@@ -23,12 +23,12 @@ class TestStep(unittest.TestCase):
     def tearDownClass(cls):
         apps.clear_cache()
 
-    def __compare_init(self, elem, name, action, app, inputs, device=None, triggers=None,
+    def __compare_init(self, elem, name, action, app, inputs, device_id=None, triggers=None,
                        widgets=None, risk=0., position=None, uid=None, templated=False, raw_representation=None):
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.action, action)
         self.assertEqual(elem.app, app)
-        self.assertEqual(elem.device, device)
+        self.assertEqual(elem.device_id, device_id)
         self.assertDictEqual({key: input_element for key, input_element in elem.inputs.items()}, inputs)
         self.assertEqual(elem.risk, risk)
         widgets = widgets if widgets is not None else []
@@ -103,8 +103,8 @@ class TestStep(unittest.TestCase):
             Step(app='HelloWorld', action='invalid')
 
     def test_init_app_action_only_with_device(self):
-        step = Step('HelloWorld', 'helloWorld', device='test')
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {}, device='test')
+        step = Step('HelloWorld', 'helloWorld', device_id='test')
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {}, device_id='test')
 
     def test_init_with_inputs_no_conversion(self):
         step = Step('HelloWorld', 'returnPlusOne', inputs={'number': -5.6})

@@ -27,7 +27,7 @@ class Widget(object):
 class Step(ExecutionElement):
     _templatable = True
 
-    def __init__(self, app, action, name='', device=None, inputs=None, triggers=None, position=None, widgets=None,
+    def __init__(self, app, action, name='', device_id=None, inputs=None, triggers=None, position=None, widgets=None,
                  risk=0, uid=None, templated=False, raw_representation=None):
         """Initializes a new Step object. A Workflow has many steps that it executes.
 
@@ -35,7 +35,7 @@ class Step(ExecutionElement):
             app (str): The name of the app associated with the Step
             action (str): The name of the action associated with a Step
             name (str, optional): The name of the Step object. Defaults to an empty string.
-            device (int, optional): The id of the device associated with the app associated with the Step. Defaults
+            device_id (int, optional): The id of the device associated with the app associated with the Step. Defaults
                 to None.
             inputs (dict, optional): A dictionary of Argument objects that are input to the step execution. Defaults
                 to None.
@@ -72,7 +72,7 @@ class Step(ExecutionElement):
             self.inputs = validate_app_action_parameters(self._input_api, inputs, self.app, self.action)
         else:
             self.inputs = inputs
-        self.device = device
+        self.device_id = device_id
         self.risk = risk
         self.position = position if position is not None else {}
         self.widgets = [widget if isinstance(widget, Widget) else Widget(**widget)
@@ -111,7 +111,7 @@ class Step(ExecutionElement):
     def _update_json(self, updated_json):
         self.action = updated_json['action']
         self.app = updated_json['app']
-        self.device = updated_json['device'] if 'device' in updated_json else ''
+        self.device_id = updated_json['device'] if 'device' in updated_json else ''
         self.risk = updated_json['risk'] if 'risk' in updated_json else 0
         inputs = {arg['name']: arg['value'] for arg in updated_json['inputs']} if 'inputs' in updated_json else {}
         if inputs is not None:

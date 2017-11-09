@@ -135,7 +135,7 @@ Step:
       type: array
       items:
         $ref: '#/definitions/Condition'
-    device:
+    device_id:
       description: ID of the device to use
       type: integer
       example: 42
@@ -203,7 +203,7 @@ DisplayStep:
       type: array
       items:
         $ref: '#/definitions/Condition'
-    device:
+    device_id:
       description: ID of the device to use
       type: integer
       example: 42
