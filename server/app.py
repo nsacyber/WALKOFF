@@ -25,12 +25,12 @@ def register_blueprints(flaskapp):
 
 def __get_blueprints_in_module(module, sub_module_name='display'):
     from importlib import import_module
-    from apps import AppWidgetBlueprint
+    from apps import AppBlueprint
     import_module('{0}.{1}'.format(module.__name__, sub_module_name))
     submodule = getattr(module, sub_module_name)
     blueprints = [getattr(submodule, field)
                   for field in dir(submodule) if (not field.startswith('__')
-                                                  and isinstance(getattr(submodule, field), AppWidgetBlueprint))]
+                                                  and isinstance(getattr(submodule, field), AppBlueprint))]
     return blueprints
 
 
