@@ -428,6 +428,8 @@ export class PlaybookComponent {
 			// Set the new cytoscape positions on our loadedworkflow
 			s.position = cyData.find(cyStep => cyStep.data.uid === s.uid).position;
 			
+			if (s.device_id === 0) { delete s.device_id; }
+
 			// Properly sanitize arguments through the tree
 			s.inputs.forEach(i => this._sanitizeArgumentForSave(i));
 
@@ -563,7 +565,8 @@ export class PlaybookComponent {
 		if (!self.selectedStep.triggers) { self.selectedStep.triggers = []; }
 
 		// TODO: maybe scope out relevant devices by action, but for now we're just only scoping out by app
-		self.relevantDevices = self.devices.filter(d => d.app === data.app);
+		self.relevantDevices = self.devices.filter(d => d.app === self.selectedStep.app);
+		console.log(self.devices, self.relevantDevices);
 	}
 
 	/**
@@ -743,16 +746,6 @@ export class PlaybookComponent {
 				id: uid,
 				uid,
 				label: stepName,
-				// parameters: {
-				// 	action: action,
-				// 	app: app,
-				// 	device_id: 0,
-				// 	errors: <any[]>[],
-				// 	inputs: inputs,
-				// 	uid: uid,
-				// 	name: action,
-				// 	next_steps: <any[]>[],
-				// }
 			},
 			renderedPosition: null as GraphPosition,
 			position: null as GraphPosition,

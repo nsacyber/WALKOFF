@@ -1,5 +1,5 @@
 import { Argument } from './argument';
-import { Widget } from './widget';
+// import { Widget } from './widget';
 import { GraphPosition } from './graphPosition';
 import { Condition } from './condition';
 
@@ -14,6 +14,6 @@ export class Step {
 	risk: number;
 	inputs: Argument[] = [];
 	// output: string;
-	widgets: Widget[] = [];
+	// widgets: Widget[] = [];
 	triggers: Condition[] = [];
 }

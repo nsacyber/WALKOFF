@@ -157,8 +157,8 @@
                                 <div *ngIf="getDeviceApis(selectedStep.app).length" class="form-group">
                                     <label for="device_id">Device</label>
                                     <select class="form-control" name="device_id" [(ngModel)]="selectedStep.device_id">
-                                        <option value=""></option>
-                                        <option *ngFor="let i of relevantDevices" [value]="i.id" [label]="i.name">{{i.name}}</option>
+                                        <option [ngValue]="0"></option>
+                                        <option *ngFor="let i of relevantDevices" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
                                     </select>
                                 </div>
                                 <!-- Inputs -->
