@@ -6,7 +6,7 @@
 
 * Are repetitive, tedious processes taking up too much of your time?
 * Is more time spent focusing on managing your data than acting on the data
-itself?
+  itself?
 
 WALKOFF is an automation framework that allows you to easily automate these 80%
 of tedious tasks so you can get the job done faster, easier, and cheaper.
@@ -78,7 +78,7 @@ is `http://127.0.0.1:5000`.
    * Capability to stream data to interfaces.
 
 2. User and Role based authentication
-  
+
 3. Case based logging
    * Can granularly configure which events to log on a per-case basis
 
@@ -133,6 +133,6 @@ guarantees are yet made for the stability of the backend Python modules. The
 
 ## Contributions
 
-WALKOFF is a community focused effort and contributions are welcome.  
+WALKOFF is a community focused effort and contributions are welcome.
 
-Comments or questions?  walkoff@nsa.gov 
+Comments or questions?  walkoff@nsa.gov
