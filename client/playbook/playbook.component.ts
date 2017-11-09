@@ -566,7 +566,6 @@ export class PlaybookComponent {
 
 		// TODO: maybe scope out relevant devices by action, but for now we're just only scoping out by app
 		self.relevantDevices = self.devices.filter(d => d.app === self.selectedStep.app);
-		console.log(self.devices, self.relevantDevices);
 	}
 
 	/**
