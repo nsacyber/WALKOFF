@@ -41,8 +41,7 @@
                     "name": "1",
                     "position": {},
                     "risk": 0,
-                    "uid": "811b1acdc3ec48a9abbdc0cf01c66176",
-                    "widgets": []
+                    "uid": "811b1acdc3ec48a9abbdc0cf01c66176"
                 },
                 {
                     "action": "Add Three",
@@ -64,8 +63,7 @@
                     "name": "start",
                     "position": {},
                     "risk": 0,
-                    "uid": "5ed04d7e28354ee7b81619dab9d34fe2",
-                    "widgets": []
+                    "uid": "5ed04d7e28354ee7b81619dab9d34fe2"
                 },
                 {
                     "action": "Add Three",
@@ -87,8 +85,7 @@
                     "name": "2",
                     "position": {},
                     "risk": 0,
-                    "uid": "9515a631ba4f4d6f8fcd6b843a277c40",
-                    "widgets": []
+                    "uid": "9515a631ba4f4d6f8fcd6b843a277c40"
                 }
             ],
             "uid": "3dd54e7df3bc414a962426d92ce3e6d2"

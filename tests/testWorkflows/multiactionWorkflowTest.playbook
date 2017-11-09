@@ -46,8 +46,7 @@
                     "name": "1",
                     "position": {},
                     "risk": 0,
-                    "uid": "01204c1451c44f99b828b2367690801b",
-                    "widgets": []
+                    "uid": "01204c1451c44f99b828b2367690801b"
                 },
                 {
                     "action": "helloWorld",
@@ -56,8 +55,7 @@
                     "name": "start",
                     "position": {},
                     "risk": 0,
-                    "uid": "704c94c112fa49c3a4a3b30cf1586fc2",
-                    "widgets": []
+                    "uid": "704c94c112fa49c3a4a3b30cf1586fc2"
                 }
             ],
             "uid": "81f0ae4aaf4b4eda905d35cbab0cd36d"

@@ -11,17 +11,6 @@ from tests.util.servertestcase import ServerTestCase
 
 class TestServer(ServerTestCase):
 
-    def test_list_widgets(self):
-        expected = {'HelloWorld': ['testWidget', 'testWidget2'], 'DailyQuote': []}
-        response = self.app.get('/widgets', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertEqual(2, len(response))
-        self.assertIn('HelloWorld', response)
-        self.assertIn('DailyQuote', response)
-        self.assertEqual(0, len(response['DailyQuote']))
-        orderless_list_compare(self, expected['HelloWorld'], response['HelloWorld'])
-
     def test_get_device_types(self):
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]

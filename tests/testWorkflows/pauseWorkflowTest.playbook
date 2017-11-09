@@ -33,8 +33,7 @@
                     "name": "1",
                     "position": {},
                     "risk": 0,
-                    "uid": "6c52b6a75406452a9d85967d80d71bf8",
-                    "widgets": []
+                    "uid": "6c52b6a75406452a9d85967d80d71bf8"
                 },
                 {
                     "action": "helloWorld",
@@ -43,8 +42,7 @@
                     "name": "start",
                     "position": {},
                     "risk": 0,
-                    "uid": "e2131c32efe44a83913396a0fbb9f34d",
-                    "widgets": []
+                    "uid": "e2131c32efe44a83913396a0fbb9f34d"
                 },
                 {
                     "action": "pause",
@@ -58,8 +56,7 @@
                     "name": "2",
                     "position": {},
                     "risk": 0,
-                    "uid": "b7725c22c881484ebe2901027f1acd7f",
-                    "widgets": []
+                    "uid": "b7725c22c881484ebe2901027f1acd7f"
                 }
             ],
             "uid": "f160b324ab6e422b82e0aae54cc34f08"

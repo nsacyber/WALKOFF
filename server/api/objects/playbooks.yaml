@@ -153,21 +153,6 @@ Step:
       description: The output of the step after it has been executed
       type: string
       example: result_from_step
-    widgets:
-      description: The widgets to which this app should send its output
-      type: array
-      items:
-        type: object
-        required: [app, name]
-        properties:
-          app:
-            description: Name of the app
-            type: string
-            example: HelloWorld
-          widget:
-            description: Name of the widget
-            type: string
-            example: testWidget
     position:
       description:  position of the step onthe workflow editor
       type: object
@@ -217,21 +202,6 @@ DisplayStep:
       type: array
       items:
         $ref: '#/definitions/Argument'
-    widgets:
-      description: The widgets to which this app should send its output
-      type: array
-      items:
-        type: object
-        required: [app, name]
-        properties:
-          app:
-            description: Name of the app
-            type: string
-            example: HelloWorld
-          widget:
-            description: Name of the widget
-            type: string
-            example: testWidget
     position:
       description:  position of the step onthe workflow editor
       type: object

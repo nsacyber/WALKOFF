@@ -23,18 +23,14 @@ class TestStep(unittest.TestCase):
     def tearDownClass(cls):
         apps.clear_cache()
 
-    def __compare_init(self, elem, name, action, app, inputs, device_id=None, triggers=None,
-                       widgets=None, risk=0., position=None, uid=None, templated=False, raw_representation=None):
+    def __compare_init(self, elem, name, action, app, inputs, device_id=None, triggers=None, risk=0.,
+                       position=None, uid=None, templated=False, raw_representation=None):
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.action, action)
         self.assertEqual(elem.app, app)
         self.assertEqual(elem.device_id, device_id)
         self.assertDictEqual({key: input_element for key, input_element in elem.inputs.items()}, inputs)
         self.assertEqual(elem.risk, risk)
-        widgets = widgets if widgets is not None else []
-        self.assertEqual(len(elem.widgets), len(widgets))
-        for widget in elem.widgets:
-            self.assertIn((widget.app, widget.name), widgets)
         if triggers:
             self.assertEqual(len(elem.triggers), len(triggers))
             self.assertSetEqual({trigger.action for trigger in elem.triggers}, set(triggers))
@@ -127,12 +123,6 @@ class TestStep(unittest.TestCase):
                     Condition('HelloWorld', 'regMatch', args={'regex': 'a'})]
         step = Step('HelloWorld', 'helloWorld', triggers=triggers)
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {}, triggers=['regMatch', 'regMatch'])
-
-    def test_init_with_widgets(self):
-        widget_tuples = [('aaa', 'bbb'), ('ccc', 'ddd'), ('eee', 'fff')]
-        widgets = [{'app': widget[0], 'name': widget[1]} for widget in widget_tuples]
-        step = Step('HelloWorld', 'helloWorld', widgets=widgets)
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {}, widgets=widget_tuples)
 
     def test_execute_no_args(self):
         step = Step(app='HelloWorld', action='helloWorld')

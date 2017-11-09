@@ -74,10 +74,6 @@ class TestHelperFunctions(unittest.TestCase):
         expected_apps = ['HelloWorld', 'DailyQuote']
         orderless_list_compare(self, expected_apps, list_apps())
 
-    def test_list_widgets(self):
-        orderless_list_compare(self, list_widgets('HelloWorld'), ['testWidget', 'testWidget2'])
-        self.assertListEqual(list_widgets('JunkApp'), [])
-
     def test_import_py_file(self):
         module_name = 'tests.testapps.HelloWorld'
         imported_module = import_py_file(module_name,

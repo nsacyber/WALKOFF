@@ -157,21 +157,6 @@ def list_apps_with_interfaces(path=None):
     return apps_with_interfaces
 
 
-def list_widgets(app, app_path=None):
-    """Get a list of the widgets for a given app. 
-    
-    Args:
-        app (str): The app under which the widgets are located.
-        app_path (str, optional): The path to the widgets folder. Default is None.
-        
-    Returns:
-        A list of the widgets given the apps path or the apps_path in the configuration.
-    """
-    if app_path is None:
-        app_path = core.config.paths.apps_path
-    return __list_valid_directories(os.path.join(app_path, app, 'widgets'))
-
-
 def list_class_functions(class_name):
     """Get the functions for a python Class.
     

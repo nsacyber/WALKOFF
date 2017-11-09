@@ -16,9 +16,8 @@ logger = logging.getLogger(__name__)
 
 def register_blueprints(flaskapp):
     from server.blueprints import app as app
-    from server.blueprints import events, widgets, workflowresult
+    from server.blueprints import events, workflowresult
     flaskapp.register_blueprint(app.app_page, url_prefix='/appinterface/<app>')
-    flaskapp.register_blueprint(widgets.widgets_page, url_prefix='/apps/<app>/widgets/<widget>')
     flaskapp.register_blueprint(events.events_page, url_prefix='/events')
     flaskapp.register_blueprint(workflowresult.workflowresults_page, url_prefix='/workflowresults')
     __register_all_app_blueprints(flaskapp)
@@ -69,29 +68,6 @@ def __register_all_app_blueprints(flaskapp):
             pass
         else:
             __register_app_blueprints(flaskapp, app_name, blueprints)
-
-        __register_all_app_widget_blueprints(flaskapp, app_module)
-
-
-def __register_all_app_widget_blueprints(flaskapp, app_module):
-    from importlib import import_module
-    from core.helpers import import_submodules
-    try:
-        widgets_module = import_module('{0}.widgets'.format(app_module.__name__))
-    except ImportError:
-        return
-    else:
-        app_name = app_module.__name__.split('.')[-1]
-        imported_widgets = import_submodules(widgets_module)
-        for widget_name, widget_module in imported_widgets.items():
-            try:
-                blueprints = __get_blueprints_in_module(widget_module)
-            except ImportError:
-                continue
-            else:
-                url_prefix = '/apps/{0}/{1}'.format(app_name, widget_name.split('.')[-1])
-                for blueprint in blueprints:
-                    __register_blueprint(flaskapp, blueprint, url_prefix)
 
 
 def create_app():

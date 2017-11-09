@@ -47,8 +47,7 @@
                         "y": 130
                     },
                     "risk": 0,
-                    "uid": "facaa3c3-0aac-4268-8569-9e269e566de1",
-                    "widgets": []
+                    "uid": "facaa3c3-0aac-4268-8569-9e269e566de1"
                 },
                 {
                     "action": "helloWorld",
@@ -60,8 +59,7 @@
                         "y": 210
                     },
                     "risk": 0,
-                    "uid": "28c6d4a9-1f2b-4c2e-91e3-c953cc6d66ac",
-                    "widgets": []
+                    "uid": "28c6d4a9-1f2b-4c2e-91e3-c953cc6d66ac"
                 },
                 {
                     "action": "echo object",
@@ -87,8 +85,7 @@
                         "y": 150
                     },
                     "risk": 0,
-                    "uid": "d8511ddf-294f-4821-8e76-dac7f6009bf8",
-                    "widgets": []
+                    "uid": "d8511ddf-294f-4821-8e76-dac7f6009bf8"
                 },
                 {
                     "action": "echo object",
@@ -114,8 +111,7 @@
                         "y": 90
                     },
                     "risk": 0,
-                    "uid": "ac8c7a4f-83db-4e27-a5b6-ecf18de3937d",
-                    "widgets": []
+                    "uid": "ac8c7a4f-83db-4e27-a5b6-ecf18de3937d"
                 },
                 {
                     "action": "helloWorld",
@@ -127,8 +123,7 @@
                         "y": 170
                     },
                     "risk": 0,
-                    "uid": "093fdb92-33bd-4bcc-9653-dfed6563d4a7",
-                    "widgets": []
+                    "uid": "093fdb92-33bd-4bcc-9653-dfed6563d4a7"
                 }
             ],
             "uid": "2030ae36-633f-4499-a258-2913fa46d388"
@@ -178,8 +173,7 @@
                         "y": 130
                     },
                     "risk": 0,
-                    "uid": "580374f6-bd03-46e1-8262-49bb2c0faff1",
-                    "widgets": []
+                    "uid": "580374f6-bd03-46e1-8262-49bb2c0faff1"
                 },
                 {
                     "action": "helloWorld",
@@ -191,8 +185,7 @@
                         "y": 210
                     },
                     "risk": 0,
-                    "uid": "b94fd6ff-88ad-4484-818e-004594bf3b20",
-                    "widgets": []
+                    "uid": "b94fd6ff-88ad-4484-818e-004594bf3b20"
                 },
                 {
                     "action": "helloWorld",
@@ -204,8 +197,7 @@
                         "y": 170
                     },
                     "risk": 0,
-                    "uid": "d151e29b-6a7f-4da6-91c4-de4b555b8169",
-                    "widgets": []
+                    "uid": "d151e29b-6a7f-4da6-91c4-de4b555b8169"
                 },
                 {
                     "action": "echo object",
@@ -231,8 +223,7 @@
                         "y": 90
                     },
                     "risk": 0,
-                    "uid": "a6f7a8dc-e626-4f10-894d-7d4c19d0e7cb",
-                    "widgets": []
+                    "uid": "a6f7a8dc-e626-4f10-894d-7d4c19d0e7cb"
                 },
                 {
                     "action": "echo object",
@@ -258,8 +249,7 @@
                         "y": 150
                     },
                     "risk": 0,
-                    "uid": "19096d0c-8ac6-4d96-b1d3-419dcb17b357",
-                    "widgets": []
+                    "uid": "19096d0c-8ac6-4d96-b1d3-419dcb17b357"
                 }
             ],
             "uid": "4faf9d28-3631-44bd-838e-81501978714f"

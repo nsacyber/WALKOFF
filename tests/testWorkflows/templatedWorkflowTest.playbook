@@ -47,8 +47,7 @@
                     "position": {},
                     "risk": 0,
                     "templated": true,
-                    "uid": "cd178e70ba734022b3ee1715255e9fd2",
-                    "widgets": []
+                    "uid": "cd178e70ba734022b3ee1715255e9fd2"
                 },
                 {
                     "action": "helloWorld",
@@ -57,8 +56,7 @@
                     "name": "start",
                     "position": {},
                     "risk": 0,
-                    "uid": "403e56dee3b74c5fad931d5e821fe2b9",
-                    "widgets": []
+                    "uid": "403e56dee3b74c5fad931d5e821fe2b9"
                 }
             ],
             "uid": "3c144dc81686489cb98766bdbbdf180a"
