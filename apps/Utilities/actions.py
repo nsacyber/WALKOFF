@@ -7,7 +7,7 @@ from random import SystemRandom
 from apps.Utilities.events import wait
 
 @action
-def system_rand():
+def secure_rand():
     return SystemRandom().random()
 
 @action
