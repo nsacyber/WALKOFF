@@ -88,4 +88,4 @@ class TestAppUtilities(unittest.TestCase):
     def test_get_device(self):
         devices = [self.device1, self.device2, self.device3, self.device4]
         self.add_test_app(devices=devices)
-        self.assertEqual(get_device(self.app_name, 'test1'), self.device1)
+        self.assertEqual(get_device(self.app_name, self.device1.id), self.device1)

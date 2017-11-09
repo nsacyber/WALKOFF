@@ -27,7 +27,7 @@ class Widget(object):
 class Step(ExecutionElement):
     _templatable = True
 
-    def __init__(self, app, action, name='', device='', inputs=None, triggers=None, position=None, widgets=None,
+    def __init__(self, app, action, name='', device=None, inputs=None, triggers=None, position=None, widgets=None,
                  risk=0, uid=None, templated=False, raw_representation=None):
         """Initializes a new Step object. A Workflow has many steps that it executes.
 
@@ -35,8 +35,8 @@ class Step(ExecutionElement):
             app (str): The name of the app associated with the Step
             action (str): The name of the action associated with a Step
             name (str, optional): The name of the Step object. Defaults to an empty string.
-            device (str, optional): The name of the device associated with the app associated with the Step. Defaults
-                to an empty string.
+            device (int, optional): The id of the device associated with the app associated with the Step. Defaults
+                to None.
             inputs (dict, optional): A dictionary of Argument objects that are input to the step execution. Defaults
                 to None.
             triggers (list[Flag], optional): A list of Flag objects for the Step. If a Step should wait for data

@@ -35,28 +35,28 @@ class TestAppBase(TestCase):
         self.assertTrue(getattr(AppBase, '_is_walkoff_app', False))
 
     def test_init(self):
-        app = AppBase(self.test_app_name, 'test')
+        app = AppBase(self.test_app_name, self.device1.id)
         self.assertEqual(app.app, self.db_app)
         self.assertEqual(app.device, self.device1)
         self.assertDictEqual(app.device_fields, {})
         self.assertEqual(app.device_type, 'type1')
-        self.assertEqual(app.device_id, 'test')
+        self.assertEqual(app.device_id, self.device1.id)
 
     def test_init_with_fields(self):
-        app = AppBase(self.test_app_name, 'test2')
+        app = AppBase(self.test_app_name, self.device2.id)
         self.assertEqual(app.app, self.db_app)
         self.assertEqual(app.device, self.device2)
         self.assertDictEqual(app.device_fields, self.device2.get_plaintext_fields())
         self.assertEqual(app.device_type, 'type2')
-        self.assertEqual(app.device_id, 'test2')
+        self.assertEqual(app.device_id, self.device2.id)
 
     def test_init_with_invalid_app(self):
-        app = AppBase('Invalid', 'test2')
+        app = AppBase('Invalid', self.device2.id)
         self.assertIsNone(app.app)
         self.assertIsNone(app.device)
         self.assertDictEqual(app.device_fields, {})
         self.assertEqual(app.device_type, None)
-        self.assertEqual(app.device_id, 'test2')
+        self.assertEqual(app.device_id, self.device2.id)
 
     def test_init_with_invalid_device(self):
         app = AppBase(self.test_app_name, 'invalid')
@@ -67,11 +67,11 @@ class TestAppBase(TestCase):
         self.assertEqual(app.device_id, 'invalid')
 
     def test_get_all_devices(self):
-        app = AppBase(self.test_app_name, 'test2')
+        app = AppBase(self.test_app_name, self.device2.id)
         devices = app.get_all_devices()
         self.assertIn(self.device1, devices)
         self.assertIn(self.device2, devices)
 
     def test_get_all_devices_invalid_app(self):
-        app = AppBase('Invalid', 'test2')
+        app = AppBase('Invalid', self.device2.id)
         self.assertListEqual(app.get_all_devices(), [])
