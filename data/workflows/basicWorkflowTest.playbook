@@ -5,7 +5,7 @@
         {
             "accumulated_risk": 0.0,
             "name": "helloWorldWorkflow",
-            "start": "1",
+            "start": "2",
             "steps": [
                 {
                     "action": "helloWorld",
@@ -17,17 +17,17 @@
                         {
                             "flags": [],
                             "name": "2",
-                            "status": "Success",
-                            "uid": "55541eee50774accbf70a8d7df17a027"
+                            "status": "UnhandledException",
+                            "uid": "a8b8aad1a63d49318b86d91a1e4815a4"
                         }
                     ],
                     "position": {
-                        "x": -450,
-                        "y": -50
+                        "x": -310,
+                        "y": -30
                     },
                     "risk": 0,
                     "triggers": [],
-                    "uid": "c5a7c29a0f844b69a59901bb542e9305",
+                    "uid": "e35bfb0ee98d41a1a1605a330ce990ea",
                     "widgets": []
                 },
                 {
@@ -36,9 +36,16 @@
                     "device": "",
                     "inputs": [],
                     "name": "3",
-                    "next_steps": [],
+                    "next_steps": [
+                        {
+                            "flags": [],
+                            "name": "1",
+                            "status": "Success",
+                            "uid": "1e92adfc1df6487f98793a06c2b7d6ff"
+                        }
+                    ],
                     "position": {
-                        "x": -50,
+                        "x": -230,
                         "y": 10
                     },
                     "risk": 0,
@@ -56,21 +63,21 @@
                         {
                             "flags": [],
                             "name": "3",
-                            "status": "Success",
-                            "uid": "55541eee50774accbf70a8d7df17a027"
+                            "status": "InvalidInput",
+                            "uid": "0d1be9b65568445bbad00ef6b4947872"
                         }
                     ],
                     "position": {
-                        "x": -230,
-                        "y": -30
+                        "x": -250,
+                        "y": -90
                     },
                     "risk": 0,
                     "triggers": [],
-                    "uid": "c5a7c29a0f844b69a59901bb542e9305",
+                    "uid": "d76790f5ed444496ab2852ee021d8795",
                     "widgets": []
                 }
             ],
-            "uid": "98e356f6fd1b41b487ab992852903bc4"
+            "uid": "99728b576cd74e03a70e77aa7f68c6e9"
         }
     ]
 }
