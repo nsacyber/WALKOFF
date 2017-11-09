@@ -6,25 +6,25 @@ import { LoginService } from './login.service';
 	selector: 'login-component',
 	templateUrl: './login.html',
 	//styleUrls: ['./style.css'],
-	providers: [LoginService]
+	providers: [LoginService],
 })
 export class LoginComponent {
-	title:string;
-	username:string;
-	password:string;
+	title: string;
+	username: string;
+	password: string;
 
 	constructor(private loginService: LoginService) {
-		this.title = "New Login";
+		this.title = 'New Login';
 	}
 
 	login(): void {
 		this.loginService.login(this.username, this.password)
 		.then(function (success) {
 			//route to main module
-			console.log('successfully authenticated user: ' + this.username);
+			// console.log('successfully authenticated user: ' + this.username);
 		})
 		.catch(function (error) {
-			console.log(error.message);
+			// console.log(error.message);
 		});
-	};
+	}
 }

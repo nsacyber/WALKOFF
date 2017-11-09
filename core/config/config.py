@@ -113,37 +113,9 @@ except (IOError, OSError) as e:
     __logger.error('Cannot load events metadata. Returning empty list. Error: {0}'.format(e))
     possible_events = []
 
-transforms = {}
-conditions = {}
-function_apis = {}
-
-
-def load_condition_transform_apis(path=None):
-    path = path if path is not None else core.config.paths.function_api_path
-    global function_apis
-    try:
-        with open(path) as function_file:
-            api = yaml.load(function_file.read())
-            from core.validator import validate_condition_transform_spec
-            validate_condition_transform_spec(api)
-            function_apis = api
-    except (IOError, OSError) as e:
-        __logger.fatal('Cannot open conditions and transforms api: Error {0}'.format(str(e)))
-        sys.exit(1)
-    except yaml.YAMLError:
-        __logger.fatal('conditions&transforms api is invalid yaml')
-        sys.exit(1)
-
 
 def initialize():
-    global transforms
-    global conditions
-
     load_config()
-    from core.helpers import import_all_transforms, import_all_conditions
     from apps import cache_apps
     cache_apps(core.config.paths.apps_path)
     load_app_apis()
-    conditions = import_all_conditions()
-    transforms = import_all_transforms()
-    load_condition_transform_apis()

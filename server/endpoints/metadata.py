@@ -5,8 +5,6 @@ from flask_jwt_extended import jwt_required
 
 import core.config.config
 import core.config.paths
-import core.transforms
-import core.conditions
 from core import helpers
 from server.returncodes import SUCCESS
 from server.security import roles_accepted_for_resources
@@ -33,7 +31,7 @@ def read_all_transforms():
             ret = {}
             if 'description' in transform_body:
                 ret['description'] = transform_body['description']
-            data_in_param = transform_body['dataIn']
+            data_in_param = transform_body['data_in']
             args = []
             for arg in (x for x in transform_body['parameters'] if x['name'] != data_in_param):
                 arg_ret = {'name': arg['name'], 'type': arg.get('type', 'object')}
@@ -60,7 +58,7 @@ def read_all_conditions():
             ret = {}
             if 'description' in condition_body:
                 ret['description'] = condition_body['description']
-            data_in_param = condition_body['dataIn']
+            data_in_param = condition_body['data_in']
             args = []
             for arg in (x for x in condition_body['parameters'] if x['name'] != data_in_param):
                 arg_ret = {'name': arg['name'], 'type': arg.get('type', 'object')}

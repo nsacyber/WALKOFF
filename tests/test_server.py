@@ -11,30 +11,6 @@ from tests.util.servertestcase import ServerTestCase
 
 class TestServer(ServerTestCase):
 
-    def test_list_apps(self):
-        expected_apps = ['HelloWorld', 'DailyQuote']
-        response = self.app.get('/api/apps', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
-        orderless_list_compare(self, response, expected_apps)
-
-    def test_list_apps_with_interfaces(self):
-        expected_apps = ['HelloWorld']
-        response = self.app.get('/api/apps?interfaces_only=true', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
-        orderless_list_compare(self, response, expected_apps)
-
-    def test_list_apps_with_device_types(self):
-        fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
-                       {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        core.config.config.app_apis.update({'TestApp': {'devices': {'test_type': {'fields': fields_json}}}})
-        response = self.app.get('/api/apps?has_device_types=true', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertIn('TestApp', response)
-        # orderless_list_compare(self, response, ['TestApp'])
-
     def test_list_widgets(self):
         expected = {'HelloWorld': ['testWidget', 'testWidget2'], 'DailyQuote': []}
         response = self.app.get('/widgets', headers=self.headers)
@@ -45,66 +21,6 @@ class TestServer(ServerTestCase):
         self.assertIn('DailyQuote', response)
         self.assertEqual(0, len(response['DailyQuote']))
         orderless_list_compare(self, expected['HelloWorld'], response['HelloWorld'])
-
-    def test_read_transforms(self):
-        response = self.get_with_status_check('/api/transforms', headers=self.headers)
-        expected = {'sub_top_filter': {'args': []},
-                    'mod1_filter2': {'args': [{'required': True, 'type': 'number', 'name': 'arg1'}]},
-                    'mod1_filter1': {'args': []},
-                    'sub1_filter1': {'args': [{'required': True, 'name': 'arg1',
-                                               'schema': {
-                                                   'type': 'object',
-                                                   'properties': {'a': {'type': 'number'}, 'b': {'type': 'string'}}}}]},
-                    'length': {'args': [], 'description': 'Returns the length of a collection'},
-                    'sub1_filter3': {'args': []},
-                    'filter1': {'args': []},
-                    'Top Transform': {'args': []},
-                    'complex': {'args': [{'required': True, 'name': 'arg',
-                                          'schema': {
-                                              'type': 'object',
-                                              'properties': {'a': {'type': 'number'},
-                                                             'c': {'items': {'type': 'integer'}, 'type': 'array'},
-                                                             'b': {'type': 'number'}}}}]},
-                    'select json': {'args': [{'required': True, 'type': 'string', 'name': 'element'}]}}
-        self.assertDictEqual(response, {'transforms': expected})
-
-    def test_read_conditions(self):
-        response = self.get_with_status_check('/api/conditions', headers=self.headers)
-        expected = {
-            'count':
-                {'description': 'Compares two numbers',
-                 'args': [{'name': 'operator',
-                           'enum': ['g', 'ge', 'l', 'le', 'e'],
-                           'description': "The comparison operator ('g', 'ge', etc.)",
-                           'default': 'e',
-                           'required': True,
-                           'type': 'string'},
-                          {'name': 'threshold',
-                           'required': True,
-                           'type': 'number',
-                           'description': 'The value with which to compare the input'}]},
-            'Top Condition': {'args': []},
-            'regMatch': {'description': 'Matches an input against a regular expression',
-                         'args': [{'name': 'regex',
-                                   'required': True,
-                                   'type': 'string',
-                                   'description': 'The regular expression to match'}]},
-            'mod1_flag1': {'args': []},
-            'mod1_flag2': {'args': [{'required': True, 'type': 'integer', 'name': 'arg1'}]},
-            'mod2_flag2': {'args': [{'required': True, 'name': 'arg1',
-                                     'schema': {'type': 'object',
-                                                'properties': {'a': {'type': 'integer'}, 'b': {'type': 'integer'}}}}]},
-            'mod2_flag1': {'args': []},
-            'sub1_top_flag': {'args': []}}
-        self.assertDictEqual(response, {'conditions': expected})
-
-        # def test_get_all_list_actions(self):
-        #     expected_reduced_json = {
-        #         'DailyQuote': ['quoteIntro', 'forismaticQuote', 'getQuote', 'repeatBackToMe'],
-        #         'HelloWorld': ['pause', 'Add Three', 'repeatBackToMe', 'Buggy',
-        #                        'returnPlusOne', 'helloWorld', 'Hello World', 'Add To Previous']}
-        #     response = self.get_with_status_check('/apps/actions', headers=self.headers)
-        #     orderless_list_compare(self, list(response.keys()), list(expected_reduced_json.keys()))
 
     def test_get_device_types(self):
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},

@@ -7,7 +7,6 @@ import apps
 import core.config.config
 import core.controller
 from core.case.callbacks import WorkflowExecutionStart, WorkflowPaused, WorkflowResumed
-from core.helpers import import_all_transforms, import_all_conditions
 from tests import config
 from tests.util.case_db_help import *
 from tests.util.thread_control import modified_setup_worker_env
@@ -18,9 +17,6 @@ class TestZMQCommunication(unittest.TestCase):
     def setUpClass(cls):
         apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
-        core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
-        core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
-        core.config.config.load_condition_transform_apis(path=config.function_api_path)
         core.config.config.num_processes = 2
 
     def setUp(self):

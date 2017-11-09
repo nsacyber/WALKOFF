@@ -10,9 +10,10 @@ from core.decorators import ActionResult
 from core.executionelements.condition import Condition
 from core.helpers import (UnknownApp, UnknownAppAction, InvalidArgument, import_all_conditions,
                           import_all_transforms)
+from core.helpers import UnknownApp, UnknownAppAction, InvalidArgument
 from core.appinstance import AppInstance
 from core.executionelements.step import Step
-from tests.config import test_apps_path, function_api_path
+from tests.config import test_apps_path
 
 
 class TestStep(unittest.TestCase):
@@ -20,9 +21,6 @@ class TestStep(unittest.TestCase):
     def setUpClass(cls):
         apps.cache_apps(test_apps_path)
         core.config.config.load_app_apis(apps_path=test_apps_path)
-        core.config.config.conditions = import_all_conditions('tests.util.conditionstransforms')
-        core.config.config.transforms = import_all_transforms('tests.util.conditionstransforms')
-        core.config.config.load_condition_transform_apis(path=function_api_path)
 
     @classmethod
     def tearDownClass(cls):
@@ -135,8 +133,8 @@ class TestStep(unittest.TestCase):
             Step('HelloWorld', 'returnPlusOne', arguments=[{'name': 'number', 'value': 'invalid'}])
 
     def test_init_with_flags(self):
-        triggers = [Condition(action='regMatch', arguments=[{'name': 'regex', 'value': '(.*)'}]),
-                    Condition(action='regMatch', arguments=[{'name': 'regex', 'value': 'a'}])]
+        triggers = [Condition('HelloWorld', action='regMatch', arguments=[{'name': 'regex', 'value': '(.*)'}]),
+                    Condition('HelloWorld', action='regMatch', arguments=[{'name': 'regex', 'value': 'a'}])]
         step = Step('HelloWorld', 'helloWorld', triggers=triggers)
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, triggers=['regMatch', 'regMatch'])
 
@@ -364,7 +362,7 @@ class TestStep(unittest.TestCase):
                 [Argument('num1', value='-5.62'), Argument('num2', value='5'), Argument('num3', value='invalid')])
 
     def test_execute_with_triggers(self):
-        triggers = [Condition(action='regMatch', arguments=[{'name': 'regex', 'value': 'aaa'}])]
+        triggers = [Condition('HelloWorld', action='regMatch', arguments=[{'name': 'regex', 'value': 'aaa'}])]
         step = Step(app='HelloWorld', action='helloWorld', triggers=triggers)
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         step.send_data_to_trigger({"data_in": {"data": 'aaa'}})
@@ -380,7 +378,7 @@ class TestStep(unittest.TestCase):
         self.assertTrue(result['triggered'])
 
     def test_execute_multiple_triggers(self):
-        triggers = [Condition(action='regMatch', arguments=[{'name': 'regex', 'value': 'aaa'}])]
+        triggers = [Condition('HelloWorld', action='regMatch', arguments=[{'name': 'regex', 'value': 'aaa'}])]
         step = Step(app='HelloWorld', action='helloWorld', triggers=triggers)
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         step.send_data_to_trigger({"data_in": {"data": 'a'}})

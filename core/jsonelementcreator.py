@@ -44,7 +44,7 @@ class JsonElementCreator(object):
         except (KeyError, TypeError) as e:
             from core.helpers import format_exception_message
             raise ValueError(
-                'Improperly formatted JSON for ExecutionElement object {}'.format(format_exception_message(e)))
+                'Improperly formatted JSON for ExecutionElement {0} {1}'.format(current_class.__name__, format_exception_message(e)))
 
     @classmethod
     def _setup_ordering(cls):

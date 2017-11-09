@@ -21,10 +21,8 @@ def get_playbooks(full=None):
     @jwt_required
     @roles_accepted_for_resources('playbooks')
     def __func():
-        if full:
-            return running_context.controller.get_all_workflows(full_representation=True), SUCCESS
-        else:
-            return running_context.controller.get_all_workflows(full_representation=False), SUCCESS
+        playbooks = running_context.controller.get_all_workflows(full_representation=bool(full))
+        return sorted(playbooks, key=(lambda playbook: playbook['name'].lower())), SUCCESS
 
     return __func()
 
@@ -434,7 +432,7 @@ def save_workflow(playbook_name, workflow_name):
             except UnknownApp as e:
                 return {"error": "Unknown app {0}.".format(e.app)}, INVALID_INPUT_ERROR
             except UnknownAppAction as e:
-                return {'error': 'Unknown action {0} for app {1}'.format(e.action, e.app)}, INVALID_INPUT_ERROR
+                return {'error': 'Unknown action for app'}, INVALID_INPUT_ERROR
             except InvalidArgument as e:
                 return {'error': 'Invalid input to action. Error: {0}'.format(str(e))}, INVALID_INPUT_ERROR
             else:

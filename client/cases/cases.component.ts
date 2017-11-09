@@ -1,10 +1,10 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
-import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { Select2OptionData } from 'ng2-select2';
-import "rxjs/add/operator/debounceTime";
+import 'rxjs/add/operator/debounceTime';
 
 import { CasesService } from './cases.service';
 
@@ -13,6 +13,10 @@ import { CasesModalComponent } from './cases.modal.component';
 import { Case } from '../models/case';
 import { CaseEvent } from '../models/caseEvent';
 import { AvailableSubscription } from '../models/availableSubscription';
+import { Playbook } from '../models/playbook/playbook';
+import { Workflow } from '../models/playbook/workflow';
+import { Step } from '../models/playbook/step';
+import { NextStep } from '../models/playbook/nextStep';
 
 /**
  * Types as the backend calls them for adding a new CaseEvent.
@@ -30,7 +34,7 @@ const childrenTypes = ['workflows', 'steps', 'next_steps', 'conditions', 'transf
 	styleUrls: [
 		'client/cases/cases.css',
 	],
-	providers: [CasesService]
+	providers: [CasesService],
 })
 export class CasesComponent {
 	cases: Case[] = [];
@@ -44,7 +48,9 @@ export class CasesComponent {
 	caseFilterQuery: FormControl = new FormControl();
 	subscriptionTree: any;
 
-	constructor(private casesService: CasesService, private modalService: NgbModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {		
+	constructor(
+		private casesService: CasesService, private modalService: NgbModal,
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.caseSelectConfig = {
@@ -68,12 +74,12 @@ export class CasesComponent {
 	}
 
 	caseSelectChange($event: any): void {
-		if (!$event.value || $event.value === '') return;
+		if (!$event.value || $event.value === '') { return; }
 		this.getCaseEvents($event.value);
 	}
 
 	filterEvents(): void {
-		let searchFilter = this.eventFilterQuery.value ? this.eventFilterQuery.value.toLocaleLowerCase() : '';
+		const searchFilter = this.eventFilterQuery.value ? this.eventFilterQuery.value.toLocaleLowerCase() : '';
 
 		this.displayCaseEvents = this.caseEvents.filter((caseEvent) => {
 			return caseEvent.type.toLocaleLowerCase().includes(searchFilter) ||
@@ -82,7 +88,7 @@ export class CasesComponent {
 	}
 
 	filterCases(): void {
-		let searchFilter = this.caseFilterQuery.value ? this.caseFilterQuery.value.toLocaleLowerCase() : '';
+		const searchFilter = this.caseFilterQuery.value ? this.caseFilterQuery.value.toLocaleLowerCase() : '';
 
 		this.displayCases = this.cases.filter((c) => {
 			return c.name.toLocaleLowerCase().includes(searchFilter) ||
@@ -95,7 +101,7 @@ export class CasesComponent {
 			.getCases()
 			.then((cases) => {
 				this.displayCases = this.cases = cases;
-				this.availableCases = [{ id: '', text: '' }].concat(cases.map((c) => { return { id: c.id.toString(), text: c.name } }));
+				this.availableCases = [{ id: '', text: '' }].concat(cases.map((c) => ({ id: c.id.toString(), text: c.name })));
 			})
 			.catch(e => this.toastyService.error(`Error retrieving cases: ${e.message}`));
 	}
@@ -133,35 +139,9 @@ export class CasesComponent {
 		this._handleModalClose(modalRef);
 	}
 
-	private _handleModalClose(modalRef: NgbModalRef): void {
-		modalRef.result
-			.then((result) => {
-				//Handle modal dismiss
-				if (!result || !result.case) return;
-
-				//On edit, find and update the edited item
-				if (result.isEdit) {
-					let toUpdate = _.find(this.cases, c => c.id === result.case.id);
-					Object.assign(toUpdate, result.case);
-
-					this.filterCases();
-
-					this.toastyService.success(`Case "${result.case.name}" successfully edited.`);
-				}
-				//On add, push the new item
-				else {
-					this.cases.push(result.case);
-
-					this.filterCases();
-
-					this.toastyService.success(`Case "${result.case.name}" successfully added.`);
-				}
-			},
-			(error) => { if (error) this.toastyService.error(error.message); });
-	}
-
 	deleteCase(caseToDelete: Case): void {
-		if (!confirm(`Are you sure you want to delete the case "${caseToDelete.name}"? This will also delete any associated events.`)) return;
+		if (!confirm('Are you sure you want to delete the case "' + caseToDelete.name +
+			'"? This will also delete any associated events.')) { return; }
 
 		this.casesService
 			.deleteCase(caseToDelete.id)
@@ -190,72 +170,82 @@ export class CasesComponent {
 	}
 
 	convertPlaybooksToSubscriptionTree(playbooks: any[]): any {
-		let self = this;
+		const self = this;
 		//Top level controller data
-		let tree = { name: 'Controller', uid: 'controller', type: 'controller', children: <Object[]>[] };
+		const tree = { name: 'Controller', uid: 'controller', type: 'controller', children: [] as object[] };
+
+		// Remap the next steps to be under steps as they used to be
+		playbooks.forEach((p: Playbook) => {
+			p.workflows.forEach((w: Workflow) => {
+				w.steps.forEach((s: Step) => {
+					(s as any).next_steps = [];
+				});
+
+				w.next_steps.forEach((ns: NextStep) => {
+					const matchingStep = w.steps.find(s => s.uid === ns.destination_uid);
+					if (matchingStep) { (ns as any).name = matchingStep.name; }
+					(w.steps.find(s => s.uid === ns.source_uid) as any).next_steps.push(ns);
+				});
+
+				delete w.next_steps;
+			});
+		});
 
 		playbooks.forEach(function (p) {
 			tree.children.push(self.getNodeRecursive(p, 0));
-			// let node = { name: p.name, uid: '', type: 'playbook', children: <any>[] }
-
-			// p.workflows.forEach(function (w: any) {
-			// 	let node = { name: w.name, uid: w.uid, type: 'workflow', chilren: <any>[] };
-
-
-
-			// 	p.children.push(node);
-			// })
-
-			// tree.children.push(node);
 		});
 		return tree;
 	}
 
 	getNodeRecursive(target: any, typeIndex: number, prefix?: string): any {
-		let self = this;
+		const self = this;
 		// types = ['playbook', 'workflow', 'step', 'nextstep', 'condition', 'transform'];
 		// childrenTypes = ['workflows', 'steps', 'next', 'conditions', 'transforms'];
 
 		let nodeName = '';
-		if (prefix) nodeName = prefix + ': ';
+		if (prefix) { nodeName = prefix + ': '; }
 		//For higher level nodes, use the name
-		if (target.name) nodeName += target.name;
-		//For lower level nodes such as condition/transform, use action
-		else if (target.action) nodeName += target.action;
-		else nodeName = '(name unknown)';
+		if (target.name) { 
+			nodeName += target.name;
+		} else if (target.action) {
+			nodeName += target.action;
+		} else { nodeName = '(name unknown)'; }
 
-		let node = { 
+		const node = { 
 			name: nodeName, 
 			uid: target.uid ? target.uid : '', 
 			type: types[typeIndex], 
-			children: <Object[]>[]
+			children: [] as object[],
 		};
 
-		let childType = childrenTypes[typeIndex];
+		const childType = childrenTypes[typeIndex];
 		if (childType) {
-			let prefix: string;
+			let childPrefix: string;
 
 			switch (childType) {
 				case 'steps':
-					prefix = 'Step';
+					childPrefix = 'Step';
 					break;
 				case 'next_steps':
-					prefix = 'Next Step';
+					childPrefix = 'Next Step';
 					break;
 				case 'conditions':
-					prefix = 'Condition';
+					childPrefix = 'Condition';
 					break;
 				case 'transforms':
-					prefix = 'Transform';
+					childPrefix = 'Transform';
+					break;
+				default:
+					childPrefix = '(unknown)';
 					break;
 			}
 
 			target[childType].forEach(function (sub: any) {
-				node.children.push(self.getNodeRecursive(sub, typeIndex + 1, prefix));
+				node.children.push(self.getNodeRecursive(sub, typeIndex + 1, childPrefix));
 			});
 		}
 
-		if (!node.children.length) delete node.children;
+		if (!node.children.length) { delete node.children; }
 
 		return node;
 	}
@@ -264,9 +254,35 @@ export class CasesComponent {
 		return input.join(', ');
 	}
 
-	getFriendlyObject(input: Object): string {
+	getFriendlyObject(input: object): string {
 		let out = JSON.stringify(input, null, 1);
 		out = out.substr(1, out.length - 2).replace(/"/g, '');
 		return out;
 	}
+
+	private _handleModalClose(modalRef: NgbModalRef): void {
+		modalRef.result
+			.then((result) => {
+				//Handle modal dismiss
+				if (!result || !result.case) { return; }
+
+				//On edit, find and update the edited item
+				if (result.isEdit) {
+					const toUpdate = _.find(this.cases, c => c.id === result.case.id);
+					Object.assign(toUpdate, result.case);
+
+					this.filterCases();
+
+					this.toastyService.success(`Case "${result.case.name}" successfully edited.`);
+				} else {
+					this.cases.push(result.case);
+
+					this.filterCases();
+
+					this.toastyService.success(`Case "${result.case.name}" successfully added.`);
+				}
+			},
+			(error) => { if (error) { this.toastyService.error(error.message); } });
+	}
+
 }

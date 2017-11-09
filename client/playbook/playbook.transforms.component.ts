@@ -1,11 +1,10 @@
-import { Component, ViewEncapsulation, ViewChild, ElementRef, Input } from '@angular/core';
+import { Component, ViewEncapsulation, Input } from '@angular/core';
 
 import { PlaybookService } from './playbook.service';
 
 import { Workflow } from '../models/playbook/workflow';
 import { AppApi } from '../models/api/appApi';
-import { TransformApi } from '../models/api/transformApi';
-import { ArgumentApi } from '../models/api/argumentApi';
+import { ParameterApi } from '../models/api/parameterApi';
 import { Argument } from '../models/playbook/argument';
 import { Transform } from '../models/playbook/transform';
 
@@ -14,62 +13,74 @@ import { Transform } from '../models/playbook/transform';
 	templateUrl: 'client/playbook/playbook.transforms.html',
 	styleUrls: [],
 	encapsulation: ViewEncapsulation.None,
-	providers: [PlaybookService]
+	providers: [PlaybookService],
 })
 export class PlaybookTransformsComponent {
 	@Input() selectedAppName: string;
 	@Input() transforms: Transform[];
-	@Input() apps: AppApi[];
+	@Input() appApis: AppApi[];
 	@Input() loadedWorkflow: Workflow;
 
 	selectedTransformApi: string;
+	appNamesWithTransforms: string[];
 
+	// tslint:disable-next-line:no-empty
 	constructor() { }
 
 	ngOnInit(): void {
+		const appsWithTransforms = this.appApis.filter(app => app.transform_apis && app.transform_apis.length);
+		
+		// If our selected app doesn't have transforms, just auto select the first one
+		if (!appsWithTransforms.find(a => a.name === this.selectedAppName)) {
+			const firstApp = appsWithTransforms[0];
+			if (firstApp) { this.selectedAppName = firstApp.name; }
+		}
+
+		this.appNamesWithTransforms = appsWithTransforms.map(app => app.name);
+
 		this.resetTransformSelection(this.selectedAppName);
 	}
 
-	resetTransformSelection(appName: string) {
-		let app = this.apps.find(a => a.name === appName);
+	resetTransformSelection(appName: string): void {
+		const app = this.appApis.find(a => a.name === appName);
 
-		if (app.transformApis && app.transformApis.length) this.selectedTransformApi = app.transformApis[0].name;
-
-		console.log(app, this.selectedTransformApi);
+		if (app.transform_apis && app.transform_apis.length) { this.selectedTransformApi = app.transform_apis[0].name; }
 	}
 
 	addTransform(): void {
-		let api = this.apps.find(a => a.name === this.selectedAppName).transformApis.find(c => c.name === this.selectedTransformApi);
+		const api = this.appApis
+			.find(a => a.name === this.selectedAppName).transform_apis
+			.find(c => c.name === this.selectedTransformApi);
 		
-		let args: Argument[] = [];
-		api.args.forEach((argumentApi) => {
+		const args: Argument[] = [];
+		api.parameters.filter(p => p.name !== api.data_in).forEach((parameterApi) => {
 			args.push({
-				name: argumentApi.name,
-				value: argumentApi.default,
-				reference: "",
-				selector: ""
+				name: parameterApi.name,
+				value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
+				reference: '',
+				selector: '',
 			});
 		});
 
-		this.transforms.push({
-			uid: null,
-			app: this.selectedAppName,
-			action: this.selectedTransformApi,
-			args: args
-		});
+		const newTransform = new Transform();
+		newTransform.app = this.selectedAppName;
+		newTransform.action = this.selectedTransformApi;
+		newTransform.args = args;
+
+		this.transforms.push(newTransform);
 	}
 
 	moveUp(index: number): void {
-		let idAbove = index - 1;
-		let toBeSwapped = this.transforms[idAbove];
+		const idAbove = index - 1;
+		const toBeSwapped = this.transforms[idAbove];
 
 		this.transforms[idAbove] = this.transforms[index];
 		this.transforms[index] = toBeSwapped;
 	}
 
 	moveDown(index: number): void {
-		let idBelow = index + 1;
-		let toBeSwapped = this.transforms[idBelow];
+		const idBelow = index + 1;
+		const toBeSwapped = this.transforms[idBelow];
 
 		this.transforms[idBelow] = this.transforms[index];
 		this.transforms[index] = toBeSwapped;
@@ -79,22 +90,14 @@ export class PlaybookTransformsComponent {
 		this.transforms.splice(index, 1);
 	}
 
-	getTransformApiArgs(appName: string, transformName: string, argumentName: string): ArgumentApi {
-		return this.apps.find(a => a.name === appName).transformApis.find(t => t.name === transformName).args.find(a => a.name === argumentName);
-	}
-
-	getAppsFromApis(): string[] {
-		let out: string[] = [];
-
-		this.apps.forEach(app => {
-			if (!app.transformApis || !app.transformApis.length) return;
-			out.push(app.name);
-		});
-
-		return out;
+	getTransformApiArgs(appName: string, transformName: string, argumentName: string): ParameterApi {
+		return this.appApis
+			.find(a => a.name === appName).transform_apis
+			.find(t => t.name === transformName).parameters
+			.find(a => a.name === argumentName);
 	}
 
 	getTransformNamesForApp(): string[] {
-		return this.apps.find(a => a.name === this.selectedAppName).transformApis.map(c => c.name);
+		return this.appApis.find(a => a.name === this.selectedAppName).transform_apis.map(c => c.name);
 	}
 }

@@ -5,16 +5,21 @@ from core.executionelements.executionelement import ExecutionElement
 from core.helpers import get_condition, get_condition_api, InvalidArgument, format_exception_message
 from core.validator import validate_condition_parameters, validate_parameter
 from core.argument import Argument
+from core.helpers import (get_condition_api, InvalidInput,
+                          dereference_step_routing, format_exception_message)
+from core.validator import validate_condition_parameters, validate_parameter
+from apps import get_condition
 logger = logging.getLogger(__name__)
 
 
 class Condition(ExecutionElement):
-    def __init__(self, action, arguments=None, transforms=None, uid=None, app=''):
+    def __init__(self, app, action, arguments=None, transforms=None, uid=None):
         """Initializes a new Condition object.
         
         Args:
-            action (str, optional): The action name for the Condition. Defaults to an empty string.
-            arguments (dict[str:str], optional): Dictionary of Argument keys to Argument values. This dictionary will be
+            app (str): The name of the app which contains this condition
+            action (str): The action name for the Condition. Defaults to an empty string.
+            arguments (list[Argument], optional): Dictionary of Argument keys to Argument values. This dictionary will be
                 converted to a dictionary of str:Argument. Defaults to None.
             transforms(list[Transform], optional): A list of Transform objects for the Condition object. Defaults to None.
             uid (str, optional): A universally unique identifier for this object.
@@ -23,6 +28,8 @@ class Condition(ExecutionElement):
         ExecutionElement.__init__(self, uid)
         self.app = app
         self.action = action
+        self._run, self._args_api, self._data_in_api = get_condition_api(self.app, self.action)
+        self._condition_executable = get_condition(self.app, self._run)
         arguments = [Argument(**json_in) for json_in in arguments] if arguments is not None else []
         arguments = {arg.name: arg for arg in arguments}
         self._args_api, self._data_in_api = get_condition_api(self.action)
@@ -45,7 +52,7 @@ class Condition(ExecutionElement):
                 print(e)
             print(args)
             logger.debug('Arguments passed to condition {} are valid'.format(self.uid))
-            ret = get_condition(self.action)(**args)
+            ret = self._condition_executable(**args)
             data_sent.send(self, callback_name="Condition Success", object_type="Condition")
             return ret
         except InvalidArgument as e:

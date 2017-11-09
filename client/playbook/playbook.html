@@ -95,19 +95,17 @@
 
 
                             <div class="panel-group" id="accordion" [hidden]="!loadedWorkflow">
-                                <div *ngFor="let app of apps" class="panel panel-default">
-                                    <div class="panel-heading">
-                                    <h4 class="panel-title">
-                                        <a data-toggle="collapse" href="#collapse{{app.name}}">{{app.name}}</a>
-                                    </h4>
+                                <div *ngFor="let app of getAppsWithActions()" class="panel panel-default">
+                                    <div class="panel-heading playbook-heading" data-toggle="collapse" [attr.data-target]="'#actionsCollapse' + app.name">
+                                        <h4 class="panel-title">{{app.name}}</h4>
                                     </div>
-                                    <div id="collapse{{app.name}}" class="panel-collapse collapse">
+                                    <div id="actionsCollapse{{app.name}}" class="panel-collapse collapse">
                                         <div class="panel-body">
-                                            <div *ngFor="let actionApi of app.actionApis" class="panel panel-default" dnd-draggable [dragEnabled]="true" 
+                                            <div *ngFor="let actionApi of app.action_apis" class="panel panel-default" dnd-draggable [dragEnabled]="true" 
                                              [dragData]="{ appName: app.name, actionApi: actionApi }" (dblclick)="handleDoubleClickEvent(app.name, actionApi.name)">
                                                 <div class="panel-body">
-                                                    <span class="fa fa-bars pull-right"></span>
                                                     <span>{{actionApi.name}}</span>
+                                                    <span class="fa fa-bars pull-right"></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -137,7 +135,7 @@
                         <div class="col-md-4 graphEditorColumn">
                             <!-- Editor for AppSteps -->
                             <div *ngIf="selectedStep" id="parameters">
-                                <h3>App Step Parameters</h3>
+                                <h3>Step Parameters</h3>
                                 <div class="row">
                                     <div class="col-xs-4">
                                         <label>App:</label>
@@ -148,14 +146,15 @@
                                         <span>{{selectedStep.action}}</span>
                                     </div>
                                     <div class="col-xs-4">
-                                        <button class="btn btn-primary pull-right" (click)="setStartNode(selectedStep.uid)">Set as Start Step</button>
+                                        <button [disabled]="selectedStep.uid === loadedWorkflow.start" class="btn btn-primary pull-right"
+                                        (click)="setStartNode(selectedStep.uid)">Set as Start Step</button>
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="name">Name<span class="fa fa-asterisk required" title="This field is required."></span></label>
                                     <input type="text" class="form-control" [(ngModel)]="selectedStep.name" name="name" required>
                                 </div>
-                                <div *ngIf="relevantDevices.length" class="form-group">
+                                <div *ngIf="getDeviceApis(selectedStep.app).length" class="form-group">
                                     <label for="device_id">Device</label>
                                     <select class="form-control" name="device_id" [(ngModel)]="selectedStep.device_id">
                                         <option value=""></option>
@@ -166,13 +165,13 @@
                                 <div *ngIf="selectedStep.inputs.length">
                                     <h4>Inputs</h4>
                                     <playbook-argument-component *ngFor="let argument of selectedStep.inputs; let id = index" [loadedWorkflow]="loadedWorkflow" 
-                                    [argument]="argument" [argumentApi]="getInputApiArgs(selectedStep.app, selectedStep.action, argument.name)"
+                                    [argument]="argument" [parameterApi]="getInputApiArgs(selectedStep.app, selectedStep.action, argument.name)"
                                     [id]="id"></playbook-argument-component>
                                 </div>
                                 <!-- Triggers -->
                                 <div>
                                     <h4>Trigger Conditions</h4>
-                                    <playbook-conditions-component [conditions]="selectedStep.triggers" [apps]="apps"
+                                    <playbook-conditions-component [conditions]="selectedStep.triggers" [appApis]="appApis"
                                     [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedStep.app"></playbook-conditions-component>
                                 </div>
                             </div>
@@ -182,12 +181,17 @@
                                 <div class="form-group">
                                     <label for="status">Return Type<span class="fa fa-asterisk required" title="This field is required."></span></label>
                                     <select class="form-control" [(ngModel)]="selectedNextStepParams.nextStep.status" name="status">
-                                        <option *ngFor="let i of selectedNextStepParams.returnTypes" [value]="i" [label]="i">{{i}}</option>
+                                        <option *ngFor="let i of selectedNextStepParams.returnTypes" [value]="i.status" [label]="i.status">{{i.status}}</option>
                                     </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="priority">Priority<span class="fa fa-asterisk required" title="This field is required."></span></label>
+                                    <input type="number" max="999" min="1" class="form-control" [(ngModel)]="selectedNextStepParams.nextStep.priority"
+                                     name="priority" required>
                                 </div>
                                 <div>
                                     <h4>Conditions</h4>
-                                    <playbook-conditions-component [conditions]="selectedNextStepParams.nextStep.conditions" [apps]="apps"
+                                    <playbook-conditions-component [conditions]="selectedNextStepParams.nextStep.conditions" [appApis]="appApis"
                                     [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedNextStepParams.app"></playbook-conditions-component>
                                 </div>
                             </div>
@@ -336,9 +340,9 @@
                 <div class="modal-body">
                     <div class="panel-group" id="workflowAccordion">
                         <div *ngFor="let playbook of playbooks" class="panel panel-default">
-                            <div class="panel-heading">
+                            <div class="panel-heading playbook-heading" data-toggle="collapse" [attr.data-target]="'#loadWorkflowCollapse' + playbook.name">
                                 <h4 class="panel-title">
-                                    <a data-toggle="collapse" href="#collapse{{playbook.name}}">{{playbook.name}}</a>
+                                    {{playbook.name}}
                                     <div class="pull-right">
                                         <button (click)="renamePlaybookModal(playbook.name)" class="btn btn-primary" title="Rename Playbook">
                                             <span class="fa fa-i-cursor"></span>
@@ -352,7 +356,7 @@
                                     </div>
                                 </h4>
                             </div>
-                            <div id="collapse{{playbook.name}}" class="panel-collapse collapse in">
+                            <div id="loadWorkflowCollapse{{playbook.name}}" class="panel-collapse collapse">
                                 <div class="panel-body">
                                     <div *ngFor="let workflow of playbook.workflows" class="panel panel-default workflowPanel">
                                         <div class="panel-body">

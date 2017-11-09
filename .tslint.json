@@ -1,0 +1,27 @@
+{
+	"extends": "tslint:recommended",
+	"rules": {
+	  "max-line-length": {
+		"options": [120]
+	  },
+	  "indent": [true, "tabs"],
+		"no-trailing-whitespace": false,
+		"no-console": [true, "log"],
+	  "quotemark": [true, "single", "avoid-template", "avoid-escape"],
+	  "comment-format": false,
+	  "space-before-function-paren": false,
+	  "object-literal-sort-keys": false,
+	  "ordered-imports": false,
+	  "only-arrow-functions": false,
+	  "member-access": false,
+		"arrow-parens": false,
+		"variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore", "allow-snake-case"],
+		"align": [true, "parameters", "statements", "argument", "members", "elements"],
+		"no-unused-variable": true,
+		"no-require-imports": true,
+		"use-isnan": true,
+		"typeof-compare": true,
+		"switch-default": true,
+		"no-invalid-this": true
+	}
+}

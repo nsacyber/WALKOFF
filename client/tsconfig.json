@@ -6,6 +6,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitAny": true,
+    "noUnusedLocals": true,
     "removeComments": true,
     "preserveConstEnums": true,
     // "outFile": "site.js",

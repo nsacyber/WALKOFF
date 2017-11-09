@@ -1,6 +1,6 @@
 import { Component, Input, ViewEncapsulation } from '@angular/core';
-import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import * as d3 from 'd3';
 
 import { CasesService } from './cases.service';
@@ -14,9 +14,9 @@ import { Subscription } from '../models/subscription';
 	selector: 'case-modal',
 	templateUrl: 'client/cases/cases.modal.html',
 	styleUrls: [
-		'client/cases/cases.modal.css'
+		'client/cases/cases.modal.css',
 	],
-	providers: [CasesService]
+	providers: [CasesService],
 })
 export class CasesModalComponent {
 	@Input() workingCase: Case;
@@ -24,38 +24,40 @@ export class CasesModalComponent {
 	@Input() submitText: string;
 	@Input() availableSubscriptions: AvailableSubscription[] = [];
 	@Input() subscriptionTree: any;
-	@Input() workingEvents: { name: string, isChecked: boolean }[] = [];
+	@Input() workingEvents: Array<{ name: string, isChecked: boolean }> = [];
 
 	selectedNode: { name: string, uid: string, type: string } = { name: '', uid: '', type: '' };
 
-	constructor(private casesService: CasesService, private activeModal: NgbActiveModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
+	constructor(
+		private casesService: CasesService, private activeModal: NgbActiveModal, 
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
 	}
 
 	ngOnInit(): void {
-		let self = this;
-		let uids = self.workingCase.subscriptions.map(s => s.uid);
+		const self = this;
+		const uids = self.workingCase.subscriptions.map(s => s.uid);
 
 		// Set the dimensions and margins of the diagram
-		let margin = { top: 20, right: 90, bottom: 30, left: 90 },
-			width = 1350 - margin.left - margin.right,
-			height = 500 - margin.top - margin.bottom;
+		const margin = { top: 20, right: 90, bottom: 30, left: 90 };
+		const width = 1350 - margin.left - margin.right;
+		const height = 500 - margin.top - margin.bottom;
 
 		// append the svg object to the body of the page
 		// appends a 'group' element to 'svg'
 		// moves the 'group' element to the top left margin
-		let svg = d3.select("svg#caseSubscriptionsTree")//.append("svg")
-			.attr("width", width + margin.right + margin.left)
-			.attr("height", height + margin.top + margin.bottom)
-			.append("g")
-			.attr("transform", `translate(${margin.left},${margin.top})`);
+		const svg = d3.select('svg#caseSubscriptionsTree')//.append("svg")
+			.attr('width', width + margin.right + margin.left)
+			.attr('height', height + margin.top + margin.bottom)
+			.append('g')
+			.attr('transform', `translate(${margin.left},${margin.top})`);
 
-		let i = 0,
-			duration = 400,
-			root: any;
+		let i = 0;
+		const duration = 400;
+		let root: any;
 
 		// declares a tree layout and assigns the size
-		let treemap = d3.tree().size([height, width]);
+		const treemap = d3.tree().size([height, width]);
 
 		// Assigns parent, children, height, depth
 		root = d3.hierarchy(self.subscriptionTree);
@@ -63,7 +65,7 @@ export class CasesModalComponent {
 		root.y0 = 0;
 
 		//Mark our controller as included if necessary
-		if (uids.indexOf('controller') >= 0) root.data._included = true;
+		if (uids.indexOf('controller') >= 0) { root.data._included = true; }
 
 		// Check for collapse after the second level
 		root.children.forEach(checkInclusionAndCheckChildrenForExpansion);
@@ -72,7 +74,7 @@ export class CasesModalComponent {
 		
 		// This function recursively checks if each node should be included or expanded
 		function checkInclusionAndCheckChildrenForExpansion(d: any): boolean {
-			if (uids.indexOf(d.data.uid) >= 0) d.data._included = true;
+			if (uids.indexOf(d.data.uid) >= 0) { d.data._included = true; }
 			let expanded = false;
 
 			if (d.children) {
@@ -91,29 +93,29 @@ export class CasesModalComponent {
 
 		function update(source: any) {
 			// Assigns the x and y position for the nodes
-			var treeData = treemap(root);
+			const treeData = treemap(root);
 
 			// Compute the new tree layout.
-			var nodes = treeData.descendants(),
-				links = treeData.descendants().slice(1);
+			const nodes = treeData.descendants();
+			const links = treeData.descendants().slice(1);
 
 			// Normalize for fixed-depth.
-			nodes.forEach(function (d) { d.y = d.depth * 180 });
+			nodes.forEach(d => d.y = d.depth * 180);
 
 			// ****************** Nodes section ***************************
 
 			// Update the nodes...
-			var node = svg.selectAll('g.node')
-				.data(nodes, function (d: any) { return d.id || (d.id = ++i); })
+			const node = svg.selectAll('g.node')
+				.data(nodes, function (d: any) { return d.id || (d.id = ++i); });
 
 			// Enter any new modes at the parent's previous position.
-			var nodeEnter = node.enter().append('g')
+			const nodeEnter = node.enter().append('g')
 				.classed('node', true)
 				.classed('included', function (d: any) {
 					return d.data._included;
 				})
-				.attr("transform", function (d) {
-					return "translate(" + source.y0 + "," + source.x0 + ")";
+				.attr('transform', function (d) {
+					return 'translate(' + source.y0 + ',' + source.x0 + ')';
 				})
 				.attr('id', function (d: any) { return `uid-${d.data.uid}`; })
 				.on('click', click)
@@ -123,43 +125,43 @@ export class CasesModalComponent {
 			nodeEnter.append('circle')
 				.classed('node', true)
 				.attr('r', 1e-6)
-				.style("fill", function (d: any) {
-					return d._children ? "lightsteelblue" : "#fff";
+				.style('fill', function (d: any) {
+					return d._children ? 'lightsteelblue' : '#fff';
 				});
 
 			// Add labels for the nodes
 			nodeEnter.append('text')
-				.attr("dy", ".35em")
-				.attr("x", function (d: any) {
+				.attr('dy', '.35em')
+				.attr('x', function (d: any) {
 					return d.children || d._children ? -13 : 13;
 				})
-				.attr("text-anchor", function (d: any) {
-					return d.children || d._children ? "end" : "start";
+				.attr('text-anchor', function (d: any) {
+					return d.children || d._children ? 'end' : 'start';
 				})
 				.text(function (d: any) { return d.data.name; });
 
 			// UPDATE
-			var nodeUpdate = nodeEnter.merge(node);
+			const nodeUpdate = nodeEnter.merge(node);
 
 			// Transition to the proper position for the node
 			nodeUpdate.transition()
 				.duration(duration)
-				.attr("transform", function (d) {
-					return "translate(" + d.y + "," + d.x + ")";
+				.attr('transform', function (d) {
+					return 'translate(' + d.y + ',' + d.x + ')';
 				});
 
 			// Update the node attributes and style
 			nodeUpdate.select('circle.node')
 				.attr('r', 10)
-				.style("fill", function (d: any) {
-					return d._children ? "lightsteelblue" : "#fff";
+				.style('fill', function (d: any) {
+					return d._children ? 'lightsteelblue' : '#fff';
 				});
 
 			// Remove any exiting nodes
-			var nodeExit = node.exit().transition()
+			const nodeExit = node.exit().transition()
 				.duration(duration)
-				.attr("transform", function (d) {
-					return "translate(" + source.y + "," + source.x + ")";
+				.attr('transform', function (d) {
+					return 'translate(' + source.y + ',' + source.x + ')';
 				})
 				.remove();
 
@@ -174,31 +176,31 @@ export class CasesModalComponent {
 			// ****************** links section ***************************
 
 			// Update the links...
-			var link = svg.selectAll('path.link')
+			const link = svg.selectAll('path.link')
 				.data(links, function (d: any) { return d.id; });
 
 			// Enter any new links at the parent's previous position.
-			var linkEnter = link.enter().insert('path', "g")
+			const linkEnter = link.enter().insert('path', 'g')
 				.classed('link', true)
 				.attr('d', function (d) {
-					var o = { x: source.x0, y: source.y0 }
-					return diagonal(o, o)
+					const o = { x: source.x0, y: source.y0 };
+					return diagonal(o, o);
 				});
 
 			// UPDATE
-			var linkUpdate = linkEnter.merge(link);
+			const linkUpdate = linkEnter.merge(link);
 
 			// Transition back to the parent element position
 			linkUpdate.transition()
 				.duration(duration)
-				.attr('d', function (d) { return diagonal(d, d.parent) });
+				.attr('d', function (d) { return diagonal(d, d.parent); });
 
 			// Remove any exiting links
-			var linkExit = link.exit().transition()
+			link.exit().transition()
 				.duration(duration)
 				.attr('d', function (d) {
-					var o = { x: source.x, y: source.y }
-					return diagonal(o, o)
+					const o = { x: source.x, y: source.y };
+					return diagonal(o, o);
 				})
 				.remove();
 
@@ -210,7 +212,7 @@ export class CasesModalComponent {
 
 			// Creates a curved (diagonal) path from parent to the child nodes
 			function diagonal(s: any, d: any) {
-				let path = `M ${s.y} ${s.x}
+				const path = `M ${s.y} ${s.x}
 					C ${(s.y + d.y) / 2} ${s.x},
 					${(s.y + d.y) / 2} ${d.x},
 					${d.y} ${d.x}`;
@@ -220,7 +222,7 @@ export class CasesModalComponent {
 
 			// Toggle children on double click.
 			// function click(d: any) {
-			function dblclick(d:any) {
+			function dblclick(d: any) {
 				if (d.children) {
 					d._children = d.children;
 					d.children = null;
@@ -234,26 +236,26 @@ export class CasesModalComponent {
 			//Select our node on click
 			// function dblclick(d: any) {
 			function click(d: any) {
-				if (!d.data.type) return;
+				if (!d.data.type) { return; }
 
 				self.selectedNode = { name: d.data.name, uid: d.data.uid, type: d.data.type };
 
-				let availableEvents = self.availableSubscriptions.find(function (a) {
+				const availableEvents = self.availableSubscriptions.find(function (a) {
 					return d.data.type === a.type;
 				}).events;
 
-				let subscription = self.workingCase.subscriptions.find(function (s) {
+				const subscription = self.workingCase.subscriptions.find(function (s) {
 					return d.data.uid === s.uid;
 				});
 
-				let subscriptionEvents = subscription ? subscription.events : [];
+				const subscriptionEvents = subscription ? subscription.events : [];
 
 				self.workingEvents = [];
 
 				availableEvents.forEach(function (event) {
 					self.workingEvents.push({
 						name: event,
-						isChecked: subscriptionEvents.indexOf(event) > -1
+						isChecked: subscriptionEvents.indexOf(event) > -1,
 					});
 				});
 
@@ -269,10 +271,10 @@ export class CasesModalComponent {
 	}
 
 	handleEventSelectionChange(event: any, isChecked: boolean): void {
-		let self = this;
+		const self = this;
 
 		if (!self.selectedNode.name) {
-			console.log('Attempted to select events without a node selected.');
+			console.error('Attempted to select events without a node selected.');
 			return;
 		}
 
@@ -290,7 +292,7 @@ export class CasesModalComponent {
 
 			//style the node in d3 as well
 			// let data = d3.select("svg#caseSubscriptionsTree").select(`g.node#${self.selectedNode.uid}`)
-			d3.select("svg#caseSubscriptionsTree").select(`g.node#uid-${self.selectedNode.uid}`)
+			d3.select('svg#caseSubscriptionsTree').select(`g.node#uid-${self.selectedNode.uid}`)
 				.classed('included', true)
 				.datum(function (d: any) {
 					d.data._included = true;
@@ -307,11 +309,11 @@ export class CasesModalComponent {
 
 		//If no more events are checked under this subscription, remove it.
 		if (!matchingSubscription.events.length) {
-			let indexToDelete = self.workingCase.subscriptions.indexOf(matchingSubscription);
+			const indexToDelete = self.workingCase.subscriptions.indexOf(matchingSubscription);
 			self.workingCase.subscriptions.splice(indexToDelete, 1);
 
 			//style the node in d3 as well
-			d3.select("svg#caseSubscriptionsTree").select(`g.node#uid-${self.selectedNode.uid}`)
+			d3.select('svg#caseSubscriptionsTree').select(`g.node#uid-${self.selectedNode.uid}`)
 				.classed('included', false)
 				.datum(function (d: any) {
 					d.data._included = false;
@@ -321,7 +323,7 @@ export class CasesModalComponent {
 	}
 
 	submit(): void {
-		let validationMessage = this.validate();
+		const validationMessage = this.validate();
 		if (validationMessage) {
 			this.toastyService.error(validationMessage);
 			return;
@@ -333,16 +335,15 @@ export class CasesModalComponent {
 				.editCase(this.workingCase)
 				.then(c => this.activeModal.close({
 					case: c,
-					isEdit: true
+					isEdit: true,
 				}))
 				.catch(e => this.toastyService.error(e.message));
-		}
-		else {
+		} else {
 			this.casesService
 				.addCase(this.workingCase)
 				.then(c => this.activeModal.close({
 					case: c,
-					isEdit: false
+					isEdit: false,
 				}))
 				.catch(e => this.toastyService.error(e.message));
 		}

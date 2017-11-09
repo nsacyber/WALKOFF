@@ -9,7 +9,6 @@ case_db_path = join('data', 'events.db')
 device_db_path = join('data', 'devices.db')
 certificate_path = "data/shortstop.public.pem"
 private_key_path = "data/shortstop.private.pem"
-function_info_path = join('.', 'data', 'functions.json')
 config_path = join('.', 'data', 'walkoff.config')
 events_path = join('.', 'data', 'events.json')
 default_appdevice_export_path = join('.', 'data', 'appdevice.json')

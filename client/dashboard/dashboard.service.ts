@@ -1,14 +1,24 @@
 import { Injectable } from '@angular/core';
-import { Http, Headers, Response } from '@angular/http';
+import { Response } from '@angular/http';
 
 import { JwtHttp } from 'angular2-jwt-refresh';
-import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 
 @Injectable()
 export class DashboardService {
-	constructor (private authHttp: JwtHttp) {
+	constructor (private authHttp: JwtHttp) {}
+
+	getDashboard(name: string) {
+		return this.authHttp.get(`/api/dashboard/${name}`)
+			.toPromise()
+			.then(this.extractData)
+			.catch(this.handleError);
+	}
+
+	private extractData (res: Response) {
+		const body = res.json();
+		return body || {};
 	}
 
 	private handleError (error: Response | any): Promise<any> {

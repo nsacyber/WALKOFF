@@ -15,7 +15,7 @@ export class AuthService {
 
 	//TODO: not currently used, eventually should be used on the login
 	login(username: string, password: string): Promise<void> {
-		return this.authHttp.post('/api/auth', { username: username, password: password })
+		return this.authHttp.post('/api/auth', { username, password })
 			.toPromise()
 			.then(this.extractData)
 			.then((tokens: { access_token: string, refresh_token: string }) => {
@@ -42,8 +42,8 @@ export class AuthService {
 	}
 
 	//TODO: figure out how roles are going to be stored 
-	canAccess(resource: string): boolean {
-		let tokenInfo = this.getAndDecodeAccessToken();
+	canAccess(): boolean {
+		// const tokenInfo = this.getAndDecodeAccessToken();
 
 		return false;
 	}
@@ -57,18 +57,19 @@ export class AuthService {
 	}
 
 	getAccessTokenRefreshed(): Promise<string> {
-		let token = this.getAccessToken();
-		if (!this.jwtHelper.isTokenExpired(token)) return Promise.resolve(token);
-		let refreshToken = this.getRefreshToken();
+		const token = this.getAccessToken();
+		if (!this.jwtHelper.isTokenExpired(token)) { return Promise.resolve(token); }
+		const refreshToken = this.getRefreshToken();
 
-		if (!refreshToken || this.jwtHelper.isTokenExpired(refreshToken))
+		if (!refreshToken || this.jwtHelper.isTokenExpired(refreshToken)) {
 			return Promise.reject('Refresh token does not exist or has expired. Please log in again.');
+		}
 
-		let headers = new Headers({ Authorization: `Bearer ${this.getRefreshToken()}` });
-		return this.http.post('/api/auth/refresh', {}, { headers: headers })
+		const headers = new Headers({ Authorization: `Bearer ${this.getRefreshToken()}` });
+		return this.http.post('/api/auth/refresh', {}, { headers })
 			.toPromise()
 			.then(this.extractData)
-			.then(token => token.access_token)
+			.then(refreshedToken => refreshedToken.access_token)
 			.catch(this.handleError);
 	}
 
@@ -81,7 +82,7 @@ export class AuthService {
 	}
 
 	private extractData(res: Response) {
-		let body = res.json();
+		const body = res.json();
 		return body || {};
 	}
 

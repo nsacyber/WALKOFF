@@ -61,7 +61,7 @@ class Step(ExecutionElement):
         self.app = app
         self.action = action
         self._run, self._input_api = get_app_action_api(self.app, self.action)
-        get_app_action(self.app, self._run)
+        self._action_executable = get_app_action(self.app, self._run)
 
         arguments = [Argument(**json_in) for json_in in arguments] if arguments is not None else []
         arguments = {argument.name: argument for argument in arguments}
@@ -165,14 +165,12 @@ class Step(ExecutionElement):
             self._wait_for_trigger(accumulator)
 
         try:
-            # args = {argument.name: argument.get_value(accumulator) for argument in self.arguments}
             args = validate_app_action_parameters(self._input_api, self.arguments, self.app, self.action,
                                                   accumulator=accumulator)
-            action = get_app_action(self.app, self._run)
             if is_app_action_bound(self.app, self._run):
-                result = action(instance, **args)
+                result = self._action_executable(instance, **args)
             else:
-                result = action(**args)
+                result = self._action_executable(**args)
 
             data_sent.send(self, callback_name="Function Execution Success", object_type="Step",
                            data=json.dumps({"result": result.as_json()}))

@@ -30,8 +30,10 @@ AppApi:
       items:
         $ref: '#/definitions/ApiTag'
       uniqueItems: true
-    externalDocs:
-      $ref: '#/definitions/ExternalDocs'
+    external_docs:
+      type: array
+      items:
+        $ref: '#/definitions/ExternalDoc'
     
 ApiInfo:
   type: object
@@ -48,7 +50,7 @@ ApiInfo:
     description:
       type: string
       description: A longer description of the API. Should be different from the title.
-    termsOfService:
+    terms_of_service:
       type: string
       description: Terms of service for the API
     contact:
@@ -125,13 +127,15 @@ ActionApi:
     description:
       type: string
       description: A longer description of the operation
-    externalDocs:
-      $ref: '#/definitions/ExternalDocs'
+    external_docs:
+      type: array
+      items:
+        $ref: '#/definitions/ExternalDoc'
 
 ConditionApi:
   type: object
   description: The api of an app's condition
-  required: [name, run, returns, dataIn]
+  required: [name, run, returns, data_in]
   properties:
     name:
       type: string
@@ -139,7 +143,7 @@ ConditionApi:
     run:
       type: string
       description: The path to the executable function
-    dataIn:
+    data_in:
       type: string
       description: name of parameter which comes from executed step
     parameters:
@@ -163,8 +167,10 @@ ConditionApi:
     description:
       type: string
       description: A longer description of the operation
-    externalDocs:
-      $ref: '#/definitions/ExternalDocs'
+    external_docs:
+      type: array
+      items:
+        $ref: '#/definitions/ExternalDoc'
     returns:
       type: array
       items:
@@ -174,7 +180,7 @@ ConditionApi:
 TransformApi:
   type: object
   description: The api of an app's transform
-  required: [name, run, dataIn]
+  required: [name, run, data_in, returns]
   properties:
     name:
       type: string
@@ -182,7 +188,7 @@ TransformApi:
     run:
       type: string
       description: The path to the executable function
-    dataIn:
+    data_in:
       type: string
       description: name of parameter which comes from executed step
     parameters:
@@ -206,8 +212,15 @@ TransformApi:
     description:
       type: string
       description: A longer description of the operation
-    externalDocs:
-      $ref: '#/definitions/ExternalDocs'
+    external_docs:
+      type: array
+      items:
+        $ref: '#/definitions/ExternalDoc'
+    returns:
+      type: array
+      items:
+        $ref: '#/definitions/ReturnApi'
+      description: The return types of this transform
 
 DeviceApi:
   type: object
@@ -232,15 +245,13 @@ DeviceFieldApi:
     description:
       type: string
       description: description of what the argument provides
-    default:
-      description: default value for the argument
     encrypted:
       type: boolean
       description: Is this field encrypted
       default: false
     placeholder:
       type: string
-      description: brief description of the field to be use to prompt a user
+      description: brief description of the field to be used to prompt a user
     schema:
       $ref: '#/definitions/ParameterSchema'
 
@@ -257,6 +268,9 @@ ParameterApi:
     description:
       type: string
       description: description of the parameter
+    placeholder:
+      type: string
+      description: brief description of the field to be used to prompt a user
     schema:
       $ref: '#/definitions/ParameterSchema'
 
@@ -276,7 +290,7 @@ ReturnApi:
     examples:
       description: An exaple of the returned type
 
-ExternalDocs:
+ExternalDoc:
   type: object
   description: information about external documentation
   required: [url]
@@ -300,11 +314,14 @@ ApiTag:
     description:
       type: string
       description: Description of the tag
-    externalDocs:
-      $ref: '#/definitions/ExternalDocs'
+    external_docs:
+      type: array
+      items:
+        $ref: '#/definitions/ExternalDoc'
       
 ParameterSchema:
   type: object
+  description: Fields used to validate parameter against a JSON schema (Draft 4)
   required: [type]
   properties:
     type:
@@ -314,3 +331,37 @@ ParameterSchema:
       type: boolean
       default: false
       description: Is this field required?
+    format:
+      type: string
+      enum: [date-time, email, hostname, ipv4, ipv6, uri, uri-reference, uri-template, json-pointer]
+    multipleOf:
+      type: number
+      minimum: 0
+      exclusiveMinimum: true
+    maximum:
+      type: number
+    exclusiveMaximum:
+      type: boolean
+    minimum:
+      type: number
+    exclusiveMinimum:
+      type: boolean
+    maxLength:
+      type: integer
+      minimum: 0
+    minLength:
+      type: integer
+      minimum: 0
+    pattern:
+      type: string
+    maxItems:
+      type: integer
+      minimum: 0
+    minItems:
+      type: integer
+      minimum: 0
+    uniqueItems:
+      type: boolean
+    enum:
+      type: array
+      minItems: 1

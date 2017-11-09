@@ -1,25 +1,4 @@
 export class Configuration {
-	workflows_path: string;
-	templates_path: string;
-	// profile_visualizations_path: string;
-	// keywords_path: string;
-	db_path: string;
-	walkoff_db_type: string;
-	case_db_path: string;
-	case_db_type: string;
-	clear_case_db_on_startup: boolean;
-	log_config_path: string;
-	https: boolean;
-	tls_version: string;
-	// certificate_path: string;
-	// private_key_path: string;
-	// debug: boolean;
-	// default_server: boolean;
-	host: string;
-	port: number;
-	access_token_duration: number; //in minutes
-	refresh_token_duration: number; //in days
-
 	static getDefaultConfiguration(): Configuration {
 		return {
 			workflows_path: './data/workflows',
@@ -44,4 +23,25 @@ export class Configuration {
 			refresh_token_duration: 30,
 		};
 	}
+
+	workflows_path: string;
+	templates_path: string;
+	// profile_visualizations_path: string;
+	// keywords_path: string;
+	db_path: string;
+	walkoff_db_type: string;
+	case_db_path: string;
+	case_db_type: string;
+	clear_case_db_on_startup: boolean;
+	log_config_path: string;
+	https: boolean;
+	tls_version: string;
+	// certificate_path: string;
+	// private_key_path: string;
+	// debug: boolean;
+	// default_server: boolean;
+	host: string;
+	port: number;
+	access_token_duration: number; //in minutes
+	refresh_token_duration: number; //in days
 }

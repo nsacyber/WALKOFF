@@ -1,13 +1,10 @@
 import { Injectable } from '@angular/core';
-import { Http, Response, Headers } from '@angular/http';
+import { Response } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
 
 import { Workflow } from '../models/playbook/workflow';
 import { Playbook } from '../models/playbook/playbook';
 import { AppApi } from '../models/api/appApi';
-import { ActionApi } from '../models/api/actionApi';
-import { ConditionApi } from '../models/api/conditionApi';
-import { TransformApi } from '../models/api/transformApi';
 import { Device } from '../models/device';
 
 @Injectable()
@@ -16,7 +13,7 @@ export class PlaybookService {
 
 	// TODO: should maybe just return all playbooks and not just names?
 	getPlaybooks(): Promise<Playbook[]> {
-		return this.authHttp.get(`/api/playbooks`)
+		return this.authHttp.get('/api/playbooks')
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Playbook[])
@@ -29,7 +26,7 @@ export class PlaybookService {
 	 * @param newName New name for the updated playbook
 	 */
 	renamePlaybook(oldName: string, newName: string): Promise<void> {
-		return this.authHttp.post(`/api/playbooks`, { name: oldName, new_name: newName })
+		return this.authHttp.post('/api/playbooks', { name: oldName, new_name: newName })
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
@@ -79,7 +76,7 @@ export class PlaybookService {
 	 */
 	// TODO: probably don't need playbook in body, verify on server
 	duplicateWorkflow(playbook: string, oldName: string, newName: string): Promise<Workflow> {
-		return this.authHttp.post(`/api/playbooks/${playbook}/workflows/${oldName}/copy`, { playbook: playbook, workflow: newName })
+		return this.authHttp.post(`/api/playbooks/${playbook}/workflows/${oldName}/copy`, { playbook, workflow: newName })
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Workflow)
@@ -138,7 +135,8 @@ export class PlaybookService {
 	}
 
 	/**
-	 * Notifies the server to execute a given workflow under a given playbook. Note that execution results are not returned here, but on a separate stream-steps EventSource.
+	 * Notifies the server to execute a given workflow under a given playbook.
+	 * Note that execution results are not returned here, but on a separate stream-steps EventSource.
 	 * @param playbook Name of the playbook the workflow exists under
 	 * @param workflow Name of the workflow to execute
 	 */
@@ -153,96 +151,25 @@ export class PlaybookService {
 	 * Returns an array of all devices within the DB.
 	 */
 	getDevices(): Promise<Device[]> {
-		return this.authHttp.get(`/api/devices`)
+		return this.authHttp.get('/api/devices')
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Device[])
 			.catch(this.handleError);
 	}
 
-	// TODO: not actually used and doesn't currently exist in the backend; should replace the actions/conditions/triggers calls with this...
+	// TODO: not actually used and doesn't currently exist in the backend;
+	// should replace the actions/conditions/triggers calls with this...
 	getApis(): Promise<AppApi[]> {
-		return this.authHttp.get(`/api/apps/apis`)
+		return this.authHttp.get('/api/apps/apis')
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as AppApi[])
 			.catch(this.handleError);
 	}
 
-	/**
-	 * Returns an object with actions listed by app. Of form { app_name -> { action_name: {} } }.
-	 */
-	getAppsAndActions(): Promise<AppApi[]> {
-		return this.authHttp.get(`/api/apps/actions`)
-			.toPromise()
-			.then(this.extractData)
-			// TODO: should remove this step once the backend gives the data in this form
-			.then(a => {
-				let apps: AppApi[] = _.map(a, function (app: { [key: string] : ActionApi }, appName: string) {
-					return <AppApi>{ name: appName, actionApis: _.map(app, function (action: ActionApi, actionName: string) {
-						action.name = actionName;
-
-						return action;
-					})};
-				})
-
-				apps.filter(a => a.actionApis.length);
-
-				return apps;
-			})
-			.catch(this.handleError);
-	}
-
-	/**
-	 * Returns an array of all next step conditions specified within the application and its apps.
-	 */
-	getConditions(): Promise<AppApi[]> {
-		return this.authHttp.get(`/api/conditions`)
-			.toPromise()
-			.then(this.extractData)
-			// TODO: should remove this step once the backend gives the data in this form
-			.then(a => {
-				let apps: AppApi[] = _.map(a, function (app: { [key: string] : ActionApi }, appName: string) {
-					return <AppApi>{ name: appName, conditionApis: _.map(app, function (condition: ConditionApi, conditionName: string) {
-						condition.name = conditionName;
-
-						return condition;
-					})};
-				})
-
-				apps.filter(a => a.conditionApis.length);
-
-				return apps;
-			})
-			.catch(this.handleError);
-	}
-
-	/**
-	 * Returns an array of all data transforms specified within the application and its apps.
-	 */
-	getTransforms(): Promise<AppApi[]> {
-		return this.authHttp.get(`/api/transforms`)
-			.toPromise()
-			.then(this.extractData)
-			// TODO: should remove this step once the backend gives the data in this form
-			.then(a => {
-				let apps: AppApi[] = _.map(a, function (app: { [key: string] : ActionApi }, appName: string) {
-					return <AppApi>{ name: appName, transformApis: _.map(app, function (transform: TransformApi, transformName: string) {
-						transform.name = transformName;
-
-						return transform;
-					})};
-				})
-
-				apps.filter(a => a.transformApis.length);
-
-				return apps;
-			})
-			.catch(this.handleError);
-	}
-
 	private extractData(res: Response) {
-		let body = res.json();
+		const body = res.json();
 		return body || {};
 	}
 

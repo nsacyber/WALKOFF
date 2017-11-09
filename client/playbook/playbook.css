@@ -62,34 +62,8 @@
 	overflow: auto;
 }
 
-#palette {
-	display: inline-block;
-	vertical-align: top;
-	width: 100%;
-	height: 100%;
-	overflow-y: scroll;
-}
-
-#workflows {
-	min-height: 200px;
-	max-height: 500px;
-	overflow-y:scroll;
-	width:100%;
-}
-
-#actionContainer {
-	width:100%;
-	height: 100%;
-}
-
-#actionsLabel {
-	height:30px;
-}
-
-#actions {
-	overflow-y:scroll;
-	height: 90%;
-	width: 100%;
+.playbookMain .panel-heading.playbook-heading {
+	cursor: pointer;
 }
 
 #playbookEditorTabs {
@@ -106,6 +80,11 @@
 	/* vertical-align: top; */
 	width: 100%;
 	height: 100%;
+}
+
+/* Need to do this else panzoom appears above modals */
+#cy .cy-panzoom {
+	z-index: 10;
 }
 
 #cy-instructions {

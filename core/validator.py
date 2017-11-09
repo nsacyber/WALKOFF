@@ -15,6 +15,7 @@ import core.config.config
 import core.config.paths
 from core.helpers import InvalidArgument, get_function_arg_names, InvalidApi, format_exception_message
 
+
 logger = logging.getLogger(__name__)
 
 TYPE_MAP = {
@@ -102,6 +103,7 @@ def convert_json(spec, param_in, message_prefix):
 
 
 def validate_app_spec(spec, app_name, spec_url='', http_handlers=None):
+    from apps import get_all_conditions_for_app, get_all_transforms_for_app
     walkoff_resolver = validate_spec_json(
         spec,
         os.path.join(core.config.paths.walkoff_schema_path),
@@ -109,43 +111,39 @@ def validate_app_spec(spec, app_name, spec_url='', http_handlers=None):
         http_handlers)
     dereference = partial(deref, resolver=walkoff_resolver)
     dereferenced_spec = dereference(spec)
-    actions = dereference(dereferenced_spec['actions'])
+    if 'actions' in dereferenced_spec:
+        actions = dereference(dereferenced_spec['actions'])
+        validate_actions(actions, dereference, app_name)
+    if 'conditions' in dereferenced_spec:
+        condition_spec = dereference(dereferenced_spec['conditions'])
+        validate_condition_transform_params(condition_spec, app_name, 'Condition', get_all_conditions_for_app(app_name),
+                                            dereference)
+    if 'transforms' in dereferenced_spec:
+        transform_spec = dereference(dereferenced_spec['transforms'])
+        validate_condition_transform_params(transform_spec, app_name, 'Transform', get_all_transforms_for_app(app_name),
+                                            dereference)
     definitions = dereference(dereferenced_spec.get('definitions', {}))
     devices = dereference(dereferenced_spec.get('devices', {}))
-    validate_actions(actions, dereference, app_name)
     validate_definitions(definitions, dereference)
     validate_devices_api(devices, app_name)
-
-
-def validate_condition_transform_spec(spec, spec_url='', http_handlers=None):
-    walkoff_resolver = validate_spec_json(
-        spec,
-        os.path.join(core.config.paths.walkoff_schema_path),
-        spec_url,
-        http_handlers)
-    dereference = partial(deref, resolver=walkoff_resolver)
-    dereferenced_spec = dereference(spec)
-    condition_spec = dereference(dereferenced_spec['conditions'])
-    transform_spec = dereference(dereferenced_spec['transforms'])
-    validate_condition_transform_params(condition_spec, 'Condition', core.config.config.conditions, dereference)
-    validate_condition_transform_params(transform_spec, 'Transform', core.config.config.transforms, dereference)
 
 
 def validate_data_in_param(params, data_in_param_name, message_prefix):
     data_in_param = next((param for param in params if param['name'] == data_in_param_name), None)
     if data_in_param is None:
         raise InvalidApi(
-            '{0} has a dataIn param {1} '
+            '{0} has a data_in param {1} '
             'for which it does not have a '
             'corresponding parameter'.format(message_prefix, data_in_param_name))
     elif not data_in_param.get('required', False):
         raise InvalidApi(
-            '{0} has a dataIn param {1} which is not marked as required in the api. '
+            '{0} has a data_in param {1} which is not marked as required in the api. '
             'Add "required: true" to parameter specification for {1}'.format(message_prefix,
                                                                              data_in_param_name))
 
 
-def validate_condition_transform_params(spec, action_type, defined_actions, dereferencer):
+def validate_condition_transform_params(spec, app_name, action_type, defined_actions, dereferencer):
+    from apps import get_transform, get_condition
     seen = set()
     for action_name, action in spec.items():
         action = dereferencer(action)
@@ -154,14 +152,15 @@ def validate_condition_transform_params(spec, action_type, defined_actions, dere
             raise InvalidApi('{0} action {1} has a "run" param {2} '
                              'which is not defined'.format(action_type, action_name, action['run']))
 
-        data_in_param_name = action['dataIn']
+        data_in_param_name = action['data_in']
         validate_data_in_param(action_params, data_in_param_name, '{0} action {1}'.format(action_type, action_name))
-        validate_action_params(action_params, dereferencer, action_type, action_name, defined_actions[action['run']])
+        function = get_condition(app_name, action['run']) if action_type == 'Condition' else get_transform(app_name, action['run'])
+        validate_action_params(action_params, dereferencer, action_type, action_name, function)
         seen.add(action['run'])
 
-    if seen != set(defined_actions.keys()):
+    if seen != set(defined_actions):
         logger.warning('Global {0}s have defined the following actions which do not have a corresponding API: '
-                       '{1}'.format(action_type.lower(), (set(defined_actions.keys()) - seen)))
+                       '{1}'.format(action_type.lower(), (set(defined_actions) - seen)))
 
 
 def validate_spec_json(spec, schema_path, spec_url='', http_handlers=None):

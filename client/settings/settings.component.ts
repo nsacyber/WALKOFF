@@ -1,16 +1,17 @@
 import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
-import { NgbModal, NgbActiveModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig, ToastOptions, ToastData } from 'ng2-toasty';
-import "rxjs/add/operator/debounceTime";
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { ToastyService, ToastyConfig } from 'ng2-toasty';
+import 'rxjs/add/operator/debounceTime';
 
 import { SettingsService } from './settings.service';
 
 import { SettingsUserModalComponent } from './settings.user.modal.component';
 
 import { Configuration } from '../models/configuration';
-import { User, WorkingUser } from '../models/user';
+import { User } from '../models/user';
+import { WorkingUser } from '../models/workingUser';
 import { Role } from '../models/role';
 
 @Component({
@@ -19,7 +20,7 @@ import { Role } from '../models/role';
 	styleUrls: [
 		'client/settings/settings.css',
 	],
-	providers: [SettingsService]
+	providers: [SettingsService],
 })
 export class SettingsComponent {
 	configuration: Configuration = new Configuration();
@@ -31,7 +32,9 @@ export class SettingsComponent {
 	displayUsers: User[] = [];
 	filterQuery: FormControl = new FormControl();
 
-	constructor(private settingsService: SettingsService, private modalService: NgbModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig) {		
+	constructor(
+		private settingsService: SettingsService, private modalService: NgbModal,
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {		
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.getConfiguration();
@@ -44,7 +47,7 @@ export class SettingsComponent {
 	}
 
 	filterUsers() {
-		let searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
+		const searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
 
 		this.displayUsers = this.users.filter((user) => {
 			return user.username.toLocaleLowerCase().includes(searchFilter);
@@ -71,7 +74,8 @@ export class SettingsComponent {
 
 	//TODO: add a better confirm dialog
 	resetConfiguration(): void {
-		if (!confirm("Are you sure you want to reset the configuration? Note that you'll have to save the configuration after reset to update it on the server.")) return;
+		if (!confirm("Are you sure you want to reset the configuration? \
+			Note that you'll have to save the configuration after reset to update it on the server.")) { return; }
 
 		Object.assign(this.configuration, Configuration.getDefaultConfiguration());
 	}
@@ -88,7 +92,7 @@ export class SettingsComponent {
 		modalRef.componentInstance.title = 'Add New User';
 		modalRef.componentInstance.submitText = 'Add User';
 
-		let workingUser = new WorkingUser();
+		const workingUser = new WorkingUser();
 		workingUser.active = true;
 		modalRef.componentInstance.workingUser = workingUser;
 
@@ -104,35 +108,8 @@ export class SettingsComponent {
 		this._handleModalClose(modalRef);
 	}
 
-	private _handleModalClose(modalRef: NgbModalRef): void {
-		modalRef.result
-			.then((result) => {
-				//Handle modal dismiss
-				if (!result || !result.user) return;
-
-				//On edit, find and update the edited item
-				if (result.isEdit) {
-					let toUpdate = _.find(this.users, u => u.id === result.user.id);
-					Object.assign(toUpdate, result.user);
-
-					this.filterUsers();
-
-					this.toastyService.success(`User "${result.user.username}" successfully edited.`);
-				}
-				//On add, push the new item
-				else {
-					this.users.push(result.user);
-
-					this.filterUsers();
-
-					this.toastyService.success(`User "${result.user.username}" successfully added.`);
-				}
-			},
-			(error) => { if (error) this.toastyService.error(error.message); });
-	}
-
 	deleteUser(userToDelete: User): void {
-		if (!confirm(`Are you sure you want to delete the user "${userToDelete.username}"?`)) return;
+		if (!confirm(`Are you sure you want to delete the user "${userToDelete.username}"?`)) { return; }
 
 		this.settingsService
 			.deleteUser(userToDelete.id)
@@ -150,7 +127,32 @@ export class SettingsComponent {
 		return _.map(roles, 'name').join(', ');
 	}
 
-	getFriendlyBool(boolean: boolean): string {
-		return boolean ? 'Yes' : 'No';
+	getFriendlyBool(val: boolean): string {
+		return val ? 'Yes' : 'No';
+	}
+
+	private _handleModalClose(modalRef: NgbModalRef): void {
+		modalRef.result
+			.then((result) => {
+				//Handle modal dismiss
+				if (!result || !result.user) { return; }
+
+				//On edit, find and update the edited item
+				if (result.isEdit) {
+					const toUpdate = _.find(this.users, u => u.id === result.user.id);
+					Object.assign(toUpdate, result.user);
+
+					this.filterUsers();
+
+					this.toastyService.success(`User "${result.user.username}" successfully edited.`);
+				} else {
+					this.users.push(result.user);
+
+					this.filterUsers();
+
+					this.toastyService.success(`User "${result.user.username}" successfully added.`);
+				}
+			},
+			(error) => { if (error) { this.toastyService.error(error.message); } });
 	}
 }

@@ -1,21 +1,24 @@
 import { Injectable } from '@angular/core';
-import { Http, Response, Headers } from '@angular/http';
+import { Response } from '@angular/http';
 
 import { JwtHttp } from 'angular2-jwt-refresh';
-import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 
 import { Case } from '../models/case';
 import { CaseEvent } from '../models/caseEvent';
 import { AvailableSubscription } from '../models/availableSubscription';
+import { Playbook } from '../models/playbook/playbook';
 
 @Injectable()
 export class CasesService {
 	constructor (private authHttp: JwtHttp) {
 	}
 
-	getCases() : Promise<Case[]> {
+	/**
+	 * Gets an array of Case objects specified in the cases DB.
+	 */
+	getCases(): Promise<Case[]> {
 		return this.authHttp.get('/api/cases')
 			.toPromise()
 			.then(this.extractData)
@@ -23,7 +26,11 @@ export class CasesService {
 			.catch(this.handleError);
 	}
 
-	getEventsForCase(name: string) : Promise<CaseEvent[]> {
+	/**
+	 * Gets an array of CaseEvents for a given case.
+	 * @param name Name of case to query against.
+	 */
+	getEventsForCase(name: string): Promise<CaseEvent[]> {
 		return this.authHttp.get(`/api/cases/${name}/events`)
 			.toPromise()
 			.then(this.extractData)
@@ -31,7 +38,11 @@ export class CasesService {
 			.catch(this.handleError);
 	}
 
-	addCase(caseToAdd: Case) : Promise<Case> {
+	/**
+	 * Adds a case represented by the caseToAdd specified.
+	 * @param caseToAdd JSON of Case to add
+	 */
+	addCase(caseToAdd: Case): Promise<Case> {
 		return this.authHttp.put('/api/cases', caseToAdd)
 			.toPromise()
 			.then(this.extractData)
@@ -39,7 +50,11 @@ export class CasesService {
 			.catch(this.handleError);
 	}
 
-	editCase(caseToEdit: Case) : Promise<Case> {
+	/**
+	 * Edits a case in place (by id specified within the Case JSON).
+	 * @param caseToEdit JSON of Case to edit
+	 */
+	editCase(caseToEdit: Case): Promise<Case> {
 		return this.authHttp.post('/api/cases', caseToEdit)
 			.toPromise()
 			.then(this.extractData)
@@ -47,14 +62,22 @@ export class CasesService {
 			.catch(this.handleError);
 	}
 
-	deleteCase(id: number) : Promise<void> {
+	/**
+	 * Deletes a case by a given ID.
+	 * @param id ID of Case to delete
+	 */
+	deleteCase(id: number): Promise<void> {
 		return this.authHttp.delete(`/api/cases/${id}`)
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
 	}
 
-	getAvailableSubscriptions() : Promise<AvailableSubscription[]> {
+	/**
+	 * Gets a list of available event subscriptions for each type of object 
+	 * to log against (controller, workflow, step, etc.);
+	 */
+	getAvailableSubscriptions(): Promise<AvailableSubscription[]> {
 		return this.authHttp.get('/api/availablesubscriptions')
 			.toPromise()
 			.then(this.extractData)
@@ -62,7 +85,10 @@ export class CasesService {
 			.catch(this.handleError);
 	}
 
-	getPlaybooks() : Promise<any> {
+	/**
+	 * Gets a list of playbooks and all data within.
+	 */
+	getPlaybooks(): Promise<Playbook[]> {
 		return this.authHttp.get('/api/playbooks?full=true')
 			.toPromise()
 			.then(this.extractData)
@@ -70,7 +96,7 @@ export class CasesService {
 	}
 
 	private extractData (res: Response) {
-		let body = res.json();
+		const body = res.json();
 		return body || {};
 	}
 

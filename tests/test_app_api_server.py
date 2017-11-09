@@ -34,15 +34,6 @@ class TestAppApiServerFuncs(ServerTestCase):
         response = json.loads(response.get_data(as_text=True))
         orderless_list_compare(self, response, expected_apps)
 
-    def test_list_apps_with_device_types(self):
-        fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
-                       {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        core.config.config.app_apis.update({'TestApp': {'devices': {'test_type': {'fields': fields_json}}}})
-        response = self.app.get('/api/apps?has_device_types=true', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertIn('TestApp', response)
-
     def test_extract_schema(self):
         test_json = {'name': 'a', 'example': 42, 'description': 'something', 'type': 'number', 'minimum': 1}
         expected = {'name': 'a', 'example': 42, 'description': 'something', 'schema': {'type': 'number', 'minimum': 1}}
@@ -171,12 +162,20 @@ class TestAppApiServerFuncs(ServerTestCase):
         orderless_list_compare(self, [app['name'] for app in response], ['HelloWorld', 'DailyQuote'])
 
     def test_read_all_app_apis_with_field(self):
-        response = self.app.get('/api/apps/apis?field_name=actions', headers=self.headers)
+        response = self.app.get('/api/apps/apis?field_name=action_apis', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         orderless_list_compare(self, [app['name'] for app in response], ['HelloWorld', 'DailyQuote'])
         for app in response:
-            self.assertSetEqual(set(app.keys()), {'name', 'actions'})
+            self.assertSetEqual(set(app.keys()), {'name', 'action_apis'})
+
+    def test_read_all_app_apis_with_device(self):
+        response = self.app.get('/api/apps/apis?field_name=device_apis', headers=self.headers)
+        self.assertEqual(response.status_code, SUCCESS)
+        response = json.loads(response.get_data(as_text=True))
+        orderless_list_compare(self, [app['name'] for app in response], ['HelloWorld', 'DailyQuote'])
+        for app in response:
+            self.assertSetEqual(set(app.keys()), {'name', 'device_apis'})
 
     def test_read_all_app_apis_with_field_field_dne(self):
         response = self.app.get('/api/apps/apis?field_name=invalid', headers=self.headers)
@@ -186,7 +185,9 @@ class TestAppApiServerFuncs(ServerTestCase):
         response = self.app.get('/api/apps/apis/HelloWorld', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
-        self.assertSetEqual(set(response.keys()), {'name', 'info', 'actions', 'devices'})
+        self.assertSetEqual(set(response.keys()), {'name', 'tags', 'info', 'external_docs',
+                                                   'action_apis', 'device_apis',
+                                                   'condition_apis', 'transform_apis'})
         self.assertEqual(response['name'], 'HelloWorld')
 
     def test_read_app_api_app_dne(self):

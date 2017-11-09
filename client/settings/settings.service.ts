@@ -1,40 +1,40 @@
 import { Injectable } from '@angular/core';
-import { Http, Response, Headers } from '@angular/http';
+import { Response } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
 
-import { Configuration } from '../models/configuration'
-import { User } from '../models/user'
+import { Configuration } from '../models/configuration';
+import { User } from '../models/user';
 
 @Injectable()
 export class SettingsService {
 	constructor (private authHttp: JwtHttp) {
 	}
 
-	getConfiguration() : Promise<Configuration> {
+	getConfiguration(): Promise<Configuration> {
 		return this.authHttp.get('/api/configuration')
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Configuration)
 			.catch(this.handleError);
-	};
+	}
 
-	updateConfiguration(configuration: Configuration) : Promise<Configuration> {
+	updateConfiguration(configuration: Configuration): Promise<Configuration> {
 		return this.authHttp.post('/api/configuration', configuration)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Configuration)
 			.catch(this.handleError);
-	};
+	}
 
-	getUsers() : Promise<User[]> {
+	getUsers(): Promise<User[]> {
 		return this.authHttp.get('/api/users')
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as User[])
 			.catch(this.handleError);
-	};
+	}
 
-	addUser(user: User) : Promise<User> {
+	addUser(user: User): Promise<User> {
 		return this.authHttp.put('/api/users', user)
 			.toPromise()
 			.then(this.extractData)
@@ -42,7 +42,7 @@ export class SettingsService {
 			.catch(this.handleError);
 	}
 
-	editUser(user: User) : Promise<User> {
+	editUser(user: User): Promise<User> {
 		return this.authHttp.post('/api/users', user)
 			.toPromise()
 			.then(this.extractData)
@@ -50,7 +50,7 @@ export class SettingsService {
 			.catch(this.handleError);
 	}
 
-	deleteUser(id: number) : Promise<void> {
+	deleteUser(id: number): Promise<void> {
 		return this.authHttp.delete(`/api/users/${id}`)
 			.toPromise()
 			.then(() => null)
@@ -58,7 +58,7 @@ export class SettingsService {
 	}
 	
 	private extractData (res: Response) {
-		let body = res.json();
+		const body = res.json();
 		return body || {};
 	}
 

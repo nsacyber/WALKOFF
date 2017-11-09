@@ -1,7 +1,15 @@
-import { ArgumentApi } from './argumentApi';
+import { ParameterApi } from './parameterApi';
+import { ReturnApi } from './returnApi';
 
 export class ConditionApi {
 	name: string;
 	description: string;
-	args: ArgumentApi[];
+	parameters: ParameterApi[] = [];
+	returns: ReturnApi[] = [];
+	run: string;
+	data_in: string;
+	deprecated: boolean;
+	// tags: Tag[] = [];
+	summary: string;
+	// external_docs: ExternalDoc[] = [];
 }

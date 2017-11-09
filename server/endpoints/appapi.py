@@ -9,21 +9,19 @@ from server.returncodes import *
 from server.security import roles_accepted_for_resources
 
 
-def read_all_apps(interfaces_only=None, has_device_types=None):
+def read_all_apps(interfaces_only=None):
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
-        if interfaces_only:
-            return helpers.list_apps_with_interfaces(), SUCCESS
-        if has_device_types:
-            return helpers.list_apps_with_device_types(), SUCCESS
-        return helpers.list_apps(), SUCCESS
+        apps = helpers.list_apps_with_interfaces() if interfaces_only else helpers.list_apps()
+        return sorted(apps, key=(lambda app_name: app_name.lower())), SUCCESS
 
     return __func()
 
 
 def extract_schema(api, unformatted_fields=None):
-    unformatted_fields = unformatted_fields if unformatted_fields is not None else ('name', 'example', 'description')
+    unformatted_fields = unformatted_fields if unformatted_fields is not None else ('name', 'example', 'placeholder',
+                                                                                    'description')
     ret = {}
     schema = {}
     for key, value in api.items():
@@ -53,6 +51,8 @@ def format_app_action_api(api):
         ret['returns'] = format_returns(ret['returns'], 'event' in api)
     if 'parameters' in api:
         ret['parameters'] = [extract_schema(param_api) for param_api in ret['parameters']]
+    else:
+        ret['parameters'] = []
     return ret
 
 
@@ -67,7 +67,7 @@ def format_all_app_actions_api(api):
 
 def format_device_api_full(api, device_name):
     device_api = {'name': device_name}
-    unformatted_fields = ('name', 'description', 'default', 'encrypted', 'placeholder')
+    unformatted_fields = ('name', 'description', 'encrypted', 'placeholder')
     if 'description' in api:
         device_api['description'] = api['description']
     device_api['fields'] = [extract_schema(device_field,
@@ -79,47 +79,45 @@ def format_device_api_full(api, device_name):
 
 def format_full_app_api(api, app_name):
     ret = {'name': app_name}
-    for unformatted_field in ('info', 'tags', 'externalDocs'):
+    for unformatted_field in ('info', 'tags', 'external_docs'):
         if unformatted_field in api:
             ret[unformatted_field] = api[unformatted_field]
+        else:
+            ret[unformatted_field] = [] if unformatted_field in ('tags', 'external_docs') else {}
     for formatted_action_field in ('actions', 'conditions', 'transforms'):
         if formatted_action_field in api:
-            ret[formatted_action_field] = format_all_app_actions_api(api[formatted_action_field])
+            ret[formatted_action_field[:-1] + '_apis'] = format_all_app_actions_api(api[formatted_action_field])
+        else:
+            ret[formatted_action_field[:-1] + '_apis'] = []
     if 'devices' in api:
-        ret['devices'] = [format_device_api_full(device_api, device_name)
-                          for device_name, device_api in api['devices'].items()]
+        ret['device_apis'] = [format_device_api_full(device_api, device_name)
+                              for device_name, device_api in api['devices'].items()]
+    else:
+        ret['device_apis'] = []
     return ret
 
 
-@jwt_required
 def read_all_app_apis(field_name=None):
 
+    @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
         ret = []
-        transforms = core.config.config.function_apis['transforms']
-        conditions = core.config.config.function_apis['conditions']
         for app_name, app_api in core.config.config.app_apis.items():
-            app_api['conditions'] = conditions
-            app_api['transforms'] = transforms
             ret.append(format_full_app_api(app_api, app_name))
         if field_name is not None:
-            default = [] if field_name not in ('info', 'externalDocs') else {}
+            default = [] if field_name not in ('info', 'external_docs') else {}
             ret = [{'name': api['name'], field_name: api.get(field_name, default)} for api in ret]
         return ret, SUCCESS
 
     return __func()
 
 
-@jwt_required
 def read_app_api(app_name):
+    @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
         api = core.config.config.app_apis.get(app_name, None)
-        transforms = core.config.config.function_apis['transforms']
-        conditions = core.config.config.function_apis['conditions']
-        api['conditions'] = conditions
-        api['transforms'] = transforms
         if api is not None:
             return format_full_app_api(api, app_name), SUCCESS
         else:
@@ -133,14 +131,9 @@ def read_app_api_field(app_name, field_name):
     @roles_accepted_for_resources('apps')
     def __func():
         api = core.config.config.app_apis.get(app_name, None)
-        transforms = core.config.config.function_apis['transforms']
-        conditions = core.config.config.function_apis['conditions']
-        api['conditions'] = conditions
-        api['transforms'] = transforms
         if api is not None:
             return format_full_app_api(api, app_name)[field_name], SUCCESS
         else:
             return {'error': 'app not found'}, OBJECT_DNE_ERROR
 
     return __func()
-
