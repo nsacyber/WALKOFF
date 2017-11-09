@@ -17,7 +17,7 @@ together to form Workflows.  Workflows are defined in a JSON format making them
 easily sharable across environments and organizations and easily
 created/customizable through our drag and drop workflow editor.
 
-<img src="https://raw.githubusercontent.com/iadgov/WALKOFF/gh-pages/files/images/demoGIFs/DragDropGIF.gif" height=300>
+[<img src="https://raw.githubusercontent.com/iadgov/WALKOFF/gh-pages/files/images/demoGIFs/DragDropGIF.gif" height=300>](https://raw.githubusercontent.com/)
 
 WALKOFF also makes it easier to manage your newly automated processes with
 real-time visual updates and feeds based on your workflows progress.
