@@ -313,6 +313,6 @@ class TestAppApiValidation(unittest.TestCase):
         devices = {'dev1': {'description': 'something',
                             'fields': [{'name': 'param1', 'type': 'integer', 'default': 'invalid'}]}}
         self.basicapi['devices'] = devices
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             validate_devices_api(devices, '')
 

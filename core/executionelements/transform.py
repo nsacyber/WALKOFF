@@ -3,7 +3,7 @@ from copy import deepcopy
 
 from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
-from core.helpers import get_transform, get_transform_api, InvalidInput
+from core.helpers import get_transform, get_transform_api, InvalidArgument
 from core.validator import validate_transform_parameters, validate_parameter
 from core.argument import Argument
 
@@ -49,7 +49,7 @@ class Transform(ExecutionElement):
             result = get_transform(self.action)(**args)
             data_sent.send(self, callback_name="Transform Success", object_type="Transform")
             return result
-        except InvalidInput as e:
+        except InvalidArgument as e:
             data_sent.send(self, callback_name="Transform Error", object_type="Transform")
             logger.error('Transform {0} has invalid input {1}. Error: {2}. '
                          'Returning unmodified data'.format(self.action, original_data_in, str(e)))

@@ -93,13 +93,13 @@ WorkflowShutdown, __workflow_shutdown_callback = __construct_logging_signal('Wor
                                                                             'Workflow Shutdown',
                                                                             'Workflow shutdown')
 
-WorkflowInputValidated, __workflow_input_validated = __construct_logging_signal('Workflow',
-                                                                                'Workflow Input Validated',
-                                                                                'Workflow input validated')
+WorkflowArgumentValidated, __workflow_argument_validated = __construct_logging_signal('Workflow',
+                                                                                'Workflow Argument Validated',
+                                                                                'Workflow argument validated')
 
-WorkflowInputInvalid, __workflow_input_invalidated = __construct_logging_signal('Workflow',
-                                                                                'Workflow Input Invalid',
-                                                                                'Workflow input invalid')
+WorkflowArgumentInvalid, __workflow_argument_invalidated = __construct_logging_signal('Workflow',
+                                                                                'Workflow Argument Invalid',
+                                                                                'Workflow argument invalid')
 
 WorkflowPaused, __workflow_paused = __construct_logging_signal('Workflow',
                                                                'Workflow Paused',
@@ -123,9 +123,9 @@ StepExecutionError, __step_execution_error_callback = __construct_logging_signal
 StepStarted, __step_started_callback = __construct_logging_signal('Step',
                                                                   'Step Started',
                                                                   'Step execution started')
-StepInputInvalid, __step_input_invalid_callback = __construct_logging_signal('Step',
-                                                                             'Input Invalid',
-                                                                             'Input is invalid')
+StepArgumentInvalid, __step_argument_invalid_callback = __construct_logging_signal('Step',
+                                                                             'Argument Invalid',
+                                                                             'Argument is invalid')
 
 # Next step callbacks
 NextStepTaken, __next_step_taken_callback = __construct_logging_signal('Next Step',

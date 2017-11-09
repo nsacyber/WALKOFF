@@ -261,7 +261,7 @@ class TestHelperFunctions(unittest.TestCase):
     def test_dereference_step_routing_step_not_found(self):
         inputs = {'a': 1, 'b': '@step2', 'c': '@invalid', 'd': 'test'}
         accumulator = {'step1': '2', 'step2': 3, 'step3': 5}
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             dereference_step_routing(inputs, accumulator, 'message')
 
     def test_dereference_step_routing_with_nested_inputs(self):

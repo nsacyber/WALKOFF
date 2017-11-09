@@ -13,7 +13,7 @@ from swagger_spec_validator.validator20 import deref
 
 import core.config.config
 import core.config.paths
-from core.helpers import InvalidInput, get_function_arg_names, InvalidApi, format_exception_message
+from core.helpers import InvalidArgument, get_function_arg_names, InvalidApi, format_exception_message
 
 logger = logging.getLogger(__name__)
 
@@ -56,14 +56,14 @@ def convert_array(schema, param_in, message_prefix):
             message = '{0} has invalid input. Input {1} could not be converted to array ' \
                       'with type "object"'.format(message_prefix, items)
             logger.error(message)
-            raise InvalidInput(message)
+            raise InvalidArgument(message)
     else:
         return [convert_json(schema['items'], param, message_prefix) for param in param_in]
 
 
 def __convert_json(schema, param_in, message_prefix):
     if not isinstance(param_in, dict):
-        raise InvalidInput(
+        raise InvalidArgument(
             '{0} A JSON object was expected. '
             'Instead got "{1}" of type {2}.'.format(message_prefix, param_in, type(param_in).__name__))
     if 'properties' not in schema:
@@ -73,7 +73,7 @@ def __convert_json(schema, param_in, message_prefix):
         if param_name in schema['properties']:
             ret[param_name] = convert_json(schema['properties'][param_name], param_value, message_prefix)
         else:
-            raise InvalidInput('{0} Input has unknown parameter {1}'.format(message_prefix, param_name))
+            raise InvalidArgument('{0} Input has unknown parameter {1}'.format(message_prefix, param_name))
     return ret
 
 
@@ -88,7 +88,7 @@ def convert_json(spec, param_in, message_prefix):
                     '{0} has invalid input. '
                     'Input {1} could not be converted to type {2}'.format(message_prefix, param_in, parameter_type))
                 logger.error(message)
-                raise InvalidInput(message)
+                raise InvalidArgument(message)
         elif parameter_type == 'array':
             return convert_array(spec, param_in, message_prefix)
         elif parameter_type == 'object':
@@ -272,7 +272,7 @@ def validate_primitive_parameter(value, param, parameter_type, message_prefix, h
         message = '{0} has invalid input. ' \
                   'Input {1} could not be converted to type {2}'.format(message_prefix, value, parameter_type)
         logger.error(message)
-        raise InvalidInput(message)
+        raise InvalidArgument(message)
     else:
         param = deepcopy(param)
         if 'required' in param:
@@ -291,7 +291,7 @@ def validate_primitive_parameter(value, param, parameter_type, message_prefix, h
                           'validators: {2}'.format(message_prefix, parameter_type,
                                                    format_exception_message(exception))
             logger.error(message)
-            raise InvalidInput(message)
+            raise InvalidArgument(message)
         return converted_value
 
 
@@ -312,9 +312,9 @@ def validate_parameter(value, param, message_prefix):
                     message = '{0} has invalid input. Input {1} does not conform to ' \
                               'validators: {2}'.format(message_prefix, value, format_exception_message(exception))
                     logger.error(message)
-                    raise InvalidInput(message)
+                    raise InvalidArgument(message)
             else:
-                raise InvalidInput('In {0}: Unknown parameter type {1}'.format(message_prefix, primitive_type))
+                raise InvalidArgument('In {0}: Unknown parameter type {1}'.format(message_prefix, primitive_type))
         else:
             try:
                 converted_value = convert_json(param, value, message_prefix)
@@ -324,16 +324,16 @@ def validate_parameter(value, param, message_prefix):
                 message = '{0} has invalid input. Input {1} does not conform to ' \
                           'validators: {2}'.format(message_prefix, value, format_exception_message(exception))
                 logger.error(message)
-                raise InvalidInput(message)
+                raise InvalidArgument(message)
     elif param.get('required'):
         message = "In {0}: Missing {1} parameter '{2}'".format(message_prefix, primitive_type, param['name'])
         logger.error(message)
-        raise InvalidInput(message)
+        raise InvalidArgument(message)
 
     return converted_value
 
 
-def validate_parameters(api, inputs, message_prefix):
+def validate_parameters(api, inputs, message_prefix, accumulator=None):
     api_dict = {}
     for param in api:
         api_dict[param['name']] = param
@@ -342,20 +342,13 @@ def validate_parameters(api, inputs, message_prefix):
     input_set = set(inputs.keys())
     for param_name, param_api in api_dict.items():
         if param_name in inputs:
-            if not isinstance(inputs[param_name], string_types):
-                converted[param_name] = validate_parameter(inputs[param_name], param_api, message_prefix)
-            else:
-                if inputs[param_name].startswith('@'):
-                    converted[param_name] = inputs[param_name]
-                elif inputs[param_name].startswith('\@'):
-                    inputs[param_name] = inputs[param_name][1:]
-                    converted[param_name] = validate_parameter(inputs[param_name], param_api, message_prefix)
-                else:
-                    converted[param_name] = validate_parameter(inputs[param_name], param_api, message_prefix)
+            arg_val = inputs[param_name].get_value(accumulator)
+            if accumulator or not inputs[param_name].is_reference:
+                converted[param_name] = validate_parameter(arg_val, param_api, message_prefix)
         elif 'default' in param_api:
             try:
                 default_param = validate_parameter(param_api['default'], param_api, message_prefix)
-            except InvalidInput as e:
+            except InvalidArgument as e:
                 default_param = param_api['default']
                 logger.warning(
                     'For {0}: Default input {1} (value {2}) does not conform to schema. (Error: {3})'
@@ -367,7 +360,7 @@ def validate_parameters(api, inputs, message_prefix):
         elif 'required' in param_api:
             message = 'For {0}: Parameter {1} is not specified and has no default'.format(message_prefix, param_name)
             logger.error(message)
-            raise InvalidInput(message)
+            raise InvalidArgument(message)
         else:
             converted[param_name] = None
             input_set.add(param_name)
@@ -375,17 +368,17 @@ def validate_parameters(api, inputs, message_prefix):
     if seen_params != input_set:
         message = 'For {0}: Too many inputs. Extra inputs: {1}'.format(message_prefix, input_set - seen_params)
         logger.error(message)
-        raise InvalidInput(message)
+        raise InvalidArgument(message)
     return converted
 
 
-def validate_app_action_parameters(api, inputs, app, action):
+def validate_app_action_parameters(api, inputs, app, action, accumulator=None):
     message_prefix = 'app {0} action {1}'.format(app, action)
-    return validate_parameters(api, inputs, message_prefix)
+    return validate_parameters(api, inputs, message_prefix, accumulator)
 
 
-def validate_condition_parameters(api, inputs, condition):
-    return validate_parameters(api, inputs, 'condition {0}'.format(condition))
+def validate_condition_parameters(api, inputs, condition, accumulator=None):
+    return validate_parameters(api, inputs, 'condition {0}'.format(condition), accumulator)
 
 
 def validate_transform_parameters(api, inputs, transform):
@@ -418,7 +411,7 @@ def validate_devices_api(devices_api, app_name):
                 default_value = field_api['default']
                 try:
                     validate_device_field(field_api, default_value, message_prefix)
-                except InvalidInput as e:
+                except InvalidArgument as e:
                     logger.error(
                         'For {0}: Default input {1} does not conform to schema. (Error: {2})'
                         'Using anyways'.format(message_prefix, field_api['name'], format_exception_message(e)))
@@ -438,7 +431,7 @@ def validate_device_fields(device_fields_api, device_fields, device_type, app):
         message = '{0} requires {1} field but only got {2}'.format(message_prefix,
                                                                    list(required_in_api), list(field_names))
         logger.error(message)
-        raise InvalidInput(message)
+        raise InvalidArgument(message)
 
     device_fields_api_dict = {field['name']: field for field in device_fields_api}
 
@@ -448,6 +441,6 @@ def validate_device_fields(device_fields_api, device_fields, device_type, app):
         else:
             message = '{0} was passed field {1} which is not defined in its API'.format(message_prefix, field['name'])
             logger.warning(message)
-            raise InvalidInput(message)
+            raise InvalidArgument(message)
 
     return device_fields

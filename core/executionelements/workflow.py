@@ -9,7 +9,7 @@ from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
 from core.executionelements.step import Step
 from core.executionelements.nextstep import NextStep
-from core.helpers import UnknownAppAction, UnknownApp, InvalidInput, format_exception_message
+from core.helpers import UnknownAppAction, UnknownApp, InvalidArgument, format_exception_message
 
 logger = logging.getLogger(__name__)
 
@@ -204,9 +204,9 @@ class Workflow(ExecutionElement):
     def __swap_step_input(self, step, start_input):
         logger.debug('Swapping input to first step of workflow {0}'.format(self.name))
         try:
-            step.set_input(start_input)
+            step.set_arguments(start_input)
             data_sent.send(self, callback_name="Workflow Input Validated", object_type="Workflow")
-        except InvalidInput as e:
+        except InvalidArgument as e:
             logger.error('Cannot change input to workflow {0}. '
                          'Invalid input. Error: {1}'.format(self.name, format_exception_message(e)))
             data_sent.send(self, callback_name="Workflow Input Invalid", object_type="Workflow")
@@ -282,7 +282,7 @@ class Workflow(ExecutionElement):
                     if next_step.source_uid not in self.next_steps:
                         self.next_steps[next_step.source_uid] = []
                     self.next_steps[next_step.source_uid].append(next_step)
-        except (UnknownApp, UnknownAppAction, InvalidInput):
+        except (UnknownApp, UnknownAppAction, InvalidArgument):
             self.reload_async_result(backup_steps, with_deepcopy=True)
             raise
 

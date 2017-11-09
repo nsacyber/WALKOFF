@@ -1,5 +1,5 @@
 import logging
-from core.helpers import InvalidInput
+from core.helpers import InvalidArgument
 
 logger = logging.getLogger(__name__)
 
@@ -9,7 +9,7 @@ class Argument:
         if not value and not reference:
             message = 'Input {} must have either value or reference. Input has neither'.format(name)
             logger.error(message)
-            raise InvalidInput(message)
+            raise InvalidArgument(message)
         elif value and reference:
             message = 'Input {} must have either value or reference. Input has both. Using "value"'.format(name)
             logger.warning(message)
@@ -18,16 +18,20 @@ class Argument:
         self.value = value
         self.reference = reference
         self.selection = selection
+        self.is_reference = True if value is None else False
 
     def get_value(self, accumulator):
         if self.value is not None:
             return self.value
 
-        step_output = self._get_step_from_reference(accumulator)
-        if not self.selection:
-            return step_output
+        if accumulator:
+            step_output = self._get_step_from_reference(accumulator)
+            if not self.selection:
+                return step_output
 
-        return self._select(step_output)
+            return self._select(step_output)
+        else:
+            return self.reference
 
     def _get_step_from_reference(self, accumulator):
         try:
@@ -35,7 +39,7 @@ class Argument:
         except KeyError:
             message = ('Referenced step {} '
                        'has not been executed'.format(self.reference))
-            raise InvalidInput(message)
+            raise InvalidArgument(message)
 
     def _select(self, input_):
         try:
@@ -44,7 +48,7 @@ class Argument:
             return input_
 
         except (KeyError, ValueError, IndexError):
-            raise InvalidInput('Selector {0} is invalid for reference {1}'.format(
+            raise InvalidArgument('Selector {0} is invalid for reference {1}'.format(
                 self.selection, self.reference))
 
     @staticmethod
@@ -55,3 +59,7 @@ class Argument:
             return input_[int(selection)]
         else:
             raise ValueError
+
+    def __eq__(self, other):
+        return self.name == other.name and self.value == other.value and self.reference == other.reference and \
+               self.selection == other.selection and self.is_reference == other.is_reference

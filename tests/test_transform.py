@@ -3,7 +3,7 @@ import uuid
 
 import core.config.config
 from core.executionelements.transform import Transform
-from core.helpers import import_all_transforms, import_all_conditions, UnknownTransform, InvalidInput
+from core.helpers import import_all_transforms, import_all_conditions, UnknownTransform, InvalidArgument
 from tests.config import function_api_path
 
 
@@ -46,11 +46,11 @@ class TestTransform(unittest.TestCase):
         self.__compare_init(filter_elem, 'mod1_filter2', args={'arg1': '@step1'})
 
     def test_init_with_invalid_arg_name(self):
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             Transform(action='mod1_filter2', arguments={'invalid': '5.4'})
 
     def test_init_with_invalid_arg_type(self):
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             Transform(action='mod1_filter2', arguments={'arg1': 'invalid'})
 
     def test_execute_with_no_args_no_conversion(self):

@@ -1,6 +1,6 @@
 import unittest
 
-from core.validator import validate_device_fields, InvalidInput
+from core.validator import validate_device_fields, InvalidArgument
 
 
 class TestDeviceValidation(unittest.TestCase):
@@ -12,7 +12,7 @@ class TestDeviceValidation(unittest.TestCase):
     def test_basic_device_fields_validation_invalid_type(self):
         device_fields = [{'name': 'param1', 'type': 'string'}, {'name': 'param2', 'type': 'boolean'}]
         device_in = {'param1': 'somevalue', 'param2': 'invalid'}
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             validate_device_fields(device_fields, device_in, '', '')
 
     def test_device_fields_validation_with_no_fields_none_required(self):
@@ -35,7 +35,7 @@ class TestDeviceValidation(unittest.TestCase):
         device_fields = [{'name': 'param1', 'type': 'integer', 'encrypted': True},
                          {'name': 'param2', 'type': 'boolean'}]
         device_in = {'param1': 'somevalue', 'param2': True}
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             validate_device_fields(device_fields, device_in, '', '')
 
     def test_device_fields_validation_with_all_required_in_api(self):
@@ -54,21 +54,21 @@ class TestDeviceValidation(unittest.TestCase):
         device_fields = [{'name': 'param1', 'type': 'string', 'required': True},
                          {'name': 'param2', 'type': 'boolean', 'required': True}]
         device_in = {}
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             validate_device_fields(device_fields, device_in, '', '')
 
     def test_device_fields_validation_with_some_required_in_api_no_fields(self):
         device_fields = [{'name': 'param1', 'type': 'string', 'required': True},
                          {'name': 'param2', 'type': 'boolean'}]
         device_in = {}
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             validate_device_fields(device_fields, device_in, '', '')
 
     def test_device_fields_validation_with_some_required_in_api_too_few_fields(self):
         device_fields = [{'name': 'param1', 'type': 'string', 'required': True},
                          {'name': 'param2', 'type': 'boolean'}]
         device_in = {'param2': True}
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             validate_device_fields(device_fields, device_in, '', '')
 
     def test_device_fields_validation_with_required_and_encrypted(self):

@@ -1,6 +1,6 @@
 from unittest import TestCase
 from core.argument import Argument
-from core.helpers import InvalidInput
+from core.helpers import InvalidArgument
 
 
 class TestArgument(TestCase):
@@ -23,7 +23,7 @@ class TestArgument(TestCase):
             self.assertListEqual(arg.selection, selection)
 
     def test_init_no_value_or_reference(self):
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             Argument('test')
 
     def test_init_with_value(self):
@@ -73,7 +73,7 @@ class TestArgument(TestCase):
 
     def test_select_one_on_list_out_of_range(self):
         arg = Argument('test', reference='some_uid', selection=[10])
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             arg._select(['a', 'b', 'c'])
 
     def test_select_one_on_dict(self):
@@ -82,12 +82,12 @@ class TestArgument(TestCase):
 
     def test_select_one_on_dict_key_error(self):
         arg = Argument('test', reference='some_uid', selection=['d'])
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             arg._select({'a': 1, 'b': 2, 'c': 3})
 
     def test_select_one_on_value(self):
         arg = Argument('test', reference='some_uid', selection=['d'])
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             arg._select('some raw value')
 
     def test_select(self):
@@ -106,17 +106,17 @@ class TestArgument(TestCase):
                         [{'one': 1}, {'two': 2}]],
                   'b': 15,
                   'c': 'something'}
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             arg._select(input_)
 
     def test_get_step_from_reference_empty_accumulator(self):
         arg = Argument('test', reference='a')
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             arg._get_step_from_reference({})
 
     def test_get_step_from_reference_not_in_accumulator(self):
         arg = Argument('test', reference='a')
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             arg._get_step_from_reference({'b': 3, 'c': 7})
 
     def test_get_step_from_reference(self):
@@ -137,7 +137,7 @@ class TestArgument(TestCase):
 
     def test_get_value_reference_not_found(self):
         arg = Argument('test', reference='c')
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             arg.get_value({'a': 1, 'b': 2})
 
     def test_get_value_reference_and_selection(self):
@@ -156,5 +156,5 @@ class TestArgument(TestCase):
                         [{'one': 1}, {'two': 2}]],
                   'b': 15,
                   'c': 'something'}
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             arg.get_value({'a': input_, 'b': 2})

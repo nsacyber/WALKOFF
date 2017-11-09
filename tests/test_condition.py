@@ -4,7 +4,7 @@ import uuid
 import core.config.config
 from core.executionelements.transform import Transform
 from core.executionelements.condition import Condition
-from core.helpers import import_all_transforms, import_all_conditions, InvalidInput
+from core.helpers import import_all_transforms, import_all_conditions, InvalidArgument
 from tests.config import function_api_path
 
 
@@ -48,11 +48,11 @@ class TestCondition(unittest.TestCase):
         self.__compare_init(condition , 'mod1_flag2', [], {'arg1': '@step2'})
 
     def test_init_with_args_invalid_arg_name(self):
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             Condition(action='mod1_flag2', arguments={'invalid': '3'})
 
     def test_init_with_args_invalid_arg_type(self):
-        with self.assertRaises(InvalidInput):
+        with self.assertRaises(InvalidArgument):
             Condition(action='mod1_flag2', arguments={'arg1': 'aaa'})
 
     def test_init_with_transforms(self):

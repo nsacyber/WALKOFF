@@ -391,10 +391,10 @@ class UnknownDevice(Exception):
         self.device_type = device_type
 
 
-class InvalidInput(Exception):
+class InvalidArgument(Exception):
     def __init__(self, message):
         self.message = message
-        super(InvalidInput, self).__init__(self.message)
+        super(InvalidArgument, self).__init__(self.message)
 
 
 class UnknownCondition(Exception):

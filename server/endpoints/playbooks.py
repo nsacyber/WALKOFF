@@ -9,7 +9,7 @@ import core.config.config
 import core.config.paths
 from core import helpers
 from core.case.workflowresults import WorkflowResult
-from core.helpers import UnknownAppAction, UnknownApp, InvalidInput
+from core.helpers import UnknownAppAction, UnknownApp, InvalidArgument
 from server.returncodes import *
 from server.security import roles_accepted_for_resources
 import server.workflowresults  # do not delete needed to register callbacks
@@ -435,7 +435,7 @@ def save_workflow(playbook_name, workflow_name):
                 return {"error": "Unknown app {0}.".format(e.app)}, INVALID_INPUT_ERROR
             except UnknownAppAction as e:
                 return {'error': 'Unknown action {0} for app {1}'.format(e.action, e.app)}, INVALID_INPUT_ERROR
-            except InvalidInput as e:
+            except InvalidArgument as e:
                 return {'error': 'Invalid input to action. Error: {0}'.format(str(e))}, INVALID_INPUT_ERROR
             else:
                 try:

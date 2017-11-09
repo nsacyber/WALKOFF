@@ -11,7 +11,7 @@ from core import contextdecorator
 from core.case.callbacks import data_sent
 from core.decorators import ActionResult
 from core.executionelements.executionelement import ExecutionElement
-from core.helpers import get_app_action_api, InvalidInput, format_exception_message
+from core.helpers import get_app_action_api, InvalidArgument, format_exception_message
 from core.validator import validate_app_action_parameters
 from core.widgetsignals import get_widget_signal
 from core.argument import Argument
@@ -64,13 +64,12 @@ class Step(ExecutionElement):
         get_app_action(self.app, self._run)
 
         arguments = [Argument(**json_in) for json_in in arguments] if arguments is not None else []
-        arguments = {arg.name: arg for arg in arguments}
+        arguments = {argument.name: argument for argument in arguments}
 
         self.templated = templated
         if not self.templated:
-            self.arguments = validate_app_action_parameters(self._input_api, arguments, self.app, self.action)
-        else:
-            self.arguments = arguments
+            validate_app_action_parameters(self._input_api, arguments, self.app, self.action)
+        self.arguments = arguments
         self.device = device if (device is not None and device != 'None') else ''
         self.risk = risk
         self.position = position if position is not None else {}
@@ -119,11 +118,10 @@ class Step(ExecutionElement):
                 arguments[argument.name] = argument
         if arguments is not None:
             if not self.templated:
-                self.arguments = validate_app_action_parameters(self._input_api, arguments, self.app, self.action)
-            else:
-                self.arguments = arguments
+                validate_app_action_parameters(self._input_api, arguments, self.app, self.action)
         else:
-            self.arguments = validate_app_action_parameters(self._input_api, [], self.app, self.action)
+            validate_app_action_parameters(self._input_api, [], self.app, self.action)
+        self.arguments = arguments
 
     @contextdecorator.context
     def render_step(self, **kwargs):
@@ -138,17 +136,15 @@ class Step(ExecutionElement):
                 core.config.config.JINJA_GLOBALS, **kwargs)
             self._update_json(updated_json=json.loads(env))
 
-    def set_input(self, new_arguments):
+    def set_arguments(self, new_arguments):
         """Updates the arguments for a Step object.
 
         Args:
             new_arguments ([Argument]): The new Arguments for the Step object.
         """
-        if isinstance(new_arguments, list):
-            new_arguments = {arg.name: arg for arg in new_arguments}
-        elif isinstance(new_arguments, dict):
-            new_arguments = new_arguments
-        self.arguments = validate_app_action_parameters(self._input_api, new_arguments, self.app, self.action)
+        new_arguments = {arg.name: arg for arg in new_arguments}
+        validate_app_action_parameters(self._input_api, new_arguments, self.app, self.action)
+        self.arguments = new_arguments
 
     def execute(self, instance, accumulator):
         """Executes a Step by calling the associated app function.
@@ -169,8 +165,9 @@ class Step(ExecutionElement):
             self._wait_for_trigger(accumulator)
 
         try:
-            args = {argument.name: argument.get_value(accumulator) for argument in self.arguments}
-            args = validate_app_action_parameters(self._input_api, args, self.app, self.action)
+            # args = {argument.name: argument.get_value(accumulator) for argument in self.arguments}
+            args = validate_app_action_parameters(self._input_api, self.arguments, self.app, self.action,
+                                                  accumulator=accumulator)
             action = get_app_action(self.app, self._run)
             if is_app_action_bound(self.app, self._run):
                 result = action(instance, **args)
@@ -179,10 +176,10 @@ class Step(ExecutionElement):
 
             data_sent.send(self, callback_name="Function Execution Success", object_type="Step",
                            data=json.dumps({"result": result.as_json()}))
-        except InvalidInput as e:
+        except InvalidArgument as e:
             formatted_error = format_exception_message(e)
             logger.error('Error calling step {0}. Error: {1}'.format(self.name, formatted_error))
-            data_sent.send(self, callback_name="Step Input Invalid", object_type="Step")
+            data_sent.send(self, callback_name="Step Argument Invalid", object_type="Step")
             self._output = ActionResult('error: {0}'.format(formatted_error), 'InvalidInput')
             raise
         except Exception as e:
