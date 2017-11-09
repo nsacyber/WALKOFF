@@ -85,12 +85,11 @@ def create_app():
         SECURITY_PASSWORD_SALT='something_super_secret_change_in_production',
         SECURITY_POST_LOGIN_VIEW='/',
         WTF_CSRF_ENABLED=False,
-        STATIC_FOLDER=os.path.abspath('server/static'),
         JWT_BLACKLIST_ENABLED=True,
-        JWT_BLACKLIST_TOKEN_CHECKS=['refresh']
+        JWT_BLACKLIST_TOKEN_CHECKS=['refresh'],
+        JWT_TOKEN_LOCATION='headers',
+        SQLALCHEMY_TRACK_MODIFICATIONS=False
     )
-    _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    _app.config['JWT_TOKEN_LOCATION'] = 'headers'
 
     from server.database import db
     db.init_app(_app)
