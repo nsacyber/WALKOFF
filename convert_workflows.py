@@ -34,12 +34,19 @@ def convert_workflow(workflow):
     workflow['start'] = next((step['uid'] for step in steps_copy if step['name']==workflow['start']), workflow['start'])
 
     for step in workflow['steps']:
-        if 'arguments' not in step:
-            step['arguments'] = step.pop('inputs', [])
-        step['arguments'] = [convert_arg(arg, steps_copy) for arg in step['arguments']]
-
+        convert_step(step, steps_copy)
     for next_step in workflow.get('next_steps', []):
         convert_next_step(next_step, steps_copy)
+
+
+def convert_step(step, steps_copy):
+    if 'arguments' not in step:
+        step['arguments'] = step.pop('inputs', [])
+    step['arguments'] = [convert_arg(arg, steps_copy) for arg in step['arguments']]
+    if 'device' in step:
+        print('Warning step {} contains a device. '
+              'Devices are now held in "device_id" field and reference a device name, not id.')
+    step.pop('widgets', None)
 
 
 def convert_next_step_uids(next_step, step):
