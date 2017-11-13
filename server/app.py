@@ -16,9 +16,8 @@ logger = logging.getLogger(__name__)
 
 def register_blueprints(flaskapp):
     from server.blueprints import app as app
-    from server.blueprints import events, widgets, workflowresult
+    from server.blueprints import events, workflowresult
     flaskapp.register_blueprint(app.app_page, url_prefix='/appinterface/<app>')
-    flaskapp.register_blueprint(widgets.widgets_page, url_prefix='/apps/<app>/widgets/<widget>')
     flaskapp.register_blueprint(events.events_page, url_prefix='/events')
     flaskapp.register_blueprint(workflowresult.workflowresults_page, url_prefix='/workflowresults')
     __register_all_app_blueprints(flaskapp)
@@ -26,12 +25,12 @@ def register_blueprints(flaskapp):
 
 def __get_blueprints_in_module(module, sub_module_name='display'):
     from importlib import import_module
-    from apps import AppWidgetBlueprint
+    from apps import AppBlueprint
     import_module('{0}.{1}'.format(module.__name__, sub_module_name))
     submodule = getattr(module, sub_module_name)
     blueprints = [getattr(submodule, field)
                   for field in dir(submodule) if (not field.startswith('__')
-                                                  and isinstance(getattr(submodule, field), AppWidgetBlueprint))]
+                                                  and isinstance(getattr(submodule, field), AppBlueprint))]
     return blueprints
 
 
@@ -70,29 +69,6 @@ def __register_all_app_blueprints(flaskapp):
         else:
             __register_app_blueprints(flaskapp, app_name, blueprints)
 
-        __register_all_app_widget_blueprints(flaskapp, app_module)
-
-
-def __register_all_app_widget_blueprints(flaskapp, app_module):
-    from importlib import import_module
-    from core.helpers import import_submodules
-    try:
-        widgets_module = import_module('{0}.widgets'.format(app_module.__name__))
-    except ImportError:
-        return
-    else:
-        app_name = app_module.__name__.split('.')[-1]
-        imported_widgets = import_submodules(widgets_module)
-        for widget_name, widget_module in imported_widgets.items():
-            try:
-                blueprints = __get_blueprints_in_module(widget_module)
-            except ImportError:
-                continue
-            else:
-                url_prefix = '/apps/{0}/{1}'.format(app_name, widget_name.split('.')[-1])
-                for blueprint in blueprints:
-                    __register_blueprint(flaskapp, blueprint, url_prefix)
-
 
 def create_app():
     from .blueprints.events import setup_case_stream
@@ -109,12 +85,11 @@ def create_app():
         SECURITY_PASSWORD_SALT='something_super_secret_change_in_production',
         SECURITY_POST_LOGIN_VIEW='/',
         WTF_CSRF_ENABLED=False,
-        STATIC_FOLDER=os.path.abspath('server/static'),
         JWT_BLACKLIST_ENABLED=True,
-        JWT_BLACKLIST_TOKEN_CHECKS=['refresh']
+        JWT_BLACKLIST_TOKEN_CHECKS=['refresh'],
+        JWT_TOKEN_LOCATION='headers',
+        SQLALCHEMY_TRACK_MODIFICATIONS=False
     )
-    _app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    _app.config['JWT_TOKEN_LOCATION'] = 'headers'
 
     from server.database import db
     db.init_app(_app)

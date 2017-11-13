@@ -162,7 +162,7 @@ def is_app_action_bound(app_name, action_name):
     return _cache.is_app_action_bound(app_name, action_name)
 
 
-class AppWidgetBlueprint(object):
+class AppBlueprint(object):
     """
     Class to create blueprints for custom server endpoints in apps
     """
@@ -170,8 +170,6 @@ class AppWidgetBlueprint(object):
         self.blueprint = blueprint
         self.rule = rule
 
-AppBlueprint = AppWidgetBlueprint
-WidgetBlueprint = AppWidgetBlueprint
 
 
 class Event(object):

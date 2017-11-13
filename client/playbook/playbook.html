@@ -1,4 +1,5 @@
 <div id="main" class="playbookMain">
+    <!-- Graph editor toolbar -->
     <div id="playbookToolbar" class=btn-toolbar role=toolbar>
         <div class="btn-group" role="group">
             <button id="new-button" type="button" class="btn btn-default" data-toggle="tooltip" title="New Workflow" (click)="newWorkflowModal()">
@@ -34,12 +35,12 @@
                 <span class="fa fa-repeat"></span>
             </button>
         </div>
-        <div class="btn-group" role="group">
+        <!-- <div class="btn-group" role="group">
             <button id="cut-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Cut" [disabled]="!loadedWorkflow"
                 (click)="cut()">
                 <span class="fa fa-cut" style="transform: rotate(-90deg);"></span>
             </button>
-        </div>
+        </div> -->
         <div class="btn-group" role="group">
             <button id="copy-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Copy" [disabled]="!loadedWorkflow"
                 (click)="copy()">
@@ -71,179 +72,119 @@
             </button>
         </div>
         <label id="currentWorkflowText">{{currentPlaybook}} - {{currentWorkflow}}</label>
+    
+    <!-- Graph editor -->
     </div>
-
-    <!-- <div id="top"> -->
-        <!-- <div id="playbookEditorTabs">
-            <ul class="nav nav-tabs" role="tablist">
-                <li id="cyTab" class="active"><a href="#graphEditor" data-toggle="tab" role="tab">Graphical Editor</a></li>
-                <li id="cyJsonTab"><a href="#cyJson" data-toggle="tab" role="tab">JSON</a></li>
-            </ul>
-            <div class="tab-content"> -->
-                <!-- <div id="graphEditor" class="tab-pane fade in active"> -->
-                    <div class="row graphEditorRow">
-                        <div class="col-md-2 graphEditorColumn">
-                            <!-- <ngb-accordion *ngFor="let app of apps" #acc="ngbAccordion" activeIds="ngb-panel-0">
-                                <ngb-panel title="{{app.name}}">
-                                    <ng-template ngbPanelContent>
-                                        <ul>
-                                            <li *ngFor="let action of app.actions">{{action.name}}</li>
-                                        </ul>
-                                    </ng-template>
-                                </ngb-panel>
-                            </ngb-accordion> -->
-
-
-                            <div class="panel-group" id="accordion" [hidden]="!loadedWorkflow">
-                                <div *ngFor="let app of getAppsWithActions()" class="panel panel-default">
-                                    <div class="panel-heading playbook-heading" data-toggle="collapse" [attr.data-target]="'#actionsCollapse' + app.name">
-                                        <h4 class="panel-title">{{app.name}}</h4>
-                                    </div>
-                                    <div id="actionsCollapse{{app.name}}" class="panel-collapse collapse">
-                                        <div class="panel-body">
-                                            <div *ngFor="let actionApi of app.action_apis" class="panel panel-default" dnd-draggable [dragEnabled]="true" 
-                                             [dragData]="{ appName: app.name, actionApi: actionApi }" (dblclick)="handleDoubleClickEvent(app.name, actionApi.name)">
-                                                <div class="panel-body">
-                                                    <span>{{actionApi.name}}</span>
-                                                    <span class="fa fa-bars pull-right"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+        <div class="row graphEditorRow">
+            <!-- Column for app/action display for drag and drop -->
+            <div class="col-md-2 graphEditorColumn">
+                <div class="panel-group" id="accordion" [hidden]="!loadedWorkflow">
+                    <div *ngFor="let app of getAppsWithActions()" class="panel panel-default">
+                        <div class="panel-heading playbook-heading collapsed" data-toggle="collapse" [attr.data-target]="'#actionsCollapse' + app.name"
+                            [title]="app.info ? app.info.description : ''">
+                            <h4 class="panel-title">{{app.name}}</h4>
                         </div>
-
-                        <div class="col-md-6 graphEditorColumn">
-                            <div id="cy" #cy dnd-droppable (onDropSuccess)="handleDropEvent($event)" [hidden]="!loadedWorkflow" tabindex="0"></div>
-                            <div id="cy-instructions" [hidden]="loadedWorkflow">
-                                <p>Instructions:</p>
-                                <p>
-                                    <button class="btn btn-primary" data-toggle="modal" data-target="#workflowsModal">Load Workflow</button>
-                                </p>
-                                <p>
-                                    Use this button to load the workflow into the graph. After loading an initial workflow you may use the Load Workflow button
-                                    on the toolbar.
-                                </p>
-                                <p>
-                                    <b>Drag and drop</b> items from Actions tab into the graph to create a new workflow step.
-                                    <b>Double click</b> also works.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4 graphEditorColumn">
-                            <!-- Editor for AppSteps -->
-                            <div *ngIf="selectedStep" id="parameters">
-                                <h3>Step Parameters</h3>
-                                <div class="row">
-                                    <div class="col-xs-4">
-                                        <label>App:</label>
-                                        <span>{{selectedStep.app}}</span>
-                                    </div>
-                                    <div class="col-xs-4">
-                                        <label>Action:</label>
-                                        <span>{{selectedStep.action}}</span>
-                                    </div>
-                                    <div class="col-xs-4">
-                                        <button [disabled]="selectedStep.uid === loadedWorkflow.start" class="btn btn-primary pull-right"
-                                        (click)="setStartNode(selectedStep.uid)">Set as Start Step</button>
+                        <div id="actionsCollapse{{app.name}}" class="panel-collapse collapse">
+                            <div class="panel-body">
+                                <div *ngFor="let actionApi of app.action_apis" class="panel panel-default actionPanel" dnd-draggable
+                                    [dragEnabled]="true" [dragData]="{ appName: app.name, actionApi: actionApi }"
+                                    (dblclick)="handleDoubleClickEvent(app.name, actionApi.name)" [title]="actionApi.description">
+                                    <div class="panel-body">
+                                        <span>{{actionApi.name}}</span>
+                                        <!-- <i class="fa fa-bars pull-right" aria-hidden="true"></i> -->
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="name">Name<span class="fa fa-asterisk required" title="This field is required."></span></label>
-                                    <input type="text" class="form-control" [(ngModel)]="selectedStep.name" name="name" required>
-                                </div>
-                                <div *ngIf="getDeviceApis(selectedStep.app).length" class="form-group">
-                                    <label for="device_id">Device</label>
-                                    <select class="form-control" name="device_id" [(ngModel)]="selectedStep.device_id">
-                                        <option value=""></option>
-                                        <option *ngFor="let i of relevantDevices" [value]="i.id" [label]="i.name">{{i.name}}</option>
-                                    </select>
-                                </div>
-                                <!-- Inputs -->
-                                <div *ngIf="selectedStep.inputs.length">
-                                    <h4>Inputs</h4>
-                                    <playbook-argument-component *ngFor="let argument of selectedStep.inputs; let id = index" [loadedWorkflow]="loadedWorkflow" 
-                                    [argument]="argument" [parameterApi]="getInputApiArgs(selectedStep.app, selectedStep.action, argument.name)"
-                                    [id]="id"></playbook-argument-component>
-                                </div>
-                                <!-- Triggers -->
-                                <div>
-                                    <h4>Trigger Conditions</h4>
-                                    <playbook-conditions-component [conditions]="selectedStep.triggers" [appApis]="appApis"
-                                    [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedStep.app"></playbook-conditions-component>
-                                </div>
                             </div>
-                            <!-- Editor for NextSteps (edges) -->
-                            <div *ngIf="selectedNextStepParams && selectedNextStepParams.nextStep">
-                                <h3>Next Step Parameters</h3>
-                                <div class="form-group">
-                                    <label for="status">Return Type<span class="fa fa-asterisk required" title="This field is required."></span></label>
-                                    <select class="form-control" [(ngModel)]="selectedNextStepParams.nextStep.status" name="status">
-                                        <option *ngFor="let i of selectedNextStepParams.returnTypes" [value]="i.status" [label]="i.status">{{i.status}}</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="priority">Priority<span class="fa fa-asterisk required" title="This field is required."></span></label>
-                                    <input type="number" max="999" min="1" class="form-control" [(ngModel)]="selectedNextStepParams.nextStep.priority"
-                                     name="priority" required>
-                                </div>
-                                <div>
-                                    <h4>Conditions</h4>
-                                    <playbook-conditions-component [conditions]="selectedNextStepParams.nextStep.conditions" [appApis]="appApis"
-                                    [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedNextStepParams.app"></playbook-conditions-component>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                <!-- </div> -->
-<!-- 
-                <div id="cyJson" class="tab-pane fade">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <textarea id="cy-json-data" [(ngModel)]="cyJsonData"></textarea>
                         </div>
                     </div>
                 </div>
             </div>
-        </div> -->
-    <!-- </div> -->
 
-    <!-- <h4>Execution Results</h4>
-    <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]='workflowResults' [sortType]="'multi'"
-     [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]" [limit]="25">
-        <ngx-datatable-column name="UID" [flexGrow]="1">
-            <ng-template let-row="row" ngx-datatable-cell-template>
-                {{row.step_uid}}
-            </ng-template>
-        </ngx-datatable-column>
-        <ngx-datatable-column name="Name" [flexGrow]="1">
-            <ng-template let-row="row" ngx-datatable-cell-template>
-                {{row.name}}
-            </ng-template>
-        </ngx-datatable-column>
-        <ngx-datatable-column name="Timestamp" [flexGrow]="1">
-            <ng-template let-row="row" ngx-datatable-cell-template>
-                {{row.timestamp}}
-            </ng-template>
-        </ngx-datatable-column>
-        <ngx-datatable-column name="Type" [flexGrow]="1">
-            <ng-template let-row="row" ngx-datatable-cell-template>
-                {{row.type}}
-            </ng-template>
-        </ngx-datatable-column>
-        <ngx-datatable-column name="Input" [sortable]="false" [flexGrow]="2">
-            <ng-template let-row="row" ngx-datatable-cell-template>
-                {{getFriendlyObject(row.input)}}
-            </ng-template>
-        </ngx-datatable-column>
-        <ngx-datatable-column name="Result" [sortable]="false" [flexGrow]="4">
-            <ng-template let-row="row" ngx-datatable-cell-template>
-                {{getFriendlyObject(row.result)}}
-            </ng-template>
-        </ngx-datatable-column>
-    </ngx-datatable> -->
+            <!-- Actual cytoscape graph editor -->
+            <div class="col-md-6 graphEditorColumn">
+                <div id="cy" #cy dnd-droppable (onDropSuccess)="handleDropEvent($event)" [hidden]="!loadedWorkflow" tabindex="0"></div>
+                <div id="cy-instructions" [hidden]="loadedWorkflow">
+                    <p>Instructions:</p>
+                    <p>
+                        <button class="btn btn-primary" data-toggle="modal" data-target="#workflowsModal">Load Workflow</button>
+                    </p>
+                    <p>
+                        Use this button to load the workflow into the graph. After loading an initial workflow you may use the Load Workflow button
+                        on the toolbar.
+                    </p>
+                    <p>
+                        <b>Drag and drop</b> items from Actions tab into the graph to create a new workflow step.
+                        <b>Double click</b> also works.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Parameter editors -->
+            <div class="col-md-4 graphEditorColumn">
+                <!-- Editor for AppSteps -->
+                <div *ngIf="selectedStep" class="parametersEditor">
+                    <h3>Step Parameters</h3>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <label>App:</label>
+                            <span>{{selectedStep.app}}</span>
+                        </div>
+                        <div class="col-xs-4">
+                            <label>Action:</label>
+                            <span>{{selectedStep.action}}</span>
+                        </div>
+                        <div class="col-xs-4">
+                            <button [disabled]="selectedStep.uid === loadedWorkflow.start" class="btn btn-primary pull-right"
+                            (click)="setStartNode(selectedStep.uid)">Set as Start Step</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Name<span class="fa fa-asterisk required" title="This field is required."></span></label>
+                        <input type="text" class="form-control" [(ngModel)]="selectedStep.name" name="name" required>
+                    </div>
+                    <div *ngIf="getDeviceApis(selectedStep.app).length" class="form-group">
+                        <label for="device_id">Device</label>
+                        <select class="form-control" name="device_id" [(ngModel)]="selectedStep.device_id">
+                            <option [ngValue]="0"></option>
+                            <option *ngFor="let i of relevantDevices" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
+                        </select>
+                    </div>
+                    <!-- Inputs -->
+                    <div *ngIf="selectedStep.inputs.length">
+                        <h4>Inputs</h4>
+                        <playbook-argument-component *ngFor="let argument of selectedStep.inputs; let id = index" [loadedWorkflow]="loadedWorkflow" 
+                        [argument]="argument" [parameterApi]="getInputApiArgs(selectedStep.app, selectedStep.action, argument.name)"
+                        [id]="id"></playbook-argument-component>
+                    </div>
+                    <!-- Triggers -->
+                    <div>
+                        <h4>Trigger Conditions</h4>
+                        <playbook-conditions-component [conditions]="selectedStep.triggers" [appApis]="appApis"
+                        [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedStep.app"></playbook-conditions-component>
+                    </div>
+                </div>
+                <!-- Editor for NextSteps (edges) -->
+                <div *ngIf="selectedNextStepParams && selectedNextStepParams.nextStep"  class="parametersEditor">
+                    <h3>Next Step Parameters</h3>
+                    <div class="form-group">
+                        <label for="status">Return Type<span class="fa fa-asterisk required" title="This field is required."></span></label>
+                        <select class="form-control" [(ngModel)]="selectedNextStepParams.nextStep.status" name="status">
+                            <option *ngFor="let i of selectedNextStepParams.returnTypes" [value]="i.status" [label]="i.status">{{i.status}}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="priority">Priority<span class="fa fa-asterisk required" title="This field is required."></span></label>
+                        <input type="number" max="999" min="1" class="form-control" [(ngModel)]="selectedNextStepParams.nextStep.priority"
+                            name="priority" required>
+                    </div>
+                    <div>
+                        <h4>Conditions</h4>
+                        <playbook-conditions-component [conditions]="selectedNextStepParams.nextStep.conditions" [appApis]="appApis"
+                        [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedNextStepParams.app"></playbook-conditions-component>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     <div class="modal fade" id="executionResultsModal" role="dialog" aria-labelledby="executionResultsModalTitle" aria-hidden="true">
         <div class="modal-dialog" role="document">

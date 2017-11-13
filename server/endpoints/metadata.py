@@ -20,60 +20,6 @@ def read_all_possible_subscriptions():
     return __func()
 
 
-def read_all_transforms():
-
-    @jwt_required
-    @roles_accepted_for_resources('playbooks')
-    def __func():
-        transform_api = core.config.config.function_apis['transforms']
-        transforms = {}
-        for transform_name, transform_body in transform_api.items():
-            ret = {}
-            if 'description' in transform_body:
-                ret['description'] = transform_body['description']
-            data_in_param = transform_body['data_in']
-            args = []
-            for arg in (x for x in transform_body['parameters'] if x['name'] != data_in_param):
-                arg_ret = {'name': arg['name'], 'type': arg.get('type', 'object')}
-                if 'description' in arg:
-                    arg_ret['description'] = arg['description']
-                if 'required' in arg:
-                    arg_ret['required'] = arg['required']
-                args.append(arg)
-            ret['args'] = args
-            transforms[transform_name] = ret
-        return {'transforms': transforms}, SUCCESS
-
-    return __func()
-
-
-def read_all_conditions():
-
-    @jwt_required
-    @roles_accepted_for_resources('playbooks')
-    def __func():
-        conditions_api = core.config.config.function_apis['conditions']
-        conditions = {}
-        for condition_name, condition_body in conditions_api.items():
-            ret = {}
-            if 'description' in condition_body:
-                ret['description'] = condition_body['description']
-            data_in_param = condition_body['data_in']
-            args = []
-            for arg in (x for x in condition_body['parameters'] if x['name'] != data_in_param):
-                arg_ret = {'name': arg['name'], 'type': arg.get('type', 'object')}
-                if 'description' in arg:
-                    arg_ret['description'] = arg['description']
-                if 'required' in arg:
-                    arg_ret['required'] = arg['required']
-                args.append(arg)
-            ret['args'] = args
-            conditions[condition_name] = ret
-        return {"conditions": conditions}, SUCCESS
-
-    return __func()
-
-
 def read_all_device_types():
     @jwt_required
     @roles_accepted_for_resources('apps')
@@ -87,16 +33,6 @@ def read_all_device_types():
                     api['app'] = app
                     response.append(api)
         return response, SUCCESS
-
-    return __func()
-
-
-def read_all_widgets():
-
-    @jwt_required
-    @roles_accepted_for_resources('apps')
-    def __func():
-        return {_app: helpers.list_widgets(_app) for _app in helpers.list_apps()}
 
     return __func()
 

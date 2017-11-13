@@ -15,45 +15,6 @@
           type: array
           items:
             $ref: '#/definitions/AvailableSubscriptions'
-/api/transforms:
-  get:
-    tags:
-      - System
-    summary: Read all transforms
-    description: ''
-    operationId: server.endpoints.metadata.read_all_transforms
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          type: object
-          required: [transforms]
-          properties:
-            transforms:
-              description: All the available transforms. Form of '{transform_name -> Action}'
-              type: object
-
-/api/conditions:
-  get:
-    tags:
-      - System
-    summary: Read all conditions
-    description: ''
-    operationId: server.endpoints.metadata.read_all_conditions
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          type: object
-          required: [conditions]
-          properties:
-            filters:
-              description: All the available conditions. Form of '{condition_name -> Action}'
-              type: object
 
 /api/devicetypes:
   get:
@@ -72,21 +33,6 @@
           items:
             $ref: '#/definitions/DeviceType'
 
-/api/widgets:
-  get:
-    tags:
-      - System
-    summary: Read all widgets
-    description: ''
-    operationId: server.endpoints.metadata.read_all_widgets
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          type: object
-          description: All the wigdets for all apps. Form of '{app_name -> [widget_name]}'
 
 /api/client/{filename}:
   get:

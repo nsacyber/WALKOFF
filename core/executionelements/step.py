@@ -13,7 +13,6 @@ from core.decorators import ActionResult
 from core.executionelements.executionelement import ExecutionElement
 from core.helpers import get_app_action_api, InvalidArgument, format_exception_message
 from core.validator import validate_app_action_parameters
-from core.widgetsignals import get_widget_signal
 from core.argument import Argument
 
 logger = logging.getLogger(__name__)
@@ -28,7 +27,7 @@ class Widget(object):
 class Step(ExecutionElement):
     _templatable = True
 
-    def __init__(self, app, action, name='', device='', arguments=None, triggers=None, position=None, widgets=None,
+    def __init__(self, app, action, name='', device_id='', arguments=None, triggers=None, position=None,
                  risk=0, uid=None, templated=False, raw_representation=None):
         """Initializes a new Step object. A Workflow has many steps that it executes.
 
@@ -36,16 +35,14 @@ class Step(ExecutionElement):
             app (str): The name of the app associated with the Step
             action (str): The name of the action associated with a Step
             name (str, optional): The name of the Step object. Defaults to an empty string.
-            device (str, optional): The name of the device associated with the app associated with the Step. Defaults
-                to an empty string.
+            device_id (int, optional): The id of the device associated with the app associated with the Step. Defaults
+                to None.
             arguments ([Argument], optional): A list of Argument objects that are argument parameters to the step
                 execution. Defaults to None.
             triggers (list[Flag], optional): A list of Flag objects for the Step. If a Step should wait for data
                 before continuing, then include these Trigger objects in the Step init. Defaults to None.
             position (dict, optional): A dictionary with the x and y coordinates of the Step object. This is used
                 for UI display purposes. Defaults to None.
-            widgets (list[tuple(str, str)], optional): A list of widget tuples, which holds the app and the
-                corresponding widget. Defaults to None.
             risk (int, optional): The risk associated with the Step. Defaults to 0.
             uid (str, optional): A universally unique identifier for this object.
                 Created from uuid.uuid4().hex in Python
@@ -70,11 +67,9 @@ class Step(ExecutionElement):
         if not self.templated:
             validate_app_action_parameters(self._arguments_api, arguments, self.app, self.action)
         self.arguments = arguments
-        self.device = device if (device is not None and device != 'None') else ''
+        self.device_id = device_id
         self.risk = risk
         self.position = position if position is not None else {}
-        self.widgets = [widget if isinstance(widget, Widget) else Widget(**widget)
-                        for widget in widgets] if widgets is not None else []
 
         self._output = None
         self._raw_representation = raw_representation if raw_representation is not None else {}
@@ -109,7 +104,7 @@ class Step(ExecutionElement):
     def _update_json(self, updated_json):
         self.action = updated_json['action']
         self.app = updated_json['app']
-        self.device = updated_json['device'] if 'device' in updated_json else ''
+        self.device_id = updated_json['device'] if 'device' in updated_json else ''
         self.risk = updated_json['risk'] if 'risk' in updated_json else 0
         arguments = {}
         if 'arguments' in updated_json:
@@ -187,8 +182,6 @@ class Step(ExecutionElement):
             raise
         else:
             self._output = result
-            for widget in self.widgets:
-                get_widget_signal(widget.app, widget.name).send(self, data=json.dumps({"result": result.as_json()}))
             logger.debug('Step {0}-{1} (uid {2}) executed successfully'.format(self.app, self.action, self.uid))
             return result
 

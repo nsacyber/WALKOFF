@@ -66,7 +66,7 @@ class Workflow(ExecutionElement):
             
         """
         arguments = arguments if arguments is not None else []
-        step = Step(name=name, action=action, app=app, device=device, arguments=arguments, risk=risk)
+        step = Step(name=name, action=action, app=app, device_id=device, arguments=arguments, risk=risk)
         self.steps[step.uid] = step
         self.next_steps[step.uid] = []
         self._total_risk += risk
@@ -157,11 +157,11 @@ class Workflow(ExecutionElement):
         yield
 
     def __setup_app_instance(self, instances, step):
-        device_id = (step.app, step.device)
+        device_id = (step.app, step.device_id)
         if device_id not in instances:
-            instances[device_id] = AppInstance.create(step.app, step.device)
+            instances[device_id] = AppInstance.create(step.app, step.device_id)
             data_sent.send(self, callback_name="App Instance Created", object_type="Workflow")
-            logger.debug('Created new app instance: App {0}, device {1}'.format(step.app, step.device))
+            logger.debug('Created new app instance: App {0}, device {1}'.format(step.app, step.device_id))
         return device_id
 
     def send_data_to_step(self, data):
