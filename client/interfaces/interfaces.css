@@ -1,0 +1,17 @@
+#main.interfacesMain {
+	position: absolute;
+	top: 50px;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	overflow: hidden;
+}
+
+#main.interfacesMain iframe {
+	position: absolute;
+	border: none;
+	top:0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
