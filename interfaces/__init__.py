@@ -35,7 +35,7 @@ these callbacks should work on class decorators
 class InterfaceEventDispatch(object):
 
     callback_lookup = {'Workflow Started': WorkflowExecutionStart, 'Workflow Shutdown': WorkflowShutdown}
-    __instance = None # to make this class a singleton
+    __instance = None  # to make this class a singleton
 
     def __new__(cls, *args, **kwargs):
         if cls.__instance is None:
@@ -48,7 +48,7 @@ class InterfaceEventDispatch(object):
                 register_method_name = 'on_{}'.format(callback_name)
 
                 setattr(cls, dispatch_method_name, dispatch_method)
-                callback.connect(dispatch_method)
+                # callback.connect(dispatch_method)
                 setattr(cls, register_method_name, register_method)
             cls.__instance = super(InterfaceEventDispatch, cls).__new__(cls)
         return cls.__instance
