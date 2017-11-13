@@ -39,30 +39,22 @@ class InterfaceEventDispatch(object):
 
     def __new__(cls, *args, **kwargs):
         if cls.__instance is None:
-            for callback_name, callback in cls.callback_lookup.items():
-                dispatch_method = cls._make_dispatch_method(callback_name)
-                register_method = cls._make_register_method(callback_name)
-
-                callback_name = callback_name.replace(' ', '_')
-                dispatch_method_name = '_dispatch_{}_event'.format(callback_name)
-                register_method_name = 'on_{}'.format(callback_name)
-
-                setattr(cls, dispatch_method_name, dispatch_method)
-                # callback.connect(dispatch_method)
-                setattr(cls, register_method_name, register_method)
             cls.__instance = super(InterfaceEventDispatch, cls).__new__(cls)
         return cls.__instance
 
-    @classmethod
-    def _make_dispatch_method(cls, callback_name):
+    def _make_dispatch_method(self, callback_name):
         def dispatch_method(self, sender, **kwargs):
             if sender.uid in self._router and callback_name in self._router[sender.uid]:
                 for func in self._router[sender.uid][callback_name]:
                     func(sender, **kwargs)
         return dispatch_method
 
-    @classmethod
-    def _make_register_method(cls, callback_name):
+    def _make_dispatch_callback(self, dispatch_method_name):
+        def callback(sender, **kwargs):
+            getattr(self, dispatch_method_name)(self, sender, **kwargs)
+        return callback
+
+    def _make_register_method(self, callback_name):
         def on_workflow_started(self, sender_uid):
             def handler(func):
                 if sender_uid not in self._router:
@@ -76,6 +68,20 @@ class InterfaceEventDispatch(object):
 
     def __init__(self):
         self._router = {}  # {uid: {'event': [funcs]}}
+        for callback_name, callback in self.callback_lookup.items():
+            dispatch_method = self._make_dispatch_method(callback_name)
+            register_method = self._make_register_method(callback_name)
+
+            callback_name = callback_name.replace(' ', '_')
+            dispatch_method_name = '_dispatch_{}_event'.format(callback_name)
+            register_method_name = 'on_{}'.format(callback_name)
+
+            setattr(self, dispatch_method_name, dispatch_method)
+            setattr(self, register_method_name, register_method)
+
+            callback_function = self._make_dispatch_callback(dispatch_method_name)
+            callback.connect(callback_function)
+
 
 dispatcher = InterfaceEventDispatch()
 
