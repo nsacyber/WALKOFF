@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 def register_blueprints(flaskapp):
-    from server.blueprints import app as app
+    from server.blueprints import appinterface
     from server.blueprints import events, widgets, workflowresult
-    flaskapp.register_blueprint(app.app_page, url_prefix='/appinterface/<app>')
+    flaskapp.register_blueprint(appinterface.app_interface_page, url_prefix='/interface/<interface>')
     flaskapp.register_blueprint(widgets.widgets_page, url_prefix='/apps/<app>/widgets/<widget>')
     flaskapp.register_blueprint(events.events_page, url_prefix='/events')
     flaskapp.register_blueprint(workflowresult.workflowresults_page, url_prefix='/workflowresults')

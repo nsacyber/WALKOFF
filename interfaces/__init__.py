@@ -4,6 +4,7 @@ import logging
 
 _logger = logging.getLogger(__name__)
 
+
 class AppWidgetBlueprint(object):
     """
     Class to create blueprints for custom server endpoints in apps
@@ -14,7 +15,6 @@ class AppWidgetBlueprint(object):
 
 
 AppBlueprint = AppWidgetBlueprint
-WidgetBlueprint = AppWidgetBlueprint
 
 # wrapper for waiting for step/workflow to complete, waiting for generic event to happen with a UID
 
@@ -30,6 +30,7 @@ def on_app_action(appname, actions='all' or ['list of action names'], device_nam
 
 these callbacks should work on class decorators
 '''
+
 
 class InterfaceEventDispatch(object):
 
@@ -47,7 +48,7 @@ class InterfaceEventDispatch(object):
                 register_method_name = 'on_{}'.format(callback_name)
 
                 setattr(cls, dispatch_method_name, dispatch_method)
-                callback.connect(dispatch_method_name)
+                callback.connect(dispatch_method)
                 setattr(cls, register_method_name, register_method)
             cls.__instance = super(InterfaceEventDispatch, cls).__new__(cls)
         return cls.__instance
@@ -76,17 +77,5 @@ class InterfaceEventDispatch(object):
     def __init__(self):
         self._router = {}  # {uid: {'event': [funcs]}}
 
-
-
-
-
 dispatcher = InterfaceEventDispatch()
 
-
-@data_sent.connect
-def on_walkoff_event(sender **kwargs):
-    dispatch
-    # def handler(func):
-    #
-    #     @wraps(func)
-    #     def wrapper(*args, **kwargs):
