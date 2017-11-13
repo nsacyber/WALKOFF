@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='data.proto',
   package='core',
   syntax='proto2',
-  serialized_pb=_b('\n\ndata.proto\x12\x04\x63ore\"\x81\x03\n\x07Message\x12 \n\x04type\x18\x01 \x01(\x0e\x32\x12.core.Message.Type\x12-\n\x0fworkflow_packet\x18\x02 \x01(\x0b\x32\x14.core.WorkflowPacket\x12\x36\n\x14workflow_packet_data\x18\x03 \x01(\x0b\x32\x18.core.WorkflowPacketData\x12%\n\x0bstep_packet\x18\x04 \x01(\x0b\x32\x10.core.StepPacket\x12.\n\x10step_packet_data\x18\x05 \x01(\x0b\x32\x14.core.StepPacketData\x12+\n\x0egeneral_packet\x18\x06 \x01(\x0b\x32\x13.core.GeneralPacket\"i\n\x04Type\x12\x12\n\x0eWORKFLOWPACKET\x10\x01\x12\x16\n\x12WORKFLOWPACKETDATA\x10\x02\x12\x0e\n\nSTEPPACKET\x10\x03\x12\x12\n\x0eSTEPPACKETDATA\x10\x04\x12\x11\n\rGENERALPACKET\x10\x05\"\xa9\x01\n\x0eWorkflowPacket\x12\x33\n\x06sender\x18\x01 \x01(\x0b\x32#.core.WorkflowPacket.WorkflowSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x1aK\n\x0eWorkflowSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03uid\x18\x02 \x01(\t\x12\x1e\n\x16workflow_execution_uid\x18\x03 \x01(\t\"y\n\x12WorkflowPacketData\x12\x33\n\x06sender\x18\x01 \x01(\x0b\x32#.core.WorkflowPacket.WorkflowSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x03 \x01(\t\"\xb3\x02\n\nStepPacket\x12+\n\x06sender\x18\x01 \x01(\x0b\x32\x1b.core.StepPacket.StepSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x1a\xe0\x01\n\nStepSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03uid\x18\x02 \x01(\t\x12\x15\n\rexecution_uid\x18\x03 \x01(\t\x12\x0b\n\x03\x61pp\x18\x04 \x01(\t\x12\x0e\n\x06\x61\x63tion\x18\x05 \x01(\t\x12\x35\n\x05input\x18\x06 \x03(\x0b\x32&.core.StepPacket.StepSender.InputEntry\x12\x1e\n\x16workflow_execution_uid\x18\x07 \x01(\t\x1a,\n\nInputEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"m\n\x0eStepPacketData\x12+\n\x06sender\x18\x01 \x01(\x0b\x32\x1b.core.StepPacket.StepSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x03 \x01(\t\"\xa4\x01\n\rGeneralPacket\x12\x31\n\x06sender\x18\x01 \x01(\x0b\x32!.core.GeneralPacket.GeneralSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x1aI\n\rGeneralSender\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12\x0b\n\x03\x61pp\x18\x02 \x01(\t\x12\x1e\n\x16workflow_execution_uid\x18\x03 \x01(\t')
+  serialized_pb=_b('\n\ndata.proto\x12\x04\x63ore\"\x81\x03\n\x07Message\x12 \n\x04type\x18\x01 \x01(\x0e\x32\x12.core.Message.Type\x12-\n\x0fworkflow_packet\x18\x02 \x01(\x0b\x32\x14.core.WorkflowPacket\x12\x36\n\x14workflow_packet_data\x18\x03 \x01(\x0b\x32\x18.core.WorkflowPacketData\x12%\n\x0bstep_packet\x18\x04 \x01(\x0b\x32\x10.core.StepPacket\x12.\n\x10step_packet_data\x18\x05 \x01(\x0b\x32\x14.core.StepPacketData\x12+\n\x0egeneral_packet\x18\x06 \x01(\x0b\x32\x13.core.GeneralPacket\"i\n\x04Type\x12\x12\n\x0eWORKFLOWPACKET\x10\x01\x12\x16\n\x12WORKFLOWPACKETDATA\x10\x02\x12\x0e\n\nSTEPPACKET\x10\x03\x12\x12\n\x0eSTEPPACKETDATA\x10\x04\x12\x11\n\rGENERALPACKET\x10\x05\"\xa9\x01\n\x0eWorkflowPacket\x12\x33\n\x06sender\x18\x01 \x01(\x0b\x32#.core.WorkflowPacket.WorkflowSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x1aK\n\x0eWorkflowSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03uid\x18\x02 \x01(\t\x12\x1e\n\x16workflow_execution_uid\x18\x03 \x01(\t\"y\n\x12WorkflowPacketData\x12\x33\n\x06sender\x18\x01 \x01(\x0b\x32#.core.WorkflowPacket.WorkflowSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x03 \x01(\t\"\xd3\x02\n\nStepPacket\x12+\n\x06sender\x18\x01 \x01(\x0b\x32\x1b.core.StepPacket.StepSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x1aQ\n\x0cStepArgument\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\x12\x11\n\treference\x18\x03 \x01(\t\x12\x11\n\tselection\x18\x04 \x01(\t\x1a\xad\x01\n\nStepSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03uid\x18\x02 \x01(\t\x12\x15\n\rexecution_uid\x18\x03 \x01(\t\x12\x0b\n\x03\x61pp\x18\x04 \x01(\t\x12\x0e\n\x06\x61\x63tion\x18\x05 \x01(\t\x12\x30\n\targuments\x18\x06 \x03(\x0b\x32\x1d.core.StepPacket.StepArgument\x12\x1e\n\x16workflow_execution_uid\x18\x07 \x01(\t\"m\n\x0eStepPacketData\x12+\n\x06sender\x18\x01 \x01(\x0b\x32\x1b.core.StepPacket.StepSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x03 \x01(\t\"\xa4\x01\n\rGeneralPacket\x12\x31\n\x06sender\x18\x01 \x01(\x0b\x32!.core.GeneralPacket.GeneralSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x1aI\n\rGeneralSender\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12\x0b\n\x03\x61pp\x18\x02 \x01(\t\x12\x1e\n\x16workflow_execution_uid\x18\x03 \x01(\t')
 )
 
 
@@ -253,23 +253,37 @@ _WORKFLOWPACKETDATA = _descriptor.Descriptor(
 )
 
 
-_STEPPACKET_STEPSENDER_INPUTENTRY = _descriptor.Descriptor(
-  name='InputEntry',
-  full_name='core.StepPacket.StepSender.InputEntry',
+_STEPPACKET_STEPARGUMENT = _descriptor.Descriptor(
+  name='StepArgument',
+  full_name='core.StepPacket.StepArgument',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='core.StepPacket.StepSender.InputEntry.key', index=0,
+      name='name', full_name='core.StepPacket.StepArgument.name', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='value', full_name='core.StepPacket.StepSender.InputEntry.value', index=1,
+      name='value', full_name='core.StepPacket.StepArgument.value', index=1,
       number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='reference', full_name='core.StepPacket.StepArgument.reference', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='selection', full_name='core.StepPacket.StepArgument.selection', index=3,
+      number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -280,14 +294,14 @@ _STEPPACKET_STEPSENDER_INPUTENTRY = _descriptor.Descriptor(
   nested_types=[],
   enum_types=[
   ],
-  options=_descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001')),
+  options=None,
   is_extendable=False,
   syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=967,
-  serialized_end=1011,
+  serialized_start=786,
+  serialized_end=867,
 )
 
 _STEPPACKET_STEPSENDER = _descriptor.Descriptor(
@@ -333,7 +347,7 @@ _STEPPACKET_STEPSENDER = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='input', full_name='core.StepPacket.StepSender.input', index=5,
+      name='arguments', full_name='core.StepPacket.StepSender.arguments', index=5,
       number=6, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -349,7 +363,7 @@ _STEPPACKET_STEPSENDER = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_STEPPACKET_STEPSENDER_INPUTENTRY, ],
+  nested_types=[],
   enum_types=[
   ],
   options=None,
@@ -358,8 +372,8 @@ _STEPPACKET_STEPSENDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=787,
-  serialized_end=1011,
+  serialized_start=870,
+  serialized_end=1043,
 )
 
 _STEPPACKET = _descriptor.Descriptor(
@@ -386,7 +400,7 @@ _STEPPACKET = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_STEPPACKET_STEPSENDER, ],
+  nested_types=[_STEPPACKET_STEPARGUMENT, _STEPPACKET_STEPSENDER, ],
   enum_types=[
   ],
   options=None,
@@ -396,7 +410,7 @@ _STEPPACKET = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=704,
-  serialized_end=1011,
+  serialized_end=1043,
 )
 
 
@@ -440,8 +454,8 @@ _STEPPACKETDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1013,
-  serialized_end=1122,
+  serialized_start=1045,
+  serialized_end=1154,
 )
 
 
@@ -485,8 +499,8 @@ _GENERALPACKET_GENERALSENDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1216,
-  serialized_end=1289,
+  serialized_start=1248,
+  serialized_end=1321,
 )
 
 _GENERALPACKET = _descriptor.Descriptor(
@@ -522,8 +536,8 @@ _GENERALPACKET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1125,
-  serialized_end=1289,
+  serialized_start=1157,
+  serialized_end=1321,
 )
 
 _MESSAGE.fields_by_name['type'].enum_type = _MESSAGE_TYPE
@@ -536,8 +550,8 @@ _MESSAGE_TYPE.containing_type = _MESSAGE
 _WORKFLOWPACKET_WORKFLOWSENDER.containing_type = _WORKFLOWPACKET
 _WORKFLOWPACKET.fields_by_name['sender'].message_type = _WORKFLOWPACKET_WORKFLOWSENDER
 _WORKFLOWPACKETDATA.fields_by_name['sender'].message_type = _WORKFLOWPACKET_WORKFLOWSENDER
-_STEPPACKET_STEPSENDER_INPUTENTRY.containing_type = _STEPPACKET_STEPSENDER
-_STEPPACKET_STEPSENDER.fields_by_name['input'].message_type = _STEPPACKET_STEPSENDER_INPUTENTRY
+_STEPPACKET_STEPARGUMENT.containing_type = _STEPPACKET
+_STEPPACKET_STEPSENDER.fields_by_name['arguments'].message_type = _STEPPACKET_STEPARGUMENT
 _STEPPACKET_STEPSENDER.containing_type = _STEPPACKET
 _STEPPACKET.fields_by_name['sender'].message_type = _STEPPACKET_STEPSENDER
 _STEPPACKETDATA.fields_by_name['sender'].message_type = _STEPPACKET_STEPSENDER
@@ -582,14 +596,14 @@ _sym_db.RegisterMessage(WorkflowPacketData)
 
 StepPacket = _reflection.GeneratedProtocolMessageType('StepPacket', (_message.Message,), dict(
 
-  StepSender = _reflection.GeneratedProtocolMessageType('StepSender', (_message.Message,), dict(
+  StepArgument = _reflection.GeneratedProtocolMessageType('StepArgument', (_message.Message,), dict(
+    DESCRIPTOR = _STEPPACKET_STEPARGUMENT,
+    __module__ = 'data_pb2'
+    # @@protoc_insertion_point(class_scope:core.StepPacket.StepArgument)
+    ))
+  ,
 
-    InputEntry = _reflection.GeneratedProtocolMessageType('InputEntry', (_message.Message,), dict(
-      DESCRIPTOR = _STEPPACKET_STEPSENDER_INPUTENTRY,
-      __module__ = 'data_pb2'
-      # @@protoc_insertion_point(class_scope:core.StepPacket.StepSender.InputEntry)
-      ))
-    ,
+  StepSender = _reflection.GeneratedProtocolMessageType('StepSender', (_message.Message,), dict(
     DESCRIPTOR = _STEPPACKET_STEPSENDER,
     __module__ = 'data_pb2'
     # @@protoc_insertion_point(class_scope:core.StepPacket.StepSender)
@@ -600,8 +614,8 @@ StepPacket = _reflection.GeneratedProtocolMessageType('StepPacket', (_message.Me
   # @@protoc_insertion_point(class_scope:core.StepPacket)
   ))
 _sym_db.RegisterMessage(StepPacket)
+_sym_db.RegisterMessage(StepPacket.StepArgument)
 _sym_db.RegisterMessage(StepPacket.StepSender)
-_sym_db.RegisterMessage(StepPacket.StepSender.InputEntry)
 
 StepPacketData = _reflection.GeneratedProtocolMessageType('StepPacketData', (_message.Message,), dict(
   DESCRIPTOR = _STEPPACKETDATA,
@@ -626,6 +640,4 @@ _sym_db.RegisterMessage(GeneralPacket)
 _sym_db.RegisterMessage(GeneralPacket.GeneralSender)
 
 
-_STEPPACKET_STEPSENDER_INPUTENTRY.has_options = True
-_STEPPACKET_STEPSENDER_INPUTENTRY._options = _descriptor._ParseOptions(descriptor_pb2.MessageOptions(), _b('8\001'))
 # @@protoc_insertion_point(module_scope)

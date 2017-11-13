@@ -10,6 +10,7 @@ from core.executionelements.executionelement import ExecutionElement
 from core.executionelements.step import Step
 from core.executionelements.nextstep import NextStep
 from core.helpers import UnknownAppAction, UnknownApp, InvalidArgument, format_exception_message
+from core.jsonelementreader import JsonElementReader
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ class Workflow(ExecutionElement):
         self._accumulator = {}
         self._execution_uid = 'default'
 
-    def create_step(self, name='', action='', app='', device='', arg_input=None, risk=0):
+    def create_step(self, name='', action='', app='', device='', arguments=None, risk=0):
         """Creates a new Step object and adds it to the Workflow's list of Steps.
         
         Args:
@@ -59,13 +60,13 @@ class Workflow(ExecutionElement):
             app (str, optional): The name of the app associated with the Step. Defaults to an empty string.
             device (str, optional): The name of the device associated with the app associated with the Step. Defaults
                 to an empty string.
-            arg_input (dict, optional): A dictionary of Argument objects that are input to the step execution. Defaults
+            arguments (list[Argument]): A list of Argument objects that are parameters to the step execution. Defaults
                 to None.
             risk (int, optional): The risk associated with the Step. Defaults to 0.
             
         """
-        arg_input = arg_input if arg_input is not None else {}
-        step = Step(name=name, action=action, app=app, device=device, inputs=arg_input, risk=risk)
+        arguments = arguments if arguments is not None else []
+        step = Step(name=name, action=action, app=app, device=device, arguments=arguments, risk=risk)
         self.steps[step.uid] = step
         self.next_steps[step.uid] = []
         self._total_risk += risk
@@ -110,22 +111,22 @@ class Workflow(ExecutionElement):
             logger.warning('Cannot resume workflow {0}. Reason: {1}'.format(self.name, format_exception_message(e)))
             pass
 
-    def execute(self, execution_uid, start=None, start_input=''):
+    def execute(self, execution_uid, start=None, start_arguments=''):
         """Executes a Workflow by executing all Steps in the Workflow list of Step objects.
 
         Args:
             execution_uid (str): The UUID4 hex string uniquely identifying this workflow instance
             start (str, optional): The name of the first Step. Defaults to None.
-            start_input (str, optional): Input into the first Step. Defaults to an empty string.
+            start_arguments (list[Argument]): Argument paramaters into the first Step. Defaults to None.
         """
         self._execution_uid = execution_uid
         logger.info('Executing workflow {0}'.format(self.name))
         data_sent.send(self, callback_name="Workflow Execution Start", object_type="Workflow")
         start = start if start is not None else self.start
-        executor = self.__execute(start, start_input)
+        executor = self.__execute(start, start_arguments)
         next(executor)
 
-    def __execute(self, start, start_input):
+    def __execute(self, start, start_arguments):
         instances = {}
         total_steps = []
         steps = self.__steps(start=start)
@@ -147,8 +148,8 @@ class Workflow(ExecutionElement):
 
             if first:
                 first = False
-                if start_input:
-                    self.__swap_step_input(step, start_input)
+                if start_arguments:
+                    self.__swap_step_arguments(step, start_arguments)
             self.__execute_step(step, instances[device_id])
             total_steps.append(step)
             self._accumulator[step.uid] = step.get_output().result
@@ -168,8 +169,8 @@ class Workflow(ExecutionElement):
 
         Args:
             data (dict): The data to send to the triggers. This dict has two keys: 'data_in' which is the data
-                to be sent to the triggers, and 'inputs', which is an optional parameter to change the inputs to the
-                current Step
+                to be sent to the triggers, and 'arguments', which is an optional parameter to change the arguments to
+                the current Step
         """
         self._executing_step.send_data_to_trigger(data)
 
@@ -201,21 +202,21 @@ class Workflow(ExecutionElement):
             current = next_step_uid
         return current
 
-    def __swap_step_input(self, step, start_input):
-        logger.debug('Swapping input to first step of workflow {0}'.format(self.name))
+    def __swap_step_arguments(self, step, start_arguments):
+        logger.debug('Swapping arguments to first step of workflow {0}'.format(self.name))
         try:
-            step.set_arguments(start_input)
-            data_sent.send(self, callback_name="Workflow Input Validated", object_type="Workflow")
+            step.set_arguments(start_arguments)
+            data_sent.send(self, callback_name="Workflow Arguments Validated", object_type="Workflow")
         except InvalidArgument as e:
-            logger.error('Cannot change input to workflow {0}. '
-                         'Invalid input. Error: {1}'.format(self.name, format_exception_message(e)))
-            data_sent.send(self, callback_name="Workflow Input Invalid", object_type="Workflow")
+            logger.error('Cannot change arguments to workflow {0}. '
+                         'Invalid arguments. Error: {1}'.format(self.name, format_exception_message(e)))
+            data_sent.send(self, callback_name="Workflow Arguments Invalid", object_type="Workflow")
 
     def __execute_step(self, step, instance):
         data = {"app": step.app,
                 "action": step.action,
                 "name": step.name,
-                "input": step.inputs}
+                "arguments": JsonElementReader.read(step.arguments)}
         try:
             step.execute(instance=instance(), accumulator=self._accumulator)
             data['result'] = step.get_output().as_json() if step.get_output() is not None else None

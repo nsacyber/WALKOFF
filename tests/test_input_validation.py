@@ -1,5 +1,6 @@
 import unittest
 
+from core.argument import Argument
 from core.config.config import initialize
 from core.helpers import InvalidArgument
 from core.validator import validate_parameter, validate_parameters, convert_json
@@ -182,89 +183,94 @@ class TestInputValidation(unittest.TestCase):
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
             {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725}]
-        inputs = {'name1': 'test', 'name2': '5', 'name3': '10.2378'}
+        arguments = {'name1': Argument('name1', value='test'),
+                     'name2': Argument('name2', value='5'),
+                     'name3': Argument('name3', value='10.2378')}
         expected = {'name1': 'test', 'name2': 5, 'name3': 10.2378}
-        self.assertDictEqual(validate_parameters(parameter_apis, inputs, self.message), expected)
+        self.assertDictEqual(validate_parameters(parameter_apis, arguments, self.message), expected)
 
     def test_validate_parameters_invalid_no_defaults(self):
         parameter_apis = [
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
             {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725}]
-        inputs = {'name1': 'test', 'name2': '5', 'name3': '-11.2378'}
+        arguments = {'name1': Argument('name1', value='test'),
+                     'name2': Argument('name2', value='5'),
+                     'name3': Argument('name3', value='-11.2378')}
         with self.assertRaises(InvalidArgument):
-            validate_parameters(parameter_apis, inputs, self.message)
+            validate_parameters(parameter_apis, arguments, self.message)
 
     def test_validate_parameters_missing_with_valid_default(self):
         parameter_apis = [
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
             {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725, 'default': 10.25}]
-        inputs = {'name1': 'test', 'name2': '5'}
+        arguments = {'name1': Argument('name1', value='test'),
+                     'name2': Argument('name2', value='5')}
         expected = {'name1': 'test', 'name2': 5, 'name3': 10.25}
-        self.assertDictEqual(validate_parameters(parameter_apis, inputs, self.message), expected)
+        self.assertDictEqual(validate_parameters(parameter_apis, arguments, self.message), expected)
 
     def test_validate_parameters_missing_with_invalid_default(self):
         parameter_apis = [
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
             {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725, 'default': 'abc'}]
-        inputs = {'name1': 'test', 'name2': '5'}
+        arguments = {'name1': Argument('name1', value='test'),
+                     'name2': Argument('name2', value='5')}
         expected = {'name1': 'test', 'name2': 5, 'name3': 'abc'}
-        self.assertDictEqual(validate_parameters(parameter_apis, inputs, self.message), expected)
+        self.assertDictEqual(validate_parameters(parameter_apis, arguments, self.message), expected)
 
     def test_validate_parameters_missing_without_default(self):
         parameter_apis = [
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
             {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725}]
-        inputs = {'name1': 'test', 'name2': '5'}
+        arguments = {'name1': Argument('name1', value='test'),
+                     'name2': Argument('name2', value='5')}
         expected = {'name1': 'test', 'name2': 5, 'name3': None}
-        self.assertAlmostEqual(validate_parameters(parameter_apis, inputs, self.message), expected)
+        self.assertAlmostEqual(validate_parameters(parameter_apis, arguments, self.message), expected)
 
     def test_validate_parameters_missing_required_without_default(self):
         parameter_apis = [
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
             {'name': 'name3', 'type': 'number', 'required': True, 'minimum': -10.5, 'maximum': 30.725}]
-        inputs = {'name1': 'test', 'name2': '5'}
+        arguments = {'name1': Argument('name1', value='test'),
+                     'name2': Argument('name2', value='5')}
         with self.assertRaises(InvalidArgument):
-            validate_parameters(parameter_apis, inputs, self.message)
+            validate_parameters(parameter_apis, arguments, self.message)
 
     def test_validate_parameters_too_many_inputs(self):
         parameter_apis = [
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25}]
-        inputs = {'name1': 'test', 'name2': '5', 'name3': '-11.2378'}
+        arguments = {'name1': Argument('name1', value='test'),
+                     'name2': Argument('name2', value='5'),
+                     'name3': Argument('name3', value='-11.2378')}
         with self.assertRaises(InvalidArgument):
-            validate_parameters(parameter_apis, inputs, self.message)
+            validate_parameters(parameter_apis, arguments, self.message)
 
     def test_validate_parameters_skip_step_references(self):
         parameter_apis = [
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
             {'name': 'name3', 'type': 'number', 'required': True, 'minimum': -10.5, 'maximum': 30.725}]
-        inputs = {'name1': 'test', 'name2': '5', 'name3': '@step1'}
-        expected = {'name1': 'test', 'name2': 5, 'name3': '@step1'}
-        self.assertDictEqual(validate_parameters(parameter_apis, inputs, self.message), expected)
+        arguments = {'name1': Argument('name1', value='test'),
+                     'name2': Argument('name2', value='5'),
+                     'name3': Argument('name3', reference='step1')}
+        expected = {'name1': 'test', 'name2': 5}
+        self.assertDictEqual(validate_parameters(parameter_apis, arguments, self.message), expected)
 
     def test_validate_parameters_skip_step_references_inputs_non_string(self):
         parameter_apis = [
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
             {'name': 'name3', 'type': 'number', 'required': True, 'minimum': -10.5, 'maximum': 30.725}]
-        inputs = {'name1': 'test', 'name2': 5, 'name3': '@step1'}
-        expected = {'name1': 'test', 'name2': 5, 'name3': '@step1'}
-        self.assertDictEqual(validate_parameters(parameter_apis, inputs, self.message), expected)
-
-    def test_validate_parameters_escaped_string(self):
-        parameter_apis = [
-            {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3', '@test']},
-            {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
-            {'name': 'name3', 'type': 'number', 'required': True, 'minimum': -10.5, 'maximum': 30.725}]
-        inputs = {'name1': '\@test', 'name2': '5', 'name3': '3'}
-        expected = {'name1': '@test', 'name2': 5, 'name3': 3}
-        self.assertDictEqual(validate_parameters(parameter_apis, inputs, self.message), expected)
+        arguments = {'name1': Argument('name1', value='test'),
+                     'name2': Argument('name2', value=5),
+                     'name3': Argument('name3', reference='step1')}
+        expected = {'name1': 'test', 'name2': 5}
+        self.assertDictEqual(validate_parameters(parameter_apis, arguments, self.message), expected)
 
     def test_convert_json(self):
         parameter_api = {

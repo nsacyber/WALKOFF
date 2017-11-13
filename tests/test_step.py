@@ -8,8 +8,6 @@ import core.config.paths
 from core.case import callbacks
 from core.decorators import ActionResult
 from core.executionelements.condition import Condition
-from core.helpers import (UnknownApp, UnknownAppAction, InvalidArgument, import_all_conditions,
-                          import_all_transforms)
 from core.helpers import UnknownApp, UnknownAppAction, InvalidArgument
 from core.appinstance import AppInstance
 from core.executionelements.step import Step
@@ -32,11 +30,9 @@ class TestStep(unittest.TestCase):
         self.assertEqual(elem.action, action)
         self.assertEqual(elem.app, app)
         self.assertEqual(elem.device, device)
+        arguments = {arg.name: arg for arg in arguments}
         if arguments:
-            self.assertEqual(len(elem.arguments), len(arguments))
-            for arg_name, arg in elem.arguments.items():
-                self.assertIn(arg_name, arguments)
-                self.assertEqual(arg, arguments[arg_name])
+            self.assertDictEqual(elem.arguments, arguments)
         self.assertDictEqual({key: argument for key, argument in elem.arguments.items()}, arguments)
         self.assertEqual(elem.risk, risk)
         widgets = widgets if widgets is not None else []
@@ -115,26 +111,26 @@ class TestStep(unittest.TestCase):
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', 'test', {})
 
     def test_init_with_arguments_no_conversion(self):
-        step = Step('HelloWorld', 'returnPlusOne', arguments=[{'name': 'number', 'value': -5.6}])
+        step = Step('HelloWorld', 'returnPlusOne', arguments=[Argument('number', value=-5.6)])
         self.__compare_init(step, '', 'returnPlusOne', 'HelloWorld', '',
-                            arguments={'number': Argument('number', value=-5.6)})
+                            arguments=[Argument('number', value=-5.6)])
 
     def test_init_with_arguments_with_conversion(self):
-        step = Step('HelloWorld', 'returnPlusOne', arguments=[{'name': 'number', 'value': '-5.6'}])
+        step = Step('HelloWorld', 'returnPlusOne', arguments=[Argument('number', value='-5.6')])
         self.__compare_init(step, '', 'returnPlusOne', 'HelloWorld', '',
-                            arguments={'number': Argument('number', value='-5.6')})
+                            arguments=[Argument('number', value='-5.6')])
 
     def test_init_with_invalid_argument_name(self):
         with self.assertRaises(InvalidArgument):
-            Step('HelloWorld', 'returnPlusOne', arguments=[{'name': 'invalid', 'value': '-5.6'}])
+            Step('HelloWorld', 'returnPlusOne', arguments=[Argument('invalid', value='-5.6')])
 
     def test_init_with_invalid_argument_type(self):
         with self.assertRaises(InvalidArgument):
-            Step('HelloWorld', 'returnPlusOne', arguments=[{'name': 'number', 'value': 'invalid'}])
+            Step('HelloWorld', 'returnPlusOne', arguments=[Argument('number', value='invalid')])
 
     def test_init_with_flags(self):
-        triggers = [Condition('HelloWorld', action='regMatch', arguments=[{'name': 'regex', 'value': '(.*)'}]),
-                    Condition('HelloWorld', action='regMatch', arguments=[{'name': 'regex', 'value': 'a'}])]
+        triggers = [Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='(.*)')]),
+                    Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='a')])]
         step = Step('HelloWorld', 'helloWorld', triggers=triggers)
         self.__compare_init(step, '', 'helloWorld', 'HelloWorld', '', {}, triggers=['regMatch', 'regMatch'])
 
@@ -159,8 +155,9 @@ class TestStep(unittest.TestCase):
 
     def test_execute_with_args(self):
         step = Step(app='HelloWorld', action='Add Three',
-                    arguments=[{'name': 'num1', 'value': '-5.6'}, {'name': 'num2', 'value': '4.3'},
-                               {'name': 'num3', 'value': '10.2'}])
+                    arguments=[Argument('num1', value='-5.6'),
+                               Argument('num2', value='4.3'),
+                               Argument('num3', value='10.2')])
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         result = step.execute(instance.instance, {})
         self.assertAlmostEqual(result.result, 8.9)
@@ -169,8 +166,9 @@ class TestStep(unittest.TestCase):
 
     def test_execute_sends_callbacks(self):
         step = Step(app='HelloWorld', action='Add Three',
-                    arguments=[{'name': 'num1', 'value': '-5.6'}, {'name': 'num2', 'value': '4.3'},
-                               {'name': 'num3', 'value': '10.2'}])
+                    arguments=[Argument('num1', value='-5.6'),
+                               Argument('num2', value='4.3'),
+                               Argument('num3', value='10.2')])
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
 
         result = {'started_triggered': False, 'result_triggered': False}
@@ -200,8 +198,9 @@ class TestStep(unittest.TestCase):
 
     def test_execute_with_accumulator_with_conversion(self):
         step = Step(app='HelloWorld', action='Add Three',
-                    arguments=[{'name': 'num1', 'reference': '1'}, {'name': 'num2', 'reference': 'step2'},
-                               {'name': 'num3', 'value': '10.2'}])
+                    arguments=[Argument('num1', reference='1'),
+                               Argument('num2', reference='step2'),
+                               Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'step2': '4.3'}
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         result = step.execute(instance.instance, accumulator)
@@ -211,8 +210,9 @@ class TestStep(unittest.TestCase):
 
     def test_execute_with_accumulator_with_extra_steps(self):
         step = Step(app='HelloWorld', action='Add Three',
-                    arguments=[{'name': 'num1', 'reference': '1'}, {'name': 'num2', 'reference': 'step2'},
-                               {'name': 'num3', 'value': '10.2'}])
+                    arguments=[Argument('num1', reference='1'),
+                               Argument('num2', reference='step2'),
+                               Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'step2': '4.3', '3': '45'}
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         result = step.execute(instance.instance, accumulator)
@@ -222,8 +222,9 @@ class TestStep(unittest.TestCase):
 
     def test_execute_with_accumulator_missing_step(self):
         step = Step(app='HelloWorld', action='Add Three',
-                    arguments=[{'name': 'num1', 'reference': '1'}, {'name': 'num2', 'reference': 'step2'},
-                               {'name': 'num3', 'value': '10.2'}])
+                    arguments=[Argument('num1', reference='1'),
+                               Argument('num2', reference='step2'),
+                               Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'missing': '4.3', '3': '45'}
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         with self.assertRaises(InvalidArgument):
@@ -231,8 +232,9 @@ class TestStep(unittest.TestCase):
 
     def test_execute_with_accumulator_missing_step_callbacks(self):
         step = Step(app='HelloWorld', action='Add Three',
-                    arguments=[{'name': 'num1', 'reference': '1'}, {'name': 'num2', 'reference': 'step2'},
-                               {'name': 'num3', 'value': '10.2'}])
+                    arguments=[Argument('num1', reference='1'),
+                               Argument('num2', reference='step2'),
+                               Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'missing': '4.3', '3': '45'}
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
 
@@ -259,13 +261,10 @@ class TestStep(unittest.TestCase):
 
     def test_execute_with_complex_args(self):
         step = Step(app='HelloWorld', action='Json Sample',
-                    arguments={
-                        'json_in': [{'name': 'a', 'value': '-5.6'}, {'name': 'b', 'value': {'a': '4.3', 'b': 5.3}},
-                                    {'name': 'c', 'value': ['1', '2', '3']}, {'name': 'd', 'value': [{'a': '', 'b': 3},
-                                                                                                     {'a': '',
-                                                                                                      'b': -1.5},
-                                                                                                     {'a': '',
-                                                                                                      'b': -0.5}]}]})
+                    arguments=[
+                        Argument('json_in', value={'a': '-5.6', 'b': {'a': '4.3', 'b': 5.3}, 'c': ['1', '2', '3'],
+                                                   'd': [{'a': '', 'b': 3}, {'a': '', 'b': -1.5},
+                                                         {'a': '', 'b': -0.5}]})])
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         result = step.execute(instance.instance, {})
         self.assertAlmostEqual(result.result, 11.0)
@@ -302,7 +301,7 @@ class TestStep(unittest.TestCase):
         self.assertTrue(result['started_triggered'])
 
     def test_execute_global_action(self):
-        step = Step(app='HelloWorld', action='global2', arguments=[{'name': 'arg1', 'value': 'something'}])
+        step = Step(app='HelloWorld', action='global2', arguments=[Argument('arg1', value='something')])
         instance = AppInstance.create(app_name='HelloWorld', device_name='')
         result = step.execute(instance.instance, {})
         self.assertAlmostEqual(result.result, 'something')
@@ -310,7 +309,7 @@ class TestStep(unittest.TestCase):
         self.assertEqual(step._output, result)
 
     def test_execute_event(self):
-        step = Step(app='HelloWorld', action='Sample Event', arguments=[{'name': 'arg1', 'value': 1}])
+        step = Step(app='HelloWorld', action='Sample Event', arguments=[Argument('arg1', value=1)])
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
 
         import time
@@ -328,12 +327,13 @@ class TestStep(unittest.TestCase):
         end = time.time()
         thread.join()
         self.assertEqual(result, ActionResult(4, 'Success'))
-        self.assertGreater((end-start), 0.1)
+        self.assertGreater((end - start), 0.1)
 
     def test_set_args_valid(self):
         step = Step(app='HelloWorld', action='Add Three',
-                    arguments=[{'name': 'num1', 'value': '-5.6'}, {'name': 'num2', 'value': '4.3'},
-                               {'name': 'num3', 'value': '10.2'}])
+                    arguments=[Argument('num1', value='-5.6'),
+                               Argument('num2', value='4.3'),
+                               Argument('num3', value='10.2')])
         arguments = [Argument('num1', value='-5.62'), Argument('num2', value='5'), Argument('num3', value='42.42')]
         step.set_arguments(arguments)
 
@@ -347,22 +347,24 @@ class TestStep(unittest.TestCase):
 
     def test_set_args_invalid_name(self):
         step = Step(app='HelloWorld', action='Add Three',
-                    arguments=[{'name': 'num1', 'value': '-5.6'}, {'name': 'num2', 'value': '4.3'},
-                               {'name': 'num3', 'value': '10.2'}])
+                    arguments=[Argument('num1', value='-5.6'),
+                               Argument('num2', value='4.3'),
+                               Argument('num3', value='10.2')])
         with self.assertRaises(InvalidArgument):
             step.set_arguments(
                 [Argument('num1', value='-5.62'), Argument('invalid', value='5'), Argument('num3', value='42.42')])
 
     def test_set_args_invalid_format(self):
         step = Step(app='HelloWorld', action='Add Three',
-                    arguments=[{'name': 'num1', 'value': '-5.6'}, {'name': 'num2', 'value': '4.3'},
-                               {'name': 'num3', 'value': '10.2'}])
+                    arguments=[Argument('num1', value='-5.6'),
+                               Argument('num2', value='4.3'),
+                               Argument('num3', value='10.2')])
         with self.assertRaises(InvalidArgument):
             step.set_arguments(
                 [Argument('num1', value='-5.62'), Argument('num2', value='5'), Argument('num3', value='invalid')])
 
     def test_execute_with_triggers(self):
-        triggers = [Condition('HelloWorld', action='regMatch', arguments=[{'name': 'regex', 'value': 'aaa'}])]
+        triggers = [Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='aaa')])]
         step = Step(app='HelloWorld', action='helloWorld', triggers=triggers)
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         step.send_data_to_trigger({"data_in": {"data": 'aaa'}})
@@ -378,7 +380,7 @@ class TestStep(unittest.TestCase):
         self.assertTrue(result['triggered'])
 
     def test_execute_multiple_triggers(self):
-        triggers = [Condition('HelloWorld', action='regMatch', arguments=[{'name': 'regex', 'value': 'aaa'}])]
+        triggers = [Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='aaa')])]
         step = Step(app='HelloWorld', action='helloWorld', triggers=triggers)
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         step.send_data_to_trigger({"data_in": {"data": 'a'}})

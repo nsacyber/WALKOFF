@@ -38,8 +38,8 @@ class Step(ExecutionElement):
             name (str, optional): The name of the Step object. Defaults to an empty string.
             device (str, optional): The name of the device associated with the app associated with the Step. Defaults
                 to an empty string.
-            arguments ([Argument], optional): A list of Argument objects that are input to the step execution. Defaults
-                to None.
+            arguments ([Argument], optional): A list of Argument objects that are argument parameters to the step
+                execution. Defaults to None.
             triggers (list[Flag], optional): A list of Flag objects for the Step. If a Step should wait for data
                 before continuing, then include these Trigger objects in the Step init. Defaults to None.
             position (dict, optional): A dictionary with the x and y coordinates of the Step object. This is used
@@ -60,15 +60,15 @@ class Step(ExecutionElement):
         self.name = name
         self.app = app
         self.action = action
-        self._run, self._input_api = get_app_action_api(self.app, self.action)
+        self._run, self._arguments_api = get_app_action_api(self.app, self.action)
         self._action_executable = get_app_action(self.app, self._run)
 
-        arguments = [Argument(**json_in) for json_in in arguments] if arguments is not None else []
-        arguments = {argument.name: argument for argument in arguments}
+        # arguments = [Argument(**json_in) for json_in in arguments] if arguments is not None else []
+        arguments = {argument.name: argument for argument in arguments} if arguments is not None else {}
 
         self.templated = templated
         if not self.templated:
-            validate_app_action_parameters(self._input_api, arguments, self.app, self.action)
+            validate_app_action_parameters(self._arguments_api, arguments, self.app, self.action)
         self.arguments = arguments
         self.device = device if (device is not None and device != 'None') else ''
         self.risk = risk
@@ -101,8 +101,8 @@ class Step(ExecutionElement):
 
         Args:
             data (dict): The data to send to the triggers. This dict has two keys: 'data_in' which is the data
-                to be sent to the triggers, and 'inputs', which is an optional parameter to change the inputs to the
-                current Step
+                to be sent to the triggers, and 'arguments', which is an optional parameter to change the arguments
+                to the current Step
         """
         self._incoming_data.set(data)
 
@@ -113,14 +113,14 @@ class Step(ExecutionElement):
         self.risk = updated_json['risk'] if 'risk' in updated_json else 0
         arguments = {}
         if 'arguments' in updated_json:
-            for argument_json in updated_json['arguments'].values():
+            for argument_json in updated_json['arguments']:
                 argument = Argument(**argument_json)
                 arguments[argument.name] = argument
         if arguments is not None:
             if not self.templated:
-                validate_app_action_parameters(self._input_api, arguments, self.app, self.action)
+                validate_app_action_parameters(self._arguments_api, arguments, self.app, self.action)
         else:
-            validate_app_action_parameters(self._input_api, [], self.app, self.action)
+            validate_app_action_parameters(self._arguments_api, [], self.app, self.action)
         self.arguments = arguments
 
     @contextdecorator.context
@@ -143,7 +143,7 @@ class Step(ExecutionElement):
             new_arguments ([Argument]): The new Arguments for the Step object.
         """
         new_arguments = {arg.name: arg for arg in new_arguments}
-        validate_app_action_parameters(self._input_api, new_arguments, self.app, self.action)
+        validate_app_action_parameters(self._arguments_api, new_arguments, self.app, self.action)
         self.arguments = new_arguments
 
     def execute(self, instance, accumulator):
@@ -165,7 +165,7 @@ class Step(ExecutionElement):
             self._wait_for_trigger(accumulator)
 
         try:
-            args = validate_app_action_parameters(self._input_api, self.arguments, self.app, self.action,
+            args = validate_app_action_parameters(self._arguments_api, self.arguments, self.app, self.action,
                                                   accumulator=accumulator)
             if is_app_action_bound(self.app, self._run):
                 result = self._action_executable(instance, **args)
@@ -178,7 +178,7 @@ class Step(ExecutionElement):
             formatted_error = format_exception_message(e)
             logger.error('Error calling step {0}. Error: {1}'.format(self.name, formatted_error))
             data_sent.send(self, callback_name="Step Argument Invalid", object_type="Step")
-            self._output = ActionResult('error: {0}'.format(formatted_error), 'InvalidInput')
+            self._output = ActionResult('error: {0}'.format(formatted_error), 'InvalidArguments')
             raise
         except Exception as e:
             formatted_error = format_exception_message(e)

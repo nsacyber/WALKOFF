@@ -41,13 +41,20 @@ message WorkflowPacketData {
 
 message StepPacket {
 
+    message StepArgument {
+        optional string name = 1;
+        optional string value = 2;
+        optional string reference = 3;
+        optional string selection = 4;
+    }
+
     message StepSender {
         optional string name = 1;
         optional string uid = 2;
         optional string execution_uid = 3;
         optional string app = 4;
         optional string action = 5;
-        map<string, string> input = 6;
+        repeated StepArgument arguments = 6;
         optional string workflow_execution_uid = 7;
     }
 

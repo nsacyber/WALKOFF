@@ -8,7 +8,7 @@
                     "conditions": [
                         {
                             "action": "regMatch",
-                            "app": "Utilities",
+                            "app": "HelloWorld",
                             "arguments": [
                                 {
                                     "name": "regex",
@@ -28,7 +28,7 @@
                     "conditions": [
                         {
                             "action": "regMatch",
-                            "app": "Utilities",
+                            "app": "HelloWorld",
                             "arguments": [
                                 {
                                     "name": "regex",

@@ -162,13 +162,13 @@ class MultiprocessedExecutor(object):
         self.manager = None
         self.receiver = None
 
-    def execute_workflow(self, workflow, start=None, start_input=None):
+    def execute_workflow(self, workflow, start=None, start_arguments=None):
         """Executes a workflow.
 
         Args:
             workflow (Workflow): The Workflow to be executed.
             start (str, optional): The name of the first, or starting step. Defaults to None.
-            start_input (dict, optional): The input to the starting step of the workflow. Defaults to None.
+            start_arguments (dict, optional): The arguments to the starting step of the workflow. Defaults to None.
 
         Returns:
             The execution UID of the Workflow.
@@ -187,13 +187,13 @@ class MultiprocessedExecutor(object):
         workflow_json = workflow.read()
         if start:
             workflow_json['start'] = start
-        if start_input:
-            workflow_json['start_input'] = start_input
+        if start_arguments:
+            workflow_json['start_arguments'] = start_arguments
         workflow_json['execution_uid'] = uid
         self.manager.add_workflow(workflow_json)
 
         callbacks.SchedulerJobExecuted.send(self)
-        # TODO: Find some way to catch a validation error. Maybe pre-validate the input in the controller?
+        # TODO: Find some way to catch a validation error. Maybe pre-validate the argument in the controller?
         return uid
 
     def pause_workflow(self, execution_uid):
@@ -248,14 +248,14 @@ class MultiprocessedExecutor(object):
         except KeyError:
             return 0
 
-    def send_data_to_trigger(self, data_in, workflow_uids, inputs=None):
+    def send_data_to_trigger(self, data_in, workflow_uids, arguments=None):
         """Sends the data_in to the workflows specified in workflow_uids.
 
         Args:
             data_in (dict): Data to be used to match against the triggers for a Step awaiting data.
             workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
-            inputs (dict, optional): An optional dict of inputs to update for a Step awaiting data for a trigger.
+            arguments (list[Argument]): An optional list of Arguments to update for a Step awaiting data for a trigger.
                 Defaults to None.
         """
-        inputs = inputs if inputs is not None else {}
-        self.manager.send_data_to_trigger(data_in, workflow_uids, inputs)
+        arguments = arguments if arguments is not None else []
+        self.manager.send_data_to_trigger(data_in, workflow_uids, arguments)

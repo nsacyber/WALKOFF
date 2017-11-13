@@ -66,7 +66,7 @@ class TestLoadWorkflow(unittest.TestCase):
 
         transform = transforms[0]
         self.assertEqual(transform.action, 'length')
-        self.assertEqual(transform.args, {})
+        self.assertEqual(transform.arguments, {})
 
     def test_load_workflow_invalid_app(self):
         original_workflows = self.c.get_all_workflows()

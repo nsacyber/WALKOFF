@@ -342,7 +342,7 @@ def validate_parameters(api, inputs, message_prefix, accumulator=None):
     for param_name, param_api in api_dict.items():
         if param_name in inputs:
             arg_val = inputs[param_name].get_value(accumulator)
-            if accumulator or not inputs[param_name].is_reference:
+            if accumulator or not inputs[param_name].is_ref():
                 converted[param_name] = validate_parameter(arg_val, param_api, message_prefix)
         elif 'default' in param_api:
             try:
@@ -380,8 +380,8 @@ def validate_condition_parameters(api, inputs, condition, accumulator=None):
     return validate_parameters(api, inputs, 'condition {0}'.format(condition), accumulator)
 
 
-def validate_transform_parameters(api, inputs, transform):
-    return validate_parameters(api, inputs, 'transform {0}'.format(transform))
+def validate_transform_parameters(api, inputs, transform, accumulator=None):
+    return validate_parameters(api, inputs, 'transform {0}'.format(transform), accumulator)
 
 
 def validate_device_field(field_api, value, message_prefix):

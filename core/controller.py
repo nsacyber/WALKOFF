@@ -215,21 +215,21 @@ class Controller(object):
         """
         self.playbook_store.update_playbook_name(old_playbook, new_playbook)
 
-    def execute_workflow(self, playbook_name, workflow_name, start=None, start_input=None):
+    def execute_workflow(self, playbook_name, workflow_name, start=None, start_arguments=None):
         """Executes a workflow.
 
         Args:
             playbook_name (str): Playbook name under which the workflow is located.
             workflow_name (str): Workflow to execute.
             start (str, optional): The name of the first, or starting step. Defaults to None.
-            start_input (dict, optional): The input to the starting step of the workflow. Defaults to None.
+            start_arguments (list[Argument JSON]): The input to the starting step of the workflow. Defaults to None.
 
         Returns:
             The execution UID if successful, None otherwise.
         """
         if self.playbook_store.is_workflow_registered(playbook_name, workflow_name):
             workflow = self.playbook_store.get_workflow(playbook_name, workflow_name)
-            return self.executor.execute_workflow(workflow, start, start_input)
+            return self.executor.execute_workflow(workflow, start, start_arguments)
         else:
             logger.error('Attempted to execute playbook which does not exist in controller')
             return None, 'Attempted to execute playbook which does not exist in controller'

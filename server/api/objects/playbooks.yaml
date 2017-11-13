@@ -144,7 +144,7 @@ Step:
       type: number
       default: 0
       example: 20
-    inputs:
+    arguments:
       description: The input arguments to the action
       type: array
       items:
@@ -212,7 +212,7 @@ DisplayStep:
       type: number
       default: 0
       example: 20
-    inputs:
+    arguments:
       description: The input arguments to the action
       type: array
       items:
@@ -293,7 +293,7 @@ Condition:
       description: The action encapsulated by this condition
       type: string
       example: regMatch
-    args:
+    arguments:
       description: The inputs to the condition
       type: array
       items:

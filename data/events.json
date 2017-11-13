@@ -15,15 +15,15 @@
     "App Instance Created",
     "Next Step Found",
     "Workflow Shutdown",
-    "Workflow Argument Validated",
-    "Workflow Argument Invalid",
+    "Workflow Arguments Validated",
+    "Workflow Arguments Invalid",
     "Workflow Paused",
     "Workflow Resumed"
   ],
   "step": [
     "Function Execution Success",
     "Step Started",
-    "Argument Invalid",
+    "Arguments Invalid",
     "Step Execution Success",
     "Step Execution Error",
     "Trigger Step Awaiting Data",

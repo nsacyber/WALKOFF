@@ -3,7 +3,8 @@ import uuid
 
 from core.executionelements.transform import Transform
 from core.executionelements.condition import Condition
-from core.helpers import import_all_transforms, import_all_conditions, InvalidArgument
+from core.argument import Argument
+from core.helpers import InvalidArgument
 from tests.config import test_apps_path
 import core.config.config
 import apps
@@ -20,13 +21,15 @@ class TestCondition(unittest.TestCase):
     def tearDownClass(cls):
         apps.clear_cache()
 
-    def __compare_init(self, condition, app, action, transforms, arguments, uid=None):
+    def __compare_init(self, condition, app, action, transforms, arguments=None, uid=None):
         self.assertEqual(condition.app, app)
         self.assertEqual(condition.action, action)
         self.assertEqual(len(condition.transforms), len(transforms))
         for actual_transform, expected_transform in zip(condition.transforms, transforms):
             self.assertDictEqual(actual_transform.read(), expected_transform.read())
-        self.assertDictEqual(condition.arguments, arguments)
+        arguments = {arg.name: arg for arg in arguments}
+        if arguments:
+            self.assertDictEqual(condition.arguments, arguments)
         if uid is None:
             self.assertIsNotNone(condition.uid)
         else:
@@ -42,27 +45,27 @@ class TestCondition(unittest.TestCase):
         self.__compare_init(condition, 'HelloWorld', 'Top Condition', [], {}, uid=uid)
 
     def test_init_with_arguments_with_conversion(self):
-        condition = Condition('HelloWorld', action='mod1_flag2', arguments={'arg1': '3'})
-        self.__compare_init(condition , 'HelloWorld', 'mod1_flag2', [], {'arg1': 3})
+        condition = Condition('HelloWorld', action='mod1_flag2', arguments=[Argument('arg1', value='3')])
+        self.__compare_init(condition , 'HelloWorld', 'mod1_flag2', [], [Argument('arg1', value='3')])
 
     def test_init_with_arguments_no_conversion(self):
-        condition = Condition('HelloWorld', action='mod1_flag2', arguments={'arg1': 3})
-        self.__compare_init(condition , 'HelloWorld', 'mod1_flag2', [], {'arg1': 3})
+        condition = Condition('HelloWorld', action='mod1_flag2', arguments=[Argument('arg1', value='3')])
+        self.__compare_init(condition , 'HelloWorld', 'mod1_flag2', [], [Argument('arg1', value='3')])
 
     def test_init_with_arguments_with_routing(self):
-        condition = Condition('HelloWorld', action='mod1_flag2', arguments={'arg1': '@step2'})
-        self.__compare_init(condition , 'HelloWorld', 'mod1_flag2', [], {'arg1': '@step2'})
+        condition = Condition('HelloWorld', action='mod1_flag2', arguments=[Argument('arg1', reference='step2')])
+        self.__compare_init(condition , 'HelloWorld', 'mod1_flag2', [], [Argument('arg1', reference="step2")])
 
     def test_init_with_arguments_invalid_arg_name(self):
         with self.assertRaises(InvalidArgument):
-            Condition('HelloWorld', action='mod1_flag2', arguments={'invalid': '3'})
+            Condition('HelloWorld', action='mod1_flag2', arguments=[Argument('invalid', value='3')])
 
     def test_init_with_arguments_invalid_arg_type(self):
         with self.assertRaises(InvalidArgument):
-            Condition('HelloWorld', action='mod1_flag2', arguments={'arg1': 'aaa'})
+            Condition('HelloWorld', action='mod1_flag2', arguments=[Argument('arg1', value='aaa')])
 
     def test_init_with_transforms(self):
-        transforms = [Transform('HelloWorld', action='mod1_filter2', arguments={'arg1': '5.4'}), Transform(action='Top Transform')]
+        transforms = [Transform('HelloWorld', action='mod1_filter2', arguments=[Argument('arg1', value='5.4')]), Transform(app='HelloWorld', action='Top Transform')]
         condition = Condition('HelloWorld', action='Top Condition', transforms=transforms)
         self.__compare_init(condition , 'HelloWorld', 'Top Condition', transforms, {})
 
@@ -76,28 +79,28 @@ class TestCondition(unittest.TestCase):
         self.assertFalse(Condition('HelloWorld', 'Top Condition').execute('invalid', {}))
 
     def test_execute_action_with_valid_arguments_valid_data(self):
-        self.assertTrue(Condition('HelloWorld', action='mod1_flag2', arguments={'arg1': 3}).execute('5', {}))
+        self.assertTrue(Condition('HelloWorld', action='mod1_flag2', arguments=[Argument('arg1', value=3)]).execute('5', {}))
 
     def test_execute_action_with_valid_complex_arguments_valid_data(self):
-        self.assertTrue(Condition('HelloWorld', action='mod2_flag2', arguments={'arg1': {'a': '1', 'b': '5'}}).execute('some_long_string', {}))
+        self.assertTrue(Condition('HelloWorld', action='mod1_flag3', arguments=[Argument('arg1', value={'a': '1', 'b': '5'})]).execute('some_long_string', {}))
 
     def test_execute_action_with_valid_arguments_invalid_data(self):
-        self.assertFalse(Condition('HelloWorld', action='mod1_flag2', arguments={'arg1': 3}).execute('invalid', {}))
+        self.assertFalse(Condition('HelloWorld', action='mod1_flag2', arguments=[Argument('arg1', value=3)]).execute('invalid', {}))
 
     def test_execute_action_with_valid_arguments_and_transforms_valid_data(self):
-        transforms = [Transform('HelloWorld', action='mod1_filter2', arguments={'arg1': '5'}), Transform('HelloWorld', action='Top Transform')]
+        transforms = [Transform('HelloWorld', action='mod1_filter2', arguments=[Argument('arg1', value='5')]), Transform('HelloWorld', action='Top Transform')]
         # should go <input = 1> -> <mod1_filter2 = 5+1 = 6> -> <Top Transform 6=6> -> <mod1_flag2 4+6%2==0> -> True
-        self.assertTrue(Condition('HelloWorld', action='mod1_flag2', arguments={'arg1': 4}, transforms=transforms).execute('1', {}))
+        self.assertTrue(Condition('HelloWorld', action='mod1_flag2', arguments=[Argument('arg1', value=4)], transforms=transforms).execute('1', {}))
 
     def test_execute_action_with_valid_arguments_and_transforms_invalid_data(self):
-        transforms = [Transform('HelloWorld', action='mod1_filter2', arguments={'arg1': '5'}), Transform('HelloWorld', action='Top Transform')]
+        transforms = [Transform('HelloWorld', action='mod1_filter2', arguments=[Argument('arg1', value='5')]), Transform('HelloWorld', action='Top Transform')]
         # should go <input = invalid> -> <mod1_filter2 with error = invalid> -> <Top Transform with error = invalid>
         # -> <mod1_flag2 4+invalid throws error> -> False
-        self.assertFalse(Condition('HelloWorld', action='mod1_flag2', arguments={'arg1': 4}, transforms=transforms).execute('invalid', {}))
+        self.assertFalse(Condition('HelloWorld', action='mod1_flag2', arguments=[Argument('arg1', value=4)], transforms=transforms).execute('invalid', {}))
 
     def test_execute_action_with_valid_arguments_and_transforms_invalid_data_and_routing(self):
-        transforms = [Transform('HelloWorld', action='mod1_filter2', arguments={'arg1': '@step1'}), Transform('HelloWorld', action='Top Transform')]
+        transforms = [Transform('HelloWorld', action='mod1_filter2', arguments=[Argument('arg1', reference='step1')]), Transform('HelloWorld', action='Top Transform')]
         # should go <input = invalid> -> <mod1_filter2 with error = invalid> -> <Top Transform with error = invalid>
         # -> <mod1_flag2 4+invalid throws error> -> False
         accumulator = {'step1': '5', 'step2': 4}
-        self.assertFalse(Condition('HelloWorld', action='mod1_flag2', arguments={'arg1': 4}, transforms=transforms).execute('invalid', accumulator))
+        self.assertFalse(Condition('HelloWorld', action='mod1_flag2', arguments=[Argument('arg1', value=4)], transforms=transforms).execute('invalid', accumulator))

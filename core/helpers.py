@@ -317,19 +317,12 @@ def get_app_device_api(app, device_type):
             raise UnknownDevice(app, device_type)
 
 
-def __split_api_params(api):
-    data_param_name = api['data_in']
-    run = api['run']
+def split_api_params(api, data_param_name):
     args = []
-    data_param = None
-    for api_param in api['parameters']:
-        if api_param['name'] == data_param_name:
-            data_param = api_param
-        else:
+    for api_param in api:
+        if api_param['name'] != data_param_name:
             args.append(api_param)
-    if data_param is None:  # This should be validated by the schema, but just in case
-        raise ValueError
-    return run, args, data_param
+    return args
 
 
 def get_condition_api(app, condition):
@@ -340,7 +333,8 @@ def get_condition_api(app, condition):
     else:
         try:
             condition_api = app_api['conditions'][condition]
-            return __split_api_params(condition_api)
+            run = condition_api['run']
+            return condition_api['data_in'], run, condition_api.get('parameters', [])
         except KeyError:
             raise UnknownCondition(app, condition)
 
@@ -352,8 +346,9 @@ def get_transform_api(app, transform):
         raise UnknownApp(app)
     else:
         try:
-            condition_api = app_api['transforms'][transform]
-            return __split_api_params(condition_api)
+            transform_api = app_api['transforms'][transform]
+            run = transform_api['run']
+            return transform_api['data_in'], run, transform_api.get('parameters', [])
         except KeyError:
             raise UnknownTransform(app, transform)
 

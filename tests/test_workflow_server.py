@@ -4,6 +4,7 @@ from datetime import datetime
 from os import path
 from threading import Event
 
+from core.argument import Argument
 import core.case.database as case_database
 import core.case.subscription
 import core.config.paths
@@ -224,7 +225,7 @@ class TestWorkflowServer(ServerTestCase):
         initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
-        added_step = Step('HelloWorld', 'pause', name='new_id', inputs={'seconds': 5},
+        added_step = Step('HelloWorld', 'pause', name='new_id', arguments=[Argument("seconds", value=5)],
                           position={'x': 0, 'y': 0}, uid="2").read()
 
         initial_steps.append(added_step)
@@ -257,7 +258,7 @@ class TestWorkflowServer(ServerTestCase):
         # assert that the file loads properly after being saved
         flask_server.running_context.controller.workflows = {}
         flask_server.running_context.controller.load_playbook(os.path.join(core.config.paths.workflows_path,
-                                                                                      'test.playbook'))
+                                                                           'test.playbook'))
         loaded_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
         # compare the steps in loaded and expected workflow
         self.assertEqual(len(loaded_workflow.steps.keys()), len(list(resulting_workflow.steps.keys())))
@@ -277,7 +278,7 @@ class TestWorkflowServer(ServerTestCase):
         initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
-        added_step = Step(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
+        added_step = Step(name='new_id', app='HelloWorld', action='pause', arguments=[Argument("seconds", value=5)],
                           position={'x': 0, 'y': 0}).read()
         added_step['app'] = 'Invalid'
 
@@ -295,7 +296,7 @@ class TestWorkflowServer(ServerTestCase):
         initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
-        added_step =Step(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
+        added_step = Step(name='new_id', app='HelloWorld', action='pause', arguments=[Argument("seconds", value=5)],
                           position={'x': 0, 'y': 0}).read()
         added_step['action'] = 'Invalid'
 
@@ -313,9 +314,9 @@ class TestWorkflowServer(ServerTestCase):
         initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
-        added_step =Step(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
+        added_step = Step(name='new_id', app='HelloWorld', action='pause', arguments=[Argument("seconds", value=5)],
                           position={'x': 0, 'y': 0}).read()
-        added_step['inputs'] = [{'name': 'Invalid', 'value': 5}]
+        added_step['arguments'] = [{'name': 'Invalid', 'value': 5}]
 
         initial_steps.append(added_step)
         data = {"steps": initial_steps}
@@ -331,9 +332,9 @@ class TestWorkflowServer(ServerTestCase):
         initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
-        added_step =Step(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
+        added_step = Step(name='new_id', app='HelloWorld', action='pause', arguments=[Argument("seconds", value=5)],
                           position={'x': 0, 'y': 0}).read()
-        added_step['inputs'][0]['value'] = 'aaaa'
+        added_step['arguments'][0]['value'] = 'aaaa'
 
         initial_steps.append(added_step)
         data = {"steps": initial_steps}
@@ -349,7 +350,7 @@ class TestWorkflowServer(ServerTestCase):
         initial_steps = [step.read() for step in initial_workflow.steps.values()]
         initial_steps[0]['position']['x'] = 0.0
         initial_steps[0]['position']['y'] = 0.0
-        added_step =Step(name='new_id', app='HelloWorld', action='pause', inputs={'seconds': 5},
+        added_step = Step(name='new_id', app='HelloWorld', action='pause', arguments=[Argument('seconds', value=5)],
                           position={'x': 0, 'y': 0}).read()
 
         initial_steps.append(added_step)
@@ -452,7 +453,8 @@ class TestWorkflowServer(ServerTestCase):
         self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/copy',
                                     headers=self.headers, status_code=OBJECT_CREATED, data=json.dumps({}),
                                     content_type="application/json")
-        self.assertEqual(len(flask_server.running_context.controller.playbook_store.get_all_workflows_by_playbook('test')), 2)
+        self.assertEqual(
+            len(flask_server.running_context.controller.playbook_store.get_all_workflows_by_playbook('test')), 2)
         self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
         self.assertTrue(
             flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow_Copy'))
@@ -494,8 +496,11 @@ class TestWorkflowServer(ServerTestCase):
         self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/copy', data=json.dumps(data),
                                     headers=self.headers, status_code=OBJECT_CREATED, content_type="application/json")
 
-        self.assertEqual(len(flask_server.running_context.controller.playbook_store.get_all_workflows_by_playbook('test')), 1)
-        self.assertEqual(len(flask_server.running_context.controller.playbook_store.get_all_workflows_by_playbook('new_playbook')), 1)
+        self.assertEqual(
+            len(flask_server.running_context.controller.playbook_store.get_all_workflows_by_playbook('test')), 1)
+        self.assertEqual(
+            len(flask_server.running_context.controller.playbook_store.get_all_workflows_by_playbook('new_playbook')),
+            1)
         self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
         self.assertTrue(
             flask_server.running_context.controller.is_workflow_registered('new_playbook', 'helloWorldWorkflow_Copy'))
@@ -606,7 +611,8 @@ class TestWorkflowServer(ServerTestCase):
         for result in response:
             self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'uid'})
             for step_result in result['results']:
-                self.assertSetEqual(set(step_result.keys()), {'input', 'type', 'name', 'timestamp', 'result', 'app', 'action'})
+                self.assertSetEqual(set(step_result.keys()),
+                                    {'input', 'type', 'name', 'timestamp', 'result', 'app', 'action'})
 
     def test_execute_workflow_trigger_step(self):
         flask_server.running_context.controller.initialize_threading()

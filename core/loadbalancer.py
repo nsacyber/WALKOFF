@@ -10,6 +10,7 @@ import zmq.green as zmq
 from gevent.queue import Queue
 from zmq.utils.strtypes import asbytes, cast_unicode
 
+from core.argument import Argument
 import core.config.config
 import core.config.paths
 from core.protobuf.build import data_pb2
@@ -35,7 +36,7 @@ def recreate_workflow(workflow_json):
         workflow_json (JSON dict): The input workflow JSON, with some other fields as well.
 
     Returns:
-        (Workflow object, start_input): A tuple containing the reconstructed Workflow object, and the input to
+        (Workflow object, start_arguments): A tuple containing the reconstructed Workflow object, and the arguments to
             the start step.
     """
     uid = workflow_json['uid']
@@ -44,17 +45,17 @@ def recreate_workflow(workflow_json):
     del workflow_json['execution_uid']
     start = workflow_json['start']
 
-    start_input = ''
-    if 'start_input' in workflow_json:
-        start_input = workflow_json['start_input']
-        del workflow_json['start_input']
+    start_arguments = {}
+    if 'start_arguments' in workflow_json:
+        start_arguments = [Argument(**arg) for arg in workflow_json['start_arguments']]
+        workflow_json.pop("start_arguments")
 
     workflow = Workflow.create(workflow_json)
     workflow.uid = uid
     workflow.set_execution_uid(execution_uid)
     workflow.start = start
 
-    return workflow, start_input
+    return workflow, start_arguments
 
 
 def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
@@ -99,8 +100,12 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         step_packet.sender.app = sender.app
         step_packet.sender.action = sender.action
 
-        for key, value in sender.inputs.items():
-            step_packet.sender.input[key] = str(value)
+        for argument in sender.arguments.values():
+            arg = step_packet.sender.arguments.add()
+            arg.name = argument.name
+            arg.value = str(argument.value) if argument.value else ''
+            arg.reference = argument.reference if argument.reference else ''
+            arg.selection = str(argument.selection) if argument.selection else ''
 
         step_packet.callback_name = kwargs['callback_name']
     elif obj_type in ['NextStep', 'Condition', 'Transform']:
@@ -201,18 +206,18 @@ class LoadBalancer:
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume'])
 
-    def send_data_to_trigger(self, data_in, workflow_uids, inputs={}):
+    def send_data_to_trigger(self, data_in, workflow_uids, arguments=None):
         """Sends the data_in to the workflows specified in workflow_uids.
 
         Args:
             data_in (dict): Data to be used to match against the triggers for a Step awaiting data.
             workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
-            inputs (dict, optional): An optional dict of inputs to update for a Step awaiting data for a trigger.
+            arguments (list[Argument]): An optional list of Arguments to update for a Step awaiting data for a trigger.
                 Defaults to None.
         """
         data = dict()
         data['data_in'] = data_in
-        data['inputs'] = inputs
+        data['arguments'] = arguments if arguments else []
         for uid in workflow_uids:
             if uid in self.workflow_comms:
                 self.comm_socket.send_multipart(
@@ -299,10 +304,10 @@ class Worker:
         while True:
             workflow_in = self.request_sock.recv()
 
-            self.workflow, start_input = recreate_workflow(json.loads(cast_unicode(workflow_in)))
+            self.workflow, start_arguments = recreate_workflow(json.loads(cast_unicode(workflow_in)))
 
             self.workflow.execute(execution_uid=self.workflow.get_execution_uid(), start=self.workflow.start,
-                                  start_input=start_input)
+                                  start_arguments=start_arguments)
             self.request_sock.send(b"Done")
 
     def receive_data(self):
@@ -347,15 +352,15 @@ class Receiver:
         'Next Step Found': (callbacks.NextStepFound, False),
         'App Instance Created': (callbacks.AppInstanceCreated, False),
         'Workflow Shutdown': (callbacks.WorkflowShutdown, True),
-        'Workflow Argument Validated': (callbacks.WorkflowArgumentValidated, False),
-        'Workflow Argument Invalid': (callbacks.WorkflowArgumentInvalid, False),
+        'Workflow Arguments Validated': (callbacks.WorkflowArgumentsValidated, False),
+        'Workflow Arguments Invalid': (callbacks.WorkflowArgumentsInvalid, False),
         'Workflow Paused': (callbacks.WorkflowPaused, False),
         'Workflow Resumed': (callbacks.WorkflowResumed, False),
         'Step Execution Success': (callbacks.StepExecutionSuccess, True),
         'Step Execution Error': (callbacks.StepExecutionError, True),
         'Step Started': (callbacks.StepStarted, False),
         'Function Execution Success': (callbacks.FunctionExecutionSuccess, True),
-        'Step Argument Invalid': (callbacks.StepArgumentInvalid, False),
+        'Step Argument Invalid': (callbacks.StepArgumentsInvalid, False),
         'Next Step Taken': (callbacks.NextStepTaken, False),
         'Next Step Not Taken': (callbacks.NextStepNotTaken, False),
         'Condition Success': (callbacks.ConditionSuccess, False),

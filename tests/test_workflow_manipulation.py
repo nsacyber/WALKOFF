@@ -113,9 +113,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     def test_change_step_input(self):
         self.controller.initialize_threading()
-        input_list = [{'key': 'call', 'value': 'CHANGE INPUT'}]
-
-        input_arg = {arg['key']: arg['value'] for arg in input_list}
+        arguments = [{'name': 'call', 'value': 'CHANGE INPUT'}]
 
         result = {'value': None}
 
@@ -124,7 +122,8 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         FunctionExecutionSuccess.connect(step_finished_listener)
 
-        self.controller.execute_workflow('simpleDataManipulationWorkflow', 'helloWorldWorkflow', start_input=input_arg)
+        self.controller.execute_workflow('simpleDataManipulationWorkflow', 'helloWorldWorkflow',
+                                         start_arguments=arguments)
         self.controller.shutdown_pool(1)
         self.assertDictEqual(result['value'],
                              {'result': {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'}})

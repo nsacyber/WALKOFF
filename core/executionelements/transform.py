@@ -4,7 +4,7 @@ from copy import deepcopy
 from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
 from core.argument import Argument
-from core.helpers import get_transform_api, InvalidArgument
+from core.helpers import get_transform_api, InvalidArgument, split_api_params
 from core.validator import validate_transform_parameters, validate_parameter
 from apps import get_transform
 
@@ -27,11 +27,13 @@ class Transform(ExecutionElement):
         ExecutionElement.__init__(self, uid)
         self.app = app
         self.action = action
-        self._run, self._args_api, self._data_in_api = get_transform_api(self.app, self.action)
+        self._data_param_name, self._run, self._api = get_transform_api(self.app, self.action)
         self._transform_executable = get_transform(self.app, self._run)
-        arguments = [Argument(**json_in) for json_in in arguments]
-        arguments = {arg.name: arg for arg in arguments}
-        self.arguments = validate_transform_parameters(self._args_api, arguments, self.action)
+        # arguments = [Argument(**json_in) for json_in in arguments]
+        arguments = {arg.name: arg for arg in arguments} if arguments is not None else {}
+        tmp_api = split_api_params(self._api, self._data_param_name)
+        validate_transform_parameters(tmp_api, arguments, self.action)
+        self.arguments = arguments
 
     def execute(self, data_in, accumulator):
         """Executes the transform.
@@ -45,9 +47,8 @@ class Transform(ExecutionElement):
         """
         original_data_in = deepcopy(data_in)
         try:
-            data_in = validate_parameter(data_in, self._data_in_api, 'Transform {0}'.format(self.action))
-            args = {argument.name: argument.get_value(accumulator) for argument in self.arguments}
-            args.update({self._data_in_api['name']: data_in})
+            self.arguments.update({self._data_param_name: Argument(self._data_param_name, value=data_in)})
+            args = validate_transform_parameters(self._api, self.arguments, self.action, accumulator=accumulator)
             result = self._transform_executable(**args)
             data_sent.send(self, callback_name="Transform Success", object_type="Transform")
             return result

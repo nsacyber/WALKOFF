@@ -1,10 +1,12 @@
 import logging
+
+from core.representable import Representable
 from core.helpers import InvalidArgument
 
 logger = logging.getLogger(__name__)
 
 
-class Argument:
+class Argument(Representable):
     def __init__(self, name, value=None, reference=None, selection=None):
         if not value and not reference:
             message = 'Input {} must have either value or reference. Input has neither'.format(name)
@@ -18,7 +20,10 @@ class Argument:
         self.value = value
         self.reference = reference
         self.selection = selection
-        self.is_reference = True if value is None else False
+        self._is_reference = True if value is None else False
+
+    def is_ref(self):
+        return self._is_reference
 
     def get_value(self, accumulator):
         if self.value is not None:
@@ -62,4 +67,4 @@ class Argument:
 
     def __eq__(self, other):
         return self.name == other.name and self.value == other.value and self.reference == other.reference and \
-               self.selection == other.selection and self.is_reference == other.is_reference
+               self.selection == other.selection and self._is_reference == other._is_reference

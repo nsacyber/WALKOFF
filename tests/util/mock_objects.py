@@ -54,6 +54,7 @@ class MockLoadBalancer(object):
 
         def handle_data_sent(sender, **kwargs):
             self.on_data_sent(sender, **kwargs)
+
         self.handle_data_sent = handle_data_sent
         if not data_sent.receivers:
             data_sent.connect(handle_data_sent)
@@ -91,12 +92,13 @@ class MockLoadBalancer(object):
 
             exec_uid = workflow_json['execution_uid']
 
-            workflow, start_input = loadbalancer.recreate_workflow(workflow_json)
+            workflow, start_arguments = loadbalancer.recreate_workflow(workflow_json)
             self.workflow_comms[exec_uid] = workflow
 
             self.exec_uid = exec_uid
 
-            workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start, start_input=start_input)
+            workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start,
+                             start_arguments=start_arguments)
             self.exec_uid = ''
 
     def pause_workflow(self, workflow_execution_uid):

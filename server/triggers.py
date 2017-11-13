@@ -145,7 +145,7 @@ class Triggers(db.Model):
                     try:
                         uid = running_context.controller.execute_workflow(playbook_name=trigger.playbook,
                                                                           workflow_name=trigger.workflow,
-                                                                          start_input=inputs)
+                                                                          start_arguments=inputs)
                         returned_json["executed"].append({'name': trigger.name, 'id': uid})
                     except Exception as e:
                         returned_json["errors"].append(
