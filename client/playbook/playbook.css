@@ -101,6 +101,21 @@
 	resize: none;
 }
 
+.playbookMain #accordion .panel-heading .panel-title:after {
+	/* symbol for "opening" panels */
+	font: normal normal normal 14px/1 FontAwesome;
+	font-size: inherit;
+	text-rendering: auto;
+	content: "\f078";    /* adjust as needed, taken from bootstrap.css */
+	float: right;        /* adjust as needed */
+	color: grey;         /* adjust as needed */
+}
+
+.playbookMain #accordion .panel-heading.collapsed .panel-title:after {
+	/* symbol for "collapsed" panels */
+	content: "\f054";    /* adjust as needed, taken from bootstrap.css */
+}
+
 .playbookMain .required {
 	color: crimson;
 	margin-left: 5px;
@@ -123,21 +138,21 @@
 	display: none;
 }
 
-.playbookMain #parameters input[type=checkbox].form-control {
+.playbookMain .parametersEditor input[type=checkbox].form-control {
 	width: 34px;
 	margin: 0 5px;
 }
 
-.playbookMain #parameters .form-group.argument {
+.playbookMain .parametersEditor .form-group.argument {
 	margin-bottom: 5px;
 	padding: 5px;
 }
 
-.playbookMain #parameters .form-group.argument.odd {
+.playbookMain .parametersEditor .form-group.argument.odd {
 	background-color: #EEE;
 }
 
-.playbookMain #parameters .transforms {
+.playbookMain .parametersEditor .transforms {
 	padding-left: 15px;
 	border-left: 3px solid #DDD;
 }

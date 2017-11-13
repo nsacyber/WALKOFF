@@ -168,6 +168,7 @@ export class PlaybookComponent {
 					autounselectify: false,
 					wheelSensitivity: 0.1,
 					layout: { name: 'preset' },
+					selectionType: 'single',
 					style: [
 						{
 							selector: 'node',
@@ -557,6 +558,9 @@ export class PlaybookComponent {
 
 		const data = e.target.data();
 
+		// Unselect anything else we might have selected (via ctrl+click basically)
+		self.cy.elements(`[uid!="${data.uid}"]`).unselect();
+
 		self.selectedStep = self.loadedWorkflow.steps.find(s => s.uid === data.uid);
 
 		if (!self.selectedStep) { return; }
@@ -578,6 +582,9 @@ export class PlaybookComponent {
 		self.selectedNextStepParams = null;
 
 		const uid = e.target.data('uid');
+
+		// Unselect anything else we might have selected (via ctrl+click basically)
+		self.cy.elements(`[uid!="${uid}"]`).unselect();
 
 		const nextStep = self.loadedWorkflow.next_steps.find(ns => ns.uid === uid);
 		const sourceStep = self.loadedWorkflow.steps.find(s => s.uid === nextStep.source_uid);
@@ -763,13 +770,13 @@ export class PlaybookComponent {
 	/**
 	 * Cytoscape cut method.
 	 */
-	cut(): void {
-		const selecteds = this.cy.$(':selected');
-		if (selecteds.length > 0) {
-			this.cy.clipboard().copy(selecteds);
-			this.ur.do('remove', selecteds);
-		}
-	}
+	// cut(): void {
+	// 	const selecteds = this.cy.$(':selected');
+	// 	if (selecteds.length > 0) {
+	// 		this.cy.clipboard().copy(selecteds);
+	// 		this.ur.do('remove', selecteds);
+	// 	}
+	// }
 
 	/**
 	 * Cytoscape copy method.
@@ -878,10 +885,11 @@ export class PlaybookComponent {
 				} else if (e.which === 86) {
 					// Ctrl + V, Paste
 					self.paste();
-				} else if (e.which === 88) {
-					// Ctrl + X, Cut
-					self.cut();
 				}
+				// else if (e.which === 88) {
+				// 	// Ctrl + X, Cut
+				// 	self.cut();
+				// }
 				// else if (e.which == 65) { // 'Ctrl+A', Select All
 				//     cy.elements().select();
 				//     e.preventDefault();
