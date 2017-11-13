@@ -24,14 +24,11 @@ def register_blueprints(flaskapp):
     __register_all_app_blueprints(flaskapp)
 
 
-def __get_blueprints_in_module(module, sub_module_name='display'):
-    from importlib import import_module
+def __get_blueprints_in_module(module):
     from interfaces import AppWidgetBlueprint
-    import_module('{0}.{1}'.format(module.__name__, sub_module_name))
-    submodule = getattr(module, sub_module_name)
-    blueprints = [getattr(submodule, field)
-                  for field in dir(submodule) if (not field.startswith('__')
-                                                  and isinstance(getattr(submodule, field), AppWidgetBlueprint))]
+    blueprints = [getattr(module, field)
+                  for field in dir(module) if (not field.startswith('__')
+                                                  and isinstance(getattr(module, field), AppWidgetBlueprint))]
     return blueprints
 
 
@@ -46,31 +43,24 @@ def __register_blueprint(flaskapp, blueprint, url_prefix):
 
 
 def __register_app_blueprints(flaskapp, app_name, blueprints):
-    url_prefix = '/apps/{0}'.format(app_name.split('.')[-1])
+    url_prefix = '/interfaces/{0}'.format(app_name.split('.')[-1])
     for blueprint in blueprints:
         __register_blueprint(flaskapp, blueprint, url_prefix)
 
 
 def __register_all_app_blueprints(flaskapp):
     from core.helpers import import_submodules
-    import apps
-    imported_apps = import_submodules(apps)
-    for app_name, app_module in imported_apps.items():
+    import interfaces
+    imported_apps = import_submodules(interfaces)
+    for interface_name, interfaces_module in imported_apps.items():
         try:
-            display_blueprints = __get_blueprints_in_module(app_module)
+            display_blueprints = []
+            for submodule in import_submodules(interfaces_module, recursive=True).values():
+                display_blueprints.extend(__get_blueprints_in_module(submodule))
         except ImportError:
             pass
         else:
-            __register_app_blueprints(flaskapp, app_name, display_blueprints)
-
-        try:
-            blueprints = __get_blueprints_in_module(app_module, sub_module_name='events')
-        except ImportError:
-            pass
-        else:
-            __register_app_blueprints(flaskapp, app_name, blueprints)
-
-        __register_all_app_widget_blueprints(flaskapp, app_module)
+            __register_app_blueprints(flaskapp, interface_name, display_blueprints)
 
 
 def __register_all_app_widget_blueprints(flaskapp, app_module):

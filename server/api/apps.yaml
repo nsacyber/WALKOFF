@@ -7,12 +7,6 @@
     operationId: server.endpoints.appapi.read_all_apps
     produces:
       - application/json
-    parameters:
-      - in: query
-        name: interfaces_only
-        description: Return only the apps with custom interfaces?
-        type: boolean
-        required: false
     responses:
       200:
         description: Success
@@ -22,6 +16,7 @@
           items:
             type: string
             example: [PhillipsHue, OpenDaylight, PaloAlto]
+
 /api/apps/apis:
   get:
     tags:

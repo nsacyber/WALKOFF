@@ -88,6 +88,25 @@
           type: object
           description: All the wigdets for all apps. Form of '{app_name -> [widget_name]}'
 
+/api/interfaces:
+  get:
+    tags:
+      - System
+    summary: Read all interfaces
+    description: ''
+    operationId: server.endpoints.metadata.read_all_interfaces
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          description: All the interfaces defined
+          type: array
+          items:
+            type: string
+
+
 /api/client/{filename}:
   get:
     tags:

@@ -101,6 +101,14 @@ def read_all_widgets():
     return __func()
 
 
+def read_all_interfaces():
+
+    @jwt_required
+    @roles_accepted_for_resources('apps')
+    def __func():
+        return helpers.list_interfaces()
+
+
 def validate_path(directory, filename):
     """ Checks that the filename is inside of the given directory
     Args:

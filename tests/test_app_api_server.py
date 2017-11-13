@@ -27,13 +27,6 @@ class TestAppApiServerFuncs(ServerTestCase):
         response = json.loads(response.get_data(as_text=True))
         orderless_list_compare(self, response, expected_apps)
 
-    def test_list_apps_with_interfaces(self):
-        expected_apps = ['HelloWorld']
-        response = self.app.get('/api/apps?interfaces_only=true', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
-        orderless_list_compare(self, response, expected_apps)
-
     def test_extract_schema(self):
         test_json = {'name': 'a', 'example': 42, 'description': 'something', 'type': 'number', 'minimum': 1}
         expected = {'name': 'a', 'example': 42, 'description': 'something', 'schema': {'type': 'number', 'minimum': 1}}
