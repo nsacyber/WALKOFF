@@ -43,19 +43,16 @@
                     "name": "1",
                     "position": {},
                     "risk": 0,
-                    "uid": "1",
-                    "widgets": []
+                    "uid": "1"
                 },
                 {
                     "action": "helloWorld",
                     "app": "Invalid",
                     "arguments": [],
-                    "device": "hwTest",
                     "name": "start",
                     "position": {},
                     "risk": 0,
-                    "uid": "2",
-                    "widgets": []
+                    "uid": "2"
                 }
             ]
         }

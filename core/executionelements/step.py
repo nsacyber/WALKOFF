@@ -27,7 +27,7 @@ class Widget(object):
 class Step(ExecutionElement):
     _templatable = True
 
-    def __init__(self, app, action, name='', device_id='', arguments=None, triggers=None, position=None,
+    def __init__(self, app, action, name='', device_id=None, arguments=None, triggers=None, position=None,
                  risk=0, uid=None, templated=False, raw_representation=None):
         """Initializes a new Step object. A Workflow has many steps that it executes.
 

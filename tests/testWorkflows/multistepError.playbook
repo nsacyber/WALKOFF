@@ -58,23 +58,19 @@
                     "action": "Buggy",
                     "app": "HelloWorld",
                     "arguments": [],
-                    "device": "hwTest",
                     "name": "1",
                     "position": {},
                     "risk": 0,
-                    "uid": "dc6836d7e42d4e54a43d0acdad3f9728",
-                    "widgets": []
+                    "uid": "dc6836d7e42d4e54a43d0acdad3f9728"
                 },
                 {
                     "action": "helloWorld",
                     "app": "HelloWorld",
                     "arguments": [],
-                    "device": "hwTest",
                     "name": "start",
                     "position": {},
                     "risk": 0,
-                    "uid": "93fdd70cdf9b4d1987df5e0cee6b4d37",
-                    "widgets": []
+                    "uid": "93fdd70cdf9b4d1987df5e0cee6b4d37"
                 },
                 {
                     "action": "repeatBackToMe",
@@ -85,12 +81,10 @@
                             "value": "Hello World"
                         }
                     ],
-                    "device": "hwTest",
                     "name": "error",
                     "position": {},
                     "risk": 0,
-                    "uid": "06bf52b3b0014c4c9da0e6f91a53ce21",
-                    "widgets": []
+                    "uid": "06bf52b3b0014c4c9da0e6f91a53ce21"
                 }
             ],
             "uid": "49bcd8c8080946d4af9d71b5b45f23ad"

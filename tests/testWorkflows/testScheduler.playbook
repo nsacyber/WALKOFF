@@ -43,12 +43,10 @@
                             "value": "Hello World"
                         }
                     ],
-                    "device": "hwTest",
                     "name": "start",
                     "position": {},
                     "risk": 0,
-                    "uid": "7aeb492a73c345bbb4e8570bb682c87d",
-                    "widgets": []
+                    "uid": "7aeb492a73c345bbb4e8570bb682c87d"
                 }
             ],
             "uid": "127560fb39eb44ddbdea6af70fb86e26"

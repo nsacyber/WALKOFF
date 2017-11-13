@@ -24,16 +24,16 @@ class TestStep(unittest.TestCase):
     def tearDownClass(cls):
         apps.clear_cache()
 
-    def __compare_init(self, elem, name, action, app, device_id, arguments=None, triggers=None,
+    def __compare_init(self, elem, name, action, app, device_id=None, arguments=None, triggers=None,
                        risk=0., position=None, uid=None, templated=False, raw_representation=None):
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.action, action)
         self.assertEqual(elem.app, app)
         self.assertEqual(elem.device_id, device_id)
-        arguments = {arg.name: arg for arg in arguments}
         if arguments:
+            arguments = {arg.name: arg for arg in arguments}
             self.assertDictEqual(elem.arguments, arguments)
-        self.assertDictEqual({key: argument for key, argument in elem.arguments.items()}, arguments)
+            self.assertDictEqual({key: argument for key, argument in elem.arguments.items()}, arguments)
         self.assertEqual(elem.risk, risk)
         if triggers:
             self.assertEqual(len(elem.triggers), len(triggers))
@@ -55,27 +55,27 @@ class TestStep(unittest.TestCase):
 
     def test_init_default(self):
         step = Step('HelloWorld', 'helloWorld')
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {})
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld')
 
     def test_init_with_name(self):
         step = Step('HelloWorld', 'helloWorld', name='test')
-        self.__compare_init(step, 'test', 'helloWorld', 'HelloWorld', {})
+        self.__compare_init(step, 'test', 'helloWorld', 'HelloWorld')
 
     def test_init_with_uid(self):
         step = Step('HelloWorld', 'helloWorld', uid='test')
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {}, uid='test')
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', uid='test')
 
     def test_init_with_position(self):
         step = Step('HelloWorld', 'helloWorld', position={'x': 13, 'y': 42})
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {}, position={'x': 13, 'y': 42})
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', position={'x': 13, 'y': 42})
 
     def test_init_with_risk(self):
         step = Step('HelloWorld', 'helloWorld', risk=42)
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {}, risk=42)
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', risk=42)
 
     def test_init_templated(self):
         step = Step('HelloWorld', 'helloWorld', templated=True, raw_representation={'a': 42})
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {}, templated=True, raw_representation={'a': 42})
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', templated=True, raw_representation={'a': 42})
 
     def test_get_execution_uid(self):
         step = Step('HelloWorld', 'helloWorld')
@@ -88,11 +88,11 @@ class TestStep(unittest.TestCase):
 
     def test_init_app_action_only(self):
         step = Step('HelloWorld', 'helloWorld')
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {})
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld')
 
     def test_init_app_and_action_name_different_than_method_name(self):
         step = Step(app='HelloWorld', action='Hello World')
-        self.__compare_init(step, '', 'Hello World', 'HelloWorld', {})
+        self.__compare_init(step, '', 'Hello World', 'HelloWorld')
 
     def test_init_invalid_app(self):
         with self.assertRaises(UnknownApp):
@@ -104,7 +104,7 @@ class TestStep(unittest.TestCase):
 
     def test_init_app_action_only_with_device(self):
         step = Step('HelloWorld', 'helloWorld', device_id='test')
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {}, device_id='test')
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', device_id='test')
 
     def test_init_with_arguments_no_conversion(self):
         step = Step('HelloWorld', 'returnPlusOne', arguments=[Argument('number', value=-5.6)])
@@ -114,7 +114,7 @@ class TestStep(unittest.TestCase):
     def test_init_with_arguments_with_conversion(self):
         step = Step('HelloWorld', 'returnPlusOne', arguments=[Argument('number', value='-5.6')])
         self.__compare_init(step, '', 'returnPlusOne', 'HelloWorld',
-                            arguments=[Argument('number', value=-5.6)])
+                            arguments=[Argument('number', value='-5.6')])
 
     def test_init_with_invalid_argument_name(self):
         with self.assertRaises(InvalidArgument):
@@ -128,7 +128,7 @@ class TestStep(unittest.TestCase):
         triggers = [Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='(.*)')]),
                     Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='a')])]
         step = Step('HelloWorld', 'helloWorld', triggers=triggers)
-        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', {}, triggers=['regMatch', 'regMatch'])
+        self.__compare_init(step, '', 'helloWorld', 'HelloWorld', triggers=['regMatch', 'regMatch'])
 
     def test_execute_no_args(self):
         step = Step(app='HelloWorld', action='helloWorld')

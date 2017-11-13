@@ -31,12 +31,10 @@
                             "value": 3.0
                         }
                     ],
-                    "device": "hwTest",
                     "name": "1",
                     "position": {},
                     "risk": 0,
-                    "uid": "0ed91d07f1774d16a991d7815814fff1",
-                    "widgets": []
+                    "uid": "0ed91d07f1774d16a991d7815814fff1"
                 },
                 {
                     "action": "Add Three",
@@ -55,12 +53,10 @@
                             "value": 3.0
                         }
                     ],
-                    "device": "hwTest",
                     "name": "start",
                     "position": {},
                     "risk": 0,
-                    "uid": "9fd0559779a84bd584c1ecd43b156656",
-                    "widgets": []
+                    "uid": "9fd0559779a84bd584c1ecd43b156656"
                 },
                 {
                     "action": "Add Three",
@@ -79,12 +75,10 @@
                             "value": 3.0
                         }
                     ],
-                    "device": "hwTest",
                     "name": "2",
                     "position": {},
                     "risk": 0,
-                    "uid": "de45a29e29864b39998f60743055a452",
-                    "widgets": []
+                    "uid": "de45a29e29864b39998f60743055a452"
                 }
             ],
             "uid": "06e80ec0a9b543d29dcd227f04a9c90e"
