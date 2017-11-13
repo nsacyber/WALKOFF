@@ -35,8 +35,8 @@ def default():
     return render_template("index.html")
 
 
-@app.route('/apps/<app_name>')
-def app_page(app_name):
+@app.route('/interfaces/<interface_name>')
+def app_page(interface_name):
     return render_template("index.html")
 
 

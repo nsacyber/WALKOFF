@@ -18,12 +18,12 @@ import { AuthService } from '../auth/auth.service';
 })
 export class MainComponent {
 	currentUser: string;
-	apps: string[] = [];
+	interfaceNames: string[] = [];
 	jwtHelper: JwtHelper = new JwtHelper();
 
 	constructor(private mainService: MainService, private authService: AuthService) {
-		this.mainService.getApps()
-			.then(apps => this.apps = apps);
+		this.mainService.getInterfaceNamess()
+			.then(interfaceNames => this.interfaceNames = interfaceNames);
 
 		this.updateUserInfo();
 

@@ -22,7 +22,7 @@ import { DevicesComponent } from './devices/devices.component';
 import { CasesComponent } from './cases/cases.component';
 import { SettingsComponent } from './settings/settings.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { AppsComponent } from './apps/apps.component';
+import { InterfacesComponent } from './interfaces/interfaces.component';
 
 import { SchedulerModalComponent } from './scheduler/scheduler.modal.component';
 import { DevicesModalComponent } from './devices/devices.modal.component';
@@ -58,7 +58,7 @@ import { PlaybookTransformsComponent } from './playbook/playbook.transforms.comp
 		// TriggersComponent,
 		CasesComponent,
 		SettingsComponent,
-		AppsComponent,
+		InterfacesComponent,
 		//Modals
 		SchedulerModalComponent,
 		DevicesModalComponent,

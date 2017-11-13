@@ -6,8 +6,8 @@ import { JwtHttp } from 'angular2-jwt-refresh';
 export class MainService {
 	constructor (private authHttp: JwtHttp) { }
 
-	getApps(): Promise<string[]> {
-		return this.authHttp.get('/api/apps?interfaces_only=true')
+	getInterfaceNamess(): Promise<string[]> {
+		return this.authHttp.get('/api/interfaces')
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);

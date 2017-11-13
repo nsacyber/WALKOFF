@@ -22,11 +22,11 @@
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Apps <span class="caret"></span></a>
               <ul class="dropdown-menu">
-                <li *ngFor="let app of apps">
-                  <a class="installedApp" routerLink="/apps/{{app}}"><i class="fa fa-gear"></i><span>{{app}}</span></a>
+                <li *ngFor="let interfaceName of interfaceNames">
+                  <a class="installedApp" routerLink="/interfaces/{{interfaceName}}"><i class="fa fa-gear"></i><span>{{interfaceName}}</span></a>
                 </li>
-                <li *ngIf="!apps || !apps.length">
-                  <span class="dropdown-item">You have no Shortstop apps installed.</span>
+                <li *ngIf="!interfaceName || !interfaceName.length">
+                  <span class="dropdown-item">No custom WALKOFF interfaces are installed.</span>
                 </li>
               </ul>
             </li>
