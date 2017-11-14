@@ -204,8 +204,7 @@ class Step(ExecutionElement):
                 if arguments:
                     new_args = {}
                     for argument in arguments:
-                        arg = Argument(**argument)
-                        new_args[arg.name] = arg
+                        new_args[argument.name] = argument
                     self.arguments.update(new_args)
                 break
             else:

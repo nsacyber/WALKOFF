@@ -293,21 +293,21 @@ class Controller(object):
         """
         self.playbook_store.copy_playbook(old_playbook_name, new_playbook_name)
 
-    def send_data_to_trigger(self, data_in, workflow_uids, inputs=None):
+    def send_data_to_trigger(self, data_in, workflow_uids, arguments=None):
         """Tries to match the data in against the conditionals of all the triggers registered in the database.
 
         Args:
             data_in (dict): Data to be used to match against the triggers for a Step awaiting data.
             workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
-            inputs (dict, optional): An optional dict of inputs to update for a Step awaiting data for a trigger.
-                Defaults to {}.
+            arguments (list[Argument]): An optional list of arguments to update for a Step awaiting data for a trigger.
+                Defaults to None.
 
         Returns:
             Dictionary of {"status": <status string>}
         """
-        inputs = inputs if inputs is not None else {}
+        arguments = arguments if arguments is not None else []
         if workflow_uids is not None:
-            self.executor.send_data_to_trigger(data_in, workflow_uids, inputs)
+            self.executor.send_data_to_trigger(data_in, workflow_uids, arguments)
 
     def get_workflow_status(self, execution_uid):
         """Gets the status of an executing workflow

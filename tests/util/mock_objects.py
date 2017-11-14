@@ -4,6 +4,7 @@ import time
 
 from zmq.utils.strtypes import cast_unicode
 
+from core.argument import Argument
 from core import loadbalancer
 from core.case.callbacks import data_sent
 from core.protobuf.build import data_pb2
@@ -109,10 +110,14 @@ class MockLoadBalancer(object):
         if workflow_execution_uid in self.workflow_comms:
             self.workflow_comms[workflow_execution_uid].resume()
 
-    def send_data_to_trigger(self, data_in, workflow_uids, inputs={}):
+    def send_data_to_trigger(self, data_in, workflow_uids, arguments=None):
         data = dict()
         data['data_in'] = data_in
-        data['inputs'] = inputs
+        arg_objects = []
+        if arguments:
+            for arg in arguments:
+                arg_objects.append(Argument(**arg))
+        data["arguments"] = arg_objects
         for uid in workflow_uids:
             if uid in self.workflow_comms:
                 self.workflow_comms[uid].send_data_to_step(data)

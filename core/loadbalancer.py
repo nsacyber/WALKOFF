@@ -329,7 +329,13 @@ class Worker:
                 self.workflow.resume()
                 self.comm_sock.send(b"Resumed")
             else:
-                self.workflow.send_data_to_step(json.loads(message.decode("utf-8")))
+                decoded_message = json.loads(message.decode("utf-8"))
+                if "arguments" in decoded_message:
+                    arguments = []
+                    for arg in decoded_message["arguments"]:
+                        arguments.append(Argument(**arg))
+                    decoded_message["arguments"] = arguments
+                self.workflow.send_data_to_step(decoded_message)
 
             gevent.sleep(0.1)
         return

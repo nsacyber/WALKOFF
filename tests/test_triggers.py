@@ -10,7 +10,6 @@ from tests.util.servertestcase import ServerTestCase
 
 
 class TestTriggers(ServerTestCase):
-
     def setUp(self):
         apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
@@ -30,11 +29,13 @@ class TestTriggers(ServerTestCase):
             server.running_context.controller.workflows = {}
             # server.running_context.controller.shutdown_pool(0)
 
+    # TODO: Uncomment these tests. Thanks Python3.6!
     # def test_trigger_execute(self):
     #     server.running_context.controller.initialize_threading()
     #
-    #     response=self.post_with_status_check('/api/playbooks/triggerStepWorkflow/workflows/triggerStepWorkflow/execute',
-    #                                          headers=self.headers, status_code=SUCCESS_ASYNC)
+    #     response = self.post_with_status_check(
+    #         '/api/playbooks/triggerStepWorkflow/workflows/triggerStepWorkflow/execute',
+    #         headers=self.headers, status_code=SUCCESS_ASYNC)
     #
     #     data = {"execution_uids": [response['id']],
     #             "data_in": {"data": "1"}}
@@ -52,7 +53,7 @@ class TestTriggers(ServerTestCase):
     #
     #     server.running_context.controller.shutdown_pool(1)
     #     self.assertTrue(result['result'])
-
+    #
     # def test_trigger_execute_multiple_data(self):
     #     server.running_context.controller.initialize_threading()
     #
@@ -80,7 +81,7 @@ class TestTriggers(ServerTestCase):
     #
     #     server.running_context.controller.shutdown_pool(1)
     #     self.assertEqual(result['result'], 1)
-
+    #
     # def test_trigger_execute_change_input(self):
     #     server.running_context.controller.initialize_threading()
     #
@@ -90,7 +91,8 @@ class TestTriggers(ServerTestCase):
     #
     #     data = {"execution_uids": [response['id']],
     #             "data_in": {"data": "1"},
-    #             "inputs": {"call": "CHANGE INPUT"}}
+    #             "arguments": [{"name": "call",
+    #                           "value": "CHANGE INPUT"}]}
     #
     #     result = {"value": None}
     #
@@ -107,7 +109,7 @@ class TestTriggers(ServerTestCase):
     #
     #     self.assertDictEqual(result['value'],
     #                          {'result': {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'}})
-
+    #
     # def test_trigger_execute_with_change_input_invalid_input(self):
     #     server.running_context.controller.initialize_threading()
     #
@@ -117,11 +119,12 @@ class TestTriggers(ServerTestCase):
     #
     #     data = {"execution_uids": [response['id']],
     #             "data_in": {"data": "1"},
-    #             "inputs": {"invalid": "CHANGE INPUT"}}
+    #             "arguments": [{"name": "invalid",
+    #                           "value": "CHANGE INPUT"}]}
     #
     #     result = {"result": False}
     #
-    #     @callbacks.StepInputInvalid.connect
+    #     @callbacks.StepArgumentsInvalid.connect
     #     def step_input_invalids(sender, **kwargs):
     #         result['result'] = True
     #
@@ -132,8 +135,3 @@ class TestTriggers(ServerTestCase):
     #
     #     server.running_context.controller.shutdown_pool(1)
     #     self.assertTrue(result['result'])
-
-    @classmethod
-    def tearDownClass(cls):
-        apps.clear_cache()
-

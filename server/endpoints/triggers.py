@@ -14,12 +14,12 @@ def send_data_to_trigger():
         data = request.get_json()
         workflows_in = set(data['execution_uids'])
         data_in = data['data_in']
-        inputs = data['inputs'] if 'inputs' in data else {}
+        arguments = data['arguments'] if 'arguments' in data else []
 
         workflows_awaiting_data = set(running_context.controller.get_waiting_workflows())
         uids = set.intersection(workflows_in, workflows_awaiting_data)
 
-        running_context.controller.send_data_to_trigger(data_in, uids, inputs)
+        running_context.controller.send_data_to_trigger(data_in, uids, arguments)
         return {}, SUCCESS
 
     return __func()
