@@ -14,7 +14,7 @@ class JsonElementReader(object):
         Returns:
             (dict) The JSON representation of the ExecutionElement
         """
-        from core.executionelements.executionelement import ExecutionElement
+        from core.representable import Representable
         accumulator = {}
         for field, value in ((field, getattr(element, field)) for field in dir(element)
                              if not field.startswith('_')
@@ -27,7 +27,7 @@ class JsonElementReader(object):
             elif isinstance(value, bool):
                 if value:
                     accumulator[field] = value
-            elif isinstance(value, ExecutionElement):
+            elif isinstance(value, Representable):
                 accumulator[field] = JsonElementReader.read(value)
             elif value is not None:
                 accumulator[field] = value
@@ -41,14 +41,13 @@ class JsonElementReader(object):
 
     @staticmethod
     def _read_dict(field_name, dict_, accumulator):
-        from core.executionelements.executionelement import ExecutionElement
         from core.representable import Representable
         if dict_ and all(
                 (isinstance(dict_value, Representable)) for dict_value in
                 dict_.values()):
             accumulator[field_name] = [JsonElementReader.read(dict_value) for dict_value in dict_.values()]
         elif dict_ and all(isinstance(dict_value, list) for dict_value in dict_.values()):
-            if all((isinstance(list_value, ExecutionElement) for list_value in dict_value) for dict_value in
+            if all((isinstance(list_value, Representable) for list_value in dict_value) for dict_value in
                    dict_.values()):
                 field_accumulator = []
                 for dict_value in dict_.values():
@@ -59,4 +58,4 @@ class JsonElementReader(object):
             accumulator[field_name] = dict_
         else:
             accumulator[field_name] = [{'name': dict_key, 'value': dict_value} for dict_key, dict_value in dict_.items()
-                                       if not isinstance(dict_value, ExecutionElement)]
+                                       if not isinstance(dict_value, Representable)]
