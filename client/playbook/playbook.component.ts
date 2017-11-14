@@ -156,7 +156,7 @@ export class PlaybookComponent {
 
 				// Convert our selector arrays to a string
 				this.loadedWorkflow.steps.forEach(s => {
-					s.inputs.forEach(i => {
+					s.arguments.forEach(i => {
 						if (i.selector && Array.isArray(i.selector)) { i.selector = (i.selector as Array<string | number>).join('.'); }
 					});
 				});
@@ -431,22 +431,22 @@ export class PlaybookComponent {
 			if (s.device_id === 0) { delete s.device_id; }
 
 			// Properly sanitize arguments through the tree
-			s.inputs.forEach(i => this._sanitizeArgumentForSave(i));
+			s.arguments.forEach(i => this._sanitizeArgumentForSave(i));
 
 			s.triggers.forEach(t => {
-				t.args.forEach(a => this._sanitizeArgumentForSave(a));
+				t.arguments.forEach(a => this._sanitizeArgumentForSave(a));
 
 				t.transforms.forEach(tr => {
-					tr.args.forEach(a => this._sanitizeArgumentForSave(a));
+					tr.arguments.forEach(a => this._sanitizeArgumentForSave(a));
 				});
 			});
 		});
 		this.loadedWorkflow.next_steps.forEach(ns => {
 			ns.conditions.forEach(c => {
-				c.args.forEach(a => this._sanitizeArgumentForSave(a));
+				c.arguments.forEach(a => this._sanitizeArgumentForSave(a));
 
 				c.transforms.forEach(tr => {
-					tr.args.forEach(a => this._sanitizeArgumentForSave(a));
+					tr.arguments.forEach(a => this._sanitizeArgumentForSave(a));
 				});
 			});
 		});
@@ -739,7 +739,7 @@ export class PlaybookComponent {
 		stepToBeAdded.name = stepName;
 		stepToBeAdded.app = appName;
 		stepToBeAdded.action = actionName;
-		stepToBeAdded.inputs = inputs;
+		stepToBeAdded.arguments = inputs;
 
 		this.loadedWorkflow.steps.push(stepToBeAdded);
 

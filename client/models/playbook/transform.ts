@@ -4,5 +4,5 @@ export class Transform {
 	uid: string;
 	app: string;
 	action: string;
-	args: Argument[] = [];
+	arguments: Argument[] = [];
 }

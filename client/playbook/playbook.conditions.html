@@ -31,7 +31,7 @@
 				</div>
 			</div>
 		</div>
-		<playbook-argument-component *ngFor="let argument of condition.args; let id = index" [loadedWorkflow]="loadedWorkflow"
+		<playbook-argument-component *ngFor="let argument of condition.arguments; let id = index" [loadedWorkflow]="loadedWorkflow"
 		[argument]="argument" [parameterApi]="getConditionApiArgs(condition.app, condition.action, argument.name)" [id]="id"></playbook-argument-component>
 		<div>
 			<h4>Transforms</h4>

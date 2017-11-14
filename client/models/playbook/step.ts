@@ -12,7 +12,7 @@ export class Step {
 	app: string;
 	device_id: number;
 	risk: number;
-	inputs: Argument[] = [];
+	arguments: Argument[] = [];
 	// output: string;
 	// widgets: Widget[] = [];
 	triggers: Condition[] = [];

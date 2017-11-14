@@ -5,6 +5,6 @@ export class Condition {
 	uid: string;
 	app: string;
 	action: string;
-	args: Argument[] = [];
+	arguments: Argument[] = [];
 	transforms: Transform[] = [];
 }
