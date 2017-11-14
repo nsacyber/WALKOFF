@@ -3,8 +3,12 @@ import time
 import json
 import csv
 import sys
+from random import SystemRandom
 from apps.Utilities.events import wait
 
+@action
+def secure_rand():
+    return SystemRandom().random()
 
 @action
 def echo_object(data):

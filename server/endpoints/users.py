@@ -26,8 +26,8 @@ def create_user():
         username = data['username']
         if not running_context.User.query.filter_by(username=username).first():
             user = add_user(username=username, password=data['password'])
-            if 'roles' in data:
-                user.set_roles(data['roles'])
+            # if 'roles' in data:
+            #     user.set_roles(data['roles'])
 
             running_context.db.session.commit()
             current_app.logger.info('User added: {0}'.format(user.as_json()))
@@ -78,8 +78,8 @@ def update_user():
                     else:
                         user.username = original_username
                         return {"error": "User's current password was entered incorrectly."}, BAD_REQUEST
-                if 'roles' in data:
-                    user.set_roles(data['roles'])
+                # if 'roles' in data:
+                #     user.set_roles(data['roles'])
                 if is_admin and 'active' in data:
                     user.active = data['active']
                 running_context.db.session.commit()

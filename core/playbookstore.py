@@ -317,8 +317,6 @@ class PlaybookStore(object):
             for workflow in self.playbooks[old_playbook_name].workflows.values():
                 self.copy_workflow(old_playbook_name, new_playbook_name, workflow.name, workflow.name)
 
-            # self.playbooks[new_playbook_name].regenerate_uids(with_children=)
-
     def get_workflows_by_uid(self, workflow_uids):
         """Gets a list of workflows from their UIDs
 

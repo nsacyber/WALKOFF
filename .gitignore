@@ -30,3 +30,5 @@ public_keys/
 .idea/markdown-navigator/profiles_settings.xml
 client/build/
 tests/testWorkflows/testGeneratedWorkflows_bkup
+.coverage*
+coverage.*

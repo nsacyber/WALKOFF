@@ -8,6 +8,13 @@ info:
   license:
     name: Creative Commons
 actions:
+  Secure PRNG:
+    run: actions.secure_rand
+    description: Returns random float between 0.0 and 1.0 using system entropy
+    returns:
+      Success:
+        schema:
+          type: number
   echo object:
     run: actions.echo_object
     description: returns the same object passed into it
