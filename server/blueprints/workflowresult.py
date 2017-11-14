@@ -44,43 +44,6 @@ def __workflow_ended_callback(sender, **kwargs):
     __sync_signal.clear()
 
 
-def __step_ended_callback(sender, **kwargs):
-    data = 'None'
-    step_arguments = str(sender.arguments)
-    if 'data' in kwargs:
-        data = kwargs['data']
-        if not isinstance(data, str):
-            data = str(data)
-    result = {'name': sender.name,
-              'timestamp': str(datetime.utcnow()),
-              'type': "SUCCESS",
-              'arguments': step_arguments,
-              'result': data}
-    __workflow_step_event_json.set(json.dumps(result))
-    __step_signal.set()
-    __step_signal.clear()
-    sleep(0)
-
-
-def __step_error_callback(sender, **kwargs):
-    data = 'None'
-    step_arguments = str(sender.arguments)
-    if 'data' in kwargs:
-        data = kwargs['data']
-        if not isinstance(data, str):
-            data = str(data)
-    result = {'name': sender.name,
-              'timestamp': str(datetime.utcnow()),
-              'type': "ERROR",
-              'arguments': step_arguments,
-              'result': data}
-    __workflow_step_event_json.set(json.dumps(result))
-    sleep(0)
-    __step_signal.set()
-    __step_signal.clear()
-    sleep(0)
-
-
 @FunctionExecutionSuccess.connect
 def __step_ended_callback(sender, **kwargs):
     data = 'None'
