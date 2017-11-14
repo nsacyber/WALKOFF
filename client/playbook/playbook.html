@@ -150,9 +150,9 @@
                         </select>
                     </div>
                     <!-- Inputs -->
-                    <div *ngIf="selectedStep.inputs.length">
-                        <h4>Inputs</h4>
-                        <playbook-argument-component *ngFor="let argument of selectedStep.inputs; let id = index" [loadedWorkflow]="loadedWorkflow" 
+                    <div *ngIf="selectedStep.arguments.length">
+                        <h4>Arguments</h4>
+                        <playbook-argument-component *ngFor="let argument of selectedStep.arguments; let id = index" [loadedWorkflow]="loadedWorkflow" 
                         [argument]="argument" [parameterApi]="getInputApiArgs(selectedStep.app, selectedStep.action, argument.name)"
                         [id]="id"></playbook-argument-component>
                     </div>

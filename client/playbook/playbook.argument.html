@@ -1,11 +1,11 @@
 <div class="form-group argument {{id % 2 ? 'odd' : 'even'}}">
-	<!-- Label for input with optional required icon -->
+	<!-- Label for argument with optional required icon -->
 	<label for="{{argument.name}}">
-		Input {{id+1}}: {{argument.name}} ({{parameterSchema.type}})
+		Argument {{id+1}}: {{argument.name}} ({{parameterSchema.type}})
 		<span *ngIf="parameterSchema.required" class="fa fa-asterisk required" title="This field is required."></span>
 	</label>
 
-	<!-- Columns for allowing users to specify outputs of other steps as inputs for this one -->
+	<!-- Columns for allowing users to specify outputs of other steps as arguments for this one -->
 	<div class="row">
 		<div class="col-xs-4">
 			<select name="playbookSelect" class="form-control" [(ngModel)]="argument.reference">
