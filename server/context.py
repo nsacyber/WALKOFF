@@ -11,14 +11,12 @@ class Context(object):
 
         from server.app import app
         from server.database import User, Role, resource_roles, db
-        from server.triggers import Triggers
         from server.casesubscription import CaseSubscription
         import core.controller
         from server.scheduledtasks import ScheduledTask
 
         self.User = User
         self.Role = Role
-        self.Triggers = Triggers
         self.CaseSubscription = CaseSubscription
         self.flask_app = app
         self.resource_roles = resource_roles

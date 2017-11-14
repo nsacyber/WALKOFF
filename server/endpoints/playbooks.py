@@ -89,7 +89,6 @@ def update_playbook():
 
                 new_name = data['new_name']
                 running_context.controller.update_playbook_name(playbook_name, new_name)
-                running_context.Triggers.update_playbook(old_playbook=playbook_name, new_playbook=new_name)
                 saved_playbooks = [os.path.splitext(playbook)[0]
                                    for playbook in
                                    helpers.locate_playbooks_in_directory(core.config.paths.workflows_path)]
@@ -245,7 +244,6 @@ def update_workflow(playbook_name):
                                                                     wf_name,
                                                                     playbook_name,
                                                                     data['new_name'])
-                    running_context.Triggers.update_workflow(old_workflow=wf_name, new_workflow=data['new_name'])
                     wf_name = data['new_name']
             workflow = running_context.controller.get_workflow(playbook_name, wf_name)
             if workflow:
