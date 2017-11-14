@@ -39,10 +39,6 @@ tags:
     description: Event Operations
   - name: Scheduler
     description: Scheduler Operations
-  - name: Widget
-    description: Widget Operations
-  - name: Widgets
-    description: Multiple Widget Operations
   - name: Triggers
     description: Trigger Operations
   - name: System

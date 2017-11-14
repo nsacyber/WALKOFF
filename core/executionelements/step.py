@@ -18,12 +18,6 @@ from core.argument import Argument
 logger = logging.getLogger(__name__)
 
 
-class Widget(object):
-    def __init__(self, app, name):
-        self.app = app
-        self.name = name
-
-
 class Step(ExecutionElement):
     _templatable = True
 
