@@ -1,9 +1,9 @@
 {
-    "name": "multistepError",
+    "name": "multiactionError",
     "workflows": [
         {
             "name": "multiactionErrorWorkflow",
-            "next_steps": [
+            "next_actions": [
                 {
                     "conditions": [
                         {
@@ -53,7 +53,7 @@
                 }
             ],
             "start": "93fdd70cdf9b4d1987df5e0cee6b4d37",
-            "steps": [
+            "actions": [
                 {
                     "action": "Buggy",
                     "app": "HelloWorld",

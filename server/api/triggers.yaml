@@ -1,6 +1,6 @@
 /api/triggers/send_data:
   post:
-    summary: Send data to one or more workflows with trigger steps awaiting data before continuing execution
+    summary: Send data to one or more workflows with trigger actions awaiting data before continuing execution
     description: ''
     operationId: server.endpoints.triggers.send_data_to_trigger
     consumes:
@@ -24,7 +24,7 @@
               description: Data to send to workflows awaiting data
               type: object
             inputs:
-              description: Updated inputs to send to the trigger step
+              description: Updated inputs to send to the trigger action
               type: object
     responses:
       200:

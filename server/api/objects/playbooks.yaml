@@ -54,21 +54,21 @@ Workflow:
       description: The name of the workflow. Composed of both its enclosing playbook and its own name
       type: string
       example: HelloWorldWorkflow
-    steps:
-      description: The steps defined in this workflow.
+    actions:
+      description: The actions defined in this workflow.
       type: array
       items:
-        $ref: "#/definitions/DisplayStep"
-    next_steps:
-      description: The possible next steps
+        $ref: "#/definitions/DisplayAction"
+    next_actions:
+      description: The possible next actions
       type: array
       items:
-        $ref: '#/definitions/NextStep'
+        $ref: '#/definitions/NextAction'
     start:
-      description: UID of the starting step
+      description: UID of the starting action
       type: string
       default: start
-      example: step1
+      example: action1
     accumulated_risk:
       description: The risk which has been accumulated as this workflow has been executed
       type: number
@@ -108,22 +108,22 @@ WorkflowId:
       description: 32-byte hexidecimal string representing the ID of the workflow
       readOnly: true
 
-Step:
+Action:
   type: object
   required: [name, action, app]
   description: Encapsulation of executing an action in an app
   additionalProperties: false
   properties:
     uid:
-      description: UID of this step
+      description: UID of this action
       type: string
       x-nullable: true
     name:
-      description: Name of the step
+      description: Name of the action
       type: string
-      example: step1
+      example: action1
     action:
-      description: The action the step will take
+      description: The action the action will take
       type: string
       example: pause
     app:
@@ -140,7 +140,7 @@ Step:
       type: integer
       example: 42
     risk:
-      description: risk associated with this step failing
+      description: risk associated with this action failing
       type: number
       default: 0
       example: 20
@@ -150,11 +150,11 @@ Step:
       items:
         $ref: '#/definitions/Argument'
     output:
-      description: The output of the step after it has been executed
+      description: The output of the action after it has been executed
       type: string
-      example: result_from_step
+      example: result_from_action
     position:
-      description:  position of the step onthe workflow editor
+      description:  position of the action onthe workflow editor
       type: object
       required: [x, y]
       properties:
@@ -167,16 +167,16 @@ Step:
           type: number
           example: -12.036
 
-DisplayStep:
+DisplayAction:
   type: object
   description: Encapsulation of executing an action in an app
   properties:
     name:
-      description: Name of the step
+      description: Name of the action
       type: string
-      example: step1
+      example: action1
     action:
-      description: The action the step will take
+      description: The action the action will take
       type: string
       example: pause
     app:
@@ -193,7 +193,7 @@ DisplayStep:
       type: integer
       example: 42
     risk:
-      description: risk associated with this step failing
+      description: risk associated with this action failing
       type: number
       default: 0
       example: 20
@@ -203,7 +203,7 @@ DisplayStep:
       items:
         $ref: '#/definitions/Argument'
     position:
-      description:  position of the step onthe workflow editor
+      description:  position of the action onthe workflow editor
       type: object
       required: [x, y]
       properties:
@@ -216,24 +216,24 @@ DisplayStep:
           type: number
           example: -12.036
 
-NextStep:
+NextAction:
   type: object
   required: [source_uid, destination_uid]
-  description: Encapsualtion of a list of possible steps to take and conditionals required to be met before taking that step
+  description: Encapsualtion of a list of possible actions to take and conditionals required to be met before taking that action
   additionalProperties: false
   properties:
     source_uid:
-      description: The source Step UID for this NextStep
+      description: The source Action UID for this NextAction
       type: string
     destination_uid:
-      description: The destination Step UID for this NextStep, if the conditions evaluate to True
+      description: The destination Action UID for this NextAction, if the conditions evaluate to True
       type: string
     uid:
-      description: UID of this step
+      description: UID of this action
       type: string
       x-nullable: true
     priority:
-      description: The priority for this NextStep, which will be compared to other NextSteps with the same source_uid Step, ascending, i.e. 1 is the highest priority.
+      description: The priority for this NextAction, which will be compared to other NextActions with the same source_uid Action, ascending, i.e. 1 is the highest priority.
       type: integer
     status:
       description: The status return code to use
@@ -252,7 +252,7 @@ Condition:
   additionalProperties: false
   properties:
     uid:
-      description: UID of this step
+      description: UID of this condition
       type: string
       x-nullable: true
     app:
@@ -281,7 +281,7 @@ Transform:
   additionalProperties: false
   properties:
     uid:
-      description: UID of this step
+      description: UID of this transform
       type: string
       x-nullable: true
     app:
@@ -310,11 +310,11 @@ Argument:
       description: The value of the argument
       example: WALK(.*)
     reference:
-      description: The UID of the step whose output should be used
+      description: The UID of the action whose output should be used
       type: string
     selection:
       description: >-
-        The path to a subsection of the output of the step to use. For example [1, "a"] would use the second element
+        The path to a subsection of the output of the action to use. For example [1, "a"] would use the second element
         of a list, and the "a" field of that object.
       type: array
       items:

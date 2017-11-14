@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from core.case.callbacks import StepStarted, FunctionExecutionSuccess, StepExecutionError, \
+from core.case.callbacks import ActionStarted, FunctionExecutionSuccess, ActionExecutionError, \
     WorkflowShutdown, WorkflowExecutionStart
 
 app_metrics = {}
@@ -23,9 +23,8 @@ __action_tmp = {}
 __workflow_tmp = {}
 
 
-@StepStarted.connect
+@ActionStarted.connect
 def __action_started_callback(sender, **kwargs):
-    # TODO: This identifier should be replaced by step id when that happens
     __action_tmp[sender.execution_uid] = datetime.utcnow()
 
 
@@ -34,10 +33,10 @@ def __action_ended_callback(sender, **kwargs):
     __update_success_action_tracker(sender.execution_uid, sender.app, sender.action)
 
 
-@StepExecutionError.connect
+@ActionExecutionError.connect
 def __action_ended_error_callback(sender, **kwargs):
-    step = kwargs['data']
-    __update_error_action_tracker(step['execution_uid'], step['app'], step['action'])
+    action = kwargs['data']
+    __update_error_action_tracker(action['execution_uid'], action['app'], action['action'])
 
 
 def __update_success_action_tracker(uid, app, action):

@@ -10,7 +10,7 @@ import core.loadbalancer
 import core.multiprocessedexecutor
 from core.case import subscription
 from tests import config
-from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
+from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
 from tests.util.mock_objects import *
 
 
@@ -37,39 +37,39 @@ class TestExecutionRuntime(unittest.TestCase):
         apps.clear_cache()
 
     def test_templated_workflow(self):
-        step_names = ['start', '1']
+        action_names = ['start', '1']
 
         workflow = self.controller.get_workflow('templatedWorkflowTest', 'templatedWorkflow')
-        step_uids = [step.uid for step in workflow.steps.values() if step.name in step_names]
-        setup_subscriptions_for_step(workflow.uid, step_uids)
+        action_uids = [action.uid for action in workflow.actions.values() if action.name in action_names]
+        setup_subscriptions_for_action(workflow.uid, action_uids)
         self.controller.execute_workflow('templatedWorkflowTest', 'templatedWorkflow')
 
         self.controller.shutdown_pool(1)
 
-        steps = []
-        for uid in step_uids:
-            steps.extend(executed_steps(uid, self.start, datetime.utcnow()))
-        self.assertEqual(len(steps), 2, 'Unexpected number of steps executed. '
-                                        'Expected {0}, got {1}'.format(2, len(steps)))
+        actions = []
+        for uid in action_uids:
+            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        self.assertEqual(len(actions), 2, 'Unexpected number of actions executed. '
+                                        'Expected {0}, got {1}'.format(2, len(actions)))
 
     # def test_simple_tiered_workflow(self):
     #     workflow1 = self.controller.get_workflow('tieredWorkflow', 'parentWorkflow')
     #     workflow2 = self.controller.get_workflow('tieredWorkflow', 'childWorkflow')
-    #     step_names = ['start', '1']
-    #     step_uids = [step.uid for step in workflow1.steps.values() if step.name in step_names]
-    #     step_uids.extend([step.uid for step in workflow2.steps.values() if step.name in step_names])
-    #     setup_subscriptions_for_step([workflow1.uid, workflow2.uid], step_uids)
+    #     action_names = ['start', '1']
+    #     action_uids = [action.uid for action in workflow1.actions.values() if action.name in action_names]
+    #     action_uids.extend([action.uid for action in workflow2.actions.values() if action.name in action_names])
+    #     setup_subscriptions_for_action([workflow1.uid, workflow2.uid], action_uids)
     #     self.controller.execute_workflow('tieredWorkflow', 'parentWorkflow')
     #
     #     self.controller.shutdown_pool(1)
-    #     steps = []
-    #     for uid in step_uids:
-    #         steps.extend(executed_steps(uid, self.start, datetime.utcnow()))
-    #     expected_results = [{'status': 'Success', 'result': 'REPEATING: Parent Step One'},
-    #                         {'status': 'Success', 'result': 'REPEATING: Child Step One'},
-    #                         {'status': 'Success', 'result': 'REPEATING: Parent Step Two'}]
-    #     self.assertEqual(len(steps), 3)
-    #     for result in [step['data']['result'] for step in steps]:
+    #     actions = []
+    #     for uid in action_uids:
+    #         actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+    #     expected_results = [{'status': 'Success', 'result': 'REPEATING: Parent action One'},
+    #                         {'status': 'Success', 'result': 'REPEATING: Child action One'},
+    #                         {'status': 'Success', 'result': 'REPEATING: Parent action Two'}]
+    #     self.assertEqual(len(actions), 3)
+    #     for result in [action['data']['result'] for action in actions]:
     #         self.assertIn(result, expected_results)
     #
     # def test_loop(self):
@@ -79,9 +79,9 @@ class TestExecutionRuntime(unittest.TestCase):
     #     monkey.patch_all()
     #
     #     workflow = self.controller.get_workflow('loopWorkflow', 'loopWorkflow')
-    #     step_names = ['start', '1']
-    #     step_uids = [step.uid for step in workflow.steps.values() if step.name in step_names]
-    #     setup_subscriptions_for_step(workflow.uid, step_uids)
+    #     action_names = ['start', '1']
+    #     action_uids = [action.uid for action in workflow.actions.values() if action.name in action_names]
+    #     setup_subscriptions_for_action(workflow.uid, action_uids)
     #
     #     waiter = Event()
     #
@@ -91,8 +91,8 @@ class TestExecutionRuntime(unittest.TestCase):
     #     WorkflowShutdown.connect(wait_for_shutdown)
     #     self.controller.execute_workflow('loopWorkflow', 'loopWorkflow')
     #     self.controller.shutdown_pool(1)
-    #     steps = []
-    #     for uid in step_uids:
-    #         steps.extend(executed_steps(uid, self.start, datetime.utcnow()))
+    #     actions = []
+    #     for uid in action_uids:
+    #         actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
     #
-    #     self.assertEqual(len(steps), 5)
+    #     self.assertEqual(len(actions), 5)

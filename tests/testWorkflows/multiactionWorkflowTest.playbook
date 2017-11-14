@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "multiactionWorkflow",
-            "next_steps": [
+            "next_actions": [
                 {
                     "conditions": [
                         {
@@ -33,7 +33,7 @@
                 }
             ],
             "start": "704c94c112fa49c3a4a3b30cf1586fc2",
-            "steps": [
+            "actions": [
                 {
                     "action": "repeatBackToMe",
                     "app": "HelloWorld",

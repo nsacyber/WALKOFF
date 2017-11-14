@@ -5,9 +5,9 @@
         {
             "accumulated_risk": 0.0,
             "name": "helloWorldWorkflow",
-            "next_steps": [],
+            "next_actions": [],
             "start": "e1db14e0cc8d4179aff5f1080a2b7e91",
-            "steps": [
+            "actions": [
                 {
                     "action": "repeatBackToMe",
                     "app": "HelloWorld",

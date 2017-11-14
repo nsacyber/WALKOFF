@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "templatedWorkflow",
-            "next_steps": [
+            "next_actions": [
                 {
                     "conditions": [
                         {
@@ -33,14 +33,14 @@
                 }
             ],
             "start": "403e56dee3b74c5fad931d5e821fe2b9",
-            "steps": [
+            "actions": [
                 {
                     "action": "repeatBackToMe",
                     "app": "HelloWorld",
                     "arguments": [
                         {
                             "name": "call",
-                            "value": "{{ outputFrom(steps, -1) }}"
+                            "value": "{{ outputFrom(actions, -1) }}"
                         }
                     ],
                     "name": "1",

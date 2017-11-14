@@ -30,50 +30,50 @@ WorkflowResult:
       enum: [completed, running, 'awaiting_data', 'paused']
       readOnly: true
     results:
-      description: The results of the workflow steps
+      description: The results of the workflow actions
       type: array
       items:
-        $ref: '#/definitions/DetailedStepResult'
+        $ref: '#/definitions/DetailedActionResult'
     uid:
       description: The UID of the workflow
       type: string
 
-DetailedStepResult:
+DetailedActionResult:
   type: object
   required: [name, result, input, type, timestamp]
-  description: A result of a step execution
+  description: A result of an action execution
   properties:
     name:
-      description: The name of the step
+      description: The name of the action
       type: string
-      example: 'This One step'
+      example: 'This One action'
       readOnly: true
     action:
-      description: The name of the action take by the step
+      description: The name of the action take by the action
       type: string
       example: get that thing
       readOnly: true
     app:
-      description: The name of the app associated with the step
+      description: The name of the app associated with the action
       type: string
       example: ThingGetter
       readOnly: true
     result:
-      description: The result of the step
+      description: The result of the action
       type: object
       readOnly: true
     type:
-      description: Success or failure of the step
+      description: Success or failure of the action
       type: string
       example: SUCCESS
       enum: [SUCCESS, ERROR]
       readOnly: true
     timestamp:
-      description: The timestamp of when the step completed
+      description: The timestamp of when the action completed
       type: string
       example: '2017-05-24 00:43:26.930892'
       readOnly: true
     input:
-      description: The input to the step. Of form {input_name -> value}
+      description: The input to the action. Of form {input_name -> value}
       type: object
       readOnly: true

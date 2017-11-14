@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "pauseWorkflow",
-            "next_steps": [
+            "next_actions": [
                 {
                     "conditions": [],
                     "destination_uid": "b7725c22c881484ebe2901027f1acd7f",
@@ -20,7 +20,7 @@
                 }
             ],
             "start": "e2131c32efe44a83913396a0fbb9f34d",
-            "steps": [
+            "actions": [
                 {
                     "action": "pause",
                     "app": "HelloWorld",

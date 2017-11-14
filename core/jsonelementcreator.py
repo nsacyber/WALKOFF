@@ -54,15 +54,15 @@ class JsonElementCreator(object):
         if cls.playbook_class_ordering is None:
             from core.executionelements.playbook import Playbook
             from core.executionelements.workflow import Workflow
-            from core.executionelements.step import Step
-            from core.executionelements.nextstep import NextStep
+            from core.executionelements.action import Action
+            from core.executionelements.nextaction import NextAction
             from core.executionelements.condition import Condition
             from core.executionelements.transform import Transform
             cls.playbook_class_ordering = OrderedDict([
                 (Playbook, {'workflows': Workflow}),
-                (Workflow, {'steps': Step, 'next_steps': NextStep}),
-                (Step, {'triggers': Condition}),
-                (NextStep, {'conditions': Condition}),
+                (Workflow, {'actions': Action, 'next_actions': NextAction}),
+                (Action, {'triggers': Condition}),
+                (NextAction, {'conditions': Condition}),
                 (Condition, {'transforms': Transform}),
                 (Transform, None)
             ])

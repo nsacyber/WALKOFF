@@ -37,7 +37,7 @@ def recreate_workflow(workflow_json):
 
     Returns:
         (Workflow object, start_arguments): A tuple containing the reconstructed Workflow object, and the arguments to
-            the start step.
+            the start action.
     """
     uid = workflow_json['uid']
     del workflow_json['uid']
@@ -85,30 +85,30 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         wf_packet.sender.uid = sender.uid
         wf_packet.sender.workflow_execution_uid = workflow_execution_uid
         wf_packet.callback_name = kwargs['callback_name']
-    elif obj_type == 'Step':
+    elif obj_type == 'Action':
         if 'data' in kwargs:
             packet.type = data_pb2.Message.STEPPACKETDATA
-            step_packet = packet.step_packet_data
-            step_packet.additional_data = json.dumps(kwargs['data'])
+            action_packet = packet.step_packet_data
+            action_packet.additional_data = json.dumps(kwargs['data'])
         else:
             packet.type = data_pb2.Message.STEPPACKET
-            step_packet = packet.step_packet
-        step_packet.sender.name = sender.name
-        step_packet.sender.uid = sender.uid
-        step_packet.sender.workflow_execution_uid = workflow_execution_uid
-        step_packet.sender.execution_uid = sender.get_execution_uid()
-        step_packet.sender.app = sender.app
-        step_packet.sender.action = sender.action
+            action_packet = packet.step_packet
+        action_packet.sender.name = sender.name
+        action_packet.sender.uid = sender.uid
+        action_packet.sender.workflow_execution_uid = workflow_execution_uid
+        action_packet.sender.execution_uid = sender.get_execution_uid()
+        action_packet.sender.app = sender.app
+        action_packet.sender.action = sender.action
 
         for argument in sender.arguments.values():
-            arg = step_packet.sender.arguments.add()
+            arg = action_packet.sender.arguments.add()
             arg.name = argument.name
             arg.value = str(argument.value) if argument.value else ''
             arg.reference = argument.reference if argument.reference else ''
             arg.selection = str(argument.selection) if argument.selection else ''
 
-        step_packet.callback_name = kwargs['callback_name']
-    elif obj_type in ['NextStep', 'Condition', 'Transform']:
+        action_packet.callback_name = kwargs['callback_name']
+    elif obj_type in ['NextAction', 'Condition', 'Transform']:
         packet.type = data_pb2.Message.GENERALPACKET
         general_packet = packet.general_packet
         general_packet.sender.uid = sender.uid
@@ -210,9 +210,9 @@ class LoadBalancer:
         """Sends the data_in to the workflows specified in workflow_uids.
 
         Args:
-            data_in (dict): Data to be used to match against the triggers for a Step awaiting data.
+            data_in (dict): Data to be used to match against the triggers for an Action awaiting data.
             workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
-            arguments (list[Argument]): An optional list of Arguments to update for a Step awaiting data for a trigger.
+            arguments (list[Argument]): An optional list of Arguments to update for a Action awaiting data for a trigger.
                 Defaults to None.
         """
         data = dict()
@@ -335,7 +335,7 @@ class Worker:
                     for arg in decoded_message["arguments"]:
                         arguments.append(Argument(**arg))
                     decoded_message["arguments"] = arguments
-                self.workflow.send_data_to_step(decoded_message)
+                self.workflow.send_data_to_action(decoded_message)
 
             gevent.sleep(0.1)
         return
@@ -355,27 +355,27 @@ class Worker:
 class Receiver:
     callback_lookup = {
         'Workflow Execution Start': (callbacks.WorkflowExecutionStart, False),
-        'Next Step Found': (callbacks.NextStepFound, False),
+        'Next Action Found': (callbacks.NextActionFound, False),
         'App Instance Created': (callbacks.AppInstanceCreated, False),
         'Workflow Shutdown': (callbacks.WorkflowShutdown, True),
         'Workflow Arguments Validated': (callbacks.WorkflowArgumentsValidated, False),
         'Workflow Arguments Invalid': (callbacks.WorkflowArgumentsInvalid, False),
         'Workflow Paused': (callbacks.WorkflowPaused, False),
         'Workflow Resumed': (callbacks.WorkflowResumed, False),
-        'Step Execution Success': (callbacks.StepExecutionSuccess, True),
-        'Step Execution Error': (callbacks.StepExecutionError, True),
-        'Step Started': (callbacks.StepStarted, False),
+        'Action Execution Success': (callbacks.ActionExecutionSuccess, True),
+        'Action Execution Error': (callbacks.ActionExecutionError, True),
+        'Action Started': (callbacks.ActionStarted, False),
         'Function Execution Success': (callbacks.FunctionExecutionSuccess, True),
-        'Step Argument Invalid': (callbacks.StepArgumentsInvalid, False),
-        'Next Step Taken': (callbacks.NextStepTaken, False),
-        'Next Step Not Taken': (callbacks.NextStepNotTaken, False),
+        'Action Argument Invalid': (callbacks.ActionArgumentsInvalid, False),
+        'Next Action Taken': (callbacks.NextActionTaken, False),
+        'Next Action Not Taken': (callbacks.NextActionNotTaken, False),
         'Condition Success': (callbacks.ConditionSuccess, False),
         'Condition Error': (callbacks.ConditionError, False),
         'Transform Success': (callbacks.TransformSuccess, False),
         'Transform Error': (callbacks.TransformError, False),
-        'Trigger Step Taken': (callbacks.TriggerStepTaken, False),
-        'Trigger Step Not Taken': (callbacks.TriggerStepNotTaken, False),
-        'Trigger Step Awaiting Data': (callbacks.TriggerStepAwaitingData, False)
+        'Trigger Action Taken': (callbacks.TriggerActionTaken, False),
+        'Trigger Action Not Taken': (callbacks.TriggerActionNotTaken, False),
+        'Trigger Action Awaiting Data': (callbacks.TriggerActionAwaitingData, False)
     }
 
     def __init__(self, ctx):

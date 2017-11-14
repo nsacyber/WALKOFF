@@ -9,7 +9,7 @@ import core.config.paths
 import core.controller
 from server import flaskserver as flask_server
 from server.returncodes import *
-from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
+from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
 from tests.util.servertestcase import ServerTestCase
 from tests.util.thread_control import modified_setup_worker_env
 
@@ -38,8 +38,8 @@ class TestWorkflowServer(ServerTestCase):
     def test_execute_workflow(self):
         flask_server.running_context.controller.initialize_threading(worker_environment_setup=modified_setup_worker_env)
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        step_uids = [step.uid for step in workflow.steps.values() if step.name == 'start']
-        setup_subscriptions_for_step(workflow.uid, step_uids)
+        action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
+        setup_subscriptions_for_action(workflow.uid, action_uids)
         start = datetime.utcnow()
 
         response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
@@ -47,12 +47,12 @@ class TestWorkflowServer(ServerTestCase):
                                                status_code=SUCCESS_ASYNC)
         flask_server.running_context.controller.shutdown_pool(1)
         self.assertIn('id', response)
-        steps = []
-        for uid in step_uids:
-            steps.extend(executed_steps(uid, start, datetime.utcnow()))
-        self.assertEqual(len(steps), 1)
-        step = steps[0]
-        result = step['data']
+        actions = []
+        for uid in action_uids:
+            actions.extend(executed_actions(uid, start, datetime.utcnow()))
+        self.assertEqual(len(actions), 1)
+        action = actions[0]
+        result = action['data']
         self.assertEqual(result, {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     def test_read_all_results(self):
@@ -69,5 +69,5 @@ class TestWorkflowServer(ServerTestCase):
 
         for result in response:
             self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'uid'})
-            for step_result in result['results']:
-                self.assertSetEqual(set(step_result.keys()), {'input', 'type', 'name', 'timestamp', 'result', 'app', 'action'})
+            for action_result in result['results']:
+                self.assertSetEqual(set(action_result.keys()), {'input', 'type', 'name', 'timestamp', 'result', 'app', 'action'})

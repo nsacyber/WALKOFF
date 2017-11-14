@@ -1,9 +1,9 @@
 {
-    "name": "tooManyStepInputsWorkflow",
+    "name": "tooManyActionInputsWorkflow",
     "workflows": [
         {
             "name": "multiactionWorkflow",
-            "next_steps": [
+            "next_actions": [
                 {
                     "conditions": [
                         {
@@ -30,7 +30,7 @@
                 }
             ],
             "start": "2",
-            "steps": [
+            "actions": [
                 {
                     "action": "returnPlusOne",
                     "app": "HelloWorld",

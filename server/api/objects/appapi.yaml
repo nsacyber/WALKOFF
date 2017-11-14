@@ -145,7 +145,7 @@ ConditionApi:
       description: The path to the executable function
     data_in:
       type: string
-      description: name of parameter which comes from executed step
+      description: name of parameter which comes from executed action
     parameters:
       type: array
       items:
@@ -190,7 +190,7 @@ TransformApi:
       description: The path to the executable function
     data_in:
       type: string
-      description: name of parameter which comes from executed step
+      description: name of parameter which comes from executed action
     parameters:
       type: array
       items:

@@ -6,14 +6,14 @@ from core.case import callbacks
 from core.argument import Argument
 import core.config.config
 from core.executionelements.condition import Condition
-from core.executionelements.step import Step
-from core.executionelements.nextstep import NextStep
+from core.executionelements.action import Action
+from core.executionelements.nextaction import NextAction
 from core.executionelements.workflow import Workflow
 from core.decorators import ActionResult
 from tests.config import test_apps_path
 
 
-class TestNextStep(unittest.TestCase):
+class TestNextAction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         apps.cache_apps(test_apps_path)
@@ -37,40 +37,40 @@ class TestNextStep(unittest.TestCase):
             self.assertEqual(elem.uid, uid)
 
     def test_init(self):
-        next_step = NextStep(source_uid="1", destination_uid="2")
-        self.__compare_init(next_step, "1", "2")
+        next_action = NextAction(source_uid="1", destination_uid="2")
+        self.__compare_init(next_action, "1", "2")
 
     def test_init_wth_uid(self):
         uid = uuid.uuid4().hex
-        next_step = NextStep(source_uid="1", destination_uid="2", uid=uid)
-        self.__compare_init(next_step, "1", "2", uid=uid)
+        next_action = NextAction(source_uid="1", destination_uid="2", uid=uid)
+        self.__compare_init(next_action, "1", "2", uid=uid)
 
     def test_init_with_status(self):
-        next_step = NextStep(source_uid="1", destination_uid="2", status='test_status')
-        self.__compare_init(next_step, "1", "2", status='test_status')
+        next_action = NextAction(source_uid="1", destination_uid="2", status='test_status')
+        self.__compare_init(next_action, "1", "2", status='test_status')
 
     def test_init_with_empty_conditions(self):
-        next_step = NextStep(source_uid="1", destination_uid="2", conditions=[])
-        self.__compare_init(next_step, '1', '2')
+        next_action = NextAction(source_uid="1", destination_uid="2", conditions=[])
+        self.__compare_init(next_action, '1', '2')
 
     def test_init_with_conditions(self):
         conditions = [Condition('HelloWorld', 'Top Condition'), Condition('HelloWorld', 'mod1_flag1')]
         expected_condition_json = [{'action': 'Top Condition', 'args': [], 'filters': []},
                               {'action': 'mod1_flag1', 'args': [], 'filters': []}]
-        next_step = NextStep("1", "2", conditions=conditions)
-        self.__compare_init(next_step, "1", "2", expected_condition_json)
+        next_action = NextAction("1", "2", conditions=conditions)
+        self.__compare_init(next_action, "1", "2", expected_condition_json)
 
     def test_eq(self):
         conditions = [Condition('HelloWorld', 'mod1_flag1'), Condition('HelloWorld', 'Top Condition')]
-        next_steps = [NextStep(source_uid="1", destination_uid="2"),
-                      NextStep(source_uid="1", destination_uid="2", status='TestStatus'),
-                      NextStep(source_uid="1", destination_uid="2", conditions=conditions)]
-        for i in range(len(next_steps)):
-            for j in range(len(next_steps)):
+        next_actions = [NextAction(source_uid="1", destination_uid="2"),
+                      NextAction(source_uid="1", destination_uid="2", status='TestStatus'),
+                      NextAction(source_uid="1", destination_uid="2", conditions=conditions)]
+        for i in range(len(next_actions)):
+            for j in range(len(next_actions)):
                 if i == j:
-                    self.assertEqual(next_steps[i], next_steps[j])
+                    self.assertEqual(next_actions[i], next_actions[j])
                 else:
-                    self.assertNotEqual(next_steps[i], next_steps[j])
+                    self.assertNotEqual(next_actions[i], next_actions[j])
 
     def test_execute(self):
         conditions1 = [Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='(.*)')])]
@@ -84,51 +84,51 @@ class TestNextStep(unittest.TestCase):
                   ('name4', conditions2, ActionResult('aaaa', 'Custom'), False)]
 
         for name, conditions, input_str, expect_name in inputs:
-            next_step = NextStep(source_uid="1", destination_uid="2", conditions=conditions)
+            next_action = NextAction(source_uid="1", destination_uid="2", conditions=conditions)
             if expect_name:
-                expected_name = next_step.destination_uid
-                self.assertEqual(next_step.execute(input_str, {}), expected_name)
+                expected_name = next_action.destination_uid
+                self.assertEqual(next_action.execute(input_str, {}), expected_name)
             else:
-                self.assertIsNone(next_step.execute(input_str, {}))
+                self.assertIsNone(next_action.execute(input_str, {}))
 
-    def test_get_next_step_no_next_steps(self):
+    def test_get_next_action_no_next_actions(self):
         workflow = Workflow()
-        self.assertIsNone(workflow.get_next_step(None, {}))
+        self.assertIsNone(workflow.get_next_action(None, {}))
 
-    def test_get_next_step_invalid_step(self):
+    def test_get_next_action_invalid_action(self):
         flag = Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='aaa')])
-        next_step = NextStep(source_uid="1", destination_uid='next', conditions=[flag])
-        step = Step('HelloWorld', 'helloWorld', uid="2")
-        step._output = ActionResult(result='bbb', status='Success')
-        workflow = Workflow(steps=[step], next_steps=[next_step])
-        self.assertIsNone(workflow.get_next_step(step, {}))
+        next_action = NextAction(source_uid="1", destination_uid='next', conditions=[flag])
+        action = Action('HelloWorld', 'helloWorld', uid="2")
+        action._output = ActionResult(result='bbb', status='Success')
+        workflow = Workflow(actions=[action], next_actions=[next_action])
+        self.assertIsNone(workflow.get_next_action(action, {}))
 
-    def test_get_next_step(self):
+    def test_get_next_action(self):
         flag = Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='aaa')])
-        next_step = NextStep(source_uid="1", destination_uid="2", conditions=[flag])
-        step = Step('HelloWorld', 'helloWorld', uid="1")
-        step._output = ActionResult(result='aaa', status='Success')
-        workflow = Workflow(steps=[step], next_steps=[next_step])
+        next_action = NextAction(source_uid="1", destination_uid="2", conditions=[flag])
+        action = Action('HelloWorld', 'helloWorld', uid="1")
+        action._output = ActionResult(result='aaa', status='Success')
+        workflow = Workflow(actions=[action], next_actions=[next_action])
 
         result = {'triggered': False}
 
         @callbacks.data_sent.connect
         def validate_sent_data(sender, **kwargs):
-            if isinstance(sender, NextStep):
+            if isinstance(sender, NextAction):
                 self.assertIn('callback_name', kwargs)
-                self.assertEqual(kwargs['callback_name'], 'Next Step Taken')
+                self.assertEqual(kwargs['callback_name'], 'Next Action Taken')
                 self.assertIn('object_type', kwargs)
-                self.assertEqual(kwargs['object_type'], 'NextStep')
+                self.assertEqual(kwargs['object_type'], 'NextAction')
                 result['triggered'] = True
 
-        self.assertEqual(workflow.get_next_step(step, {}), '2')
+        self.assertEqual(workflow.get_next_action(action, {}), '2')
         self.assertTrue(result['triggered'])
 
-    def test_next_step_with_priority(self):
+    def test_next_action_with_priority(self):
         flag = Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='aaa')])
-        next_step_one = NextStep(source_uid="1", destination_uid='five', conditions=[flag], priority="5")
-        next_step_two = NextStep(source_uid="1", destination_uid='one', conditions=[flag], priority="1")
-        step = Step('HelloWorld', 'helloWorld', uid="1")
-        step._output = ActionResult(result='aaa', status='Success')
-        workflow = Workflow(steps=[step], next_steps=[next_step_one, next_step_two])
-        self.assertEqual(workflow.get_next_step(step, {}), "one")
+        next_action_one = NextAction(source_uid="1", destination_uid='five', conditions=[flag], priority="5")
+        next_action_two = NextAction(source_uid="1", destination_uid='one', conditions=[flag], priority="1")
+        action = Action('HelloWorld', 'helloWorld', uid="1")
+        action._output = ActionResult(result='aaa', status='Success')
+        workflow = Workflow(actions=[action], next_actions=[next_action_one, next_action_two])
+        self.assertEqual(workflow.get_next_action(action, {}), "one")

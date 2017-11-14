@@ -1,5 +1,5 @@
-def main(steps, input_):
+def main(actions, input_):
     input_ = int(input_)
-    if steps[input_]:
-        return steps[input_]._output.result
+    if actions[input_]:
+        return actions[input_]._output.result
     return None

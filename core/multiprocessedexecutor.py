@@ -38,12 +38,12 @@ class MultiprocessedExecutor(object):
         def handle_workflow_wait(sender, **kwargs):
             self.__trigger_workflow_status_wait(sender, **kwargs)
         self.handle_workflow_wait = handle_workflow_wait
-        callbacks.TriggerStepAwaitingData.connect(handle_workflow_wait)
+        callbacks.TriggerActionAwaitingData.connect(handle_workflow_wait)
 
         def handle_workflow_continue(sender, **kwargs):
             self.__trigger_workflow_status_continue(sender, **kwargs)
         self.handle_workflow_continue = handle_workflow_continue
-        callbacks.TriggerStepTaken.connect(handle_workflow_continue)
+        callbacks.TriggerActionTaken.connect(handle_workflow_continue)
 
         def handle_workflow_shutdown(sender, **kwargs):
             self.__remove_workflow_status(sender, **kwargs)
@@ -167,8 +167,8 @@ class MultiprocessedExecutor(object):
 
         Args:
             workflow (Workflow): The Workflow to be executed.
-            start (str, optional): The name of the first, or starting step. Defaults to None.
-            start_arguments (dict, optional): The arguments to the starting step of the workflow. Defaults to None.
+            start (str, optional): The name of the first, or starting action. Defaults to None.
+            start_arguments (dict, optional): The arguments to the starting action of the workflow. Defaults to None.
 
         Returns:
             The execution UID of the Workflow.
@@ -179,9 +179,9 @@ class MultiprocessedExecutor(object):
             self.initialize_threading()
 
         if start is not None:
-            logger.info('Executing workflow {0} for step {1}'.format(workflow.name, start))
+            logger.info('Executing workflow {0} for action {1}'.format(workflow.name, start))
         else:
-            logger.info('Executing workflow {0} with default starting step'.format(workflow.name, start))
+            logger.info('Executing workflow {0} with default starting action'.format(workflow.name, start))
         self.workflow_status[uid] = WORKFLOW_RUNNING
 
         workflow_json = workflow.read()
@@ -252,9 +252,9 @@ class MultiprocessedExecutor(object):
         """Sends the data_in to the workflows specified in workflow_uids.
 
         Args:
-            data_in (dict): Data to be used to match against the triggers for a Step awaiting data.
+            data_in (dict): Data to be used to match against the triggers for an Action awaiting data.
             workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
-            arguments (list[Argument]): An optional list of Arguments to update for a Step awaiting data for a trigger.
+            arguments (list[Argument]): An optional list of Arguments to update for an Action awaiting data for a trigger.
                 Defaults to None.
         """
         arguments = arguments if arguments is not None else []

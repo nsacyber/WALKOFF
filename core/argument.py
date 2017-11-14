@@ -30,19 +30,19 @@ class Argument(Representable):
             return self.value
 
         if accumulator:
-            step_output = self._get_step_from_reference(accumulator)
+            action_output = self._get_action_from_reference(accumulator)
             if not self.selection:
-                return step_output
+                return action_output
 
-            return self._select(step_output)
+            return self._select(action_output)
         else:
             return self.reference
 
-    def _get_step_from_reference(self, accumulator):
+    def _get_action_from_reference(self, accumulator):
         try:
             return accumulator[self.reference]
         except KeyError:
-            message = ('Referenced step {} '
+            message = ('Referenced action {} '
                        'has not been executed'.format(self.reference))
             raise InvalidArgument(message)
 
