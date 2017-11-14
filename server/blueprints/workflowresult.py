@@ -18,14 +18,14 @@ __step_signal = Event()
 def __workflow_shutdown_event_stream():
     while True:
         data = __workflow_shutdown_event_json.get()
-        yield 'data: %s\n\n' % data
+        yield 'data: {}\n\n'.format(json.dumps(data))
         __sync_signal.wait()
 
 
 def __workflow_steps_event_stream():
     while True:
         data = __workflow_step_event_json.get()
-        yield 'data: %s\n\n' % data
+        yield 'data: {}\n\n'.format(json.dumps(data))
         __step_signal.wait()
 
 
@@ -39,7 +39,7 @@ def __workflow_ended_callback(sender, **kwargs):
     result = {'name': sender.name,
               'timestamp': str(datetime.utcnow()),
               'result': data}
-    __workflow_shutdown_event_json.set(json.dumps(result))
+    __workflow_shutdown_event_json.set(result)
     __sync_signal.set()
     __sync_signal.clear()
 
@@ -57,7 +57,7 @@ def __step_ended_callback(sender, **kwargs):
               'type': "SUCCESS",
               'arguments': step_arguments,
               'result': data}
-    __workflow_step_event_json.set(json.dumps(result))
+    __workflow_step_event_json.set(result)
     sleep(0)
     __step_signal.set()
     __step_signal.clear()
@@ -71,7 +71,7 @@ def __step_error_callback(sender, **kwargs):
         data = kwargs['data']
         result['arguments'] = data['arguments']
         result['result'] = data['result']
-    __workflow_step_event_json.set(json.dumps(result))
+    __workflow_step_event_json.set(result)
     sleep(0)
     __step_signal.set()
     __step_signal.clear()

@@ -113,9 +113,7 @@ export class PlaybookComponent {
 
 				observable.subscribe({
 					next: (message: any) => {
-						console.log(message.data);
 						const workflowResult: WorkflowResult = JSON.parse(message.data);
-						console.log(workflowResult);
 						if (this.cy) {
 							const matchingNode = this.cy.elements(`node[uid="${workflowResult.step_uid}"]`);
 	
@@ -125,7 +123,8 @@ export class PlaybookComponent {
 						}
 
 						this.workflowResults.push(workflowResult);
-						console.log(this.workflowResults);
+						// Slice the array to induce change detection
+						this.workflowResults = this.workflowResults.slice();
 					},
 					error: (err: Error) => {
 						this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
