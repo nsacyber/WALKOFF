@@ -155,6 +155,7 @@ export class PlaybookComponent {
 				this.loadedWorkflow = workflow;
 
 				// Convert our selector arrays to a string
+				if (!this.loadedWorkflow.steps) { this.loadedWorkflow.steps = []; }
 				this.loadedWorkflow.steps.forEach(s => {
 					s.arguments.forEach(i => {
 						if (i.selector && Array.isArray(i.selector)) { i.selector = (i.selector as Array<string | number>).join('.'); }
