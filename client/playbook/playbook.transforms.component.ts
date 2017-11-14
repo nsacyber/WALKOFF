@@ -58,7 +58,7 @@ export class PlaybookTransformsComponent {
 				name: parameterApi.name,
 				value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
 				reference: '',
-				selector: '',
+				selection: '',
 			});
 		});
 

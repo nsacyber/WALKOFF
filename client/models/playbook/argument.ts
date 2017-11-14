@@ -5,7 +5,7 @@ export class Argument {
 	name: string;
 	/**
 	 * The static value of the argument in question. Only used if reference is not specified.
-	 * If reference is specified, selector is used to select specific values.
+	 * If reference is specified, selection is used to select specific values.
 	 */
 	value: any;
 	/**
@@ -13,8 +13,8 @@ export class Argument {
 	 */
 	reference: string;
 	/**
-	 * Selector is currently specified in the UI as a string,
+	 * Selection is currently specified in the UI as a string,
 	 * but is split and sent/ingested as an array containing strings and numbers
 	 */
-	selector: string | Array<string | number>;
+	selection: string | Array<string | number>;
 }

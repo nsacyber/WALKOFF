@@ -196,7 +196,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]='workflowResults' [sortType]="'multi'"
+                    <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]="workflowResults" [sortType]="'multi'"
                     [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]" [limit]="25">
                         <!-- Column Templates -->
                         <ngx-datatable-column name="UID" [flexGrow]="1">
@@ -219,14 +219,16 @@
                                 {{row.type}}
                             </ng-template>
                         </ngx-datatable-column>
-                        <ngx-datatable-column name="Input" [sortable]="false" [flexGrow]="2">
+                        <ngx-datatable-column name="Arguments" [sortable]="false" [flexGrow]="2">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                {{getFriendlyObject(row.input)}}
+                                <!-- {{getFriendlyArgs(row.arguments)}} -->
+                                {{row.arguments}}
                             </ng-template>
                         </ngx-datatable-column>
                         <ngx-datatable-column name="Result" [sortable]="false" [flexGrow]="4">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                {{getFriendlyObject(row.result)}}
+                                <!-- {{getFriendlyObject(row.result)}} -->
+                                {{row.result}}
                             </ng-template>
                         </ngx-datatable-column>
                     </ngx-datatable>

@@ -1,4 +1,5 @@
 import { GenericObject } from '../genericObject';
+import { Argument } from '../playbook/argument';
 
 export class WorkflowResult {
 	/**
@@ -18,6 +19,12 @@ export class WorkflowResult {
 	 * Type of result. "SUCCESS" or "ERROR"
 	 */
 	type: string;
-	input: GenericObject;
+	/**
+	 * List of arguments used as inputs.
+	 */
+	arguments: Argument[];
+	/**
+	 * Result returned by the step executed.
+	 */
 	result: GenericObject;
 }

@@ -14,8 +14,8 @@
 			</select>
 		</div>
 		<div class="col-xs-8">
-			<input *ngIf="argument.reference" type="text" class="form-control" [(ngModel)]="argument.selector" name="selector"
-			 placeholder="(Optional) Selector for object-based outputs">
+			<input *ngIf="argument.reference" type="text" class="form-control" [(ngModel)]="argument.selection" name="selection"
+			 placeholder="(Optional) Selection for object-based outputs">
 			<ng-container *ngIf="!argument.reference">
 				<!-- Normal string text entries -->
 				<input *ngIf="parameterSchema.type === 'string' && !parameterSchema.enum" class="form-control" name="{{argument.name}}"

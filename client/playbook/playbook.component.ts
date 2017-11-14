@@ -112,14 +112,20 @@ export class PlaybookComponent {
 				});
 
 				observable.subscribe({
-					next: (workflowResult: WorkflowResult) => {
-						const matchingNode = this.cy.elements(`node[uid="${workflowResult.step_uid}"]`);
-
-						if (workflowResult.type === 'SUCCESS') {
-							matchingNode.addClass('good-highlighted');
-						} else { matchingNode.addClass('bad-highlighted'); }
+					next: (message: any) => {
+						console.log(message.data);
+						const workflowResult: WorkflowResult = JSON.parse(message.data);
+						console.log(workflowResult);
+						if (this.cy) {
+							const matchingNode = this.cy.elements(`node[uid="${workflowResult.step_uid}"]`);
+	
+							if (workflowResult.type === 'SUCCESS') {
+								matchingNode.addClass('good-highlighted');
+							} else { matchingNode.addClass('bad-highlighted'); }
+						}
 
 						this.workflowResults.push(workflowResult);
+						console.log(this.workflowResults);
 					},
 					error: (err: Error) => {
 						this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
@@ -154,11 +160,13 @@ export class PlaybookComponent {
 				this.currentWorkflow = workflowName;
 				this.loadedWorkflow = workflow;
 
-				// Convert our selector arrays to a string
+				// Convert our selection arrays to a string
 				if (!this.loadedWorkflow.steps) { this.loadedWorkflow.steps = []; }
 				this.loadedWorkflow.steps.forEach(s => {
 					s.arguments.forEach(i => {
-						if (i.selector && Array.isArray(i.selector)) { i.selector = (i.selector as Array<string | number>).join('.'); }
+						if (i.selection && Array.isArray(i.selection)) {
+							i.selection = (i.selection as Array<string | number>).join('.');
+						}
 					});
 				});
 
@@ -528,17 +536,17 @@ export class PlaybookComponent {
 		if (argument.reference) { delete argument.value; }
 
 		// Split our string argument selector into what the server expects
-		if (argument.selector == null) {
-			argument.selector = [];
-		} else if (typeof(argument.selector) === 'string') {
-			argument.selector = argument.selector.trim();
-			argument.selector = argument.selector.split('.');
+		if (argument.selection == null) {
+			argument.selection = [];
+		} else if (typeof(argument.selection) === 'string') {
+			argument.selection = argument.selection.trim();
+			argument.selection = argument.selection.split('.');
 
-			if (argument.selector[0] === '') {
-				argument.selector = [];
+			if (argument.selection[0] === '') {
+				argument.selection = [];
 			} else {
-				for (let i = 0; i < argument.selector.length; i++) {
-					if (!isNaN(argument.selector[i] as number)) { argument.selector[i] = +argument.selector[i]; }
+				for (let i = 0; i < argument.selection.length; i++) {
+					if (!isNaN(argument.selection[i] as number)) { argument.selection[i] = +argument.selection[i]; }
 				}
 			}
 		}
@@ -724,7 +732,7 @@ export class PlaybookComponent {
 					name: input.name,
 					value: input.schema.default != null ? input.schema.default : null,
 					reference: '',
-					selector: '',
+					selection: '',
 				});
 			});
 		}
