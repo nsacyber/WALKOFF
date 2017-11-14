@@ -1,3 +1,5 @@
+from six import string_types
+
 class JsonElementReader(object):
     """
     Reads an ExecutionElement and converts it to JSON
@@ -20,15 +22,15 @@ class JsonElementReader(object):
                              if not field.startswith('_')
                              and not callable(getattr(element, field))
                              and field != 'raw_representation'):
-            if isinstance(value, list):
+            if isinstance(value, Representable):
+                accumulator[field] = JsonElementReader.read(value)
+            elif isinstance(value, list):
                 JsonElementReader._read_list(field, value, accumulator)
             elif isinstance(value, dict):
                 JsonElementReader._read_dict(field, value, accumulator)
             elif isinstance(value, bool):
                 if value:
                     accumulator[field] = value
-            elif isinstance(value, Representable):
-                accumulator[field] = JsonElementReader.read(value)
             elif value is not None:
                 accumulator[field] = value
         return accumulator
@@ -36,7 +38,8 @@ class JsonElementReader(object):
     @staticmethod
     def _read_list(field_name, list_, accumulator):
         accumulator[field_name] = [JsonElementReader.read(list_value)
-                                   if type(list_value) not in (float, str, int, bool) else list_value
+                                   if not (isinstance(list_value, string_types) or type(list_value) in (float, int, bool))
+                                   else list_value
                                    for list_value in list_ if list_value is not None]
 
     @staticmethod
