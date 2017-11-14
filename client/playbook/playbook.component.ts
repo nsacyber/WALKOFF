@@ -168,7 +168,6 @@ export class PlaybookComponent {
 					autounselectify: false,
 					wheelSensitivity: 0.1,
 					layout: { name: 'preset' },
-					selectionType: 'single',
 					style: [
 						{
 							selector: 'node',
