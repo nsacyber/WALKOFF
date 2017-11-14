@@ -16,9 +16,8 @@ logger = logging.getLogger(__name__)
 
 def register_blueprints(flaskapp):
     from server.blueprints import app as app
-    from server.blueprints import events, workflowresult
+    from server.blueprints import workflowresult
     flaskapp.register_blueprint(app.app_page, url_prefix='/appinterface/<app>')
-    flaskapp.register_blueprint(events.events_page, url_prefix='/events')
     flaskapp.register_blueprint(workflowresult.workflowresults_page, url_prefix='/workflowresults')
     __register_all_app_blueprints(flaskapp)
 
@@ -71,7 +70,6 @@ def __register_all_app_blueprints(flaskapp):
 
 
 def create_app():
-    from .blueprints.events import setup_case_stream
     import core.config
     connexion_app = connexion.App(__name__, specification_dir='api/')
     _app = connexion_app.app
@@ -102,7 +100,6 @@ def create_app():
 
     import core.controller
     core.controller.controller.load_playbooks()
-    setup_case_stream()
     return _app
 
 
