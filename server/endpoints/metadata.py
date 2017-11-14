@@ -106,7 +106,8 @@ def read_all_interfaces():
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
-        return helpers.list_interfaces()
+        return helpers.list_interfaces(), SUCCESS
+    return __func()
 
 
 def validate_path(directory, filename):

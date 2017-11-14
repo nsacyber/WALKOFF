@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 def register_blueprints(flaskapp):
-    from server.blueprints import appinterface
+    from server.blueprints import custominterface
     from server.blueprints import events, widgets, workflowresult
-    flaskapp.register_blueprint(appinterface.app_interface_page, url_prefix='/interface/<interface>')
+    flaskapp.register_blueprint(custominterface.custom_interface_page, url_prefix='/custominterfaces/<interface>')
     flaskapp.register_blueprint(widgets.widgets_page, url_prefix='/apps/<app>/widgets/<widget>')
     flaskapp.register_blueprint(events.events_page, url_prefix='/events')
     flaskapp.register_blueprint(workflowresult.workflowresults_page, url_prefix='/workflowresults')
@@ -79,7 +79,7 @@ def __register_all_app_widget_blueprints(flaskapp, app_module):
             except ImportError:
                 continue
             else:
-                url_prefix = '/apps/{0}/{1}'.format(app_name, widget_name.split('.')[-1])
+                url_prefix = '/interfaces/{0}/{1}'.format(app_name, widget_name.split('.')[-1])
                 for blueprint in blueprints:
                     __register_blueprint(flaskapp, blueprint, url_prefix)
 
@@ -122,7 +122,7 @@ def create_app():
 
 
 # Template Loader
-env = Environment(loader=FileSystemLoader("apps"))
+env = Environment(loader=FileSystemLoader("interfaces"))
 app = create_app()
 
 

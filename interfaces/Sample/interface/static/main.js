@@ -253,8 +253,8 @@ $(function(){
 })
 
 $(function(){
-    var sse1 = new EventSource('apps/HelloWorld/stream/counter');
-    var sse2 = new EventSource('apps/HelloWorld/stream/random-number');
+    var sse1 = new EventSource('interfaces/Sample/stream/counter');
+    var sse2 = new EventSource('interfaces/Sample/stream/random-number');
 
     var s1 = document.getElementById('counter_stream')
     sse1.onmessage = function(message) {
