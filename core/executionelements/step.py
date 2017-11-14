@@ -168,7 +168,7 @@ class Step(ExecutionElement):
                 result = self._action_executable(**args)
 
             data_sent.send(self, callback_name="Function Execution Success", object_type="Step",
-                           data=json.dumps({"result": result.as_json()}))
+                           data=result.as_json())
         except InvalidArgument as e:
             formatted_error = format_exception_message(e)
             logger.error('Error calling step {0}. Error: {1}'.format(self.name, formatted_error))
@@ -177,7 +177,7 @@ class Step(ExecutionElement):
             raise
         except Exception as e:
             formatted_error = format_exception_message(e)
-            logger.error('Error calling step {0}. Error: {1}'.format(self.name, formatted_error))
+            logger.exception('Error calling step {0}. Error: {1}'.format(self.name, formatted_error))
             self._output = ActionResult('error: {0}'.format(formatted_error), 'UnhandledException')
             raise
         else:

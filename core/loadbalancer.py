@@ -77,7 +77,7 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         if 'data' in kwargs:
             packet.type = data_pb2.Message.WORKFLOWPACKETDATA
             wf_packet = packet.workflow_packet_data
-            wf_packet.additional_data = kwargs['data']
+            wf_packet.additional_data = json.dumps(kwargs['data'])
         else:
             packet.type = data_pb2.Message.WORKFLOWPACKET
             wf_packet = packet.workflow_packet
@@ -89,7 +89,7 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         if 'data' in kwargs:
             packet.type = data_pb2.Message.STEPPACKETDATA
             step_packet = packet.step_packet_data
-            step_packet.additional_data = kwargs['data']
+            step_packet.additional_data = json.dumps(kwargs['data'])
         else:
             packet.type = data_pb2.Message.STEPPACKET
             step_packet = packet.step_packet

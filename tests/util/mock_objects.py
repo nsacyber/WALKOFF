@@ -133,7 +133,7 @@ class MockReceiveQueue(loadbalancer.Receiver):
         callback_name = kwargs['callback_name']
 
         callback = self.callback_lookup[callback_name]
-        data = json.loads(kwargs['data']) if callback[1] else {}
+        data = kwargs['data'] if callback[1] else {}
         loadbalancer.Receiver.send_callback(callback[0], sender, data)
 
         if callback_name == 'Workflow Shutdown':

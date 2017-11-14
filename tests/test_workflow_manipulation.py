@@ -126,4 +126,4 @@ class TestWorkflowManipulation(unittest.TestCase):
                                          start_arguments=arguments)
         self.controller.shutdown_pool(1)
         self.assertDictEqual(result['value'],
-                             {'result': {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'}})
+                             {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'})

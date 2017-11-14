@@ -14,8 +14,6 @@
                     "arguments": [
                         {
                             "name": "call",
-                            "reference": null,
-                            "selection": null,
                             "value": "Hello World"
                         }
                     ],

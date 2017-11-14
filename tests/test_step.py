@@ -175,9 +175,7 @@ class TestStep(unittest.TestCase):
                     result['started_triggered'] = True
                 else:
                     self.assertIn('data', kwargs)
-                    data = json.loads(kwargs['data'])
-                    self.assertIn('result', data)
-                    data = data['result']
+                    data = kwargs['data']
                     self.assertEqual(data['status'], 'Success')
                     self.assertAlmostEqual(data['result'], 8.9)
                     result['result_triggered'] = True

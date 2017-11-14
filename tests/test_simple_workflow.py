@@ -54,7 +54,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.assertEqual(len(steps), 1)
         step = steps[0]
         result = step['data']
-        self.assertDictEqual(result['result'], {'result': "REPEATING: Hello World", 'status': 'Success'})
+        self.assertDictEqual(result, {'result': "REPEATING: Hello World", 'status': 'Success'})
 
     def test_multi_action_workflow(self):
         workflow = self.controller.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
@@ -71,7 +71,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.assertEqual(len(steps), 2)
         expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
                             {'result': "REPEATING: Hello World", 'status': 'Success'}]
-        for result in [step['data']['result'] for step in steps]:
+        for result in [step['data'] for step in steps]:
             self.assertIn(result, expected_results)
 
     def test_error_workflow(self):
@@ -90,7 +90,7 @@ class TestSimpleWorkflow(unittest.TestCase):
 
         expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
                             {'status': 'Success', 'result': 'REPEATING: Hello World'}]
-        for result in [step['data']['result'] for step in steps]:
+        for result in [step['data'] for step in steps]:
             self.assertIn(result, expected_results)
 
     def test_workflow_with_dataflow(self):
@@ -109,7 +109,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         expected_results = [{'result': 6, 'status': 'Success'},
                             {'result': 6, 'status': 'Success'},
                             {'result': 15, 'status': 'Success'}]
-        for result in [step['data']['result'] for step in steps]:
+        for result in [step['data'] for step in steps]:
             self.assertIn(result, expected_results)
 
     def test_workflow_with_dataflow_step_not_executed(self):

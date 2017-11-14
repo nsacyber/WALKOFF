@@ -221,11 +221,11 @@ class Workflow(ExecutionElement):
             step.execute(instance=instance(), accumulator=self._accumulator)
             data['result'] = step.get_output().as_json() if step.get_output() is not None else None
             data['execution_uid'] = step.get_execution_uid()
-            data_sent.send(self, callback_name="Step Execution Success", object_type="Workflow", data=json.dumps(data))
+            data_sent.send(self, callback_name="Step Execution Success", object_type="Workflow", data=data)
         except Exception as e:
             data['result'] = step.get_output().as_json() if step.get_output() is not None else None
             data['execution_uid'] = step.get_execution_uid()
-            data_sent.send(self, callback_name="Step Execution Error", object_type="Workflow", data=json.dumps(data))
+            data_sent.send(self, callback_name="Step Execution Error", object_type="Workflow", data=data)
             if self._total_risk > 0:
                 self.accumulated_risk += float(step.risk) / self._total_risk
             logger.debug('Step {0} of workflow {1} executed with error {2}'.format(step, self.name,

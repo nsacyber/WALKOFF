@@ -53,7 +53,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(len(steps), 1)
         step = steps[0]
         result = step['data']
-        self.assertEqual(result['result'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
+        self.assertEqual(result, {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     def test_read_all_results(self):
         flask_server.running_context.controller.initialize_threading(worker_environment_setup=modified_setup_worker_env)
