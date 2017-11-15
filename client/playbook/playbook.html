@@ -127,11 +127,11 @@
                     <div class="row">
                         <div class="col-xs-4">
                             <label>App:</label>
-                            <span>{{selectedAction.app}}</span>
+                            <span>{{selectedAction.app_name}}</span>
                         </div>
                         <div class="col-xs-4">
                             <label>Action:</label>
-                            <span>{{selectedAction.action}}</span>
+                            <span>{{selectedAction.action_name}}</span>
                         </div>
                         <div class="col-xs-4">
                             <button [disabled]="selectedAction.uid === loadedWorkflow.start" class="btn btn-primary pull-right"
@@ -142,7 +142,7 @@
                         <label for="name">Name<span class="fa fa-asterisk required" title="This field is required."></span></label>
                         <input type="text" class="form-control" [(ngModel)]="selectedAction.name" name="name" required>
                     </div>
-                    <div *ngIf="getDeviceApis(selectedAction.app).length" class="form-group">
+                    <div *ngIf="getDeviceApis(selectedAction.app_name).length" class="form-group">
                         <label for="device_id">Device</label>
                         <select class="form-control" name="device_id" [(ngModel)]="selectedAction.device_id">
                             <option [ngValue]="0"></option>
@@ -153,14 +153,14 @@
                     <div *ngIf="selectedAction.arguments.length">
                         <h4>Arguments</h4>
                         <playbook-argument-component *ngFor="let argument of selectedAction.arguments; let id = index" [loadedWorkflow]="loadedWorkflow" 
-                        [argument]="argument" [parameterApi]="getInputApiArgs(selectedAction.app, selectedAction.action, argument.name)"
+                        [argument]="argument" [parameterApi]="getInputApiArgs(selectedAction.app_name, selectedAction.action_name, argument.name)"
                         [id]="id"></playbook-argument-component>
                     </div>
                     <!-- Triggers -->
                     <div>
                         <h4>Trigger Conditions</h4>
                         <playbook-conditions-component [conditions]="selectedAction.triggers" [appApis]="appApis"
-                        [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedAction.app"></playbook-conditions-component>
+                        [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedAction.app_name"></playbook-conditions-component>
                     </div>
                 </div>
                 <!-- Editor for Branches (edges) -->
@@ -180,7 +180,7 @@
                     <div>
                         <h4>Conditions</h4>
                         <playbook-conditions-component [conditions]="selectedBranchParams.branch.conditions" [appApis]="appApis"
-                        [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedBranchParams.app"></playbook-conditions-component>
+                        [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedBranchParams.appName"></playbook-conditions-component>
                     </div>
                 </div>
             </div>
@@ -206,7 +206,7 @@
                         </ngx-datatable-column>
                         <ngx-datatable-column name="Name" [flexGrow]="1">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                {{row.name}}
+                                {{row.action_name}}
                             </ng-template>
                         </ngx-datatable-column>
                         <ngx-datatable-column name="Timestamp" [flexGrow]="1">

@@ -43,8 +43,8 @@ export class DevicesModalComponent {
 
 	ngAfterViewInit(): void {
 		//For an existing device, set our available device types and store the known fields for our device type
-		if (this.workingDevice.app) {
-			this.deviceTypesForApp = this.appApis.find(app => app.name === this.workingDevice.app).device_apis;
+		if (this.workingDevice.app_name) {
+			this.deviceTypesForApp = this.appApis.find(app => app.name === this.workingDevice.app_name).device_apis;
 		}
 		//Detect changes beforehand so the select box is updated
 		this.cdr.detectChanges();
@@ -57,9 +57,9 @@ export class DevicesModalComponent {
 		this.cdr.detectChanges();
 	}
 
-	handleAppSelection(event: any, app: string): void {
-		this.workingDevice.app = app;
-		this.deviceTypesForApp = this.appApis.find(a => a.name === app).device_apis;
+	handleAppSelection(event: any, appName: string): void {
+		this.workingDevice.app_name = appName;
+		this.deviceTypesForApp = this.appApis.find(a => a.name === appName).device_apis;
 		if (this.selectedDeviceType) { this._clearDeviceTypeData(); }
 	}
 
@@ -71,7 +71,7 @@ export class DevicesModalComponent {
 			return;
 		}
 		// Grab the first device type that matches our app and newly selected type
-		this.selectedDeviceType = this.appApis.find(a => a.name === this.workingDevice.app)
+		this.selectedDeviceType = this.appApis.find(a => a.name === this.workingDevice.app_name)
 			.device_apis.find(d => d.name === deviceType);
 		// Set the type on our working device
 		this.workingDevice.type = deviceType;
@@ -128,7 +128,7 @@ export class DevicesModalComponent {
 
 	isBasicInfoValid(): boolean {
 		if (this.workingDevice.name && this.workingDevice.name.trim() && 
-			this.workingDevice.app && this.workingDevice.type) { return true; }
+			this.workingDevice.app_name && this.workingDevice.type) { return true; }
 
 		return false;
 	}

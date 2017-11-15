@@ -3,8 +3,8 @@ import { Argument } from './argument';
 
 export class Condition {
 	uid: string;
-	app: string;
-	action: string;
+	app_name: string;
+	action_name: string;
 	arguments: Argument[] = [];
 	transforms: Transform[] = [];
 }

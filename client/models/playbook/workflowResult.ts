@@ -13,7 +13,7 @@ export class WorkflowResult {
 	/**
 	 * Name of the action to be executed as it is stored in the workflow.
 	 */
-	name: string;
+	action_name: string;
 	timestamp: string;
 	/**
 	 * Type of result. "SUCCESS" or "ERROR"

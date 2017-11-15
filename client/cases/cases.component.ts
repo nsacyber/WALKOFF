@@ -207,8 +207,8 @@ export class CasesComponent {
 		//For higher level nodes, use the name
 		if (target.name) { 
 			nodeName += target.name;
-		} else if (target.action) {
-			nodeName += target.action;
+		} else if (target.action_name) {
+			nodeName += target.action_name;
 		} else { nodeName = '(name unknown)'; }
 
 		const node = { 

@@ -64,8 +64,8 @@ export class PlaybookConditionsComponent {
 		});
 
 		const newCondition = new Condition();
-		newCondition.app = this.selectedAppName;
-		newCondition.action = this.selectedConditionApi;
+		newCondition.app_name = this.selectedAppName;
+		newCondition.action_name = this.selectedConditionApi;
 		newCondition.arguments = args;
 
 		this.conditions.push(newCondition);

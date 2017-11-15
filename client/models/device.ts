@@ -6,7 +6,7 @@ export class Device {
 		out.id = device.id;
 		out.name = device.name;
 		out.description = device.description;
-		out.app = device.app;
+		out.app_name = device.app_name;
 		out.type = device.type;
 		out.fields = {};
 
@@ -21,7 +21,7 @@ export class Device {
 	name: string;
 	description: string;
 	type: string;
-	app: string;
+	app_name: string;
 	fields: Array<{ name: string; value: any }> = [];
 	//Below should be removed
 	username: string;

@@ -50,8 +50,8 @@ export class PlaybookComponent {
 	selectedBranchParams: {
 		branch: Branch;
 		returnTypes: ReturnApi[];
-		app: string;
-		action: string;
+		appName: string;
+		actionName: string;
 	};
 	cyJsonData: string;
 	workflowResults: WorkflowResult[] = [];
@@ -108,7 +108,7 @@ export class PlaybookComponent {
 					if (this.cy) {
 						const matchingNode = this.cy.elements(`node[uid="${workflowResult.action_uid}"]`);
 
-						if (workflowResult.type === 'SUCCESS') {
+						if (message.type === 'action_success') {
 							matchingNode.addClass('good-highlighted');
 						} else { matchingNode.addClass('bad-highlighted'); }
 					}
@@ -558,7 +558,7 @@ export class PlaybookComponent {
 		if (!self.selectedAction.triggers) { self.selectedAction.triggers = []; }
 
 		// TODO: maybe scope out relevant devices by action, but for now we're just only scoping out by app
-		self.relevantDevices = self.devices.filter(d => d.app === self.selectedAction.app);
+		self.relevantDevices = self.devices.filter(d => d.app_name === self.selectedAction.app_name);
 	}
 
 	/**
@@ -580,9 +580,9 @@ export class PlaybookComponent {
 
 		self.selectedBranchParams = {
 			branch,
-			returnTypes: this._getAction(sourceAction.app, sourceAction.action).returns,
-			app: sourceAction.app,
-			action: sourceAction.action,
+			returnTypes: this._getAction(sourceAction.app_name, sourceAction.action_name).returns,
+			appName: sourceAction.app_name,
+			actionName: sourceAction.action_name,
 		};
 	}
 
@@ -720,15 +720,15 @@ export class PlaybookComponent {
 
 		let actionToBeAdded: Action;
 		let numExistingActions = 0;
-		this.loadedWorkflow.actions.forEach(s => s.action === actionName ? numExistingActions++ : null);
+		this.loadedWorkflow.actions.forEach(s => s.action_name === actionName ? numExistingActions++ : null);
 		// Set our name to be something like "action 2" if "action" already exists
 		const uniqueActionName = numExistingActions ? `${actionName} ${numExistingActions + 1}` : actionName;
 
 		if (appName && actionName) { actionToBeAdded = new Action(); }
 		actionToBeAdded.uid = uid;
 		actionToBeAdded.name = uniqueActionName;
-		actionToBeAdded.app = appName;
-		actionToBeAdded.action = actionName;
+		actionToBeAdded.app_name = appName;
+		actionToBeAdded.action_name = actionName;
 		actionToBeAdded.arguments = inputs;
 
 		this.loadedWorkflow.actions.push(actionToBeAdded);
@@ -807,7 +807,7 @@ export class PlaybookComponent {
 	 */
 	_setNodeDisplayProperties(actionNode: any, action: Action): void {
 		//add a type field to handle node styling
-		if (this._getAction(action.app, action.action).event) {
+		if (this._getAction(action.app_name, action.action_name).event) {
 			actionNode.type = 'eventAction';
 		} else { actionNode.type = 'action'; }
 	}

@@ -63,8 +63,8 @@ export class PlaybookTransformsComponent {
 		});
 
 		const newTransform = new Transform();
-		newTransform.app = this.selectedAppName;
-		newTransform.action = this.selectedTransformApi;
+		newTransform.app_name = this.selectedAppName;
+		newTransform.action_name = this.selectedTransformApi;
 		newTransform.arguments = args;
 
 		this.transforms.push(newTransform);

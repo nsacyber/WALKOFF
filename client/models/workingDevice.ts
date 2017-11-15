@@ -6,7 +6,7 @@ export class WorkingDevice {
 		out.id = workingDevice.id;
 		out.name = workingDevice.name;
 		out.description = workingDevice.description;
-		out.app = workingDevice.app;
+		out.app_name = workingDevice.app_name;
 		out.type = workingDevice.type;
 		out.fields = [];
 
@@ -20,7 +20,7 @@ export class WorkingDevice {
 	id: number;
 	name: string;
 	description: string;
-	app: string;
+	app_name: string;
 	type: string;
 	fields: { [key: string]: any } = {};
 }

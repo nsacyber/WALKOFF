@@ -7,8 +7,8 @@ export class Action {
 	uid: string;
 	name: string;
 	position: GraphPosition;
-	action: string;
-	app: string;
+	app_name: string;
+	action_name: string;
 	device_id: number;
 	risk: number;
 	arguments: Argument[] = [];
