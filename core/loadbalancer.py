@@ -355,7 +355,6 @@ class Worker:
 class Receiver:
     callback_lookup = {
         'Workflow Execution Start': (callbacks.WorkflowExecutionStart, False),
-        'Branch Found': (callbacks.BranchFound, False),
         'App Instance Created': (callbacks.AppInstanceCreated, False),
         'Workflow Shutdown': (callbacks.WorkflowShutdown, True),
         'Workflow Arguments Validated': (callbacks.WorkflowArgumentsValidated, False),

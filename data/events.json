@@ -13,7 +13,6 @@
   "workflow": [
     "Workflow Execution Start",
     "App Instance Created",
-    "Branch Found",
     "Workflow Shutdown",
     "Workflow Arguments Validated",
     "Workflow Arguments Invalid",

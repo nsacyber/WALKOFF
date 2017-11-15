@@ -87,7 +87,6 @@ WorkflowExecutionStart, __workflow_execution_start_callback = __construct_loggin
 AppInstanceCreated, __app_instance_created_callback = __construct_logging_signal('Workflow',
                                                                                  'App Instance Created',
                                                                                  'New app instance created')
-BranchFound, __branch_found_callback = __construct_logging_signal('Workflow', 'Branch Found', 'branch found')
 
 WorkflowShutdown, __workflow_shutdown_callback = __construct_logging_signal('Workflow',
                                                                             'Workflow Shutdown',

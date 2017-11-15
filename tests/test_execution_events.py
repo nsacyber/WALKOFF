@@ -36,7 +36,7 @@ class TestExecutionEvents(unittest.TestCase):
         self.c.load_playbook(resource=config.test_workflows_path + 'multiactionWorkflowTest.playbook')
         workflow_uid = self.c.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow').uid
         subs = {'case1': {workflow_uid: ['App Instance Created', 'Action Execution Success',
-                                         'Branch Found', 'Workflow Shutdown']}}
+                                         'Workflow Shutdown']}}
         case_subscription.set_subscriptions(subs)
         self.c.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
@@ -44,9 +44,9 @@ class TestExecutionEvents(unittest.TestCase):
         execution_events = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'case1').first().events.all()
 
-        self.assertEqual(len(execution_events), 6,
+        self.assertEqual(len(execution_events), 4,
                          'Incorrect length of event history. '
-                         'Expected {0}, got {1}'.format(6, len(execution_events)))
+                         'Expected {0}, got {1}'.format(4, len(execution_events)))
 
     def test_action_execution_events(self):
         self.c.load_playbook(resource=config.test_workflows_path + 'basicWorkflowTest.playbook')

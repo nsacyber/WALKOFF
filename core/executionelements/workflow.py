@@ -134,7 +134,6 @@ class Workflow(ExecutionElement):
         for action in (action_ for action_ in actions if action_ is not None):
             self._executing_action = action
             logger.debug('Executing action {0} of workflow {1}'.format(action, self.name))
-            data_sent.send(self, callback_name="Branch Found", object_type="Workflow")
 
             if self._is_paused:
                 data_sent.send(self, callback_name="Workflow Paused", object_type="Workflow")
