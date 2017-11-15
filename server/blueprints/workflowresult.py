@@ -55,17 +55,13 @@ def __workflow_ended_callback(sender, **kwargs):
 
 @ActionExecutionSuccess.connect
 def __action_ended_callback(sender, **kwargs):
-    data = 'None'
     action_arguments = [convert_argument(argument) for argument in list(sender.arguments)]
-
-    if 'data' in kwargs:
-        data = kwargs['data']
     result = {'action_name': sender.name,
               'action_uid': sender.uid,
               'timestamp': str(datetime.utcnow()),
               'arguments': action_arguments,
-              'result': data['result'],
-              'status': data['status']}
+              'result': kwargs['data']['result'],
+              'status': kwargs['data']['status']}
     __workflow_action_event_json.set(('action_success', result))
     sleep(0)
     __action_signal.set()
@@ -75,13 +71,13 @@ def __action_ended_callback(sender, **kwargs):
 
 @ActionExecutionError.connect
 def __action_error_callback(sender, **kwargs):
-    result = {'action_name': sender.name, 'action_uid': sender.uid}
-    if 'data' in kwargs:
-        data = kwargs['data']
-        result['arguments'] = data['arguments']
-        result['result'] = data['result']['result']
-        result['status'] = data['result']['status']
-        result['timestamp'] = str(datetime.utcnow())
+    action_arguments = [convert_argument(argument) for argument in list(sender.arguments)]
+    result = {'action_name': sender.name,
+              'action_uid': sender.uid,
+              'timestamp': str(datetime.utcnow()),
+              'arguments': action_arguments,
+              'result': kwargs['data']['result'],
+              'status': kwargs['data']['status']}
     __workflow_action_event_json.set(('action_error', result))
     sleep(0)
     __action_signal.set()

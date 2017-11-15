@@ -212,16 +212,9 @@ class Workflow(ExecutionElement):
             data_sent.send(self, callback_name="Workflow Arguments Invalid", object_type="Workflow")
 
     def __execute_action(self, action, instance):
-        data = {"app_name": action.app_name,
-                "action_name": action.action_name,
-                "name": action.name,
-                "arguments": JsonElementReader.read(action.arguments)}
         try:
             action.execute(instance=instance(), accumulator=self._accumulator)
         except Exception as e:
-            data['result'] = action.get_output().as_json() if action.get_output() is not None else None
-            data['execution_uid'] = action.get_execution_uid()
-            data_sent.send(self, callback_name="Action Execution Error", object_type="Workflow", data=data)
             if self._total_risk > 0:
                 self.accumulated_risk += float(action.risk) / self._total_risk
             logger.debug('Action {0} of workflow {1} executed with error {2}'.format(action, self.name,

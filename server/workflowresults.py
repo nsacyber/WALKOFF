@@ -40,12 +40,18 @@ def __action_execution_success_callback(sender, **kwargs):
                 'result': kwargs['data']}
         __append_action_result(workflow_result, data, 'success')
 
+
 @ActionExecutionError.connect
 def __action_execution_error_callback(sender, **kwargs):
     workflow_result = case_database.case_db.session.query(WorkflowResult).filter(
         WorkflowResult.uid == sender.workflow_execution_uid).first()
     if workflow_result is not None:
-        __append_action_result(workflow_result, kwargs['data'], 'error')
+        data = {'name': sender.name,
+                'app_name': sender.app_name,
+                'action_name': sender.action_name,
+                'arguments': [convert_argument(argument) for argument in list(sender.arguments)],
+                'result': kwargs['data']}
+        __append_action_result(workflow_result, data, 'error')
 
 
 @TriggerActionAwaitingData.connect

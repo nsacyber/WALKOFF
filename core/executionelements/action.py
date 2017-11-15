@@ -178,6 +178,8 @@ class Action(ExecutionElement):
             formatted_error = format_exception_message(e)
             logger.exception('Error calling action {0}. Error: {1}'.format(self.name, formatted_error))
             self._output = ActionResult('error: {0}'.format(formatted_error), 'UnhandledException')
+            data_sent.send(self, callback_name="Action Execution Error", object_type="Action",
+                           data=self._output.as_json())
             raise
         else:
             self._output = result
