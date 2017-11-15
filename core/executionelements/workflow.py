@@ -151,7 +151,6 @@ class Workflow(ExecutionElement):
                     self.__swap_action_arguments(action, start_arguments)
             self.__execute_action(action, instances[device_id])
             total_actions.append(action)
-            self._accumulator[action.uid] = action.get_output().result
         self.__shutdown(instances)
         yield
 
@@ -188,6 +187,8 @@ class Workflow(ExecutionElement):
     def get_branch(self, current_action, accumulator):
         if self.branches:
             for branch in sorted(self.branches[current_action.uid]):
+                # TODO: This here is the only hold up from getting rid of action._output.
+                # Keep whole result in accumulator
                 branch = branch.execute(current_action.get_output(), accumulator)
                 if branch is not None:
                     return branch
@@ -219,6 +220,7 @@ class Workflow(ExecutionElement):
                 self.accumulated_risk += float(action.risk) / self._total_risk
             logger.debug('Action {0} of workflow {1} executed with error {2}'.format(action, self.name,
                                                                                      format_exception_message(e)))
+        self._accumulator[action.uid] = action.get_output().result
 
     def __shutdown(self, instances):
         # Upon finishing shuts down instances
