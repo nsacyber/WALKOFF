@@ -81,7 +81,8 @@ export class PlaybookComponent {
 
 	constructor(
 		private playbookService: PlaybookService, private authService: AuthService,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+	) {
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.playbookService.getDevices().then(devices => this.devices = devices);
@@ -101,21 +102,22 @@ export class PlaybookComponent {
 	getWorkflowResultsSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
+				const self = this;
 				const eventSource = new (window as any).EventSource('workflowresults/stream-actions?access_token=' + authToken);
 
 				function eventHandler(message: any) {
 					const workflowResult: WorkflowResult = JSON.parse(message.data);
-					if (this.cy) {
-						const matchingNode = this.cy.elements(`node[uid="${workflowResult.action_uid}"]`);
+					if (self.cy) {
+						const matchingNode = self.cy.elements(`node[uid="${workflowResult.action_uid}"]`);
 
 						if (message.type === 'action_success') {
 							matchingNode.addClass('good-highlighted');
 						} else { matchingNode.addClass('bad-highlighted'); }
 					}
 
-					this.workflowResults.push(workflowResult);
-					// Slice the array to induce change detection
-					this.workflowResults = this.workflowResults.slice();
+					self.workflowResults.push(workflowResult);
+					// Induce change detection by slicing array
+					self.workflowResults = self.workflowResults.slice();
 				}
 
 				eventSource.addEventListener('action_success', eventHandler);
@@ -1219,5 +1221,30 @@ export class PlaybookComponent {
 	 */
 	getAppsWithActions(): AppApi[] {
 		return this.appApis.filter(a => a.action_apis && a.action_apis.length);
+	}
+
+	getFriendlyJSON(input: any): string {
+		let out = JSON.stringify(input, null, 1);
+		out = out.replace(/[\{\[\}\]"]/g, '').trim();
+		if (!out) { return 'N/A'; }
+		return out;
+	}
+
+	getFriendlyArguments(args: Argument[]): string {
+		if (!args || !args.length) { return 'N/A'; }
+
+		const obj: { [key: string]: string } = {};
+		args.forEach(element => {
+			if (element.value) { obj[element.name] = element.value; }
+			if (element.reference) { obj[element.name] = element.reference; }
+			if (element.selection) {
+				const selectionString = (element.selection as any[]).join('.');
+				obj[element.name] = `${obj[element.name]} (${selectionString})`;
+			}
+		});
+
+		let out = JSON.stringify(obj, null, 1);
+		out = out.replace(/[\{\}"]/g, '');
+		return out;
 	}
 }

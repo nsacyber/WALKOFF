@@ -37,7 +37,8 @@ export class DevicesModalComponent {
 
 	constructor (
 		private devicesService: DevicesService, private activeModal: NgbActiveModal, 
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig, private cdr: ChangeDetectorRef) {
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig, private cdr: ChangeDetectorRef,
+	) {
 		this.toastyConfig.theme = 'bootstrap';
 	}
 

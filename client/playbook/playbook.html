@@ -199,12 +199,12 @@
                     <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]="workflowResults" [sortType]="'multi'"
                     [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]" [limit]="25">
                         <!-- Column Templates -->
-                        <ngx-datatable-column name="UID" [flexGrow]="1">
+                        <ngx-datatable-column name="Action UID" [flexGrow]="1">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 {{row.action_uid}}
                             </ng-template>
                         </ngx-datatable-column>
-                        <ngx-datatable-column name="Name" [flexGrow]="1">
+                        <ngx-datatable-column name="Action Name" [flexGrow]="1">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 {{row.action_name}}
                             </ng-template>
@@ -214,21 +214,19 @@
                                 {{row.timestamp}}
                             </ng-template>
                         </ngx-datatable-column>
-                        <ngx-datatable-column name="Type" [flexGrow]="1">
+                        <ngx-datatable-column name="Status" [flexGrow]="1">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                {{row.type}}
+                                {{row.status}}
                             </ng-template>
                         </ngx-datatable-column>
                         <ngx-datatable-column name="Arguments" [sortable]="false" [flexGrow]="2">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <!-- {{getFriendlyArgs(row.arguments)}} -->
-                                {{row.arguments}}
+                                {{getFriendlyArguments(row.arguments)}}
                             </ng-template>
                         </ngx-datatable-column>
                         <ngx-datatable-column name="Result" [sortable]="false" [flexGrow]="4">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <!-- {{getFriendlyObject(row.result)}} -->
-                                {{row.result}}
+                                {{getFriendlyJSON(row.result)}}
                             </ng-template>
                         </ngx-datatable-column>
                     </ngx-datatable>
