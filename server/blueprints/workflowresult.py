@@ -73,12 +73,14 @@ def __action_ended_callback(sender, **kwargs):
               'action_uid': sender.uid,
               'timestamp': str(datetime.utcnow()),
               'arguments': action_arguments,
-              'result': data}
+              'result': data['result'],
+              'status': data['status']}
     __workflow_action_event_json.set(('action_success', result))
     sleep(0)
     __action_signal.set()
     __action_signal.clear()
     sleep(0)
+
 
 @ActionExecutionError.connect
 def __action_error_callback(sender, **kwargs):
@@ -86,7 +88,8 @@ def __action_error_callback(sender, **kwargs):
     if 'data' in kwargs:
         data = kwargs['data']
         result['arguments'] = data['arguments']
-        result['result'] = data['result']
+        result['result'] = data['result']['result']
+        result['status'] = data['result']['status']
         result['timestamp'] = str(datetime.utcnow())
     __workflow_action_event_json.set(('action_error', result))
     sleep(0)
