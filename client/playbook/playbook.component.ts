@@ -121,7 +121,7 @@ export class PlaybookComponent {
 				eventSource.addEventListener('action_success', eventHandler);
 				eventSource.addEventListener('action_error', eventHandler);
 				eventSource.addEventListener('error', (err: Error) => {
-					this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
+					// this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
 					console.error(err);
 				});
 
@@ -451,13 +451,17 @@ export class PlaybookComponent {
 	 * @param cyData Nodes and edges from the cytoscape graph. Only really used to grab the new positions of nodes.
 	 */
 	saveWorkflow(cyData: any[]): void {
-		if (!this.loadedWorkflow.start) {
+		// Clone the loadedWorkflow first, so we don't change the parameters 
+		// in the editor when converting it to the format the backend expects.
+		const workflowToSave: Workflow = _.cloneDeep(this.loadedWorkflow);
+
+		if (!workflowToSave.start) {
 			this.toastyService.warning('Workflow cannot be saved without a starting action.');
 			return;
 		}
 
 		// Go through our workflow and update some parameters
-		this.loadedWorkflow.actions.forEach(s => {
+		workflowToSave.actions.forEach(s => {
 			// Set the new cytoscape positions on our loadedworkflow
 			s.position = cyData.find(cyAction => cyAction.data.uid === s.uid).position;
 			
@@ -474,7 +478,7 @@ export class PlaybookComponent {
 				});
 			});
 		});
-		this.loadedWorkflow.branches.forEach(ns => {
+		workflowToSave.branches.forEach(ns => {
 			ns.conditions.forEach(c => {
 				c.arguments.forEach(a => this._sanitizeArgumentForSave(a));
 
@@ -484,7 +488,7 @@ export class PlaybookComponent {
 			});
 		});
 
-		this.playbookService.saveWorkflow(this.currentPlaybook, this.currentWorkflow, this.loadedWorkflow)
+		this.playbookService.saveWorkflow(this.currentPlaybook, this.currentWorkflow, workflowToSave)
 			.then(() => this.toastyService
 				.success(`Successfully saved workflow ${this.currentPlaybook} - ${this.currentWorkflow}.`))
 			.catch(e => this.toastyService

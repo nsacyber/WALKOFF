@@ -70,7 +70,10 @@
                     "arguments": [
                         {
                             "name": "call",
-                            "reference": "e7a2f454-109f-5e44-ee97-0095af957c09"
+                            "reference": "e7a2f454-109f-5e44-ee97-0095af957c09",
+                            "selection": [
+                                "message"
+                            ]
                         }
                     ],
                     "name": "repeatBackToMe",
@@ -98,7 +101,7 @@
                     "priority": 1,
                     "source_uid": "0585feec-cc74-c2d6-16bd-6bdda55bfa38",
                     "status": "Success",
-                    "uid": "eefb3d29-a968-4ea4-bd6b-c3c703697631"
+                    "uid": "e3861965-e938-4bf5-818b-a97d77d1b132"
                 },
                 {
                     "conditions": [],
