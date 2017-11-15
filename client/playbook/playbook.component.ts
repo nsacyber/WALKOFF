@@ -95,14 +95,14 @@ export class PlaybookComponent {
 	/// Playbook CRUD etc functions
 	///------------------------------------------------------------------------------------------------------
 	/**
-	 * Sets up the EventStream for receiving stream steps from the server.
-	 * Will currently return ALL stream steps and not just the ones manually executed.
+	 * Sets up the EventStream for receiving stream actions from the server.
+	 * Will currently return ALL stream actions and not just the ones manually executed.
 	 */
 	getWorkflowResultsSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
 				const observable = Observable.create((observer: any) => {
-					const eventSource = new (window as any).EventSource('workflowresults/stream-steps?access_token=' + authToken);
+					const eventSource = new (window as any).EventSource('workflowresults/stream-actions?access_token=' + authToken);
 					eventSource.onmessage = (x: object) => observer.next(x);
 					eventSource.onerror = (x: Error) => observer.error(x);
 

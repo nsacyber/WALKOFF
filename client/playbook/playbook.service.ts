@@ -136,7 +136,7 @@ export class PlaybookService {
 
 	/**
 	 * Notifies the server to execute a given workflow under a given playbook.
-	 * Note that execution results are not returned here, but on a separate stream-steps EventSource.
+	 * Note that execution results are not returned here, but on a separate stream-actions EventSource.
 	 * @param playbook Name of the playbook the workflow exists under
 	 * @param workflow Name of the workflow to execute
 	 */
