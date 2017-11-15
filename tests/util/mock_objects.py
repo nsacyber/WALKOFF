@@ -72,10 +72,10 @@ class MockLoadBalancer(object):
             message = message_outer.workflow_packet
         elif message_outer.type == data_pb2.Message.WORKFLOWPACKETDATA:
             message = message_outer.workflow_packet_data
-        elif message_outer.type == data_pb2.Message.STEPPACKET:
-            message = message_outer.step_packet
-        elif message_outer.type == data_pb2.Message.STEPPACKETDATA:
-            message = message_outer.step_packet_data
+        elif message_outer.type == data_pb2.Message.ACTIONPACKET:
+            message = message_outer.action_packet
+        elif message_outer.type == data_pb2.Message.ACTIONPACKETDATA:
+            message = message_outer.action_packet_data
         else:
             message = message_outer.general_packet
 

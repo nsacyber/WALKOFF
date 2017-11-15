@@ -87,12 +87,12 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         wf_packet.callback_name = kwargs['callback_name']
     elif obj_type == 'Action':
         if 'data' in kwargs:
-            packet.type = data_pb2.Message.STEPPACKETDATA
-            action_packet = packet.step_packet_data
+            packet.type = data_pb2.Message.ACTIONPACKETDATA
+            action_packet = packet.action_packet_data
             action_packet.additional_data = json.dumps(kwargs['data'])
         else:
-            packet.type = data_pb2.Message.STEPPACKET
-            action_packet = packet.step_packet
+            packet.type = data_pb2.Message.ACTIONPACKET
+            action_packet = packet.action_packet
         action_packet.sender.name = sender.name
         action_packet.sender.uid = sender.uid
         action_packet.sender.workflow_execution_uid = workflow_execution_uid
@@ -431,10 +431,10 @@ class Receiver:
                 message = message_outer.workflow_packet
             elif message_outer.type == data_pb2.Message.WORKFLOWPACKETDATA:
                 message = message_outer.workflow_packet_data
-            elif message_outer.type == data_pb2.Message.STEPPACKET:
-                message = message_outer.step_packet
-            elif message_outer.type == data_pb2.Message.STEPPACKETDATA:
-                message = message_outer.step_packet_data
+            elif message_outer.type == data_pb2.Message.ACTIONPACKET:
+                message = message_outer.action_packet
+            elif message_outer.type == data_pb2.Message.ACTIONPACKETDATA:
+                message = message_outer.action_packet_data
             else:
                 message = message_outer.general_packet
 
