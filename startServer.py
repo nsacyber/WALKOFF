@@ -50,15 +50,16 @@ def setup_logger():
 
 def run():
     setup_logger()
+    from server import flaskserver
+    flaskserver.running_context.controller.initialize_threading()
     monkey.patch_all()
     # The order of these imports matter for initialization (should probably be fixed)
     from compose_api import compose_api
     compose_api()
-    from server import flaskserver
+
     import core.case.database as case_database
     case_database.initialize()
     ssl_context = get_ssl_context()
-    flaskserver.running_context.controller.initialize_threading()
 
     try:
         port = int(config.port)
