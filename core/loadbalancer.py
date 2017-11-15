@@ -148,7 +148,7 @@ class LoadBalancer:
         self.comm_socket.curve_server = True
         self.comm_socket.bind(COMM_ADDR)
 
-        gevent.sleep(2)
+        # gevent.sleep(2)
 
     def manage_workflows(self):
         """Manages the workflows to be executed and the workers. It waits for the server to submit a request to
@@ -171,7 +171,7 @@ class LoadBalancer:
                     if ready == b"Ready" or ready == b"Done":
                         self.available_workers.append(worker)
                 except zmq.ZMQError:
-                    gevent.sleep(0.1)
+                    # gevent.sleep(0.1)
                     continue
         self.request_socket.close()
         self.comm_socket.close()
@@ -218,10 +218,15 @@ class LoadBalancer:
         data = dict()
         data['data_in'] = data_in
         data['arguments'] = arguments if arguments else []
+        print(workflow_uids)
+        print(self.workflow_comms)
         for uid in workflow_uids:
+            print(uid)
             if uid in self.workflow_comms:
+                print("sending worker the stuff")
                 self.comm_socket.send_multipart(
                     [self.workflow_comms[uid], b'', str.encode(json.dumps(data))])
+                print("Data sent")
 
 
 class Worker:
@@ -318,8 +323,9 @@ class Worker:
                 break
             try:
                 message = self.comm_sock.recv(zmq.NOBLOCK)
+                print(message)
             except zmq.ZMQError:
-                gevent.sleep(0.1)
+                # gevent.sleep(0.1)
                 continue
 
             if message == b'Pause':
@@ -337,7 +343,7 @@ class Worker:
                     decoded_message["arguments"] = arguments
                 self.workflow.send_data_to_action(decoded_message)
 
-            gevent.sleep(0.1)
+            # gevent.sleep(0.1)
         return
 
     def on_data_sent(self, sender, **kwargs):
@@ -421,7 +427,7 @@ class Receiver:
             try:
                 message_bytes = self.results_sock.recv(zmq.NOBLOCK)
             except zmq.ZMQError:
-                gevent.sleep(0.1)
+                # gevent.sleep(0.1)
                 continue
 
             message_outer = data_pb2.Message()
@@ -439,6 +445,7 @@ class Receiver:
                 message = message_outer.general_packet
 
             callback_name = message.callback_name
+            print(callback_name)
             sender = message.sender
 
             try:

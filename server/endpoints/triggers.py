@@ -17,7 +17,10 @@ def send_data_to_trigger():
         arguments = data['arguments'] if 'arguments' in data else []
 
         workflows_awaiting_data = set(running_context.controller.get_waiting_workflows())
+        print(workflows_awaiting_data)
+        print(workflows_in)
         uids = set.intersection(workflows_in, workflows_awaiting_data)
+        print(uids)
 
         running_context.controller.send_data_to_trigger(data_in, uids, arguments)
         return {}, SUCCESS

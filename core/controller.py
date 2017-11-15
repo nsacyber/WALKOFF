@@ -32,14 +32,18 @@ class Controller(object):
         """
         self.executor.initialize_threading(pids=pids)
 
-    def shutdown_pool(self, num_workflows=0):
-        """Shuts down the executor
+    def wait_and_reset(self, num_workflows):
+        """Waits for the specified number of workflows to finish execution.
 
         Args:
-            num_workflows (int, optional): Number of workflows to wait to complete before shutting down. Defaults to 0,
-                meaning that it will immediately shutdown the pool upon receiving this command.
+            num_workflows (int): The number of workflows to wait for.
         """
-        self.executor.shutdown_pool(num_workflows=num_workflows)
+        self.executor.wait_and_reset(num_workflows)
+
+    def shutdown_pool(self):
+        """Shuts down the executor
+        """
+        self.executor.shutdown_pool()
 
     def pause_workflow(self, execution_uid):
         """Pauses a workflow.

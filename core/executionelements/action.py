@@ -1,9 +1,7 @@
 import json
 import logging
 import uuid
-
-import gevent
-from gevent.event import AsyncResult
+import threading
 
 import core.config.config
 from apps import get_app_action, is_app_action_bound
@@ -46,7 +44,8 @@ class Action(ExecutionElement):
         ExecutionElement.__init__(self, uid)
 
         self.triggers = triggers if triggers is not None else []
-        self._incoming_data = AsyncResult()
+        self._incoming_data = None
+        self._event = threading.Event()
 
         self.name = name
         self.app_name = app_name
@@ -92,7 +91,9 @@ class Action(ExecutionElement):
                 to be sent to the triggers, and 'arguments', which is an optional parameter to change the arguments
                 to the current Action
         """
-        self._incoming_data.set(data)
+        print("Setting now")
+        self._incoming_data = data
+        self._event.set()
 
     def _update_json(self, updated_json):
         self.action_name = updated_json['action_name']
@@ -180,13 +181,15 @@ class Action(ExecutionElement):
 
     def _wait_for_trigger(self, accumulator):
         while True:
-            try:
-                data = self._incoming_data.get(timeout=1)
-                self._incoming_data = AsyncResult()
-            except gevent.Timeout:
-                gevent.sleep(0.1)
+            print("About to wait")
+            self._event.wait(timeout=1)
+            print("Awoken")
+            if self._incoming_data is None:
                 continue
+            data = self._incoming_data
             data_in = data['data_in']
+            self._incoming_data = None
+            self._event.clear()
 
             if all(flag.execute(data_in=data_in, accumulator=accumulator) for flag in self.triggers):
                 data_sent.send(self, callback_name="Trigger Action Taken", object_type="Action")
@@ -194,6 +197,7 @@ class Action(ExecutionElement):
                 accumulator[self.name] = data_in
 
                 arguments = data['arguments'] if 'arguments' in data else []
+                print(arguments)
                 if arguments:
                     new_args = {}
                     for argument in arguments:
@@ -201,7 +205,6 @@ class Action(ExecutionElement):
                     self.arguments.update(new_args)
                 break
             else:
+                print("Trigger invalid")
                 logger.debug('Trigger is not valid for input {0}'.format(data_in))
                 data_sent.send(self, callback_name="Trigger Action Not Taken", object_type="Action")
-
-            gevent.sleep(0.1)
