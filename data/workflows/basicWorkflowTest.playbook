@@ -108,9 +108,7 @@
                             "name": "call",
                             "reference": "e7a2f454-109f-5e44-ee97-0095af957c09",
                             "selection": [
-                                {},
-                                {},
-                                {}
+                                "message"
                             ]
                         }
                     ],

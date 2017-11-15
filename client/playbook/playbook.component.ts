@@ -101,36 +101,61 @@ export class PlaybookComponent {
 	getWorkflowResultsSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				const observable = Observable.create((observer: any) => {
-					const eventSource = new (window as any).EventSource('workflowresults/stream-steps?access_token=' + authToken);
-					eventSource.onmessage = (x: object) => observer.next(x);
-					eventSource.onerror = (x: Error) => observer.error(x);
+				const eventSource = new (window as any).EventSource('workflowresults/stream-steps?access_token=' + authToken);
 
-					return () => {
-						eventSource.close();
-					};
+				function eventHandler(message: any) {
+					const workflowResult: WorkflowResult = JSON.parse(message.data);
+					if (this.cy) {
+						const matchingNode = this.cy.elements(`node[uid="${workflowResult.step_uid}"]`);
+
+						if (workflowResult.type === 'SUCCESS') {
+							matchingNode.addClass('good-highlighted');
+						} else { matchingNode.addClass('bad-highlighted'); }
+					}
+
+					this.workflowResults.push(workflowResult);
+					// Slice the array to induce change detection
+					this.workflowResults = this.workflowResults.slice();
+				}
+
+				eventSource.addEventListener('step_success', eventHandler);
+				eventSource.addEventListener('step_error', eventHandler);
+				eventSource.addEventListener('error', (err: Error) => {
+					this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
+					console.error(err);
 				});
 
-				observable.subscribe({
-					next: (message: any) => {
-						const workflowResult: WorkflowResult = JSON.parse(message.data);
-						if (this.cy) {
-							const matchingNode = this.cy.elements(`node[uid="${workflowResult.step_uid}"]`);
+				// const observable = Observable.create((observer: any) => {
+				// 	const eventSource = new (window as any).EventSource('workflowresults/stream-steps?access_token=' + authToken);
+				// 	eventSource.onmessage = (x: object) => observer.next(x);
+				// 	eventSource.onerror = (x: Error) => observer.error(x);
+
+				// 	return () => {
+				// 		eventSource.close();
+				// 	};
+				// });
+
+				// observable.subscribe({
+				// 	next: (message: any) => {
+				// 		console.log(message);
+				// 		const workflowResult: WorkflowResult = JSON.parse(message.data);
+				// 		if (this.cy) {
+				// 			const matchingNode = this.cy.elements(`node[uid="${workflowResult.step_uid}"]`);
 	
-							if (workflowResult.type === 'SUCCESS') {
-								matchingNode.addClass('good-highlighted');
-							} else { matchingNode.addClass('bad-highlighted'); }
-						}
+				// 			if (workflowResult.type === 'SUCCESS') {
+				// 				matchingNode.addClass('good-highlighted');
+				// 			} else { matchingNode.addClass('bad-highlighted'); }
+				// 		}
 
-						this.workflowResults.push(workflowResult);
-						// Slice the array to induce change detection
-						this.workflowResults = this.workflowResults.slice();
-					},
-					error: (err: Error) => {
-						this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
-						console.error(err);
-					},
-				});
+				// 		this.workflowResults.push(workflowResult);
+				// 		// Slice the array to induce change detection
+				// 		this.workflowResults = this.workflowResults.slice();
+				// 	},
+				// 	error: (err: Error) => {
+				// 		this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
+				// 		console.error(err);
+				// 	},
+				// });
 			});
 	}
 
