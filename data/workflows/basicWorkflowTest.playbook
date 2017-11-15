@@ -42,19 +42,6 @@
                     "action_name": "helloWorld",
                     "app_name": "HelloWorld",
                     "arguments": [],
-                    "name": "helloWorld 2",
-                    "position": {
-                        "x": 210,
-                        "y": 210
-                    },
-                    "risk": 0,
-                    "triggers": [],
-                    "uid": "78e3baca-72ee-ac97-6770-6c36bd90d5c0"
-                },
-                {
-                    "action_name": "helloWorld",
-                    "app_name": "HelloWorld",
-                    "arguments": [],
                     "name": "helloWorld",
                     "position": {
                         "x": 130,
@@ -63,6 +50,19 @@
                     "risk": 0,
                     "triggers": [],
                     "uid": "aae6192c-35b1-95e9-a2d7-3c127667ee19"
+                },
+                {
+                    "action_name": "helloWorld",
+                    "app_name": "HelloWorld",
+                    "arguments": [],
+                    "name": "helloWorld 2",
+                    "position": {
+                        "x": 210,
+                        "y": 210
+                    },
+                    "risk": 0,
+                    "triggers": [],
+                    "uid": "78e3baca-72ee-ac97-6770-6c36bd90d5c0"
                 },
                 {
                     "action_name": "repeatBackToMe",
@@ -102,19 +102,19 @@
                 },
                 {
                     "conditions": [],
-                    "destination_uid": "e7a2f454-109f-5e44-ee97-0095af957c09",
-                    "priority": 1,
-                    "source_uid": "78e3baca-72ee-ac97-6770-6c36bd90d5c0",
-                    "status": "Success",
-                    "uid": "988fdd62-e102-447a-8862-80b6f240cdef"
-                },
-                {
-                    "conditions": [],
                     "destination_uid": "78e3baca-72ee-ac97-6770-6c36bd90d5c0",
                     "priority": 1,
                     "source_uid": "aae6192c-35b1-95e9-a2d7-3c127667ee19",
                     "status": "Success",
                     "uid": "2771fe58-9b7f-4fbe-bdd8-79a59002977e"
+                },
+                {
+                    "conditions": [],
+                    "destination_uid": "e7a2f454-109f-5e44-ee97-0095af957c09",
+                    "priority": 1,
+                    "source_uid": "78e3baca-72ee-ac97-6770-6c36bd90d5c0",
+                    "status": "Success",
+                    "uid": "988fdd62-e102-447a-8862-80b6f240cdef"
                 }
             ],
             "name": "helloWorldWorkflow",

@@ -5,7 +5,7 @@ from core.case.callbacks import WorkflowShutdown, FunctionExecutionSuccess, Acti
 from datetime import datetime
 from server.security import jwt_required_in_query
 import server.workflowresults  # do not delete needed to register callbacks
-
+import json
 workflowresults_page = Blueprint('workflowresults_page', __name__)
 
 __workflow_shutdown_event_json = AsyncResult()
@@ -21,7 +21,7 @@ def __workflow_shutdown_event_stream():
     global __workflow_event_id_counter
     while True:
         data = __workflow_shutdown_event_json.get()
-        yield 'event: workflow_shutdown\nid: {0}\ndata: {1}\n\n'.format(__workflow_event_id_counter, data)
+        yield 'event: workflow_shutdown\nid: {0}\ndata: {1}\n\n'.format(__workflow_event_id_counter, json.dumps(data))
         __workflow_event_id_counter += 1
         __sync_signal.wait()
 
@@ -30,7 +30,7 @@ def __workflow_actions_event_stream():
     global __action_event_id_counter
     while True:
         event_type, data = __workflow_action_event_json.get()
-        yield 'event: {0}\nid: {1}\ndata: {2}\n\n'.format(event_type, __action_event_id_counter, data)
+        yield 'event: {0}\nid: {1}\ndata: {2}\n\n'.format(event_type, __action_event_id_counter, json.dumps(data))
         __action_event_id_counter += 1
         __action_signal.wait()
 
@@ -78,7 +78,6 @@ def __action_ended_callback(sender, **kwargs):
     __action_signal.set()
     __action_signal.clear()
     sleep(0)
-
 
 @ActionExecutionError.connect
 def __action_error_callback(sender, **kwargs):
