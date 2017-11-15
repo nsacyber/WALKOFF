@@ -30,7 +30,7 @@ def __action_started_callback(sender, **kwargs):
 
 @FunctionExecutionSuccess.connect
 def __action_ended_callback(sender, **kwargs):
-    __update_success_action_tracker(sender.execution_uid, sender.app, sender.action)
+    __update_success_action_tracker(sender.execution_uid, sender.app_name, sender.action_name)
 
 
 @ActionExecutionError.connect

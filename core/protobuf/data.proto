@@ -52,8 +52,8 @@ message ActionPacket {
         optional string name = 1;
         optional string uid = 2;
         optional string execution_uid = 3;
-        optional string app = 4;
-        optional string action = 5;
+        optional string app_name = 4;
+        optional string action_name = 5;
         repeated ActionArgument arguments = 6;
         optional string workflow_execution_uid = 7;
     }
@@ -73,7 +73,7 @@ message GeneralPacket {
 
     message GeneralSender {
         optional string uid = 1;
-        optional string app = 2;
+        optional string app_name = 2;
         optional string workflow_execution_uid = 3;
     }
 
