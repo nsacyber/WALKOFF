@@ -7,8 +7,8 @@
                 {
                     "conditions": [
                         {
-                            "action": "regMatch",
-                            "app": "HelloWorld",
+                            "action_name": "regMatch",
+                            "app_name": "HelloWorld",
                             "arguments": [
                                 {
                                     "name": "regex",
@@ -17,8 +17,8 @@
                             ],
                             "transforms": [
                                 {
-                                    "action": "length",
-                                    "app": "HelloWorld",
+                                    "action_name": "length",
+                                    "app_name": "HelloWorld",
                                     "arguments": [],
                                     "uid": "d0b24e6095ac45669753899bd11d37fd"
                                 }
@@ -35,8 +35,8 @@
             "start": "389b95462e334a52bb0b9608713f81b8",
             "actions": [
                 {
-                    "action": "repeatBackToMe",
-                    "app": "HelloWorld",
+                    "action_name": "repeatBackToMe",
+                    "app_name": "HelloWorld",
                     "arguments": [
                         {
                             "name": "call",

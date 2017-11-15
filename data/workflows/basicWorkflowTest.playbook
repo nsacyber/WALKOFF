@@ -6,8 +6,8 @@
             "accumulated_risk": 0.0,
             "actions": [
                 {
-                    "action": "helloWorld",
-                    "app": "HelloWorld",
+                    "action_name": "helloWorld",
+                    "app_name": "HelloWorld",
                     "arguments": [],
                     "name": "helloWorld 3",
                     "position": {
@@ -19,8 +19,8 @@
                     "uid": "e7a2f454-109f-5e44-ee97-0095af957c09"
                 },
                 {
-                    "action": "returnPlusOne",
-                    "app": "HelloWorld",
+                    "action_name": "returnPlusOne",
+                    "app_name": "HelloWorld",
                     "arguments": [
                         {
                             "name": "number",
@@ -39,8 +39,8 @@
                     "uid": "0585feec-cc74-c2d6-16bd-6bdda55bfa38"
                 },
                 {
-                    "action": "helloWorld",
-                    "app": "HelloWorld",
+                    "action_name": "helloWorld",
+                    "app_name": "HelloWorld",
                     "arguments": [],
                     "name": "helloWorld 2",
                     "position": {
@@ -52,8 +52,8 @@
                     "uid": "78e3baca-72ee-ac97-6770-6c36bd90d5c0"
                 },
                 {
-                    "action": "helloWorld",
-                    "app": "HelloWorld",
+                    "action_name": "helloWorld",
+                    "app_name": "HelloWorld",
                     "arguments": [],
                     "name": "helloWorld",
                     "position": {
@@ -65,8 +65,8 @@
                     "uid": "aae6192c-35b1-95e9-a2d7-3c127667ee19"
                 },
                 {
-                    "action": "repeatBackToMe",
-                    "app": "HelloWorld",
+                    "action_name": "repeatBackToMe",
+                    "app_name": "HelloWorld",
                     "arguments": [
                         {
                             "name": "call",

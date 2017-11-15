@@ -15,8 +15,8 @@
             "start": "9fd0559779a84bd584c1ecd43b156656",
             "actions": [
                 {
-                    "action": "Add Three",
-                    "app": "HelloWorld",
+                    "action_name": "Add Three",
+                    "app_name": "HelloWorld",
                     "arguments": [
                         {
                             "name": "num1",
@@ -37,8 +37,8 @@
                     "uid": "0ed91d07f1774d16a991d7815814fff1"
                 },
                 {
-                    "action": "Add Three",
-                    "app": "HelloWorld",
+                    "action_name": "Add Three",
+                    "app_name": "HelloWorld",
                     "arguments": [
                         {
                             "name": "num1",
@@ -59,8 +59,8 @@
                     "uid": "9fd0559779a84bd584c1ecd43b156656"
                 },
                 {
-                    "action": "Add Three",
-                    "app": "HelloWorld",
+                    "action_name": "Add Three",
+                    "app_name": "HelloWorld",
                     "arguments": [
                         {
                             "name": "num1",

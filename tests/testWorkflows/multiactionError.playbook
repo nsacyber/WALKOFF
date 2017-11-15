@@ -7,8 +7,8 @@
                 {
                     "conditions": [
                         {
-                            "action": "regMatch",
-                            "app": "HelloWorld",
+                            "action_name": "regMatch",
+                            "app_name": "HelloWorld",
                             "arguments": [
                                 {
                                     "name": "regex",
@@ -27,8 +27,8 @@
                 {
                     "conditions": [
                         {
-                            "action": "regMatch",
-                            "app": "HelloWorld",
+                            "action_name": "regMatch",
+                            "app_name": "HelloWorld",
                             "arguments": [
                                 {
                                     "name": "regex",
@@ -37,8 +37,8 @@
                             ],
                             "transforms": [
                                 {
-                                    "action": "length",
-                                    "app": "HelloWorld",
+                                    "action_name": "length",
+                                    "app_name": "HelloWorld",
                                     "arguments": [],
                                     "uid": "d3a2a7e44b0742cd9838f96a5dc32ce1"
                                 }
@@ -55,8 +55,8 @@
             "start": "93fdd70cdf9b4d1987df5e0cee6b4d37",
             "actions": [
                 {
-                    "action": "Buggy",
-                    "app": "HelloWorld",
+                    "action_name": "Buggy",
+                    "app_name": "HelloWorld",
                     "arguments": [],
                     "name": "1",
                     "position": {},
@@ -64,8 +64,8 @@
                     "uid": "dc6836d7e42d4e54a43d0acdad3f9728"
                 },
                 {
-                    "action": "helloWorld",
-                    "app": "HelloWorld",
+                    "action_name": "helloWorld",
+                    "app_name": "HelloWorld",
                     "arguments": [],
                     "name": "start",
                     "position": {},
@@ -73,8 +73,8 @@
                     "uid": "93fdd70cdf9b4d1987df5e0cee6b4d37"
                 },
                 {
-                    "action": "repeatBackToMe",
-                    "app": "HelloWorld",
+                    "action_name": "repeatBackToMe",
+                    "app_name": "HelloWorld",
                     "arguments": [
                         {
                             "name": "call",

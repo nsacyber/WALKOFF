@@ -70,4 +70,4 @@ class TestWorkflowServer(ServerTestCase):
         for result in response:
             self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'uid'})
             for action_result in result['results']:
-                self.assertSetEqual(set(action_result.keys()), {'input', 'type', 'name', 'timestamp', 'result', 'app', 'action'})
+                self.assertSetEqual(set(action_result.keys()), {'input', 'type', 'name', 'timestamp', 'result', 'app_name', 'action_name'})

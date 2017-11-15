@@ -62,23 +62,23 @@ class ActionResult(Case_Base):
     result = Column(String)
     input = Column(String)
     type = Column(String)
-    action = Column(String)
-    app = Column(String)
+    action_name = Column(String)
+    app_name = Column(String)
     workflow_result_id = Column(Integer, ForeignKey('workflow.id'))
 
-    def __init__(self, name, result, action_input, action_type, app, action):
+    def __init__(self, name, result, action_input, action_type, app_name, action_name):
         self.name = name
         self.result = result
         self.input = action_input
         self.type = action_type
         self.timestamp = datetime.utcnow()
-        self.app = app
-        self.action = action
+        self.app_name = app_name
+        self.action_name = action_name
 
     def as_json(self):
         return {"name": self.name,
-                "app": self.app,
-                "action": self.action,
+                "app_name": self.app_name,
+                "action_name": self.action_name,
                 "result": json.loads(self.result),
                 "input": json.loads(self.input),
                 "type": self.type,

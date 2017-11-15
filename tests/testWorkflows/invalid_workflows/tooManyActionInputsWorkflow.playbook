@@ -7,8 +7,8 @@
                 {
                     "conditions": [
                         {
-                            "action": "regMatch",
-                            "app": "HelloWorld",
+                            "action_name": "regMatch",
+                            "app_name": "HelloWorld",
                             "arguments": [
                                 {
                                     "name": "regex",
@@ -17,8 +17,8 @@
                             ],
                             "transforms": [
                                 {
-                                    "action": "length",
-                                    "app": "HelloWorld",
+                                    "action_name": "length",
+                                    "app_name": "HelloWorld",
                                     "arguments": []
                                 }
                             ]
@@ -32,8 +32,8 @@
             "start": "2",
             "actions": [
                 {
-                    "action": "returnPlusOne",
-                    "app": "HelloWorld",
+                    "action_name": "returnPlusOne",
+                    "app_name": "HelloWorld",
                     "arguments": [
                         {
                             "name": "number",
@@ -50,8 +50,8 @@
                     "uid": "1"
                 },
                 {
-                    "action": "helloWorld",
-                    "app": "Invalid",
+                    "action_name": "helloWorld",
+                    "app_name": "Invalid",
                     "arguments": [],
                     "name": "start",
                     "position": {},

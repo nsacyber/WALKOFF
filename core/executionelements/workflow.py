@@ -66,7 +66,7 @@ class Workflow(ExecutionElement):
             
         """
         arguments = arguments if arguments is not None else []
-        action = Action(name=name, action=action, app=app, device_id=device, arguments=arguments, risk=risk)
+        action = Action(name=name, action_name=action, app_name=app, device_id=device, arguments=arguments, risk=risk)
         self.actions[action.uid] = action
         self.branches[action.uid] = []
         self._total_risk += risk
@@ -157,11 +157,11 @@ class Workflow(ExecutionElement):
         yield
 
     def __setup_app_instance(self, instances, action):
-        device_id = (action.app, action.device_id)
+        device_id = (action.app_name, action.device_id)
         if device_id not in instances:
-            instances[device_id] = AppInstance.create(action.app, action.device_id)
+            instances[device_id] = AppInstance.create(action.app_name, action.device_id)
             data_sent.send(self, callback_name="App Instance Created", object_type="Workflow")
-            logger.debug('Created new app instance: App {0}, device {1}'.format(action.app, action.device_id))
+            logger.debug('Created new app instance: App {0}, device {1}'.format(action.app_name, action.device_id))
         return device_id
 
     def send_data_to_action(self, data):
@@ -213,8 +213,8 @@ class Workflow(ExecutionElement):
             data_sent.send(self, callback_name="Workflow Arguments Invalid", object_type="Workflow")
 
     def __execute_action(self, action, instance):
-        data = {"app": action.app,
-                "action": action.action,
+        data = {"app_name": action.app_name,
+                "action_name": action.action_name,
                 "name": action.name,
                 "arguments": JsonElementReader.read(action.arguments)}
         try:

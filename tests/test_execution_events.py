@@ -74,9 +74,9 @@ class TestExecutionEvents(unittest.TestCase):
         branches = [branch for sublist in workflow.branches.values() for branch in sublist]
         branch = branches[0]
         subs[branch.uid] = ['Branch Taken', 'Branch Not Taken']
-        condition = next(condition for condition in branch.conditions if condition.action == 'regMatch')
+        condition = next(condition for condition in branch.conditions if condition.action_name == 'regMatch')
         subs[condition.uid] = ['Condition Success', 'Condition Error']
-        transform = next(transform for transform in condition.transforms if transform.action == 'length')
+        transform = next(transform for transform in condition.transforms if transform.action_name == 'length')
         subs[transform.uid] = ['Transform Success', 'Transform Error']
 
         case_subscription.set_subscriptions({'case1': subs})

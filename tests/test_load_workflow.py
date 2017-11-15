@@ -39,8 +39,8 @@ class TestLoadWorkflow(unittest.TestCase):
 
         # Verify attributes
         self.assertEqual(action.name, 'start')
-        self.assertEqual(action.app, 'HelloWorld')
-        self.assertEqual(action.action, 'repeatBackToMe')
+        self.assertEqual(action.app_name, 'HelloWorld')
+        self.assertEqual(action.action_name, 'repeatBackToMe')
         self.assertIsNone(action.device_id)
 
     def test_workflow_branches(self):
@@ -57,7 +57,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertTrue(len(conditions) == 1)
 
         condition = conditions[0]
-        self.assertEqual(condition.action, 'regMatch')
+        self.assertEqual(condition.action_name, 'regMatch')
         self.assertTrue(condition.transforms)
 
     def test_workflow_branch_transforms(self):
@@ -65,7 +65,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertEqual(len(transforms), 1)
 
         transform = transforms[0]
-        self.assertEqual(transform.action, 'length')
+        self.assertEqual(transform.action_name, 'length')
         self.assertEqual(transform.arguments, {})
 
     def test_load_workflow_invalid_app(self):

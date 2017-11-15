@@ -7,8 +7,8 @@
                 {
                     "conditions": [
                         {
-                            "action": "regMatch",
-                            "app": "HelloWorld",
+                            "action_name": "regMatch",
+                            "app_name": "HelloWorld",
                             "arguments": [
                                 {
                                     "name": "regex",
@@ -27,8 +27,8 @@
                 {
                     "conditions": [
                         {
-                            "action": "regMatch",
-                            "app": "HelloWorld",
+                            "action_name": "regMatch",
+                            "app_name": "HelloWorld",
                             "arguments": [
                                 {
                                     "name": "regex",
@@ -48,8 +48,8 @@
             "start": "543f6226116c473bb75d19330b77371e",
             "actions": [
                 {
-                    "action": "repeatBackToMe",
-                    "app": "HelloWorld",
+                    "action_name": "repeatBackToMe",
+                    "app_name": "HelloWorld",
                     "arguments": [
                         {
                             "name": "call",
@@ -63,8 +63,8 @@
                     "uid": "c8d5873e831c44fb838e601bb407a768"
                 },
                 {
-                    "action": "returnPlusOne",
-                    "app": "HelloWorld",
+                    "action_name": "returnPlusOne",
+                    "app_name": "HelloWorld",
                     "arguments": [
                         {
                             "name": "number",

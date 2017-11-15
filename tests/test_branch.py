@@ -29,8 +29,8 @@ class TestBranch(unittest.TestCase):
         self.assertEqual(elem.status, status)
         self.assertEqual(elem.priority, priority)
         if conditions:
-            self.assertListEqual([condition.action for condition in elem.conditions],
-                                 [condition['action'] for condition in conditions])
+            self.assertListEqual([condition.action_name for condition in elem.conditions],
+                                 [condition['action_name'] for condition in conditions])
         if uid is None:
             self.assertIsNotNone(elem.uid)
         else:
@@ -55,8 +55,8 @@ class TestBranch(unittest.TestCase):
 
     def test_init_with_conditions(self):
         conditions = [Condition('HelloWorld', 'Top Condition'), Condition('HelloWorld', 'mod1_flag1')]
-        expected_condition_json = [{'action': 'Top Condition', 'args': [], 'filters': []},
-                              {'action': 'mod1_flag1', 'args': [], 'filters': []}]
+        expected_condition_json = [{'action_name': 'Top Condition', 'args': [], 'filters': []},
+                              {'action_name': 'mod1_flag1', 'args': [], 'filters': []}]
         branch = Branch("1", "2", conditions=conditions)
         self.__compare_init(branch, "1", "2", expected_condition_json)
 
@@ -73,9 +73,9 @@ class TestBranch(unittest.TestCase):
                     self.assertNotEqual(branches[i], branches[j])
 
     def test_execute(self):
-        conditions1 = [Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='(.*)')])]
-        conditions2 = [Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='(.*)')]),
-                       Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='a')])]
+        conditions1 = [Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='(.*)')])]
+        conditions2 = [Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='(.*)')]),
+                       Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='a')])]
 
         inputs = [('name1', [], ActionResult('aaaa', 'Success'), True),
                   ('name2', conditions1, ActionResult('anyString', 'Success'), True),
@@ -96,7 +96,7 @@ class TestBranch(unittest.TestCase):
         self.assertIsNone(workflow.get_branch(None, {}))
 
     def test_get_branch_invalid_action(self):
-        flag = Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='aaa')])
+        flag = Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])
         branch = Branch(source_uid="1", destination_uid='next', conditions=[flag])
         action = Action('HelloWorld', 'helloWorld', uid="2")
         action._output = ActionResult(result='bbb', status='Success')
@@ -104,7 +104,7 @@ class TestBranch(unittest.TestCase):
         self.assertIsNone(workflow.get_branch(action, {}))
 
     def test_get_branch(self):
-        flag = Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='aaa')])
+        flag = Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])
         branch = Branch(source_uid="1", destination_uid="2", conditions=[flag])
         action = Action('HelloWorld', 'helloWorld', uid="1")
         action._output = ActionResult(result='aaa', status='Success')
@@ -125,7 +125,7 @@ class TestBranch(unittest.TestCase):
         self.assertTrue(result['triggered'])
 
     def test_branch_with_priority(self):
-        flag = Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='aaa')])
+        flag = Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])
         branch_one = Branch(source_uid="1", destination_uid='five', conditions=[flag], priority="5")
         branch_two = Branch(source_uid="1", destination_uid='one', conditions=[flag], priority="1")
         action = Action('HelloWorld', 'helloWorld', uid="1")

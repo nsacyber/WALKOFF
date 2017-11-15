@@ -48,12 +48,12 @@ DetailedActionResult:
       type: string
       example: 'This One action'
       readOnly: true
-    action:
+    action_name:
       description: The name of the action take by the action
       type: string
       example: get that thing
       readOnly: true
-    app:
+    app_name:
       description: The name of the app associated with the action
       type: string
       example: ThingGetter

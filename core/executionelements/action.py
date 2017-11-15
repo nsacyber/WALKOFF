@@ -21,13 +21,13 @@ logger = logging.getLogger(__name__)
 class Action(ExecutionElement):
     _templatable = True
 
-    def __init__(self, app, action, name='', device_id=None, arguments=None, triggers=None, position=None,
+    def __init__(self, app_name, action_name, name='', device_id=None, arguments=None, triggers=None, position=None,
                  risk=0, uid=None, templated=False, raw_representation=None):
         """Initializes a new Action object. A Workflow has many actions that it executes.
 
         Args:
-            app (str): The name of the app associated with the Action
-            action (str): The name of the action associated with a Action
+            app_name (str): The name of the app associated with the Action
+            action_name (str): The name of the action associated with a Action
             name (str, optional): The name of the Action object. Defaults to an empty string.
             device_id (int, optional): The id of the device associated with the app associated with the Action. Defaults
                 to None.
@@ -49,17 +49,16 @@ class Action(ExecutionElement):
         self._incoming_data = AsyncResult()
 
         self.name = name
-        self.app = app
-        self.action = action
-        self._run, self._arguments_api = get_app_action_api(self.app, self.action)
-        self._action_executable = get_app_action(self.app, self._run)
+        self.app_name = app_name
+        self.action_name = action_name
+        self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
+        self._action_executable = get_app_action(self.app_name, self._run)
 
-        # arguments = [Argument(**json_in) for json_in in arguments] if arguments is not None else []
         arguments = {argument.name: argument for argument in arguments} if arguments is not None else {}
 
         self.templated = templated
         if not self.templated:
-            validate_app_action_parameters(self._arguments_api, arguments, self.app, self.action)
+            validate_app_action_parameters(self._arguments_api, arguments, self.app_name, self.action_name)
         self.arguments = arguments
         self.device_id = device_id
         self.risk = risk
@@ -96,8 +95,8 @@ class Action(ExecutionElement):
         self._incoming_data.set(data)
 
     def _update_json(self, updated_json):
-        self.action = updated_json['action']
-        self.app = updated_json['app']
+        self.action_name = updated_json['action_name']
+        self.app_name = updated_json['app_name']
         self.device_id = updated_json['device'] if 'device' in updated_json else ''
         self.risk = updated_json['risk'] if 'risk' in updated_json else 0
         arguments = {}
@@ -107,9 +106,9 @@ class Action(ExecutionElement):
                 arguments[argument.name] = argument
         if arguments is not None:
             if not self.templated:
-                validate_app_action_parameters(self._arguments_api, arguments, self.app, self.action)
+                validate_app_action_parameters(self._arguments_api, arguments, self.app_name, self.action_name)
         else:
-            validate_app_action_parameters(self._arguments_api, [], self.app, self.action)
+            validate_app_action_parameters(self._arguments_api, [], self.app_name, self.action_name)
         self.arguments = arguments
 
     @contextdecorator.context
@@ -132,7 +131,7 @@ class Action(ExecutionElement):
             new_arguments ([Argument]): The new Arguments for the Action object.
         """
         new_arguments = {arg.name: arg for arg in new_arguments}
-        validate_app_action_parameters(self._arguments_api, new_arguments, self.app, self.action)
+        validate_app_action_parameters(self._arguments_api, new_arguments, self.app_name, self.action_name)
         self.arguments = new_arguments
 
     def execute(self, instance, accumulator):
@@ -154,9 +153,9 @@ class Action(ExecutionElement):
             self._wait_for_trigger(accumulator)
 
         try:
-            args = validate_app_action_parameters(self._arguments_api, self.arguments, self.app, self.action,
+            args = validate_app_action_parameters(self._arguments_api, self.arguments, self.app_name, self.action_name,
                                                   accumulator=accumulator)
-            if is_app_action_bound(self.app, self._run):
+            if is_app_action_bound(self.app_name, self._run):
                 result = self._action_executable(instance, **args)
             else:
                 result = self._action_executable(**args)
@@ -176,7 +175,7 @@ class Action(ExecutionElement):
             raise
         else:
             self._output = result
-            logger.debug('Action {0}-{1} (uid {2}) executed successfully'.format(self.app, self.action, self.uid))
+            logger.debug('Action {0}-{1} (uid {2}) executed successfully'.format(self.app_name, self.action_name, self.uid))
             return result
 
     def _wait_for_trigger(self, accumulator):

@@ -278,9 +278,9 @@ class TestWorkflowServer(ServerTestCase):
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
         initial_actions[0]['position']['x'] = 0.0
         initial_actions[0]['position']['y'] = 0.0
-        added_action = Action(name='new_id', app='HelloWorld', action='pause', arguments=[Argument("seconds", value=5)],
-                            position={'x': 0, 'y': 0}).read()
-        added_action['app'] = 'Invalid'
+        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause', arguments=[Argument("seconds", value=5)],
+                              position={'x': 0, 'y': 0}).read()
+        added_action['app_name'] = 'Invalid'
 
         initial_actions.append(added_action)
         data = {"actions": initial_actions}
@@ -296,9 +296,9 @@ class TestWorkflowServer(ServerTestCase):
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
         initial_actions[0]['position']['x'] = 0.0
         initial_actions[0]['position']['y'] = 0.0
-        added_action = Action(name='new_id', app='HelloWorld', action='pause', arguments=[Argument("seconds", value=5)],
-                            position={'x': 0, 'y': 0}).read()
-        added_action['action'] = 'Invalid'
+        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause', arguments=[Argument("seconds", value=5)],
+                              position={'x': 0, 'y': 0}).read()
+        added_action['action_name'] = 'Invalid'
 
         initial_actions.append(added_action)
         data = {"actions": initial_actions}
@@ -314,8 +314,8 @@ class TestWorkflowServer(ServerTestCase):
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
         initial_actions[0]['position']['x'] = 0.0
         initial_actions[0]['position']['y'] = 0.0
-        added_action = Action(name='new_id', app='HelloWorld', action='pause', arguments=[Argument("seconds", value=5)],
-                            position={'x': 0, 'y': 0}).read()
+        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause', arguments=[Argument("seconds", value=5)],
+                              position={'x': 0, 'y': 0}).read()
         added_action['arguments'] = [{'name': 'Invalid', 'value': 5}]
 
         initial_actions.append(added_action)
@@ -332,8 +332,8 @@ class TestWorkflowServer(ServerTestCase):
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
         initial_actions[0]['position']['x'] = 0.0
         initial_actions[0]['position']['y'] = 0.0
-        added_action = Action(name='new_id', app='HelloWorld', action='pause', arguments=[Argument("seconds", value=5)],
-                            position={'x': 0, 'y': 0}).read()
+        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause', arguments=[Argument("seconds", value=5)],
+                              position={'x': 0, 'y': 0}).read()
         added_action['arguments'][0]['value'] = 'aaaa'
 
         initial_actions.append(added_action)
@@ -350,8 +350,8 @@ class TestWorkflowServer(ServerTestCase):
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
         initial_actions[0]['position']['x'] = 0.0
         initial_actions[0]['position']['y'] = 0.0
-        added_action = Action(name='new_id', app='HelloWorld', action='pause', arguments=[Argument('seconds', value=5)],
-                            position={'x': 0, 'y': 0}).read()
+        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause', arguments=[Argument('seconds', value=5)],
+                              position={'x': 0, 'y': 0}).read()
 
         initial_actions.append(added_action)
         data = {"actions": initial_actions, "start": "new_start"}
@@ -612,7 +612,7 @@ class TestWorkflowServer(ServerTestCase):
             self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'uid'})
             for action_result in result['results']:
                 self.assertSetEqual(set(action_result.keys()),
-                                    {'input', 'type', 'name', 'timestamp', 'result', 'app', 'action'})
+                                    {'input', 'type', 'name', 'timestamp', 'result', 'app_name', 'action_name'})
 
     def test_execute_workflow_trigger_action(self):
         flask_server.running_context.controller.initialize_threading()

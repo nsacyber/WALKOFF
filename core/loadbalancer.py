@@ -97,8 +97,8 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         action_packet.sender.uid = sender.uid
         action_packet.sender.workflow_execution_uid = workflow_execution_uid
         action_packet.sender.execution_uid = sender.get_execution_uid()
-        action_packet.sender.app = sender.app
-        action_packet.sender.action = sender.action
+        action_packet.sender.app = sender.app_name
+        action_packet.sender.action = sender.action_name
 
         for argument in sender.arguments.values():
             arg = action_packet.sender.arguments.add()
@@ -114,7 +114,7 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         general_packet.sender.uid = sender.uid
         general_packet.sender.workflow_execution_uid = workflow_execution_uid
         if hasattr(sender, 'app'):
-            general_packet.sender.app = sender.app
+            general_packet.sender.app = sender.app_name
         general_packet.callback_name = kwargs['callback_name']
     packet_bytes = packet.SerializeToString()
     return packet_bytes

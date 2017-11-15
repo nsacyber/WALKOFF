@@ -65,9 +65,9 @@ class TestWorkflowManipulation(unittest.TestCase):
     def test_accumulated_risk_with_error(self):
         workflow = Workflow(name='workflow')
         workflow._execution_uid = 'some_uid'
-        action1 = Action(name="action_one", app='HelloWorld', action='Buggy', risk=1)
-        action2 = Action(name="action_two", app='HelloWorld', action='Buggy', risk=2)
-        action3 = Action(name="action_three", app='HelloWorld', action='Buggy', risk=3.5)
+        action1 = Action(name="action_one", app_name='HelloWorld', action_name='Buggy', risk=1)
+        action2 = Action(name="action_two", app_name='HelloWorld', action_name='Buggy', risk=2)
+        action3 = Action(name="action_three", app_name='HelloWorld', action_name='Buggy', risk=3.5)
         workflow.actions = {'action_one': action1, 'action_two': action2, 'action_three': action3}
         workflow._total_risk = 6.5
 
