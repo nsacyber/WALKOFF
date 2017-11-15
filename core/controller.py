@@ -27,10 +27,10 @@ class Controller(object):
         self.scheduler = Scheduler()
         self.executor = executor()
 
-    def initialize_threading(self, worker_environment_setup=None):
+    def initialize_threading(self, pids=None):
         """Initializes threading in the executor
         """
-        self.executor.initialize_threading(worker_environment_setup=worker_environment_setup)
+        self.executor.initialize_threading(pids=pids)
 
     def shutdown_pool(self, num_workflows=0):
         """Shuts down the executor

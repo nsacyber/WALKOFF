@@ -25,13 +25,28 @@ WORKFLOW_AWAITING_DATA = 5
 NUM_PROCESSES = core.config.config.num_processes
 
 
+def spawn_worker_processes(worker_environment_setup=None):
+    """Initialize the multiprocessing pool, allowing for parallel execution of workflows.
+
+    Args:
+        worker_environment_setup (function, optional): Optional alternative worker setup environment function.
+    """
+    pids = []
+    for i in range(NUM_PROCESSES):
+        args = (i, worker_environment_setup) if worker_environment_setup else (i,)
+
+        pid = multiprocessing.Process(target=loadbalancer.Worker, args=args)
+        pid.start()
+    return pids
+
+
 class MultiprocessedExecutor(object):
     def __init__(self):
         """Initializes a multiprocessed executor, which will handle the execution of workflows.
         """
         self.threading_is_initialized = False
         self.uid = "executor"
-        self.pids = []
+        self.pids = None
         self.workflow_status = {}
         self.workflows_executed = 0
 
@@ -68,24 +83,15 @@ class MultiprocessedExecutor(object):
         if sender.workflow_execution_uid in self.workflow_status:
             self.workflow_status.pop(sender.workflow_execution_uid, None)
 
-    def initialize_threading(self, worker_environment_setup=None):
-        """Initialize the multiprocessing pool, allowing for parallel execution of workflows.
+    def initialize_threading(self, pids):
+        """Initialize the multiprocessing communication threads, allowing for parallel execution of workflows.
 
-        Args:
-            worker_environment_setup (function, optional): Optional alternative worker setup environment function.
         """
         if not (os.path.exists(core.config.paths.zmq_public_keys_path) and
                 os.path.exists(core.config.paths.zmq_private_keys_path)):
             logging.error("Certificates are missing - run generate_certificates.py script first.")
             sys.exit(0)
-
-        for i in range(NUM_PROCESSES):
-            args = (i, worker_environment_setup) if worker_environment_setup else (i, )
-
-            pid = multiprocessing.Process(target=loadbalancer.Worker, args=args)
-            pid.start()
-            self.pids.append(pid)
-
+        self.pids = pids
         self.ctx = zmq.Context.instance()
         self.auth = ThreadAuthenticator(self.ctx)
         self.auth.start()

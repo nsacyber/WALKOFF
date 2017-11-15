@@ -49,10 +49,12 @@ def setup_logger():
 
 
 def run():
+    from core.multiprocessedexecutor import spawn_worker_processes
     setup_logger()
-    from server import flaskserver
+    pids = spawn_worker_processes()
     monkey.patch_all()
-    flaskserver.running_context.controller.initialize_threading()
+    from server import flaskserver
+    flaskserver.running_context.controller.initialize_threading(pids=pids)
     # The order of these imports matter for initialization (should probably be fixed)
     from compose_api import compose_api
     compose_api()
