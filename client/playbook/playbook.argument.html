@@ -5,12 +5,12 @@
 		<span *ngIf="parameterSchema.required" class="fa fa-asterisk required" title="This field is required."></span>
 	</label>
 
-	<!-- Columns for allowing users to specify outputs of other steps as arguments for this one -->
+	<!-- Columns for allowing users to specify outputs of other action as arguments for this one -->
 	<div class="row">
 		<div class="col-xs-4">
 			<select name="playbookSelect" class="form-control" [(ngModel)]="argument.reference">
 				<option value="">-- Set Static Value --</option>
-				<option *ngFor="let i of getPreviousSteps()" [value]="i.uid" [label]="i.name">{{i.name}}</option>
+				<option *ngFor="let i of getPreviousActions()" [value]="i.uid" [label]="i.name">{{i.name}}</option>
 			</select>
 		</div>
 		<div class="col-xs-8">

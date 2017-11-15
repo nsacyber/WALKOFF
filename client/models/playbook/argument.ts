@@ -9,7 +9,7 @@ export class Argument {
 	 */
 	value: any;
 	/**
-	 * Reference to a Step UID to use the output of
+	 * Reference to an Action UID to use the output of
 	 */
 	reference: string;
 	/**

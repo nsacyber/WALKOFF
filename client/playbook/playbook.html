@@ -113,7 +113,7 @@
                         on the toolbar.
                     </p>
                     <p>
-                        <b>Drag and drop</b> items from Actions tab into the graph to create a new workflow step.
+                        <b>Drag and drop</b> items from Actions tab into the graph to create a new workflow action.
                         <b>Double click</b> also works.
                     </p>
                 </div>
@@ -121,66 +121,66 @@
 
             <!-- Parameter editors -->
             <div class="col-md-4 graphEditorColumn">
-                <!-- Editor for AppSteps -->
-                <div *ngIf="selectedStep" class="parametersEditor">
-                    <h3>Step Parameters</h3>
+                <!-- Editor for Actions -->
+                <div *ngIf="selectedAction" class="parametersEditor">
+                    <h3>Action Parameters</h3>
                     <div class="row">
                         <div class="col-xs-4">
                             <label>App:</label>
-                            <span>{{selectedStep.app}}</span>
+                            <span>{{selectedAction.app}}</span>
                         </div>
                         <div class="col-xs-4">
                             <label>Action:</label>
-                            <span>{{selectedStep.action}}</span>
+                            <span>{{selectedAction.action}}</span>
                         </div>
                         <div class="col-xs-4">
-                            <button [disabled]="selectedStep.uid === loadedWorkflow.start" class="btn btn-primary pull-right"
-                            (click)="setStartNode(selectedStep.uid)">Set as Start Step</button>
+                            <button [disabled]="selectedAction.uid === loadedWorkflow.start" class="btn btn-primary pull-right"
+                            (click)="setStartNode(selectedAction.uid)">Set as Start Action</button>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="name">Name<span class="fa fa-asterisk required" title="This field is required."></span></label>
-                        <input type="text" class="form-control" [(ngModel)]="selectedStep.name" name="name" required>
+                        <input type="text" class="form-control" [(ngModel)]="selectedAction.name" name="name" required>
                     </div>
-                    <div *ngIf="getDeviceApis(selectedStep.app).length" class="form-group">
+                    <div *ngIf="getDeviceApis(selectedAction.app).length" class="form-group">
                         <label for="device_id">Device</label>
-                        <select class="form-control" name="device_id" [(ngModel)]="selectedStep.device_id">
+                        <select class="form-control" name="device_id" [(ngModel)]="selectedAction.device_id">
                             <option [ngValue]="0"></option>
                             <option *ngFor="let i of relevantDevices" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
                         </select>
                     </div>
                     <!-- Inputs -->
-                    <div *ngIf="selectedStep.arguments.length">
+                    <div *ngIf="selectedAction.arguments.length">
                         <h4>Arguments</h4>
-                        <playbook-argument-component *ngFor="let argument of selectedStep.arguments; let id = index" [loadedWorkflow]="loadedWorkflow" 
-                        [argument]="argument" [parameterApi]="getInputApiArgs(selectedStep.app, selectedStep.action, argument.name)"
+                        <playbook-argument-component *ngFor="let argument of selectedAction.arguments; let id = index" [loadedWorkflow]="loadedWorkflow" 
+                        [argument]="argument" [parameterApi]="getInputApiArgs(selectedAction.app, selectedAction.action, argument.name)"
                         [id]="id"></playbook-argument-component>
                     </div>
                     <!-- Triggers -->
                     <div>
                         <h4>Trigger Conditions</h4>
-                        <playbook-conditions-component [conditions]="selectedStep.triggers" [appApis]="appApis"
-                        [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedStep.app"></playbook-conditions-component>
+                        <playbook-conditions-component [conditions]="selectedAction.triggers" [appApis]="appApis"
+                        [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedAction.app"></playbook-conditions-component>
                     </div>
                 </div>
-                <!-- Editor for NextSteps (edges) -->
-                <div *ngIf="selectedNextStepParams && selectedNextStepParams.nextStep"  class="parametersEditor">
-                    <h3>Next Step Parameters</h3>
+                <!-- Editor for Branches (edges) -->
+                <div *ngIf="selectedBranchParams && selectedBranchParams.branch"  class="parametersEditor">
+                    <h3>Branch Parameters</h3>
                     <div class="form-group">
                         <label for="status">Return Type<span class="fa fa-asterisk required" title="This field is required."></span></label>
-                        <select class="form-control" [(ngModel)]="selectedNextStepParams.nextStep.status" name="status">
-                            <option *ngFor="let i of selectedNextStepParams.returnTypes" [value]="i.status" [label]="i.status">{{i.status}}</option>
+                        <select class="form-control" [(ngModel)]="selectedBranchParams.branch.status" name="status">
+                            <option *ngFor="let i of selectedBranchParams.returnTypes" [value]="i.status" [label]="i.status">{{i.status}}</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="priority">Priority<span class="fa fa-asterisk required" title="This field is required."></span></label>
-                        <input type="number" max="999" min="1" class="form-control" [(ngModel)]="selectedNextStepParams.nextStep.priority"
+                        <input type="number" max="999" min="1" class="form-control" [(ngModel)]="selectedBranchParams.branch.priority"
                             name="priority" required>
                     </div>
                     <div>
                         <h4>Conditions</h4>
-                        <playbook-conditions-component [conditions]="selectedNextStepParams.nextStep.conditions" [appApis]="appApis"
-                        [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedNextStepParams.app"></playbook-conditions-component>
+                        <playbook-conditions-component [conditions]="selectedBranchParams.branch.conditions" [appApis]="appApis"
+                        [loadedWorkflow]="loadedWorkflow" [selectedAppName]="selectedBranchParams.app"></playbook-conditions-component>
                     </div>
                 </div>
             </div>
@@ -201,7 +201,7 @@
                         <!-- Column Templates -->
                         <ngx-datatable-column name="UID" [flexGrow]="1">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                {{row.step_uid}}
+                                {{row.action_uid}}
                             </ng-template>
                         </ngx-datatable-column>
                         <ngx-datatable-column name="Name" [flexGrow]="1">

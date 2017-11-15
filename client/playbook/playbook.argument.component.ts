@@ -3,7 +3,7 @@ import { Component, ViewEncapsulation, Input } from '@angular/core';
 import { PlaybookService } from './playbook.service';
 
 import { Workflow } from '../models/playbook/workflow';
-import { Step } from '../models/playbook/step';
+import { Action } from '../models/playbook/action';
 import { ParameterApi } from '../models/api/parameterApi';
 import { ParameterSchema } from '../models/api/parameterSchema';
 import { Argument } from '../models/playbook/argument';
@@ -32,9 +32,9 @@ export class PlaybookArgumentComponent {
 		if (this.argument.reference == null) { this.argument.reference = ''; }
 	}
 
-	// TODO: maybe somehow recursively find steps that may occur before. Right now it just returns all of them.
-	getPreviousSteps(): Step[] {
-		return this.loadedWorkflow.steps;
+	// TODO: maybe somehow recursively find actions that may occur before. Right now it just returns all of them.
+	getPreviousActions(): Action[] {
+		return this.loadedWorkflow.actions;
 	}
 
 	/**

@@ -15,17 +15,17 @@ import { CaseEvent } from '../models/caseEvent';
 import { AvailableSubscription } from '../models/availableSubscription';
 import { Playbook } from '../models/playbook/playbook';
 import { Workflow } from '../models/playbook/workflow';
-import { Step } from '../models/playbook/step';
-import { NextStep } from '../models/playbook/nextStep';
+import { Action } from '../models/playbook/action';
+import { Branch } from '../models/playbook/branch';
 
 /**
  * Types as the backend calls them for adding a new CaseEvent.
  */
-const types = ['playbook', 'workflow', 'step', 'nextstep', 'condition', 'transform'];
+const types = ['playbook', 'workflow', 'action', 'branch', 'condition', 'transform'];
 /**
- * Types that are used to recursively check for the next level. E.g. next_steps have flags.
+ * Types that are used to recursively check for the next level. E.g. branches have conditions.
  */
-const childrenTypes = ['workflows', 'steps', 'next_steps', 'conditions', 'transforms'];
+const childrenTypes = ['workflows', 'actipns', 'branches', 'conditions', 'transforms'];
 
 @Component({
 	selector: 'cases-component',
@@ -174,20 +174,20 @@ export class CasesComponent {
 		//Top level controller data
 		const tree = { name: 'Controller', uid: 'controller', type: 'controller', children: [] as object[] };
 
-		// Remap the next steps to be under steps as they used to be
+		// Remap the branches to be under actions as they used to be
 		playbooks.forEach((p: Playbook) => {
 			p.workflows.forEach((w: Workflow) => {
-				w.steps.forEach((s: Step) => {
-					(s as any).next_steps = [];
+				w.actions.forEach((s: Action) => {
+					(s as any).branches = [];
 				});
 
-				w.next_steps.forEach((ns: NextStep) => {
-					const matchingStep = w.steps.find(s => s.uid === ns.destination_uid);
-					if (matchingStep) { (ns as any).name = matchingStep.name; }
-					(w.steps.find(s => s.uid === ns.source_uid) as any).next_steps.push(ns);
+				w.branches.forEach((ns: Branch) => {
+					const matchingAction = w.actions.find(s => s.uid === ns.destination_uid);
+					if (matchingAction) { (ns as any).name = matchingAction.name; }
+					(w.actions.find(s => s.uid === ns.source_uid) as any).branches.push(ns);
 				});
 
-				delete w.next_steps;
+				delete w.branches;
 			});
 		});
 
@@ -199,8 +199,8 @@ export class CasesComponent {
 
 	getNodeRecursive(target: any, typeIndex: number, prefix?: string): any {
 		const self = this;
-		// types = ['playbook', 'workflow', 'step', 'nextstep', 'condition', 'transform'];
-		// childrenTypes = ['workflows', 'steps', 'next', 'conditions', 'transforms'];
+		// types = ['playbook', 'workflow', 'action', 'branch', 'condition', 'transform'];
+		// childrenTypes = ['workflows', 'actions', 'branches', 'conditions', 'transforms'];
 
 		let nodeName = '';
 		if (prefix) { nodeName = prefix + ': '; }
@@ -223,11 +223,11 @@ export class CasesComponent {
 			let childPrefix: string;
 
 			switch (childType) {
-				case 'steps':
-					childPrefix = 'Step';
+				case 'actions':
+					childPrefix = 'Action';
 					break;
-				case 'next_steps':
-					childPrefix = 'Next Step';
+				case 'branches':
+					childPrefix = 'Branch';
 					break;
 				case 'conditions':
 					childPrefix = 'Condition';
