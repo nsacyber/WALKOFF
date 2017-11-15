@@ -20,10 +20,9 @@
     "Workflow Resumed"
   ],
   "action": [
-    "Function Execution Success",
+    "Action Execution Success",
     "Action Started",
     "Arguments Invalid",
-    "Action Execution Success",
     "Action Execution Error",
     "Trigger Action Awaiting Data",
     "Trigger Action Taken",

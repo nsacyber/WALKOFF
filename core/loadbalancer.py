@@ -103,9 +103,10 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         for argument in sender.arguments.values():
             arg = action_packet.sender.arguments.add()
             arg.name = argument.name
-            arg.value = str(argument.value) if argument.value else ''
-            arg.reference = argument.reference if argument.reference else ''
-            arg.selection = str(argument.selection) if argument.selection else ''
+            for field in ('value', 'reference', 'selection'):
+                val = getattr(argument, field)
+                if val is not None:
+                    setattr(arg, field, str(val))
 
         action_packet.callback_name = kwargs['callback_name']
     elif obj_type in ['Branch', 'Condition', 'Transform']:
@@ -361,10 +362,9 @@ class Receiver:
         'Workflow Arguments Invalid': (callbacks.WorkflowArgumentsInvalid, False),
         'Workflow Paused': (callbacks.WorkflowPaused, False),
         'Workflow Resumed': (callbacks.WorkflowResumed, False),
-        'Action Execution Success': (callbacks.ActionExecutionSuccess, True),
         'Action Execution Error': (callbacks.ActionExecutionError, True),
         'Action Started': (callbacks.ActionStarted, False),
-        'Function Execution Success': (callbacks.FunctionExecutionSuccess, True),
+        'Action Execution Success': (callbacks.ActionExecutionSuccess, True),
         'Action Argument Invalid': (callbacks.ActionArgumentsInvalid, False),
         'Branch Taken': (callbacks.BranchTaken, False),
         'Branch Not Taken': (callbacks.BranchNotTaken, False),

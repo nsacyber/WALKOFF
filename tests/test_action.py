@@ -167,7 +167,7 @@ class TestAction(unittest.TestCase):
             if isinstance(sender, Action):
                 self.assertIs(sender, action)
                 self.assertIn('callback_name', kwargs)
-                self.assertIn(kwargs['callback_name'], ('Action Started', 'Function Execution Success'))
+                self.assertIn(kwargs['callback_name'], ('Action Started', 'Action Execution Success'))
                 self.assertIn('object_type', kwargs)
                 self.assertEqual(kwargs['object_type'], 'Action')
                 if kwargs['callback_name'] == 'Action Started':

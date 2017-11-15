@@ -35,8 +35,7 @@ class TestExecutionEvents(unittest.TestCase):
 
         self.c.load_playbook(resource=config.test_workflows_path + 'multiactionWorkflowTest.playbook')
         workflow_uid = self.c.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow').uid
-        subs = {'case1': {workflow_uid: ['App Instance Created', 'Action Execution Success',
-                                         'Workflow Shutdown']}}
+        subs = {'case1': {workflow_uid: ['App Instance Created', 'Workflow Shutdown']}}
         case_subscription.set_subscriptions(subs)
         self.c.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
@@ -44,15 +43,15 @@ class TestExecutionEvents(unittest.TestCase):
         execution_events = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'case1').first().events.all()
 
-        self.assertEqual(len(execution_events), 4,
+        self.assertEqual(len(execution_events), 2,
                          'Incorrect length of event history. '
-                         'Expected {0}, got {1}'.format(4, len(execution_events)))
+                         'Expected {0}, got {1}'.format(2, len(execution_events)))
 
     def test_action_execution_events(self):
         self.c.load_playbook(resource=config.test_workflows_path + 'basicWorkflowTest.playbook')
         workflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         action_uids = [action.uid for action in workflow.actions.values()]
-        action_events = ['Function Execution Success', 'Action Started']
+        action_events = ['Action Execution Success', 'Action Started']
         subs = {'case1': {action_uid: action_events for action_uid in action_uids}}
         case_subscription.set_subscriptions(subs)
 
@@ -70,7 +69,7 @@ class TestExecutionEvents(unittest.TestCase):
         self.c.load_playbook(resource=config.test_workflows_path + 'basicWorkflowTest.playbook')
         workflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         action = workflow.actions['c5a7c29a0f844b69a59901bb542e9305']
-        subs = {action.uid: ['Function Execution Success', 'Action Started']}
+        subs = {action.uid: ['Action Execution Success', 'Action Started']}
         branches = [branch for sublist in workflow.branches.values() for branch in sublist]
         branch = branches[0]
         subs[branch.uid] = ['Branch Taken', 'Branch Not Taken']

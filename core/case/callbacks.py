@@ -110,12 +110,9 @@ WorkflowResumed, __workflow_resumed = __construct_logging_signal('Workflow',
 
 # Action callbacks
 
-FunctionExecutionSuccess, __func_exec_success_callback = __construct_logging_signal('Action',
-                                                                                    'Function Execution Success',
-                                                                                    'Function executed successfully')
-ActionExecutionSuccess, __action_execution_success_callback = __construct_logging_signal('Action',
-                                                                                     'Action Execution Success',
-                                                                                     'Action executed successfully')
+ActionExecutionSuccess, __func_exec_success_callback = __construct_logging_signal('Action',
+                                                                                    'Action Execution Success',
+                                                                                    'Action executed successfully')
 ActionExecutionError, __action_execution_error_callback = __construct_logging_signal('Action',
                                                                                  'Action Execution Error',
                                                                                  'Action executed with error')

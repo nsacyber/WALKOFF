@@ -218,9 +218,6 @@ class Workflow(ExecutionElement):
                 "arguments": JsonElementReader.read(action.arguments)}
         try:
             action.execute(instance=instance(), accumulator=self._accumulator)
-            data['result'] = action.get_output().as_json() if action.get_output() is not None else None
-            data['execution_uid'] = action.get_execution_uid()
-            data_sent.send(self, callback_name="Action Execution Success", object_type="Workflow", data=data)
         except Exception as e:
             data['result'] = action.get_output().as_json() if action.get_output() is not None else None
             data['execution_uid'] = action.get_execution_uid()
