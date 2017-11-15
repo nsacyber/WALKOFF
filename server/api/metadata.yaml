@@ -16,24 +16,6 @@
           items:
             $ref: '#/definitions/AvailableSubscriptions'
 
-/api/devicetypes:
-  get:
-    tags:
-      - System
-    summary: Read all the device types for all apps
-    description: ''
-    operationId: server.endpoints.metadata.read_all_device_types
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          type: array
-          items:
-            $ref: '#/definitions/DeviceType'
-
-
 /api/client/{filename}:
   get:
     tags:

@@ -16,7 +16,7 @@ def get_device_json_with_app_name(device):
 
     device_json = device.as_json()
     app = device_db.session.query(App).filter(App.id == device.app_id).first()
-    device_json['app'] = app.name if app is not None else ''
+    device_json['app_name'] = app.name if app is not None else ''
     return device_json
 
 
@@ -95,7 +95,7 @@ def create_device():
             return {"error": "Device already exists."}, OBJECT_EXISTS_ERROR
 
         fields = {field['name']: field['value'] for field in add_device_json['fields']}
-        app = add_device_json['app']
+        app = add_device_json['app_name']
         device_type = add_device_json['type']
         try:
             device_api = get_app_device_api(app, device_type)
@@ -147,7 +147,7 @@ def update_device():
 
         fields = ({field['name']: field['value'] for field in update_device_json['fields']}
                   if 'fields' in update_device_json else None)
-        app = update_device_json['app']
+        app = update_device_json['app_name']
         device_type = update_device_json['type'] if 'type' in update_device_json else device.type
         try:
             device_api = get_app_device_api(app, device_type)

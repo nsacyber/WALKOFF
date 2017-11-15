@@ -1,6 +1,6 @@
 AddDevice:
   type: object
-  required: [name, app, type, fields]
+  required: [name, app_name, type, fields]
   description: Object used to create a device
   properties:
     name:
@@ -9,7 +9,7 @@ AddDevice:
       minLength: 4
       maxLength: 25
       example: Server1
-    app:
+    app_name:
       type: string
       example: HelloWorld
       description: The name of the app associated with this device
@@ -43,7 +43,7 @@ Device:
       minLength: 4
       maxLength: 25
       example: Server1
-    app:
+    app_name:
       type: string
       example: HelloWorld
       description: The name of the app associated with this device
@@ -63,25 +63,6 @@ Device:
       type: array
       items:
         $ref: '#/definitions/Argument'
-
-DeviceType:
-  type: object
-  description: A type of device
-  properties:
-    name:
-      type: string
-    app:
-      type: string
-      example: HelloWorld
-      description: The name of the app associated with this device
-    description:
-      type: string
-      example: This device type configures my app under some circumstances
-      description: A description of your device type
-    fields:
-      type: array
-      items:
-        $ref: '#/definitions/DeviceField'
 
 DeviceField:
   type: object
