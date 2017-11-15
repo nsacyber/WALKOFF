@@ -82,15 +82,15 @@ class TestCaseDatabase(unittest.TestCase):
         case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
         event2 = case_database.Event(type='WORKFLOW', message='message2')
         case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
-        event3 = case_database.Event(type='STEP', message='message3')
+        event3 = case_database.Event(type='ACTION', message='message3')
         case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
-        event4 = case_database.Event(type='NEXT', message='message4')
+        event4 = case_database.Event(type='BRANCH', message='message4')
         case_database.case_db.add_event(event=event4, cases=['case1'])
 
-        expected_event_messages = {'case1': [('SYSTEM', 'message1'), ('NEXT', 'message4')],
-                                   'case2': [('WORKFLOW', 'message2'), ('STEP', 'message3')],
-                                   'case3': [('SYSTEM', 'message1'), ('STEP', 'message3')],
-                                   'case4': [('WORKFLOW', 'message2'), ('STEP', 'message3')]}
+        expected_event_messages = {'case1': [('SYSTEM', 'message1'), ('BRANCH', 'message4')],
+                                   'case2': [('WORKFLOW', 'message2'), ('ACTION', 'message3')],
+                                   'case3': [('SYSTEM', 'message1'), ('ACTION', 'message3')],
+                                   'case4': [('WORKFLOW', 'message2'), ('ACTION', 'message3')]}
 
         # check cases to events is as expected
         for case_name, expected_events in expected_event_messages.items():
@@ -130,9 +130,9 @@ class TestCaseDatabase(unittest.TestCase):
         case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
         event2 = case_database.Event(type='WORKFLOW', message='message2')
         case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
-        event3 = case_database.Event(type='STEP', message='message3')
+        event3 = case_database.Event(type='ACTION', message='message3')
         case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
-        event4 = case_database.Event(type='NEXT', message='message4')
+        event4 = case_database.Event(type='BRANCH', message='message4')
         case_database.case_db.add_event(event=event4, cases=['case1'])
 
         events = case_database.case_db.session.query(case_database.Event).all()
@@ -155,9 +155,9 @@ class TestCaseDatabase(unittest.TestCase):
         case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
         event2 = case_database.Event(type='WORKFLOW', message='message2')
         case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
-        event3 = case_database.Event(type='STEP', message='message3')
+        event3 = case_database.Event(type='ACTION', message='message3')
         case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
-        event4 = case_database.Event(type='NEXT', message='message4')
+        event4 = case_database.Event(type='BRANCH', message='message4')
         case_database.case_db.add_event(event=event4, cases=['case1'])
 
         events = case_database.case_db.session.query(case_database.Event).all()
@@ -183,9 +183,9 @@ class TestCaseDatabase(unittest.TestCase):
         case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
         event2 = case_database.Event(type='WORKFLOW', message='message2', data='some_string')
         case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
-        event3 = case_database.Event(type='STEP', message='message3', data=6)
+        event3 = case_database.Event(type='ACTION', message='message3', data=6)
         case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
-        event4 = case_database.Event(type='NEXT', message='message4', data=json.dumps(event4_data))
+        event4 = case_database.Event(type='BRANCH', message='message4', data=json.dumps(event4_data))
         case_database.case_db.add_event(event=event4, cases=['case1'])
 
         events = case_database.case_db.session.query(case_database.Event).all()

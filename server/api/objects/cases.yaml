@@ -55,7 +55,7 @@ Subscription:
       example:
         - Workflow Execution Start
         - App Instance Created
-        - Step Execution Success
+        - Action Execution Success
 
 Event:
   type: object
@@ -75,8 +75,8 @@ Event:
       description: The type of event
       type: string
       readOnly: true
-      enum: [System, Workflow, Step, 'Next Step', Condition, Transform]
-      example: Step
+      enum: [System, Workflow, Action, Branch, Condition, Transform]
+      example: Action
     originator:
       description: The UID of the execution element which caused this event
       type: string
@@ -84,7 +84,7 @@ Event:
       description: The message attached to the event
       type: string
       readOnly: true
-      example: Next step not taken
+      example: Branch not taken
     note:
       description: A user-created note attached to the event
       type: string

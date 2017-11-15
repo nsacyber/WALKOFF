@@ -1,6 +1,6 @@
 import { Condition } from './condition';
 
-export class NextStep {
+export class Branch {
 	uid: string;
 	source_uid: string;
 	destination_uid: string;

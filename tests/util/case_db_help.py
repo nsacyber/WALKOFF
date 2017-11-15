@@ -4,17 +4,17 @@ import core.case.database as case_database
 import core.case.subscription as case_subscription
 
 
-def setup_subscriptions_for_step(workflow_uids, step_uids, step_events=None, workflow_events=None):
-    step_events = step_events if step_events is not None else ['Function Execution Success']
+def setup_subscriptions_for_action(workflow_uids, action_uids, action_events=None, workflow_events=None):
+    action_events = action_events if action_events is not None else ['Function Execution Success']
     workflow_events = workflow_events if workflow_events is not None else []
     subs = {workflow_uid: workflow_events for workflow_uid in workflow_uids} \
         if isinstance(workflow_uids, list) else {workflow_uids: workflow_events}
-    for step_uid in step_uids:
-        subs[step_uid] = step_events
+    for action_uid in action_uids:
+        subs[action_uid] = action_events
     case_subscription.set_subscriptions({'case1': subs})
 
 
-def executed_steps(workflow_uid, start_time, end_time):
+def executed_actions(workflow_uid, start_time, end_time):
     events = [event.as_json()
               for event in case_database.case_db.session.query(case_database.Event). \
                   filter(case_database.Event.originator == workflow_uid).all()]

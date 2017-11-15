@@ -10,12 +10,12 @@ import core.case.subscription
 import core.config.paths
 from core import helpers
 from core.case.callbacks import WorkflowShutdown
-from core.executionelements.nextstep import NextStep
-from core.executionelements.step import Step
+from core.executionelements.branch import Branch
+from core.executionelements.action import Action
 from server import flaskserver as flask_server
 from server.returncodes import *
 from tests.util.assertwrappers import orderless_list_compare
-from tests.util.case_db_help import executed_steps, setup_subscriptions_for_step
+from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
 from tests.util.servertestcase import ServerTestCase
 
 
@@ -23,11 +23,11 @@ class TestWorkflowServer(ServerTestCase):
     def setUp(self):
         # This looks awful, I know
         self.empty_workflow_json = \
-            {'steps': [],
+            {'actions': [],
              'name': 'test_name',
              'start': 'start',
              'accumulated_risk': 0.0,
-             'next_steps': []}
+             'branches': []}
 
         case_database.initialize()
 
@@ -43,11 +43,11 @@ class TestWorkflowServer(ServerTestCase):
                 workflow.pop('uid')
 
         for playbook in response:
-            self.assertIn(playbook['name'], ['test', 'triggerStepWorkflow'])
+            self.assertIn(playbook['name'], ['test', 'triggerActionWorkflow'])
             if playbook['name'] == 'test':
                 self.assertEqual(playbook['workflows'], [{'name': 'helloWorldWorkflow'}])
-            elif playbook['name'] == 'triggerStepWorkflow':
-                self.assertEqual(playbook['workflows'], [{"name": "triggerStepWorkflow"}])
+            elif playbook['name'] == 'triggerActionWorkflow':
+                self.assertEqual(playbook['workflows'], [{"name": "triggerActionWorkflow"}])
 
         self.assertEqual(len(response), 2)
 
@@ -222,32 +222,32 @@ class TestWorkflowServer(ServerTestCase):
     def test_save_workflow(self):
         initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
-        initial_steps = [step.read() for step in initial_workflow.steps.values()]
-        initial_steps[0]['position']['x'] = 0.0
-        initial_steps[0]['position']['y'] = 0.0
-        added_step = Step('HelloWorld', 'pause', name='new_id', arguments=[Argument("seconds", value=5)],
-                          position={'x': 0, 'y': 0}, uid="2").read()
+        initial_actions = [action.read() for action in initial_workflow.actions.values()]
+        initial_actions[0]['position']['x'] = 0.0
+        initial_actions[0]['position']['y'] = 0.0
+        added_action = Action('HelloWorld', 'pause', name='new_id', arguments=[Argument("seconds", value=5)],
+                            position={'x': 0, 'y': 0}, uid="2").read()
 
-        initial_steps.append(added_step)
+        initial_actions.append(added_action)
 
-        step_uid = "e1db14e0cc8d4179aff5f1080a2b7e91"
-        added_next_step = NextStep(source_uid=step_uid, destination_uid="2").read()
+        action_uid = "e1db14e0cc8d4179aff5f1080a2b7e91"
+        added_branch = Branch(source_uid=action_uid, destination_uid="2").read()
 
-        data = {"steps": initial_steps, "next_steps": [added_next_step]}
+        data = {"actions": initial_actions, "branches": [added_branch]}
         self.post_with_status_check('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
                                     data=json.dumps(data),
                                     headers=self.headers,
                                     content_type='application/json')
 
         resulting_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
-        # compare the steps in initial and final workflow
-        self.assertEqual(len(resulting_workflow.steps.keys()), len(list(initial_steps)))
-        for initial_step in initial_steps:
-            self.assertIn(initial_step['uid'], resulting_workflow.steps.keys())
-            self.assertDictEqual(initial_step, resulting_workflow.steps[initial_step['uid']].read())
+        # compare the actions in initial and final workflow
+        self.assertEqual(len(resulting_workflow.actions.keys()), len(list(initial_actions)))
+        for initial_action in initial_actions:
+            self.assertIn(initial_action['uid'], resulting_workflow.actions.keys())
+            self.assertDictEqual(initial_action, resulting_workflow.actions[initial_action['uid']].read())
 
-        self.assertEqual(added_next_step["source_uid"], resulting_workflow.next_steps[step_uid][0].source_uid)
-        self.assertEqual(added_next_step["destination_uid"], resulting_workflow.next_steps[step_uid][0].destination_uid)
+        self.assertEqual(added_branch["source_uid"], resulting_workflow.branches[action_uid][0].source_uid)
+        self.assertEqual(added_branch["destination_uid"], resulting_workflow.branches[action_uid][0].destination_uid)
 
         # assert that the file has been saved to a file
         workflows = [path.splitext(workflow)[0]
@@ -260,30 +260,30 @@ class TestWorkflowServer(ServerTestCase):
         flask_server.running_context.controller.load_playbook(os.path.join(core.config.paths.workflows_path,
                                                                            'test.playbook'))
         loaded_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
-        # compare the steps in loaded and expected workflow
-        self.assertEqual(len(loaded_workflow.steps.keys()), len(list(resulting_workflow.steps.keys())))
+        # compare the actions in loaded and expected workflow
+        self.assertEqual(len(loaded_workflow.actions.keys()), len(list(resulting_workflow.actions.keys())))
 
-        def remove_uids(step):
-            step.uid = ''
+        def remove_uids(action):
+            action.uid = ''
 
-        for step_name, loaded_step in loaded_workflow.steps.items():
-            self.assertIn(step_name, resulting_workflow.steps.keys())
-            remove_uids(loaded_step)
-            remove_uids(resulting_workflow.steps[step_name])
-            self.assertDictEqual(loaded_step.read(), resulting_workflow.steps[step_name].read())
+        for action_name, loaded_action in loaded_workflow.actions.items():
+            self.assertIn(action_name, resulting_workflow.actions.keys())
+            remove_uids(loaded_action)
+            remove_uids(resulting_workflow.actions[action_name])
+            self.assertDictEqual(loaded_action.read(), resulting_workflow.actions[action_name].read())
 
     def test_save_workflow_invalid_app(self):
         initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
-        initial_steps = [step.read() for step in initial_workflow.steps.values()]
-        initial_steps[0]['position']['x'] = 0.0
-        initial_steps[0]['position']['y'] = 0.0
-        added_step = Step(name='new_id', app='HelloWorld', action='pause', arguments=[Argument("seconds", value=5)],
-                          position={'x': 0, 'y': 0}).read()
-        added_step['app'] = 'Invalid'
+        initial_actions = [action.read() for action in initial_workflow.actions.values()]
+        initial_actions[0]['position']['x'] = 0.0
+        initial_actions[0]['position']['y'] = 0.0
+        added_action = Action(name='new_id', app='HelloWorld', action='pause', arguments=[Argument("seconds", value=5)],
+                            position={'x': 0, 'y': 0}).read()
+        added_action['app'] = 'Invalid'
 
-        initial_steps.append(added_step)
-        data = {"steps": initial_steps}
+        initial_actions.append(added_action)
+        data = {"actions": initial_actions}
         self.post_with_status_check('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
                                     data=json.dumps(data),
                                     headers=self.headers,
@@ -293,15 +293,15 @@ class TestWorkflowServer(ServerTestCase):
     def test_save_workflow_invalid_action(self):
         initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
-        initial_steps = [step.read() for step in initial_workflow.steps.values()]
-        initial_steps[0]['position']['x'] = 0.0
-        initial_steps[0]['position']['y'] = 0.0
-        added_step = Step(name='new_id', app='HelloWorld', action='pause', arguments=[Argument("seconds", value=5)],
-                          position={'x': 0, 'y': 0}).read()
-        added_step['action'] = 'Invalid'
+        initial_actions = [action.read() for action in initial_workflow.actions.values()]
+        initial_actions[0]['position']['x'] = 0.0
+        initial_actions[0]['position']['y'] = 0.0
+        added_action = Action(name='new_id', app='HelloWorld', action='pause', arguments=[Argument("seconds", value=5)],
+                            position={'x': 0, 'y': 0}).read()
+        added_action['action'] = 'Invalid'
 
-        initial_steps.append(added_step)
-        data = {"steps": initial_steps}
+        initial_actions.append(added_action)
+        data = {"actions": initial_actions}
         self.post_with_status_check('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
                                     data=json.dumps(data),
                                     headers=self.headers,
@@ -311,15 +311,15 @@ class TestWorkflowServer(ServerTestCase):
     def test_save_workflow_invalid_input_name(self):
         initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
-        initial_steps = [step.read() for step in initial_workflow.steps.values()]
-        initial_steps[0]['position']['x'] = 0.0
-        initial_steps[0]['position']['y'] = 0.0
-        added_step = Step(name='new_id', app='HelloWorld', action='pause', arguments=[Argument("seconds", value=5)],
-                          position={'x': 0, 'y': 0}).read()
-        added_step['arguments'] = [{'name': 'Invalid', 'value': 5}]
+        initial_actions = [action.read() for action in initial_workflow.actions.values()]
+        initial_actions[0]['position']['x'] = 0.0
+        initial_actions[0]['position']['y'] = 0.0
+        added_action = Action(name='new_id', app='HelloWorld', action='pause', arguments=[Argument("seconds", value=5)],
+                            position={'x': 0, 'y': 0}).read()
+        added_action['arguments'] = [{'name': 'Invalid', 'value': 5}]
 
-        initial_steps.append(added_step)
-        data = {"steps": initial_steps}
+        initial_actions.append(added_action)
+        data = {"actions": initial_actions}
         self.post_with_status_check('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
                                     data=json.dumps(data),
                                     headers=self.headers,
@@ -329,32 +329,32 @@ class TestWorkflowServer(ServerTestCase):
     def test_save_workflow_invalid_input_format(self):
         initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
-        initial_steps = [step.read() for step in initial_workflow.steps.values()]
-        initial_steps[0]['position']['x'] = 0.0
-        initial_steps[0]['position']['y'] = 0.0
-        added_step = Step(name='new_id', app='HelloWorld', action='pause', arguments=[Argument("seconds", value=5)],
-                          position={'x': 0, 'y': 0}).read()
-        added_step['arguments'][0]['value'] = 'aaaa'
+        initial_actions = [action.read() for action in initial_workflow.actions.values()]
+        initial_actions[0]['position']['x'] = 0.0
+        initial_actions[0]['position']['y'] = 0.0
+        added_action = Action(name='new_id', app='HelloWorld', action='pause', arguments=[Argument("seconds", value=5)],
+                            position={'x': 0, 'y': 0}).read()
+        added_action['arguments'][0]['value'] = 'aaaa'
 
-        initial_steps.append(added_step)
-        data = {"steps": initial_steps}
+        initial_actions.append(added_action)
+        data = {"actions": initial_actions}
         self.post_with_status_check('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
                                     data=json.dumps(data),
                                     headers=self.headers,
                                     content_type='application/json',
                                     status_code=INVALID_INPUT_ERROR)
 
-    def test_save_workflow_new_start_step(self):
+    def test_save_workflow_new_start_action(self):
         initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
-        initial_steps = [step.read() for step in initial_workflow.steps.values()]
-        initial_steps[0]['position']['x'] = 0.0
-        initial_steps[0]['position']['y'] = 0.0
-        added_step = Step(name='new_id', app='HelloWorld', action='pause', arguments=[Argument('seconds', value=5)],
-                          position={'x': 0, 'y': 0}).read()
+        initial_actions = [action.read() for action in initial_workflow.actions.values()]
+        initial_actions[0]['position']['x'] = 0.0
+        initial_actions[0]['position']['y'] = 0.0
+        added_action = Action(name='new_id', app='HelloWorld', action='pause', arguments=[Argument('seconds', value=5)],
+                            position={'x': 0, 'y': 0}).read()
 
-        initial_steps.append(added_step)
-        data = {"steps": initial_steps, "start": "new_start"}
+        initial_actions.append(added_action)
+        data = {"actions": initial_actions, "start": "new_start"}
         self.post_with_status_check('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
                                     data=json.dumps(data),
                                     headers=self.headers,
@@ -364,7 +364,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(resulting_workflow.start, "new_start")
 
     def test_save_workflow_invalid_name(self):
-        data = {"steps": []}
+        data = {"actions": []}
         self.post_with_status_check('/api/playbooks/test/workflows/junkworkflowname/save',
                                     error='Playbook or workflow does not exist.',
                                     headers=self.headers, status_code=OBJECT_DNE_ERROR, data=json.dumps(data),
@@ -411,9 +411,9 @@ class TestWorkflowServer(ServerTestCase):
                      content_type="application/json")
 
         initial_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
-        initial_steps = [step.read() for step in initial_workflow.steps.values()]
+        initial_actions = [action.read() for action in initial_workflow.actions.values()]
 
-        data = {"steps": initial_steps}
+        data = {"actions": initial_actions}
         self.app.post('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
                       data=json.dumps(data),
                       headers=self.headers,
@@ -473,7 +473,7 @@ class TestWorkflowServer(ServerTestCase):
         TestWorkflowServer.strip_uids(copy_workflow_json)
         TestWorkflowServer.strip_uids(original_workflow_json)
         self.assertDictEqual(copy_workflow_json, original_workflow_json)
-        self.assertEqual(len(workflow_original.steps), len(workflow_copy.steps))
+        self.assertEqual(len(workflow_original.actions), len(workflow_copy.actions))
 
     def test_copy_workflow_invalid_name(self):
         data = {"workflow": "helloWorldWorkflow"}
@@ -521,7 +521,7 @@ class TestWorkflowServer(ServerTestCase):
 
         self.assertDictEqual(copy_workflow_json, original_workflow_json)
 
-        self.assertEqual(len(workflow_original.steps), len(workflow_copy.steps))
+        self.assertEqual(len(workflow_original.actions), len(workflow_copy.actions))
 
     def test_copy_playbook(self):
         self.post_with_status_check('/api/playbooks/test/copy',
@@ -560,8 +560,8 @@ class TestWorkflowServer(ServerTestCase):
         flask_server.running_context.controller.initialize_threading()
         sync = Event()
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        step_uids = [step.uid for step in workflow.steps.values() if step.name == 'start']
-        setup_subscriptions_for_step(workflow.uid, step_uids)
+        action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
+        setup_subscriptions_for_action(workflow.uid, action_uids)
         start = datetime.utcnow()
 
         @WorkflowShutdown.connect
@@ -576,12 +576,12 @@ class TestWorkflowServer(ServerTestCase):
         flask_server.running_context.controller.shutdown_pool(1)
         self.assertIn('id', response)
         sync.wait(timeout=10)
-        steps = []
-        for uid in step_uids:
-            steps.extend(executed_steps(uid, start, datetime.utcnow()))
-        self.assertEqual(len(steps), 1)
-        step = steps[0]
-        result = step['data']
+        actions = []
+        for uid in action_uids:
+            actions.extend(executed_actions(uid, start, datetime.utcnow()))
+        self.assertEqual(len(actions), 1)
+        action = actions[0]
+        result = action['data']
         self.assertEqual(result, {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     def test_read_results(self):
@@ -610,16 +610,16 @@ class TestWorkflowServer(ServerTestCase):
 
         for result in response:
             self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'uid'})
-            for step_result in result['results']:
-                self.assertSetEqual(set(step_result.keys()),
+            for action_result in result['results']:
+                self.assertSetEqual(set(action_result.keys()),
                                     {'input', 'type', 'name', 'timestamp', 'result', 'app', 'action'})
 
-    def test_execute_workflow_trigger_step(self):
+    def test_execute_workflow_trigger_action(self):
         flask_server.running_context.controller.initialize_threading()
         sync = Event()
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        step_uids = [step.uid for step in workflow.steps.values() if step.name == 'start']
-        setup_subscriptions_for_step(workflow.uid, step_uids)
+        action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
+        setup_subscriptions_for_action(workflow.uid, action_uids)
         start = datetime.utcnow()
 
         @WorkflowShutdown.connect
@@ -635,10 +635,10 @@ class TestWorkflowServer(ServerTestCase):
         flask_server.running_context.controller.shutdown_pool(1)
         self.assertIn('id', response)
         sync.wait(timeout=10)
-        steps = []
-        for uid in step_uids:
-            steps.extend(executed_steps(uid, start, datetime.utcnow()))
-        self.assertEqual(len(steps), 1)
-        step = steps[0]
-        result = step['data']
+        actions = []
+        for uid in action_uids:
+            actions.extend(executed_actions(uid, start, datetime.utcnow()))
+        self.assertEqual(len(actions), 1)
+        action = actions[0]
+        result = action['data']
         self.assertEqual(result, {'status': 'Success', 'result': 'REPEATING: Hello World'})

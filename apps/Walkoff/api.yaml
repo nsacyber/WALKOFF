@@ -159,7 +159,7 @@ actions:
         items:
           type: string
       - name: inputs
-        description: Inputs into the starting step as key-value pairs
+        description: Inputs into the starting action as key-value pairs
         schema:
           type: object
           additionalProperties: true
@@ -252,31 +252,31 @@ actions:
                   type: string
                   enum: [completed, running]
                 results:
-                  description: The results of the workflow steps
+                  description: The results of the workflow actions
                   type: array
                   items:
                     type: object
                     required: [name, result, input, type, timestamp]
-                    description: A result of a step execution
+                    description: A result of a action execution
                     properties:
                       name:
-                        description: The name of the step
+                        description: The name of the action
                         type: string
-                        example: 'This One step'
+                        example: 'This One action'
                       result:
-                        description: The result of the step
+                        description: The result of the action
                         type: object
                       type:
-                        description: Success or failure of the step
+                        description: Success or failure of the action
                         type: string
                         example: SUCCESS
                         enum: [SUCCESS, ERROR]
                       timestamp:
-                        description: The timestamp of when the step completed
+                        description: The timestamp of when the action completed
                         type: string
                         example: '2017-05-24 00:43:26.930892'
                       input:
-                        description: The input to the step. Of form {input_name -> value}
+                        description: The input to the action. Of form {input_name -> value}
                         type: object
       TimedOut:
         schema:
@@ -340,31 +340,31 @@ actions:
               type: string
               enum: [completed, running]
             results:
-              description: The results of the workflow steps
+              description: The results of the workflow actions
               type: array
               items:
                 type: object
                 required: [name, result, input, type, timestamp]
-                description: A result of a step execution
+                description: A result of a action execution
                 properties:
                   name:
-                    description: The name of the step
+                    description: The name of the action
                     type: string
-                    example: 'This One step'
+                    example: 'This One action'
                   result:
-                    description: The result of the step
+                    description: The result of the action
                     type: object
                   type:
-                    description: Success or failure of the step
+                    description: Success or failure of the action
                     type: string
                     example: SUCCESS
                     enum: [SUCCESS, ERROR]
                   timestamp:
-                    description: The timestamp of when the step completed
+                    description: The timestamp of when the action completed
                     type: string
                     example: '2017-05-24 00:43:26.930892'
                   input:
-                    description: The input to the step. Of form {input_name -> value}
+                    description: The input to the action. Of form {input_name -> value}
                     type: object
       TimedOut:
         schema:

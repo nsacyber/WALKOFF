@@ -3,15 +3,15 @@ import { Argument } from '../playbook/argument';
 
 export class WorkflowResult {
 	/**
-	 * UUID of the given step execution, unique for all individual executions of this step.
+	 * UUID of the given action execution, unique for all individual executions of this action.
 	 */
 	uid: string;
 	/**
-	 * UUID of the given step that is executing as stored in the workflow.
+	 * UUID of the given action that is executing as stored in the workflow.
 	 */
-	step_uid: string;
+	action_uid: string;
 	/**
-	 * Name of the step to be executed as it is stored in the workflow.
+	 * Name of the action to be executed as it is stored in the workflow.
 	 */
 	name: string;
 	timestamp: string;
@@ -24,7 +24,7 @@ export class WorkflowResult {
 	 */
 	arguments: Argument[];
 	/**
-	 * Result returned by the step executed.
+	 * Result returned by the action executed.
 	 */
 	result: GenericObject;
 }

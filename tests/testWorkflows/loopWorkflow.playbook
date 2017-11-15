@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "loopWorkflow",
-            "next_steps": [
+            "branches": [
                 {
                     "conditions": [
                         {
@@ -46,14 +46,14 @@
                 }
             ],
             "start": "543f6226116c473bb75d19330b77371e",
-            "steps": [
+            "actions": [
                 {
                     "action": "repeatBackToMe",
                     "app": "HelloWorld",
                     "arguments": [
                         {
                             "name": "call",
-                            "value": "{{outputFrom(steps, -1)}}"
+                            "value": "{{outputFrom(actions, -1)}}"
                         }
                     ],
                     "name": "1",
@@ -68,7 +68,7 @@
                     "arguments": [
                         {
                             "name": "number",
-                            "value": "{%- if steps | length > 0 -%}\n                        {%- set x = outputFrom(steps, -1) -%}\n                    {%- endif -%}\n\n                    {%- if x is not none and x is defined -%}\n                        {{ x }}\n                    {%- else -%}\n                        1\n                    {%- endif -%}\n                "
+                            "value": "{%- if actions | length > 0 -%}\n                        {%- set x = outputFrom(actions, -1) -%}\n                    {%- endif -%}\n\n                    {%- if x is not none and x is defined -%}\n                        {{ x }}\n                    {%- else -%}\n                        1\n                    {%- endif -%}\n                "
                         }
                     ],
                     "name": "start",

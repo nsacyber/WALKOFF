@@ -34,7 +34,7 @@ class TestTriggers(ServerTestCase):
     #     server.running_context.controller.initialize_threading()
     #
     #     response = self.post_with_status_check(
-    #         '/api/playbooks/triggerStepWorkflow/workflows/triggerStepWorkflow/execute',
+    #         '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
     #         headers=self.headers, status_code=SUCCESS_ASYNC)
     #
     #     data = {"execution_uids": [response['id']],
@@ -42,12 +42,12 @@ class TestTriggers(ServerTestCase):
     #
     #     result = {"result": False}
     #
-    #     @callbacks.TriggerStepAwaitingData.connect
+    #     @callbacks.TriggerActionAwaitingData.connect
     #     def send_data(sender, **kwargs):
     #         self.post_with_status_check('/api/triggers/send_data', headers=self.headers, data=json.dumps(data),
     #                                     status_code=SUCCESS, content_type='application/json')
     #
-    #     @callbacks.TriggerStepTaken.connect
+    #     @callbacks.TriggerActionTaken.connect
     #     def trigger_taken(sender, **kwargs):
     #         result['result'] = True
     #
@@ -58,7 +58,7 @@ class TestTriggers(ServerTestCase):
     #     server.running_context.controller.initialize_threading()
     #
     #     response = self.post_with_status_check(
-    #         '/api/playbooks/triggerStepWorkflow/workflows/triggerStepWorkflow/execute',
+    #         '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
     #         headers=self.headers, status_code=SUCCESS_ASYNC)
     #
     #     data = {"execution_uids": [response['id']],
@@ -66,7 +66,7 @@ class TestTriggers(ServerTestCase):
     #
     #     result = {"result": 0}
     #
-    #     @callbacks.TriggerStepAwaitingData.connect
+    #     @callbacks.TriggerActionAwaitingData.connect
     #     def send_data(sender, **kwargs):
     #         self.post_with_status_check('/api/triggers/send_data', headers=self.headers, data=json.dumps(data),
     #                                     status_code=SUCCESS, content_type='application/json')
@@ -75,7 +75,7 @@ class TestTriggers(ServerTestCase):
     #         self.post_with_status_check('/api/triggers/send_data', headers=self.headers, data=json.dumps(data_correct),
     #                                     status_code=SUCCESS, content_type='application/json')
     #
-    #     @callbacks.TriggerStepTaken.connect
+    #     @callbacks.TriggerActionTaken.connect
     #     def trigger_taken(sender, **kwargs):
     #         result['result'] += 1
     #
@@ -86,7 +86,7 @@ class TestTriggers(ServerTestCase):
     #     server.running_context.controller.initialize_threading()
     #
     #     response = self.post_with_status_check(
-    #         '/api/playbooks/triggerStepWorkflow/workflows/triggerStepWorkflow/execute',
+    #         '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
     #         headers=self.headers, status_code=SUCCESS_ASYNC)
     #
     #     data = {"execution_uids": [response['id']],
@@ -97,10 +97,10 @@ class TestTriggers(ServerTestCase):
     #     result = {"value": None}
     #
     #     @callbacks.FunctionExecutionSuccess.connect
-    #     def step_finished_listener(sender, **kwargs):
+    #     def action_finished_listener(sender, **kwargs):
     #         result['value'] = kwargs['data']
     #
-    #     @callbacks.TriggerStepAwaitingData.connect
+    #     @callbacks.TriggerActionAwaitingData.connect
     #     def send_data(sender, **kwargs):
     #         self.post_with_status_check('/api/triggers/send_data', headers=self.headers, data=json.dumps(data),
     #                                     status_code=SUCCESS, content_type='application/json')
@@ -114,7 +114,7 @@ class TestTriggers(ServerTestCase):
     #     server.running_context.controller.initialize_threading()
     #
     #     response = self.post_with_status_check(
-    #         '/api/playbooks/triggerStepWorkflow/workflows/triggerStepWorkflow/execute',
+    #         '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
     #         headers=self.headers, status_code=SUCCESS_ASYNC)
     #
     #     data = {"execution_uids": [response['id']],
@@ -124,11 +124,11 @@ class TestTriggers(ServerTestCase):
     #
     #     result = {"result": False}
     #
-    #     @callbacks.StepArgumentsInvalid.connect
-    #     def step_input_invalids(sender, **kwargs):
+    #     @callbacks.ActionArgumentsInvalid.connect
+    #     def action_input_invalids(sender, **kwargs):
     #         result['result'] = True
     #
-    #     @callbacks.TriggerStepAwaitingData.connect
+    #     @callbacks.TriggerActionAwaitingData.connect
     #     def send_data(sender, **kwargs):
     #         self.post_with_status_check('/api/triggers/send_data', headers=self.headers, data=json.dumps(data),
     #                                     status_code=SUCCESS, content_type='application/json')

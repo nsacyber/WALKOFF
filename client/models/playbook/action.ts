@@ -3,11 +3,10 @@ import { Argument } from './argument';
 import { GraphPosition } from './graphPosition';
 import { Condition } from './condition';
 
-export class Step {
+export class Action {
 	uid: string;
 	name: string;
 	position: GraphPosition;
-	// next_steps: NextStep[] = [];
 	action: string;
 	app: string;
 	device_id: number;

@@ -120,7 +120,7 @@ class MockLoadBalancer(object):
         data["arguments"] = arg_objects
         for uid in workflow_uids:
             if uid in self.workflow_comms:
-                self.workflow_comms[uid].send_data_to_step(data)
+                self.workflow_comms[uid].send_data_to_action(data)
 
 
 class MockReceiveQueue(loadbalancer.Receiver):

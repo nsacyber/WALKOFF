@@ -39,8 +39,8 @@ class Transform(ExecutionElement):
         """Executes the transform.
 
         Args:
-            data_in: The input to the condition. Typically from the last step of the workflow or the input to a trigger.
-            accumulator (dict): A record of executed steps and their results. Of form {step_name: result}.
+            data_in: The input to the condition, the last executed action of the workflow or the input to a trigger.
+            accumulator (dict): A record of executed actions and their results. Of form {action_name: result}.
 
         Returns:
             (obj): The transformed data

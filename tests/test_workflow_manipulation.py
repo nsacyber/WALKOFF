@@ -10,7 +10,7 @@ import core.controller
 import core.loadbalancer
 import core.multiprocessedexecutor
 from core.case.callbacks import FunctionExecutionSuccess, WorkflowExecutionStart, WorkflowPaused, WorkflowResumed
-from core.executionelements.step import Step
+from core.executionelements.action import Action
 from core.executionelements.workflow import Workflow
 from core.appinstance import AppInstance
 from tests import config
@@ -56,28 +56,28 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     def test_simple_risk(self):
         workflow = Workflow(name='workflow')
-        workflow.create_step(name="stepOne", action='helloWorld', app='HelloWorld', risk=1)
-        workflow.create_step(name="stepTwo", action='helloWorld', app='HelloWorld', risk=2)
-        workflow.create_step(name="stepThree", action='helloWorld', app='HelloWorld', risk=3)
+        workflow.create_action(name="actionOne", action='helloWorld', app='HelloWorld', risk=1)
+        workflow.create_action(name="actionTwo", action='helloWorld', app='HelloWorld', risk=2)
+        workflow.create_action(name="actionThree", action='helloWorld', app='HelloWorld', risk=3)
 
         self.assertEqual(workflow._total_risk, 6)
 
     def test_accumulated_risk_with_error(self):
         workflow = Workflow(name='workflow')
         workflow._execution_uid = 'some_uid'
-        step1 = Step(name="step_one", app='HelloWorld', action='Buggy', risk=1)
-        step2 = Step(name="step_two", app='HelloWorld', action='Buggy', risk=2)
-        step3 = Step(name="step_three", app='HelloWorld', action='Buggy', risk=3.5)
-        workflow.steps = {'step_one': step1, 'step_two': step2, 'step_three': step3}
+        action1 = Action(name="action_one", app='HelloWorld', action='Buggy', risk=1)
+        action2 = Action(name="action_two", app='HelloWorld', action='Buggy', risk=2)
+        action3 = Action(name="action_three", app='HelloWorld', action='Buggy', risk=3.5)
+        workflow.actions = {'action_one': action1, 'action_two': action2, 'action_three': action3}
         workflow._total_risk = 6.5
 
         instance = AppInstance.create(app_name='HelloWorld', device_name='test_device_name')
 
-        workflow._Workflow__execute_step(workflow.steps["step_one"], instance)
+        workflow._Workflow__execute_action(workflow.actions["action_one"], instance)
         self.assertAlmostEqual(workflow.accumulated_risk, 1.0 / 6.5)
-        workflow._Workflow__execute_step(workflow.steps["step_two"], instance)
+        workflow._Workflow__execute_action(workflow.actions["action_two"], instance)
         self.assertAlmostEqual(workflow.accumulated_risk, (1.0 / 6.5) + (2.0 / 6.5))
-        workflow._Workflow__execute_step(workflow.steps["step_three"], instance)
+        workflow._Workflow__execute_action(workflow.actions["action_three"], instance)
         self.assertAlmostEqual(workflow.accumulated_risk, 1.0)
 
     def test_pause_and_resume_workflow(self):
@@ -103,7 +103,7 @@ class TestWorkflowManipulation(unittest.TestCase):
             return
 
         @WorkflowExecutionStart.connect
-        def step_1_about_to_begin_listener(sender, **kwargs):
+        def action_1_about_to_begin_listener(sender, **kwargs):
             threading.Thread(target=pause_resume_thread).start()
 
         uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
@@ -111,16 +111,16 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(result['paused'])
         self.assertTrue(result['resumed'])
 
-    def test_change_step_input(self):
+    def test_change_action_input(self):
         self.controller.initialize_threading()
         arguments = [{'name': 'call', 'value': 'CHANGE INPUT'}]
 
         result = {'value': None}
 
-        def step_finished_listener(sender, **kwargs):
+        def action_finished_listener(sender, **kwargs):
             result['value'] = kwargs['data']
 
-        FunctionExecutionSuccess.connect(step_finished_listener)
+        FunctionExecutionSuccess.connect(action_finished_listener)
 
         self.controller.execute_workflow('simpleDataManipulationWorkflow', 'helloWorldWorkflow',
                                          start_arguments=arguments)

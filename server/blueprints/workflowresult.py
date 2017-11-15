@@ -1,7 +1,7 @@
 from flask import Blueprint, Response
 from gevent.event import Event, AsyncResult
 from gevent import sleep
-from core.case.callbacks import WorkflowShutdown, FunctionExecutionSuccess, StepExecutionError
+from core.case.callbacks import WorkflowShutdown, FunctionExecutionSuccess, ActionExecutionError
 from datetime import datetime
 from server.security import jwt_required_in_query
 import server.workflowresults  # do not delete needed to register callbacks
@@ -9,11 +9,11 @@ import server.workflowresults  # do not delete needed to register callbacks
 workflowresults_page = Blueprint('workflowresults_page', __name__)
 
 __workflow_shutdown_event_json = AsyncResult()
-__workflow_step_event_json = AsyncResult()
+__workflow_action_event_json = AsyncResult()
 __sync_signal = Event()
-__step_signal = Event()
+__action_signal = Event()
 
-__step_event_id_counter = 0
+__action_event_id_counter = 0
 __workflow_event_id_counter = 0
 
 
@@ -26,13 +26,13 @@ def __workflow_shutdown_event_stream():
         __sync_signal.wait()
 
 
-def __workflow_steps_event_stream():
-    global __step_event_id_counter
+def __workflow_actions_event_stream():
+    global __action_event_id_counter
     while True:
-        event_type, data = __workflow_step_event_json.get()
-        yield 'event: {0}\nid: {1}\ndata: {2}\n\n'.format(event_type, __step_event_id_counter, data)
-        __step_event_id_counter += 1
-        __step_signal.wait()
+        event_type, data = __workflow_action_event_json.get()
+        yield 'event: {0}\nid: {1}\ndata: {2}\n\n'.format(event_type, __action_event_id_counter, data)
+        __action_event_id_counter += 1
+        __action_signal.wait()
 
 
 @WorkflowShutdown.connect
@@ -63,35 +63,35 @@ def convert_argument(argument):
 
 
 @FunctionExecutionSuccess.connect
-def __step_ended_callback(sender, **kwargs):
+def __action_ended_callback(sender, **kwargs):
     data = 'None'
-    step_arguments = [convert_argument(argument) for argument in list(sender.arguments)]
+    action_arguments = [convert_argument(argument) for argument in list(sender.arguments)]
 
     if 'data' in kwargs:
         data = kwargs['data']
     result = {'name': sender.name,
               'timestamp': str(datetime.utcnow()),
-              'arguments': step_arguments,
+              'arguments': action_arguments,
               'result': data}
-    __workflow_step_event_json.set(('step_success', result))
+    __workflow_action_event_json.set(('action_success', result))
     sleep(0)
-    __step_signal.set()
-    __step_signal.clear()
+    __action_signal.set()
+    __action_signal.clear()
     sleep(0)
 
 
-@StepExecutionError.connect
-def __step_error_callback(sender, **kwargs):
+@ActionExecutionError.connect
+def __action_error_callback(sender, **kwargs):
     result = {'name': sender.name}
     if 'data' in kwargs:
         data = kwargs['data']
         result['arguments'] = data['arguments']
         result['result'] = data['result']
         result['timestamp'] = str(datetime.utcnow())
-    __workflow_step_event_json.set(('step_error', result))
+    __workflow_action_event_json.set(('action_error', result))
     sleep(0)
-    __step_signal.set()
-    __step_signal.clear()
+    __action_signal.set()
+    __action_signal.clear()
     sleep(0)
 
 
@@ -101,7 +101,7 @@ def stream_workflow_success_events():
     return Response(__workflow_shutdown_event_stream(), mimetype='text/event-stream')
 
 
-@workflowresults_page.route('/stream-steps', methods=['GET'])
+@workflowresults_page.route('/stream-actions', methods=['GET'])
 @jwt_required_in_query('access_token')
-def stream_workflow_step_events():
-    return Response(__workflow_steps_event_stream(), mimetype='text/event-stream')
+def stream_workflow_action_events():
+    return Response(__workflow_actions_event_stream(), mimetype='text/event-stream')

@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "dataflowWorkflow",
-            "next_steps": [
+            "branches": [
                 {
                     "conditions": [],
                     "destination_uid": "9515a631ba4f4d6f8fcd6b843a277c40",
@@ -20,7 +20,7 @@
                 }
             ],
             "start": "5ed04d7e28354ee7b81619dab9d34fe2",
-            "steps": [
+            "actions": [
                 {
                     "action": "Add Three",
                     "app": "HelloWorld",

@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "helloWorldWorkflow",
-            "next_steps": [
+            "branches": [
                 {
                     "conditions": [
                         {
@@ -33,7 +33,7 @@
                 }
             ],
             "start": "af46e96b015d42e7abe04925fe1c43f0",
-            "steps": [
+            "actions": [
                 {
                     "action": "repeatBackToMe",
                     "app": "HelloWorld",

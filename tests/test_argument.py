@@ -109,19 +109,19 @@ class TestArgument(TestCase):
         with self.assertRaises(InvalidArgument):
             arg._select(input_)
 
-    def test_get_step_from_reference_empty_accumulator(self):
+    def test_get_action_from_reference_empty_accumulator(self):
         arg = Argument('test', reference='a')
         with self.assertRaises(InvalidArgument):
-            arg._get_step_from_reference({})
+            arg._get_action_from_reference({})
 
-    def test_get_step_from_reference_not_in_accumulator(self):
+    def test_get_action_from_reference_not_in_accumulator(self):
         arg = Argument('test', reference='a')
         with self.assertRaises(InvalidArgument):
-            arg._get_step_from_reference({'b': 3, 'c': 7})
+            arg._get_action_from_reference({'b': 3, 'c': 7})
 
-    def test_get_step_from_reference(self):
+    def test_get_action_from_reference(self):
         arg = Argument('test', reference='a')
-        self.assertEqual(arg._get_step_from_reference({'a': 1, 'b': 3, 'c': 7}), 1)
+        self.assertEqual(arg._get_action_from_reference({'a': 1, 'b': 3, 'c': 7}), 1)
 
     def test_get_value_value_only(self):
         arg = Argument('test', value=42)

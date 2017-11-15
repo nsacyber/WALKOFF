@@ -17,7 +17,7 @@ class WorkflowResult(Case_Base):
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
     status = Column(String)
-    results = relationship("StepResult", backref='workflow', lazy='dynamic')
+    results = relationship("ActionResult", backref='workflow', lazy='dynamic')
 
     def __init__(self, uid, name):
         self.uid = uid
@@ -45,14 +45,14 @@ class WorkflowResult(Case_Base):
     def resumed(self):
         self.status = 'running'
 
-    def trigger_step_awaiting_data(self):
+    def trigger_action_awaiting_data(self):
         self.status = 'awaiting_data'
 
-    def trigger_step_executing(self):
+    def trigger_action_executing(self):
         self.status = 'running'
 
 
-class StepResult(Case_Base):
+class ActionResult(Case_Base):
     """ORM for an Event in the events database
     """
     __tablename__ = 'result'
@@ -66,11 +66,11 @@ class StepResult(Case_Base):
     app = Column(String)
     workflow_result_id = Column(Integer, ForeignKey('workflow.id'))
 
-    def __init__(self, name, result, step_input, step_type, app, action):
+    def __init__(self, name, result, action_input, action_type, app, action):
         self.name = name
         self.result = result
-        self.input = step_input
-        self.type = step_type
+        self.input = action_input
+        self.type = action_type
         self.timestamp = datetime.utcnow()
         self.app = app
         self.action = action

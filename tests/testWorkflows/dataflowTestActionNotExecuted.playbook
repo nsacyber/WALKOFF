@@ -1,9 +1,9 @@
 {
-    "name": "dataflowTestStepNotExecuted",
+    "name": "dataflowTestActionNotExecuted",
     "workflows": [
         {
             "name": "dataflowWorkflow",
-            "next_steps": [
+            "branches": [
                 {
                     "conditions": [],
                     "destination_uid": "0ed91d07f1774d16a991d7815814fff1",
@@ -13,7 +13,7 @@
                 }
             ],
             "start": "9fd0559779a84bd584c1ecd43b156656",
-            "steps": [
+            "actions": [
                 {
                     "action": "Add Three",
                     "app": "HelloWorld",

@@ -41,12 +41,12 @@ class TestTriggersServer(ServerTestCase):
         ids = []
 
         response=self.post_with_status_check(
-            '/api/playbooks/triggerStepWorkflow/workflows/triggerStepWorkflow/execute',
+            '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
             headers=self.headers, status_code=SUCCESS_ASYNC)
         ids.append(response['id'])
 
         response = self.post_with_status_check(
-            '/api/playbooks/triggerStepWorkflow/workflows/triggerStepWorkflow/execute',
+            '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
             headers=self.headers, status_code=SUCCESS_ASYNC)
         ids.append(response['id'])
 
@@ -56,7 +56,7 @@ class TestTriggersServer(ServerTestCase):
         result = {"result": 0,
                   "num_trigs": 0}
 
-        @callbacks.TriggerStepAwaitingData.connect
+        @callbacks.TriggerActionAwaitingData.connect
         def send_data(sender, **kwargs):
             if result["num_trigs"] == 1:
                 self.post_with_status_check('/api/triggers/send_data', headers=self.headers, data=json.dumps(data),
@@ -64,7 +64,7 @@ class TestTriggersServer(ServerTestCase):
             else:
                 result["num_trigs"] += 1
 
-        @callbacks.TriggerStepTaken.connect
+        @callbacks.TriggerActionTaken.connect
         def trigger_taken(sender, **kwargs):
             result['result'] += 1
 

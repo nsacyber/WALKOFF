@@ -39,7 +39,7 @@ def __construct_logging_signal(event_type, message_name, entry_message):
         module variable for the signal to work.
         
     Args:
-        event_type (str): Type of event which is logged 'Workflow, Step, etc.'
+        event_type (str): Type of event which is logged 'Workflow, Action, etc.'
         message_name (str): Name of message
         entry_message (str): More detailed message to log
         
@@ -87,7 +87,7 @@ WorkflowExecutionStart, __workflow_execution_start_callback = __construct_loggin
 AppInstanceCreated, __app_instance_created_callback = __construct_logging_signal('Workflow',
                                                                                  'App Instance Created',
                                                                                  'New app instance created')
-NextStepFound, __next_step_found_callback = __construct_logging_signal('Workflow', 'Next Step Found', 'Next step found')
+BranchFound, __branch_found_callback = __construct_logging_signal('Workflow', 'Branch Found', 'branch found')
 
 WorkflowShutdown, __workflow_shutdown_callback = __construct_logging_signal('Workflow',
                                                                             'Workflow Shutdown',
@@ -109,31 +109,29 @@ WorkflowResumed, __workflow_resumed = __construct_logging_signal('Workflow',
                                                                  'Workflow Resumed',
                                                                  'Workflow resumed')
 
-# Step callbacks
+# Action callbacks
 
-FunctionExecutionSuccess, __func_exec_success_callback = __construct_logging_signal('Step',
+FunctionExecutionSuccess, __func_exec_success_callback = __construct_logging_signal('Action',
                                                                                     'Function Execution Success',
                                                                                     'Function executed successfully')
-StepExecutionSuccess, __step_execution_success_callback = __construct_logging_signal('Step',
-                                                                                     'Step Execution Success',
-                                                                                     'Step executed successfully')
-StepExecutionError, __step_execution_error_callback = __construct_logging_signal('Step',
-                                                                                 'Step Execution Error',
-                                                                                 'Step executed with error')
-StepStarted, __step_started_callback = __construct_logging_signal('Step',
-                                                                  'Step Started',
-                                                                  'Step execution started')
-StepArgumentsInvalid, __step_arguments_invalid_callback = __construct_logging_signal('Step',
+ActionExecutionSuccess, __action_execution_success_callback = __construct_logging_signal('Action',
+                                                                                     'Action Execution Success',
+                                                                                     'Action executed successfully')
+ActionExecutionError, __action_execution_error_callback = __construct_logging_signal('Action',
+                                                                                 'Action Execution Error',
+                                                                                 'Action executed with error')
+ActionStarted, __action_started_callback = __construct_logging_signal('Action',
+                                                                  'Action Started',
+                                                                  'Action execution started')
+ActionArgumentsInvalid, __action_arguments_invalid_callback = __construct_logging_signal('Action',
                                                                              'Arguments Invalid',
                                                                              'Arguments invalid')
 
-# Next step callbacks
-NextStepTaken, __next_step_taken_callback = __construct_logging_signal('Next Step',
-                                                                       'Next Step Taken',
-                                                                       'Next step taken')
-NextStepNotTaken, __next_step_not_taken_callback = __construct_logging_signal('Next Step',
-                                                                              'Next Step Not Taken',
-                                                                              'Next step not taken')
+# Branch callbacks
+BranchTaken, __branch_taken_callback = __construct_logging_signal('Branch', 'Branch Taken', 'Branch taken')
+BranchNotTaken, __branch_not_taken_callback = __construct_logging_signal('Branch',
+                                                                              'Branch Not Taken',
+                                                                              'Branch not taken')
 
 # Condition callbacks
 ConditionSuccess, __condition_success_callback = __construct_logging_signal('Condition',
@@ -149,13 +147,13 @@ TransformError, __transform_error_callback = __construct_logging_signal('Transfo
 # Load Balancer callbacks
 data_sent = Signal('sent')
 
-# Trigger Step callbacks
-TriggerStepAwaitingData, __trigger_step_awaiting_data = __construct_logging_signal('Trigger',
-                                                                                   'Trigger Step Awaiting Data',
-                                                                                   'Trigger step awaiting data')
-TriggerStepTaken, __trigger_step_taken = __construct_logging_signal('Trigger',
-                                                                    'Trigger Step Taken',
-                                                                    'Trigger step taken')
-TriggerStepNotTaken, __trigger_step_not_taken = __construct_logging_signal('Trigger',
-                                                                           'Trigger Step Not Taken',
-                                                                           'Trigger step not taken')
+# Trigger Action callbacks
+TriggerActionAwaitingData, __trigger_action_awaiting_data = __construct_logging_signal('Trigger',
+                                                                                   'Trigger Action Awaiting Data',
+                                                                                   'Trigger action awaiting data')
+TriggerActionTaken, __trigger_action_taken = __construct_logging_signal('Trigger',
+                                                                    'Trigger Action Taken',
+                                                                    'Trigger action taken')
+TriggerActionNotTaken, __trigger_action_not_taken = __construct_logging_signal('Trigger',
+                                                                           'Trigger Action Not Taken',
+                                                                           'Trigger action not taken')

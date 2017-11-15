@@ -18,29 +18,29 @@ from core.argument import Argument
 logger = logging.getLogger(__name__)
 
 
-class Step(ExecutionElement):
+class Action(ExecutionElement):
     _templatable = True
 
     def __init__(self, app, action, name='', device_id=None, arguments=None, triggers=None, position=None,
                  risk=0, uid=None, templated=False, raw_representation=None):
-        """Initializes a new Step object. A Workflow has many steps that it executes.
+        """Initializes a new Action object. A Workflow has many actions that it executes.
 
         Args:
-            app (str): The name of the app associated with the Step
-            action (str): The name of the action associated with a Step
-            name (str, optional): The name of the Step object. Defaults to an empty string.
-            device_id (int, optional): The id of the device associated with the app associated with the Step. Defaults
+            app (str): The name of the app associated with the Action
+            action (str): The name of the action associated with a Action
+            name (str, optional): The name of the Action object. Defaults to an empty string.
+            device_id (int, optional): The id of the device associated with the app associated with the Action. Defaults
                 to None.
-            arguments ([Argument], optional): A list of Argument objects that are argument parameters to the step
-                execution. Defaults to None.
-            triggers (list[Flag], optional): A list of Flag objects for the Step. If a Step should wait for data
-                before continuing, then include these Trigger objects in the Step init. Defaults to None.
-            position (dict, optional): A dictionary with the x and y coordinates of the Step object. This is used
+            arguments ([Argument], optional): A list of Argument objects that are arguments to the action.
+                Defaults to None.
+            triggers (list[Flag], optional): A list of Flag objects for the Action. If a Action should wait for data
+                before continuing, then include these Trigger objects in the Action init. Defaults to None.
+            position (dict, optional): A dictionary with the x and y coordinates of the Action object. This is used
                 for UI display purposes. Defaults to None.
-            risk (int, optional): The risk associated with the Step. Defaults to 0.
+            risk (int, optional): The risk associated with the Action. Defaults to 0.
             uid (str, optional): A universally unique identifier for this object.
                 Created from uuid.uuid4().hex in Python
-            templated (bool, optional): Whether or not the Step is templated. Used for Jinja templating.
+            templated (bool, optional): Whether or not the Action is templated. Used for Jinja templating.
             raw_representation (dict, optional): JSON representation of this object. Used for Jinja templating.
         """
         ExecutionElement.__init__(self, uid)
@@ -70,15 +70,15 @@ class Step(ExecutionElement):
         self._execution_uid = 'default'
 
     def get_output(self):
-        """Gets the output of a Step (the result)
+        """Gets the output of a Action (the result)
 
         Returns:
-            The result of the Step
+            The result of the Action
         """
         return self._output
 
     def get_execution_uid(self):
-        """Gets the execution UID of the Step
+        """Gets the execution UID of the Action
 
         Returns:
             The execution UID
@@ -86,12 +86,12 @@ class Step(ExecutionElement):
         return self._execution_uid
 
     def send_data_to_trigger(self, data):
-        """Sends data to the Step if it has triggers associated with it, and is currently awaiting data
+        """Sends data to the Action if it has triggers associated with it, and is currently awaiting data
 
         Args:
             data (dict): The data to send to the triggers. This dict has two keys: 'data_in' which is the data
                 to be sent to the triggers, and 'arguments', which is an optional parameter to change the arguments
-                to the current Step
+                to the current Action
         """
         self._incoming_data.set(data)
 
@@ -113,8 +113,8 @@ class Step(ExecutionElement):
         self.arguments = arguments
 
     @contextdecorator.context
-    def render_step(self, **kwargs):
-        """Uses JINJA templating to render a Step object.
+    def render_action(self, **kwargs):
+        """Uses JINJA templating to render a Action object.
 
         Args:
             kwargs (dict[str]): Arguments to use in the JINJA templating.
@@ -126,31 +126,31 @@ class Step(ExecutionElement):
             self._update_json(updated_json=json.loads(env))
 
     def set_arguments(self, new_arguments):
-        """Updates the arguments for a Step object.
+        """Updates the arguments for a Action object.
 
         Args:
-            new_arguments ([Argument]): The new Arguments for the Step object.
+            new_arguments ([Argument]): The new Arguments for the Action object.
         """
         new_arguments = {arg.name: arg for arg in new_arguments}
         validate_app_action_parameters(self._arguments_api, new_arguments, self.app, self.action)
         self.arguments = new_arguments
 
     def execute(self, instance, accumulator):
-        """Executes a Step by calling the associated app function.
+        """Executes a Action by calling the associated app function.
 
         Args:
             instance (App): The instance of an App object to be used to execute the associated function.
-            accumulator (dict): Dict containing the results of the previous steps
+            accumulator (dict): Dict containing the results of the previous actions
 
         Returns:
             The result of the executed function.
         """
         self._execution_uid = str(uuid.uuid4())
-        data_sent.send(self, callback_name="Step Started", object_type="Step")
+        data_sent.send(self, callback_name="Action Started", object_type="Action")
 
         if self.triggers:
-            data_sent.send(self, callback_name="Trigger Step Awaiting Data", object_type="Step")
-            logger.debug('Trigger Step {} is awaiting data'.format(self.name))
+            data_sent.send(self, callback_name="Trigger Action Awaiting Data", object_type="Action")
+            logger.debug('Trigger Action {} is awaiting data'.format(self.name))
             self._wait_for_trigger(accumulator)
 
         try:
@@ -161,22 +161,22 @@ class Step(ExecutionElement):
             else:
                 result = self._action_executable(**args)
 
-            data_sent.send(self, callback_name="Function Execution Success", object_type="Step",
+            data_sent.send(self, callback_name="Function Execution Success", object_type="Action",
                            data=result.as_json())
         except InvalidArgument as e:
             formatted_error = format_exception_message(e)
-            logger.error('Error calling step {0}. Error: {1}'.format(self.name, formatted_error))
-            data_sent.send(self, callback_name="Step Argument Invalid", object_type="Step")
+            logger.error('Error calling action {0}. Error: {1}'.format(self.name, formatted_error))
+            data_sent.send(self, callback_name="Action Argument Invalid", object_type="Action")
             self._output = ActionResult('error: {0}'.format(formatted_error), 'InvalidArguments')
             raise
         except Exception as e:
             formatted_error = format_exception_message(e)
-            logger.exception('Error calling step {0}. Error: {1}'.format(self.name, formatted_error))
+            logger.exception('Error calling action {0}. Error: {1}'.format(self.name, formatted_error))
             self._output = ActionResult('error: {0}'.format(formatted_error), 'UnhandledException')
             raise
         else:
             self._output = result
-            logger.debug('Step {0}-{1} (uid {2}) executed successfully'.format(self.app, self.action, self.uid))
+            logger.debug('Action {0}-{1} (uid {2}) executed successfully'.format(self.app, self.action, self.uid))
             return result
 
     def _wait_for_trigger(self, accumulator):
@@ -190,7 +190,7 @@ class Step(ExecutionElement):
             data_in = data['data_in']
 
             if all(flag.execute(data_in=data_in, accumulator=accumulator) for flag in self.triggers):
-                data_sent.send(self, callback_name="Trigger Step Taken", object_type="Step")
+                data_sent.send(self, callback_name="Trigger Action Taken", object_type="Action")
                 logger.debug('Trigger is valid for input {0}'.format(data_in))
                 accumulator[self.name] = data_in
 
@@ -203,6 +203,6 @@ class Step(ExecutionElement):
                 break
             else:
                 logger.debug('Trigger is not valid for input {0}'.format(data_in))
-                data_sent.send(self, callback_name="Trigger Step Not Taken", object_type="Step")
+                data_sent.send(self, callback_name="Trigger Action Not Taken", object_type="Action")
 
             gevent.sleep(0.1)

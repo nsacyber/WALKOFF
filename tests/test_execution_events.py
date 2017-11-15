@@ -35,8 +35,8 @@ class TestExecutionEvents(unittest.TestCase):
 
         self.c.load_playbook(resource=config.test_workflows_path + 'multiactionWorkflowTest.playbook')
         workflow_uid = self.c.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow').uid
-        subs = {'case1': {workflow_uid: ['App Instance Created', 'Step Execution Success',
-                                         'Next Step Found', 'Workflow Shutdown']}}
+        subs = {'case1': {workflow_uid: ['App Instance Created', 'Action Execution Success',
+                                         'Branch Found', 'Workflow Shutdown']}}
         case_subscription.set_subscriptions(subs)
         self.c.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
@@ -48,12 +48,12 @@ class TestExecutionEvents(unittest.TestCase):
                          'Incorrect length of event history. '
                          'Expected {0}, got {1}'.format(6, len(execution_events)))
 
-    def test_step_execution_events(self):
+    def test_action_execution_events(self):
         self.c.load_playbook(resource=config.test_workflows_path + 'basicWorkflowTest.playbook')
         workflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-        step_uids = [step.uid for step in workflow.steps.values()]
-        step_events = ['Function Execution Success', 'Step Started']
-        subs = {'case1': {step_uid: step_events for step_uid in step_uids}}
+        action_uids = [action.uid for action in workflow.actions.values()]
+        action_events = ['Function Execution Success', 'Action Started']
+        subs = {'case1': {action_uid: action_events for action_uid in action_uids}}
         case_subscription.set_subscriptions(subs)
 
         self.c.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
@@ -69,12 +69,12 @@ class TestExecutionEvents(unittest.TestCase):
     def test_condition_transform_execution_events(self):
         self.c.load_playbook(resource=config.test_workflows_path + 'basicWorkflowTest.playbook')
         workflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-        step = workflow.steps['c5a7c29a0f844b69a59901bb542e9305']
-        subs = {step.uid: ['Function Execution Success', 'Step Started']}
-        next_steps = [next_step for sublist in workflow.next_steps.values() for next_step in sublist]
-        next_step = next_steps[0]
-        subs[next_step.uid] = ['Next Step Taken', 'Next Step Not Taken']
-        condition = next(condition for condition in next_step.conditions if condition.action == 'regMatch')
+        action = workflow.actions['c5a7c29a0f844b69a59901bb542e9305']
+        subs = {action.uid: ['Function Execution Success', 'Action Started']}
+        branches = [branch for sublist in workflow.branches.values() for branch in sublist]
+        branch = branches[0]
+        subs[branch.uid] = ['Branch Taken', 'Branch Not Taken']
+        condition = next(condition for condition in branch.conditions if condition.action == 'regMatch')
         subs[condition.uid] = ['Condition Success', 'Condition Error']
         transform = next(transform for transform in condition.transforms if transform.action == 'length')
         subs[transform.uid] = ['Transform Success', 'Transform Error']

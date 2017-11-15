@@ -221,8 +221,8 @@ class Controller(object):
         Args:
             playbook_name (str): Playbook name under which the workflow is located.
             workflow_name (str): Workflow to execute.
-            start (str, optional): The name of the first, or starting step. Defaults to None.
-            start_arguments (list[Argument JSON]): The input to the starting step of the workflow. Defaults to None.
+            start (str, optional): The name of the first, or starting action. Defaults to None.
+            start_arguments (list[Argument JSON]): The input to the starting action of the workflow. Defaults to None.
 
         Returns:
             The execution UID if successful, None otherwise.
@@ -297,9 +297,9 @@ class Controller(object):
         """Tries to match the data in against the conditionals of all the triggers registered in the database.
 
         Args:
-            data_in (dict): Data to be used to match against the triggers for a Step awaiting data.
+            data_in (dict): Data to be used to match against the triggers for an Action awaiting data.
             workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
-            arguments (list[Argument]): An optional list of arguments to update for a Step awaiting data for a trigger.
+            arguments (list[Argument]): An optional list of arguments to update for an Action awaiting data for a trigger.
                 Defaults to None.
 
         Returns:

@@ -50,8 +50,8 @@ class TestTransform(unittest.TestCase):
         self.__compare_init(filter_elem, 'HelloWorld', 'mod1_filter2', arguments=[Argument('arg1', value='5.4')])
 
     def test_init_with_args_with_routing(self):
-        filter_elem = Transform('HelloWorld', action='mod1_filter2', arguments=[Argument('arg1', reference="step1")])
-        self.__compare_init(filter_elem, 'HelloWorld', 'mod1_filter2', arguments=[Argument('arg1', reference="step1")])
+        filter_elem = Transform('HelloWorld', action='mod1_filter2', arguments=[Argument('arg1', reference="action1")])
+        self.__compare_init(filter_elem, 'HelloWorld', 'mod1_filter2', arguments=[Argument('arg1', reference="action1")])
 
     def test_init_with_invalid_arg_name(self):
         with self.assertRaises(InvalidArgument):
@@ -83,7 +83,7 @@ class TestTransform(unittest.TestCase):
 
     def test_execute_with_args_with_routing(self):
         self.assertAlmostEqual(
-            Transform('HelloWorld', action='mod1_filter2', arguments=[Argument('arg1', reference="step1")]).execute(5.4, {'step1': 10.3}),
+            Transform('HelloWorld', action='mod1_filter2', arguments=[Argument('arg1', reference="action1")]).execute(5.4, {'action1': 10.3}),
             15.7)
 
     def test_execute_with_complex_args(self):

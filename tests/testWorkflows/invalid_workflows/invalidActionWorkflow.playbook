@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "multiactionWorkflow",
-            "next_steps": [
+            "branches": [
                 {
                     "conditions": [
                         {
@@ -30,7 +30,7 @@
                 }
             ],
             "start": "2",
-            "steps": [
+            "actions": [
                 {
                     "action": "invalid",
                     "app": "HelloWorld",

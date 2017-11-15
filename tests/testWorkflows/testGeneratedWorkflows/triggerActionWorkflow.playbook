@@ -1,13 +1,13 @@
 {
-    "name": "triggerStepWorkflow",
+    "name": "triggerActionWorkflow",
     "uid": "1c8dc8d1e824425892c14226de6f565a",
     "workflows": [
         {
             "accumulated_risk": 0.0,
-            "name": "triggerStepWorkflow",
-            "next_steps": [],
+            "name": "triggerActionWorkflow",
+            "branches": [],
             "start": "c5a7c29a0f844b69a59901bb542e9305",
-            "steps": [
+            "actions": [
                 {
                     "action": "repeatBackToMe",
                     "app": "HelloWorld",

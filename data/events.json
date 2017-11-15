@@ -13,26 +13,26 @@
   "workflow": [
     "Workflow Execution Start",
     "App Instance Created",
-    "Next Step Found",
+    "Branch Found",
     "Workflow Shutdown",
     "Workflow Arguments Validated",
     "Workflow Arguments Invalid",
     "Workflow Paused",
     "Workflow Resumed"
   ],
-  "step": [
+  "action": [
     "Function Execution Success",
-    "Step Started",
+    "Action Started",
     "Arguments Invalid",
-    "Step Execution Success",
-    "Step Execution Error",
-    "Trigger Step Awaiting Data",
-    "Trigger Step Taken",
-    "Trigger Step Not Taken"
+    "Action Execution Success",
+    "Action Execution Error",
+    "Trigger Action Awaiting Data",
+    "Trigger Action Taken",
+    "Trigger Action Not Taken"
   ],
-  "nextstep": [
-    "Next Step Taken",
-    "Next Step Not Taken"
+  "branch": [
+    "Branch Taken",
+    "Branch Not Taken"
   ],
   "condition": [
     "Condition Success",

@@ -17,7 +17,7 @@ server_suite = TestSuite()
 add_tests_to_suite(server_suite, __server_tests)
 
 __execution_tests = [test_argument, test_execution_runtime, test_execution_element, test_execution_events, test_execution_modes,
-                     test_step, test_helper_functions, test_transform, test_condition, test_next_step,
+                     test_action, test_helper_functions, test_transform, test_condition, test_branch,
                      test_app_instance, test_controller, test_metrics,
                      test_app_utilities, test_input_validation, test_decorators,
                      test_app_api_validation, test_condition_transform_validation, test_app_event, test_workflow_results,
