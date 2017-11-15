@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "loopWorkflow",
-            "next_actions": [
+            "branches": [
                 {
                     "conditions": [
                         {

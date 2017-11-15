@@ -59,11 +59,11 @@ Workflow:
       type: array
       items:
         $ref: "#/definitions/DisplayAction"
-    next_actions:
-      description: The possible next actions
+    branches:
+      description: The possible branches
       type: array
       items:
-        $ref: '#/definitions/NextAction'
+        $ref: '#/definitions/Branch'
     start:
       description: UID of the starting action
       type: string
@@ -216,24 +216,24 @@ DisplayAction:
           type: number
           example: -12.036
 
-NextAction:
+Branch:
   type: object
   required: [source_uid, destination_uid]
   description: Encapsualtion of a list of possible actions to take and conditionals required to be met before taking that action
   additionalProperties: false
   properties:
     source_uid:
-      description: The source Action UID for this NextAction
+      description: The source Action UID for this Branch
       type: string
     destination_uid:
-      description: The destination Action UID for this NextAction, if the conditions evaluate to True
+      description: The destination Action UID for this Branch, if the conditions evaluate to True
       type: string
     uid:
       description: UID of this action
       type: string
       x-nullable: true
     priority:
-      description: The priority for this NextAction, which will be compared to other NextActions with the same source_uid Action, ascending, i.e. 1 is the highest priority.
+      description: The priority for this Branch, which will be compared to other Branches with the same source_uid Action, ascending, i.e. 1 is the highest priority.
       type: integer
     status:
       description: The status return code to use

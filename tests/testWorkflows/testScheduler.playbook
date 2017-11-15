@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "helloWorldWorkflow",
-            "next_actions": [
+            "branches": [
                 {
                     "conditions": [
                         {

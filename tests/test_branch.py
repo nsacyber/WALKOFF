@@ -7,13 +7,13 @@ from core.argument import Argument
 import core.config.config
 from core.executionelements.condition import Condition
 from core.executionelements.action import Action
-from core.executionelements.nextaction import NextAction
+from core.executionelements.branch import Branch
 from core.executionelements.workflow import Workflow
 from core.decorators import ActionResult
 from tests.config import test_apps_path
 
 
-class TestNextAction(unittest.TestCase):
+class TestBranch(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         apps.cache_apps(test_apps_path)
@@ -37,40 +37,40 @@ class TestNextAction(unittest.TestCase):
             self.assertEqual(elem.uid, uid)
 
     def test_init(self):
-        next_action = NextAction(source_uid="1", destination_uid="2")
-        self.__compare_init(next_action, "1", "2")
+        branch = Branch(source_uid="1", destination_uid="2")
+        self.__compare_init(branch, "1", "2")
 
     def test_init_wth_uid(self):
         uid = uuid.uuid4().hex
-        next_action = NextAction(source_uid="1", destination_uid="2", uid=uid)
-        self.__compare_init(next_action, "1", "2", uid=uid)
+        branch = Branch(source_uid="1", destination_uid="2", uid=uid)
+        self.__compare_init(branch, "1", "2", uid=uid)
 
     def test_init_with_status(self):
-        next_action = NextAction(source_uid="1", destination_uid="2", status='test_status')
-        self.__compare_init(next_action, "1", "2", status='test_status')
+        branch = Branch(source_uid="1", destination_uid="2", status='test_status')
+        self.__compare_init(branch, "1", "2", status='test_status')
 
     def test_init_with_empty_conditions(self):
-        next_action = NextAction(source_uid="1", destination_uid="2", conditions=[])
-        self.__compare_init(next_action, '1', '2')
+        branch = Branch(source_uid="1", destination_uid="2", conditions=[])
+        self.__compare_init(branch, '1', '2')
 
     def test_init_with_conditions(self):
         conditions = [Condition('HelloWorld', 'Top Condition'), Condition('HelloWorld', 'mod1_flag1')]
         expected_condition_json = [{'action': 'Top Condition', 'args': [], 'filters': []},
                               {'action': 'mod1_flag1', 'args': [], 'filters': []}]
-        next_action = NextAction("1", "2", conditions=conditions)
-        self.__compare_init(next_action, "1", "2", expected_condition_json)
+        branch = Branch("1", "2", conditions=conditions)
+        self.__compare_init(branch, "1", "2", expected_condition_json)
 
     def test_eq(self):
         conditions = [Condition('HelloWorld', 'mod1_flag1'), Condition('HelloWorld', 'Top Condition')]
-        next_actions = [NextAction(source_uid="1", destination_uid="2"),
-                      NextAction(source_uid="1", destination_uid="2", status='TestStatus'),
-                      NextAction(source_uid="1", destination_uid="2", conditions=conditions)]
-        for i in range(len(next_actions)):
-            for j in range(len(next_actions)):
+        branches = [Branch(source_uid="1", destination_uid="2"),
+                        Branch(source_uid="1", destination_uid="2", status='TestStatus'),
+                        Branch(source_uid="1", destination_uid="2", conditions=conditions)]
+        for i in range(len(branches)):
+            for j in range(len(branches)):
                 if i == j:
-                    self.assertEqual(next_actions[i], next_actions[j])
+                    self.assertEqual(branches[i], branches[j])
                 else:
-                    self.assertNotEqual(next_actions[i], next_actions[j])
+                    self.assertNotEqual(branches[i], branches[j])
 
     def test_execute(self):
         conditions1 = [Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='(.*)')])]
@@ -84,51 +84,51 @@ class TestNextAction(unittest.TestCase):
                   ('name4', conditions2, ActionResult('aaaa', 'Custom'), False)]
 
         for name, conditions, input_str, expect_name in inputs:
-            next_action = NextAction(source_uid="1", destination_uid="2", conditions=conditions)
+            branch = Branch(source_uid="1", destination_uid="2", conditions=conditions)
             if expect_name:
-                expected_name = next_action.destination_uid
-                self.assertEqual(next_action.execute(input_str, {}), expected_name)
+                expected_name = branch.destination_uid
+                self.assertEqual(branch.execute(input_str, {}), expected_name)
             else:
-                self.assertIsNone(next_action.execute(input_str, {}))
+                self.assertIsNone(branch.execute(input_str, {}))
 
-    def test_get_next_action_no_next_actions(self):
+    def test_get_branch_no_branchs(self):
         workflow = Workflow()
-        self.assertIsNone(workflow.get_next_action(None, {}))
+        self.assertIsNone(workflow.get_branch(None, {}))
 
-    def test_get_next_action_invalid_action(self):
+    def test_get_branch_invalid_action(self):
         flag = Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='aaa')])
-        next_action = NextAction(source_uid="1", destination_uid='next', conditions=[flag])
+        branch = Branch(source_uid="1", destination_uid='next', conditions=[flag])
         action = Action('HelloWorld', 'helloWorld', uid="2")
         action._output = ActionResult(result='bbb', status='Success')
-        workflow = Workflow(actions=[action], next_actions=[next_action])
-        self.assertIsNone(workflow.get_next_action(action, {}))
+        workflow = Workflow(actions=[action], branches=[branch])
+        self.assertIsNone(workflow.get_branch(action, {}))
 
-    def test_get_next_action(self):
+    def test_get_branch(self):
         flag = Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='aaa')])
-        next_action = NextAction(source_uid="1", destination_uid="2", conditions=[flag])
+        branch = Branch(source_uid="1", destination_uid="2", conditions=[flag])
         action = Action('HelloWorld', 'helloWorld', uid="1")
         action._output = ActionResult(result='aaa', status='Success')
-        workflow = Workflow(actions=[action], next_actions=[next_action])
+        workflow = Workflow(actions=[action], branches=[branch])
 
         result = {'triggered': False}
 
         @callbacks.data_sent.connect
         def validate_sent_data(sender, **kwargs):
-            if isinstance(sender, NextAction):
+            if isinstance(sender, Branch):
                 self.assertIn('callback_name', kwargs)
-                self.assertEqual(kwargs['callback_name'], 'Next Action Taken')
+                self.assertEqual(kwargs['callback_name'], 'Branch Taken')
                 self.assertIn('object_type', kwargs)
-                self.assertEqual(kwargs['object_type'], 'NextAction')
+                self.assertEqual(kwargs['object_type'], 'Branch')
                 result['triggered'] = True
 
-        self.assertEqual(workflow.get_next_action(action, {}), '2')
+        self.assertEqual(workflow.get_branch(action, {}), '2')
         self.assertTrue(result['triggered'])
 
-    def test_next_action_with_priority(self):
+    def test_branch_with_priority(self):
         flag = Condition('HelloWorld', action='regMatch', arguments=[Argument('regex', value='aaa')])
-        next_action_one = NextAction(source_uid="1", destination_uid='five', conditions=[flag], priority="5")
-        next_action_two = NextAction(source_uid="1", destination_uid='one', conditions=[flag], priority="1")
+        branch_one = Branch(source_uid="1", destination_uid='five', conditions=[flag], priority="5")
+        branch_two = Branch(source_uid="1", destination_uid='one', conditions=[flag], priority="1")
         action = Action('HelloWorld', 'helloWorld', uid="1")
         action._output = ActionResult(result='aaa', status='Success')
-        workflow = Workflow(actions=[action], next_actions=[next_action_one, next_action_two])
-        self.assertEqual(workflow.get_next_action(action, {}), "one")
+        workflow = Workflow(actions=[action], branches=[branch_one, branch_two])
+        self.assertEqual(workflow.get_branch(action, {}), "one")

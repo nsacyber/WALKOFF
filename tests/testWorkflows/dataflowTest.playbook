@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "dataflowWorkflow",
-            "next_actions": [
+            "branches": [
                 {
                     "conditions": [],
                     "destination_uid": "9515a631ba4f4d6f8fcd6b843a277c40",

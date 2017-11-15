@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "multiactionWorkflow",
-            "next_actions": [
+            "branches": [
                 {
                     "conditions": [
                         {

@@ -8,20 +8,20 @@ logger = logging.getLogger(__name__)
 
 
 @total_ordering
-class NextAction(ExecutionElement):
+class Branch(ExecutionElement):
     def __init__(self, source_uid, destination_uid, status='Success', conditions=None, priority=999, uid=None):
-        """Initializes a new NextAction object.
+        """Initializes a new Branch object.
         
         Args:
-            source_uid (str): The UID of the source action that will be sending inputs to this NextAction.
+            source_uid (str): The UID of the source action that will be sending inputs to this Branch.
             destination_uid (str): The UID of the destination action that will be returned if the conditions for this
-                NextAction are met.
-            status (str, optional): Optional field to keep track of the status of the NextAction. Defaults to
+                Branch are met.
+            status (str, optional): Optional field to keep track of the status of the Branch. Defaults to
                 "Success".
-            conditions (list[Condition], optional): A list of Condition objects for the NextAction object.
+            conditions (list[Condition], optional): A list of Condition objects for the Branch object.
                 Defaults to None.
-            priority (int, optional): Optional priority parameter to specify which NextAction in the Workflow's
-                list of NextActions should be executed if multiple have conditions resulting to True.
+            priority (int, optional): Optional priority parameter to specify which Branch in the Workflow's
+                list of Branches should be executed if multiple have conditions resulting to True.
                 Defaults to 999 (lowest priority).
             uid (str, optional): A universally unique identifier for this object. Created from uuid.uuid4() in Python.
         """
@@ -42,12 +42,12 @@ class NextAction(ExecutionElement):
     def execute(self, data_in, accumulator):
         if data_in is not None and data_in.status == self.status:
             if all(condition.execute(data_in=data_in.result, accumulator=accumulator) for condition in self.conditions):
-                data_sent.send(self, callback_name="Next Action Taken", object_type="NextAction")
-                logger.debug('NextAction is valid for input {0}'.format(data_in))
+                data_sent.send(self, callback_name="Branch Taken", object_type="Branch")
+                logger.debug('Branch is valid for input {0}'.format(data_in))
                 return self.destination_uid
             else:
-                logger.debug('NextAction is not valid for input {0}'.format(data_in))
-                data_sent.send(self, callback_name="Next Action Not Taken", object_type="NextAction")
+                logger.debug('Branch is not valid for input {0}'.format(data_in))
+                data_sent.send(self, callback_name="Branch Not Taken", object_type="Branch")
                 return None
         else:
             return None

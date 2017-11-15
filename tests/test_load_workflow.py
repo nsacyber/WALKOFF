@@ -43,15 +43,15 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertEqual(action.action, 'repeatBackToMe')
         self.assertIsNone(action.device_id)
 
-    def test_workflow_next_actions(self):
-        next_action = list(self.testWorkflow.next_actions.values())[0]
-        self.assertEqual(len(next_action), 1)
+    def test_workflow_branches(self):
+        branch = list(self.testWorkflow.branches.values())[0]
+        self.assertEqual(len(branch), 1)
 
-        next_action = next_action[0]
-        self.assertTrue(next_action.conditions)
+        branch = branch[0]
+        self.assertTrue(branch.conditions)
 
-    def test_workflow_next_action_conditions(self):
-        conditions = list(self.testWorkflow.next_actions.values())[0][0].conditions
+    def test_workflow_branch_conditions(self):
+        conditions = list(self.testWorkflow.branches.values())[0][0].conditions
 
         # Verify conditions exist
         self.assertTrue(len(conditions) == 1)
@@ -60,8 +60,8 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertEqual(condition.action, 'regMatch')
         self.assertTrue(condition.transforms)
 
-    def test_workflow_next_action_transforms(self):
-        transforms = list(self.testWorkflow.next_actions.values())[0][0].conditions[0].transforms
+    def test_workflow_branch_transforms(self):
+        transforms = list(self.testWorkflow.branches.values())[0][0].conditions[0].transforms
         self.assertEqual(len(transforms), 1)
 
         transform = transforms[0]

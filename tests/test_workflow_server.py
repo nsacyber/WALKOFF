@@ -10,7 +10,7 @@ import core.case.subscription
 import core.config.paths
 from core import helpers
 from core.case.callbacks import WorkflowShutdown
-from core.executionelements.nextaction import NextAction
+from core.executionelements.branch import Branch
 from core.executionelements.action import Action
 from server import flaskserver as flask_server
 from server.returncodes import *
@@ -27,7 +27,7 @@ class TestWorkflowServer(ServerTestCase):
              'name': 'test_name',
              'start': 'start',
              'accumulated_risk': 0.0,
-             'next_actions': []}
+             'branches': []}
 
         case_database.initialize()
 
@@ -231,9 +231,9 @@ class TestWorkflowServer(ServerTestCase):
         initial_actions.append(added_action)
 
         action_uid = "e1db14e0cc8d4179aff5f1080a2b7e91"
-        added_next_action = NextAction(source_uid=action_uid, destination_uid="2").read()
+        added_branch = Branch(source_uid=action_uid, destination_uid="2").read()
 
-        data = {"actions": initial_actions, "next_actions": [added_next_action]}
+        data = {"actions": initial_actions, "branches": [added_branch]}
         self.post_with_status_check('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
                                     data=json.dumps(data),
                                     headers=self.headers,
@@ -246,8 +246,8 @@ class TestWorkflowServer(ServerTestCase):
             self.assertIn(initial_action['uid'], resulting_workflow.actions.keys())
             self.assertDictEqual(initial_action, resulting_workflow.actions[initial_action['uid']].read())
 
-        self.assertEqual(added_next_action["source_uid"], resulting_workflow.next_actions[action_uid][0].source_uid)
-        self.assertEqual(added_next_action["destination_uid"], resulting_workflow.next_actions[action_uid][0].destination_uid)
+        self.assertEqual(added_branch["source_uid"], resulting_workflow.branches[action_uid][0].source_uid)
+        self.assertEqual(added_branch["destination_uid"], resulting_workflow.branches[action_uid][0].destination_uid)
 
         # assert that the file has been saved to a file
         workflows = [path.splitext(workflow)[0]

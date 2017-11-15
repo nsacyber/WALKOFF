@@ -541,10 +541,10 @@
               type: array
               items:
                 $ref: "#/definitions/Action"
-            next_actions:
+            branches:
               type: array
               items:
-                $ref: "#/definitions/NextAction"
+                $ref: "#/definitions/Branch"
     produces:
       - application/json
     consumes:

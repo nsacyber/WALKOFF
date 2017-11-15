@@ -13,7 +13,7 @@
   "workflow": [
     "Workflow Execution Start",
     "App Instance Created",
-    "Next Action Found",
+    "Branch Found",
     "Workflow Shutdown",
     "Workflow Arguments Validated",
     "Workflow Arguments Invalid",
@@ -30,9 +30,9 @@
     "Trigger Action Taken",
     "Trigger Action Not Taken"
   ],
-  "nextaction": [
-    "Next Action Taken",
-    "Next Action Not Taken"
+  "branch": [
+    "Branch Taken",
+    "Branch Not Taken"
   ],
   "condition": [
     "Condition Success",

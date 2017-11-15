@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "templatedWorkflow",
-            "next_actions": [
+            "branches": [
                 {
                     "conditions": [
                         {

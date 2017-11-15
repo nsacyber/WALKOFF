@@ -36,7 +36,7 @@ class TestExecutionEvents(unittest.TestCase):
         self.c.load_playbook(resource=config.test_workflows_path + 'multiactionWorkflowTest.playbook')
         workflow_uid = self.c.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow').uid
         subs = {'case1': {workflow_uid: ['App Instance Created', 'Action Execution Success',
-                                         'Next Action Found', 'Workflow Shutdown']}}
+                                         'Branch Found', 'Workflow Shutdown']}}
         case_subscription.set_subscriptions(subs)
         self.c.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
@@ -71,10 +71,10 @@ class TestExecutionEvents(unittest.TestCase):
         workflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         action = workflow.actions['c5a7c29a0f844b69a59901bb542e9305']
         subs = {action.uid: ['Function Execution Success', 'Action Started']}
-        next_actions = [next_action for sublist in workflow.next_actions.values() for next_action in sublist]
-        next_action = next_actions[0]
-        subs[next_action.uid] = ['Next Action Taken', 'Next Action Not Taken']
-        condition = next(condition for condition in next_action.conditions if condition.action == 'regMatch')
+        branches = [branch for sublist in workflow.branches.values() for branch in sublist]
+        branch = branches[0]
+        subs[branch.uid] = ['Branch Taken', 'Branch Not Taken']
+        condition = next(condition for condition in branch.conditions if condition.action == 'regMatch')
         subs[condition.uid] = ['Condition Success', 'Condition Error']
         transform = next(transform for transform in condition.transforms if transform.action == 'length')
         subs[transform.uid] = ['Transform Success', 'Transform Error']

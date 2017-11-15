@@ -5,7 +5,7 @@
         {
             "accumulated_risk": 0.0,
             "name": "triggerActionWorkflow",
-            "next_actions": [],
+            "branches": [],
             "start": "c5a7c29a0f844b69a59901bb542e9305",
             "actions": [
                 {

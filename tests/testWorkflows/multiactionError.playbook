@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "multiactionErrorWorkflow",
-            "next_actions": [
+            "branches": [
                 {
                     "conditions": [
                         {

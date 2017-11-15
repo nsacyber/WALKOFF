@@ -5,7 +5,7 @@
         {
             "accumulated_risk": 0.0,
             "name": "helloWorldWorkflow",
-            "next_actions": [
+            "branches": [
                 {
                     "conditions": [],
                     "destination_uid": "0585feec-cc74-c2d6-16bd-6bdda55bfa38",

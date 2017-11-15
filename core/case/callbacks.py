@@ -87,8 +87,7 @@ WorkflowExecutionStart, __workflow_execution_start_callback = __construct_loggin
 AppInstanceCreated, __app_instance_created_callback = __construct_logging_signal('Workflow',
                                                                                  'App Instance Created',
                                                                                  'New app instance created')
-NextActionFound, __next_action_found_callback = __construct_logging_signal('Workflow', 'Next Action Found',
-                                                                           'Next action found')
+BranchFound, __branch_found_callback = __construct_logging_signal('Workflow', 'Branch Found', 'branch found')
 
 WorkflowShutdown, __workflow_shutdown_callback = __construct_logging_signal('Workflow',
                                                                             'Workflow Shutdown',
@@ -128,13 +127,11 @@ ActionArgumentsInvalid, __action_arguments_invalid_callback = __construct_loggin
                                                                              'Arguments Invalid',
                                                                              'Arguments invalid')
 
-# Next action callbacks
-NextActionTaken, __next_action_taken_callback = __construct_logging_signal('Next Action',
-                                                                       'Next Action Taken',
-                                                                       'Next action taken')
-NextActionNotTaken, __next_action_not_taken_callback = __construct_logging_signal('Next Action',
-                                                                              'Next Action Not Taken',
-                                                                              'Next action not taken')
+# Branch callbacks
+BranchTaken, __branch_taken_callback = __construct_logging_signal('Branch', 'Branch Taken', 'Branch taken')
+BranchNotTaken, __branch_not_taken_callback = __construct_logging_signal('Branch',
+                                                                              'Branch Not Taken',
+                                                                              'Branch not taken')
 
 # Condition callbacks
 ConditionSuccess, __condition_success_callback = __construct_logging_signal('Condition',

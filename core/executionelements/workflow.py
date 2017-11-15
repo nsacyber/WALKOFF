@@ -8,7 +8,7 @@ from core.appinstance import AppInstance
 from core.case.callbacks import data_sent
 from core.executionelements.executionelement import ExecutionElement
 from core.executionelements.action import Action
-from core.executionelements.nextaction import NextAction
+from core.executionelements.branch import Branch
 from core.helpers import UnknownAppAction, UnknownApp, InvalidArgument, format_exception_message
 from core.jsonelementreader import JsonElementReader
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class Workflow(ExecutionElement):
-    def __init__(self, name='', uid=None, actions=None, next_actions=None, start=None, accumulated_risk=0.0):
+    def __init__(self, name='', uid=None, actions=None, branches=None, start=None, accumulated_risk=0.0):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Actions
             within it that get executed.
             
@@ -24,7 +24,7 @@ class Workflow(ExecutionElement):
             name (str, optional): The name of the Workflow object. Defaults to an empty string.
             uid (str, optional): Optional UID to pass in for the workflow. Defaults to uuid.uuid4().
             actions (dict, optional): Optional Action objects. Defaults to None.
-            next_actions (list[NextAction], optional): A list of NextAction objects for the Action object. Defaults to None.
+            branches (list[Branch], optional): A list of Branch objects for the Action object. Defaults to None.
             start (str, optional): Optional UID of the starting Action. Defaults to None.
             accumulated_risk (float, optional): The amount of risk that the execution of this Workflow has
                 accrued. Defaults to 0.0.
@@ -33,15 +33,15 @@ class Workflow(ExecutionElement):
         self.name = name
         self.actions = {action.uid: action for action in actions} if actions is not None else {}
 
-        self.next_actions = {}
+        self.branches = {}
         if actions:
             for action in actions:
-                self.next_actions[action.uid] = []
+                self.branches[action.uid] = []
 
-        if next_actions:
-            for next_action in next_actions:
-                if next_action.source_uid in self.next_actions:
-                    self.next_actions[next_action.source_uid].append(next_action)
+        if branches:
+            for branch in branches:
+                if branch.source_uid in self.branches:
+                    self.branches[branch.source_uid].append(branch)
 
         self.start = start if start is not None else 'start'
         self.accumulated_risk = accumulated_risk
@@ -68,7 +68,7 @@ class Workflow(ExecutionElement):
         arguments = arguments if arguments is not None else []
         action = Action(name=name, action=action, app=app, device_id=device, arguments=arguments, risk=risk)
         self.actions[action.uid] = action
-        self.next_actions[action.uid] = []
+        self.branches[action.uid] = []
         self._total_risk += risk
         logger.info('Action added to workflow {0}. Action: {1}'.format(self.name, self.actions[action.uid].read()))
 
@@ -84,11 +84,11 @@ class Workflow(ExecutionElement):
         if uid in self.actions:
             self.actions.pop(uid)
 
-            self.next_actions.pop(uid)
-            for action in self.next_actions.keys():
-                for next_action in list(self.next_actions[action]):
-                    if next_action.destination_uid == uid:
-                        self.next_actions[action].remove(next_action)
+            self.branches.pop(uid)
+            for action in self.branches.keys():
+                for branch in list(self.branches[action]):
+                    if branch.destination_uid == uid:
+                        self.branches[action].remove(branch)
 
             logger.debug('Removed action {0} from workflow {1}'.format(uid, self.name))
             return True
@@ -134,7 +134,7 @@ class Workflow(ExecutionElement):
         for action in (action_ for action_ in actions if action_ is not None):
             self._executing_action = action
             logger.debug('Executing action {0} of workflow {1}'.format(action, self.name))
-            data_sent.send(self, callback_name="Next Action Found", object_type="Workflow")
+            data_sent.send(self, callback_name="Branch Found", object_type="Workflow")
 
             if self._is_paused:
                 data_sent.send(self, callback_name="Workflow Paused", object_type="Workflow")
@@ -180,26 +180,26 @@ class Workflow(ExecutionElement):
         current_action = self.actions[current_uid] if self.actions else None
         while current_action:
             yield current_action
-            next_action_uid = self.get_next_action(current_action, self._accumulator)
-            current_uid = self.__go_to_next_action(next_action_uid)
+            branch_uid = self.get_branch(current_action, self._accumulator)
+            current_uid = self.__go_to_branch(branch_uid)
             current_action = self.actions[current_uid] if current_uid is not None else None
             yield  # needed so that when for-loop calls next() it doesn't advance too far
         yield  # needed so you can avoid catching StopIteration exception
 
-    def get_next_action(self, current_action, accumulator):
-        if self.next_actions:
-            for next_action in sorted(self.next_actions[current_action.uid]):
-                next_action = next_action.execute(current_action.get_output(), accumulator)
-                if next_action is not None:
-                    return next_action
+    def get_branch(self, current_action, accumulator):
+        if self.branches:
+            for branch in sorted(self.branches[current_action.uid]):
+                branch = branch.execute(current_action.get_output(), accumulator)
+                if branch is not None:
+                    return branch
         else:
             return None
 
-    def __go_to_next_action(self, next_action_uid):
-        if next_action_uid not in self.actions:
+    def __go_to_branch(self, branch_uid):
+        if branch_uid not in self.actions:
             current = None
         else:
-            current = next_action_uid
+            current = branch_uid
         return current
 
     def __swap_action_arguments(self, action, start_arguments):
@@ -276,13 +276,13 @@ class Workflow(ExecutionElement):
             for action_json in json_in['actions']:
                 action = Action.create(action_json)
                 self.actions[action_json['uid']] = action
-            if "next_actions" in json_in:
-                next_actions = [NextAction.create(cond_json) for cond_json in json_in['next_actions']]
-                self.next_actions = {}
-                for next_actions in next_actions:
-                    if next_actions.source_uid not in self.next_actions:
-                        self.next_actions[next_actions.source_uid] = []
-                    self.next_actions[next_actions.source_uid].append(next_actions)
+            if "branches" in json_in:
+                branches = [Branch.create(cond_json) for cond_json in json_in['branches']]
+                self.branches = {}
+                for branch in branches:
+                    if branch.source_uid not in self.branches:
+                        self.branches[branch.source_uid] = []
+                    self.branches[branch.source_uid].append(branch)
         except (UnknownApp, UnknownAppAction, InvalidArgument):
             self.reload_async_result(backup_actions, with_deepcopy=True)
             raise

@@ -3,7 +3,7 @@
     "workflows": [
         {
             "name": "pauseWorkflow",
-            "next_actions": [
+            "branches": [
                 {
                     "conditions": [],
                     "destination_uid": "b7725c22c881484ebe2901027f1acd7f",

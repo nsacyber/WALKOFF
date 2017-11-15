@@ -108,7 +108,7 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
             arg.selection = str(argument.selection) if argument.selection else ''
 
         action_packet.callback_name = kwargs['callback_name']
-    elif obj_type in ['NextAction', 'Condition', 'Transform']:
+    elif obj_type in ['Branch', 'Condition', 'Transform']:
         packet.type = data_pb2.Message.GENERALPACKET
         general_packet = packet.general_packet
         general_packet.sender.uid = sender.uid
@@ -355,7 +355,7 @@ class Worker:
 class Receiver:
     callback_lookup = {
         'Workflow Execution Start': (callbacks.WorkflowExecutionStart, False),
-        'Next Action Found': (callbacks.NextActionFound, False),
+        'Branch Found': (callbacks.BranchFound, False),
         'App Instance Created': (callbacks.AppInstanceCreated, False),
         'Workflow Shutdown': (callbacks.WorkflowShutdown, True),
         'Workflow Arguments Validated': (callbacks.WorkflowArgumentsValidated, False),
@@ -367,8 +367,8 @@ class Receiver:
         'Action Started': (callbacks.ActionStarted, False),
         'Function Execution Success': (callbacks.FunctionExecutionSuccess, True),
         'Action Argument Invalid': (callbacks.ActionArgumentsInvalid, False),
-        'Next Action Taken': (callbacks.NextActionTaken, False),
-        'Next Action Not Taken': (callbacks.NextActionNotTaken, False),
+        'Branch Taken': (callbacks.BranchTaken, False),
+        'Branch Not Taken': (callbacks.BranchNotTaken, False),
         'Condition Success': (callbacks.ConditionSuccess, False),
         'Condition Error': (callbacks.ConditionError, False),
         'Transform Success': (callbacks.TransformSuccess, False),
