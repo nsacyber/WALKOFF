@@ -70,7 +70,7 @@ def __action_ended_callback(sender, **kwargs):
     if 'data' in kwargs:
         data = kwargs['data']
     result = {'name': sender.name,
-              'uid': sender.uid,
+              'action_uid': sender.uid,
               'timestamp': str(datetime.utcnow()),
               'arguments': action_arguments,
               'result': data}
@@ -82,7 +82,7 @@ def __action_ended_callback(sender, **kwargs):
 
 @ActionExecutionError.connect
 def __action_error_callback(sender, **kwargs):
-    result = {'name': sender.name, 'step_uid': sender.uid}
+    result = {'name': sender.name, 'action_uid': sender.uid}
     if 'data' in kwargs:
         data = kwargs['data']
         result['arguments'] = data['arguments']
