@@ -10,6 +10,7 @@ import zmq.green as zmq
 from gevent.queue import Queue
 from zmq.utils.strtypes import asbytes, cast_unicode
 
+from core.argument import Argument
 import core.config.config
 import core.config.paths
 from core.protobuf.build import data_pb2
@@ -35,8 +36,8 @@ def recreate_workflow(workflow_json):
         workflow_json (JSON dict): The input workflow JSON, with some other fields as well.
 
     Returns:
-        (Workflow object, start_input): A tuple containing the reconstructed Workflow object, and the input to
-            the start step.
+        (Workflow object, start_arguments): A tuple containing the reconstructed Workflow object, and the arguments to
+            the start action.
     """
     uid = workflow_json['uid']
     del workflow_json['uid']
@@ -44,17 +45,17 @@ def recreate_workflow(workflow_json):
     del workflow_json['execution_uid']
     start = workflow_json['start']
 
-    start_input = ''
-    if 'start_input' in workflow_json:
-        start_input = workflow_json['start_input']
-        del workflow_json['start_input']
+    start_arguments = {}
+    if 'start_arguments' in workflow_json:
+        start_arguments = [Argument(**arg) for arg in workflow_json['start_arguments']]
+        workflow_json.pop("start_arguments")
 
     workflow = Workflow.create(workflow_json)
     workflow.uid = uid
     workflow.set_execution_uid(execution_uid)
     workflow.start = start
 
-    return workflow, start_input
+    return workflow, start_arguments
 
 
 def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
@@ -76,7 +77,7 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         if 'data' in kwargs:
             packet.type = data_pb2.Message.WORKFLOWPACKETDATA
             wf_packet = packet.workflow_packet_data
-            wf_packet.additional_data = kwargs['data']
+            wf_packet.additional_data = json.dumps(kwargs['data'])
         else:
             packet.type = data_pb2.Message.WORKFLOWPACKET
             wf_packet = packet.workflow_packet
@@ -84,32 +85,37 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         wf_packet.sender.uid = sender.uid
         wf_packet.sender.workflow_execution_uid = workflow_execution_uid
         wf_packet.callback_name = kwargs['callback_name']
-    elif obj_type == 'Step':
+    elif obj_type == 'Action':
         if 'data' in kwargs:
-            packet.type = data_pb2.Message.STEPPACKETDATA
-            step_packet = packet.step_packet_data
-            step_packet.additional_data = kwargs['data']
+            packet.type = data_pb2.Message.ACTIONPACKETDATA
+            action_packet = packet.action_packet_data
+            action_packet.additional_data = json.dumps(kwargs['data'])
         else:
-            packet.type = data_pb2.Message.STEPPACKET
-            step_packet = packet.step_packet
-        step_packet.sender.name = sender.name
-        step_packet.sender.uid = sender.uid
-        step_packet.sender.workflow_execution_uid = workflow_execution_uid
-        step_packet.sender.execution_uid = sender.get_execution_uid()
-        step_packet.sender.app = sender.app
-        step_packet.sender.action = sender.action
+            packet.type = data_pb2.Message.ACTIONPACKET
+            action_packet = packet.action_packet
+        action_packet.sender.name = sender.name
+        action_packet.sender.uid = sender.uid
+        action_packet.sender.workflow_execution_uid = workflow_execution_uid
+        action_packet.sender.execution_uid = sender.get_execution_uid()
+        action_packet.sender.app_name = sender.app_name
+        action_packet.sender.action_name = sender.action_name
 
-        for key, value in sender.inputs.items():
-            step_packet.sender.input[key] = str(value)
+        for argument in sender.arguments.values():
+            arg = action_packet.sender.arguments.add()
+            arg.name = argument.name
+            for field in ('value', 'reference', 'selection'):
+                val = getattr(argument, field)
+                if val is not None:
+                    setattr(arg, field, str(val))
 
-        step_packet.callback_name = kwargs['callback_name']
-    elif obj_type in ['NextStep', 'Condition', 'Transform']:
+        action_packet.callback_name = kwargs['callback_name']
+    elif obj_type in ['Branch', 'Condition', 'Transform']:
         packet.type = data_pb2.Message.GENERALPACKET
         general_packet = packet.general_packet
         general_packet.sender.uid = sender.uid
         general_packet.sender.workflow_execution_uid = workflow_execution_uid
-        if hasattr(sender, 'app'):
-            general_packet.sender.app = sender.app
+        if hasattr(sender, 'app_name'):
+            general_packet.sender.app_name = sender.app_name
         general_packet.callback_name = kwargs['callback_name']
     packet_bytes = packet.SerializeToString()
     return packet_bytes
@@ -201,18 +207,18 @@ class LoadBalancer:
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume'])
 
-    def send_data_to_trigger(self, data_in, workflow_uids, inputs={}):
+    def send_data_to_trigger(self, data_in, workflow_uids, arguments=None):
         """Sends the data_in to the workflows specified in workflow_uids.
 
         Args:
-            data_in (dict): Data to be used to match against the triggers for a Step awaiting data.
+            data_in (dict): Data to be used to match against the triggers for an Action awaiting data.
             workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
-            inputs (dict, optional): An optional dict of inputs to update for a Step awaiting data for a trigger.
+            arguments (list[Argument]): An optional list of Arguments to update for a Action awaiting data for a trigger.
                 Defaults to None.
         """
         data = dict()
         data['data_in'] = data_in
-        data['inputs'] = inputs
+        data['arguments'] = arguments if arguments else []
         for uid in workflow_uids:
             if uid in self.workflow_comms:
                 self.comm_socket.send_multipart(
@@ -299,10 +305,10 @@ class Worker:
         while True:
             workflow_in = self.request_sock.recv()
 
-            self.workflow, start_input = recreate_workflow(json.loads(cast_unicode(workflow_in)))
+            self.workflow, start_arguments = recreate_workflow(json.loads(cast_unicode(workflow_in)))
 
             self.workflow.execute(execution_uid=self.workflow.get_execution_uid(), start=self.workflow.start,
-                                  start_input=start_input)
+                                  start_arguments=start_arguments)
             self.request_sock.send(b"Done")
 
     def receive_data(self):
@@ -324,7 +330,13 @@ class Worker:
                 self.workflow.resume()
                 self.comm_sock.send(b"Resumed")
             else:
-                self.workflow.send_data_to_step(json.loads(message.decode("utf-8")))
+                decoded_message = json.loads(message.decode("utf-8"))
+                if "arguments" in decoded_message:
+                    arguments = []
+                    for arg in decoded_message["arguments"]:
+                        arguments.append(Argument(**arg))
+                    decoded_message["arguments"] = arguments
+                self.workflow.send_data_to_action(decoded_message)
 
             gevent.sleep(0.1)
         return
@@ -344,27 +356,25 @@ class Worker:
 class Receiver:
     callback_lookup = {
         'Workflow Execution Start': (callbacks.WorkflowExecutionStart, False),
-        'Next Step Found': (callbacks.NextStepFound, False),
         'App Instance Created': (callbacks.AppInstanceCreated, False),
         'Workflow Shutdown': (callbacks.WorkflowShutdown, True),
-        'Workflow Input Validated': (callbacks.WorkflowInputInvalid, False),
-        'Workflow Input Invalid': (callbacks.WorkflowInputInvalid, False),
+        'Workflow Arguments Validated': (callbacks.WorkflowArgumentsValidated, False),
+        'Workflow Arguments Invalid': (callbacks.WorkflowArgumentsInvalid, False),
         'Workflow Paused': (callbacks.WorkflowPaused, False),
         'Workflow Resumed': (callbacks.WorkflowResumed, False),
-        'Step Execution Success': (callbacks.StepExecutionSuccess, True),
-        'Step Execution Error': (callbacks.StepExecutionError, True),
-        'Step Started': (callbacks.StepStarted, False),
-        'Function Execution Success': (callbacks.FunctionExecutionSuccess, True),
-        'Step Input Invalid': (callbacks.StepInputInvalid, False),
-        'Next Step Taken': (callbacks.NextStepTaken, False),
-        'Next Step Not Taken': (callbacks.NextStepNotTaken, False),
+        'Action Execution Error': (callbacks.ActionExecutionError, True),
+        'Action Started': (callbacks.ActionStarted, False),
+        'Action Execution Success': (callbacks.ActionExecutionSuccess, True),
+        'Action Argument Invalid': (callbacks.ActionArgumentsInvalid, False),
+        'Branch Taken': (callbacks.BranchTaken, False),
+        'Branch Not Taken': (callbacks.BranchNotTaken, False),
         'Condition Success': (callbacks.ConditionSuccess, False),
         'Condition Error': (callbacks.ConditionError, False),
         'Transform Success': (callbacks.TransformSuccess, False),
         'Transform Error': (callbacks.TransformError, False),
-        'Trigger Step Taken': (callbacks.TriggerStepTaken, False),
-        'Trigger Step Not Taken': (callbacks.TriggerStepNotTaken, False),
-        'Trigger Step Awaiting Data': (callbacks.TriggerStepAwaitingData, False)
+        'Trigger Action Taken': (callbacks.TriggerActionTaken, False),
+        'Trigger Action Not Taken': (callbacks.TriggerActionNotTaken, False),
+        'Trigger Action Awaiting Data': (callbacks.TriggerActionAwaitingData, False)
     }
 
     def __init__(self, ctx):
@@ -420,10 +430,10 @@ class Receiver:
                 message = message_outer.workflow_packet
             elif message_outer.type == data_pb2.Message.WORKFLOWPACKETDATA:
                 message = message_outer.workflow_packet_data
-            elif message_outer.type == data_pb2.Message.STEPPACKET:
-                message = message_outer.step_packet
-            elif message_outer.type == data_pb2.Message.STEPPACKETDATA:
-                message = message_outer.step_packet_data
+            elif message_outer.type == data_pb2.Message.ACTIONPACKET:
+                message = message_outer.action_packet
+            elif message_outer.type == data_pb2.Message.ACTIONPACKETDATA:
+                message = message_outer.action_packet_data
             else:
                 message = message_outer.general_packet
 

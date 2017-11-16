@@ -4,19 +4,17 @@ export class Argument {
 	 */
 	name: string;
 	/**
-	 * Serves a dual purpose: if reference is unspecified, this is the static value of the input.
-	 * If reference is specified, this is an optional "path" through the referenced step's output JSON.
-	 * (e.g. given an output { status: 'Success', result: 'something' },
-	 * passing 'result' as the value would grab 'something' from the output JSON.
+	 * The static value of the argument in question. Only used if reference is not specified.
+	 * If reference is specified, selection is used to select specific values.
 	 */
 	value: any;
 	/**
-	 * Reference to a Step UID to use the output of
+	 * Reference to an Action UID to use the output of
 	 */
 	reference: string;
 	/**
-	 * Selector is currently specified in the UI as a string,
+	 * Selection is currently specified in the UI as a string,
 	 * but is split and sent/ingested as an array containing strings and numbers
 	 */
-	selector: string | Array<string | number>;
+	selection: string | Array<string | number>;
 }

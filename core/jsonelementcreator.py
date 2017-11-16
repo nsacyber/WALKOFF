@@ -22,6 +22,7 @@ class JsonElementCreator(object):
             (ExecutionElement) The constructed ExecutionElement
         """
         from core.executionelements.playbook import Playbook
+        from core.argument import Argument
         cls._setup_ordering()
         if element_class is None:
             element_class = Playbook
@@ -40,6 +41,8 @@ class JsonElementCreator(object):
                         if hasattr(current_class, '_templatable'):
                             json_in['raw_representation'] = dict(json_in)
                         json_in[subfield_name] = [next_class.create(element_json) for element_json in subfield_json]
+            if 'arguments' in json_in:
+                json_in['arguments'] = [Argument(**arg_json) for arg_json in json_in['arguments']]
             return current_class(**json_in)
         except (KeyError, TypeError) as e:
             from core.helpers import format_exception_message
@@ -51,15 +54,15 @@ class JsonElementCreator(object):
         if cls.playbook_class_ordering is None:
             from core.executionelements.playbook import Playbook
             from core.executionelements.workflow import Workflow
-            from core.executionelements.step import Step
-            from core.executionelements.nextstep import NextStep
+            from core.executionelements.action import Action
+            from core.executionelements.branch import Branch
             from core.executionelements.condition import Condition
             from core.executionelements.transform import Transform
             cls.playbook_class_ordering = OrderedDict([
                 (Playbook, {'workflows': Workflow}),
-                (Workflow, {'steps': Step, 'next_steps': NextStep}),
-                (Step, {'triggers': Condition}),
-                (NextStep, {'conditions': Condition}),
+                (Workflow, {'actions': Action, 'branches': Branch}),
+                (Action, {'triggers': Condition}),
+                (Branch, {'conditions': Condition}),
                 (Condition, {'transforms': Transform}),
                 (Transform, None)
             ])

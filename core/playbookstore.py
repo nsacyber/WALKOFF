@@ -289,14 +289,14 @@ class PlaybookStore(object):
         """
         workflow = self.get_workflow(old_playbook_name, old_workflow_name)
         if workflow is not None:
-            steps = workflow.strip_async_result()
+            actions = workflow.strip_async_result()
 
             workflow_copy = deepcopy(workflow)
             workflow_copy.name = new_workflow_name
             workflow_copy.regenerate_uids()
             workflow_copy.reset_async_result()
 
-            workflow.reload_async_result(steps)
+            workflow.reload_async_result(actions)
 
             if new_playbook_name in self.playbooks:
                 self.playbooks[new_playbook_name].add_workflow(workflow_copy)
@@ -316,8 +316,6 @@ class PlaybookStore(object):
             self.create_playbook(new_playbook_name)
             for workflow in self.playbooks[old_playbook_name].workflows.values():
                 self.copy_workflow(old_playbook_name, new_playbook_name, workflow.name, workflow.name)
-
-            # self.playbooks[new_playbook_name].regenerate_uids(with_children=)
 
     def get_workflows_by_uid(self, workflow_uids):
         """Gets a list of workflows from their UIDs

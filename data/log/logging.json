@@ -37,7 +37,7 @@
       "handlers": ["file_handler"]
     },
     "apps": {
-      "level": "DEBUG",
+      "level": "ERROR",
       "handlers": ["file_handler"]
     },
     "connexion": {
@@ -50,6 +50,10 @@
     },
     "zmq": {
       "level": "INFO",
+      "handlers": ["file_handler"]
+    },
+    "swagger_spec_validator": {
+      "level": "ERROR",
       "handlers": ["file_handler"]
     }
   },

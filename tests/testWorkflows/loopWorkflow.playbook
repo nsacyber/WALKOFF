@@ -3,15 +3,15 @@
     "workflows": [
         {
             "name": "loopWorkflow",
-            "next_steps": [
+            "branches": [
                 {
                     "conditions": [
                         {
-                            "action": "regMatch",
-                            "args": [
+                            "action_name": "regMatch",
+                            "app_name": "HelloWorld",
+                            "arguments": [
                                 {
                                     "name": "regex",
-                                    "app": "HelloWorld",
                                     "value": "1|2|3|4"
                                 }
                             ],
@@ -27,9 +27,9 @@
                 {
                     "conditions": [
                         {
-                            "action": "regMatch",
-                            "app": "HelloWorld",
-                            "args": [
+                            "action_name": "regMatch",
+                            "app_name": "HelloWorld",
+                            "arguments": [
                                 {
                                     "name": "regex",
                                     "value": "5"
@@ -46,40 +46,36 @@
                 }
             ],
             "start": "543f6226116c473bb75d19330b77371e",
-            "steps": [
+            "actions": [
                 {
-                    "action": "repeatBackToMe",
-                    "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [
+                    "action_name": "repeatBackToMe",
+                    "app_name": "HelloWorld",
+                    "arguments": [
                         {
                             "name": "call",
-                            "value": "{{outputFrom(steps, -1)}}"
+                            "value": "{{outputFrom(actions, -1)}}"
                         }
                     ],
                     "name": "1",
                     "position": {},
                     "risk": 0,
                     "templated": true,
-                    "uid": "c8d5873e831c44fb838e601bb407a768",
-                    "widgets": []
+                    "uid": "c8d5873e831c44fb838e601bb407a768"
                 },
                 {
-                    "action": "returnPlusOne",
-                    "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [
+                    "action_name": "returnPlusOne",
+                    "app_name": "HelloWorld",
+                    "arguments": [
                         {
                             "name": "number",
-                            "value": "{%- if steps | length > 0 -%}\n                        {%- set x = outputFrom(steps, -1) -%}\n                    {%- endif -%}\n\n                    {%- if x is not none and x is defined -%}\n                        {{ x }}\n                    {%- else -%}\n                        1\n                    {%- endif -%}\n                "
+                            "value": "{%- if actions | length > 0 -%}\n                        {%- set x = outputFrom(actions, -1) -%}\n                    {%- endif -%}\n\n                    {%- if x is not none and x is defined -%}\n                        {{ x }}\n                    {%- else -%}\n                        1\n                    {%- endif -%}\n                "
                         }
                     ],
                     "name": "start",
                     "position": {},
                     "risk": 0,
                     "templated": true,
-                    "uid": "543f6226116c473bb75d19330b77371e",
-                    "widgets": []
+                    "uid": "543f6226116c473bb75d19330b77371e"
                 }
             ],
             "uid": "01e606fc47fa4c169a154ea8d835a198"

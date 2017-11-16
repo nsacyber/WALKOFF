@@ -43,7 +43,7 @@ AvailableSubscriptions:
       description: The type of execution element
       type: string
       example: Condition
-      enum: [controller, playbook, workflow, step, nextstep, condition, transform]
+      enum: [controller, playbook, workflow, action, branch, condition, transform]
     events:
       description: Events which can be subscribed to
       type: array

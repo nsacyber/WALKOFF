@@ -52,13 +52,6 @@ def display_possible_subscriptions():
     return json.dumps(core.config.config.possible_events)
 
 
-@app.route('/widgets', methods=['GET'])
-@jwt_required
-@roles_accepted_for_resources('apps')
-def list_all_widgets():
-    return json.dumps({_app: helpers.list_widgets(_app) for _app in helpers.list_apps()})
-
-
 def write_playbook_to_file(playbook_name):
     """Writes a playbook to file.
 

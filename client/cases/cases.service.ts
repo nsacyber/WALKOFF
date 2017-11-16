@@ -75,7 +75,7 @@ export class CasesService {
 
 	/**
 	 * Gets a list of available event subscriptions for each type of object 
-	 * to log against (controller, workflow, step, etc.);
+	 * to log against (controller, workflow, action, etc.);
 	 */
 	getAvailableSubscriptions(): Promise<AvailableSubscription[]> {
 		return this.authHttp.get('/api/availablesubscriptions')

@@ -25,7 +25,9 @@ class TestInstance(unittest.TestCase):
         self.assertEqual(inst.state, appinstance.OK)
 
     def test_create_invalid_app_name(self):
-        self.assertIsNone(appinstance.AppInstance.create("InvalidAppName", "testDevice"))
+        instance = appinstance.AppInstance.create("InvalidAppName", "testDevice")
+        self.assertIsNone(instance.instance)
+        self.assertEqual(instance.state, appinstance.OK)
 
     def test_call(self):
         inst = appinstance.AppInstance.create("HelloWorld", "testDevice")

@@ -37,9 +37,9 @@ class TestDevicesServer(ServerTestCase):
         device_db.session.commit()
         response = self.get_with_status_check('/api/devices', headers=self.headers, status_code=SUCCESS)
         expected_device1 = device1.as_json()
-        expected_device1['app'] = 'TestApp'
+        expected_device1['app_name'] = 'TestApp'
         expected_device2 = device2.as_json()
-        expected_device2['app'] = 'TestApp'
+        expected_device2['app_name'] = 'TestApp'
         self.assertIn(expected_device1, response)
         self.assertIn(expected_device2, response)
 
@@ -52,7 +52,7 @@ class TestDevicesServer(ServerTestCase):
         response = self.get_with_status_check('/api/devices/{}'.format(device1.id), headers=self.headers,
                                               status_code=SUCCESS)
         expected_device1 = device1.as_json()
-        expected_device1['app'] = ''
+        expected_device1['app_name'] = ''
         self.assertEqual(response, expected_device1)
 
     def test_read_device_does_not_exist(self):
@@ -75,7 +75,7 @@ class TestDevicesServer(ServerTestCase):
         device1 = Device('test', [], [], 'type', description='description')
         device_db.session.add(device1)
         device_db.session.commit()
-        device_json = {'app': 'test', 'name': 'test', 'type': 'some_type', 'fields': []}
+        device_json = {'app_name': 'test', 'name': 'test', 'type': 'some_type', 'fields': []}
         self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
                                    status_code=OBJECT_EXISTS_ERROR, content_type='application/json')
 
@@ -84,7 +84,7 @@ class TestDevicesServer(ServerTestCase):
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
         core.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
-        device_json = {'app': 'Invalid', 'name': 'test', 'type': 'some_type', 'fields': []}
+        device_json = {'app_name': 'Invalid', 'name': 'test', 'type': 'some_type', 'fields': []}
         self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
                                    status_code=INVALID_INPUT_ERROR, content_type='application/json')
 
@@ -93,7 +93,7 @@ class TestDevicesServer(ServerTestCase):
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
         core.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
-        device_json = {'app': 'TestApp', 'name': 'test', 'type': 'invalid', 'fields': []}
+        device_json = {'app_name': 'TestApp', 'name': 'test', 'type': 'invalid', 'fields': []}
         self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
                                    status_code=INVALID_INPUT_ERROR, content_type='application/json')
 
@@ -102,7 +102,7 @@ class TestDevicesServer(ServerTestCase):
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
         core.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
-        device_json = {'app': 'TestApp', 'name': 'test', 'type': 'test_type',
+        device_json = {'app_name': 'TestApp', 'name': 'test', 'type': 'test_type',
                        'fields': [{'name': 'test_name', 'value': 'invalid'}, {'name': 'test2', 'value': 'something'}]}
         self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
                                    status_code=INVALID_INPUT_ERROR, content_type='application/json')
@@ -112,7 +112,7 @@ class TestDevicesServer(ServerTestCase):
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
         core.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
-        device_json = {'app': 'TestApp', 'name': 'test', 'type': 'test_type',
+        device_json = {'app_name': 'TestApp', 'name': 'test', 'type': 'test_type',
                        'fields': [{'name': 'test_name', 'value': 123}, {'name': 'test2', 'value': 'something'}]}
         self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
                                    status_code=INVALID_INPUT_ERROR, content_type='application/json')
@@ -125,14 +125,14 @@ class TestDevicesServer(ServerTestCase):
         device_db.session.add(app)
         device_db.session.commit()
 
-        device_json = {'app': 'TestApp', 'name': 'test', 'type': 'test_type',
+        device_json = {'app_name': 'TestApp', 'name': 'test', 'type': 'test_type',
                        'fields': [{'name': 'test_name', 'value': 123}, {'name': 'test2', 'value': 'something'}]}
         response = self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
                                    status_code=OBJECT_CREATED, content_type='application/json')
         device = device_db.session.query(Device).filter(Device.name == 'test').first()
         self.assertIsNotNone(device)
         expected = device.as_json()
-        expected['app'] = 'TestApp'
+        expected['app_name'] = 'TestApp'
         self.assertEqual(response, expected)
 
     def test_update_device_device_dne(self):
@@ -151,7 +151,7 @@ class TestDevicesServer(ServerTestCase):
         device_db.session.add(device2)
         device_db.session.add(device1)
         device_db.session.commit()
-        data = {'id': device1.id, 'name': 'renamed', 'app': 'Invalid'}
+        data = {'id': device1.id, 'name': 'renamed', 'app_name': 'Invalid'}
         self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
                                               status_code=INVALID_INPUT_ERROR, content_type='application/json')
 
@@ -166,7 +166,7 @@ class TestDevicesServer(ServerTestCase):
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
         core.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
-        data = {'id': device1.id, 'name': 'renamed', 'app': self.test_app_name, 'type': 'Invalid'}
+        data = {'id': device1.id, 'name': 'renamed', 'app_name': self.test_app_name, 'type': 'Invalid'}
         self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
                                               status_code=INVALID_INPUT_ERROR, content_type='application/json')
 
@@ -183,7 +183,7 @@ class TestDevicesServer(ServerTestCase):
 
         fields_json = [{'name': 'test_name', 'value': 'invalid'}, {'name': 'test2', 'value': 'something'}]
 
-        data = {'id': device1.id, 'name': 'renamed', 'app': self.test_app_name, 'type': 'test_type', 'fields': fields_json}
+        data = {'id': device1.id, 'name': 'renamed', 'app_name': self.test_app_name, 'type': 'test_type', 'fields': fields_json}
         self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
                                               status_code=INVALID_INPUT_ERROR, content_type='application/json')
 
@@ -200,7 +200,7 @@ class TestDevicesServer(ServerTestCase):
 
         fields_json = [{'name': 'test_name', 'value': 123}, {'name': 'test2', 'value': 'something'}]
 
-        data = {'id': device1.id, 'name': 'renamed', 'app': self.test_app_name, 'type': 'test_type', 'fields': fields_json}
+        data = {'id': device1.id, 'name': 'renamed', 'app_name': self.test_app_name, 'type': 'test_type', 'fields': fields_json}
         self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
                                               status_code=SUCCESS, content_type='application/json')
 
@@ -213,7 +213,7 @@ class TestDevicesServer(ServerTestCase):
         fields = [{"name": "Text field", "value": "texts"}, {"name": "Encrypted field", "value": "encrypted"},
                   {"name": "Number field", "value": 5}, {"name": "Enum field", "value": "val 1"},
                   {"name": "Boolean field", "value": True}]
-        data = {"name": "testDevice", "app": "HelloWorld", "type": "Test Device Type", "fields": fields}
+        data = {"name": "testDevice", "app_name": "HelloWorld", "type": "Test Device Type", "fields": fields}
         self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
                                               status_code=OBJECT_CREATED, content_type="application/json")
 
@@ -243,7 +243,7 @@ class TestDevicesServer(ServerTestCase):
         fields = [{"name": "Text field", "value": "texts"}, {"name": "Encrypted field", "value": "encrypted"},
                   {"name": "Number field", "value": 5}, {"name": "Enum field", "value": "val 1"},
                   {"name": "Boolean field", "value": True}]
-        data = {"name": "testDevice", "app": "HelloWorld", "type": "Test Device Type", "fields": fields}
+        data = {"name": "testDevice", 'app_name': "HelloWorld", "type": "Test Device Type", "fields": fields}
         self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
                                               status_code=OBJECT_CREATED, content_type="application/json")
 
@@ -277,7 +277,7 @@ class TestDevicesServer(ServerTestCase):
         fields = [{"name": "Text field", "value": "texts"}, {"name": "Encrypted field", "value": "encrypted"},
                   {"name": "Number field", "value": 5}, {"name": "Enum field", "value": "val 1"},
                   {"name": "Boolean field", "value": True}]
-        data = {"name": "testDevice", "app": "HelloWorld", "type": "Test Device Type", "fields": fields}
+        data = {"name": "testDevice", 'app_name': "HelloWorld", "type": "Test Device Type", "fields": fields}
         self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
                                    status_code=OBJECT_CREATED, content_type="application/json")
 

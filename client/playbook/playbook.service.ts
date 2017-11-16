@@ -33,7 +33,7 @@ export class PlaybookService {
 	}
 
 	/**
-	 * Duplicates and saves an existing playbook, it's workflows, steps, next steps, etc. under a new name.
+	 * Duplicates and saves an existing playbook, it's workflows, actions, branches, etc. under a new name.
 	 * @param oldName Name of the playbook to duplicate
 	 * @param newName Name of the new copy to be saved
 	 */
@@ -69,7 +69,7 @@ export class PlaybookService {
 	}
 
 	/**
-	 * Duplicates a workflow under a given playbook, its steps, next steps, etc. under a new name.
+	 * Duplicates a workflow under a given playbook, it's actions, branches, etc. under a new name.
 	 * @param playbook Name of playbook the workflow exists under
 	 * @param oldName Current workflow name to be duplicated
 	 * @param newName Name for the new copy to be saved
@@ -112,7 +112,7 @@ export class PlaybookService {
 	 * Saves the data of a given workflow specified under a given playbook.
 	 * @param playbookName Name of the playbook the workflow exists under
 	 * @param workflowName Name of the workflow to be saved
-	 * @param workflow Data to be saved under the workflow (steps, etc.)
+	 * @param workflow Data to be saved under the workflow (actions, etc.)
 	 */
 	saveWorkflow(playbookName: string, workflowName: string, workflow: Workflow): Promise<void> {
 		return this.authHttp.post(`/api/playbooks/${playbookName}/workflows/${workflowName}/save`, workflow)
@@ -136,7 +136,7 @@ export class PlaybookService {
 
 	/**
 	 * Notifies the server to execute a given workflow under a given playbook.
-	 * Note that execution results are not returned here, but on a separate stream-steps EventSource.
+	 * Note that execution results are not returned here, but on a separate stream-actions EventSource.
 	 * @param playbook Name of the playbook the workflow exists under
 	 * @param workflow Name of the workflow to execute
 	 */

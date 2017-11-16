@@ -21,7 +21,7 @@
 	<div *ngFor="let condition of conditions; let id = index">
 		<div class="row">
 			<div class="col-xs-6">
-				<label>Condition {{id+1}}: {{condition.app}} - {{condition.action}}</label>
+				<label>Condition {{id+1}}: {{condition.app_name}} - {{condition.action_name}}</label>
 			</div>
 			<div class="col-xs-6">
 				<div class="pull-right">
@@ -31,8 +31,8 @@
 				</div>
 			</div>
 		</div>
-		<playbook-argument-component *ngFor="let argument of condition.args; let id = index" [loadedWorkflow]="loadedWorkflow"
-		[argument]="argument" [parameterApi]="getConditionApiArgs(condition.app, condition.action, argument.name)" [id]="id"></playbook-argument-component>
+		<playbook-argument-component *ngFor="let argument of condition.arguments; let id = index" [loadedWorkflow]="loadedWorkflow"
+		[argument]="argument" [parameterApi]="getConditionApiArgs(condition.app_name, condition.action_name, argument.name)" [id]="id"></playbook-argument-component>
 		<div>
 			<h4>Transforms</h4>
 			<playbook-transforms-component [transforms]="condition.transforms" [appApis]="appApis"

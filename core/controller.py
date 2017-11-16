@@ -215,21 +215,21 @@ class Controller(object):
         """
         self.playbook_store.update_playbook_name(old_playbook, new_playbook)
 
-    def execute_workflow(self, playbook_name, workflow_name, start=None, start_input=None):
+    def execute_workflow(self, playbook_name, workflow_name, start=None, start_arguments=None):
         """Executes a workflow.
 
         Args:
             playbook_name (str): Playbook name under which the workflow is located.
             workflow_name (str): Workflow to execute.
-            start (str, optional): The name of the first, or starting step. Defaults to None.
-            start_input (dict, optional): The input to the starting step of the workflow. Defaults to None.
+            start (str, optional): The name of the first, or starting action. Defaults to None.
+            start_arguments (list[Argument JSON]): The input to the starting action of the workflow. Defaults to None.
 
         Returns:
             The execution UID if successful, None otherwise.
         """
         if self.playbook_store.is_workflow_registered(playbook_name, workflow_name):
             workflow = self.playbook_store.get_workflow(playbook_name, workflow_name)
-            return self.executor.execute_workflow(workflow, start, start_input)
+            return self.executor.execute_workflow(workflow, start, start_arguments)
         else:
             logger.error('Attempted to execute playbook which does not exist in controller')
             return None, 'Attempted to execute playbook which does not exist in controller'
@@ -293,21 +293,21 @@ class Controller(object):
         """
         self.playbook_store.copy_playbook(old_playbook_name, new_playbook_name)
 
-    def send_data_to_trigger(self, data_in, workflow_uids, inputs=None):
+    def send_data_to_trigger(self, data_in, workflow_uids, arguments=None):
         """Tries to match the data in against the conditionals of all the triggers registered in the database.
 
         Args:
-            data_in (dict): Data to be used to match against the triggers for a Step awaiting data.
+            data_in (dict): Data to be used to match against the triggers for an Action awaiting data.
             workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
-            inputs (dict, optional): An optional dict of inputs to update for a Step awaiting data for a trigger.
-                Defaults to {}.
+            arguments (list[Argument]): An optional list of arguments to update for an Action awaiting data for a trigger.
+                Defaults to None.
 
         Returns:
             Dictionary of {"status": <status string>}
         """
-        inputs = inputs if inputs is not None else {}
+        arguments = arguments if arguments is not None else []
         if workflow_uids is not None:
-            self.executor.send_data_to_trigger(data_in, workflow_uids, inputs)
+            self.executor.send_data_to_trigger(data_in, workflow_uids, arguments)
 
     def get_workflow_status(self, execution_uid):
         """Gets the status of an executing workflow

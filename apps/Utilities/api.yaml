@@ -8,6 +8,13 @@ info:
   license:
     name: Creative Commons
 actions:
+  Secure PRNG:
+    run: actions.secure_rand
+    description: Returns random float between 0.0 and 1.0 using system entropy
+    returns:
+      Success:
+        schema:
+          type: number
   echo object:
     run: actions.echo_object
     description: returns the same object passed into it
@@ -26,7 +33,7 @@ actions:
     description: Gets a selected sub element of a json
     parameters:
         - name: json_reference
-          description: Step reference to the json object
+          description: Action reference to the json object
           required: true
           type: string
         - name: element
@@ -42,7 +49,7 @@ actions:
     description: Gets an element from a list
     parameters:
         - name: list_reference
-          description: Step reference to the list from which to select the element
+          description: Action reference to the list from which to select the element
           required: true
           type: string
         - name: index
@@ -164,7 +171,7 @@ actions:
     description: Writes a list of IPs to a CSV file
     parameters:
         - name: ips_reference
-          description: Step reference to the list of IPs
+          description: Action reference to the list of IPs
           required: true
           type: string
         - name: path

@@ -32,7 +32,7 @@
         description: The name of the field of the api to get for all apps
         required: false
         type: string
-        enum: [info, actions, conditions, transforms, devices, tags, externalDocs]
+        enum: [info, action_apis, condition_apis, transform_apis, device_apis, tags, external_docs]
     responses:
       200:
         description: Success

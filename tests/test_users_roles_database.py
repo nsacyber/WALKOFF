@@ -61,6 +61,10 @@ class TestUserRolesDatabase(unittest.TestCase):
         user = User('username', 'password')
         self.assertTrue(user.verify_password('password'))
 
+    def test_password_stored_encrypted(self):
+        user = User('username', 'password')
+        self.assertNotEqual(user.password, 'password')
+
     def test_verify_invalid_password(self):
         user = User('username', 'invalid')
         self.assertFalse(user.verify_password('password'))
@@ -294,3 +298,4 @@ class TestUserRolesDatabase(unittest.TestCase):
         role_json = role.as_json(with_users=True)
         role_json.pop('id')
         self.assertDictEqual(role_json, expected)
+

@@ -529,22 +529,22 @@
         type: string
       - in: body
         name: body
-        description: Start step and Steps
+        description: Start action and Actions
         required: true
         schema:
           type: object
-          required: [steps]
+          required: [actions]
           properties:
             start:
               type: string
-            steps:
+            actions:
               type: array
               items:
-                $ref: "#/definitions/Step"
-            next_steps:
+                $ref: "#/definitions/Action"
+            branches:
               type: array
               items:
-                $ref: "#/definitions/NextStep"
+                $ref: "#/definitions/Branch"
     produces:
       - application/json
     consumes:

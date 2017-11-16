@@ -65,10 +65,10 @@ export class DevicesComponent {
 
 		this.displayDevices = this.devices.filter((device) => {
 			return (device.name.toLocaleLowerCase().includes(searchFilter) ||
-				device.app.toLocaleLowerCase().includes(searchFilter) ||
+				device.app_name.toLocaleLowerCase().includes(searchFilter) ||
 				device.ip.includes(searchFilter) ||
 				device.port.toString().includes(searchFilter)) &&
-				(this.selectedApps.length ? this.selectedApps.indexOf(device.app) > -1 : true);
+				(this.selectedApps.length ? this.selectedApps.indexOf(device.app_name) > -1 : true);
 		});
 	}
 

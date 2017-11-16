@@ -30,43 +30,43 @@ class TestLoadWorkflow(unittest.TestCase):
 
     def test_base_workflow_attributes(self):
 
-        # Correct number of steps
-        self.assertEqual(len(self.testWorkflow.steps), 1)
+        # Correct number of actions
+        self.assertEqual(len(self.testWorkflow.actions), 1)
 
         # Asserts workflow entry point
-        self.assertTrue(self.testWorkflow.steps[self.workflow_uid])
-        step = self.testWorkflow.steps[self.workflow_uid]
+        self.assertTrue(self.testWorkflow.actions[self.workflow_uid])
+        action = self.testWorkflow.actions[self.workflow_uid]
 
         # Verify attributes
-        self.assertEqual(step.name, 'start')
-        self.assertEqual(step.app, 'HelloWorld')
-        self.assertEqual(step.action, 'repeatBackToMe')
-        self.assertEqual(step.device, 'hwTest')
+        self.assertEqual(action.name, 'start')
+        self.assertEqual(action.app_name, 'HelloWorld')
+        self.assertEqual(action.action_name, 'repeatBackToMe')
+        self.assertIsNone(action.device_id)
 
-    def test_workflow_next_steps(self):
-        next_step = list(self.testWorkflow.next_steps.values())[0]
-        self.assertEqual(len(next_step), 1)
+    def test_workflow_branches(self):
+        branch = list(self.testWorkflow.branches.values())[0]
+        self.assertEqual(len(branch), 1)
 
-        next_step = next_step[0]
-        self.assertTrue(next_step.conditions)
+        branch = branch[0]
+        self.assertTrue(branch.conditions)
 
-    def test_workflow_next_step_conditions(self):
-        conditions = list(self.testWorkflow.next_steps.values())[0][0].conditions
+    def test_workflow_branch_conditions(self):
+        conditions = list(self.testWorkflow.branches.values())[0][0].conditions
 
         # Verify conditions exist
         self.assertTrue(len(conditions) == 1)
 
         condition = conditions[0]
-        self.assertEqual(condition.action, 'regMatch')
+        self.assertEqual(condition.action_name, 'regMatch')
         self.assertTrue(condition.transforms)
 
-    def test_workflow_next_step_transforms(self):
-        transforms = list(self.testWorkflow.next_steps.values())[0][0].conditions[0].transforms
+    def test_workflow_branch_transforms(self):
+        transforms = list(self.testWorkflow.branches.values())[0][0].conditions[0].transforms
         self.assertEqual(len(transforms), 1)
 
         transform = transforms[0]
-        self.assertEqual(transform.action, 'length')
-        self.assertEqual(transform.args, {})
+        self.assertEqual(transform.action_name, 'length')
+        self.assertEqual(transform.arguments, {})
 
     def test_load_workflow_invalid_app(self):
         original_workflows = self.c.get_all_workflows()
@@ -89,5 +89,5 @@ class TestLoadWorkflow(unittest.TestCase):
     def test_load_workflow_too_many_inputs(self):
         original_workflows = self.c.get_all_workflows()
         self.c.load_playbook(
-            resource='{}tooManyStepInputsWorkflow.playbook'.format(config.test_invalid_workflows_path))
+            resource='{}tooManyActionInputsWorkflow.playbook'.format(config.test_invalid_workflows_path))
         self.assertListEqual(self.c.get_all_workflows(), original_workflows)

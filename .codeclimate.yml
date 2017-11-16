@@ -1,0 +1,42 @@
+engines:
+  csslint:
+    enabled: true
+  duplication:
+    enabled: true
+    checks:
+      Similar code:
+        enabled: false
+    config:
+      languages:
+        python:
+          mass_threshold: 75
+  fixme:
+    enabled: true
+  radon:
+    enabled: true
+  tslint:
+    enabled: true
+    channel: beta
+    config: .tslint.json
+  markdownlint:
+    enabled: true
+  pep8:
+    enabled: true
+checks:
+  file-lines:
+    config:
+      threshold: 500
+  method-lines:
+    config:
+      threshold: 40
+ratings:
+  paths:
+    - "**.css"
+    - "**.ts"
+    - "**.py"
+    - "**.md"
+exclude_paths:
+  - tests/
+  - server/static
+  - core/protobuf
+  - "**.js"

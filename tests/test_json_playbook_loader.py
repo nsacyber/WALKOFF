@@ -69,7 +69,7 @@ class TestJsonPlaybookLoader(TestCase):
         workflow_json = {
                 "name": "test_workflow",
                 "start": "start",
-                "steps": [{"action": "repeatBackToMe",
+                "actions": [{"action": "repeatBackToMe",
                            "app": "HelloWorld",
                            "name": "start"}]}
         playbook_json = {'name': 'test_playbook', 'workflows': [workflow_json]}
@@ -82,10 +82,10 @@ class TestJsonPlaybookLoader(TestCase):
         workflow_json = {
             "name": "test_workflow",
             "start": "start",
-            "steps": [{"action": "invalid",
+            "actions": [{"action": "invalid",
                        "app": "Invalid",
                        "name": "start",
-                       "next_steps": []}]}
+                       "branches": []}]}
         playbook_json = {'name': 'test_playbook', 'workflows': [workflow_json]}
         filepath = os.path.join(test_data_path, 'test.json')
         with open(filepath, 'w') as file_out:
@@ -125,10 +125,10 @@ class TestJsonPlaybookLoader(TestCase):
         workflow_json = {
             "name": "test_workflow",
             "start": "start",
-            "steps": [{"action": "invalid",
+            "actions": [{"action": "invalid",
                        "app": "Invalid",
                        "name": "start",
-                       "next_steps": []}]}
+                       "branches": []}]}
         playbook_json = {'name': 'test_playbook', 'workflows': [workflow_json]}
         filepath = os.path.join(test_data_path, 'test.json')
         with open(filepath, 'w') as file_out:

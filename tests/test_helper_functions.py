@@ -49,11 +49,11 @@ class TestHelperFunctions(unittest.TestCase):
         expected_workflows = ['basicWorkflowTest.playbook',
                               'DailyQuote.playbook',
                               'dataflowTest.playbook',
-                              'dataflowTestStepNotExecuted.playbook',
+                              'dataflowTestActionNotExecuted.playbook',
                               'loopWorkflow.playbook',
                               'multiactionWorkflowTest.playbook',
                               'pauseWorkflowTest.playbook',
-                              'multistepError.playbook',
+                              'multiactionError.playbook',
                               'simpleDataManipulationWorkflow.playbook',
                               'templatedWorkflowTest.playbook',
                               'testExecutionWorkflow.playbook',
@@ -73,10 +73,6 @@ class TestHelperFunctions(unittest.TestCase):
     def test_list_apps(self):
         expected_apps = ['HelloWorld', 'DailyQuote']
         orderless_list_compare(self, expected_apps, list_apps())
-
-    def test_list_widgets(self):
-        orderless_list_compare(self, list_widgets('HelloWorld'), ['testWidget', 'testWidget2'])
-        self.assertListEqual(list_widgets('JunkApp'), [])
 
     def test_import_py_file(self):
         module_name = 'tests.testapps.HelloWorld'
@@ -193,55 +189,6 @@ class TestHelperFunctions(unittest.TestCase):
     def test_get_filter_api_invalid(self):
         with self.assertRaises(UnknownTransform):
             get_transform_api('HelloWorld', 'invalid')
-
-    def test_dereference_step_routing(self):
-        inputs = {'a': 1, 'b': '@step1', 'c': '@step2', 'd': 'test'}
-        accumulator = {'step1': '2', 'step2': 3}
-        output = {'a': 1, 'b': '2', 'c': 3, 'd': 'test'}
-        self.assertDictEqual(dereference_step_routing(inputs, accumulator, 'message'), output)
-
-    def test_dereference_step_routing_extra_steps(self):
-        inputs = {'a': 1, 'b': '@step1', 'c': '@step2', 'd': 'test'}
-        accumulator = {'step1': '2', 'step2': 3, 'step3': 5}
-        output = {'a': 1, 'b': '2', 'c': 3, 'd': 'test'}
-        self.assertDictEqual(dereference_step_routing(inputs, accumulator, 'message'), output)
-
-    def test_dereference_step_routing_no_referenced(self):
-        inputs = {'a': 1, 'b': '2', 'c': 3, 'd': 'test'}
-        accumulator = {'step1': '2', 'step2': 3, 'step3': 5}
-        output = {'a': 1, 'b': '2', 'c': 3, 'd': 'test'}
-        self.assertDictEqual(dereference_step_routing(inputs, accumulator, 'message'), output)
-
-    def test_dereference_step_routing_step_not_found(self):
-        inputs = {'a': 1, 'b': '@step2', 'c': '@invalid', 'd': 'test'}
-        accumulator = {'step1': '2', 'step2': 3, 'step3': 5}
-        with self.assertRaises(InvalidInput):
-            dereference_step_routing(inputs, accumulator, 'message')
-
-    def test_dereference_step_routing_with_nested_inputs(self):
-        inputs = {'a': 1, 'b': '2', 'c': '@step1', 'd': {'e': 3, 'f': '@step2'}}
-        accumulator = {'step1': '2', 'step2': 3, 'step3': 5}
-        output = {'a': 1, 'b': '2', 'c': '2', 'd': {'e': 3, 'f': 3}}
-        self.assertDictEqual(dereference_step_routing(inputs, accumulator, 'message'), output)
-
-    def test_dereference_step_routing_with_ref_to_array(self):
-        inputs = {'a': 1, 'b': '2', 'c': '@step1', 'd': {'e': 3, 'f': '@step2'}}
-        accumulator = {'step1': [1, 2, 3], 'step2': 3, 'step3': 5}
-        output = {'a': 1, 'b': '2', 'c': [1, 2, 3], 'd': {'e': 3, 'f': 3}}
-        self.assertDictEqual(dereference_step_routing(inputs, accumulator, 'message'), output)
-
-    def test_dereference_step_routing_with_arrays_of_refs(self):
-        inputs = {'a': 1, 'b': '2', 'c': ['@step1', '@step2', '@step3'], 'd': {'e': 3, 'f': '@step2'}}
-        accumulator = {'step1': 1, 'step2': 3, 'step3': 5}
-        output = {'a': 1, 'b': '2', 'c': [1, 3, 5], 'd': {'e': 3, 'f': 3}}
-        self.assertDictEqual(dereference_step_routing(inputs, accumulator, 'message'), output)
-
-    def test_dereference_step_routing_with_arrays_of_objects(self):
-        inputs = {'a': 1, 'b': '2', 'c': [{'a': '@step1', 'b': '@step2'}, {'a': 10, 'b': '@step3'}],
-                  'd': {'e': 3, 'f': '@step2'}}
-        accumulator = {'step1': 1, 'step2': 3, 'step3': 5}
-        output = {'a': 1, 'b': '2', 'c': [{'a': 1, 'b': 3}, {'a': 10, 'b': 5}], 'd': {'e': 3, 'f': 3}}
-        self.assertDictEqual(dereference_step_routing(inputs, accumulator, 'message'), output)
 
     def test_get_arg_names_no_args(self):
         def x(): pass

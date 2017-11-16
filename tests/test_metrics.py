@@ -14,14 +14,13 @@ class MetricsTest(ServerTestCase):
 
     def test_action_metrics(self):
         server.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                        'multistepError.playbook')
+                                                                        'multiactionError.playbook')
 
-        server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
+        server.running_context.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
 
         server.running_context.controller.shutdown_pool(1)
         self.assertListEqual(list(metrics.app_metrics.keys()), ['HelloWorld'])
         orderless_list_compare(self, list(metrics.app_metrics['HelloWorld'].keys()), ['count', 'actions'])
-
         self.assertEqual(metrics.app_metrics['HelloWorld']['count'], 3)
         orderless_list_compare(self,
                                list(metrics.app_metrics['HelloWorld']['actions'].keys()),
@@ -44,14 +43,14 @@ class MetricsTest(ServerTestCase):
 
     def test_workflow_metrics(self):
         server.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                        'multistepError.playbook')
+                                                                        'multiactionError.playbook')
         server.running_context.controller.load_playbook(resource=config.test_workflows_path +
                                                                         'multiactionWorkflowTest.playbook')
 
         error_key = 'multiactionErrorWorkflow'
         multiaction_key = 'multiactionWorkflow'
-        server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
-        server.running_context.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
+        server.running_context.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
+        server.running_context.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
         server.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
         server.running_context.controller.shutdown_pool(3)

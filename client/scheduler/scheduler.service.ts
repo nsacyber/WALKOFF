@@ -73,8 +73,8 @@ export class SchedulerService {
 			.catch(this.handleError);
 	}
 
-	changeScheduledTaskStatus(scheduledTaskId: number, action: string): Promise<void> {
-		return this.authHttp.put(`/api/scheduledtasks/${scheduledTaskId}/${action}`, {})
+	changeScheduledTaskStatus(scheduledTaskId: number, actionName: string): Promise<void> {
+		return this.authHttp.put(`/api/scheduledtasks/${scheduledTaskId}/${actionName}`, {})
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);

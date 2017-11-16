@@ -10,11 +10,11 @@ AddUser:
         description: Password for the user
         type: string
         example: password123
-      roles:
-        description: A list of roles that this user possesses
-        type: array
-        items:
-          type: string
+#      roles:
+#        description: A list of roles that this user possesses
+#        type: array
+#        items:
+#          type: string
 EditUser:
     type: object
     required: [id]
@@ -39,15 +39,15 @@ EditUser:
       active:
         description: activate/deactive a user
         type: boolean
-      roles:
-        description: New list of role objects that this user possesses
-        type: array
-        items:
-          type: string
-        example:
-          - /users
-          - /cases
-          - /playbooks
+#      roles:
+#        description: New list of role objects that this user possesses
+#        type: array
+#        items:
+#          type: string
+#        example:
+#          - /users
+#          - /cases
+#          - /playbooks
 DisplayUser:
     type: object
     properties:

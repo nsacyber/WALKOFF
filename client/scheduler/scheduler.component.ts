@@ -117,10 +117,10 @@ export class SchedulerComponent {
 			.catch(e => this.toastyService.error(`Error deleting task: ${e.message}`));
 	}
 
-	changeScheduledTaskStatus(task: ScheduledTask, action: string): void {
+	changeScheduledTaskStatus(task: ScheduledTask, actionName: string): void {
 		let newStatus: string;
 
-		switch (action) {
+		switch (actionName) {
 			case 'start':
 				newStatus = 'running';
 				break;
@@ -131,14 +131,14 @@ export class SchedulerComponent {
 				newStatus = 'stopped';
 				break;
 			default:
-				this.toastyService.error(`Attempted to set an unknown status ${action}`);
+				this.toastyService.error(`Attempted to set an unknown status ${actionName}`);
 				break;
 		}
 
 		if (!newStatus) { return; }
 
 		this.schedulerService
-			.changeScheduledTaskStatus(task.id, action)
+			.changeScheduledTaskStatus(task.id, actionName)
 			.then(() => {
 				task.status = newStatus;
 			})

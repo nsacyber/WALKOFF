@@ -1,5 +1,5 @@
 from functools import wraps
-from core.case.callbacks import WorkflowExecutionStart, WorkflowShutdown, StepStarted
+from core.case.callbacks import WorkflowExecutionStart, WorkflowShutdown, ActionStarted
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -35,7 +35,7 @@ these callbacks should work on class decorators
 class InterfaceEventDispatch(object):
 
     _callback_lookup = {'Workflow Started': WorkflowExecutionStart, 'Workflow Shutdown': WorkflowShutdown,
-                        'Step Started': StepStarted}
+                        'Action Started': ActionStarted}
     __step_callback_names = ('Function Execution Success', 'Step Started', 'Input Invalid', 'Step Execution Success',
                              'Step Execution Error', 'Trigger Step Awaiting Data', 'Trigger Step Taken',
                              'Trigger Step Not Taken')

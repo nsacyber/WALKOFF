@@ -5,12 +5,13 @@ import os.path
 import core.config.paths
 from core.executionelements.playbook import Playbook
 from core.executionelements.workflow import Workflow
-from core.helpers import (locate_playbooks_in_directory, InvalidInput, UnknownApp, UnknownAppAction,
+from core.helpers import (locate_playbooks_in_directory, InvalidArgument, UnknownApp, UnknownAppAction,
                           UnknownTransform, UnknownCondition, format_exception_message)
 
 logger = logging.getLogger(__name__)
 
 
+logging.basicConfig()
 class JsonPlaybookLoader(object):
 
     @staticmethod
@@ -46,7 +47,7 @@ class JsonPlaybookLoader(object):
                     return playbook_name, workflow
                 except ValueError as e:
                     logger.error('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
-                except (InvalidInput, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
+                except (InvalidArgument, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
                     logger.error('Error constructing workflow {0}. Reason: {1}'.format(workflow_name,
                                                                                        format_exception_message(e)))
                     return None
@@ -74,7 +75,7 @@ class JsonPlaybookLoader(object):
                     return Playbook.create(playbook_json)
                 except ValueError as e:
                     logger.error('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
-                except (InvalidInput, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
+                except (InvalidArgument, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
                     logger.error(
                         'Error constructing playbook from {0}. '
                         'Reason: {1}'.format(resource, format_exception_message(e)))

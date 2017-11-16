@@ -4,6 +4,7 @@ import time
 
 from zmq.utils.strtypes import cast_unicode
 
+from core.argument import Argument
 from core import loadbalancer
 from core.case.callbacks import data_sent
 from core.protobuf.build import data_pb2
@@ -54,6 +55,7 @@ class MockLoadBalancer(object):
 
         def handle_data_sent(sender, **kwargs):
             self.on_data_sent(sender, **kwargs)
+
         self.handle_data_sent = handle_data_sent
         if not data_sent.receivers:
             data_sent.connect(handle_data_sent)
@@ -70,10 +72,10 @@ class MockLoadBalancer(object):
             message = message_outer.workflow_packet
         elif message_outer.type == data_pb2.Message.WORKFLOWPACKETDATA:
             message = message_outer.workflow_packet_data
-        elif message_outer.type == data_pb2.Message.STEPPACKET:
-            message = message_outer.step_packet
-        elif message_outer.type == data_pb2.Message.STEPPACKETDATA:
-            message = message_outer.step_packet_data
+        elif message_outer.type == data_pb2.Message.ACTIONPACKET:
+            message = message_outer.action_packet
+        elif message_outer.type == data_pb2.Message.ACTIONPACKETDATA:
+            message = message_outer.action_packet_data
         else:
             message = message_outer.general_packet
 
@@ -91,12 +93,13 @@ class MockLoadBalancer(object):
 
             exec_uid = workflow_json['execution_uid']
 
-            workflow, start_input = loadbalancer.recreate_workflow(workflow_json)
+            workflow, start_arguments = loadbalancer.recreate_workflow(workflow_json)
             self.workflow_comms[exec_uid] = workflow
 
             self.exec_uid = exec_uid
 
-            workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start, start_input=start_input)
+            workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start,
+                             start_arguments=start_arguments)
             self.exec_uid = ''
 
     def pause_workflow(self, workflow_execution_uid):
@@ -107,13 +110,17 @@ class MockLoadBalancer(object):
         if workflow_execution_uid in self.workflow_comms:
             self.workflow_comms[workflow_execution_uid].resume()
 
-    def send_data_to_trigger(self, data_in, workflow_uids, inputs={}):
+    def send_data_to_trigger(self, data_in, workflow_uids, arguments=None):
         data = dict()
         data['data_in'] = data_in
-        data['inputs'] = inputs
+        arg_objects = []
+        if arguments:
+            for arg in arguments:
+                arg_objects.append(Argument(**arg))
+        data["arguments"] = arg_objects
         for uid in workflow_uids:
             if uid in self.workflow_comms:
-                self.workflow_comms[uid].send_data_to_step(data)
+                self.workflow_comms[uid].send_data_to_action(data)
 
 
 class MockReceiveQueue(loadbalancer.Receiver):
@@ -126,7 +133,7 @@ class MockReceiveQueue(loadbalancer.Receiver):
         callback_name = kwargs['callback_name']
 
         callback = self.callback_lookup[callback_name]
-        data = json.loads(kwargs['data']) if callback[1] else {}
+        data = kwargs['data'] if callback[1] else {}
         loadbalancer.Receiver.send_callback(callback[0], sender, data)
 
         if callback_name == 'Workflow Shutdown':

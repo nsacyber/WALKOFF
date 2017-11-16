@@ -1,6 +1,6 @@
 import logging
 
-from apps import get_app
+from apps import get_app, is_app_action_bound
 from core.helpers import format_exception_message
 
 logger = logging.getLogger(__name__)
@@ -38,9 +38,10 @@ class AppInstance(object):
         try:
             return AppInstance(instance=get_app(app_name)(name=app_name, device=device_name), state=OK)
         except Exception as e:
-            logger.error('Cannot create app instance. app: {0}, device: {1}. '
-                         'Error: {2}'.format(app_name, device_name, format_exception_message(e)))
-            return None
+            if device_name:
+                logger.error('Cannot create app instance. app: {0}, device: {1}. '
+                             'Error: {2}'.format(app_name, device_name, format_exception_message(e)))
+            return AppInstance(instance=None, state=OK)
 
     def __call__(self):
         return self.instance

@@ -1,14 +1,15 @@
 {
-    "name": "tooManyStepInputsWorkflow",
+    "name": "tooManyActionInputsWorkflow",
     "workflows": [
         {
             "name": "multiactionWorkflow",
-            "next_steps": [
+            "branches": [
                 {
                     "conditions": [
                         {
-                            "action": "regMatch",
-                            "args": [
+                            "action_name": "regMatch",
+                            "app_name": "HelloWorld",
+                            "arguments": [
                                 {
                                     "name": "regex",
                                     "value": "(.*)"
@@ -16,8 +17,9 @@
                             ],
                             "transforms": [
                                 {
-                                    "action": "length",
-                                    "args": []
+                                    "action_name": "length",
+                                    "app_name": "HelloWorld",
+                                    "arguments": []
                                 }
                             ]
                         }
@@ -27,12 +29,12 @@
                     "status": "Success"
                 }
             ],
-            "start": "start",
-            "steps": [
+            "start": "2",
+            "actions": [
                 {
-                    "action": "returnPlusOne",
-                    "app": "HelloWorld",
-                    "inputs": [
+                    "action_name": "returnPlusOne",
+                    "app_name": "HelloWorld",
+                    "arguments": [
                         {
                             "name": "number",
                             "value": "1"
@@ -45,19 +47,16 @@
                     "name": "1",
                     "position": {},
                     "risk": 0,
-                    "uid": "1",
-                    "widgets": []
+                    "uid": "1"
                 },
                 {
-                    "action": "helloWorld",
-                    "app": "Invalid",
-                    "device": "hwTest",
-                    "inputs": [],
+                    "action_name": "helloWorld",
+                    "app_name": "Invalid",
+                    "arguments": [],
                     "name": "start",
                     "position": {},
                     "risk": 0,
-                    "uid": "2",
-                    "widgets": []
+                    "uid": "2"
                 }
             ]
         }

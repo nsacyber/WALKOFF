@@ -16,9 +16,9 @@
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="app">Associated App<span class="fa fa-asterisk required" title="This field is required."></span></label>
-						<select class="form-control" [ngModel]="workingDevice.app" #app="ngModel" (change)="handleAppSelection($event, $event.target.value)" 
-						 [disabled]="workingDevice.id" name="app" tabindex="3" required>
+						<label for="app_name">Associated App<span class="fa fa-asterisk required" title="This field is required."></span></label>
+						<select class="form-control" [ngModel]="workingDevice.app_name" #app="ngModel" (change)="handleAppSelection($event, $event.target.value)" 
+						 [disabled]="workingDevice.id" name="app_name" tabindex="3" required>
 							<option value=""></option>
 							<option *ngFor="let i of appNames" [value]="i" [label]="i">{{i}}</option>
 						</select>
@@ -54,10 +54,10 @@
 					<label for="{{i.name}}">
 						{{i.name}}
 						<span *ngIf="i.schema.required" class="fa fa-asterisk required" title="This field is required."></span>
-						<span *ngIf="i.schema.encrypted" class="fa fa-lock"
+						<span *ngIf="i.encrypted" class="fa fa-lock"
 						 title="This field will be encrypted at rest and will not be returned to the client for viewing or editing."></span>
 						<!-- If we have an encrypted field AND this is an edit AND there is an encrypted value on the server, allow the user to clear it if it's not required -->
-						<div *ngIf="workingDevice.id && i.schema.encrypted && workingDevice.fields[i.name] !== undefined" class="form-check form-check-inline">
+						<div *ngIf="workingDevice.id && i.encrypted && workingDevice.fields[i.name] !== undefined" class="form-check form-check-inline">
 							<label class="form-check-label">
 								Clear Existing Value
 								<input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1" 
@@ -68,7 +68,7 @@
 
 					<!-- Normal string text entries -->
 					<input *ngIf="i.schema.type === 'string' && !i.schema.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]"
-					 [attr.type]="i.schema.encrypted ? 'password' : 'text'" [attr.minlength]="i.schema.minLength > 0 ? i.schema.minLength : null"
+					 [attr.type]="i.encrypted ? 'password' : 'text'" [attr.minlength]="i.schema.minLength > 0 ? i.schema.minLength : null"
 					 [attr.maxlength]="i.schema.maxLength > 0 ? i.schema.maxLength : null"
 					 [attr.pattern]="i.schema.pattern ? i.schema.pattern : null" [attr.required]="i.schema.required"
 					 [disabled]="encryptedFieldsToBeCleared[i.name]" [attr.placeholder]="i.schema.placeholder">

@@ -43,75 +43,75 @@ class TestZMQCommunication(unittest.TestCase):
 
     def test_simple_workflow_execution(self):
         workflow = self.controller.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-        step_uids = [step.uid for step in workflow.steps.values() if step.name == 'start']
-        setup_subscriptions_for_step(workflow.uid, step_uids)
+        action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
+        setup_subscriptions_for_action(workflow.uid, action_uids)
         self.controller.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
         self.controller.shutdown_pool(1)
 
-        steps = []
-        for uid in step_uids:
-            steps.extend(executed_steps(uid, self.start, datetime.utcnow()))
+        actions = []
+        for uid in action_uids:
+            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
 
-        self.assertEqual(len(steps), 1)
-        step = steps[0]
-        result = step['data']
-        self.assertDictEqual(result['result'], {'result': "REPEATING: Hello World", 'status': 'Success'})
+        self.assertEqual(len(actions), 1)
+        action = actions[0]
+        result = action['data']
+        self.assertDictEqual(result, {'result': "REPEATING: Hello World", 'status': 'Success'})
 
     def test_multi_action_workflow(self):
         workflow = self.controller.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-        step_names = ['start', '1']
-        step_uids = [step.uid for step in workflow.steps.values() if step.name in step_names]
-        setup_subscriptions_for_step(workflow.uid, step_uids)
+        action_names = ['start', '1']
+        action_uids = [action.uid for action in workflow.actions.values() if action.name in action_names]
+        setup_subscriptions_for_action(workflow.uid, action_uids)
         self.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
         self.controller.shutdown_pool(1)
-        steps = []
-        for uid in step_uids:
-            steps.extend(executed_steps(uid, self.start, datetime.utcnow()))
+        actions = []
+        for uid in action_uids:
+            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
 
-        self.assertEqual(len(steps), 2)
+        self.assertEqual(len(actions), 2)
         expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
                             {'result': "REPEATING: Hello World", 'status': 'Success'}]
-        for result in [step['data']['result'] for step in steps]:
+        for result in [action['data'] for action in actions]:
             self.assertIn(result, expected_results)
 
     def test_error_workflow(self):
-        workflow = self.controller.get_workflow('multistepError', 'multiactionErrorWorkflow')
-        step_names = ['start', '1', 'error']
-        step_uids = [step.uid for step in workflow.steps.values() if step.name in step_names]
-        setup_subscriptions_for_step(workflow.uid, step_uids)
-        self.controller.execute_workflow('multistepError', 'multiactionErrorWorkflow')
+        workflow = self.controller.get_workflow('multiactionError', 'multiactionErrorWorkflow')
+        action_names = ['start', '1', 'error']
+        action_uids = [action.uid for action in workflow.actions.values() if action.name in action_names]
+        setup_subscriptions_for_action(workflow.uid, action_uids)
+        self.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
 
         self.controller.shutdown_pool(1)
 
-        steps = []
-        for uid in step_uids:
-            steps.extend(executed_steps(uid, self.start, datetime.utcnow()))
-        self.assertEqual(len(steps), 2)
+        actions = []
+        for uid in action_uids:
+            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        self.assertEqual(len(actions), 2)
 
         expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
                             {'status': 'Success', 'result': 'REPEATING: Hello World'}]
-        for result in [step['data']['result'] for step in steps]:
+        for result in [action['data'] for action in actions]:
             self.assertIn(result, expected_results)
 
     def test_workflow_with_dataflow(self):
         workflow = self.controller.get_workflow('dataflowTest', 'dataflowWorkflow')
-        step_names = ['start', '1', '2']
-        step_uids = [step.uid for step in workflow.steps.values() if step.name in step_names]
-        setup_subscriptions_for_step(workflow.uid, step_uids)
+        action_names = ['start', '1', '2']
+        action_uids = [action.uid for action in workflow.actions.values() if action.name in action_names]
+        setup_subscriptions_for_action(workflow.uid, action_uids)
         self.controller.execute_workflow('dataflowTest', 'dataflowWorkflow')
 
         self.controller.shutdown_pool(1)
 
-        steps = []
-        for uid in step_uids:
-            steps.extend(executed_steps(uid, self.start, datetime.utcnow()))
-        self.assertEqual(len(steps), 3)
+        actions = []
+        for uid in action_uids:
+            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        self.assertEqual(len(actions), 3)
         expected_results = [{'result': 6, 'status': 'Success'},
                             {'result': 6, 'status': 'Success'},
                             {'result': 15, 'status': 'Success'}]
-        for result in [step['data']['result'] for step in steps]:
+        for result in [action['data'] for action in actions]:
             self.assertIn(result, expected_results)
 
     '''Communication Socket Testing'''
@@ -138,7 +138,7 @@ class TestZMQCommunication(unittest.TestCase):
             return
 
         @WorkflowExecutionStart.connect
-        def step_1_about_to_begin_listener(sender, **kwargs):
+        def action_1_about_to_begin_listener(sender, **kwargs):
             threading.Thread(target=pause_resume_thread).start()
             time.sleep(0)
 

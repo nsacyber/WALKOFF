@@ -20,7 +20,8 @@ def read_all_apps(interfaces_only=None):
 
 
 def extract_schema(api, unformatted_fields=None):
-    unformatted_fields = unformatted_fields if unformatted_fields is not None else ('name', 'example', 'description')
+    unformatted_fields = unformatted_fields if unformatted_fields is not None else ('name', 'example', 'placeholder',
+                                                                                    'description')
     ret = {}
     schema = {}
     for key, value in api.items():
@@ -66,7 +67,7 @@ def format_all_app_actions_api(api):
 
 def format_device_api_full(api, device_name):
     device_api = {'name': device_name}
-    unformatted_fields = ('name', 'description', 'default', 'encrypted', 'placeholder')
+    unformatted_fields = ('name', 'description', 'encrypted', 'placeholder')
     if 'description' in api:
         device_api['description'] = api['description']
     device_api['fields'] = [extract_schema(device_field,
@@ -96,8 +97,9 @@ def format_full_app_api(api, app_name):
     return ret
 
 
-@jwt_required
 def read_all_app_apis(field_name=None):
+
+    @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
         ret = []
@@ -111,8 +113,8 @@ def read_all_app_apis(field_name=None):
     return __func()
 
 
-@jwt_required
 def read_app_api(app_name):
+    @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
         api = core.config.config.app_apis.get(app_name, None)

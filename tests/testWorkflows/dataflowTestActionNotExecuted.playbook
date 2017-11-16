@@ -1,9 +1,9 @@
 {
-    "name": "dataflowTestStepNotExecuted",
+    "name": "dataflowTestActionNotExecuted",
     "workflows": [
         {
             "name": "dataflowWorkflow",
-            "next_steps": [
+            "branches": [
                 {
                     "conditions": [],
                     "destination_uid": "0ed91d07f1774d16a991d7815814fff1",
@@ -13,19 +13,18 @@
                 }
             ],
             "start": "9fd0559779a84bd584c1ecd43b156656",
-            "steps": [
+            "actions": [
                 {
-                    "action": "Add Three",
-                    "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [
+                    "action_name": "Add Three",
+                    "app_name": "HelloWorld",
+                    "arguments": [
                         {
                             "name": "num1",
-                            "value": "@start"
+                            "reference": "9fd0559779a84bd584c1ecd43b156656"
                         },
                         {
                             "name": "num2",
-                            "value": "@2"
+                            "reference": "de45a29e29864b39998f60743055a452"
                         },
                         {
                             "name": "num3",
@@ -35,14 +34,12 @@
                     "name": "1",
                     "position": {},
                     "risk": 0,
-                    "uid": "0ed91d07f1774d16a991d7815814fff1",
-                    "widgets": []
+                    "uid": "0ed91d07f1774d16a991d7815814fff1"
                 },
                 {
-                    "action": "Add Three",
-                    "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [
+                    "action_name": "Add Three",
+                    "app_name": "HelloWorld",
+                    "arguments": [
                         {
                             "name": "num1",
                             "value": 1.0
@@ -59,14 +56,12 @@
                     "name": "start",
                     "position": {},
                     "risk": 0,
-                    "uid": "9fd0559779a84bd584c1ecd43b156656",
-                    "widgets": []
+                    "uid": "9fd0559779a84bd584c1ecd43b156656"
                 },
                 {
-                    "action": "Add Three",
-                    "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [
+                    "action_name": "Add Three",
+                    "app_name": "HelloWorld",
+                    "arguments": [
                         {
                             "name": "num1",
                             "value": 1.0
@@ -83,8 +78,7 @@
                     "name": "2",
                     "position": {},
                     "risk": 0,
-                    "uid": "de45a29e29864b39998f60743055a452",
-                    "widgets": []
+                    "uid": "de45a29e29864b39998f60743055a452"
                 }
             ],
             "uid": "06e80ec0a9b543d29dcd227f04a9c90e"

@@ -3,13 +3,13 @@
     "workflows": [
         {
             "name": "templatedWorkflow",
-            "next_steps": [
+            "branches": [
                 {
                     "conditions": [
                         {
-                            "action": "regMatch",
-                            "app": "HelloWorld",
-                            "args": [
+                            "action_name": "regMatch",
+                            "app_name": "HelloWorld",
+                            "arguments": [
                                 {
                                     "name": "regex",
                                     "value": "(.*)"
@@ -17,9 +17,9 @@
                             ],
                             "transforms": [
                                 {
-                                    "action": "length",
-                                    "app": "HelloWorld",
-                                    "args": [],
+                                    "action_name": "length",
+                                    "app_name": "HelloWorld",
+                                    "arguments": [],
                                     "uid": "2e371b8c5cee4a40850f334defcf28f2"
                                 }
                             ],
@@ -33,34 +33,30 @@
                 }
             ],
             "start": "403e56dee3b74c5fad931d5e821fe2b9",
-            "steps": [
+            "actions": [
                 {
-                    "action": "repeatBackToMe",
-                    "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [
+                    "action_name": "repeatBackToMe",
+                    "app_name": "HelloWorld",
+                    "arguments": [
                         {
                             "name": "call",
-                            "value": "{{ outputFrom(steps, -1) }}"
+                            "value": "{{ outputFrom(actions, -1) }}"
                         }
                     ],
                     "name": "1",
                     "position": {},
                     "risk": 0,
                     "templated": true,
-                    "uid": "cd178e70ba734022b3ee1715255e9fd2",
-                    "widgets": []
+                    "uid": "cd178e70ba734022b3ee1715255e9fd2"
                 },
                 {
-                    "action": "helloWorld",
-                    "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [],
+                    "action_name": "helloWorld",
+                    "app_name": "HelloWorld",
+                    "arguments": [],
                     "name": "start",
                     "position": {},
                     "risk": 0,
-                    "uid": "403e56dee3b74c5fad931d5e821fe2b9",
-                    "widgets": []
+                    "uid": "403e56dee3b74c5fad931d5e821fe2b9"
                 }
             ],
             "uid": "3c144dc81686489cb98766bdbbdf180a"

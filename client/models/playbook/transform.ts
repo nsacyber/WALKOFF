@@ -2,7 +2,7 @@ import { Argument } from './argument';
 
 export class Transform {
 	uid: string;
-	app: string;
-	action: string;
-	args: Argument[] = [];
+	app_name: string;
+	action_name: string;
+	arguments: Argument[] = [];
 }

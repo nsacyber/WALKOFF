@@ -150,21 +150,6 @@ def list_interfaces(path=None):
     return __list_valid_directories(path)
 
 
-def list_widgets(app, app_path=None):
-    """Get a list of the widgets for a given app. 
-    
-    Args:
-        app (str): The app under which the widgets are located.
-        app_path (str, optional): The path to the widgets folder. Default is None.
-        
-    Returns:
-        A list of the widgets given the apps path or the apps_path in the configuration.
-    """
-    if app_path is None:
-        app_path = core.config.paths.apps_path
-    return __list_valid_directories(os.path.join(app_path, app, 'widgets'))
-
-
 def list_class_functions(class_name):
     """Get the functions for a python Class.
     
@@ -310,19 +295,12 @@ def get_app_device_api(app, device_type):
             raise UnknownDevice(app, device_type)
 
 
-def __split_api_params(api):
-    data_param_name = api['data_in']
-    run = api['run']
+def split_api_params(api, data_param_name):
     args = []
-    data_param = None
-    for api_param in api['parameters']:
-        if api_param['name'] == data_param_name:
-            data_param = api_param
-        else:
+    for api_param in api:
+        if api_param['name'] != data_param_name:
             args.append(api_param)
-    if data_param is None:  # This should be validated by the schema, but just in case
-        raise ValueError
-    return run, args, data_param
+    return args
 
 
 def get_condition_api(app, condition):
@@ -333,7 +311,8 @@ def get_condition_api(app, condition):
     else:
         try:
             condition_api = app_api['conditions'][condition]
-            return __split_api_params(condition_api)
+            run = condition_api['run']
+            return condition_api['data_in'], run, condition_api.get('parameters', [])
         except KeyError:
             raise UnknownCondition(app, condition)
 
@@ -345,8 +324,9 @@ def get_transform_api(app, transform):
         raise UnknownApp(app)
     else:
         try:
-            condition_api = app_api['transforms'][transform]
-            return __split_api_params(condition_api)
+            transform_api = app_api['transforms'][transform]
+            run = transform_api['run']
+            return transform_api['data_in'], run, transform_api.get('parameters', [])
         except KeyError:
             raise UnknownTransform(app, transform)
 
@@ -381,10 +361,10 @@ class UnknownDevice(Exception):
         self.device_type = device_type
 
 
-class InvalidInput(Exception):
+class InvalidArgument(Exception):
     def __init__(self, message):
         self.message = message
-        super(InvalidInput, self).__init__(self.message)
+        super(InvalidArgument, self).__init__(self.message)
 
 
 class UnknownCondition(UnknownFunction):
@@ -395,41 +375,6 @@ class UnknownCondition(UnknownFunction):
 class UnknownTransform(Exception):
     def __init__(self, app, transform_name):
         super(UnknownTransform, self).__init__(app, transform_name, 'transform')
-
-
-def __get_tagged_functions(module, tag, prefix):
-    tagged = {}
-    start_index = len(prefix)+1
-    for attr_name in dir(module):
-        attr = getattr(module, attr_name)
-        if not attr_name.startswith('_') and callable(attr) and getattr(attr, tag, False):
-            name = '{0}.{1}'.format(module.__name__, attr_name)[start_index:]
-            tagged[name] = attr
-    return tagged
-
-
-def __get_step_from_reference(reference, accumulator, message_prefix):
-    input_step_name = reference[1:]
-    if input_step_name in accumulator:
-        return accumulator[input_step_name]
-    else:
-        message = ('{0}: Referenced step {1} '
-                   'has not been executed'.format(message_prefix, input_step_name))
-        raise InvalidInput(message)
-
-
-# TODO: Rewrite this using generators. Python doesn't play nice with recursion
-def dereference_step_routing(input_, accumulator, message_prefix):
-    if isinstance(input_, dict):
-        return {input_name: dereference_step_routing(input_value, accumulator, message_prefix)
-                for input_name, input_value in input_.items()}
-    elif isinstance(input_, list):
-        return [dereference_step_routing(element, accumulator, message_prefix) for element in input_]
-    else:
-        if isinstance(input_, string_types) and input_.startswith('@'):
-            return __get_step_from_reference(input_, accumulator, message_prefix)
-        else:
-            return input_
 
 
 def get_function_arg_names(func):
@@ -447,3 +392,11 @@ def format_exception_message(exception):
     exception_message = str(exception)
     class_name = exception.__class__.__name__
     return '{0}: {1}'.format(class_name, exception_message) if exception_message else class_name
+
+
+def convert_argument(argument):
+    converted_arg = {}
+    for field in ('name', 'value', 'reference', 'selector'):
+        if hasattr(argument, field):
+            converted_arg[field] = getattr(argument, field)
+    return converted_arg

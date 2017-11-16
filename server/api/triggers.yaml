@@ -1,6 +1,6 @@
 /api/triggers/send_data:
   post:
-    summary: Send data to one or more workflows with trigger steps awaiting data before continuing execution
+    summary: Send data to one or more workflows with trigger actions awaiting data before continuing execution
     description: ''
     operationId: server.endpoints.triggers.send_data_to_trigger
     consumes:
@@ -24,144 +24,8 @@
               description: Data to send to workflows awaiting data
               type: object
             inputs:
-              description: Updated inputs to send to the trigger step
+              description: Updated inputs to send to the trigger action
               type: object
     responses:
       200:
         description: Success
-
-/execution/listener/triggers:
-  get:
-    tags:
-      - Triggers
-    summary: Get all triggers
-    description: ''
-    operationId: server.endpoints.triggers.read_all_triggers
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          description: A list of trigger objects
-          type: object
-          properties:
-            triggers:
-              type: array
-              items:
-                $ref: '#/definitions/Trigger'
-/api/triggers/execute:
-  post:
-    tags:
-      - Triggers
-    summary: Execute the trigger
-    description: ''
-    operationId: server.endpoints.triggers.execute
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        description: Fields to execute the trigger
-        required: true
-        schema:
-          $ref: '#/definitions/TriggerExecutionParameters'
-    responses:
-      202:
-        description: Success asynchronous.
-        schema:
-            $ref: '#/definitions/TriggerExecutionResponse'
-
-/execution/listener/triggers/{trigger_name}:
-  parameters:
-    - name: trigger_name
-      in: path
-      description: The name that needs to be fetched.
-      required: true
-      type: string
-  put:
-    tags:
-      - Triggers
-    summary: Create a trigger
-    description: ''
-    operationId: server.endpoints.triggers.create_trigger
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        description: Fields for the trigger object
-        required: true
-        schema:
-          $ref: '#/definitions/Trigger'
-    responses:
-      201:
-        description: Trigger created.
-      462:
-        description: Trigger already exists.
-        schema:
-          $ref: '#/definitions/Error'
-  get:
-    tags:
-      - Triggers
-    summary: Get a trigger
-    description: ''
-    operationId: server.endpoints.triggers.read_trigger
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          $ref: '#/definitions/Trigger'
-      461:
-        description: Trigger does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-  post:
-    tags:
-      - Triggers
-    summary: Update a trigger
-    description: ''
-    operationId: server.endpoints.triggers.update_trigger
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        description: Fields for the trigger object
-        required: true
-        schema:
-          $ref: '#/definitions/Trigger'
-    responses:
-      200:
-        description: Success
-      461:
-        description: Trigger does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-      462:
-        description: Trigger already exists.
-        schema:
-          $ref: '#/definitions/Error'
-  delete:
-    tags:
-      - Triggers
-    summary: Delete a trigger
-    description: ''
-    operationId: server.endpoints.triggers.delete_trigger
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-      461:
-        description: Trigger does not exist.
-        schema:
-          $ref: '#/definitions/Error'

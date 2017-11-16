@@ -58,14 +58,14 @@ export class PlaybookTransformsComponent {
 				name: parameterApi.name,
 				value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
 				reference: '',
-				selector: '',
+				selection: '',
 			});
 		});
 
 		const newTransform = new Transform();
-		newTransform.app = this.selectedAppName;
-		newTransform.action = this.selectedTransformApi;
-		newTransform.args = args;
+		newTransform.app_name = this.selectedAppName;
+		newTransform.action_name = this.selectedTransformApi;
+		newTransform.arguments = args;
 
 		this.transforms.push(newTransform);
 	}

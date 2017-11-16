@@ -7,16 +7,16 @@ message Message {
     enum Type {
         WORKFLOWPACKET = 1;
         WORKFLOWPACKETDATA = 2;
-        STEPPACKET = 3;
-        STEPPACKETDATA = 4;
+        ACTIONPACKET = 3;
+        ACTIONPACKETDATA = 4;
         GENERALPACKET = 5;
     }
 
     optional Type type = 1;
     optional WorkflowPacket workflow_packet = 2;
     optional WorkflowPacketData workflow_packet_data = 3;
-    optional StepPacket step_packet = 4;
-    optional StepPacketData step_packet_data = 5;
+    optional ActionPacket action_packet = 4;
+    optional ActionPacketData action_packet_data = 5;
     optional GeneralPacket general_packet = 6;
 
 }
@@ -39,25 +39,32 @@ message WorkflowPacketData {
     optional string additional_data = 3;
 }
 
-message StepPacket {
+message ActionPacket {
 
-    message StepSender {
+    message ActionArgument {
+        optional string name = 1;
+        optional string value = 2;
+        optional string reference = 3;
+        optional string selection = 4;
+    }
+
+    message ActionSender {
         optional string name = 1;
         optional string uid = 2;
         optional string execution_uid = 3;
-        optional string app = 4;
-        optional string action = 5;
-        map<string, string> input = 6;
+        optional string app_name = 4;
+        optional string action_name = 5;
+        repeated ActionArgument arguments = 6;
         optional string workflow_execution_uid = 7;
     }
 
-    optional StepSender sender = 1;
+    optional ActionSender sender = 1;
     optional string callback_name = 2;
 }
 
-message StepPacketData {
+message ActionPacketData {
 
-    optional StepPacket.StepSender sender = 1;
+    optional ActionPacket.ActionSender sender = 1;
     optional string callback_name = 2;
     optional string additional_data = 3;
 }
@@ -66,7 +73,7 @@ message GeneralPacket {
 
     message GeneralSender {
         optional string uid = 1;
-        optional string app = 2;
+        optional string app_name = 2;
         optional string workflow_execution_uid = 3;
     }
 

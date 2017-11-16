@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from core.executionelements.playbook import Playbook
 from core.executionelements.workflow import Workflow
-from core.executionelements.step import Step
+from core.executionelements.action import Action
 from core.playbookstore import PlaybookStore
 
 

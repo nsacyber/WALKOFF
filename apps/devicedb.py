@@ -37,13 +37,13 @@ class App(Device_Base):
             for device in devices:
                 self.add_device(device)
 
-    def get_device(self, name):
-        device = next((device for device in self.devices if device.name == name), None)
+    def get_device(self, device_id):
+        device = next((device for device in self.devices if device.id == device_id), None)
         if device is not None:
             return device
         else:
             logger.warning('Cannot get device {0} for app {1}. '
-                           'Device does not exist for app'.format(name, self.name))
+                           'Device does not exist for app'.format(device_id, self.name))
             return None
 
     def get_devices_of_type(self, device_type):

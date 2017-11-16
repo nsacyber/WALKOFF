@@ -21,7 +21,7 @@
 	<div *ngFor="let transform of transforms; let id = index">
 		<div class="row">
 			<div class="col-xs-6">
-				<label>Transform {{id+1}}: {{transform.app}} - {{transform.action}}</label>
+				<label>Transform {{id+1}}: {{transform.app_name}} - {{transform.action_name}}</label>
 			</div>
 			<div class="col-xs-6">
 				<div class="pull-right">
@@ -31,7 +31,7 @@
 				</div>
 			</div>
 		</div>
-		<playbook-argument-component *ngFor="let argument of transform.args; let id = index" [loadedWorkflow]="loadedWorkflow"
-		 [argument]="argument" [parameterApi]="getTransformApiArgs(transform.app, transform.action, argument.name)" [id]="id"></playbook-argument-component>
+		<playbook-argument-component *ngFor="let argument of transform.arguments; let id = index" [loadedWorkflow]="loadedWorkflow"
+		 [argument]="argument" [parameterApi]="getTransformApiArgs(transform.app_name, transform.action_name, argument.name)" [id]="id"></playbook-argument-component>
 	</div>
 </div>

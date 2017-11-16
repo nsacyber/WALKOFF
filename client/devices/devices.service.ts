@@ -58,7 +58,7 @@ export class DevicesService {
 	}
 
 	getDeviceApis(): Promise<AppApi[]> {
-		return this.authHttp.get('api/apps/apis?field_name=devices')
+		return this.authHttp.get('api/apps/apis?field_name=device_apis')
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as AppApi[])

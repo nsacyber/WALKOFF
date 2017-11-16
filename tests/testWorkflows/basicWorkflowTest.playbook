@@ -3,13 +3,13 @@
     "workflows": [
         {
             "name": "helloWorldWorkflow",
-            "next_steps": [
+            "branches": [
                 {
                     "conditions": [
                         {
-                            "action": "regMatch",
-                            "app": "HelloWorld",
-                            "args": [
+                            "action_name": "regMatch",
+                            "app_name": "HelloWorld",
+                            "arguments": [
                                 {
                                     "name": "regex",
                                     "value": "(.*)"
@@ -17,9 +17,9 @@
                             ],
                             "transforms": [
                                 {
-                                    "action": "length",
-                                    "app": "HelloWorld",
-                                    "args": [],
+                                    "action_name": "length",
+                                    "app_name": "HelloWorld",
+                                    "arguments": [],
                                     "uid": "48bbcbd8009e47f7b2d368d596850d86"
                                 }
                             ],
@@ -33,12 +33,11 @@
                 }
             ],
             "start": "c5a7c29a0f844b69a59901bb542e9305",
-            "steps": [
+            "actions": [
                 {
-                    "action": "repeatBackToMe",
-                    "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [
+                    "action_name": "repeatBackToMe",
+                    "app_name": "HelloWorld",
+                    "arguments": [
                         {
                             "name": "call",
                             "value": "Hello World"
@@ -47,8 +46,7 @@
                     "name": "start",
                     "position": {},
                     "risk": 0,
-                    "uid": "c5a7c29a0f844b69a59901bb542e9305",
-                    "widgets": []
+                    "uid": "c5a7c29a0f844b69a59901bb542e9305"
                 }
             ],
             "uid": "3c7f67c8ea6e481eb5d37b488a7b15b3"

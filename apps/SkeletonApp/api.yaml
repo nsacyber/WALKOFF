@@ -42,7 +42,7 @@ actions:
           type: string
   'action using device':
     run: app.SkeletonApp.test_function_with_device_reference
-    description: Basic function which uses the connexted device
+    description: Basic function which uses the connected device
     returns:
       Success:
         schema:

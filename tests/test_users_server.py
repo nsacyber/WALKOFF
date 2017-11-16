@@ -42,14 +42,14 @@ class TestUserServer(ServerTestCase):
         self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
                                               data=json.dumps(data), status_code=OBJECT_EXISTS_ERROR)
 
-    def test_create_user_with_roles(self):
-        role = Role('role1')
-        db.session.add(role)
-        db.session.commit()
-        data = {'username': 'username', 'password': 'NoH4x0rzPls!', 'roles': ['role1']}
-        response = self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                   data=json.dumps(data), status_code=OBJECT_CREATED)
-        self.assertUserCreatedResponse('username', response)
+    # def test_create_user_with_roles(self):
+    #     role = Role('role1')
+    #     db.session.add(role)
+    #     db.session.commit()
+    #     data = {'username': 'username', 'password': 'NoH4x0rzPls!', 'roles': ['role1']}
+    #     response = self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
+    #                                data=json.dumps(data), status_code=OBJECT_CREATED)
+    #     self.assertUserCreatedResponse('username', response)
 
     def test_read_user(self):
         user = User('username', 'asdfghjkl;')
@@ -81,18 +81,18 @@ class TestUserServer(ServerTestCase):
                                    data=json.dumps(data), status_code=BAD_REQUEST)
         self.assertTrue(user.verify_password('asdfghjkl;'))
 
-    def test_update_user_with_roles(self):
-        role = Role('role1')
-        db.session.add(role)
-        db.session.commit()
-        user = User('username', 'supersecretshhhhh')
-        db.session.add(user)
-        db.session.commit()
-        data = {'id': user.id, 'roles': ['role1']}
-        response = self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                               data=json.dumps(data), status_code=SUCCESS)
-        self.assertDictEqual(response, user.as_json())
-        self.assertSetEqual({role.name for role in user.roles}, {'role1'})
+    # def test_update_user_with_roles(self):
+    #     role = Role('role1')
+    #     db.session.add(role)
+    #     db.session.commit()
+    #     user = User('username', 'supersecretshhhhh')
+    #     db.session.add(user)
+    #     db.session.commit()
+    #     data = {'id': user.id, 'roles': ['role1']}
+    #     response = self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
+    #                                            data=json.dumps(data), status_code=SUCCESS)
+    #     self.assertDictEqual(response, user.as_json())
+    #     self.assertSetEqual({role.name for role in user.roles}, {'role1'})
 
     def test_update_username(self):
         user = User('username', 'whisperDieselEngine')
@@ -191,7 +191,6 @@ class TestUserServer(ServerTestCase):
         data = {'id': admin.id, 'username': 'somethingelse'}
         self.post_with_status_check('/api/users', headers=headers, content_type='application/json',
                                     data=json.dumps(data), status_code=UNAUTHORIZED_ERROR)
-
 
     def test_update_user_invalid_id(self):
         data = {'id': 404, 'username': 'new_name'}

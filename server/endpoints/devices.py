@@ -6,7 +6,7 @@ from flask_jwt_extended import jwt_required
 import core.config.config
 import core.config.paths
 from apps.devicedb import Device, App, device_db
-from core.helpers import get_app_device_api, InvalidInput, UnknownDevice, UnknownApp, format_exception_message
+from core.helpers import get_app_device_api, InvalidArgument, UnknownDevice, UnknownApp, format_exception_message
 from core.validator import validate_device_fields
 from server.returncodes import *
 from server.security import roles_accepted_for_resources
@@ -16,7 +16,7 @@ def get_device_json_with_app_name(device):
 
     device_json = device.as_json()
     app = device_db.session.query(App).filter(App.id == device.app_id).first()
-    device_json['app'] = app.name if app is not None else ''
+    device_json['app_name'] = app.name if app is not None else ''
     return device_json
 
 
@@ -95,7 +95,7 @@ def create_device():
             return {"error": "Device already exists."}, OBJECT_EXISTS_ERROR
 
         fields = {field['name']: field['value'] for field in add_device_json['fields']}
-        app = add_device_json['app']
+        app = add_device_json['app_name']
         device_type = add_device_json['type']
         try:
             device_api = get_app_device_api(app, device_type)
@@ -109,7 +109,7 @@ def create_device():
             current_app.logger.error('Cannot create device for app {0}, type {1}. '
                                      'Type does not exist'.format(app, device_type))
             return {'error': 'Unknown device type'}, INVALID_INPUT_ERROR
-        except InvalidInput as e:
+        except InvalidArgument as e:
             current_app.logger.error('Cannot create device for app {0}, type {1}. '
                                      'Invalid input'.format(app, device_type,
                                                             format_exception_message(e)))
@@ -147,7 +147,7 @@ def update_device():
 
         fields = ({field['name']: field['value'] for field in update_device_json['fields']}
                   if 'fields' in update_device_json else None)
-        app = update_device_json['app']
+        app = update_device_json['app_name']
         device_type = update_device_json['type'] if 'type' in update_device_json else device.type
         try:
             device_api = get_app_device_api(app, device_type)
@@ -162,7 +162,7 @@ def update_device():
             current_app.logger.error('Cannot update device for app {0}, type {1}. '
                                      'Type does not exist'.format(app, device_type))
             return {'error': 'Unknown device type'}, INVALID_INPUT_ERROR
-        except InvalidInput as e:
+        except InvalidArgument as e:
             current_app.logger.error('Cannot update device for app {0}, type {1}. '
                                      'Invalid input'.format(app, device_type,
                                                             format_exception_message(e)))
@@ -211,7 +211,7 @@ def import_devices():
                     current_app.logger.error('Cannot import device for app {0}, type {1}. '
                                              'Type does not exist'.format(app, device_type))
                     continue
-                except InvalidInput as e:
+                except InvalidArgument as e:
                     current_app.logger.error('Cannot import device for app {0}, type {1}. '
                                              'Invalid input'.format(app, device_type,
                                                                     format_exception_message(e)))
