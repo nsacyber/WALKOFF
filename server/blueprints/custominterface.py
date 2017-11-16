@@ -19,7 +19,7 @@ def static_request_handler(endpoint, values):
 @custom_interface_page.route('/<page>')
 @jwt_required
 def read_app(page):
-    # This is horrific and I'm sorry
+    # This is terrible and I'm sorry
     path = '{0}/interface/templates/{1}.html'.format(g.interface, page)
     #path = url_for('custom_interface.static', interface=g.interface, filename='../interface/templates/{}.html'.format(page))
     #path = path[len('custominterfaces/')+1:]
