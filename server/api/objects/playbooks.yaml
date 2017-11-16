@@ -301,7 +301,8 @@ Transform:
 Argument:
   type: object
   required: [name]
-  description: Object used for passing an argument into actions
+  description: Object used for passing an argument into actions. Either reference or value must be selected.
+  minProperties: 2
   properties:
     name:
       type: string
