@@ -19,7 +19,7 @@ try:
     from Queue import Queue
 except ImportError:
     from queue import Queue
-from core.case import callbacks
+from core.events import EventType, WalkoffEvent
 from core.executionelements.workflow import Workflow
 
 REQUESTS_ADDR = 'tcp://127.0.0.1:5555'
@@ -71,9 +71,9 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
     Returns:
         The newly formed protobuf object, serialized as a string to send over the ZMQ socket.
     """
-    obj_type = kwargs['object_type']
+    event = kwargs['event']
     packet = data_pb2.Message()
-    if obj_type == 'Workflow':
+    if event.event_type == EventType.workflow:
         if 'data' in kwargs:
             packet.type = data_pb2.Message.WORKFLOWPACKETDATA
             wf_packet = packet.workflow_packet_data
@@ -84,8 +84,8 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         wf_packet.sender.name = sender.name
         wf_packet.sender.uid = sender.uid
         wf_packet.sender.workflow_execution_uid = workflow_execution_uid
-        wf_packet.callback_name = kwargs['callback_name']
-    elif obj_type == 'Action':
+        wf_packet.callback_name = event.name
+    elif event.event_type == EventType.action:
         if 'data' in kwargs:
             packet.type = data_pb2.Message.ACTIONPACKETDATA
             action_packet = packet.action_packet_data
@@ -108,15 +108,16 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
                 if val is not None:
                     setattr(arg, field, str(val))
 
-        action_packet.callback_name = kwargs['callback_name']
-    elif obj_type in ['Branch', 'Condition', 'Transform']:
+        action_packet.callback_name = event.name
+
+    elif event.event_type in (EventType.branch, EventType.condition, EventType.transform):
         packet.type = data_pb2.Message.GENERALPACKET
         general_packet = packet.general_packet
         general_packet.sender.uid = sender.uid
         general_packet.sender.workflow_execution_uid = workflow_execution_uid
         if hasattr(sender, 'app_name'):
             general_packet.sender.app_name = sender.app_name
-        general_packet.callback_name = kwargs['callback_name']
+        general_packet.callback_name = event.name
     packet_bytes = packet.SerializeToString()
     return packet_bytes
 
@@ -239,7 +240,7 @@ class Worker:
         def handle_data_sent(sender, **kwargs):
             self.on_data_sent(sender, **kwargs)
         self.handle_data_sent = handle_data_sent
-        callbacks.data_sent.connect(handle_data_sent)
+        WalkoffEvent.CommonWorkflowSignal.connect(self.on_data_sent)
 
         self.thread_exit = False
         self.workflow = None
@@ -354,28 +355,6 @@ class Worker:
 
 
 class Receiver:
-    callback_lookup = {
-        'Workflow Execution Start': (callbacks.WorkflowExecutionStart, False),
-        'App Instance Created': (callbacks.AppInstanceCreated, False),
-        'Workflow Shutdown': (callbacks.WorkflowShutdown, True),
-        'Workflow Arguments Validated': (callbacks.WorkflowArgumentsValidated, False),
-        'Workflow Arguments Invalid': (callbacks.WorkflowArgumentsInvalid, False),
-        'Workflow Paused': (callbacks.WorkflowPaused, False),
-        'Workflow Resumed': (callbacks.WorkflowResumed, False),
-        'Action Execution Error': (callbacks.ActionExecutionError, True),
-        'Action Started': (callbacks.ActionStarted, False),
-        'Action Execution Success': (callbacks.ActionExecutionSuccess, True),
-        'Action Argument Invalid': (callbacks.ActionArgumentsInvalid, False),
-        'Branch Taken': (callbacks.BranchTaken, False),
-        'Branch Not Taken': (callbacks.BranchNotTaken, False),
-        'Condition Success': (callbacks.ConditionSuccess, False),
-        'Condition Error': (callbacks.ConditionError, False),
-        'Transform Success': (callbacks.TransformSuccess, False),
-        'Transform Error': (callbacks.TransformError, False),
-        'Trigger Action Taken': (callbacks.TriggerActionTaken, False),
-        'Trigger Action Not Taken': (callbacks.TriggerActionNotTaken, False),
-        'Trigger Action Awaiting Data': (callbacks.TriggerActionAwaitingData, False)
-    }
 
     def __init__(self, ctx):
         """Initialize a Receiver object, which will receive callbacks from the execution elements.
@@ -440,15 +419,16 @@ class Receiver:
             callback_name = message.callback_name
             sender = message.sender
 
-            try:
-                callback = self.callback_lookup[callback_name]
-                data = json.loads(message.additional_data) if callback[1] else {}
-                Receiver.send_callback(callback[0], sender, data)
-            except KeyError:
-                logger.error('Unknown callback {} sent'.format(callback_name))
-            else:
-                if callback_name == 'Workflow Shutdown':
+            event = WalkoffEvent.get_event_from_name(callback_name)
+            if event is not None:
+                if event.requires_data():
+                    event.send(sender, data=json.loads(message.additional_data))
+                else:
+                    event.send(sender)
+                if event == WalkoffEvent.WorkflowShutdown:
                     self.workflows_executed += 1
+            else:
+                logger.error('Unknown callback {} sent'.format(callback_name))
 
         self.results_sock.close()
         return

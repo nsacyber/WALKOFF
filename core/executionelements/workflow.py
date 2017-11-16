@@ -5,12 +5,11 @@ from copy import deepcopy
 import gevent
 
 from core.appinstance import AppInstance
-from core.case.callbacks import data_sent
+from core.events import WalkoffEvent
 from core.executionelements.executionelement import ExecutionElement
 from core.executionelements.action import Action
 from core.executionelements.branch import Branch
 from core.helpers import UnknownAppAction, UnknownApp, InvalidArgument, format_exception_message
-from core.jsonelementreader import JsonElementReader
 
 logger = logging.getLogger(__name__)
 
@@ -121,7 +120,7 @@ class Workflow(ExecutionElement):
         """
         self._execution_uid = execution_uid
         logger.info('Executing workflow {0}'.format(self.name))
-        data_sent.send(self, callback_name="Workflow Execution Start", object_type="Workflow")
+        WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowExecutionStart)
         start = start if start is not None else self.start
         executor = self.__execute(start, start_arguments)
         next(executor)
@@ -136,11 +135,11 @@ class Workflow(ExecutionElement):
             logger.debug('Executing action {0} of workflow {1}'.format(action, self.name))
 
             if self._is_paused:
-                data_sent.send(self, callback_name="Workflow Paused", object_type="Workflow")
+                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowPaused)
                 while self._is_paused:
                     gevent.sleep(1)
                     continue
-                data_sent.send(self, callback_name="Workflow Resumed", object_type="Workflow")
+                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowResumed)
 
             device_id = self.__setup_app_instance(instances, action)
             action.render_action(actions=total_actions)
@@ -158,7 +157,7 @@ class Workflow(ExecutionElement):
         device_id = (action.app_name, action.device_id)
         if device_id not in instances:
             instances[device_id] = AppInstance.create(action.app_name, action.device_id)
-            data_sent.send(self, callback_name="App Instance Created", object_type="Workflow")
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.AppInstanceCreated)
             logger.debug('Created new app instance: App {0}, device {1}'.format(action.app_name, action.device_id))
         return device_id
 
@@ -206,11 +205,11 @@ class Workflow(ExecutionElement):
         logger.debug('Swapping arguments to first action of workflow {0}'.format(self.name))
         try:
             action.set_arguments(start_arguments)
-            data_sent.send(self, callback_name="Workflow Arguments Validated", object_type="Workflow")
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowArgumentsValidated)
         except InvalidArgument as e:
             logger.error('Cannot change arguments to workflow {0}. '
                          'Invalid arguments. Error: {1}'.format(self.name, format_exception_message(e)))
-            data_sent.send(self, callback_name="Workflow Arguments Invalid", object_type="Workflow")
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowArgumentsInvalid)
 
     def __execute_action(self, action, instance):
         try:
@@ -244,7 +243,7 @@ class Workflow(ExecutionElement):
             data_json = json.dumps(data)
         except TypeError:
             data_json = str(data)
-        data_sent.send(self, callback_name="Workflow Shutdown", object_type="Workflow", data=data_json)
+        WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowShutdown, data=data_json)
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self._accumulator))
 
     def update_from_json(self, json_in):

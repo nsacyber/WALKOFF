@@ -1,7 +1,5 @@
 import json
 import os
-from collections import OrderedDict
-from os.path import join
 
 import core.case.database as case_database
 import core.case.subscription as case_subs
@@ -342,11 +340,12 @@ class TestCaseServer(ServerTestCase):
             self.__assert_subscriptions_synced(case)
 
     def test_display_possible_subscriptions(self):
-        with open(join('.', 'data', 'events.json')) as f:
-            expected_response = json.loads(f.read(), object_pairs_hook=OrderedDict)
-        expected_response = [{'type': element_type, 'events': events}
-                             for element_type, events in expected_response.items()]
-        response = self.app.get('/availablesubscriptions', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertListEqual(response, expected_response)
+        response = self.get_with_status_check('/api/availablesubscriptions', headers=self.headers)
+        from core.events import EventType, WalkoffEvent
+        self.assertSetEqual({event['type'] for event in response},
+                            {event.name for event in EventType if event != EventType.other})
+        for event_type in (event.name for event in EventType if event != EventType.other):
+            events = next((event['events'] for event in response if event['type'] == event_type))
+            self.assertSetEqual(set(events),
+                                {event.signal_name for event in WalkoffEvent if event.event_type.name == event_type})
+

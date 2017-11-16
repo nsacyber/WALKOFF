@@ -1,7 +1,7 @@
 from functools import total_ordering
 import logging
 
-from core.case.callbacks import data_sent
+from core.events import WalkoffEvent
 from core.executionelements.executionelement import ExecutionElement
 
 logger = logging.getLogger(__name__)
@@ -42,12 +42,12 @@ class Branch(ExecutionElement):
     def execute(self, data_in, accumulator):
         if data_in is not None and data_in.status == self.status:
             if all(condition.execute(data_in=data_in.result, accumulator=accumulator) for condition in self.conditions):
-                data_sent.send(self, callback_name="Branch Taken", object_type="Branch")
+                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.BranchTaken)
                 logger.debug('Branch is valid for input {0}'.format(data_in))
                 return self.destination_uid
             else:
                 logger.debug('Branch is not valid for input {0}'.format(data_in))
-                data_sent.send(self, callback_name="Branch Not Taken", object_type="Branch")
+                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.BranchNotTaken)
                 return None
         else:
             return None

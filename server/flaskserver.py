@@ -3,14 +3,12 @@ import logging
 import os
 
 from flask import render_template, send_from_directory
-from flask_jwt_extended import jwt_required
 
 import core.config.config
 import core.config.paths
 from core import helpers
 from server import app
 from server.context import running_context
-from server.security import roles_accepted_for_resources
 from . import database
 
 logger = logging.getLogger(__name__)
@@ -28,7 +26,6 @@ def client_app_folder(filename):
 @app.route('/playbook')
 @app.route('/scheduler')
 @app.route('/devices')
-# @app.route('/triggers')
 @app.route('/cases')
 @app.route('/settings')
 def default():
@@ -43,13 +40,6 @@ def app_page(interface_name):
 @app.route('/login')
 def login_page():
     return render_template("login.html")
-
-
-@app.route('/availablesubscriptions', methods=['GET'])
-@jwt_required
-@roles_accepted_for_resources('cases')
-def display_possible_subscriptions():
-    return json.dumps(core.config.config.possible_events)
 
 
 def write_playbook_to_file(playbook_name):

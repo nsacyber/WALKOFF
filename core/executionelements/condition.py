@@ -1,6 +1,6 @@
 import logging
 
-from core.case.callbacks import data_sent
+from core.events import WalkoffEvent
 from core.executionelements.executionelement import ExecutionElement
 from core.helpers import get_condition_api, InvalidArgument, format_exception_message, split_api_params
 from core.argument import Argument
@@ -44,17 +44,17 @@ class Condition(ExecutionElement):
             args = validate_condition_parameters(self._api, self.arguments, self.action_name, accumulator=accumulator)
             logger.debug('Arguments passed to condition {} are valid'.format(self.uid))
             ret = self._condition_executable(**args)
-            data_sent.send(self, callback_name="Condition Success", object_type="Condition")
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionSuccess)
             return ret
         except InvalidArgument as e:
             logger.error('Condition {0} has invalid input {1} which was converted to {2}. Error: {3}. '
                          'Returning False'.format(self.action_name, data_in, data, format_exception_message(e)))
-            data_sent.send(self, callback_name="Condition Error", object_type="Condition")
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionError)
             return False
         except Exception as e:
             logger.error('Error encountered executing '
                          'condition {0} with arguments {1} and value {2}: '
                          'Error {3}. Returning False'.format(self.action_name, self.arguments, data,
                                                              format_exception_message(e)))
-            data_sent.send(self, callback_name="Condition Error", object_type="Condition")
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionError)
             return False

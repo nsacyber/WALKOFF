@@ -1,9 +1,5 @@
 import logging
 
-from apscheduler.events import (EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED,
-                                EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED,
-                                EVENT_SCHEDULER_RESUMED)
-
 from core.case import database
 
 subscriptions = {}
@@ -122,39 +118,3 @@ def remove_subscription_node(case, originator):
     global subscriptions
     if case in subscriptions:
         subscriptions[case].pop(originator, False)
-
-
-scheduler_event_conversion = {'Scheduler Start': EVENT_SCHEDULER_START,
-                              'Scheduler Shutdown': EVENT_SCHEDULER_SHUTDOWN,
-                              'Scheduler Paused': EVENT_SCHEDULER_PAUSED,
-                              'Scheduler Resumed': EVENT_SCHEDULER_RESUMED,
-                              'Job Added': EVENT_JOB_ADDED,
-                              'Job Removed': EVENT_JOB_REMOVED,
-                              'Job Executed': EVENT_JOB_EXECUTED,
-                              'Job Error': EVENT_JOB_ERROR}
-
-
-def convert_from_event_names(events):
-    return [scheduler_event_conversion[event] for event in events if event in scheduler_event_conversion]
-
-
-def convert_to_event_names(events):
-    """
-    Converts events to controller event names if event is a controller event
-    
-    Args:
-        events (list[str, int]): Events to be converted
-        
-    Returns:
-        List of event identifiers in which the controller events have been converted to their string representations
-    """
-    result = []
-    for event in events:
-        try:
-            code = int(event)
-            for key in scheduler_event_conversion:
-                if scheduler_event_conversion[key] == code:
-                    result.append(key)
-        except (TypeError, ValueError, KeyError):
-            result.append(event)
-    return result

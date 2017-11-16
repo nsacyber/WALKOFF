@@ -10,7 +10,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from core.case import callbacks
+from core.events import WalkoffEvent
 
 logger = logging.getLogger(__name__)
 
@@ -249,14 +249,14 @@ class Scheduler(object):
                 logger.warning('Cannot resume scheduled workflow {}. Workflow ID not found'.format(job_id))
 
     def __scheduler_listener(self):
-        event_selector_map = {EVENT_SCHEDULER_START: (lambda: callbacks.SchedulerStart.send(self)),
-                              EVENT_SCHEDULER_SHUTDOWN: (lambda: callbacks.SchedulerShutdown.send(self)),
-                              EVENT_SCHEDULER_PAUSED: (lambda: callbacks.SchedulerPaused.send(self)),
-                              EVENT_SCHEDULER_RESUMED: (lambda: callbacks.SchedulerResumed.send(self)),
-                              EVENT_JOB_ADDED: (lambda: callbacks.SchedulerJobAdded.send(self)),
-                              EVENT_JOB_REMOVED: (lambda: callbacks.SchedulerJobRemoved.send(self)),
-                              EVENT_JOB_EXECUTED: (lambda: callbacks.SchedulerJobExecuted.send(self)),
-                              EVENT_JOB_ERROR: (lambda: callbacks.SchedulerJobError.send(self))}
+        event_selector_map = {EVENT_SCHEDULER_START: (lambda: WalkoffEvent.SchedulerStart.send(self)),
+                              EVENT_SCHEDULER_SHUTDOWN: (lambda: WalkoffEvent.SchedulerShutdown.send(self)),
+                              EVENT_SCHEDULER_PAUSED: (lambda: WalkoffEvent.SchedulerPaused.send(self)),
+                              EVENT_SCHEDULER_RESUMED: (lambda: WalkoffEvent.SchedulerResumed.send(self)),
+                              EVENT_JOB_ADDED: (lambda: WalkoffEvent.SchedulerJobAdded.send(self)),
+                              EVENT_JOB_REMOVED: (lambda: WalkoffEvent.SchedulerJobRemoved.send(self)),
+                              EVENT_JOB_EXECUTED: (lambda: WalkoffEvent.SchedulerJobExecuted.send(self)),
+                              EVENT_JOB_ERROR: (lambda: WalkoffEvent.SchedulerJobError.send(self))}
 
         def event_selector(event):
             try:

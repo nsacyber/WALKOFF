@@ -9,6 +9,7 @@ import apps
 import core.case.database as case_database
 import core.case.subscription as case_subscription
 import core.config.config
+from core.events import WalkoffEvent, EventType
 from core import controller
 from tests import config
 import core.config.config
@@ -33,9 +34,7 @@ class TestExecutionModes(unittest.TestCase):
     def test_start_stop_execution_loop(self):
         c = controller.Controller()
         c.load_playbook(resource=config.test_workflows_path + "testScheduler.playbook")
-        subs = {'controller': [EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED,
-                               EVENT_SCHEDULER_RESUMED, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, EVENT_JOB_EXECUTED,
-                               EVENT_JOB_ERROR]}
+        subs = {'controller': [event.signal_name for event in WalkoffEvent if event.event_type == EventType.controller]}
         case_subscription.set_subscriptions({'case1': subs})
         c.scheduler.start()
         time.sleep(0.1)
@@ -51,9 +50,7 @@ class TestExecutionModes(unittest.TestCase):
         c = controller.Controller()
         c.load_playbook(resource=config.test_workflows_path + "testScheduler.playbook")
 
-        subs = {'controller': [EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED,
-                               EVENT_SCHEDULER_RESUMED, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, EVENT_JOB_EXECUTED,
-                               EVENT_JOB_ERROR]}
+        subs = {'controller': [event.signal_name for event in WalkoffEvent if event.event_type == EventType.controller]}
         case_subscription.set_subscriptions({'pauseResume': subs})
 
         c.scheduler.start()

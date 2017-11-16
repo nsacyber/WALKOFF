@@ -6,7 +6,7 @@ from zmq.utils.strtypes import cast_unicode
 
 from core.argument import Argument
 from core import loadbalancer
-from core.case.callbacks import data_sent
+from core.events import WalkoffEvent
 from core.protobuf.build import data_pb2
 
 try:
@@ -40,7 +40,7 @@ def mock_shutdown_pool(self, num_workflows=0):
         self.manager.pending_workflows.put("Exit")
         self.manager_thread.join(timeout=1)
     self.threading_is_initialized = False
-    data_sent.receivers = {}
+    WalkoffEvent.CommonWorkflowSignal.signal.receivers = {}
     self.cleanup_threading()
     return
 
@@ -57,8 +57,8 @@ class MockLoadBalancer(object):
             self.on_data_sent(sender, **kwargs)
 
         self.handle_data_sent = handle_data_sent
-        if not data_sent.receivers:
-            data_sent.connect(handle_data_sent)
+        if not WalkoffEvent.CommonWorkflowSignal.signal.receivers:
+            WalkoffEvent.CommonWorkflowSignal.connect(handle_data_sent)
 
     def on_data_sent(self, sender, **kwargs):
         if self.exec_uid or not hasattr(sender, "_execution_uid"):
@@ -129,15 +129,22 @@ class MockReceiveQueue(loadbalancer.Receiver):
 
     def send(self, sender, kwargs):
         global workflows_executed
+        event = kwargs['event']
 
-        callback_name = kwargs['callback_name']
+        if event is not None:
+            if event.requires_data():
+                event.send(sender, data=kwargs['data'])
+            else:
+                event.send(sender)
+            if event == WalkoffEvent.WorkflowShutdown:
+                workflows_executed += 1
 
-        callback = self.callback_lookup[callback_name]
-        data = kwargs['data'] if callback[1] else {}
-        loadbalancer.Receiver.send_callback(callback[0], sender, data)
-
-        if callback_name == 'Workflow Shutdown':
-            workflows_executed += 1
+        # callback = self.callback_lookup[callback_name]
+        # data = kwargs['data'] if callback[1] else {}
+        # loadbalancer.Receiver.send_callback(callback[0], sender, data)
+        #
+        # if callback_name == 'Workflow Shutdown':
+        #     workflows_executed += 1
 
 
 class MockRequestQueue(object):

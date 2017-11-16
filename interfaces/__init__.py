@@ -1,5 +1,5 @@
 from functools import wraps
-from core.case.callbacks import WorkflowExecutionStart, WorkflowShutdown, ActionStarted
+from core.events import WalkoffEvent
 import logging
 
 _logger = logging.getLogger(__name__)
@@ -34,8 +34,8 @@ these callbacks should work on class decorators
 
 class InterfaceEventDispatch(object):
 
-    _callback_lookup = {'Workflow Started': WorkflowExecutionStart, 'Workflow Shutdown': WorkflowShutdown,
-                        'Action Started': ActionStarted}
+    _callback_lookup = {'Workflow Started': WalkoffEvent.WorkflowExecutionStart, 'Workflow Shutdown': WalkoffEvent.WorkflowShutdown,
+                        'Action Started': WalkoffEvent.ActionStarted}
     __step_callback_names = ('Function Execution Success', 'Step Started', 'Input Invalid', 'Step Execution Success',
                              'Step Execution Error', 'Trigger Step Awaiting Data', 'Trigger Step Taken',
                              'Trigger Step Not Taken')
@@ -83,7 +83,6 @@ class InterfaceEventDispatch(object):
                     pass
         return handler
 
-
     def _make_dispatch_method(self, callback_name):
         def dispatch_method(self, sender, **kwargs):
             callbacks = self.__get_callbacks(sender, callback_name)
@@ -125,7 +124,6 @@ class InterfaceEventDispatch(object):
 
 
 dispatcher = InterfaceEventDispatch()
-print(WorkflowExecutionStart.receivers)
 
 @dispatcher.on_workflow_shutdown('6645b2d61a514cbd8c8ce1094fa63be1')
 def x(sender, **kwargs):

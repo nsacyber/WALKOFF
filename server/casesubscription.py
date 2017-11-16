@@ -2,7 +2,6 @@ import json
 import logging
 
 import core.case.subscription
-from core.case.subscription import convert_from_event_names, convert_to_event_names
 from .database import db, TrackModificationsMixIn
 
 
@@ -36,8 +35,6 @@ class CaseSubscription(db.Model, TrackModificationsMixIn):
             self.subscriptions = '[]'
         finally:
             subscriptions = {subscription['uid']: subscription['events'] for subscription in subscriptions}
-            if 'controller' in subscriptions:
-                subscriptions['controller'] = convert_from_event_names(subscriptions['controller'])
             core.case.subscription.add_cases({name: subscriptions})
 
     def as_json(self):
@@ -61,8 +58,6 @@ class CaseSubscription(db.Model, TrackModificationsMixIn):
         case = CaseSubscription.query.filter_by(name=case_name).first()
         if case and case_name in core.case.subscription.subscriptions:
             case_subs = core.case.subscription.subscriptions[case_name]
-            if 'controller' in case_subs:
-                case_subs['controller'] = convert_to_event_names(case_subs['controller'])
             case.subscriptions = json.dumps([{'uid': uid, 'events': events} for uid, events in case_subs.items()])
 
     @staticmethod

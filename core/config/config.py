@@ -105,15 +105,6 @@ def load_app_apis(apps_path=None):
                 __logger.error('Cannot load apps api for app {0}: Error {1}'.format(app, str(format_exception_message(e))))
 
 
-try:
-    with open(core.config.paths.events_path) as f:
-        possible_events = json.loads(f.read(), object_pairs_hook=OrderedDict)
-        possible_events = [{'type': element_type, 'events': events} for element_type, events in possible_events.items()]
-except (IOError, OSError) as e:
-    __logger.error('Cannot load events metadata. Returning empty list. Error: {0}'.format(e))
-    possible_events = []
-
-
 def initialize():
     load_config()
     from apps import cache_apps

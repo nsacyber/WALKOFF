@@ -1,8 +1,6 @@
 import json
 import os
 
-from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
-    EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
 from flask import request, current_app
 from flask_jwt_extended import jwt_required
 
@@ -10,7 +8,7 @@ import core.case.database as case_database
 import core.case.subscription as case_subscription
 import core.config.config
 import core.config.paths
-from core.case.subscription import delete_cases, convert_to_event_names
+from core.case.subscription import delete_cases
 from core.helpers import format_exception_message
 from server.database import db
 from server.returncodes import *
@@ -88,8 +86,6 @@ def update_case():
             if 'subscriptions' in data:
                 case_obj.subscriptions = json.dumps(data['subscriptions'])
                 subscriptions = {subscription['uid']: subscription['events'] for subscription in data['subscriptions']}
-                if 'controller' in subscriptions:
-                    subscriptions['controller'] = convert_to_event_names(subscriptions['controller'])
                 for uid, events in subscriptions.items():
                     case_subscription.modify_subscription(case_name, uid, events)
             db.session.commit()
@@ -191,13 +187,3 @@ def read_all_events(case_id):
         return result, SUCCESS
 
     return __func()
-
-
-__scheduler_event_conversion = {'Scheduler Start': EVENT_SCHEDULER_START,
-                                'Scheduler Shutdown': EVENT_SCHEDULER_SHUTDOWN,
-                                'Scheduler Paused': EVENT_SCHEDULER_PAUSED,
-                                'Scheduler Resumed': EVENT_SCHEDULER_RESUMED,
-                                'Job Added': EVENT_JOB_ADDED,
-                                'Job Removed': EVENT_JOB_REMOVED,
-                                'Job Executed': EVENT_JOB_EXECUTED,
-                                'Job Error': EVENT_JOB_ERROR}

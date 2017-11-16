@@ -4,7 +4,7 @@ import apps
 from core.argument import Argument
 import core.config.config
 import core.config.paths
-from core.case import callbacks
+from core.events import WalkoffEvent
 from core.decorators import ActionResult
 from core.executionelements.condition import Condition
 from core.helpers import UnknownApp, UnknownAppAction, InvalidArgument
@@ -162,15 +162,11 @@ class TestAction(unittest.TestCase):
 
         result = {'started_triggered': False, 'result_triggered': False}
 
-        @callbacks.data_sent.connect
         def callback_is_sent(sender, **kwargs):
             if isinstance(sender, Action):
-                self.assertIs(sender, action)
-                self.assertIn('callback_name', kwargs)
-                self.assertIn(kwargs['callback_name'], ('Action Started', 'Action Execution Success'))
-                self.assertIn('object_type', kwargs)
-                self.assertEqual(kwargs['object_type'], 'Action')
-                if kwargs['callback_name'] == 'Action Started':
+                self.assertIn('event', kwargs)
+                self.assertIn(kwargs['event'], (WalkoffEvent.ActionStarted, WalkoffEvent.ActionExecutionSuccess))
+                if kwargs['event'] == WalkoffEvent.ActionStarted:
                     result['started_triggered'] = True
                 else:
                     self.assertIn('data', kwargs)
@@ -178,6 +174,7 @@ class TestAction(unittest.TestCase):
                     self.assertEqual(data['status'], 'Success')
                     self.assertAlmostEqual(data['result'], 8.9)
                     result['result_triggered'] = True
+        WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
 
         action.execute(instance.instance, {})
         self.assertTrue(result['started_triggered'])
@@ -227,19 +224,15 @@ class TestAction(unittest.TestCase):
 
         result = {'started_triggered': False, 'result_triggered': False}
 
-        @callbacks.data_sent.connect
         def callback_is_sent(sender, **kwargs):
             if isinstance(sender, Action):
-                self.assertIs(sender, action)
-                self.assertIn('callback_name', kwargs)
-                self.assertIn(kwargs['callback_name'], ('Action Started', 'Action Argument Invalid'))
-                self.assertIn('object_type', kwargs)
-                self.assertEqual(kwargs['object_type'], 'Action')
-                if kwargs['callback_name'] == 'Action Started':
+                self.assertIn('event', kwargs)
+                self.assertIn(kwargs['event'], (WalkoffEvent.ActionStarted, WalkoffEvent.ActionArgumentsInvalid))
+                if kwargs['event'] == WalkoffEvent.ActionStarted:
                     result['started_triggered'] = True
                 else:
                     result['result_triggered'] = True
-
+        WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
         with self.assertRaises(InvalidArgument):
             action.execute(instance.instance, accumulator)
 
@@ -272,18 +265,15 @@ class TestAction(unittest.TestCase):
 
         result = {'started_triggered': False, 'result_triggered': False}
 
-        @callbacks.data_sent.connect
         def callback_is_sent(sender, **kwargs):
             if isinstance(sender, Action):
-                self.assertIs(sender, action)
-                self.assertIn('callback_name', kwargs)
-                self.assertIn(kwargs['callback_name'], ('Action Started', 'Action Execution Error'))
-                self.assertIn('object_type', kwargs)
-                self.assertEqual(kwargs['object_type'], 'Action')
-                if kwargs['callback_name'] == 'Action Started':
+                self.assertIn('event', kwargs)
+                self.assertIn(kwargs['event'], (WalkoffEvent.ActionStarted, WalkoffEvent.ActionExecutionError))
+                if kwargs['event'] == WalkoffEvent.ActionStarted:
                     result['started_triggered'] = True
-                elif kwargs['callback_name'] == 'Action Execution Error':
+                elif kwargs['event'] == WalkoffEvent.ActionExecutionError:
                     result['result_triggered'] = True
+        WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
 
         with self.assertRaises(CustomException):
             action.execute(instance.instance, {})
@@ -362,11 +352,10 @@ class TestAction(unittest.TestCase):
 
         result = {'triggered': False}
 
-        @callbacks.data_sent.connect
         def callback_is_sent(sender, **kwargs):
-            if kwargs['callback_name'] == "Trigger Action Taken":
+            if kwargs['event'] == WalkoffEvent.TriggerActionTaken:
                 result['triggered'] = True
-
+        WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
         action.execute(instance.instance, {})
         self.assertTrue(result['triggered'])
 
@@ -379,13 +368,13 @@ class TestAction(unittest.TestCase):
         trigger_taken = {'triggered': 0}
         trigger_not_taken = {'triggered': 0}
 
-        @callbacks.data_sent.connect
         def callback_is_sent(sender, **kwargs):
-            if kwargs['callback_name'] == "Trigger Action Taken":
+            if kwargs['event'] == WalkoffEvent.TriggerActionTaken:
                 trigger_taken['triggered'] += 1
-            elif kwargs['callback_name'] == "Trigger Action Not Taken":
+            elif kwargs['event'] == WalkoffEvent.TriggerActionNotTaken:
                 action.send_data_to_trigger({"data_in": {"data": 'aaa'}})
                 trigger_not_taken['triggered'] += 1
+        WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
 
         action.execute(instance.instance, {})
         self.assertEqual(trigger_taken['triggered'], 1)

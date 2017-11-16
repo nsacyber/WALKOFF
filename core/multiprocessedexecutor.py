@@ -12,7 +12,7 @@ import zmq.green as zmq
 import core.config.config
 import core.config.paths
 from core import loadbalancer
-from core.case import callbacks
+from core.events import WalkoffEvent
 from core.threadauthenticator import ThreadAuthenticator
 
 logger = logging.getLogger(__name__)
@@ -38,17 +38,17 @@ class MultiprocessedExecutor(object):
         def handle_workflow_wait(sender, **kwargs):
             self.__trigger_workflow_status_wait(sender, **kwargs)
         self.handle_workflow_wait = handle_workflow_wait
-        callbacks.TriggerActionAwaitingData.connect(handle_workflow_wait)
+        WalkoffEvent.TriggerActionAwaitingData.connect(handle_workflow_wait)
 
         def handle_workflow_continue(sender, **kwargs):
             self.__trigger_workflow_status_continue(sender, **kwargs)
         self.handle_workflow_continue = handle_workflow_continue
-        callbacks.TriggerActionTaken.connect(handle_workflow_continue)
+        WalkoffEvent.TriggerActionTaken.connect(handle_workflow_continue)
 
         def handle_workflow_shutdown(sender, **kwargs):
             self.__remove_workflow_status(sender, **kwargs)
         self.handle_data_sent = handle_workflow_shutdown
-        callbacks.WorkflowShutdown.connect(handle_workflow_shutdown)
+        WalkoffEvent.WorkflowShutdown.connect(handle_workflow_shutdown)
 
         self.ctx = None
         self.auth = None
@@ -192,7 +192,7 @@ class MultiprocessedExecutor(object):
         workflow_json['execution_uid'] = uid
         self.manager.add_workflow(workflow_json)
 
-        callbacks.SchedulerJobExecuted.send(self)
+        WalkoffEvent.SchedulerJobExecuted.send(self)
         # TODO: Find some way to catch a validation error. Maybe pre-validate the argument in the controller?
         return uid
 

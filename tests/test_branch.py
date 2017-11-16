@@ -2,7 +2,7 @@ import unittest
 import uuid
 
 import apps
-from core.case import callbacks
+from core.events import WalkoffEvent
 from core.argument import Argument
 import core.config.config
 from core.executionelements.condition import Condition
@@ -112,14 +112,13 @@ class TestBranch(unittest.TestCase):
 
         result = {'triggered': False}
 
-        @callbacks.data_sent.connect
         def validate_sent_data(sender, **kwargs):
             if isinstance(sender, Branch):
-                self.assertIn('callback_name', kwargs)
-                self.assertEqual(kwargs['callback_name'], 'Branch Taken')
-                self.assertIn('object_type', kwargs)
-                self.assertEqual(kwargs['object_type'], 'Branch')
+                self.assertIn('event', kwargs)
+                self.assertEqual(kwargs['event'], WalkoffEvent.BranchTaken)
                 result['triggered'] = True
+
+        WalkoffEvent.CommonWorkflowSignal.connect(validate_sent_data)
 
         self.assertEqual(workflow.get_branch(action, {}), '2')
         self.assertTrue(result['triggered'])

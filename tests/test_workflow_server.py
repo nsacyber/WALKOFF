@@ -9,7 +9,7 @@ import core.case.database as case_database
 import core.case.subscription
 import core.config.paths
 from core import helpers
-from core.case.callbacks import WorkflowShutdown
+from core.events import WalkoffEvent
 from core.executionelements.branch import Branch
 from core.executionelements.action import Action
 from server import flaskserver as flask_server
@@ -564,11 +564,11 @@ class TestWorkflowServer(ServerTestCase):
         setup_subscriptions_for_action(workflow.uid, action_uids)
         start = datetime.utcnow()
 
-        @WorkflowShutdown.connect
         def wait_for_completion(sender, **kwargs):
             sync.set()
 
-        WorkflowShutdown.connect(wait_for_completion)
+        WalkoffEvent.WorkflowShutdown.connect(wait_for_completion)
+
 
         response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
                                                headers=self.headers,
@@ -622,11 +622,10 @@ class TestWorkflowServer(ServerTestCase):
         setup_subscriptions_for_action(workflow.uid, action_uids)
         start = datetime.utcnow()
 
-        @WorkflowShutdown.connect
         def wait_for_completion(sender, **kwargs):
             sync.set()
 
-        WorkflowShutdown.connect(wait_for_completion)
+        WalkoffEvent.WorkflowShutdown.connect(wait_for_completion)
 
         response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
                                                headers=self.headers,

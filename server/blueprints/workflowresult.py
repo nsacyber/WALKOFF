@@ -5,7 +5,7 @@ from flask import Blueprint, Response
 from gevent import sleep
 from gevent.event import Event, AsyncResult
 
-from core.case.callbacks import WorkflowShutdown, ActionExecutionSuccess, ActionExecutionError
+from core.events import WalkoffEvent
 from core.helpers import convert_argument
 from server.security import jwt_required_in_query
 
@@ -38,7 +38,7 @@ def __workflow_actions_event_stream():
         __action_signal.wait()
 
 
-@WorkflowShutdown.connect
+
 def __workflow_ended_callback(sender, **kwargs):
     data = 'None'
     if 'data' in kwargs:
@@ -51,9 +51,9 @@ def __workflow_ended_callback(sender, **kwargs):
     __workflow_shutdown_event_json.set(result)
     __sync_signal.set()
     __sync_signal.clear()
+WalkoffEvent.WorkflowShutdown.connect(__workflow_ended_callback)
 
 
-@ActionExecutionSuccess.connect
 def __action_ended_callback(sender, **kwargs):
     action_arguments = [convert_argument(argument) for argument in list(sender.arguments)]
     result = {'action_name': sender.name,
@@ -67,9 +67,9 @@ def __action_ended_callback(sender, **kwargs):
     __action_signal.set()
     __action_signal.clear()
     sleep(0)
+WalkoffEvent.ActionExecutionSuccess.connect(__action_ended_callback)
 
 
-@ActionExecutionError.connect
 def __action_error_callback(sender, **kwargs):
     action_arguments = [convert_argument(argument) for argument in list(sender.arguments)]
     result = {'action_name': sender.name,
@@ -83,6 +83,7 @@ def __action_error_callback(sender, **kwargs):
     __action_signal.set()
     __action_signal.clear()
     sleep(0)
+WalkoffEvent.ActionExecutionError.connect(__action_error_callback)
 
 
 @workflowresults_page.route('/stream', methods=['GET'])

@@ -1,11 +1,11 @@
 import logging
 from copy import deepcopy
 
-from core.case.callbacks import data_sent
+from core.events import WalkoffEvent
 from core.executionelements.executionelement import ExecutionElement
 from core.argument import Argument
 from core.helpers import get_transform_api, InvalidArgument, split_api_params
-from core.validator import validate_transform_parameters, validate_parameter
+from core.validator import validate_transform_parameters
 from apps import get_transform
 
 logger = logging.getLogger(__name__)
@@ -49,13 +49,13 @@ class Transform(ExecutionElement):
             self.arguments.update({self._data_param_name: Argument(self._data_param_name, value=data_in)})
             args = validate_transform_parameters(self._api, self.arguments, self.action_name, accumulator=accumulator)
             result = self._transform_executable(**args)
-            data_sent.send(self, callback_name="Transform Success", object_type="Transform")
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformSuccess)
             return result
         except InvalidArgument as e:
-            data_sent.send(self, callback_name="Transform Error", object_type="Transform")
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformError)
             logger.error('Transform {0} has invalid input {1}. Error: {2}. '
                          'Returning unmodified data'.format(self.action_name, original_data_in, str(e)))
         except Exception as e:
-            data_sent.send(self, callback_name="Transform Error", object_type="Transform")
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformError)
             logger.error('Transform {0} encountered an error: {1}. Returning unmodified data'.format(self.action_name, str(e)))
         return original_data_in

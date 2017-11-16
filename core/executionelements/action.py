@@ -8,7 +8,7 @@ from gevent.event import AsyncResult
 import core.config.config
 from apps import get_app_action, is_app_action_bound
 from core import contextdecorator
-from core.case.callbacks import data_sent
+from core.events import WalkoffEvent
 from core.decorators import ActionResult
 from core.executionelements.executionelement import ExecutionElement
 from core.helpers import get_app_action_api, InvalidArgument, format_exception_message
@@ -144,17 +144,12 @@ class Action(ExecutionElement):
         Returns:
             The result of the executed function.
         """
-        from core.jsonelementreader import JsonElementReader
-        data = {"app_name": self.app_name,
-                "action_name": self.action_name,
-                "name": self.name,
-                "arguments": JsonElementReader.read(self.arguments)}
-
         self._execution_uid = str(uuid.uuid4())
-        data_sent.send(self, callback_name="Action Started", object_type="Action")
+
+        WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionStarted)
 
         if self.triggers:
-            data_sent.send(self, callback_name="Trigger Action Awaiting Data", object_type="Action")
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionAwaitingData)
             logger.debug('Trigger Action {} is awaiting data'.format(self.name))
             self._wait_for_trigger(accumulator)
 
@@ -166,20 +161,19 @@ class Action(ExecutionElement):
             else:
                 result = self._action_executable(**args)
 
-            data_sent.send(self, callback_name="Action Execution Success", object_type="Action",
-                           data=result.as_json())
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionSuccess, data=result.as_json())
         except InvalidArgument as e:
             formatted_error = format_exception_message(e)
             logger.error('Error calling action {0}. Error: {1}'.format(self.name, formatted_error))
-            data_sent.send(self, callback_name="Action Argument Invalid", object_type="Action")
+            #TODO: Should this event return the error?
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionArgumentsInvalid)
             self._output = ActionResult('error: {0}'.format(formatted_error), 'InvalidArguments')
             raise
         except Exception as e:
             formatted_error = format_exception_message(e)
             logger.exception('Error calling action {0}. Error: {1}'.format(self.name, formatted_error))
             self._output = ActionResult('error: {0}'.format(formatted_error), 'UnhandledException')
-            data_sent.send(self, callback_name="Action Execution Error", object_type="Action",
-                           data=self._output.as_json())
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionError, data=self._output.as_json())
             raise
         else:
             self._output = result
@@ -197,7 +191,7 @@ class Action(ExecutionElement):
             data_in = data['data_in']
 
             if all(flag.execute(data_in=data_in, accumulator=accumulator) for flag in self.triggers):
-                data_sent.send(self, callback_name="Trigger Action Taken", object_type="Action")
+                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionTaken)
                 logger.debug('Trigger is valid for input {0}'.format(data_in))
                 accumulator[self.name] = data_in
 
@@ -210,6 +204,6 @@ class Action(ExecutionElement):
                 break
             else:
                 logger.debug('Trigger is not valid for input {0}'.format(data_in))
-                data_sent.send(self, callback_name="Trigger Action Not Taken", object_type="Action")
+                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionNotTaken)
 
             gevent.sleep(0.1)

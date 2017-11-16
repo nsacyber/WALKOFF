@@ -8,16 +8,26 @@ import core.config.paths
 from core import helpers
 from server.returncodes import SUCCESS
 from server.security import roles_accepted_for_resources
+from core.events import WalkoffEvent, EventType
 
 
 def read_all_possible_subscriptions():
+    event_dict = {EventType.playbook.name: []}
+    for event in WalkoffEvent:
+        if event.event_type.name not in event_dict:
+            event_dict[event.event_type.name] = [event.signal_name]
+        else:
+            event_dict[event.event_type.name].append(event.signal_name)
+    ret = [{'type': event_type.name, 'events': sorted(event_dict[event_type.name])}
+           for event_type in EventType if event_type != EventType.other]
 
     @jwt_required
     @roles_accepted_for_resources('cases')
     def __func():
-        return core.config.config.possible_events, SUCCESS
+        return ret, SUCCESS
 
     return __func()
+
 
 def read_all_interfaces():
 

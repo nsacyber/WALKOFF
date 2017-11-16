@@ -6,7 +6,7 @@ from os import path
 import apps
 import core.config.config
 import core.controller
-from core.case.callbacks import WorkflowExecutionStart, WorkflowPaused, WorkflowResumed
+from core.events import WalkoffEvent
 from tests import config
 from tests.util.case_db_help import *
 from tests.util.thread_control import modified_setup_worker_env
@@ -124,23 +124,23 @@ class TestZMQCommunication(unittest.TestCase):
         result['paused'] = False
         result['resumed'] = False
 
-        @WorkflowPaused.connect
         def workflow_paused_listener(sender, **kwargs):
             result['paused'] = True
             self.controller.resume_workflow(uid)
+        WalkoffEvent.WorkflowPaused.connect(workflow_paused_listener)
 
-        @WorkflowResumed.connect
         def workflow_resumed_listener(sender, **kwargs):
             result['resumed'] = True
+        WalkoffEvent.WorkflowResumed.connect(workflow_resumed_listener)
 
         def pause_resume_thread():
             self.controller.pause_workflow(uid)
             return
 
-        @WorkflowExecutionStart.connect
         def action_1_about_to_begin_listener(sender, **kwargs):
             threading.Thread(target=pause_resume_thread).start()
             time.sleep(0)
+        WalkoffEvent.WorkflowExecutionStart.connect(action_1_about_to_begin_listener)
 
         uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
         self.controller.shutdown_pool(1)
