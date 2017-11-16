@@ -252,6 +252,10 @@ DeviceFieldApi:
     placeholder:
       type: string
       description: brief description of the field to be used to prompt a user
+    required:
+      type: boolean
+      default: false
+      description: Is this field required?
     schema:
       $ref: '#/definitions/ParameterSchema'
 
@@ -271,6 +275,10 @@ ParameterApi:
     placeholder:
       type: string
       description: brief description of the field to be used to prompt a user
+    required:
+      type: boolean
+      default: false
+      description: Is this parameter required
     schema:
       $ref: '#/definitions/ParameterSchema'
 
@@ -327,10 +335,6 @@ ParameterSchema:
     type:
       type: string
       enum: [string, boolean, integer, number, object, array]
-    required:
-      type: boolean
-      default: false
-      description: Is this field required?
     format:
       type: string
       enum: [date-time, email, hostname, ipv4, ipv6, uri, uri-reference, uri-template, json-pointer]

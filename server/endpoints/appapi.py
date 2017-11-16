@@ -19,9 +19,7 @@ def read_all_apps(interfaces_only=None):
     return __func()
 
 
-def extract_schema(api, unformatted_fields=None):
-    unformatted_fields = unformatted_fields if unformatted_fields is not None else ('name', 'example', 'placeholder',
-                                                                                    'description')
+def extract_schema(api, unformatted_fields=('name', 'example', 'placeholder', 'description', 'required')):
     ret = {}
     schema = {}
     for key, value in api.items():
@@ -30,6 +28,8 @@ def extract_schema(api, unformatted_fields=None):
         else:
             ret[key] = value
     ret['schema'] = schema
+    if 'schema' in ret['schema']:  # flatten the nested schema, happens when parameter is an object
+        ret['schema'].update({key: value for key, value in ret['schema'].pop('schema').items()})
     return ret
 
 
@@ -67,7 +67,7 @@ def format_all_app_actions_api(api):
 
 def format_device_api_full(api, device_name):
     device_api = {'name': device_name}
-    unformatted_fields = ('name', 'description', 'encrypted', 'placeholder')
+    unformatted_fields = ('name', 'description', 'encrypted', 'placeholder', 'required')
     if 'description' in api:
         device_api['description'] = api['description']
     device_api['fields'] = [extract_schema(device_field,

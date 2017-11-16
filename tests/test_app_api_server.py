@@ -45,6 +45,18 @@ class TestAppApiServerFuncs(ServerTestCase):
                     'schema': {'description': 'something', 'type': 'number', 'minimum': 1}}
         self.assertDictEqual(extract_schema(test_json, unformatted_fields=('name', 'example')), expected)
 
+    def test_extract_schema_with_object(self):
+        test_json = {'name': 'a', 'description': 'something', 'type': 'object',
+                     'schema': {'required': ['a', 'b'],
+                                'properties': {'a': {'type': 'string'},
+                                               'b': {'type': 'number'}}}}
+        expected = {'name': 'a', 'description': 'something',
+                     'schema': {'type': 'object',
+                                'required': ['a', 'b'],
+                                'properties': {'a': {'type': 'string'},
+                                               'b': {'type': 'number'}}}}
+        self.assertDictEqual(extract_schema(test_json), expected)
+
     def test_format_returns(self):
         returns = {'Success': {'description': 'something 1'}, 'Return2': {'schema': {'type': 'number', 'minimum': 10}}}
         expected = [{'status': 'Success', 'description': 'something 1'},
@@ -78,7 +90,7 @@ class TestAppApiServerFuncs(ServerTestCase):
             'run': 'main.Main.pause',
             'description': 'Pauses execution',
             'parameters': [
-                {'schema': {'required': True, 'type': 'number'}, 'name': 'seconds', 'description': 'Seconds to pause'}]}
+                {'schema': {'type': 'number'}, 'name': 'seconds', 'description': 'Seconds to pause', 'required': True}]}
         formatted = format_app_action_api(action_api)
         self.assertSetEqual(set(formatted.keys()), set(expected.keys()))
         self.assertEqual(formatted['run'], expected['run'])
@@ -98,7 +110,7 @@ class TestAppApiServerFuncs(ServerTestCase):
                                 {'status': 'EventTimedOut', 'description': 'Action timed out out waiting for event'}],
                     'run': 'main.Main.sample_event',
                     'event': 'Event1',
-                    'parameters': [{'schema': {'required': True, 'type': 'number'}, 'name': 'arg1'}]}
+                    'parameters': [{'schema': {'type': 'number'}, 'name': 'arg1', 'required': True}]}
 
         formatted = format_app_action_api(action_api)
         self.assertSetEqual(set(formatted.keys()), set(expected.keys()))
@@ -119,7 +131,7 @@ class TestAppApiServerFuncs(ServerTestCase):
                                  {'status': 'EventTimedOut', 'description': 'Action timed out out waiting for event'}],
                      'run': 'main.Main.sample_event',
                      'event': 'Event1',
-                     'parameters': [{'schema': {'required': True, 'type': 'number'}, 'name': 'arg1'}],
+                     'parameters': [{'schema': {'type': 'number'}, 'name': 'arg1', 'required': True}],
                      'name': 'Sample Event'}]
         action_api.update({'pause': core.config.config.app_apis['HelloWorld']['actions']['pause']})
         expected.append({
@@ -146,9 +158,9 @@ class TestAppApiServerFuncs(ServerTestCase):
         expected = {'description': 'Something',
                     'name': 'TestDev',
                     'fields': [
-                          {'name': 'username', 'placeholder': 'user', 'schema': {'type': 'string', 'required': True}},
-                          {'name': 'password', 'placeholder': 'pass', 'encrypted': True,
-                           'schema': {'type': 'string', 'required': True,'minimumLength': 6}}]}
+                          {'name': 'username', 'placeholder': 'user', 'required': True, 'schema': {'type': 'string'}},
+                          {'name': 'password', 'placeholder': 'pass', 'encrypted': True, 'required': True,
+                           'schema': {'type': 'string', 'minimumLength': 6}}]}
         self.assertSetEqual(set(formatted.keys()), set(expected.keys()))
         self.assertEqual(formatted['name'], expected['name'])
         self.assertEqual(formatted['description'], expected['description'])
