@@ -2,7 +2,8 @@
 	<!-- Label for argument with optional required icon -->
 	<label for="{{argument.name}}">
 		Argument {{id+1}}: {{argument.name}} ({{parameterSchema.type}})
-		<span *ngIf="parameterSchema.required" class="fa fa-asterisk required" title="This field is required."></span>
+		<i *ngIf="parameterApi.description != null" class="fa fa-question-circle" [title]="parameterApi.description"></i>
+		<i *ngIf="parameterApi.required" class="fa fa-asterisk required" title="This field is required."></i>
 	</label>
 
 	<!-- Columns for allowing users to specify outputs of other action as arguments for this one -->
@@ -21,22 +22,26 @@
 				<input *ngIf="parameterSchema.type === 'string' && !parameterSchema.enum" class="form-control" name="{{argument.name}}"
 				 [(ngModel)]="argument.value" [attr.minlength]="parameterSchema.minLength > 0 ? parameterSchema.minLength : null"
 				 [attr.maxlength]="parameterSchema.maxLength > 0 ? parameterSchema.maxLength : null" [attr.pattern]="parameterSchema.pattern ? parameterSchema.pattern : null"
-				 [attr.required]="parameterSchema.required" [attr.placeholder]="parameterSchema.placeholder">
+				 [attr.required]="parameterApi.required" [attr.placeholder]="parameterSchema.placeholder">
 
 				<!-- Enum types, make a select box -->
-				<select *ngIf="parameterSchema.enum" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value" [attr.required]="parameterSchema.required">
-					<option *ngIf="!parameterSchema.required" value=""></option>
+				<select *ngIf="parameterSchema.enum" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value" [attr.required]="parameterApi.required">
+					<option *ngIf="!parameterApi.required" value=""></option>
 					<option *ngFor="let i of parameterSchema.enum" [value]="i" [label]="i">{{i}}</option>
 				</select>
 
 				<!-- For numbers enter number info -->
 				<input *ngIf="parameterSchema.type === 'number' || parameterSchema.type === 'integer'" class="form-control" name="{{argument.name}}"
 				 [(ngModel)]="argument.value" type="number" [attr.min]="getMin(parameterSchema)" [attr.max]="getMax(parameterSchema)"
-				 [attr.step]="parameterSchema.multipleOf > 0 ? parameterSchema.multipleOf : null" [attr.required]="parameterSchema.required"
+				 [attr.step]="parameterSchema.multipleOf > 0 ? parameterSchema.multipleOf : null" [attr.required]="parameterApi.required"
 				 [attr.placeholder]="parameterSchema.placeholder">
 
 				<!-- Checkbox for boolean values -->
 				<input *ngIf="parameterSchema.type === 'boolean'" type="checkbox" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value">
+
+				<!-- For other types (e.g. objects and arrays), right now just put a disabled box -->
+				<input *ngIf="parameterSchema.type === 'array' || parameterSchema.type === 'object'" class="form-control"
+				 type="text" disabled="disabled" placeholder="Please use an action reference">
 			</ng-container>
 		</div>
 	</div>

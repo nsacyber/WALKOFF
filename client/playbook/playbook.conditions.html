@@ -14,7 +14,7 @@
 		</div>
 		<div class="col-xs-4">
 			<div class="form-group">
-				<button class="btn btn-primary pull-right" (click)="addCondition()"><span class="fa fa-plus"></span>Add Condition</button>
+				<button class="btn btn-primary pull-right" (click)="addCondition()"><i class="fa fa-plus"></i>Add Condition</button>
 			</div>
 		</div>
 	</div>
@@ -25,9 +25,9 @@
 			</div>
 			<div class="col-xs-6">
 				<div class="pull-right">
-					<button *ngIf="id > 0" class="btn btn-primary" (click)="moveUp(id)" title="Move Up"><span class="fa fa-arrow-up"></span></button>
-					<button *ngIf="id < conditions.length - 1" class="btn btn-primary" (click)="moveDown(id)" title="Move Down"><span class="fa fa-arrow-down"></span></button>
-					<button class="btn btn-danger" (click)="removeCondition(id)" title="Remove Condition"><span class="fa fa-close"></span></button>
+					<button *ngIf="id > 0" class="btn btn-primary" (click)="moveUp(id)" title="Move Up"><i class="fa fa-arrow-up"></i></button>
+					<button *ngIf="id < conditions.length - 1" class="btn btn-primary" (click)="moveDown(id)" title="Move Down"><i class="fa fa-arrow-down"></i></button>
+					<button class="btn btn-danger" (click)="removeCondition(id)" title="Remove Condition"><i class="fa fa-close"></i></button>
 				</div>
 			</div>
 		</div>
