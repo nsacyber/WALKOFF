@@ -180,7 +180,7 @@ class TestTriggersServer(ServerTestCase):
 
         result = {"value": None}
 
-        @callbacks.FunctionExecutionSuccess.connect
+        @callbacks.ActionExecutionSuccess.connect
         def action_finished_listener(sender, **kwargs):
             result['value'] = kwargs['data']
 
