@@ -23,7 +23,7 @@ __execution_tests = [test_argument, test_execution_runtime, test_execution_eleme
                      test_app_api_validation, test_condition_transform_validation, test_app_event, test_workflow_results,
                      test_roles_pages_database, test_users_roles_database, test_page_roles_cache, test_playbook,
                      test_json_element_creator, test_json_element_reader, test_json_playbook_loader, test_playbook_store,
-                     test_scheduler, test_app_cache, test_app_base]
+                     test_scheduler, test_app_cache, test_app_base, test_events]
 execution_suite = TestSuite()
 add_tests_to_suite(execution_suite, __execution_tests)
 
@@ -32,6 +32,11 @@ __workflow_tests = [test_zmq_communication_server, test_zmq_communication, test_
 workflow_suite = TestSuite()
 add_tests_to_suite(workflow_suite, __workflow_tests)
 
+__interface_tests = [test_callback_container, test_interface_event_dispatch_helpers, test_app_action_event_dispatcher,
+                     test_app_event_dispatcher, test_event_dispatcher]
+interface_suite = TestSuite()
+add_tests_to_suite(interface_suite, __interface_tests)
+
 full_suite = TestSuite()
-for tests in [__workflow_tests, __execution_tests, __case_tests, __server_tests]:
+for tests in [__workflow_tests, __execution_tests, __case_tests, __server_tests, __interface_tests]:
     add_tests_to_suite(full_suite, tests)

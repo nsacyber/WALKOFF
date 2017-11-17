@@ -6,7 +6,9 @@ from apscheduler.events import EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, 
 from blinker import Signal
 
 from core.case.callbacks import _add_entry_to_case_wrapper
+import logging
 
+logger = logging.getLogger(__name__)
 
 @unique
 class EventType(Enum):
@@ -21,7 +23,7 @@ class EventType(Enum):
 
 
 class WalkoffSignal(object):
-    signals = {}
+    _signals = {}
 
     def __init__(self, name, event_type, loggable=True, message=''):
         self.name = name
@@ -46,25 +48,15 @@ class WalkoffSignal(object):
     @classmethod
     def _store_callback(cls, func):
         """
-        Stores callbacks so they aren't garabage collected and the weakrefs of the signals disappear
+        Stores callbacks so they aren't garbage collected and the weak references of the signals disappear
         """
-        cls.signals[id(func)] = func
+        cls._signals[id(func)] = func
 
 
 class ControllerSignal(WalkoffSignal):
-    name_event_conversion = {
-        'Scheduler Start': EVENT_SCHEDULER_START,
-        'Scheduler Shutdown': EVENT_SCHEDULER_SHUTDOWN,
-        'Scheduler Paused': EVENT_SCHEDULER_PAUSED,
-        'Scheduler Resumed': EVENT_SCHEDULER_RESUMED,
-        'Job Added': EVENT_JOB_ADDED,
-        'Job Removed': EVENT_JOB_REMOVED,
-        'Job Executed': EVENT_JOB_EXECUTED,
-        'Job Error': EVENT_JOB_ERROR}
-
-    def __init__(self, name, message):
+    def __init__(self, name, message, scheduler_event):
         super(ControllerSignal, self).__init__(name, EventType.controller, message=message)
-        self.scheduler_event = self.name_event_conversion.get(name, 0)
+        self.scheduler_event = scheduler_event
 
 
 class WorkflowSignal(WalkoffSignal):
@@ -94,14 +86,14 @@ class TransformSignal(WalkoffSignal):
 
 @unique
 class WalkoffEvent(Enum):
-    SchedulerStart = ControllerSignal('Scheduler Start', 'Scheduler started')
-    SchedulerShutdown = ControllerSignal('Scheduler Shutdown', 'Scheduler shutdown')
-    SchedulerPaused = ControllerSignal('Scheduler Paused', 'Scheduler paused')
-    SchedulerResumed = ControllerSignal('Scheduler Resumed', 'Scheduler resumed')
-    SchedulerJobAdded = ControllerSignal('Job Added', 'Job added')
-    SchedulerJobRemoved = ControllerSignal('Job Removed', 'Job removed')
-    SchedulerJobExecuted = ControllerSignal('Job Executed', 'Job executed successfully')
-    SchedulerJobError = ControllerSignal('Job Error', 'Job executed with error')
+    SchedulerStart = ControllerSignal('Scheduler Start', 'Scheduler started', EVENT_SCHEDULER_START)
+    SchedulerShutdown = ControllerSignal('Scheduler Shutdown', 'Scheduler shutdown', EVENT_SCHEDULER_SHUTDOWN)
+    SchedulerPaused = ControllerSignal('Scheduler Paused', 'Scheduler paused', EVENT_SCHEDULER_PAUSED)
+    SchedulerResumed = ControllerSignal('Scheduler Resumed', 'Scheduler resumed', EVENT_SCHEDULER_RESUMED)
+    SchedulerJobAdded = ControllerSignal('Job Added', 'Job added', EVENT_JOB_ADDED)
+    SchedulerJobRemoved = ControllerSignal('Job Removed', 'Job removed', EVENT_JOB_REMOVED)
+    SchedulerJobExecuted = ControllerSignal('Job Executed', 'Job executed successfully', EVENT_JOB_EXECUTED)
+    SchedulerJobError = ControllerSignal('Job Error', 'Job executed with error', EVENT_JOB_ERROR)
 
     WorkflowExecutionStart = WorkflowSignal('Workflow Execution Start', 'Workflow execution started')
     AppInstanceCreated = WorkflowSignal('App Instance Created', 'New app instance created')
@@ -141,13 +133,6 @@ class WalkoffEvent(Enum):
     @property
     def event_type(self):
         return self.value.event_type
-
-    @classmethod
-    def send_from_event_name(cls, event_name, sender, **kwargs):
-        event = getattr(cls, event_name, None)
-        if event is not None:
-            event.value.send(sender, **kwargs)
-            # TODO: Log otherwise
 
     @classmethod
     def get_event_from_name(cls, event_name):

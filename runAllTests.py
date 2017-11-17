@@ -8,7 +8,6 @@ import logging
 import server.context
 
 
-
 def run_tests():
     logging.disable(logging.CRITICAL)
 
@@ -21,6 +20,8 @@ def run_tests():
     ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.case_suite).wasSuccessful()
     print('\nTesting Server:')
     ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.server_suite).wasSuccessful()
+    print('\nTesting Interface:')
+    ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.interface_suite).wasSuccessful()
     return ret
 
 

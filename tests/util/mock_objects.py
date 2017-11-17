@@ -179,3 +179,10 @@ class MockRequestQueue(object):
             self.push(workflow_json)
         except:
             self.push(data)
+
+
+class MockActionSender(object):
+    def __init__(self, app='', action='', device_id=0):
+        self.app = app
+        self.action = action
+        self.device_id = device_id
