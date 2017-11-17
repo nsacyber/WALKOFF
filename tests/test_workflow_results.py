@@ -30,7 +30,7 @@ class TestWorkflowResults(ServerTestCase):
             result.pop('timestamp')
             return result
         self.assertDictEqual(strip_timestamp(workflow_result.results[0].as_json()),
-                             {'input': {},
+                             {'arguments': [],
                               'app_name': 'HelloWorld',
                               'action_name': 'helloWorld',
                               'type': 'success',

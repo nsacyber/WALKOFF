@@ -37,7 +37,8 @@ export class DevicesModalComponent {
 
 	constructor (
 		private devicesService: DevicesService, private activeModal: NgbActiveModal, 
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig, private cdr: ChangeDetectorRef) {
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig, private cdr: ChangeDetectorRef,
+	) {
 		this.toastyConfig.theme = 'bootstrap';
 	}
 
@@ -150,7 +151,7 @@ export class DevicesModalComponent {
 		});
 
 		this.selectedDeviceType.fields.forEach(field => {
-			if (field.schema.required) {
+			if (field.required) {
 				if (inputs[field.name] == null ||
 					(typeof inputs[field.name] === 'string' && !inputs[field.name]) ||
 					(typeof inputs[field.name] === 'number' && inputs[field.name] === null)) {
@@ -170,7 +171,7 @@ export class DevicesModalComponent {
 					}
 					if (field.schema.enum) {
 						const enumArray: string[] = field.schema.enum.slice(0);
-						if (!field.schema.required) { enumArray.push(''); }
+						if (!field.required) { enumArray.push(''); }
 						if (enumArray.indexOf(inputs[field.name]) < 0) {
 							this._concatValidationMessage(field.name, 'You must select a value from the list.');
 						}

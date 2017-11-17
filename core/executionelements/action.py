@@ -144,6 +144,12 @@ class Action(ExecutionElement):
         Returns:
             The result of the executed function.
         """
+        from core.jsonelementreader import JsonElementReader
+        data = {"app_name": self.app_name,
+                "action_name": self.action_name,
+                "name": self.name,
+                "arguments": JsonElementReader.read(self.arguments)}
+
         self._execution_uid = str(uuid.uuid4())
         data_sent.send(self, callback_name="Action Started", object_type="Action")
 
@@ -160,7 +166,7 @@ class Action(ExecutionElement):
             else:
                 result = self._action_executable(**args)
 
-            data_sent.send(self, callback_name="Function Execution Success", object_type="Action",
+            data_sent.send(self, callback_name="Action Execution Success", object_type="Action",
                            data=result.as_json())
         except InvalidArgument as e:
             formatted_error = format_exception_message(e)
@@ -172,6 +178,8 @@ class Action(ExecutionElement):
             formatted_error = format_exception_message(e)
             logger.exception('Error calling action {0}. Error: {1}'.format(self.name, formatted_error))
             self._output = ActionResult('error: {0}'.format(formatted_error), 'UnhandledException')
+            data_sent.send(self, callback_name="Action Execution Error", object_type="Action",
+                           data=self._output.as_json())
             raise
         else:
             self._output = result

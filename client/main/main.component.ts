@@ -9,10 +9,6 @@ import { AuthService } from '../auth/auth.service';
 	templateUrl: 'client/main/main.html',
 	styleUrls: [
 		'client/main/main.css',
-		// 'client/components/main/AdminLTE.css',
-		// 'client/components/main/skin-blue.min.css',
-		// 'client/node_modules/bootstrap/dist/css/bootstrap.min.css',
-		// 'client/node_modules/font-awesome/css/font-awesome.min.css',
 	],
 	providers: [MainService, AuthService],
 })

@@ -1,4 +1,3 @@
-import { GenericObject } from '../genericObject';
 import { Argument } from '../playbook/argument';
 
 export class WorkflowResult {
@@ -16,9 +15,9 @@ export class WorkflowResult {
 	action_name: string;
 	timestamp: string;
 	/**
-	 * Type of result. "SUCCESS" or "ERROR"
+	 * Status of result. e.g. "Success" or "InvalidArguments"
 	 */
-	type: string;
+	status: string;
 	/**
 	 * List of arguments used as inputs.
 	 */
@@ -26,5 +25,5 @@ export class WorkflowResult {
 	/**
 	 * Result returned by the action executed.
 	 */
-	result: GenericObject;
+	result: any;
 }

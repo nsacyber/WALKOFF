@@ -3,36 +3,36 @@
     <div id="playbookToolbar" class=btn-toolbar role=toolbar>
         <div class="btn-group" role="group">
             <button id="new-button" type="button" class="btn btn-default" data-toggle="tooltip" title="New Workflow" (click)="newWorkflowModal()">
-                <span class="fa fa-file-o"></span>
+                <i class="fa fa-file-o"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
             <button id="load-button" type="button" class="btn btn-default" data-toggle="modal" data-target="#workflowsModal" title="Load Workflow">
-                <span class="fa fa-folder-open-o"></span>
+                <i class="fa fa-folder-open-o"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
             <button id="save-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Save Workflow" [disabled]="!loadedWorkflow"
                 (click)="save()">
-                <span class="fa fa-save"></span>
+                <i class="fa fa-save"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
             <button id="remove-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Delete Selected Nodes" [disabled]="!loadedWorkflow"
                 (click)="removeSelectedNodes()">
-                <span class="fa fa-trash-o"></span>
+                <i class="fa fa-trash-o"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
             <button id="undo-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Undo" [disabled]="!loadedWorkflow || (ur && ur.isUndoStackEmpty())"
                 (click)="ur.undo()">
-                <span class="fa fa-undo"></span>
+                <i class="fa fa-undo"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
             <button id="redo-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Redo" [disabled]="!loadedWorkflow || (ur && ur.isRedoStackEmpty())"
                 (click)="ur.redo()">
-                <span class="fa fa-repeat"></span>
+                <i class="fa fa-repeat"></i>
             </button>
         </div>
         <!-- <div class="btn-group" role="group">
@@ -44,31 +44,31 @@
         <div class="btn-group" role="group">
             <button id="copy-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Copy" [disabled]="!loadedWorkflow"
                 (click)="copy()">
-                <span class="fa fa-copy"></span>
+                <i class="fa fa-copy"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
             <button id="paste-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Paste" [disabled]="!loadedWorkflow"
                 (click)="paste()">
-                <span class="fa fa-paste"></span>
+                <i class="fa fa-paste"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
             <button id="execute-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Execute Workflow" [disabled]="!loadedWorkflow"
                 (click)="executeWorkflow()">
-                <span class="fa fa-play-circle"></span>
+                <i class="fa fa-play-circle"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
             <button id="execution-results-button" type="button" class="btn btn-default" data-toggle="modal" data-target="#executionResultsModal"
             title="Open Execution Results">
-                <span class="fa fa-table"></span>
+                <i class="fa fa-table"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
             <button id="clear-execution-highlighting-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Clear Execution Results Highlighting"
             [disabled]="!loadedWorkflow" (click)="clearExecutionHighlighting()">
-                <span class="fa fa-eraser"></span>
+                <i class="fa fa-eraser"></i>
             </button>
         </div>
         <label id="currentWorkflowText">{{currentPlaybook}} - {{currentWorkflow}}</label>
@@ -139,7 +139,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="name">Name<span class="fa fa-asterisk required" title="This field is required."></span></label>
+                        <label for="name">Name<i class="fa fa-asterisk required" title="This field is required."></i></label>
                         <input type="text" class="form-control" [(ngModel)]="selectedAction.name" name="name" required>
                     </div>
                     <div *ngIf="getDeviceApis(selectedAction.app_name).length" class="form-group">
@@ -167,13 +167,13 @@
                 <div *ngIf="selectedBranchParams && selectedBranchParams.branch"  class="parametersEditor">
                     <h3>Branch Parameters</h3>
                     <div class="form-group">
-                        <label for="status">Return Type<span class="fa fa-asterisk required" title="This field is required."></span></label>
+                        <label for="status">Return Type<i class="fa fa-asterisk required" title="This field is required."></i></label>
                         <select class="form-control" [(ngModel)]="selectedBranchParams.branch.status" name="status">
                             <option *ngFor="let i of selectedBranchParams.returnTypes" [value]="i.status" [label]="i.status">{{i.status}}</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="priority">Priority<span class="fa fa-asterisk required" title="This field is required."></span></label>
+                        <label for="priority">Priority<i class="fa fa-asterisk required" title="This field is required."></i></label>
                         <input type="number" max="999" min="1" class="form-control" [(ngModel)]="selectedBranchParams.branch.priority"
                             name="priority" required>
                     </div>
@@ -199,12 +199,12 @@
                     <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]="workflowResults" [sortType]="'multi'"
                     [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]" [limit]="25">
                         <!-- Column Templates -->
-                        <ngx-datatable-column name="UID" [flexGrow]="1">
+                        <ngx-datatable-column name="Action UID" [flexGrow]="1">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 {{row.action_uid}}
                             </ng-template>
                         </ngx-datatable-column>
-                        <ngx-datatable-column name="Name" [flexGrow]="1">
+                        <ngx-datatable-column name="Action Name" [flexGrow]="1">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 {{row.action_name}}
                             </ng-template>
@@ -214,21 +214,19 @@
                                 {{row.timestamp}}
                             </ng-template>
                         </ngx-datatable-column>
-                        <ngx-datatable-column name="Type" [flexGrow]="1">
+                        <ngx-datatable-column name="Status" [flexGrow]="1">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                {{row.type}}
+                                {{row.status}}
                             </ng-template>
                         </ngx-datatable-column>
                         <ngx-datatable-column name="Arguments" [sortable]="false" [flexGrow]="2">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <!-- {{getFriendlyArgs(row.arguments)}} -->
-                                {{row.arguments}}
+                                {{getFriendlyArguments(row.arguments)}}
                             </ng-template>
                         </ngx-datatable-column>
                         <ngx-datatable-column name="Result" [sortable]="false" [flexGrow]="4">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                <!-- {{getFriendlyObject(row.result)}} -->
-                                {{row.result}}
+                                {{getFriendlyJSON(row.result)}}
                             </ng-template>
                         </ngx-datatable-column>
                     </ngx-datatable>
@@ -288,13 +286,13 @@
                                     {{playbook.name}}
                                     <div class="pull-right">
                                         <button (click)="renamePlaybookModal(playbook.name)" class="btn btn-primary" title="Rename Playbook">
-                                            <span class="fa fa-i-cursor"></span>
+                                            <i class="fa fa-i-cursor"></i>
                                         </button>
                                         <button (click)="duplicatePlaybookModal(playbook.name)" class="btn btn-primary" title="Duplicate Playbook">
-                                            <span class="fa fa-copy"></span>
+                                            <i class="fa fa-copy"></i>
                                         </button>
                                         <button (click)="deletePlaybook(playbook.name)" class="btn btn-danger" title="Delete Playbook">
-                                            <span class="fa fa-times"></span>
+                                            <i class="fa fa-times"></i>
                                         </button>
                                     </div>
                                 </h4>
@@ -306,13 +304,13 @@
                                             <a (click)="loadWorkflow(playbook.name, workflow.name)">{{workflow.name}}</a>
                                             <div class="pull-right">
                                                 <button (click)="renameWorkflowModal(playbook.name, workflow.name)" class="btn btn-primary" title="Rename Workflow">
-                                                    <span class="fa fa-i-cursor"></span>
+                                                    <i class="fa fa-i-cursor"></i>
                                                 </button>
                                                 <button (click)="duplicateWorkflowModal(playbook.name, workflow.name)" class="btn btn-primary" title="Duplicate Workflow">
-                                                    <span class="fa fa-copy"></span>
+                                                    <i class="fa fa-copy"></i>
                                                 </button>
                                                 <button (click)="deleteWorkflow(playbook.name, workflow.name)" class="btn btn-danger" title="Delete Workflow">
-                                                    <span class="fa fa-times"></span>
+                                                    <i class="fa fa-times"></i>
                                                 </button>
                                             </div>
                                         </div>

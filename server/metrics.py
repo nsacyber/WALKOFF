@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from core.case.callbacks import ActionStarted, FunctionExecutionSuccess, ActionExecutionError, \
+from core.case.callbacks import ActionStarted, ActionExecutionSuccess, ActionExecutionError, \
     WorkflowShutdown, WorkflowExecutionStart
 
 app_metrics = {}
@@ -28,15 +28,14 @@ def __action_started_callback(sender, **kwargs):
     __action_tmp[sender.execution_uid] = datetime.utcnow()
 
 
-@FunctionExecutionSuccess.connect
+@ActionExecutionSuccess.connect
 def __action_ended_callback(sender, **kwargs):
     __update_success_action_tracker(sender.execution_uid, sender.app_name, sender.action_name)
 
 
 @ActionExecutionError.connect
 def __action_ended_error_callback(sender, **kwargs):
-    action = kwargs['data']
-    __update_error_action_tracker(action['execution_uid'], action['app_name'], action['action_name'])
+    __update_error_action_tracker(sender.execution_uid, sender.app_name, sender.action_name)
 
 
 def __update_success_action_tracker(uid, app, action):

@@ -167,7 +167,7 @@ class TestAction(unittest.TestCase):
             if isinstance(sender, Action):
                 self.assertIs(sender, action)
                 self.assertIn('callback_name', kwargs)
-                self.assertIn(kwargs['callback_name'], ('Action Started', 'Function Execution Success'))
+                self.assertIn(kwargs['callback_name'], ('Action Started', 'Action Execution Success'))
                 self.assertIn('object_type', kwargs)
                 self.assertEqual(kwargs['object_type'], 'Action')
                 if kwargs['callback_name'] == 'Action Started':
@@ -270,22 +270,26 @@ class TestAction(unittest.TestCase):
         action = Action(app_name='HelloWorld', action_name='Buggy')
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
 
-        result = {'started_triggered': False}
+        result = {'started_triggered': False, 'result_triggered': False}
 
         @callbacks.data_sent.connect
         def callback_is_sent(sender, **kwargs):
             if isinstance(sender, Action):
                 self.assertIs(sender, action)
                 self.assertIn('callback_name', kwargs)
-                self.assertEqual(kwargs['callback_name'], 'Action Started')
+                self.assertIn(kwargs['callback_name'], ('Action Started', 'Action Execution Error'))
                 self.assertIn('object_type', kwargs)
                 self.assertEqual(kwargs['object_type'], 'Action')
-                result['started_triggered'] = True
+                if kwargs['callback_name'] == 'Action Started':
+                    result['started_triggered'] = True
+                elif kwargs['callback_name'] == 'Action Execution Error':
+                    result['result_triggered'] = True
 
         with self.assertRaises(CustomException):
             action.execute(instance.instance, {})
 
         self.assertTrue(result['started_triggered'])
+        self.assertTrue(result['result_triggered'])
 
     def test_execute_global_action(self):
         action = Action(app_name='HelloWorld', action_name='global2', arguments=[Argument('arg1', value='something')])

@@ -65,7 +65,7 @@
 
 			<div class="row">
 				<div class="col-xs-6">
-					<button (click)="addCase()" class="btn btn-primary"><span class="fa fa-plus"></span>Add Case</button>
+					<button (click)="addCase()" class="btn btn-primary"><i class="fa fa-plus"></i>Add Case</button>
 				</div>
 				<div class="col-xs-6">
 					<div class="form-group row">
@@ -92,8 +92,8 @@
 				</ngx-datatable-column>
 				<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
 					<ng-template let-row="row" ngx-datatable-cell-template>
-						<button (click)="editCase(row)" class="btn btn-primary" title="Edit Case"><span class="fa fa-edit"></span></button>
-						<button (click)="deleteCase(row)" class="btn btn-danger" title="Delete Case"><span class="fa fa-times"></span></button>
+						<button (click)="editCase(row)" class="btn btn-primary" title="Edit Case"><i class="fa fa-edit"></i></button>
+						<button (click)="deleteCase(row)" class="btn btn-danger" title="Delete Case"><i class="fa fa-times"></i></button>
 					</ng-template>
 				</ngx-datatable-column>
 			</ngx-datatable>

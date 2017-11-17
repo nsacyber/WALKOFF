@@ -9,7 +9,7 @@ import core.config.config
 import core.controller
 import core.loadbalancer
 import core.multiprocessedexecutor
-from core.case.callbacks import FunctionExecutionSuccess, WorkflowExecutionStart, WorkflowPaused, WorkflowResumed
+from core.case.callbacks import ActionExecutionSuccess, WorkflowExecutionStart, WorkflowPaused, WorkflowResumed
 from core.executionelements.action import Action
 from core.executionelements.workflow import Workflow
 from core.appinstance import AppInstance
@@ -120,7 +120,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         def action_finished_listener(sender, **kwargs):
             result['value'] = kwargs['data']
 
-        FunctionExecutionSuccess.connect(action_finished_listener)
+        ActionExecutionSuccess.connect(action_finished_listener)
 
         self.controller.execute_workflow('simpleDataManipulationWorkflow', 'helloWorldWorkflow',
                                          start_arguments=arguments)

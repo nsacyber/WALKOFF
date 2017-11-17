@@ -134,7 +134,6 @@ class Workflow(ExecutionElement):
         for action in (action_ for action_ in actions if action_ is not None):
             self._executing_action = action
             logger.debug('Executing action {0} of workflow {1}'.format(action, self.name))
-            data_sent.send(self, callback_name="Branch Found", object_type="Workflow")
 
             if self._is_paused:
                 data_sent.send(self, callback_name="Workflow Paused", object_type="Workflow")
@@ -152,7 +151,6 @@ class Workflow(ExecutionElement):
                     self.__swap_action_arguments(action, start_arguments)
             self.__execute_action(action, instances[device_id])
             total_actions.append(action)
-            self._accumulator[action.uid] = action.get_output().result
         self.__shutdown(instances)
         yield
 
@@ -189,6 +187,8 @@ class Workflow(ExecutionElement):
     def get_branch(self, current_action, accumulator):
         if self.branches:
             for branch in sorted(self.branches[current_action.uid]):
+                # TODO: This here is the only hold up from getting rid of action._output.
+                # Keep whole result in accumulator
                 branch = branch.execute(current_action.get_output(), accumulator)
                 if branch is not None:
                     return branch
@@ -213,23 +213,14 @@ class Workflow(ExecutionElement):
             data_sent.send(self, callback_name="Workflow Arguments Invalid", object_type="Workflow")
 
     def __execute_action(self, action, instance):
-        data = {"app_name": action.app_name,
-                "action_name": action.action_name,
-                "name": action.name,
-                "arguments": JsonElementReader.read(action.arguments)}
         try:
             action.execute(instance=instance(), accumulator=self._accumulator)
-            data['result'] = action.get_output().as_json() if action.get_output() is not None else None
-            data['execution_uid'] = action.get_execution_uid()
-            data_sent.send(self, callback_name="Action Execution Success", object_type="Workflow", data=data)
         except Exception as e:
-            data['result'] = action.get_output().as_json() if action.get_output() is not None else None
-            data['execution_uid'] = action.get_execution_uid()
-            data_sent.send(self, callback_name="Action Execution Error", object_type="Workflow", data=data)
             if self._total_risk > 0:
                 self.accumulated_risk += float(action.risk) / self._total_risk
             logger.debug('Action {0} of workflow {1} executed with error {2}'.format(action, self.name,
                                                                                      format_exception_message(e)))
+        self._accumulator[action.uid] = action.get_output().result
 
     def __shutdown(self, instances):
         # Upon finishing shuts down instances

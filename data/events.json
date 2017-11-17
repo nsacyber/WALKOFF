@@ -13,7 +13,6 @@
   "workflow": [
     "Workflow Execution Start",
     "App Instance Created",
-    "Branch Found",
     "Workflow Shutdown",
     "Workflow Arguments Validated",
     "Workflow Arguments Invalid",
@@ -21,10 +20,9 @@
     "Workflow Resumed"
   ],
   "action": [
-    "Function Execution Success",
+    "Action Execution Success",
     "Action Started",
     "Arguments Invalid",
-    "Action Execution Success",
     "Action Execution Error",
     "Trigger Action Awaiting Data",
     "Trigger Action Taken",

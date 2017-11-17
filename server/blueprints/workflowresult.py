@@ -1,11 +1,14 @@
-from flask import Blueprint, Response
-from gevent.event import Event, AsyncResult
-from gevent import sleep
-from core.case.callbacks import WorkflowShutdown, FunctionExecutionSuccess, ActionExecutionError
-from datetime import datetime
-from server.security import jwt_required_in_query
-import server.workflowresults  # do not delete needed to register callbacks
 import json
+from datetime import datetime
+
+from flask import Blueprint, Response
+from gevent import sleep
+from gevent.event import Event, AsyncResult
+
+from core.case.callbacks import WorkflowShutdown, ActionExecutionSuccess, ActionExecutionError
+from core.helpers import convert_argument
+from server.security import jwt_required_in_query
+
 workflowresults_page = Blueprint('workflowresults_page', __name__)
 
 __workflow_shutdown_event_json = AsyncResult()
@@ -50,44 +53,31 @@ def __workflow_ended_callback(sender, **kwargs):
     __sync_signal.clear()
 
 
-def convert_argument(argument):
-    converted_arg = {}
-    for field in ('name', 'value', 'reference', 'selector'):
-        if hasattr(argument, field):
-            attribute = getattr(argument, field)
-            if field == 'value':
-                converted_arg[field] = attribute
-            elif attribute:
-                converted_arg[field] = attribute
-    return converted_arg
-
-
-@FunctionExecutionSuccess.connect
+@ActionExecutionSuccess.connect
 def __action_ended_callback(sender, **kwargs):
-    data = 'None'
     action_arguments = [convert_argument(argument) for argument in list(sender.arguments)]
-
-    if 'data' in kwargs:
-        data = kwargs['data']
-    result = {'name': sender.name,
+    result = {'action_name': sender.name,
               'action_uid': sender.uid,
               'timestamp': str(datetime.utcnow()),
               'arguments': action_arguments,
-              'result': data}
+              'result': kwargs['data']['result'],
+              'status': kwargs['data']['status']}
     __workflow_action_event_json.set(('action_success', result))
     sleep(0)
     __action_signal.set()
     __action_signal.clear()
     sleep(0)
 
+
 @ActionExecutionError.connect
 def __action_error_callback(sender, **kwargs):
-    result = {'name': sender.name, 'action_uid': sender.uid}
-    if 'data' in kwargs:
-        data = kwargs['data']
-        result['arguments'] = data['arguments']
-        result['result'] = data['result']
-        result['timestamp'] = str(datetime.utcnow())
+    action_arguments = [convert_argument(argument) for argument in list(sender.arguments)]
+    result = {'action_name': sender.name,
+              'action_uid': sender.uid,
+              'timestamp': str(datetime.utcnow()),
+              'arguments': action_arguments,
+              'result': kwargs['data']['result'],
+              'status': kwargs['data']['status']}
     __workflow_action_event_json.set(('action_error', result))
     sleep(0)
     __action_signal.set()

@@ -1,6 +1,5 @@
 export class ParameterSchema {
 	type: string;
-	required: boolean = false;
 	default: any;
 	placeholder: string;
 	// maxLength: 10;

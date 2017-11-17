@@ -60,7 +60,7 @@ class ActionResult(Case_Base):
     timestamp = Column(DateTime)
     name = Column(String)
     result = Column(String)
-    input = Column(String)
+    arguments = Column(String)
     type = Column(String)
     action_name = Column(String)
     app_name = Column(String)
@@ -69,7 +69,7 @@ class ActionResult(Case_Base):
     def __init__(self, name, result, action_input, action_type, app_name, action_name):
         self.name = name
         self.result = result
-        self.input = action_input
+        self.arguments = action_input
         self.type = action_type
         self.timestamp = datetime.utcnow()
         self.app_name = app_name
@@ -80,6 +80,6 @@ class ActionResult(Case_Base):
                 "app_name": self.app_name,
                 "action_name": self.action_name,
                 "result": json.loads(self.result),
-                "input": json.loads(self.input),
+                "arguments": json.loads(self.arguments),
                 "type": self.type,
                 "timestamp": str(self.timestamp)}

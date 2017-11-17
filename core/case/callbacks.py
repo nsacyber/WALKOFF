@@ -87,7 +87,6 @@ WorkflowExecutionStart, __workflow_execution_start_callback = __construct_loggin
 AppInstanceCreated, __app_instance_created_callback = __construct_logging_signal('Workflow',
                                                                                  'App Instance Created',
                                                                                  'New app instance created')
-BranchFound, __branch_found_callback = __construct_logging_signal('Workflow', 'Branch Found', 'branch found')
 
 WorkflowShutdown, __workflow_shutdown_callback = __construct_logging_signal('Workflow',
                                                                             'Workflow Shutdown',
@@ -111,12 +110,9 @@ WorkflowResumed, __workflow_resumed = __construct_logging_signal('Workflow',
 
 # Action callbacks
 
-FunctionExecutionSuccess, __func_exec_success_callback = __construct_logging_signal('Action',
-                                                                                    'Function Execution Success',
-                                                                                    'Function executed successfully')
-ActionExecutionSuccess, __action_execution_success_callback = __construct_logging_signal('Action',
-                                                                                     'Action Execution Success',
-                                                                                     'Action executed successfully')
+ActionExecutionSuccess, __func_exec_success_callback = __construct_logging_signal('Action',
+                                                                                    'Action Execution Success',
+                                                                                    'Action executed successfully')
 ActionExecutionError, __action_execution_error_callback = __construct_logging_signal('Action',
                                                                                  'Action Execution Error',
                                                                                  'Action executed with error')

@@ -5,7 +5,7 @@ import core.case.subscription as case_subscription
 
 
 def setup_subscriptions_for_action(workflow_uids, action_uids, action_events=None, workflow_events=None):
-    action_events = action_events if action_events is not None else ['Function Execution Success']
+    action_events = action_events if action_events is not None else ['Action Execution Success']
     workflow_events = workflow_events if workflow_events is not None else []
     subs = {workflow_uid: workflow_events for workflow_uid in workflow_uids} \
         if isinstance(workflow_uids, list) else {workflow_uids: workflow_events}
