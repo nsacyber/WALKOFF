@@ -364,8 +364,13 @@ def execute_workflow(playbook_name, workflow_name):
     @roles_accepted_for_resources('playbooks')
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
+            data = request.get_json()
+            args = data['arguments'] if 'arguments' in data else None
+            start = data['start'] if 'start' in data else None
+
             write_playbook_to_file(playbook_name)
-            uid = running_context.controller.execute_workflow(playbook_name, workflow_name)
+            uid = running_context.controller.execute_workflow(playbook_name, workflow_name, start=start,
+                                                              start_arguments=args)
             current_app.logger.info('Executed workflow {0}-{1}'.format(playbook_name, workflow_name))
             return {'id': uid}, SUCCESS_ASYNC
         else:

@@ -1,5 +1,6 @@
 import socket
 from datetime import datetime
+import json
 
 from gevent import monkey
 
@@ -42,8 +43,8 @@ class TestWorkflowServer(ServerTestCase):
         start = datetime.utcnow()
 
         response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
-                                               headers=self.headers,
-                                               status_code=SUCCESS_ASYNC)
+                                               headers=self.headers, data=json.dumps({}),
+                                               status_code=SUCCESS_ASYNC, content_type="application/json")
         flask_server.running_context.controller.wait_and_reset(1)
         self.assertIn('id', response)
         actions = []
@@ -55,9 +56,12 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(result, {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     def test_read_all_results(self):
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
+        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers,
+                      content_type="application/json", data=json.dumps({}))
+        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers,
+                      content_type="application/json", data=json.dumps({}))
+        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers,
+                      content_type="application/json", data=json.dumps({}))
 
         with flask_server.running_context.flask_app.app_context():
             flask_server.running_context.controller.wait_and_reset(3)
@@ -68,4 +72,5 @@ class TestWorkflowServer(ServerTestCase):
         for result in response:
             self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'uid'})
             for action_result in result['results']:
-                self.assertSetEqual(set(action_result.keys()), {'arguments', 'type', 'name', 'timestamp', 'result', 'app_name', 'action_name'})
+                self.assertSetEqual(set(action_result.keys()),
+                                    {'arguments', 'type', 'name', 'timestamp', 'result', 'app_name', 'action_name'})

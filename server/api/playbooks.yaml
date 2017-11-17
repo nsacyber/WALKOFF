@@ -426,6 +426,20 @@
         description: 'The name that needs to be fetched. '
         required: true
         type: string
+      - name: body
+        in: body
+        schema:
+          type: object
+          properties:
+            start:
+              description: The UID of the starting action
+              type: string
+            arguments:
+              type: array
+              items:
+                $ref: '#/definitions/Argument'
+    consumes:
+      - application/json
     produces:
       - application/json
     responses:

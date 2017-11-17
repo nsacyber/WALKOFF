@@ -41,12 +41,14 @@ class TestTriggersServer(ServerTestCase):
 
         response = self.post_with_status_check(
             '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
-            headers=self.headers, status_code=SUCCESS_ASYNC)
+            headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json",
+            data=json.dumps({}))
         ids.append(response['id'])
 
         response = self.post_with_status_check(
             '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
-            headers=self.headers, status_code=SUCCESS_ASYNC)
+            headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json",
+            data=json.dumps({}))
         ids.append(response['id'])
 
         data = {"execution_uids": ids,
@@ -86,7 +88,7 @@ class TestTriggersServer(ServerTestCase):
 
         response = self.post_with_status_check(
             '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
-            headers=self.headers, status_code=SUCCESS_ASYNC)
+            headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json", data=json.dumps({}))
 
         ids = [response['id']]
 
@@ -122,7 +124,7 @@ class TestTriggersServer(ServerTestCase):
 
         response = self.post_with_status_check(
             '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
-            headers=self.headers, status_code=SUCCESS_ASYNC)
+            headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json", data=json.dumps({}))
 
         ids = [response['id']]
 
@@ -169,7 +171,7 @@ class TestTriggersServer(ServerTestCase):
 
         response = self.post_with_status_check(
             '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
-            headers=self.headers, status_code=SUCCESS_ASYNC)
+            headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json", data=json.dumps({}))
 
         ids = [response['id']]
 
@@ -208,7 +210,7 @@ class TestTriggersServer(ServerTestCase):
 
         response = self.post_with_status_check(
             '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
-            headers=self.headers, status_code=SUCCESS_ASYNC)
+            headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json", data=json.dumps({}))
 
         ids = [response['id']]
 
