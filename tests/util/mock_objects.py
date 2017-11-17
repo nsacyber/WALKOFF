@@ -1,6 +1,6 @@
 import json
 import threading
-import time
+import gevent
 
 from zmq.utils.strtypes import cast_unicode
 
@@ -17,7 +17,7 @@ except ImportError:
 workflows_executed = 0
 
 
-def mock_initialize_threading(self, worker_environment_setup=None):
+def mock_initialize_threading(self, pids):
     global workflows_executed
     workflows_executed = 0
 
@@ -28,14 +28,20 @@ def mock_initialize_threading(self, worker_environment_setup=None):
     self.threading_is_initialized = True
 
 
-def mock_shutdown_pool(self, num_workflows=0):
+def mock_wait_and_reset(self, num_workflows):
+    global workflows_executed
+
     timeout = 0
     shutdown = 10
     while timeout < shutdown:
-        if (num_workflows == 0) or (num_workflows != 0 and num_workflows == workflows_executed):
+        if num_workflows == workflows_executed:
             break
         timeout += 0.1
-        time.sleep(0.1)
+        gevent.sleep(0.1)
+    workflows_executed = 0
+
+
+def mock_shutdown_pool(self):
     if self.manager_thread and self.manager_thread.is_alive():
         self.manager.pending_workflows.put("Exit")
         self.manager_thread.join(timeout=1)

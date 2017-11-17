@@ -138,7 +138,7 @@ class Workflow(ExecutionElement):
             if self._is_paused:
                 data_sent.send(self, callback_name="Workflow Paused", object_type="Workflow")
                 while self._is_paused:
-                    gevent.sleep(1)
+                    # gevent.sleep(1)
                     continue
                 data_sent.send(self, callback_name="Workflow Resumed", object_type="Workflow")
 
@@ -318,12 +318,12 @@ class Workflow(ExecutionElement):
         """
         actions = {}
         for action in self.actions.values():
-            async_result = action._incoming_data
-            action._incoming_data = None
+            event = action._event
+            action._event = None
             if with_deepcopy:
-                actions[action.uid] = (deepcopy(action), async_result)
+                actions[action.uid] = (deepcopy(action), event)
             else:
-                actions[action.uid] = async_result
+                actions[action.uid] = event
         return actions
 
     def reload_async_result(self, actions, with_deepcopy=False):
@@ -337,15 +337,15 @@ class Workflow(ExecutionElement):
         if with_deepcopy:
             for action in actions.values():
                 action_obj = action[0]
-                action_obj._incoming_data = action[1]
+                action_obj._event = action[1]
                 self.actions[action_obj.name] = action_obj
         else:
             for action in self.actions.values():
-                action._incoming_data = actions[action.uid]
+                action._event = actions[action.uid]
 
     def reset_async_result(self):
         """Reinitialize an AsyncResult object for all of the Actions when a Workflow is copied
         """
-        from gevent.event import AsyncResult
+        from threading import Event
         for action in self.actions.values():
-            action._incoming_data = AsyncResult()
+            action._event = Event()

@@ -29,3 +29,8 @@
     responses:
       200:
         description: Success
+        schema:
+          type: array
+          items:
+            type: string
+            description: The execution UIDs of workflows that were sent data.

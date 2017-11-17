@@ -4,6 +4,7 @@ import server.database
 from server.database import Role, db, initialize_resource_roles_from_cleared_database
 from server.returncodes import *
 from tests.util import servertestcase
+import server.flaskserver
 
 
 class TestRolesServer(servertestcase.ServerTestCase):
@@ -20,6 +21,7 @@ class TestRolesServer(servertestcase.ServerTestCase):
     @classmethod
     def tearDownClass(cls):
         initialize_resource_roles_from_cleared_database()
+        server.flaskserver.running_context.controller.shutdown_pool()
 
     def test_read_all_roles_no_added_roles(self):
         response = self.get_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS)

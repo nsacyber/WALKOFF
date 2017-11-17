@@ -32,7 +32,6 @@ class TestWorkflowServer(ServerTestCase):
         case_database.initialize()
 
     def tearDown(self):
-        flask_server.running_context.controller.shutdown_pool(0)
         flask_server.running_context.controller.playbook_store.playbooks = {}
         case_database.case_db.tear_down()
 
@@ -557,7 +556,6 @@ class TestWorkflowServer(ServerTestCase):
                                     headers=self.headers, status_code=OBJECT_DNE_ERROR)
 
     def test_execute_workflow(self):
-        flask_server.running_context.controller.initialize_threading()
         sync = Event()
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
@@ -573,7 +571,7 @@ class TestWorkflowServer(ServerTestCase):
         response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
                                                headers=self.headers,
                                                status_code=SUCCESS_ASYNC)
-        flask_server.running_context.controller.shutdown_pool(1)
+        flask_server.running_context.controller.wait_and_reset(1)
         self.assertIn('id', response)
         sync.wait(timeout=10)
         actions = []
@@ -586,7 +584,6 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_read_results(self):
 
-        flask_server.running_context.controller.initialize_threading()
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow.execute('a')
         workflow.execute('b')
@@ -596,14 +593,13 @@ class TestWorkflowServer(ServerTestCase):
         self.assertSetEqual(set(response.keys()), {'status', 'uid', 'results', 'started_at', 'completed_at', 'name'})
 
     def test_read_all_results(self):
-        flask_server.running_context.controller.initialize_threading()
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
 
         workflow.execute('a')
         workflow.execute('b')
         workflow.execute('c')
 
-        flask_server.running_context.controller.shutdown_pool(3)
+        flask_server.running_context.controller.wait_and_reset(3)
 
         response = self.get_with_status_check('/api/workflowresults', headers=self.headers)
         self.assertEqual(len(response), 3)
@@ -615,7 +611,6 @@ class TestWorkflowServer(ServerTestCase):
                                     {'input', 'type', 'name', 'timestamp', 'result', 'app_name', 'action_name'})
 
     def test_execute_workflow_trigger_action(self):
-        flask_server.running_context.controller.initialize_threading()
         sync = Event()
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
@@ -632,7 +627,7 @@ class TestWorkflowServer(ServerTestCase):
                                                headers=self.headers,
                                                status_code=SUCCESS_ASYNC)
 
-        flask_server.running_context.controller.shutdown_pool(1)
+        flask_server.running_context.controller.wait_and_reset(1)
         self.assertIn('id', response)
         sync.wait(timeout=10)
         actions = []

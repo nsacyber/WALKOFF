@@ -19,7 +19,9 @@ class TestSimpleWorkflow(unittest.TestCase):
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.num_processes = 2
         core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
+        core.multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
+        core.controller.controller.initialize_threading()
 
     def setUp(self):
         self.controller = core.controller.controller
@@ -27,7 +29,6 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.controller.load_playbooks(resource_collection=config.test_workflows_path)
         self.start = datetime.utcnow()
 
-        self.controller.initialize_threading()
         database.initialize()
 
     def tearDown(self):
@@ -38,6 +39,7 @@ class TestSimpleWorkflow(unittest.TestCase):
     def tearDownClass(cls):
         import apps
         apps.clear_cache()
+        core.controller.controller.shutdown_pool()
 
     def test_simple_workflow_execution(self):
         workflow = self.controller.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
@@ -45,7 +47,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         setup_subscriptions_for_action(workflow.uid, action_uids)
         self.controller.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
-        self.controller.shutdown_pool(1)
+        self.controller.wait_and_reset(1)
 
         actions = []
         for uid in action_uids:
@@ -63,7 +65,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         setup_subscriptions_for_action(workflow.uid, action_uids)
         self.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
-        self.controller.shutdown_pool(1)
+        self.controller.wait_and_reset(1)
         actions = []
         for uid in action_uids:
             actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
@@ -81,7 +83,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         setup_subscriptions_for_action(workflow.uid, action_uids)
         self.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
 
-        self.controller.shutdown_pool(1)
+        self.controller.wait_and_reset(1)
 
         actions = []
         for uid in action_uids:
@@ -100,7 +102,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         setup_subscriptions_for_action(workflow.uid, action_uids)
         self.controller.execute_workflow('dataflowTest', 'dataflowWorkflow')
 
-        self.controller.shutdown_pool(1)
+        self.controller.wait_and_reset(1)
 
         actions = []
         for uid in action_uids:
@@ -119,7 +121,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         setup_subscriptions_for_action(workflow.uid, action_uids)
         self.controller.execute_workflow('dataflowTest', 'dataflowWorkflow')
 
-        self.controller.shutdown_pool(1)
+        self.controller.wait_and_reset(1)
 
         actions = []
         for uid in action_uids:
