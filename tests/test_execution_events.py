@@ -17,11 +17,12 @@ class TestExecutionEvents(unittest.TestCase):
         apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
+        core.multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
+        core.controller.controller.initialize_threading()
 
     def setUp(self):
         self.c = core.controller.controller
-        self.c.initialize_threading()
         case_database.initialize()
 
     def tearDown(self):
@@ -30,6 +31,7 @@ class TestExecutionEvents(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         apps.clear_cache()
+        core.controller.controller.shutdown_pool()
 
     def test_workflow_execution_events(self):
 
@@ -40,7 +42,7 @@ class TestExecutionEvents(unittest.TestCase):
         case_subscription.set_subscriptions(subs)
         self.c.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
-        self.c.shutdown_pool(1)
+        self.c.wait_and_reset(1)
         execution_events = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'case1').first().events.all()
 
@@ -58,7 +60,7 @@ class TestExecutionEvents(unittest.TestCase):
 
         self.c.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
-        self.c.shutdown_pool(1)
+        self.c.wait_and_reset(1)
 
         execution_events = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'case1').first().events.all()
@@ -83,7 +85,7 @@ class TestExecutionEvents(unittest.TestCase):
 
         self.c.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
-        self.c.shutdown_pool(1)
+        self.c.wait_and_reset(1)
 
         events = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'case1').first().events.all()

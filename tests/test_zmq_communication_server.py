@@ -36,7 +36,6 @@ class TestWorkflowServer(ServerTestCase):
         reload(socket)
 
     def test_execute_workflow(self):
-        flask_server.running_context.controller.initialize_threading(worker_environment_setup=modified_setup_worker_env)
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
         setup_subscriptions_for_action(workflow.uid, action_uids)
@@ -45,7 +44,7 @@ class TestWorkflowServer(ServerTestCase):
         response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
                                                headers=self.headers,
                                                status_code=SUCCESS_ASYNC)
-        flask_server.running_context.controller.shutdown_pool(1)
+        flask_server.running_context.controller.wait_and_reset(1)
         self.assertIn('id', response)
         actions = []
         for uid in action_uids:
@@ -56,13 +55,12 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(result, {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     def test_read_all_results(self):
-        flask_server.running_context.controller.initialize_threading(worker_environment_setup=modified_setup_worker_env)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers)
 
         with flask_server.running_context.flask_app.app_context():
-            flask_server.running_context.controller.shutdown_pool(3)
+            flask_server.running_context.controller.wait_and_reset(3)
 
         response = self.get_with_status_check('/api/workflowresults', headers=self.headers)
         self.assertEqual(len(response), 3)

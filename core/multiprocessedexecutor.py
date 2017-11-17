@@ -75,7 +75,6 @@ class MultiprocessedExecutor(object):
 
     def __trigger_workflow_status_wait(self, sender, **kwargs):
         self.workflow_status[sender.workflow_execution_uid] = WORKFLOW_AWAITING_DATA
-        print(self.workflow_status)
 
     def __trigger_workflow_status_continue(self, sender, **kwargs):
         self.workflow_status[sender.workflow_execution_uid] = WORKFLOW_RUNNING
@@ -94,10 +93,10 @@ class MultiprocessedExecutor(object):
             sys.exit(0)
         self.pids = pids
         self.ctx = zmq.Context.instance()
-        self.auth = ThreadAuthenticator(self.ctx)
-        self.auth.start()
-        self.auth.allow('127.0.0.1')
-        self.auth.configure_curve(domain='*', location=core.config.paths.zmq_public_keys_path)
+        # self.auth = ThreadAuthenticator(self.ctx)
+        # self.auth.start()
+        # self.auth.allow('127.0.0.1')
+        # self.auth.configure_curve(domain='*', location=core.config.paths.zmq_public_keys_path)
 
         self.manager = loadbalancer.LoadBalancer(self.ctx)
         self.receiver = loadbalancer.Receiver(self.ctx)
@@ -118,10 +117,8 @@ class MultiprocessedExecutor(object):
         while timeout < shutdown:
             if self.receiver is not None and num_workflows == self.receiver.workflows_executed:
                 break
-            if num_workflows > 0:
-                timeout += 0.1
-                time.sleep(0.1)
-            print(self.receiver.workflows_executed)
+            timeout += 0.1
+            gevent.sleep(0.1)
         self.receiver.workflows_executed = 0
 
     def shutdown_pool(self):
@@ -230,7 +227,6 @@ class MultiprocessedExecutor(object):
         Returns:
             A list of execution UIDs of workflows currently awaiting data to be sent to a trigger.
         """
-        print(self.workflow_status)
         return [uid for uid, status in self.workflow_status.items() if status == WORKFLOW_AWAITING_DATA]
 
     def get_workflow_status(self, workflow_execution_uid):

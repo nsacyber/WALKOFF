@@ -7,7 +7,6 @@ import apps
 import core.config.config
 import core.config.paths
 import tests.config
-import server.flaskserver
 from tests.util.thread_control import *
 import core.controller
 import core.loadbalancer
@@ -70,7 +69,7 @@ class ServerTestCase(unittest.TestCase):
             core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
             core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
             core.multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
-            server.flaskserver.running_context.controller.initialize_threading(None)
+            server.flaskserver.running_context.controller.initialize_threading()
         else:
             from core.multiprocessedexecutor import spawn_worker_processes
             pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)

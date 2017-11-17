@@ -91,7 +91,6 @@ class Action(ExecutionElement):
                 to be sent to the triggers, and 'arguments', which is an optional parameter to change the arguments
                 to the current Action
         """
-        print("Setting now")
         self._incoming_data = data
         self._event.set()
 
@@ -181,9 +180,7 @@ class Action(ExecutionElement):
 
     def _wait_for_trigger(self, accumulator):
         while True:
-            print("About to wait")
-            self._event.wait(timeout=1)
-            print("Awoken")
+            self._event.wait()
             if self._incoming_data is None:
                 continue
             data = self._incoming_data
@@ -197,7 +194,6 @@ class Action(ExecutionElement):
                 accumulator[self.name] = data_in
 
                 arguments = data['arguments'] if 'arguments' in data else []
-                print(arguments)
                 if arguments:
                     new_args = {}
                     for argument in arguments:
@@ -205,6 +201,5 @@ class Action(ExecutionElement):
                     self.arguments.update(new_args)
                 break
             else:
-                print("Trigger invalid")
                 logger.debug('Trigger is not valid for input {0}'.format(data_in))
                 data_sent.send(self, callback_name="Trigger Action Not Taken", object_type="Action")

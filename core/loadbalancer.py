@@ -137,15 +137,15 @@ class LoadBalancer:
         server_public, server_secret = auth.load_certificate(server_secret_file)
 
         self.request_socket = self.ctx.socket(zmq.ROUTER)
-        self.request_socket.curve_secretkey = server_secret
-        self.request_socket.curve_publickey = server_public
-        self.request_socket.curve_server = True
+        # self.request_socket.curve_secretkey = server_secret
+        # self.request_socket.curve_publickey = server_public
+        # self.request_socket.curve_server = True
         self.request_socket.bind(REQUESTS_ADDR)
 
         self.comm_socket = self.ctx.socket(zmq.ROUTER)
-        self.comm_socket.curve_secretkey = server_secret
-        self.comm_socket.curve_publickey = server_public
-        self.comm_socket.curve_server = True
+        # self.comm_socket.curve_secretkey = server_secret
+        # self.comm_socket.curve_publickey = server_public
+        # self.comm_socket.curve_server = True
         self.comm_socket.bind(COMM_ADDR)
 
         # gevent.sleep(2)
@@ -168,10 +168,13 @@ class LoadBalancer:
             else:
                 try:
                     worker, empty, ready = self.request_socket.recv_multipart(flags=zmq.NOBLOCK)
-                    if ready == b"Ready" or ready == b"Done":
+                    if ready == b"Done":
+                        self.available_workers.append(worker)
+                        self.workflow_comms = {uid: worker for uid, proc in self.workflow_comms.items() if proc != worker}
+                    elif ready == b"Ready":
                         self.available_workers.append(worker)
                 except zmq.ZMQError:
-                    # gevent.sleep(0.1)
+                    gevent.sleep(0.1)
                     continue
         self.request_socket.close()
         self.comm_socket.close()
@@ -218,15 +221,10 @@ class LoadBalancer:
         data = dict()
         data['data_in'] = data_in
         data['arguments'] = arguments if arguments else []
-        print(workflow_uids)
-        print(self.workflow_comms)
         for uid in workflow_uids:
-            print(uid)
             if uid in self.workflow_comms:
-                print("sending worker the stuff")
                 self.comm_socket.send_multipart(
                     [self.workflow_comms[uid], b'', str.encode(json.dumps(data))])
-                print("Data sent")
 
 
 class Worker:
@@ -257,23 +255,23 @@ class Worker:
 
         self.request_sock = self.ctx.socket(zmq.REQ)
         self.request_sock.identity = u"Worker-{}".format(id_).encode("ascii")
-        self.request_sock.curve_secretkey = client_secret
-        self.request_sock.curve_publickey = client_public
-        self.request_sock.curve_serverkey = server_public
+        # self.request_sock.curve_secretkey = client_secret
+        # self.request_sock.curve_publickey = client_public
+        # self.request_sock.curve_serverkey = server_public
         self.request_sock.connect(REQUESTS_ADDR)
 
         self.comm_sock = self.ctx.socket(zmq.REQ)
         self.comm_sock.identity = u"Worker-{}".format(id_).encode("ascii")
-        self.comm_sock.curve_secretkey = client_secret
-        self.comm_sock.curve_publickey = client_public
-        self.comm_sock.curve_serverkey = server_public
+        # self.comm_sock.curve_secretkey = client_secret
+        # self.comm_sock.curve_publickey = client_public
+        # self.comm_sock.curve_serverkey = server_public
         self.comm_sock.connect(COMM_ADDR)
 
         self.results_sock = self.ctx.socket(zmq.PUSH)
         self.results_sock.identity = u"Worker-{}".format(id_).encode("ascii")
-        self.results_sock.curve_secretkey = client_secret
-        self.results_sock.curve_publickey = client_public
-        self.results_sock.curve_serverkey = server_public
+        # self.results_sock.curve_secretkey = client_secret
+        # self.results_sock.curve_publickey = client_public
+        # self.results_sock.curve_serverkey = server_public
         self.results_sock.connect(RESULTS_ADDR)
 
         if worker_environment_setup:
@@ -323,7 +321,6 @@ class Worker:
                 break
             try:
                 message = self.comm_sock.recv(zmq.NOBLOCK)
-                print(message)
             except zmq.ZMQError:
                 # gevent.sleep(0.1)
                 continue
@@ -342,6 +339,7 @@ class Worker:
                         arguments.append(Argument(**arg))
                     decoded_message["arguments"] = arguments
                 self.workflow.send_data_to_action(decoded_message)
+                self.comm_sock.send(b"Received")
 
             # gevent.sleep(0.1)
         return
@@ -399,9 +397,9 @@ class Receiver:
         self.ctx = ctx
 
         self.results_sock = self.ctx.socket(zmq.PULL)
-        self.results_sock.curve_secretkey = server_secret
-        self.results_sock.curve_publickey = server_public
-        self.results_sock.curve_server = True
+        # self.results_sock.curve_secretkey = server_secret
+        # self.results_sock.curve_publickey = server_public
+        # self.results_sock.curve_server = True
         self.results_sock.bind(RESULTS_ADDR)
 
     @staticmethod
@@ -427,7 +425,7 @@ class Receiver:
             try:
                 message_bytes = self.results_sock.recv(zmq.NOBLOCK)
             except zmq.ZMQError:
-                # gevent.sleep(0.1)
+                gevent.sleep(0.1)
                 continue
 
             message_outer = data_pb2.Message()
@@ -445,7 +443,6 @@ class Receiver:
                 message = message_outer.general_packet
 
             callback_name = message.callback_name
-            print(callback_name)
             sender = message.sender
 
             try:

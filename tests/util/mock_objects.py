@@ -1,6 +1,6 @@
 import json
 import threading
-import time
+import gevent
 
 from zmq.utils.strtypes import cast_unicode
 
@@ -35,11 +35,9 @@ def mock_wait_and_reset(self, num_workflows):
     shutdown = 10
     while timeout < shutdown:
         if num_workflows == workflows_executed:
-            # print("Broken")
             break
         timeout += 0.1
-        time.sleep(0.1)
-    # print("Timeout or broken")
+        gevent.sleep(0.1)
     workflows_executed = 0
 
 
