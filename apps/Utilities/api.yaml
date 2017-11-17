@@ -8,9 +8,25 @@ info:
   license:
     name: Creative Commons
 actions:
-  Secure PRNG:
-    run: actions.secure_rand
+  System PRNG:
+    run: actions.system_rand
     description: Returns random float between 0.0 and 1.0 using system entropy
+    returns:
+      Success:
+        schema:
+          type: number
+  Round to N:
+    run: actions.round_to_n
+    description: Rounds a number to the specified number of decimals
+    parameters:
+        - name: number
+          description: Number to round
+          required: true
+          type: number
+        - name: places
+          description: Decimal places to round to
+          required: true
+          type: integer
     returns:
       Success:
         schema:
@@ -249,6 +265,21 @@ transforms:
           type: object
         - name: element
           type: string
+          required: true
+    returns:
+      Success:
+        schema:
+          type: object
+  select list:
+    run: transforms.list_select
+    description: selects an element from a list
+    data_in: list_in
+    parameters:
+        - name: list_in
+          required: true
+          type: object
+        - name: index
+          type: number
           required: true
     returns:
       Success:
