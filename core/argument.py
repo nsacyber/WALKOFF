@@ -8,11 +8,11 @@ logger = logging.getLogger(__name__)
 
 class Argument(Representable):
     def __init__(self, name, value=None, reference=None, selection=None):
-        if not value and not reference:
+        if value is None and reference is None:
             message = 'Input {} must have either value or reference. Input has neither'.format(name)
             logger.error(message)
             raise InvalidArgument(message)
-        elif value and reference:
+        elif value is not None and reference is not None:
             message = 'Input {} must have either value or reference. Input has both. Using "value"'.format(name)
             logger.warning(message)
 
