@@ -84,6 +84,49 @@
                     "uid": "e7a2f454-109f-5e44-ee97-0095af957c09"
                 },
                 {
+                    "action_name": "linearly scale",
+                    "app_name": "Utilities",
+                    "arguments": [
+                        {
+                            "name": "max_value",
+                            "reference": "",
+                            "selection": [],
+                            "value": 10
+                        },
+                        {
+                            "name": "min_value",
+                            "reference": "",
+                            "selection": [],
+                            "value": 0
+                        },
+                        {
+                            "name": "low_scale",
+                            "reference": "",
+                            "selection": [],
+                            "value": 0
+                        },
+                        {
+                            "name": "high_scale",
+                            "reference": "",
+                            "selection": [],
+                            "value": 1
+                        },
+                        {
+                            "name": "value",
+                            "reference": "0585feec-cc74-c2d6-16bd-6bdda55bfa38",
+                            "selection": []
+                        }
+                    ],
+                    "name": "linearly scale",
+                    "position": {
+                        "x": 610,
+                        "y": 130
+                    },
+                    "risk": 0,
+                    "triggers": [],
+                    "uid": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd"
+                },
+                {
                     "action_name": "repeatBackToMe",
                     "app_name": "HelloWorld",
                     "arguments": [
@@ -121,6 +164,14 @@
                     "source_uid": "0585feec-cc74-c2d6-16bd-6bdda55bfa38",
                     "status": "Success",
                     "uid": "e3861965-e938-4bf5-818b-a97d77d1b132"
+                },
+                {
+                    "conditions": [],
+                    "destination_uid": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd",
+                    "priority": 1,
+                    "source_uid": "02b4fa8f-b003-823b-39ed-666e9d58b2ef",
+                    "status": "Success",
+                    "uid": "394c89d2-90cd-4de7-9165-6ce9f64ba9bb"
                 },
                 {
                     "conditions": [],

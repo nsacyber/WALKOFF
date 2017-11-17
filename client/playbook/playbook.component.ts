@@ -143,7 +143,7 @@ export class PlaybookComponent {
 				// 		const workflowResult: WorkflowResult = JSON.parse(message.data);
 				// 		if (this.cy) {
 				// 			const matchingNode = this.cy.elements(`node[uid="${workflowResult.step_uid}"]`);
-	
+
 				// 			if (workflowResult.type === 'SUCCESS') {
 				// 				matchingNode.addClass('good-highlighted');
 				// 			} else { matchingNode.addClass('bad-highlighted'); }
@@ -294,7 +294,7 @@ export class PlaybookComponent {
 				this.cy.edgehandles({
 					preview: false,
 					toggleOffOnLeave: true,
-					complete (sourceNode: any, targetNodes: any[], addedEntities: any[]) {
+					complete(sourceNode: any, targetNodes: any[], addedEntities: any[]) {
 						if (!self.loadedWorkflow.branches) { self.loadedWorkflow.branches = []; }
 
 						// The edge handles extension is not integrated into the undo/redo extension.
@@ -316,7 +316,7 @@ export class PlaybookComponent {
 
 							//If we attempt to draw an edge that already exists, please remove it and take no further action
 							if (self.loadedWorkflow.branches
-								.find(ns =>  ns.source_uid === sourceUid && ns.destination_uid === destinationUid)) {
+								.find(ns => ns.source_uid === sourceUid && ns.destination_uid === destinationUid)) {
 								self.cy.remove(addedEntities);
 								return;
 							}
@@ -385,13 +385,13 @@ export class PlaybookComponent {
 					};
 					return edge;
 				});
-	
+
 				const nodes = workflow.actions.map(action => {
 					const node: any = { group: 'nodes', position: _.clone(action.position) };
 					node.data = {
 						id: action.uid,
 						uid: action.uid,
-						label: action.name, 
+						label: action.name,
 						isStartNode: action.uid === workflow.start,
 					};
 					self._setNodeDisplayProperties(node, action);
@@ -466,26 +466,26 @@ export class PlaybookComponent {
 		workflowToSave.actions.forEach(s => {
 			// Set the new cytoscape positions on our loadedworkflow
 			s.position = cyData.find(cyAction => cyAction.data.uid === s.uid).position;
-			
+
 			if (s.device_id === 0) { delete s.device_id; }
 
 			// Properly sanitize arguments through the tree
-			s.arguments.forEach(i => this._sanitizeArgumentForSave(i));
+			this._sanitizeArgumentForSave(s.arguments);
 
 			s.triggers.forEach(t => {
-				t.arguments.forEach(a => this._sanitizeArgumentForSave(a));
+				this._sanitizeArgumentForSave(t.arguments);
 
 				t.transforms.forEach(tr => {
-					tr.arguments.forEach(a => this._sanitizeArgumentForSave(a));
+					this._sanitizeArgumentForSave(tr.arguments);
 				});
 			});
 		});
 		workflowToSave.branches.forEach(ns => {
 			ns.conditions.forEach(c => {
-				c.arguments.forEach(a => this._sanitizeArgumentForSave(a));
+				this._sanitizeArgumentForSave(c.arguments);
 
 				c.transforms.forEach(tr => {
-					tr.arguments.forEach(a => this._sanitizeArgumentForSave(a));
+					this._sanitizeArgumentForSave(tr.arguments);
 				});
 			});
 		});
@@ -519,24 +519,41 @@ export class PlaybookComponent {
 	 * Sanitizes an argument so we don't have bad data on save, such as a value when reference is specified.
 	 * @param argument The argument to sanitize
 	 */
-	_sanitizeArgumentForSave(argument: Argument): void {
-		if (argument.reference) { delete argument.value; }
-
-		// Split our string argument selector into what the server expects
-		if (argument.selection == null) {
-			argument.selection = [];
-		} else if (typeof(argument.selection) === 'string') {
-			argument.selection = argument.selection.trim();
-			argument.selection = argument.selection.split('.');
-
-			if (argument.selection[0] === '') {
-				argument.selection = [];
-			} else {
-				for (let i = 0; i < argument.selection.length; i++) {
-					if (!isNaN(argument.selection[i] as number)) { argument.selection[i] = +argument.selection[i]; }
-				}
+	_sanitizeArgumentForSave(args: Argument[]): void {
+		// Filter out any arguments that are blank, essentially
+		const idsToRemove: number[] = [];
+		for (const argument of args) {
+			// First trim any string inputs for sanitation and so we can check against ''
+			if (typeof (argument.value) === 'string') { argument.value = argument.value.trim(); }
+			// If value and reference are blank, add this argument's ID in the array to the list
+			// Add them in reverse so we don't have problems with the IDs sliding around on the splice
+			if (((argument.value == null || argument.value === '') && argument.reference === '')) {
+				idsToRemove.unshift(args.indexOf(argument));
 			}
 		}
+		// Actually splice out all the args
+		for (const id of idsToRemove) {
+			args.splice(id, 1);
+		}
+
+		// Split our string argument selector into what the server expects
+		args.forEach(argument => {
+			if (argument.selection == null) {
+				argument.selection = [];
+			} else if (typeof (argument.selection) === 'string') {
+				argument.selection = argument.selection.trim();
+				argument.selection = argument.selection.split('.');
+
+				if (argument.selection[0] === '') {
+					argument.selection = [];
+				} else {
+					// For each value, if it's a valid number, convert it to a number.
+					for (let i = 0; i < argument.selection.length; i++) {
+						if (!isNaN(argument.selection[i] as number)) { argument.selection[i] = +argument.selection[i]; }
+					}
+				}
+			}
+		});
 	}
 
 	///------------------------------------------------------------------------------------------------------
@@ -964,7 +981,7 @@ export class PlaybookComponent {
 
 				// If our loaded workflow is in this playbook, close it.
 				if (playbook === this.currentPlaybook) { this.closeWorkflow(); }
-				
+
 				this.toastyService.success(`Successfully deleted playbook "${playbook}".`);
 			})
 			.catch(e => this.toastyService
@@ -1103,7 +1120,7 @@ export class PlaybookComponent {
 
 				// Close the workflow if the deleted workflow matches the loaded one
 				if (playbook === this.currentPlaybook && workflow === this.currentWorkflow) { this.closeWorkflow(); }
-				
+
 				this.toastyService.success(`Successfully deleted workflow "${playbook} - ${workflow}".`);
 			})
 			.catch(e => this.toastyService.error(`Error deleting workflow "${playbook} - ${workflow}": ${e.message}`));
@@ -1129,7 +1146,7 @@ export class PlaybookComponent {
 	_closeWorkflowsModal(): void {
 		($('#workflowsModal') as any).modal('hide');
 	}
-	
+
 	/**
 	 * Gets the playbook name from a given modal:
 	 * either by the selected playbook or whatever's specified under new playbook.
@@ -1162,7 +1179,7 @@ export class PlaybookComponent {
 
 		if (!matchingPB) { return false; }
 
-		return matchingPB.workflows.findIndex(wf => wf.name === workflow ) >= 0;
+		return matchingPB.workflows.findIndex(wf => wf.name === workflow) >= 0;
 	}
 
 	// TODO: maybe somehow recursively find actions that may occur before. Right now it just returns all of them.

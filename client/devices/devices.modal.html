@@ -53,7 +53,7 @@
 				<div *ngFor="let i of selectedDeviceType.fields" class="form-group">
 					<label for="{{i.name}}">
 						{{i.name}}
-						<i *ngIf="i.description != null" class="fa fa-question-circle-o" [title]="i.description"></i>
+						<i *ngIf="i.description != null" class="fa fa-info-circle" [title]="i.description"></i>
 						<i *ngIf="i.required" class="fa fa-asterisk required" title="This field is required."></i>
 						<i *ngIf="i.encrypted" class="fa fa-lock"
 						 title="This field will be encrypted at rest and will not be returned to the client for viewing or editing."></i>
