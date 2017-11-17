@@ -7,7 +7,6 @@ from tests.util.servertestcase import ServerTestCase
 
 class TestWorkflowResults(ServerTestCase):
     def setUp(self):
-        flaskserver.running_context.controller.initialize_threading()
         case_database.initialize()
 
     def tearDown(self):
@@ -18,7 +17,7 @@ class TestWorkflowResults(ServerTestCase):
                                                                         'multiactionWorkflowTest.playbook')
         uid = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         with flaskserver.running_context.flask_app.app_context():
-            flaskserver.running_context.controller.shutdown_pool(1)
+            flaskserver.running_context.controller.wait_and_reset(1)
 
         workflow_results = case_database.case_db.session.query(WorkflowResult).all()
         self.assertEqual(len(workflow_results), 1)
@@ -44,7 +43,7 @@ class TestWorkflowResults(ServerTestCase):
         uid1 = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         uid2 = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         with flaskserver.running_context.flask_app.app_context():
-            flaskserver.running_context.controller.shutdown_pool(2)
+            flaskserver.running_context.controller.wait_and_reset(2)
 
         workflow_uids = case_database.case_db.session.query(WorkflowResult).with_entities(WorkflowResult.uid).all()
         self.assertSetEqual({uid1, uid2}, {uid[0] for uid in workflow_uids})

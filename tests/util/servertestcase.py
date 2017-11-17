@@ -7,7 +7,6 @@ import apps
 import core.config.config
 import core.config.paths
 import tests.config
-import server.flaskserver
 from tests.util.thread_control import *
 import core.controller
 import core.loadbalancer
@@ -18,6 +17,14 @@ from tests.util.mock_objects import *
 
 if not getattr(__builtins__, 'WindowsError', None):
     class WindowsError(OSError): pass
+
+
+def modified_setup_worker_env():
+    import tests.config
+    import core.config.config
+    import apps
+    apps.cache_apps(tests.config.test_apps_path)
+    core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
 
 
 class ServerTestCase(unittest.TestCase):
@@ -54,14 +61,19 @@ class ServerTestCase(unittest.TestCase):
         core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
         core.config.config.num_processes = 2
 
-        if cls.patch:
-            core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
-            core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
-
         cls.context = server.flaskserver.app.test_request_context()
         cls.context.push()
 
         server.flaskserver.running_context.db.create_all()
+        if cls.patch:
+            core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
+            core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
+            core.multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
+            server.flaskserver.running_context.controller.initialize_threading()
+        else:
+            from core.multiprocessedexecutor import spawn_worker_processes
+            pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)
+            server.flaskserver.running_context.controller.initialize_threading(pids)
 
     @classmethod
     def tearDownClass(cls):
@@ -71,6 +83,7 @@ class ServerTestCase(unittest.TestCase):
             else:
                 shutil.rmtree(tests.config.test_data_path)
         apps.clear_cache()
+        server.flaskserver.running_context.controller.shutdown_pool()
 
     def setUp(self):
         core.config.paths.workflows_path = tests.config.test_workflows_path_with_generated

@@ -40,7 +40,7 @@ class AuthenticationThread(Thread):
         poller.register(self.pipe, zmq.POLLIN)
         poller.register(zap, zmq.POLLIN)
         while True:
-            gevent.sleep(0.1)
+            # gevent.sleep(0.1)
             try:
                 socks = dict(poller.poll(1))
             except zmq.ZMQError:
