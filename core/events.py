@@ -153,12 +153,17 @@ class WalkoffEvent(Enum):
     def get_event_from_name(cls, event_name):
         return getattr(cls, event_name, None)
 
+    @classmethod
+    def get_event_from_signal_name(cls, signal_name):
+        return next((event for event in cls if event.signal_name == signal_name), None)
+
     def requires_data(self):
-        return self in (
-        WalkoffEvent.WorkflowShutdown, WalkoffEvent.ActionExecutionError, WalkoffEvent.ActionExecutionSuccess)
+        return (self in (WalkoffEvent.WorkflowShutdown,
+                         WalkoffEvent.ActionExecutionError,
+                         WalkoffEvent.ActionExecutionSuccess))
 
     def send(self, sender, **kwargs):
         self.value.send(sender, **kwargs)
 
-    def connect(self, func):
-        self.value.connect(func)
+    def connect(self, func, weak=True):
+        self.value.connect(func, weak=weak)
