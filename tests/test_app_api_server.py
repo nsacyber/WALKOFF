@@ -21,14 +21,14 @@ class TestAppApiServerFuncs(ServerTestCase):
         core.config.config.app_apis.pop('TestApp', None)
 
     def test_read_all_apps(self):
-        expected_apps = ['HelloWorld', 'DailyQuote']
+        expected_apps = ['HelloWorldBounded', 'DailyQuote', 'HelloWorld']
         response = self.app.get('/api/apps', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         orderless_list_compare(self, response, expected_apps)
 
     def test_list_apps_with_interfaces(self):
-        expected_apps = ['HelloWorld']
+        expected_apps = ['HelloWorldBounded', 'HelloWorld']
         response = self.app.get('/api/apps?interfaces_only=true', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
@@ -82,7 +82,7 @@ class TestAppApiServerFuncs(ServerTestCase):
             self.assertIn(return_, expected)
 
     def test_format_app_action_api(self):
-        action_api = core.config.config.app_apis['HelloWorld']['actions']['pause']
+        action_api = core.config.config.app_apis['HelloWorldBounded']['actions']['pause']
         expected = {
             'returns': [{'status': 'Success', 'description': 'successfully paused', 'schema': {'type': 'number'}},
                         {'status': 'UnhandledException', 'description': 'Exception occurred in action'},
@@ -103,7 +103,7 @@ class TestAppApiServerFuncs(ServerTestCase):
             self.assertIn(parameter, expected['parameters'])
 
     def test_format_app_action_api_with_event(self):
-        action_api = core.config.config.app_apis['HelloWorld']['actions']['Sample Event']
+        action_api = core.config.config.app_apis['HelloWorldBounded']['actions']['Sample Event']
         expected = {'returns': [{'status': 'Success', 'description': 'summation', 'schema': {'type': 'number'}},
                                 {'status': 'UnhandledException', 'description': 'Exception occurred in action'},
                                 {'status': 'InvalidInput', 'description': 'Input into the action was invalid'},
@@ -124,7 +124,7 @@ class TestAppApiServerFuncs(ServerTestCase):
             self.assertIn(parameter, expected['parameters'])
 
     def test_format_all_app_actions_api(self):
-        action_api = {'Sample Event': core.config.config.app_apis['HelloWorld']['actions']['Sample Event']}
+        action_api = {'Sample Event': core.config.config.app_apis['HelloWorldBounded']['actions']['Sample Event']}
         expected = [{'returns': [{'status': 'Success', 'description': 'summation', 'schema': {'type': 'number'}},
                                  {'status': 'UnhandledException', 'description': 'Exception occurred in action'},
                                  {'status': 'InvalidInput', 'description': 'Input into the action was invalid'},
@@ -133,7 +133,7 @@ class TestAppApiServerFuncs(ServerTestCase):
                      'event': 'Event1',
                      'parameters': [{'schema': {'type': 'number'}, 'name': 'arg1', 'required': True}],
                      'name': 'Sample Event'}]
-        action_api.update({'pause': core.config.config.app_apis['HelloWorld']['actions']['pause']})
+        action_api.update({'pause': core.config.config.app_apis['HelloWorldBounded']['actions']['pause']})
         expected.append({
             'returns': [{'status': 'Success', 'description': 'successfully paused', 'schema': {'type': 'number'}},
                         {'status': 'UnhandledException', 'description': 'Exception occurred in action'},
@@ -171,13 +171,13 @@ class TestAppApiServerFuncs(ServerTestCase):
         response = self.app.get('/api/apps/apis', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
-        orderless_list_compare(self, [app['name'] for app in response], ['HelloWorld', 'DailyQuote'])
+        orderless_list_compare(self, [app['name'] for app in response], ['HelloWorldBounded', 'DailyQuote', 'HelloWorld'])
 
     def test_read_all_app_apis_with_field(self):
         response = self.app.get('/api/apps/apis?field_name=action_apis', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
-        orderless_list_compare(self, [app['name'] for app in response], ['HelloWorld', 'DailyQuote'])
+        orderless_list_compare(self, [app['name'] for app in response], ['HelloWorldBounded', 'DailyQuote', 'HelloWorld'])
         for app in response:
             self.assertSetEqual(set(app.keys()), {'name', 'action_apis'})
 
@@ -185,7 +185,7 @@ class TestAppApiServerFuncs(ServerTestCase):
         response = self.app.get('/api/apps/apis?field_name=device_apis', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
-        orderless_list_compare(self, [app['name'] for app in response], ['HelloWorld', 'DailyQuote'])
+        orderless_list_compare(self, [app['name'] for app in response], ['HelloWorldBounded', 'DailyQuote', 'HelloWorld'])
         for app in response:
             self.assertSetEqual(set(app.keys()), {'name', 'device_apis'})
 
@@ -194,20 +194,20 @@ class TestAppApiServerFuncs(ServerTestCase):
         self.assertEqual(response.status_code, BAD_REQUEST)
 
     def test_read_app_api(self):
-        response = self.app.get('/api/apps/apis/HelloWorld', headers=self.headers)
+        response = self.app.get('/api/apps/apis/HelloWorldBounded', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         self.assertSetEqual(set(response.keys()), {'name', 'tags', 'info', 'external_docs',
                                                    'action_apis', 'device_apis',
                                                    'condition_apis', 'transform_apis'})
-        self.assertEqual(response['name'], 'HelloWorld')
+        self.assertEqual(response['name'], 'HelloWorldBounded')
 
     def test_read_app_api_app_dne(self):
         response = self.app.get('/api/apps/apis/Invalid', headers=self.headers)
         self.assertEqual(response.status_code, OBJECT_DNE_ERROR)
 
     def test_read_app_api_field(self):
-        response = self.app.get('/api/apps/apis/HelloWorld/info', headers=self.headers)
+        response = self.app.get('/api/apps/apis/HelloWorldBounded/info', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         self.assertSetEqual(set(response.keys()), {'version', 'title', 'contact', 'license', 'description'})
@@ -217,7 +217,7 @@ class TestAppApiServerFuncs(ServerTestCase):
         self.assertEqual(response.status_code, OBJECT_DNE_ERROR)
 
     def test_read_app_api_field_field_dne(self):
-        response = self.app.get('/api/apps/apis/HelloWorld/invalid', headers=self.headers)
+        response = self.app.get('/api/apps/apis/HelloWorldBounded/invalid', headers=self.headers)
         self.assertEqual(response.status_code, BAD_REQUEST)
 
 

@@ -289,14 +289,14 @@ class PlaybookStore(object):
         """
         workflow = self.get_workflow(old_playbook_name, old_workflow_name)
         if workflow is not None:
-            actions = workflow.strip_async_result()
+            actions = workflow.strip_event()
 
             workflow_copy = deepcopy(workflow)
             workflow_copy.name = new_workflow_name
             workflow_copy.regenerate_uids()
-            workflow_copy.reset_async_result()
+            workflow_copy.reset_event()
 
-            workflow.reload_async_result(actions)
+            workflow.reload_event(actions)
 
             if new_playbook_name in self.playbooks:
                 self.playbooks[new_playbook_name].add_workflow(workflow_copy)

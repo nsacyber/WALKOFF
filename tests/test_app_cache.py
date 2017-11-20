@@ -221,11 +221,11 @@ class TestAppCache(TestCase):
         self.assertDictEqual(self.cache._cache, {'A': {'main': A, 'actions': {'z': {'run': z, 'bound': False}}}})
 
     def test_cache_module(self):
-        module = import_module('tests.testapps.HelloWorld.main')
-        from tests.testapps.HelloWorld.main import Main, global1
-        self.cache._cache_module(module, 'HelloWorld', 'tests.testapps')
+        module = import_module('tests.testapps.HelloWorldBounded.main')
+        from tests.testapps.HelloWorldBounded.main import Main, global1
+        self.cache._cache_module(module, 'HelloWorldBounded', 'tests.testapps')
         self.maxDiff = None
-        expected = {'HelloWorld': {'main': Main,
+        expected = {'HelloWorldBounded': {'main': Main,
                                    'actions': {'main.Main.helloWorld': {'run': Main.helloWorld, 'bound': True},
                                                'main.Main.repeatBackToMe': {'run': Main.repeatBackToMe, 'bound': True},
                                                'main.Main.returnPlusOne': {'run': Main.returnPlusOne, 'bound': True},
@@ -238,26 +238,26 @@ class TestAppCache(TestCase):
         self.assertDictEqual(self.cache._cache, expected)
 
     def test_cache_module_nothing_found(self):
-        module = import_module('tests.testapps.HelloWorld.events')
-        self.cache._cache_module(module, 'HelloWorld', 'tests.testapps')
+        module = import_module('tests.testapps.HelloWorldBounded.events')
+        self.cache._cache_module(module, 'HelloWorldBounded', 'tests.testapps')
         self.assertDictEqual(self.cache._cache, {})
 
     def test_cache_module_no_class(self):
-        module = import_module('tests.testapps.HelloWorld.actions')
-        self.cache._cache_module(module, 'HelloWorld', 'tests.testapps')
-        from tests.testapps.HelloWorld.actions import global2
+        module = import_module('tests.testapps.HelloWorldBounded.actions')
+        self.cache._cache_module(module, 'HelloWorldBounded', 'tests.testapps')
+        from tests.testapps.HelloWorldBounded.actions import global2
         self.assertDictEqual(self.cache._cache,
-                             {'HelloWorld': {'actions': {'actions.global2': {'run': global2, 'bound': False}}}})
+                             {'HelloWorldBounded': {'actions': {'actions.global2': {'run': global2, 'bound': False}}}})
 
     def test_import_and_cache_submodules_from_string(self):
-        self.cache._import_and_cache_submodules('tests.testapps.HelloWorld', 'HelloWorld', 'tests.testapps')
-        from tests.testapps.HelloWorld.main import Main, global1
-        from tests.testapps.HelloWorld.actions import global2
-        from tests.testapps.HelloWorld.conditions import (top_level_flag, flag1, flag2, flag3, sub1_top_flag,
+        self.cache._import_and_cache_submodules('tests.testapps.HelloWorldBounded', 'HelloWorldBounded', 'tests.testapps')
+        from tests.testapps.HelloWorldBounded.main import Main, global1
+        from tests.testapps.HelloWorldBounded.actions import global2
+        from tests.testapps.HelloWorldBounded.conditions import (top_level_flag, flag1, flag2, flag3, sub1_top_flag,
                                                           regMatch, count)
-        from tests.testapps.HelloWorld.transforms import (top_level_filter, filter1, filter2, filter3, complex_filter,
+        from tests.testapps.HelloWorldBounded.transforms import (top_level_filter, filter1, filter2, filter3, complex_filter,
                                                           length, json_select, sub1_top_filter)
-        expected = {'HelloWorld': {'main': Main,
+        expected = {'HelloWorldBounded': {'main': Main,
                                    'actions': {'main.Main.helloWorld': {'run': Main.helloWorld, 'bound': True},
                                                'main.Main.repeatBackToMe': {'run': Main.repeatBackToMe, 'bound': True},
                                                'main.Main.returnPlusOne': {'run': Main.returnPlusOne, 'bound': True},
@@ -286,15 +286,15 @@ class TestAppCache(TestCase):
         self.assertDictEqual(self.cache._cache, expected)
 
     def test_import_and_cache_submodules_from_module(self):
-        module = import_module('tests.testapps.HelloWorld')
-        self.cache._import_and_cache_submodules(module, 'HelloWorld', 'tests.testapps')
-        from tests.testapps.HelloWorld.main import Main, global1
-        from tests.testapps.HelloWorld.actions import global2
-        from tests.testapps.HelloWorld.conditions import (top_level_flag, flag1, flag2, flag3, sub1_top_flag,
+        module = import_module('tests.testapps.HelloWorldBounded')
+        self.cache._import_and_cache_submodules(module, 'HelloWorldBounded', 'tests.testapps')
+        from tests.testapps.HelloWorldBounded.main import Main, global1
+        from tests.testapps.HelloWorldBounded.actions import global2
+        from tests.testapps.HelloWorldBounded.conditions import (top_level_flag, flag1, flag2, flag3, sub1_top_flag,
                                                           regMatch, count)
-        from tests.testapps.HelloWorld.transforms import (top_level_filter, filter1, filter2, filter3, complex_filter,
+        from tests.testapps.HelloWorldBounded.transforms import (top_level_filter, filter1, filter2, filter3, complex_filter,
                                                           length, json_select, sub1_top_filter)
-        expected = {'HelloWorld': {'main': Main,
+        expected = {'HelloWorldBounded': {'main': Main,
                                    'actions': {'main.Main.helloWorld': {'run': Main.helloWorld, 'bound': True},
                                                'main.Main.repeatBackToMe': {'run': Main.repeatBackToMe, 'bound': True},
                                                'main.Main.returnPlusOne': {'run': Main.returnPlusOne, 'bound': True},
@@ -336,15 +336,15 @@ class TestAppCache(TestCase):
 
     def test_cache_apps(self):
         self.cache.cache_apps(os.path.join('.', 'tests', 'testapps'))
-        from tests.testapps.HelloWorld.main import Main, global1
-        from tests.testapps.HelloWorld.conditions import (top_level_flag, flag1, flag2, flag3, sub1_top_flag,
+        from tests.testapps.HelloWorldBounded.main import Main, global1
+        from tests.testapps.HelloWorldBounded.conditions import (top_level_flag, flag1, flag2, flag3, sub1_top_flag,
                                                           regMatch, count)
-        from tests.testapps.HelloWorld.transforms import (top_level_filter, filter1, filter2, filter3, complex_filter,
+        from tests.testapps.HelloWorldBounded.transforms import (top_level_filter, filter1, filter2, filter3, complex_filter,
                                                           length, json_select, sub1_top_filter)
-        from tests.testapps.HelloWorld.actions import global2
+        from tests.testapps.HelloWorldBounded.actions import global2
         from tests.testapps.DailyQuote.main import Main as DailyMain
         self.maxDiff = None
-        expected = {'HelloWorld': {'main': Main,
+        expected = {'HelloWorldBounded': {'main': Main,
                                    'actions': {'main.Main.helloWorld': {'run': Main.helloWorld, 'bound': True},
                                                'main.Main.repeatBackToMe': {'run': Main.repeatBackToMe, 'bound': True},
                                                'main.Main.returnPlusOne': {'run': Main.returnPlusOne, 'bound': True},
@@ -375,6 +375,7 @@ class TestAppCache(TestCase):
                                               'main.Main.repeatBackToMe': {'run': DailyMain.repeatBackToMe, 'bound': True},
                                               'main.Main.forismaticQuote': {'run': DailyMain.forismaticQuote, 'bound': True},
                                               'main.Main.getQuote': {'run': DailyMain.getQuote, 'bound': True}}}}
+        self.cache._cache.pop("HelloWorld")
         self.assertDictEqual(self.cache._cache, expected)
 
     def test_clear_cache_empty_cache(self):

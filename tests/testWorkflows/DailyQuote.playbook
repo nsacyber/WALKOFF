@@ -13,7 +13,8 @@
                     "name": "start",
                     "position": {},
                     "risk": 0,
-                    "uid": "ffd28bd2913242949069b8579fa148fd"
+                    "uid": "ffd28bd2913242949069b8579fa148fd",
+                    "device_id": 1
                 }
             ],
             "uid": "07ddf567fb304933bde7c91abcba00b8"

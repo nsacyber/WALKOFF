@@ -143,13 +143,13 @@ class TestAppApiValidation(unittest.TestCase):
 
     def test_validate_actions_valid_run_no_params(self):
         self.__generate_resolver_dereferencer(self.basicapi)
-        validate_actions(self.basicapi['actions'], self.dereferencer, 'HelloWorld')
+        validate_actions(self.basicapi['actions'], self.dereferencer, 'HelloWorldBounded')
 
     def test_validate_actions_invalid_run_no_params(self):
         self.basicapi['actions']['helloWorld']['run'] = 'invalid.invalid'
         self.__generate_resolver_dereferencer(self.basicapi)
         with self.assertRaises(InvalidApi):
-            validate_actions(self.basicapi['actions'], self.dereferencer, 'HelloWorld')
+            validate_actions(self.basicapi['actions'], self.dereferencer, 'HelloWorldBounded')
 
     def test_validate_actions_invalid_app_name(self):
         self.__generate_resolver_dereferencer(self.basicapi)
@@ -167,9 +167,9 @@ class TestAppApiValidation(unittest.TestCase):
         self.__generate_resolver_dereferencer(self.basicapi)
         validate_action_params(self.basicapi['actions']['Add Three']['parameters'],
                                self.dereferencer,
-                               'HelloWorld',
+                               'HelloWorldBounded',
                                'Add Three',
-                               get_app_action('HelloWorld', 'main.Main.addThree'))
+                               get_app_action('HelloWorldBounded', 'main.Main.addThree'))
 
     def test_validate_action_params_duplicate_param_name(self):
         self.basicapi['actions']['Add Three'] = {'run': 'main.Main.addThree',
@@ -183,9 +183,9 @@ class TestAppApiValidation(unittest.TestCase):
         with self.assertRaises(InvalidApi):
             validate_action_params(self.basicapi['actions']['Add Three']['parameters'],
                                    self.dereferencer,
-                                   'HelloWorld',
+                                   'HelloWorldBounded',
                                    'Add Three',
-                                   get_app_action('HelloWorld', 'main.Main.addThree'))
+                                   get_app_action('HelloWorldBounded', 'main.Main.addThree'))
 
     def test_validate_action_params_too_many_params_in_api(self):
         self.basicapi['actions']['Add Three'] = {'run': 'main.Main.addThree',
@@ -201,9 +201,9 @@ class TestAppApiValidation(unittest.TestCase):
         with self.assertRaises(InvalidApi):
             validate_action_params(self.basicapi['actions']['Add Three']['parameters'],
                                    self.dereferencer,
-                                   'HelloWorld',
+                                   'HelloWorldBounded',
                                    'Add Three',
-                                   get_app_action('HelloWorld', 'main.Main.addThree'))
+                                   get_app_action('HelloWorldBounded', 'main.Main.addThree'))
 
     def test_validate_action_params_too_few_params_in_api(self):
         self.basicapi['actions']['Add Three'] = {'run': 'main.Main.addThree',
@@ -215,9 +215,9 @@ class TestAppApiValidation(unittest.TestCase):
         with self.assertRaises(InvalidApi):
             validate_action_params(self.basicapi['actions']['Add Three']['parameters'],
                                    self.dereferencer,
-                                   'HelloWorld',
+                                   'HelloWorldBounded',
                                    'Add Three',
-                                   get_app_action('HelloWorld', 'main.Main.addThree'))
+                                   get_app_action('HelloWorldBounded', 'main.Main.addThree'))
 
     def test_validate_action_params_different_params_in_api(self):
         self.basicapi['actions']['Add Three'] = {'run': 'main.Main.addThree',
@@ -231,9 +231,9 @@ class TestAppApiValidation(unittest.TestCase):
         with self.assertRaises(InvalidApi):
             validate_action_params(self.basicapi['actions']['Add Three']['parameters'],
                                    self.dereferencer,
-                                   'HelloWorld',
+                                   'HelloWorldBounded',
                                    'Add Three',
-                                   get_app_action('HelloWorld', 'main.Main.addThree'))
+                                   get_app_action('HelloWorldBounded', 'main.Main.addThree'))
 
     def test_validate_action_params_event(self):
         self.basicapi['actions']['Sample Event'] = {'run': 'main.Main.sample_event',
@@ -244,9 +244,9 @@ class TestAppApiValidation(unittest.TestCase):
         self.__generate_resolver_dereferencer(self.basicapi)
         validate_action_params(self.basicapi['actions']['Sample Event']['parameters'],
                                self.dereferencer,
-                               'HelloWorld',
+                               'HelloWorldBounded',
                                'Sample Event',
-                               get_app_action('HelloWorld', 'main.Main.sample_event'),
+                               get_app_action('HelloWorldBounded', 'main.Main.sample_event'),
                                event='event1')
 
     def test_validate_return_codes(self):

@@ -300,8 +300,9 @@ class TestAction(unittest.TestCase):
         self.assertEqual(action._output, result)
 
     def test_execute_event(self):
-        action = Action(app_name='HelloWorld', action_name='Sample Event', arguments=[Argument('arg1', value=1)])
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
+        action = Action(app_name='HelloWorldBounded', action_name='Sample Event', arguments=[Argument('arg1', value=1)],
+                        device_id=1)
+        instance = AppInstance.create(app_name='HelloWorldBounded', device_name='device1')
 
         import time
         from tests.testapps.HelloWorld.events import event1

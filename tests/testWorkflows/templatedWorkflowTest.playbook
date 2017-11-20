@@ -8,7 +8,7 @@
                     "conditions": [
                         {
                             "action_name": "regMatch",
-                            "app_name": "HelloWorld",
+                            "app_name": "HelloWorldBounded",
                             "arguments": [
                                 {
                                     "name": "regex",
@@ -18,7 +18,7 @@
                             "transforms": [
                                 {
                                     "action_name": "length",
-                                    "app_name": "HelloWorld",
+                                    "app_name": "HelloWorldBounded",
                                     "arguments": [],
                                     "uid": "2e371b8c5cee4a40850f334defcf28f2"
                                 }
@@ -36,7 +36,7 @@
             "actions": [
                 {
                     "action_name": "repeatBackToMe",
-                    "app_name": "HelloWorld",
+                    "app_name": "HelloWorldBounded",
                     "arguments": [
                         {
                             "name": "call",
@@ -47,16 +47,18 @@
                     "position": {},
                     "risk": 0,
                     "templated": true,
-                    "uid": "cd178e70ba734022b3ee1715255e9fd2"
+                    "uid": "cd178e70ba734022b3ee1715255e9fd2",
+                    "device_id": 1
                 },
                 {
                     "action_name": "helloWorld",
-                    "app_name": "HelloWorld",
+                    "app_name": "HelloWorldBounded",
                     "arguments": [],
                     "name": "start",
                     "position": {},
                     "risk": 0,
-                    "uid": "403e56dee3b74c5fad931d5e821fe2b9"
+                    "uid": "403e56dee3b74c5fad931d5e821fe2b9",
+                    "device_id": 1
                 }
             ],
             "uid": "3c144dc81686489cb98766bdbbdf180a"

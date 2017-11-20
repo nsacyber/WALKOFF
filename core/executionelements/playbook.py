@@ -105,8 +105,6 @@ class Playbook(ExecutionElement):
 
         Returns:
             A list of all of the Workflows associated with the Playbook, in limited JSON form
-
-        :return:
         """
         return [{'name': workflow_names, 'uid': workflow.uid} for workflow_names, workflow in self.workflows.items()]
 

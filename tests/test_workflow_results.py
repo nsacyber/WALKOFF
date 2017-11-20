@@ -31,7 +31,7 @@ class TestWorkflowResults(ServerTestCase):
             return result
         self.assertDictEqual(strip_timestamp(workflow_result.results[0].as_json()),
                              {'arguments': [],
-                              'app_name': 'HelloWorld',
+                              'app_name': 'HelloWorldBounded',
                               'action_name': 'helloWorld',
                               'type': 'success',
                               'name': 'start',

@@ -29,7 +29,7 @@ class Action(ExecutionElement):
             name (str, optional): The name of the Action object. Defaults to an empty string.
             device_id (int, optional): The id of the device associated with the app associated with the Action. Defaults
                 to None.
-            arguments ([Argument], optional): A list of Argument objects that are arguments to the action.
+            arguments ([Argument], optional): A list of Argument objects that are parameters to the action.
                 Defaults to None.
             triggers (list[Flag], optional): A list of Flag objects for the Action. If a Action should wait for data
                 before continuing, then include these Trigger objects in the Action init. Defaults to None.
@@ -54,7 +54,7 @@ class Action(ExecutionElement):
         self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
 
         if is_app_action_bound(self.app_name, self._run) and not self.device_id:
-            logger.error(
+            raise InvalidArgument(
                 "Cannot initialize Action {}. App action is bound but no device ID was provided.".format(self.name))
 
         self._action_executable = get_app_action(self.app_name, self._run)
@@ -73,7 +73,7 @@ class Action(ExecutionElement):
         self._execution_uid = 'default'
 
     def get_output(self):
-        """Gets the output of a Action (the result)
+        """Gets the output of an Action (the result)
 
         Returns:
             The result of the Action
@@ -130,7 +130,7 @@ class Action(ExecutionElement):
             self._update_json(updated_json=json.loads(env))
 
     def set_arguments(self, new_arguments):
-        """Updates the arguments for a Action object.
+        """Updates the arguments for an Action object.
 
         Args:
             new_arguments ([Argument]): The new Arguments for the Action object.
@@ -140,7 +140,7 @@ class Action(ExecutionElement):
         self.arguments = new_arguments
 
     def execute(self, instance, accumulator):
-        """Executes a Action by calling the associated app function.
+        """Executes an Action by calling the associated app function.
 
         Args:
             instance (App): The instance of an App object to be used to execute the associated function.

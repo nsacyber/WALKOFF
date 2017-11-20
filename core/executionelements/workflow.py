@@ -73,7 +73,7 @@ class Workflow(ExecutionElement):
         logger.info('Action added to workflow {0}. Action: {1}'.format(self.name, self.actions[action.uid].read()))
 
     def remove_action(self, uid):
-        """Removes a Action object from the Workflow's list of Actions given the Action name.
+        """Removes a Action object from the Workflow's list of Actions given the Action UID.
         
         Args:
             uid (str): The UID of the Action object to be removed.
@@ -111,7 +111,7 @@ class Workflow(ExecutionElement):
             logger.warning('Cannot resume workflow {0}. Reason: {1}'.format(self.name, format_exception_message(e)))
             pass
 
-    def execute(self, execution_uid, start=None, start_arguments=''):
+    def execute(self, execution_uid, start=None, start_arguments=None):
         """Executes a Workflow by executing all Actions in the Workflow list of Action objects.
 
         Args:
@@ -163,7 +163,7 @@ class Workflow(ExecutionElement):
         return device_id
 
     def send_data_to_action(self, data):
-        """Sends data to a Action if it has triggers associated with it, and is currently awaiting data
+        """Sends data to an Action if it has triggers associated with it, and is currently awaiting data
 
         Args:
             data (dict): The data to send to the triggers. This dict has two keys: 'data_in' which is the data
@@ -185,6 +185,16 @@ class Workflow(ExecutionElement):
         yield  # needed so you can avoid catching StopIteration exception
 
     def get_branch(self, current_action, accumulator):
+        """Executes the Branch objects associated with this Workflow to determine which Action should be
+            executed next.
+
+        Args:
+            current_action(Action): The current action that has just finished executing.
+            accumulator (dict): The accumulated results of previous Actions.
+
+        Returns:
+            The UID of the next Action to be executed if successful, else None.
+        """
         if self.branches:
             for branch in sorted(self.branches[current_action.uid]):
                 # TODO: This here is the only hold up from getting rid of action._output.
@@ -254,7 +264,7 @@ class Workflow(ExecutionElement):
                json_in (JSON dict): The JSON data to be parsed and reconstructed into a Workflow object.
         """
 
-        backup_actions = self.strip_async_result(with_deepcopy=True)
+        backup_actions = self.strip_event(with_deepcopy=True)
         self.actions = {}
         if 'name' in json_in:
             self.name = json_in['name']
@@ -275,7 +285,7 @@ class Workflow(ExecutionElement):
                         self.branches[branch.source_uid] = []
                     self.branches[branch.source_uid].append(branch)
         except (UnknownApp, UnknownAppAction, InvalidArgument):
-            self.reload_async_result(backup_actions, with_deepcopy=True)
+            self.reload_event(backup_actions, with_deepcopy=True)
             raise
 
     def set_execution_uid(self, execution_uid):
@@ -306,8 +316,8 @@ class Workflow(ExecutionElement):
         else:
             super(Workflow, self).regenerate_uids()
 
-    def strip_async_result(self, with_deepcopy=False):
-        """Removes the AsyncResult object from all of the Actions, necessary to deepcopy a Workflow
+    def strip_event(self, with_deepcopy=False):
+        """Removes the Event object from all of the Actions, necessary to deepcopy a Workflow
 
         Args:
             with_deepcopy (bool, optional): Whether or not to deepcopy the Action, or just return the AsyncResult.
@@ -326,8 +336,8 @@ class Workflow(ExecutionElement):
                 actions[action.uid] = event
         return actions
 
-    def reload_async_result(self, actions, with_deepcopy=False):
-        """Reloads the AsyncResult object for all of the Actions, necessary to restore a Workflow
+    def reload_event(self, actions, with_deepcopy=False):
+        """Reloads the Event object for all of the Actions, necessary to restore a Workflow
 
         Args:
             actions (dict): A dict of action_uid: async_result, or action_uid to (action, async_result)
@@ -343,8 +353,8 @@ class Workflow(ExecutionElement):
             for action in self.actions.values():
                 action._event = actions[action.uid]
 
-    def reset_async_result(self):
-        """Reinitialize an AsyncResult object for all of the Actions when a Workflow is copied
+    def reset_event(self):
+        """Reinitialize an Event object for all of the Actions when a Workflow is copied
         """
         from threading import Event
         for action in self.actions.values():

@@ -23,7 +23,7 @@
             "actions": [
                 {
                     "action_name": "Add Three",
-                    "app_name": "HelloWorld",
+                    "app_name": "HelloWorldBounded",
                     "arguments": [
                         {
                             "name": "num1",
@@ -41,11 +41,12 @@
                     "name": "1",
                     "position": {},
                     "risk": 0,
-                    "uid": "811b1acdc3ec48a9abbdc0cf01c66176"
+                    "uid": "811b1acdc3ec48a9abbdc0cf01c66176",
+                    "device_id": 1
                 },
                 {
                     "action_name": "Add Three",
-                    "app_name": "HelloWorld",
+                    "app_name": "HelloWorldBounded",
                     "arguments": [
                         {
                             "name": "num1",
@@ -63,11 +64,12 @@
                     "name": "start",
                     "position": {},
                     "risk": 0,
-                    "uid": "5ed04d7e28354ee7b81619dab9d34fe2"
+                    "uid": "5ed04d7e28354ee7b81619dab9d34fe2",
+                    "device_id": 1
                 },
                 {
                     "action_name": "Add Three",
-                    "app_name": "HelloWorld",
+                    "app_name": "HelloWorldBounded",
                     "arguments": [
                         {
                             "name": "num1",
@@ -85,7 +87,8 @@
                     "name": "2",
                     "position": {},
                     "risk": 0,
-                    "uid": "9515a631ba4f4d6f8fcd6b843a277c40"
+                    "uid": "9515a631ba4f4d6f8fcd6b843a277c40",
+                    "device_id": 1
                 }
             ],
             "uid": "3dd54e7df3bc414a962426d92ce3e6d2"
