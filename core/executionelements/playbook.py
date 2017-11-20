@@ -1,22 +1,21 @@
 from core.executionelements.executionelement import ExecutionElement
+import core.config.config
 
 
 class Playbook(ExecutionElement):
-    def __init__(self, name, workflows=None, uid=None, version_number=None):
+    def __init__(self, name, workflows=None, uid=None):
         """Creates a Playbook object.
 
         Args:
             name (str): The name of the Playbook
             workflows (list[Workflow], optional): An optional list of Workflows associated with this Playbook
             uid (str, optional): An optional UID to specify for this Playbook
-            version_number (str, optional): The version number for this Playbook, used when an update to a field
-                in the back-end requires that a playbook also be updated. Defaults to None.
         """
         ExecutionElement.__init__(self, uid)
         self.name = name
         # TODO: When playbook endpoints use UIDs, this should store UIDS
         self.workflows = {workflow.name: workflow for workflow in workflows} if workflows is not None else {}
-        self.version_number = version_number
+        self.version_number = core.config.config.playbook_version_number
 
     def add_workflow(self, workflow):
         """Add a Workflow to the Playbook.
