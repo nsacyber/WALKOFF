@@ -48,9 +48,15 @@ class Action(ExecutionElement):
         self._event = threading.Event()
 
         self.name = name
+        self.device_id = device_id
         self.app_name = app_name
         self.action_name = action_name
         self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
+
+        if is_app_action_bound(self.app_name, self._run) and not self.device_id:
+            logger.error(
+                "Cannot initialize Action {}. App action is bound but no device ID was provided.".format(self.name))
+
         self._action_executable = get_app_action(self.app_name, self._run)
 
         arguments = {argument.name: argument for argument in arguments} if arguments is not None else {}
@@ -59,7 +65,6 @@ class Action(ExecutionElement):
         if not self.templated:
             validate_app_action_parameters(self._arguments_api, arguments, self.app_name, self.action_name)
         self.arguments = arguments
-        self.device_id = device_id
         self.risk = risk
         self.position = position if position is not None else {}
 
@@ -183,7 +188,8 @@ class Action(ExecutionElement):
             raise
         else:
             self._output = result
-            logger.debug('Action {0}-{1} (uid {2}) executed successfully'.format(self.app_name, self.action_name, self.uid))
+            logger.debug(
+                'Action {0}-{1} (uid {2}) executed successfully'.format(self.app_name, self.action_name, self.uid))
             return result
 
     def _wait_for_trigger(self, accumulator):
