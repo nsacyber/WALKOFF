@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from os import path
 from threading import Event
+from copy import deepcopy
 
 from core.argument import Argument
 import core.case.database as case_database
@@ -271,10 +272,11 @@ class TestWorkflowServer(ServerTestCase):
             remove_uids(resulting_workflow.actions[action_name])
             self.assertDictEqual(loaded_action.read(), resulting_workflow.actions[action_name].read())
 
-    def test_save_workflow_invalid_app(self):
+    def test_save_workflow_invalid_app_reload_actions(self):
         initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
+        actions_unmod = deepcopy(initial_actions)
         initial_actions[0]['position']['x'] = 0.0
         initial_actions[0]['position']['y'] = 0.0
         added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause',
@@ -289,6 +291,15 @@ class TestWorkflowServer(ServerTestCase):
                                     headers=self.headers,
                                     content_type='application/json',
                                     status_code=INVALID_INPUT_ERROR)
+
+        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        new_actions = [action.read() for action in workflow.actions.values()]
+        for action in actions_unmod:
+            action.pop('position')
+        for action in new_actions:
+            action.pop('position')
+            action.pop('event')
+        self.assertListEqual(actions_unmod, new_actions)
 
     def test_save_workflow_invalid_action(self):
         initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')

@@ -264,7 +264,8 @@ class Workflow(ExecutionElement):
                json_in (JSON dict): The JSON data to be parsed and reconstructed into a Workflow object.
         """
 
-        backup_actions = self.strip_event(with_deepcopy=True)
+        backup_actions = self.deepcopy_actions_with_events()
+        backup_branches = deepcopy(self.branches)
         self.actions = {}
         if 'name' in json_in:
             self.name = json_in['name']
@@ -285,7 +286,8 @@ class Workflow(ExecutionElement):
                         self.branches[branch.source_uid] = []
                     self.branches[branch.source_uid].append(branch)
         except (UnknownApp, UnknownAppAction, InvalidArgument):
-            self.reload_event(backup_actions, with_deepcopy=True)
+            self.restore_actions_and_events(backup_actions)
+            self.branches = backup_branches
             raise
 
     def set_execution_uid(self, execution_uid):
@@ -316,42 +318,35 @@ class Workflow(ExecutionElement):
         else:
             super(Workflow, self).regenerate_uids()
 
-    def strip_event(self, with_deepcopy=False):
-        """Removes the Event object from all of the Actions, necessary to deepcopy a Workflow
-
-        Args:
-            with_deepcopy (bool, optional): Whether or not to deepcopy the Action, or just return the AsyncResult.
-                Defaults to False.
+    def deepcopy_actions_with_events(self):
+        """Makes a deepcopy of all actions, including their event objects
 
         Returns:
-            A dict of action_uid: async_result, or action_uid to (action, async_result)
+            A dict of action_uid: (action, event)
         """
         actions = {}
         for action in self.actions.values():
             event = action._event
             action._event = None
-            if with_deepcopy:
-                actions[action.uid] = (deepcopy(action), event)
-            else:
-                actions[action.uid] = event
+            actions[action.uid] = (deepcopy(action), event)
         return actions
 
-    def reload_event(self, actions, with_deepcopy=False):
-        """Reloads the Event object for all of the Actions, necessary to restore a Workflow
+    def restore_actions_and_events(self, backup_actions):
+        """Restores all actions that were previously deepcopied
 
         Args:
-            actions (dict): A dict of action_uid: async_result, or action_uid to (action, async_result)
-            with_deepcopy (bool, optional): Whether or not the Action was deepcopied (i.e. what format the actions dict
-                is in). Defaults to False
+            backup_actions (dict): The actions to be restored
         """
-        if with_deepcopy:
-            for action in actions.values():
-                action_obj = action[0]
-                action_obj._event = action[1]
-                self.actions[action_obj.name] = action_obj
-        else:
-            for action in self.actions.values():
-                action._event = actions[action.uid]
+        self.actions = {}
+        for action, event in backup_actions.values():
+            action.event = event
+            self.actions[action.uid] = action
+
+    def strip_events_from_actions(self):
+        """Removes the Event object from all of the Actions, necessary to deepcopy a Workflow
+        """
+        for action in self.actions.values():
+            action._event = None
 
     def reset_event(self):
         """Reinitialize an Event object for all of the Actions when a Workflow is copied
