@@ -140,15 +140,15 @@ class LoadBalancer:
         server_public, server_secret = auth.load_certificate(server_secret_file)
 
         self.request_socket = self.ctx.socket(zmq.ROUTER)
-        # self.request_socket.curve_secretkey = server_secret
-        # self.request_socket.curve_publickey = server_public
-        # self.request_socket.curve_server = True
+        self.request_socket.curve_secretkey = server_secret
+        self.request_socket.curve_publickey = server_public
+        self.request_socket.curve_server = True
         self.request_socket.bind(REQUESTS_ADDR)
 
         self.comm_socket = self.ctx.socket(zmq.ROUTER)
-        # self.comm_socket.curve_secretkey = server_secret
-        # self.comm_socket.curve_publickey = server_public
-        # self.comm_socket.curve_server = True
+        self.comm_socket.curve_secretkey = server_secret
+        self.comm_socket.curve_publickey = server_public
+        self.comm_socket.curve_server = True
         self.comm_socket.bind(COMM_ADDR)
 
         # gevent.sleep(2)
@@ -258,23 +258,23 @@ class Worker:
 
         self.request_sock = self.ctx.socket(zmq.REQ)
         self.request_sock.identity = u"Worker-{}".format(id_).encode("ascii")
-        # self.request_sock.curve_secretkey = client_secret
-        # self.request_sock.curve_publickey = client_public
-        # self.request_sock.curve_serverkey = server_public
+        self.request_sock.curve_secretkey = client_secret
+        self.request_sock.curve_publickey = client_public
+        self.request_sock.curve_serverkey = server_public
         self.request_sock.connect(REQUESTS_ADDR)
 
         self.comm_sock = self.ctx.socket(zmq.REQ)
         self.comm_sock.identity = u"Worker-{}".format(id_).encode("ascii")
-        # self.comm_sock.curve_secretkey = client_secret
-        # self.comm_sock.curve_publickey = client_public
-        # self.comm_sock.curve_serverkey = server_public
+        self.comm_sock.curve_secretkey = client_secret
+        self.comm_sock.curve_publickey = client_public
+        self.comm_sock.curve_serverkey = server_public
         self.comm_sock.connect(COMM_ADDR)
 
         self.results_sock = self.ctx.socket(zmq.PUSH)
         self.results_sock.identity = u"Worker-{}".format(id_).encode("ascii")
-        # self.results_sock.curve_secretkey = client_secret
-        # self.results_sock.curve_publickey = client_public
-        # self.results_sock.curve_serverkey = server_public
+        self.results_sock.curve_secretkey = client_secret
+        self.results_sock.curve_publickey = client_public
+        self.results_sock.curve_serverkey = server_public
         self.results_sock.connect(RESULTS_ADDR)
 
         if worker_environment_setup:
@@ -398,9 +398,9 @@ class Receiver:
         self.ctx = ctx
 
         self.results_sock = self.ctx.socket(zmq.PULL)
-        # self.results_sock.curve_secretkey = server_secret
-        # self.results_sock.curve_publickey = server_public
-        # self.results_sock.curve_server = True
+        self.results_sock.curve_secretkey = server_secret
+        self.results_sock.curve_publickey = server_public
+        self.results_sock.curve_server = True
         self.results_sock.bind(RESULTS_ADDR)
 
     @staticmethod
