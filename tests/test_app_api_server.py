@@ -91,7 +91,7 @@ class TestAppApiServerFuncs(ServerTestCase):
             'description': 'Pauses execution',
             'parameters': [
                 {'schema': {'type': 'number'}, 'name': 'seconds', 'description': 'Seconds to pause', 'required': True}]}
-        formatted = format_app_action_api(action_api)
+        formatted = format_app_action_api(action_api, "HelloWorldBounded", "actions")
         self.assertSetEqual(set(formatted.keys()), set(expected.keys()))
         self.assertEqual(formatted['run'], expected['run'])
         self.assertEqual(formatted['description'], expected['description'])
@@ -112,7 +112,7 @@ class TestAppApiServerFuncs(ServerTestCase):
                     'event': 'Event1',
                     'parameters': [{'schema': {'type': 'number'}, 'name': 'arg1', 'required': True}]}
 
-        formatted = format_app_action_api(action_api)
+        formatted = format_app_action_api(action_api, "HelloWorldBounded", "actions")
         self.assertSetEqual(set(formatted.keys()), set(expected.keys()))
         self.assertEqual(formatted['run'], expected['run'])
         self.assertEqual(formatted['event'], expected['event'])
@@ -143,7 +143,7 @@ class TestAppApiServerFuncs(ServerTestCase):
             'parameters': [
                 {'schema': {'required': True, 'type': 'number'}, 'name': 'seconds', 'description': 'Seconds to pause'}],
             'name': 'pause'})
-        formatted = format_all_app_actions_api(action_api)
+        formatted = format_all_app_actions_api(action_api, "HelloWorldBounded", "actions")
         self.assertEqual(len(formatted), len(expected))
         for action in formatted:
             self.assertIn(action['name'], ('Sample Event', 'pause'))
