@@ -37,6 +37,7 @@ class JsonElementReader(object):
 
     @staticmethod
     def _read_list(field_name, list_, accumulator):
+        # TODO: Check if list is full before this happens. Somehow this test breaks templated steps
         accumulator[field_name] = [JsonElementReader.read(list_value)
                                    if not (isinstance(list_value, string_types) or type(list_value) in (float, int, bool))
                                    else list_value
