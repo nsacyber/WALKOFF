@@ -44,6 +44,19 @@ actions:
       Success:
         schema:
           type: object
+  echo array:
+    run: actions.echo_array
+    description: returns the same array passed into it
+    parameters:
+      - name: data
+        description: array to echo
+        required: true
+        type: array
+    returns:
+      Success:
+        description: echoed list
+        schema:
+          type: array
   'json select':
     run: actions.json_select
     description: Gets a selected sub element of a json

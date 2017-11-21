@@ -13,4 +13,5 @@ export class ActionApi {
 	// tags: Tag[] = [];
 	summary: string;
 	// external_docs: ExternalDoc[] = [];
+	global: boolean;
 }

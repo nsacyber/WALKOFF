@@ -21,6 +21,9 @@ def round_to_n(number, places):
 def echo_object(data):
     return data
 
+@action
+def echo_array(data):
+    return data
 
 @action
 def json_select(json_reference, element):

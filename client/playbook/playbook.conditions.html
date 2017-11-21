@@ -1,5 +1,5 @@
 <div *ngIf="appNamesWithConditions.length">
-	<div class="row actionAddBar">
+	<div class="row addBar">
 		<div class="col-xs-4">
 			<label>App</label>
 			<select class="form-control" [(ngModel)]="selectedAppName" (change)="resetConditionSelection($event.target.value)">
@@ -31,8 +31,9 @@
 				</div>
 			</div>
 		</div>
-		<playbook-argument-component *ngFor="let argument of condition.arguments; let id = index" [loadedWorkflow]="loadedWorkflow"
-		[argument]="argument" [parameterApi]="getConditionApiArgs(condition.app_name, condition.action_name, argument.name)" [id]="id"></playbook-argument-component>
+		<playbook-argument-component *ngFor="let parameterApi of getConditionApi(condition.app_name, condition.action_name).parameters; let id = index"
+		[loadedWorkflow]="loadedWorkflow" [argument]="getOrInitializeArgument(condition, parameterApi)" [parameterApi]="parameterApi"
+		[id]="id"></playbook-argument-component>
 		<div>
 			<h4>Transforms</h4>
 			<playbook-transforms-component [transforms]="condition.transforms" [appApis]="appApis"

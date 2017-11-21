@@ -3,6 +3,7 @@ import { Component, ViewEncapsulation, Input } from '@angular/core';
 import { PlaybookService } from './playbook.service';
 
 import { AppApi } from '../models/api/appApi';
+import { ConditionApi } from '../models/api/conditionApi';
 import { ParameterApi } from '../models/api/parameterApi';
 import { Workflow } from '../models/playbook/workflow';
 import { Argument } from '../models/playbook/argument';
@@ -48,25 +49,25 @@ export class PlaybookConditionsComponent {
 	}
 
 	addCondition(): void {
-		const api = this.appApis
-			.find(a => a.name === this.selectedAppName).condition_apis
-			.find(c => c.name === this.selectedConditionApi);
+		// const api = this.appApis
+		// 	.find(a => a.name === this.selectedAppName).condition_apis
+		// 	.find(c => c.name === this.selectedConditionApi);
 
-		const args: Argument[] = [];
-		// Omit the parameter that matches the data_in
-		api.parameters.filter(p => p.name !== api.data_in).forEach((parameterApi) => {
-			args.push({
-				name: parameterApi.name,
-				value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
-				reference: '',
-				selection: '',
-			});
-		});
+		// const args: Argument[] = [];
+		// // Omit the parameter that matches the data_in
+		// api.parameters.filter(p => p.name !== api.data_in).forEach((parameterApi) => {
+		// 	args.push({
+		// 		name: parameterApi.name,
+		// 		value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
+		// 		reference: '',
+		// 		selection: '',
+		// 	});
+		// });
 
 		const newCondition = new Condition();
 		newCondition.app_name = this.selectedAppName;
 		newCondition.action_name = this.selectedConditionApi;
-		newCondition.arguments = args;
+		// newCondition.arguments = [];
 
 		this.conditions.push(newCondition);
 	}
@@ -91,11 +92,34 @@ export class PlaybookConditionsComponent {
 		this.conditions.splice(index, 1);
 	}
 
-	getConditionApiArgs(appName: string, conditionName: string, argumentName: string): ParameterApi {
-		return this.appApis
-			.find(a => a.name === appName).condition_apis
-			.find(c => c.name === conditionName).parameters
-			.find(a => a.name === argumentName);
+	getConditionApi(appName: string, conditionName: string): ConditionApi {
+		const conditionApi = this.appApis.find(a => a.name === appName).condition_apis.find(c => c.name === conditionName);
+		// Filter out the data_in parameter
+		conditionApi.parameters = conditionApi.parameters.filter(p => p.name !== conditionApi.data_in);
+		return conditionApi;
+	}
+
+	getOrInitializeArgument(condition: Condition, parameterApi: ParameterApi): Argument {
+		// Find an existing argument
+		let argument = condition.arguments.find(a => a.name === parameterApi.name);
+		if (argument) { return argument; }
+
+		argument = this.getDefaultArgument(parameterApi);
+		condition.arguments.push(argument);
+		return argument;
+	}
+
+	/**
+	 * Returns an argument based upon a given parameter API and its default value.
+	 * @param parameterApi Parameter API used to generate the default argument
+	 */
+	getDefaultArgument(parameterApi: ParameterApi): Argument {
+		return {
+			name: parameterApi.name,
+			value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
+			reference: '',
+			selection: '',
+		};
 	}
 
 	getConditionNamesForApp(): string[] {

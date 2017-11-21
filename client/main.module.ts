@@ -33,6 +33,8 @@ import { PlaybookArgumentComponent } from './playbook/playbook.argument.componen
 import { PlaybookConditionsComponent } from './playbook/playbook.conditions.component';
 import { PlaybookTransformsComponent } from './playbook/playbook.transforms.component';
 
+import { KeysPipe } from './pipes/keys.pipe';
+
 @NgModule({
 	imports: [
 		BrowserModule,
@@ -68,6 +70,8 @@ import { PlaybookTransformsComponent } from './playbook/playbook.transforms.comp
 		PlaybookArgumentComponent,
 		PlaybookConditionsComponent,
 		PlaybookTransformsComponent,
+		// Pipes
+		KeysPipe,
 	],
 	providers: [{
 		provide: JwtHttp,

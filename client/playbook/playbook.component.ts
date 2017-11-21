@@ -47,6 +47,7 @@ export class PlaybookComponent {
 	appApis: AppApi[] = [];
 	offset: GraphPosition = { x: -330, y: -170 };
 	selectedAction: Action; // node being displayed in json editor
+	selectedActionApi: ActionApi;
 	selectedBranchParams: {
 		branch: Branch;
 		returnTypes: ReturnApi[];
@@ -470,22 +471,22 @@ export class PlaybookComponent {
 			if (s.device_id === 0) { delete s.device_id; }
 
 			// Properly sanitize arguments through the tree
-			this._sanitizeArgumentForSave(s.arguments);
+			this._sanitizeArgumentsForSave(s.arguments);
 
 			s.triggers.forEach(t => {
-				this._sanitizeArgumentForSave(t.arguments);
+				this._sanitizeArgumentsForSave(t.arguments);
 
 				t.transforms.forEach(tr => {
-					this._sanitizeArgumentForSave(tr.arguments);
+					this._sanitizeArgumentsForSave(tr.arguments);
 				});
 			});
 		});
 		workflowToSave.branches.forEach(ns => {
 			ns.conditions.forEach(c => {
-				this._sanitizeArgumentForSave(c.arguments);
+				this._sanitizeArgumentsForSave(c.arguments);
 
 				c.transforms.forEach(tr => {
-					this._sanitizeArgumentForSave(tr.arguments);
+					this._sanitizeArgumentsForSave(tr.arguments);
 				});
 			});
 		});
@@ -519,7 +520,7 @@ export class PlaybookComponent {
 	 * Sanitizes an argument so we don't have bad data on save, such as a value when reference is specified.
 	 * @param argument The argument to sanitize
 	 */
-	_sanitizeArgumentForSave(args: Argument[]): void {
+	_sanitizeArgumentsForSave(args: Argument[]): void {
 		// Filter out any arguments that are blank, essentially
 		const idsToRemove: number[] = [];
 		for (const argument of args) {
@@ -527,7 +528,7 @@ export class PlaybookComponent {
 			if (typeof (argument.value) === 'string') { argument.value = argument.value.trim(); }
 			// If value and reference are blank, add this argument's ID in the array to the list
 			// Add them in reverse so we don't have problems with the IDs sliding around on the splice
-			if (((argument.value == null || argument.value === '') && argument.reference === '')) {
+			if ((argument.value == null || argument.value === '') && argument.reference === '') {
 				idsToRemove.unshift(args.indexOf(argument));
 			}
 		}
@@ -574,7 +575,7 @@ export class PlaybookComponent {
 		self.cy.elements(`[uid!="${data.uid}"]`).unselect();
 
 		self.selectedAction = self.loadedWorkflow.actions.find(s => s.uid === data.uid);
-
+		self.selectedActionApi = this._getAction(self.selectedAction.app_name, self.selectedAction.action_name);
 		if (!self.selectedAction) { return; }
 
 		// Add data to the selectedAction if it does not exist
@@ -727,17 +728,13 @@ export class PlaybookComponent {
 		// Should we change this logic to do a similar thing?
 		const uid = UUID.UUID();
 
-		const inputs: Argument[] = [];
+		const args: Argument[] = [];
 		const parameters = this._getAction(appName, actionName).parameters;
-
+		// TODO: might be able to remove this entirely
+		// due to the argument component auto-initializing default values
 		if (parameters && parameters.length) {
-			this._getAction(appName, actionName).parameters.forEach((input) => {
-				inputs.push({
-					name: input.name,
-					value: input.schema.default != null ? input.schema.default : null,
-					reference: '',
-					selection: '',
-				});
+			this._getAction(appName, actionName).parameters.forEach((parameter) => {
+				args.push(this.getDefaultArgument(parameter));
 			});
 		}
 
@@ -752,7 +749,7 @@ export class PlaybookComponent {
 		actionToBeAdded.name = uniqueActionName;
 		actionToBeAdded.app_name = appName;
 		actionToBeAdded.action_name = actionName;
-		actionToBeAdded.arguments = inputs;
+		actionToBeAdded.arguments = args;
 
 		this.loadedWorkflow.actions.push(actionToBeAdded);
 
@@ -869,6 +866,9 @@ export class PlaybookComponent {
 	 */
 	removeSelectedNodes(): void {
 		const selecteds = this.cy.$(':selected');
+		// Unselect the elements first to remove the parameters editor if need be
+		// Because deleting elements doesn't unselect them for some reason
+		this.cy.elements(':selected').unselect();
 		if (selecteds.length > 0) { this.ur.do('remove', selecteds); }
 	}
 
@@ -879,7 +879,11 @@ export class PlaybookComponent {
 		const self = this;
 
 		// Handle keyboard presses on graph
-		document.addEventListener('keydown', function (e) {
+		document.addEventListener('keydown', function (e: any) {
+			// If we aren't "focused" on a body or button tag, don't do anything
+			// to prevent events from being fired while in the parameters editor
+			const tagName = document.activeElement.tagName;
+			if (!(tagName === 'BODY' || tagName === 'BUTTON')) { return; }
 			if (self.cy === null) { return; }
 
 			if (e.which === 46) { // Delete
@@ -1197,6 +1201,34 @@ export class PlaybookComponent {
 	 */
 	_getAction(appName: string, actionName: string): ActionApi {
 		return this.appApis.find(a => a.name === appName).action_apis.find(a => a.name === actionName);
+	}
+
+	/**
+	 * Gets a given argument matching an inputted parameter API.
+	 * Adds a new argument to the selected action with default values if the argument doesn't exist.
+	 * @param parameterApi Parameter API object relating to the argument to return
+	 */
+	getOrInitializeSelectedActionArgument(parameterApi: ParameterApi): Argument {
+		// Find an existing argument
+		let argument = this.selectedAction.arguments.find(a => a.name === parameterApi.name);
+		if (argument) { return argument; }
+
+		argument = this.getDefaultArgument(parameterApi);
+		this.selectedAction.arguments.push(argument);
+		return argument;
+	}
+
+	/**
+	 * Returns an argument based upon a given parameter API and its default value.
+	 * @param parameterApi Parameter API used to generate the default argument
+	 */
+	getDefaultArgument(parameterApi: ParameterApi): Argument {
+		return {
+			name: parameterApi.name,
+			value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
+			reference: '',
+			selection: '',
+		};
 	}
 
 	/**

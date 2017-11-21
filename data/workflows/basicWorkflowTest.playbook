@@ -9,6 +9,7 @@
                     "action_name": "helloWorld",
                     "app_name": "HelloWorld",
                     "arguments": [],
+                    "device_id": 1,
                     "name": "helloWorld",
                     "position": {
                         "x": 130,
@@ -16,7 +17,6 @@
                     },
                     "risk": 0,
                     "triggers": [],
-                    "device_id": 1,
                     "uid": "aae6192c-35b1-95e9-a2d7-3c127667ee19"
                 },
                 {
@@ -25,11 +25,10 @@
                     "arguments": [
                         {
                             "name": "number",
-                            "reference": "",
-                            "selection": [],
                             "value": 5
                         }
                     ],
+                    "device_id": 1,
                     "name": "returnPlusOne",
                     "position": {
                         "x": 370,
@@ -37,7 +36,6 @@
                     },
                     "risk": 0,
                     "triggers": [],
-                    "device_id": 1,
                     "uid": "0585feec-cc74-c2d6-16bd-6bdda55bfa38"
                 },
                 {
@@ -47,9 +45,11 @@
                         {
                             "name": "data",
                             "value": {
-                                "a": 1,
-                                "b": 2,
-                                "c": 3
+                                "a": 12,
+                                "c": 9,
+                                "num": -15,
+                                "something": true,
+                                "test": "hi"
                             }
                         }
                     ],
@@ -66,6 +66,7 @@
                     "action_name": "helloWorld",
                     "app_name": "HelloWorld",
                     "arguments": [],
+                    "device_id": 1,
                     "name": "helloWorld 2",
                     "position": {
                         "x": 210,
@@ -73,13 +74,13 @@
                     },
                     "risk": 0,
                     "triggers": [],
-                    "device_id": 1,
                     "uid": "78e3baca-72ee-ac97-6770-6c36bd90d5c0"
                 },
                 {
                     "action_name": "helloWorld",
                     "app_name": "HelloWorld",
                     "arguments": [],
+                    "device_id": 1,
                     "name": "helloWorld 3",
                     "position": {
                         "x": 290,
@@ -87,51 +88,7 @@
                     },
                     "risk": 0,
                     "triggers": [],
-                    "device_id": 1,
                     "uid": "e7a2f454-109f-5e44-ee97-0095af957c09"
-                },
-                {
-                    "action_name": "linearly scale",
-                    "app_name": "Utilities",
-                    "arguments": [
-                        {
-                            "name": "max_value",
-                            "reference": "",
-                            "selection": [],
-                            "value": 10
-                        },
-                        {
-                            "name": "min_value",
-                            "reference": "",
-                            "selection": [],
-                            "value": 0
-                        },
-                        {
-                            "name": "low_scale",
-                            "reference": "",
-                            "selection": [],
-                            "value": 0
-                        },
-                        {
-                            "name": "high_scale",
-                            "reference": "",
-                            "selection": [],
-                            "value": 1
-                        },
-                        {
-                            "name": "value",
-                            "reference": "0585feec-cc74-c2d6-16bd-6bdda55bfa38",
-                            "selection": []
-                        }
-                    ],
-                    "name": "linearly scale",
-                    "position": {
-                        "x": 610,
-                        "y": 130
-                    },
-                    "risk": 0,
-                    "triggers": [],
-                    "uid": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd"
                 },
                 {
                     "action_name": "repeatBackToMe",
@@ -145,6 +102,7 @@
                             ]
                         }
                     ],
+                    "device_id": 1,
                     "name": "repeatBackToMe",
                     "position": {
                         "x": 450,
@@ -152,8 +110,82 @@
                     },
                     "risk": 0,
                     "triggers": [],
-                    "device_id": 1,
                     "uid": "9a2a03e1-21ad-3c49-1359-16eda19da906"
+                },
+                {
+                    "action_name": "linearly scale",
+                    "app_name": "Utilities",
+                    "arguments": [
+                        {
+                            "name": "max_value",
+                            "value": 10
+                        },
+                        {
+                            "name": "min_value",
+                            "value": 0
+                        },
+                        {
+                            "name": "low_scale",
+                            "value": 0
+                        },
+                        {
+                            "name": "high_scale",
+                            "value": 1
+                        },
+                        {
+                            "name": "value",
+                            "reference": "0585feec-cc74-c2d6-16bd-6bdda55bfa38"
+                        }
+                    ],
+                    "name": "linearly scale",
+                    "position": {
+                        "x": 610,
+                        "y": 130
+                    },
+                    "risk": 0,
+                    "triggers": [
+                        {
+                            "action_name": "number compare",
+                            "app_name": "Utilities",
+                            "arguments": [
+                                {
+                                    "name": "operator",
+                                    "value": "le"
+                                },
+                                {
+                                    "name": "threshold",
+                                    "value": 5
+                                }
+                            ],
+                            "transforms": [],
+                            "uid": "61678960-6688-4735-88b1-29756bd1a8a9"
+                        }
+                    ],
+                    "uid": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd"
+                },
+                {
+                    "action_name": "echo array",
+                    "app_name": "Utilities",
+                    "arguments": [
+                        {
+                            "name": "data",
+                            "value": [
+                                true,
+                                "testtesttest",
+                                "ddddddd",
+                                -13,
+                                "fhfffhdsdsdsdf soemthing"
+                            ]
+                        }
+                    ],
+                    "name": "test",
+                    "position": {
+                        "x": 690,
+                        "y": 210
+                    },
+                    "risk": 0,
+                    "triggers": [],
+                    "uid": "b5f04cbe-d315-d1a9-c192-b4a47d012afd"
                 }
             ],
             "branches": [
@@ -196,6 +228,14 @@
                     "source_uid": "e7a2f454-109f-5e44-ee97-0095af957c09",
                     "status": "Success",
                     "uid": "c3639cdf-c4e1-4c93-bc7f-eb2e7dd25da9"
+                },
+                {
+                    "conditions": [],
+                    "destination_uid": "b5f04cbe-d315-d1a9-c192-b4a47d012afd",
+                    "priority": 1,
+                    "source_uid": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd",
+                    "status": "Success",
+                    "uid": "1c32254e-f978-40e6-b592-f438953475c1"
                 },
                 {
                     "conditions": [],

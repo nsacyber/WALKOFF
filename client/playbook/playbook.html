@@ -102,7 +102,7 @@
 
             <!-- Actual cytoscape graph editor -->
             <div class="col-md-6 graphEditorColumn">
-                <div id="cy" #cy dnd-droppable (onDropSuccess)="handleDropEvent($event)" [hidden]="!loadedWorkflow" tabindex="0"></div>
+                <div id="cy" #cyRef dnd-droppable (onDropSuccess)="handleDropEvent($event)" [hidden]="!loadedWorkflow" tabindex="0"></div>
                 <div id="cy-instructions" [hidden]="loadedWorkflow">
                     <p>Instructions:</p>
                     <p>
@@ -142,18 +142,18 @@
                         <label for="name">Name<i class="fa fa-asterisk required" title="This field is required."></i></label>
                         <input type="text" class="form-control" [(ngModel)]="selectedAction.name" name="name" required>
                     </div>
-                    <div *ngIf="getDeviceApis(selectedAction.app_name).length" class="form-group">
-                        <label for="device_id">Device</label>
+                    <div *ngIf="!selectedActionApi.global" class="form-group">
+                        <label for="device_id">Device<i class="fa fa-asterisk required" title="This field is required."></i></label>
                         <select class="form-control" name="device_id" [(ngModel)]="selectedAction.device_id">
                             <option [ngValue]="0"></option>
                             <option *ngFor="let i of relevantDevices" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
                         </select>
                     </div>
                     <!-- Inputs -->
-                    <div *ngIf="selectedAction.arguments.length">
+                    <div *ngIf="selectedActionApi.parameters.length">
                         <h4>Arguments</h4>
-                        <playbook-argument-component *ngFor="let argument of selectedAction.arguments; let id = index" [loadedWorkflow]="loadedWorkflow" 
-                        [argument]="argument" [parameterApi]="getInputApiArgs(selectedAction.app_name, selectedAction.action_name, argument.name)"
+                        <playbook-argument-component *ngFor="let parameterApi of selectedActionApi.parameters; let id = index" [loadedWorkflow]="loadedWorkflow" 
+                        [argument]="getOrInitializeSelectedActionArgument(parameterApi)" [parameterApi]="parameterApi"
                         [id]="id"></playbook-argument-component>
                     </div>
                     <!-- Triggers -->
