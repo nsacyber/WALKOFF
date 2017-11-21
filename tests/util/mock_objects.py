@@ -8,6 +8,7 @@ from core.argument import Argument
 from core import loadbalancer
 from core.case.callbacks import data_sent
 from core.protobuf.build import data_pb2
+from google.protobuf.json_format import MessageToDict
 
 try:
     from Queue import Queue
@@ -140,6 +141,7 @@ class MockReceiveQueue(loadbalancer.Receiver):
 
         callback = self.callback_lookup[callback_name]
         data = kwargs['data'] if callback[1] else {}
+        sender = MessageToDict(sender, preserving_proto_field_name=True)
         loadbalancer.Receiver.send_callback(callback[0], sender, data)
 
         if callback_name == 'Workflow Shutdown':

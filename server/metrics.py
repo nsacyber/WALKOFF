@@ -25,17 +25,17 @@ __workflow_tmp = {}
 
 @ActionStarted.connect
 def __action_started_callback(sender, **kwargs):
-    __action_tmp[sender.execution_uid] = datetime.utcnow()
+    __action_tmp[sender['execution_uid']] = datetime.utcnow()
 
 
 @ActionExecutionSuccess.connect
 def __action_ended_callback(sender, **kwargs):
-    __update_success_action_tracker(sender.execution_uid, sender.app_name, sender.action_name)
+    __update_success_action_tracker(sender['execution_uid'], sender['app_name'], sender['action_name'])
 
 
 @ActionExecutionError.connect
 def __action_ended_error_callback(sender, **kwargs):
-    __update_error_action_tracker(sender.execution_uid, sender.app_name, sender.action_name)
+    __update_error_action_tracker(sender['execution_uid'], sender['app_name'], sender['action_name'])
 
 
 def __update_success_action_tracker(uid, app, action):
@@ -65,16 +65,16 @@ def __update_action_tracker(form, uid, app, action):
 
 @WorkflowExecutionStart.connect
 def __workflow_started_callback(sender, **kwargs):
-    __workflow_tmp[sender.workflow_execution_uid] = datetime.utcnow()
+    __workflow_tmp[sender['workflow_execution_uid']] = datetime.utcnow()
 
 
 @WorkflowShutdown.connect
 def __workflow_ended_callback(sender, **kwargs):
-    if sender.workflow_execution_uid in __workflow_tmp:
-        execution_time = datetime.utcnow() - __workflow_tmp[sender.workflow_execution_uid]
-        if sender.name not in workflow_metrics:
-            workflow_metrics[sender.name] = {'count': 1, 'avg_time': execution_time}
+    if sender['workflow_execution_uid'] in __workflow_tmp:
+        execution_time = datetime.utcnow() - __workflow_tmp[sender['workflow_execution_uid']]
+        if sender['name'] not in workflow_metrics:
+            workflow_metrics[sender['name']] = {'count': 1, 'avg_time': execution_time}
         else:
-            workflow_metrics[sender.name]['count'] += 1
-            workflow_metrics[sender.name]['avg_time'] = (workflow_metrics[sender.name]['avg_time'] + execution_time) / 2
-        __workflow_tmp.pop(sender.workflow_execution_uid)
+            workflow_metrics[sender['name']]['count'] += 1
+            workflow_metrics[sender['name']]['avg_time'] = (workflow_metrics[sender['name']]['avg_time'] + execution_time) / 2
+        __workflow_tmp.pop(sender['workflow_execution_uid'])

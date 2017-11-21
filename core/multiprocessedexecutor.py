@@ -74,14 +74,14 @@ class MultiprocessedExecutor(object):
         self.receiver_thread = None
 
     def __trigger_workflow_status_wait(self, sender, **kwargs):
-        self.workflow_status[sender.workflow_execution_uid] = WORKFLOW_AWAITING_DATA
+        self.workflow_status[sender['workflow_execution_uid']] = WORKFLOW_AWAITING_DATA
 
     def __trigger_workflow_status_continue(self, sender, **kwargs):
-        self.workflow_status[sender.workflow_execution_uid] = WORKFLOW_RUNNING
+        self.workflow_status[sender['workflow_execution_uid']] = WORKFLOW_RUNNING
 
     def __remove_workflow_status(self, sender, **kwargs):
-        if sender.workflow_execution_uid in self.workflow_status:
-            self.workflow_status.pop(sender.workflow_execution_uid, None)
+        if sender['workflow_execution_uid'] in self.workflow_status:
+            self.workflow_status.pop(sender['workflow_execution_uid'], None)
 
     def initialize_threading(self, pids):
         """Initialize the multiprocessing communication threads, allowing for parallel execution of workflows.

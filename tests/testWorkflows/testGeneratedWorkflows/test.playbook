@@ -14,12 +14,12 @@
                             "value": "Hello World"
                         }
                     ],
+                    "device_id": 1,
                     "name": "start",
                     "position": {},
                     "risk": 0,
                     "triggers": [],
-                    "uid": "e1db14e0cc8d4179aff5f1080a2b7e91",
-                    "device_id": 1
+                    "uid": "e1db14e0cc8d4179aff5f1080a2b7e91"
                 }
             ],
             "branches": [],

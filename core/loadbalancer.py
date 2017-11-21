@@ -14,6 +14,7 @@ from core.argument import Argument
 import core.config.config
 import core.config.paths
 from core.protobuf.build import data_pb2
+from google.protobuf.json_format import MessageToDict
 
 try:
     from Queue import Queue
@@ -99,6 +100,7 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         action_packet.sender.execution_uid = sender.get_execution_uid()
         action_packet.sender.app_name = sender.app_name
         action_packet.sender.action_name = sender.action_name
+
 
         for argument in sender.arguments.values():
             arg = action_packet.sender.arguments.add()
@@ -442,7 +444,7 @@ class Receiver:
                 message = message_outer.general_packet
 
             callback_name = message.callback_name
-            sender = message.sender
+            sender = MessageToDict(message.sender, preserving_proto_field_name=True)
 
             try:
                 callback = self.callback_lookup[callback_name]

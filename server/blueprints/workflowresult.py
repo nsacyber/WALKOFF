@@ -45,7 +45,7 @@ def __workflow_ended_callback(sender, **kwargs):
         data = kwargs['data']
         if not isinstance(data, str):
             data = str(data)
-    result = {'name': sender.name,
+    result = {'name': sender['name'],
               'timestamp': str(datetime.utcnow()),
               'result': data}
     __workflow_shutdown_event_json.set(result)
@@ -55,9 +55,9 @@ def __workflow_ended_callback(sender, **kwargs):
 
 @ActionExecutionSuccess.connect
 def __action_ended_callback(sender, **kwargs):
-    action_arguments = [convert_argument(argument) for argument in list(sender.arguments)]
-    result = {'action_name': sender.name,
-              'action_uid': sender.uid,
+    action_arguments = [convert_argument(argument) for argument in list(sender['arguments'])] if 'arguments' in sender else []
+    result = {'action_name': sender['name'],
+              'action_uid': sender['uid'],
               'timestamp': str(datetime.utcnow()),
               'arguments': action_arguments,
               'result': kwargs['data']['result'],
@@ -71,9 +71,9 @@ def __action_ended_callback(sender, **kwargs):
 
 @ActionExecutionError.connect
 def __action_error_callback(sender, **kwargs):
-    action_arguments = [convert_argument(argument) for argument in list(sender.arguments)]
-    result = {'action_name': sender.name,
-              'action_uid': sender.uid,
+    action_arguments = [convert_argument(argument) for argument in list(sender['arguments'])] if 'arguments' in sender else []
+    result = {'action_name': sender['name'],
+              'action_uid': sender['uid'],
               'timestamp': str(datetime.utcnow()),
               'arguments': action_arguments,
               'result': kwargs['data']['result'],
