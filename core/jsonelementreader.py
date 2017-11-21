@@ -57,7 +57,7 @@ class JsonElementReader(object):
                     list_acc = [JsonElementReader.read(list_value) for list_value in dict_value]
                     field_accumulator.extend(list_acc)
                 accumulator[field_name] = field_accumulator
-        elif field_name == 'position':
+        elif field_name in ('position', 'value'):
             accumulator[field_name] = dict_
         else:
             accumulator[field_name] = [{'name': dict_key, 'value': dict_value} for dict_key, dict_value in dict_.items()
