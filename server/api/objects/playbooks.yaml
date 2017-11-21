@@ -292,7 +292,7 @@ Transform:
       description: The action encapsulated by this transform
       type: string
       example: count
-    args:
+    arguments:
       description: The inputs to the transform
       type: array
       items:
