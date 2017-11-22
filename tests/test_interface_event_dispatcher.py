@@ -230,14 +230,14 @@ class TestInterfaceEventDispatcher(TestCase):
                                                                    'all', x))
 
     def test_on_app_action_single_action_single_events_single_device(self):
-        @dispatcher.on_app_actions('App1', actions='action1', events=WalkoffEvent.ActionStarted, devices=1)
+        @dispatcher.on_app_actions('App1', actions='action1', events=WalkoffEvent.ActionStarted, device_ids=1)
         def x(data): pass
 
         self.assertTrue(dispatcher.app_action_router.is_registered('App1', 'action1', WalkoffEvent.ActionStarted,
                                                                    1, x))
 
     def test_on_app_action_single_action_single_events_multiple_devices(self):
-        @dispatcher.on_app_actions('App1', actions='action1', events=WalkoffEvent.ActionStarted, devices=[1, 2])
+        @dispatcher.on_app_actions('App1', actions='action1', events=WalkoffEvent.ActionStarted, device_ids=[1, 2])
         def x(data): pass
 
         self.assertTrue(dispatcher.app_action_router.is_registered('App1', 'action1', WalkoffEvent.ActionStarted,

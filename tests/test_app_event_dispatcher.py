@@ -85,11 +85,11 @@ class TestAppEventDispatcher(TestCase):
         self.assert_router_structure('App1', {'action1', 'action2', 'action3'}, self.possible_events, {'all'})
 
     def test_register_app_actions_all_actions_all_events_single_device(self):
-        self.router.register_app_actions(func, 'App1', self.possible_events, devices=1)
+        self.router.register_app_actions(func, 'App1', self.possible_events, device_ids=1)
         self.assert_router_structure('App1', {'action1', 'action2', 'action3'}, self.possible_events, {1})
 
     def test_register_app_actions_all_actions_all_events_multiple_devices(self):
-        self.router.register_app_actions(func, 'App1', self.possible_events, devices=[1, 2, 3])
+        self.router.register_app_actions(func, 'App1', self.possible_events, device_ids=[1, 2, 3])
         self.assert_router_structure('App1', {'action1', 'action2', 'action3'}, self.possible_events, {1, 2, 3})
 
     def test_register_app_actions_app_actions_single_event_all_devices(self):
@@ -178,16 +178,16 @@ class TestAppEventDispatcher(TestCase):
 
     def test_is_registered_action_device_not_in_router(self):
         self.router.register_app_actions(func, 'App1', {WalkoffEvent.ActionStarted},
-                                         actions=['action1', 'action2'], devices=1)
+                                         actions=['action1', 'action2'], device_ids=1)
         self.assertFalse(self.router.is_registered('App1', 'action1', WalkoffEvent.ActionStarted, 2, func))
 
     def test_is_registered_action_func_not_in_router(self):
         def func2(): pass
         self.router.register_app_actions(func2, 'App1', {WalkoffEvent.ActionStarted},
-                                         actions=['action1', 'action2'], devices=1)
+                                         actions=['action1', 'action2'], device_ids=1)
         self.assertFalse(self.router.is_registered('App1', 'action1', WalkoffEvent.ActionStarted, 1, func))
 
     def test_is_registered_valid(self):
         self.router.register_app_actions(func, 'App1', {WalkoffEvent.ActionStarted},
-                                         actions=['action1', 'action2'], devices=1)
+                                         actions=['action1', 'action2'], device_ids=1)
         self.assertTrue(self.router.is_registered('App1', 'action1', WalkoffEvent.ActionStarted, 1, func))

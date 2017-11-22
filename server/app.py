@@ -24,10 +24,10 @@ def register_blueprints(flaskapp):
 
 
 def __get_blueprints_in_module(module):
-    from interfaces import AppWidgetBlueprint
+    from interfaces import AppBlueprint
     blueprints = [getattr(module, field)
                   for field in dir(module) if (not field.startswith('__')
-                                                  and isinstance(getattr(module, field), AppWidgetBlueprint))]
+                                               and isinstance(getattr(module, field), AppBlueprint))]
     return blueprints
 
 

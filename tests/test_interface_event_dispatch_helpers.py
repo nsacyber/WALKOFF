@@ -42,14 +42,14 @@ class TestInterfaceEventDispatchHelpers(TestCase):
 
     def test_validate_events_all_events_specified_available_events(self):
         available_events = (WalkoffEvent.CommonWorkflowSignal, WalkoffEvent.SchedulerStart)
-        self.assertEqual(validate_events(available_events=available_events), available_events)
+        self.assertSetEqual(validate_events(allowed_events=available_events), set(available_events))
 
     def test_validate_events_no_events(self):
         self.assertSetEqual(set(validate_events(events=[])), set())
 
     def test_validate_events_no_available_events(self):
         with self.assertRaises(UnknownEvent):
-            validate_events(events=[WalkoffEvent.CommonWorkflowSignal], available_events=[])
+            validate_events(events=[WalkoffEvent.CommonWorkflowSignal], allowed_events=[])
 
     def test_validate_events_too_few_events(self):
         self.assertSetEqual(validate_events(events=WalkoffEvent.CommonWorkflowSignal),
@@ -58,12 +58,12 @@ class TestInterfaceEventDispatchHelpers(TestCase):
     def test_validate_events_too_invalid_events(self):
         with self.assertRaises(UnknownEvent):
             validate_events(events=(WalkoffEvent.CommonWorkflowSignal,),
-                            available_events=(WalkoffEvent.SchedulerStart,))
+                            allowed_events=(WalkoffEvent.SchedulerStart,))
 
     def test_validate_events_single_invalid_event(self):
         with self.assertRaises(UnknownEvent):
             validate_events(events=WalkoffEvent.CommonWorkflowSignal,
-                            available_events=(WalkoffEvent.SchedulerStart,))
+                            allowed_events=(WalkoffEvent.SchedulerStart,))
 
     def test_unknown_event_init_single_event(self):
         exception = UnknownEvent('SingleEvent')
