@@ -578,12 +578,16 @@ class TestWorkflowServer(ServerTestCase):
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
         setup_subscriptions_for_action(workflow.uid, action_uids)
-        start = datetime.utcnow()
 
+        @WalkoffEvent.WorkflowShutdown.connect
         def wait_for_completion(sender, **kwargs):
             sync.set()
 
-        WalkoffEvent.WorkflowShutdown.connect(wait_for_completion)
+        result = {'count': 0}
+        @WalkoffEvent.ActionExecutionSuccess.connect
+        def y(sender, **kwargs):
+            result['count'] += 1
+            result['data'] = kwargs['data']
 
 
         response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
@@ -593,21 +597,21 @@ class TestWorkflowServer(ServerTestCase):
         flask_server.running_context.controller.wait_and_reset(1)
         self.assertIn('id', response)
         sync.wait(timeout=10)
-        actions = []
-        for uid in action_uids:
-            actions.extend(executed_actions(uid, start, datetime.utcnow()))
-
-        self.assertEqual(len(actions), 1)
-        action = actions[0]
-        result = action['data']
-        self.assertEqual(result, {'status': 'Success', 'result': 'REPEATING: Hello World'})
+        self.assertEqual(result['count'], 1)
+        self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     def test_execute_workflow_change_arguments(self):
 
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
         setup_subscriptions_for_action(workflow.uid, action_uids)
-        start = datetime.utcnow()
+
+        result = {'count': 0}
+
+        @WalkoffEvent.ActionExecutionSuccess.connect
+        def y(sender, **kwargs):
+            result['count'] += 1
+            result['data'] = kwargs['data']
 
         data = {"arguments": [{"name": "call",
                                "value": "CHANGE INPUT"}]}
@@ -619,13 +623,8 @@ class TestWorkflowServer(ServerTestCase):
 
         flask_server.running_context.controller.wait_and_reset(1)
 
-        actions = []
-        for uid in action_uids:
-            actions.extend(executed_actions(uid, start, datetime.utcnow()))
-
-        action = actions[0]
-        result = action['data']
-        self.assertDictEqual(result, {'status': 'Success', 'result': 'REPEATING: CHANGE INPUT'})
+        self.assertEqual(result['count'], 1)
+        self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: CHANGE INPUT'})
 
     def test_read_results(self):
 
@@ -660,12 +659,17 @@ class TestWorkflowServer(ServerTestCase):
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
         setup_subscriptions_for_action(workflow.uid, action_uids)
-        start = datetime.utcnow()
 
+        @WalkoffEvent.WorkflowShutdown.connect
         def wait_for_completion(sender, **kwargs):
             sync.set()
 
-        WalkoffEvent.WorkflowShutdown.connect(wait_for_completion)
+        result = {'count': 0}
+
+        @WalkoffEvent.ActionExecutionSuccess.connect
+        def y(sender, **kwargs):
+            result['count'] += 1
+            result['data'] = kwargs['data']
 
         response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
                                                headers=self.headers,
@@ -675,10 +679,5 @@ class TestWorkflowServer(ServerTestCase):
         flask_server.running_context.controller.wait_and_reset(1)
         self.assertIn('id', response)
         sync.wait(timeout=10)
-        actions = []
-        for uid in action_uids:
-            actions.extend(executed_actions(uid, start, datetime.utcnow()))
-        self.assertEqual(len(actions), 1)
-        action = actions[0]
-        result = action['data']
-        self.assertEqual(result, {'status': 'Success', 'result': 'REPEATING: Hello World'})
+        self.assertEqual(result['count'], 1)
+        self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: Hello World'})

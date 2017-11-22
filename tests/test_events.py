@@ -1,15 +1,12 @@
 from unittest import TestCase
 from copy import deepcopy
-from blinker import Signal
 
 from core.events import *
 
 
 class TestEvents(TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.original_signals = deepcopy(WalkoffSignal._signals)
+    original_signals = deepcopy(WalkoffSignal._signals)
 
     def setUp(self):
         WalkoffSignal._signals = {}
@@ -17,6 +14,9 @@ class TestEvents(TestCase):
     @classmethod
     def tearDownClass(cls):
         WalkoffSignal._signals = cls.original_signals
+        for x, value in WalkoffSignal._signals.items():
+            if hasattr(value, '__test'):
+                WalkoffSignal._signals.pop(x)
 
     def test_walkoff_signal_init_default(self):
         signal = WalkoffSignal('name', EventType.action)
@@ -34,6 +34,7 @@ class TestEvents(TestCase):
 
     def test_walkoff_signal_connect_strong_ref(self):
         def xx(): pass
+        setattr(xx, '__test', True)
         signal = WalkoffSignal('name', EventType.action, loggable=False)
         signal.connect(xx, weak=False)
         xx_id = id(xx)
@@ -45,6 +46,7 @@ class TestEvents(TestCase):
 
     def test_walkoff_signal_connect_weak_ref(self):
         def xx(): pass
+        setattr(xx, '__test', True)
         signal = WalkoffSignal('name', EventType.action, loggable=False)
         signal.connect(xx)
         xx_id = id(xx)
@@ -62,7 +64,7 @@ class TestEvents(TestCase):
             result['triggered'] = True
             result['sender'] = sender
             result['kwargs'] = kwargs
-
+        setattr(xx, '__test', True)
         signal.connect(xx)
         signal.send(5, x=42)
         self.assertTrue(result['triggered'])
@@ -71,6 +73,7 @@ class TestEvents(TestCase):
 
     def test_walkoff_signal_store_callback(self):
         def xx(): pass
+        setattr(xx, '__test', True)
         WalkoffSignal._store_callback(xx)
         self.assertEqual(WalkoffSignal._signals[id(xx)], xx)
 
@@ -136,6 +139,7 @@ class TestEvents(TestCase):
 
     def test_walkoff_event_connect_strong_reference(self):
         def xx(): pass
+        setattr(xx, '__test', True)
         WalkoffEvent.CommonWorkflowSignal.connect(xx, weak=False)
         xx_id = id(xx)
         self.assertIn(xx_id, WalkoffSignal._signals)
@@ -146,6 +150,7 @@ class TestEvents(TestCase):
 
     def test_walkoff_event_connect_weak_reference(self):
         def xx(): pass
+        setattr(xx, '__test', True)
         WalkoffEvent.CommonWorkflowSignal.connect(xx)
         xx_id = id(xx)
         self.assertNotIn(xx_id, WalkoffSignal._signals)

@@ -561,7 +561,6 @@ class InterfaceEventDispatcher(object):
             cls.event_dispatcher.dispatch(event, data)
             if event.event_type == EventType.action:
                 cls.app_action_dispatcher.dispatch(event, data)
-            pass
         return dispatch_method
 
     @classmethod
