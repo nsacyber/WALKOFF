@@ -102,65 +102,65 @@ class TestInterfaceEventDispatcher(TestCase):
     def test_on_walkoff_events_single_event_single_uid(self):
         @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, sender_uids='a')
         def x(data): pass
-        self.assertTrue(dispatcher.event_router.is_registered('a', WalkoffEvent.ActionStarted, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered('a', WalkoffEvent.ActionStarted, x))
 
     def test_on_walkoff_events_single_event_single_uid_strong(self):
         @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, sender_uids='a', weak=False)
         def x(data): pass
-        self.assertTrue(dispatcher.event_router.is_registered('a', WalkoffEvent.ActionStarted, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered('a', WalkoffEvent.ActionStarted, x))
 
     def test_on_walkoff_events_single_event_multiple_uids(self):
         @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, sender_uids=('a', 'b'))
         def x(data): pass
-        self.assertTrue(dispatcher.event_router.is_registered('a', WalkoffEvent.ActionStarted, x))
-        self.assertTrue(dispatcher.event_router.is_registered('b', WalkoffEvent.ActionStarted, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered('a', WalkoffEvent.ActionStarted, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered('b', WalkoffEvent.ActionStarted, x))
 
     def test_on_walkoff_events_single_event_single_name(self):
         @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, names='a')
         def x(data): pass
-        self.assertTrue(dispatcher.event_router.is_registered('a', WalkoffEvent.ActionStarted, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered('a', WalkoffEvent.ActionStarted, x))
 
     def test_on_walkoff_events_single_event_multiple_names(self):
         @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, names=('a', 'b'))
         def x(data): pass
-        self.assertTrue(dispatcher.event_router.is_registered('a', WalkoffEvent.ActionStarted, x))
-        self.assertTrue(dispatcher.event_router.is_registered('b', WalkoffEvent.ActionStarted, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered('a', WalkoffEvent.ActionStarted, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered('b', WalkoffEvent.ActionStarted, x))
 
     def test_on_walkoff_events_single_event_mixed_name_uids(self):
         @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, sender_uids='c', names=('a', 'b'))
         def x(data): pass
-        self.assertTrue(dispatcher.event_router.is_registered('a', WalkoffEvent.ActionStarted, x))
-        self.assertTrue(dispatcher.event_router.is_registered('b', WalkoffEvent.ActionStarted, x))
-        self.assertTrue(dispatcher.event_router.is_registered('c', WalkoffEvent.ActionStarted, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered('a', WalkoffEvent.ActionStarted, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered('b', WalkoffEvent.ActionStarted, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered('c', WalkoffEvent.ActionStarted, x))
 
     def test_on_walkoff_events_multiple_events_single_name(self):
         @dispatcher.on_walkoff_events({WalkoffEvent.AppInstanceCreated, WalkoffEvent.ActionStarted}, names='a')
         def x(data): pass
-        self.assertTrue(dispatcher.event_router.is_registered('a', WalkoffEvent.ActionStarted, x))
-        self.assertTrue(dispatcher.event_router.is_registered('a', WalkoffEvent.AppInstanceCreated, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered('a', WalkoffEvent.ActionStarted, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered('a', WalkoffEvent.AppInstanceCreated, x))
 
     def test_on_walkoff_events_controller_event_no_uids_or_names(self):
         @dispatcher.on_walkoff_events({WalkoffEvent.SchedulerStart})
         def x(): pass
-        self.assertTrue(dispatcher.event_router.is_registered(EventType.controller.name, WalkoffEvent.SchedulerStart, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered(EventType.controller.name, WalkoffEvent.SchedulerStart, x))
 
     def test_on_walkoff_events_multiple_controller_events_no_uids_or_names(self):
         @dispatcher.on_walkoff_events({WalkoffEvent.SchedulerStart, WalkoffEvent.SchedulerShutdown})
         def x(): pass
-        self.assertTrue(dispatcher.event_router.is_registered(EventType.controller.name, WalkoffEvent.SchedulerStart, x))
-        self.assertTrue(dispatcher.event_router.is_registered(EventType.controller.name, WalkoffEvent.SchedulerShutdown, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered(EventType.controller.name, WalkoffEvent.SchedulerStart, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered(EventType.controller.name, WalkoffEvent.SchedulerShutdown, x))
 
     def test_on_walkoff_events_controller_event_with_uids(self):
         @dispatcher.on_walkoff_events({WalkoffEvent.SchedulerStart}, sender_uids='a')
         def x(): pass
-        self.assertTrue(dispatcher.event_router.is_registered(EventType.controller.name, WalkoffEvent.SchedulerStart, x))
-        self.assertFalse(dispatcher.event_router.is_registered('a', WalkoffEvent.SchedulerStart, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered(EventType.controller.name, WalkoffEvent.SchedulerStart, x))
+        self.assertFalse(dispatcher.event_dispatcher.is_registered('a', WalkoffEvent.SchedulerStart, x))
 
     def test_on_walkoff_events_multiple_controller_events_with_names(self):
         @dispatcher.on_walkoff_events({WalkoffEvent.SchedulerStart, WalkoffEvent.SchedulerShutdown}, names=('a', 'b'))
         def x(): pass
-        self.assertTrue(dispatcher.event_router.is_registered(EventType.controller.name, WalkoffEvent.SchedulerStart, x))
-        self.assertTrue(dispatcher.event_router.is_registered(EventType.controller.name, WalkoffEvent.SchedulerShutdown, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered(EventType.controller.name, WalkoffEvent.SchedulerStart, x))
+        self.assertTrue(dispatcher.event_dispatcher.is_registered(EventType.controller.name, WalkoffEvent.SchedulerShutdown, x))
 
     def test_on_walkoff_events_invalid_function(self):
         with self.assertRaises(InvalidEventHandler):
@@ -202,21 +202,21 @@ class TestInterfaceEventDispatcher(TestCase):
         def x(data): pass
 
         for event in self.action_events:
-            self.assertTrue(dispatcher.app_action_router.is_registered('App1', 'action1', event, 'all', x))
+            self.assertTrue(dispatcher.app_action_dispatcher.is_registered('App1', 'action1', event, 'all', x))
 
     def test_on_app_action_multiple_actions_all_events_all_devices(self):
         @dispatcher.on_app_actions('App1', actions=('action1', 'action2'))
         def x(data): pass
 
         for event in self.action_events:
-            self.assertTrue(dispatcher.app_action_router.is_registered('App1', 'action1', event, 'all', x))
-            self.assertTrue(dispatcher.app_action_router.is_registered('App1', 'action2', event, 'all', x))
+            self.assertTrue(dispatcher.app_action_dispatcher.is_registered('App1', 'action1', event, 'all', x))
+            self.assertTrue(dispatcher.app_action_dispatcher.is_registered('App1', 'action2', event, 'all', x))
 
     def test_on_app_action_single_action_single_event_all_devices(self):
         @dispatcher.on_app_actions('App1', actions='action1', events=WalkoffEvent.ActionStarted)
         def x(data): pass
 
-        self.assertTrue(dispatcher.app_action_router.is_registered('App1', 'action1', WalkoffEvent.ActionStarted,
+        self.assertTrue(dispatcher.app_action_dispatcher.is_registered('App1', 'action1', WalkoffEvent.ActionStarted,
                                                                    'all', x))
 
     def test_on_app_action_single_action_multiple_events_all_devices(self):
@@ -224,27 +224,129 @@ class TestInterfaceEventDispatcher(TestCase):
                                    events=[WalkoffEvent.ActionStarted, WalkoffEvent.ActionExecutionError])
         def x(data): pass
 
-        self.assertTrue(dispatcher.app_action_router.is_registered('App1', 'action1', WalkoffEvent.ActionStarted,
+        self.assertTrue(dispatcher.app_action_dispatcher.is_registered('App1', 'action1', WalkoffEvent.ActionStarted,
                                                                    'all', x))
-        self.assertTrue(dispatcher.app_action_router.is_registered('App1', 'action1', WalkoffEvent.ActionExecutionError,
+        self.assertTrue(dispatcher.app_action_dispatcher.is_registered('App1', 'action1', WalkoffEvent.ActionExecutionError,
                                                                    'all', x))
 
     def test_on_app_action_single_action_single_events_single_device(self):
         @dispatcher.on_app_actions('App1', actions='action1', events=WalkoffEvent.ActionStarted, device_ids=1)
         def x(data): pass
 
-        self.assertTrue(dispatcher.app_action_router.is_registered('App1', 'action1', WalkoffEvent.ActionStarted,
+        self.assertTrue(dispatcher.app_action_dispatcher.is_registered('App1', 'action1', WalkoffEvent.ActionStarted,
                                                                    1, x))
 
     def test_on_app_action_single_action_single_events_multiple_devices(self):
         @dispatcher.on_app_actions('App1', actions='action1', events=WalkoffEvent.ActionStarted, device_ids=[1, 2])
         def x(data): pass
 
-        self.assertTrue(dispatcher.app_action_router.is_registered('App1', 'action1', WalkoffEvent.ActionStarted,
+        self.assertTrue(dispatcher.app_action_dispatcher.is_registered('App1', 'action1', WalkoffEvent.ActionStarted,
                                                                    1, x))
-        self.assertTrue(dispatcher.app_action_router.is_registered('App1', 'action1', WalkoffEvent.ActionStarted,
+        self.assertTrue(dispatcher.app_action_dispatcher.is_registered('App1', 'action1', WalkoffEvent.ActionStarted,
                                                                    2, x))
 
+    def test_example_on_walkoff_event_controller_event(self):
+
+        result = {'x': False}
+
+        @dispatcher.on_walkoff_events(WalkoffEvent.SchedulerStart, sender_uids='a')
+        def x():
+            result['x'] = True
+
+        self.uid = 'test'
+        WalkoffEvent.SchedulerStart.send(self)
+        self.assertTrue(result['x'])
+
+    def test_example_on_walkoff_event_controller_event_one_errors(self):
+
+        result = {'x': False}
+
+        @dispatcher.on_walkoff_events(WalkoffEvent.SchedulerStart, sender_uids='a')
+        def x():
+            result['x'] = True
+
+        @dispatcher.on_walkoff_events(WalkoffEvent.SchedulerStart, sender_uids='a')
+        def y():
+            raise ValueError()
+
+        self.uid = 'test'
+        WalkoffEvent.SchedulerStart.send(self)
+        self.assertTrue(result['x'])
+
+    def test_example_on_walkoff_event_noncontroller_event(self):
+
+        result = {'x': False}
+
+        @dispatcher.on_walkoff_events(WalkoffEvent.ActionStarted, sender_uids='a')
+        def x(data):
+            result['x'] = True
+            result['data'] = data
+
+        self.uid = 'test'
+        data = {'uid': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+                'execution_uid': 'cc'}
+        WalkoffEvent.ActionStarted.send(data)
+        expected = data
+        expected['sender_uid'] = expected.pop('uid')
+        expected['sender_name'] = expected.pop('name')
+        self.assertTrue(result['x'])
+        self.assertDictEqual(result['data'], expected)
+
+    def test_example_on_app_action_event(self):
+
+        result = {}
+
+        @dispatcher.on_app_actions('App1', actions='action1', events=WalkoffEvent.ActionStarted)
+        def x(data):
+            result['data'] = data
+
+        self.uid = 'test'
+        data = {'uid': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+                'execution_uid': 'cc'}
+        WalkoffEvent.ActionStarted.send(data)
+        expected = data
+        expected['sender_uid'] = expected.pop('uid')
+        expected['sender_name'] = expected.pop('name')
+        self.assertDictEqual(result['data'], expected)
+
+    def test_example_on_app_action_event_one_event_errors(self):
+
+        result = {}
+
+        @dispatcher.on_app_actions('App1', actions='action1', events=WalkoffEvent.ActionStarted)
+        def x(data):
+            result['data'] = data
+
+        @dispatcher.on_app_actions('App1', actions='action1', events=WalkoffEvent.ActionStarted)
+        def y(data):
+            result['y'] = True
+            raise ValueError()
+
+        self.uid = 'test'
+        data = {'uid': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+                'execution_uid': 'cc'}
+        WalkoffEvent.ActionStarted.send(data)
+        expected = data
+        expected['sender_uid'] = expected.pop('uid')
+        expected['sender_name'] = expected.pop('name')
+        self.assertDictEqual(result['data'], expected)
+        self.assertTrue(result['y'])
+
+    def test_example_autogenerated_registration(self):
+        result = {}
+
+        @dispatcher.on_action_started(sender_uids='a')
+        def x(data):
+            result['data'] = data
+
+        self.uid = 'test'
+        data = {'uid': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+                'execution_uid': 'cc'}
+        WalkoffEvent.ActionStarted.send(data)
+        expected = data
+        expected['sender_uid'] = expected.pop('uid')
+        expected['sender_name'] = expected.pop('name')
+        self.assertDictEqual(result['data'], expected)
 
 
 
