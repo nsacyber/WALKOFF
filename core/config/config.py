@@ -66,8 +66,8 @@ port = 5000
 walkoff_db_type = 'sqlite'
 case_db_type = 'sqlite'
 device_db_type = 'sqlite'
-secret_key = "SHORTSTOPKEYTEST"
-playbook_version_number = "0.0"
+secret_key = 'SHORTSTOPKEYTEST'
+walkoff_version = '0.5.0'
 
 # Loads the keywords into the environment filter for use
 JINJA_GLOBALS = {splitext(fn)[0]: getattr(importlib.import_module("core.keywords." + splitext(fn)[0]), "main")
