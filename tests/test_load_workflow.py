@@ -39,9 +39,8 @@ class TestLoadWorkflow(unittest.TestCase):
 
         # Verify attributes
         self.assertEqual(action.name, 'start')
-        self.assertEqual(action.app_name, 'HelloWorld')
+        self.assertEqual(action.app_name, 'HelloWorldBounded')
         self.assertEqual(action.action_name, 'repeatBackToMe')
-        self.assertIsNone(action.device_id)
 
     def test_workflow_branches(self):
         branch = list(self.testWorkflow.branches.values())[0]

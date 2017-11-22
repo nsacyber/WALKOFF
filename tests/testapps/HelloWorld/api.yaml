@@ -34,7 +34,7 @@ actions:
           type: string
 
   helloWorld:
-    run: main.Main.helloWorld
+    run: main.helloWorld
     description: Returns an introductory message
     returns:
       Success:
@@ -42,7 +42,7 @@ actions:
         schema:
           type: string
   'Hello World':
-    run: main.Main.helloWorld
+    run: main.helloWorld
     description: Returns an introductory message
     returns:
       Success:
@@ -50,7 +50,7 @@ actions:
         schema:
           type: string
   repeatBackToMe:
-    run: main.Main.repeatBackToMe
+    run: main.repeatBackToMe
     description: Repeats the call argument
     parameters:
         - name: call
@@ -63,7 +63,7 @@ actions:
         schema:
           type: string
   returnPlusOne:
-    run: main.Main.returnPlusOne
+    run: main.returnPlusOne
     description: Increments a given number by 1
     parameters:
         - name: number
@@ -76,7 +76,7 @@ actions:
         schema:
           type: number
   pause:
-    run: main.Main.pause
+    run: main.pause
     description: Pauses execution
     parameters:
         - name: seconds
@@ -89,7 +89,7 @@ actions:
         schema:
           type: number
   Buggy:
-    run: main.Main.buggy_action
+    run: main.buggy_action
     description: raises an exception
     returns:
       Success:
@@ -97,7 +97,7 @@ actions:
         schema:
           type: integer
   'Add Three':
-    run: main.Main.addThree
+    run: main.addThree
     description: Adds three numbers
     parameters:
         - name: num1
@@ -115,7 +115,7 @@ actions:
         schema:
           type: number
   'Json Sample':
-    run: main.Main.json_sample
+    run: main.json_sample
     description: Example of using a json input
     parameters:
         - name: json_in

@@ -20,7 +20,7 @@ def send_data_to_trigger():
         uids = set.intersection(workflows_in, workflows_awaiting_data)
 
         running_context.controller.send_data_to_trigger(data_in, uids, arguments)
-        return {}, SUCCESS
+        return list(uids), SUCCESS
 
     return __func()
 

@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 from os import path
 from threading import Event
+from copy import deepcopy
 
 from core.argument import Argument
 import core.case.database as case_database
@@ -32,7 +33,6 @@ class TestWorkflowServer(ServerTestCase):
         case_database.initialize()
 
     def tearDown(self):
-        flask_server.running_context.controller.shutdown_pool(0)
         flask_server.running_context.controller.playbook_store.playbooks = {}
         case_database.case_db.tear_down()
 
@@ -226,7 +226,7 @@ class TestWorkflowServer(ServerTestCase):
         initial_actions[0]['position']['x'] = 0.0
         initial_actions[0]['position']['y'] = 0.0
         added_action = Action('HelloWorld', 'pause', name='new_id', arguments=[Argument("seconds", value=5)],
-                            position={'x': 0, 'y': 0}, uid="2").read()
+                              position={'x': 0, 'y': 0}, uid="2").read()
 
         initial_actions.append(added_action)
 
@@ -272,13 +272,15 @@ class TestWorkflowServer(ServerTestCase):
             remove_uids(resulting_workflow.actions[action_name])
             self.assertDictEqual(loaded_action.read(), resulting_workflow.actions[action_name].read())
 
-    def test_save_workflow_invalid_app(self):
+    def test_save_workflow_invalid_app_reload_actions(self):
         initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
+        actions_unmod = deepcopy(initial_actions)
         initial_actions[0]['position']['x'] = 0.0
         initial_actions[0]['position']['y'] = 0.0
-        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause', arguments=[Argument("seconds", value=5)],
+        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause',
+                              arguments=[Argument("seconds", value=5)],
                               position={'x': 0, 'y': 0}).read()
         added_action['app_name'] = 'Invalid'
 
@@ -290,13 +292,23 @@ class TestWorkflowServer(ServerTestCase):
                                     content_type='application/json',
                                     status_code=INVALID_INPUT_ERROR)
 
+        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        new_actions = [action.read() for action in workflow.actions.values()]
+        for action in actions_unmod:
+            action.pop('position')
+        for action in new_actions:
+            action.pop('position')
+            action.pop('event')
+        self.assertListEqual(actions_unmod, new_actions)
+
     def test_save_workflow_invalid_action(self):
         initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
         initial_actions[0]['position']['x'] = 0.0
         initial_actions[0]['position']['y'] = 0.0
-        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause', arguments=[Argument("seconds", value=5)],
+        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause',
+                              arguments=[Argument("seconds", value=5)],
                               position={'x': 0, 'y': 0}).read()
         added_action['action_name'] = 'Invalid'
 
@@ -314,7 +326,8 @@ class TestWorkflowServer(ServerTestCase):
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
         initial_actions[0]['position']['x'] = 0.0
         initial_actions[0]['position']['y'] = 0.0
-        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause', arguments=[Argument("seconds", value=5)],
+        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause',
+                              arguments=[Argument("seconds", value=5)],
                               position={'x': 0, 'y': 0}).read()
         added_action['arguments'] = [{'name': 'Invalid', 'value': 5}]
 
@@ -332,7 +345,8 @@ class TestWorkflowServer(ServerTestCase):
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
         initial_actions[0]['position']['x'] = 0.0
         initial_actions[0]['position']['y'] = 0.0
-        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause', arguments=[Argument("seconds", value=5)],
+        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause',
+                              arguments=[Argument("seconds", value=5)],
                               position={'x': 0, 'y': 0}).read()
         added_action['arguments'][0]['value'] = 'aaaa'
 
@@ -350,7 +364,8 @@ class TestWorkflowServer(ServerTestCase):
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
         initial_actions[0]['position']['x'] = 0.0
         initial_actions[0]['position']['y'] = 0.0
-        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause', arguments=[Argument('seconds', value=5)],
+        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause',
+                              arguments=[Argument('seconds', value=5)],
                               position={'x': 0, 'y': 0}).read()
 
         initial_actions.append(added_action)
@@ -549,15 +564,16 @@ class TestWorkflowServer(ServerTestCase):
     def test_execute_workflow_playbook_dne(self):
         self.post_with_status_check('/api/playbooks/junkPlay/workflows/helloWorldWorkflow/execute',
                                     error='Playbook or workflow does not exist.',
-                                    headers=self.headers, status_code=OBJECT_DNE_ERROR)
+                                    headers=self.headers, status_code=OBJECT_DNE_ERROR,
+                                    content_type="application/json", data=json.dumps({}))
 
     def test_execute_workflow_workflow_dne(self):
         self.post_with_status_check('/api/playbooks/test/workflows/junkWorkflow/execute',
                                     error='Playbook or workflow does not exist.',
-                                    headers=self.headers, status_code=OBJECT_DNE_ERROR)
+                                    headers=self.headers, status_code=OBJECT_DNE_ERROR,
+                                    content_type="application/json", data=json.dumps({}))
 
     def test_execute_workflow(self):
-        flask_server.running_context.controller.initialize_threading()
         sync = Event()
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
@@ -572,8 +588,9 @@ class TestWorkflowServer(ServerTestCase):
 
         response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
                                                headers=self.headers,
-                                               status_code=SUCCESS_ASYNC)
-        flask_server.running_context.controller.shutdown_pool(1)
+                                               status_code=SUCCESS_ASYNC,
+                                               content_type="application/json", data=json.dumps({}))
+        flask_server.running_context.controller.wait_and_reset(1)
         self.assertIn('id', response)
         sync.wait(timeout=10)
         actions = []
@@ -584,9 +601,33 @@ class TestWorkflowServer(ServerTestCase):
         result = action['data']
         self.assertEqual(result, {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
+    def test_execute_workflow_change_arguments(self):
+
+        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
+        setup_subscriptions_for_action(workflow.uid, action_uids)
+        start = datetime.utcnow()
+
+        data = {"arguments": [{"name": "call",
+                               "value": "CHANGE INPUT"}]}
+
+        self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
+                                    headers=self.headers,
+                                    status_code=SUCCESS_ASYNC,
+                                    content_type="application/json", data=json.dumps(data))
+
+        flask_server.running_context.controller.wait_and_reset(1)
+
+        actions = []
+        for uid in action_uids:
+            actions.extend(executed_actions(uid, start, datetime.utcnow()))
+
+        action = actions[0]
+        result = action['data']
+        self.assertDictEqual(result, {'status': 'Success', 'result': 'REPEATING: CHANGE INPUT'})
+
     def test_read_results(self):
 
-        flask_server.running_context.controller.initialize_threading()
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         workflow.execute('a')
         workflow.execute('b')
@@ -596,14 +637,13 @@ class TestWorkflowServer(ServerTestCase):
         self.assertSetEqual(set(response.keys()), {'status', 'uid', 'results', 'started_at', 'completed_at', 'name'})
 
     def test_read_all_results(self):
-        flask_server.running_context.controller.initialize_threading()
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
 
         workflow.execute('a')
         workflow.execute('b')
         workflow.execute('c')
 
-        flask_server.running_context.controller.shutdown_pool(3)
+        flask_server.running_context.controller.wait_and_reset(3)
 
         response = self.get_with_status_check('/api/workflowresults', headers=self.headers)
         self.assertEqual(len(response), 3)
@@ -615,7 +655,6 @@ class TestWorkflowServer(ServerTestCase):
                                     {'input', 'type', 'name', 'timestamp', 'result', 'app_name', 'action_name'})
 
     def test_execute_workflow_trigger_action(self):
-        flask_server.running_context.controller.initialize_threading()
         sync = Event()
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
         action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
@@ -629,9 +668,10 @@ class TestWorkflowServer(ServerTestCase):
 
         response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
                                                headers=self.headers,
-                                               status_code=SUCCESS_ASYNC)
+                                               status_code=SUCCESS_ASYNC,
+                                               content_type="application/json", data=json.dumps({}))
 
-        flask_server.running_context.controller.shutdown_pool(1)
+        flask_server.running_context.controller.wait_and_reset(1)
         self.assertIn('id', response)
         sync.wait(timeout=10)
         actions = []

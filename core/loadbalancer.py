@@ -14,6 +14,7 @@ from core.argument import Argument
 import core.config.config
 import core.config.paths
 from core.protobuf.build import data_pb2
+from google.protobuf.json_format import MessageToDict
 
 try:
     from Queue import Queue
@@ -100,6 +101,7 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         action_packet.sender.app_name = sender.app_name
         action_packet.sender.action_name = sender.action_name
 
+
         for argument in sender.arguments.values():
             arg = action_packet.sender.arguments.add()
             arg.name = argument.name
@@ -150,7 +152,7 @@ class LoadBalancer:
         self.comm_socket.curve_server = True
         self.comm_socket.bind(COMM_ADDR)
 
-        gevent.sleep(2)
+        # gevent.sleep(2)
 
     def manage_workflows(self):
         """Manages the workflows to be executed and the workers. It waits for the server to submit a request to
@@ -170,7 +172,10 @@ class LoadBalancer:
             else:
                 try:
                     worker, empty, ready = self.request_socket.recv_multipart(flags=zmq.NOBLOCK)
-                    if ready == b"Ready" or ready == b"Done":
+                    if ready == b"Done":
+                        self.available_workers.append(worker)
+                        self.workflow_comms = {uid: worker for uid, proc in self.workflow_comms.items() if proc != worker}
+                    elif ready == b"Ready":
                         self.available_workers.append(worker)
                 except zmq.ZMQError:
                     gevent.sleep(0.1)
@@ -321,7 +326,7 @@ class Worker:
             try:
                 message = self.comm_sock.recv(zmq.NOBLOCK)
             except zmq.ZMQError:
-                gevent.sleep(0.1)
+                # gevent.sleep(0.1)
                 continue
 
             if message == b'Pause':
@@ -338,8 +343,9 @@ class Worker:
                         arguments.append(Argument(**arg))
                     decoded_message["arguments"] = arguments
                 self.workflow.send_data_to_action(decoded_message)
+                self.comm_sock.send(b"Received")
 
-            gevent.sleep(0.1)
+            # gevent.sleep(0.1)
         return
 
     def on_data_sent(self, sender, **kwargs):
@@ -417,7 +423,7 @@ class Receiver:
                 message = message_outer.general_packet
 
             callback_name = message.callback_name
-            sender = message.sender
+            sender = MessageToDict(message.sender, preserving_proto_field_name=True)
 
             event = WalkoffEvent.get_event_from_name(callback_name)
             if event is not None:

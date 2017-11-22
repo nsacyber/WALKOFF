@@ -47,6 +47,7 @@ export class PlaybookComponent {
 	appApis: AppApi[] = [];
 	offset: GraphPosition = { x: -330, y: -170 };
 	selectedAction: Action; // node being displayed in json editor
+	selectedActionApi: ActionApi;
 	selectedBranchParams: {
 		branch: Branch;
 		returnTypes: ReturnApi[];
@@ -81,7 +82,8 @@ export class PlaybookComponent {
 
 	constructor(
 		private playbookService: PlaybookService, private authService: AuthService,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+	) {
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.playbookService.getDevices().then(devices => this.devices = devices);
@@ -101,27 +103,28 @@ export class PlaybookComponent {
 	getWorkflowResultsSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
+				const self = this;
 				const eventSource = new (window as any).EventSource('workflowresults/stream-actions?access_token=' + authToken);
 
 				function eventHandler(message: any) {
 					const workflowResult: WorkflowResult = JSON.parse(message.data);
-					if (this.cy) {
-						const matchingNode = this.cy.elements(`node[uid="${workflowResult.action_uid}"]`);
+					if (self.cy) {
+						const matchingNode = self.cy.elements(`node[uid="${workflowResult.action_uid}"]`);
 
 						if (message.type === 'action_success') {
 							matchingNode.addClass('good-highlighted');
 						} else { matchingNode.addClass('bad-highlighted'); }
 					}
 
-					this.workflowResults.push(workflowResult);
-					// Slice the array to induce change detection
-					this.workflowResults = this.workflowResults.slice();
+					self.workflowResults.push(workflowResult);
+					// Induce change detection by slicing array
+					self.workflowResults = self.workflowResults.slice();
 				}
 
 				eventSource.addEventListener('action_success', eventHandler);
 				eventSource.addEventListener('action_error', eventHandler);
 				eventSource.addEventListener('error', (err: Error) => {
-					this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
+					// this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
 					console.error(err);
 				});
 
@@ -141,7 +144,7 @@ export class PlaybookComponent {
 				// 		const workflowResult: WorkflowResult = JSON.parse(message.data);
 				// 		if (this.cy) {
 				// 			const matchingNode = this.cy.elements(`node[uid="${workflowResult.step_uid}"]`);
-	
+
 				// 			if (workflowResult.type === 'SUCCESS') {
 				// 				matchingNode.addClass('good-highlighted');
 				// 			} else { matchingNode.addClass('bad-highlighted'); }
@@ -292,7 +295,7 @@ export class PlaybookComponent {
 				this.cy.edgehandles({
 					preview: false,
 					toggleOffOnLeave: true,
-					complete (sourceNode: any, targetNodes: any[], addedEntities: any[]) {
+					complete(sourceNode: any, targetNodes: any[], addedEntities: any[]) {
 						if (!self.loadedWorkflow.branches) { self.loadedWorkflow.branches = []; }
 
 						// The edge handles extension is not integrated into the undo/redo extension.
@@ -314,7 +317,7 @@ export class PlaybookComponent {
 
 							//If we attempt to draw an edge that already exists, please remove it and take no further action
 							if (self.loadedWorkflow.branches
-								.find(ns =>  ns.source_uid === sourceUid && ns.destination_uid === destinationUid)) {
+								.find(ns => ns.source_uid === sourceUid && ns.destination_uid === destinationUid)) {
 								self.cy.remove(addedEntities);
 								return;
 							}
@@ -383,13 +386,13 @@ export class PlaybookComponent {
 					};
 					return edge;
 				});
-	
+
 				const nodes = workflow.actions.map(action => {
 					const node: any = { group: 'nodes', position: _.clone(action.position) };
 					node.data = {
 						id: action.uid,
 						uid: action.uid,
-						label: action.name, 
+						label: action.name,
 						isStartNode: action.uid === workflow.start,
 					};
 					self._setNodeDisplayProperties(node, action);
@@ -451,40 +454,44 @@ export class PlaybookComponent {
 	 * @param cyData Nodes and edges from the cytoscape graph. Only really used to grab the new positions of nodes.
 	 */
 	saveWorkflow(cyData: any[]): void {
-		if (!this.loadedWorkflow.start) {
+		// Clone the loadedWorkflow first, so we don't change the parameters 
+		// in the editor when converting it to the format the backend expects.
+		const workflowToSave: Workflow = _.cloneDeep(this.loadedWorkflow);
+
+		if (!workflowToSave.start) {
 			this.toastyService.warning('Workflow cannot be saved without a starting action.');
 			return;
 		}
 
 		// Go through our workflow and update some parameters
-		this.loadedWorkflow.actions.forEach(s => {
+		workflowToSave.actions.forEach(s => {
 			// Set the new cytoscape positions on our loadedworkflow
 			s.position = cyData.find(cyAction => cyAction.data.uid === s.uid).position;
-			
+
 			if (s.device_id === 0) { delete s.device_id; }
 
 			// Properly sanitize arguments through the tree
-			s.arguments.forEach(i => this._sanitizeArgumentForSave(i));
+			this._sanitizeArgumentsForSave(s.arguments);
 
 			s.triggers.forEach(t => {
-				t.arguments.forEach(a => this._sanitizeArgumentForSave(a));
+				this._sanitizeArgumentsForSave(t.arguments);
 
 				t.transforms.forEach(tr => {
-					tr.arguments.forEach(a => this._sanitizeArgumentForSave(a));
+					this._sanitizeArgumentsForSave(tr.arguments);
 				});
 			});
 		});
-		this.loadedWorkflow.branches.forEach(ns => {
+		workflowToSave.branches.forEach(ns => {
 			ns.conditions.forEach(c => {
-				c.arguments.forEach(a => this._sanitizeArgumentForSave(a));
+				this._sanitizeArgumentsForSave(c.arguments);
 
 				c.transforms.forEach(tr => {
-					tr.arguments.forEach(a => this._sanitizeArgumentForSave(a));
+					this._sanitizeArgumentsForSave(tr.arguments);
 				});
 			});
 		});
 
-		this.playbookService.saveWorkflow(this.currentPlaybook, this.currentWorkflow, this.loadedWorkflow)
+		this.playbookService.saveWorkflow(this.currentPlaybook, this.currentWorkflow, workflowToSave)
 			.then(() => this.toastyService
 				.success(`Successfully saved workflow ${this.currentPlaybook} - ${this.currentWorkflow}.`))
 			.catch(e => this.toastyService
@@ -513,24 +520,41 @@ export class PlaybookComponent {
 	 * Sanitizes an argument so we don't have bad data on save, such as a value when reference is specified.
 	 * @param argument The argument to sanitize
 	 */
-	_sanitizeArgumentForSave(argument: Argument): void {
-		if (argument.reference) { delete argument.value; }
-
-		// Split our string argument selector into what the server expects
-		if (argument.selection == null) {
-			argument.selection = [];
-		} else if (typeof(argument.selection) === 'string') {
-			argument.selection = argument.selection.trim();
-			argument.selection = argument.selection.split('.');
-
-			if (argument.selection[0] === '') {
-				argument.selection = [];
-			} else {
-				for (let i = 0; i < argument.selection.length; i++) {
-					if (!isNaN(argument.selection[i] as number)) { argument.selection[i] = +argument.selection[i]; }
-				}
+	_sanitizeArgumentsForSave(args: Argument[]): void {
+		// Filter out any arguments that are blank, essentially
+		const idsToRemove: number[] = [];
+		for (const argument of args) {
+			// First trim any string inputs for sanitation and so we can check against ''
+			if (typeof (argument.value) === 'string') { argument.value = argument.value.trim(); }
+			// If value and reference are blank, add this argument's ID in the array to the list
+			// Add them in reverse so we don't have problems with the IDs sliding around on the splice
+			if ((argument.value == null || argument.value === '') && argument.reference === '') {
+				idsToRemove.unshift(args.indexOf(argument));
 			}
 		}
+		// Actually splice out all the args
+		for (const id of idsToRemove) {
+			args.splice(id, 1);
+		}
+
+		// Split our string argument selector into what the server expects
+		args.forEach(argument => {
+			if (argument.selection == null) {
+				argument.selection = [];
+			} else if (typeof (argument.selection) === 'string') {
+				argument.selection = argument.selection.trim();
+				argument.selection = argument.selection.split('.');
+
+				if (argument.selection[0] === '') {
+					argument.selection = [];
+				} else {
+					// For each value, if it's a valid number, convert it to a number.
+					for (let i = 0; i < argument.selection.length; i++) {
+						if (!isNaN(argument.selection[i] as number)) { argument.selection[i] = +argument.selection[i]; }
+					}
+				}
+			}
+		});
 	}
 
 	///------------------------------------------------------------------------------------------------------
@@ -551,7 +575,7 @@ export class PlaybookComponent {
 		self.cy.elements(`[uid!="${data.uid}"]`).unselect();
 
 		self.selectedAction = self.loadedWorkflow.actions.find(s => s.uid === data.uid);
-
+		self.selectedActionApi = this._getAction(self.selectedAction.app_name, self.selectedAction.action_name);
 		if (!self.selectedAction) { return; }
 
 		// Add data to the selectedAction if it does not exist
@@ -704,17 +728,13 @@ export class PlaybookComponent {
 		// Should we change this logic to do a similar thing?
 		const uid = UUID.UUID();
 
-		const inputs: Argument[] = [];
+		const args: Argument[] = [];
 		const parameters = this._getAction(appName, actionName).parameters;
-
+		// TODO: might be able to remove this entirely
+		// due to the argument component auto-initializing default values
 		if (parameters && parameters.length) {
-			this._getAction(appName, actionName).parameters.forEach((input) => {
-				inputs.push({
-					name: input.name,
-					value: input.schema.default != null ? input.schema.default : null,
-					reference: '',
-					selection: '',
-				});
+			this._getAction(appName, actionName).parameters.forEach((parameter) => {
+				args.push(this.getDefaultArgument(parameter));
 			});
 		}
 
@@ -729,7 +749,7 @@ export class PlaybookComponent {
 		actionToBeAdded.name = uniqueActionName;
 		actionToBeAdded.app_name = appName;
 		actionToBeAdded.action_name = actionName;
-		actionToBeAdded.arguments = inputs;
+		actionToBeAdded.arguments = args;
 
 		this.loadedWorkflow.actions.push(actionToBeAdded);
 
@@ -846,6 +866,9 @@ export class PlaybookComponent {
 	 */
 	removeSelectedNodes(): void {
 		const selecteds = this.cy.$(':selected');
+		// Unselect the elements first to remove the parameters editor if need be
+		// Because deleting elements doesn't unselect them for some reason
+		this.cy.elements(':selected').unselect();
 		if (selecteds.length > 0) { this.ur.do('remove', selecteds); }
 	}
 
@@ -856,7 +879,11 @@ export class PlaybookComponent {
 		const self = this;
 
 		// Handle keyboard presses on graph
-		document.addEventListener('keydown', function (e) {
+		document.addEventListener('keydown', function (e: any) {
+			// If we aren't "focused" on a body or button tag, don't do anything
+			// to prevent events from being fired while in the parameters editor
+			const tagName = document.activeElement.tagName;
+			if (!(tagName === 'BODY' || tagName === 'BUTTON')) { return; }
 			if (self.cy === null) { return; }
 
 			if (e.which === 46) { // Delete
@@ -958,7 +985,7 @@ export class PlaybookComponent {
 
 				// If our loaded workflow is in this playbook, close it.
 				if (playbook === this.currentPlaybook) { this.closeWorkflow(); }
-				
+
 				this.toastyService.success(`Successfully deleted playbook "${playbook}".`);
 			})
 			.catch(e => this.toastyService
@@ -1097,7 +1124,7 @@ export class PlaybookComponent {
 
 				// Close the workflow if the deleted workflow matches the loaded one
 				if (playbook === this.currentPlaybook && workflow === this.currentWorkflow) { this.closeWorkflow(); }
-				
+
 				this.toastyService.success(`Successfully deleted workflow "${playbook} - ${workflow}".`);
 			})
 			.catch(e => this.toastyService.error(`Error deleting workflow "${playbook} - ${workflow}": ${e.message}`));
@@ -1123,7 +1150,7 @@ export class PlaybookComponent {
 	_closeWorkflowsModal(): void {
 		($('#workflowsModal') as any).modal('hide');
 	}
-	
+
 	/**
 	 * Gets the playbook name from a given modal:
 	 * either by the selected playbook or whatever's specified under new playbook.
@@ -1156,7 +1183,7 @@ export class PlaybookComponent {
 
 		if (!matchingPB) { return false; }
 
-		return matchingPB.workflows.findIndex(wf => wf.name === workflow ) >= 0;
+		return matchingPB.workflows.findIndex(wf => wf.name === workflow) >= 0;
 	}
 
 	// TODO: maybe somehow recursively find actions that may occur before. Right now it just returns all of them.
@@ -1174,6 +1201,34 @@ export class PlaybookComponent {
 	 */
 	_getAction(appName: string, actionName: string): ActionApi {
 		return this.appApis.find(a => a.name === appName).action_apis.find(a => a.name === actionName);
+	}
+
+	/**
+	 * Gets a given argument matching an inputted parameter API.
+	 * Adds a new argument to the selected action with default values if the argument doesn't exist.
+	 * @param parameterApi Parameter API object relating to the argument to return
+	 */
+	getOrInitializeSelectedActionArgument(parameterApi: ParameterApi): Argument {
+		// Find an existing argument
+		let argument = this.selectedAction.arguments.find(a => a.name === parameterApi.name);
+		if (argument) { return argument; }
+
+		argument = this.getDefaultArgument(parameterApi);
+		this.selectedAction.arguments.push(argument);
+		return argument;
+	}
+
+	/**
+	 * Returns an argument based upon a given parameter API and its default value.
+	 * @param parameterApi Parameter API used to generate the default argument
+	 */
+	getDefaultArgument(parameterApi: ParameterApi): Argument {
+		return {
+			name: parameterApi.name,
+			value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
+			reference: '',
+			selection: '',
+		};
 	}
 
 	/**
@@ -1215,5 +1270,30 @@ export class PlaybookComponent {
 	 */
 	getAppsWithActions(): AppApi[] {
 		return this.appApis.filter(a => a.action_apis && a.action_apis.length);
+	}
+
+	getFriendlyJSON(input: any): string {
+		let out = JSON.stringify(input, null, 1);
+		out = out.replace(/[\{\[\}\]"]/g, '').trim();
+		if (!out) { return 'N/A'; }
+		return out;
+	}
+
+	getFriendlyArguments(args: Argument[]): string {
+		if (!args || !args.length) { return 'N/A'; }
+
+		const obj: { [key: string]: string } = {};
+		args.forEach(element => {
+			if (element.value) { obj[element.name] = element.value; }
+			if (element.reference) { obj[element.name] = element.reference; }
+			if (element.selection) {
+				const selectionString = (element.selection as any[]).join('.');
+				obj[element.name] = `${obj[element.name]} (${selectionString})`;
+			}
+		});
+
+		let out = JSON.stringify(obj, null, 1);
+		out = out.replace(/[\{\}"]/g, '');
+		return out;
 	}
 }

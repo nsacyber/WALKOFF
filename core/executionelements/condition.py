@@ -35,6 +35,15 @@ class Condition(ExecutionElement):
         self.transforms = transforms if transforms is not None else []
 
     def execute(self, data_in, accumulator):
+        """Executes the Condition object, determining if the Condition evaluates to True or False.
+
+        Args:
+            data_in (): The input to the Transform objects associated with this Condition.
+            accumulator (dict): The accumulated data from previous Actions.
+
+        Returns:
+            True if the Condition evaluated to True, False otherwise
+        """
         data = data_in
 
         for transform in self.transforms:

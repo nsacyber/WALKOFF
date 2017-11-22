@@ -11,7 +11,6 @@ from core.helpers import (locate_playbooks_in_directory, InvalidArgument, Unknow
 logger = logging.getLogger(__name__)
 
 
-logging.basicConfig()
 class JsonPlaybookLoader(object):
 
     @staticmethod

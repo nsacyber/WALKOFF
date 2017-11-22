@@ -44,6 +44,7 @@ class WalkoffSignal(object):
         self.signal.connect(func)
         if not weak:
             WalkoffSignal._store_callback(func)
+        return func
 
     @classmethod
     def _store_callback(cls, func):
@@ -152,3 +153,4 @@ class WalkoffEvent(Enum):
 
     def connect(self, func, weak=True):
         self.value.connect(func, weak=weak)
+        return func

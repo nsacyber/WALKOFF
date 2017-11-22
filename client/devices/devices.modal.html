@@ -7,7 +7,7 @@
 			<div class="row">
 				<div class="col-xs-6">
 					<div class="form-group">
-						<label for="name">Name<span class="fa fa-asterisk required" title="This field is required."></span></label>
+						<label for="name">Name<i class="fa fa-asterisk required" title="This field is required."></i></label>
 						<input type="text" class="form-control" [(ngModel)]="workingDevice.name" #name="ngModel" name="name" required tabindex="1">
 						<div *ngIf="name.errors && (name.dirty || name.touched)" class="alert alert-danger">
 							<div [hidden]="!name.errors.required">
@@ -16,7 +16,7 @@
 						</div>
 					</div>
 					<div class="form-group">
-						<label for="app_name">Associated App<span class="fa fa-asterisk required" title="This field is required."></span></label>
+						<label for="app_name">Associated App<i class="fa fa-asterisk required" title="This field is required."></i></label>
 						<select class="form-control" [ngModel]="workingDevice.app_name" #app="ngModel" (change)="handleAppSelection($event, $event.target.value)" 
 						 [disabled]="workingDevice.id" name="app_name" tabindex="3" required>
 							<option value=""></option>
@@ -35,7 +35,7 @@
 						<input type="text" class="form-control" [(ngModel)]="workingDevice.description" name="ip" tabindex="2">
 					</div>
 					<div class="form-group">
-						<label for="type">Device Type<span class="fa fa-asterisk required" title="This field is required."></span></label>
+						<label for="type">Device Type<i class="fa fa-asterisk required" title="This field is required."></i></label>
 						<select class="form-control" [ngModel]="workingDevice.type" #typeRef #type="ngModel" (change)="handleDeviceTypeSelection(event, $event.target.value)"
 						 name="type" tabindex="4" required>
 							<option value=""></option>
@@ -53,9 +53,10 @@
 				<div *ngFor="let i of selectedDeviceType.fields" class="form-group">
 					<label for="{{i.name}}">
 						{{i.name}}
-						<span *ngIf="i.schema.required" class="fa fa-asterisk required" title="This field is required."></span>
-						<span *ngIf="i.encrypted" class="fa fa-lock"
-						 title="This field will be encrypted at rest and will not be returned to the client for viewing or editing."></span>
+						<i *ngIf="i.description != null" class="fa fa-info-circle" [title]="i.description"></i>
+						<i *ngIf="i.required" class="fa fa-asterisk required" title="This field is required."></i>
+						<i *ngIf="i.encrypted" class="fa fa-lock"
+						 title="This field will be encrypted at rest and will not be returned to the client for viewing or editing."></i>
 						<!-- If we have an encrypted field AND this is an edit AND there is an encrypted value on the server, allow the user to clear it if it's not required -->
 						<div *ngIf="workingDevice.id && i.encrypted && workingDevice.fields[i.name] !== undefined" class="form-check form-check-inline">
 							<label class="form-check-label">
@@ -70,20 +71,20 @@
 					<input *ngIf="i.schema.type === 'string' && !i.schema.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]"
 					 [attr.type]="i.encrypted ? 'password' : 'text'" [attr.minlength]="i.schema.minLength > 0 ? i.schema.minLength : null"
 					 [attr.maxlength]="i.schema.maxLength > 0 ? i.schema.maxLength : null"
-					 [attr.pattern]="i.schema.pattern ? i.schema.pattern : null" [attr.required]="i.schema.required"
+					 [attr.pattern]="i.schema.pattern ? i.schema.pattern : null" [attr.required]="i.required"
 					 [disabled]="encryptedFieldsToBeCleared[i.name]" [attr.placeholder]="i.schema.placeholder">
 
 					<!-- Enum types, make a select box -->
 					<select *ngIf="i.schema.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]"
-					[attr.required]="i.schema.required">
-						<option *ngIf="!i.schema.required" value=""></option>
+					[attr.required]="i.required">
+						<option *ngIf="!i.required" value=""></option>
 						<option *ngFor="let i of i.schema.enum" [value]="i" [label]="i">{{i}}</option>
 					</select>
 
 					<!-- For numbers enter number info -->
 					<input *ngIf="i.schema.type === 'number' || i.schema.type === 'integer'" class="form-control" name="{{i.name}}"
 					 [(ngModel)]="workingDevice.fields[i.name]" type="number" [attr.min]="getMin(i.schema)" [attr.max]="getMax(i.schema)"
-					 [attr.step]="i.schema.multipleOf > 0 ? i.schema.multipleOf : null" [attr.required]="i.schema.required"
+					 [attr.step]="i.schema.multipleOf > 0 ? i.schema.multipleOf : null" [attr.required]="i.required"
 					 [attr.placeholder]="i.schema.placeholder">
 
 					<!-- Checkbox for boolean values -->

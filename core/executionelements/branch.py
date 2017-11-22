@@ -40,6 +40,16 @@ class Branch(ExecutionElement):
         return self.priority < other.priority
 
     def execute(self, data_in, accumulator):
+        """Executes the Branch object, determining if this Branch should be taken.
+
+        Args:
+            data_in (): The input to the Condition objects associated with this Branch.
+            accumulator (dict): The accumulated data from previous Actions.
+
+        Returns:
+            Destination UID for the next Action that should be taken, None if the data_in was not valid
+                for this Branch.
+        """
         if data_in is not None and data_in.status == self.status:
             if all(condition.execute(data_in=data_in.result, accumulator=accumulator) for condition in self.conditions):
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.BranchTaken)

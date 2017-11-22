@@ -6,14 +6,24 @@ import sys
 from random import SystemRandom
 from apps.Utilities.events import wait
 
+
 @action
-def secure_rand():
+def system_rand():
     return SystemRandom().random()
+
+
+@action
+def round_to_n(number, places):
+    return round(number, places)
+
 
 @action
 def echo_object(data):
     return data
 
+@action
+def echo_array(data):
+    return data
 
 @action
 def json_select(json_reference, element):

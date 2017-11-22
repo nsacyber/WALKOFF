@@ -3,6 +3,7 @@ import multiprocessing
 import os
 import signal
 import sys
+import time
 import threading
 import uuid
 
@@ -22,7 +23,21 @@ WORKFLOW_PAUSED = 2
 WORKFLOW_COMPLETED = 4
 WORKFLOW_AWAITING_DATA = 5
 
-NUM_PROCESSES = core.config.config.num_processes
+
+def spawn_worker_processes(worker_environment_setup=None):
+    """Initialize the multiprocessing pool, allowing for parallel execution of workflows.
+
+    Args:
+        worker_environment_setup (function, optional): Optional alternative worker setup environment function.
+    """
+    pids = []
+    for i in range(core.config.config.num_processes):
+        args = (i, worker_environment_setup) if worker_environment_setup else (i,)
+
+        pid = multiprocessing.Process(target=loadbalancer.Worker, args=args)
+        pid.start()
+        pids.append(pid)
+    return pids
 
 
 class MultiprocessedExecutor(object):
@@ -31,7 +46,7 @@ class MultiprocessedExecutor(object):
         """
         self.threading_is_initialized = False
         self.uid = "executor"
-        self.pids = []
+        self.pids = None
         self.workflow_status = {}
         self.workflows_executed = 0
 
@@ -59,38 +74,29 @@ class MultiprocessedExecutor(object):
         self.receiver_thread = None
 
     def __trigger_workflow_status_wait(self, sender, **kwargs):
-        self.workflow_status[sender.workflow_execution_uid] = WORKFLOW_AWAITING_DATA
+        self.workflow_status[sender['workflow_execution_uid']] = WORKFLOW_AWAITING_DATA
 
     def __trigger_workflow_status_continue(self, sender, **kwargs):
-        self.workflow_status[sender.workflow_execution_uid] = WORKFLOW_RUNNING
+        self.workflow_status[sender['workflow_execution_uid']] = WORKFLOW_RUNNING
 
     def __remove_workflow_status(self, sender, **kwargs):
-        if sender.workflow_execution_uid in self.workflow_status:
-            self.workflow_status.pop(sender.workflow_execution_uid, None)
+        if sender['workflow_execution_uid'] in self.workflow_status:
+            self.workflow_status.pop(sender['workflow_execution_uid'], None)
 
-    def initialize_threading(self, worker_environment_setup=None):
-        """Initialize the multiprocessing pool, allowing for parallel execution of workflows.
+    def initialize_threading(self, pids):
+        """Initialize the multiprocessing communication threads, allowing for parallel execution of workflows.
 
-        Args:
-            worker_environment_setup (function, optional): Optional alternative worker setup environment function.
         """
         if not (os.path.exists(core.config.paths.zmq_public_keys_path) and
                 os.path.exists(core.config.paths.zmq_private_keys_path)):
             logging.error("Certificates are missing - run generate_certificates.py script first.")
             sys.exit(0)
-
-        for i in range(NUM_PROCESSES):
-            args = (i, worker_environment_setup) if worker_environment_setup else (i, )
-
-            pid = multiprocessing.Process(target=loadbalancer.Worker, args=args)
-            pid.start()
-            self.pids.append(pid)
-
+        self.pids = pids
         self.ctx = zmq.Context.instance()
-        self.auth = ThreadAuthenticator(self.ctx)
-        self.auth.start()
-        self.auth.allow('127.0.0.1')
-        self.auth.configure_curve(domain='*', location=core.config.paths.zmq_public_keys_path)
+        # self.auth = ThreadAuthenticator(self.ctx)
+        # self.auth.start()
+        # self.auth.allow('127.0.0.1')
+        # self.auth.configure_curve(domain='*', location=core.config.paths.zmq_public_keys_path)
 
         self.manager = loadbalancer.LoadBalancer(self.ctx)
         self.receiver = loadbalancer.Receiver(self.ctx)
@@ -103,29 +109,21 @@ class MultiprocessedExecutor(object):
 
         self.threading_is_initialized = True
         logger.debug('Controller threading initialized')
-        gevent.sleep(0)
 
-    def shutdown_pool(self, num_workflows=0):
-        """Shuts down the threadpool.
-
-        Args:
-            num_workflows (int, optional): The number of workflows that should be executed before the pool
-                is shutdown.
-        """
-        gevent.sleep(0.1)
-
+    def wait_and_reset(self, num_workflows):
         timeout = 0
         shutdown = 10
 
         while timeout < shutdown:
-            if (num_workflows == 0) or \
-                    (num_workflows != 0 and self.receiver is not None
-                     and num_workflows == self.receiver.workflows_executed):
+            if self.receiver is not None and num_workflows == self.receiver.workflows_executed:
                 break
-            if num_workflows > 0:
-                timeout += 0.1
+            timeout += 0.1
             gevent.sleep(0.1)
+        self.receiver.workflows_executed = 0
 
+    def shutdown_pool(self):
+        """Shuts down the threadpool.
+        """
         if self.manager_thread:
             self.manager.thread_exit = True
             self.manager_thread.join(timeout=1)
@@ -174,9 +172,6 @@ class MultiprocessedExecutor(object):
             The execution UID of the Workflow.
         """
         uid = str(uuid.uuid4())
-
-        if not self.threading_is_initialized:
-            self.initialize_threading()
 
         if start is not None:
             logger.info('Executing workflow {0} for action {1}'.format(workflow.name, start))

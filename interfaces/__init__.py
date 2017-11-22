@@ -7,7 +7,7 @@ from weakref import WeakSet
 from google.protobuf.json_format import MessageToDict
 from functools import partial
 _logger = logging.getLogger(__name__)
-
+from copy import deepcopy
 
 class AppWidgetBlueprint(object):
     """
@@ -284,7 +284,7 @@ class InterfaceEventDispatcher(object):
     def _make_dispatch_method(cls, event):
         def dispatch_method(sender, **kwargs):
             if event.event_type != EventType.controller:
-                data = MessageToDict(sender, preserving_proto_field_name=True)
+                data = deepcopy(sender)
                 kwargs.pop('cls', None)
                 data.update(kwargs)
                 if 'uid' in data:

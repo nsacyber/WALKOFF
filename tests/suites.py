@@ -27,7 +27,7 @@ __execution_tests = [test_argument, test_execution_runtime, test_execution_eleme
 execution_suite = TestSuite()
 add_tests_to_suite(execution_suite, __execution_tests)
 
-__workflow_tests = [test_zmq_communication_server, test_zmq_communication, test_triggers, test_load_workflow, test_simple_workflow,
+__workflow_tests = [test_zmq_communication_server, test_zmq_communication, test_triggers_server, test_load_workflow, test_simple_workflow,
                     test_workflow_manipulation]
 workflow_suite = TestSuite()
 add_tests_to_suite(workflow_suite, __workflow_tests)

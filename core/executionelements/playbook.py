@@ -1,4 +1,5 @@
 from core.executionelements.executionelement import ExecutionElement
+import core.config.config
 
 
 class Playbook(ExecutionElement):
@@ -14,6 +15,7 @@ class Playbook(ExecutionElement):
         self.name = name
         # TODO: When playbook endpoints use UIDs, this should store UIDS
         self.workflows = {workflow.name: workflow for workflow in workflows} if workflows is not None else {}
+        self._version_number = core.config.config.playbook_version_number
 
     def add_workflow(self, workflow):
         """Add a Workflow to the Playbook.
@@ -103,8 +105,6 @@ class Playbook(ExecutionElement):
 
         Returns:
             A list of all of the Workflows associated with the Playbook, in limited JSON form
-
-        :return:
         """
         return [{'name': workflow_names, 'uid': workflow.uid} for workflow_names, workflow in self.workflows.items()]
 

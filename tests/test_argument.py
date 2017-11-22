@@ -26,6 +26,10 @@ class TestArgument(TestCase):
         with self.assertRaises(InvalidArgument):
             Argument('test')
 
+    def test_init_no_value_empty_reference(self):
+        with self.assertRaises(InvalidArgument):
+            Argument('test', reference='')
+
     def test_init_with_value(self):
         arg = Argument('test_name', value=5)
         self.assert_init_equals(arg, 'test_name', value=5)
@@ -33,6 +37,14 @@ class TestArgument(TestCase):
     def test_init_with_reference(self):
         arg = Argument('test_name', reference='some_uid')
         self.assert_init_equals(arg, 'test_name', reference='some_uid')
+
+    def test_init_with_reference_empty(self):
+        arg = Argument('test_name', value=5, reference='')
+        self.assert_init_equals(arg, 'test_name', value=5)
+
+    def test_init_with_selection_empty(self):
+        arg = Argument('test_name', value=5, selection=[])
+        self.assert_init_equals(arg, 'test_name', value=5)
 
     def test_init_with_selection(self):
         arg = Argument('test_name', reference='some_uid', selection=[1, 'a', 2])
@@ -62,10 +74,6 @@ class TestArgument(TestCase):
     def test_get_next_selection_index_on_list_out_of_bounds(self):
         with self.assertRaises(IndexError):
             Argument._get_next_selection(['a', 1, '2', 'something'], 10)
-
-    def test_select_empty_selection(self):
-        arg = Argument('test', reference='some_uid', selection=[])
-        self.assertEqual(arg._select('something in'), 'something in')
 
     def test_select_one_on_list(self):
         arg = Argument('test', reference='some_uid', selection=[1])

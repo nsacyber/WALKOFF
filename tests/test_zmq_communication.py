@@ -15,6 +15,9 @@ from tests.util.thread_control import modified_setup_worker_env
 class TestZMQCommunication(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        from core.multiprocessedexecutor import spawn_worker_processes
+        pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)
+        core.controller.controller.initialize_threading(pids)
         apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.num_processes = 2
@@ -27,7 +30,6 @@ class TestZMQCommunication(unittest.TestCase):
         self.testWorkflow = self.controller.get_workflow(*self.id_tuple)
         self.testWorkflow.set_execution_uid('some_uid')
         self.start = datetime.utcnow()
-        self.controller.initialize_threading(worker_environment_setup=modified_setup_worker_env)
         case_database.initialize()
 
     def tearDown(self):
@@ -38,6 +40,7 @@ class TestZMQCommunication(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         apps.clear_cache()
+        core.controller.controller.shutdown_pool()
 
     '''Request and Result Socket Testing (Basic Workflow Execution)'''
 
@@ -47,7 +50,7 @@ class TestZMQCommunication(unittest.TestCase):
         setup_subscriptions_for_action(workflow.uid, action_uids)
         self.controller.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
 
-        self.controller.shutdown_pool(1)
+        self.controller.wait_and_reset(1)
 
         actions = []
         for uid in action_uids:
@@ -65,7 +68,7 @@ class TestZMQCommunication(unittest.TestCase):
         setup_subscriptions_for_action(workflow.uid, action_uids)
         self.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
-        self.controller.shutdown_pool(1)
+        self.controller.wait_and_reset(1)
         actions = []
         for uid in action_uids:
             actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
@@ -83,7 +86,7 @@ class TestZMQCommunication(unittest.TestCase):
         setup_subscriptions_for_action(workflow.uid, action_uids)
         self.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
 
-        self.controller.shutdown_pool(1)
+        self.controller.wait_and_reset(1)
 
         actions = []
         for uid in action_uids:
@@ -102,7 +105,7 @@ class TestZMQCommunication(unittest.TestCase):
         setup_subscriptions_for_action(workflow.uid, action_uids)
         self.controller.execute_workflow('dataflowTest', 'dataflowWorkflow')
 
-        self.controller.shutdown_pool(1)
+        self.controller.wait_and_reset(1)
 
         actions = []
         for uid in action_uids:
@@ -143,6 +146,6 @@ class TestZMQCommunication(unittest.TestCase):
         WalkoffEvent.WorkflowExecutionStart.connect(action_1_about_to_begin_listener)
 
         uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
-        self.controller.shutdown_pool(1)
+        self.controller.wait_and_reset(1)
         self.assertTrue(result['paused'])
         self.assertTrue(result['resumed'])

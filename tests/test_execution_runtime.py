@@ -20,7 +20,9 @@ class TestExecutionRuntime(unittest.TestCase):
         apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
+        core.multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
+        core.controller.controller.initialize_threading()
 
     def setUp(self):
         self.start = datetime.utcnow()
@@ -35,6 +37,7 @@ class TestExecutionRuntime(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         apps.clear_cache()
+        core.controller.controller.shutdown_pool()
 
     def test_templated_workflow(self):
         action_names = ['start', '1']
@@ -44,7 +47,7 @@ class TestExecutionRuntime(unittest.TestCase):
         setup_subscriptions_for_action(workflow.uid, action_uids)
         self.controller.execute_workflow('templatedWorkflowTest', 'templatedWorkflow')
 
-        self.controller.shutdown_pool(1)
+        self.controller.wait_and_reset(1)
 
         actions = []
         for uid in action_uids:

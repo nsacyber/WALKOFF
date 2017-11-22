@@ -2,6 +2,7 @@ from copy import deepcopy
 
 from flask_jwt_extended import jwt_required
 
+from apps import is_app_action_bound
 import core.config.config
 import core.config.paths
 from core import helpers
@@ -19,9 +20,7 @@ def read_all_apps(interfaces_only=None):
     return __func()
 
 
-def extract_schema(api, unformatted_fields=None):
-    unformatted_fields = unformatted_fields if unformatted_fields is not None else ('name', 'example', 'placeholder',
-                                                                                    'description')
+def extract_schema(api, unformatted_fields=('name', 'example', 'placeholder', 'description', 'required')):
     ret = {}
     schema = {}
     for key, value in api.items():
@@ -30,6 +29,8 @@ def extract_schema(api, unformatted_fields=None):
         else:
             ret[key] = value
     ret['schema'] = schema
+    if 'schema' in ret['schema']:  # flatten the nested schema, happens when parameter is an object
+        ret['schema'].update({key: value for key, value in ret['schema'].pop('schema').items()})
     return ret
 
 
@@ -45,10 +46,12 @@ def format_returns(api, with_event=False):
     return ret_returns
 
 
-def format_app_action_api(api):
+def format_app_action_api(api, app_name, action_type):
     ret = deepcopy(api)
     if 'returns' in api:
         ret['returns'] = format_returns(ret['returns'], 'event' in api)
+    if action_type in ('conditions', 'transforms') or not is_app_action_bound(app_name, api['run']):
+        ret['global'] = True
     if 'parameters' in api:
         ret['parameters'] = [extract_schema(param_api) for param_api in ret['parameters']]
     else:
@@ -56,18 +59,18 @@ def format_app_action_api(api):
     return ret
 
 
-def format_all_app_actions_api(api):
+def format_all_app_actions_api(api, app_name, action_type):
     actions = []
     for action_name, action_api in api.items():
         ret_action_api = {'name': action_name}
-        ret_action_api.update(format_app_action_api(action_api))
+        ret_action_api.update(format_app_action_api(action_api, app_name, action_type))
         actions.append(ret_action_api)
     return actions
 
 
 def format_device_api_full(api, device_name):
     device_api = {'name': device_name}
-    unformatted_fields = ('name', 'description', 'encrypted', 'placeholder')
+    unformatted_fields = ('name', 'description', 'encrypted', 'placeholder', 'required')
     if 'description' in api:
         device_api['description'] = api['description']
     device_api['fields'] = [extract_schema(device_field,
@@ -86,7 +89,7 @@ def format_full_app_api(api, app_name):
             ret[unformatted_field] = [] if unformatted_field in ('tags', 'external_docs') else {}
     for formatted_action_field in ('actions', 'conditions', 'transforms'):
         if formatted_action_field in api:
-            ret[formatted_action_field[:-1] + '_apis'] = format_all_app_actions_api(api[formatted_action_field])
+            ret[formatted_action_field[:-1] + '_apis'] = format_all_app_actions_api(api[formatted_action_field], app_name, formatted_action_field)
         else:
             ret[formatted_action_field[:-1] + '_apis'] = []
     if 'devices' in api:

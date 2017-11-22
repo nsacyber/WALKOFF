@@ -1,5 +1,5 @@
-<div *ngIf="appNamesWithTransforms.length" class="transforms">
-	<div class="row actionAddBar">
+<div *ngIf="appNamesWithTransforms.length" class="indent">
+	<div class="row addBar">
 		<div class="col-xs-4">
 			<label>App</label>
 			<select class="form-control" [(ngModel)]="selectedAppName" (change)="resetTransformSelection($event.target.value)">
@@ -14,7 +14,7 @@
 			</div>
 		<div class="col-xs-4">
 			<div class="form-group">
-				<button class="btn btn-primary pull-right" (click)="addTransform()"><span class="fa fa-plus"></span>Add Transform</button>
+				<button class="btn btn-primary pull-right" (click)="addTransform()"><i class="fa fa-plus"></i>Add Transform</button>
 			</div>
 		</div>
 	</div>
@@ -25,13 +25,14 @@
 			</div>
 			<div class="col-xs-6">
 				<div class="pull-right">
-					<button *ngIf="id > 0" class="btn btn-primary" (click)="moveUp(id)" title="Move Up"><span class="fa fa-arrow-up"></span></button>
-					<button *ngIf="id < transforms.length - 1" class="btn btn-primary" (click)="moveDown(id)" title="Move Down"><span class="fa fa-arrow-down"></span></button>
-					<button class="btn btn-danger" (click)="removeTransform(id)" title="Remove Condition"><span class="fa fa-close"></span></button>
+					<button *ngIf="id > 0" class="btn btn-primary" (click)="moveUp(id)" title="Move Up"><i class="fa fa-arrow-up"></i></button>
+					<button *ngIf="id < transforms.length - 1" class="btn btn-primary" (click)="moveDown(id)" title="Move Down"><i class="fa fa-arrow-down"></i></button>
+					<button class="btn btn-danger" (click)="removeTransform(id)" title="Remove Transform"><i class="fa fa-close"></i></button>
 				</div>
 			</div>
 		</div>
-		<playbook-argument-component *ngFor="let argument of transform.arguments; let id = index" [loadedWorkflow]="loadedWorkflow"
-		 [argument]="argument" [parameterApi]="getTransformApiArgs(transform.app_name, transform.action_name, argument.name)" [id]="id"></playbook-argument-component>
+		<playbook-argument-component *ngFor="let parameterApi of getTransformApi(transform.app_name, transform.action_name).parameters; let id = index"
+		[loadedWorkflow]="loadedWorkflow" [argument]="getOrInitializeArgument(transform, parameterApi)" [parameterApi]="parameterApi"
+		[id]="id"></playbook-argument-component>
 	</div>
 </div>

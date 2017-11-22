@@ -28,7 +28,9 @@ class TestWorkflowManipulation(unittest.TestCase):
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.num_processes = 2
         core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
+        core.multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
+        core.controller.controller.initialize_threading()
 
     def setUp(self):
         self.controller = core.controller.controller
@@ -46,12 +48,12 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.controller.workflows = None
         case_database.case_db.tear_down()
         case_subscription.clear_subscriptions()
-        self.controller.shutdown_pool(0)
         reload(socket)
 
     @classmethod
     def tearDownClass(cls):
         apps.clear_cache()
+        core.controller.controller.shutdown_pool()
 
     def test_simple_risk(self):
         workflow = Workflow(name='workflow')
@@ -80,7 +82,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertAlmostEqual(workflow.accumulated_risk, 1.0)
 
     def test_pause_and_resume_workflow(self):
-        self.controller.initialize_threading()
         self.controller.load_playbook(resource=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
 
         uid = None
@@ -107,12 +108,11 @@ class TestWorkflowManipulation(unittest.TestCase):
 
 
         uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
-        self.controller.shutdown_pool(1)
+        self.controller.wait_and_reset(1)
         self.assertTrue(result['paused'])
         self.assertTrue(result['resumed'])
 
     def test_change_action_input(self):
-        self.controller.initialize_threading()
         arguments = [{'name': 'call', 'value': 'CHANGE INPUT'}]
 
         result = {'value': None}
@@ -124,6 +124,6 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         self.controller.execute_workflow('simpleDataManipulationWorkflow', 'helloWorldWorkflow',
                                          start_arguments=arguments)
-        self.controller.shutdown_pool(1)
+        self.controller.wait_and_reset(1)
         self.assertDictEqual(result['value'],
                              {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'})

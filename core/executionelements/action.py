@@ -1,9 +1,7 @@
 import json
 import logging
 import uuid
-
-import gevent
-from gevent.event import AsyncResult
+import threading
 
 import core.config.config
 from apps import get_app_action, is_app_action_bound
@@ -31,7 +29,7 @@ class Action(ExecutionElement):
             name (str, optional): The name of the Action object. Defaults to an empty string.
             device_id (int, optional): The id of the device associated with the app associated with the Action. Defaults
                 to None.
-            arguments ([Argument], optional): A list of Argument objects that are arguments to the action.
+            arguments ([Argument], optional): A list of Argument objects that are parameters to the action.
                 Defaults to None.
             triggers (list[Flag], optional): A list of Flag objects for the Action. If a Action should wait for data
                 before continuing, then include these Trigger objects in the Action init. Defaults to None.
@@ -46,12 +44,19 @@ class Action(ExecutionElement):
         ExecutionElement.__init__(self, uid)
 
         self.triggers = triggers if triggers is not None else []
-        self._incoming_data = AsyncResult()
+        self._incoming_data = None
+        self._event = threading.Event()
 
         self.name = name
+        self.device_id = device_id
         self.app_name = app_name
         self.action_name = action_name
         self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
+
+        if is_app_action_bound(self.app_name, self._run) and not self.device_id:
+            raise InvalidArgument(
+                "Cannot initialize Action {}. App action is bound but no device ID was provided.".format(self.name))
+
         self._action_executable = get_app_action(self.app_name, self._run)
 
         arguments = {argument.name: argument for argument in arguments} if arguments is not None else {}
@@ -60,7 +65,6 @@ class Action(ExecutionElement):
         if not self.templated:
             validate_app_action_parameters(self._arguments_api, arguments, self.app_name, self.action_name)
         self.arguments = arguments
-        self.device_id = device_id
         self.risk = risk
         self.position = position if position is not None else {}
 
@@ -69,7 +73,7 @@ class Action(ExecutionElement):
         self._execution_uid = 'default'
 
     def get_output(self):
-        """Gets the output of a Action (the result)
+        """Gets the output of an Action (the result)
 
         Returns:
             The result of the Action
@@ -92,7 +96,8 @@ class Action(ExecutionElement):
                 to be sent to the triggers, and 'arguments', which is an optional parameter to change the arguments
                 to the current Action
         """
-        self._incoming_data.set(data)
+        self._incoming_data = data
+        self._event.set()
 
     def _update_json(self, updated_json):
         self.action_name = updated_json['action_name']
@@ -125,7 +130,7 @@ class Action(ExecutionElement):
             self._update_json(updated_json=json.loads(env))
 
     def set_arguments(self, new_arguments):
-        """Updates the arguments for a Action object.
+        """Updates the arguments for an Action object.
 
         Args:
             new_arguments ([Argument]): The new Arguments for the Action object.
@@ -135,7 +140,7 @@ class Action(ExecutionElement):
         self.arguments = new_arguments
 
     def execute(self, instance, accumulator):
-        """Executes a Action by calling the associated app function.
+        """Executes an Action by calling the associated app function.
 
         Args:
             instance (App): The instance of an App object to be used to execute the associated function.
@@ -177,18 +182,19 @@ class Action(ExecutionElement):
             raise
         else:
             self._output = result
-            logger.debug('Action {0}-{1} (uid {2}) executed successfully'.format(self.app_name, self.action_name, self.uid))
+            logger.debug(
+                'Action {0}-{1} (uid {2}) executed successfully'.format(self.app_name, self.action_name, self.uid))
             return result
 
     def _wait_for_trigger(self, accumulator):
         while True:
-            try:
-                data = self._incoming_data.get(timeout=1)
-                self._incoming_data = AsyncResult()
-            except gevent.Timeout:
-                gevent.sleep(0.1)
+            self._event.wait()
+            if self._incoming_data is None:
                 continue
+            data = self._incoming_data
             data_in = data['data_in']
+            self._incoming_data = None
+            self._event.clear()
 
             if all(flag.execute(data_in=data_in, accumulator=accumulator) for flag in self.triggers):
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionTaken)
@@ -205,5 +211,3 @@ class Action(ExecutionElement):
             else:
                 logger.debug('Trigger is not valid for input {0}'.format(data_in))
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionNotTaken)
-
-            gevent.sleep(0.1)

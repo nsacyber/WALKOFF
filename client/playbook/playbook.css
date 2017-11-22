@@ -1,6 +1,9 @@
-/* @import '/client/node_modules/jstree/dist/themes/default/style.min.css'; */
 @import '/client/node_modules/cytoscape-panzoom/cytoscape.js-panzoom.css';
 @import '/client/node_modules/ng2-dnd/bundles/style.css';
+
+#main.playbookMain {
+	padding: 10px 15px 0px 15px;
+}
 
 .playbookMain h3 {
 	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
@@ -14,8 +17,12 @@
 	color: #255876;
 }
 
-#main.playbookMain {
-	padding: 10px 15px 0px 15px;
+#playbookToolbar {
+	background-color: #aecbdc;
+	margin-left: 0;
+	margin-bottom: 5px;
+	border: 1px solid #8b9aa3;
+	border-radius: 5px;
 }
 
 #playbookToolbar .btn-default {
@@ -30,8 +37,8 @@
 	border-radius: 0;
 }
 
-#playbookToolbar .btn-toolbar>.btn, .btn-toolbar>.btn-group, .btn-toolbar>.input-group {
-	margin-left: 0;
+#playbookToolbar .btn-group {
+	border-right: 1px solid #8b9aa3;
 }
 
 #playbookToolbar .btn-group>.btn:first-child {
@@ -39,16 +46,8 @@
 	padding: 10px;
 }
 
-#playbookToolbar {
-	background-color: #aecbdc;
+#playbookToolbar .btn-toolbar>.btn, .btn-toolbar>.btn-group, .btn-toolbar>.input-group {
 	margin-left: 0;
-	margin-bottom: 5px;
-	border: 1px solid #8b9aa3;
-	border-radius: 5px;
-}
-
-#playbookToolbar .btn-group {
-	border-right: 1px solid #8b9aa3;
 }
 
 #currentWorkflowText {
@@ -116,26 +115,9 @@
 	content: "\f054";    /* adjust as needed, taken from bootstrap.css */
 }
 
-.playbookMain .required {
-	color: crimson;
-	margin-left: 5px;
-}
-
 .playbookMain .panel-default>.panel-heading {
 	background-color: #eaf2f6;
 	font-weight: bolder;
-}
-
-.playbookMain .list-group-item:last-child {
-	background-color: #d6e5ed;
-}
-
-.playbookMain .list-group-item:first-child {
-	background-color: #aecbdc;
-}
-
-.playbookMain .no-close .ui-dialog-titlebar-close {
-	display: none;
 }
 
 .playbookMain .parametersEditor input[type=checkbox].form-control {
@@ -152,17 +134,26 @@
 	background-color: #EEE;
 }
 
-.playbookMain .parametersEditor .transforms {
+.playbookMain .parametersEditor .indent {
 	padding-left: 15px;
 	border-left: 3px solid #DDD;
 }
 
-.playbookMain .actionAddBar {
+.playbookMain .parametersEditor .addBar {
 	margin-bottom: 10px;
 }
 
-.playbookMain .actionAddBar button {
+.playbookMain .parametersEditor .addBar button {
 	margin-top: 25px;
+}
+
+.playbookMain .parametersEditor .propertyHeader {
+	margin-bottom: 5px;
+}
+
+.playbookMain .parametersEditor .required {
+	color: crimson;
+	margin-left: 5px;
 }
 
 .playbookMain ngx-datatable datatable-body datatable-body-row datatable-body-cell div.datatable-body-cell-label {
@@ -172,7 +163,6 @@
 #workflowsModal .workflowPanel a {
 	cursor: pointer;
 }
-
 
 #workflowsModal .panel-heading h4 {
 	min-height: 30px;

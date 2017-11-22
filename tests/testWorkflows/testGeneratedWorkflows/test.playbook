@@ -7,13 +7,14 @@
             "actions": [
                 {
                     "action_name": "repeatBackToMe",
-                    "app_name": "HelloWorld",
+                    "app_name": "HelloWorldBounded",
                     "arguments": [
                         {
                             "name": "call",
                             "value": "Hello World"
                         }
                     ],
+                    "device_id": 1,
                     "name": "start",
                     "position": {},
                     "risk": 0,

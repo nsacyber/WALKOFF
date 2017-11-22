@@ -1,5 +1,5 @@
 <div *ngIf="appNamesWithConditions.length">
-	<div class="row actionAddBar">
+	<div class="row addBar">
 		<div class="col-xs-4">
 			<label>App</label>
 			<select class="form-control" [(ngModel)]="selectedAppName" (change)="resetConditionSelection($event.target.value)">
@@ -14,7 +14,7 @@
 		</div>
 		<div class="col-xs-4">
 			<div class="form-group">
-				<button class="btn btn-primary pull-right" (click)="addCondition()"><span class="fa fa-plus"></span>Add Condition</button>
+				<button class="btn btn-primary pull-right" (click)="addCondition()"><i class="fa fa-plus"></i>Add Condition</button>
 			</div>
 		</div>
 	</div>
@@ -25,14 +25,15 @@
 			</div>
 			<div class="col-xs-6">
 				<div class="pull-right">
-					<button *ngIf="id > 0" class="btn btn-primary" (click)="moveUp(id)" title="Move Up"><span class="fa fa-arrow-up"></span></button>
-					<button *ngIf="id < conditions.length - 1" class="btn btn-primary" (click)="moveDown(id)" title="Move Down"><span class="fa fa-arrow-down"></span></button>
-					<button class="btn btn-danger" (click)="removeCondition(id)" title="Remove Condition"><span class="fa fa-close"></span></button>
+					<button *ngIf="id > 0" class="btn btn-primary" (click)="moveUp(id)" title="Move Up"><i class="fa fa-arrow-up"></i></button>
+					<button *ngIf="id < conditions.length - 1" class="btn btn-primary" (click)="moveDown(id)" title="Move Down"><i class="fa fa-arrow-down"></i></button>
+					<button class="btn btn-danger" (click)="removeCondition(id)" title="Remove Condition"><i class="fa fa-close"></i></button>
 				</div>
 			</div>
 		</div>
-		<playbook-argument-component *ngFor="let argument of condition.arguments; let id = index" [loadedWorkflow]="loadedWorkflow"
-		[argument]="argument" [parameterApi]="getConditionApiArgs(condition.app_name, condition.action_name, argument.name)" [id]="id"></playbook-argument-component>
+		<playbook-argument-component *ngFor="let parameterApi of getConditionApi(condition.app_name, condition.action_name).parameters; let id = index"
+		[loadedWorkflow]="loadedWorkflow" [argument]="getOrInitializeArgument(condition, parameterApi)" [parameterApi]="parameterApi"
+		[id]="id"></playbook-argument-component>
 		<div>
 			<h4>Transforms</h4>
 			<playbook-transforms-component [transforms]="condition.transforms" [appApis]="appApis"

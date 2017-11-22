@@ -71,7 +71,7 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertListEqual(workflows, [])
 
     def test_list_apps(self):
-        expected_apps = ['HelloWorld', 'DailyQuote']
+        expected_apps = ['HelloWorld', 'DailyQuote', 'HelloWorldBounded']
         orderless_list_compare(self, expected_apps, list_apps())
 
     def test_import_py_file(self):

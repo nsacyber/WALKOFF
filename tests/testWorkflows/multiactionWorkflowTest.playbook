@@ -8,7 +8,7 @@
                     "conditions": [
                         {
                             "action_name": "regMatch",
-                            "app_name": "HelloWorld",
+                            "app_name": "HelloWorldBounded",
                             "arguments": [
                                 {
                                     "name": "regex",
@@ -18,7 +18,7 @@
                             "transforms": [
                                 {
                                     "action_name": "length",
-                                    "app_name": "HelloWorld",
+                                    "app_name": "HelloWorldBounded",
                                     "arguments": [],
                                     "uid": "fead248eba064defbf25b33cccc734fc"
                                 }
@@ -36,7 +36,7 @@
             "actions": [
                 {
                     "action_name": "repeatBackToMe",
-                    "app_name": "HelloWorld",
+                    "app_name": "HelloWorldBounded",
                     "arguments": [
                         {
                             "name": "call",
@@ -46,16 +46,18 @@
                     "name": "1",
                     "position": {},
                     "risk": 0,
-                    "uid": "01204c1451c44f99b828b2367690801b"
+                    "uid": "01204c1451c44f99b828b2367690801b",
+                    "device_id": 1
                 },
                 {
                     "action_name": "helloWorld",
-                    "app_name": "HelloWorld",
+                    "app_name": "HelloWorldBounded",
                     "arguments": [],
                     "name": "start",
                     "position": {},
                     "risk": 0,
-                    "uid": "704c94c112fa49c3a4a3b30cf1586fc2"
+                    "uid": "704c94c112fa49c3a4a3b30cf1586fc2",
+                    "device_id": 1
                 }
             ],
             "uid": "81f0ae4aaf4b4eda905d35cbab0cd36d"
