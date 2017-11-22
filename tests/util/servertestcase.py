@@ -6,14 +6,13 @@ import unittest
 import apps
 import core.config.config
 import core.config.paths
-import tests.config
-from tests.util.thread_control import *
 import core.controller
-import core.loadbalancer
-import core.multiprocessedexecutor
+from core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 import server.flaskserver
 import tests.config
+import tests.config
 from tests.util.mock_objects import *
+from tests.util.thread_control import *
 
 if not getattr(__builtins__, 'WindowsError', None):
     class WindowsError(OSError): pass
@@ -66,12 +65,12 @@ class ServerTestCase(unittest.TestCase):
 
         server.flaskserver.running_context.db.create_all()
         if cls.patch:
-            core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
-            core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
-            core.multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
+            MultiprocessedExecutor.initialize_threading = mock_initialize_threading
+            MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
+            MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
             server.flaskserver.running_context.controller.initialize_threading()
         else:
-            from core.multiprocessedexecutor import spawn_worker_processes
+            from core.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
             pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)
             server.flaskserver.running_context.controller.initialize_threading(pids)
 

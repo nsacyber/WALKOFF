@@ -2,8 +2,7 @@ import unittest
 
 import core.config.config
 import core.controller
-import core.loadbalancer
-import core.multiprocessedexecutor
+from core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from core.case import database
 from core.case import subscription
 from tests import config
@@ -18,9 +17,9 @@ class TestSimpleWorkflow(unittest.TestCase):
         cache_apps(path=config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
         core.config.config.num_processes = 2
-        core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
-        core.multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
-        core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
+        MultiprocessedExecutor.initialize_threading = mock_initialize_threading
+        MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
+        MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
         core.controller.controller.initialize_threading()
 
     def setUp(self):

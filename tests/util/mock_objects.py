@@ -1,14 +1,15 @@
 import json
 import threading
-import gevent
 
+import gevent
+from google.protobuf.json_format import MessageToDict
 from zmq.utils.strtypes import cast_unicode
 
 from core.argument import Argument
-from core import loadbalancer
 from core.events import WalkoffEvent
+from core.multiprocessedexecutor.worker import convert_to_protobuf, recreate_workflow
+from core.multiprocessedexecutor import loadbalancer
 from core.protobuf.build import data_pb2
-from google.protobuf.json_format import MessageToDict
 
 try:
     from Queue import Queue
@@ -69,9 +70,9 @@ class MockLoadBalancer(object):
 
     def on_data_sent(self, sender, **kwargs):
         if self.exec_uid or not hasattr(sender, "_execution_uid"):
-            packet_bytes = loadbalancer.convert_to_protobuf(sender, self.exec_uid, **kwargs)
+            packet_bytes = convert_to_protobuf(sender, self.exec_uid, **kwargs)
         else:
-            packet_bytes = loadbalancer.convert_to_protobuf(sender, sender.get_execution_uid(), **kwargs)
+            packet_bytes = convert_to_protobuf(sender, sender.get_execution_uid(), **kwargs)
         message_outer = data_pb2.Message()
         message_outer.ParseFromString(packet_bytes)
 
@@ -100,7 +101,7 @@ class MockLoadBalancer(object):
 
             exec_uid = workflow_json['execution_uid']
 
-            workflow, start_arguments = loadbalancer.recreate_workflow(workflow_json)
+            workflow, start_arguments = recreate_workflow(workflow_json)
             self.workflow_comms[exec_uid] = workflow
 
             self.exec_uid = exec_uid
@@ -145,22 +146,6 @@ class MockReceiveQueue(loadbalancer.Receiver):
                 event.send(sender)
             if event == WalkoffEvent.WorkflowShutdown:
                 workflows_executed += 1
-
-#         # callback = self.callback_lookup[callback_name]
-#         # data = kwargs['data'] if callback[1] else {}
-#         # loadbalancer.Receiver.send_callback(callback[0], sender, data)
-#         #
-#         # if callback_name == 'Workflow Shutdown':
-#         #     workflows_executed += 1
-# =======
-#         callback = self.callback_lookup[callback_name]
-#         data = kwargs['data'] if callback[1] else {}
-#
-#         loadbalancer.Receiver.send_callback(callback[0], sender, data)
-#
-#         if callback_name == 'Workflow Shutdown':
-#             workflows_executed += 1
-# >>>>>>> development
 
 
 class MockRequestQueue(object):

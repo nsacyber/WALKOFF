@@ -3,7 +3,6 @@ import multiprocessing
 import os
 import signal
 import sys
-import time
 import threading
 import uuid
 
@@ -12,9 +11,8 @@ import zmq.green as zmq
 
 import core.config.config
 import core.config.paths
-from core import loadbalancer
 from core.events import WalkoffEvent
-from core.threadauthenticator import ThreadAuthenticator
+from core.multiprocessedexecutor import loadbalancer, worker, threadauthenticator
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +32,7 @@ def spawn_worker_processes(worker_environment_setup=None):
     for i in range(core.config.config.num_processes):
         args = (i, worker_environment_setup) if worker_environment_setup else (i,)
 
-        pid = multiprocessing.Process(target=loadbalancer.Worker, args=args)
+        pid = multiprocessing.Process(target=worker.Worker, args=args)
         pid.start()
         pids.append(pid)
     return pids
@@ -50,20 +48,20 @@ class MultiprocessedExecutor(object):
         self.workflow_status = {}
         self.workflows_executed = 0
 
+        @WalkoffEvent.TriggerActionAwaitingData.connect
         def handle_workflow_wait(sender, **kwargs):
             self.__trigger_workflow_status_wait(sender, **kwargs)
         self.handle_workflow_wait = handle_workflow_wait
-        WalkoffEvent.TriggerActionAwaitingData.connect(handle_workflow_wait)
 
+        @WalkoffEvent.TriggerActionTaken.connect
         def handle_workflow_continue(sender, **kwargs):
             self.__trigger_workflow_status_continue(sender, **kwargs)
         self.handle_workflow_continue = handle_workflow_continue
-        WalkoffEvent.TriggerActionTaken.connect(handle_workflow_continue)
 
+        @WalkoffEvent.WorkflowShutdown.connect
         def handle_workflow_shutdown(sender, **kwargs):
             self.__remove_workflow_status(sender, **kwargs)
         self.handle_data_sent = handle_workflow_shutdown
-        WalkoffEvent.WorkflowShutdown.connect(handle_workflow_shutdown)
 
         self.ctx = None
         self.auth = None
@@ -93,10 +91,10 @@ class MultiprocessedExecutor(object):
             sys.exit(0)
         self.pids = pids
         self.ctx = zmq.Context.instance()
-        # self.auth = ThreadAuthenticator(self.ctx)
-        # self.auth.start()
-        # self.auth.allow('127.0.0.1')
-        # self.auth.configure_curve(domain='*', location=core.config.paths.zmq_public_keys_path)
+        self.auth = threadauthenticator.ThreadAuthenticator(self.ctx)
+        self.auth.start()
+        self.auth.allow('127.0.0.1')
+        self.auth.configure_curve(domain='*', location=core.config.paths.zmq_public_keys_path)
 
         self.manager = loadbalancer.LoadBalancer(self.ctx)
         self.receiver = loadbalancer.Receiver(self.ctx)
@@ -124,6 +122,7 @@ class MultiprocessedExecutor(object):
     def shutdown_pool(self):
         """Shuts down the threadpool.
         """
+        self.manager.send_exit_to_worker_comms()
         if self.manager_thread:
             self.manager.thread_exit = True
             self.manager_thread.join(timeout=1)
