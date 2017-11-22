@@ -2,7 +2,7 @@ import json
 import os
 from copy import deepcopy
 from six import string_types
-
+from core.config.config import walkoff_version
 
 def convert_playbooks():
     for subdir, dir, files in os.walk('.'):
@@ -16,6 +16,7 @@ def convert_playbook(path):
     print('Processing {}'.format(path))
     with open(path, 'r') as f:
         playbook = json.load(f)
+        playbook['walkoff_version'] = walkoff_version
         for workflow in playbook['workflows']:
             convert_workflow(workflow)
     with open(path, 'w') as f:
