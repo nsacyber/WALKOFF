@@ -38,7 +38,7 @@ def __workflow_actions_event_stream():
         __action_signal.wait()
 
 
-
+@WalkoffEvent.WorkflowShutdown.connect
 def __workflow_ended_callback(sender, **kwargs):
     data = 'None'
     if 'data' in kwargs:
@@ -51,9 +51,9 @@ def __workflow_ended_callback(sender, **kwargs):
     __workflow_shutdown_event_json.set(result)
     __sync_signal.set()
     __sync_signal.clear()
-WalkoffEvent.WorkflowShutdown.connect(__workflow_ended_callback)
 
 
+@WalkoffEvent.ActionExecutionSuccess.connect
 def __action_ended_callback(sender, **kwargs):
     action_arguments = [convert_argument(argument) for argument in list(sender['arguments'])] if 'arguments' in sender else []
     result = {'action_name': sender['name'],
@@ -67,9 +67,9 @@ def __action_ended_callback(sender, **kwargs):
     __action_signal.set()
     __action_signal.clear()
     sleep(0)
-WalkoffEvent.ActionExecutionSuccess.connect(__action_ended_callback)
 
 
+@WalkoffEvent.ActionExecutionError.connect
 def __action_error_callback(sender, **kwargs):
     action_arguments = [convert_argument(argument) for argument in list(sender['arguments'])] if 'arguments' in sender else []
     result = {'action_name': sender['name'],
@@ -83,7 +83,6 @@ def __action_error_callback(sender, **kwargs):
     __action_signal.set()
     __action_signal.clear()
     sleep(0)
-WalkoffEvent.ActionExecutionError.connect(__action_error_callback)
 
 
 @workflowresults_page.route('/stream', methods=['GET'])

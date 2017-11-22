@@ -4,7 +4,7 @@ import gevent
 
 from gevent import monkey
 
-from core.case import callbacks
+from core.events import WalkoffEvent
 import core.case.database as case_database
 import core.case.subscription
 import core.config.paths
@@ -70,14 +70,14 @@ class TestTriggersServer(ServerTestCase):
                 timeout += 0.1
             return
 
-        @callbacks.TriggerActionAwaitingData.connect
+        @WalkoffEvent.TriggerActionAwaitingData.connect
         def send_data(sender, **kwargs):
             if result["num_trigs"] == 1:
                 gevent.spawn(gevent_wait_thread)
             else:
                 result["num_trigs"] += 1
 
-        @callbacks.TriggerActionTaken.connect
+        @WalkoffEvent.TriggerActionTaken.connect
         def trigger_taken(sender, **kwargs):
             result['result'] += 1
 
@@ -109,11 +109,11 @@ class TestTriggersServer(ServerTestCase):
                 gevent.sleep(0.1)
                 timeout += 0.1
 
-        @callbacks.TriggerActionAwaitingData.connect
+        @WalkoffEvent.TriggerActionAwaitingData.connect
         def send_data(sender, **kwargs):
             gevent.spawn(gevent_wait_thread)
 
-        @callbacks.TriggerActionTaken.connect
+        @WalkoffEvent.TriggerActionTaken.connect
         def trigger_taken(sender, **kwargs):
             result['result'] = True
 
@@ -156,11 +156,11 @@ class TestTriggersServer(ServerTestCase):
                 gevent.sleep(0.1)
                 timeout += 0.1
 
-        @callbacks.TriggerActionAwaitingData.connect
+        @WalkoffEvent.TriggerActionAwaitingData.connect
         def send_data(sender, **kwargs):
             gevent.spawn(gevent_wait_thread)
 
-        @callbacks.TriggerActionTaken.connect
+        @WalkoffEvent.TriggerActionTaken.connect
         def trigger_taken(sender, **kwargs):
             result['result'] += 1
 
@@ -182,7 +182,7 @@ class TestTriggersServer(ServerTestCase):
 
         result = {"value": None}
 
-        @callbacks.ActionExecutionSuccess.connect
+        @WalkoffEvent.ActionExecutionSuccess.connect
         def action_finished_listener(sender, **kwargs):
             result['value'] = kwargs['data']
 
@@ -198,7 +198,7 @@ class TestTriggersServer(ServerTestCase):
                 gevent.sleep(0.1)
                 timeout += 0.1
 
-        @callbacks.TriggerActionAwaitingData.connect
+        @WalkoffEvent.TriggerActionAwaitingData.connect
         def send_data(sender, **kwargs):
             gevent.spawn(gevent_wait_thread)
 
@@ -221,7 +221,7 @@ class TestTriggersServer(ServerTestCase):
 
         result = {"result": False}
 
-        @callbacks.ActionArgumentsInvalid.connect
+        @WalkoffEvent.ActionArgumentsInvalid.connect
         def action_input_invalids(sender, **kwargs):
             result['result'] = True
 
@@ -237,7 +237,7 @@ class TestTriggersServer(ServerTestCase):
                 gevent.sleep(0.1)
                 timeout += 0.1
 
-        @callbacks.TriggerActionAwaitingData.connect
+        @WalkoffEvent.TriggerActionAwaitingData.connect
         def send_data(sender, **kwargs):
             gevent.spawn(gevent_wait_thread)
 

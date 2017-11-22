@@ -285,8 +285,9 @@ class InterfaceEventDispatcher(object):
         def dispatch_method(sender, **kwargs):
             if event.event_type != EventType.controller:
                 data = deepcopy(sender)
-                kwargs.pop('cls', None)
-                data.update(kwargs)
+                additonal_data = deepcopy(kwargs)
+                additonal_data.pop('cls', None)
+                data.update(additonal_data)
                 if 'uid' in data:
                     data['sender_uid'] = data.pop('uid')
                 if 'name' in data:
@@ -296,6 +297,7 @@ class InterfaceEventDispatcher(object):
             cls.event_router.dispatch(event, data)
             if event.event_type == EventType.action:
                 cls.app_action_router.dispatch(event, data)
+            pass
         return dispatch_method
 
     @classmethod
@@ -388,63 +390,9 @@ Creates a callback for the {0} WalkoffEvent. Requires that the function being de
 
 dispatcher = InterfaceEventDispatcher()
 
-
-@dispatcher.on_workflow_shutdown(sender_uids='6645b2d61a514cbd8c8ce1094fa63be1')
-def x(data):
-    print('INHEREHRHERHEHEHRHRHEHEHREHREHEHREHEHREHREHRHHEHRE')
-    print('CALLED')
-    print(data)
-
-
-
-# class TestDispatch(object):
-#     def __init__(self):
-#         self.funcs = WeakSet()
 #
-#     def register(self, func):
-#         self.funcs.add(func)
-#
-#     def dispatch(self, sender, **kwargs):
-#         print('dispatching to {}'.format(list(self.funcs)))
-#         for func in self.funcs:
-#             func(sender, **kwargs)
-#
-# class TestIt(object):
-#     router = TestDispatch()
-#
-#     # @classmethod
-#     # def test(cls, sender, **kwargs):
-#     #     print('CALLED!!!!!')
-#     #     print(sender)
-#     #
-#     def __new__(cls, *args, **kwargs):
-#         xx = cls.dispatch()
-#         from functools import partial
-#         yy = partial(xx, cls=cls)
-#         WalkoffEvent.WorkflowShutdown.connect(yy, weak=False)
-#         return super(TestIt, cls).__new__(cls)
-#
-#     @classmethod
-#     def print_it(cls):
-#         print('in here')
-#
-#     @classmethod
-#     def dispatch(cls):
-#         def test(sender, **kwargs):
-#             print('dispatching')
-#             cls.router.dispatch(sender, **kwargs)
-#         return test
-#
-#     @classmethod
-#     def register(cls, arg):
-#         print(arg)
-#         def wrapper(func):
-#             cls.router.register(func)
-#             return func
-#         return wrapper
-#
-# testdisp = TestIt()
-# #
-# @testdisp.register(1)
-# def xxx(sender, **kwargs):
-#     print('CALLING INSIDE')
+# @dispatcher.on_workflow_shutdown(sender_uids='6645b2d61a514cbd8c8ce1094fa63be1')
+# def x(data):
+#     print('INHEREHRHERHEHEHRHRHEHEHREHREHEHREHEHREHREHRHHEHRE')
+#     print('CALLED')
+#     print(data)

@@ -596,6 +596,7 @@ class TestWorkflowServer(ServerTestCase):
         actions = []
         for uid in action_uids:
             actions.extend(executed_actions(uid, start, datetime.utcnow()))
+
         self.assertEqual(len(actions), 1)
         action = actions[0]
         result = action['data']
