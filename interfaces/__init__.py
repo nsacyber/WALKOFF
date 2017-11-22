@@ -224,8 +224,8 @@ class AppActionEventDispatcher(object):
 
         Args:
             event (WalkoffEvent): The event to register
-            device_ids: iterable((str|int)): The device IDs to register to. Specifying 'all' will always trigger regardless of
-                device ID passed to dispatch()
+            device_ids: (str|iterable(int)): The device IDs to register to. Specifying 'all' will always trigger
+                regardless of device ID passed to dispatch()
             func (func): Function to register
             weak: (bool, optional): Should the reference to the function be weak? Defaults to True
         """
@@ -325,7 +325,7 @@ class AppEventDispatcher(object):
             events (iterable(WalkoffEvent)): The events to register to callback to
             actions (str|iterable(str), optional): The actions to register the callback to. Defaults to 'all',
                 meaning all actions
-            device_ids (str|int|iterable(str|int), optional): The devices to register the callback to. Defaults to 'all'
+            device_ids (str|int|iterable(int), optional): The devices to register the callback to. Defaults to 'all'
                 meaning all devices
             weak (bool, optional): Should the function be registered as a weak reference? Defaults to True
 

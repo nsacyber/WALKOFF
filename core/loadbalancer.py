@@ -100,7 +100,7 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         action_packet.sender.execution_uid = sender.get_execution_uid()
         action_packet.sender.app_name = sender.app_name
         action_packet.sender.action_name = sender.action_name
-
+        action_packet.sender.device_id = sender.device_id if sender.device_id is not None else -1
 
         for argument in sender.arguments.values():
             arg = action_packet.sender.arguments.add()

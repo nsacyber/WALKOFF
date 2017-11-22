@@ -56,6 +56,7 @@ message ActionPacket {
         optional string action_name = 5;
         repeated ActionArgument arguments = 6;
         optional string workflow_execution_uid = 7;
+        optional int32 device_id = 8;
     }
 
     optional ActionSender sender = 1;
