@@ -72,6 +72,8 @@ class TestPlaybookStore(TestCase):
         self.assertPlaybookWorkflowNamesEqual('play2', {'work3'})
 
     def test_load_workflow_playbook_in_storage_new_workflows(self):
+        for workflow in self.loader.playbook1.workflows.values():
+            workflow._resume = None
         copied_playbook = deepcopy(self.loader.playbook1)
         copied_playbook.remove_workflow_by_name('work1')
         self.store.playbooks['play1'] = copied_playbook

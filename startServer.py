@@ -49,7 +49,7 @@ def setup_logger():
 
 
 def run():
-    from core.multiprocessedexecutor import spawn_worker_processes
+    from core.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
     setup_logger()
     pids = spawn_worker_processes()
     monkey.patch_all()

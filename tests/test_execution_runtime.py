@@ -1,13 +1,12 @@
 import unittest
-import core.config.config
 from datetime import datetime
 
 import apps
 import core.case.database as case_database
 import core.config.config
+import core.config.config
 import core.controller
-import core.loadbalancer
-import core.multiprocessedexecutor
+from core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from core.case import subscription
 from tests import config
 from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
@@ -19,9 +18,9 @@ class TestExecutionRuntime(unittest.TestCase):
     def setUpClass(cls):
         apps.cache_apps(config.test_apps_path)
         core.config.config.load_app_apis(apps_path=config.test_apps_path)
-        core.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
-        core.multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
-        core.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
+        MultiprocessedExecutor.initialize_threading = mock_initialize_threading
+        MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
+        MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
         core.controller.controller.initialize_threading()
 
     def setUp(self):

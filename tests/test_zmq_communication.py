@@ -15,7 +15,7 @@ from tests.util.thread_control import modified_setup_worker_env
 class TestZMQCommunication(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from core.multiprocessedexecutor import spawn_worker_processes
+        from core.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
         pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)
         core.controller.controller.initialize_threading(pids)
         apps.cache_apps(config.test_apps_path)

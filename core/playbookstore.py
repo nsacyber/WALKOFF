@@ -289,7 +289,7 @@ class PlaybookStore(object):
         """
         workflow = self.get_workflow(old_playbook_name, old_workflow_name)
         if workflow is not None:
-            workflow.strip_events_from_actions()
+            workflow.strip_events()
 
             workflow_copy = deepcopy(workflow)
             workflow_copy.name = new_workflow_name

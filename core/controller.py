@@ -1,8 +1,7 @@
 import logging
 
 import core.config.config
-import core.multiprocessedexecutor
-from core.multiprocessedexecutor import MultiprocessedExecutor
+from core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from core.playbookstore import PlaybookStore
 from core.scheduler import Scheduler
 

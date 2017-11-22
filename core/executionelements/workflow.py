@@ -1,8 +1,7 @@
 import json
 import logging
 from copy import deepcopy
-
-import gevent
+import threading
 
 from core.appinstance import AppInstance
 from core.case.callbacks import data_sent
@@ -10,7 +9,6 @@ from core.executionelements.executionelement import ExecutionElement
 from core.executionelements.action import Action
 from core.executionelements.branch import Branch
 from core.helpers import UnknownAppAction, UnknownApp, InvalidArgument, format_exception_message
-from core.jsonelementreader import JsonElementReader
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +46,7 @@ class Workflow(ExecutionElement):
 
         self._total_risk = float(sum([action.risk for action in self.actions.values() if action.risk > 0]))
         self._is_paused = False
+        self._resume = threading.Event()
         self._accumulator = {}
         self._execution_uid = 'default'
 
@@ -107,6 +106,7 @@ class Workflow(ExecutionElement):
         try:
             logger.info('Attempting to resume workflow {0}'.format(self.name))
             self._is_paused = False
+            self._resume.set()
         except (StopIteration, AttributeError) as e:
             logger.warning('Cannot resume workflow {0}. Reason: {1}'.format(self.name, format_exception_message(e)))
             pass
@@ -137,9 +137,8 @@ class Workflow(ExecutionElement):
 
             if self._is_paused:
                 data_sent.send(self, callback_name="Workflow Paused", object_type="Workflow")
-                while self._is_paused:
-                    # gevent.sleep(1)
-                    continue
+                self._resume.wait()
+                self._resume.clear()
                 data_sent.send(self, callback_name="Workflow Resumed", object_type="Workflow")
 
             device_id = self.__setup_app_instance(instances, action)
@@ -342,15 +341,17 @@ class Workflow(ExecutionElement):
             action.event = event
             self.actions[action.uid] = action
 
-    def strip_events_from_actions(self):
-        """Removes the Event object from all of the Actions, necessary to deepcopy a Workflow
+    def strip_events(self):
+        """Removes the Event object from all of the Actions and the Workflow, necessary to do a deepcopy
         """
         for action in self.actions.values():
             action._event = None
+        self._resume = None
 
     def reset_event(self):
-        """Reinitialize an Event object for all of the Actions when a Workflow is copied
+        """Reinitialize an Event object for all of the Actions and the Workflow when a Workflow is copied
         """
         from threading import Event
         for action in self.actions.values():
             action._event = Event()
+        self._resume = Event()
