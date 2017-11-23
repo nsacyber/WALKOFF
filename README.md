@@ -45,11 +45,11 @@ First, install the dependencies with the following command:
 
 To install the dependencies for each individual app, run:
 
-   `python installDependencies.py`
+   `python install_dependencies.py`
 
 Or to just install the dependencies for specific apps:
 
-   `python installDependencies -a AppOne,AppTwo,AppThree`
+   `python install_dependencies -a AppOne,AppTwo,AppThree`
 
 Next, navigate to /client and install the client dependencies with the
 following commands:
@@ -64,7 +64,7 @@ Next, use gulp to build the client:
 That's it! To start up the server, just navigate back to the walkoff root and
 run:
 
-   `python startServer.py`
+   `python walkoff.py`
 
 Then, navigate to the specified IP and port to start using WALKOFF. The default
 is `http://127.0.0.1:5000`.
