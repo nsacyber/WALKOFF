@@ -1,0 +1,27 @@
+<div class="w3-row-padding w3-padding-64 w3-container">
+    <div class="w3-content">
+        <div class="w3-twothird">
+            <h1>Actions</h1>
+            <p>
+                Actions are the fundamental units of execution in a Workflow. Each app has a set of defined actions,
+                all of which can be made used in a Workflow. If some error occurs during the execution of the Action,
+                a step will return error codes which can be used with Branches to handle the error.
+            </p>
+            <p>
+                To execute an Action, the Workflow must provide any required inputs the app's Action. On the successful
+                conclusion of the Action's execution, it selects the next Action to take using
+                <a href="Branch_Overview.html">Branches</a> in the Workflow.
+            </p>
+            <p>
+                Actions can also have "triggers". Using triggers, you can have an action pause until the correct data is
+                provided to a URL on the WALKOFF server. You can define what is "correct" data for your action using
+                a list of <a href="Condition_Overview.html">Conditions</a> which are evaluated against the data sent to
+                the URL.
+            </p>
+        </div>
+
+        <div class="w3-third w3-center">
+            <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+        </div>
+    </div>
+</div>

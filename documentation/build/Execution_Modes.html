@@ -137,20 +137,20 @@ img.media-object.image{
                     </a>
                 </div>
             <h1>Passive Execution - The Triggers</h1>
-            <h6>You can also configure the system to execute a workflow in response to an event using a trigger.
-                A trigger is a workflow connected to a set of conditions which allows you to execute a workflow via
-                the REST API. Through this REST API, you can send data which can be validated against a series of Flags.
-                If the the flags all return True, then the workflow associated with the trigger is executed.
-                On the Triggers page accessible from the dashboard, you have the ability to view,
-                edit, and add a Trigger. Learn more about trigger management
+            <h6>You can also configure the system to execute a workflow in response to an event in one of two ways --
+                by directly executing an entire workflow or by resuming a paused workflow. To execute a workflow
+                directly, you can use a URL defined in our REST API which requires only that you know the playbook name
+                and the workflow name. The response from server contains a UID of that executing workflow. When executed
+                directly from WALKOFF's REST API, an additional field can be sent which can change the arguments to
+                the first step of the workflow. Inside of your workflow, each step can have triggers, which are a list of
+                <a href="Condition_Overview.html">Conditions</a>. If a step has a trigger, then when the workflow
+                reaches that step it waits until the correct data is sent to it. The correct data is whatever data is
+                validated against the Conditions. If no Conditions are specified, then no data is required to be sent.
+                To send data to a workflow which is awaiting trigger data, you can use a different endpoint and the UID
+                given when the workflow was called on to be executed. To get a status of all executing workflows,
+                including their execution UIDs, you can use the WorkflowResults server endpoints from our REST API.
+                Learn more about trigger management
                 <a href="../../tutorials/build/Trigger_Management.html">here</a>.</h6>
-            <div class="media-left media-middle">
-                <a href="images/Triggers_Home.png">
-                    <img class="media-object image"
-                         src="images/Triggers_Home.png"
-                         alt="...">
-                </a>
-            </div>
         </div>
 
         <div class="w3-third w3-center">

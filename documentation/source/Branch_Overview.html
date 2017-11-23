@@ -1,0 +1,24 @@
+<div class="w3-row-padding w3-padding-64 w3-container">
+    <div class="w3-content">
+        <div class="w3-twothird">
+            <h1>Branches</h1>
+            <p>
+                A Branch object is a linkage between two <a href="Action_Overview.html">Actions</a>, a source and a
+                destination Action with a list of <a href="Condition_Overview.html">Conditions</a> which must all
+                evaluate to be true for an Action to progress from the source Action to the destination Action. If no
+                conditions are provided, then the destination Action named will act as a default or catch-all Action,
+                and the source Action will always progress to the destination Action. Multiple branches can share the
+                same source Action. In this case, those branches have a configurable priority in which they and their
+                associated Conditions will be evaluated. The first Branch whose conditions evaluate as True will
+                determine the next Action taken by the Workflow. An Action can also result in a variety of status codes.
+                These can be custom-created and defined by the action, but the default statuses are "Success",
+                "UnhandledException", and "InvalidArguments". These status codes can be used with branches to control
+                execution flow.
+            </p>
+        </div>
+
+        <div class="w3-third w3-center">
+            <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+        </div>
+    </div>
+</div>

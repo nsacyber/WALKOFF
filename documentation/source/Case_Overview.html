@@ -27,41 +27,41 @@
             <ul style="list-style-type:circle">
                 <li>Workflow Execution Start</li>
                 <li>App Instance Created</li>
-                <li>Next Step Found</li>
                 <li>Workflow Shutdown</li>
-                <li>Workflow Input Validated</li>
-                <li>Workflow Input Invalid</li>
+                <li>Workflow Arguments Validated</li>
+                <li>Workflow Arguments Invalid</li>
                 <li>Workflow Paused <i>(UI integration coming soon)</i></li>
                 <li>Workflow Resumed <i>(UI integration coming soon)</i></li>
             </ul>
 
             <h6>Step</h6>
             <ul style="list-style-type:circle">
-                <li>Function Execution Success</li>,
-                <li>Step Started</li>
-                <li>Input Invalid</li>
-                <li>Conditionals Executed</li>
-                <li>Step Execution Success</li>
-                <li>Step Execution Error</li>
+                <li>Action Execution Success</li>,
+                <li>Action Execution Error</li>
+                <li>Action Started</li>
+                <li>Arguments Invalid</li>
+                <li>Trigger Action Awaiting Data</li>
+                <li>Trigger Action Taken</li>
+                <li>Trigger Action Not Taken</li>
             </ul>
 
-            <h6>Next Step</h6>
+            <h6>Branch</h6>
             <ul style="list-style-type:circle">
-                <li>Next Step Taken</li>
-                <li>Next Step Not Taken</li>
+                <li>Branch Taken</li>
+                <li>Branch Not Taken</li>
             </ul>
 
 
-            <h6>Flag</h6>
+            <h6>Condition</h6>
             <ul style="list-style-type:circle">
-                <li>Flag Success</li>
-                <li>Flag Error</li>
+                <li>Condition Success</li>
+                <li>Condition Error</li>
             </ul>
 
-            <h6>Filter</h6>
+            <h6>Transform</h6>
             <ul style="list-style-type:circle">
-                <li>Filter Success</li>
-                <li>Filter Error</li>
+                <li>Transform Success</li>
+                <li>Transform Error</li>
             </ul>
 
 
@@ -69,8 +69,8 @@
                 Each execution element can have multiple execution elements it manages, and for each execution
                 element instance, a case which can have an
                 individualized set of events it is subscribed to. So if you want one step in one workflow to be log
-                the events Function Execution Success
-                and Conditionals Executed, but a different step in that same workflow to only log its Input
+                the events Action Execution Success
+                and Conditionals Executed, but a different step in that same workflow to only log its Arguments
                 Validated event, you can specify these.</p>
 
             <p>Each event is logged with the following fields</p>
