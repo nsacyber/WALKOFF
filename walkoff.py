@@ -8,7 +8,7 @@ from apps import *
 from gevent.wsgi import WSGIServer
 from gevent import monkey
 
-logger = logging.getLogger('startserver')
+logger = logging.getLogger('walkoff')
 
 
 def get_ssl_context():
@@ -75,6 +75,8 @@ def run():
         else:
             server = WSGIServer((host, port), application=flaskserver.app)
             proto = 'http'
+        from core.config.config import walkoff_version
+        logger.info('*** Running WALKOFF v.{} ***'.format(walkoff_version))
         logger.info('Listening on host {0}://{1}:{2}'.format(proto, host, port))
 
         server.serve_forever()
