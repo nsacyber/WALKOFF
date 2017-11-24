@@ -112,13 +112,32 @@ img.media-object.image{
         <ul type="1" class="media-list imageList">
             <li class="media">
                 <div class="media-body">
-                  <h4 class="media-heading"><b>Create a new Workflow</b></h4>
-                  <p>First, begin by creating a new Workflow. Enter the Playbook name and workflow name, then click Create New Workflow.</p>
+                    <h4 class="media-heading"><b>Create a new Workflow</b></h4>
+                    <p>In the top navigation bar, click "Playbook" to return to the playbook editor. Then, in the
+                        toolbar, click the "New Workflow" button. You can specify an existing Playbook or create a
+                        new one. Enter or select the Playbook name and enter the Workflow name, then click "Create
+                        New Workflow."</p>
                 </div>
                 <div class="media-left media-middle">
-                    <a href="images/workflowEditorBranch/0.PNG">
+                    <a href="images/workflowEditor2/newworkflow.PNG">
                         <img class="media-object image"
-                             src="images/workflowEditorBranch/0.PNG"
+                             src="images/workflowEditor2/newworkflow.PNG"
+                             alt="...">
+                    </a>
+                </div>
+            </li>
+            <br>
+            <li class="media">
+                <div class="media-body">
+                    <h4 class="media-heading"><b>Open the newly created Workflow</b></h4>
+                    <p>In the toolbar, click the "Open Workflow" button. You can click Playbook names to expand or
+                        collapse them. You can also rename, duplicate, and delete workflows here. Click on the name
+                        of the Workflow that was just created.</p>
+                </div>
+                <div class="media-left media-middle">
+                    <a href="images/workflowEditor2/openworkflow.PNG">
+                        <img class="media-object image"
+                             src="images/workflowEditor2/openworkflow.PNG"
                              alt="...">
                     </a>
                 </div>
@@ -127,19 +146,14 @@ img.media-object.image{
             <li class="media">
                 <div class="media-body">
                   <h4 class="media-heading"><b>Add actions to the workspace</b></h4>
-                  <p>In this workflow, we will use the "Secure PRNG" action from the included Utilities app, and three "Repeat Back to Me" actions. Ensure that the "Secure PRNG" action is set as the start node, and connect the actions as shown.</p>
+                  <p>In this workflow, we will use the "System PRNG" action from the included Utilities app, and two
+                      "repeatBackToMe" actions. Ensure that the "System PRNG" action is set as the start node, and
+                      connect the actions as shown.</p>
                 </div>
                 <div class="media-left media-middle">
-                    <a href="images/workflowEditorBranch/1.PNG">
+                    <a href="images/workflowEditorBranch/addactions.PNG">
                         <img class="media-object image"
-                             src="images/workflowEditorBranch/1.PNG"
-                             alt="...">
-                    </a>
-                </div>
-                <div class="media-left media-middle">
-                    <a href="images/workflowEditorBranch/4.PNG">
-                        <img class="media-object image"
-                             src="images/workflowEditorBranch/4.PNG"
+                             src="images/workflowEditorBranch/addactions.PNG"
                              alt="...">
                     </a>
                 </div>
@@ -148,23 +162,25 @@ img.media-object.image{
             <li class="media">
                 <div class="media-body">
                   <h4 class="media-heading"><b>Configure actions</b></h4>
-                  <p>The "Secure PRNG" action will output a random floating point number between 0.0 and 1.0 using system entropy (it's really only as secure as your system's implementation). We want to know whether the number it outputs is less than, or greater than/equal to 0.5.</p>
-                  <p>Select the "Secure PRNG" action and find the Next Nodes section in the right pane. In one of the Next Node entries, set the return code to "Success", and the flag as "count" with inputs of "l" and "0.5". In the other, set the return code and flag as appropriate.</p>
-                  <p>Select the first "Repeat Back to Me" whose next node entry you configured above, and enter "less than 0.5" as the input. In the other "Repeat Back to Me" action, enter "greater than or equal to 0.5."</p>
-                  <p>Finally, in the third "Repeat Back to Me" action, set the input as @Name, where Name is replaced by the name of the "Secure PRNG" action.</p>
+                  <p>The "System PRNG" action will output a random floating point number between 0.0 and 1.0 using
+                      system entropy (it's really only as secure as your system's implementation). We want to know
+                      whether the number it outputs is less than, or greater than/equal to 0.5.</p>
+                  <p>Select the left branch, set the return code to "Success" and priority to 1, Under Conditions, select "Utilities" and "Number Compare", then set a threshold of 0.5 and a "ge" operator for "greater than or equal". In the right branch, set the same settings, but use an "l" operator for "less than" instead.</p>
+                  <p>Select the left "repeatBackToMe" action, and enter "ge to 0.5" as the string argument. In the right "repeatBackToMe" action, enter "l than 0.5" instead.</p>
+                  <p>In both "repeatBackToMe" actions, be sure to set the device as configured in the previous tutorial.</p>
                   <p>Then, save and execute the workflow.</p>
                 </div>
                 <div class="media-left media-middle">
-                    <a href="images/workflowEditorBranch/6.PNG">
+                    <a href="images/workflowEditorBranch/branchconfig.PNG">
                         <img class="media-object image"
-                             src="images/workflowEditorBranch/6.PNG"
+                             src="images/workflowEditorBranch/branchconfig.PNG"
                              alt="...">
                     </a>
                 </div>
                 <div class="media-left media-middle">
-                    <a href="images/workflowEditorBranch/11.PNG">
+                    <a href="images/workflowEditorBranch/actionconfig.PNG">
                         <img class="media-object image"
-                             src="images/workflowEditorBranch/11.PNG"
+                             src="images/workflowEditorBranch/actionconfig.PNG"
                              alt="...">
                     </a>
                 </div>
@@ -173,12 +189,14 @@ img.media-object.image{
             <li class="media">
                 <div class="media-body">
                   <h4 class="media-heading"><b>Examine results</b></h4>
-                  <p>If you configured everything as shown, you should obtain similar results to what is shown. The correct "Repeat Back to Me" action should have executed according to the output generated by the "Secure PRNG" action, and the last "Repeat Back to Me" action should have repeated that number. Run the Workflow a few more times to verify that it was set up correctly.</p>
+                  <p>If you configured everything as shown, you should obtain similar results to what is shown.
+                      The correct "repeatBackToMe" action should have executed according to the output generated by
+                      the "System PRNG" action. Run the Workflow a few more times to verify that it was set up correctly.</p>
                 </div>
                 <div class="media-left media-middle">
-                    <a href="images/workflowEditorBranch/12.PNG">
+                    <a href="images/workflowEditorBranch/results.PNG">
                         <img class="media-object image"
-                             src="images/workflowEditorBranch/12.PNG"
+                             src="images/workflowEditorBranch/results.PNG"
                              alt="...">
                     </a>
                 </div>

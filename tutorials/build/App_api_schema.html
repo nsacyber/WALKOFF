@@ -285,6 +285,20 @@ actions:
         </code></pre>
         <p>This default will be displayed on the workflow editor.</p>
 
+        <h4><b>Using giving hints</b></h4>
+        <p>You can set a default parameter with the <code>default</code> field. The following schema sets the default to
+            10.</p>
+        <pre><code class="yaml">
+actions:
+  some action:
+    run: the_name_of_the_method_of_the_action
+    parameters:
+      - name: status
+        type: integer
+        placeholder: enter your status here
+        </code></pre>
+        <p>This placeholder will be displayed on the workflow editor as a prompt for a user to enter some data.</p>
+
     </div>
 
    <div class="w3-third w3-center">

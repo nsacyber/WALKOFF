@@ -1,136 +1,131 @@
 <div class="w3-row-padding w3-padding-64 w3-container">
-  <div class="w3-content">
-    <div class="w3-twothird">
-      <h1>Basic Workflow Creation Tutorial</h1>
-        <p>In this tutorial, we will create our first, very basic workflow in order to demonstrate the general features
-            of the workflow editor.</p>
-        <ul type="1" class="media-list imageList">
-            <li class="media">
-                <div class="media-body">
-                  <h4 class="media-heading"><b>Create a new Workflow</b></h4>
-                  <p>First, begin by clicking the New Workflow button.</p>
-                </div>
-                <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/1.png">
-                        <img class="media-object image"
-                             src="images/workflowEditor2/1.png"
-                             alt="...">
-                    </a>
-                </div>
-            </li>
-            <br>
-            <li class="media">
-                <div class="media-body">
-                  <h4 class="media-heading"><b>Enter Playbook and Workflow Name</b></h4>
-                  <p>If you specify an existing Playbook name, the new Workflow will be saved under it. Enter the
-                      Playbook name and workflow name, then click Create New Workflow.</p>
-                </div>
-                <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/2.png">
-                        <img class="media-object image"
-                             src="images/workflowEditor2/2.png"
-                             alt="...">
-                    </a>
-                </div>
-            </li>
-            <br>
-            <li class="media">
-                <div class="media-body">
-                  <h4 class="media-heading"><b>Add actions to the workspace</b></h4>
-                  <p>Let's begin by adding a Hello World action and a Pause action from the HelloWorld app. Expand the
-                      HelloWorld app by double-clicking on the name, or clicking on the drop-down arrow. Then,
-                      double-click, or click and drag the desired actions into the workspace.<br>Ensure that the Hello
-                      World action is set as the starting node.</p>
-                </div>
-                <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/3.png">
-                        <img class="media-object image"
-                             src="images/workflowEditor2/3.png"
-                             alt="...">
-                    </a>
-                </div>
-            </li>
-            <br>
-            <li class="media">
-                <div class="media-body">
-                  <h4 class="media-heading"><b>Configure actions</b></h4>
-                  <p>Some actions will have inputs; some required, some optional. In this case, the Pause action
-                      requires you to input the time in seconds that it should pause for. Enter 5.</p>
-                </div>
-                <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/4.png">
-                        <img class="media-object image"
-                             src="images/workflowEditor2/4.png"
-                             alt="...">
-                    </a>
-                </div>
-            </li>
-            <br>
-            <li class="media">
-                <div class="media-body">
-                  <h4 class="media-heading"><b>Connecting actions together</b></h4>
-                  <p>Now, let's connect our actions together. When hovering over the top edge of an action, a red
-                      dot will appear. Click and drag from the red dot to the top of the next action in the sequence;
-                      an arrow should appear, linking the actions together.<br>Add another Hello World action after
-                      the Pause and connect it as shown.</p>
-                </div>
-                <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/5.png">
-                        <img class="media-object image"
-                             src="images/workflowEditor2/5.png"
-                             alt="...">
-                    </a>
-                </div>
-            </li>
-            <br>
-            <li class="media">
-                <div class="media-body">
-                  <h4 class="media-heading"><b>Save the Workflow</b></h4>
-                  <p></p>
-                </div>
-                <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/6.png">
-                        <img class="media-object image"
-                             src="images/workflowEditor2/6.png"
-                             alt="...">
-                    </a>
-                </div>
-            </li>
-            <br>
-            <li class="media">
-                <div class="media-body">
-                  <h4 class="media-heading"><b>Execute the Workflow</b></h4>
-                  <p></p>
-                </div>
-                <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/7.png">
-                        <img class="media-object image"
-                             src="images/workflowEditor2/7.png"
-                             alt="...">
-                    </a>
-                </div>
-            </li>
-            <br>
-            <li class="media">
-                <div class="media-body">
-                  <h4 class="media-heading"><b>Examine results</b></h4>
-                  <p>If you connected everything as shown, you should obtain similar results to what is shown. Note the
-                      5 second delay created by the Pause action under the Timestamp heading, and the resulting JSON
-                      created by each step.</p>
-                </div>
-                <div class="media-left media-middle">
-                    <a href="images/workflowEditor2/8.png">
-                        <img class="media-object image"
-                             src="images/workflowEditor2/8.png"
-                             alt="...">
-                    </a>
-                </div>
-            </li>
-        </ul>
-    </div>
+    <div class="w3-content">
+        <div class="w3-twothird">
+            <h1>Basic Workflow Creation Tutorial</h1>
+            <p>In this tutorial, we will create our first, very basic workflow in order to demonstrate the general
+                features
+                of the workflow editor.</p>
+            <ul type="1" class="media-list imageList">
+                <li class="media">
+                    <div class="media-body">
+                        <h4 class="media-heading"><b>Create a new device</b></h4>
+                        <p>Before we create a workflow, we will create a device that our actions will use.</p>
+                        <p>In the top navigation bar, click on "Devices", then "Add Device". Fill out any required
+                            fields (their exact values will not matter), and click "Add Device" in the dialog box.</p>
+                    </div>
+                    <div class="media-left media-middle">
+                        <a href="images/workflowEditor2/createdevice.PNG">
+                            <img class="media-object image"
+                                 src="images/workflowEditor2/createdevice.PNG"
+                                 alt="...">
+                        </a>
+                    </div>
+                </li>
+                <br>
+                <li class="media">
+                    <div class="media-body">
+                        <h4 class="media-heading"><b>Create a new Workflow</b></h4>
+                        <p>In the top navigation bar, click "Playbook" to return to the playbook editor. Then, in the
+                            toolbar, click the "New Workflow" button. You can specify an existing Playbook or create a
+                            new one. Enter or select the Playbook name and enter the Workflow name, then click "Create
+                            New Workflow."</p>
+                    </div>
+                    <div class="media-left media-middle">
+                        <a href="images/workflowEditor2/newworkflow.PNG">
+                            <img class="media-object image"
+                                 src="images/workflowEditor2/newworkflow.PNG"
+                                 alt="...">
+                        </a>
+                    </div>
+                </li>
+                <br>
+                <li class="media">
+                    <div class="media-body">
+                        <h4 class="media-heading"><b>Open the newly created Workflow</b></h4>
+                        <p>In the toolbar, click the "Open Workflow" button. You can click Playbook names to expand or
+                            collapse them. You can also rename, duplicate, and delete workflows here. Click on the name
+                            of the Workflow that was just created.</p>
+                    </div>
+                    <div class="media-left media-middle">
+                        <a href="images/workflowEditor2/openworkflow.PNG">
+                            <img class="media-object image"
+                                 src="images/workflowEditor2/openworkflow.PNG"
+                                 alt="...">
+                        </a>
+                    </div>
+                </li>
+                <br>
+                <li class="media">
+                    <div class="media-body">
+                        <h4 class="media-heading"><b>Add actions to the workspace</b></h4>
+                        <p>Let's begin by adding a Hello World action and a Pause action from the HelloWorld app. Expand
+                            the HelloWorld app by clicking on the app name in the left pane. Then, double-click, or
+                            click and drag the desired actions into the workspace.<br>Ensure that the Hello World action
+                            is set as the starting node by clicking "Set as Start Action" in the Action Parameters pane.
+                        </p>
+                    </div>
+                    <div class="media-left media-middle">
+                        <a href="images/workflowEditor2/addactions.PNG">
+                            <img class="media-object image"
+                                 src="images/workflowEditor2/addactions.PNG"
+                                 alt="...">
+                        </a>
+                    </div>
+                </li>
+                <br>
+                <li class="media">
+                    <div class="media-body">
+                        <h4 class="media-heading"><b>Configure actions</b></h4>
+                        <p>Some actions will have inputs; some required, some optional. In this case, both actions
+                            require a device; set it to the example device created previously. Additionally, the Pause
+                            action requires you to input the time in seconds that it should pause for. Enter 5.</p>
+                        <p>Finally, connect the actions together by clicking and dragging from the top of the helloWorld
+                            action to the top of the pause action.</p>
+                    </div>
+                    <div class="media-left media-middle">
+                        <a href="images/workflowEditor2/configureactions.PNG">
+                            <img class="media-object image"
+                                 src="images/workflowEditor2/configureactions.PNG"
+                                 alt="...">
+                        </a>
+                    </div>
+                </li>
+                <br>
+                <li class="media">
+                    <div class="media-body">
+                        <h4 class="media-heading"><b>Save and Execute the Workflow</b></h4>
+                        <p>Use the Save button and the Execute button in the toolbar.</p>
+                    </div>
+                    <div class="media-left media-middle">
+                        <a href="images/workflowEditor2/saveandexecute.PNG">
+                            <img class="media-object image"
+                                 src="images/workflowEditor2/saveandexecute.PNG"
+                                 alt="...">
+                        </a>
+                    </div>
+                </li>
+                <br>
+                <li class="media">
+                    <div class="media-body">
+                        <h4 class="media-heading"><b>Examine results</b></h4>
+                        <p>Click on the "Open Execution Results" button in the toolbar.</p>
+                        <p>If you configured everything as shown, you should obtain similar results to what is shown.
+                            Note the 5 second delay created by the Pause action under the Timestamp heading, and the
+                            results created by each step.</p>
+                    </div>
+                    <div class="media-left media-middle">
+                        <a href="images/workflowEditor2/results.PNG">
+                            <img class="media-object image"
+                                 src="images/workflowEditor2/results.PNG"
+                                 alt="...">
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </div>
 
-   <div class="w3-third w3-center">
-      <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+        <div class="w3-third w3-center">
+            <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+        </div>
     </div>
-  </div>
 </div>
