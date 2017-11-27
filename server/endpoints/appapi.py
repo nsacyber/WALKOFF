@@ -10,11 +10,11 @@ from server.returncodes import *
 from server.security import roles_accepted_for_resources
 
 
-def read_all_apps(interfaces_only=None):
+def read_all_apps():
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
-        apps = helpers.list_apps_with_interfaces() if interfaces_only else helpers.list_apps()
+        apps = helpers.list_apps()
         return sorted(apps, key=(lambda app_name: app_name.lower())), SUCCESS
 
     return __func()
