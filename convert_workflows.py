@@ -3,6 +3,8 @@ import os
 from copy import deepcopy
 from six import string_types
 from core.config.config import walkoff_version
+from apps.devicedb import device_db, App
+
 
 def convert_playbooks():
     for subdir, dir, files in os.walk('.'):
@@ -52,9 +54,29 @@ def convert_action(step, steps_copy):
         step['arguments'] = step.pop('inputs', [])
     step['arguments'] = [convert_arg(arg, steps_copy) for arg in step['arguments']]
     if 'device' in step:
-        print('Warning step {} contains a device. '
-              'Devices are now held in "device_id" field and reference a device name, not id.')
+        device_name = step.pop('device')
+        device_id = convert_device_to_device_id(step['app'], device_name, step['action'])
+        if device_id is not None:
+            step['device_id'] = device_id
     step.pop('widgets', None)
+
+
+def convert_device_to_device_id(app_name, device_name, step_name):
+    app = device_db.session.query(App).filter(App.name == app_name).first()
+    generic_error_ending = ('Devices are new held in field named "device_id" and are referenced by id rather than name.'
+                            ' This will need to be changed manually.')
+    if app is not None:
+        device = next((device for device in app.devices if device.name == device_name), None)
+        if device is not None:
+            print('WARNING: In action {0}: No device with name of {1} found for app {2}. '
+                  '{3}'.format(step_name, device_name, app_name, generic_error_ending))
+            return None
+        else:
+            return device.id
+    else:
+        print('WARNING: In action {0}: No app {2} found in database. '
+              '{3}'.format(step_name, device_name, app_name, generic_error_ending))
+        return None
 
 
 def convert_branch_uids(branch, action):

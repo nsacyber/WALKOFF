@@ -301,6 +301,7 @@ def get_device(app_name, device_name):
         logger.warning('Cannot get device {0} for app {1}. App does not exist'.format(device_name, app_name))
         return None
 
+
 def get_app(app_name):
     """ Gets the app associated with an app name
 
@@ -315,7 +316,6 @@ def get_app(app_name):
     else:
         logger.warning('Cannot get app {}. App does not exist'.format(app_name))
         return None
-
 
 
 class DeviceDatabase(object):
