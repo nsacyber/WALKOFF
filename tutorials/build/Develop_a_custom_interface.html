@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<title>WALKOFF-Automation for All</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/styles/androidstudio.min.css">
+<style>
+
+body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
+.w3-navbar,h1,button {font-family: "Montserrat", sans-serif}
+.fa-graduation-cap,.fa-flask{font-size:200px}
+
+#headerDiv{
+    background-image:url("../../files/images/headerBackground2.png");
+    background-size: 50% auto;
+    background-repeat: no-repeat;
+    background-position:50% 50%;
+}
+
+.imageList {
+  list-style-type: none;
+}
+
+.topLevelList + h5{
+  display:none;
+}
+
+.fa-circle, .fa-circle-o{
+  font-size:12px;
+  padding-right:10px;
+}
+
+.code{
+    background-color:#edf0f4;
+    padding:25px;
+}
+
+
+td{
+    padding-right:10px;
+    margin-bottom: 25px;
+    margin-top:25px;
+}
+
+.image{
+    text-align:center;
+}
+
+.image img{
+    max-width:100%;
+    max-height:100%;
+}
+
+.functionality_list li{
+    margin-bottom:20px;
+}
+
+.tag{
+    background-color:#edf0f4;
+    text-align:center;
+}
+
+img.media-object.image{
+    width:100%;
+}
+
+.tutorialTable td{
+    border-bottom:1px solid black;
+}
+
+</style>
+<body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.11.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+    
+<!-- Navbar -->
+<div class="w3-top">
+  <div class="w3-bar w3-blue-grey w3-card-2 w3-left-align w3-large">
+    <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-opennav w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
+    <a href="../../index.html" class="w3-bar-item w3-button w3-padding-large w3-white">Home</a>
+    <a href="../../documentation/build/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Documentation</a>
+    <a href="https://github.com/iadgov/WALKOFF" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Source</a>
+    <a href="../../swagger/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">API</a>
+    <a href="index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Tutorials</a>
+  </div>
+
+  <!-- Navbar on small screens -->
+  <div id="navDemo" class="w3-navblock w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
+    <a class="w3-padding-large" href="../../documentation/build/index.html">Documentation</a>
+    <a class="w3-padding-large" href="https://github.com/iadgov/WALKOFF">Source</a>
+    <a class="w3-padding-large" href="../../swagger/index.html">API</a>
+    <a class="w3-padding-large" href="index.html">Tutorials</a>
+  </div>
+</div>
+
+<!-- Header -->
+<header id="headerDiv" class="w3-container w3-black w3-center w3-padding-64">
+  <h1 class="headerText w3-margin w3-jumbo">WALKOFF</h1>
+  <h5 class="headerText w3-margin w3-xxxlarge">Tutorials</h5>
+</header>
+
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="">
+      <h1>Develop a custom interface</h1>
+        <p>Under the hood WALKOFF runs on the Flask server, a web microframework built on the Werkzeug WSGI middleware
+            and the Jinja templating engine. In this example we will be constructing a small custom interface named
+            HelloWorld which connects to the HelloWorld app and provides some custom server endpoints to grab some
+            metrics on how often different actions were run. You can find another example in the <code>Sample</code>
+            interface provided in the repository.</p>
+        <h4><b>1. Inside the <code>interfaces</code> directory create the HelloWorld interface directory</b></h4>
+        <p>The <code>interfaces</code> directory should look like this:</p>
+        <pre><code class="console">
+WALKOFF
+|-- interfaces
+  |-- __init__.py
+  |-- HelloWorld
+    |-- interface
+      |-- static
+      |-- templates
+    |-- __init__.py
+  |-- [Other interfaces]
+        </code></pre>
+        <p>The <code>static</code> folder will contain the Javascript libraries needed to display your interface, and
+           the <code>templates</code> folder will contain the HTML templates to use.</p>
+
+        <h4><b>2. Create a basic HTML file</b></h4>
+        <p>Currently WALKOFF only supports single-page interfaces. Your interface's landing page must be called
+           <code>index.html</code>, and it must be placed into the <code>templates</code> directory. Let's create a
+           basic HTML which only contains a title and some information about the interface.</p>
+        <pre><code class="html">
+&lt!DOCTYPE html&gt
+&lthtml lang="en"&gt
+&lthead&gt
+    &ltmeta charset="UTF-8"&gt
+    &lttitle&gtHelloWorld metrics&lt/title&gt
+    &lth1&gtYou have reached the Hello World metrics page!&lt/h1&gt
+&lt/head&gt
+&ltbody&gt
+
+&lt/body&gt
+&lt/html&gt
+        </code></pre>
+        <p>This is the minimum needed to display a custom interface, and this page should be viewable from the "apps"
+            drop-down menu on the top left of the dashboard.</p>
+        <p>This isn't a particularly exciting interface, so we should add some endpoints for our server to grab some
+           data as well as some callbacks which collect some data from Walkoff Events.</p>
+
+        <h4><b>3. Create some Walkoff event callbacks</b></h4>
+        <p>Let's start with the callbacks which collect the data. You can connect to all the events which can be logged
+           inside of a case using decorators. These events are listed in the Case Overview page and are contained in the
+           <code>core.events</code> module in the backend. For example, if you want to connect to the event triggered
+           when a workflow begins executing, which is called 'Workflow Execution Start', you could use register a
+           function like this:
+        </p>
+        <pre><code class="python">
+from interfaces import dispatcher
+
+@dispatcher.on_workflow_execution_start()
+def handle_workflow_start(data):
+    print(data)
+        </code></pre>
+        <p>This function will be called whenever any workflows start executing. The data parameter will be a dictionary
+           of information about this event such as the name and UID of the workflow being executed. Different callbacks
+           will have different data sent to them. The exceptions are callbacks for the scheduler which contain no data,
+           and should therefore take no parameters.
+        </p>
+        <p>If you want to further filter the results so that you only respond to particular workflows, you can specify
+           the workflow(s) either by UID or by name. The UIDs can are generated by the server when a workflow is created
+           and are guaranteed to be unique, but two different playbooks could have workflows with the same name, so the
+           name has no such guarantees. Additionally, all events will have a UID associated with the component of the
+           workflow which triggered the event, but only workflow and action events have names. The UIDs are stable, and
+           can be located in the workflow's JSON file in the <code>data/workflows/</code> directory. Here are examples
+           of the same function, but which select a workflow or a set of workflows by UID and name:
+        </p>
+
+        <pre><code class="python">
+from interfaces import dispatcher
+
+
+@dispatcher.on_workflow_execution_start(sender_uids='4faf9d28-3631-44bd-838e-81501978714f')
+def handle_workflow_start(data):
+    print(data)
+
+
+uids = ['4faf9d28-3631-44bd-838e-81501978714f', 'abba99ac-c97c-418b-ac1f-d8b8378f20ca']
+@dispatcher.on_workflow_execution_start(sender_uids=uids)
+def handle_workflows_start(data):
+    print(data)
+
+
+@dispatcher.on_workflow_execution_start(names='workflow1')
+def handle_workflow1_start(data):
+    print(data)
+
+
+@dispatcher.on_workflow_execution_start(names=['workflow1', 'workflow2'])
+def handle_workflow12_start(data):
+    print(data)
+        </code></pre>
+
+    <p>You can also use the generic decorator <code>on_walkoff_events</code> to register a function to any walkoff event
+        or events. For example if you wanted to register a callback which is called when a workflow starts and when it
+        shuts down, you could use: </p>
+    <pre><code class="python">
+from interfaces import dispatcher
+from core.events import WalkoffEvent
+
+
+@dispatcher.on_walkoff_events(
+    events=[WalkoffEvent.WorkflowStarted, WalkoffEvent.WorkflowShutdown],
+    sender_uids='4faf9d28-3631-44bd-838e-81501978714f')
+def handle_workflow_start_stop(data):
+    print(data)
+    </code></pre>
+
+    <p>For actions, there is an additional decorator you can use in which you can select the app you want to respond to,
+       the actions, the events you want to listen to, and even the ID of the device in the database you want to respond
+       to. The 'actions', 'events', and 'device_ids' are all optional fields of the decorator and if not specified, then
+       all actions/events/devices will be listened for.
+    </p>
+    <pre><code class="python">
+from interfaces import dispatcher
+from core.events import WalkoffEvent
+
+
+@dispatcher.on_app_actions(
+    'HelloWorld', actions=['hello_world', 'action2'], events=WalkOffEvent.ActionStarted, device_ids=3)
+def handle_hello_world_actions(data):
+    print(data)
+    </code></pre>
+
+        <p>So let's just make some metrics which count how many times each action of the HelloWorld app has been called.
+           Inside the <code>interfaces/HelloWorld/</code> directory, let's add a file called <code>metrics.py</code>
+           which contains the following code:
+        </p>
+
+        <pre><code class="python">
+from interfaces import dispatcher
+from core.events import WalkoffEvent
+
+hello_world_action_count = {}
+
+@dispatcher.on_app_actions('HelloWorld', events=WalkOffEvent.ActionStarted)
+def handle_workflow1_start(data):
+    global hello_world_action_count
+    action_name = data['action_name']
+    if action_name not in hello_world_action_count:
+        hello_world_action_count[action_name] = 1
+    else:
+        hello_world_action_count[action_name] += 1
+        </code></pre>
+
+        <h4><b>4. Create a server endpoint to serve the data</b></h4>
+        <p>Now that the data is being gathered, let's put an endpoint to serve that data to the frontend. We'll be
+           using a very thin wrapper around Flask's blueprints to register the endpoint.</p>
+                <pre><code class="python">
+from interfaces import dispatcher, AppBlueprint
+from core.events import WalkoffEvent
+from flask import Blueprint, jsonify
+
+blueprint = AppBlueprint(blueprint=Blueprint('HelloWorldPage', __name__))
+
+hello_world_action_count = {}
+
+@dispatcher.on_app_actions('HelloWorld', events=WalkOffEvent.ActionStarted)
+def handle_workflow1_start(data):
+    global hello_world_action_count
+    action_name = data['action_name']
+    if action_name not in hello_world_action_count:
+        hello_world_action_count[action_name] = 1
+    else:
+        hello_world_action_count[action_name] += 1
+
+
+@blueprint.blueprint.route('/metrics', methods=['GET'])
+def get_hello_world_metrics():
+    global hello_world_action_count
+    return jsonify(hello_world_action_count), 200
+        </code></pre>
+    </div>
+  </div>
+</div>
+
+<div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
+    <h1 class="w3-margin w3-xlarge">Questions? Comments? </h1>
+    <h1 class="w3-margin w3-xlarge"> Reach out to us at <a href="mailto:walkoff@nsa.gov"> walkoff@nsa.gov </a> </h1>
+</div>
+
+<!-- Footer -->
+<footer class="w3-container w3-padding-64 w3-center w3-opacity">
+ <!-- <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank"> </a></p> -->
+</footer>
+
+<script src="../../files/plugins/jQuery/jQuery-2.1.4.min.js"></script>
+<script>
+// Used to toggle the menu on small screens when clicking on the menu button
+function myFunction() {
+    var x = document.getElementById("navDemo");
+    if (x.className.indexOf("w3-show") == -1) {
+        x.className += " w3-show";
+    } else {
+        x.className = x.className.replace(" w3-show", "");
+    }
+}
+</script>
+</body>
+</html>
