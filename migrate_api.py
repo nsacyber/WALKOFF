@@ -21,8 +21,16 @@ def convert_apis():
 
 
 def scan_api(api, path):
+    if 'actions' in api:
+        scan_actions(api['actions'], path)
     if 'transforms' in api:
         scan_transforms(api['transforms'], path)
+
+
+def scan_actions(actions, path):
+    for action_name, action_api in actions.items():
+        if 'event' in action_api:
+            print('event driven actions has been removed in Walkoff 0.5.0. Refactor your workflows to use triggers')
 
 
 def scan_transforms(transforms, path):
