@@ -12,7 +12,7 @@ install:
 before_script:
   - python generate_certificates.py
 script:
-  - coverage run test.py
+  - coverage run run_all_tests.py
   - coverage combine
   - coverage report
 branches:
