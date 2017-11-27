@@ -108,9 +108,6 @@ ActionApi:
       items:
         $ref: '#/definitions/ParameterApi'
       description: The parameters needed by this action
-    event:
-      type: string
-      description: name of the event needed for this action to occur. Only used for event-driven actions.
     deprecated:
       type: boolean
       default: false
