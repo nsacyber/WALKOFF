@@ -1,0 +1,348 @@
+<div class="w3-row-padding w3-padding-64 ">
+    <div class="w3-content">
+            <h1>Playbook Overview</h1>
+            <div class="w3-container w3-row">
+                <div class="w3-col l6">
+                    <pre class="code w3-small"><code>
+{
+    "name": "MyPlaybookName",
+    "uid": "1357c4af-35fd-4cad-8c09-1bf3e2a52af8",
+    "walkoff_version": "0.5.0",
+    "workflows": [
+        {
+            "name": "helloWorldWorkflow",
+            "start": "aae6192c-35b1-95e9-a2d7-3c127667ee19",
+            "uid": "4faf9d28-3631-44bd-838e-81501978714f",
+            "actions": [
+                {
+                    "name": "action 1",
+                    "action_name": "returnPlusOne",
+                    "app_name": "HelloWorld",
+                    "device_id": 1,
+                    "arguments": [
+                        {
+                            "name": "number",
+                            "value": 5
+                        }
+                    ],
+                    "position": {
+                        "x": 370,
+                        "y": 210
+                    },
+                    "triggers": [],
+                    "uid": "0585feec-cc74-c2d6-16bd-6bdda55bfa38"
+                },
+                {
+                    "action_name": "action 2",
+                    "app_name": "Utilities",
+                    "name": "linearly scale",
+                    "arguments": [
+                        {
+                            "name": "max_value",
+                            "value": 10
+                        },
+                        {
+                            "name": "min_value",
+                            "value": 0
+                        },
+                        {
+                            "name": "low_scale",
+                            "value": 0
+                        },
+                        {
+                            "name": "high_scale",
+                            "value": 1
+                        },
+                        {
+                            "name": "value",
+                            "reference": "0585feec-cc74-c2d6-16bd-6bdda55bfa38"
+                        }
+                    ],
+                    "position": {
+                        "x": 610,
+                        "y": 130
+                    },
+                    "triggers": [
+                        {
+                            "action_name": "number compare",
+                            "app_name": "Utilities",
+                            "arguments": [
+                                {
+                                    "name": "operator",
+                                    "value": "le"
+                                },
+                                {
+                                    "name": "threshold",
+                                    "value": 5
+                                }
+                            ],
+                            "transforms": [],
+                            "uid": "61678960-6688-4735-88b1-29756bd1a8a9"
+                        }
+                    ],
+                    "uid": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd"
+                }
+            ],
+            "branches": [
+                {
+                    "conditions": [],
+                    "source_uid": "0585feec-cc74-c2d6-16bd-6bdda55bfa38",
+                    "destination_uid": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd",
+                    "priority": 1,
+                    "status": "Success",
+                    "uid": "2771fe58-9b7f-4fbe-bdd8-79a59002977e"
+                }
+            ]
+        }
+    ]
+}
+                    </code></pre>
+                </div>
+                <div class="w3-col l6">
+                    <table class="w3-table w3-bordered">
+                        <thead>
+                            <tr>
+                                <th class="w3-col l6"> Tag </th>
+                                <th class="w3-col l6"> Description </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="w3-col l6">
+                                    <pre class="tag">
+workflows
+                                    </pre>
+                                </td>
+                                <td class="w3-col l6">
+                                    Container for Workflows
+                                </td>
+                            </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+start
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> The UID of the start step </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+walkoff_version
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> The version of Walkoff which generated the playbook </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+actions
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Container for step objects </p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+uid
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> UUID of an element </p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+app_name
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> App Name </p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+name
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Name of the playbook, workflow, or action </p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+action_name
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Name of the action, condition, or transform to be taken</p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+device_id
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Device (configuration profile) ID to use </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+triggers
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Conditional statements to be executed against data sent to a URL before a step takes
+                                    an action </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+arguments
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Container for arguments to actions</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+value
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Static value of an argument</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+reference
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> UUID of a previously-executed step to use as an argument</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+selection
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> The path to a element of a list or JSON object to use an argument</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+branches
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Container for conditional objects</p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+conditions
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Conditional statement object to validate output of a series of transforms or the
+                                    last executed action</p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+transforms
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Container for transform objects</p>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+status
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Status to use for the branch. Steps can return multiple status codes
+                                    (default is "Success") </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+priority
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Priority of the branch. A branch with a priority of 1 is evaluated first. </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+source_uid
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> The UUID of the source action of the branch</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+destination_uid
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> The UUID of the destination action of the branch</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+position
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Position if the action node on the workflow editor </p>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

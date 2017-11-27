@@ -109,74 +109,99 @@ img.media-object.image{
 
 <div class="w3-row-padding w3-padding-64 ">
     <div class="w3-content">
-            <h1>Workflow Overview</h1>
+            <h1>Playbook Overview</h1>
             <div class="w3-container w3-row">
                 <div class="w3-col l6">
                     <pre class="code w3-small"><code>
 {
     "name": "MyPlaybookName",
-    "walkoff_version": "0.5.0"
+    "uid": "1357c4af-35fd-4cad-8c09-1bf3e2a52af8",
+    "walkoff_version": "0.5.0",
     "workflows": [
         {
-            "name": "MyWorkflow",
-            "start": "start",
-            "steps": [
+            "name": "helloWorldWorkflow",
+            "start": "aae6192c-35b1-95e9-a2d7-3c127667ee19",
+            "uid": "4faf9d28-3631-44bd-838e-81501978714f",
+            "actions": [
                 {
-                    "action": "repeatBackToMe",
-                    "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [
+                    "name": "action 1",
+                    "action_name": "returnPlusOne",
+                    "app_name": "HelloWorld",
+                    "device_id": 1,
+                    "arguments": [
                         {
-                            "name": "call",
-                            "value": "Hello World"
+                            "name": "number",
+                            "value": 5
                         }
                     ],
-                    "name": "1",
-                    "next": [],
-                    "position":
-                        {
-                            "x": 250,
-                            "y": 300
-                        },
-                    "uid": "01204c1451c44f99b828b2367690801b",
+                    "position": {
+                        "x": 370,
+                        "y": 210
+                    },
+                    "triggers": [],
+                    "uid": "0585feec-cc74-c2d6-16bd-6bdda55bfa38"
                 },
                 {
-                    "action": "helloWorld",
-                    "app": "HelloWorld",
-                    "device": "hwTest",
-                    "inputs": [],
-                    "name": "start",
-                    "next": [
+                    "action_name": "action 2",
+                    "app_name": "Utilities",
+                    "name": "linearly scale",
+                    "arguments": [
                         {
-                            "flags": [
-                                {
-                                    "action": "regMatch",
-                                    "args": [
-                                        {
-                                            "name": "regex",
-                                            "value": "(.*)"
-                                        }
-                                    ],
-                                    "filters": [
-                                        {
-                                            "action": "length",
-                                            "args": [],
-                                            "uid": "fead248eba064defbf25b33cccc734fc"
-                                        }
-                                    ],
-                                    "uid": "8f698454d6a74978a730f9f4e429e1f6"
-                                }
-                            ],
-                            "name": "1",
-                            "status": "Success",
-                            "uid": "f54edf0644ae4bd4878de898bf3997a7"
+                            "name": "max_value",
+                            "value": 10
+                        },
+                        {
+                            "name": "min_value",
+                            "value": 0
+                        },
+                        {
+                            "name": "low_scale",
+                            "value": 0
+                        },
+                        {
+                            "name": "high_scale",
+                            "value": 1
+                        },
+                        {
+                            "name": "value",
+                            "reference": "0585feec-cc74-c2d6-16bd-6bdda55bfa38"
                         }
                     ],
-                    "position": {},
-                    "uid": "704c94c112fa49c3a4a3b30cf1586fc2",
+                    "position": {
+                        "x": 610,
+                        "y": 130
+                    },
+                    "triggers": [
+                        {
+                            "action_name": "number compare",
+                            "app_name": "Utilities",
+                            "arguments": [
+                                {
+                                    "name": "operator",
+                                    "value": "le"
+                                },
+                                {
+                                    "name": "threshold",
+                                    "value": 5
+                                }
+                            ],
+                            "transforms": [],
+                            "uid": "61678960-6688-4735-88b1-29756bd1a8a9"
+                        }
+                    ],
+                    "uid": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd"
                 }
             ],
-            "uid": "81f0ae4aaf4b4eda905d35cbab0cd36d"
+            "branches": [
+                {
+                    "conditions": [],
+                    "source_uid": "0585feec-cc74-c2d6-16bd-6bdda55bfa38",
+                    "destination_uid": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd",
+                    "priority": 1,
+                    "status": "Success",
+                    "uid": "2771fe58-9b7f-4fbe-bdd8-79a59002977e"
+                }
+            ]
         }
     ]
 }
@@ -208,14 +233,23 @@ start
                                 </pre>
                             </td>
                             <td class="w3-col l6">
-                                <p> The name of the start step </p>
+                                <p> The UID of the start step </p>
                             </td>
                         </tr>
-
                         <tr>
                             <td class="w3-col l6">
                                 <pre class="tag">
-steps
+walkoff_version
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> The version of Walkoff which generated the playbook </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+actions
                                 </pre>
                             </td>
                             <td class="w3-col l6">
@@ -237,7 +271,7 @@ uid
                         <tr>
                             <td class="w3-col l6">
                                 <pre class="tag">
-app
+app_name
                                 </pre>
                             </td>
                             <td class="w3-col l6">
@@ -252,88 +286,113 @@ name
                                 </pre>
                             </td>
                             <td class="w3-col l6">
-                                <p> Name of the playbook or workflow or step </p>
+                                <p> Name of the playbook, workflow, or action </p>
                             </td>
                         </tr>
 
                         <tr>
                             <td class="w3-col l6">
                                 <pre class="tag">
-action
+action_name
                                 </pre>
                             </td>
                             <td class="w3-col l6">
-                                <p> Action name to be taken</p>
+                                <p> Name of the action, condition, or transform to be taken</p>
                             </td>
                         </tr>
 
                         <tr>
                             <td class="w3-col l6">
                                 <pre class="tag">
-device
+device_id
                                 </pre>
                             </td>
                             <td class="w3-col l6">
-                                <p> Device Name (configuration profile) to be used </p>
+                                <p> Device (configuration profile) ID to use </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+triggers
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Conditional statements to be executed against data sent to a URL before a step takes
+                                    an action </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+arguments
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Container for arguments to actions</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+value
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Static value of an argument</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+reference
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> UUID of a previously-executed step to use as an argument</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+selection
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> The path to a element of a list or JSON object to use an argument</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+branches
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Container for conditional objects</p>
                             </td>
                         </tr>
 
                         <tr>
                             <td class="w3-col l6">
                                 <pre class="tag">
-inputs
+conditions
                                 </pre>
                             </td>
                             <td class="w3-col l6">
-                                <p> Container for arguments </p>
-                                <p> Tags contained within are specific to each app. </p>
+                                <p> Conditional statement object to validate output of a series of transforms or the
+                                    last executed action</p>
                             </td>
                         </tr>
 
                         <tr>
                             <td class="w3-col l6">
                                 <pre class="tag">
-next
+transforms
                                 </pre>
                             </td>
                             <td class="w3-col l6">
-                                <p> Container for conditional </p>
-                                <p> step=Step to jump to next if conditional is true </p>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td class="w3-col l6">
-                                <pre class="tag">
-flags
-                                </pre>
-                            </td>
-                            <td class="w3-col l6">
-                                <p> Conditional statement object </p>
-                                <p> action=function to verify output against </p>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td class="w3-col l6">
-                                <pre class="tag">
-args
-                                </pre>
-                            </td>
-                            <td class="w3-col l6">
-                                <p> Container for conditional arguments</p>
-                                <p> Elements contained within are specific to function called</p>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td class="w3-col l6">
-                                <pre class="tag">
-filters
-                                </pre>
-                            </td>
-                            <td class="w3-col l6">
-                                <p> Container for filter objects</p>
+                                <p> Container for transform objects</p>
                             </td>
                         </tr>
 
@@ -344,8 +403,38 @@ status
                                 </pre>
                             </td>
                             <td class="w3-col l6">
-                                <p> Status to use for the next step. Steps can return multiple status codes
+                                <p> Status to use for the branch. Steps can return multiple status codes
                                     (default is "Success") </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+priority
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Priority of the branch. A branch with a priority of 1 is evaluated first. </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+source_uid
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> The UUID of the source action of the branch</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+destination_uid
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> The UUID of the destination action of the branch</p>
                             </td>
                         </tr>
                         <tr>
@@ -355,7 +444,7 @@ position
                                 </pre>
                             </td>
                             <td class="w3-col l6">
-                                <p> Position if teh step node on the workflow editor </p>
+                                <p> Position if the action node on the workflow editor </p>
                             </td>
                         </tr>
                         </tbody>
