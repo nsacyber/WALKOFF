@@ -65,7 +65,7 @@ def format_all_app_actions_api(api, app_name, action_type):
         ret_action_api = {'name': action_name}
         ret_action_api.update(format_app_action_api(action_api, app_name, action_type))
         actions.append(ret_action_api)
-    return actions
+    return sorted(actions, key=lambda action: action['name'])
 
 
 def format_device_api_full(api, device_name):
