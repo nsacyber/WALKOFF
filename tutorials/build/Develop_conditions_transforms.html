@@ -107,55 +107,115 @@ img.media-object.image{
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
     <div class="w3-twothird">
-      <h1>Version Two Tutorials</h1>
-      <h5><i>  More tutorials coming soon... </i></h5>
-      <h5><a href="../../swagger/index.html">API Documentation</a></h5>
-      <h5><a href="../../Sphinx_Docs/_build/html/index.html">WALKOFF Python Code Documentation</a></h5>
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i>The Basics</h5>
-      <ul class="w3-medium">
-        <li><a href="Install_Tutorial.html"> Installation </a></li>
-        <li><a href="Interface_Overview.html"> Interface Overview </a></li>
-        <!--<li>Run Your First Workflow</li>-->
-      </ul>
-      <hr>
+      <h1>Develop Conditions and Transforms</h1>
+        <p>Developing conditions and transforms is similar to developing any other app action, with only a couple key
+           differences:</p>
+        <ol>
+            <li>Conditions and transforms must be global</li>
+            <li>Conditions and transforms must specify an additional parameter for the data supplied by the previous
+                action</li>
+            <li>Conditions and transforms use their own decorators</li>
+            <li>Conditions must return True/False and do not specify return codes</li>
+            <li>Transforms cannot return any return codes other than "Success"</li>
+        </ol>
+        <p>In this tutorial we'll develop some simple conditions and transforms.</p>
+        <h4><b>Develop a condition</b></h4>
+        <p>Inside our HelloWorld app, we create a module named <code>conditions.py</code>. Inside this module, we will
+            define a condition called <code>list_contains</code> which will take a list of strings from the previously
+            executed action or transform and return true if a given string is found in that list.</p>
 
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Workflows</h5>
-      <ul class="w3-medium">
-        <li><a href="Workflow_Navigation_Tutorial.html"> Workflow Editor Navigation </a></li>
-        <li><a href="Workflow_Editor_Tutorial.html"> Basic Workflow Creation </a></li>
-        <li><a href="Workflow_Branching_Tutorial.html"> Branching Workflow Creation </a></li>
-        <li><a href="Workflow_Advanced_Tutorial.html"> "Advanced" Workflow Creation </a></li>
-      </ul>
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Devices</h5>
-      <ul class="w3-medium">
-        <li><a href="Devices_Tutorial.html"> Device Tutorial </a></li>
-      </ul>
-      <hr>
+        <pre><code class="python">
+from apps import condition
 
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Apps</h5>
-      <ol class="w3-medium">
-        <li><a href="Develop_an_app.html">Develop an App</a></li>
-        <li><a href="Develop_an_app_with_class.html">Develop an App with Devices</a></li>
-        <li><a href="Develop_conditions_transforms.html">Develop Conditions and Transforms</a></li>
-        <li><a href="App_api_schema.html">App API Schema Examples</a></li>
-        <li><a href="Actions_with_multiple_return_codes.html">Action Return Codes</a></li>
-        <li><a href="Manage_app_dependencies.html">Managing App Dependencies</a></li>
-        <li><a href="Test_an_app.html">Testing an App</a></li>
-      </ol>
-      <hr>
+@condition
+def list_contains(list_in, member):
+    return member in list_in
+        </code></pre>
 
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Platform</h5>
-      <ul class="w3-medium">
-        <li><a href="Workflow_Scheduler.html">Workflow Scheduler</a></li>
-        <li><a href="Trigger_Management.html">Manage Triggers</a></li>
-        <li><a href="Case_Management.html">Case Management</a></li>
-      </ul>
+        <p>And we add this condition to our <code>api.yaml</code> file:</p>
 
-      <h5 class="topLevelList w3-padding-8 w3-large"><i class="fa fa-circle w3-text-black" > </i> System Administration</h5>
-      <ul class="w3-medium">
-        <li><a href="User_Management.html">Managing Users</a></li>
-        <li><a href="Settings.html">System Configuration</a></li>
-      </ul>
+        <pre><code class="yaml">
+walkoff: '0.1'
+info:
+  title: HelloWorld
+  version: 1.0.0
+actions:
+  # ... actions go here ...
+conditions:
+  list contains:
+    run: conditions.list_contains
+    description: Returns true if the list contains the given member
+    data_in: list_in
+    parameters:
+      - name: list_in
+        description: The list to search through
+        type: array
+        items:
+            type: string
+        required: true
+      - name: member
+        description: The string to search for
+        type: string
+        required: true
+        </code></pre>
+        <p>The <code>data_in</code> field of the metadata file specifies the parameter to which the data from the
+            previously executed transform or action will be sent</p>
+
+        <h4><b>Develop a transform</b></h4>
+        <p>Inside our HelloWorld app, we create a module named <code>transforms.py</code>. Inside this module, we will
+            define a transform called <code>decimal_to_hex</code> which will take a decimal integer from the previously
+            executed transform or action and return its hexidecimal representation using Python's builtin
+            <code>hex()</code> function.</p>
+
+        <pre><code class="python">
+from apps import transform
+
+@transform
+def decimal_to_hex(decimal_in):
+    return hex(decimal_in)
+        </code></pre>
+
+        <p>And we add this transform to our <code>api.yaml</code> file:</p>
+
+        <pre><code class="yaml">
+walkoff: '0.1'
+info:
+  title: HelloWorld
+  version: 1.0.0
+actions:
+  # ... actions go here ...
+transforms:
+  decimal to hex:
+    run: transforms.decimal_to_hex
+    description: Returns hexidecimal value of the given integer
+    data_in: decimal_in
+    parameters:
+      - name: decimal_in
+        description: The number to convert to hexidecimal
+        type: integer
+    returns:
+      Success:
+        schema:
+            type: string
+            description: The hexidecimal representation of the number passed in
+        </code></pre>
+
+         <p>Just like in the condition, the <code>data_in</code> field of the metadata file specifies the parameter to
+             which the data from the previously executed transform or action will be sent</p>
+
+
+        <div align="center" style="border:1px solid blue">
+            <h5><a href="Develop_an_app_with_class.html">Next >></a></h5>
+        </div>
+        <h4><b>More</b></h4>
+        <ol>
+            <li><a href="Develop_an_app.html">Develop an App</a></li>
+            <li><a href="Develop_an_app_with_class.html">Develop an App with Devices</a></li>
+            <li><a href="App_api_schema.html">App API Schema Examples</a></li>
+            <li><a href="Actions_with_multiple_return_codes.html">Action Return Codes</a></li>
+            <li><a href="Manage_app_dependencies.html">Managing App Dependencies</a></li>
+            <li><a href="Test_an_app.html">Testing an App</a></li>
+        </ol>
     </div>
 
    <div class="w3-third w3-center">
@@ -163,7 +223,6 @@ img.media-object.image{
     </div>
   </div>
 </div>
-
 <div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
     <h1 class="w3-margin w3-xlarge">Questions? Comments? </h1>
     <h1 class="w3-margin w3-xlarge"> Reach out to us at <a href="mailto:walkoff@nsa.gov"> walkoff@nsa.gov </a> </h1>
