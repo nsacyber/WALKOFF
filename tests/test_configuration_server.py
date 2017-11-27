@@ -5,7 +5,6 @@ from flask import current_app
 import core.config.config
 import core.config.paths
 from server.returncodes import *
-from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
 
 
@@ -38,7 +37,6 @@ class TestConfigurationServer(ServerTestCase):
 
     def test_get_configuration(self):
         expected = {'workflows_path': core.config.paths.workflows_path,
-                    'templates_path': core.config.paths.templates_path,
                     'db_path': core.config.paths.db_path,
                     'case_db_path': core.config.paths.case_db_path,
                     'log_config_path': core.config.paths.logging_config_path,
@@ -69,7 +67,6 @@ class TestConfigurationServer(ServerTestCase):
                                     content_type='application/json')
 
         expected = {core.config.paths.workflows_path: 'workflows_path_reset',
-                    core.config.paths.templates_path: 'templates_path_reset',
                     core.config.paths.db_path: 'db_path_reset',
                     core.config.config.host: 'host_reset',
                     core.config.config.port: 1100,
@@ -84,13 +81,10 @@ class TestConfigurationServer(ServerTestCase):
     def test_set_configuration_invalid_token_durations(self):
         access_token_duration = current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds
         refresh_token_duration = current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days
-        templates_path = core.config.paths.templates_path
-        data = {"templates_path": 'templates_path_reset',
-                "access_token_duration": 60*25,
+        data = {"access_token_duration": 60*25,
                 "refresh_token_duration": 1}
         self.post_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
                                     content_type='application/json', status_code=BAD_REQUEST)
 
         self.assertEqual(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds, access_token_duration)
         self.assertEqual(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days, refresh_token_duration)
-        self.assertEqual(core.config.paths.templates_path, templates_path)

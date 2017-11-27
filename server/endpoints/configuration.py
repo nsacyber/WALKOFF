@@ -11,7 +11,6 @@ from server.security import roles_accepted_for_resources
 
 def __get_current_configuration():
     return {'workflows_path': core.config.paths.workflows_path,
-            'templates_path': core.config.paths.templates_path,
             'db_path': core.config.paths.db_path,
             'case_db_path': core.config.paths.case_db_path,
             'log_config_path': core.config.paths.logging_config_path,

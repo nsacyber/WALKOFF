@@ -2,8 +2,7 @@ from os.path import join
 
 apps_path = join('.', 'apps')
 interfaces_path = join('.', 'interfaces')
-workflows_path = join('.', 'data', 'workflows')
-templates_path = join('.', 'data', 'templates')
+workflows_path = join('.', 'workflows')
 keywords_path = join('.', 'core', 'keywords')
 db_path = "data/walkoff.db"
 case_db_path = join('data', 'events.db')
