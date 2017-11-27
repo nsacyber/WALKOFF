@@ -22,7 +22,6 @@
                 type: string
             data_in:
               description: Data to send to workflows awaiting data
-              type: object
             inputs:
               description: Updated inputs to send to the trigger action
               type: object
