@@ -54,8 +54,7 @@ class TestConfigurationServer(ServerTestCase):
         self.assertDictEqual(response, expected)
 
     def test_set_configuration(self):
-        data = {"templates_path": 'templates_path_reset',
-                "workflows_path": 'workflows_path_reset',
+        data = {"workflows_path": 'workflows_path_reset',
                 "db_path": 'db_path_reset',
                 "tls_version": '1.1',
                 "https": True,

@@ -6,9 +6,6 @@ Configuration:
       workflows_path:
         type: string
         description: The path to the workflows
-      templates_path:
-        type: string
-        description: The path to the workflow templates
       db_path:
         type: string
         description: The path to the primary WALKOFF database
