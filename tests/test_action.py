@@ -289,28 +289,6 @@ class TestAction(unittest.TestCase):
         self.assertEqual(result.status, 'Success')
         self.assertEqual(action._output, result)
 
-    def test_execute_event(self):
-        action = Action(app_name='HelloWorldBounded', action_name='Sample Event', arguments=[Argument('arg1', value=1)],
-                        device_id=1)
-        instance = AppInstance.create(app_name='HelloWorldBounded', device_name='device1')
-
-        import time
-        from tests.testapps.HelloWorld.events import event1
-        import threading
-
-        def sender():
-            time.sleep(0.1)
-            event1.trigger(3)
-
-        thread = threading.Thread(target=sender)
-        start = time.time()
-        thread.start()
-        result = action.execute(instance.instance, {})
-        end = time.time()
-        thread.join()
-        self.assertEqual(result, ActionResult(4, 'Success'))
-        self.assertGreater((end - start), 0.1)
-
     def test_set_args_valid(self):
         action = Action(app_name='HelloWorld', action_name='Add Three',
                         arguments=[Argument('num1', value='-5.6'),

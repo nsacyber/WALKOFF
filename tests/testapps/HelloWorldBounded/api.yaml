@@ -151,18 +151,6 @@ actions:
         schema:
           type: number
 
-  Sample Event:
-    run: main.Main.sample_event
-    parameters:
-        - name: arg1
-          required: true
-          type: number
-    event: Event1
-    returns:
-      Success:
-        description: summation
-        schema:
-          type: number
 conditions:
   'Top Condition':
     run: conditions.top_level_flag

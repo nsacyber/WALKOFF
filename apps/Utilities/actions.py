@@ -1,10 +1,9 @@
-from apps import action, event
+from apps import action
 import time
 import json
 import csv
 import sys
 from random import SystemRandom
-from apps.Utilities.events import wait
 
 
 @action
@@ -21,9 +20,11 @@ def round_to_n(number, places):
 def echo_object(data):
     return data
 
+
 @action
 def echo_array(data):
     return data
+
 
 @action
 def json_select(json_reference, element):
@@ -90,7 +91,3 @@ def write_ips_to_csv(ips_reference, path):
                 else:
                     writer.writerow({'Host': ip})
 
-
-@event(wait)
-def wait_for_event(data):
-    return 'success'

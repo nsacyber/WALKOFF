@@ -1,7 +1,6 @@
 import time
-from apps import App, action, event
+from apps import App, action
 from tests.testapps.HelloWorld.exceptions import CustomException
-from tests.testapps.HelloWorld.events import event1
 
 
 @action
@@ -44,10 +43,6 @@ class Main(App):
     def __init__(self, name=None, device=None):
         App.__init__(self, name, device)
         self.introMessage = {"message": "HELLO WORLD"}
-
-    @event(event1)
-    def sample_event(self, data, arg1):
-        return data + arg1
 
     def shutdown(self):
         return

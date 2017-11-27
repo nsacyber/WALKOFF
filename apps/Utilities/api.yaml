@@ -211,15 +211,7 @@ actions:
       Success:
         schema:
           type: string
-  wait for event:
-    run: actions.wait_for_event
-    description: waits for a post to the endpoint /apps/Utilities/resume
-    event: Wait
-    returns:
-      Success:
-        schema:
-          type: string
-          enum: [success]
+
 conditions:
   regex match:
     run: conditions.regMatch

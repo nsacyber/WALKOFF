@@ -95,52 +95,6 @@ class TestAppApiServerFuncs(ServerTestCase):
         for parameter in formatted['parameters']:
             self.assertIn(parameter, expected['parameters'])
 
-    def test_format_app_action_api_with_event(self):
-        action_api = core.config.config.app_apis['HelloWorldBounded']['actions']['Sample Event']
-        expected = {'returns': [{'status': 'Success', 'description': 'summation', 'schema': {'type': 'number'}},
-                                {'status': 'UnhandledException', 'description': 'Exception occurred in action'},
-                                {'status': 'InvalidInput', 'description': 'Input into the action was invalid'},
-                                {'status': 'EventTimedOut', 'description': 'Action timed out out waiting for event'}],
-                    'run': 'main.Main.sample_event',
-                    'event': 'Event1',
-                    'parameters': [{'schema': {'type': 'number'}, 'name': 'arg1', 'required': True}]}
-
-        formatted = format_app_action_api(action_api, "HelloWorldBounded", "actions")
-        self.assertSetEqual(set(formatted.keys()), set(expected.keys()))
-        self.assertEqual(formatted['run'], expected['run'])
-        self.assertEqual(formatted['event'], expected['event'])
-        self.assertEqual(len(formatted['returns']), len(expected['returns']))
-        for return_ in formatted['returns']:
-            self.assertIn(return_, expected['returns'])
-        self.assertEqual(len(formatted['parameters']), len(expected['parameters']))
-        for parameter in formatted['parameters']:
-            self.assertIn(parameter, expected['parameters'])
-
-    def test_format_all_app_actions_api(self):
-        action_api = {'Sample Event': core.config.config.app_apis['HelloWorldBounded']['actions']['Sample Event']}
-        expected = [{'returns': [{'status': 'Success', 'description': 'summation', 'schema': {'type': 'number'}},
-                                 {'status': 'UnhandledException', 'description': 'Exception occurred in action'},
-                                 {'status': 'InvalidInput', 'description': 'Input into the action was invalid'},
-                                 {'status': 'EventTimedOut', 'description': 'Action timed out out waiting for event'}],
-                     'run': 'main.Main.sample_event',
-                     'event': 'Event1',
-                     'parameters': [{'schema': {'type': 'number'}, 'name': 'arg1', 'required': True}],
-                     'name': 'Sample Event'}]
-        action_api.update({'pause': core.config.config.app_apis['HelloWorldBounded']['actions']['pause']})
-        expected.append({
-            'returns': [{'status': 'Success', 'description': 'successfully paused', 'schema': {'type': 'number'}},
-                        {'status': 'UnhandledException', 'description': 'Exception occurred in action'},
-                        {'status': 'InvalidInput', 'description': 'Input into the action was invalid'}],
-            'run': 'main.Main.pause',
-            'description': 'Pauses execution',
-            'parameters': [
-                {'schema': {'required': True, 'type': 'number'}, 'name': 'seconds', 'description': 'Seconds to pause'}],
-            'name': 'pause'})
-        formatted = format_all_app_actions_api(action_api, "HelloWorldBounded", "actions")
-        self.assertEqual(len(formatted), len(expected))
-        for action in formatted:
-            self.assertIn(action['name'], ('Sample Event', 'pause'))
-
     def test_format_device_api(self):
         device_api = {'description': 'Something',
                       'fields': [

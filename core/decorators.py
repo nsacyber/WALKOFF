@@ -50,54 +50,6 @@ def action(func):
     return wrapper
 
 
-def event(event_, timeout=300):
-    """
-    Decorator used to tag an action as an event
-
-    Args:
-        event_ (apps.Event): The event to wait for before executing the action
-        timeout (int, optional): Seconds to wait for the event to occur. Defaults to 300 (5 minutes).
-    Returns:
-        (func) Tagged function
-    """
-    def _event(func):
-        arg_names = get_function_arg_names(func)
-        if not arg_names or (arg_names[0] == 'self' and len(arg_names) < 2):
-            raise InvalidApi('Event action has too few parameters. '
-                             'There must be at least one parameter to receive data from the event.')
-
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            result = [('Getting event {0} timed out at {1} seconds'.format(event_.name, timeout), 'EventTimedOut')]
-            await_result_condition = Condition()
-
-            @event_.connect
-            def send(data):
-                await_result_condition.acquire()
-                if len(kwargs) > 0:
-                    result.append(func(args[0], data, **kwargs))
-                else:
-                    result.append(func(args[0], data))
-                await_result_condition.notify()
-                await_result_condition.release()
-
-            await_result_condition.acquire()
-            while not len(result) >= 2:
-                await_result_condition.wait(timeout=timeout)
-                break
-            await_result_condition.release()
-
-            event_.disconnect(send)
-            return format_result(result[-1])
-
-        tag(wrapper, 'action')
-        wrapper.__arg_names = arg_names
-        wrapper.__event_name = event_.name
-        return wrapper
-
-    return _event
-
-
 def condition(func):
     """
     Decorator used to tag a method or function as a condition

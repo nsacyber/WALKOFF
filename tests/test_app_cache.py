@@ -233,12 +233,11 @@ class TestAppCache(TestCase):
                                                'main.Main.addThree': {'run': Main.addThree, 'bound': True},
                                                'main.Main.buggy_action': {'run': Main.buggy_action, 'bound': True},
                                                'main.Main.json_sample': {'run': Main.json_sample, 'bound': True},
-                                               'main.Main.sample_event': {'run': Main.sample_event, 'bound': True},
                                                'main.global1': {'run': global1, 'bound': False}}}}
         self.assertDictEqual(self.cache._cache, expected)
 
     def test_cache_module_nothing_found(self):
-        module = import_module('tests.testapps.HelloWorldBounded.events')
+        module = import_module('tests.testapps.HelloWorldBounded.display')
         self.cache._cache_module(module, 'HelloWorldBounded', 'tests.testapps')
         self.assertDictEqual(self.cache._cache, {})
 
@@ -265,7 +264,6 @@ class TestAppCache(TestCase):
                                                'main.Main.addThree': {'run': Main.addThree, 'bound': True},
                                                'main.Main.buggy_action': {'run': Main.buggy_action, 'bound': True},
                                                'main.Main.json_sample': {'run': Main.json_sample, 'bound': True},
-                                               'main.Main.sample_event': {'run': Main.sample_event, 'bound': True},
                                                'main.global1': {'run': global1, 'bound': False},
                                                'actions.global2': {'run': global2, 'bound': False}},
                                    'conditions': {'conditions.top_level_flag': {'run': top_level_flag},
@@ -302,7 +300,6 @@ class TestAppCache(TestCase):
                                                'main.Main.addThree': {'run': Main.addThree, 'bound': True},
                                                'main.Main.buggy_action': {'run': Main.buggy_action, 'bound': True},
                                                'main.Main.json_sample': {'run': Main.json_sample, 'bound': True},
-                                               'main.Main.sample_event': {'run': Main.sample_event, 'bound': True},
                                                'main.global1': {'run': global1, 'bound': False},
                                                'actions.global2': {'run': global2, 'bound': False}},
                                    'conditions': {'conditions.top_level_flag': {'run': top_level_flag},
@@ -352,7 +349,6 @@ class TestAppCache(TestCase):
                                                'main.Main.addThree': {'run': Main.addThree, 'bound': True},
                                                'main.Main.buggy_action': {'run': Main.buggy_action, 'bound': True},
                                                'main.Main.json_sample': {'run': Main.json_sample, 'bound': True},
-                                               'main.Main.sample_event': {'run': Main.sample_event, 'bound': True},
                                                'main.global1': {'run': global1, 'bound': False},
                                                'actions.global2': {'run': global2, 'bound': False}},
                                    'conditions': {'conditions.top_level_flag': {'run': top_level_flag},

@@ -1,7 +1,6 @@
 import time
-from apps import App, action, event
+from apps import App, action
 from tests.testapps.HelloWorld.exceptions import CustomException
-from tests.testapps.HelloWorld.events import event1
 
 
 @action
@@ -42,10 +41,6 @@ class Main(App):
     def json_sample(self, json_in):
         return (json_in['a'] + json_in['b']['a'] + json_in['b']['b'] + sum(json_in['c']) +
                 sum([x['b'] for x in json_in['d']]))
-
-    @event(event1)
-    def sample_event(self, data, arg1):
-        return data + arg1
 
     def shutdown(self):
         return
