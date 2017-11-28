@@ -35,7 +35,7 @@ Walkoff apps can be found at: <https://github.com/iadgov/WALKOFF-Apps>
 ## Installation Instructions
 
 To install, you can run (possibly with administrator privileges)
-   `python make.py`
+   `python setup_walkoff.py`
 
 Alternatively, you can manually install WALKOFF
 
