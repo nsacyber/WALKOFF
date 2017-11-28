@@ -6,7 +6,6 @@ from gevent import sleep
 from gevent.event import Event, AsyncResult
 
 from core.events import WalkoffEvent
-from core.helpers import convert_argument
 from server.security import jwt_required_in_query
 
 workflowresults_page = Blueprint('workflowresults_page', __name__)
@@ -55,8 +54,7 @@ def __workflow_ended_callback(sender, **kwargs):
 
 @WalkoffEvent.ActionExecutionSuccess.connect
 def __action_ended_callback(sender, **kwargs):
-    action_arguments = [convert_argument(argument) for argument in
-                        list(sender['arguments'])] if 'arguments' in sender else []
+    action_arguments = sender['arguments'] if 'arguments' in sender else []
     result = {'action_name': sender['name'],
               'action_uid': sender['uid'],
               'timestamp': str(datetime.utcnow()),
@@ -72,8 +70,7 @@ def __action_ended_callback(sender, **kwargs):
 
 @WalkoffEvent.ActionExecutionError.connect
 def __action_error_callback(sender, **kwargs):
-    action_arguments = [convert_argument(argument) for argument in
-                        list(sender['arguments'])] if 'arguments' in sender else []
+    action_arguments = sender['arguments'] if 'arguments' in sender else []
     result = {'action_name': sender['name'],
               'action_uid': sender['uid'],
               'timestamp': str(datetime.utcnow()),

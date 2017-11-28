@@ -1,6 +1,7 @@
 {
     "name": "basicWorkflowTest",
     "uid": "1357c4af-35fd-4cad-8c09-1bf3e2a52af8",
+    "walkoff_version": "0.5.0",
     "workflows": [
         {
             "actions": [
@@ -85,25 +86,27 @@
                     "uid": "e7a2f454-109f-5e44-ee97-0095af957c09"
                 },
                 {
-                    "action_name": "repeatBackToMe",
-                    "app_name": "HelloWorld",
+                    "action_name": "echo array",
+                    "app_name": "Utilities",
                     "arguments": [
                         {
-                            "name": "call",
-                            "reference": "e7a2f454-109f-5e44-ee97-0095af957c09",
-                            "selection": [
-                                "message"
+                            "name": "data",
+                            "value": [
+                                true,
+                                "testtesttest",
+                                "ddddddd",
+                                -13,
+                                "fhfffhdsdsdsdf soemthing"
                             ]
                         }
                     ],
-                    "device_id": 1,
-                    "name": "repeatBackToMe",
+                    "name": "test",
                     "position": {
-                        "x": 450,
-                        "y": 130
+                        "x": 690,
+                        "y": 210
                     },
                     "triggers": [],
-                    "uid": "9a2a03e1-21ad-3c49-1359-16eda19da906"
+                    "uid": "b5f04cbe-d315-d1a9-c192-b4a47d012afd"
                 },
                 {
                     "action_name": "linearly scale",
@@ -156,27 +159,25 @@
                     "uid": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd"
                 },
                 {
-                    "action_name": "echo array",
-                    "app_name": "Utilities",
+                    "action_name": "repeatBackToMe",
+                    "app_name": "HelloWorld",
                     "arguments": [
                         {
-                            "name": "data",
-                            "value": [
-                                true,
-                                "testtesttest",
-                                "ddddddd",
-                                -13,
-                                "fhfffhdsdsdsdf soemthing"
+                            "name": "call",
+                            "reference": "e7a2f454-109f-5e44-ee97-0095af957c09",
+                            "selection": [
+                                "message"
                             ]
                         }
                     ],
-                    "name": "test",
+                    "device_id": 1,
+                    "name": "repeatBackToMe",
                     "position": {
-                        "x": 690,
-                        "y": 210
+                        "x": 450,
+                        "y": 130
                     },
                     "triggers": [],
-                    "uid": "b5f04cbe-d315-d1a9-c192-b4a47d012afd"
+                    "uid": "9a2a03e1-21ad-3c49-1359-16eda19da906"
                 }
             ],
             "branches": [

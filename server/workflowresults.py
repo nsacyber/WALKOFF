@@ -3,7 +3,6 @@ import json
 import core.case.database as case_database
 from core.case.workflowresults import WorkflowResult, ActionResult
 from core.events import WalkoffEvent
-from core.helpers import convert_argument
 
 
 @WalkoffEvent.WorkflowShutdown.connect
@@ -37,8 +36,7 @@ def __action_execution_success_callback(sender, **kwargs):
         data = {'name': sender['name'],
                 'app_name': sender['app_name'],
                 'action_name': sender['action_name'],
-                'arguments': [convert_argument(argument) for argument in
-                              list(sender['arguments'])] if 'arguments' in sender else [],
+                'arguments': sender['arguments'] if 'arguments' in sender else [],
                 'result': kwargs['data']}
         __append_action_result(workflow_result, data, 'success')
 
@@ -51,8 +49,7 @@ def __action_execution_error_callback(sender, **kwargs):
         data = {'name': sender['name'],
                 'app_name': sender['app_name'],
                 'action_name': sender['action_name'],
-                'arguments': [convert_argument(argument) for argument in
-                              list(sender['arguments'])] if 'arguments' in sender else [],
+                'arguments': sender['arguments'] if 'arguments' in sender else [],
                 'result': kwargs['data']}
         __append_action_result(workflow_result, data, 'error')
 
