@@ -7,7 +7,7 @@ import core.config.paths
 
 
 def generate_certificates():
-    keys_dir = core.config.paths.zmq_keys_path
+    keys_dir = core.config.paths.keys_path
     public_keys_dir = core.config.paths.zmq_public_keys_path
     secret_keys_dir = core.config.paths.zmq_private_keys_path
 

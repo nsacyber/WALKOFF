@@ -1,32 +1,14 @@
 import logging.config
-import sys, traceback
-import ssl
+import sys
+import traceback
 import os
 from os.path import isfile
 from core.config import config, paths
 from apps import *
-from gevent.wsgi import WSGIServer
 from gevent import monkey
+from gevent import pywsgi
 
 logger = logging.getLogger('walkoff')
-
-
-def get_ssl_context():
-    if config.https:
-        # Sets up HTTPS
-        if config.tls_version == "1.2":
-            context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-        elif config.tls_version == "1.1":
-            context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_1)
-        else:
-            context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-
-        if isfile(paths.certificate_path) and isfile(paths.private_key_path):
-            context.load_cert_chain(paths.certificate_path, paths.private_key_path)
-            return context
-        else:
-            print('Certificates not found')
-    return None
 
 
 def setup_logger():
@@ -61,7 +43,6 @@ def run():
 
     import core.case.database as case_database
     case_database.initialize()
-    ssl_context = get_ssl_context()
 
     try:
         port = int(config.port)
@@ -69,19 +50,18 @@ def run():
         print('Invalid port {0}. Port must be an integer'.format(config.port))
     else:
         host = config.host
-        if ssl_context:
-            server = WSGIServer((host, port), application=flaskserver.app, ssl_context=ssl_context)
+        if isfile(paths.certificate_path) and isfile(paths.private_key_path):
+            server = pywsgi.WSGIServer((host, port), application=flaskserver.app,
+                                       keyfile=paths.private_key_path, certfile=paths.certificate_path)
             proto = 'https'
         else:
-            server = WSGIServer((host, port), application=flaskserver.app)
+            server = pywsgi.WSGIServer((host, port), application=flaskserver.app)
             proto = 'http'
         from core.config.config import walkoff_version
         logger.info('*** Running WALKOFF v.{} ***'.format(walkoff_version))
         logger.info('Listening on host {0}://{1}:{2}'.format(proto, host, port))
 
         server.serve_forever()
-
-        # app.run()
 
 
 if __name__ == "__main__":
