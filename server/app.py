@@ -88,8 +88,9 @@ def create_app():
     jwt.init_app(_app)
 
     connexion_app.add_api('composed_api.yaml')
-    register_blueprints(_app)
+
     core.config.config.initialize()
+    register_blueprints(_app)
 
     import core.controller
     core.controller.controller.load_playbooks()
