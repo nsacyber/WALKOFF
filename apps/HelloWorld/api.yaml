@@ -8,8 +8,8 @@ info:
   license:
     name: Creative Commons
 actions:
-  helloWorld:
-    run: app.HelloWorld.helloWorld
+  hello world:
+    run: app.hello_world
     description: Returns an introductory message
     returns:
       Success:
@@ -19,8 +19,8 @@ actions:
           properties:
             message:
               type: string
-  repeatBackToMe:
-    run: app.HelloWorld.repeatBackToMe
+  repeat back to me:
+    run: app.repeat_back_to_me
     description: Repeats the call argument
     parameters:
         - name: call
@@ -32,8 +32,8 @@ actions:
         description: repeated method
         schema:
           type: string
-  returnPlusOne:
-    run: app.HelloWorld.returnPlusOne
+  return plus one:
+    run: app.return_plus_one
     description: Increments a given number by 1
     parameters:
         - name: number
@@ -47,7 +47,7 @@ actions:
         schema:
           type: integer
   pause:
-    run: app.HelloWorld.pause
+    run: app.pause
     description: pauses execution for an amount of time
     parameters:
       - name: seconds
@@ -57,6 +57,63 @@ actions:
     returns:
       Success:
         description: successfully paused
+  hello world bound:
+    run: app.HelloWorld.hello_world_bound
+    description: Returns an introductory message
+    returns:
+      Success:
+        description: introductory message
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+  repeat back to me bound:
+    run: app.HelloWorld.repeat_back_to_me_bound
+    description: Repeats the call argument
+    parameters:
+        - name: call
+          description: message to repeat
+          required: true
+          type: string
+    returns:
+      Success:
+        description: repeated method
+        schema:
+          type: string
+  return plus one bound:
+    run: app.HelloWorld.return_plus_one_bound
+    description: Increments a given number by 1
+    parameters:
+        - name: number
+          description: number to increment
+          required: true
+          type: integer
+          format: int32
+    returns:
+      Success:
+        description: incremented number
+        schema:
+          type: integer
+  pause bound:
+    run: app.HelloWorld.pause_bound
+    description: pauses execution for an amount of time
+    parameters:
+      - name: seconds
+        description: The seconds to pause for
+        required: true
+        type: number
+    returns:
+      Success:
+        description: successfully paused
+  total actions called:
+    run: app.HelloWorld.total_actions_called
+    description: gets teh total number of actions which have been called for this app instance
+    returns:
+      Success:
+        schema:
+          type: integer
+          minimum: 0
 
 devices:
   Test Device Type:

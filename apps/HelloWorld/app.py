@@ -5,35 +5,60 @@ from apps import App, action
 logger = logging.getLogger(__name__)
 
 
-# There is an associated Hello world test workflow which can be executed
+@action
+def hello_world():
+    return {"message": "HELLO WORLD"}
+
+
+@action
+def repeat_back_to_me(call):
+    return "REPEATING: " + call
+
+
+@action
+def return_plus_one(number):
+    return number + 1
+
+
+@action
+def pause(seconds):
+    time.sleep(seconds)
+
+
 class HelloWorld(App):
+    """This app defines the same actions as above, but bound to an app instance. This instance will keep track fo how
+    many total actions are called for this app's instance.
+
+    """
     def __init__(self, name=None, device=None):
-        # The parent app constructor looks for a device configuration and returns that as a dict called self.config
         App.__init__(self, name, device)
         # Functions and Variables that are designed to exist across functions go here
         self.introMessage = {"message": "HELLO WORLD"}
+        self.total_called_functions = 0
 
-    # Every function in Main is an action that can be taken
-    # Every function needs to define an args argument which receives a dictionary of input parameters
     @action
-    def helloWorld(self):
+    def hello_world_bound(self):
+        self.total_called_functions += 1
         return self.introMessage
 
-    # Example using arguments
-    # Repeats back the contents of the call argument
     @action
-    def repeatBackToMe(self, call):
+    def repeat_back_to_me_bound(self, call):
+        self.total_called_functions += 1
         return "REPEATING: " + call
 
-    # Increments number by one
     @action
-    def returnPlusOne(self, number):
+    def return_plus_one_bound(self, number):
+        self.total_called_functions += 1
         return number + 1
 
     @action
-    def pause(self, seconds):
+    def pause_bound(self, seconds):
+        self.total_called_functions += 1
         time.sleep(seconds)
 
+    @action
+    def total_actions_called(self):
+        return self.total_called_functions
+
     def shutdown(self):
-        # print("SHUTTING DOWN")
         return
