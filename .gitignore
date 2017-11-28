@@ -30,4 +30,6 @@ client/build/
 tests/testWorkflows/testGeneratedWorkflows_bkup
 .coverage*
 coverage.*
-.certificates
+.certificates/
+_build/
+sphinx/
