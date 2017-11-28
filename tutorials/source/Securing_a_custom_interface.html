@@ -1,0 +1,39 @@
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="">
+      <h1>Securing a custom interface</h1>
+        <p>For endpoint security in WALKOFF we use JSON Web Tokens with access and refresh tokens. To secure a server
+           endpoint, we use the <code>flask-jwt-extended</code> package. You can and should use this same package to
+           protect endpoints. To require a valid JWT token to access your endpoint, you can use the following code:</p>
+        <pre><code class="python">
+from interfaces import dispatcher, AppBlueprint
+from core.events import WalkoffEvent
+from flask import Blueprint, jsonify
+from flask_jwt_extended import jwt_required
+
+blueprint = AppBlueprint(blueprint=Blueprint('HelloWorldPage', __name__))
+
+hello_world_action_count = {}
+
+@dispatcher.on_app_actions('HelloWorld', events=WalkOffEvent.ActionStarted)
+def handle_workflow1_start(data):
+    global hello_world_action_count
+    action_name = data['action_name']
+    if action_name not in hello_world_action_count:
+        hello_world_action_count[action_name] = 1
+    else:
+        hello_world_action_count[action_name] += 1
+
+
+@blueprint.blueprint.route('/metrics', methods=['GET'])
+@jwt_required
+def get_hello_world_metrics():
+    global hello_world_action_count
+    return jsonify(hello_world_action_count), 200
+        </code></pre>
+        <p>That's it! Just an import and one line of code, and now only authenticated users can access your endpoint</p>
+        <p>To add the access token to your AJAX request, you can add the following line to the request</p>
+
+    </div>
+  </div>
+</div>
