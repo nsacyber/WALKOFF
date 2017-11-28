@@ -4,13 +4,14 @@ import zmq.auth
 import core.config.paths
 
 
-def generate_certificates(base_dir):
-    keys_dir = os.path.join(base_dir, 'certificates')
+def generate_certificates():
+    keys_dir = core.config.paths.zmq_keys_path
     public_keys_dir = core.config.paths.zmq_public_keys_path
     secret_keys_dir = core.config.paths.zmq_private_keys_path
 
     # Create dirs for certs, remove old content if necessary
     for d in [keys_dir, public_keys_dir, secret_keys_dir]:
+        print(d)
         if os.path.exists(d):
             shutil.rmtree(d)
         os.mkdir(d)
@@ -31,4 +32,4 @@ def generate_certificates(base_dir):
 
 
 if __name__ == '__main__':
-    generate_certificates(os.path.dirname(__file__))
+    generate_certificates()
