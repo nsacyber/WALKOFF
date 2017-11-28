@@ -62,7 +62,7 @@
         <div class="btn-group" role="group">
             <button id="execution-results-button" type="button" class="btn btn-default" data-toggle="modal" data-target="#executionResultsModal"
             title="Open Execution Results">
-                <i class="fa fa-table"></i>
+                    <i class="fa fa-table"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
@@ -195,9 +195,9 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body" #workflowResultsContainer>
                     <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]="workflowResults" [sortType]="'multi'"
-                    [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]" [limit]="25">
+                    [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]" [limit]="10">
                         <!-- Column Templates -->
                         <ngx-datatable-column name="Action UID" [flexGrow]="1">
                             <ng-template let-row="row" ngx-datatable-cell-template>

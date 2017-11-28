@@ -63,6 +63,7 @@ export class PlaybookConditionsComponent {
 		// 		selection: '',
 		// 	});
 		// });
+		if (!this.selectedAppName || !this.selectedConditionApi) { return; }
 
 		const newCondition = new Condition();
 		newCondition.app_name = this.selectedAppName;

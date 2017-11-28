@@ -62,6 +62,7 @@ export class PlaybookTransformsComponent {
 		// 		selection: '',
 		// 	});
 		// });
+		if (!this.selectedAppName || !this.selectedTransformApi) { return; }
 
 		const newTransform = new Transform();
 		newTransform.app_name = this.selectedAppName;

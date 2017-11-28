@@ -89,14 +89,14 @@
                             "name": "data",
                             "value": [
                                 true,
-                                "testtesttest",
-                                "ddddddd",
+                                "asdf",
+                                "something",
                                 -13,
-                                "fhfffhdsdsdsdf soemthing"
+                                "something else"
                             ]
                         }
                     ],
-                    "name": "test",
+                    "name": "echo array",
                     "position": {
                         "x": 690,
                         "y": 210
@@ -149,6 +149,7 @@
                             ]
                         }
                     ],
+                    "device_id": 1,
                     "name": "repeatBackToMe",
                     "position": {
                         "x": 450,
@@ -165,7 +166,7 @@
                     "priority": 1,
                     "source_uid": "aae6192c-35b1-95e9-a2d7-3c127667ee19",
                     "status": "Success",
-                    "uid": "2771fe58-9b7f-4fbe-bdd8-79a59002977e"
+                    "uid": "cec3cf6e-aa5d-45e7-8543-7ee8f4bf1266"
                 },
                 {
                     "conditions": [],
@@ -173,7 +174,7 @@
                     "priority": 1,
                     "source_uid": "0585feec-cc74-c2d6-16bd-6bdda55bfa38",
                     "status": "Success",
-                    "uid": "e3861965-e938-4bf5-818b-a97d77d1b132"
+                    "uid": "eaad93b7-80a7-4c51-aba1-4448b602d9dc"
                 },
                 {
                     "conditions": [],
@@ -181,7 +182,7 @@
                     "priority": 1,
                     "source_uid": "02b4fa8f-b003-823b-39ed-666e9d58b2ef",
                     "status": "Success",
-                    "uid": "394c89d2-90cd-4de7-9165-6ce9f64ba9bb"
+                    "uid": "d0b14074-6bf4-468f-a8af-a558a03608bd"
                 },
                 {
                     "conditions": [],
@@ -189,7 +190,7 @@
                     "priority": 1,
                     "source_uid": "78e3baca-72ee-ac97-6770-6c36bd90d5c0",
                     "status": "Success",
-                    "uid": "988fdd62-e102-447a-8862-80b6f240cdef"
+                    "uid": "3e4b3158-b310-46a6-8f6b-0c27e431c623"
                 },
                 {
                     "conditions": [],
@@ -197,7 +198,7 @@
                     "priority": 1,
                     "source_uid": "e7a2f454-109f-5e44-ee97-0095af957c09",
                     "status": "Success",
-                    "uid": "c3639cdf-c4e1-4c93-bc7f-eb2e7dd25da9"
+                    "uid": "dd479893-dd90-48e4-8036-e5268ba9305e"
                 },
                 {
                     "conditions": [],
@@ -205,7 +206,7 @@
                     "priority": 1,
                     "source_uid": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd",
                     "status": "Success",
-                    "uid": "1c32254e-f978-40e6-b592-f438953475c1"
+                    "uid": "bc453382-c471-42a1-86fa-7877eb437aa3"
                 },
                 {
                     "conditions": [],
@@ -213,7 +214,7 @@
                     "priority": 1,
                     "source_uid": "9a2a03e1-21ad-3c49-1359-16eda19da906",
                     "status": "Success",
-                    "uid": "abba99ac-c97c-418b-ac1f-d8b8378f20ca"
+                    "uid": "8b17be11-b56e-4c44-b3ce-68852cbcf026"
                 }
             ],
             "name": "helloWorldWorkflow",

@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewEncapsulation, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 // import * as _ from 'lodash';
 // import { Observable } from 'rxjs';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
@@ -22,6 +22,7 @@ import { GraphPosition } from '../models/playbook/graphPosition';
 import { Device } from '../models/device';
 import { Argument } from '../models/playbook/argument';
 import { WorkflowResult } from '../models/playbook/workflowResult';
+import { DatatableComponent } from '@swimlane/ngx-datatable';
 
 @Component({
 	selector: 'playbook-component',
@@ -34,6 +35,8 @@ import { WorkflowResult } from '../models/playbook/workflowResult';
 })
 export class PlaybookComponent {
 	@ViewChild('cyRef') cyRef: ElementRef;
+	@ViewChild('workflowResultsContainer') workflowResultsContainer: ElementRef;
+	@ViewChild('workflowResultsTable') workflowResultsTable: DatatableComponent;
 
 	devices: Device[] = [];
 	relevantDevices: Device[] = [];
@@ -56,6 +59,7 @@ export class PlaybookComponent {
 	};
 	cyJsonData: string;
 	workflowResults: WorkflowResult[] = [];
+	executionResultsComponentWidth: number;
 
 	// Simple bootstrap modal params
 	modalParams: {
@@ -83,6 +87,7 @@ export class PlaybookComponent {
 	constructor(
 		private playbookService: PlaybookService, private authService: AuthService,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private cdr: ChangeDetectorRef,
 	) {
 		this.toastyConfig.theme = 'bootstrap';
 
@@ -91,6 +96,19 @@ export class PlaybookComponent {
 		this.getWorkflowResultsSSE();
 		this.getPlaybooksWithWorkflows();
 		this._addCytoscapeEventBindings();
+	}
+
+	/**
+	 * This angular function is used primarily to recalculate column widths for execution results table.
+	 */
+	ngAfterViewChecked() {
+		// Check if the table size has changed,
+		if (this.workflowResultsTable && this.workflowResultsTable.recalculate && 
+			(this.workflowResultsContainer.nativeElement.clientWidth !== this.executionResultsComponentWidth)) {
+			this.executionResultsComponentWidth = this.workflowResultsContainer.nativeElement.clientWidth;
+			this.workflowResultsTable.recalculate();
+			this.cdr.detectChanges();
+		}
 	}
 
 	///------------------------------------------------------------------------------------------------------
@@ -166,6 +184,7 @@ export class PlaybookComponent {
 	 * Executes the loaded workflow as it exists on the server. Will not currently execute the workflow as it stands.
 	 */
 	executeWorkflow(): void {
+		this.clearExecutionHighlighting();
 		this.playbookService.executeWorkflow(this.currentPlaybook, this.currentWorkflow)
 			.then(() => this.toastyService.success(`Starting execution of ${this.currentPlaybook} - ${this.currentWorkflow}.`))
 			.catch(e => this.toastyService
@@ -762,7 +781,7 @@ export class PlaybookComponent {
 			data: {
 				id: uid,
 				uid,
-				label: actionName,
+				label: uniqueActionName,
 			},
 			renderedPosition: null as GraphPosition,
 			position: null as GraphPosition,
