@@ -31,13 +31,6 @@ Configuration:
         type: string
         description: The type of database used by the case database
         enum: [sqlite, mysql, postgresql, oracle, mssql]
-      https:
-        type: boolean
-        description: Toggle HTTPS on/off
-      tls_version:
-        type: string
-        description: The version of TLS to use
-        enum: ['1.1', '1.2', '1.3']
       clear_case_db_on_startup:
         type: boolean
         description: Should the case database be cleared upon a server restart?

@@ -43,8 +43,6 @@ class TestConfigurationServer(ServerTestCase):
                     'port': int(core.config.config.port),
                     'walkoff_db_type': core.config.config.walkoff_db_type,
                     'case_db_type': core.config.config.case_db_type,
-                    'https': bool(core.config.config.https),
-                    'tls_version': core.config.config.tls_version,
                     'clear_case_db_on_startup': bool(core.config.config.reinitialize_case_db_on_startup),
                     'number_processes': int(core.config.config.num_processes),
                     'access_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds / 60),
@@ -55,8 +53,6 @@ class TestConfigurationServer(ServerTestCase):
     def test_set_configuration(self):
         data = {"workflows_path": 'workflows_path_reset',
                 "db_path": 'db_path_reset',
-                "tls_version": '1.1',
-                "https": True,
                 "host": 'host_reset',
                 "port": 1100,
                 "access_token_duration": 20,
@@ -67,8 +63,7 @@ class TestConfigurationServer(ServerTestCase):
         expected = {core.config.paths.workflows_path: 'workflows_path_reset',
                     core.config.paths.db_path: 'db_path_reset',
                     core.config.config.host: 'host_reset',
-                    core.config.config.port: 1100,
-                    core.config.config.https: True}
+                    core.config.config.port: 1100}
 
         for actual, expected_ in expected.items():
             self.assertEqual(actual, expected_)

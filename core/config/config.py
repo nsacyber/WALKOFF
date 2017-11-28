@@ -16,7 +16,6 @@ __logger = logging.getLogger(__name__)
 def load_config():
     """ Loads Walkoff configuration from JSON file
     """
-    global https
     self = sys.modules[__name__]
     if isfile(core.config.paths.config_path):
         try:
@@ -55,11 +54,6 @@ def write_values_to_file(keys=None):
 
 reinitialize_case_db_on_startup = True
 
-tls_version = "1.2"
-https = False
-
-debug = True
-default_server = True
 host = "127.0.0.1"
 port = 5000
 

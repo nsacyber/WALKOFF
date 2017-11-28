@@ -18,8 +18,6 @@ def __get_current_configuration():
             'port': int(core.config.config.port),
             'walkoff_db_type': core.config.config.walkoff_db_type,
             'case_db_type': core.config.config.case_db_type,
-            'https': bool(core.config.config.https),
-            'tls_version': core.config.config.tls_version,
             'clear_case_db_on_startup': bool(core.config.config.reinitialize_case_db_on_startup),
             'number_processes': int(core.config.config.num_processes),
             'access_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds / 60),
