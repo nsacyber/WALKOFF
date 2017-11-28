@@ -1,3 +1,5 @@
+import argparse
+import json
 import logging.config
 import os
 import sys
@@ -7,7 +9,6 @@ from os.path import isfile
 from gevent import monkey
 from gevent import pywsgi
 
-from apps import *
 from core.config import config, paths
 
 logger = logging.getLogger('walkoff')
@@ -33,7 +34,7 @@ def setup_logger():
         logger.info("Basic logging is being used")
 
 
-def run():
+def run(host, port):
     from core.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
     setup_logger()
     print_banner()
@@ -48,13 +49,8 @@ def run():
     import core.case.database as case_database
     case_database.initialize()
 
-    try:
-        port = int(config.port)
-    except ValueError:
-        logger.fatal('Invalid port {}. Port must be an integer'.format(config.port))
-    else:
-        server = setup_server(flaskserver.app, port)
-        server.serve_forever()
+    server = setup_server(flaskserver.app, host, port)
+    server.serve_forever()
 
 
 def print_banner():
@@ -66,8 +62,7 @@ def print_banner():
     logger.info(header_footer_banner)
 
 
-def setup_server(app, port):
-    host = config.host
+def setup_server(app, host, port):
     if isfile(paths.certificate_path) and isfile(paths.private_key_path):
         server = pywsgi.WSGIServer((host, port), application=app,
                                    keyfile=paths.private_key_path, certfile=paths.certificate_path)
@@ -81,17 +76,47 @@ def setup_server(app, port):
     return server
 
 
-if __name__ == "__main__":
+def parse_args():
+    parser = argparse.ArgumentParser(description='Script to the WALKOFF server')
+    parser.add_argument('-v', '--version', help='Get the version of WALKOFF running', action='store_true')
+    parser.add_argument('-p', '--port', help='port to run the server on')
+    parser.add_argument('-H', '--host', help='host address to run the server on')
+
+    args = parser.parse_args()
+    if args.version:
+        from core.config.config import walkoff_version
+        print(walkoff_version)
+        exit(0)
+
+    return args
+
+
+def convert_host_port(args):
+    host = config.host if args.host is None else args.host
+    port = config.port if args.port is None else args.port
     try:
-        run()
+        port = int(port)
+    except ValueError:
+        print('Invalid port {}. Port must be an integer!'.format(port))
+        exit(1)
+    return host, port
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    exit_code = 0
+    try:
+
+        run(*convert_host_port(args))
     except KeyboardInterrupt:
         logger.info('Caught KeyboardInterrupt!')
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_exc()
+        exit_code = 1
     finally:
         from server import flaskserver
 
         flaskserver.running_context.controller.shutdown_pool()
         logger.info('Shutting down server')
-        os._exit(0)
+        os._exit(exit_code)
