@@ -3,7 +3,7 @@ $(function () {
        'async': false,
        'type': "GET",
        'global': false,
-       'headers': { "Authorization": 'Bearer ' + sessionStorage.getItem('accessToken')},
+       'headers': { "Authorization": 'Bearer ' + sessionStorage.getItem('access_token')},
        'url': "interfaces/HelloWorld/metrics",
        'success': function(data) {
             for (const action in data) {

@@ -1,6 +1,7 @@
 from interfaces import dispatcher, AppBlueprint
 from core.events import WalkoffEvent
 from flask import Blueprint, jsonify
+from flask_jwt_extended import jwt_required
 
 blueprint = AppBlueprint(blueprint=Blueprint('HelloWorldPage__', __name__))
 
@@ -19,6 +20,7 @@ def handle_action_start(data):
 
 
 @blueprint.blueprint.route('/metrics', methods=['GET'])
+@jwt_required
 def get_hello_world_metrics():
     global hello_world_action_count
     return jsonify(hello_world_action_count), 200
