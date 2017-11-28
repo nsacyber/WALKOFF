@@ -8,7 +8,6 @@ from tests.config import test_apps_path
 
 
 class TestLoadWorkflow(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         apps.cache_apps(test_apps_path)
@@ -29,7 +28,6 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertTrue(self.c.is_workflow_registered('basicWorkflowTest', 'helloWorldWorkflow'))
 
     def test_base_workflow_attributes(self):
-
         # Correct number of actions
         self.assertEqual(len(self.testWorkflow.actions), 1)
 

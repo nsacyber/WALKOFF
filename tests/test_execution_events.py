@@ -34,7 +34,6 @@ class TestExecutionEvents(unittest.TestCase):
         core.controller.controller.shutdown_pool()
 
     def test_workflow_execution_events(self):
-
         self.c.load_playbook(resource=config.test_workflows_path + 'multiactionWorkflowTest.playbook')
         workflow_uid = self.c.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow').uid
         subs = {'case1': {workflow_uid: [WalkoffEvent.AppInstanceCreated.signal_name,

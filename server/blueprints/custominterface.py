@@ -1,6 +1,6 @@
 import os
 
-from flask import Blueprint, render_template, g, abort, url_for
+from flask import Blueprint, render_template, g, abort
 from flask_jwt_extended import jwt_required
 from jinja2 import TemplateNotFound
 
@@ -21,10 +21,9 @@ def static_request_handler(endpoint, values):
 def read_app(page):
     # This is terrible and I'm sorry
     path = '{0}/interface/templates/{1}.html'.format(g.interface, page)
-    #path = url_for('custom_interface.static', interface=g.interface, filename='../interface/templates/{}.html'.format(page))
-    #path = path[len('custominterfaces/')+1:]
+    # path = url_for('custom_interface.static', interface=g.interface, filename='../interface/templates/{}.html'.format(page))
+    # path = path[len('custominterfaces/')+1:]
     try:
         return render_template(path)
     except TemplateNotFound:
         abort(404)
-

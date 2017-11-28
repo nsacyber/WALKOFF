@@ -8,7 +8,6 @@ from server.database import (initialize_resource_roles_from_cleared_database, se
 
 
 class TestRolesPagesCache(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.context = server.flaskserver.app.test_request_context()
@@ -41,7 +40,8 @@ class TestRolesPagesCache(unittest.TestCase):
 
     def test_set_resources_for_role_no_resources_in_cache_with_resources_to_add(self):
         set_resources_for_role('role1', ['resource1', 'resource2', 'resource3'])
-        self.assertDictEqual(server.database.resource_roles, {'resource1': {'role1'}, 'resource2': {'role1'}, 'resource3': {'role1'}})
+        self.assertDictEqual(server.database.resource_roles,
+                             {'resource1': {'role1'}, 'resource2': {'role1'}, 'resource3': {'role1'}})
 
     def test_set_resources_for_roles_resources_in_cache_no_resources_to_add(self):
         starting = {'resource1': {'role1'}, 'resource2': {'role1'}, 'resource3': {'role1'}}
@@ -108,8 +108,9 @@ class TestRolesPagesCache(unittest.TestCase):
                     'resource4': {'role2'}, 'resource5': {'role2'}}
         server.database.resource_roles = dict(starting)
         clear_resources_for_role('role2')
-        self.assertDictEqual(server.database.resource_roles, {'resource1': {'role1'}, 'resource2': {'role1'}, 'resource3': {'role1'},
-                                                          'resource4': set(), 'resource5': set()})
+        self.assertDictEqual(server.database.resource_roles,
+                             {'resource1': {'role1'}, 'resource2': {'role1'}, 'resource3': {'role1'},
+                              'resource4': set(), 'resource5': set()})
 
     def test_init_from_database_none_in_database(self):
         initialize_resource_roles_from_database()

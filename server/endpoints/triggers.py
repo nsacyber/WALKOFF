@@ -23,4 +23,3 @@ def send_data_to_trigger():
         return list(uids), SUCCESS
 
     return __func()
-

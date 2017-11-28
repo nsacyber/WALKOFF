@@ -1,13 +1,13 @@
 import json
 import logging
-from copy import deepcopy
 import threading
+from copy import deepcopy
 
 from core.appinstance import AppInstance
 from core.events import WalkoffEvent
-from core.executionelements.executionelement import ExecutionElement
 from core.executionelements.action import Action
 from core.executionelements.branch import Branch
+from core.executionelements.executionelement import ExecutionElement
 from core.helpers import UnknownAppAction, UnknownApp, InvalidArgument, format_exception_message
 
 logger = logging.getLogger(__name__)

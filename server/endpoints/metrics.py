@@ -6,7 +6,6 @@ from server.security import roles_accepted_for_resources
 
 
 def read_app_metrics():
-
     @jwt_required
     @roles_accepted_for_resources('metrics')
     def __func():
@@ -16,7 +15,6 @@ def read_app_metrics():
 
 
 def read_workflow_metrics():
-
     @jwt_required
     @roles_accepted_for_resources('metrics')
     def __func():

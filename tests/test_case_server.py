@@ -13,7 +13,6 @@ from tests.util.servertestcase import ServerTestCase
 
 
 class TestCaseServer(ServerTestCase):
-        
     def setUp(self):
         case_database.initialize()
         self.cases1 = {'case1': {'uid1': ['e1', 'e2', 'e3'],
@@ -88,7 +87,8 @@ class TestCaseServer(ServerTestCase):
 
     def test_add_case_duplicate_case_in_sync(self):
         set_subscriptions({'case1': {}})
-        self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}), content_type='application/json')
+        self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
+                     content_type='application/json')
         self.put_with_status_check('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
                                    status_code=OBJECT_EXISTS_ERROR, content_type='application/json')
 
@@ -108,7 +108,7 @@ class TestCaseServer(ServerTestCase):
         response = self.put_with_status_check('/api/cases', headers=self.headers, data=json.dumps(data),
                                               content_type='application/json', status_code=OBJECT_CREATED)
         self.assertEqual(response, {'id': 1, 'name': 'case1', 'note': 'Test',
-                                    'subscriptions': [{'uid': 'uid1',  'events': ['a', 'b', 'c']}]})
+                                    'subscriptions': [{'uid': 'uid1', 'events': ['a', 'b', 'c']}]})
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case1']
         orderless_list_compare(self, cases, expected_cases)
@@ -119,7 +119,7 @@ class TestCaseServer(ServerTestCase):
 
     def test_display_cases_typical(self):
         response = json.loads(self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
-                              content_type='application/json').get_data(as_text=True))
+                                           content_type='application/json').get_data(as_text=True))
         case1_id = response['id']
         response = json.loads(self.app.put('api/cases', headers=self.headers,
                                            data=json.dumps({'name': 'case2', "note": 'note1'}),
@@ -149,10 +149,10 @@ class TestCaseServer(ServerTestCase):
 
     def test_delete_case_only_case(self):
         response = json.loads(self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
-                     content_type='application/json').get_data(as_text=True))
+                                           content_type='application/json').get_data(as_text=True))
         case_id = response['id']
         response = self.delete_with_status_check('api/cases/{0}'.format(case_id), headers=self.headers,
-                                                status_code=SUCCESS)
+                                                 status_code=SUCCESS)
         self.assertEqual(response, {})
 
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
@@ -164,7 +164,7 @@ class TestCaseServer(ServerTestCase):
 
     def test_delete_case(self):
         response = json.loads(self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
-                     content_type='application/json').get_data(as_text=True))
+                                           content_type='application/json').get_data(as_text=True))
         case1_id = response['id']
         self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case2'}),
                      content_type='application/json')
@@ -217,7 +217,7 @@ class TestCaseServer(ServerTestCase):
 
     def test_edit_case(self):
         response = json.loads(self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
-                     content_type='application/json').get_data(as_text=True))
+                                           content_type='application/json').get_data(as_text=True))
         case1_id = response['id']
         self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case2'}),
                      content_type='application/json')
@@ -239,13 +239,13 @@ class TestCaseServer(ServerTestCase):
 
     def test_edit_case_no_name(self):
         response = json.loads(self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case2'}),
-                     content_type='application/json').get_data(as_text=True))
+                                           content_type='application/json').get_data(as_text=True))
         case2_id = response['id']
         self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
                      content_type='application/json')
         data = {"note": "note1", "id": case2_id}
         response = self.post_with_status_check('api/cases', data=json.dumps(data), headers=self.headers,
-                                 content_type='application/json', status_code=SUCCESS)
+                                               content_type='application/json', status_code=SUCCESS)
         self.assertDictEqual(response, {'note': 'note1', 'subscriptions': [], 'id': 1, 'name': 'case2'})
 
     def test_edit_case_no_note(self):
@@ -256,14 +256,14 @@ class TestCaseServer(ServerTestCase):
                      content_type='application/json')
         data = {"name": "renamed", "id": case1_id}
         response = self.post_with_status_check('api/cases', data=json.dumps(data), headers=self.headers,
-                                 content_type='application/json', status_code=SUCCESS)
+                                               content_type='application/json', status_code=SUCCESS)
         self.assertDictEqual(response, {'note': '', 'subscriptions': [], 'id': 1, 'name': 'renamed'})
 
     def test_edit_case_invalid_case(self):
         self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
                      content_type='application/json')
         self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case2'}),
-                     content_type = 'application/json')
+                     content_type='application/json')
         data = {"name": "renamed", "id": 404}
         self.post_with_status_check('api/cases',
                                     error='Case does not exist.',
@@ -288,7 +288,8 @@ class TestCaseServer(ServerTestCase):
         expected_subs = case_subs.subscriptions
         filename = os.path.join(tests.config.test_data_path, 'case_other.json')
         data = {"filename": filename}
-        self.post_with_status_check('api/cases/export', headers=self.headers, data=json.dumps(data), content_type='application/json')
+        self.post_with_status_check('api/cases/export', headers=self.headers, data=json.dumps(data),
+                                    content_type='application/json')
         self.assertIn('case_other.json', os.listdir(tests.config.test_data_path))
         with open(filename, 'r') as appdevice_file:
             read_file = appdevice_file.read()
@@ -312,11 +313,11 @@ class TestCaseServer(ServerTestCase):
 
         response = self.get_with_status_check('api/cases/import', headers=self.headers)
         expected_subs = {'case1': {'uid2': ['e1'],
-                                                            'uid1': ['e1', 'e2', 'e3']},
-                                                  'case3': {'uid4': ['d'],
-                                                            'uid3': ['e', 'b', 'c']},
-                                                  'case2': {'uid1': ['e2', 'e3']},
-                                                  'case4': {'uid1': ['a', 'b']}}
+                                   'uid1': ['e1', 'e2', 'e3']},
+                         'case3': {'uid4': ['d'],
+                                   'uid3': ['e', 'b', 'c']},
+                         'case2': {'uid1': ['e2', 'e3']},
+                         'case4': {'uid1': ['a', 'b']}}
         self.assertDictEqual(response, {'cases': expected_subs})
         self.assertDictEqual(case_subs.subscriptions, expected_subs)
         for case in ['case1', 'case2', 'case3', 'case4']:
@@ -326,10 +327,12 @@ class TestCaseServer(ServerTestCase):
         self.__basic_case_setup()
         filename = os.path.join(tests.config.test_data_path, 'case_other.json')
         data = {"filename": filename}
-        self.post_with_status_check('api/cases/export', headers=self.headers, data=json.dumps(data), content_type='application/json')
+        self.post_with_status_check('api/cases/export', headers=self.headers, data=json.dumps(data),
+                                    content_type='application/json')
         # essentially add two more cases, swap contents of case 1 and 2 in case_subscriptions
         delete_cases(['case1' 'case2'])
-        response = self.get_with_status_check('api/cases/import', headers=self.headers, data=json.dumps(data), content_type='application/json')
+        response = self.get_with_status_check('api/cases/import', headers=self.headers, data=json.dumps(data),
+                                              content_type='application/json')
         expected_subs = {'case1': {'uid2': ['e1'], 'uid1': ['e1', 'e2', 'e3']},
                          'case3': {'uid4': ['d'], 'uid3': ['e', 'b', 'c']},
                          'case2': {'uid1': ['e2', 'e3']},
@@ -348,4 +351,3 @@ class TestCaseServer(ServerTestCase):
             events = next((event['events'] for event in response if event['type'] == event_type))
             self.assertSetEqual(set(events),
                                 {event.signal_name for event in WalkoffEvent if event.event_type.name == event_type})
-

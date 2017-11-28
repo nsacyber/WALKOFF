@@ -1,9 +1,11 @@
 import json
 import os
 from copy import deepcopy
+
 from six import string_types
-from core.config.config import walkoff_version
+
 from apps.devicedb import device_db, App
+from core.config.config import walkoff_version
 
 
 def convert_playbooks():
@@ -130,7 +132,8 @@ def convert_arg(arg, actions):
 def convert_arg_value(arg, actions):
     if isinstance(arg, string_types) and arg[0] == '@':
         reference_action_name = arg[1:]
-        reference_action_uid = next((action['uid'] for action in actions if action['name'] == reference_action_name), None)
+        reference_action_uid = next((action['uid'] for action in actions if action['name'] == reference_action_name),
+                                    None)
         if reference_action_uid is not None:
             return {'reference': reference_action_uid}
         else:

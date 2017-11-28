@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from interfaces import CallbackContainer, EventDispatcher, UnknownEvent
 from core.events import WalkoffEvent, EventType
+from interfaces import EventDispatcher
 
 
 def func(): pass
@@ -11,7 +11,6 @@ def func2(): pass
 
 
 class TestEventDispatcher(TestCase):
-
     def setUp(self):
         self.router = EventDispatcher()
 
@@ -38,7 +37,8 @@ class TestEventDispatcher(TestCase):
         self.assert_router_structure({WalkoffEvent.ActionStarted}, uids='a')
 
     def test_register_events_multiple_events_single_uid(self):
-        self.router.register_events(func, [WalkoffEvent.ActionStarted, WalkoffEvent.ActionExecutionError], sender_uids='a')
+        self.router.register_events(func, [WalkoffEvent.ActionStarted, WalkoffEvent.ActionExecutionError],
+                                    sender_uids='a')
         self.assert_router_structure({WalkoffEvent.ActionStarted, WalkoffEvent.ActionExecutionError}, uids='a')
 
     def test_register_events_multiple_uids(self):
@@ -198,4 +198,3 @@ class TestEventDispatcher(TestCase):
     def test_is_registered_valid(self):
         self.router.register_events(func, {WalkoffEvent.ActionArgumentsInvalid}, names='a')
         self.assertTrue(self.router.is_registered('a', WalkoffEvent.ActionArgumentsInvalid, func))
-

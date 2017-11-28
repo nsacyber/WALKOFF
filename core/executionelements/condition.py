@@ -1,11 +1,11 @@
 import logging
 
+from apps import get_condition
+from core.argument import Argument
 from core.events import WalkoffEvent
 from core.executionelements.executionelement import ExecutionElement
 from core.helpers import get_condition_api, InvalidArgument, format_exception_message, split_api_params
-from core.argument import Argument
 from core.validator import validate_condition_parameters
-from apps import get_condition
 
 logger = logging.getLogger(__name__)
 

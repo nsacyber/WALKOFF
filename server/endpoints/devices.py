@@ -13,7 +13,6 @@ from server.security import roles_accepted_for_resources
 
 
 def get_device_json_with_app_name(device):
-
     device_json = device.as_json()
     app = device_db.session.query(App).filter(App.id == device.app_id).first()
     device_json['app_name'] = app.name if app is not None else ''
@@ -21,7 +20,6 @@ def get_device_json_with_app_name(device):
 
 
 def read_all_devices():
-
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
@@ -31,7 +29,6 @@ def read_all_devices():
 
 
 def read_device(device_id):
-
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
@@ -48,7 +45,6 @@ def read_device(device_id):
 
 
 def delete_device(device_id):
-
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
@@ -84,7 +80,6 @@ def add_configuration_keys_to_device_json(device_fields, device_fields_api):
 
 
 def create_device():
-
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
@@ -134,7 +129,6 @@ def create_device():
 
 
 def update_device():
-
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
@@ -181,7 +175,6 @@ def update_device():
 
 
 def import_devices():
-
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
@@ -237,7 +230,6 @@ def import_devices():
 
 
 def export_devices():
-
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():

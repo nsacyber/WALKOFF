@@ -6,7 +6,6 @@ from apps.devicedb import get_device, get_all_devices_for_app, \
 
 
 class TestAppUtilities(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         app = device_db.session.query(App).filter(App.name == 'TestApp').first()

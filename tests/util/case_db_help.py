@@ -1,7 +1,8 @@
 from datetime import datetime
-from core.events import WalkoffEvent
+
 import core.case.database as case_database
 import core.case.subscription as case_subscription
+from core.events import WalkoffEvent
 
 
 def setup_subscriptions_for_action(workflow_uids, action_uids, action_events=None, workflow_events=None):

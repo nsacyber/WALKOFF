@@ -55,8 +55,9 @@ class TestScheduledTask(unittest.TestCase):
         self.assertSchedulerWorkflowsRunningEqual(expected_running_workflows)
 
     def patch_controller_workflows(self, workflow_uids):
-        server.running_context.controller.playbook_store.playbooks = {i: Playbook(i, [MockWorkflow(workflow_uids[i], i+1)])
-                                                       for i, uid in enumerate(workflow_uids)}
+        server.running_context.controller.playbook_store.playbooks = {
+        i: Playbook(i, [MockWorkflow(workflow_uids[i], i + 1)])
+        for i, uid in enumerate(workflow_uids)}
 
     def test_init_default(self):
         task = ScheduledTask(name='test')

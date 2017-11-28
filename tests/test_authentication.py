@@ -1,11 +1,13 @@
-import unittest
-from server.tokens import *
-from datetime import timedelta
 import json
+import unittest
+from datetime import timedelta
+
 from flask_jwt_extended import decode_token
-from server.returncodes import *
-from server.flaskserver import running_context
+
 from server.database import add_user, db, User
+from server.flaskserver import running_context
+from server.returncodes import *
+from server.tokens import *
 
 
 class TestAuthorization(unittest.TestCase):

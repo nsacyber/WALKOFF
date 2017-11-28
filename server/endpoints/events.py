@@ -7,7 +7,6 @@ from server.security import roles_accepted_for_resources
 
 
 def update_event_note():
-
     @jwt_required
     @roles_accepted_for_resources('cases')
     def __func():
@@ -19,11 +18,11 @@ def update_event_note():
             return case_database.case_db.event_as_json(data['id']), SUCCESS
         else:
             return {"error": "Event does not exist."}, OBJECT_DNE_ERROR
+
     return __func()
 
 
 def read_event(event_id):
-
     @jwt_required
     @roles_accepted_for_resources('cases')
     def __func():
@@ -33,4 +32,5 @@ def read_event(event_id):
             return case_database.case_db.event_as_json(event_id), SUCCESS
         else:
             return {"error": "Event does not exist."}, OBJECT_DNE_ERROR
+
     return __func()

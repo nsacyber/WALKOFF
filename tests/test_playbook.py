@@ -1,13 +1,12 @@
 import unittest
 
-from core.executionelements.playbook import Playbook
 from core.config.config import walkoff_version
+from core.executionelements.playbook import Playbook
 from tests.test_scheduler import MockWorkflow
 from tests.util.assertwrappers import orderless_list_compare
 
 
 class TestPlaybook(unittest.TestCase):
-
     def test_init(self):
         playbook = Playbook('test')
         self.assertEqual(playbook.name, 'test')
@@ -16,7 +15,7 @@ class TestPlaybook(unittest.TestCase):
         self.assertEqual(playbook.walkoff_version, walkoff_version)
 
     def test_init_with_workflows(self):
-        workflows = [MockWorkflow(i, i+1) for i in range(3)]
+        workflows = [MockWorkflow(i, i + 1) for i in range(3)]
         playbook = Playbook('test', workflows)
         self.assertEqual(playbook.name, 'test')
         self.assertEqual(playbook.walkoff_version, walkoff_version)
@@ -129,7 +128,7 @@ class TestPlaybook(unittest.TestCase):
         workflows = [MockWorkflow(i, i + 1) for i in range(3)]
         playbook = Playbook('test', workflows)
         workflow_jsons = playbook.get_all_workflow_representations()
-        expected = [{'name': i+1, 'uid': i, 'other': 'other'} for i in range(3)]
+        expected = [{'name': i + 1, 'uid': i, 'other': 'other'} for i in range(3)]
         for workflow_json in workflow_jsons:
             self.assertIn(workflow_json, expected)
 
@@ -141,7 +140,7 @@ class TestPlaybook(unittest.TestCase):
         workflows = [MockWorkflow(i, i + 1) for i in range(3)]
         playbook = Playbook('test', workflows)
         workflow_jsons = playbook.get_all_workflows_as_limited_json()
-        expected = [{'name': i+1, 'uid': i} for i in range(3)]
+        expected = [{'name': i + 1, 'uid': i} for i in range(3)]
         for workflow_json in workflow_jsons:
             self.assertIn(workflow_json, expected)
 
@@ -181,4 +180,3 @@ class TestPlaybook(unittest.TestCase):
         playbook.remove_workflow_by_name(2)
         self.assertEqual(len(playbook.workflows), 2)
         self.assertFalse(playbook.has_workflow_name(2))
-

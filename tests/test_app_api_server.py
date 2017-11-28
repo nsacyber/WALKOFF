@@ -44,10 +44,10 @@ class TestAppApiServerFuncs(ServerTestCase):
                                 'properties': {'a': {'type': 'string'},
                                                'b': {'type': 'number'}}}}
         expected = {'name': 'a', 'description': 'something',
-                     'schema': {'type': 'object',
-                                'required': ['a', 'b'],
-                                'properties': {'a': {'type': 'string'},
-                                               'b': {'type': 'number'}}}}
+                    'schema': {'type': 'object',
+                               'required': ['a', 'b'],
+                               'properties': {'a': {'type': 'string'},
+                                              'b': {'type': 'number'}}}}
         self.assertDictEqual(extract_schema(test_json), expected)
 
     def test_format_returns(self):
@@ -100,14 +100,14 @@ class TestAppApiServerFuncs(ServerTestCase):
                       'fields': [
                           {'name': 'username', 'placeholder': 'user', 'type': 'string', 'required': True},
                           {'name': 'password', 'placeholder': 'pass', 'type': 'string', 'required': True, 'encrypted':
-                           True, 'minimumLength': 6}]}
+                              True, 'minimumLength': 6}]}
         formatted = format_device_api_full(device_api, 'TestDev')
         expected = {'description': 'Something',
                     'name': 'TestDev',
                     'fields': [
-                          {'name': 'username', 'placeholder': 'user', 'required': True, 'schema': {'type': 'string'}},
-                          {'name': 'password', 'placeholder': 'pass', 'encrypted': True, 'required': True,
-                           'schema': {'type': 'string', 'minimumLength': 6}}]}
+                        {'name': 'username', 'placeholder': 'user', 'required': True, 'schema': {'type': 'string'}},
+                        {'name': 'password', 'placeholder': 'pass', 'encrypted': True, 'required': True,
+                         'schema': {'type': 'string', 'minimumLength': 6}}]}
         self.assertSetEqual(set(formatted.keys()), set(expected.keys()))
         self.assertEqual(formatted['name'], expected['name'])
         self.assertEqual(formatted['description'], expected['description'])
@@ -118,13 +118,15 @@ class TestAppApiServerFuncs(ServerTestCase):
         response = self.app.get('/api/apps/apis', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
-        orderless_list_compare(self, [app['name'] for app in response], ['HelloWorldBounded', 'DailyQuote', 'HelloWorld'])
+        orderless_list_compare(self, [app['name'] for app in response],
+                               ['HelloWorldBounded', 'DailyQuote', 'HelloWorld'])
 
     def test_read_all_app_apis_with_field(self):
         response = self.app.get('/api/apps/apis?field_name=action_apis', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
-        orderless_list_compare(self, [app['name'] for app in response], ['HelloWorldBounded', 'DailyQuote', 'HelloWorld'])
+        orderless_list_compare(self, [app['name'] for app in response],
+                               ['HelloWorldBounded', 'DailyQuote', 'HelloWorld'])
         for app in response:
             self.assertSetEqual(set(app.keys()), {'name', 'action_apis'})
 
@@ -132,7 +134,8 @@ class TestAppApiServerFuncs(ServerTestCase):
         response = self.app.get('/api/apps/apis?field_name=device_apis', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
-        orderless_list_compare(self, [app['name'] for app in response], ['HelloWorldBounded', 'DailyQuote', 'HelloWorld'])
+        orderless_list_compare(self, [app['name'] for app in response],
+                               ['HelloWorldBounded', 'DailyQuote', 'HelloWorld'])
         for app in response:
             self.assertSetEqual(set(app.keys()), {'name', 'device_apis'})
 
@@ -166,5 +169,3 @@ class TestAppApiServerFuncs(ServerTestCase):
     def test_read_app_api_field_field_dne(self):
         response = self.app.get('/api/apps/apis/HelloWorldBounded/invalid', headers=self.headers)
         self.assertEqual(response.status_code, BAD_REQUEST)
-
-

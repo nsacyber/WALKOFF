@@ -1,14 +1,18 @@
-import os
 import argparse
-from core.helpers import list_apps
+import os
+
 import pip
+
+from core.helpers import list_apps
 
 
 def cmd_line():
     parser = argparse.ArgumentParser("Install Dependencies")
-    parser.add_argument('-a', '--apps', nargs='*', type=str, required=False, help='List of apps for which you would like to install dependencies')
+    parser.add_argument('-a', '--apps', nargs='*', type=str, required=False,
+                        help='List of apps for which you would like to install dependencies')
     args = parser.parse_args()
     return args
+
 
 if __name__ == '__main__':
 
@@ -22,6 +26,6 @@ if __name__ == '__main__':
         print("Installing dependencies for " + app + " App...")
         path = os.path.abspath('apps/' + app + '/requirements.txt')
         if os.path.isfile(path) is False:
-            print("No requirements.txt file found in "+app+" folder. Skipping...")
+            print("No requirements.txt file found in " + app + " folder. Skipping...")
             continue
         pip.main(['install', '-r', path])

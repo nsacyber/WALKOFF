@@ -1,8 +1,8 @@
 import json
 
 import core.case.database as case_database
-from core.events import WalkoffEvent
 from core.case.workflowresults import WorkflowResult, ActionResult
+from core.events import WalkoffEvent
 from core.helpers import convert_argument
 
 

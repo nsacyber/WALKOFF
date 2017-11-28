@@ -3,7 +3,6 @@ from tests.util.servertestcase import ServerTestCase
 
 
 class TestAppBlueprint(ServerTestCase):
-
     def test_basic_blueprint(self):
         response = self.app.get('/interfaces/Sample/test_blueprint', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
@@ -15,4 +14,3 @@ class TestAppBlueprint(ServerTestCase):
         self.assertEqual(response.status_code, SUCCESS)
         response = response.get_data(as_text=True)
         self.assertEqual(response, 'successfully called templated blueprint with action test_action')
-

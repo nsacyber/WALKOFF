@@ -1,17 +1,15 @@
 from unittest import TestCase
-from copy import deepcopy
 
 import core.config.config
-from core.helpers import UnknownApp, UnknownAppAction
 from core.events import WalkoffEvent, EventType
-from interfaces import AppActionEventDispatcher, AppEventDispatcher, UnknownEvent
+from core.helpers import UnknownApp, UnknownAppAction
+from interfaces import AppEventDispatcher
 
 
 def func(): pass
 
 
 class TestAppEventDispatcher(TestCase):
-
     @classmethod
     def setUpClass(cls):
         core.config.config.app_apis = {'App1': {'actions': {'action1': None,
@@ -57,7 +55,8 @@ class TestAppEventDispatcher(TestCase):
             AppEventDispatcher.validate_app_actions('App1', 'invalid')
 
     def test_validate_app_actions_multiple_valid_actions(self):
-        self.assertSetEqual(AppEventDispatcher.validate_app_actions('App1', ['action1', 'action2']), {'action1', 'action2'})
+        self.assertSetEqual(AppEventDispatcher.validate_app_actions('App1', ['action1', 'action2']),
+                            {'action1', 'action2'})
 
     def test_validate_app_actions_multiple_invalid_actions(self):
         with self.assertRaises(UnknownAppAction):
@@ -183,6 +182,7 @@ class TestAppEventDispatcher(TestCase):
 
     def test_is_registered_action_func_not_in_router(self):
         def func2(): pass
+
         self.router.register_app_actions(func2, 'App1', {WalkoffEvent.ActionStarted},
                                          actions=['action1', 'action2'], device_ids=1)
         self.assertFalse(self.router.is_registered('App1', 'action1', WalkoffEvent.ActionStarted, 1, func))

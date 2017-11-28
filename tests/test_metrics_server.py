@@ -99,7 +99,7 @@ class MetricsServerTest(ServerTestCase):
 
     def test_action_metrics(self):
         server.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                        'multiactionError.playbook')
+                                                                 'multiactionError.playbook')
 
         server.running_context.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
         server.running_context.controller.wait_and_reset(1)
@@ -111,9 +111,9 @@ class MetricsServerTest(ServerTestCase):
 
     def test_workflow_metrics(self):
         server.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                        'multiactionError.playbook')
+                                                                 'multiactionError.playbook')
         server.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                        'multiactionWorkflowTest.playbook')
+                                                                 'multiactionWorkflowTest.playbook')
         server.running_context.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
         server.running_context.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
         server.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')

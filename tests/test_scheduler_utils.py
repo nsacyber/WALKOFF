@@ -1,9 +1,6 @@
 import datetime
 import unittest
 
-from apscheduler.triggers.cron import CronTrigger
-from apscheduler.triggers.date import DateTrigger
-from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.util import convert_to_datetime
 from tzlocal import get_localzone
 

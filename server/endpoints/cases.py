@@ -49,7 +49,6 @@ def create_case():
 
 
 def read_case(case_id):
-
     @jwt_required
     @roles_accepted_for_resources('cases')
     def __func():
@@ -154,7 +153,6 @@ def import_cases():
 
 
 def export_cases():
-
     @jwt_required
     @roles_accepted_for_resources('cases')
     def __func():
@@ -174,7 +172,6 @@ def export_cases():
 
 
 def read_all_events(case_id):
-
     @jwt_required
     @roles_accepted_for_resources('cases')
     def __func():

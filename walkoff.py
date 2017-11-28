@@ -94,6 +94,7 @@ if __name__ == "__main__":
         traceback.print_exc()
     finally:
         from server import flaskserver
+
         flaskserver.running_context.controller.shutdown_pool()
         logger.info('Shutting down server')
         os._exit(0)

@@ -38,7 +38,6 @@ class D(Base):
 
 
 class TestJsonElementReader(TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.original_class_order = JsonElementCreator.playbook_class_ordering
@@ -98,7 +97,8 @@ class TestJsonElementReader(TestCase):
             A.create(json_in)
 
     def test_multiple_in_class(self):
-        JsonElementCreator.playbook_class_ordering = OrderedDict([(A, {'bs': B}), (B, {'cs': C, 'b': D}), (C, None), (D, None)])
+        JsonElementCreator.playbook_class_ordering = OrderedDict(
+            [(A, {'bs': B}), (B, {'cs': C, 'b': D}), (C, None), (D, None)])
         json_in = {'b': [{'d': 1}, {'d': 3}], 'cs': [{'c': 1, 'd': 2}, {'c': 2, 'd': 3}]}
         b = B.create(json_in)
         self.assertEqual(len(b.cs), 2)
@@ -110,9 +110,9 @@ class TestJsonElementReader(TestCase):
         self.assertEqual(b.b[0].d, 1)
         self.assertEqual(b.b[1].d, 3)
 
-
     def test_invalid_class(self):
         class D(Base): pass
+
         json = {'a': 5, 'c': 45}
         with self.assertRaises(ValueError):
             D.create(json)

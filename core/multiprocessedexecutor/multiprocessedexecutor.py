@@ -51,16 +51,19 @@ class MultiprocessedExecutor(object):
         @WalkoffEvent.TriggerActionAwaitingData.connect
         def handle_workflow_wait(sender, **kwargs):
             self.__trigger_workflow_status_wait(sender, **kwargs)
+
         self.handle_workflow_wait = handle_workflow_wait
 
         @WalkoffEvent.TriggerActionTaken.connect
         def handle_workflow_continue(sender, **kwargs):
             self.__trigger_workflow_status_continue(sender, **kwargs)
+
         self.handle_workflow_continue = handle_workflow_continue
 
         @WalkoffEvent.WorkflowShutdown.connect
         def handle_workflow_shutdown(sender, **kwargs):
             self.__remove_workflow_status(sender, **kwargs)
+
         self.handle_data_sent = handle_workflow_shutdown
 
         self.ctx = None
@@ -86,7 +89,7 @@ class MultiprocessedExecutor(object):
 
         """
         if not (os.path.exists(core.config.paths.zmq_public_keys_path) and
-                os.path.exists(core.config.paths.zmq_private_keys_path)):
+                    os.path.exists(core.config.paths.zmq_private_keys_path)):
             logging.error("Certificates are missing - run generate_certificates.py script first.")
             sys.exit(0)
         self.pids = pids
@@ -197,7 +200,7 @@ class MultiprocessedExecutor(object):
             execution_uid (str): The execution uid of the workflow.
         """
         if (execution_uid in self.workflow_status
-                and self.workflow_status[execution_uid] == WORKFLOW_RUNNING):
+            and self.workflow_status[execution_uid] == WORKFLOW_RUNNING):
             self.manager.pause_workflow(execution_uid)
             self.workflow_status[execution_uid] = WORKFLOW_PAUSED
 
@@ -212,7 +215,7 @@ class MultiprocessedExecutor(object):
             True if successful, false otherwise.
         """
         if (workflow_execution_uid in self.workflow_status
-                and self.workflow_status[workflow_execution_uid] == WORKFLOW_PAUSED):
+            and self.workflow_status[workflow_execution_uid] == WORKFLOW_PAUSED):
             self.manager.resume_workflow(workflow_execution_uid)
             self.workflow_status[workflow_execution_uid] = WORKFLOW_RUNNING
             return True

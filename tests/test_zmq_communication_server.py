@@ -1,6 +1,6 @@
+import json
 import socket
 from datetime import datetime
-import json
 
 from gevent import monkey
 
@@ -12,7 +12,6 @@ from server import flaskserver as flask_server
 from server.returncodes import *
 from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
 from tests.util.servertestcase import ServerTestCase
-from tests.util.thread_control import modified_setup_worker_env
 
 try:
     from importlib import reload

@@ -11,7 +11,6 @@ class B(ExecutionElement):
 
 
 class TestExecutionElement(unittest.TestCase):
-
     def assertAllNewUids(self, new_uids, original_uids):
         self.assertSetEqual(new_uids & original_uids, set())
 
@@ -30,6 +29,7 @@ class TestExecutionElement(unittest.TestCase):
                 ExecutionElement.__init__(self)
                 self.a = 42
                 self.b = 'something'
+
         a = A()
         original_uid = a.uid
         a.regenerate_uids()
@@ -41,6 +41,7 @@ class TestExecutionElement(unittest.TestCase):
                 ExecutionElement.__init__(self)
                 self.a = 42
                 self.d = B('something')
+
         a = A()
         original_uid = a.uid
         original_d_uid = a.d.uid
@@ -54,6 +55,7 @@ class TestExecutionElement(unittest.TestCase):
                 ExecutionElement.__init__(self)
                 self.a = 42
                 self.d = [B(i) for i in range(3)]
+
         a = A()
         original_uid = a.uid
         original_d_uids = {d.uid for d in a.d}
@@ -67,6 +69,7 @@ class TestExecutionElement(unittest.TestCase):
                 ExecutionElement.__init__(self)
                 self.a = 42
                 self.d = {i: B(i) for i in range(3)}
+
         a = A()
         original_uid = a.uid
         original_d_uids = {d.uid for d in a.d.values()}
@@ -82,6 +85,7 @@ class TestExecutionElement(unittest.TestCase):
                 self.b = B('a')
                 self.c = [B(i) for i in range(3)]
                 self.d = {i: B(i) for i in range(3)}
+
         a = A()
         original_uid = a.uid
         original_b_uid = a.b.uid

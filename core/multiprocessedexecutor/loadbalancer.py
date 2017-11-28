@@ -6,20 +6,20 @@ import gevent
 import zmq.auth as auth
 import zmq.green as zmq
 from gevent.queue import Queue
+from google.protobuf.json_format import MessageToDict
 from zmq.utils.strtypes import asbytes
 
-from core.argument import Argument
 import core.config.config
 import core.config.paths
+from core.argument import Argument
+from core.events import WalkoffEvent
 from core.protobuf.build import data_pb2
-from google.protobuf.json_format import MessageToDict
 
 try:
     from Queue import Queue
 except ImportError:
     from queue import Queue
-from core.events import EventType, WalkoffEvent
-from core.executionelements.workflow import Workflow
+
 
 REQUESTS_ADDR = 'tcp://127.0.0.1:5555'
 RESULTS_ADDR = 'tcp://127.0.0.1:5556'
@@ -77,7 +77,8 @@ class LoadBalancer:
                     worker, empty, ready = self.request_socket.recv_multipart(flags=zmq.NOBLOCK)
                     if ready == b"Done":
                         self.available_workers.append(worker)
-                        self.workflow_comms = {uid: worker for uid, proc in self.workflow_comms.items() if proc != worker}
+                        self.workflow_comms = {uid: worker for uid, proc in self.workflow_comms.items() if
+                                               proc != worker}
                     elif ready == b"Ready":
                         self.registered_workers.append(worker)
                         self.available_workers.append(worker)
@@ -142,7 +143,6 @@ class LoadBalancer:
 
 
 class Receiver:
-
     def __init__(self, ctx):
         """Initialize a Receiver object, which will receive callbacks from the execution elements.
 

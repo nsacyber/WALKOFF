@@ -326,7 +326,7 @@ class DeviceField(Device_Base, DeviceFieldMixin):
         Returns:
             dict: The JSON representation of this object
         """
-        return {"name": self.name, "type": self.type, "value": self.value, "encrypted":False}
+        return {"name": self.name, "type": self.type, "value": self.value, "encrypted": False}
 
     @staticmethod
     def from_json(data):
@@ -509,6 +509,7 @@ class DeviceDatabase(object):
 def get_device_db(_singleton=DeviceDatabase()):
     """Singleton factory which returns the database"""
     return _singleton
+
 
 device_db = get_device_db()
 """The SQLAlchemy engine/connection object for the device database

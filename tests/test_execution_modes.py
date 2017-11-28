@@ -1,18 +1,14 @@
 import time
 import unittest
 
-from apscheduler.events import EVENT_JOB_EXECUTED, EVENT_JOB_ERROR, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, \
-    EVENT_SCHEDULER_START, \
-    EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED, EVENT_SCHEDULER_RESUMED
-
 import apps
 import core.case.database as case_database
 import core.case.subscription as case_subscription
 import core.config.config
-from core.events import WalkoffEvent, EventType
-from core import controller
-from tests import config
 import core.config.config
+from core import controller
+from core.events import WalkoffEvent, EventType
+from tests import config
 
 
 class TestExecutionModes(unittest.TestCase):

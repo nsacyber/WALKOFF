@@ -55,7 +55,8 @@ def __workflow_ended_callback(sender, **kwargs):
 
 @WalkoffEvent.ActionExecutionSuccess.connect
 def __action_ended_callback(sender, **kwargs):
-    action_arguments = [convert_argument(argument) for argument in list(sender['arguments'])] if 'arguments' in sender else []
+    action_arguments = [convert_argument(argument) for argument in
+                        list(sender['arguments'])] if 'arguments' in sender else []
     result = {'action_name': sender['name'],
               'action_uid': sender['uid'],
               'timestamp': str(datetime.utcnow()),
@@ -71,7 +72,8 @@ def __action_ended_callback(sender, **kwargs):
 
 @WalkoffEvent.ActionExecutionError.connect
 def __action_error_callback(sender, **kwargs):
-    action_arguments = [convert_argument(argument) for argument in list(sender['arguments'])] if 'arguments' in sender else []
+    action_arguments = [convert_argument(argument) for argument in
+                        list(sender['arguments'])] if 'arguments' in sender else []
     result = {'action_name': sender['name'],
               'action_uid': sender['uid'],
               'timestamp': str(datetime.utcnow()),

@@ -10,7 +10,7 @@ from core.case import database
 from core.case.database import Event
 
 
-def _add_entry_to_case(sender, data, event_type, entry_message, message_name):
+def add_entry_to_case(sender, data, event_type, entry_message, message_name):
     """Adds an entry to all appropriate case logs
     """
     if isinstance(sender, dict):
@@ -48,12 +48,10 @@ def __construct_logging_signal(event_type, message_name, entry_message):
         (signal, callback): The constructed blinker signal and its associated callback.
     """
     signal = Signal(message_name)
-    signal_callback = partial(_add_entry_to_case,
+    signal_callback = partial(add_entry_to_case,
                               data='',
                               event_type=event_type,
                               entry_message=entry_message,
                               message_name=message_name)
     signal.connect(signal_callback)
     return signal, signal_callback  # need to return a tuple and save it to avoid weak reference
-
-

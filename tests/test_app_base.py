@@ -5,7 +5,6 @@ from apps.devicedb import App, Device, DeviceField, EncryptedDeviceField, device
 
 
 class TestAppBase(TestCase):
-
     def setUp(self):
         self.test_app_name = 'TestApp'
         self.device1 = Device('test', [], [], 'type1')

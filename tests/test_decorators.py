@@ -4,12 +4,10 @@ from core.decorators import *
 
 
 class TestDecorators(unittest.TestCase):
-
     def test_action_decorator_is_tagged(self):
-
         @action
-        def add_three(a,  b, c):
-            return a+b+c
+        def add_three(a, b, c):
+            return a + b + c
 
         self.assertTrue(getattr(add_three, 'action'))
 
@@ -35,7 +33,6 @@ class TestDecorators(unittest.TestCase):
         self.assertEqual(add_three(1, 2, 3), ActionResult(6, 'Custom'))
 
     def test_flag_decorator_is_tagged(self):
-
         @condition
         def is_even(x):
             return x % 2 == 0
@@ -46,7 +43,7 @@ class TestDecorators(unittest.TestCase):
     def test_filter_decorator_is_tagged(self):
         @transform
         def add_one(x):
-            return x+1
+            return x + 1
 
         self.assertTrue(getattr(add_one, 'transform'))
         self.assertEqual(add_one(1), 2)

@@ -73,4 +73,5 @@ def logout():
             return {}, SUCCESS
         else:
             return {'error': 'identity of refresh token does not match identity of auth token'}, BAD_REQUEST
+
     return __func()

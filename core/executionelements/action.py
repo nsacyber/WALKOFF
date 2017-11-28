@@ -1,17 +1,17 @@
 import json
 import logging
-import uuid
 import threading
+import uuid
 
 import core.config.config
 from apps import get_app_action, is_app_action_bound
 from core import contextdecorator
-from core.events import WalkoffEvent
+from core.argument import Argument
 from core.decorators import ActionResult
+from core.events import WalkoffEvent
 from core.executionelements.executionelement import ExecutionElement
 from core.helpers import get_app_action_api, InvalidArgument, format_exception_message
 from core.validator import validate_app_action_parameters
-from core.argument import Argument
 
 logger = logging.getLogger(__name__)
 
@@ -164,18 +164,20 @@ class Action(ExecutionElement):
             else:
                 result = self._action_executable(**args)
 
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionSuccess, data=result.as_json())
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionSuccess,
+                                                   data=result.as_json())
         except InvalidArgument as e:
             formatted_error = format_exception_message(e)
             logger.error('Error calling action {0}. Error: {1}'.format(self.name, formatted_error))
-            #TODO: Should this event return the error?
+            # TODO: Should this event return the error?
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionArgumentsInvalid)
             self._output = ActionResult('error: {0}'.format(formatted_error), 'InvalidArguments')
         except Exception as e:
             formatted_error = format_exception_message(e)
             logger.exception('Error calling action {0}. Error: {1}'.format(self.name, formatted_error))
             self._output = ActionResult('error: {0}'.format(formatted_error), 'UnhandledException')
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionError, data=self._output.as_json())
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionError,
+                                                   data=self._output.as_json())
         else:
             self._output = result
             logger.debug(
@@ -192,7 +194,7 @@ class Action(ExecutionElement):
             self._incoming_data = None
             self._event.clear()
 
-            if all(flag.execute(data_in=data_in, accumulator=accumulator) for flag in self.triggers):
+            if all(condition.execute(data_in=data_in, accumulator=accumulator) for condition in self.triggers):
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionTaken)
                 logger.debug('Trigger is valid for input {0}'.format(data_in))
                 accumulator[self.name] = data_in

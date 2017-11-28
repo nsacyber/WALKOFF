@@ -5,8 +5,6 @@ import os
 import pkgutil
 import sys
 
-from six import string_types
-
 import core.config.config
 import core.config.paths
 
@@ -22,7 +20,6 @@ if sys.version_info.major >= 3 and sys.version_info.minor >= 3:
     __new_inspection = True
 else:
     from inspect import getargspec as getsignature
-
 
 logger = logging.getLogger(__name__)
 
@@ -43,9 +40,10 @@ def import_py_file(module_name, path_to_file):
         with warnings.catch_warnings(record=True) as w:
             imported = load_source(module_name, os.path.abspath(path_to_file))
             if w:
-                mod_name = module_name.replace('.main','')
+                mod_name = module_name.replace('.main', '')
                 if not (type(w[-1].category) == type(exceptions.RuntimeWarning) or
-                        'Parent module \'apps.'+mod_name+'\' not found while handling absolute import' in w[-1].message):
+                                        'Parent module \'apps.' + mod_name + '\' not found while handling absolute import' in
+                                w[-1].message):
                     print(w[-1].message)
     else:
         from importlib import machinery

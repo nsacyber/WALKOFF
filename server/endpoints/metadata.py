@@ -6,9 +6,9 @@ from flask_jwt_extended import jwt_required
 import core.config.config
 import core.config.paths
 from core import helpers
+from core.events import WalkoffEvent, EventType
 from server.returncodes import SUCCESS
 from server.security import roles_accepted_for_resources
-from core.events import WalkoffEvent, EventType
 
 
 def read_all_possible_subscriptions():
@@ -30,11 +30,11 @@ def read_all_possible_subscriptions():
 
 
 def read_all_interfaces():
-
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():
         return helpers.list_interfaces(), SUCCESS
+
     return __func()
 
 

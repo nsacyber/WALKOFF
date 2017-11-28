@@ -1,22 +1,21 @@
 import json
 import os
-from datetime import datetime
+from copy import deepcopy
 from os import path
 from threading import Event
-from copy import deepcopy
 
-from core.argument import Argument
 import core.case.database as case_database
 import core.case.subscription
 import core.config.paths
 from core import helpers
+from core.argument import Argument
 from core.events import WalkoffEvent
-from core.executionelements.branch import Branch
 from core.executionelements.action import Action
+from core.executionelements.branch import Branch
 from server import flaskserver as flask_server
 from server.returncodes import *
 from tests.util.assertwrappers import orderless_list_compare
-from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
+from tests.util.case_db_help import setup_subscriptions_for_action
 from tests.util.servertestcase import ServerTestCase
 
 
@@ -582,11 +581,11 @@ class TestWorkflowServer(ServerTestCase):
             sync.set()
 
         result = {'count': 0}
+
         @WalkoffEvent.ActionExecutionSuccess.connect
         def y(sender, **kwargs):
             result['count'] += 1
             result['data'] = kwargs['data']
-
 
         response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
                                                headers=self.headers,

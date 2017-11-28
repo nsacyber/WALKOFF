@@ -1,7 +1,8 @@
 import argparse
-from os import walk
 import os.path
 import re
+from os import walk
+
 import yaml
 
 main_dir = os.path.dirname(os.path.realpath(__file__))
@@ -85,7 +86,7 @@ def generate_methods(input_fp):
             else:
                 init_lines.append(line)
     with open(main_py, 'w') as write_to_file:
-        write_to_file.writelines(init_lines[:max(loc for loc, val in enumerate(init_lines) if val == '\n')+1])
+        write_to_file.writelines(init_lines[:max(loc for loc, val in enumerate(init_lines) if val == '\n') + 1])
     with open(main_py, 'a') as write_to_file:
         actions = yaml_dict['actions']
         for action in actions:
@@ -99,7 +100,7 @@ def generate_methods(input_fp):
                 parameters0 = action_val['parameters'][0]
                 lines.append('Inputs:')
                 parameters_str = '{0} ({1}): {2}'.format(parameters0['name'], parameters0['type'],
-                                                               parameters0['description'])
+                                                         parameters0['description'])
                 parameters_args = ', ' + parameters0['name']
                 required_val = parameters0['required']
                 if not required_val:
@@ -129,12 +130,11 @@ def generate_methods(input_fp):
 help_msg_app_name = 'make template for app with name provided by app_name. The new app is stored under the "apps" ' \
                     'directory.'
 help_msg_yaml = 'generate methods for app using yaml file at the filepath provided. If YAML_FILE is a filename, ' \
-                     'then it is assumed the file is located inside the WALKOFF directory; otherwise, an absolute ' \
-                     'filepath is required. If there are multiple files with the same filename, then the first file ' \
-                     'found will be used.'
+                'then it is assumed the file is located inside the WALKOFF directory; otherwise, an absolute ' \
+                'filepath is required. If there are multiple files with the same filename, then the first file ' \
+                'found will be used.'
 
 parser = argparse.ArgumentParser(description='Make the template for a new app.')
 parser.add_argument("--app_name", type=make_template, help=help_msg_app_name)
 parser.add_argument("--yaml", type=generate_methods, help=help_msg_yaml, metavar=('YAML_FILE'))
 args = parser.parse_args()
-

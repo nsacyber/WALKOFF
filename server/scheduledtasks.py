@@ -1,7 +1,8 @@
-from .database import db, TrackModificationsMixIn
-import logging
 import json
+import logging
+
 from core.scheduler import construct_trigger
+from .database import db, TrackModificationsMixIn
 
 logger = logging.getLogger(__name__)
 

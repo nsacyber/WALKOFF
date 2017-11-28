@@ -13,6 +13,7 @@ def get_scheduler_status():
     @roles_accepted_for_resources('scheduler')
     def __func():
         return {"status": running_context.controller.scheduler.scheduler.state}, SUCCESS
+
     return __func()
 
 
@@ -47,6 +48,7 @@ def read_all_scheduled_tasks():
     @roles_accepted_for_resources('scheduler')
     def __func():
         return [task.as_json() for task in running_context.ScheduledTask.query.all()], SUCCESS
+
     return __func()
 
 
@@ -69,6 +71,7 @@ def create_scheduled_task():
                 return task.as_json(), OBJECT_CREATED
         else:
             return {'error': 'Could not create object. Object with given name already exists'}, OBJECT_EXISTS_ERROR
+
     return __func()
 
 

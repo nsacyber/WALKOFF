@@ -1,5 +1,6 @@
 from six import string_types
 
+
 class JsonElementReader(object):
     """
     Reads an ExecutionElement and converts it to JSON
@@ -39,7 +40,8 @@ class JsonElementReader(object):
     def _read_list(field_name, list_, accumulator):
         # TODO: Check if list is full before this happens. Somehow this test breaks templated steps
         accumulator[field_name] = [JsonElementReader.read(list_value)
-                                   if not (isinstance(list_value, string_types) or type(list_value) in (float, int, bool))
+                                   if not (
+        isinstance(list_value, string_types) or type(list_value) in (float, int, bool))
                                    else list_value
                                    for list_value in list_ if list_value is not None]
 

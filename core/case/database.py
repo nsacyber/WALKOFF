@@ -12,7 +12,6 @@ from core.helpers import format_db_path
 
 logger = logging.getLogger(__name__)
 
-
 Case_Base = declarative_base()
 
 
@@ -213,6 +212,7 @@ def get_case_db(_singleton=CaseDatabase()):
     """ Singleton factory which returns the case database"""
     return _singleton
 
+
 case_db = get_case_db()
 
 
@@ -222,4 +222,3 @@ def initialize():
     """
     Case_Base.metadata.drop_all()
     Case_Base.metadata.create_all()
-

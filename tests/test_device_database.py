@@ -4,8 +4,8 @@ from apps.devicedb import Device, UnknownDeviceField, DeviceField, EncryptedDevi
 
 
 class TestDeviceDatabase(unittest.TestCase):
-
-    def assertConstructionIsCorrect(self, device, name, plaintext_fields, encrypted_fields, device_type, description=''):
+    def assertConstructionIsCorrect(self, device, name, plaintext_fields, encrypted_fields, device_type,
+                                    description=''):
         self.assertEqual(device.name, name)
         self.assertListEqual([x for x in device.plaintext_fields], plaintext_fields)
         self.assertListEqual([x for x in device.encrypted_fields], encrypted_fields)
@@ -131,7 +131,8 @@ class TestDeviceDatabase(unittest.TestCase):
                             EncryptedDeviceField('test4', 'string', 'something else')]
         device = Device('test', plaintext_fields, encrypted_fields, 'type', description='desc')
         device.update_from_json({'name': 'new_name'})
-        self.assertConstructionIsCorrect(device, 'new_name', plaintext_fields, encrypted_fields, 'type', description='desc')
+        self.assertConstructionIsCorrect(device, 'new_name', plaintext_fields, encrypted_fields, 'type',
+                                         description='desc')
 
     def test_update_from_json_description_only(self):
         plaintext_fields = [DeviceField('test_name', 'integer', 123), DeviceField('test2', 'string', 'something')]
@@ -139,7 +140,8 @@ class TestDeviceDatabase(unittest.TestCase):
                             EncryptedDeviceField('test4', 'string', 'something else')]
         device = Device('test', plaintext_fields, encrypted_fields, 'type', description='desc')
         device.update_from_json({'description': 'new_desc'})
-        self.assertConstructionIsCorrect(device, 'test', plaintext_fields, encrypted_fields, 'type', description='new_desc')
+        self.assertConstructionIsCorrect(device, 'test', plaintext_fields, encrypted_fields, 'type',
+                                         description='new_desc')
 
     def test_update_from_json_type_only(self):
         plaintext_fields = [DeviceField('test_name', 'integer', 123), DeviceField('test2', 'string', 'something')]
@@ -154,7 +156,8 @@ class TestDeviceDatabase(unittest.TestCase):
         plaintext_fields = [DeviceField('test_name', 'integer', 123), DeviceField('test2', 'string', 'something')]
         encrypted_fields = [EncryptedDeviceField('test3', 'boolean', True),
                             EncryptedDeviceField('test4', 'string', 'something else')]
-        new_plaintext_fields = [DeviceField('new_test_name', 'integer', 451), DeviceField('new_test2', 'string', 'changed')]
+        new_plaintext_fields = [DeviceField('new_test_name', 'integer', 451),
+                                DeviceField('new_test2', 'string', 'changed')]
         device = Device('test', plaintext_fields, encrypted_fields, 'type', description='desc')
         device.update_from_json({'fields': [field.as_json() for field in new_plaintext_fields]})
         self.assertEqual(device.name, 'test')

@@ -2,9 +2,9 @@ from copy import deepcopy
 
 from flask_jwt_extended import jwt_required
 
-from apps import is_app_action_bound
 import core.config.config
 import core.config.paths
+from apps import is_app_action_bound
 from core import helpers
 from server.returncodes import *
 from server.security import roles_accepted_for_resources
@@ -89,7 +89,8 @@ def format_full_app_api(api, app_name):
             ret[unformatted_field] = [] if unformatted_field in ('tags', 'external_docs') else {}
     for formatted_action_field in ('actions', 'conditions', 'transforms'):
         if formatted_action_field in api:
-            ret[formatted_action_field[:-1] + '_apis'] = format_all_app_actions_api(api[formatted_action_field], app_name, formatted_action_field)
+            ret[formatted_action_field[:-1] + '_apis'] = format_all_app_actions_api(api[formatted_action_field],
+                                                                                    app_name, formatted_action_field)
         else:
             ret[formatted_action_field[:-1] + '_apis'] = []
     if 'devices' in api:
@@ -101,7 +102,6 @@ def format_full_app_api(api, app_name):
 
 
 def read_all_app_apis(field_name=None):
-
     @jwt_required
     @roles_accepted_for_resources('apps')
     def __func():

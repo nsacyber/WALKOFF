@@ -1,10 +1,10 @@
 from unittest import TestCase
+
 from core.argument import Argument
 from core.helpers import InvalidArgument
 
 
 class TestArgument(TestCase):
-
     def assert_init_equals(self, arg, name, value=None, reference=None, selection=None):
         self.assertEqual(arg.name, name)
         if value is None:
@@ -55,7 +55,7 @@ class TestArgument(TestCase):
 
     def test_get_next_selection_key_on_list(self):
         with self.assertRaises(ValueError):
-            Argument._get_next_selection(['a',  1, '2',  'something'], 'a')
+            Argument._get_next_selection(['a', 1, '2', 'something'], 'a')
 
     def test_get_next_selection_key_on_value(self):
         with self.assertRaises(ValueError):

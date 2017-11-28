@@ -10,7 +10,6 @@ def func2(): pass
 
 
 class TestCallbackContainer(TestCase):
-
     def setUp(self):
         self.callbackcontainer = CallbackContainer()
 

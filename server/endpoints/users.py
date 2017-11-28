@@ -12,6 +12,7 @@ def read_all_users():
     @roles_accepted_for_resources('users')
     def __func():
         return [user.as_json() for user in running_context.User.query.all()], SUCCESS
+
     return __func()
 
 
@@ -35,6 +36,7 @@ def create_user():
         else:
             current_app.logger.warning('Could not create user {0}. User already exists.'.format(username))
             return {"error": "User {0} already exists.".format(username)}, OBJECT_EXISTS_ERROR
+
     return __func()
 
 
@@ -50,6 +52,7 @@ def read_user(user_id):
         else:
             current_app.logger.error('Could not display user {0}. User does not exist.'.format(user_id))
             return {"error": 'User with id {0} does not exist.'.format(user_id)}, OBJECT_DNE_ERROR
+
     return __func()
 
 
@@ -92,6 +95,7 @@ def update_user():
         else:
             current_app.logger.error('Could not edit user {0}. User does not exist.'.format(data['id']))
             return {"error": 'User {0} does not exist.'.format(data['id'])}, OBJECT_DNE_ERROR
+
     return __func()
 
 
@@ -114,4 +118,5 @@ def delete_user(user_id):
         else:
             current_app.logger.error('Could not delete user {0}. User does not exist.'.format(user_id))
             return {"error": 'User with id {0} does not exist.'.format(user_id)}, OBJECT_DNE_ERROR
+
     return __func()

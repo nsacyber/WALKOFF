@@ -1,15 +1,15 @@
 import unittest
 
 import apps
-from core.argument import Argument
 import core.config.config
 import core.config.paths
-from core.events import WalkoffEvent
+from core.appinstance import AppInstance
+from core.argument import Argument
 from core.decorators import ActionResult
+from core.events import WalkoffEvent
+from core.executionelements.action import Action
 from core.executionelements.condition import Condition
 from core.helpers import UnknownApp, UnknownAppAction, InvalidArgument
-from core.appinstance import AppInstance
-from core.executionelements.action import Action
 from tests.config import test_apps_path
 
 
@@ -140,8 +140,8 @@ class TestAction(unittest.TestCase):
     def test_execute_with_args(self):
         action = Action(app_name='HelloWorld', action_name='Add Three',
                         arguments=[Argument('num1', value='-5.6'),
-                               Argument('num2', value='4.3'),
-                               Argument('num3', value='10.2')])
+                                   Argument('num2', value='4.3'),
+                                   Argument('num3', value='10.2')])
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         result = action.execute(instance.instance, {})
         self.assertAlmostEqual(result.result, 8.9)
@@ -151,8 +151,8 @@ class TestAction(unittest.TestCase):
     def test_execute_sends_callbacks(self):
         action = Action(app_name='HelloWorld', action_name='Add Three',
                         arguments=[Argument('num1', value='-5.6'),
-                               Argument('num2', value='4.3'),
-                               Argument('num3', value='10.2')])
+                                   Argument('num2', value='4.3'),
+                                   Argument('num3', value='10.2')])
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
 
         result = {'started_triggered': False, 'result_triggered': False}
@@ -169,6 +169,7 @@ class TestAction(unittest.TestCase):
                     self.assertEqual(data['status'], 'Success')
                     self.assertAlmostEqual(data['result'], 8.9)
                     result['result_triggered'] = True
+
         WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
 
         action.execute(instance.instance, {})
@@ -178,8 +179,8 @@ class TestAction(unittest.TestCase):
     def test_execute_with_accumulator_with_conversion(self):
         action = Action(app_name='HelloWorld', action_name='Add Three',
                         arguments=[Argument('num1', reference='1'),
-                               Argument('num2', reference='action2'),
-                               Argument('num3', value='10.2')])
+                                   Argument('num2', reference='action2'),
+                                   Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'action2': '4.3'}
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         result = action.execute(instance.instance, accumulator)
@@ -190,8 +191,8 @@ class TestAction(unittest.TestCase):
     def test_execute_with_accumulator_with_extra_actions(self):
         action = Action(app_name='HelloWorld', action_name='Add Three',
                         arguments=[Argument('num1', reference='1'),
-                               Argument('num2', reference='action2'),
-                               Argument('num3', value='10.2')])
+                                   Argument('num2', reference='action2'),
+                                   Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'action2': '4.3', '3': '45'}
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         result = action.execute(instance.instance, accumulator)
@@ -202,8 +203,8 @@ class TestAction(unittest.TestCase):
     def test_execute_with_accumulator_missing_action(self):
         action = Action(app_name='HelloWorld', action_name='Add Three',
                         arguments=[Argument('num1', reference='1'),
-                               Argument('num2', reference='action2'),
-                               Argument('num3', value='10.2')])
+                                   Argument('num2', reference='action2'),
+                                   Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'missing': '4.3', '3': '45'}
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         action.execute(instance.instance, accumulator)
@@ -211,8 +212,8 @@ class TestAction(unittest.TestCase):
     def test_execute_with_accumulator_missing_action_callbacks(self):
         action = Action(app_name='HelloWorld', action_name='Add Three',
                         arguments=[Argument('num1', reference='1'),
-                               Argument('num2', reference='action2'),
-                               Argument('num3', value='10.2')])
+                                   Argument('num2', reference='action2'),
+                                   Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'missing': '4.3', '3': '45'}
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
 
@@ -226,6 +227,7 @@ class TestAction(unittest.TestCase):
                     result['started_triggered'] = True
                 else:
                     result['result_triggered'] = True
+
         WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
         action.execute(instance.instance, accumulator)
 
@@ -235,9 +237,9 @@ class TestAction(unittest.TestCase):
     def test_execute_with_complex_args(self):
         action = Action(app_name='HelloWorld', action_name='Json Sample',
                         arguments=[
-                        Argument('json_in', value={'a': '-5.6', 'b': {'a': '4.3', 'b': 5.3}, 'c': ['1', '2', '3'],
-                                                   'd': [{'a': '', 'b': 3}, {'a': '', 'b': -1.5},
-                                                         {'a': '', 'b': -0.5}]})])
+                            Argument('json_in', value={'a': '-5.6', 'b': {'a': '4.3', 'b': 5.3}, 'c': ['1', '2', '3'],
+                                                       'd': [{'a': '', 'b': 3}, {'a': '', 'b': -1.5},
+                                                             {'a': '', 'b': -0.5}]})])
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         result = action.execute(instance.instance, {})
         self.assertAlmostEqual(result.result, 11.0)
@@ -264,6 +266,7 @@ class TestAction(unittest.TestCase):
                     result['started_triggered'] = True
                 elif kwargs['event'] == WalkoffEvent.ActionExecutionError:
                     result['result_triggered'] = True
+
         WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
 
         action.execute(instance.instance, {})
@@ -282,8 +285,8 @@ class TestAction(unittest.TestCase):
     def test_set_args_valid(self):
         action = Action(app_name='HelloWorld', action_name='Add Three',
                         arguments=[Argument('num1', value='-5.6'),
-                               Argument('num2', value='4.3'),
-                               Argument('num3', value='10.2')])
+                                   Argument('num2', value='4.3'),
+                                   Argument('num3', value='10.2')])
         arguments = [Argument('num1', value='-5.62'), Argument('num2', value='5'), Argument('num3', value='42.42')]
         action.set_arguments(arguments)
 
@@ -298,8 +301,8 @@ class TestAction(unittest.TestCase):
     def test_set_args_invalid_name(self):
         action = Action(app_name='HelloWorld', action_name='Add Three',
                         arguments=[Argument('num1', value='-5.6'),
-                               Argument('num2', value='4.3'),
-                               Argument('num3', value='10.2')])
+                                   Argument('num2', value='4.3'),
+                                   Argument('num3', value='10.2')])
         with self.assertRaises(InvalidArgument):
             action.set_arguments(
                 [Argument('num1', value='-5.62'), Argument('invalid', value='5'), Argument('num3', value='42.42')])
@@ -307,8 +310,8 @@ class TestAction(unittest.TestCase):
     def test_set_args_invalid_format(self):
         action = Action(app_name='HelloWorld', action_name='Add Three',
                         arguments=[Argument('num1', value='-5.6'),
-                               Argument('num2', value='4.3'),
-                               Argument('num3', value='10.2')])
+                                   Argument('num2', value='4.3'),
+                                   Argument('num3', value='10.2')])
         with self.assertRaises(InvalidArgument):
             action.set_arguments(
                 [Argument('num1', value='-5.62'), Argument('num2', value='5'), Argument('num3', value='invalid')])
@@ -324,6 +327,7 @@ class TestAction(unittest.TestCase):
         def callback_is_sent(sender, **kwargs):
             if kwargs['event'] == WalkoffEvent.TriggerActionTaken:
                 result['triggered'] = True
+
         WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
         action.execute(instance.instance, {})
         self.assertTrue(result['triggered'])
@@ -343,6 +347,7 @@ class TestAction(unittest.TestCase):
             elif kwargs['event'] == WalkoffEvent.TriggerActionNotTaken:
                 action.send_data_to_trigger({"data_in": {"data": 'aaa'}})
                 trigger_not_taken['triggered'] += 1
+
         WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
 
         action.execute(instance.instance, {})

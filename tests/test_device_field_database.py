@@ -4,7 +4,6 @@ from apps.devicedb import EncryptedDeviceField, DeviceField
 
 
 class TestDeviceField(unittest.TestCase):
-
     def assertConstructionIsCorrect(self, field, name, field_type, value):
         self.assertEqual(field.name, name)
         self.assertEqual(field.type, field_type)
@@ -36,7 +35,8 @@ class TestDeviceField(unittest.TestCase):
 
     def test_as_json_basic(self):
         field = DeviceField('test_name', 'integer', 123)
-        self.assertDictEqual(field.as_json(), {'name': 'test_name', 'value': 123, 'type': 'integer', 'encrypted': False})
+        self.assertDictEqual(field.as_json(),
+                             {'name': 'test_name', 'value': 123, 'type': 'integer', 'encrypted': False})
 
     def test_as_json_basic_encrypted(self):
         field = EncryptedDeviceField('test_name', 'integer', 123)

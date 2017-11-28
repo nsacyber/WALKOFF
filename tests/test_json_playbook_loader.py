@@ -11,7 +11,6 @@ from tests.config import test_data_path
 
 
 class TestJsonPlaybookLoader(TestCase):
-
     @classmethod
     def setUpClass(cls):
         if not os.path.exists(test_data_path):
@@ -22,7 +21,7 @@ class TestJsonPlaybookLoader(TestCase):
             for path in os.listdir(test_data_path):
                 try:
                     os.remove(os.path.join(test_data_path, path))
-                except WindowsError as we: #Windows sometimes makes files read only when created
+                except WindowsError as we:  # Windows sometimes makes files read only when created
                     os.chmod(os.path.join(test_data_path, path), stat.S_IWRITE)
                     os.remove(os.path.join(test_data_path, path))
 
@@ -67,11 +66,11 @@ class TestJsonPlaybookLoader(TestCase):
 
     def test_load_workflow_invalid_workflow_json(self):
         workflow_json = {
-                "name": "test_workflow",
-                "start": "start",
-                "actions": [{"action": "repeatBackToMe",
-                           "app": "HelloWorld",
-                           "name": "start"}]}
+            "name": "test_workflow",
+            "start": "start",
+            "actions": [{"action": "repeatBackToMe",
+                         "app": "HelloWorld",
+                         "name": "start"}]}
         playbook_json = {'name': 'test_playbook', 'workflows': [workflow_json]}
         filepath = os.path.join(test_data_path, 'test.json')
         with open(filepath, 'w') as file_out:
@@ -83,9 +82,9 @@ class TestJsonPlaybookLoader(TestCase):
             "name": "test_workflow",
             "start": "start",
             "actions": [{"action": "invalid",
-                       "app": "Invalid",
-                       "name": "start",
-                       "branches": []}]}
+                         "app": "Invalid",
+                         "name": "start",
+                         "branches": []}]}
         playbook_json = {'name': 'test_playbook', 'workflows': [workflow_json]}
         filepath = os.path.join(test_data_path, 'test.json')
         with open(filepath, 'w') as file_out:
@@ -126,9 +125,9 @@ class TestJsonPlaybookLoader(TestCase):
             "name": "test_workflow",
             "start": "start",
             "actions": [{"action": "invalid",
-                       "app": "Invalid",
-                       "name": "start",
-                       "branches": []}]}
+                         "app": "Invalid",
+                         "name": "start",
+                         "branches": []}]}
         playbook_json = {'name': 'test_playbook', 'workflows': [workflow_json]}
         filepath = os.path.join(test_data_path, 'test.json')
         with open(filepath, 'w') as file_out:

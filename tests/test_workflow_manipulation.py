@@ -9,9 +9,6 @@ import core.config.config
 import core.controller
 import core.multiprocessedexecutor
 from core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
-from core.appinstance import AppInstance
-from core.executionelements.action import Action
-from core.executionelements.workflow import Workflow
 from tests import config
 from tests.util.mock_objects import *
 
@@ -66,10 +63,12 @@ class TestWorkflowManipulation(unittest.TestCase):
         def workflow_paused_listener(sender, **kwargs):
             result['paused'] = True
             self.controller.resume_workflow(uid)
+
         WalkoffEvent.WorkflowPaused.connect(workflow_paused_listener)
 
         def workflow_resumed_listener(sender, **kwargs):
             result['resumed'] = True
+
         WalkoffEvent.WorkflowResumed.connect(workflow_resumed_listener)
 
         def pause_resume_thread():
@@ -78,8 +77,8 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         def action_1_about_to_begin_listener(sender, **kwargs):
             threading.Thread(target=pause_resume_thread).start()
-        WalkoffEvent.WorkflowExecutionStart.connect(action_1_about_to_begin_listener)
 
+        WalkoffEvent.WorkflowExecutionStart.connect(action_1_about_to_begin_listener)
 
         uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
         self.controller.wait_and_reset(1)

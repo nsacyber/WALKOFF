@@ -301,4 +301,3 @@ class TestAppApiValidation(unittest.TestCase):
         self.basicapi['devices'] = devices
         with self.assertRaises(InvalidArgument):
             validate_devices_api(devices, '')
-

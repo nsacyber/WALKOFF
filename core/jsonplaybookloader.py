@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 class JsonPlaybookLoader(object):
-
     @staticmethod
     def load_workflow(resource, workflow_name):
         """Loads a workflow from a file.

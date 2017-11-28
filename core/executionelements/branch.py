@@ -1,5 +1,5 @@
-from functools import total_ordering
 import logging
+from functools import total_ordering
 
 from core.events import WalkoffEvent
 from core.executionelements.executionelement import ExecutionElement

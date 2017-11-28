@@ -36,6 +36,7 @@ def construct_trigger(trigger_args):
     except (KeyError, ValueError, TypeError):
         raise InvalidTriggerArgs('Invalid scheduler arguments')
 
+
 task_id_separator = '-'
 
 
@@ -68,7 +69,6 @@ def split_task_id(task_id):
 
 # A thin wrapper around APScheduler
 class Scheduler(object):
-
     def __init__(self):
         self.scheduler = GeventScheduler()
         self.scheduler.add_listener(self.__scheduler_listener(),

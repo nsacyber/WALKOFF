@@ -6,7 +6,6 @@ from server.database import db, User, Role, add_user, remove_user
 
 
 class TestUserRolesDatabase(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.context = server.flaskserver.app.test_request_context()
@@ -233,7 +232,8 @@ class TestUserRolesDatabase(unittest.TestCase):
         expected = {"id": 1,
                     "username": 'username',
                     "active": True,
-                    "roles": [{'name': role, 'description': '', 'resources': []} for role in ['role1', 'role2', 'role3']]}
+                    "roles": [{'name': role, 'description': '', 'resources': []} for role in
+                              ['role1', 'role2', 'role3']]}
         self.assertSetEqual(set(user_json.keys()), set(expected.keys()))
         self.assertEqual(user_json['username'], 'username')
         self.assertEqual(user_json['active'], True)
@@ -255,7 +255,8 @@ class TestUserRolesDatabase(unittest.TestCase):
         user_json = user.as_json(with_user_history=True)
         expected = {"id": 1,
                     "username": 'username',
-                    "roles": [{'name': role, 'description': '', 'resources': []} for role in ['role1', 'role2', 'role3']],
+                    "roles": [{'name': role, 'description': '', 'resources': []} for role in
+                              ['role1', 'role2', 'role3']],
                     "active": True,
                     "last_login_at": first_login_timestamp,
                     "current_login_at": second_login_timestamp,
@@ -298,4 +299,3 @@ class TestUserRolesDatabase(unittest.TestCase):
         role_json = role.as_json(with_users=True)
         role_json.pop('id')
         self.assertDictEqual(role_json, expected)
-

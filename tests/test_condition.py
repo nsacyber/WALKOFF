@@ -1,13 +1,13 @@
 import unittest
 import uuid
 
-from core.executionelements.transform import Transform
-from core.executionelements.condition import Condition
+import apps
+import core.config.config
 from core.argument import Argument
+from core.executionelements.condition import Condition
+from core.executionelements.transform import Transform
 from core.helpers import InvalidArgument
 from tests.config import test_apps_path
-import core.config.config
-import apps
 
 
 class TestCondition(unittest.TestCase):
@@ -90,7 +90,8 @@ class TestCondition(unittest.TestCase):
 
     def test_execute_action_with_valid_arguments_invalid_data(self):
         self.assertFalse(
-            Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value=3)]).execute('invalid', {}))
+            Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value=3)]).execute('invalid',
+                                                                                                             {}))
 
     def test_execute_action_with_valid_arguments_and_transforms_valid_data(self):
         transforms = [Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='5')]),
@@ -108,8 +109,9 @@ class TestCondition(unittest.TestCase):
                                    transforms=transforms).execute('invalid', {}))
 
     def test_execute_action_with_valid_arguments_and_transforms_invalid_data_and_routing(self):
-        transforms = [Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', reference='action1')]),
-                      Transform('HelloWorld', action_name='Top Transform')]
+        transforms = [
+            Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', reference='action1')]),
+            Transform('HelloWorld', action_name='Top Transform')]
         # should go <input = invalid> -> <mod1_filter2 with error = invalid> -> <Top Transform with error = invalid>
         # -> <mod1_flag2 4+invalid throws error> -> False
         accumulator = {'action1': '5', 'action2': 4}

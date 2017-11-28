@@ -4,21 +4,22 @@ import os
 import signal
 import threading
 
-import zmq.auth as auth
 import zmq
+import zmq.auth as auth
 from zmq.utils.strtypes import cast_unicode
 
-from core.argument import Argument
 import core.config.config
 import core.config.paths
-from core.protobuf.build import data_pb2
+from core.argument import Argument
 from core.events import EventType, WalkoffEvent
+from core.executionelements.workflow import Workflow
+from core.protobuf.build import data_pb2
+
 try:
     from Queue import Queue
 except ImportError:
     from queue import Queue
 
-from core.executionelements.workflow import Workflow
 
 REQUESTS_ADDR = 'tcp://127.0.0.1:5555'
 RESULTS_ADDR = 'tcp://127.0.0.1:5556'
@@ -135,6 +136,7 @@ class Worker:
         @WalkoffEvent.CommonWorkflowSignal.connect
         def handle_data_sent(sender, **kwargs):
             self.on_data_sent(sender, **kwargs)
+
         self.handle_data_sent = handle_data_sent
 
         self.thread_exit = False

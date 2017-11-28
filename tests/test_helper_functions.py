@@ -132,7 +132,6 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertEqual(format_db_path('sqlite', 'aa.db'), 'sqlite:///aa.db')
         self.assertEqual(format_db_path('postgresql', 'aa.db'), 'postgresql://aa.db')
 
-
     # def test_get_app_action_api_valid(self):
     #     api = get_app_action_api('HelloWorld', 'pause')
     #     expected = ('main.Main.pause',

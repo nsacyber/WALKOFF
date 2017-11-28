@@ -128,7 +128,7 @@ class TestDevicesServer(ServerTestCase):
         device_json = {'app_name': 'TestApp', 'name': 'test', 'type': 'test_type',
                        'fields': [{'name': 'test_name', 'value': 123}, {'name': 'test2', 'value': 'something'}]}
         response = self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
-                                   status_code=OBJECT_CREATED, content_type='application/json')
+                                              status_code=OBJECT_CREATED, content_type='application/json')
         device = device_db.session.query(Device).filter(Device.name == 'test').first()
         self.assertIsNotNone(device)
         expected = device.as_json()
@@ -143,7 +143,7 @@ class TestDevicesServer(ServerTestCase):
         device_db.session.commit()
         data = {'id': 404, 'name': 'renamed'}
         self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
-                                              status_code=OBJECT_DNE_ERROR, content_type='application/json')
+                                    status_code=OBJECT_DNE_ERROR, content_type='application/json')
 
     def test_update_device_app_dne(self):
         device1 = Device('test', [], [], 'type')
@@ -153,7 +153,7 @@ class TestDevicesServer(ServerTestCase):
         device_db.session.commit()
         data = {'id': device1.id, 'name': 'renamed', 'app_name': 'Invalid'}
         self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
-                                              status_code=INVALID_INPUT_ERROR, content_type='application/json')
+                                    status_code=INVALID_INPUT_ERROR, content_type='application/json')
 
     def test_update_device_type_dne(self):
         device1 = Device('test', [], [], 'type')
@@ -168,7 +168,7 @@ class TestDevicesServer(ServerTestCase):
 
         data = {'id': device1.id, 'name': 'renamed', 'app_name': self.test_app_name, 'type': 'Invalid'}
         self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
-                                              status_code=INVALID_INPUT_ERROR, content_type='application/json')
+                                    status_code=INVALID_INPUT_ERROR, content_type='application/json')
 
     def test_update_device_invalid_fields(self):
         device1 = Device('test', [], [], 'type')
@@ -183,9 +183,10 @@ class TestDevicesServer(ServerTestCase):
 
         fields_json = [{'name': 'test_name', 'value': 'invalid'}, {'name': 'test2', 'value': 'something'}]
 
-        data = {'id': device1.id, 'name': 'renamed', 'app_name': self.test_app_name, 'type': 'test_type', 'fields': fields_json}
+        data = {'id': device1.id, 'name': 'renamed', 'app_name': self.test_app_name, 'type': 'test_type',
+                'fields': fields_json}
         self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
-                                              status_code=INVALID_INPUT_ERROR, content_type='application/json')
+                                    status_code=INVALID_INPUT_ERROR, content_type='application/json')
 
     def test_update_device_fields(self):
         device1 = Device('test', [], [], 'type')
@@ -200,9 +201,10 @@ class TestDevicesServer(ServerTestCase):
 
         fields_json = [{'name': 'test_name', 'value': 123}, {'name': 'test2', 'value': 'something'}]
 
-        data = {'id': device1.id, 'name': 'renamed', 'app_name': self.test_app_name, 'type': 'test_type', 'fields': fields_json}
+        data = {'id': device1.id, 'name': 'renamed', 'app_name': self.test_app_name, 'type': 'test_type',
+                'fields': fields_json}
         self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
-                                              status_code=SUCCESS, content_type='application/json')
+                                    status_code=SUCCESS, content_type='application/json')
 
         self.assertEqual(device1.name, 'renamed')
         self.assertEqual(device1.get_plaintext_fields(), {field['name']: field['value'] for field in fields_json})
@@ -215,7 +217,7 @@ class TestDevicesServer(ServerTestCase):
                   {"name": "Boolean field", "value": True}]
         data = {"name": "testDevice", "app_name": "HelloWorld", "type": "Test Device Type", "fields": fields}
         self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
-                                              status_code=OBJECT_CREATED, content_type="application/json")
+                                   status_code=OBJECT_CREATED, content_type="application/json")
 
         self.post_with_status_check('/api/devices/export', headers=self.headers, content_type="application/json",
                                     data=json.dumps({}))
@@ -233,7 +235,8 @@ class TestDevicesServer(ServerTestCase):
                 self.assertEqual(len(device['fields']), len(fields))
                 for field in fields:
                     # Checks if test field is a subset of the device json fields
-                    self.assertTrue(any(x for x in device['fields'] if set(x) not in set({k.encode("utf-8"): str(v).encode("utf-8") for k, v in field.items()})))
+                    self.assertTrue(any(x for x in device['fields'] if set(x) not in set(
+                        {k.encode("utf-8"): str(v).encode("utf-8") for k, v in field.items()})))
                 devices_read += 1
         self.assertEqual(devices_read, 1)
 
@@ -245,13 +248,13 @@ class TestDevicesServer(ServerTestCase):
                   {"name": "Boolean field", "value": True}]
         data = {"name": "testDevice", 'app_name': "HelloWorld", "type": "Test Device Type", "fields": fields}
         self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
-                                              status_code=OBJECT_CREATED, content_type="application/json")
+                                   status_code=OBJECT_CREATED, content_type="application/json")
 
         filename = 'testappdevices.json'
         filepath = os.path.join(tests.config.test_data_path, filename)
         data = {'filename': filepath}
         self.post_with_status_check('/api/devices/export',
-                                    data=json.dumps(data), headers=self.headers, content_type = "application/json")
+                                    data=json.dumps(data), headers=self.headers, content_type="application/json")
 
         self.assertIn(filename, os.listdir(tests.config.test_data_path))
         with open(filepath, 'r') as appdevice_file:
@@ -265,9 +268,10 @@ class TestDevicesServer(ServerTestCase):
             if device['name'] == 'testDevice':
                 self.assertEqual(len(device['fields']), len(fields))
                 for field in fields:
-                    #self.assertIn(field, device['fields'])
+                    # self.assertIn(field, device['fields'])
                     # Checks if test field is a subset of the device json fields
-                    self.assertTrue(any(x for x in device['fields'] if set(x) not in set({k.encode("utf-8"): str(v).encode("utf-8") for k, v in field.items()})))
+                    self.assertTrue(any(x for x in device['fields'] if set(x) not in set(
+                        {k.encode("utf-8"): str(v).encode("utf-8") for k, v in field.items()})))
                 devices_read += 1
         self.assertEqual(devices_read, 1)
 
@@ -285,7 +289,7 @@ class TestDevicesServer(ServerTestCase):
         filepath = os.path.join(tests.config.test_data_path, filename)
         data = {'filename': filepath}
         self.post_with_status_check('/api/devices/export',
-                                    data=json.dumps(data), headers=self.headers, content_type = "application/json")
+                                    data=json.dumps(data), headers=self.headers, content_type="application/json")
 
         fields.remove({"name": "Encrypted field", "value": "encrypted"})
         fields.append({"name": "Encrypted field", "encrypted": True})
@@ -306,6 +310,7 @@ class TestDevicesServer(ServerTestCase):
                 self.assertEqual(device.app_id, app_id)
                 self.assertEqual(len(device_json['fields']), len(fields))
                 for field in fields:
-                    #self.assertIn(field, device_json['fields'])
-                    #Checks if test field is a subset of the device json fields
-                    self.assertTrue(any(x for x in device_json['fields'] if set(x) not in set({k.encode("utf-8"): str(v).encode("utf-8") for k, v in field.items()})))
+                    # self.assertIn(field, device_json['fields'])
+                    # Checks if test field is a subset of the device json fields
+                    self.assertTrue(any(x for x in device_json['fields'] if set(x) not in set(
+                        {k.encode("utf-8"): str(v).encode("utf-8") for k, v in field.items()})))

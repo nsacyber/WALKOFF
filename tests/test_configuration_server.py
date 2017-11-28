@@ -9,7 +9,6 @@ from tests.util.servertestcase import ServerTestCase
 
 
 class TestConfigurationServer(ServerTestCase):
-
     def setUp(self):
         config_fields = [x for x in dir(core.config.config) if
                          not x.startswith('__') and type(getattr(core.config.config, x)).__name__
@@ -74,13 +73,13 @@ class TestConfigurationServer(ServerTestCase):
         for actual, expected_ in expected.items():
             self.assertEqual(actual, expected_)
 
-        self.assertEqual(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds, 20*60)
+        self.assertEqual(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds, 20 * 60)
         self.assertEqual(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days, 35)
 
     def test_set_configuration_invalid_token_durations(self):
         access_token_duration = current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds
         refresh_token_duration = current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days
-        data = {"access_token_duration": 60*25,
+        data = {"access_token_duration": 60 * 25,
                 "refresh_token_duration": 1}
         self.post_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
                                     content_type='application/json', status_code=BAD_REQUEST)

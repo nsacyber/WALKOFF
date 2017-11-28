@@ -302,8 +302,8 @@ class Controller(object):
         Args:
             data_in (dict): Data to be used to match against the triggers for an Action awaiting data.
             workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
-            arguments (list[Argument]): An optional list of arguments to update for an Action awaiting data for a trigger.
-                Defaults to None.
+            arguments (list[Argument]): An optional list of arguments to update for an Action awaiting data for a
+                trigger. Defaults to None.
 
         Returns:
             Dictionary of {"status": <status string>}
@@ -322,5 +322,6 @@ class Controller(object):
             (int) Status code of the executing workflow
         """
         return self.executor.get_workflow_status(execution_uid)
+
 
 controller = Controller()

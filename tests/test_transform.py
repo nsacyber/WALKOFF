@@ -1,11 +1,11 @@
 import unittest
 import uuid
 
-from core.argument import Argument
+import apps
 import core.config.config
+from core.argument import Argument
 from core.executionelements.transform import Transform
 from core.helpers import UnknownTransform, InvalidArgument
-import apps
 from tests.config import test_apps_path
 
 
@@ -50,8 +50,10 @@ class TestTransform(unittest.TestCase):
         self.__compare_init(filter_elem, 'HelloWorld', 'mod1_filter2', arguments=[Argument('arg1', value='5.4')])
 
     def test_init_with_args_with_routing(self):
-        filter_elem = Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', reference="action1")])
-        self.__compare_init(filter_elem, 'HelloWorld', 'mod1_filter2', arguments=[Argument('arg1', reference="action1")])
+        filter_elem = Transform('HelloWorld', action_name='mod1_filter2',
+                                arguments=[Argument('arg1', reference="action1")])
+        self.__compare_init(filter_elem, 'HelloWorld', 'mod1_filter2',
+                            arguments=[Argument('arg1', reference="action1")])
 
     def test_init_with_invalid_arg_name(self):
         with self.assertRaises(InvalidArgument):
@@ -75,15 +77,19 @@ class TestTransform(unittest.TestCase):
 
     def test_execute_with_args_no_conversion(self):
         self.assertAlmostEqual(
-            Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='10.3')]).execute('5.4', {}), 15.7)
+            Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='10.3')]).execute(
+                '5.4', {}), 15.7)
 
     def test_execute_with_args_with_conversion(self):
         self.assertAlmostEqual(
-            Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='10.3')]).execute(5.4, {}), 15.7)
+            Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='10.3')]).execute(5.4,
+                                                                                                                    {}),
+            15.7)
 
     def test_execute_with_args_with_routing(self):
         self.assertAlmostEqual(
-            Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', reference="action1")]).execute(5.4, {'action1': 10.3}),
+            Transform('HelloWorld', action_name='mod1_filter2',
+                      arguments=[Argument('arg1', reference="action1")]).execute(5.4, {'action1': 10.3}),
             15.7)
 
     def test_execute_with_complex_args(self):
@@ -98,5 +104,6 @@ class TestTransform(unittest.TestCase):
 
     def test_call_with_args_invalid_input(self):
         self.assertEqual(
-            Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='10.3')]).execute('invalid', {}),
+            Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='10.3')]).execute(
+                'invalid', {}),
             'invalid')

@@ -1,6 +1,7 @@
 import os
-import yaml
 import re
+
+import yaml
 
 
 def convert_apis():
@@ -37,6 +38,7 @@ def scan_transforms(transforms, path):
     for transform, transform_api in transforms.items():
         if 'returns' not in transform_api:
             print('Error in {0}--transforms.{1}: Transforms now require explicit returns'.format(path, transform))
+
 
 if __name__ == "__main__":
     convert_apis()

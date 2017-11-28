@@ -1,18 +1,17 @@
 import logging
 from copy import deepcopy
 
+from apps import get_transform
+from core.argument import Argument
 from core.events import WalkoffEvent
 from core.executionelements.executionelement import ExecutionElement
-from core.argument import Argument
 from core.helpers import get_transform_api, InvalidArgument, split_api_params
 from core.validator import validate_transform_parameters
-from apps import get_transform
 
 logger = logging.getLogger(__name__)
 
 
 class Transform(ExecutionElement):
-
     def __init__(self, app_name, action_name, arguments=None, uid=None):
         """Initializes a new Transform object. A Transform is used to transform input into a workflow.
         
@@ -57,5 +56,6 @@ class Transform(ExecutionElement):
                          'Returning unmodified data'.format(self.action_name, original_data_in, str(e)))
         except Exception as e:
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformError)
-            logger.error('Transform {0} encountered an error: {1}. Returning unmodified data'.format(self.action_name, str(e)))
+            logger.error(
+                'Transform {0} encountered an error: {1}. Returning unmodified data'.format(self.action_name, str(e)))
         return original_data_in

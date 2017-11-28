@@ -1,8 +1,7 @@
 import json
 from functools import wraps
-from threading import Condition
 
-from core.helpers import get_function_arg_names, InvalidApi
+from core.helpers import get_function_arg_names
 
 
 class ActionResult(object):
@@ -41,6 +40,7 @@ def action(func):
     Returns:
         (func) Tagged function
     """
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         return format_result(func(*args, **kwargs))

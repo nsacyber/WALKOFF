@@ -98,7 +98,7 @@ def update_playbook():
                 current_app.logger.info('Playbook renamed from {0} to {1}'.format(playbook_name, new_name))
 
                 workflow = next(playbook for playbook in running_context.controller.get_all_workflows()
-                                    if playbook['name'] == new_name)['workflows']
+                                if playbook['name'] == new_name)['workflows']
                 return workflow, SUCCESS
             else:
                 current_app.logger.error('No new name provided to update playbook')
@@ -106,6 +106,7 @@ def update_playbook():
         else:
             current_app.logger.error('Could not edit playbook {0}. Playbook does not exist.'.format(playbook_name))
             return {"error": 'Playbook does not exist.'.format(playbook_name)}, OBJECT_DNE_ERROR
+
     return __func()
 
 
@@ -454,6 +455,7 @@ def read_results():
                             'timestamp': result['completed_at'],
                             'result': json.dumps(result['results'])})
         return ret, SUCCESS
+
     return __func()
 
 
@@ -464,7 +466,6 @@ def read_all_results():
 
 
 def read_result(uid):
-
     @jwt_required
     def __func():
         workflow_result = case_database.case_db.session.query(WorkflowResult).filter(WorkflowResult.uid == uid).first()
@@ -472,4 +473,5 @@ def read_result(uid):
             return workflow_result.as_json(), SUCCESS
         else:
             return {'error': 'No workflow found'}, OBJECT_DNE_ERROR
+
     return __func()

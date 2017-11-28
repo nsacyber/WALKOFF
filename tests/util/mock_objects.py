@@ -7,8 +7,8 @@ from zmq.utils.strtypes import cast_unicode
 
 from core.argument import Argument
 from core.events import WalkoffEvent
-from core.multiprocessedexecutor.worker import convert_to_protobuf, recreate_workflow
 from core.multiprocessedexecutor import loadbalancer
+from core.multiprocessedexecutor.worker import convert_to_protobuf, recreate_workflow
 from core.protobuf.build import data_pb2
 
 try:

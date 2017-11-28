@@ -1,7 +1,7 @@
 import logging
 
-from core.representable import Representable
 from core.helpers import InvalidArgument
+from core.representable import Representable
 
 logger = logging.getLogger(__name__)
 
@@ -91,4 +91,4 @@ class Argument(Representable):
 
     def __eq__(self, other):
         return self.name == other.name and self.value == other.value and self.reference == other.reference and \
-               self.selection == other.selection and self._is_reference == other._is_reference
+               self.selection == other.selection and self._is_reference == other.is_ref()

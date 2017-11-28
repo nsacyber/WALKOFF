@@ -28,7 +28,8 @@ class ExecutionElement(Representable):
                                          if isinstance(list_element_, ExecutionElement)):
                         list_element.regenerate_uids()
                 elif isinstance(value, dict):
-                    for dict_element in (element for element in value.values() if isinstance(element, ExecutionElement)):
+                    for dict_element in (element for element in value.values() if
+                                         isinstance(element, ExecutionElement)):
                         dict_element.regenerate_uids()
                 elif isinstance(value, ExecutionElement):
                     value.regenerate_uids()

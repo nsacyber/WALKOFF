@@ -7,7 +7,6 @@ from tests.util.servertestcase import ServerTestCase
 
 
 class TestSchedulerActions(ServerTestCase):
-
     def test_scheduler_actions(self):
         response = self.app.get('/api/scheduler/start', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)

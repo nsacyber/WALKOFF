@@ -1,10 +1,11 @@
-import unittest
-import os
-import sys
 import argparse
 import importlib
-from core.helpers import list_apps
+import os
+import sys
+import unittest
+
 from core.config.paths import apps_path
+from core.helpers import list_apps
 
 
 def cmd_line():
@@ -43,6 +44,7 @@ def test_app(app_name):
     elif test_modules is None or len(test_modules) == 0:
         print("App {0} has no tests. Don't be that person. Write your tests.".format(app_name))
         return True
+
 
 if __name__ == '__main__':
     cmd_args = cmd_line()

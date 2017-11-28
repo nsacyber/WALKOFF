@@ -7,10 +7,10 @@ import apps
 import core.config.config
 import core.config.paths
 import core.controller
-from core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 import server.flaskserver
 import tests.config
 import tests.config
+from core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from tests.util.mock_objects import *
 from tests.util.thread_control import *
 
@@ -38,6 +38,7 @@ class ServerTestCase(unittest.TestCase):
             def setup_override(self, *args, **kwargs):
                 ServerTestCase.setUp(self)
                 return original_setup(self, *args, **kwargs)
+
             cls.setUp = setup_override
 
         if cls != ServerTestCase and cls.tearDown != ServerTestCase.tearDown:
@@ -51,7 +52,7 @@ class ServerTestCase(unittest.TestCase):
             cls.tearDown = teardown_override
 
         if (tests.config.test_data_dir_name not in os.listdir(tests.config.test_path)
-                or os.path.isfile(tests.config.test_data_path)):
+            or os.path.isfile(tests.config.test_data_path)):
             if os.path.isfile(tests.config.test_data_path):
                 os.remove(tests.config.test_data_path)
             os.makedirs(tests.config.test_data_path)
@@ -118,10 +119,9 @@ class ServerTestCase(unittest.TestCase):
         for data_file in os.listdir(tests.config.test_data_path):
             try:
                 os.remove(os.path.join(tests.config.test_data_path, data_file))
-            except WindowsError as we: #Windows sometimes makes files read only when created
+            except WindowsError as we:  # Windows sometimes makes files read only when created
                 os.chmod(os.path.join(tests.config.test_data_path, data_file), stat.S_IWRITE)
                 os.remove(os.path.join(tests.config.test_data_path, data_file))
-
 
     def preTearDown(self):
         """

@@ -7,14 +7,12 @@ from functools import partial
 from connexion.utils import boolean
 from jsonschema import RefResolver, draft4_format_checker, ValidationError
 from jsonschema.validators import Draft4Validator
-from six import string_types
 from swagger_spec_validator import ref_validators
 from swagger_spec_validator.validator20 import deref
 
 import core.config.config
 import core.config.paths
 from core.helpers import InvalidArgument, get_function_arg_names, InvalidApi, format_exception_message
-
 
 logger = logging.getLogger(__name__)
 
@@ -154,7 +152,9 @@ def validate_condition_transform_params(spec, app_name, action_type, defined_act
 
         data_in_param_name = action['data_in']
         validate_data_in_param(action_params, data_in_param_name, '{0} action {1}'.format(action_type, action_name))
-        function = get_condition(app_name, action['run']) if action_type == 'Condition' else get_transform(app_name, action['run'])
+        function = get_condition(app_name, action['run']) if action_type == 'Condition' else get_transform(app_name,
+                                                                                                           action[
+                                                                                                               'run'])
         validate_action_params(action_params, dereferencer, action_type, action_name, function)
         seen.add(action['run'])
 

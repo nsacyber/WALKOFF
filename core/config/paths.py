@@ -1,24 +1,22 @@
 from os.path import join
 
+api_path = join('.', 'server', 'api')
 apps_path = join('.', 'apps')
-interfaces_path = join('.', 'interfaces')
-workflows_path = join('.', 'workflows')
-keywords_path = join('.', 'core', 'keywords')
-db_path = "data/walkoff.db"
 case_db_path = join('data', 'events.db')
-device_db_path = join('data', 'devices.db')
-certificate_path = "data/shortstop.public.pem"
-private_key_path = "data/shortstop.private.pem"
+certificate_path = join('data', 'shortstop.public.pem')
 config_path = join('.', 'data', 'walkoff.config')
-events_path = join('.', 'data', 'events.json')
+data_path = join('.', 'data')
 default_appdevice_export_path = join('.', 'data', 'appdevice.json')
 default_case_export_path = join('.', 'data', 'cases.json')
-data_path = join('.', 'data')
+device_db_path = join('data', 'devices.db')
+db_path = join('data', 'walkoff.db')
+interfaces_path = join('.', 'interfaces')
+keywords_path = join('.', 'core', 'keywords')
 logging_config_path = join('.', 'data', 'log', 'logging.json')
-api_path = join('.', 'server', 'api')
+private_key_path = join('data', 'shortstop.private.pem')
+workflows_path = join('.', 'workflows')
 walkoff_schema_path = join(data_path, 'walkoff_schema.json')
 function_api_path = join(data_path, 'functions.yaml')
-AES_key_path = join('.', 'data', 'aes_key.txt')
 client_path = join('.', 'client')
 zmq_keys_path = join('.', '.certificates')
 zmq_public_keys_path = join(zmq_keys_path, 'public_keys')

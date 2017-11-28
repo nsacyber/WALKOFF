@@ -1,8 +1,7 @@
+import logging
 import os
 
 from core.config import paths
-
-import logging
 
 logger = logging.getLogger(__name__)
 

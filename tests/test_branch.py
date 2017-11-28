@@ -2,14 +2,14 @@ import unittest
 import uuid
 
 import apps
-from core.events import WalkoffEvent
-from core.argument import Argument
 import core.config.config
-from core.executionelements.condition import Condition
+from core.argument import Argument
+from core.decorators import ActionResult
+from core.events import WalkoffEvent
 from core.executionelements.action import Action
 from core.executionelements.branch import Branch
+from core.executionelements.condition import Condition
 from core.executionelements.workflow import Workflow
-from core.decorators import ActionResult
 from tests.config import test_apps_path
 
 
@@ -23,7 +23,8 @@ class TestBranch(unittest.TestCase):
     def tearDownClass(cls):
         apps.clear_cache()
 
-    def __compare_init(self, elem, source_uid, destination_uid, conditions=None, status='Success', uid=None, priority=999):
+    def __compare_init(self, elem, source_uid, destination_uid, conditions=None, status='Success', uid=None,
+                       priority=999):
         self.assertEqual(elem.source_uid, source_uid)
         self.assertEqual(elem.destination_uid, destination_uid)
         self.assertEqual(elem.status, status)
@@ -56,15 +57,15 @@ class TestBranch(unittest.TestCase):
     def test_init_with_conditions(self):
         conditions = [Condition('HelloWorld', 'Top Condition'), Condition('HelloWorld', 'mod1_flag1')]
         expected_condition_json = [{'action_name': 'Top Condition', 'args': [], 'filters': []},
-                              {'action_name': 'mod1_flag1', 'args': [], 'filters': []}]
+                                   {'action_name': 'mod1_flag1', 'args': [], 'filters': []}]
         branch = Branch("1", "2", conditions=conditions)
         self.__compare_init(branch, "1", "2", expected_condition_json)
 
     def test_eq(self):
         conditions = [Condition('HelloWorld', 'mod1_flag1'), Condition('HelloWorld', 'Top Condition')]
         branches = [Branch(source_uid="1", destination_uid="2"),
-                        Branch(source_uid="1", destination_uid="2", status='TestStatus'),
-                        Branch(source_uid="1", destination_uid="2", conditions=conditions)]
+                    Branch(source_uid="1", destination_uid="2", status='TestStatus'),
+                    Branch(source_uid="1", destination_uid="2", conditions=conditions)]
         for i in range(len(branches)):
             for j in range(len(branches)):
                 if i == j:

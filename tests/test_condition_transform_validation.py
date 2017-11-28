@@ -2,11 +2,11 @@ import unittest
 
 import yaml
 
-from core.config.paths import walkoff_schema_path
+import apps
 import core.config.config
+from core.config.paths import walkoff_schema_path
 from core.validator import *
 from tests.config import basic_app_api, test_apps_path
-import apps
 
 
 class TestConditionTransformValidation(unittest.TestCase):

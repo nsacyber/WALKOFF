@@ -27,11 +27,11 @@ def __get_current_configuration():
 
 
 def read_config_values():
-
     @jwt_required
     @roles_accepted_for_resources('configuration')
     def __func():
         return __get_current_configuration(), SUCCESS
+
     return __func()
 
 
@@ -67,6 +67,7 @@ def update_configuration(configuration):
         except (IOError, OSError):
             current_app.logger.error('Could not write changes to configuration to file')
             return {"error": 'Could not write to file.'}, IO_ERROR
+
     return __func()
 
 

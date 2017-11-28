@@ -1,7 +1,6 @@
 import logging
 from threading import Thread
 
-import gevent
 import zmq.auth
 import zmq.green as zmq
 from zmq.auth.base import Authenticator

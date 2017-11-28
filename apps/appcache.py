@@ -302,7 +302,7 @@ class AppCache(object):
         base_path = '.'.join([app_path, app_name])
         for field, obj in inspect.getmembers(module):
             if (inspect.isclass(obj) and getattr(obj, '_is_walkoff_app', False)
-                    and AppCache._get_qualified_class_name(obj) != 'apps.App'):
+                and AppCache._get_qualified_class_name(obj) != 'apps.App'):
                 self._cache_app(obj, app_name, base_path)
             elif inspect.isfunction(obj):
                 for attr in ('action', 'condition', 'transform'):

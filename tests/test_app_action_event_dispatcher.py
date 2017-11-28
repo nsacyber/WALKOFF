@@ -1,4 +1,5 @@
 from unittest import TestCase
+
 from interfaces import AppActionEventDispatcher, CallbackContainer
 
 
@@ -9,7 +10,6 @@ def func2(): pass
 
 
 class TestAppActionEventDispatcher(TestCase):
-
     def setUp(self):
         self.router = AppActionEventDispatcher('app', 'action')
 
@@ -82,6 +82,7 @@ class TestAppActionEventDispatcher(TestCase):
 
     def test_get_callbacks_specified_devices_only_with_all(self):
         def func3(): pass
+
         self.router.register_event('event1', ['a', 'b', 'c'], func, weak=False)
         self.router.register_event('event1', ['a', 'b'], func2)
         self.router.register_event('event1', 'all', func3, weak=False)

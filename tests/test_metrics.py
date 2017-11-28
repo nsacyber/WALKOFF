@@ -6,14 +6,13 @@ from tests.util.servertestcase import ServerTestCase
 
 
 class MetricsTest(ServerTestCase):
-
     def setUp(self):
         metrics.app_metrics = {}
         metrics.workflow_metrics = {}
 
     def test_action_metrics(self):
         server.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                        'multiactionError.playbook')
+                                                                 'multiactionError.playbook')
 
         server.running_context.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
 
@@ -29,22 +28,24 @@ class MetricsTest(ServerTestCase):
                                ['success'])
         for form in ['success']:
             orderless_list_compare(self,
-                                   list(metrics.app_metrics['HelloWorldBounded']['actions']['repeatBackToMe'][form].keys()),
+                                   list(metrics.app_metrics['HelloWorldBounded']['actions']['repeatBackToMe'][
+                                            form].keys()),
                                    ['count', 'avg_time'])
             self.assertEqual(metrics.app_metrics['HelloWorldBounded']['actions']['repeatBackToMe'][form]['count'], 1)
         orderless_list_compare(self,
                                list(metrics.app_metrics['HelloWorldBounded']['actions']['helloWorld'].keys()),
                                ['success'])
         orderless_list_compare(self,
-                               list(metrics.app_metrics['HelloWorldBounded']['actions']['helloWorld']['success'].keys()),
+                               list(
+                                   metrics.app_metrics['HelloWorldBounded']['actions']['helloWorld']['success'].keys()),
                                ['count', 'avg_time'])
         self.assertEqual(metrics.app_metrics['HelloWorldBounded']['actions']['helloWorld']['success']['count'], 1)
 
     def test_workflow_metrics(self):
         server.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                        'multiactionError.playbook')
+                                                                 'multiactionError.playbook')
         server.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                        'multiactionWorkflowTest.playbook')
+                                                                 'multiactionWorkflowTest.playbook')
 
         error_key = 'multiactionErrorWorkflow'
         multiaction_key = 'multiactionWorkflow'

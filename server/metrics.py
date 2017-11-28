@@ -75,5 +75,6 @@ def __workflow_ended_callback(sender, **kwargs):
             workflow_metrics[sender['name']] = {'count': 1, 'avg_time': execution_time}
         else:
             workflow_metrics[sender['name']]['count'] += 1
-            workflow_metrics[sender['name']]['avg_time'] = (workflow_metrics[sender['name']]['avg_time'] + execution_time) / 2
+            workflow_metrics[sender['name']]['avg_time'] = (workflow_metrics[sender['name']][
+                                                                'avg_time'] + execution_time) / 2
         __workflow_tmp.pop(sender['workflow_execution_uid'])

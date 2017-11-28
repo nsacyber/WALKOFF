@@ -1,4 +1,3 @@
-
 def modified_setup_worker_env():
     import tests.config
     import core.config.config

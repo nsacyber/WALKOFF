@@ -7,7 +7,6 @@ from tests.util.servertestcase import ServerTestCase
 
 
 class TestUserServer(ServerTestCase):
-
     def tearDown(self):
         db.session.rollback()
         for user in [user for user in User.query.all() if user.username != 'admin']:
@@ -40,7 +39,7 @@ class TestUserServer(ServerTestCase):
         db.session.commit()
         data = {'username': 'username', 'password': 'NoH4x0rzPls!'}
         self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                              data=json.dumps(data), status_code=OBJECT_EXISTS_ERROR)
+                                   data=json.dumps(data), status_code=OBJECT_EXISTS_ERROR)
 
     # def test_create_user_with_roles(self):
     #     role = Role('role1')
@@ -68,7 +67,7 @@ class TestUserServer(ServerTestCase):
         db.session.commit()
         data = {'id': user.id, 'old_password': 'asdfghjkl;', 'password': 'changed!'}
         response = self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                   data=json.dumps(data), status_code=SUCCESS)
+                                               data=json.dumps(data), status_code=SUCCESS)
         self.assertDictEqual(response, user.as_json())
         self.assertTrue(user.verify_password('changed!'))
 
@@ -78,7 +77,7 @@ class TestUserServer(ServerTestCase):
         db.session.commit()
         data = {'id': user.id, 'old_password': 'incorrectpassword', 'password': 'changed!'}
         self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                   data=json.dumps(data), status_code=BAD_REQUEST)
+                                    data=json.dumps(data), status_code=BAD_REQUEST)
         self.assertTrue(user.verify_password('asdfghjkl;'))
 
     # def test_update_user_with_roles(self):
@@ -113,7 +112,7 @@ class TestUserServer(ServerTestCase):
         db.session.commit()
         data = {'id': user.id, 'username': 'user2'}
         self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                               data=json.dumps(data), status_code=BAD_REQUEST)
+                                    data=json.dumps(data), status_code=BAD_REQUEST)
         self.assertTrue(user.verify_password('whisperDieselEngine'))  # check password wasn't changed
 
     def test_change_password_and_username(self):
@@ -122,7 +121,7 @@ class TestUserServer(ServerTestCase):
         db.session.commit()
         data = {'id': user.id, 'old_password': 'asdfghjkl;', 'password': 'changed!', 'username': 'new_name'}
         response = self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                    data=json.dumps(data), status_code=SUCCESS)
+                                               data=json.dumps(data), status_code=SUCCESS)
         self.assertTrue(user.verify_password('changed!'))
         self.assertEqual(user.username, 'new_name')
         self.assertDictEqual(response, user.as_json())

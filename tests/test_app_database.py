@@ -4,7 +4,6 @@ from apps.devicedb import App, Device
 
 
 class TestAppDatabase(unittest.TestCase):
-
     def setUp(self):
         self.device1 = Device('test1', [], [], 'type1')
         self.device2 = Device('test2', [], [], 'type1')

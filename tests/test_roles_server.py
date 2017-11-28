@@ -1,14 +1,13 @@
 import json
 
 import server.database
+import server.flaskserver
 from server.database import Role, db, initialize_resource_roles_from_cleared_database
 from server.returncodes import *
 from tests.util import servertestcase
-import server.flaskserver
 
 
 class TestRolesServer(servertestcase.ServerTestCase):
-
     def setUp(self):
         server.database.resource_roles = {}
 
@@ -152,7 +151,7 @@ class TestRolesServer(servertestcase.ServerTestCase):
     def test_update_role_with_invalid_id(self):
         data = {'id': 404, 'description': 'new_desc', 'resources': ['resource4', 'resource5', '/roles']}
         self.post_with_status_check('/api/roles', headers=self.headers, status_code=OBJECT_DNE_ERROR,
-                                               content_type='application/json', data=json.dumps(data))
+                                    content_type='application/json', data=json.dumps(data))
 
     def test_update_role_with_resources_updates_resource_roles(self):
         resources = ['resource1', 'resource2', 'resource3']

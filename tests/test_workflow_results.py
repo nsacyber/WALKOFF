@@ -14,7 +14,7 @@ class TestWorkflowResults(ServerTestCase):
 
     def test_workflow_result_format(self):
         flaskserver.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                        'multiactionWorkflowTest.playbook')
+                                                                      'multiactionWorkflowTest.playbook')
         uid = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         with flaskserver.running_context.flask_app.app_context():
             flaskserver.running_context.controller.wait_and_reset(1)
@@ -29,6 +29,7 @@ class TestWorkflowResults(ServerTestCase):
         def strip_timestamp(result):
             result.pop('timestamp')
             return result
+
         self.assertDictEqual(strip_timestamp(workflow_result.results[0].as_json()),
                              {'arguments': [],
                               'app_name': 'HelloWorldBounded',
@@ -39,7 +40,7 @@ class TestWorkflowResults(ServerTestCase):
 
     def test_workflow_result_multiple_workflows(self):
         flaskserver.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                             'multiactionWorkflowTest.playbook')
+                                                                      'multiactionWorkflowTest.playbook')
         uid1 = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         uid2 = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         with flaskserver.running_context.flask_app.app_context():

@@ -1,6 +1,6 @@
 import logging
 
-from apps import get_app, is_app_action_bound
+from apps import get_app
 from core.helpers import format_exception_message
 
 logger = logging.getLogger(__name__)

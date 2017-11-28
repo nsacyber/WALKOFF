@@ -1,11 +1,10 @@
 from unittest import TestCase
 
-from interfaces import convert_events, UnknownEvent, validate_events, add_docstring, convert_to_iterable
 from core.events import WalkoffEvent
+from interfaces import convert_events, UnknownEvent, validate_events, add_docstring, convert_to_iterable
 
 
 class TestInterfaceEventDispatchHelpers(TestCase):
-
     def test_convert_events_no_events(self):
         self.assertSetEqual(convert_events([]), set())
 
@@ -77,6 +76,7 @@ class TestInterfaceEventDispatchHelpers(TestCase):
     def test_add_docstring(self):
         @add_docstring('test_docstring')
         def x(): pass
+
         self.assertEqual(x.__doc__, 'test_docstring')
 
     def test_convert_to_iterable_already_iterable(self):

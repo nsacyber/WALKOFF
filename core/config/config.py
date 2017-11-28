@@ -2,7 +2,6 @@ import importlib
 import json
 import logging
 import sys
-from collections import OrderedDict
 from os import listdir
 from os.path import isfile, join, splitext
 
@@ -53,6 +52,7 @@ def write_values_to_file(keys=None):
     with open(core.config.paths.config_path, 'w') as config_file:
         config_file.write(json.dumps(output, sort_keys=True, indent=4, separators=(',', ': ')))
 
+
 reinitialize_case_db_on_startup = True
 
 tls_version = "1.2"
@@ -73,7 +73,6 @@ walkoff_version = '0.5.0'
 JINJA_GLOBALS = {splitext(fn)[0]: getattr(importlib.import_module("core.keywords." + splitext(fn)[0]), "main")
                  for fn in listdir(keywords_path) if
                  isfile(join(keywords_path, fn)) and not splitext(fn)[0] in ["__init__", "."]}
-
 
 num_processes = 5
 
@@ -103,7 +102,8 @@ def load_app_apis(apps_path=None):
                     validate_app_spec(api, app)
                     app_apis[app] = api
             except Exception as e:
-                __logger.error('Cannot load apps api for app {0}: Error {1}'.format(app, str(format_exception_message(e))))
+                __logger.error(
+                    'Cannot load apps api for app {0}: Error {1}'.format(app, str(format_exception_message(e))))
 
 
 def initialize():

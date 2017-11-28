@@ -1,14 +1,14 @@
-import socket
 import json
-import gevent
+import socket
 
+import gevent
 from gevent import monkey
 
-from core.events import WalkoffEvent
 import core.case.database as case_database
 import core.case.subscription
 import core.config.paths
 import core.controller
+from core.events import WalkoffEvent
 from server import flaskserver as flask_server
 from server.returncodes import *
 from tests.util.servertestcase import ServerTestCase

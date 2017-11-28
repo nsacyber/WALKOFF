@@ -3,7 +3,6 @@ from unittest import TestCase
 
 from core.executionelements.playbook import Playbook
 from core.executionelements.workflow import Workflow
-from core.executionelements.action import Action
 from core.playbookstore import PlaybookStore
 
 
@@ -19,7 +18,7 @@ class MockPlaybookLoader(object):
             return resource, self.playbook2.get_workflow_by_name(workflow_name)
         else:
             return None
-    
+
     def load_playbook(self, resource):
         if resource == 'test1':
             return self.playbook1
@@ -27,20 +26,18 @@ class MockPlaybookLoader(object):
             return self.playbook2
         else:
             return None
-    
+
     def load_playbooks(self, resource_collection):
         return [self.playbook1, self.playbook2]
 
 
 class MockElementReader(object):
-
     @staticmethod
     def read(element):
         return id(element)
 
 
 class TestPlaybookStore(TestCase):
-
     def setUp(self):
         self.store = PlaybookStore()
         self.loader = MockPlaybookLoader()
@@ -245,7 +242,7 @@ class TestPlaybookStore(TestCase):
     def test_get_all_workflows_with_limited_representations(self):
         self.store.playbooks['play1'] = self.loader.playbook1
         expected = [{'name': 'play1', 'workflows': [{'name': workflow.name, 'uid': workflow.uid}
-                                                   for workflow in self.loader.playbook1.workflows.values()]}]
+                                                    for workflow in self.loader.playbook1.workflows.values()]}]
         self.assertListEqual(self.store.get_all_workflows(), expected)
 
     def test_get_all_workflows_with_representation_custom_reader(self):

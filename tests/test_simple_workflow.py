@@ -2,9 +2,9 @@ import unittest
 
 import core.config.config
 import core.controller
-from core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from core.case import database
 from core.case import subscription
+from core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from tests import config
 from tests.util.case_db_help import *
 from tests.util.mock_objects import *

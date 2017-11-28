@@ -1,5 +1,5 @@
-from core.executionelements.executionelement import ExecutionElement
 import core.config.config
+from core.executionelements.executionelement import ExecutionElement
 
 
 class Playbook(ExecutionElement):
