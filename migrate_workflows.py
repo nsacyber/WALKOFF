@@ -1,15 +1,18 @@
 import json
 import os
+from os.path import join
 from copy import deepcopy
 
 from six import string_types
 
 from apps.devicedb import device_db, App
-from core.config.config import walkoff_version
+from apps import cache_apps, is_app_action_bound
+from core.helpers import get_app_action_api
+from core.config.config import walkoff_version, load_app_apis
 
 
 def convert_playbooks():
-    for subdir, dir, files in os.walk('.'):
+    for subdir, dir, files in os.walk(join('.', 'data', 'workflows')):
         for file in files:
             if file.endswith('.playbook'):
                 path = os.path.join(subdir, file)
@@ -17,7 +20,7 @@ def convert_playbooks():
 
 
 def convert_playbook(path):
-    print('Processing {}'.format(path))
+    print('Converting {}'.format(path))
     with open(path, 'r') as f:
         playbook = json.load(f)
         if 'walkoff_version' not in playbook:
@@ -32,25 +35,36 @@ def convert_workflow(workflow):
     workflow.pop('accumulated_risk', None)
     if 'actions' not in workflow:
         workflow['actions'] = workflow.pop('steps')
-    if 'branches' not in workflow:
-        branches = []
-        for action in workflow['actions']:
-            next_action_for_action = [convert_branch_uids(branch, action) for branch in action.pop('next_steps', [])]
-            branches.append(next_action_for_action)
-        workflow['branches'] = branches
-
     actions_copy = deepcopy(workflow['actions'])
-    workflow['start'] = next((action['uid'] for action in actions_copy if action['name'] == workflow['start']),
-                             workflow['start'])
+    if 'branches' not in workflow:
+        create_branches(workflow, actions_copy)
+
+    convert_workflow_start_uid(workflow, actions_copy)
 
     for action in workflow['actions']:
         if 'arguments' not in action:
             action['arguments'] = action.pop('inputs', [])
-        action['arguments'] = [convert_arg(arg, actions_copy) for arg in action['arguments']]
-
         convert_action(action, actions_copy)
+
     for branch in workflow.get('branches', []):
         convert_branch(branch, actions_copy)
+
+
+def create_branches(workflow, actions_copy):
+    branches = []
+    for action in workflow['actions']:
+        branch_for_action = [convert_branch_uids(branch, action, actions_copy) for branch in
+                             action.pop('next_steps', [])]
+        branches.extend(branch_for_action)
+    workflow['branches'] = branches
+
+
+def convert_workflow_start_uid(workflow, actions_copy):
+    start_uid = next((action['uid'] for action in actions_copy if action['name'] == workflow['start']),
+                     None)
+    if start_uid is None:
+        print('Invalid starting step {}!!'.format(workflow['start']))
+    workflow['start'] = start_uid
 
 
 def convert_action(action, actions_copy):
@@ -58,12 +72,25 @@ def convert_action(action, actions_copy):
     if 'arguments' not in action:
         action['arguments'] = action.pop('inputs', [])
     action['arguments'] = [convert_arg(arg, actions_copy) for arg in action['arguments']]
+    action['app_name'] = action.pop('app')
+    action['action_name'] = action.pop('action')
+    app_name = action['app_name']
+    if app_name == 'HelloWorld':
+        action['action_name'] = convert_hello_world_action_names(action['action_name'])
+
     if 'device' in action:
-        device_name = action.pop('device')
-        device_id = convert_device_to_device_id(action['app'], device_name, action['action'])
+        convert_action_device(action)
+
+    action.pop('widgets', None)
+
+
+def convert_action_device(action):
+    device_name = action.pop('device')
+    action_run, _ = get_app_action_api(action['app_name'], action['action_name'])
+    if is_app_action_bound(action['app_name'], action_run):
+        device_id = convert_device_to_device_id(action['app_name'], device_name, action['action_name'])
         if device_id is not None:
             action['device_id'] = device_id
-    action.pop('widgets', None)
 
 
 def convert_device_to_device_id(app_name, device_name, action_name):
@@ -72,7 +99,7 @@ def convert_device_to_device_id(app_name, device_name, action_name):
                             ' This will need to be changed manually.')
     if app is not None:
         device = next((device for device in app.devices if device.name == device_name), None)
-        if device is not None:
+        if device is None:
             print('WARNING: In action {0}: No device with name of {1} found for app {2}. '
                   '{3}'.format(action_name, device_name, app_name, generic_error_ending))
             return None
@@ -84,10 +111,14 @@ def convert_device_to_device_id(app_name, device_name, action_name):
         return None
 
 
-def convert_branch_uids(branch, action):
+def convert_branch_uids(branch, action, actions_copy):
     branch['source_uid'] = action['uid']
     dst = branch.pop('name')
-    branch['destination_uid'] = dst
+    dst_uid = next((action['uid'] for action in actions_copy if action['name'] == dst), None)
+    if dst_uid is None:
+        print('Destination of branch {} is invalid'.format(branch['uid']))
+    branch['destination_uid'] = dst_uid
+    return branch
 
 
 def convert_branch(branch, actions_copy):
@@ -129,6 +160,16 @@ def convert_arg(arg, actions):
     return new_arg
 
 
+def convert_hello_world_action_names(name):
+    new_name = ''
+    for letter in name:
+        if letter.isupper():
+            new_name += ' ' + letter.lower()
+        else:
+            new_name += letter
+    return new_name
+
+
 def convert_arg_value(arg, actions):
     if isinstance(arg, string_types) and arg[0] == '@':
         reference_action_name = arg[1:]
@@ -144,4 +185,6 @@ def convert_arg_value(arg, actions):
 
 
 if __name__ == '__main__':
+    cache_apps(join('.', 'apps'))
+    load_app_apis()
     convert_playbooks()
