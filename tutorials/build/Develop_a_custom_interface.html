@@ -142,6 +142,7 @@ WALKOFF
     &lth1&gtYou have reached the Hello World metrics page!&lt/h1&gt
 &lt/head&gt
 &ltbody&gt
+
 &lt/body&gt
 &lt/html&gt
         </code></pre>
@@ -309,7 +310,7 @@ def get_hello_world_metrics():
 
         <p>
             So we want to display the information returned from the metrics route.
-            First, in the HTML, add a simple table to store the information.
+            First, in the HTML body element, add a simple table to store the information.
         </p>
 
         <pre><code class="html">
@@ -332,7 +333,6 @@ $(function () {
         'async': false,
         'type': "GET",
         'global': false,
-        'headers': { "Authorization": 'Bearer ' + sessionStorage.getItem('access_token') },
         'url': "/interfaces/HelloWorld/metrics",
         'success': function (data) {
             for (const action in data) {

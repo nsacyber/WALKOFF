@@ -106,67 +106,63 @@ img.media-object.image{
 
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
-    <div class="w3-twothird">
-      <h1>Version Two Tutorials</h1>
-      <h5><i>  More tutorials coming soon... </i></h5>
-      <h5><a href="../../swagger/index.html">API Documentation</a></h5>
-      <h5><a href="../../Sphinx_Docs/_build/html/index.html">WALKOFF Python Code Documentation</a></h5>
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i>The Basics</h5>
-      <ul class="w3-medium">
-        <li><a href="Install_Tutorial.html"> Installation </a></li>
-        <li><a href="Interface_Overview.html"> Interface Overview </a></li>
-        <!--<li>Run Your First Workflow</li>-->
-      </ul>
-      <hr>
+    <div class="">
+      <h1>Securing a custom interface</h1>
+        <p>For endpoint security in WALKOFF we use JSON Web Tokens with access and refresh tokens. To secure a server
+           endpoint, we use the <code>flask-jwt-extended</code> package. You can and should use this same package to
+           protect endpoints. To require a valid JWT token to access your endpoint, you can use the following code:</p>
+        <pre><code class="python">
+from interfaces import dispatcher, AppBlueprint
+from core.events import WalkoffEvent
+from flask import Blueprint, jsonify
+from flask_jwt_extended import jwt_required
 
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Workflows</h5>
-      <ul class="w3-medium">
-        <li><a href="Workflow_Navigation_Tutorial.html"> Workflow Editor Navigation </a></li>
-        <li><a href="Workflow_Editor_Tutorial.html"> Basic Workflow Creation </a></li>
-        <li><a href="Workflow_Branching_Tutorial.html"> Branching Workflow Creation </a></li>
-        <li><a href="Workflow_Advanced_Tutorial.html"> "Advanced" Workflow Creation </a></li>
-      </ul>
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Devices</h5>
-      <ul class="w3-medium">
-        <li><a href="Devices_Tutorial.html"> Device Tutorial </a></li>
-      </ul>
-      <hr>
+blueprint = AppBlueprint(blueprint=Blueprint('HelloWorldPage', __name__))
 
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Apps</h5>
-      <ol class="w3-medium">
-        <li><a href="Develop_an_app.html">Develop an App</a></li>
-        <li><a href="Develop_an_app_with_class.html">Develop an App with Devices</a></li>
-        <li><a href="Develop_conditions_transforms.html">Develop Conditions and Transforms</a></li>
-        <li><a href="App_api_schema.html">App API Schema Examples</a></li>
-        <li><a href="Actions_with_multiple_return_codes.html">Action Return Codes</a></li>
-        <li><a href="Manage_app_dependencies.html">Managing App Dependencies</a></li>
-        <li><a href="Test_an_app.html">Testing an App</a></li>
-      </ol>
-      <hr>
+hello_world_action_count = {}
 
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Interfaces</h5>
-      <ul class="w3-medium">
-        <li><a href="Develop_a_custom_interface.html">Develop a Custom Interface</a></li>
-        <li><a href="Securing_a_custom_interface.html">Securing a Custom Interface</a></li>
-      </ul>
-      <hr>
+@dispatcher.on_app_actions('HelloWorld', events=WalkOffEvent.ActionStarted)
+def handle_workflow1_start(data):
+    global hello_world_action_count
+    action_name = data['action_name']
+    if action_name not in hello_world_action_count:
+        hello_world_action_count[action_name] = 1
+    else:
+        hello_world_action_count[action_name] += 1
 
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Platform</h5>
-      <ul class="w3-medium">
-        <li><a href="Workflow_Scheduler.html">Workflow Scheduler</a></li>
-        <li><a href="Trigger_Management.html">Manage Triggers</a></li>
-        <li><a href="Case_Management.html">Case Management</a></li>
-      </ul>
 
-      <h5 class="topLevelList w3-padding-8 w3-large"><i class="fa fa-circle w3-text-black" > </i> System Administration</h5>
-      <ul class="w3-medium">
-        <li><a href="User_Management.html">Managing Users</a></li>
-        <li><a href="Settings.html">System Configuration</a></li>
-      </ul>
-    </div>
-
-   <div class="w3-third w3-center">
-      <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+@blueprint.blueprint.route('/metrics', methods=['GET'])
+@jwt_required
+def get_hello_world_metrics():
+    global hello_world_action_count
+    return jsonify(hello_world_action_count), 200
+        </code></pre>
+        <p>That's it! Just an import and one line of code, and now only authenticated users can access your endpoint</p>
+        <p>To add the access token to your AJAX request, you can add the following line to the request</p>
+        <pre><code class="javascript js">
+$(function () {
+        $.ajax({
+        'async': false,
+        'type': "GET",
+        'global': false,
+        'headers': { "Authorization": 'Bearer ' + sessionStorage.getItem('access_token') },
+        'url': "/interfaces/HelloWorld/metrics",
+        'success': function (data) {
+            for (const action in data) {
+                $('#results').append(`
+                    &lttr&gt
+                        &lttd&gt${action}&lt/td&gt
+                        &lttd&gt${data[action]}&lt/td&gt
+                    &lt/tr&gt
+                `)
+            }
+        },
+        'error': function (e) {
+            console.log(e);
+        }
+    });
+});
+        </code></pre>
     </div>
   </div>
 </div>

@@ -33,7 +33,30 @@ def get_hello_world_metrics():
         </code></pre>
         <p>That's it! Just an import and one line of code, and now only authenticated users can access your endpoint</p>
         <p>To add the access token to your AJAX request, you can add the following line to the request</p>
-
+        <pre><code class="javascript js">
+$(function () {
+        $.ajax({
+        'async': false,
+        'type': "GET",
+        'global': false,
+        'headers': { "Authorization": 'Bearer ' + sessionStorage.getItem('access_token') },
+        'url': "/interfaces/HelloWorld/metrics",
+        'success': function (data) {
+            for (const action in data) {
+                $('#results').append(`
+                    &lttr&gt
+                        &lttd&gt${action}&lt/td&gt
+                        &lttd&gt${data[action]}&lt/td&gt
+                    &lt/tr&gt
+                `)
+            }
+        },
+        'error': function (e) {
+            console.log(e);
+        }
+    });
+});
+        </code></pre>
     </div>
   </div>
 </div>
