@@ -9,3 +9,6 @@ client/node_modules/*
 client/build/*
 public_keys/*
 private_keys/*
+.vscode
+composed_api.yaml
+data/log

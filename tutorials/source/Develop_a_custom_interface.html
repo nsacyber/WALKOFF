@@ -177,6 +177,74 @@ def get_hello_world_metrics():
     global hello_world_action_count
     return jsonify(hello_world_action_count), 200
         </code></pre>
+
+        <h4><b>5. Query the endpoint and display the data</b></h4>
+        <p>
+            We now have a page being served on this interface and a route created to grab JSON data.
+            The next step is actually utilizing this route on the front end to grab and display the data.
+
+            <i>Note: WALKOFF's client interface is written in Angular, but currently the interface functionality is limited
+            to jQuery and whatever libraries you install via npm.</i>
+
+            Under the <code>interface/static</code>, you may create a JavaScript file (e.g. main.js) and CSS file (e.g. main.css).
+            You can include the JS file into your view by adding this line to the <code>head</code> HTML element:
+        </p>
+
+        <pre><code class="html">
+&ltscript src="{{ url_for('custom_interface.static', app=g.interface, filename='main.js') }}"&gt&lt/script&gt
+        </code></pre>
+
+        <p>
+            You may also add CSS files the same way with Jinja's url_for method:
+        </p>
+
+        <pre><code class="html">
+&ltlink rel="stylesheet" href="{{ url_for('custom_interface.static', app=g.interface, filename='main.css') }}"&gt&lt/link&gt
+        </code></pre>
+
+        <p>
+            So we want to display the information returned from the metrics route.
+            First, in the HTML body element, add a simple table to store the information.
+        </p>
+
+        <pre><code class="html">
+&lttable id="results"&gt
+    &ltthead&gt
+        &lttr&gtAction Name&lt/tr&gt
+        &lttr&gtCount&lt/tr&gt
+    &lt/thead&gt
+&lttable&gt
+        </code></pre>
+        <p>
+            Within the JavaScript, add this block to query the new endpoint and utilize the data.
+            This will query the endpoint, and on a successful response, will iterate through the
+            object returned from the server and add rows to the "results" table.
+        </p>
+
+        <pre><code class="javascript js">
+$(function () {
+        $.ajax({
+        'async': false,
+        'type': "GET",
+        'global': false,
+        'headers': { "Authorization": 'Bearer ' + sessionStorage.getItem('access_token') },
+        'url': "/interfaces/HelloWorld/metrics",
+        'success': function (data) {
+            for (const action in data) {
+                $('#results').append(`
+                    &lttr&gt
+                        &lttd&gt${action}&lt/td&gt
+                        &lttd&gt${data[action]}&lt/td&gt
+                    &lt/tr&gt
+                `)
+            }
+        },
+        'error': function (e) {
+            console.log(e);
+        }
+    });
+});
+        </code></pre>
     </div>
   </div>
 </div>
