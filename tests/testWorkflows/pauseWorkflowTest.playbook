@@ -32,7 +32,6 @@
                     ],
                     "name": "1",
                     "position": {},
-                    "risk": 0,
                     "uid": "6c52b6a75406452a9d85967d80d71bf8",
                     "device_id": 1
                 },
@@ -42,7 +41,6 @@
                     "arguments": [],
                     "name": "start",
                     "position": {},
-                    "risk": 0,
                     "uid": "e2131c32efe44a83913396a0fbb9f34d",
                     "device_id": 1
                 },
@@ -57,7 +55,6 @@
                     ],
                     "name": "2",
                     "position": {},
-                    "risk": 0,
                     "uid": "b7725c22c881484ebe2901027f1acd7f",
                     "device_id": 1
                 }

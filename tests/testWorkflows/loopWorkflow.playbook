@@ -58,7 +58,6 @@
                     ],
                     "name": "1",
                     "position": {},
-                    "risk": 0,
                     "templated": true,
                     "uid": "c8d5873e831c44fb838e601bb407a768",
                     "device_id": 1
@@ -74,7 +73,6 @@
                     ],
                     "name": "start",
                     "position": {},
-                    "risk": 0,
                     "templated": true,
                     "uid": "543f6226116c473bb75d19330b77371e",
                     "device_id": 1

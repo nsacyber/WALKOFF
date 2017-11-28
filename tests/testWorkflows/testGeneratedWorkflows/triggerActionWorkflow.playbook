@@ -3,7 +3,6 @@
     "uid": "1c8dc8d1e824425892c14226de6f565a",
     "workflows": [
         {
-            "accumulated_risk": 0.0,
             "actions": [
                 {
                     "action_name": "repeatBackToMe",
@@ -16,7 +15,6 @@
                     ],
                     "name": "start",
                     "position": {},
-                    "risk": 0,
                     "triggers": [
                         {
                             "action_name": "regMatch",

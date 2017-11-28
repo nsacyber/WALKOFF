@@ -139,11 +139,6 @@ Action:
       description: ID of the device to use
       type: integer
       example: 42
-    risk:
-      description: risk associated with this action failing
-      type: number
-      default: 0
-      example: 20
     arguments:
       description: The input arguments to the action
       type: array

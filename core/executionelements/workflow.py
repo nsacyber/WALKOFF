@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class Workflow(ExecutionElement):
-    def __init__(self, name='', uid=None, actions=None, branches=None, start=None, accumulated_risk=0.0):
+    def __init__(self, name='', uid=None, actions=None, branches=None, start=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Actions
             within it that get executed.
             
@@ -24,8 +24,6 @@ class Workflow(ExecutionElement):
             actions (dict, optional): Optional Action objects. Defaults to None.
             branches (list[Branch], optional): A list of Branch objects for the Action object. Defaults to None.
             start (str, optional): Optional UID of the starting Action. Defaults to None.
-            accumulated_risk (float, optional): The amount of risk that the execution of this Workflow has
-                accrued. Defaults to 0.0.
         """
         ExecutionElement.__init__(self, uid)
         self.name = name
@@ -42,9 +40,7 @@ class Workflow(ExecutionElement):
                     self.branches[branch.source_uid].append(branch)
 
         self.start = start if start is not None else 'start'
-        self.accumulated_risk = accumulated_risk
 
-        self._total_risk = float(sum([action.risk for action in self.actions.values() if action.risk > 0]))
         self._is_paused = False
         self._resume = threading.Event()
         self._accumulator = {}
@@ -148,7 +144,8 @@ class Workflow(ExecutionElement):
                 first = False
                 if start_arguments:
                     self.__swap_action_arguments(action, start_arguments)
-            self.__execute_action(action, instances[device_id])
+            action.execute(instance=instances[device_id](), accumulator=self._accumulator)
+            self._accumulator[action.uid] = action.get_output().result
             total_actions.append(action)
         self.__shutdown(instances)
         yield
@@ -220,16 +217,6 @@ class Workflow(ExecutionElement):
             logger.error('Cannot change arguments to workflow {0}. '
                          'Invalid arguments. Error: {1}'.format(self.name, format_exception_message(e)))
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowArgumentsInvalid)
-
-    def __execute_action(self, action, instance):
-        try:
-            action.execute(instance=instance(), accumulator=self._accumulator)
-        except Exception as e:
-            if self._total_risk > 0:
-                self.accumulated_risk += float(action.risk) / self._total_risk
-            logger.debug('Action {0} of workflow {1} executed with error {2}'.format(action, self.name,
-                                                                                     format_exception_message(e)))
-        self._accumulator[action.uid] = action.get_output().result
 
     def __shutdown(self, instances):
         # Upon finishing shuts down instances

@@ -55,32 +55,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         apps.clear_cache()
         core.controller.controller.shutdown_pool()
 
-    def test_simple_risk(self):
-        workflow = Workflow(name='workflow')
-        workflow.create_action(name="actionOne", action='helloWorld', app='HelloWorld', risk=1)
-        workflow.create_action(name="actionTwo", action='helloWorld', app='HelloWorld', risk=2)
-        workflow.create_action(name="actionThree", action='helloWorld', app='HelloWorld', risk=3)
-
-        self.assertEqual(workflow._total_risk, 6)
-
-    def test_accumulated_risk_with_error(self):
-        workflow = Workflow(name='workflow')
-        workflow._execution_uid = 'some_uid'
-        action1 = Action(name="action_one", app_name='HelloWorld', action_name='Buggy', risk=1)
-        action2 = Action(name="action_two", app_name='HelloWorld', action_name='Buggy', risk=2)
-        action3 = Action(name="action_three", app_name='HelloWorld', action_name='Buggy', risk=3.5)
-        workflow.actions = {'action_one': action1, 'action_two': action2, 'action_three': action3}
-        workflow._total_risk = 6.5
-
-        instance = AppInstance.create(app_name='HelloWorld', device_name='test_device_name')
-
-        workflow._Workflow__execute_action(workflow.actions["action_one"], instance)
-        self.assertAlmostEqual(workflow.accumulated_risk, 1.0 / 6.5)
-        workflow._Workflow__execute_action(workflow.actions["action_two"], instance)
-        self.assertAlmostEqual(workflow.accumulated_risk, (1.0 / 6.5) + (2.0 / 6.5))
-        workflow._Workflow__execute_action(workflow.actions["action_three"], instance)
-        self.assertAlmostEqual(workflow.accumulated_risk, 1.0)
-
     def test_pause_and_resume_workflow(self):
         self.controller.load_playbook(resource=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
 

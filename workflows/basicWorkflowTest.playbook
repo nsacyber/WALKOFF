@@ -3,7 +3,6 @@
     "uid": "1357c4af-35fd-4cad-8c09-1bf3e2a52af8",
     "workflows": [
         {
-            "accumulated_risk": 0.0,
             "actions": [
                 {
                     "action_name": "helloWorld",
@@ -15,7 +14,6 @@
                         "x": 130,
                         "y": 130
                     },
-                    "risk": 0,
                     "triggers": [],
                     "uid": "aae6192c-35b1-95e9-a2d7-3c127667ee19"
                 },
@@ -34,7 +32,6 @@
                         "x": 370,
                         "y": 210
                     },
-                    "risk": 0,
                     "triggers": [],
                     "uid": "0585feec-cc74-c2d6-16bd-6bdda55bfa38"
                 },
@@ -58,7 +55,6 @@
                         "x": 530,
                         "y": 210
                     },
-                    "risk": 0,
                     "triggers": [],
                     "uid": "02b4fa8f-b003-823b-39ed-666e9d58b2ef"
                 },
@@ -72,7 +68,6 @@
                         "x": 210,
                         "y": 210
                     },
-                    "risk": 0,
                     "triggers": [],
                     "uid": "78e3baca-72ee-ac97-6770-6c36bd90d5c0"
                 },
@@ -86,7 +81,6 @@
                         "x": 290,
                         "y": 130
                     },
-                    "risk": 0,
                     "triggers": [],
                     "uid": "e7a2f454-109f-5e44-ee97-0095af957c09"
                 },
@@ -108,7 +102,6 @@
                         "x": 450,
                         "y": 130
                     },
-                    "risk": 0,
                     "triggers": [],
                     "uid": "9a2a03e1-21ad-3c49-1359-16eda19da906"
                 },
@@ -142,7 +135,6 @@
                         "x": 610,
                         "y": 130
                     },
-                    "risk": 0,
                     "triggers": [
                         {
                             "action_name": "number compare",
@@ -183,7 +175,6 @@
                         "x": 690,
                         "y": 210
                     },
-                    "risk": 0,
                     "triggers": [],
                     "uid": "b5f04cbe-d315-d1a9-c192-b4a47d012afd"
                 }

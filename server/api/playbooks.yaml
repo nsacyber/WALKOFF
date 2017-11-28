@@ -328,45 +328,7 @@
         description: Playbook or workflow does not exist.
         schema:
           $ref: '#/definitions/Error'
-/api/playbooks/{playbook_name}/workflows/{workflow_name}/risk:
-  get:
-    tags:
-      - Workflows
-    summary: Read a workflow's risk value
-    description: ''
-    operationId: server.endpoints.playbooks.read_workflow_risk
-    parameters:
-      - name: playbook_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
-      - name: workflow_name
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          type: object
-          required: [risk_percent, risk_number]
-          properties:
-            risk_percent:
-              description: Percentage of total risk accumulated
-              type: number
-              example: 25.63
-            risk_number:
-              description: Raw number of the risk accumulated by the workflow
-              type: number
-              example: 153.5
-      461:
-        description: Playbook or workflow does not exist.
-        schema:
-          $ref: '#/definitions/Error'
+
 /api/playbooks/{playbook_name}/workflows/{workflow_name}/copy:
   post:
     tags:

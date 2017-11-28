@@ -20,7 +20,7 @@ class Action(ExecutionElement):
     _templatable = True
 
     def __init__(self, app_name, action_name, name='', device_id=None, arguments=None, triggers=None, position=None,
-                 risk=0, uid=None, templated=False, raw_representation=None):
+                 uid=None, templated=False, raw_representation=None):
         """Initializes a new Action object. A Workflow has many actions that it executes.
 
         Args:
@@ -35,7 +35,6 @@ class Action(ExecutionElement):
                 before continuing, then include these Trigger objects in the Action init. Defaults to None.
             position (dict, optional): A dictionary with the x and y coordinates of the Action object. This is used
                 for UI display purposes. Defaults to None.
-            risk (int, optional): The risk associated with the Action. Defaults to 0.
             uid (str, optional): A universally unique identifier for this object.
                 Created from uuid.uuid4().hex in Python
             templated (bool, optional): Whether or not the Action is templated. Used for Jinja templating.
@@ -65,7 +64,6 @@ class Action(ExecutionElement):
         if not self.templated:
             validate_app_action_parameters(self._arguments_api, arguments, self.app_name, self.action_name)
         self.arguments = arguments
-        self.risk = risk
         self.position = position if position is not None else {}
 
         self._output = None
@@ -173,13 +171,11 @@ class Action(ExecutionElement):
             #TODO: Should this event return the error?
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionArgumentsInvalid)
             self._output = ActionResult('error: {0}'.format(formatted_error), 'InvalidArguments')
-            raise
         except Exception as e:
             formatted_error = format_exception_message(e)
             logger.exception('Error calling action {0}. Error: {1}'.format(self.name, formatted_error))
             self._output = ActionResult('error: {0}'.format(formatted_error), 'UnhandledException')
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionError, data=self._output.as_json())
-            raise
         else:
             self._output = result
             logger.debug(

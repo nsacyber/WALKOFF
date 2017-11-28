@@ -42,7 +42,6 @@
                     ],
                     "name": "1",
                     "position": {},
-                    "risk": 0,
                     "uid": "1",
                     "device_id": 1
                 },
@@ -52,7 +51,6 @@
                     "arguments": [],
                     "name": "start",
                     "position": {},
-                    "risk": 0,
                     "uid": "2",
                     "device_id": 1
                 }

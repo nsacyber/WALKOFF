@@ -294,27 +294,6 @@ def delete_workflow(playbook_name, workflow_name):
     return __func()
 
 
-def read_workflow_risk(playbook_name, workflow_name):
-    from server.context import running_context
-
-    @jwt_required
-    @roles_accepted_for_resources('playbooks')
-    def __func():
-        if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
-            risk_percent = "{0:.2f}".format(workflow.accumulated_risk * 100.00)
-            risk_number = str(workflow.accumulated_risk * workflow.total_risk)
-            return {"risk_percent": risk_percent,
-                    "risk_number": risk_number}, SUCCESS
-        else:
-            current_app.logger.info(
-                'Workflow {0}-{1} not found in controller. Cannot retrieve risk.'.format(playbook_name,
-                                                                                         workflow_name))
-            return {"error": 'Playbook or workflow does not exist.'}, OBJECT_DNE_ERROR
-
-    return __func()
-
-
 def copy_workflow(playbook_name, workflow_name):
     from server.context import running_context
     from server.flaskserver import write_playbook_to_file

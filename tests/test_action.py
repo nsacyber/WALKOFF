@@ -24,7 +24,7 @@ class TestAction(unittest.TestCase):
         apps.clear_cache()
 
     def __compare_init(self, elem, name, action_name, app_name, device_id=None, arguments=None, triggers=None,
-                       risk=0., position=None, uid=None, templated=False, raw_representation=None):
+                       position=None, uid=None, templated=False, raw_representation=None):
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.action_name, action_name)
         self.assertEqual(elem.app_name, app_name)
@@ -33,7 +33,6 @@ class TestAction(unittest.TestCase):
             arguments = {arg.name: arg for arg in arguments}
             self.assertDictEqual(elem.arguments, arguments)
             self.assertDictEqual({key: argument for key, argument in elem.arguments.items()}, arguments)
-        self.assertEqual(elem.risk, risk)
         if triggers:
             self.assertEqual(len(elem.triggers), len(triggers))
             self.assertSetEqual({trigger.action_name for trigger in elem.triggers}, set(triggers))
@@ -67,10 +66,6 @@ class TestAction(unittest.TestCase):
     def test_init_with_position(self):
         action = Action('HelloWorld', 'helloWorld', position={'x': 13, 'y': 42})
         self.__compare_init(action, '', 'helloWorld', 'HelloWorld', position={'x': 13, 'y': 42})
-
-    def test_init_with_risk(self):
-        action = Action('HelloWorld', 'helloWorld', risk=42)
-        self.__compare_init(action, '', 'helloWorld', 'HelloWorld', risk=42)
 
     def test_init_templated(self):
         action = Action('HelloWorld', 'helloWorld', templated=True, raw_representation={'a': 42})
@@ -211,8 +206,7 @@ class TestAction(unittest.TestCase):
                                Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'missing': '4.3', '3': '45'}
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        with self.assertRaises(InvalidArgument):
-            action.execute(instance.instance, accumulator)
+        action.execute(instance.instance, accumulator)
 
     def test_execute_with_accumulator_missing_action_callbacks(self):
         action = Action(app_name='HelloWorld', action_name='Add Three',
@@ -233,8 +227,7 @@ class TestAction(unittest.TestCase):
                 else:
                     result['result_triggered'] = True
         WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
-        with self.assertRaises(InvalidArgument):
-            action.execute(instance.instance, accumulator)
+        action.execute(instance.instance, accumulator)
 
         self.assertTrue(result['started_triggered'])
         self.assertTrue(result['result_triggered'])
@@ -252,14 +245,12 @@ class TestAction(unittest.TestCase):
         self.assertEqual(action._output, result)
 
     def test_execute_action_which_raises_exception(self):
-        from tests.testapps.HelloWorld.exceptions import CustomException
         action = Action(app_name='HelloWorld', action_name='Buggy')
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        with self.assertRaises(CustomException):
-            action.execute(instance.instance, {})
+        action.execute(instance.instance, {})
+        self.assertIsNotNone(action.get_output())
 
     def test_execute_action_which_raises_exception_sends_callbacks(self):
-        from tests.testapps.HelloWorld.exceptions import CustomException
         action = Action(app_name='HelloWorld', action_name='Buggy')
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
 
@@ -275,8 +266,7 @@ class TestAction(unittest.TestCase):
                     result['result_triggered'] = True
         WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
 
-        with self.assertRaises(CustomException):
-            action.execute(instance.instance, {})
+        action.execute(instance.instance, {})
 
         self.assertTrue(result['started_triggered'])
         self.assertTrue(result['result_triggered'])

@@ -22,12 +22,10 @@ from tests.util.servertestcase import ServerTestCase
 
 class TestWorkflowServer(ServerTestCase):
     def setUp(self):
-        # This looks awful, I know
         self.empty_workflow_json = \
             {'actions': [],
              'name': 'test_name',
              'start': 'start',
-             'accumulated_risk': 0.0,
              'branches': []}
 
         case_database.initialize()

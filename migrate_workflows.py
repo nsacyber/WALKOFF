@@ -18,14 +18,16 @@ def convert_playbook(path):
     print('Processing {}'.format(path))
     with open(path, 'r') as f:
         playbook = json.load(f)
-        playbook['walkoff_version'] = walkoff_version
-        for workflow in playbook['workflows']:
-            convert_workflow(workflow)
+        if 'walkoff_version' not in playbook:
+            playbook['walkoff_version'] = walkoff_version
+            for workflow in playbook['workflows']:
+                convert_workflow(workflow)
     with open(path, 'w') as f:
         json.dump(playbook, f, sort_keys=True, indent=4, separators=(',', ': '))
 
 
 def convert_workflow(workflow):
+    workflow.pop('accumulated_risk', None)
     if 'actions' not in workflow:
         workflow['actions'] = workflow.pop('steps')
     if 'branches' not in workflow:
@@ -50,6 +52,7 @@ def convert_workflow(workflow):
 
 
 def convert_action(step, steps_copy):
+    step.pop('risk', None)
     if 'arguments' not in step:
         step['arguments'] = step.pop('inputs', [])
     step['arguments'] = [convert_arg(arg, steps_copy) for arg in step['arguments']]
