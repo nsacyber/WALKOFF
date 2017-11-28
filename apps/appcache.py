@@ -13,10 +13,12 @@ _logger = logging.getLogger(__name__)
 
 
 class AppCache(object):
+    """Object which caches app actions, conditions, and transforms
+
+    Attributes:
+        _cache (dict): The cache of the app and functions
     """
-    Object which caches app actions
-    """
-    #TODO: Use an enum for this? Something better than this anyways
+    # TODO: Use an enum for this? Something better than this anyways
     exception_lookup = {'actions': UnknownAppAction,
                         'conditions': UnknownCondition,
                         'transforms': UnknownTransform}
@@ -25,8 +27,7 @@ class AppCache(object):
         self._cache = {}
 
     def cache_apps(self, path):
-        """
-        Cache apps from a given path
+        """Cache apps from a given path
 
         Args:
             path (str): Path to apps module
@@ -42,27 +43,29 @@ class AppCache(object):
                 self._import_and_cache_submodules('{0}.{1}'.format(app_path, app), app, app_path)
 
     def clear(self):
-        """
-        Clears the cache
+        """Clears the cache
         """
         self._cache = {}
 
     def get_app_names(self):
-        """
-        Gets a list of all the app names
+        """Gets a list of all the app names
+
+        Returns:
+            list[str]: A list of all the names of apps stored in the cache
         """
         return list(self._cache.keys())
 
     def get_app(self, app_name):
-        """
-        Gets the app class for a given app. If app has only global actions or is not found,
-        raises an UnknownApp exception.
+        """Gets the app class for a given app.
 
         Args:
             app_name (str): Name of the app to get
 
         Returns:
-            (cls) The app's class
+            cls: The app's class
+
+        Raises:
+            UnknownApp: If the app is not found in the cache or the app has only global actions
         """
         try:
             app_cache = self._cache[app_name]
@@ -77,40 +80,48 @@ class AppCache(object):
                 raise UnknownApp(app_name)
 
     def get_app_action_names(self, app_name):
-        """
-        Gets all the names of the actions for a given app
+        """Gets all the names of the actions for a given app
 
         Args:
             app_name (str): Name of the app
 
         Returns:
-            (list[str]): The actions associated with the app
+            list[str]: The actions associated with the app
+
+        Raises:
+            UnknownApp: If the app is not found in the cache
         """
         return self._get_function_type_names(app_name, 'actions')
 
     def get_app_action(self, app_name, action_name):
-        """
-        Gets the action function for a given app and action name
+        """Gets the action function for a given app and action name
 
         Args:
             app_name (str): Name of the app
             action_name(str): Name of the action
 
         Returns:
-            (func) The action
+            func: The action
+
+        Raises:
+            UnknownApp: If the app is not found in the cache
+            UnknownAppAction: If the app does not have the specified action
         """
         return self._get_function_type(app_name, action_name, 'actions')
 
     def is_app_action_bound(self, app_name, action_name):
-        """
-        Determines if the action is bound (meaning it's inside a class) or not
+        """Determines if the action is bound (meaning it's inside a class) or not
 
         Args:
             app_name (str): Name of the app
             action_name(str): Name of the action
 
         Returns:
-            (bool) Is the action bound?
+            bool: Is the action bound?
+
+        Raises:
+            UnknownApp: If the app is not found in the cache
+            UnknownAppAction: If the app does not have the specified action
         """
         try:
             app_cache = self._cache[app_name]
@@ -127,56 +138,78 @@ class AppCache(object):
             raise UnknownAppAction(app_name, action_name)
 
     def get_app_condition_names(self, app_name):
-        """
-        Gets all the names of the conditions for a given app
+        """Gets all the names of the conditions for a given app
 
         Args:
             app_name (str): Name of the app
 
         Returns:
-            (list[str]): The conditions associated with the app
+            list[str]: The conditions associated with the app
+
+        Raises:
+            UnknownApp: If the app is not found in the cache
         """
         return self._get_function_type_names(app_name, 'conditions')
 
     def get_app_condition(self, app_name, condition_name):
-        """
-        Gets the condition function for a given app and action name
+        """Gets the condition function for a given app and action name
 
         Args:
             app_name (str): Name of the app
             condition_name(str): Name of the action
 
         Returns:
-            (func) The action
+            func: The action
+
+        Raises:
+            UnknownApp: If the app is not found in the cache
+            UnknownCondition: If the app does not have the specified condition
         """
         return self._get_function_type(app_name, condition_name, 'conditions')
 
     def get_app_transform_names(self, app_name):
-        """
-        Gets all the names of the transforms for a given app
+        """Gets all the names of the transforms for a given app
 
         Args:
             app_name (str): Name of the app
 
         Returns:
-            (list[str]): The transforms associated with the app
+            list[str]: The transforms associated with the app
+
+        Raises:
+            UnknownApp: If the app is not found in the cache
         """
         return self._get_function_type_names(app_name, 'transforms')
 
     def get_app_transform(self, app_name, transform_name):
-        """
-        Gets the transform function for a given app and action name
+        """Gets the transform function for a given app and action name
 
         Args:
             app_name (str): Name of the app
             transform_name(str): Name of the action
 
         Returns:
-            (func) The transform
+            func: The transform
+
+        Raises:
+            UnknownApp: If the app is not found in the cache
+            UnknownCondition: If the app does not have the specified condition
         """
         return self._get_function_type(app_name, transform_name, 'transforms')
 
     def _get_function_type_names(self, app_name, function_type):
+        """Gets all the names for a given function type ('actions', 'conditions', 'transforms') for an app
+
+        Args:
+            app_name (str): The name of the app
+            function_type (str): 'actions', 'conditions' or 'transforms'
+
+        Returns:
+            list[str]: List of all the names of the functions of the given type
+
+        Raises:
+            UnknownApp: If the app is not found in the cache
+        """
         try:
             app_cache = self._cache[app_name]
             if function_type not in app_cache:
@@ -187,16 +220,21 @@ class AppCache(object):
             raise UnknownApp(app_name)
 
     def _get_function_type(self, app_name, function_name, function_type):
-        """
-        Gets the function of the for a given app and action name
+        """Gets the function of the for a given app and action name
 
         Args:
             app_name (str): Name of the app
             function_name(str): Name of the action
-            function_type (str): Type of function
+            function_type (str): Type of function, 'actions', 'conditions', or 'transforms'
 
         Returns:
-            (func) The transform
+            func: The function
+
+        Raises:
+            UnknownApp: If the app is not found in the cache
+            UnknownAppAction: if the function_type is 'actions' and the given action name isn't found
+            UnknownCondition: if the function_type is 'conditions' and the given condition name isn't found
+            UnknownTransform: if the function_type is 'transforms' and the given transform name isn't found
         """
         try:
             app_cache = self._cache[app_name]
@@ -214,14 +252,13 @@ class AppCache(object):
 
     @staticmethod
     def _path_to_module(path):
-        """
-        Converts a path to a module. Can only handle relative paths without '..' in them.
+        """Converts a path to a module. Can only handle relative paths without '..' in them.
 
         Args:
             path (str): Path to convert
 
         Returns:
-            (str) Module form of the path
+            str: Module form of the path
         """
         path = path.replace(os.path.sep, '.')
         path = path.rstrip('.')
@@ -230,11 +267,11 @@ class AppCache(object):
     def _import_and_cache_submodules(self, package, app_name, app_path, recursive=True):
         """Imports and caches the submodules from a given package.
 
-            Args:
-                package (str|module): The name of the package or the package itself from which to import the submodules.
-                recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules.
-                    Defaults to True.
-            """
+        Args:
+            package (str|module): The name of the package or the package itself from which to import the submodules.
+            recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules.
+                Defaults to True.
+        """
         successful_import = True
         if isinstance(package, string_types):
             try:
@@ -256,8 +293,7 @@ class AppCache(object):
                             self._import_and_cache_submodules(full_name, app_name, app_path, recursive=True)
 
     def _cache_module(self, module, app_name, app_path):
-        """
-        Caches a module
+        """Caches a module
 
         Args:
             module (module): The module to cache
@@ -274,8 +310,7 @@ class AppCache(object):
                         self._cache_action(obj, app_name, base_path, attr)
 
     def _cache_app(self, app_class, app_name, app_path):
-        """
-        Caches an app
+        """Caches an app
 
         Args:
             app_class (cls): The app class to cache
@@ -305,8 +340,7 @@ class AppCache(object):
             self._cache[app_name]['actions'].update(new_actions)
 
     def _cache_action(self, action_method, app_name, app_path, tag, cls=None):
-        """
-        Caches an action
+        """Caches an action
 
         Args:
             action_method (func): The action to cache
@@ -334,8 +368,7 @@ class AppCache(object):
             self._cache[app_name][plural_tag][qualified_action_name]['bound'] = False
 
     def _clear_existing_bound_functions(self, app_name):
-        """
-        Clears existing bound functions from an app
+        """Clears existing bound functions from an app
 
         Args:
             app_name (str): The name of the app to clear
@@ -347,28 +380,26 @@ class AppCache(object):
 
     @staticmethod
     def _get_qualified_class_name(obj):
-        """
-        Gets the qualified name of a class
+        """Gets the qualified name of a class
 
         Args:
             obj (cls): The class to get the name
 
         Returns:
-            (str) The qualified name of the class
+            str: The qualified name of the class
         """
         return '{0}.{1}'.format(obj.__module__, obj.__name__)
 
     @staticmethod
     def _get_qualified_function_name(method, cls=None):
-        """
-        Gets the qualified name of a function or method
+        """Gets the qualified name of a function or method
 
         Args:
             method (func): The function or method to get the name
             cls (cls, optional): The class containing this function or method is any
 
         Returns:
-            (str) The qualified name of the function or method
+            str: The qualified name of the function or method
         """
         if cls:
             return '{0}.{1}.{2}'.format(method.__module__, cls.__name__, method.__name__)
@@ -377,15 +408,14 @@ class AppCache(object):
 
     @staticmethod
     def _strip_base_module_from_qualified_name(qualified_name, base_module):
-        """
-        Strips a base module from a qualified name
+        """Strips a base module from a qualified name
 
         Args:
             qualified_name (str): The qualified name to strip
             base_module (str): The base module path to strip from the qualified name
 
         Returns:
-            (str) The stripped qualified name
+            str: The stripped qualified name
         """
         base_module += '.'
         return qualified_name[len(base_module):] if qualified_name.startswith(base_module) else qualified_name

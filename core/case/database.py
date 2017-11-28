@@ -223,9 +223,3 @@ def initialize():
     Case_Base.metadata.drop_all()
     Case_Base.metadata.create_all()
 
-
-# Teardown Module
-def tear_down():
-    """ Tears down the case database
-    """
-    pass

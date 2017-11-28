@@ -24,9 +24,6 @@ class TestExecutionModes(unittest.TestCase):
     def setUp(self):
         case_database.initialize()
 
-    def tearDown(self):
-        case_database.tear_down()
-
     @classmethod
     def tearDownClass(cls):
         apps.clear_cache()

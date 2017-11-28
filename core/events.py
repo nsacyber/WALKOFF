@@ -5,7 +5,7 @@ from apscheduler.events import EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, 
     EVENT_SCHEDULER_RESUMED, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, EVENT_JOB_EXECUTED, EVENT_JOB_ERROR
 from blinker import Signal
 
-from core.case.callbacks import _add_entry_to_case_wrapper
+from core.case.callbacks import _add_entry_to_case
 import logging
 
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ class WalkoffSignal(object):
         self.signal = Signal(name)
         self.event_type = event_type
         if loggable:
-            signal_callback = partial(_add_entry_to_case_wrapper,
+            signal_callback = partial(_add_entry_to_case,
                                       data='',
                                       event_type=event_type.name,
                                       entry_message=message,

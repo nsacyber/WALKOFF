@@ -10,7 +10,9 @@ from core.case import database
 from core.case.database import Event
 
 
-def _add_entry_to_case_wrapper(sender, data, event_type, entry_message, message_name):
+def _add_entry_to_case(sender, data, event_type, entry_message, message_name):
+    """Adds an entry to all appropriate case logs
+    """
     if isinstance(sender, dict):
         originator = sender['uid']
     else:
@@ -32,8 +34,10 @@ def _add_entry_to_case_wrapper(sender, data, event_type, entry_message, message_
 
 
 def __construct_logging_signal(event_type, message_name, entry_message):
-    """Constructs a blinker Signal to log an event to the log database. Note: The returned callback must be stored to a
-        module variable for the signal to work.
+    """Constructs a blinker Signal to log an event to the log database.
+
+    Note:
+        The returned callback must be stored to a module variable for the signal to work.
         
     Args:
         event_type (str): Type of event which is logged 'Workflow, Action, etc.'
@@ -44,7 +48,7 @@ def __construct_logging_signal(event_type, message_name, entry_message):
         (signal, callback): The constructed blinker signal and its associated callback.
     """
     signal = Signal(message_name)
-    signal_callback = partial(_add_entry_to_case_wrapper,
+    signal_callback = partial(_add_entry_to_case,
                               data='',
                               event_type=event_type,
                               entry_message=entry_message,
