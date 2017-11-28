@@ -21,10 +21,6 @@ except ImportError:
     from queue import Queue
 
 
-REQUESTS_ADDR = 'tcp://127.0.0.1:5555'
-RESULTS_ADDR = 'tcp://127.0.0.1:5556'
-COMM_ADDR = 'tcp://127.0.0.1:5557'
-
 logger = logging.getLogger(__name__)
 
 
@@ -49,13 +45,13 @@ class LoadBalancer:
         self.request_socket.curve_secretkey = server_secret
         self.request_socket.curve_publickey = server_public
         self.request_socket.curve_server = True
-        self.request_socket.bind(REQUESTS_ADDR)
+        self.request_socket.bind(core.config.config.zmq_requests_address)
 
         self.comm_socket = self.ctx.socket(zmq.ROUTER)
         self.comm_socket.curve_secretkey = server_secret
         self.comm_socket.curve_publickey = server_public
         self.comm_socket.curve_server = True
-        self.comm_socket.bind(COMM_ADDR)
+        self.comm_socket.bind(core.config.config.zmq_communication_address)
 
     def manage_workflows(self):
         """Manages the workflows to be executed and the workers. It waits for the server to submit a request to
@@ -161,7 +157,7 @@ class Receiver:
         self.results_sock.curve_secretkey = server_secret
         self.results_sock.curve_publickey = server_public
         self.results_sock.curve_server = True
-        self.results_sock.bind(RESULTS_ADDR)
+        self.results_sock.bind(core.config.config.zmq_results_address)
 
     @staticmethod
     def send_callback(callback, sender, data):

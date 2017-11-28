@@ -21,10 +21,6 @@ except ImportError:
     from queue import Queue
 
 
-REQUESTS_ADDR = 'tcp://127.0.0.1:5555'
-RESULTS_ADDR = 'tcp://127.0.0.1:5556'
-COMM_ADDR = 'tcp://127.0.0.1:5557'
-
 logger = logging.getLogger(__name__)
 
 
@@ -154,21 +150,21 @@ class Worker:
         self.request_sock.curve_secretkey = client_secret
         self.request_sock.curve_publickey = client_public
         self.request_sock.curve_serverkey = server_public
-        self.request_sock.connect(REQUESTS_ADDR)
+        self.request_sock.connect(core.config.config.zmq_requests_address)
 
         self.comm_sock = self.ctx.socket(zmq.REQ)
         self.comm_sock.identity = u"Worker-{}".format(id_).encode("ascii")
         self.comm_sock.curve_secretkey = client_secret
         self.comm_sock.curve_publickey = client_public
         self.comm_sock.curve_serverkey = server_public
-        self.comm_sock.connect(COMM_ADDR)
+        self.comm_sock.connect(core.config.config.zmq_communication_address)
 
         self.results_sock = self.ctx.socket(zmq.PUSH)
         self.results_sock.identity = u"Worker-{}".format(id_).encode("ascii")
         self.results_sock.curve_secretkey = client_secret
         self.results_sock.curve_publickey = client_public
         self.results_sock.curve_serverkey = server_public
-        self.results_sock.connect(RESULTS_ADDR)
+        self.results_sock.connect(core.config.config.zmq_results_address)
 
         if worker_environment_setup:
             worker_environment_setup()
