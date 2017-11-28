@@ -20,7 +20,7 @@
 				<!-- Normal string text entries -->
 				<input *ngIf="parameterSchema.type === 'string' && !parameterSchema.enum" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value"
 				 type="text" [attr.minlength]="parameterSchema.minLength > 0 ? parameterSchema.minLength : null" [attr.maxlength]="parameterSchema.maxLength > 0 ? parameterSchema.maxLength : null"
-				 [attr.pattern]="parameterSchema.pattern ? parameterSchema.pattern : null" [attr.required]="parameterApi.required" [attr.placeholder]="parameterSchema.placeholder">
+				 [attr.pattern]="parameterSchema.pattern ? parameterSchema.pattern : null" [attr.required]="parameterApi.required" [attr.placeholder]="parameterApi.placeholder">
 
 				<!-- Enum types, make a select box -->
 				<select *ngIf="parameterSchema.enum" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value" [attr.required]="parameterApi.required">
@@ -32,7 +32,7 @@
 				<input *ngIf="parameterSchema.type === 'number' || parameterSchema.type === 'integer'" class="form-control" name="{{argument.name}}"
 				 [(ngModel)]="argument.value" type="number" [attr.min]="getMin(parameterSchema)" [attr.max]="getMax(parameterSchema)"
 				 [attr.step]="parameterSchema.multipleOf > 0 ? parameterSchema.multipleOf : null" [attr.required]="parameterApi.required"
-				 [attr.placeholder]="parameterSchema.placeholder">
+				 [attr.placeholder]="parameterApi.placeholder">
 
 				<!-- Checkbox for boolean values -->
 				<input *ngIf="parameterSchema.type === 'boolean'" type="checkbox" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value">

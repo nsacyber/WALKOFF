@@ -322,12 +322,14 @@ export class PlaybookComponent {
 								return;
 							}
 
+							const sourceAction = self.loadedWorkflow.actions.find(a => a.uid === sourceUid);
+							const sourceActionApi = self._getAction(sourceAction.app_name, sourceAction.action_name);
 							// Add our branch to the actual loadedWorkflow model
 							self.loadedWorkflow.branches.push({
 								uid,
 								source_uid: sourceUid,
 								destination_uid: destinationUid,
-								status: 'Success',
+								status: sourceActionApi.returns.length ? sourceActionApi.returns[0].status : '',
 								priority: 1,
 								conditions: [],
 							});

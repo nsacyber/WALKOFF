@@ -72,7 +72,7 @@
 					 [attr.type]="i.encrypted ? 'password' : 'text'" [attr.minlength]="i.schema.minLength > 0 ? i.schema.minLength : null"
 					 [attr.maxlength]="i.schema.maxLength > 0 ? i.schema.maxLength : null"
 					 [attr.pattern]="i.schema.pattern ? i.schema.pattern : null" [attr.required]="i.required"
-					 [disabled]="encryptedFieldsToBeCleared[i.name]" [attr.placeholder]="i.schema.placeholder">
+					 [disabled]="encryptedFieldsToBeCleared[i.name]" [attr.placeholder]="i.placeholder">
 
 					<!-- Enum types, make a select box -->
 					<select *ngIf="i.schema.enum" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]"
@@ -85,7 +85,7 @@
 					<input *ngIf="i.schema.type === 'number' || i.schema.type === 'integer'" class="form-control" name="{{i.name}}"
 					 [(ngModel)]="workingDevice.fields[i.name]" type="number" [attr.min]="getMin(i.schema)" [attr.max]="getMax(i.schema)"
 					 [attr.step]="i.schema.multipleOf > 0 ? i.schema.multipleOf : null" [attr.required]="i.required"
-					 [attr.placeholder]="i.schema.placeholder">
+					 [attr.placeholder]="i.placeholder">
 
 					<!-- Checkbox for boolean values -->
 					<input *ngIf="i.schema.type === 'boolean'" type="checkbox" class="form-control" name="{{i.name}}" [(ngModel)]="workingDevice.fields[i.name]">
