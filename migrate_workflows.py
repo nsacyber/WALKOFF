@@ -38,7 +38,7 @@ def convert_workflow(workflow):
         workflow['branches'] = branches
 
     actions_copy = deepcopy(workflow['actions'])
-    workflow['start'] = next((step['uid'] for step in actions_copy if step['name'] == workflow['start']), 
+    workflow['start'] = next((action['uid'] for action in actions_copy if action['name'] == workflow['start']),
                              workflow['start'])
 
     for action in workflow['actions']:
@@ -51,20 +51,20 @@ def convert_workflow(workflow):
         convert_branch(branch, actions_copy)
 
 
-def convert_action(step, steps_copy):
-    step.pop('risk', None)
-    if 'arguments' not in step:
-        step['arguments'] = step.pop('inputs', [])
-    step['arguments'] = [convert_arg(arg, steps_copy) for arg in step['arguments']]
-    if 'device' in step:
-        device_name = step.pop('device')
-        device_id = convert_device_to_device_id(step['app'], device_name, step['action'])
+def convert_action(action, actions_copy):
+    action.pop('risk', None)
+    if 'arguments' not in action:
+        action['arguments'] = action.pop('inputs', [])
+    action['arguments'] = [convert_arg(arg, actions_copy) for arg in action['arguments']]
+    if 'device' in action:
+        device_name = action.pop('device')
+        device_id = convert_device_to_device_id(action['app'], device_name, action['action'])
         if device_id is not None:
-            step['device_id'] = device_id
-    step.pop('widgets', None)
+            action['device_id'] = device_id
+    action.pop('widgets', None)
 
 
-def convert_device_to_device_id(app_name, device_name, step_name):
+def convert_device_to_device_id(app_name, device_name, action_name):
     app = device_db.session.query(App).filter(App.name == app_name).first()
     generic_error_ending = ('Devices are new held in field named "device_id" and are referenced by id rather than name.'
                             ' This will need to be changed manually.')
@@ -72,13 +72,13 @@ def convert_device_to_device_id(app_name, device_name, step_name):
         device = next((device for device in app.devices if device.name == device_name), None)
         if device is not None:
             print('WARNING: In action {0}: No device with name of {1} found for app {2}. '
-                  '{3}'.format(step_name, device_name, app_name, generic_error_ending))
+                  '{3}'.format(action_name, device_name, app_name, generic_error_ending))
             return None
         else:
             return device.id
     else:
         print('WARNING: In action {0}: No app {2} found in database. '
-              '{3}'.format(step_name, device_name, app_name, generic_error_ending))
+              '{3}'.format(action_name, device_name, app_name, generic_error_ending))
         return None
 
 
@@ -121,20 +121,20 @@ def convert_all_condition_transform_arguments(actions_copy, condition_transform)
     condition_transform['arguments'] = [convert_arg(arg, actions_copy) for arg in condition_transform['arguments']]
 
 
-def convert_arg(arg, steps):
+def convert_arg(arg, actions):
     new_arg = {'name': arg['name']}
-    new_arg.update(convert_arg_value(arg['value'], steps))
+    new_arg.update(convert_arg_value(arg['value'], actions))
     return new_arg
 
 
-def convert_arg_value(arg, steps):
+def convert_arg_value(arg, actions):
     if isinstance(arg, string_types) and arg[0] == '@':
-        reference_step_name = arg[1:]
-        reference_step_uid = next((step['uid'] for step in steps if step['name'] == reference_step_name), None)
-        if reference_step_uid is not None:
-            return {'reference': reference_step_uid}
+        reference_action_name = arg[1:]
+        reference_action_uid = next((action['uid'] for action in actions if action['name'] == reference_action_name), None)
+        if reference_action_uid is not None:
+            return {'reference': reference_action_uid}
         else:
-            print('reference {} cannot be converted from name to UID. Step UID not found'.format(arg))
+            print('reference {} cannot be converted from name to UID. Action UID not found'.format(arg))
             return {'reference': arg[1:]}
     else:
         return {'value': arg}
