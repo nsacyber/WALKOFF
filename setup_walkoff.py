@@ -20,6 +20,7 @@ def main():
     os.system('gulp ts')
 
     print('\nComposing API...')
+    os.chdir('..')
     os.system('python compose_api.py')
 
 
