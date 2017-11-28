@@ -1,12 +1,14 @@
 import logging.config
+import os
 import sys
 import traceback
-import os
 from os.path import isfile
-from core.config import config, paths
-from apps import *
+
 from gevent import monkey
 from gevent import pywsgi
+
+from apps import *
+from core.config import config, paths
 
 logger = logging.getLogger('walkoff')
 
@@ -58,7 +60,7 @@ def run():
 def print_banner():
     from core.config.config import walkoff_version
     banner = '***** Running WALKOFF v.{} *****'.format(walkoff_version)
-    header_footer_banner = '*'*len(banner)
+    header_footer_banner = '*' * len(banner)
     logger.info(header_footer_banner)
     logger.info(banner)
     logger.info(header_footer_banner)
