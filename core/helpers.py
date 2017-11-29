@@ -400,3 +400,17 @@ def convert_action_argument(argument):
             except ValueError:
                 pass
     return argument
+
+
+def create_sse_event(event_id=None, event=None, data=None):
+    response = ''
+    if event_id is not None:
+        response += 'id: {}\n'.format(event_id)
+    if event is not None:
+        response += 'event: {}\n'.format(event)
+    if data is not None:
+        try:
+            response += 'data: {}\n'.format(json.dumps(data))
+        except ValueError:
+            response += 'data: {}\n'.format(data)
+    return response + '\n'

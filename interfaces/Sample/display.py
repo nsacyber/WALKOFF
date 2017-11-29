@@ -71,3 +71,4 @@ def stream_counter():
 def test_templated_blueprint(action):
     # This url is used by an blueprint2, and can be called using the url /apps/HelloWorld/<action>/test_action_blueprint
     return 'successfully called templated blueprint with action {0}'.format(action)
+

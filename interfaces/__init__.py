@@ -7,7 +7,7 @@ from six import string_types
 
 import core.config.config
 from core.events import WalkoffEvent, EventType
-from core.helpers import UnknownApp, UnknownAppAction, get_function_arg_names
+from core.helpers import UnknownApp, UnknownAppAction, get_function_arg_names, convert_action_argument
 
 _logger = logging.getLogger(__name__)
 
