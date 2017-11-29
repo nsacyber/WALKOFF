@@ -132,18 +132,6 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertEqual(format_db_path('sqlite', 'aa.db'), 'sqlite:///aa.db')
         self.assertEqual(format_db_path('postgresql', 'aa.db'), 'postgresql://aa.db')
 
-    # def test_get_app_action_api_valid(self):
-    #     api = get_app_action_api('HelloWorld', 'pause')
-    #     expected = ('main.Main.pause',
-    #                 [{'required': True,
-    #                   'type': 'number',
-    #                   'name': 'seconds',
-    #                   'description': 'Seconds to pause'}])
-    #     self.assertEqual(len(api), 2)
-    #     self.assertEqual(api[0], expected[0])
-    #     self.assertEqual(len(api[1]), 1)
-    #     self.assertDictEqual(api[1][0], expected[1][0])
-
     def test_get_app_action_api_invalid_app(self):
         with self.assertRaises(UnknownApp):
             get_app_action_api('InvalidApp', 'pause')
@@ -160,30 +148,9 @@ class TestHelperFunctions(unittest.TestCase):
         for actual_param in actual[0]:
             self.assertIn(actual_param, expected[0])
 
-    # def test_get_flag_api_valid(self):
-    #     api = get_condition_api('HelloWorld', 'regMatch')
-    #     expected = ('conditions.regMatch',
-    #         [{'required': True, 'type': 'string', 'name': 'regex', 'description': 'The regular expression to match'}],
-    #         {'required': True, 'type': 'string', 'name': 'value', 'description': 'The input value'}
-    #     )
-    #     expected = ('conditions.regMatch',
-    #         [{'required': True, 'type': 'string', 'name': 'regex', 'description': 'The regular expression to match'}],
-    #         {'required': True, 'type': 'string', 'name': 'value', 'description': 'The input value'})
-    #
-    #     print(api)
-    #     print(len(api))
-    #     print(len(expected))
-    #     self.assert_params_tuple_equal(api, expected)
-
     def test_get_flag_api_invalid(self):
         with self.assertRaises(UnknownCondition):
             get_condition_api('HelloWorld', 'invalid')
-
-    # def test_get_filter_api_valid(self):
-    #     api = get_transform_api('HelloWorld', 'length')
-    #     expected = ([], {'required': True, 'type': 'string', 'name': 'value', 'description': 'The input collection'})
-    #
-    #     self.assert_params_tuple_equal(api, expected)
 
     def test_get_filter_api_invalid(self):
         with self.assertRaises(UnknownTransform):
@@ -216,3 +183,24 @@ class TestHelperFunctions(unittest.TestCase):
             raise CustomError('test')
         except CustomError as e:
             self.assertEqual(format_exception_message(e), 'CustomError: test')
+
+    def test_create_sse_event_empty_args(self):
+        self.assertEqual(create_sse_event(), '')
+
+    def test_create_sse_event_id_only(self):
+        self.assertEqual(create_sse_event(event_id=1), 'id: 1\n\n')
+
+    def test_create_sse_event_only(self):
+        self.assertEqual(create_sse_event(event='some_event'), 'event: some_event\n\n')
+
+    def test_create_sse_data_only_non_json(self):
+        self.assertEqual(create_sse_event(data=42), 'data: 42\n\n')
+
+    def test_create_sse_data_only_json(self):
+        data = {'a': [1, 2, 3, 4], 'b': {'c': 'something', 'd': ['1', '2', '3']}}
+        self.assertEqual(create_sse_event(data=data), 'data: {}\n\n'.format(json.dumps(data)))
+
+    def test_create_sse_full(self):
+        data = {'a': [1, 2, 3, 4], 'b': {'c': 'something', 'd': ['1', '2', '3']}}
+        self.assertEqual(create_sse_event(event_id=1, event='something', data=data),
+                         'id: 1\nevent: something\ndata: {}\n\n'.format(json.dumps(data)))

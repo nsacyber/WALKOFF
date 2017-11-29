@@ -403,6 +403,8 @@ def convert_action_argument(argument):
 
 
 def create_sse_event(event_id=None, event=None, data=None):
+    if data is None and event_id is None and event is None:
+        return ''
     response = ''
     if event_id is not None:
         response += 'id: {}\n'.format(event_id)
