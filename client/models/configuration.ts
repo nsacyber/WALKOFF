@@ -12,7 +12,7 @@ export class Configuration {
 			clear_case_db_on_startup: false,
 			log_config_path: './data/log/logging.json',
 			// https: false,
-			tls_version: '1.2',
+			// tls_version: '1.2',
 			// certificate_path: 'data/shortstop.public.pem',
 			// private_key_path: 'data/shortstop.private.pem',
 			// debug: true,
@@ -35,7 +35,7 @@ export class Configuration {
 	clear_case_db_on_startup: boolean;
 	log_config_path: string;
 	// https: boolean;
-	tls_version: string;
+	// tls_version: string;
 	// certificate_path: string;
 	// private_key_path: string;
 	// debug: boolean;

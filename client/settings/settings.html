@@ -47,12 +47,12 @@
                             <label for="name">Use HTTPS</label>
                             <input type="checkbox" class="form-control" [(ngModel)]="configuration.https" name="https" required>
                         </div> -->
-                        <div class="form-group">
+                        <!-- <div class="form-group">
                             <label for="name">TLS Version (if enabled)</label>
                             <select class="form-control" [(ngModel)]="configuration.tls_version" name="tls_version">
                                 <option *ngFor="let i of tlsVersions" [value]="i" [label]="i">{{i}}</option>
                             </select>
-                        </div>
+                        </div> -->
                         <div class="form-group">
                             <label for="name">JWT Access Token Duration (in minutes)</label>
                             <input type="number" min="1" class="form-control" [(ngModel)]="configuration.access_token_duration" name="access_token_duration"
