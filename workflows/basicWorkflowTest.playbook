@@ -86,27 +86,25 @@
                     "uid": "e7a2f454-109f-5e44-ee97-0095af957c09"
                 },
                 {
-                    "action_name": "echo array",
-                    "app_name": "Utilities",
+                    "action_name": "repeat back to me",
+                    "app_name": "HelloWorld",
                     "arguments": [
                         {
-                            "name": "data",
-                            "value": [
-                                true,
-                                "asdf",
-                                "something",
-                                -13,
-                                "something else"
+                            "name": "call",
+                            "reference": "e7a2f454-109f-5e44-ee97-0095af957c09",
+                            "selection": [
+                                "message"
                             ]
                         }
                     ],
-                    "name": "echo array",
+                    "device_id": 1,
+                    "name": "repeatBackToMe",
                     "position": {
-                        "x": 690,
-                        "y": 210
+                        "x": 450,
+                        "y": 130
                     },
                     "triggers": [],
-                    "uid": "b5f04cbe-d315-d1a9-c192-b4a47d012afd"
+                    "uid": "9a2a03e1-21ad-3c49-1359-16eda19da906"
                 },
                 {
                     "action_name": "linearly scale",
@@ -142,25 +140,27 @@
                     "uid": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd"
                 },
                 {
-                    "action_name": "repeat back to me",
-                    "app_name": "HelloWorld",
+                    "action_name": "echo array",
+                    "app_name": "Utilities",
                     "arguments": [
                         {
-                            "name": "call",
-                            "reference": "e7a2f454-109f-5e44-ee97-0095af957c09",
-                            "selection": [
-                                "message"
+                            "name": "data",
+                            "value": [
+                                true,
+                                "asdf",
+                                "something",
+                                -13,
+                                "something else"
                             ]
                         }
                     ],
-                    "device_id": 1,
-                    "name": "repeatBackToMe",
+                    "name": "echo array",
                     "position": {
-                        "x": 450,
-                        "y": 130
+                        "x": 690,
+                        "y": 210
                     },
                     "triggers": [],
-                    "uid": "9a2a03e1-21ad-3c49-1359-16eda19da906"
+                    "uid": "b5f04cbe-d315-d1a9-c192-b4a47d012afd"
                 }
             ],
             "branches": [
@@ -206,19 +206,19 @@
                 },
                 {
                     "conditions": [],
-                    "destination_uid": "b5f04cbe-d315-d1a9-c192-b4a47d012afd",
-                    "priority": 1,
-                    "source_uid": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd",
-                    "status": "Success",
-                    "uid": "bc453382-c471-42a1-86fa-7877eb437aa3"
-                },
-                {
-                    "conditions": [],
                     "destination_uid": "02b4fa8f-b003-823b-39ed-666e9d58b2ef",
                     "priority": 1,
                     "source_uid": "9a2a03e1-21ad-3c49-1359-16eda19da906",
                     "status": "Success",
                     "uid": "8b17be11-b56e-4c44-b3ce-68852cbcf026"
+                },
+                {
+                    "conditions": [],
+                    "destination_uid": "b5f04cbe-d315-d1a9-c192-b4a47d012afd",
+                    "priority": 1,
+                    "source_uid": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd",
+                    "status": "Success",
+                    "uid": "bc453382-c471-42a1-86fa-7877eb437aa3"
                 }
             ],
             "name": "helloWorldWorkflow",

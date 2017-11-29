@@ -7,6 +7,7 @@ import threading
 import zmq
 import zmq.auth as auth
 from zmq.utils.strtypes import cast_unicode
+from six import string_types
 
 import core.config.config
 import core.config.paths
@@ -102,7 +103,13 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
             for field in ('value', 'reference', 'selection'):
                 val = getattr(argument, field)
                 if val is not None:
-                    setattr(arg, field, str(val))
+                    if not isinstance(val, string_types):
+                        try:
+                            setattr(arg, field, json.dumps(val))
+                        except ValueError:
+                            setattr(arg, field, str(val))
+                    else:
+                        setattr(arg, field, val)
 
         action_packet.callback_name = event.name
 
