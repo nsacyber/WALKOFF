@@ -40,26 +40,6 @@
             
   <div class="section" id="apps-helloworld-package">
 <h1>apps.HelloWorld package<a class="headerlink" href="#apps-helloworld-package" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="apps.HelloWorld.widgets.html">apps.HelloWorld.widgets package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="apps.HelloWorld.widgets.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="apps.HelloWorld.widgets.testWidget.html">apps.HelloWorld.widgets.testWidget package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="apps.HelloWorld.widgets.testWidget.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="apps.HelloWorld.widgets.testWidget.html#module-apps.HelloWorld.widgets.testWidget.display">apps.HelloWorld.widgets.testWidget.display module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="apps.HelloWorld.widgets.testWidget.html#module-apps.HelloWorld.widgets.testWidget">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="apps.HelloWorld.widgets.html#module-apps.HelloWorld.widgets">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
@@ -69,24 +49,26 @@
 <dt id="apps.HelloWorld.app.HelloWorld">
 <em class="property">class </em><code class="descclassname">apps.HelloWorld.app.</code><code class="descname">HelloWorld</code><span class="sig-paren">(</span><em>name=None</em>, <em>device=None</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.app.HelloWorld" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="apps.html#apps.App" title="apps.App"><code class="xref py py-class docutils literal"><span class="pre">apps.App</span></code></a></p>
+<p>This app defines the same actions as above, but bound to an app instance. This instance will keep track fo how
+many total actions are called for this app’s instance.</p>
 <dl class="method">
-<dt id="apps.HelloWorld.app.HelloWorld.helloWorld">
-<code class="descname">helloWorld</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.app.HelloWorld.helloWorld" title="Permalink to this definition">¶</a></dt>
+<dt id="apps.HelloWorld.app.HelloWorld.hello_world_bound">
+<code class="descname">hello_world_bound</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.app.HelloWorld.hello_world_bound" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="apps.HelloWorld.app.HelloWorld.pause">
-<code class="descname">pause</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.app.HelloWorld.pause" title="Permalink to this definition">¶</a></dt>
+<dt id="apps.HelloWorld.app.HelloWorld.pause_bound">
+<code class="descname">pause_bound</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.app.HelloWorld.pause_bound" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="apps.HelloWorld.app.HelloWorld.repeatBackToMe">
-<code class="descname">repeatBackToMe</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.app.HelloWorld.repeatBackToMe" title="Permalink to this definition">¶</a></dt>
+<dt id="apps.HelloWorld.app.HelloWorld.repeat_back_to_me_bound">
+<code class="descname">repeat_back_to_me_bound</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.app.HelloWorld.repeat_back_to_me_bound" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="apps.HelloWorld.app.HelloWorld.returnPlusOne">
-<code class="descname">returnPlusOne</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.app.HelloWorld.returnPlusOne" title="Permalink to this definition">¶</a></dt>
+<dt id="apps.HelloWorld.app.HelloWorld.return_plus_one_bound">
+<code class="descname">return_plus_one_bound</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.app.HelloWorld.return_plus_one_bound" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -94,48 +76,31 @@
 <code class="descname">shutdown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.app.HelloWorld.shutdown" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</dd></dl>
-
-</div>
-<div class="section" id="module-apps.HelloWorld.display">
-<span id="apps-helloworld-display-module"></span><h2>apps.HelloWorld.display module<a class="headerlink" href="#module-apps.HelloWorld.display" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="apps.HelloWorld.display.load">
-<code class="descclassname">apps.HelloWorld.display.</code><code class="descname">load</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.display.load" title="Permalink to this definition">¶</a></dt>
+<dl class="method">
+<dt id="apps.HelloWorld.app.HelloWorld.total_actions_called">
+<code class="descname">total_actions_called</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.app.HelloWorld.total_actions_called" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="function">
-<dt id="apps.HelloWorld.display.random_number_pusher">
-<code class="descclassname">apps.HelloWorld.display.</code><code class="descname">random_number_pusher</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.display.random_number_pusher" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="apps.HelloWorld.display.random_number_receiver">
-<code class="descclassname">apps.HelloWorld.display.</code><code class="descname">random_number_receiver</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.display.random_number_receiver" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="apps.HelloWorld.display.stream_counter">
-<code class="descclassname">apps.HelloWorld.display.</code><code class="descname">stream_counter</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.display.stream_counter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Example of using an infinite generator to create a stream
-:return:</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="apps.HelloWorld.display.stream_random_numbers">
-<code class="descclassname">apps.HelloWorld.display.</code><code class="descname">stream_random_numbers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.display.stream_random_numbers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Example of using coroutines to create an event-driven stream
-:return:</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="apps.HelloWorld.display.test_basic_blueprint">
-<code class="descclassname">apps.HelloWorld.display.</code><code class="descname">test_basic_blueprint</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.display.test_basic_blueprint" title="Permalink to this definition">¶</a></dt>
+<dt id="apps.HelloWorld.app.hello_world">
+<code class="descclassname">apps.HelloWorld.app.</code><code class="descname">hello_world</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.app.hello_world" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="apps.HelloWorld.display.test_templated_blueprint">
-<code class="descclassname">apps.HelloWorld.display.</code><code class="descname">test_templated_blueprint</code><span class="sig-paren">(</span><em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.display.test_templated_blueprint" title="Permalink to this definition">¶</a></dt>
+<dt id="apps.HelloWorld.app.pause">
+<code class="descclassname">apps.HelloWorld.app.</code><code class="descname">pause</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.app.pause" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="apps.HelloWorld.app.repeat_back_to_me">
+<code class="descclassname">apps.HelloWorld.app.</code><code class="descname">repeat_back_to_me</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.app.repeat_back_to_me" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="apps.HelloWorld.app.return_plus_one">
+<code class="descclassname">apps.HelloWorld.app.</code><code class="descname">return_plus_one</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.HelloWorld.app.return_plus_one" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -153,10 +118,8 @@
   <h3><a href="../../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">apps.HelloWorld package</a><ul>
-<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-apps.HelloWorld.app">apps.HelloWorld.app module</a></li>
-<li><a class="reference internal" href="#module-apps.HelloWorld.display">apps.HelloWorld.display module</a></li>
 <li><a class="reference internal" href="#module-apps.HelloWorld">Module contents</a></li>
 </ul>
 </li>

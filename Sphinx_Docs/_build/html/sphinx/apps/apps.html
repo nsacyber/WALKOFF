@@ -43,6 +43,40 @@
 <div class="section" id="subpackages">
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="apps.DailyQuote.html">apps.DailyQuote package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="apps.DailyQuote.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apps.DailyQuote.html#module-apps.DailyQuote.app">apps.DailyQuote.app module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apps.DailyQuote.html#module-apps.DailyQuote">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apps.HelloWorld.html">apps.HelloWorld package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="apps.HelloWorld.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apps.HelloWorld.html#module-apps.HelloWorld.app">apps.HelloWorld.app module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apps.HelloWorld.html#module-apps.HelloWorld">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apps.SkeletonApp.html">apps.SkeletonApp package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="apps.SkeletonApp.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apps.SkeletonApp.html#module-apps.SkeletonApp.app">apps.SkeletonApp.app module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apps.SkeletonApp.html#module-apps.SkeletonApp">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apps.Utilities.html">apps.Utilities package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="apps.Utilities.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apps.Utilities.html#module-apps.Utilities.actions">apps.Utilities.actions module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apps.Utilities.html#module-apps.Utilities.conditions">apps.Utilities.conditions module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apps.Utilities.html#module-apps.Utilities.transforms">apps.Utilities.transforms module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apps.Utilities.html#module-apps.Utilities">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="apps.Walkoff.html">apps.Walkoff package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="apps.Walkoff.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apps.Walkoff.html#module-apps.Walkoff.app">apps.Walkoff.app module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="apps.Walkoff.html#module-apps.Walkoff">Module contents</a></li>
+</ul>
+</li>
+</ul>
 </div>
 </div>
 <div class="section" id="submodules">
@@ -54,7 +88,11 @@
 <dt id="apps.appcache.AppCache">
 <em class="property">class </em><code class="descclassname">apps.appcache.</code><code class="descname">AppCache</code><a class="headerlink" href="#apps.appcache.AppCache" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Object which caches app actions</p>
+<p>Object which caches app actions, conditions, and transforms</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd>_cache (dict): The cache of the app and functions</dd>
+</dl>
 <dl class="method">
 <dt id="apps.appcache.AppCache.cache_apps">
 <code class="descname">cache_apps</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.appcache.AppCache.cache_apps" title="Permalink to this definition">¶</a></dt>
@@ -71,16 +109,22 @@
 <dd><p>Clears the cache</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="apps.appcache.AppCache.exception_lookup">
+<code class="descname">exception_lookup</code><em class="property"> = {'conditions': &lt;class 'core.helpers.UnknownCondition'&gt;, 'transforms': &lt;class 'core.helpers.UnknownTransform'&gt;, 'actions': &lt;class 'core.helpers.UnknownAppAction'&gt;}</em><a class="headerlink" href="#apps.appcache.AppCache.exception_lookup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="method">
 <dt id="apps.appcache.AppCache.get_app">
 <code class="descname">get_app</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.appcache.AppCache.get_app" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the app class for a given app. If app has only global actions or is not found,
-raises an UnknownApp exception.</p>
+<dd><p>Gets the app class for a given app.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd>app_name (str): Name of the app to get</dd>
 <dt>Returns:</dt>
-<dd>(cls) The app’s class</dd>
+<dd>cls: The app’s class</dd>
+<dt>Raises:</dt>
+<dd>UnknownApp: If the app is not found in the cache or the app has only global actions</dd>
 </dl>
 </dd></dl>
 
@@ -93,7 +137,10 @@ raises an UnknownApp exception.</p>
 <dd>app_name (str): Name of the app
 action_name(str): Name of the action</dd>
 <dt>Returns:</dt>
-<dd>(func) The action</dd>
+<dd>func: The action</dd>
+<dt>Raises:</dt>
+<dd>UnknownApp: If the app is not found in the cache
+UnknownAppAction: If the app does not have the specified action</dd>
 </dl>
 </dd></dl>
 
@@ -105,7 +152,39 @@ action_name(str): Name of the action</dd>
 <dt>Args:</dt>
 <dd>app_name (str): Name of the app</dd>
 <dt>Returns:</dt>
-<dd>(list[str]): The actions associated with the app</dd>
+<dd>list[str]: The actions associated with the app</dd>
+<dt>Raises:</dt>
+<dd>UnknownApp: If the app is not found in the cache</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="apps.appcache.AppCache.get_app_condition">
+<code class="descname">get_app_condition</code><span class="sig-paren">(</span><em>app_name</em>, <em>condition_name</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.appcache.AppCache.get_app_condition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the condition function for a given app and action name</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>app_name (str): Name of the app
+condition_name(str): Name of the action</dd>
+<dt>Returns:</dt>
+<dd>func: The action</dd>
+<dt>Raises:</dt>
+<dd>UnknownApp: If the app is not found in the cache
+UnknownCondition: If the app does not have the specified condition</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="apps.appcache.AppCache.get_app_condition_names">
+<code class="descname">get_app_condition_names</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.appcache.AppCache.get_app_condition_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all the names of the conditions for a given app</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>app_name (str): Name of the app</dd>
+<dt>Returns:</dt>
+<dd>list[str]: The conditions associated with the app</dd>
+<dt>Raises:</dt>
+<dd>UnknownApp: If the app is not found in the cache</dd>
 </dl>
 </dd></dl>
 
@@ -113,6 +192,40 @@ action_name(str): Name of the action</dd>
 <dt id="apps.appcache.AppCache.get_app_names">
 <code class="descname">get_app_names</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.appcache.AppCache.get_app_names" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets a list of all the app names</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>list[str]: A list of all the names of apps stored in the cache</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="apps.appcache.AppCache.get_app_transform">
+<code class="descname">get_app_transform</code><span class="sig-paren">(</span><em>app_name</em>, <em>transform_name</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.appcache.AppCache.get_app_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the transform function for a given app and action name</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>app_name (str): Name of the app
+transform_name(str): Name of the action</dd>
+<dt>Returns:</dt>
+<dd>func: The transform</dd>
+<dt>Raises:</dt>
+<dd>UnknownApp: If the app is not found in the cache
+UnknownCondition: If the app does not have the specified condition</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="apps.appcache.AppCache.get_app_transform_names">
+<code class="descname">get_app_transform_names</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.appcache.AppCache.get_app_transform_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all the names of the transforms for a given app</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>app_name (str): Name of the app</dd>
+<dt>Returns:</dt>
+<dd>list[str]: The transforms associated with the app</dd>
+<dt>Raises:</dt>
+<dd>UnknownApp: If the app is not found in the cache</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -124,7 +237,10 @@ action_name(str): Name of the action</dd>
 <dd>app_name (str): Name of the app
 action_name(str): Name of the action</dd>
 <dt>Returns:</dt>
-<dd>(bool) Is the action bound?</dd>
+<dd>bool: Is the action bound?</dd>
+<dt>Raises:</dt>
+<dd>UnknownApp: If the app is not found in the cache
+UnknownAppAction: If the app does not have the specified action</dd>
 </dl>
 </dd></dl>
 
@@ -137,18 +253,36 @@ action_name(str): Name of the action</dd>
 <dt id="apps.devicedb.App">
 <em class="property">class </em><code class="descclassname">apps.devicedb.</code><code class="descname">App</code><span class="sig-paren">(</span><em>name</em>, <em>devices=None</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.App" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>SqlAlchemy ORM class for Apps</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd>id (int): Integer Column which is the primary key
+name (str): String Column which is the name of the app
+devices: One-to-many relationship to Devices</dd>
+<dt>Args:</dt>
+<dd>name (str): Name of the app
+devices (iterable(Device), optional): The devices for this app . Defaults to None</dd>
+</dl>
 <dl class="method">
 <dt id="apps.devicedb.App.add_device">
 <code class="descname">add_device</code><span class="sig-paren">(</span><em>device</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.App.add_device" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Adds a device to this app.
+If the name of the device to add to this app already exists, then no device will be added</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>device (Device): The device to add</dd>
+</dl>
+</dd></dl>
 
 <dl class="method">
 <dt id="apps.devicedb.App.as_json">
 <code class="descname">as_json</code><span class="sig-paren">(</span><em>with_devices=False</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.App.as_json" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets the JSON representation of an App object.</p>
 <dl class="docutils">
+<dt>Args:</dt>
+<dd>with_devices (bool, optional): Should the devices of this app be included in its JSON? Defaults to False</dd>
 <dt>Returns:</dt>
-<dd>The JSON representation of an App object.</dd>
+<dd>dict: The JSON representation of an App object.</dd>
 </dl>
 </dd></dl>
 
@@ -160,17 +294,38 @@ action_name(str): Name of the action</dd>
 <dl class="staticmethod">
 <dt id="apps.devicedb.App.from_json">
 <em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.App.from_json" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Constructs an App from its JSON representation</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>data (dict): The JSON representation of the App</dd>
+<dt>Returns:</dt>
+<dd>App: The constructed app</dd>
+</dl>
+</dd></dl>
 
 <dl class="method">
 <dt id="apps.devicedb.App.get_device">
-<code class="descname">get_device</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.App.get_device" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descname">get_device</code><span class="sig-paren">(</span><em>device_id</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.App.get_device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a device associated with this app by ID</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>device_id (int): The device’s ID</dd>
+<dt>Returns:</dt>
+<dd>Device: The Device with the given ID if found. None otherwise</dd>
+</dl>
+</dd></dl>
 
 <dl class="method">
 <dt id="apps.devicedb.App.get_devices_of_type">
 <code class="descname">get_devices_of_type</code><span class="sig-paren">(</span><em>device_type</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.App.get_devices_of_type" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Gets all the devices associated with this app of a given type</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>device_type (str): The device type to get</dd>
+<dt>Returns:</dt>
+<dd>list[Device]: All the devices associated with this app which have the given device type</dd>
+</dl>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="apps.devicedb.App.id">
@@ -188,6 +343,25 @@ action_name(str): Name of the action</dd>
 <dt id="apps.devicedb.Device">
 <em class="property">class </em><code class="descclassname">apps.devicedb.</code><code class="descname">Device</code><span class="sig-paren">(</span><em>name</em>, <em>plaintext_fields</em>, <em>encrypted_fields</em>, <em>device_type</em>, <em>description=''</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.Device" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
+<p>The SqlAlchemy ORM class for a Device</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd>id (int): The id of this device. The primary key in the table
+name (str): The name of this device
+type (str): The type of this device
+description (str): A brief description of what this device represents
+plaintext_fields: A relationship to a DeviceField table
+encrypted_fields: A relationship to an EncryptedDeviceField table
+app_id (int): Foreign key to the app which is associated with this device.
+created_at (datetime): The time this device was created at
+modified_at (datetime): The time this device was last modified</dd>
+<dt>Args:</dt>
+<dd>name (str): The name of this device
+plaintext_fields (list[DeviceField]): The plaintext fields for this device
+encrypted_fields (list[EncryptedDeviceField]): The encrypted fields for this device
+device_type (str): The type of this device
+description: (str, optional): This device’s description. Defaults to empty string</dd>
+</dl>
 <dl class="attribute">
 <dt id="apps.devicedb.Device.app_id">
 <code class="descname">app_id</code><a class="headerlink" href="#apps.devicedb.Device.app_id" title="Permalink to this definition">¶</a></dt>
@@ -196,7 +370,14 @@ action_name(str): Name of the action</dd>
 <dl class="method">
 <dt id="apps.devicedb.Device.as_json">
 <code class="descname">as_json</code><span class="sig-paren">(</span><em>export=False</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.Device.as_json" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Constructs a JSON representation of this object</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>export (bool, optional): Should the value of all the encrypted device field be sent? Defaults to False</dd>
+<dt>Returns:</dt>
+<dd>dict: The JSON representation of this device</dd>
+</dl>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="apps.devicedb.Device.created_at">
@@ -216,17 +397,42 @@ action_name(str): Name of the action</dd>
 <dl class="staticmethod">
 <dt id="apps.devicedb.Device.from_json">
 <em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_in</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.Device.from_json" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Constructs a Device from its JSON representation</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>json_in (dict): A JSON representation of a Device</dd>
+<dt>Returns:</dt>
+<dd>Device: The constructed device</dd>
+</dl>
+</dd></dl>
 
 <dl class="method">
 <dt id="apps.devicedb.Device.get_encrypted_field">
 <code class="descname">get_encrypted_field</code><span class="sig-paren">(</span><em>field_name</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.Device.get_encrypted_field" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Gets an encrypted field</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>field_name (str): The name of the encrypted field to get</dd>
+<dt>Returns:</dt>
+<dd>The encrypted field</dd>
+<dt>Raises:</dt>
+<dd>UnknownDeviceField: If the device does not have an encrypted field with this name</dd>
+</dl>
+</dd></dl>
 
 <dl class="method">
 <dt id="apps.devicedb.Device.get_plaintext_fields">
 <code class="descname">get_plaintext_fields</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.Device.get_plaintext_fields" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Gets all the plaintext fields associated with this device</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt>dict{str: str|int|bool|float}: All the plaintext fields associated with this device.</dt>
+<dd>In the form of {field_name: value}</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="apps.devicedb.Device.id">
@@ -256,7 +462,12 @@ action_name(str): Name of the action</dd>
 <dl class="method">
 <dt id="apps.devicedb.Device.update_from_json">
 <code class="descname">update_from_json</code><span class="sig-paren">(</span><em>json_in</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.Device.update_from_json" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Updates this device from a partial JSON representation of a Device</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>json_in (dict): The partial JSON representation of a Device</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -264,17 +475,38 @@ action_name(str): Name of the action</dd>
 <dt id="apps.devicedb.DeviceDatabase">
 <em class="property">class </em><code class="descclassname">apps.devicedb.</code><code class="descname">DeviceDatabase</code><a class="headerlink" href="#apps.devicedb.DeviceDatabase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Wrapper for the SQLAlchemy database object</p>
+<p>Wrapper for the SQLAlchemy database connection object</p>
 </dd></dl>
 
 <dl class="class">
 <dt id="apps.devicedb.DeviceField">
 <em class="property">class </em><code class="descclassname">apps.devicedb.</code><code class="descname">DeviceField</code><span class="sig-paren">(</span><em>name</em>, <em>field_type</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.DeviceField" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code>, <a class="reference internal" href="#apps.devicedb.DeviceFieldMixin" title="apps.devicedb.DeviceFieldMixin"><code class="xref py py-class docutils literal"><span class="pre">apps.devicedb.DeviceFieldMixin</span></code></a></p>
+<p>The SqlAlchemy ORM for an unencrypted DeviceField</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd><dl class="first last docutils">
+<dt>value (str|int|bool|float): The value of the field. This is stored as a string and cast back to the appropriate</dt>
+<dd>type when accessed</dd>
+</dl>
+</dd>
+<dt>Args:</dt>
+<dd><p class="first">name (str): The name of the device field
+field_type (str): The type of the field. Must come from allowed_device_field_types else it will be cast to a</p>
+<blockquote>
+<div>string</div></blockquote>
+<p class="last">value (int|str|bool|float): The value of this field</p>
+</dd>
+</dl>
 <dl class="method">
 <dt id="apps.devicedb.DeviceField.as_json">
 <code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.DeviceField.as_json" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Gets a JSON representation of this object</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>dict: The JSON representation of this object</dd>
+</dl>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="apps.devicedb.DeviceField.device_id">
@@ -284,7 +516,14 @@ action_name(str): Name of the action</dd>
 <dl class="staticmethod">
 <dt id="apps.devicedb.DeviceField.from_json">
 <em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.DeviceField.from_json" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Constructs a DeviceField from its JSON representation</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>data (dict): The JSON representation of a DeviceField</dd>
+<dt>Returns:</dt>
+<dd>DeviceField: The constructed DeviceField</dd>
+</dl>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="apps.devicedb.DeviceField.id">
@@ -312,6 +551,13 @@ action_name(str): Name of the action</dd>
 <dt id="apps.devicedb.DeviceFieldMixin">
 <em class="property">class </em><code class="descclassname">apps.devicedb.</code><code class="descname">DeviceFieldMixin</code><a class="headerlink" href="#apps.devicedb.DeviceFieldMixin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>A mixin for DeviceFields which adds a primary key, name, and type</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd>id (int): The primary key of this table
+name (str): The name of the device field
+type (str): The data type of this device field. Must come from allowed_device_field_types</dd>
+</dl>
 <dl class="attribute">
 <dt id="apps.devicedb.DeviceFieldMixin.device_id">
 <code class="descname">device_id</code><em class="property"> = Column(None, Integer(), ForeignKey('device.id'), table=None)</em><a class="headerlink" href="#apps.devicedb.DeviceFieldMixin.device_id" title="Permalink to this definition">¶</a></dt>
@@ -338,10 +584,33 @@ action_name(str): Name of the action</dd>
 <dt id="apps.devicedb.EncryptedDeviceField">
 <em class="property">class </em><code class="descclassname">apps.devicedb.</code><code class="descname">EncryptedDeviceField</code><span class="sig-paren">(</span><em>name</em>, <em>field_type</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.EncryptedDeviceField" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code>, <a class="reference internal" href="#apps.devicedb.DeviceFieldMixin" title="apps.devicedb.DeviceFieldMixin"><code class="xref py py-class docutils literal"><span class="pre">apps.devicedb.DeviceFieldMixin</span></code></a></p>
+<p>The SqlAlchemy ORM for an encrypted DeviceField</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd><dl class="first last docutils">
+<dt>value (str|int|bool|float): The value of the field. This is stored as an encrypted string. When accessed it is</dt>
+<dd>decrypted and cast back to the appropriate type</dd>
+</dl>
+</dd>
+<dt>Args:</dt>
+<dd><p class="first">name (str): The name of the device field
+field_type (str): The type of the field. Must come from allowed_device_field_types else it will be cast to a</p>
+<blockquote>
+<div>string</div></blockquote>
+<p class="last">value (int|str|bool|float): The value of this field</p>
+</dd>
+</dl>
 <dl class="method">
 <dt id="apps.devicedb.EncryptedDeviceField.as_json">
 <code class="descname">as_json</code><span class="sig-paren">(</span><em>export=False</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.EncryptedDeviceField.as_json" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Gets a JSON representation of this object</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>export (bool, optional): Should the value be decrypted and returned? Defaults to False</dd>
+<dt>Returns:</dt>
+<dd>dict: The JSON representation of this object</dd>
+</dl>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="apps.devicedb.EncryptedDeviceField.device_id">
@@ -351,7 +620,14 @@ action_name(str): Name of the action</dd>
 <dl class="staticmethod">
 <dt id="apps.devicedb.EncryptedDeviceField.from_json">
 <em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.EncryptedDeviceField.from_json" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Constructs a DeviceField from its JSON representation</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>data (dict): The JSON representation of a DeviceField</dd>
+<dt>Returns:</dt>
+<dd>DeviceField: The constructed DeviceField</dd>
+</dl>
+</dd></dl>
 
 <dl class="attribute">
 <dt id="apps.devicedb.EncryptedDeviceField.id">
@@ -381,6 +657,18 @@ action_name(str): Name of the action</dd>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></p>
 </dd></dl>
 
+<dl class="data">
+<dt id="apps.devicedb.allowed_device_field_types">
+<code class="descclassname">apps.devicedb.</code><code class="descname">allowed_device_field_types</code><em class="property"> = ('string', 'number', 'boolean', 'integer')</em><a class="headerlink" href="#apps.devicedb.allowed_device_field_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>tuple: The string representations from JSON Schema of the allowed fields to be stored in a DeviceField</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="apps.devicedb.device_db">
+<code class="descclassname">apps.devicedb.</code><code class="descname">device_db</code><em class="property"> = &lt;apps.devicedb.DeviceDatabase object&gt;</em><a class="headerlink" href="#apps.devicedb.device_db" title="Permalink to this definition">¶</a></dt>
+<dd><p>The SQLAlchemy engine/connection object for the device database</p>
+</dd></dl>
+
 <dl class="function">
 <dt id="apps.devicedb.get_all_devices_for_app">
 <code class="descclassname">apps.devicedb.</code><code class="descname">get_all_devices_for_app</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.devicedb.get_all_devices_for_app" title="Permalink to this definition">¶</a></dt>
@@ -389,7 +677,7 @@ action_name(str): Name of the action</dd>
 <dt>Args:</dt>
 <dd>app_name (str): The name of the app</dd>
 <dt>Returns:</dt>
-<dd>(list[Device]): A list of devices associated with this app. Returns empty list if app is not in database</dd>
+<dd>list[Device]: A list of devices associated with this app. Returns empty list if app is not in database</dd>
 </dl>
 </dd></dl>
 
@@ -402,7 +690,7 @@ action_name(str): Name of the action</dd>
 <dd>app_name (str): The name of the app
 device_type (str): The type of device</dd>
 <dt>Returns:</dt>
-<dd>(list[Device]): A list of devices associated with this app. Returns empty list if app is not in database</dd>
+<dd>list[Device]: A list of devices associated with this app. Returns empty list if app is not in database</dd>
 </dl>
 </dd></dl>
 
@@ -414,7 +702,7 @@ device_type (str): The type of device</dd>
 <dt>Args:</dt>
 <dd>app_name (str): The name of the app</dd>
 <dt>Returns:</dt>
-<dd>(App): The desired device. Returns None if app or device not found.</dd>
+<dd>App: The desired device. Returns None if app or device not found.</dd>
 </dl>
 </dd></dl>
 
@@ -427,7 +715,7 @@ device_type (str): The type of device</dd>
 <dd>app_name (str): The name of the app
 device_name (str): The name of the device</dd>
 <dt>Returns:</dt>
-<dd>(Device): The desired device. Returns None if app or device not found.</dd>
+<dd>Device: The desired device. Returns None if app or device not found.</dd>
 </dl>
 </dd></dl>
 
@@ -445,10 +733,24 @@ device_name (str): The name of the device</dd>
 <em class="property">class </em><code class="descclassname">apps.</code><code class="descname">App</code><span class="sig-paren">(</span><em>app</em>, <em>device</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.App" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <p>Base class for apps</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd>app (apps.devicedb.App): The ORM of the App with the name passed into the constructor
+device (apps.devicedb.Device): The ORM of the device with the ID passed into teh constructor
+device_fields (dict): A dict of the plaintext fields of the device
+device_type (str): The type of device associated with self.device</dd>
+<dt>Args:</dt>
+<dd>app (str): The name of the app
+device (int): The ID of the device</dd>
+</dl>
 <dl class="method">
 <dt id="apps.App.get_all_devices">
 <code class="descname">get_all_devices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#apps.App.get_all_devices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets all the devices associated with this app</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>list: A list of apps.appdevice.Device objects associated with this app</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -457,69 +759,6 @@ device_name (str): The name of the device</dd>
 <dd><p>When implemented, this method performs shutdown procedures for the app</p>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="attribute">
-<dt id="apps.AppBlueprint">
-<code class="descclassname">apps.</code><code class="descname">AppBlueprint</code><a class="headerlink" href="#apps.AppBlueprint" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <a class="reference internal" href="#apps.AppWidgetBlueprint" title="apps.AppWidgetBlueprint"><code class="xref py py-class docutils literal"><span class="pre">AppWidgetBlueprint</span></code></a></p>
-</dd></dl>
-
-<dl class="class">
-<dt id="apps.AppWidgetBlueprint">
-<em class="property">class </em><code class="descclassname">apps.</code><code class="descname">AppWidgetBlueprint</code><span class="sig-paren">(</span><em>blueprint</em>, <em>rule=''</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.AppWidgetBlueprint" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Class to create blueprints for custom server endpoints in apps</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="apps.Event">
-<em class="property">class </em><code class="descclassname">apps.</code><code class="descname">Event</code><span class="sig-paren">(</span><em>name=''</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.Event" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Encapsulated an asynchronous event.</p>
-<dl class="docutils">
-<dt>Attributes:</dt>
-<dd>name (str, optional): Name of the event. Defaults to ‘’
-receivers (set{func}): Set of functions waiting on the event</dd>
-</dl>
-<dl class="method">
-<dt id="apps.Event.connect">
-<code class="descname">connect</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.Event.connect" title="Permalink to this definition">¶</a></dt>
-<dd><p>Connects a function to the event as a callback</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>func (func): Function to register as a callback</dd>
-<dt>Returns:</dt>
-<dd>(func): The unmodified function</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="apps.Event.disconnect">
-<code class="descname">disconnect</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.Event.disconnect" title="Permalink to this definition">¶</a></dt>
-<dd><p>Disconnects a function</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>func (func): The function to disconnect</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="apps.Event.trigger">
-<code class="descname">trigger</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.Event.trigger" title="Permalink to this definition">¶</a></dt>
-<dd><p>Triggers an event and calls all the functions with the data provided</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>data: Data to send to all the callbacks registered to this event</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="attribute">
-<dt id="apps.WidgetBlueprint">
-<code class="descclassname">apps.</code><code class="descname">WidgetBlueprint</code><a class="headerlink" href="#apps.WidgetBlueprint" title="Permalink to this definition">¶</a></dt>
-<dd><p>alias of <a class="reference internal" href="#apps.AppWidgetBlueprint" title="apps.AppWidgetBlueprint"><code class="xref py py-class docutils literal"><span class="pre">AppWidgetBlueprint</span></code></a></p>
 </dd></dl>
 
 <dl class="function">
@@ -547,19 +786,50 @@ receivers (set{func}): Set of functions waiting on the event</dd>
 <dd>app_name (str): Name of the app</dd>
 <dt>Returns:</dt>
 <dd>(list[str]): The actions associated with the app</dd>
+<dt>Raises:</dt>
+<dd>UnknownApp: If the app is not found in the cache</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="apps.get_all_conditions_for_app">
+<code class="descclassname">apps.</code><code class="descname">get_all_conditions_for_app</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.get_all_conditions_for_app" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all the names of the conditions for a given app from the global cache</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>app_name (str): Name of the app</dd>
+<dt>Returns:</dt>
+<dd>(list[str]): The conditions associated with the app</dd>
+<dt>Raises:</dt>
+<dd>UnknownApp: If the app is not found in the cache</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="apps.get_all_transforms_for_app">
+<code class="descclassname">apps.</code><code class="descname">get_all_transforms_for_app</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.get_all_transforms_for_app" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all the names of the transforms for a given app from the global cache</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>app_name (str): Name of the app</dd>
+<dt>Returns:</dt>
+<dd>(list[str]): The transforms associated with the app</dd>
+<dt>Raises:</dt>
+<dd>UnknownApp: If the app is not found in the cache</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="apps.get_app">
 <code class="descclassname">apps.</code><code class="descname">get_app</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.get_app" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the app class for a given app from the global cache. If app has only global actions or is not found,
-raises an UnknownApp exception.</p>
+<dd><p>Gets the app class for a given app from the global cache.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd>app_name (str): Name of the app to get</dd>
 <dt>Returns:</dt>
 <dd>(cls) The app’s class</dd>
+<dt>Raises:</dt>
+<dd>UnknownApp: If app has only global actions or app is not found</dd>
 </dl>
 </dd></dl>
 
@@ -573,6 +843,41 @@ raises an UnknownApp exception.</p>
 action_name(str): Name of the action</dd>
 <dt>Returns:</dt>
 <dd>(func) The action</dd>
+<dt>Raises:</dt>
+<dd>UnknownApp: If the app is not found in the cache
+UnknownAppAction: If the app does not have the action</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="apps.get_condition">
+<code class="descclassname">apps.</code><code class="descname">get_condition</code><span class="sig-paren">(</span><em>app_name</em>, <em>condition_name</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.get_condition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the condition function for a given app and condition name from the global cache</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>app_name (str): Name of the app
+condition_name(str): Name of the action</dd>
+<dt>Returns:</dt>
+<dd>(func) The action</dd>
+<dt>Raises:</dt>
+<dd>UnknownApp: If the app is not found in the cache
+UnknownCondition: If the app does not have the condition</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="apps.get_transform">
+<code class="descclassname">apps.</code><code class="descname">get_transform</code><span class="sig-paren">(</span><em>app_name</em>, <em>transform_name</em><span class="sig-paren">)</span><a class="headerlink" href="#apps.get_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the transform function for a given app and transform name from the global cache</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>app_name (str): Name of the app
+transform_name(str): Name of the transform</dd>
+<dt>Returns:</dt>
+<dd>(func) The action</dd>
+<dt>Raises:</dt>
+<dd>UnknownApp: If the app is not found in the cache
+UnknownCondition: If the app does not have the transform</dd>
 </dl>
 </dd></dl>
 
@@ -586,6 +891,9 @@ action_name(str): Name of the action</dd>
 action_name(str): Name of the action</dd>
 <dt>Returns:</dt>
 <dd>(bool) Is the action bound?</dd>
+<dt>Raises:</dt>
+<dd>UnknownApp: If the app is not found in the cache
+UnknownAppAction: If the app does not have the action</dd>
 </dl>
 </dd></dl>
 

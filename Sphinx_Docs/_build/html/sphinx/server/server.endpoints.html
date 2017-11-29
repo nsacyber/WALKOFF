@@ -46,23 +46,53 @@
 <div class="section" id="module-server.endpoints.appapi">
 <span id="server-endpoints-appapi-module"></span><h2>server.endpoints.appapi module<a class="headerlink" href="#module-server.endpoints.appapi" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="server.endpoints.appapi.list_app_actions">
-<code class="descclassname">server.endpoints.appapi.</code><code class="descname">list_app_actions</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.list_app_actions" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.appapi.extract_schema">
+<code class="descclassname">server.endpoints.appapi.</code><code class="descname">extract_schema</code><span class="sig-paren">(</span><em>api</em>, <em>unformatted_fields=('name'</em>, <em>'example'</em>, <em>'placeholder'</em>, <em>'description'</em>, <em>'required')</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.extract_schema" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.endpoints.appapi.read_all_app_actions">
-<code class="descclassname">server.endpoints.appapi.</code><code class="descname">read_all_app_actions</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.read_all_app_actions" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.appapi.format_all_app_actions_api">
+<code class="descclassname">server.endpoints.appapi.</code><code class="descname">format_all_app_actions_api</code><span class="sig-paren">(</span><em>api</em>, <em>app_name</em>, <em>action_type</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.format_all_app_actions_api" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.appapi.format_app_action_api">
+<code class="descclassname">server.endpoints.appapi.</code><code class="descname">format_app_action_api</code><span class="sig-paren">(</span><em>api</em>, <em>app_name</em>, <em>action_type</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.format_app_action_api" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.appapi.format_device_api_full">
+<code class="descclassname">server.endpoints.appapi.</code><code class="descname">format_device_api_full</code><span class="sig-paren">(</span><em>api</em>, <em>device_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.format_device_api_full" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.appapi.format_full_app_api">
+<code class="descclassname">server.endpoints.appapi.</code><code class="descname">format_full_app_api</code><span class="sig-paren">(</span><em>api</em>, <em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.format_full_app_api" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.appapi.format_returns">
+<code class="descclassname">server.endpoints.appapi.</code><code class="descname">format_returns</code><span class="sig-paren">(</span><em>api</em>, <em>with_event=False</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.format_returns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.appapi.read_all_app_apis">
+<code class="descclassname">server.endpoints.appapi.</code><code class="descname">read_all_app_apis</code><span class="sig-paren">(</span><em>field_name=None</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.read_all_app_apis" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="server.endpoints.appapi.read_all_apps">
-<code class="descclassname">server.endpoints.appapi.</code><code class="descname">read_all_apps</code><span class="sig-paren">(</span><em>interfaces_only=None</em>, <em>has_device_types=None</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.read_all_apps" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.endpoints.appapi.</code><code class="descname">read_all_apps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.read_all_apps" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.endpoints.appapi.read_all_devices">
-<code class="descclassname">server.endpoints.appapi.</code><code class="descname">read_all_devices</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.read_all_devices" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.appapi.read_app_api">
+<code class="descclassname">server.endpoints.appapi.</code><code class="descname">read_app_api</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.read_app_api" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="server.endpoints.appapi.read_app_api_field">
+<code class="descclassname">server.endpoints.appapi.</code><code class="descname">read_app_api_field</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.appapi.read_app_api_field" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -209,28 +239,13 @@
 <div class="section" id="module-server.endpoints.metadata">
 <span id="server-endpoints-metadata-module"></span><h2>server.endpoints.metadata module<a class="headerlink" href="#module-server.endpoints.metadata" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="server.endpoints.metadata.read_all_device_types">
-<code class="descclassname">server.endpoints.metadata.</code><code class="descname">read_all_device_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.metadata.read_all_device_types" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.metadata.read_all_filters">
-<code class="descclassname">server.endpoints.metadata.</code><code class="descname">read_all_filters</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.metadata.read_all_filters" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.metadata.read_all_flags">
-<code class="descclassname">server.endpoints.metadata.</code><code class="descname">read_all_flags</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.metadata.read_all_flags" title="Permalink to this definition">¶</a></dt>
+<dt id="server.endpoints.metadata.read_all_interfaces">
+<code class="descclassname">server.endpoints.metadata.</code><code class="descname">read_all_interfaces</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.metadata.read_all_interfaces" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="server.endpoints.metadata.read_all_possible_subscriptions">
 <code class="descclassname">server.endpoints.metadata.</code><code class="descname">read_all_possible_subscriptions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.metadata.read_all_possible_subscriptions" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.metadata.read_all_widgets">
-<code class="descclassname">server.endpoints.metadata.</code><code class="descname">read_all_widgets</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.metadata.read_all_widgets" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -349,11 +364,6 @@ filename (str): The given filename</div></blockquote>
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="server.endpoints.playbooks.read_workflow_risk">
-<code class="descclassname">server.endpoints.playbooks.</code><code class="descname">read_workflow_risk</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.read_workflow_risk" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="server.endpoints.playbooks.resume_workflow">
 <code class="descclassname">server.endpoints.playbooks.</code><code class="descname">resume_workflow</code><span class="sig-paren">(</span><em>playbook_name</em>, <em>workflow_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.playbooks.resume_workflow" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -448,38 +458,8 @@ filename (str): The given filename</div></blockquote>
 <div class="section" id="module-server.endpoints.triggers">
 <span id="server-endpoints-triggers-module"></span><h2>server.endpoints.triggers module<a class="headerlink" href="#module-server.endpoints.triggers" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
-<dt id="server.endpoints.triggers.create_trigger">
-<code class="descclassname">server.endpoints.triggers.</code><code class="descname">create_trigger</code><span class="sig-paren">(</span><em>trigger_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.triggers.create_trigger" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.triggers.delete_trigger">
-<code class="descclassname">server.endpoints.triggers.</code><code class="descname">delete_trigger</code><span class="sig-paren">(</span><em>trigger_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.triggers.delete_trigger" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.triggers.execute">
-<code class="descclassname">server.endpoints.triggers.</code><code class="descname">execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.triggers.execute" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.triggers.read_all_triggers">
-<code class="descclassname">server.endpoints.triggers.</code><code class="descname">read_all_triggers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.triggers.read_all_triggers" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.triggers.read_trigger">
-<code class="descclassname">server.endpoints.triggers.</code><code class="descname">read_trigger</code><span class="sig-paren">(</span><em>trigger_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.triggers.read_trigger" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="server.endpoints.triggers.send_data_to_trigger">
 <code class="descclassname">server.endpoints.triggers.</code><code class="descname">send_data_to_trigger</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.triggers.send_data_to_trigger" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.endpoints.triggers.update_trigger">
-<code class="descclassname">server.endpoints.triggers.</code><code class="descname">update_trigger</code><span class="sig-paren">(</span><em>trigger_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.endpoints.triggers.update_trigger" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>

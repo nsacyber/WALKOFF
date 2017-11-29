@@ -12,14 +12,6 @@ apps\.SkeletonApp\.app module
     :undoc-members:
     :show-inheritance:
 
-apps\.SkeletonApp\.display module
----------------------------------
-
-.. automodule:: apps.SkeletonApp.display
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 Module contents
 ---------------

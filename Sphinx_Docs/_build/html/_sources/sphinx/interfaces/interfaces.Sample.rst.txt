@@ -1,0 +1,22 @@
+interfaces\.Sample package
+==========================
+
+Submodules
+----------
+
+interfaces\.Sample\.display module
+----------------------------------
+
+.. automodule:: interfaces.Sample.display
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: interfaces.Sample
+    :members:
+    :undoc-members:
+    :show-inheritance:

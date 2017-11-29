@@ -92,14 +92,6 @@ server\.tokens module
     :undoc-members:
     :show-inheritance:
 
-server\.triggers module
------------------------
-
-.. automodule:: server.triggers
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 server\.workflowresults module
 ------------------------------
 

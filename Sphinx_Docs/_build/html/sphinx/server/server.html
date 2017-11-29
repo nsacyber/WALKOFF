@@ -46,9 +46,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="server.blueprints.html">server.blueprints package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.app">server.blueprints.app module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.events">server.blueprints.events module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.widgets">server.blueprints.widgets module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.custominterface">server.blueprints.custominterface module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints.workflowresult">server.blueprints.workflowresult module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="server.blueprints.html#module-server.blueprints">Module contents</a></li>
 </ul>
@@ -192,18 +190,6 @@ subscription_json (dict): A JSON representation of the subscription</dd>
 </dl>
 </dd></dl>
 
-<dl class="staticmethod">
-<dt id="server.context.Context.get_widgets">
-<em class="property">static </em><code class="descname">get_widgets</code><span class="sig-paren">(</span><em>path='./apps'</em><span class="sig-paren">)</span><a class="headerlink" href="#server.context.Context.get_widgets" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets a dictionary of all Widgets for every App.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>path (str, optional): The path to the apps. Defaults to the apps_path set in the configuration.</dd>
-<dt>Returns:</dt>
-<dd>A dictionary containing all App objects and any Widgets associated with them.</dd>
-</dl>
-</dd></dl>
-
 <dl class="method">
 <dt id="server.context.Context.set">
 <code class="descname">set</code><span class="sig-paren">(</span><em>key</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#server.context.Context.set" title="Permalink to this definition">¶</a></dt>
@@ -328,12 +314,12 @@ value (any): The value of the attribute to set.</dd>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 <dl class="attribute">
 <dt id="server.database.TrackModificationsMixIn.created_at">
-<code class="descname">created_at</code><em class="property"> = Column(None, DateTime(), table=None, default=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x7f09696e3310; current_timestamp&gt;))</em><a class="headerlink" href="#server.database.TrackModificationsMixIn.created_at" title="Permalink to this definition">¶</a></dt>
+<code class="descname">created_at</code><em class="property"> = Column(None, DateTime(), table=None, default=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x7fcad36f0690; current_timestamp&gt;))</em><a class="headerlink" href="#server.database.TrackModificationsMixIn.created_at" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
 <dt id="server.database.TrackModificationsMixIn.modified_at">
-<code class="descname">modified_at</code><em class="property"> = Column(None, DateTime(), table=None, onupdate=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x7f09696e3650; current_timestamp&gt;), default=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x7f09696e3510; current_timestamp&gt;))</em><a class="headerlink" href="#server.database.TrackModificationsMixIn.modified_at" title="Permalink to this definition">¶</a></dt>
+<code class="descname">modified_at</code><em class="property"> = Column(None, DateTime(), table=None, onupdate=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x7fcad36f0990; current_timestamp&gt;), default=ColumnDefault(&lt;sqlalchemy.sql.functions.current_timestamp at 0x7fcad36f0950; current_timestamp&gt;))</em><a class="headerlink" href="#server.database.TrackModificationsMixIn.modified_at" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -532,7 +518,7 @@ resources (list[str]): The list of resources for which this role should have acc
 <span id="server-flaskserver-module"></span><h2>server.flaskserver module<a class="headerlink" href="#module-server.flaskserver" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="server.flaskserver.app_page">
-<code class="descclassname">server.flaskserver.</code><code class="descname">app_page</code><span class="sig-paren">(</span><em>app_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.app_page" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">server.flaskserver.</code><code class="descname">app_page</code><span class="sig-paren">(</span><em>interface_name</em><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.app_page" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -543,16 +529,6 @@ resources (list[str]): The list of resources for which this role should have acc
 <dl class="function">
 <dt id="server.flaskserver.default">
 <code class="descclassname">server.flaskserver.</code><code class="descname">default</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.default" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.flaskserver.display_possible_subscriptions">
-<code class="descclassname">server.flaskserver.</code><code class="descname">display_possible_subscriptions</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.display_possible_subscriptions" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="server.flaskserver.list_all_widgets">
-<code class="descclassname">server.flaskserver.</code><code class="descname">list_all_widgets</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#server.flaskserver.list_all_widgets" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -809,105 +785,6 @@ it was created.</p>
 </dd></dl>
 
 </div>
-<div class="section" id="module-server.triggers">
-<span id="server-triggers-module"></span><h2>server.triggers module<a class="headerlink" href="#module-server.triggers" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="server.triggers.Triggers">
-<em class="property">class </em><code class="descclassname">server.triggers.</code><code class="descname">Triggers</code><span class="sig-paren">(</span><em>name</em>, <em>playbook</em>, <em>workflow</em>, <em>conditions</em>, <em>tag=''</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">flask_sqlalchemy.Model</span></code></p>
-<p>ORM for the triggers in the Walkoff database</p>
-<dl class="method">
-<dt id="server.triggers.Triggers.as_json">
-<code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers.as_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the JSON representation of the Trigger object.</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>The JSON representation of the Trigger object.</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="server.triggers.Triggers.condition">
-<code class="descname">condition</code><a class="headerlink" href="#server.triggers.Triggers.condition" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="server.triggers.Triggers.edit_trigger">
-<code class="descname">edit_trigger</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers.edit_trigger" title="Permalink to this definition">¶</a></dt>
-<dd><p>Edits a Trigger object.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>data (dict): JSON containing the edited information.</dd>
-<dt>Returns:</dt>
-<dd>True on successful edit, False otherwise.</dd>
-</dl>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="server.triggers.Triggers.execute">
-<em class="property">static </em><code class="descname">execute</code><span class="sig-paren">(</span><em>data</em>, <em>inputs</em>, <em>triggers=None</em>, <em>tags=None</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Tries to match the data in against the conditionals of all the triggers registered in the database.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>data (str): Data to be used to match against the conditionals
-inputs (list): The input to the first step of the workflow
-triggers (list[str], optional): List of names of the specific trigger to execute
-tags (list[str], optional): A list of tags to find the specific triggers to execute</dd>
-<dt>Returns:</dt>
-<dd>Dictionary of {“status”: &lt;status string&gt;}</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="server.triggers.Triggers.id">
-<code class="descname">id</code><a class="headerlink" href="#server.triggers.Triggers.id" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.triggers.Triggers.name">
-<code class="descname">name</code><a class="headerlink" href="#server.triggers.Triggers.name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.triggers.Triggers.playbook">
-<code class="descname">playbook</code><a class="headerlink" href="#server.triggers.Triggers.playbook" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="server.triggers.Triggers.tag">
-<code class="descname">tag</code><a class="headerlink" href="#server.triggers.Triggers.tag" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="staticmethod">
-<dt id="server.triggers.Triggers.update_playbook">
-<em class="property">static </em><code class="descname">update_playbook</code><span class="sig-paren">(</span><em>old_playbook</em>, <em>new_playbook</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers.update_playbook" title="Permalink to this definition">¶</a></dt>
-<dd><p>Updates the Trigger objects associated with a playbook that has since changed its name.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>old_playbook (str): The previous name of the playbook.
-new_playbook (str): The new name of the playbook.</dd>
-</dl>
-</dd></dl>
-
-<dl class="staticmethod">
-<dt id="server.triggers.Triggers.update_workflow">
-<em class="property">static </em><code class="descname">update_workflow</code><span class="sig-paren">(</span><em>old_workflow</em>, <em>new_workflow</em><span class="sig-paren">)</span><a class="headerlink" href="#server.triggers.Triggers.update_workflow" title="Permalink to this definition">¶</a></dt>
-<dd><p>Updates the Trigger objects associated with a workflow that has since changed its name.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>old_workflow (str): The previous name of the workflow.
-new_workflow (str): The new name of the workflow.</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="server.triggers.Triggers.workflow">
-<code class="descname">workflow</code><a class="headerlink" href="#server.triggers.Triggers.workflow" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-</div>
 <div class="section" id="module-server.workflowresults">
 <span id="server-workflowresults-module"></span><h2>server.workflowresults module<a class="headerlink" href="#module-server.workflowresults" title="Permalink to this headline">¶</a></h2>
 </div>
@@ -937,7 +814,6 @@ new_workflow (str): The new name of the workflow.</dd>
 <li><a class="reference internal" href="#module-server.scheduledtasks">server.scheduledtasks module</a></li>
 <li><a class="reference internal" href="#module-server.security">server.security module</a></li>
 <li><a class="reference internal" href="#module-server.tokens">server.tokens module</a></li>
-<li><a class="reference internal" href="#module-server.triggers">server.triggers module</a></li>
 <li><a class="reference internal" href="#module-server.workflowresults">server.workflowresults module</a></li>
 <li><a class="reference internal" href="#module-server">Module contents</a></li>
 </ul>

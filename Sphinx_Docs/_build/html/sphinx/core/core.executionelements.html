@@ -43,95 +43,141 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
+<div class="section" id="module-core.executionelements.action">
+<span id="core-executionelements-action-module"></span><h2>core.executionelements.action module<a class="headerlink" href="#module-core.executionelements.action" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.executionelements.action.Action">
+<em class="property">class </em><code class="descclassname">core.executionelements.action.</code><code class="descname">Action</code><span class="sig-paren">(</span><em>app_name</em>, <em>action_name</em>, <em>name=''</em>, <em>device_id=None</em>, <em>arguments=None</em>, <em>triggers=None</em>, <em>position=None</em>, <em>uid=None</em>, <em>templated=False</em>, <em>raw_representation=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.action.Action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.executionelements.executionelement.ExecutionElement" title="core.executionelements.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelements.executionelement.ExecutionElement</span></code></a></p>
+<dl class="method">
+<dt id="core.executionelements.action.Action.execute">
+<code class="descname">execute</code><span class="sig-paren">(</span><em>instance</em>, <em>accumulator</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.action.Action.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes an Action by calling the associated app function.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>instance (App): The instance of an App object to be used to execute the associated function.
+accumulator (dict): Dict containing the results of the previous actions</dd>
+<dt>Returns:</dt>
+<dd>The result of the executed function.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.executionelements.action.Action.get_execution_uid">
+<code class="descname">get_execution_uid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.action.Action.get_execution_uid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the execution UID of the Action</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>The execution UID</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.executionelements.action.Action.get_output">
+<code class="descname">get_output</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.action.Action.get_output" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the output of an Action (the result)</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>The result of the Action</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.executionelements.action.Action.render_action">
+<code class="descname">render_action</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.action.Action.render_action" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.executionelements.action.Action.send_data_to_trigger">
+<code class="descname">send_data_to_trigger</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.action.Action.send_data_to_trigger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends data to the Action if it has triggers associated with it, and is currently awaiting data</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>data (dict): The data to send to the triggers. This dict has two keys: ‘data_in’ which is the data</dt>
+<dd>to be sent to the triggers, and ‘arguments’, which is an optional parameter to change the arguments
+to the current Action</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.executionelements.action.Action.set_arguments">
+<code class="descname">set_arguments</code><span class="sig-paren">(</span><em>new_arguments</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.action.Action.set_arguments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates the arguments for an Action object.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>new_arguments ([Argument]): The new Arguments for the Action object.</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.executionelements.branch">
+<span id="core-executionelements-branch-module"></span><h2>core.executionelements.branch module<a class="headerlink" href="#module-core.executionelements.branch" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.executionelements.branch.Branch">
+<em class="property">class </em><code class="descclassname">core.executionelements.branch.</code><code class="descname">Branch</code><span class="sig-paren">(</span><em>source_uid</em>, <em>destination_uid</em>, <em>status='Success'</em>, <em>conditions=None</em>, <em>priority=999</em>, <em>uid=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.branch.Branch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.executionelements.executionelement.ExecutionElement" title="core.executionelements.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelements.executionelement.ExecutionElement</span></code></a></p>
+<dl class="method">
+<dt id="core.executionelements.branch.Branch.execute">
+<code class="descname">execute</code><span class="sig-paren">(</span><em>data_in</em>, <em>accumulator</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.branch.Branch.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes the Branch object, determining if this Branch should be taken.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>data_in (): The input to the Condition objects associated with this Branch.
+accumulator (dict): The accumulated data from previous Actions.</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt>Destination UID for the next Action that should be taken, None if the data_in was not valid</dt>
+<dd>for this Branch.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.executionelements.condition">
+<span id="core-executionelements-condition-module"></span><h2>core.executionelements.condition module<a class="headerlink" href="#module-core.executionelements.condition" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.executionelements.condition.Condition">
+<em class="property">class </em><code class="descclassname">core.executionelements.condition.</code><code class="descname">Condition</code><span class="sig-paren">(</span><em>app_name</em>, <em>action_name</em>, <em>arguments=None</em>, <em>transforms=None</em>, <em>uid=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.condition.Condition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.executionelements.executionelement.ExecutionElement" title="core.executionelements.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelements.executionelement.ExecutionElement</span></code></a></p>
+<dl class="method">
+<dt id="core.executionelements.condition.Condition.execute">
+<code class="descname">execute</code><span class="sig-paren">(</span><em>data_in</em>, <em>accumulator</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.condition.Condition.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes the Condition object, determining if the Condition evaluates to True or False.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>data_in (): The input to the Transform objects associated with this Condition.
+accumulator (dict): The accumulated data from previous Actions.</dd>
+<dt>Returns:</dt>
+<dd>True if the Condition evaluated to True, False otherwise</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="module-core.executionelements.executionelement">
 <span id="core-executionelements-executionelement-module"></span><h2>core.executionelements.executionelement module<a class="headerlink" href="#module-core.executionelements.executionelement" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="core.executionelements.executionelement.ExecutionElement">
 <em class="property">class </em><code class="descclassname">core.executionelements.executionelement.</code><code class="descname">ExecutionElement</code><span class="sig-paren">(</span><em>uid=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.executionelement.ExecutionElement" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<dl class="classmethod">
-<dt id="core.executionelements.executionelement.ExecutionElement.create">
-<em class="property">classmethod </em><code class="descname">create</code><span class="sig-paren">(</span><em>representation</em>, <em>creator=&lt;class 'core.jsonelementcreator.JsonElementCreator'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.executionelement.ExecutionElement.create" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a ExecutionElement from a representation</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><p class="first">representation: Representation of the ExecutionElement
-creator (cls, optional): The creator class to use to construct the ExecutionElement.</p>
-<blockquote class="last">
-<div>Defaults to JsonElementCreator</div></blockquote>
-</dd>
-<dt>Returns:</dt>
-<dd>(ExecutionElement) The created execution element</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.executionelements.executionelement.ExecutionElement.read">
-<code class="descname">read</code><span class="sig-paren">(</span><em>reader=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.executionelement.ExecutionElement.read" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reads an ExecutionElement and converts it to some representation</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>reader (cls, optional): The reader to use. Defaults to JsonElementReader</dd>
-<dt>Returns:</dt>
-<dd>The representation of the ExecutionElement generated by the reader</dd>
-</dl>
-</dd></dl>
-
+<dd><p>Bases: <a class="reference internal" href="core.html#core.representable.Representable" title="core.representable.Representable"><code class="xref py py-class docutils literal"><span class="pre">core.representable.Representable</span></code></a></p>
 <dl class="method">
 <dt id="core.executionelements.executionelement.ExecutionElement.regenerate_uids">
-<code class="descname">regenerate_uids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.executionelement.ExecutionElement.regenerate_uids" title="Permalink to this definition">¶</a></dt>
+<code class="descname">regenerate_uids</code><span class="sig-paren">(</span><em>with_children=True</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.executionelement.ExecutionElement.regenerate_uids" title="Permalink to this definition">¶</a></dt>
 <dd><p>Regenerates the UIDs of the execution element and its children</p>
-</dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="module-core.executionelements.filter">
-<span id="core-executionelements-filter-module"></span><h2>core.executionelements.filter module<a class="headerlink" href="#module-core.executionelements.filter" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="core.executionelements.filter.Filter">
-<em class="property">class </em><code class="descclassname">core.executionelements.filter.</code><code class="descname">Filter</code><span class="sig-paren">(</span><em>action</em>, <em>args=None</em>, <em>uid=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.filter.Filter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#core.executionelements.executionelement.ExecutionElement" title="core.executionelements.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelements.executionelement.ExecutionElement</span></code></a></p>
-<dl class="method">
-<dt id="core.executionelements.filter.Filter.execute">
-<code class="descname">execute</code><span class="sig-paren">(</span><em>data_in</em>, <em>accumulator</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.filter.Filter.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Executes the flag.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>data_in: The input to the flag. Typically from the last step of the workflow or the input to a trigger.
-accumulator (dict): A record of executed steps and their results. Of form {step_name: result}.</dd>
-<dt>Returns:</dt>
-<dd>(bool): Is the flag true for the given data and accumulator</dd>
+<dd>with_children (bool optional): Regenerate the childrens’ UIDs of this object? Defaults to True</dd>
 </dl>
 </dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="module-core.executionelements.flag">
-<span id="core-executionelements-flag-module"></span><h2>core.executionelements.flag module<a class="headerlink" href="#module-core.executionelements.flag" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="core.executionelements.flag.Flag">
-<em class="property">class </em><code class="descclassname">core.executionelements.flag.</code><code class="descname">Flag</code><span class="sig-paren">(</span><em>action</em>, <em>args=None</em>, <em>filters=None</em>, <em>uid=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.flag.Flag" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#core.executionelements.executionelement.ExecutionElement" title="core.executionelements.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelements.executionelement.ExecutionElement</span></code></a></p>
-<dl class="method">
-<dt id="core.executionelements.flag.Flag.execute">
-<code class="descname">execute</code><span class="sig-paren">(</span><em>data_in</em>, <em>accumulator</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.flag.Flag.execute" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-</div>
-<div class="section" id="module-core.executionelements.nextstep">
-<span id="core-executionelements-nextstep-module"></span><h2>core.executionelements.nextstep module<a class="headerlink" href="#module-core.executionelements.nextstep" title="Permalink to this headline">¶</a></h2>
-<dl class="class">
-<dt id="core.executionelements.nextstep.NextStep">
-<em class="property">class </em><code class="descclassname">core.executionelements.nextstep.</code><code class="descname">NextStep</code><span class="sig-paren">(</span><em>status='Success'</em>, <em>name=''</em>, <em>flags=None</em>, <em>uid=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.nextstep.NextStep" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#core.executionelements.executionelement.ExecutionElement" title="core.executionelements.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelements.executionelement.ExecutionElement</span></code></a></p>
-<dl class="method">
-<dt id="core.executionelements.nextstep.NextStep.execute">
-<code class="descname">execute</code><span class="sig-paren">(</span><em>data_in</em>, <em>accumulator</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.nextstep.NextStep.execute" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 
@@ -140,7 +186,7 @@ accumulator (dict): A record of executed steps and their results. Of form {step_
 <span id="core-executionelements-playbook-module"></span><h2>core.executionelements.playbook module<a class="headerlink" href="#module-core.executionelements.playbook" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="core.executionelements.playbook.Playbook">
-<em class="property">class </em><code class="descclassname">core.executionelements.playbook.</code><code class="descname">Playbook</code><span class="sig-paren">(</span><em>name</em>, <em>workflows=None</em>, <em>uid=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.playbook.Playbook" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">core.executionelements.playbook.</code><code class="descname">Playbook</code><span class="sig-paren">(</span><em>name</em>, <em>workflows=None</em>, <em>uid=None</em>, <em>walkoff_version='0.5.0'</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.playbook.Playbook" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#core.executionelements.executionelement.ExecutionElement" title="core.executionelements.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelements.executionelement.ExecutionElement</span></code></a></p>
 <dl class="method">
 <dt id="core.executionelements.playbook.Playbook.add_workflow">
@@ -196,14 +242,6 @@ accumulator (dict): A record of executed steps and their results. Of form {step_
 <dt>Returns:</dt>
 <dd>A list of all of the Workflows associated with the Playbook, in limited JSON form</dd>
 </dl>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"></td>
-</tr>
-</tbody>
-</table>
 </dd></dl>
 
 <dl class="method">
@@ -278,113 +316,25 @@ new_name (str): The new name of the Workflow</dd>
 </dd></dl>
 
 </div>
-<div class="section" id="module-core.executionelements.step">
-<span id="core-executionelements-step-module"></span><h2>core.executionelements.step module<a class="headerlink" href="#module-core.executionelements.step" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-core.executionelements.transform">
+<span id="core-executionelements-transform-module"></span><h2>core.executionelements.transform module<a class="headerlink" href="#module-core.executionelements.transform" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="core.executionelements.step.Step">
-<em class="property">class </em><code class="descclassname">core.executionelements.step.</code><code class="descname">Step</code><span class="sig-paren">(</span><em>app</em>, <em>action</em>, <em>name=''</em>, <em>device=''</em>, <em>inputs=None</em>, <em>triggers=None</em>, <em>next_steps=None</em>, <em>position=None</em>, <em>widgets=None</em>, <em>risk=0</em>, <em>uid=None</em>, <em>templated=False</em>, <em>raw_representation=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.step.Step" title="Permalink to this definition">¶</a></dt>
+<dt id="core.executionelements.transform.Transform">
+<em class="property">class </em><code class="descclassname">core.executionelements.transform.</code><code class="descname">Transform</code><span class="sig-paren">(</span><em>app_name</em>, <em>action_name</em>, <em>arguments=None</em>, <em>uid=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.transform.Transform" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#core.executionelements.executionelement.ExecutionElement" title="core.executionelements.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelements.executionelement.ExecutionElement</span></code></a></p>
 <dl class="method">
-<dt id="core.executionelements.step.Step.execute">
-<code class="descname">execute</code><span class="sig-paren">(</span><em>instance</em>, <em>accumulator</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.step.Step.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Executes a Step by calling the associated app function.</p>
+<dt id="core.executionelements.transform.Transform.execute">
+<code class="descname">execute</code><span class="sig-paren">(</span><em>data_in</em>, <em>accumulator</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.transform.Transform.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes the transform.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>instance (App): The instance of an App object to be used to execute the associated function.
-accumulator (dict): Dict containing the results of the previous steps</dd>
+<dd>data_in: The input to the condition, the last executed action of the workflow or the input to a trigger.
+accumulator (dict): A record of executed actions and their results. Of form {action_name: result}.</dd>
 <dt>Returns:</dt>
-<dd>The result of the executed function.</dd>
+<dd>(obj): The transformed data</dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="core.executionelements.step.Step.get_execution_uid">
-<code class="descname">get_execution_uid</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.step.Step.get_execution_uid" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the execution UID of the Step</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>The execution UID</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.executionelements.step.Step.get_next_step">
-<code class="descname">get_next_step</code><span class="sig-paren">(</span><em>accumulator</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.step.Step.get_next_step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the NextStep object to be executed after the current Step.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>accumulator (dict): A record of teh previously-executed steps. Of form {step_name: result}</dd>
-<dt>Returns:</dt>
-<dd>The NextStep object to be executed.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.executionelements.step.Step.get_next_up">
-<code class="descname">get_next_up</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.step.Step.get_next_up" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the next step to be executed</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>The next step to be executed</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.executionelements.step.Step.get_output">
-<code class="descname">get_output</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.step.Step.get_output" title="Permalink to this definition">¶</a></dt>
-<dd><p>Gets the output of a Step (the result)</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>The result of the Step</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.executionelements.step.Step.render_step">
-<code class="descname">render_step</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.step.Step.render_step" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="core.executionelements.step.Step.send_data_to_trigger">
-<code class="descname">send_data_to_trigger</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.step.Step.send_data_to_trigger" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sends data to the Step if it has triggers associated with it, and is currently awaiting data</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt>data (dict): The data to send to the triggers. This dict has two keys: ‘data_in’ which is the data</dt>
-<dd>to be sent to the triggers, and ‘inputs’, which is an optional parameter to change the inputs to the
-current Step</dd>
-</dl>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.executionelements.step.Step.set_input">
-<code class="descname">set_input</code><span class="sig-paren">(</span><em>new_input</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.step.Step.set_input" title="Permalink to this definition">¶</a></dt>
-<dd><p>Updates the input for a Step object.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>new_input (dict): The new inputs for the Step object.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.executionelements.step.Step.set_next_up">
-<code class="descname">set_next_up</code><span class="sig-paren">(</span><em>next_up</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.step.Step.set_next_up" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the next step to be executed</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>The next step to be executed</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="core.executionelements.step.Widget">
-<em class="property">class </em><code class="descclassname">core.executionelements.step.</code><code class="descname">Widget</code><span class="sig-paren">(</span><em>app</em>, <em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.step.Widget" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
 </dd></dl>
 
 </div>
@@ -392,39 +342,62 @@ current Step</dd>
 <span id="core-executionelements-workflow-module"></span><h2>core.executionelements.workflow module<a class="headerlink" href="#module-core.executionelements.workflow" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
 <dt id="core.executionelements.workflow.Workflow">
-<em class="property">class </em><code class="descclassname">core.executionelements.workflow.</code><code class="descname">Workflow</code><span class="sig-paren">(</span><em>name=''</em>, <em>uid=None</em>, <em>steps=None</em>, <em>start=None</em>, <em>accumulated_risk=0.0</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">core.executionelements.workflow.</code><code class="descname">Workflow</code><span class="sig-paren">(</span><em>name=''</em>, <em>uid=None</em>, <em>actions=None</em>, <em>branches=None</em>, <em>start=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#core.executionelements.executionelement.ExecutionElement" title="core.executionelements.executionelement.ExecutionElement"><code class="xref py py-class docutils literal"><span class="pre">core.executionelements.executionelement.ExecutionElement</span></code></a></p>
 <dl class="method">
-<dt id="core.executionelements.workflow.Workflow.create_step">
-<code class="descname">create_step</code><span class="sig-paren">(</span><em>name=''</em>, <em>action=''</em>, <em>app=''</em>, <em>device=''</em>, <em>arg_input=None</em>, <em>next_steps=None</em>, <em>risk=0</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow.create_step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a new Step object and adds it to the Workflow’s list of Steps.</p>
+<dt id="core.executionelements.workflow.Workflow.create_action">
+<code class="descname">create_action</code><span class="sig-paren">(</span><em>name=''</em>, <em>action=''</em>, <em>app=''</em>, <em>device=''</em>, <em>arguments=None</em>, <em>risk=0</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow.create_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new Action object and adds it to the Workflow’s list of Actions.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd><p class="first">name (str, optional): The name of the Step object. Defaults to an empty string.
-action (str, optional): The name of the action associated with a Step. Defaults to an empty string.
-app (str, optional): The name of the app associated with the Step. Defaults to an empty string.
-device (str, optional): The name of the device associated with the app associated with the Step. Defaults</p>
+<dd><p class="first">name (str, optional): The name of the Action object. Defaults to an empty string.
+action (str, optional): The name of the action associated with a Action. Defaults to an empty string.
+app (str, optional): The name of the app associated with the Action. Defaults to an empty string.
+device (str, optional): The name of the device associated with the app associated with the Action. Defaults</p>
 <blockquote>
 <div>to an empty string.</div></blockquote>
 <dl class="docutils">
-<dt>arg_input (dict, optional): A dictionary of Argument objects that are input to the step execution. Defaults</dt>
+<dt>arguments (list[Argument]): A list of Argument objects that are parameters to the action execution. Defaults</dt>
 <dd>to None.</dd>
 </dl>
-<p class="last">next_steps (list[NextStep], optional): A list of NextStep objects for the Step object. Defaults to None.
-risk (int, optional): The risk associated with the Step. Defaults to 0.</p>
+<p class="last">risk (int, optional): The risk associated with the Action. Defaults to 0.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
+<dt id="core.executionelements.workflow.Workflow.deepcopy_actions_with_events">
+<code class="descname">deepcopy_actions_with_events</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow.deepcopy_actions_with_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a deepcopy of all actions, including their event objects</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>A dict of action_uid: (action, event)</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="core.executionelements.workflow.Workflow.execute">
-<code class="descname">execute</code><span class="sig-paren">(</span><em>execution_uid</em>, <em>start=None</em>, <em>start_input=''</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Executes a Workflow by executing all Steps in the Workflow list of Step objects.</p>
+<code class="descname">execute</code><span class="sig-paren">(</span><em>execution_uid</em>, <em>start=None</em>, <em>start_arguments=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes a Workflow by executing all Actions in the Workflow list of Action objects.</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd>execution_uid (str): The UUID4 hex string uniquely identifying this workflow instance
-start (str, optional): The name of the first Step. Defaults to None.
-start_input (str, optional): Input into the first Step. Defaults to an empty string.</dd>
+start (str, optional): The name of the first Action. Defaults to None.
+start_arguments (list[Argument]): Argument parameters into the first Action. Defaults to None.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.executionelements.workflow.Workflow.get_branch">
+<code class="descname">get_branch</code><span class="sig-paren">(</span><em>current_action</em>, <em>accumulator</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow.get_branch" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Executes the Branch objects associated with this Workflow to determine which Action should be</dt>
+<dd>executed next.</dd>
+<dt>Args:</dt>
+<dd>current_action(Action): The current action that has just finished executing.
+accumulator (dict): The accumulated results of previous Actions.</dd>
+<dt>Returns:</dt>
+<dd>The UID of the next Action to be executed if successful, else None.</dd>
 </dl>
 </dd></dl>
 
@@ -441,7 +414,7 @@ start_input (str, optional): Input into the first Step. Defaults to an empty str
 <dl class="method">
 <dt id="core.executionelements.workflow.Workflow.pause">
 <code class="descname">pause</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow.pause" title="Permalink to this definition">¶</a></dt>
-<dd><p>Pauses the execution of the Workflow. The Workflow will pause execution before starting the next Step.</p>
+<dd><p>Pauses the execution of the Workflow. The Workflow will pause execution before starting the next Action.</p>
 </dd></dl>
 
 <dl class="method">
@@ -450,35 +423,31 @@ start_input (str, optional): Input into the first Step. Defaults to an empty str
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="core.executionelements.workflow.Workflow.reload_async_result">
-<code class="descname">reload_async_result</code><span class="sig-paren">(</span><em>steps</em>, <em>with_deepcopy=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow.reload_async_result" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reloads the AsyncResult object for all of the Steps, necessary to restore a Workflow</p>
+<dt id="core.executionelements.workflow.Workflow.remove_action">
+<code class="descname">remove_action</code><span class="sig-paren">(</span><em>uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow.remove_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes a Action object from the Workflow’s list of Actions given the Action UID.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd><p class="first">steps (dict): A dict of step_uid: async_result, or step_uid to (step, async_result)
-with_deepcopy (bool, optional): Whether or not the Step was deepcopied (i.e. what format the steps dict</p>
-<blockquote class="last">
-<div>is in). Defaults to False</div></blockquote>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="core.executionelements.workflow.Workflow.remove_step">
-<code class="descname">remove_step</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow.remove_step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Removes a Step object from the Workflow’s list of Steps given the Step name.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>name (str): The name of the Step object to be removed.</dd>
+<dd>uid (str): The UID of the Action object to be removed.</dd>
 <dt>Returns:</dt>
 <dd>True on success, False otherwise.</dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="core.executionelements.workflow.Workflow.reset_async_result">
-<code class="descname">reset_async_result</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow.reset_async_result" title="Permalink to this definition">¶</a></dt>
-<dd><p>Reinitialize an AsyncResult object for all of the Steps when a Workflow is copied</p>
+<dt id="core.executionelements.workflow.Workflow.reset_event">
+<code class="descname">reset_event</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow.reset_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reinitialize an Event object for all of the Actions and the Workflow when a Workflow is copied</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.executionelements.workflow.Workflow.restore_actions_and_events">
+<code class="descname">restore_actions_and_events</code><span class="sig-paren">(</span><em>backup_actions</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow.restore_actions_and_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restores all actions that were previously deepcopied</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>backup_actions (dict): The actions to be restored</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -488,15 +457,15 @@ with_deepcopy (bool, optional): Whether or not the Step was deepcopied (i.e. wha
 </dd></dl>
 
 <dl class="method">
-<dt id="core.executionelements.workflow.Workflow.send_data_to_step">
-<code class="descname">send_data_to_step</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow.send_data_to_step" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sends data to a Step if it has triggers associated with it, and is currently awaiting data</p>
+<dt id="core.executionelements.workflow.Workflow.send_data_to_action">
+<code class="descname">send_data_to_action</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow.send_data_to_action" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends data to an Action if it has triggers associated with it, and is currently awaiting data</p>
 <dl class="docutils">
 <dt>Args:</dt>
 <dd><dl class="first last docutils">
 <dt>data (dict): The data to send to the triggers. This dict has two keys: ‘data_in’ which is the data</dt>
-<dd>to be sent to the triggers, and ‘inputs’, which is an optional parameter to change the inputs to the
-current Step</dd>
+<dd>to be sent to the triggers, and ‘arguments’, which is an optional parameter to change the arguments to
+the current Action</dd>
 </dl>
 </dd>
 </dl>
@@ -513,19 +482,9 @@ current Step</dd>
 </dd></dl>
 
 <dl class="method">
-<dt id="core.executionelements.workflow.Workflow.strip_async_result">
-<code class="descname">strip_async_result</code><span class="sig-paren">(</span><em>with_deepcopy=False</em><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow.strip_async_result" title="Permalink to this definition">¶</a></dt>
-<dd><p>Removes the AsyncResult object from all of the Steps, necessary to deepcopy a Workflow</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd><dl class="first last docutils">
-<dt>with_deepcopy (bool, optional): Whether or not to deepcopy the Step, or just return the AsyncResult.</dt>
-<dd>Defaults to False.</dd>
-</dl>
-</dd>
-<dt>Returns:</dt>
-<dd>A dict of step_uid: async_result, or step_uid to (step, async_result)</dd>
-</dl>
+<dt id="core.executionelements.workflow.Workflow.strip_events">
+<code class="descname">strip_events</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.executionelements.workflow.Workflow.strip_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the Event object from all of the Actions and the Workflow, necessary to do a deepcopy</p>
 </dd></dl>
 
 <dl class="method">
@@ -556,12 +515,12 @@ current Step</dd>
   <ul>
 <li><a class="reference internal" href="#">core.executionelements package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-core.executionelements.action">core.executionelements.action module</a></li>
+<li><a class="reference internal" href="#module-core.executionelements.branch">core.executionelements.branch module</a></li>
+<li><a class="reference internal" href="#module-core.executionelements.condition">core.executionelements.condition module</a></li>
 <li><a class="reference internal" href="#module-core.executionelements.executionelement">core.executionelements.executionelement module</a></li>
-<li><a class="reference internal" href="#module-core.executionelements.filter">core.executionelements.filter module</a></li>
-<li><a class="reference internal" href="#module-core.executionelements.flag">core.executionelements.flag module</a></li>
-<li><a class="reference internal" href="#module-core.executionelements.nextstep">core.executionelements.nextstep module</a></li>
 <li><a class="reference internal" href="#module-core.executionelements.playbook">core.executionelements.playbook module</a></li>
-<li><a class="reference internal" href="#module-core.executionelements.step">core.executionelements.step module</a></li>
+<li><a class="reference internal" href="#module-core.executionelements.transform">core.executionelements.transform module</a></li>
 <li><a class="reference internal" href="#module-core.executionelements.workflow">core.executionelements.workflow module</a></li>
 <li><a class="reference internal" href="#module-core.executionelements">Module contents</a></li>
 </ul>

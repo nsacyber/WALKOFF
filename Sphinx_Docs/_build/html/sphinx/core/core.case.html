@@ -45,6 +45,12 @@
 </div>
 <div class="section" id="module-core.case.callbacks">
 <span id="core-case-callbacks-module"></span><h2>core.case.callbacks module<a class="headerlink" href="#module-core.case.callbacks" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="core.case.callbacks.add_entry_to_case">
+<code class="descclassname">core.case.callbacks.</code><code class="descname">add_entry_to_case</code><span class="sig-paren">(</span><em>sender</em>, <em>data</em>, <em>event_type</em>, <em>entry_message</em>, <em>message_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.callbacks.add_entry_to_case" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds an entry to all appropriate case logs</p>
+</dd></dl>
+
 </div>
 <div class="section" id="module-core.case.database">
 <span id="core-case-database-module"></span><h2>core.case.database module<a class="headerlink" href="#module-core.case.database" title="Permalink to this headline">¶</a></h2>
@@ -257,12 +263,6 @@ new_case_name (str): The case’s new name</dd>
 <dd><p>Initializes the case database</p>
 </dd></dl>
 
-<dl class="function">
-<dt id="core.case.database.tear_down">
-<code class="descclassname">core.case.database.</code><code class="descname">tear_down</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.database.tear_down" title="Permalink to this definition">¶</a></dt>
-<dd><p>Tears down the case database</p>
-</dd></dl>
-
 </div>
 <div class="section" id="module-core.case.subscription">
 <span id="core-case-subscription-module"></span><h2>core.case.subscription module<a class="headerlink" href="#module-core.case.subscription" title="Permalink to this headline">¶</a></h2>
@@ -284,23 +284,6 @@ new_case_name (str): The case’s new name</dd>
 <dt id="core.case.subscription.clear_subscriptions">
 <code class="descclassname">core.case.subscription.</code><code class="descname">clear_subscriptions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.clear_subscriptions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clears and resets the subscriptions</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="core.case.subscription.convert_from_event_names">
-<code class="descclassname">core.case.subscription.</code><code class="descname">convert_from_event_names</code><span class="sig-paren">(</span><em>events</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.convert_from_event_names" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="core.case.subscription.convert_to_event_names">
-<code class="descclassname">core.case.subscription.</code><code class="descname">convert_to_event_names</code><span class="sig-paren">(</span><em>events</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.subscription.convert_to_event_names" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts events to controller event names if event is a controller event</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>events (list[str, int]): Events to be converted</dd>
-<dt>Returns:</dt>
-<dd>List of event identifiers in which the controller events have been converted to their string representations</dd>
-</dl>
 </dd></dl>
 
 <dl class="function">
@@ -378,58 +361,58 @@ new_case_name (str): Case’s new name</dd>
 <div class="section" id="module-core.case.workflowresults">
 <span id="core-case-workflowresults-module"></span><h2>core.case.workflowresults module<a class="headerlink" href="#module-core.case.workflowresults" title="Permalink to this headline">¶</a></h2>
 <dl class="class">
-<dt id="core.case.workflowresults.StepResult">
-<em class="property">class </em><code class="descclassname">core.case.workflowresults.</code><code class="descname">StepResult</code><span class="sig-paren">(</span><em>name</em>, <em>result</em>, <em>step_input</em>, <em>step_type</em>, <em>app</em>, <em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.workflowresults.StepResult" title="Permalink to this definition">¶</a></dt>
+<dt id="core.case.workflowresults.ActionResult">
+<em class="property">class </em><code class="descclassname">core.case.workflowresults.</code><code class="descname">ActionResult</code><span class="sig-paren">(</span><em>name</em>, <em>result</em>, <em>action_input</em>, <em>action_type</em>, <em>app_name</em>, <em>action_name</em><span class="sig-paren">)</span><a class="headerlink" href="#core.case.workflowresults.ActionResult" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sqlalchemy.ext.declarative.api.Base</span></code></p>
 <p>ORM for an Event in the events database</p>
 <dl class="attribute">
-<dt id="core.case.workflowresults.StepResult.action">
-<code class="descname">action</code><a class="headerlink" href="#core.case.workflowresults.StepResult.action" title="Permalink to this definition">¶</a></dt>
+<dt id="core.case.workflowresults.ActionResult.action_name">
+<code class="descname">action_name</code><a class="headerlink" href="#core.case.workflowresults.ActionResult.action_name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="core.case.workflowresults.StepResult.app">
-<code class="descname">app</code><a class="headerlink" href="#core.case.workflowresults.StepResult.app" title="Permalink to this definition">¶</a></dt>
+<dt id="core.case.workflowresults.ActionResult.app_name">
+<code class="descname">app_name</code><a class="headerlink" href="#core.case.workflowresults.ActionResult.app_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.case.workflowresults.ActionResult.arguments">
+<code class="descname">arguments</code><a class="headerlink" href="#core.case.workflowresults.ActionResult.arguments" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="core.case.workflowresults.StepResult.as_json">
-<code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.workflowresults.StepResult.as_json" title="Permalink to this definition">¶</a></dt>
+<dt id="core.case.workflowresults.ActionResult.as_json">
+<code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.workflowresults.ActionResult.as_json" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="core.case.workflowresults.StepResult.id">
-<code class="descname">id</code><a class="headerlink" href="#core.case.workflowresults.StepResult.id" title="Permalink to this definition">¶</a></dt>
+<dt id="core.case.workflowresults.ActionResult.id">
+<code class="descname">id</code><a class="headerlink" href="#core.case.workflowresults.ActionResult.id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="core.case.workflowresults.StepResult.input">
-<code class="descname">input</code><a class="headerlink" href="#core.case.workflowresults.StepResult.input" title="Permalink to this definition">¶</a></dt>
+<dt id="core.case.workflowresults.ActionResult.name">
+<code class="descname">name</code><a class="headerlink" href="#core.case.workflowresults.ActionResult.name" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="core.case.workflowresults.StepResult.name">
-<code class="descname">name</code><a class="headerlink" href="#core.case.workflowresults.StepResult.name" title="Permalink to this definition">¶</a></dt>
+<dt id="core.case.workflowresults.ActionResult.result">
+<code class="descname">result</code><a class="headerlink" href="#core.case.workflowresults.ActionResult.result" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="core.case.workflowresults.StepResult.result">
-<code class="descname">result</code><a class="headerlink" href="#core.case.workflowresults.StepResult.result" title="Permalink to this definition">¶</a></dt>
+<dt id="core.case.workflowresults.ActionResult.timestamp">
+<code class="descname">timestamp</code><a class="headerlink" href="#core.case.workflowresults.ActionResult.timestamp" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="core.case.workflowresults.StepResult.timestamp">
-<code class="descname">timestamp</code><a class="headerlink" href="#core.case.workflowresults.StepResult.timestamp" title="Permalink to this definition">¶</a></dt>
+<dt id="core.case.workflowresults.ActionResult.type">
+<code class="descname">type</code><a class="headerlink" href="#core.case.workflowresults.ActionResult.type" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="core.case.workflowresults.StepResult.type">
-<code class="descname">type</code><a class="headerlink" href="#core.case.workflowresults.StepResult.type" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="core.case.workflowresults.StepResult.workflow_result_id">
-<code class="descname">workflow_result_id</code><a class="headerlink" href="#core.case.workflowresults.StepResult.workflow_result_id" title="Permalink to this definition">¶</a></dt>
+<dt id="core.case.workflowresults.ActionResult.workflow_result_id">
+<code class="descname">workflow_result_id</code><a class="headerlink" href="#core.case.workflowresults.ActionResult.workflow_result_id" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -490,13 +473,13 @@ new_case_name (str): Case’s new name</dd>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="core.case.workflowresults.WorkflowResult.trigger_step_awaiting_data">
-<code class="descname">trigger_step_awaiting_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.workflowresults.WorkflowResult.trigger_step_awaiting_data" title="Permalink to this definition">¶</a></dt>
+<dt id="core.case.workflowresults.WorkflowResult.trigger_action_awaiting_data">
+<code class="descname">trigger_action_awaiting_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.workflowresults.WorkflowResult.trigger_action_awaiting_data" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="core.case.workflowresults.WorkflowResult.trigger_step_executing">
-<code class="descname">trigger_step_executing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.workflowresults.WorkflowResult.trigger_step_executing" title="Permalink to this definition">¶</a></dt>
+<dt id="core.case.workflowresults.WorkflowResult.trigger_action_executing">
+<code class="descname">trigger_action_executing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.case.workflowresults.WorkflowResult.trigger_action_executing" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">

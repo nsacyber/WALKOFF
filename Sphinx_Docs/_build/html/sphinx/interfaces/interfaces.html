@@ -1,0 +1,946 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>interfaces package &#8212; WALKOFF  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="interfaces-package">
+<h1>interfaces package<a class="headerlink" href="#interfaces-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="interfaces.HelloWorld.html">interfaces.HelloWorld package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaces.HelloWorld.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaces.HelloWorld.html#module-interfaces.HelloWorld.metrics">interfaces.HelloWorld.metrics module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaces.HelloWorld.html#module-interfaces.HelloWorld">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interfaces.Sample.html">interfaces.Sample package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="interfaces.Sample.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaces.Sample.html#module-interfaces.Sample.display">interfaces.Sample.display module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfaces.Sample.html#module-interfaces.Sample">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="module-interfaces">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-interfaces" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="interfaces.AppActionEventDispatcher">
+<em class="property">class </em><code class="descclassname">interfaces.</code><code class="descname">AppActionEventDispatcher</code><span class="sig-paren">(</span><em>app</em>, <em>action</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.AppActionEventDispatcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Container for routing and dispatching action events for a specific app and action</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd>app (str): The app associated with this dispatcher
+action (str): The action associated with this dispatcher
+_event_router(dict(WalkoffEvent: dict(int|str: CallbackContainer))): The router for events</dd>
+<dt>Args:</dt>
+<dd>app (str): The app associated with this dispatcher
+action (str): The action associated with this dispatcher</dd>
+</dl>
+<dl class="method">
+<dt id="interfaces.AppActionEventDispatcher.dispatch">
+<code class="descname">dispatch</code><span class="sig-paren">(</span><em>event_</em>, <em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.AppActionEventDispatcher.dispatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dispatches an event to all registered callbacks</p>
+<dl class="docutils">
+<dt>Note:</dt>
+<dd>All exceptions thrown by callbacks will be caught and logged, but not handled</dd>
+<dt>Args:</dt>
+<dd><a href="#id3"><span class="problematic" id="id4">event_</span></a> (WalkoffEvent): The event to dispatch
+data (dict): The data to send to the functions</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.AppActionEventDispatcher.is_registered">
+<code class="descname">is_registered</code><span class="sig-paren">(</span><em>event</em>, <em>device_id</em>, <em>func</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.AppActionEventDispatcher.is_registered" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is a function registered?</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>event (WalkoffEvent): The event to check
+device_id (str|int): The device ID to check
+func (func): The function to check</dd>
+<dt>Returns:</dt>
+<dd>bool: Is the function registered?</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.AppActionEventDispatcher.register_event">
+<code class="descname">register_event</code><span class="sig-paren">(</span><em>event</em>, <em>device_ids</em>, <em>func</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.AppActionEventDispatcher.register_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers an event and device_ids to a function</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">event (WalkoffEvent): The event to register
+device_ids: (str|iterable(int)): The device IDs to register to. Specifying ‘all’ will always trigger</p>
+<blockquote>
+<div>regardless of device ID passed to dispatch()</div></blockquote>
+<p class="last">func (func): Function to register
+weak: (bool, optional): Should the reference to the function be weak? Defaults to True</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="interfaces.AppBlueprint">
+<em class="property">class </em><code class="descclassname">interfaces.</code><code class="descname">AppBlueprint</code><span class="sig-paren">(</span><em>blueprint</em>, <em>rule=''</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.AppBlueprint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Class to create blueprints for custom server endpoints in apps</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd>blueprint (flask.Blueprint): The blueprint to register with Walkoff
+rule (str): The URL rule for the blueprint</dd>
+<dt>Args:</dt>
+<dd>blueprint (flask.Blueprint): The blueprint to register with Walkoff
+rule (str, optional): The URL rule for the blueprint. Defaults to /custominterfaces/&lt;interface_name&gt;/</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="interfaces.AppEventDispatcher">
+<em class="property">class </em><code class="descclassname">interfaces.</code><code class="descname">AppEventDispatcher</code><a class="headerlink" href="#interfaces.AppEventDispatcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Object which routes and dispatches action events</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd>_router (dict(str: dict(str: AppActionEventDispatcher))): The router</dd>
+</dl>
+<dl class="method">
+<dt id="interfaces.AppEventDispatcher.dispatch">
+<code class="descname">dispatch</code><span class="sig-paren">(</span><em>event_</em>, <em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.AppEventDispatcher.dispatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dispatches an event to all registered callbacks</p>
+<dl class="docutils">
+<dt>Note:</dt>
+<dd>All exceptions thrown by callbacks will be caught and logged, but not handled</dd>
+<dt>Args:</dt>
+<dd><a href="#id5"><span class="problematic" id="id6">event_</span></a> (WalkoffEvent): The event to dispatch
+data (dict): The data to send to the callbacks</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.AppEventDispatcher.is_registered">
+<code class="descname">is_registered</code><span class="sig-paren">(</span><em>app</em>, <em>action</em>, <em>event</em>, <em>device</em>, <em>func</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.AppEventDispatcher.is_registered" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is a given callback registered</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>app (str): The callback’s app
+action (str): The callback’s action
+event (WalkoffEvent): The callback’s event
+device (str|int): The callback’s device ID
+func (func): The callback</dd>
+<dt>Returns:</dt>
+<dd>bool: Is the callback registered?</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.AppEventDispatcher.register_app_actions">
+<code class="descname">register_app_actions</code><span class="sig-paren">(</span><em>func</em>, <em>app</em>, <em>events</em>, <em>actions='all'</em>, <em>device_ids='all'</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.AppEventDispatcher.register_app_actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers an callback for a given event, app, action, and device ID</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">func (func): Function to register
+app (str): The app to register the callback to
+events (iterable(WalkoffEvent)): The events to register to callback to
+actions (str|iterable(str), optional): The actions to register the callback to. Defaults to ‘all’,</p>
+<blockquote>
+<div>meaning all actions</div></blockquote>
+<dl class="docutils">
+<dt>device_ids (str|int|iterable(int), optional): The devices to register the callback to. Defaults to ‘all’</dt>
+<dd>meaning all devices</dd>
+</dl>
+<p class="last">weak (bool, optional): Should the function be registered as a weak reference? Defaults to True</p>
+</dd>
+<dt>Raises:</dt>
+<dd>UnknownApp: If the app specified is not found in all known app APIs or the app has no actions
+UnknownAppAction: If the action is not found in the give app’s actions</dd>
+</dl>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="interfaces.AppEventDispatcher.validate_app_actions">
+<em class="property">static </em><code class="descname">validate_app_actions</code><span class="sig-paren">(</span><em>app</em>, <em>actions</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.AppEventDispatcher.validate_app_actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validates that an app’s actions are valid, meaning that they exist in a defined app API</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>app (str): The app to validate
+actions (str): The action to validate</dd>
+<dt>Returns:</dt>
+<dd><blockquote class="first">
+<div>set(str): The actions. Expanded to all known actions if <cite>action</cite> was ‘all’</div></blockquote>
+<dl class="last docutils">
+<dt>Raises:</dt>
+<dd>UnknownApp: If the app specified is not found in all known app APIs or the app has no actions
+UnknownAppAction: If the action is not found in the give app’s actions</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="interfaces.CallbackContainer">
+<em class="property">class </em><code class="descclassname">interfaces.</code><code class="descname">CallbackContainer</code><span class="sig-paren">(</span><em>weak=None</em>, <em>strong=None</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.CallbackContainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>A container holding both strong and weak references to callbacks</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd>weak (WeakSet(func)): Weak references to callbacks
+strong (set(func)): Strong references to callbacks</dd>
+<dt>Args:</dt>
+<dd>weak (iterable(func), optional): The initial functions to add as weak references. Defaults to None
+strong (iterable(func), optional): The initial functions to add as strong references. Defaults to None</dd>
+</dl>
+<dl class="method">
+<dt id="interfaces.CallbackContainer.is_registered">
+<code class="descname">is_registered</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.CallbackContainer.is_registered" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is a function registered?</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>func: The function to check</dd>
+<dt>Returns:</dt>
+<dd>bool: Is the function registered?</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.CallbackContainer.iter_strong">
+<code class="descname">iter_strong</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.CallbackContainer.iter_strong" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates over all the strong references</p>
+<dl class="docutils">
+<dt>Yields:</dt>
+<dd>func: The next callback with a strong reference</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.CallbackContainer.iter_weak">
+<code class="descname">iter_weak</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.CallbackContainer.iter_weak" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterates over all the weak references</p>
+<dl class="docutils">
+<dt>Yields:</dt>
+<dd>func: The next callback with a weak reference</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.CallbackContainer.register">
+<code class="descname">register</code><span class="sig-paren">(</span><em>func</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.CallbackContainer.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers a function in the container</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>func (func): The function to register
+weak (bool, optional): Should the reference be a weak reference? Defaults to True</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="interfaces.EventDispatcher">
+<em class="property">class </em><code class="descclassname">interfaces.</code><code class="descname">EventDispatcher</code><a class="headerlink" href="#interfaces.EventDispatcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Routes as disatches generic WalkoffEvents to their given callbacks</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd>_router (dict(str: dict(WalkoffEvent: CallbackContainer))): The router</dd>
+</dl>
+<dl class="method">
+<dt id="interfaces.EventDispatcher.dispatch">
+<code class="descname">dispatch</code><span class="sig-paren">(</span><em>event_</em>, <em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.EventDispatcher.dispatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dispatches an event to all its registered callbacks</p>
+<dl class="docutils">
+<dt>Note:</dt>
+<dd>All exceptions thrown by callbacks will be caught and logged, but not handled</dd>
+<dt>Args:</dt>
+<dd><a href="#id7"><span class="problematic" id="id8">event_</span></a> (WalkoffEvent): The event to dispatch
+data (dict): The data to send to all the events</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.EventDispatcher.is_registered">
+<code class="descname">is_registered</code><span class="sig-paren">(</span><em>entry</em>, <em>event</em>, <em>func</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.EventDispatcher.is_registered" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is a function registered for a given entry ID and event?</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>entry (str): The entry ID of the callback
+event (WalkoffEvent): The event of the callback
+func (func): The callback</dd>
+<dt>Returns:</dt>
+<dd>bool: Is the function registred?</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.EventDispatcher.register_events">
+<code class="descname">register_events</code><span class="sig-paren">(</span><em>func</em>, <em>events</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.EventDispatcher.register_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers an event for a given sender UID or name</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>func (func): Callback to register
+events (iterable(WalkoffEvent)): Events to register the callback to
+sender_uids (str|iterable(str), optional): UIDs to register the callback to. Defaults to None
+names (str|iterable(str), optional): The names to register the callback to. Defaults to None
+weak (bool, optional): Should the callback be registered with a weak reference? Defaults to true</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="interfaces.InterfaceEventDispatcher">
+<em class="property">class </em><code class="descclassname">interfaces.</code><code class="descname">InterfaceEventDispatcher</code><a class="headerlink" href="#interfaces.InterfaceEventDispatcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Primary dispatcher of events to interfaces</p>
+<p>This class generates event registration methods of the form “on_&lt;signal_name&gt;” on __new__ for all WalkoffEvents
+(provided that their EventType is not <cite>other</cite>).</p>
+<dl class="docutils">
+<dt>Note:</dt>
+<dd>This class is a singleton.</dd>
+<dt>Attributes:</dt>
+<dd>event_dispatcher (EventDispatcher): Router and dispatcher for WalkoffEvents
+app_action_dispatcher (AppEventDispatcher): Router and dispatcher for action WalkfoffEvents</dd>
+</dl>
+<dl class="attribute">
+<dt id="interfaces.InterfaceEventDispatcher.app_action_dispatcher">
+<code class="descname">app_action_dispatcher</code><em class="property"> = &lt;interfaces.AppEventDispatcher object&gt;</em><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.app_action_dispatcher" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="interfaces.InterfaceEventDispatcher.event_dispatcher">
+<code class="descname">event_dispatcher</code><em class="property"> = &lt;interfaces.EventDispatcher object&gt;</em><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.event_dispatcher" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_action_execution_error">
+<code class="descname">on_action_execution_error</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_action_execution_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Action Execution Error WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_action_execution_success">
+<code class="descname">on_action_execution_success</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_action_execution_success" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Action Execution Success WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_action_started">
+<code class="descname">on_action_started</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_action_started" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Action Started WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="interfaces.InterfaceEventDispatcher.on_app_actions">
+<em class="property">classmethod </em><code class="descname">on_app_actions</code><span class="sig-paren">(</span><em>app</em>, <em>actions='all'</em>, <em>events='all'</em>, <em>device_ids='all'</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_app_actions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to register a function as a callback for a given app, action(s), event(s), and device(s)</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">app (str): The app whose events should be handled
+actions (str|iterable(str), optional): The actions whose events should be handled, Defaults to all actions
+events (str|WalkoffEvent|iterable(str|WalkoffEvent)): The events which should be handled. an use either a</p>
+<blockquote>
+<div>WalkoffEvent or its signal name. Defaults to all action-type events</div></blockquote>
+<dl class="last docutils">
+<dt>device_ids (int|iterable(int), optional): The IDs of the devices whose events should be handled. Defaults to</dt>
+<dd>all devices</dd>
+<dt>weak (bool, optional): Should the callback be registered as a weak function? Defaults to True. Warning!</dt>
+<dd>Setting this to False could causes memory leaks.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>func: The original function</dd>
+<dt>Raises:</dt>
+<dd>UnknownEvent: If an unknown or non-action event is set for the handler
+InvalidEventHandler: If the wrapped function does not have exactly one argument</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_app_instance_created">
+<code class="descname">on_app_instance_created</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_app_instance_created" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the App Instance Created WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_arguments_invalid">
+<code class="descname">on_arguments_invalid</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_arguments_invalid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Arguments Invalid WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_branch_not_taken">
+<code class="descname">on_branch_not_taken</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_branch_not_taken" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Branch Not Taken WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_branch_taken">
+<code class="descname">on_branch_taken</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_branch_taken" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Branch Taken WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_condition_error">
+<code class="descname">on_condition_error</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_condition_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Condition Error WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_condition_success">
+<code class="descname">on_condition_success</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_condition_success" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Condition Success WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_job_added">
+<code class="descname">on_job_added</code><span class="sig-paren">(</span><em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_job_added" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Job Added WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler()</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_job_error">
+<code class="descname">on_job_error</code><span class="sig-paren">(</span><em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_job_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Job Error WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler()</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_job_executed">
+<code class="descname">on_job_executed</code><span class="sig-paren">(</span><em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_job_executed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Job Executed WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler()</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_job_removed">
+<code class="descname">on_job_removed</code><span class="sig-paren">(</span><em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_job_removed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Job Removed WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler()</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_scheduler_paused">
+<code class="descname">on_scheduler_paused</code><span class="sig-paren">(</span><em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_scheduler_paused" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Scheduler Paused WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler()</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_scheduler_resumed">
+<code class="descname">on_scheduler_resumed</code><span class="sig-paren">(</span><em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_scheduler_resumed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Scheduler Resumed WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler()</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_scheduler_shutdown">
+<code class="descname">on_scheduler_shutdown</code><span class="sig-paren">(</span><em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_scheduler_shutdown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Scheduler Shutdown WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler()</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_scheduler_start">
+<code class="descname">on_scheduler_start</code><span class="sig-paren">(</span><em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_scheduler_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Scheduler Start WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler()</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_transform_error">
+<code class="descname">on_transform_error</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_transform_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Transform Error WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_transform_success">
+<code class="descname">on_transform_success</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_transform_success" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Transform Success WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_trigger_action_awaiting_data">
+<code class="descname">on_trigger_action_awaiting_data</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_trigger_action_awaiting_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Trigger Action Awaiting Data WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_trigger_action_not_taken">
+<code class="descname">on_trigger_action_not_taken</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_trigger_action_not_taken" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Trigger Action Not Taken WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_trigger_action_taken">
+<code class="descname">on_trigger_action_taken</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_trigger_action_taken" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Trigger Action Taken WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="interfaces.InterfaceEventDispatcher.on_walkoff_events">
+<em class="property">classmethod </em><code class="descname">on_walkoff_events</code><span class="sig-paren">(</span><em>events</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_walkoff_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to register a function as a callback for given WalkoffEvent(s)</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first docutils">
+<dt>events (str|WalkoffEvent|iterable(str|WalkoffEvent)): The events which should be handled. an use either a</dt>
+<dd>WalkoffEvent or its signal name. Defaults to all action-type events</dd>
+</dl>
+<p>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note</p>
+<blockquote>
+<div>that unlike UIDS, these are not guaranteed to be unique.</div></blockquote>
+<dl class="last docutils">
+<dt>weak (bool, optional): Should the callback be registered as a weak function? Defaults to True. Warning!</dt>
+<dd>Setting this to False could causes memory leaks.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd><blockquote class="first">
+<div>func: The original function wrapped</div></blockquote>
+<dl class="last docutils">
+<dt>Raises:</dt>
+<dd>UnknownEvent: If an unknown event is set for the handler
+ValueError: If a mix of controller and non-controller events are set for the handler
+InvalidEventHandler: If the wrapped function does not have the correct number of arguments</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_workflow_arguments_invalid">
+<code class="descname">on_workflow_arguments_invalid</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_arguments_invalid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Workflow Arguments Invalid WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_workflow_arguments_validated">
+<code class="descname">on_workflow_arguments_validated</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_arguments_validated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Workflow Arguments Validated WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_workflow_execution_start">
+<code class="descname">on_workflow_execution_start</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_execution_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Workflow Execution Start WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_workflow_paused">
+<code class="descname">on_workflow_paused</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_paused" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Workflow Paused WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_workflow_resumed">
+<code class="descname">on_workflow_resumed</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_resumed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Workflow Resumed WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="interfaces.InterfaceEventDispatcher.on_workflow_shutdown">
+<code class="descname">on_workflow_shutdown</code><span class="sig-paren">(</span><em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_shutdown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a callback for the Workflow Shutdown WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike UIDS, these are not guaranteed to be unique.
+weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</dd>
+<dt>Raises:</dt>
+<dd>InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="interfaces.InvalidEventHandler">
+<em class="property">exception </em><code class="descclassname">interfaces.</code><code class="descname">InvalidEventHandler</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InvalidEventHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></p>
+<p>Exception thrown when an invalid function is intended to be used as an event handler</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd>message (str): The error message</dd>
+<dt>Args:</dt>
+<dd>message (str): The error message</dd>
+</dl>
+</dd></dl>
+
+<dl class="exception">
+<dt id="interfaces.UnknownEvent">
+<em class="property">exception </em><code class="descclassname">interfaces.</code><code class="descname">UnknownEvent</code><span class="sig-paren">(</span><em>events</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.UnknownEvent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">exceptions.Exception</span></code></p>
+<p>Exception thrown when an unknown or unallowed event(s) is encountered</p>
+<dl class="docutils">
+<dt>Attributes:</dt>
+<dd>message (str): The error message</dd>
+<dt>Args:</dt>
+<dd>events (str|WalkoffEvent|iterable(str|WalkoffEvent)): The unallowed event(s)</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="interfaces.add_docstring">
+<code class="descclassname">interfaces.</code><code class="descname">add_docstring</code><span class="sig-paren">(</span><em>docstring</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.add_docstring" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to add a docstring dynamically to a function</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>docstring (str): The string to use as the docstring</dd>
+<dt>Returns:</dt>
+<dd>func: The function with the added docstring</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="interfaces.convert_events">
+<code class="descclassname">interfaces.</code><code class="descname">convert_events</code><span class="sig-paren">(</span><em>events</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.convert_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts events from signal names to WalkoffEvents</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>events (str|WalkoffEvent|iterable(str|WalkoffEvent)): The events to convert</dd>
+<dt>Returns:</dt>
+<dd>set(WalkoffEvent): The converted events</dd>
+<dt>Raises:</dt>
+<dd>UnknownEvent: If any signal name has no corresponding WalkoffEvent</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="interfaces.convert_to_iterable">
+<code class="descclassname">interfaces.</code><code class="descname">convert_to_iterable</code><span class="sig-paren">(</span><em>elements</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.convert_to_iterable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts an element or elements to list if it not already iterable</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>elements (:obj:<a href="#id1"><span class="problematic" id="id2">|</span></a>iterable(:obj:)): The object to convert to an iterable if necessary</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt>iterable: A list containing only the element passed in if the element was a non-string non-iterable.</dt>
+<dd>The original iterable otherwise</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="data">
+<dt id="interfaces.dispatcher">
+<code class="descclassname">interfaces.</code><code class="descname">dispatcher</code><em class="property"> = &lt;interfaces.InterfaceEventDispatcher object&gt;</em><a class="headerlink" href="#interfaces.dispatcher" title="Permalink to this definition">¶</a></dt>
+<dd><p>InterfaceEventDispatcher: The global dispatcher to use when registering interface event handlers</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="interfaces.validate_events">
+<code class="descclassname">interfaces.</code><code class="descname">validate_events</code><span class="sig-paren">(</span><em>events='all'</em>, <em>allowed_events=set([&lt;WalkoffEvent.WorkflowShutdown: &lt;core.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerStart: &lt;core.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ActionStarted: &lt;core.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.TransformSuccess: &lt;core.events.TransformSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowArgumentsInvalid: &lt;core.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.BranchTaken: &lt;core.events.BranchSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.AppInstanceCreated: &lt;core.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ConditionSuccess: &lt;core.events.ConditionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowArgumentsValidated: &lt;core.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerJobAdded: &lt;core.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ActionExecutionError: &lt;core.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowPaused: &lt;core.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerJobRemoved: &lt;core.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ConditionError: &lt;core.events.ConditionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowResumed: &lt;core.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.CommonWorkflowSignal: &lt;core.events.WalkoffSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.TransformError: &lt;core.events.TransformSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.TriggerActionAwaitingData: &lt;core.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.BranchNotTaken: &lt;core.events.BranchSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowExecutionStart: &lt;core.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerPaused: &lt;core.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerShutdown: &lt;core.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.TriggerActionNotTaken: &lt;core.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ActionArgumentsInvalid: &lt;core.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerResumed: &lt;core.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerJobError: &lt;core.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.TriggerActionTaken: &lt;core.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerJobExecuted: &lt;core.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ActionExecutionSuccess: &lt;core.events.ActionSignal object&gt;&gt;])</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.validate_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validates a set of events against allowed events. Converts strings to events if possible.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first docutils">
+<dt>events (str|WalkoffEvent|iterable(str|WalkoffEvent), optional): The event or events to validate.</dt>
+<dd>Defaults to all events</dd>
+</dl>
+<p class="last">allowed_events (iterable(WalkoffEvent), optional): The allowed events. Defaults to all WalkoffEvents</p>
+</dd>
+<dt>Returns:</dt>
+<dd>set(WalkoffEvent): The converted set of events.</dd>
+<dt>Raises:</dt>
+<dd>UnknownEvent: If some events passed in are not in available_events</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">interfaces package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#module-interfaces">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sphinx/interfaces/interfaces.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, IADGOV.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../../_sources/sphinx/interfaces/interfaces.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

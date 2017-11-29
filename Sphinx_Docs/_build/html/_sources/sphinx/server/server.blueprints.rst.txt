@@ -4,26 +4,10 @@ server\.blueprints package
 Submodules
 ----------
 
-server\.blueprints\.app module
-------------------------------
+server\.blueprints\.custominterface module
+------------------------------------------
 
-.. automodule:: server.blueprints.app
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-server\.blueprints\.events module
----------------------------------
-
-.. automodule:: server.blueprints.events
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-server\.blueprints\.widgets module
-----------------------------------
-
-.. automodule:: server.blueprints.widgets
+.. automodule:: server.blueprints.custominterface
     :members:
     :undoc-members:
     :show-inheritance:

@@ -1,0 +1,494 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>core.multiprocessedexecutor package &#8212; WALKOFF  documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="core-multiprocessedexecutor-package">
+<h1>core.multiprocessedexecutor package<a class="headerlink" href="#core-multiprocessedexecutor-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-core.multiprocessedexecutor.loadbalancer">
+<span id="core-multiprocessedexecutor-loadbalancer-module"></span><h2>core.multiprocessedexecutor.loadbalancer module<a class="headerlink" href="#module-core.multiprocessedexecutor.loadbalancer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.multiprocessedexecutor.loadbalancer.LoadBalancer">
+<em class="property">class </em><code class="descclassname">core.multiprocessedexecutor.loadbalancer.</code><code class="descname">LoadBalancer</code><span class="sig-paren">(</span><em>ctx</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.loadbalancer.LoadBalancer" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="core.multiprocessedexecutor.loadbalancer.LoadBalancer.add_workflow">
+<code class="descname">add_workflow</code><span class="sig-paren">(</span><em>workflow_json</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.loadbalancer.LoadBalancer.add_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds a workflow to the queue to be executed.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>workflow_json (dict): Dict representation of a workflow, along with some additional fields necessary for</dt>
+<dd>reconstructing the workflow.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.loadbalancer.LoadBalancer.manage_workflows">
+<code class="descname">manage_workflows</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.loadbalancer.LoadBalancer.manage_workflows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manages the workflows to be executed and the workers. It waits for the server to submit a request to
+execute a workflow, and then passes the workflow off to an available worker, once one becomes available.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.loadbalancer.LoadBalancer.pause_workflow">
+<code class="descname">pause_workflow</code><span class="sig-paren">(</span><em>workflow_execution_uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.loadbalancer.LoadBalancer.pause_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pauses a workflow currently executing.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>workflow_execution_uid (str): The execution UID of the workflow.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.loadbalancer.LoadBalancer.resume_workflow">
+<code class="descname">resume_workflow</code><span class="sig-paren">(</span><em>workflow_execution_uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.loadbalancer.LoadBalancer.resume_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resumes a workflow that has previously been paused.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>workflow_execution_uid (str): The execution UID of the workflow.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.loadbalancer.LoadBalancer.send_data_to_trigger">
+<code class="descname">send_data_to_trigger</code><span class="sig-paren">(</span><em>data_in</em>, <em>workflow_uids</em>, <em>arguments=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.loadbalancer.LoadBalancer.send_data_to_trigger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends the data_in to the workflows specified in workflow_uids.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">data_in (dict): Data to be used to match against the triggers for an Action awaiting data.
+workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
+arguments (list[Argument]): An optional list of Arguments to update for a Action awaiting data for a trigger.</p>
+<blockquote class="last">
+<div>Defaults to None.</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.loadbalancer.LoadBalancer.send_exit_to_worker_comms">
+<code class="descname">send_exit_to_worker_comms</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.loadbalancer.LoadBalancer.send_exit_to_worker_comms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends the exit message over the communication sockets, otherwise worker receiver threads will hang</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.multiprocessedexecutor.loadbalancer.Receiver">
+<em class="property">class </em><code class="descclassname">core.multiprocessedexecutor.loadbalancer.</code><code class="descname">Receiver</code><span class="sig-paren">(</span><em>ctx</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.loadbalancer.Receiver" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="core.multiprocessedexecutor.loadbalancer.Receiver.receive_results">
+<code class="descname">receive_results</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.loadbalancer.Receiver.receive_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keep receiving results from execution elements over a ZMQ socket, and trigger the callbacks.</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="core.multiprocessedexecutor.loadbalancer.Receiver.send_callback">
+<em class="property">static </em><code class="descname">send_callback</code><span class="sig-paren">(</span><em>callback</em>, <em>sender</em>, <em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.loadbalancer.Receiver.send_callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends a callback, received from an execution element over a ZMQ socket.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>callback (callback object): The callback object to be sent.
+sender (dict): The sender information.
+data (dict): The data associated with the callback.</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.multiprocessedexecutor.multiprocessedexecutor">
+<span id="core-multiprocessedexecutor-multiprocessedexecutor-module"></span><h2>core.multiprocessedexecutor.multiprocessedexecutor module<a class="headerlink" href="#module-core.multiprocessedexecutor.multiprocessedexecutor" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor">
+<em class="property">class </em><code class="descclassname">core.multiprocessedexecutor.multiprocessedexecutor.</code><code class="descname">MultiprocessedExecutor</code><a class="headerlink" href="#core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.cleanup_threading">
+<code class="descname">cleanup_threading</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.cleanup_threading" title="Permalink to this definition">¶</a></dt>
+<dd><p>Once the threadpool has been shutdown, clear out all of the data structures used in the pool.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.execute_workflow">
+<code class="descname">execute_workflow</code><span class="sig-paren">(</span><em>workflow</em>, <em>start=None</em>, <em>start_arguments=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.execute_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes a workflow.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>workflow (Workflow): The Workflow to be executed.
+start (str, optional): The name of the first, or starting action. Defaults to None.
+start_arguments (dict, optional): The arguments to the starting action of the workflow. Defaults to None.</dd>
+<dt>Returns:</dt>
+<dd>The execution UID of the Workflow.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.get_waiting_workflows">
+<code class="descname">get_waiting_workflows</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.get_waiting_workflows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a list of the execution UIDs of workflows currently awaiting data to be sent to a trigger.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>A list of execution UIDs of workflows currently awaiting data to be sent to a trigger.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.get_workflow_status">
+<code class="descname">get_workflow_status</code><span class="sig-paren">(</span><em>workflow_execution_uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.get_workflow_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the current status of a workflow by its execution UID</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>workflow_execution_uid (str): The execution UID of the workflow</dd>
+<dt>Returns:</dt>
+<dd>The status of the workflow</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading">
+<code class="descname">initialize_threading</code><span class="sig-paren">(</span><em>pids</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.initialize_threading" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the multiprocessing communication threads, allowing for parallel execution of workflows.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.pause_workflow">
+<code class="descname">pause_workflow</code><span class="sig-paren">(</span><em>execution_uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.pause_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pauses a workflow that is currently executing.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>execution_uid (str): The execution uid of the workflow.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.resume_workflow">
+<code class="descname">resume_workflow</code><span class="sig-paren">(</span><em>workflow_execution_uid</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.resume_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resumes a workflow that has been paused.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>workflow_execution_uid (str): The randomly-generated hexadecimal key that was returned from</dt>
+<dd>pause_workflow(). This is needed to resume a workflow for security purposes.</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>True if successful, false otherwise.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.send_data_to_trigger">
+<code class="descname">send_data_to_trigger</code><span class="sig-paren">(</span><em>data_in</em>, <em>workflow_uids</em>, <em>arguments=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.send_data_to_trigger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sends the data_in to the workflows specified in workflow_uids.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">data_in (dict): Data to be used to match against the triggers for an Action awaiting data.
+workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
+arguments (list[Argument]): An optional list of Arguments to update for an Action awaiting data for a trigger.</p>
+<blockquote class="last">
+<div>Defaults to None.</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool">
+<code class="descname">shutdown_pool</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shuts down the threadpool.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset">
+<code class="descname">wait_and_reset</code><span class="sig-paren">(</span><em>num_workflows</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="core.multiprocessedexecutor.multiprocessedexecutor.spawn_worker_processes">
+<code class="descclassname">core.multiprocessedexecutor.multiprocessedexecutor.</code><code class="descname">spawn_worker_processes</code><span class="sig-paren">(</span><em>worker_environment_setup=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.multiprocessedexecutor.spawn_worker_processes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the multiprocessing pool, allowing for parallel execution of workflows.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>worker_environment_setup (function, optional): Optional alternative worker setup environment function.</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.multiprocessedexecutor.threadauthenticator">
+<span id="core-multiprocessedexecutor-threadauthenticator-module"></span><h2>core.multiprocessedexecutor.threadauthenticator module<a class="headerlink" href="#module-core.multiprocessedexecutor.threadauthenticator" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.multiprocessedexecutor.threadauthenticator.AuthenticationThread">
+<em class="property">class </em><code class="descclassname">core.multiprocessedexecutor.threadauthenticator.</code><code class="descname">AuthenticationThread</code><span class="sig-paren">(</span><em>context</em>, <em>endpoint</em>, <em>encoding='utf-8'</em>, <em>log=None</em>, <em>authenticator=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.threadauthenticator.AuthenticationThread" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">threading.Thread</span></code></p>
+<p>A Thread for running a zmq Authenticator</p>
+<p>This is run in the background by ThreadedAuthenticator</p>
+<dl class="method">
+<dt id="core.multiprocessedexecutor.threadauthenticator.AuthenticationThread.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.threadauthenticator.AuthenticationThread.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the Authentication Agent thread task</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator">
+<em class="property">class </em><code class="descclassname">core.multiprocessedexecutor.threadauthenticator.</code><code class="descname">ThreadAuthenticator</code><span class="sig-paren">(</span><em>context=None</em>, <em>encoding='utf-8'</em>, <em>log=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Run ZAP authentication in a background thread</p>
+<dl class="method">
+<dt id="core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.allow">
+<code class="descname">allow</code><span class="sig-paren">(</span><em>*addresses</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.allow" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.auth">
+<code class="descname">auth</code><em class="property"> = None</em><a class="headerlink" href="#core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.auth" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.configure_curve">
+<code class="descname">configure_curve</code><span class="sig-paren">(</span><em>domain='*'</em>, <em>location=''</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.configure_curve" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.configure_plain">
+<code class="descname">configure_plain</code><span class="sig-paren">(</span><em>domain='*'</em>, <em>passwords=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.configure_plain" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.context">
+<code class="descname">context</code><em class="property"> = None</em><a class="headerlink" href="#core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.context" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.deny">
+<code class="descname">deny</code><span class="sig-paren">(</span><em>*addresses</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.deny" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.encoding">
+<code class="descname">encoding</code><em class="property"> = None</em><a class="headerlink" href="#core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.encoding" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.is_alive">
+<code class="descname">is_alive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.is_alive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Is the ZAP thread currently running?</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.log">
+<code class="descname">log</code><em class="property"> = None</em><a class="headerlink" href="#core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.log" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.pipe">
+<code class="descname">pipe</code><em class="property"> = None</em><a class="headerlink" href="#core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.pipe" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.pipe_endpoint">
+<code class="descname">pipe_endpoint</code><em class="property"> = ''</em><a class="headerlink" href="#core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.pipe_endpoint" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.start">
+<code class="descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the authentication thread</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop the authentication thread</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.thread">
+<code class="descname">thread</code><em class="property"> = None</em><a class="headerlink" href="#core.multiprocessedexecutor.threadauthenticator.ThreadAuthenticator.thread" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.multiprocessedexecutor.worker">
+<span id="core-multiprocessedexecutor-worker-module"></span><h2>core.multiprocessedexecutor.worker module<a class="headerlink" href="#module-core.multiprocessedexecutor.worker" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.multiprocessedexecutor.worker.Worker">
+<em class="property">class </em><code class="descclassname">core.multiprocessedexecutor.worker.</code><code class="descname">Worker</code><span class="sig-paren">(</span><em>id_</em>, <em>worker_environment_setup=None</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.worker.Worker" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="core.multiprocessedexecutor.worker.Worker.execute_workflow_worker">
+<code class="descname">execute_workflow_worker</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.worker.Worker.execute_workflow_worker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Keep executing workflows as they come in over the ZMQ socket from the manager.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.worker.Worker.exit_handler">
+<code class="descname">exit_handler</code><span class="sig-paren">(</span><em>signum</em>, <em>frame</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.worker.Worker.exit_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clean up upon receiving a SIGINT or SIGABT.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.worker.Worker.on_data_sent">
+<code class="descname">on_data_sent</code><span class="sig-paren">(</span><em>sender</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.worker.Worker.on_data_sent" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Listens for the data_sent callback, which signifies that an execution element needs to trigger a</dt>
+<dd>callback in the main thread.</dd>
+<dt>Args:</dt>
+<dd>sender (execution element): The execution element that sent the signal.
+kwargs (dict): Any extra data to send.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.multiprocessedexecutor.worker.Worker.receive_data">
+<code class="descname">receive_data</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.worker.Worker.receive_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constantly receives data from the ZMQ socket and handles it accordingly.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="core.multiprocessedexecutor.worker.convert_to_protobuf">
+<code class="descclassname">core.multiprocessedexecutor.worker.</code><code class="descname">convert_to_protobuf</code><span class="sig-paren">(</span><em>sender</em>, <em>workflow_execution_uid=''</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.worker.convert_to_protobuf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts an execution element and its data to a protobuf message.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><p class="first">sender (execution element): The execution element object that is sending the data.
+workflow_execution_uid (str, optional): The execution UID of the Workflow under which this execution</p>
+<blockquote>
+<div>element falls. It is not required and defaults to an empty string, but it is highly recommended
+so that the LoadBalancer can keep track of the Workflow’s execution.</div></blockquote>
+<p class="last">kwargs (dict, optional): A dict of extra fields, such as data, callback_name, etc.</p>
+</dd>
+<dt>Returns:</dt>
+<dd>The newly formed protobuf object, serialized as a string to send over the ZMQ socket.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="core.multiprocessedexecutor.worker.recreate_workflow">
+<code class="descclassname">core.multiprocessedexecutor.worker.</code><code class="descname">recreate_workflow</code><span class="sig-paren">(</span><em>workflow_json</em><span class="sig-paren">)</span><a class="headerlink" href="#core.multiprocessedexecutor.worker.recreate_workflow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recreates a workflow from a JSON to prepare for it to be executed.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>workflow_json (JSON dict): The input workflow JSON, with some other fields as well.</dd>
+<dt>Returns:</dt>
+<dd><dl class="first last docutils">
+<dt>(Workflow object, start_arguments): A tuple containing the reconstructed Workflow object, and the arguments to</dt>
+<dd>the start action.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.multiprocessedexecutor">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-core.multiprocessedexecutor" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">core.multiprocessedexecutor package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-core.multiprocessedexecutor.loadbalancer">core.multiprocessedexecutor.loadbalancer module</a></li>
+<li><a class="reference internal" href="#module-core.multiprocessedexecutor.multiprocessedexecutor">core.multiprocessedexecutor.multiprocessedexecutor module</a></li>
+<li><a class="reference internal" href="#module-core.multiprocessedexecutor.threadauthenticator">core.multiprocessedexecutor.threadauthenticator module</a></li>
+<li><a class="reference internal" href="#module-core.multiprocessedexecutor.worker">core.multiprocessedexecutor.worker module</a></li>
+<li><a class="reference internal" href="#module-core.multiprocessedexecutor">Module contents</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/sphinx/core/core.multiprocessedexecutor.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, IADGOV.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../../_sources/sphinx/core/core.multiprocessedexecutor.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

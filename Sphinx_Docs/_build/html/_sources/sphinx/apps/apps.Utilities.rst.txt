@@ -12,10 +12,18 @@ apps\.Utilities\.actions module
     :undoc-members:
     :show-inheritance:
 
-apps\.Utilities\.events module
-------------------------------
+apps\.Utilities\.conditions module
+----------------------------------
 
-.. automodule:: apps.Utilities.events
+.. automodule:: apps.Utilities.conditions
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+apps\.Utilities\.transforms module
+----------------------------------
+
+.. automodule:: apps.Utilities.transforms
     :members:
     :undoc-members:
     :show-inheritance:

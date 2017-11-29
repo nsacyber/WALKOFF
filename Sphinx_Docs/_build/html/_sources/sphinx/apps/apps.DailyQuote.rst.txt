@@ -12,14 +12,6 @@ apps\.DailyQuote\.app module
     :undoc-members:
     :show-inheritance:
 
-apps\.DailyQuote\.display module
---------------------------------
-
-.. automodule:: apps.DailyQuote.display
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 Module contents
 ---------------

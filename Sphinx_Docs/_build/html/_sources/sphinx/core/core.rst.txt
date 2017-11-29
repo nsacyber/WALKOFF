@@ -9,9 +9,8 @@ Subpackages
     core.case
     core.config
     core.executionelements
-    core.filters
-    core.flags
     core.keywords
+    core.multiprocessedexecutor
     core.protobuf
 
 Submodules
@@ -21,6 +20,14 @@ core\.appinstance module
 ------------------------
 
 .. automodule:: core.appinstance
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core\.argument module
+---------------------
+
+.. automodule:: core.argument
     :members:
     :undoc-members:
     :show-inheritance:
@@ -45,6 +52,14 @@ core\.decorators module
 -----------------------
 
 .. automodule:: core.decorators
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core\.events module
+-------------------
+
+.. automodule:: core.events
     :members:
     :undoc-members:
     :show-inheritance:
@@ -81,26 +96,18 @@ core\.jsonplaybookloader module
     :undoc-members:
     :show-inheritance:
 
-core\.loadbalancer module
--------------------------
-
-.. automodule:: core.loadbalancer
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-core\.multiprocessedexecutor module
------------------------------------
-
-.. automodule:: core.multiprocessedexecutor
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 core\.playbookstore module
 --------------------------
 
 .. automodule:: core.playbookstore
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core\.representable module
+--------------------------
+
+.. automodule:: core.representable
     :members:
     :undoc-members:
     :show-inheritance:
@@ -113,26 +120,10 @@ core\.scheduler module
     :undoc-members:
     :show-inheritance:
 
-core\.threadauthenticator module
---------------------------------
-
-.. automodule:: core.threadauthenticator
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 core\.validator module
 ----------------------
 
 .. automodule:: core.validator
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-core\.widgetsignals module
---------------------------
-
-.. automodule:: core.widgetsignals
     :members:
     :undoc-members:
     :show-inheritance:
