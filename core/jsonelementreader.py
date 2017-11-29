@@ -29,7 +29,7 @@ class JsonElementReader(object):
                 JsonElementReader._read_list(field, value, accumulator)
             elif isinstance(value, dict):
                 JsonElementReader._read_dict(field, value, accumulator)
-            elif isinstance(value, bool):
+            elif field == 'templated':
                 if value:
                     accumulator[field] = value
             elif value is not None:

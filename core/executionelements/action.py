@@ -101,7 +101,6 @@ class Action(ExecutionElement):
         self.action_name = updated_json['action_name']
         self.app_name = updated_json['app_name']
         self.device_id = updated_json['device_id'] if 'device_id' in updated_json else None
-        self.risk = updated_json['risk'] if 'risk' in updated_json else 0
         arguments = {}
         if 'arguments' in updated_json:
             for argument_json in updated_json['arguments']:
