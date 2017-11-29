@@ -1,0 +1,86 @@
+<div class="w3-row-padding w3-padding-64 w3-container">
+  <div class="w3-content">
+    <div class="">
+      <h1>Sever-sent events with a custom interface</h1>
+        <p>In this tutorial we will add a server-sent event (SSE) stream to our HelloWorld interface which will stream
+           the results of HelloWorld actions to the frontend which will display them in another table. Flask can create
+            an SSE stream by returning a Flask <code>Response</code> object which wraps a Python generator.</p>
+        <h4>1. Create the generator</h4>
+        <p> For our backend we will use gevent, the asynchronous IO framework which runs our server, to construct the
+            generator using gevent's <code>AsyncResult</code> and <code>Event</code> condition objects. We'll connect to
+            both the ActionExecutionSuccess and the ActionExecutionError events and create two separate SSE events for
+            each named <code>action_success</code> and <code>action_error</code> respectively. We'll also use the
+            <code>create_sse_event</code> helper function to format the SSE event.
+        </p>
+        <pre><code class="python">
+from interfaces import dispatcher
+from core.events import WalkoffEvent
+from gevent import sleep
+from gevent.event import AsyncResult, Event
+from datetime import datetime
+from core.helpers import create_sse_event
+
+action_event_json = AsyncResult()
+action_signal = Event()
+
+action_event_id_counter = 0
+
+
+def action_event_stream():
+    global action_event_id_counter
+    while True:
+        event_type, data = action_event_json.get()
+        yield create_sse_event(event_id=action_event_id_counter, event=event_type, data=data)
+        action_event_id_counter += 1
+        action_signal.wait()
+
+
+@dispatcher.on_app_actions('HelloWorld', events=WalkoffEvent.ActionExecutionSuccess)
+def action_ended_callback(data):
+    data['timestamp'] = str(datetime.utcnow())
+    action_event_json.set(('action_success', data))
+    sleep(0)
+    action_signal.set()
+    action_signal.clear()
+    sleep(0)
+
+
+@dispatcher.on_app_actions('HelloWorld', events=WalkoffEvent.ActionExecutionError)
+def __action_error_callback(data):
+    data['timestamp'] = str(datetime.utcnow())
+    action_event_json.set(('action_success', data))
+    sleep(0)
+    action_signal.set()
+    action_signal.clear()
+    sleep(0)
+        </code></pre>
+        <p> The <code>sleep(0)</code> lines explicitly context switch between the different greenlet threads in the
+            gevent framework. The <code>action_event_stream</code> is the generator.
+        </p>
+        <h4>2. Create the endpoint</h4>
+        <p> Now that we have the generator created, we will create an endpoint to start the SSE connection.</p>
+        <pre><code class="python">
+from flask import Response
+
+@blueprint.blueprint.route('/actionstream', methods=['GET'])
+def stream_workflow_action_events():
+    return Response(action_event_stream(), mimetype='text/event-stream')
+        </code></pre>
+        <h4>3. Secure the endpoint</h4>
+        <p> SSE connections cannot accept Authorization headers. Instead, we will pass our JWT token in through a query
+            parameter. In the <code>server.security</code> module, we have a decorator which checks for this query
+            parameter.</p>
+        <pre><code class="python">
+from flask import Response
+from server.security import jwt_required_in_query
+
+@blueprint.blueprint.route('/actionstream', methods=['GET'])
+@jwt_required_in_query
+def stream_workflow_action_events():
+    return Response(action_event_stream(), mimetype='text/event-stream')
+        </code></pre>
+
+        </code></pre>
+    </div>
+  </div>
+</div>

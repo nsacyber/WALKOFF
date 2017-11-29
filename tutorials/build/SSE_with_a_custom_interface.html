@@ -106,68 +106,87 @@ img.media-object.image{
 
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
-    <div class="w3-twothird">
-      <h1>Version Two Tutorials</h1>
-      <h5><i>  More tutorials coming soon... </i></h5>
-      <h5><a href="../../swagger/index.html">API Documentation</a></h5>
-      <h5><a href="../../Sphinx_Docs/_build/html/index.html">WALKOFF Python Code Documentation</a></h5>
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i>The Basics</h5>
-      <ul class="w3-medium">
-        <li><a href="Install_Tutorial.html"> Installation </a></li>
-        <li><a href="Interface_Overview.html"> Interface Overview </a></li>
-        <!--<li>Run Your First Workflow</li>-->
-      </ul>
-      <hr>
+    <div class="">
+      <h1>Sever-sent events with a custom interface</h1>
+        <p>In this tutorial we will add a server-sent event (SSE) stream to our HelloWorld interface which will stream
+           the results of HelloWorld actions to the frontend which will display them in another table. Flask can create
+            an SSE stream by returning a Flask <code>Response</code> object which wraps a Python generator.</p>
+        <h4>1. Create the generator</h4>
+        <p> For our backend we will use gevent, the asynchronous IO framework which runs our server, to construct the
+            generator using gevent's <code>AsyncResult</code> and <code>Event</code> condition objects. We'll connect to
+            both the ActionExecutionSuccess and the ActionExecutionError events and create two separate SSE events for
+            each named <code>action_success</code> and <code>action_error</code> respectively. We'll also use the
+            <code>create_sse_event</code> helper function to format the SSE event.
+        </p>
+        <pre><code class="python">
+from interfaces import dispatcher
+from core.events import WalkoffEvent
+from gevent import sleep
+from gevent.event import AsyncResult, Event
+from datetime import datetime
+from core.helpers import create_sse_event
 
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Workflows</h5>
-      <ul class="w3-medium">
-        <li><a href="Workflow_Navigation_Tutorial.html"> Workflow Editor Navigation </a></li>
-        <li><a href="Workflow_Editor_Tutorial.html"> Basic Workflow Creation </a></li>
-        <li><a href="Workflow_Branching_Tutorial.html"> Branching Workflow Creation </a></li>
-        <li><a href="Workflow_Advanced_Tutorial.html"> "Advanced" Workflow Creation </a></li>
-      </ul>
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Devices</h5>
-      <ul class="w3-medium">
-        <li><a href="Devices_Tutorial.html"> Device Tutorial </a></li>
-      </ul>
-      <hr>
+action_event_json = AsyncResult()
+action_signal = Event()
 
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Apps</h5>
-      <ol class="w3-medium">
-        <li><a href="Develop_an_app.html">Develop an App</a></li>
-        <li><a href="Develop_an_app_with_class.html">Develop an App with Devices</a></li>
-        <li><a href="Develop_conditions_transforms.html">Develop Conditions and Transforms</a></li>
-        <li><a href="App_api_schema.html">App API Schema Examples</a></li>
-        <li><a href="Actions_with_multiple_return_codes.html">Action Return Codes</a></li>
-        <li><a href="Manage_app_dependencies.html">Managing App Dependencies</a></li>
-        <li><a href="Test_an_app.html">Testing an App</a></li>
-      </ol>
-      <hr>
+action_event_id_counter = 0
 
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Interfaces</h5>
-      <ul class="w3-medium">
-        <li><a href="Develop_a_custom_interface.html">Develop a Custom Interface</a></li>
-        <li><a href="Securing_a_custom_interface.html">Securing a Custom Interface</a></li>
-        <li><a href="SSE_with_a_custom_interface.html">Sever-sent Event Streams with a Custom Interface</a></li>
-      </ul>
-      <hr>
 
-      <h5 class="topLevelList w3-padding-8 w3-xlarge"><i class="fa fa-circle w3-text-black" > </i> The Platform</h5>
-      <ul class="w3-medium">
-        <li><a href="Workflow_Scheduler.html">Workflow Scheduler</a></li>
-        <li><a href="Trigger_Management.html">Manage Triggers</a></li>
-        <li><a href="Case_Management.html">Case Management</a></li>
-      </ul>
+def action_event_stream():
+    global action_event_id_counter
+    while True:
+        event_type, data = action_event_json.get()
+        yield create_sse_event(event_id=action_event_id_counter, event=event_type, data=data)
+        action_event_id_counter += 1
+        action_signal.wait()
 
-      <h5 class="topLevelList w3-padding-8 w3-large"><i class="fa fa-circle w3-text-black" > </i> System Administration</h5>
-      <ul class="w3-medium">
-        <li><a href="User_Management.html">Managing Users</a></li>
-        <li><a href="Settings.html">System Configuration</a></li>
-      </ul>
-    </div>
 
-   <div class="w3-third w3-center">
-      <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+@dispatcher.on_app_actions('HelloWorld', events=WalkoffEvent.ActionExecutionSuccess)
+def action_ended_callback(data):
+    data['timestamp'] = str(datetime.utcnow())
+    action_event_json.set(('action_success', data))
+    sleep(0)
+    action_signal.set()
+    action_signal.clear()
+    sleep(0)
+
+
+@dispatcher.on_app_actions('HelloWorld', events=WalkoffEvent.ActionExecutionError)
+def __action_error_callback(data):
+    data['timestamp'] = str(datetime.utcnow())
+    action_event_json.set(('action_success', data))
+    sleep(0)
+    action_signal.set()
+    action_signal.clear()
+    sleep(0)
+        </code></pre>
+        <p> The <code>sleep(0)</code> lines explicitly context switch between the different greenlet threads in the
+            gevent framework. The <code>action_event_stream</code> is the generator.
+        </p>
+        <h4>2. Create the endpoint</h4>
+        <p> Now that we have the generator created, we will create an endpoint to start the SSE connection.</p>
+        <pre><code class="python">
+from flask import Response
+
+@blueprint.blueprint.route('/actionstream', methods=['GET'])
+def stream_workflow_action_events():
+    return Response(action_event_stream(), mimetype='text/event-stream')
+        </code></pre>
+        <h4>3. Secure the endpoint</h4>
+        <p> SSE connections cannot accept Authorization headers. Instead, we will pass our JWT token in through a query
+            parameter. In the <code>server.security</code> module, we have a decorator which checks for this query
+            parameter.</p>
+        <pre><code class="python">
+from flask import Response
+from server.security import jwt_required_in_query
+
+@blueprint.blueprint.route('/actionstream', methods=['GET'])
+@jwt_required_in_query
+def stream_workflow_action_events():
+    return Response(action_event_stream(), mimetype='text/event-stream')
+        </code></pre>
+
+        </code></pre>
     </div>
   </div>
 </div>
