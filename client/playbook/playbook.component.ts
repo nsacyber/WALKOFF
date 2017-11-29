@@ -552,6 +552,10 @@ export class PlaybookComponent {
 			if ((argument.value == null || argument.value === '') && argument.reference === '') {
 				idsToRemove.unshift(args.indexOf(argument));
 			}
+			// Additionally, remove "value" if reference is specified
+			if (argument.reference && argument.value) {
+				delete argument.value;
+			}
 		}
 		// Actually splice out all the args
 		for (const id of idsToRemove) {
