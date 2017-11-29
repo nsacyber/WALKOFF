@@ -11,7 +11,7 @@ export class Configuration {
 			case_db_type: 'sqlite',
 			clear_case_db_on_startup: false,
 			log_config_path: './data/log/logging.json',
-			https: false,
+			// https: false,
 			tls_version: '1.2',
 			// certificate_path: 'data/shortstop.public.pem',
 			// private_key_path: 'data/shortstop.private.pem',
@@ -34,7 +34,7 @@ export class Configuration {
 	case_db_type: string;
 	clear_case_db_on_startup: boolean;
 	log_config_path: string;
-	https: boolean;
+	// https: boolean;
 	tls_version: string;
 	// certificate_path: string;
 	// private_key_path: string;

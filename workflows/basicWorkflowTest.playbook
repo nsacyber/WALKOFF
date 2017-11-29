@@ -9,6 +9,7 @@
                     "action_name": "hello world",
                     "app_name": "HelloWorld",
                     "arguments": [],
+                    "device_id": 1,
                     "name": "helloWorld",
                     "position": {
                         "x": 130,
@@ -26,6 +27,7 @@
                             "value": 5
                         }
                     ],
+                    "device_id": 1,
                     "name": "returnPlusOne",
                     "position": {
                         "x": 370,
@@ -61,6 +63,7 @@
                     "action_name": "hello world",
                     "app_name": "HelloWorld",
                     "arguments": [],
+                    "device_id": 1,
                     "name": "helloWorld 2",
                     "position": {
                         "x": 210,
@@ -73,6 +76,7 @@
                     "action_name": "hello world",
                     "app_name": "HelloWorld",
                     "arguments": [],
+                    "device_id": 1,
                     "name": "helloWorld 3",
                     "position": {
                         "x": 290,
