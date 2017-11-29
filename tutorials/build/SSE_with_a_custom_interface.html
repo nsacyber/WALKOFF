@@ -172,6 +172,7 @@ from flask import Response
 def stream_workflow_action_events():
     return Response(action_event_stream(), mimetype='text/event-stream')
         </code></pre>
+
         <h4>3. Secure the endpoint</h4>
         <p> SSE connections cannot accept Authorization headers. Instead, we will pass our JWT token in through a query
             parameter. In the <code>server.security</code> module, we have a decorator which checks for this query
@@ -186,7 +187,61 @@ def stream_workflow_action_events():
     return Response(action_event_stream(), mimetype='text/event-stream')
         </code></pre>
 
+        <h4>4. Use the endpoint in an interface</h4>
+        <p>
+            Now that we have an endpoint created, it's time to use it in our interface to display the real-time data.
+            In our index.html body, append the following HTML:
+        </p>
+        <pre><code class="html">
+&lth1&gtAction Results&lt/h1&gt
+&lttable id="actionResults"&gt
+    &ltthead&gt
+        &lttr&gt
+            &lttd&gtAction UID&lt/td&gt
+            &lttd&gtAction Name&lt/td&gt
+            &lttd&gtTimestamp&lt/td&gt
+            &lttd&gtStatus&lt/td&gt
+        &lt/tr&gt
+    &lt/thead&gt
+    &lttbody&gt&lt/tbody&gt
+&lt/table&gt
         </code></pre>
+        
+        <p>
+            This creates a simple table for us to put the action results once we receive them. Note the tbody is empty.
+            In our main.js, the following JavaScript code will initiate the SSE event handling to add new rows to our table.
+            This should be placed below the other JS code but before the end of the module.
+        </p>
+
+        <pre><code class="javascript js">
+const eventSource = new EventSource('interfaces/HelloWorld/actionstream?access_token=' + sessionStorage.getItem('access_token'));
+
+function eventHandler(message) {
+    let result = JSON.parse(message.data);
+    
+    $('#actionResults tbody').append(`
+        &lttr&gt
+            &lttd&gt${result.sender_uid}&lt/td&gt
+            &lttd&gt${result.sender_name}&lt/td&gt
+            &lttd&gt${result.timestamp}&lt/td&gt
+            &lttd&gt${result.data.status}&lt/td&gt
+        &lt/tr&gt
+    `);
+}
+
+eventSource.addEventListener('action_success', eventHandler);
+eventSource.addEventListener('action_error', eventHandler);
+eventSource.addEventListener('error', (err) => {
+    console.error(err);
+});
+        </code></pre>
+
+        <p>
+            We see here that we have an event handler function that is bound to both action success and error events,
+            meaning that they are processed the same. Using the SSE you can produce many different types of events
+            and potentially process them in different manners. This code will simply push a new row onto the actionResults
+            table which contains some of the information from the action result received from the SSE.
+        </p>
     </div>
   </div>
 </div>
