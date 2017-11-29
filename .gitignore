@@ -12,3 +12,4 @@ private_keys/*
 .vscode
 composed_api.yaml
 data/log
+.certificates
