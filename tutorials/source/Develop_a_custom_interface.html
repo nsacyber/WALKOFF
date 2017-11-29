@@ -210,9 +210,12 @@ def get_hello_world_metrics():
         <pre><code class="html">
 &lttable id="results"&gt
     &ltthead&gt
-        &lttr&gtAction Name&lt/tr&gt
-        &lttr&gtCount&lt/tr&gt
+        &lttr&gt
+            &lttd&gtAction Name&lt/td&gt
+            &lttd&gtCount&lt/td&gt
+        &lt/tr&gt
     &lt/thead&gt
+    &lttbody&gt&ltt/body&gt
 &lttable&gt
         </code></pre>
         <p>
@@ -230,12 +233,12 @@ $(function () {
         'url': "/interfaces/HelloWorld/metrics",
         'success': function (data) {
             for (const action in data) {
-                $('#results').append(`
+                $('#results tbody').append(`
                     &lttr&gt
                         &lttd&gt${action}&lt/td&gt
                         &lttd&gt${data[action]}&lt/td&gt
                     &lt/tr&gt
-                `)
+                `);
             }
         },
         'error': function (e) {
