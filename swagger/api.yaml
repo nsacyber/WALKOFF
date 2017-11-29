@@ -2747,10 +2747,6 @@ definitions:
           type: array
           items:
             $ref: '#/definitions/Argument'
-        output:
-          description: The output of the action after it has been executed
-          type: string
-          example: result_from_action
         position:
           description:  position of the action onthe workflow editor
           type: object
@@ -2790,11 +2786,6 @@ definitions:
           description: ID of the device to use
           type: integer
           example: 42
-        risk:
-          description: risk associated with this action failing
-          type: number
-          default: 0
-          example: 20
         arguments:
           description: The input arguments to the action
           type: array
