@@ -4,7 +4,7 @@ import os
 def main():
     print('\nInstalling Python Dependencies...')
     os.system('pip install -r requirements.txt')
-    os.system('python installDependencies.py')
+    os.system('python install_dependencies.py')
 
     print('\nGenerating Certificates...')
     os.system('python generate_certificates.py')
