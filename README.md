@@ -133,16 +133,25 @@ considered permanent*
 ## Stability and Versioning
 
 WALKOFF uses Semantic Versioning. Until the full feature set is developed, the
-versions will begin with 0.x.y. The "x" version will be updated when a breaking
+versions will begin with `0.x.y`. The `x` version will be updated when a breaking
 change is made, a breaking change being defined as one which modifies either a
 database schema, the REST API, the workflow format, or API used to develop and
 specify the apps is modified in a way which breaks backward compatibility. No
 guarantees are yet made for the stability of the backend Python modules. The
-"y" version will be updated for patches, bug fixes, and non-breaking features.
+`y` version will be updated for patches, bug fixes, and non-breaking features.
+
+When possible, migration scripts will be included in each release to
+help update workflows and app APIs to new formats and specifications.
+Currently migration scripts `migrate_workflows.py` and `migrate_api.py`
+are included in version 0.5.0.
 
 ## Contributions
 
 WALKOFF is a community focused effort and contributions are welcome.
-Please submit pull requests to the "development" branch.
+Please submit pull requests to the `development` branch. Issues marked
+`help wanted` and `good first issue` are great places to start
+contributing. Additionally, you can always look at our
+[CodeClimate Issues page](https://codeclimate.com/github/iadgov/WALKOFF/issues "CodeClimate Issues")
+and help us improve our code quality.
 
 Comments or questions?  walkoff@nsa.gov
