@@ -211,7 +211,21 @@ actions:
       Success:
         schema:
           type: string
-
+  send message:
+    run: actions.send_message
+    description: Send a message to users
+    parameters:
+      - name: message
+        type: string
+      - name: users
+        type: array
+        items:
+          type: user
+    returns:
+      Success:
+        schema:
+          type: string
+          enum: ['success']
 conditions:
   regex match:
     run: conditions.regMatch

@@ -91,3 +91,6 @@ def write_ips_to_csv(ips_reference, path):
                 else:
                     writer.writerow({'Host': ip})
 
+@action
+def send_message(message, users):
+    return 'success'
