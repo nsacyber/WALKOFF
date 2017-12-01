@@ -3,7 +3,7 @@ import unittest
 import server.database
 import server.flaskserver
 from server.database import (initialize_resource_roles_from_cleared_database, set_resources_for_role,
-                             clear_resources_for_role, Role, ResourcePermission, db,
+                             clear_resources_for_role, Role, ResourceType, db,
                              initialize_resource_roles_from_database, default_resources)
 
 
@@ -21,7 +21,7 @@ class TestRolesPagesCache(unittest.TestCase):
         db.session.rollback()
         for role in [role for role in Role.query.all() if role.name != 'admin']:
             db.session.delete(role)
-        for resource in [resource for resource in ResourcePermission.query.all()
+        for resource in [resource for resource in ResourceType.query.all()
                          if resource.resource not in default_resources]:
             db.session.delete(resource)
         db.session.commit()

@@ -25,7 +25,7 @@ def initialize_resource_roles_from_cleared_database():
 def initialize_resource_roles_from_database():
     """Initializes the resource_roles dictionary.
     """
-    for resource in ResourcePermission.query.all():
+    for resource in ResourceType.query.all():
         resource_roles[resource.resource] = {role.name for role in resource.roles}
 
 
@@ -60,11 +60,6 @@ def clear_resources_for_role(role_name):
 user_roles_association = db.Table('user_roles_association',
                                   db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
                                   db.Column('user_id', db.Integer, db.ForeignKey('user.id')))
-
-roles_resources_association = db.Table('roles_resources_association',
-                                       db.Column('resource_permission_id', db.Integer,
-                                                 db.ForeignKey('resource_permission.id')),
-                                       db.Column('role_id', db.Integer, db.ForeignKey('role.id')))
 
 
 class TrackModificationsMixIn(object):
@@ -199,8 +194,7 @@ class Role(db.Model, TrackModificationsMixIn):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
     description = db.Column(db.String(255))
-    resources = db.relationship('ResourcePermission', secondary=roles_resources_association,
-                                backref=db.backref('roles', lazy='dynamic'))
+    resource_types = db.relationship('ResourceType', backref=db.backref('roles', lazy='dynamic'))
 
     def __init__(self, name, description='', resources=None):
         """Initializes a Role object. Each user has one or more Roles associated with it, which determines the user's
@@ -222,14 +216,14 @@ class Role(db.Model, TrackModificationsMixIn):
         Args:
             new_resources (list|set[str]): A list of resource names with which the Role will be associated.
         """
-        self.resources[:] = []
+        self.resource_types[:] = []
         new_resource_names = set(new_resources)
-        new_resources = (ResourcePermission.query.filter(ResourcePermission.resource.in_(new_resource_names)).all()
+        new_resources = (ResourceType.query.filter(ResourceType.type.in_(new_resource_names)).all()
                          if new_resource_names else [])
-        self.resources.extend(new_resources)
+        self.resource_types.extend(new_resources)
 
         resources_not_added = new_resource_names - {resource.resource for resource in new_resources}
-        self.resources.extend([ResourcePermission(resource) for resource in resources_not_added])
+        self.resource_types.extend([ResourceType(resource) for resource in resources_not_added])
 
     def as_json(self, with_users=False):
         """Returns the dictionary representation of the Role object.
@@ -244,24 +238,26 @@ class Role(db.Model, TrackModificationsMixIn):
         out = {"id": self.id,
                "name": self.name,
                "description": self.description,
-               "resources": [resource.resource for resource in self.resources]}
+               "resources": [resource.resource for resource in self.resource_types]}
         if with_users:
             out['users'] = [user.username for user in self.users]
         return out
 
 
-class ResourcePermission(db.Model):
-    __tablename__ = 'resource_permission'
+class ResourceType(db.Model):
+    __tablename__ = 'resource_type'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    resource = db.Column(db.String(255), unique=True, nullable=False)
+    type = db.Column(db.String(255), unique=True, nullable=False)
+    roles = db.relationship('Role', backref=db.backref('resource_types', lazy='dynamic'))
+    permissions = db.relationship('Permission', backref=db.backref('resource_types', lazy='dynamic'))
 
-    def __init__(self, resource):
-        """Initializes a new ResourcePermission object, which is a type of Resource that a Role may have access to.
+    def __init__(self, type):
+        """Initializes a new ResourceType object, which is a type of Resource that a Role may have access to.
 
         Args:
-            resource (name): Name of the Resource object.
+            type (name): Name of the Resource object.
         """
-        self.resource = resource
+        self.type = type
 
     def as_json(self, with_roles=False):
         """Returns the dictionary representation of the ResourcePermission object.
@@ -269,14 +265,19 @@ class ResourcePermission(db.Model):
         Args:
             with_roles (bool, optional): Boolean to determine whether or not to include Role objects associated with the
                 ResourcePermission in the JSON representation. Defaults to False.
-
-        :param with_roles:
-        :return:
         """
-        out = {'resource': self.resource}
+        out = {'resource': self.type}
         if with_roles:
             out["roles"] = [role.name for role in self.roles]
         return out
+
+
+class Permission(db.Model):
+    __tablename__ = "permission"
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    action_name = db.Column(db.String(255), nullable=False)
+    app_name = db.Column(db.String(255))
+    resource_types = db.relationship('ResourceType', backref=db.backref('permissions', lazy='dynamic'))
 
 
 def add_user(username, password):
