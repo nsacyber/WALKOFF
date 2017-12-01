@@ -2,6 +2,8 @@ import logging
 from datetime import datetime
 
 import flask_sqlalchemy
+from sqlalchemy import Column, Integer, Table, ForeignKey, String, DateTime, Boolean, func
+from sqlalchemy.orm import relationship, backref
 from passlib.hash import pbkdf2_sha512
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -57,39 +59,42 @@ def clear_resources_for_role(role_name):
             roles.remove(role_name)
 
 
-user_roles_association = db.Table('user_roles_association',
-                                  db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
-                                  db.Column('user_id', db.Integer, db.ForeignKey('user.id')))
+user_roles_association = Table('user_roles_association',
+                                  Column('role_id', Integer, ForeignKey('role.id')),
+                                  Column('user_id', Integer, ForeignKey('user.id')))
 
 
 class TrackModificationsMixIn(object):
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-    modified_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    created_at = Column(DateTime, default=func.current_timestamp())
+    modified_at = Column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
 
 
 class User(db.Model, TrackModificationsMixIn):
-    __tablename__ = 'user'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    roles = db.relationship('Role', secondary=user_roles_association,
-                            backref=db.backref('users', lazy='dynamic'))
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    _password = db.Column('password', db.String(255), nullable=False)
-    active = db.Column(db.Boolean, default=True)
-    last_login_at = db.Column(db.DateTime)
-    current_login_at = db.Column(db.DateTime)
-    last_login_ip = db.Column(db.String(45))
-    current_login_ip = db.Column(db.String(45))
-    login_count = db.Column(db.Integer, default=0)
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    roles = relationship('Role', secondary=user_roles_association,
+                            backref=backref('users', lazy='dynamic'))
+    username = Column(String(80), unique=True, nullable=False)
+    _password = Column('password', String(255), nullable=False)
+    active = Column(Boolean, default=True)
+    last_login_at = Column(DateTime)
+    current_login_at = Column(DateTime)
+    last_login_ip = Column(String(45))
+    current_login_ip = Column(String(45))
+    login_count = Column(Integer, default=0)
 
-    def __init__(self, name, password):
+    def __init__(self, name, password, roles=None):
         """Initializes a new User object
 
         Args:
             name (str): The username for the User.
             password (str): The password for the User.
+            roles (list[str]): List of Role names for the User. Defaults to None.
         """
         self.username = name
         self._password = pbkdf2_sha512.hash(password)
+        if roles:
+            self.set_roles(roles)
 
     @hybrid_property
     def password(self):
@@ -190,11 +195,13 @@ class User(db.Model, TrackModificationsMixIn):
 
 
 class Role(db.Model, TrackModificationsMixIn):
-    __tablename__ = 'role'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(80), unique=True, nullable=False)
-    description = db.Column(db.String(255))
-    resource_types = db.relationship('ResourceType', backref=db.backref('roles', lazy='dynamic'))
+    __tablename__ = 'roles'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(80), unique=True, nullable=False)
+    description = Column(String(255))
+    users = relationship('User', secondary=user_roles_association,
+                            backref=backref('roles', lazy='dynamic'))
+    resource_types = relationship('ResourceType', backref=backref('role', lazy='dynamic'))
 
     def __init__(self, name, description='', resources=None):
         """Initializes a Role object. Each user has one or more Roles associated with it, which determines the user's
@@ -244,23 +251,24 @@ class Role(db.Model, TrackModificationsMixIn):
         return out
 
 
-class ResourceType(db.Model):
-    __tablename__ = 'resource_type'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    type = db.Column(db.String(255), unique=True, nullable=False)
-    roles = db.relationship('Role', backref=db.backref('resource_types', lazy='dynamic'))
-    permissions = db.relationship('Permission', backref=db.backref('resource_types', lazy='dynamic'))
+class ResourceType(db.Model, TrackModificationsMixIn):
+    __tablename__ = 'resource_types'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(255), unique=True, nullable=False)
+    role_id = Column(Integer, ForeignKey('roles.id'))
+    role = relationship('Role', backref=backref('resource_types', lazy='dynamic'))
+    permissions = relationship('Permission', backref=backref('resource_types', lazy='dynamic'))
 
-    def __init__(self, type):
+    def __init__(self, name):
         """Initializes a new ResourceType object, which is a type of Resource that a Role may have access to.
 
         Args:
-            type (name): Name of the Resource object.
+            name (str): Name of the Resource object.
         """
-        self.type = type
+        self.name = name
 
     def as_json(self, with_roles=False):
-        """Returns the dictionary representation of the ResourcePermission object.
+        """Returns the dictionary representation of the ResourceType object.
 
         Args:
             with_roles (bool, optional): Boolean to determine whether or not to include Role objects associated with the
@@ -273,11 +281,16 @@ class ResourceType(db.Model):
 
 
 class Permission(db.Model):
-    __tablename__ = "permission"
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    action_name = db.Column(db.String(255), nullable=False)
-    app_name = db.Column(db.String(255))
-    resource_types = db.relationship('ResourceType', backref=db.backref('permissions', lazy='dynamic'))
+    __tablename__ = "permissions"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    action_name = Column(String(255), nullable=False)
+    app_name = Column(String(255))
+    resource_type_id = Column(Integer, ForeignKey('resource_types.id'))
+    resource_types = relationship('ResourceType', backref=backref('permissions', lazy='dynamic'))
+
+    def __init__(self, action_name, app_name=""):
+        self.action_name = action_name
+        self.app_name = app_name
 
 
 def add_user(username, password):
