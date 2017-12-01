@@ -143,5 +143,6 @@ guarantees are yet made for the stability of the backend Python modules. The
 ## Contributions
 
 WALKOFF is a community focused effort and contributions are welcome.
+Please submit pull requests to the "development" branch.
 
 Comments or questions?  walkoff@nsa.gov
