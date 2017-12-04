@@ -40,11 +40,12 @@ def run(host, port):
     print_banner()
     pids = spawn_worker_processes()
     monkey.patch_all()
+    from compose_api import compose_api
+    compose_api()
     from server import flaskserver
     flaskserver.running_context.controller.initialize_threading(pids=pids)
     # The order of these imports matter for initialization (should probably be fixed)
-    from compose_api import compose_api
-    compose_api()
+    
 
     import core.case.database as case_database
     case_database.initialize()
