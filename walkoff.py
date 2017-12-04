@@ -40,6 +40,7 @@ def run(host, port):
     print_banner()
     pids = spawn_worker_processes()
     monkey.patch_all()
+    
     from compose_api import compose_api
     compose_api()
     
