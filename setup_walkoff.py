@@ -19,10 +19,6 @@ def main():
     print('\nGulping TypeScript Files...')
     os.system('gulp ts')
 
-    print('\nComposing API...')
-    os.chdir('..')
-    os.system('python compose_api.py')
-
 
 if __name__ == '__main__':
     main()
