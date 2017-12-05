@@ -368,10 +368,22 @@ def pause_workflow(playbook_name, workflow_name):
     @jwt_required
     @roles_accepted_for_resources('playbooks')
     def __func():
+        data = request.get_json()
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            running_context.controller.pause_workflow(playbook_name, workflow_name)
-            current_app.logger.info('Paused workflow {0}-{1}'.format(playbook_name, workflow_name))
-            return {}, SUCCESS
+            execution_uid = data['id']
+            status = running_context.controller.executor.get_workflow_status(execution_uid)
+            if status == 1: #WORKFLOW_RUNNING
+                if running_context.controller.pause_workflow(execution_uid):
+                    current_app.logger.info('Paused workflow {0}-{1}:{2}'.format(playbook_name, workflow_name, execution_uid))
+                    return {"info": "Workflow paused"}, SUCCESS
+                else:
+                    return {"error": "Invalid UUID."}, INVALID_INPUT_ERROR
+            elif status == 2:
+                return {"info": "Workflow already paused"}, SUCCESS
+            elif status == 0:
+                return {"error": 'Invalid UUID'}, INVALID_INPUT_ERROR
+            else:
+                return {"error": 'Workflow stopped or awaiting data'}
         else:
             current_app.logger.error('Cannot pause workflow '
                                      '{0}-{1}. Does not exist in controller'.format(playbook_name, workflow_name))
@@ -388,11 +400,22 @@ def resume_workflow(playbook_name, workflow_name):
     def __func():
         data = request.get_json()
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            uuid = data['uuid']
-            if running_context.controller.resume_workflow(playbook_name, workflow_name, uuid):
-                return {}, SUCCESS
+            execution_uid = data['id']
+            status = running_context.controller.executor.get_workflow_status(execution_uid)
+            if status == 2:  # WORKFLOW_PAUSED
+                if running_context.controller.resume_workflow(execution_uid):
+                    current_app.logger.info(
+                        'Resumed workflow {0}-{1}:{2}'.format(playbook_name, workflow_name, execution_uid))
+                    print(running_context.controller.executor.get_workflow_status(execution_uid))
+                    return {"info": "Workflow resumed"}, SUCCESS
+                else:
+                    return {"error": "Invalid UUID."}, INVALID_INPUT_ERROR
+            elif status == 1:
+                return {"info": "Workflow already running"}, SUCCESS
+            elif status == 0:
+                return {"error": 'Invalid UUID'}, INVALID_INPUT_ERROR
             else:
-                return {"error": "Invalid UUID."}, INVALID_INPUT_ERROR
+                return {"error": 'Workflow stopped or awaiting data'}
         else:
             current_app.logger.error(
                 'Cannot resume workflow {0}-{1}. Does not exist in controller'.format(playbook_name, workflow_name))

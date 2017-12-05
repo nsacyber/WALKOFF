@@ -203,6 +203,10 @@ class MultiprocessedExecutor(object):
             and self.workflow_status[execution_uid] == WORKFLOW_RUNNING):
             self.manager.pause_workflow(execution_uid)
             self.workflow_status[execution_uid] = WORKFLOW_PAUSED
+            return True
+        else:
+            logger.warning('Cannot pause workflow {0}. Invalid key'.format(execution_uid))
+            return False
 
     def resume_workflow(self, workflow_execution_uid):
         """Resumes a workflow that has been paused.
@@ -243,6 +247,7 @@ class MultiprocessedExecutor(object):
         try:
             return self.workflow_status[workflow_execution_uid]
         except KeyError:
+            logger.error("Key {} does not exist in {}.").format(workflow_execution_uid, self.workflow_status.items())
             return 0
 
     def send_data_to_trigger(self, data_in, workflow_uids, arguments=None):
