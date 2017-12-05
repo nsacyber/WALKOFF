@@ -65,6 +65,211 @@ actions:
       Success:
         schema:
           type: boolean
+  get app metrics:
+    run: app.Walkoff.get_app_metrics
+    description: Get metrics on app usage on this instance
+    parameters:
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        type: number
+        default: 2.0
+    returns:
+      Success:
+        schema:
+          type: object
+          description: List of apps with their metrics
+          properties:
+            apps:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: App name
+                  count:
+                    type: integer
+                    description: Number of times an app has been used
+                  actions:
+                    type: array
+                    description: list of actions in an app
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: Name of action
+                        success_metrics:
+                          type: object
+                          properties:
+                            count:
+                              type: integer
+                              description: number of times the action was successfully run
+                            avg_time:
+                              type: string
+                              description: average runtime of the action until success
+                        error_metrics:
+                          type: object
+                          properties:
+                            count:
+                              type: integer
+                              description: number of times the action encountered and error
+                            avg_time:
+                              type: string
+                              description: average runtime of the action until error
+      TimedOut:
+        schema:
+          type: string
+          enum: [Connection timed out]
+      Unauthorized:
+        schema:
+          type: string
+          enum: [Unauthorized credentials]
+      NotConnected:
+        schema:
+          type: string
+          enum: [Not connected to Walkoff]
+      UnknownResponse:
+        schema:
+          type: string
+          description: Unknown HTTP response from server
+  get workflow metrics:
+    run: app.Walkoff.get_workflow_metrics
+    description: Gets metrics on workflow usage on this instance
+    parameters:
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        type: number
+        default: 2.0
+    returns:
+      Success:
+        schema:
+          type: object
+          description: list of workflows and their metrics
+          properties:
+            workflows:
+              type: array
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: name of the workflow
+                  count:
+                    type: integer
+                    description: number of times the workflow has run
+                  avg_time:
+                    type: string
+                    description: average runtime of the workflow
+      TimedOut:
+        schema:
+          type: string
+          enum: [Connection timed out]
+      Unauthorized:
+        schema:
+          type: string
+          enum: [Unauthorized credentials]
+      NotConnected:
+        schema:
+          type: string
+          enum: [Not connected to Walkoff]
+      UnknownResponse:
+        schema:
+          type: string
+          description: Unknown HTTP response from server
+  get all cases:
+    run: app.Walkoff.get_all_cases
+    description: Gets a list of all the cases loaded on the system
+    parameters:
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        type: number
+        default: 2.0
+    returns:
+      Success:
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              note:
+                type: string
+              subscriptions:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    uid:
+                      type: string
+                    events:
+                      type: array
+                      items:
+                        type: string
+      TimedOut:
+        schema:
+          type: string
+          enum: [Connection timed out]
+      Unauthorized:
+        schema:
+          type: string
+          enum: [Unauthorized credentials]
+      NotConnected:
+        schema:
+          type: string
+          enum: [Not connected to Walkoff]
+      UnknownResponse:
+        schema:
+          type: string
+          description: Unknown HTTP response from server
+  get all users:
+    run: app.Walkoff.get_all_users
+    description: Gets a list of all the users loaded on the system
+    parameters:
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        type: number
+        default: 2.0
+    returns:
+      Success:
+        schema:
+          type: array
+          items:
+            properties:
+              name:
+                type: string
+                description: name of the playbook
+              workflows:
+                description: the workflows associated with this playbook
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: name of the workflow
+                    uid:
+                      type: string
+                      description: UID of the workflow
+      TimedOut:
+        schema:
+          type: string
+          enum: [Connection timed out]
+      Unauthorized:
+        schema:
+          type: string
+          enum: [Unauthorized credentials]
+      NotConnected:
+        schema:
+          type: string
+          enum: [Not connected to Walkoff]
+      UnknownResponse:
+        schema:
+          type: string
+          description: Unknown HTTP response from server
   get all workflows:
     run: app.Walkoff.get_all_workflows
     description: Gets the names and uids of all the workflows loaded on the system
@@ -149,28 +354,144 @@ actions:
         schema:
           type: string
           description: Unknown HTTP response from server
+  execute workflow:
+    run: app.Walkoff.execute_workflow
+    description: Executes a workflow with the specified playbook and workflow
+    parameters:
+      - name: playbook_name
+        description: name of the playbook
+        type: string
+        required: true
+      - name: workflow_name
+        description: name of the workflow
+        type: string
+        required: true
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        type: number
+        default: 2.0
+    returns:
+      Success:
+        schema:
+          type: array
+          items:
+            type: string
+            description: execution_uid of the executed workflow in array
+      TimedOut:
+        schema:
+          type: string
+          enum: [Connection timed out]
+      Unauthorized:
+        schema:
+          type: string
+          enum: [Unauthorized credentials]
+      NotConnected:
+        schema:
+          type: string
+          enum: [Not connected to Walkoff]
+      UnknownResponse:
+        schema:
+          type: string
+          description: Unknown HTTP response from server
+  pause workflow:
+    run: app.Walkoff.pause_workflow
+    description: Pauses a workflow with the specified playbook, workflow and execution uid
+    parameters:
+      - name: playbook_name
+        description: name of the playbook
+        type: string
+        required: true
+      - name: workflow_name
+        description: name of the workflow
+        type: string
+        required: true
+      - name: execution_uid
+        description: specific execution_uid of the workflow
+        type: string
+        required: true
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        type: number
+        default: 2.0
+    returns:
+      Success:
+        schema:
+          type: string
+      TimedOut:
+        schema:
+          type: string
+          enum: [Connection timed out]
+      Unauthorized:
+        schema:
+          type: string
+          enum: [Unauthorized credentials]
+      NotConnected:
+        schema:
+          type: string
+          enum: [Not connected to Walkoff]
+      UnknownResponse:
+        schema:
+          type: string
+          description: Unknown HTTP response from server
+  resume workflow:
+    run: app.Walkoff.resume_workflow
+    description: Resumes a paused workflow with the specified playbook, workflow and execution uid
+    parameters:
+      - name: playbook_name
+        description: name of the playbook
+        type: string
+        required: true
+      - name: workflow_name
+        description: name of the workflow
+        type: string
+        required: true
+      - name: execution_uid
+        description: specific execution_uid of the workflow
+        type: string
+        required: true
+      - name: timeout
+        description: Timeout on the request (in seconds)
+        type: number
+        default: 2.0
+    returns:
+      Success:
+        schema:
+          type: string
+      TimedOut:
+        schema:
+          type: string
+          enum: [Connection timed out]
+      Unauthorized:
+        schema:
+          type: string
+          enum: [Unauthorized credentials]
+      NotConnected:
+        schema:
+          type: string
+          enum: [Not connected to Walkoff]
+      UnknownResponse:
+        schema:
+          type: string
+          description: Unknown HTTP response from server
   trigger:
     run: app.Walkoff.trigger
     description: Trigger a workflow
     parameters:
-      - name: names
-        description: names of triggers to execute
+      - name: execution_uids
+        description: execution_uid of workflows to triggers
         type: array
         items:
           type: string
+        required: true
+      - name: data
+        description: data to send to waiting workflow
+        type: string
+        required: true
       - name: inputs
         description: Inputs into the starting action as key-value pairs
         schema:
           type: object
           additionalProperties: true
-      - name: data
-        description: Data to send to the trigger
-        type: string
-      - name: tags
-        description: names of trigger tags to execute
-        type: array
-        items:
-          type: string
       - name: timeout
         description: Timeout on the request (in seconds)
         type: number
@@ -389,18 +710,15 @@ devices:
       - name: username
         type: string
         description: Username for Walkoff instance
-        placeholder: username
         required: true
       - name: password
         type: string
         description: Password for Walkoff instance
         encrypted: true
-        placeholder: password
         required: true
       - name: ip
         description: IP address of Walkoff instance
         type: string
-        placeholder: ip address
         required: true
       - name: port
         description: Port of Walkoff instance
@@ -408,4 +726,7 @@ devices:
         minimum: 1
         maximum: 65355
         required: true
+      - name: https
+        description: Whether or not to use HTTPS
+        type: boolean
 

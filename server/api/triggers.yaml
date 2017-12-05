@@ -3,6 +3,8 @@
     summary: Send data to one or more workflows with trigger actions awaiting data before continuing execution
     description: ''
     operationId: server.endpoints.triggers.send_data_to_trigger
+    tags:
+      - Triggers
     consumes:
       - application/json
     produces:

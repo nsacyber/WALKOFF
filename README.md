@@ -69,6 +69,10 @@ run:
 Then, navigate to the specified IP and port to start using WALKOFF. The default
 is `http://127.0.0.1:5000`.
 
+Through this script, you can also specify port and host, for example
+
+    `python walkoff.py --port 3333 --host 0.0.0.0`
+
 For more options, run
 
     `python walkoff.py --help`

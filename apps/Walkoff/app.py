@@ -31,11 +31,13 @@ class Walkoff(App):
         self.headers = None
         self.refresh_token = None
         self.username = self.device_fields['username']
-        self.walkoff_address = self.device_fields['ip']
-        port = self.device_fields['port']
-        if port:
-            self.walkoff_address += ':{}'.format(port)
-        self.is_https = self.walkoff_address.startswith('https')
+        self.is_https = self.device_fields['https']
+        if self.is_https:
+            self.walkoff_address = "https://"
+        else:
+            self.walkoff_address = "http://"
+        self.walkoff_address += self.device_fields['ip']
+        self.walkoff_address += ':{}'.format(self.device_fields['port'])
 
     @action
     def connect(self, timeout=DEFAULT_TIMEOUT):
@@ -44,19 +46,19 @@ class Walkoff(App):
                                      data=dict(username=self.username,
                                                password=self.device.get_encrypted_field('password')))
         except Timeout:
-            return 'Connection timed out', 'TimedOut'
+            return False, 'TimedOut'
 
         status_code = response.status_code
         if status_code == 404:
-            return 'Could not locate Walkoff instance', 'WalkoffNotFound'
+            return False, 'WalkoffNotFound'
         elif status_code == 401:
-            return 'Invalid login', 'AuthenticationError'
+            return False, 'AuthenticationError'
         elif status_code == 201:
             response = response.json()
             self.refresh_token = response['refresh_token']
             self.reset_authorization(response['access_token'])
             self.is_connected = True
-            return 'Success'
+            return response, 'Success'
         else:
             return 'Unknown response {}'.format(status_code), 'UnknownResponse'
 
@@ -76,6 +78,26 @@ class Walkoff(App):
     def is_connected(self):
         return self.is_connected
 
+    # METRICS
+    @action
+    def get_app_metrics(self, timeout=DEFAULT_TIMEOUT):
+        return self.standard_request('get', '/metrics/apps', timeout, headers=self.headers)
+
+    @action
+    def get_workflow_metrics(self, timeout=DEFAULT_TIMEOUT):
+        return self.standard_request('get', '/metrics/workflows', timeout, headers=self.headers)
+
+    # CASES
+    @action
+    def get_all_cases(self, timeout=DEFAULT_TIMEOUT):
+        return self.standard_request('get', '/api/cases', timeout, headers=self.headers)
+
+    # USERS
+    @action
+    def get_all_users(self, timeout=DEFAULT_TIMEOUT):
+        return self.standard_request('get', '/api/users', timeout, headers=self.headers)
+
+    # WORKFLOWS
     @action
     def get_all_workflows(self, timeout=DEFAULT_TIMEOUT):
         return self.standard_request('get', '/api/playbooks', timeout, headers=self.headers)
@@ -104,25 +126,37 @@ class Walkoff(App):
                 return workflow['uid']
 
     @action
-    def trigger(self, names=None, inputs=None, data=None, tags=None, timeout=DEFAULT_TIMEOUT):
-        trigger_data = {}
-        if names:
-            trigger_data['names'] = names
-        if inputs:
-            trigger_data['inputs'] = inputs
-        if data:
-            trigger_data['data'] = data
-        if tags:
-            trigger_data['tags'] = tags
+    def execute_workflow(self, playbook_name, workflow_name, timeout=DEFAULT_TIMEOUT):
+        data = {}
+        r = self.standard_request('post', '/api/playbooks/{}/workflows/{}/execute'.format(playbook_name, workflow_name),
+                                  timeout, headers=self.headers, data=data)
+        r = [r[0]['id']]
+        return r, 'Success'
 
-        return self.standard_request('post', '/api/triggers/execute', timeout, headers=self.headers, data=data)
+    @action
+    def pause_workflow(self, playbook_name, workflow_name, execution_uid, timeout=DEFAULT_TIMEOUT):
+        return self.standard_request('post',
+                                     '/api/playbooks/{}/workflows/{}/pause'.format(playbook_name, workflow_name),
+                                     timeout, headers=self.headers, data=dict(id=execution_uid))
+
+    @action
+    def resume_workflow(self, playbook_name, workflow_name, execution_uid, timeout=DEFAULT_TIMEOUT):
+        return self.standard_request('post',
+                                     '/api/playbooks/{}/workflows/{}/resume'.format(playbook_name, workflow_name),
+                                     timeout, headers=self.headers, data=dict(id=execution_uid))
+
+    @action
+    def trigger(self, execution_uids, data, inputs=None, timeout=DEFAULT_TIMEOUT):
+        trigger_data = {"execution_uids": execution_uids, "data_in": data, "inputs": inputs}
+        return self.standard_request('post', '/api/triggers/send_data', timeout, headers=self.headers, data=trigger_data)
 
     @action
     def get_workflow_results(self, timeout=DEFAULT_TIMEOUT):
         return self.standard_request('get', '/api/workflowresults', timeout, headers=self.headers)
 
     @action
-    def wait_for_workflow_completion(self, execution_uid, timeout=60*5, request_timeout=DEFAULT_TIMEOUT, wait_between_requests=0.1):
+    def wait_for_workflow_completion(self, execution_uid, timeout=60 * 5, request_timeout=DEFAULT_TIMEOUT,
+                                     wait_between_requests=0.1):
         if timeout < request_timeout:
             return 'Function timeout must be greater than request timeout', 'InvalidInput'
         elif timeout < wait_between_requests:
@@ -130,7 +164,8 @@ class Walkoff(App):
         start = time.time()
         while time.time() - start < timeout:
             try:
-                response = self.request_with_refresh('get', '/api/workflowresults/{}'.format(execution_uid), timeout, headers=self.headers)
+                response = self.request_with_refresh('get', '/api/workflowresults/{}'.format(execution_uid), timeout,
+                                                     headers=self.headers)
                 if response.status_code == 200:
                     response = response.json()
                     if response['status'] == 'completed':
@@ -150,7 +185,7 @@ class Walkoff(App):
             response = self.request_with_refresh(method, address, timeout, headers=headers, data=data, **kwargs)
             if response.status_code == 400:
                 return 'Bad Request', 'BadRequest'
-            return response.json()
+            return response.json(), 'Success'
         except Timeout:
             return 'Connection timed out', 'TimedOut'
         except Unauthorized:

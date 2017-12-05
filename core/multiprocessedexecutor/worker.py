@@ -54,88 +54,6 @@ def recreate_workflow(workflow_json):
     return workflow, start_arguments
 
 
-def convert_workflow_event_to_protobuf(sender, event, workflow_execution_uid, data=None):
-    packet = data_pb2.Message()
-    if data is not None:
-        packet.type = data_pb2.Message.WORKFLOWPACKETDATA
-        wf_packet = packet.workflow_packet_data
-        wf_packet.additional_data = json.dumps(data)
-    else:
-        packet.type = data_pb2.Message.WORKFLOWPACKET
-        wf_packet = packet.workflow_packet
-    wf_packet.sender.name = sender.name
-    wf_packet.sender.uid = sender.uid
-    wf_packet.sender.workflow_execution_uid = workflow_execution_uid
-    wf_packet.callback_name = event.name
-    return packet
-
-
-def convert_action_event_to_protobuf(sender, event, workflow_execution_uid, data=None, **kwargs):
-    packet = data_pb2.Message()
-    if event == WalkoffEvent.SendMessage:
-        convert_message_to_protobuf(packet, sender, workflow_execution_uid, **kwargs)
-        return packet
-    if data is not None:
-        packet.type = data_pb2.Message.ACTIONPACKETDATA
-        action_packet = packet.action_packet_data
-        action_packet.additional_data = json.dumps(data)
-    else:
-        packet.type = data_pb2.Message.ACTIONPACKET
-        action_packet = packet.action_packet
-    action_packet.sender.name = sender.name
-    action_packet.sender.uid = sender.uid
-    action_packet.sender.workflow_execution_uid = workflow_execution_uid
-    action_packet.sender.execution_uid = sender.get_execution_uid()
-    action_packet.sender.app_name = sender.app_name
-    action_packet.sender.action_name = sender.action_name
-    action_packet.sender.device_id = sender.device_id if sender.device_id is not None else -1
-
-    add_argument_to_packet(action_packet, sender)
-
-    action_packet.callback_name = event.name
-    return packet
-
-
-def add_argument_to_packet(action_packet, sender):
-    for argument in sender.arguments.values():
-        arg = action_packet.sender.arguments.add()
-        arg.name = argument.name
-        for field in ('value', 'reference', 'selection'):
-            val = getattr(argument, field)
-            if val is not None:
-                if not isinstance(val, string_types):
-                    try:
-                        setattr(arg, field, json.dumps(val))
-                    except ValueError:
-                        setattr(arg, field, str(val))
-                else:
-                    setattr(arg, field, val)
-
-
-def convert_message_to_protobuf(packet, sender, workflow_execution_uid, **kwargs):
-    packet.type = data_pb2.Message.USERMESSAGE
-    message_packet = packet.user_message
-    message_packet.workflow_execution_uid = workflow_execution_uid
-    message_packet.message = sender.as_json()
-    message_packet.users = kwargs['users']
-    if 'requires_reauth' in kwargs and kwargs['requires_reauth']:
-        message_packet.requires_reauth = True
-
-
-
-
-def convert_branch_transform_condition_event_to_protobuf(sender, event, workflow_execution_uid):
-    packet = data_pb2.Message()
-    packet.type = data_pb2.Message.GENERALPACKET
-    general_packet = packet.general_packet
-    general_packet.sender.uid = sender.uid
-    general_packet.sender.workflow_execution_uid = workflow_execution_uid
-    if hasattr(sender, 'app_name'):
-        general_packet.sender.app_name = sender.app_name
-    general_packet.callback_name = event.name
-    return packet
-
-
 def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
     """Converts an execution element and its data to a protobuf message.
 
@@ -150,15 +68,51 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         The newly formed protobuf object, serialized as a string to send over the ZMQ socket.
     """
     event = kwargs['event']
-    data = kwargs['data'] if 'kwargs' in kwargs else None
+    packet = data_pb2.Message()
+    packet.event_name = event.name
     if event.event_type == EventType.workflow:
-        packet = convert_workflow_event_to_protobuf(sender, event, workflow_execution_uid, data)
+        packet.type = data_pb2.Message.WORKFLOWPACKET
+        wf_packet = packet.workflow_packet
+        if 'data' in kwargs:
+            wf_packet.additional_data = json.dumps(kwargs['data'])
+        wf_packet.sender.name = sender.name
+        wf_packet.sender.uid = sender.uid
+        wf_packet.sender.workflow_execution_uid = workflow_execution_uid
+
     elif event.event_type == EventType.action:
-        packet = convert_action_event_to_protobuf(sender, event, workflow_execution_uid, data, kwargs)
+        packet.type = data_pb2.Message.ACTIONPACKET
+        action_packet = packet.action_packet
+        if 'data' in kwargs:
+            action_packet.additional_data = json.dumps(kwargs['data'])
+        action_packet.sender.name = sender.name
+        action_packet.sender.uid = sender.uid
+        action_packet.sender.workflow_execution_uid = workflow_execution_uid
+        action_packet.sender.execution_uid = sender.get_execution_uid()
+        action_packet.sender.app_name = sender.app_name
+        action_packet.sender.action_name = sender.action_name
+        action_packet.sender.device_id = sender.device_id if sender.device_id is not None else -1
+
+        for argument in sender.arguments.values():
+            arg = action_packet.sender.arguments.add()
+            arg.name = argument.name
+            for field in ('value', 'reference', 'selection'):
+                val = getattr(argument, field)
+                if val is not None:
+                    if not isinstance(val, string_types):
+                        try:
+                            setattr(arg, field, json.dumps(val))
+                        except ValueError:
+                            setattr(arg, field, str(val))
+                    else:
+                        setattr(arg, field, val)
+
     elif event.event_type in (EventType.branch, EventType.condition, EventType.transform):
-        packet = convert_branch_transform_condition_event_to_protobuf(sender, event, workflow_execution_uid)
-    else:
-        return ''
+        packet.type = data_pb2.Message.GENERALPACKET
+        general_packet = packet.general_packet
+        general_packet.sender.uid = sender.uid
+        general_packet.sender.workflow_execution_uid = workflow_execution_uid
+        if hasattr(sender, 'app_name'):
+            general_packet.sender.app_name = sender.app_name
     packet_bytes = packet.SerializeToString()
     return packet_bytes
 

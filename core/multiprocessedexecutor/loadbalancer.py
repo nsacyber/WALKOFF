@@ -103,6 +103,9 @@ class LoadBalancer:
         logger.info('Pausing workflow {0}'.format(workflow_execution_uid))
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Pause'])
+            return True
+        else:
+            return False
 
     def resume_workflow(self, workflow_execution_uid):
         """Resumes a workflow that has previously been paused.
@@ -113,6 +116,9 @@ class LoadBalancer:
         logger.info('Resuming workflow {0}'.format(workflow_execution_uid))
         if workflow_execution_uid in self.workflow_comms:
             self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume'])
+            return True
+        else:
+            return False
 
     def send_data_to_trigger(self, data_in, workflow_uids, arguments=None):
         """Sends the data_in to the workflows specified in workflow_uids.
@@ -187,20 +193,17 @@ class Receiver:
                 continue
 
             message_outer = data_pb2.Message()
+
             message_outer.ParseFromString(message_bytes)
+            callback_name = message_outer.event_name
 
             if message_outer.type == data_pb2.Message.WORKFLOWPACKET:
                 message = message_outer.workflow_packet
-            elif message_outer.type == data_pb2.Message.WORKFLOWPACKETDATA:
-                message = message_outer.workflow_packet_data
             elif message_outer.type == data_pb2.Message.ACTIONPACKET:
                 message = message_outer.action_packet
-            elif message_outer.type == data_pb2.Message.ACTIONPACKETDATA:
-                message = message_outer.action_packet_data
             else:
                 message = message_outer.general_packet
 
-            callback_name = message.callback_name
             sender = MessageToDict(message.sender, preserving_proto_field_name=True)
 
             event = WalkoffEvent.get_event_from_name(callback_name)
