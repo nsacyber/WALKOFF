@@ -1,6 +1,6 @@
 import unittest
 
-from server.database import db, Role, ResourceType, default_resources
+from server.database import db, Role, Resource, default_resources
 
 
 class TestRoles(unittest.TestCase):
@@ -15,7 +15,7 @@ class TestRoles(unittest.TestCase):
         db.session.rollback()
         for role in [role for role in Role.query.all() if role.name != 'admin']:
             db.session.delete(role)
-        for resource in [resource for resource in ResourceType.query.all() if
+        for resource in [resource for resource in Resource.query.all() if
                          resource.resource not in default_resources]:
             db.session.delete(resource)
         db.session.commit()
@@ -27,11 +27,11 @@ class TestRoles(unittest.TestCase):
         self.assertSetEqual({resource.resource for resource in role.resources}, expected_resources)
 
     def test_resources_init(self):
-        resource = ResourceType(resource='/test/resource')
+        resource = Resource(resource='/test/resource')
         self.assertEqual(resource.type, '/test/resource')
 
     def test_resources_as_json(self):
-        resource = ResourceType(resource='/test/resource')
+        resource = Resource(resource='/test/resource')
         self.assertDictEqual(resource.as_json(), {'resource': '/test/resource'})
 
     def test_role_init_default(self):
@@ -47,18 +47,18 @@ class TestRoles(unittest.TestCase):
         role = Role(name='test', resources=resources)
         db.session.add(role)
         self.assertRoleConstructionIsCorrect(role, 'test', resources=resources)
-        self.assertSetEqual({resource.resource for resource in ResourceType.query.all()},
+        self.assertSetEqual({resource.resource for resource in Resource.query.all()},
                             set(default_resources) | set(resources))
 
     def test_role_init_with_some_in_db(self):
         resources = ['resource1', 'resource2', 'resource3']
-        db.session.add(ResourceType('resource1'))
+        db.session.add(Resource('resource1'))
         role = Role(name='test', resources=resources)
         db.session.add(role)
         self.assertRoleConstructionIsCorrect(role, 'test', resources=resources)
-        self.assertSetEqual({resource.resource for resource in ResourceType.query.all()},
+        self.assertSetEqual({resource.resource for resource in Resource.query.all()},
                             set(resources) | set(default_resources))
-        for resource in (resource for resource in ResourceType.query.all() if resource.resource in resources):
+        for resource in (resource for resource in Resource.query.all() if resource.resource in resources):
             self.assertListEqual([role.name for role in resource.roles], ['test'])
 
     def test_set_resources_to_role_no_resources_to_add(self):
@@ -72,17 +72,17 @@ class TestRoles(unittest.TestCase):
         role.set_resources(resources)
         db.session.add(role)
         self.assertSetEqual({resource.resource for resource in role.resource_types}, set(resources))
-        self.assertEqual({resource.resource for resource in ResourceType.query.all()},
+        self.assertEqual({resource.resource for resource in Resource.query.all()},
                          set(resources) | set(default_resources))
 
     def test_set_resources_to_role_with_no_resources_and_resources_in_db(self):
         role = Role(name='test')
-        db.session.add(ResourceType('resource1'))
+        db.session.add(Resource('resource1'))
         resources = ['resource1', 'resource2']
         role.set_resources(resources)
         db.session.add(role)
         self.assertSetEqual({resource.resource for resource in role.resource_types}, set(resources))
-        self.assertEqual({resource.resource for resource in ResourceType.query.all()},
+        self.assertEqual({resource.resource for resource in Resource.query.all()},
                          set(resources) | set(default_resources))
 
     def test_set_resources_to_role_with_existing_resources_with_overlap(self):
@@ -92,7 +92,7 @@ class TestRoles(unittest.TestCase):
         role.set_resources(new_resources)
         db.session.add(role)
         self.assertSetEqual({resource.resource for resource in role.resource_types}, set(new_resources))
-        self.assertEqual({resource.resource for resource in ResourceType.query.all()},
+        self.assertEqual({resource.resource for resource in Resource.query.all()},
                          set(new_resources) | set(default_resources))
 
     def test_set_resources_to_role_shared_resources(self):
@@ -109,7 +109,7 @@ class TestRoles(unittest.TestCase):
 
         def assert_resources_have_correct_roles(resources, roles):
             for resource in resources:
-                resource = ResourceType.query.filter_by(resource=resource).first()
+                resource = Resource.query.filter_by(resource=resource).first()
                 self.assertSetEqual({role.name for role in resource.roles}, roles)
 
         assert_resources_have_correct_roles(['resource1', 'resource2'], {'test1'})
@@ -128,7 +128,7 @@ class TestRoles(unittest.TestCase):
 
         def assert_resource_json_is_correct(resources, roles):
             for resource in resources:
-                resource_json = ResourceType.query.filter_by(resource=resource).first().as_json(with_roles=True)
+                resource_json = Resource.query.filter_by(resource=resource).first().as_json(with_roles=True)
                 self.assertEqual(resource_json['resource'], resource)
                 self.assertSetEqual(set(resource_json['roles']), roles)
 
