@@ -50,7 +50,8 @@ class Controller(object):
         Args:
             execution_uid (str): The execution UID of the workflow to pause
         """
-        self.executor.pause_workflow(execution_uid)
+
+        return self.executor.pause_workflow(execution_uid)
 
     def resume_workflow(self, workflow_execution_uid):
         """Resumes a workflow that has been paused.
