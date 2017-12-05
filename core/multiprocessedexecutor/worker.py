@@ -70,12 +70,15 @@ def convert_workflow_event_to_protobuf(sender, event, workflow_execution_uid, da
     return packet
 
 
-def convert_action_event_to_protobuf(sender, event, workflow_execution_uid, data=None):
+def convert_action_event_to_protobuf(sender, event, workflow_execution_uid, data=None, **kwargs):
     packet = data_pb2.Message()
+    if event == WalkoffEvent.SendMessage:
+        convert_message_to_protobuf(packet, sender, workflow_execution_uid, **kwargs)
+        return packet
     if data is not None:
         packet.type = data_pb2.Message.ACTIONPACKETDATA
         action_packet = packet.action_packet_data
-        action_packet.additional_data = json.dumps(kwargs['data'])
+        action_packet.additional_data = json.dumps(data)
     else:
         packet.type = data_pb2.Message.ACTIONPACKET
         action_packet = packet.action_packet
@@ -109,6 +112,18 @@ def add_argument_to_packet(action_packet, sender):
                     setattr(arg, field, val)
 
 
+def convert_message_to_protobuf(packet, sender, workflow_execution_uid, **kwargs):
+    packet.type = data_pb2.Message.USERMESSAGE
+    message_packet = packet.user_message
+    message_packet.workflow_execution_uid = workflow_execution_uid
+    message_packet.message = sender.as_json()
+    message_packet.users = kwargs['users']
+    if 'requires_reauth' in kwargs and kwargs['requires_reauth']:
+        message_packet.requires_reauth = True
+
+
+
+
 def convert_branch_transform_condition_event_to_protobuf(sender, event, workflow_execution_uid):
     packet = data_pb2.Message()
     packet.type = data_pb2.Message.GENERALPACKET
@@ -139,7 +154,7 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
     if event.event_type == EventType.workflow:
         packet = convert_workflow_event_to_protobuf(sender, event, workflow_execution_uid, data)
     elif event.event_type == EventType.action:
-        packet = convert_action_event_to_protobuf(sender, event, workflow_execution_uid, data)
+        packet = convert_action_event_to_protobuf(sender, event, workflow_execution_uid, data, kwargs)
     elif event.event_type in (EventType.branch, EventType.condition, EventType.transform):
         packet = convert_branch_transform_condition_event_to_protobuf(sender, event, workflow_execution_uid)
     else:

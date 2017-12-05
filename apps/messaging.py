@@ -61,5 +61,5 @@ class Message(object):
 
 
 def send_message(message, users, requires_reauth=False):
-    WalkoffEvent.CommonWorkflowSignal.send(message, event=WalkoffEvent.SendMessage,
-                                           users=users, requires_reauth=requires_reauth)
+    WalkoffEvent.CommonWorkflowSignal.send(
+        message, event=WalkoffEvent.SendMessage, users=users, requires_reauth=requires_reauth)

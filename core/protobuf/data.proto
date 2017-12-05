@@ -10,6 +10,7 @@ message Message {
         ACTIONPACKET = 3;
         ACTIONPACKETDATA = 4;
         GENERALPACKET = 5;
+        USERMESSAGE = 6;
     }
 
     optional Type type = 1;
@@ -18,7 +19,7 @@ message Message {
     optional ActionPacket action_packet = 4;
     optional ActionPacketData action_packet_data = 5;
     optional GeneralPacket general_packet = 6;
-
+    optional UserMessage user_message = 7;
 }
 
 message WorkflowPacket {
@@ -83,8 +84,7 @@ message GeneralPacket {
 }
 
 message UserMessage {
-    optional string execution_uid = 1;
-    optional string name = 2;
+    optional string workflow_execution_uid = 1;
     optional string message = 3;
     repeated int32 users = 4;
     optional bool requires_reauth = 5;

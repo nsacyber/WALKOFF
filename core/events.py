@@ -148,7 +148,8 @@ class WalkoffEvent(Enum):
     def requires_data(self):
         return (self in (WalkoffEvent.WorkflowShutdown,
                          WalkoffEvent.ActionExecutionError,
-                         WalkoffEvent.ActionExecutionSuccess))
+                         WalkoffEvent.ActionExecutionSuccess,
+                         WalkoffEvent.SendMessage))
 
     def send(self, sender, **kwargs):
         self.value.send(sender, **kwargs)
