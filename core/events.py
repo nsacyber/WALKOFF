@@ -112,6 +112,7 @@ class WalkoffEvent(Enum):
     TriggerActionAwaitingData = ActionSignal('Trigger Action Awaiting Data', 'Trigger action awaiting data')
     TriggerActionTaken = ActionSignal('Trigger Action Taken', 'Trigger action taken')
     TriggerActionNotTaken = ActionSignal('Trigger Action Not Taken', 'Trigger action not taken')
+    SendMessage = ActionSignal('Message Sent', 'Walkoff message sent')
 
     BranchTaken = BranchSignal('Branch Taken', 'Branch taken')
     BranchNotTaken = BranchSignal('Branch Not Taken', 'Branch not taken')
