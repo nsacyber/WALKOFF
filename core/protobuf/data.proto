@@ -73,8 +73,8 @@ message GeneralPacket {
 }
 
 message UserMessage {
-    optional string workflow_execution_uid = 1;
-    optional string message = 3;
+    optional string message = 1;
+    optional string workflow_execution_uid = 2;
+    optional bool requires_reauth = 3;
     repeated int32 users = 4;
-    optional bool requires_reauth = 5;
 }
