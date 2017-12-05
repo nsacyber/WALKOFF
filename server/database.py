@@ -70,7 +70,7 @@ class TrackModificationsMixIn(object):
 
 
 class User(db.Model, TrackModificationsMixIn):
-    __tablename__ = 'users'
+    __tablename__ = 'user'
     id = Column(Integer, primary_key=True, autoincrement=True)
     roles = relationship('Role', secondary=user_roles_association,
                             backref=backref('users', lazy='dynamic'))
@@ -195,7 +195,7 @@ class User(db.Model, TrackModificationsMixIn):
 
 
 class Role(db.Model, TrackModificationsMixIn):
-    __tablename__ = 'roles'
+    __tablename__ = 'role'
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(80), unique=True, nullable=False)
     description = Column(String(255))
@@ -251,8 +251,8 @@ class Role(db.Model, TrackModificationsMixIn):
         return out
 
 
-class ResourceType(db.Model, TrackModificationsMixIn):
-    __tablename__ = 'resource_types'
+class Resource(db.Model, TrackModificationsMixIn):
+    __tablename__ = 'resource'
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), unique=True, nullable=False)
     role_id = Column(Integer, ForeignKey('roles.id'))
@@ -281,10 +281,9 @@ class ResourceType(db.Model, TrackModificationsMixIn):
 
 
 class Permission(db.Model):
-    __tablename__ = "permissions"
+    __tablename__ = 'permission'
     id = Column(Integer, primary_key=True, autoincrement=True)
     action_name = Column(String(255), nullable=False)
-    app_name = Column(String(255))
     resource_type_id = Column(Integer, ForeignKey('resource_types.id'))
     resource_types = relationship('ResourceType', backref=backref('permissions', lazy='dynamic'))
 
