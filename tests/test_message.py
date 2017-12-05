@@ -106,6 +106,11 @@ class TestMessage(TestCase):
         message = Message(components=components)
         self.assertDictEqual(message.as_json(), {'message': [component.as_json() for component in components]})
 
+    def test_message_iterator(self):
+        components = [Text('a'), Text('b')]
+        message = Message(components=components)
+        self.assertEqual(list(message), components)
+
     def test_send_message(self):
 
         data = {'called': False}

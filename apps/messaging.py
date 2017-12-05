@@ -56,6 +56,9 @@ class Message(object):
     def __len__(self):
         return len(self.message)
 
+    def __iter__(self):
+        return iter(self.message)
+
     def as_json(self):
         return {'message': [message_component.as_json() for message_component in self.message]}
 
