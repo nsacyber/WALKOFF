@@ -81,3 +81,11 @@ message GeneralPacket {
     optional GeneralSender sender = 1;
     optional string callback_name = 2;
 }
+
+message UserMessage {
+    optional string execution_uid = 1;
+    optional string name = 2;
+    optional string message = 3;
+    repeated int32 users = 4;
+    optional bool requires_reauth = 5;
+}
