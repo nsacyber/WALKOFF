@@ -69,26 +69,21 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
     """
     event = kwargs['event']
     packet = data_pb2.Message()
+    packet.event_name = event.name
     if event.event_type == EventType.workflow:
+        packet.type = data_pb2.Message.WORKFLOWPACKET
+        wf_packet = packet.workflow_packet
         if 'data' in kwargs:
-            packet.type = data_pb2.Message.WORKFLOWPACKETDATA
-            wf_packet = packet.workflow_packet_data
             wf_packet.additional_data = json.dumps(kwargs['data'])
-        else:
-            packet.type = data_pb2.Message.WORKFLOWPACKET
-            wf_packet = packet.workflow_packet
         wf_packet.sender.name = sender.name
         wf_packet.sender.uid = sender.uid
         wf_packet.sender.workflow_execution_uid = workflow_execution_uid
-        wf_packet.callback_name = event.name
+
     elif event.event_type == EventType.action:
+        packet.type = data_pb2.Message.ACTIONPACKET
+        action_packet = packet.action_packet
         if 'data' in kwargs:
-            packet.type = data_pb2.Message.ACTIONPACKETDATA
-            action_packet = packet.action_packet_data
             action_packet.additional_data = json.dumps(kwargs['data'])
-        else:
-            packet.type = data_pb2.Message.ACTIONPACKET
-            action_packet = packet.action_packet
         action_packet.sender.name = sender.name
         action_packet.sender.uid = sender.uid
         action_packet.sender.workflow_execution_uid = workflow_execution_uid
@@ -111,8 +106,6 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
                     else:
                         setattr(arg, field, val)
 
-        action_packet.callback_name = event.name
-
     elif event.event_type in (EventType.branch, EventType.condition, EventType.transform):
         packet.type = data_pb2.Message.GENERALPACKET
         general_packet = packet.general_packet
@@ -120,7 +113,6 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         general_packet.sender.workflow_execution_uid = workflow_execution_uid
         if hasattr(sender, 'app_name'):
             general_packet.sender.app_name = sender.app_name
-        general_packet.callback_name = event.name
     packet_bytes = packet.SerializeToString()
     return packet_bytes
 

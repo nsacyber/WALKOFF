@@ -193,20 +193,17 @@ class Receiver:
                 continue
 
             message_outer = data_pb2.Message()
+
             message_outer.ParseFromString(message_bytes)
+            callback_name = message_outer.event_name
 
             if message_outer.type == data_pb2.Message.WORKFLOWPACKET:
                 message = message_outer.workflow_packet
-            elif message_outer.type == data_pb2.Message.WORKFLOWPACKETDATA:
-                message = message_outer.workflow_packet_data
             elif message_outer.type == data_pb2.Message.ACTIONPACKET:
                 message = message_outer.action_packet
-            elif message_outer.type == data_pb2.Message.ACTIONPACKETDATA:
-                message = message_outer.action_packet_data
             else:
                 message = message_outer.general_packet
 
-            callback_name = message.callback_name
             sender = MessageToDict(message.sender, preserving_proto_field_name=True)
 
             event = WalkoffEvent.get_event_from_name(callback_name)
