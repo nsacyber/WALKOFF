@@ -602,7 +602,8 @@ class TestWorkflowServer(ServerTestCase):
     def test_execute_workflow_pause_resume(self):
         sync = Event()
 
-        flask_server.running_context.controller.load_playbook(os.path.join(".", "tests", "testWorkflows", "pauseWorkflowTest.playbook"))
+        flask_server.running_context.controller.load_playbook(
+            os.path.join(".", "tests", "testWorkflows", "pauseWorkflowTest.playbook"))
 
         workflow = flask_server.running_context.controller.get_workflow('pauseWorkflowTest', 'pauseWorkflow')
         action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
@@ -615,23 +616,24 @@ class TestWorkflowServer(ServerTestCase):
             result['count'] += 1
             result['data'].append(kwargs['data'])
             if not result['paused']:
-                result['response2'] = self.post_with_status_check('/api/playbooks/pauseWorkflowTest/workflows/pauseWorkflow/pause',
-                                              headers=self.headers,
-                                              status_code=SUCCESS,
-                                              content_type="application/json", data=json.dumps(response))
+                result['response2'] = self.post_with_status_check(
+                    '/api/playbooks/pauseWorkflowTest/workflows/pauseWorkflow/pause',
+                    headers=self.headers,
+                    status_code=SUCCESS,
+                    content_type="application/json", data=json.dumps(response))
 
         @WalkoffEvent.WorkflowPaused.connect
         def workflow_paused_listener(sender, **kwargs):
             result['paused'] = True
-            result['response3'] = self.post_with_status_check('/api/playbooks/pauseWorkflowTest/workflows/pauseWorkflow/resume',
-                                                    headers=self.headers,
-                                                    status_code=SUCCESS,
-                                                    content_type="application/json", data=json.dumps(response))
+            result['response3'] = self.post_with_status_check(
+                '/api/playbooks/pauseWorkflowTest/workflows/pauseWorkflow/resume',
+                headers=self.headers,
+                status_code=SUCCESS,
+                content_type="application/json", data=json.dumps(response))
 
         @WalkoffEvent.WorkflowResumed.connect
         def workflow_resumed_listner(sender, **kwargs):
             result['resumed'] = True
-
 
         @WalkoffEvent.WorkflowShutdown.connect
         def wait_for_completion(sender, **kwargs):
@@ -650,7 +652,11 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(result['count'], 3)
         self.assertDictEqual(result['response2'], {'info': 'Workflow paused'})
         self.assertDictEqual(result['response3'], {'info': 'Workflow resumed'})
-        self.assertItemsEqual(result['data'], [{'status': 'Success', 'result': {'message': 'HELLO WORLD'}}, {'status': 'Success', 'result': None}, {'status': 'Success', 'result': None}])
+        expected_data = [{'status': 'Success', 'result': {'message': 'HELLO WORLD'}},
+                         {'status': 'Success', 'result': None}, {'status': 'Success', 'result': None}]
+        self.assertEqual(len(result['data']), len(expected_data))
+        for exp, act in zip(expected_data, result['data']):
+            self.assertDictEqual(exp, act)
 
     def test_execute_workflow_change_arguments(self):
 
