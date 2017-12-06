@@ -40,13 +40,15 @@ class TestWorkflowServer(ServerTestCase):
                 workflow.pop('uid')
 
         for playbook in response:
-            self.assertIn(playbook['name'], ['test', 'triggerActionWorkflow'])
+            self.assertIn(playbook['name'], ['test', 'triggerActionWorkflow', 'pauseWorkflowTest'])
             if playbook['name'] == 'test':
                 self.assertEqual(playbook['workflows'], [{'name': 'helloWorldWorkflow'}])
             elif playbook['name'] == 'triggerActionWorkflow':
                 self.assertEqual(playbook['workflows'], [{"name": "triggerActionWorkflow"}])
+            elif playbook['name'] == 'pauseWorkflowTest':
+                self.assertEqual(playbook['workflows'], [{"name": "pauseWorkflow"}])
 
-        self.assertEqual(len(response), 2)
+        self.assertEqual(len(response), 3)
 
     def test_display_playbook_workflows(self):
         response = self.get_with_status_check('/api/playbooks/test', headers=self.headers)
@@ -596,6 +598,59 @@ class TestWorkflowServer(ServerTestCase):
         sync.wait(timeout=10)
         self.assertEqual(result['count'], 1)
         self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
+
+    def test_execute_workflow_pause_resume(self):
+        sync = Event()
+
+        flask_server.running_context.controller.load_playbook(os.path.join(".", "tests", "testWorkflows", "pauseWorkflowTest.playbook"))
+
+        workflow = flask_server.running_context.controller.get_workflow('pauseWorkflowTest', 'pauseWorkflow')
+        action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
+        setup_subscriptions_for_action(workflow.uid, action_uids)
+
+        result = {'paused': False, 'count': 0, 'data': []}
+
+        @WalkoffEvent.ActionExecutionSuccess.connect
+        def y(sender, **kwargs):
+            result['count'] += 1
+            result['data'].append(kwargs['data'])
+            if not result['paused']:
+                result['response2'] = self.post_with_status_check('/api/playbooks/pauseWorkflowTest/workflows/pauseWorkflow/pause',
+                                              headers=self.headers,
+                                              status_code=SUCCESS,
+                                              content_type="application/json", data=json.dumps(response))
+
+        @WalkoffEvent.WorkflowPaused.connect
+        def workflow_paused_listener(sender, **kwargs):
+            result['paused'] = True
+            result['response3'] = self.post_with_status_check('/api/playbooks/pauseWorkflowTest/workflows/pauseWorkflow/resume',
+                                                    headers=self.headers,
+                                                    status_code=SUCCESS,
+                                                    content_type="application/json", data=json.dumps(response))
+
+        @WalkoffEvent.WorkflowResumed.connect
+        def workflow_resumed_listner(sender, **kwargs):
+            result['resumed'] = True
+
+
+        @WalkoffEvent.WorkflowShutdown.connect
+        def wait_for_completion(sender, **kwargs):
+            sync.set()
+
+        response = self.post_with_status_check('/api/playbooks/pauseWorkflowTest/workflows/pauseWorkflow/execute',
+                                               headers=self.headers,
+                                               status_code=SUCCESS_ASYNC,
+                                               content_type="application/json", data=json.dumps({}))
+
+        flask_server.running_context.controller.wait_and_reset(1)
+        sync.wait(timeout=10)
+        self.assertIn('id', response)
+        self.assertTrue(result['paused'])
+        self.assertTrue(result['resumed'])
+        self.assertEqual(result['count'], 3)
+        self.assertDictEqual(result['response2'], {'info': 'Workflow paused'})
+        self.assertDictEqual(result['response3'], {'info': 'Workflow resumed'})
+        self.assertItemsEqual(result['data'], [{'status': 'Success', 'result': {'message': 'HELLO WORLD'}}, {'status': 'Success', 'result': None}, {'status': 'Success', 'result': None}])
 
     def test_execute_workflow_change_arguments(self):
 

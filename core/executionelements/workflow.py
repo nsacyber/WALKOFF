@@ -130,7 +130,6 @@ class Workflow(ExecutionElement):
         for action in (action_ for action_ in actions if action_ is not None):
             self._executing_action = action
             logger.debug('Executing action {0} of workflow {1}'.format(action, self.name))
-
             if self._is_paused:
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowPaused)
                 self._resume.wait()

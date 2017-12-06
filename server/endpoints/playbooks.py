@@ -406,7 +406,6 @@ def resume_workflow(playbook_name, workflow_name):
                 if running_context.controller.resume_workflow(execution_uid):
                     current_app.logger.info(
                         'Resumed workflow {0}-{1}:{2}'.format(playbook_name, workflow_name, execution_uid))
-                    print(running_context.controller.executor.get_workflow_status(execution_uid))
                     return {"info": "Workflow resumed"}, SUCCESS
                 else:
                     return {"error": "Invalid UUID."}, INVALID_INPUT_ERROR
