@@ -6,6 +6,8 @@ import { Workflow } from '../models/playbook/workflow';
 import { Playbook } from '../models/playbook/playbook';
 import { AppApi } from '../models/api/appApi';
 import { Device } from '../models/device';
+import { User } from '../models/user';
+import { Role } from '../models/role';
 
 @Injectable()
 export class PlaybookService {
@@ -158,13 +160,36 @@ export class PlaybookService {
 			.catch(this.handleError);
 	}
 
-	// TODO: not actually used and doesn't currently exist in the backend;
-	// should replace the actions/conditions/triggers calls with this...
+	/**
+	 * Gets all app apis from the server.
+	 */
 	getApis(): Promise<AppApi[]> {
 		return this.authHttp.get('/api/apps/apis')
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as AppApi[])
+			.catch(this.handleError);
+	}
+
+	/**
+	 * Returns an array of all users within the DB.
+	 */
+	getUsers(): Promise<User[]> {
+		return this.authHttp.get('/api/users')
+			.toPromise()
+			.then(this.extractData)
+			.then(data => data as User[])
+			.catch(this.handleError);
+	}
+
+	/**
+	 * Returns an array of all roles within the application.
+	 */
+	getRoles(): Promise<Role[]> {
+		return this.authHttp.get('/api/roles')
+			.toPromise()
+			.then(this.extractData)
+			.then(data => data as Role[])
 			.catch(this.handleError);
 	}
 

@@ -4,6 +4,8 @@ import { JwtHttp } from 'angular2-jwt-refresh';
 
 import { Configuration } from '../models/configuration';
 import { User } from '../models/user';
+import { Role } from '../models/role';
+import { AvailableResourceAction } from '../models/availableResourceAction';
 
 @Injectable()
 export class SettingsService {
@@ -55,6 +57,74 @@ export class SettingsService {
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
+	}
+
+	getRoles(): Promise<Role[]> {
+		return this.authHttp.get('/api/roles')
+			.toPromise()
+			.then(this.extractData)
+			.then(data => data as Role[])
+			.catch(this.handleError);
+	}
+
+	addRole(role: Role): Promise<Role> {
+		return this.authHttp.put('/api/roles', role)
+			.toPromise()
+			.then(this.extractData)
+			.then(data => data as Role)
+			.catch(this.handleError);
+	}
+
+	editRole(role: Role): Promise<Role> {
+		return this.authHttp.post('/api/roles', role)
+			.toPromise()
+			.then(this.extractData)
+			.then(data => data as Role)
+			.catch(this.handleError);
+	}
+
+	deleteRole(id: number): Promise<void> {
+		return this.authHttp.delete(`/api/roles/${id}`)
+			.toPromise()
+			.then(() => null)
+			.catch(this.handleError);
+	}
+
+	getAvailableResourceActions(): Promise<AvailableResourceAction[]> {
+		const testData: AvailableResourceAction[] = [
+			{
+				type: 'workflow',
+				actions: [ 'create', 'read', 'update', 'delete', 'execute' ],
+				app_name: null,
+			},
+			{
+				type: 'device',
+				actions: [ 'create', 'read', 'update', 'delete', 'import', 'export' ],
+				app_name: null,
+			},
+			{
+				type: 'user',
+				actions: [ 'create', 'read', 'update', 'delete' ],
+				app_name: null,
+			},
+			{
+				type: 'case',
+				actions: [ 'create', 'read', 'update', 'delete' ],
+				app_name: null,
+			},
+			{
+				type: 'test',
+				actions: ['some', 'actions', 'go', 'here'],
+				app_name: 'Utilities',
+			},
+		];
+
+		return Promise.resolve(testData);
+		// return this.authHttp.get('/api/availableresourceactions')
+		// 	.toPromise()
+		// 	.then(this.extractData)
+		// 	.then(data => data as AvailableResourceAction[])
+		// 	.catch(this.handleError);
 	}
 	
 	private extractData (res: Response) {

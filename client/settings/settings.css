@@ -72,3 +72,12 @@ select#roles {
 .ngx-datatable .datatable-row-odd {
 	background-color: #CCC;
 }
+
+#roleModalBody .form-group.odd {
+	background-color: #EEE;
+}
+
+#roleModalBody .required {
+	color: crimson;
+	margin-left: 5px;
+}

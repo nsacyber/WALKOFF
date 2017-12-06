@@ -28,10 +28,12 @@ import { SchedulerModalComponent } from './scheduler/scheduler.modal.component';
 import { DevicesModalComponent } from './devices/devices.modal.component';
 import { CasesModalComponent } from './cases/cases.modal.component';
 import { SettingsUserModalComponent } from './settings/settings.user.modal.component';
+import { SettingsRoleModalComponent } from './settings/settings.roles.modal.component';
 
 import { PlaybookArgumentComponent } from './playbook/playbook.argument.component';
 import { PlaybookConditionsComponent } from './playbook/playbook.conditions.component';
 import { PlaybookTransformsComponent } from './playbook/playbook.transforms.component';
+import { SettingsRolesComponent } from './settings/settings.roles.component';
 
 import { KeysPipe } from './pipes/keys.pipe';
 
@@ -66,10 +68,12 @@ import { KeysPipe } from './pipes/keys.pipe';
 		DevicesModalComponent,
 		CasesModalComponent,
 		SettingsUserModalComponent,
+		SettingsRoleModalComponent,
 		// Other subcomponents
 		PlaybookArgumentComponent,
 		PlaybookConditionsComponent,
 		PlaybookTransformsComponent,
+		SettingsRolesComponent,
 		// Pipes
 		KeysPipe,
 	],
@@ -83,6 +87,7 @@ import { KeysPipe } from './pipes/keys.pipe';
 		DevicesModalComponent,
 		CasesModalComponent,
 		SettingsUserModalComponent,
+		SettingsRoleModalComponent,
 	],
 	bootstrap: [MainComponent],
 })

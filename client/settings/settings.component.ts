@@ -34,7 +34,8 @@ export class SettingsComponent {
 
 	constructor(
 		private settingsService: SettingsService, private modalService: NgbModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {		
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+	) {
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.getConfiguration();
