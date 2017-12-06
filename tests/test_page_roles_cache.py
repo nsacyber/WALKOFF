@@ -2,9 +2,7 @@ import unittest
 
 import server.database
 import server.flaskserver
-from server.database import (initialize_resource_roles_from_cleared_database, set_resources_for_role,
-                             clear_resources_for_role, Role, Resource, db,
-                             initialize_resource_roles_from_database, default_resources)
+from server.database import (set_resources_for_role, clear_resources_for_role, Role, Resource, db, default_resources)
 
 
 class TestRolesPagesCache(unittest.TestCase):
@@ -28,10 +26,11 @@ class TestRolesPagesCache(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        initialize_resource_roles_from_cleared_database()
+        # initialize_resource_roles_from_cleared_database()
+        pass
 
     def test_initialize_from_clear_db(self):
-        initialize_resource_roles_from_cleared_database()
+        # initialize_resource_roles_from_cleared_database()
         self.assertDictEqual(server.database.resource_roles, {resource: {'admin'} for resource in default_resources})
 
     def test_set_resources_for_role_no_resources_in_cache_no_resources_to_add(self):
@@ -113,7 +112,7 @@ class TestRolesPagesCache(unittest.TestCase):
                               'resource4': set(), 'resource5': set()})
 
     def test_init_from_database_none_in_database(self):
-        initialize_resource_roles_from_database()
+        # initialize_resource_roles_from_database()
         for resource in default_resources:
             self.assertSetEqual(server.database.resource_roles[resource], {'admin'})
 
@@ -125,7 +124,7 @@ class TestRolesPagesCache(unittest.TestCase):
         role3 = Role('role3', resources=['resource4', 'resource5'])
         db.session.add(role3)
         db.session.commit()
-        initialize_resource_roles_from_database()
+        # initialize_resource_roles_from_database()
         expected = {'resource1': {'role1'},
                     'resource2': {'role1', 'role2'},
                     'resource3': {'role2'},

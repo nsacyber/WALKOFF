@@ -11,22 +11,17 @@ db = flask_sqlalchemy.SQLAlchemy()
 
 default_resources = ['/', 'playbooks', 'configuration', 'interface', 'trigger', 'metrics', 'users', 'cases', 'apps',
                      'scheduler']
+default_permissions = ['create', 'read', 'update', 'delete', 'execute']
 
-resource_roles = {}
 
-
-def initialize_resource_roles_from_cleared_database():
-    """Initializes the roles dictionary, used in determining which role can access which resource(s).
-    """
+def initialize_resource_permissions_from_default():
+    resource_permissions = {}
     for resource in default_resources:
-        resource_roles[resource] = {"admin"}
+        resource_permissions[resource] = list(default_permissions)
+    return resource_permissions
 
 
-def initialize_resource_roles_from_database():
-    """Initializes the resource_roles dictionary.
-    """
-    for resource in Resource.query.all():
-        resource_roles[resource.name] = {role.name for role in resource.roles}
+default_resource_permissions = initialize_resource_permissions_from_default()
 
 
 def set_resources_for_role(role_name, resources):
@@ -34,16 +29,20 @@ def set_resources_for_role(role_name, resources):
 
     Args:
         role_name (str): The name of the role.
-        resources (list[str]): The list of resources for which this role should have access.
+        resources (dict[resource:list[permission]): A dictionary containing the name of the resource, with the value
+                being a list of permission names
     """
-    for resource, roles in resource_roles.items():
-        if resource in resources:
-            roles.add(role_name)
-        elif role_name in roles and resource not in resources:
-            roles.remove(role_name)
-    new_resources = set(resources) - set(resource_roles.keys())
-    for new_resource in new_resources:
-        resource_roles[new_resource] = {role_name}
+    role = Role.query.filter(Role.name == role_name).first()
+    role.set_resources(resources)
+
+    # for resource, roles in resource_roles.items():
+    #     if resource in resources:
+    #         roles.add(role_name)
+    #     elif role_name in roles and resource not in resources:
+    #         roles.remove(role_name)
+    # new_resources = set(resources) - set(resource_roles.keys())
+    # for new_resource in new_resources:
+    #     resource_roles[new_resource] = {role_name}
 
 
 def clear_resources_for_role(role_name):
@@ -52,9 +51,8 @@ def clear_resources_for_role(role_name):
     Args:
         role_name (str): The name of the role.
     """
-    for resource, roles in resource_roles.items():
-        if role_name in roles:
-            roles.remove(role_name)
+    role = Role.query.filter(Role.name == role_name).first()
+    role.resources = None
 
 
 user_roles_association = db.Table('user_roles_association',
@@ -205,7 +203,8 @@ class Role(db.Model, TrackModificationsMixIn):
         Args:
             name (str): The name of the Role.
             description (str, optional): A description of the role.
-            resources (list[str]): The list of resources that a user with this Role can access.
+            resources (dict[resource:list[permission]): A dictionary containing the name of the resource, with the value
+                being a list of permission names
         """
         self.name = name
         self.description = description
@@ -216,16 +215,17 @@ class Role(db.Model, TrackModificationsMixIn):
         """Adds the given list of resources to the Role object.
 
         Args:
-            new_resources (list|set[str]): A list of resource names with which the Role will be associated.
+            new_resources (dict[resource:list[permission]): A dictionary containing the name of the resource, with the value
+                being a list of permission names
         """
-        self.resource[:] = []
-        new_resource_names = set(new_resources)
-        new_resources = (Resource.query.filter(Resource.name.in_(new_resource_names)).all()
-                         if new_resource_names else [])
-        self.resources.extend(new_resources)
+        self.resources[:] = []
+        # new_resource_names = set(new_resources.keys())
+        # new_resources = (Resource.query.filter(Resource.name.in_(new_resource_names)).all()
+        #                  if new_resource_names else [])
+        # self.resources.extend(new_resources)
 
-        resources_not_added = new_resource_names - {resource.name for resource in new_resources}
-        self.resources.extend([Resource(resource) for resource in resources_not_added])
+        # resources_not_added = new_resource_names - {resource.name for resource in new_resources}
+        self.resources.extend([Resource(resource, permissions) for resource, permissions in new_resources.items()])
 
     def as_json(self, with_users=False):
         """Returns the dictionary representation of the Role object.
@@ -273,7 +273,7 @@ class Resource(db.Model, TrackModificationsMixIn):
         """
         self.permissions[:] = []
         new_permission_names = set(new_permissions)
-        self.permissions.extend([Permission(permission.name) for permission in new_permission_names])
+        self.permissions.extend([Permission(permission) for permission in new_permission_names])
 
     def as_json(self, with_roles=False):
         """Returns the dictionary representation of the Resource object.
