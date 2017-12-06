@@ -18,7 +18,7 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='data.proto',
   package='core',
-  serialized_pb=_b('\n\ndata.proto\x12\x04\x63ore\"\x8d\x03\n\x07Message\x12 \n\x04type\x18\x01 \x01(\x0e\x32\x12.core.Message.Type\x12-\n\x0fworkflow_packet\x18\x02 \x01(\x0b\x32\x14.core.WorkflowPacket\x12\x36\n\x14workflow_packet_data\x18\x03 \x01(\x0b\x32\x18.core.WorkflowPacketData\x12)\n\raction_packet\x18\x04 \x01(\x0b\x32\x12.core.ActionPacket\x12\x32\n\x12\x61\x63tion_packet_data\x18\x05 \x01(\x0b\x32\x16.core.ActionPacketData\x12+\n\x0egeneral_packet\x18\x06 \x01(\x0b\x32\x13.core.GeneralPacket\"m\n\x04Type\x12\x12\n\x0eWORKFLOWPACKET\x10\x01\x12\x16\n\x12WORKFLOWPACKETDATA\x10\x02\x12\x10\n\x0c\x41\x43TIONPACKET\x10\x03\x12\x14\n\x10\x41\x43TIONPACKETDATA\x10\x04\x12\x11\n\rGENERALPACKET\x10\x05\"\xa9\x01\n\x0eWorkflowPacket\x12\x33\n\x06sender\x18\x01 \x01(\x0b\x32#.core.WorkflowPacket.WorkflowSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x1aK\n\x0eWorkflowSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03uid\x18\x02 \x01(\t\x12\x1e\n\x16workflow_execution_uid\x18\x03 \x01(\t\"y\n\x12WorkflowPacketData\x12\x33\n\x06sender\x18\x01 \x01(\x0b\x32#.core.WorkflowPacket.WorkflowSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x03 \x01(\t\"\xfe\x02\n\x0c\x41\x63tionPacket\x12/\n\x06sender\x18\x01 \x01(\x0b\x32\x1f.core.ActionPacket.ActionSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x1aS\n\x0e\x41\x63tionArgument\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\x12\x11\n\treference\x18\x03 \x01(\t\x12\x11\n\tselection\x18\x04 \x01(\t\x1a\xd0\x01\n\x0c\x41\x63tionSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03uid\x18\x02 \x01(\t\x12\x15\n\rexecution_uid\x18\x03 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x04 \x01(\t\x12\x13\n\x0b\x61\x63tion_name\x18\x05 \x01(\t\x12\x34\n\targuments\x18\x06 \x03(\x0b\x32!.core.ActionPacket.ActionArgument\x12\x1e\n\x16workflow_execution_uid\x18\x07 \x01(\t\x12\x11\n\tdevice_id\x18\x08 \x01(\x05\"s\n\x10\x41\x63tionPacketData\x12/\n\x06sender\x18\x01 \x01(\x0b\x32\x1f.core.ActionPacket.ActionSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x03 \x01(\t\"\xa9\x01\n\rGeneralPacket\x12\x31\n\x06sender\x18\x01 \x01(\x0b\x32!.core.GeneralPacket.GeneralSender\x12\x15\n\rcallback_name\x18\x02 \x01(\t\x1aN\n\rGeneralSender\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x02 \x01(\t\x12\x1e\n\x16workflow_execution_uid\x18\x03 \x01(\t')
+  serialized_pb=_b('\n\ndata.proto\x12\x04\x63ore\"\xc5\x02\n\x07Message\x12 \n\x04type\x18\x01 \x01(\x0e\x32\x12.core.Message.Type\x12\x12\n\nevent_name\x18\x02 \x01(\t\x12/\n\x0fworkflow_packet\x18\x03 \x01(\x0b\x32\x14.core.WorkflowPacketH\x00\x12+\n\raction_packet\x18\x04 \x01(\x0b\x32\x12.core.ActionPacketH\x00\x12-\n\x0egeneral_packet\x18\x05 \x01(\x0b\x32\x13.core.GeneralPacketH\x00\"m\n\x04Type\x12\x12\n\x0eWORKFLOWPACKET\x10\x01\x12\x16\n\x12WORKFLOWPACKETDATA\x10\x02\x12\x10\n\x0c\x41\x43TIONPACKET\x10\x03\x12\x14\n\x10\x41\x43TIONPACKETDATA\x10\x04\x12\x11\n\rGENERALPACKET\x10\x05\x42\x08\n\x06packet\"\xab\x01\n\x0eWorkflowPacket\x12\x33\n\x06sender\x18\x01 \x01(\x0b\x32#.core.WorkflowPacket.WorkflowSender\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x02 \x01(\t\x1aK\n\x0eWorkflowSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03uid\x18\x02 \x01(\t\x12\x1e\n\x16workflow_execution_uid\x18\x03 \x01(\t\"\x80\x03\n\x0c\x41\x63tionPacket\x12/\n\x06sender\x18\x01 \x01(\x0b\x32\x1f.core.ActionPacket.ActionSender\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x02 \x01(\t\x1aS\n\x0e\x41\x63tionArgument\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\x12\x11\n\treference\x18\x03 \x01(\t\x12\x11\n\tselection\x18\x04 \x01(\t\x1a\xd0\x01\n\x0c\x41\x63tionSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03uid\x18\x02 \x01(\t\x12\x15\n\rexecution_uid\x18\x03 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x04 \x01(\t\x12\x13\n\x0b\x61\x63tion_name\x18\x05 \x01(\t\x12\x34\n\targuments\x18\x06 \x03(\x0b\x32!.core.ActionPacket.ActionArgument\x12\x1e\n\x16workflow_execution_uid\x18\x07 \x01(\t\x12\x11\n\tdevice_id\x18\x08 \x01(\x05\"\x92\x01\n\rGeneralPacket\x12\x31\n\x06sender\x18\x01 \x01(\x0b\x32!.core.GeneralPacket.GeneralSender\x1aN\n\rGeneralSender\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x02 \x01(\t\x12\x1e\n\x16workflow_execution_uid\x18\x03 \x01(\t')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -53,8 +53,8 @@ _MESSAGE_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=309,
-  serialized_end=418,
+  serialized_start=227,
+  serialized_end=336,
 )
 _sym_db.RegisterEnumDescriptor(_MESSAGE_TYPE)
 
@@ -74,14 +74,14 @@ _MESSAGE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='workflow_packet', full_name='core.Message.workflow_packet', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
+      name='event_name', full_name='core.Message.event_name', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='workflow_packet_data', full_name='core.Message.workflow_packet_data', index=2,
+      name='workflow_packet', full_name='core.Message.workflow_packet', index=2,
       number=3, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -95,15 +95,8 @@ _MESSAGE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='action_packet_data', full_name='core.Message.action_packet_data', index=4,
+      name='general_packet', full_name='core.Message.general_packet', index=4,
       number=5, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='general_packet', full_name='core.Message.general_packet', index=5,
-      number=6, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -119,9 +112,12 @@ _MESSAGE = _descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   oneofs=[
+    _descriptor.OneofDescriptor(
+      name='packet', full_name='core.Message.packet',
+      index=0, containing_type=None, fields=[]),
   ],
   serialized_start=21,
-  serialized_end=418,
+  serialized_end=346,
 )
 
 
@@ -164,8 +160,8 @@ _WORKFLOWPACKET_WORKFLOWSENDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=515,
-  serialized_end=590,
+  serialized_start=445,
+  serialized_end=520,
 )
 
 _WORKFLOWPACKET = _descriptor.Descriptor(
@@ -183,7 +179,7 @@ _WORKFLOWPACKET = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='callback_name', full_name='core.WorkflowPacket.callback_name', index=1,
+      name='additional_data', full_name='core.WorkflowPacket.additional_data', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -200,52 +196,8 @@ _WORKFLOWPACKET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=421,
-  serialized_end=590,
-)
-
-
-_WORKFLOWPACKETDATA = _descriptor.Descriptor(
-  name='WorkflowPacketData',
-  full_name='core.WorkflowPacketData',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='sender', full_name='core.WorkflowPacketData.sender', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='callback_name', full_name='core.WorkflowPacketData.callback_name', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='additional_data', full_name='core.WorkflowPacketData.additional_data', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=592,
-  serialized_end=713,
+  serialized_start=349,
+  serialized_end=520,
 )
 
 
@@ -295,8 +247,8 @@ _ACTIONPACKET_ACTIONARGUMENT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=804,
-  serialized_end=887,
+  serialized_start=613,
+  serialized_end=696,
 )
 
 _ACTIONPACKET_ACTIONSENDER = _descriptor.Descriptor(
@@ -373,8 +325,8 @@ _ACTIONPACKET_ACTIONSENDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=890,
-  serialized_end=1098,
+  serialized_start=699,
+  serialized_end=907,
 )
 
 _ACTIONPACKET = _descriptor.Descriptor(
@@ -392,7 +344,7 @@ _ACTIONPACKET = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='callback_name', full_name='core.ActionPacket.callback_name', index=1,
+      name='additional_data', full_name='core.ActionPacket.additional_data', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -409,52 +361,8 @@ _ACTIONPACKET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=716,
-  serialized_end=1098,
-)
-
-
-_ACTIONPACKETDATA = _descriptor.Descriptor(
-  name='ActionPacketData',
-  full_name='core.ActionPacketData',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='sender', full_name='core.ActionPacketData.sender', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='callback_name', full_name='core.ActionPacketData.callback_name', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='additional_data', full_name='core.ActionPacketData.additional_data', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1100,
-  serialized_end=1215,
+  serialized_start=523,
+  serialized_end=907,
 )
 
 
@@ -497,8 +405,8 @@ _GENERALPACKET_GENERALSENDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1309,
-  serialized_end=1387,
+  serialized_start=978,
+  serialized_end=1056,
 )
 
 _GENERALPACKET = _descriptor.Descriptor(
@@ -515,13 +423,6 @@ _GENERALPACKET = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
-    _descriptor.FieldDescriptor(
-      name='callback_name', full_name='core.GeneralPacket.callback_name', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
   ],
   extensions=[
   ],
@@ -533,32 +434,35 @@ _GENERALPACKET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1218,
-  serialized_end=1387,
+  serialized_start=910,
+  serialized_end=1056,
 )
 
 _MESSAGE.fields_by_name['type'].enum_type = _MESSAGE_TYPE
 _MESSAGE.fields_by_name['workflow_packet'].message_type = _WORKFLOWPACKET
-_MESSAGE.fields_by_name['workflow_packet_data'].message_type = _WORKFLOWPACKETDATA
 _MESSAGE.fields_by_name['action_packet'].message_type = _ACTIONPACKET
-_MESSAGE.fields_by_name['action_packet_data'].message_type = _ACTIONPACKETDATA
 _MESSAGE.fields_by_name['general_packet'].message_type = _GENERALPACKET
 _MESSAGE_TYPE.containing_type = _MESSAGE
+_MESSAGE.oneofs_by_name['packet'].fields.append(
+  _MESSAGE.fields_by_name['workflow_packet'])
+_MESSAGE.fields_by_name['workflow_packet'].containing_oneof = _MESSAGE.oneofs_by_name['packet']
+_MESSAGE.oneofs_by_name['packet'].fields.append(
+  _MESSAGE.fields_by_name['action_packet'])
+_MESSAGE.fields_by_name['action_packet'].containing_oneof = _MESSAGE.oneofs_by_name['packet']
+_MESSAGE.oneofs_by_name['packet'].fields.append(
+  _MESSAGE.fields_by_name['general_packet'])
+_MESSAGE.fields_by_name['general_packet'].containing_oneof = _MESSAGE.oneofs_by_name['packet']
 _WORKFLOWPACKET_WORKFLOWSENDER.containing_type = _WORKFLOWPACKET
 _WORKFLOWPACKET.fields_by_name['sender'].message_type = _WORKFLOWPACKET_WORKFLOWSENDER
-_WORKFLOWPACKETDATA.fields_by_name['sender'].message_type = _WORKFLOWPACKET_WORKFLOWSENDER
 _ACTIONPACKET_ACTIONARGUMENT.containing_type = _ACTIONPACKET
 _ACTIONPACKET_ACTIONSENDER.fields_by_name['arguments'].message_type = _ACTIONPACKET_ACTIONARGUMENT
 _ACTIONPACKET_ACTIONSENDER.containing_type = _ACTIONPACKET
 _ACTIONPACKET.fields_by_name['sender'].message_type = _ACTIONPACKET_ACTIONSENDER
-_ACTIONPACKETDATA.fields_by_name['sender'].message_type = _ACTIONPACKET_ACTIONSENDER
 _GENERALPACKET_GENERALSENDER.containing_type = _GENERALPACKET
 _GENERALPACKET.fields_by_name['sender'].message_type = _GENERALPACKET_GENERALSENDER
 DESCRIPTOR.message_types_by_name['Message'] = _MESSAGE
 DESCRIPTOR.message_types_by_name['WorkflowPacket'] = _WORKFLOWPACKET
-DESCRIPTOR.message_types_by_name['WorkflowPacketData'] = _WORKFLOWPACKETDATA
 DESCRIPTOR.message_types_by_name['ActionPacket'] = _ACTIONPACKET
-DESCRIPTOR.message_types_by_name['ActionPacketData'] = _ACTIONPACKETDATA
 DESCRIPTOR.message_types_by_name['GeneralPacket'] = _GENERALPACKET
 
 Message = _reflection.GeneratedProtocolMessageType('Message', (_message.Message,), dict(
@@ -583,13 +487,6 @@ WorkflowPacket = _reflection.GeneratedProtocolMessageType('WorkflowPacket', (_me
 _sym_db.RegisterMessage(WorkflowPacket)
 _sym_db.RegisterMessage(WorkflowPacket.WorkflowSender)
 
-WorkflowPacketData = _reflection.GeneratedProtocolMessageType('WorkflowPacketData', (_message.Message,), dict(
-  DESCRIPTOR = _WORKFLOWPACKETDATA,
-  __module__ = 'data_pb2'
-  # @@protoc_insertion_point(class_scope:core.WorkflowPacketData)
-  ))
-_sym_db.RegisterMessage(WorkflowPacketData)
-
 ActionPacket = _reflection.GeneratedProtocolMessageType('ActionPacket', (_message.Message,), dict(
 
   ActionArgument = _reflection.GeneratedProtocolMessageType('ActionArgument', (_message.Message,), dict(
@@ -612,13 +509,6 @@ ActionPacket = _reflection.GeneratedProtocolMessageType('ActionPacket', (_messag
 _sym_db.RegisterMessage(ActionPacket)
 _sym_db.RegisterMessage(ActionPacket.ActionArgument)
 _sym_db.RegisterMessage(ActionPacket.ActionSender)
-
-ActionPacketData = _reflection.GeneratedProtocolMessageType('ActionPacketData', (_message.Message,), dict(
-  DESCRIPTOR = _ACTIONPACKETDATA,
-  __module__ = 'data_pb2'
-  # @@protoc_insertion_point(class_scope:core.ActionPacketData)
-  ))
-_sym_db.RegisterMessage(ActionPacketData)
 
 GeneralPacket = _reflection.GeneratedProtocolMessageType('GeneralPacket', (_message.Message,), dict(
 
