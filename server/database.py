@@ -24,6 +24,16 @@ def initialize_resource_permissions_from_default():
 default_resource_permissions = initialize_resource_permissions_from_default()
 
 
+def initialize_default_resources_for_admin():
+    admin = Role.query.filter(Role.name == "admin").first()
+    if not admin:
+        admin = Role("admin", resources=default_resource_permissions)
+        db.session.add(admin)
+    else:
+        admin.set_resources(default_resource_permissions)
+    db.session.commit()
+
+
 def get_roles_by_resource_permissions(resource_permission):
     resource = resource_permission.resource
     permissions = resource_permission.permissions
@@ -46,15 +56,6 @@ def set_resources_for_role(role_name, resources):
     """
     role = Role.query.filter(Role.name == role_name).first()
     role.set_resources(resources)
-
-    # for resource, roles in resource_roles.items():
-    #     if resource in resources:
-    #         roles.add(role_name)
-    #     elif role_name in roles and resource not in resources:
-    #         roles.remove(role_name)
-    # new_resources = set(resources) - set(resource_roles.keys())
-    # for new_resource in new_resources:
-    #     resource_roles[new_resource] = {role_name}
 
 
 def clear_resources_for_role(role_name):
@@ -221,6 +222,7 @@ class Role(db.Model, TrackModificationsMixIn):
         self.name = name
         self.description = description
         if resources is not None:
+            self.resources = []
             self.set_resources(resources)
 
     def set_resources(self, new_resources):
@@ -230,14 +232,12 @@ class Role(db.Model, TrackModificationsMixIn):
             new_resources (dict[resource:list[permission]): A dictionary containing the name of the resource, with the value
                 being a list of permission names
         """
-        self.resources[:] = []
-        # new_resource_names = set(new_resources.keys())
-        # new_resources = (Resource.query.filter(Resource.name.in_(new_resource_names)).all()
-        #                  if new_resource_names else [])
-        # self.resources.extend(new_resources)
+        resource_names = set(new_resources.keys())
+        current_resource_names = set([resource.name for resource in self.resources] if self.resources else [])
+        new_resource_names = resource_names - current_resource_names
 
-        # resources_not_added = new_resource_names - {resource.name for resource in new_resources}
-        self.resources.extend([Resource(resource, permissions) for resource, permissions in new_resources.items()])
+        for resource in new_resource_names:
+            self.resources.append(Resource(resource, new_resources[resource]))
 
     def as_json(self, with_users=False):
         """Returns the dictionary representation of the Role object.
@@ -252,7 +252,7 @@ class Role(db.Model, TrackModificationsMixIn):
         out = {"id": self.id,
                "name": self.name,
                "description": self.description,
-               "resources": [resource.resource for resource in self.resources]}
+               "resources": [resource.name for resource in self.resources]}
         if with_users:
             out['users'] = [user.username for user in self.users]
         return out
@@ -261,7 +261,7 @@ class Role(db.Model, TrackModificationsMixIn):
 class Resource(db.Model, TrackModificationsMixIn):
     __tablename__ = 'resource'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(255), unique=True, nullable=False)
+    name = db.Column(db.String(255), nullable=False)
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     permissions = db.relationship('Permission', backref=db.backref('resource'))
 
@@ -294,9 +294,9 @@ class Resource(db.Model, TrackModificationsMixIn):
             with_roles (bool, optional): Boolean to determine whether or not to include Role objects associated with the
                 Resource in the JSON representation. Defaults to False.
         """
-        out = {'resource': self.type, 'permissions': self.permissions}
+        out = {'name': self.name, 'permissions': [permission.name for permission in self.permissions]}
         if with_roles:
-            out["roles"] = [role.name for role in self.roles]
+            out["role"] = self.role.name
         return out
 
 

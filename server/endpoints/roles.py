@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 
 from server.database import set_resources_for_role, clear_resources_for_role
 from server.returncodes import *
-from server.security import roles_accepted, ResourcePermissions
+from server.security import roles_accepted
 
 
 def read_all_roles():
