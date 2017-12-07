@@ -8,7 +8,7 @@ from flask_jwt_extended.jwt_manager import JWTManager
 from flask_jwt_extended.tokens import decode_jwt
 from flask_jwt_extended.view_decorators import _load_user
 
-from server.database import User
+from server.database import User, Role, Resource, Permission
 
 try:
     from flask import _app_ctx_stack as ctx_stack
@@ -58,13 +58,14 @@ def roles_accepted(*roles):
     return wrapper
 
 
-def roles_accepted_for_resources(*resources):
+def roles_accepted_for_resources(*resource_permissions):
     _roles_accepted = set()
-    for resource in resources:
+    for resource_permission in resource_permissions:
         try:
-            _roles_accepted |= server.database.resource_roles[resource]
+            _roles_accepted |= server.database.get_roles_by_resource_permissions(resource_permission)
         except KeyError:
-            logger.error('Unknown resource {}'.format(resource))
+            # logger.error('Unknown resource {}'.format(resource))
+            pass
 
     def wrapper(fn):
         @wraps(fn)
@@ -112,3 +113,9 @@ def _decode_jwt_from_query_string(param_name):
         csrf=False,
         identity_claim=config.identity_claim
     )
+
+
+class ResourcePermissions:
+    def __init__(self, resource, permissions):
+        self.resource = resource
+        self.permissions = permissions

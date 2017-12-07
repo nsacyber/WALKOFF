@@ -24,6 +24,18 @@ def initialize_resource_permissions_from_default():
 default_resource_permissions = initialize_resource_permissions_from_default()
 
 
+def get_roles_by_resource_permissions(resource_permission):
+    resource = resource_permission.resource
+    permissions = resource_permission.permissions
+
+    roles = []
+    for permission in permissions:
+        roles.extend(Role.query.join(Role.resources).join(Resource.permissions).filter(Resource.name == resource,
+                                                                                       Permission.name == permission).all())
+
+    return set([role.name for role in roles])
+
+
 def set_resources_for_role(role_name, resources):
     """Sets the resources a role is allowed to access.
 
@@ -56,8 +68,8 @@ def clear_resources_for_role(role_name):
 
 
 user_roles_association = db.Table('user_roles_association',
-                               db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
-                               db.Column('user_id', db.Integer, db.ForeignKey('user.id')))
+                                  db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
+                                  db.Column('user_id', db.Integer, db.ForeignKey('user.id')))
 
 
 class TrackModificationsMixIn(object):

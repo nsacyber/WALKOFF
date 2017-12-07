@@ -6,7 +6,7 @@ from flask_jwt_extended import jwt_required
 import core.config.config
 import core.config.paths
 from server.returncodes import *
-from server.security import roles_accepted_for_resources
+from server.security import roles_accepted_for_resources, ResourcePermissions
 
 
 def __get_current_configuration():
@@ -26,7 +26,7 @@ def __get_current_configuration():
 
 def read_config_values():
     @jwt_required
-    @roles_accepted_for_resources('configuration')
+    @roles_accepted_for_resources(ResourcePermissions('configuration', ['read']))
     def __func():
         return __get_current_configuration(), SUCCESS
 
@@ -38,7 +38,7 @@ def update_configuration(configuration):
     from server.flaskserver import write_playbook_to_file
 
     @jwt_required
-    @roles_accepted_for_resources('configuration')
+    @roles_accepted_for_resources(ResourcePermissions('configuration', ['update']))
     def __func():
         if 'workflows_path' in configuration:
             for playbook in running_context.controller.get_all_playbooks():
