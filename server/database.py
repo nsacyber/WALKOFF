@@ -65,7 +65,8 @@ def clear_resources_for_role(role_name):
         role_name (str): The name of the role.
     """
     role = Role.query.filter(Role.name == role_name).first()
-    role.resources = None
+    role.resources = []
+    db.session.commit()
 
 
 user_roles_association = db.Table('user_roles_association',
@@ -252,7 +253,7 @@ class Role(db.Model, TrackModificationsMixIn):
         out = {"id": self.id,
                "name": self.name,
                "description": self.description,
-               "resources": [resource.name for resource in self.resources]}
+               "resources": {resource.as_json() for resource in self.resources}}
         if with_users:
             out['users'] = [user.username for user in self.users]
         return out

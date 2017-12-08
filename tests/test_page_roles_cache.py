@@ -2,7 +2,8 @@ import unittest
 
 import server.database
 import server.flaskserver
-from server.database import (set_resources_for_role, clear_resources_for_role, Role, Resource, db, default_resources)
+from server.database import (set_resources_for_role, clear_resources_for_role, Role, Resource, db, default_resources,
+                             initialize_default_resources_for_admin)
 
 
 class TestRolesPagesCache(unittest.TestCase):
@@ -10,17 +11,15 @@ class TestRolesPagesCache(unittest.TestCase):
     def setUpClass(cls):
         cls.context = server.flaskserver.app.test_request_context()
         cls.context.push()
+        initialize_default_resources_for_admin()
         db.create_all()
-
-    def setUp(self):
-        server.database.resource_roles = {}
 
     def tearDown(self):
         db.session.rollback()
         for role in [role for role in Role.query.all() if role.name != 'admin']:
             db.session.delete(role)
-        for resource in [resource for resource in Resource.query.all()
-                         if resource.resource not in default_resources]:
+        for resource in [resource for resource in Resource.query.all() if
+                         resource.name not in default_resources]:
             db.session.delete(resource)
         db.session.commit()
 
