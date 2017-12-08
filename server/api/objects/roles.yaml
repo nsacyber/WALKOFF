@@ -69,21 +69,7 @@ Resource:
         example: playbooks, cases
       permissions:
         description: A list of permissions associated with this resource
-        example: [/users, /cases, /playbooks]
+        example: [create, read, update, delete, execute]
         type: array
         items:
-          $ref: '#/definitions/Permission'
-
-Permission:
-    type: object
-    required: [id]
-    properties:
-      id:
-        type: integer
-        minimum: 1
-        description: id of the object
-      name:
-        description: Name of the permission
-        type: string
-        example: create, read, update, delete, execute
-
+          type: string

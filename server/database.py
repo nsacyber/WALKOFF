@@ -217,28 +217,37 @@ class Role(db.Model, TrackModificationsMixIn):
         Args:
             name (str): The name of the Role.
             description (str, optional): A description of the role.
-            resources (dict[resource:list[permission]): A dictionary containing the name of the resource, with the value
-                being a list of permission names
+            resources (list(dict[name:resource, permissions:list[permission])): A list of dictionaries containing the
+                name of the resource, and a list of permission names associated with the resource. Defaults to None.
         """
         self.name = name
         self.description = description
+        self.resources = []
         if resources is not None:
-            self.resources = []
             self.set_resources(resources)
 
     def set_resources(self, new_resources):
         """Adds the given list of resources to the Role object.
 
         Args:
-            new_resources (dict[resource:list[permission]): A dictionary containing the name of the resource, with the value
-                being a list of permission names
+            new_resources (list(dict[name:resource, permissions:list[permission])): A list of dictionaries containing
+                the name of the resource, and a list of permission names associated with the resource.
         """
-        resource_names = set(new_resources.keys())
+        new_resource_names = set([resource for resource in new_resources])
         current_resource_names = set([resource.name for resource in self.resources] if self.resources else [])
-        new_resource_names = resource_names - current_resource_names
+        resource_names_to_add = new_resource_names - current_resource_names
+        resource_names_to_delete = current_resource_names - new_resource_names
+        resource_names_intersect = current_resource_names.intersection(new_resource_names)
 
-        for resource in new_resource_names:
-            self.resources.append(Resource(resource, new_resources[resource]))
+        self.resources[:] = [resource for resource in self.resources if resource.name not in resource_names_to_delete]
+
+        for resource, permissions in new_resources.items():
+            if resource in resource_names_to_add:
+                self.resources.append(Resource(resource, permissions))
+            elif resource in resource_names_intersect:
+                resource = Resource.query.filter_by(role_id=self.id, name=resource).first()
+                if resource:
+                    resource.set_permissions(permissions)
 
     def as_json(self, with_users=False):
         """Returns the dictionary representation of the Role object.
@@ -253,7 +262,7 @@ class Role(db.Model, TrackModificationsMixIn):
         out = {"id": self.id,
                "name": self.name,
                "description": self.description,
-               "resources": {resource.as_json() for resource in self.resources}}
+               "resources": [resource.as_json() for resource in self.resources]}
         if with_users:
             out['users'] = [user.username for user in self.users]
         return out
@@ -295,7 +304,7 @@ class Resource(db.Model, TrackModificationsMixIn):
             with_roles (bool, optional): Boolean to determine whether or not to include Role objects associated with the
                 Resource in the JSON representation. Defaults to False.
         """
-        out = {'name': self.name, 'permissions': [permission.name for permission in self.permissions]}
+        out = {'id': self.id, 'name': self.name, 'permissions': [permission.name for permission in self.permissions]}
         if with_roles:
             out["role"] = self.role.name
         return out
