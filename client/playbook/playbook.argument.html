@@ -36,11 +36,19 @@
 
 				<!-- Checkbox for boolean values -->
 				<input *ngIf="parameterSchema.type === 'boolean'" type="checkbox" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value">
+
+				<!-- User select -->
+				<select2 *ngIf="isUserSelect(parameterSchema)" [data]="selectData" [value]="selectInitialValue" [options]="selectConfig"
+				 (valueChanged)="selectChange($event)"></select2>
+
+				<!-- Role select -->
+				<select2 *ngIf="isRoleSelect(parameterSchema)" [data]="selectData" [value]="selectInitialValue" [options]="selectConfig"
+				 (valueChanged)="selectChange($event)"></select2>
 			</ng-container>
 		</div>
 	</div>
 </div>
-<div *ngIf="!argument.reference && parameterSchema.type === 'array'" class="indent">
+<div *ngIf="!argument.reference && isNormalArray(parameterSchema)" class="indent">
 	<div class="row">
 		<div class="col-xs-6">
 			<select class="form-control" [(ngModel)]="selectedType" name="selectedType">

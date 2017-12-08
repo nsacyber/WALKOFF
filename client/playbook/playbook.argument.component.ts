@@ -8,6 +8,9 @@ import { ParameterApi } from '../models/api/parameterApi';
 import { ParameterSchema } from '../models/api/parameterSchema';
 import { Argument } from '../models/playbook/argument';
 import { GenericObject } from '../models/genericObject';
+import { User } from '../models/user';
+import { Role } from '../models/role';
+import { Select2OptionData } from 'ng2-select2/ng2-select2.interface';
 
 const AVAILABLE_TYPES = ['string', 'number', 'boolean'];
 
@@ -23,6 +26,8 @@ export class PlaybookArgumentComponent {
 	@Input() argument: Argument;
 	@Input() parameterApi: ParameterApi;
 	@Input() loadedWorkflow: Workflow;
+	@Input() users: User[];
+	@Input() roles: Role[];
 
 	propertyName: string = '';
 	selectedType: string;
@@ -31,6 +36,9 @@ export class PlaybookArgumentComponent {
 	objectTypes: GenericObject = {};
 	// Simple parameter schema reference so I'm not constantly showing parameterApi.schema
 	parameterSchema: ParameterSchema;
+	selectData: Select2OptionData[];
+	selectConfig: Select2Options;
+	selectInitialValue: number[];
 
 	// tslint:disable-next-line:no-empty
 	constructor() { }
@@ -56,6 +64,60 @@ export class PlaybookArgumentComponent {
 			}
 		}
 		this.selectedType = this.availableTypes[0];
+
+		if (this.isUserSelect(this.parameterSchema)) {
+			this.selectData = this.users.map((user) => {
+				return { id: user.id.toString(), text: user.username };
+			});
+
+			this.selectConfig = {
+				width: '100%',
+				placeholder: 'Select user',
+			};
+
+			if (this.parameterSchema.type === 'array') {
+				this.selectConfig.placeholder += '(s)';
+				this.selectConfig.multiple = true;
+				this.selectConfig.allowClear = true;
+				this.selectConfig.closeOnSelect = false;
+			}
+
+			this.selectInitialValue = JSON.parse(JSON.stringify(this.argument.value));
+		}
+		if (this.isRoleSelect(this.parameterSchema)) {
+			this.selectData = this.roles.map((role) => {
+				return { id: role.role_id.toString(), text: role.name };
+			});
+
+			this.selectConfig = {
+				width: '100%',
+				placeholder: 'Select role',
+			};
+
+			if (this.parameterSchema.type === 'array') {
+				this.selectConfig.placeholder += '(s)';
+				this.selectConfig.multiple = true;
+				this.selectConfig.allowClear = true;
+				this.selectConfig.closeOnSelect = false;
+			}
+
+			this.selectInitialValue = JSON.parse(JSON.stringify(this.argument.value));
+		}
+
+	}
+
+	/**
+	 * Event fired on the select2 change for users/roles. Updates the value based on the event value.
+	 * @param $event JS Event Fired
+	 */
+	selectChange($event: any): void {
+		// Convert strings to numbers here
+		if (this.parameterSchema.type === 'array') {
+			const array = $event.value.map((id: string) => +id);
+			this.argument.value = array;
+		} else {
+			this.argument.value = +$event.value;
+		}
 	}
 
 	addItem(): void {
@@ -156,5 +218,47 @@ export class PlaybookArgumentComponent {
 		if (schema.maximum === undefined) { return null; }
 		if (schema.exclusiveMaximum) { return schema.maximum - 1; }
 		return schema.maximum;
+	}
+
+	/**
+	 * Checks if this array is an array of primitives only.
+	 * Returns false if the schema is not an array or if it contains user/role types.
+	 * @param schema JSON Schema Object to check against
+	 */
+	isNormalArray(schema: ParameterSchema): boolean {
+		if (schema.type !== 'array') { return false; }
+		if (Array.isArray(schema.items)) {
+			(schema.items as GenericObject[]).forEach(i => {
+				if (i.type === 'user' || i.type === 'role') { return false; }
+			});
+		} else if (schema.items.type === 'user' || schema.items.type === 'role') { return false; }
+
+		return true;
+	}
+
+	/**
+	 * Checks if this schema represents a user select (single or multiple via array type).
+	 * @param schema JSON Schema Object to check against
+	 */
+	isUserSelect(schema: ParameterSchema): boolean {
+		if (schema.type === 'user' || 
+		(schema.type === 'array' && schema.items && !Array.isArray(schema.items) && schema.items.type === 'user')) { 
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks if this schema represents a role select (single or multiple via array type).
+	 * @param schema JSON Schema Object to check against
+	 */
+	isRoleSelect(schema: ParameterSchema): boolean {
+		if (schema.type === 'role' || 
+		(schema.type === 'array' && schema.items && !Array.isArray(schema.items) && schema.items.type === 'role')) { 
+			return true;
+		}
+
+		return false;
 	}
 }

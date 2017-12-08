@@ -46,17 +46,17 @@ export class SettingsRoleModalComponent {
 
 	ngOnInit(): void {
 		this.availableResourceActions.forEach(ara => {
-			let typeName = ara.type;
+			let typeName = ara.name;
 
 			if (ara.app_name) { typeName += ` - ${ara.app_name}`; }
 
 			this.typeNames.push(typeName);
 		});
-		console.log(this.typeNames);
+
 		// On init, set up our select2 stuff first
 		this.workingRole.resources.forEach(resource => {
 			const matchingAvailableResourceAction = this.availableResourceActions
-				.find(a => a.type === resource.type && a.app_name === resource.app_name);
+				.find(a => a.name === resource.name && a.app_name === resource.app_name);
 			this.selectPermissionMapping[resource.resource_id] = matchingAvailableResourceAction.actions.map(action => {
 				return {
 					id: action,
@@ -69,17 +69,18 @@ export class SettingsRoleModalComponent {
 	addResource(): void {
 		const selectedAvailableResourceAction = this.availableResourceActions.find(a => {
 			const selectedInfo = this.selectedAvailableResourceActionName.split(' - ');
-			if (selectedInfo.length === 1) { return a.type === selectedInfo[0]; }
-			return a.type === selectedInfo[0] && a.app_name === selectedInfo[1];
+			if (selectedInfo.length === 1) { return a.name === selectedInfo[0]; }
+			return a.name === selectedInfo[0] && a.app_name === selectedInfo[1];
 		});
 
 		const newResource: Resource = {
 			resource_id: this.newResourceTempIdTracker--,
 			role_id: this.workingRole.role_id,
-			type: selectedAvailableResourceAction.type,
-			app_name: selectedAvailableResourceAction.app_name,
+			name: selectedAvailableResourceAction.name,
 			permissions: [],
 		};
+
+		if (selectedAvailableResourceAction.app_name) { newResource.app_name = selectedAvailableResourceAction.app_name; }
 
 		this.selectPermissionMapping[newResource.resource_id] = selectedAvailableResourceAction.actions.map(action => {
 			return {
@@ -97,7 +98,6 @@ export class SettingsRoleModalComponent {
 
 	permissionSelectChange(event: any, resource: Resource) {
 		resource.permissions = event.value;
-		console.log(resource);
 	}
 
 	submit(): void {
@@ -109,7 +109,7 @@ export class SettingsRoleModalComponent {
 
 		// Remove temp Ids for new resources
 		this.workingRole.resources.forEach(resource => {
-			if (resource.resource_id < 0) { resource.resource_id = 0; }
+			if (resource.resource_id < 0) { delete resource.resource_id; }
 		});
 
 		//If role has an ID, it already exists, call update

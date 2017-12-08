@@ -106,7 +106,7 @@ app = create_app()
 @app.before_first_request
 def create_user():
     from server.context import running_context
-    from server.database import add_user, User, Resource, Role
+    from server.database import add_user, User, Resource, Role, initialize_resource_roles_from_database
 
     running_context.db.create_all()
     if not User.query.all():
@@ -117,8 +117,7 @@ def create_user():
         admin_user.roles.append(admin_role)
         running_context.db.session.commit()
     if Role.query.all() or Resource.query.all():
-        # initialize_resource_roles_from_database()
-        pass
+        initialize_resource_roles_from_database()
 
     apps = set(helpers.list_apps()) - set([_app.name
                                            for _app in device_db.session.query(App).all()])

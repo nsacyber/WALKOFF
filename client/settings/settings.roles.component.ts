@@ -103,7 +103,7 @@ export class SettingsRolesComponent {
 		return 'test';
 
 		const obj = role.resources.reduce((accumulator: GenericObject, resource) => {
-			let key = resource.type;
+			let key = resource.name;
 			if (resource.app_name) { key += ` - ${resource.app_name}`; }
 
 			accumulator[key] = resource.permissions;

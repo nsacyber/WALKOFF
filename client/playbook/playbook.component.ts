@@ -64,6 +64,7 @@ export class PlaybookComponent {
 	cyJsonData: string;
 	workflowResults: WorkflowResult[] = [];
 	executionResultsComponentWidth: number;
+	waitingOnData: boolean = false;
 
 	// Simple bootstrap modal params
 	modalParams: {
@@ -603,16 +604,37 @@ export class PlaybookComponent {
 		// Unselect anything else we might have selected (via ctrl+click basically)
 		self.cy.elements(`[uid!="${data.uid}"]`).unselect();
 
-		self.selectedAction = self.loadedWorkflow.actions.find(s => s.uid === data.uid);
-		if (!self.selectedAction) { return; }
-		self.selectedActionApi = this._getAction(self.selectedAction.app_name, self.selectedAction.action_name);
+		const action = self.loadedWorkflow.actions.find(s => s.uid === data.uid);
+		if (!action) { return; }
+		const actionApi = this._getAction(action.app_name, action.action_name);
 
-		if (!this.users && this.selectedActionApi.parameters.findIndex(p => p.schema.type === 'user') > -1) {
-			this.playbookService.getUsers().then(users => this.users = users);
+		const queryPromises: Array<Promise<any>> = [];
+
+		if (!this.users && 
+			(actionApi.parameters.findIndex(p => p.schema.type === 'user') > -1 ||
+			actionApi.parameters.findIndex(p => p.schema.items && p.schema.items.type === 'user') > -1)) {
+			this.waitingOnData = true;
+			queryPromises.push(this.playbookService.getUsers().then(users => this.users = users));
 		}
-		if (!this.roles && this.selectedActionApi.parameters.findIndex(p => p.schema.type === 'role') > -1) {
-			this.playbookService.getRoles().then(roles => this.roles = roles);
+		if (!this.roles && 
+			(actionApi.parameters.findIndex(p => p.schema.type === 'role') > -1 ||
+			actionApi.parameters.findIndex(p => p.schema.items && p.schema.items.type === 'role') > -1)) {
+			queryPromises.push(this.playbookService.getRoles().then(roles => this.roles = roles));
 		}
+
+		if (queryPromises.length) {
+			Promise.all(queryPromises)
+				.then(() => {
+					this.waitingOnData = false;
+				})
+				.catch(error => {
+					this.waitingOnData = false;
+					this.toastyService.error(`Error grabbing users or roles: ${error.message}`);
+				});
+		}
+
+		self.selectedAction = action;
+		self.selectedActionApi = actionApi;
 
 		// Add data to the selectedAction if it does not exist
 		if (!self.selectedAction.triggers) { self.selectedAction.triggers = []; }

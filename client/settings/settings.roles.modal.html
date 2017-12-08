@@ -44,7 +44,7 @@
 			<div class="form-group {{id % 2 ? 'odd' : 'even'}}" *ngFor="let resource of workingRole.resources; let id = index">
 				<div class="row">
 					<div class="col-xs-6">
-						<label>Resource {{id+1}}: {{resource.type}}{{resource.app_name ? ' (' + resource.app_name + ')' : ''}}</label>
+						<label>Resource {{id+1}}: {{resource.name}}{{resource.app_name ? ' (' + resource.app_name + ')' : ''}}</label>
 					</div>
 					<div class="col-xs-6">
 						<div class="pull-right">

@@ -93,38 +93,38 @@ export class SettingsService {
 	getAvailableResourceActions(): Promise<AvailableResourceAction[]> {
 		const testData: AvailableResourceAction[] = [
 			{
-				type: 'workflow',
+				name: 'workflow',
 				actions: [ 'create', 'read', 'update', 'delete', 'execute' ],
 				app_name: null,
 			},
 			{
-				type: 'device',
+				name: 'device',
 				actions: [ 'create', 'read', 'update', 'delete', 'import', 'export' ],
 				app_name: null,
 			},
 			{
-				type: 'user',
+				name: 'user',
 				actions: [ 'create', 'read', 'update', 'delete' ],
 				app_name: null,
 			},
 			{
-				type: 'case',
+				name: 'case',
 				actions: [ 'create', 'read', 'update', 'delete' ],
 				app_name: null,
 			},
 			{
-				type: 'test',
+				name: 'test',
 				actions: ['some', 'actions', 'go', 'here'],
 				app_name: 'Utilities',
 			},
 		];
 
 		return Promise.resolve(testData);
-		// return this.authHttp.get('/api/availableresourceactions')
-		// 	.toPromise()
-		// 	.then(this.extractData)
-		// 	.then(data => data as AvailableResourceAction[])
-		// 	.catch(this.handleError);
+		return this.authHttp.get('/api/availableresourceactions')
+			.toPromise()
+			.then(this.extractData)
+			.then(data => data as AvailableResourceAction[])
+			.catch(this.handleError);
 	}
 	
 	private extractData (res: Response) {

@@ -1,5 +1,5 @@
 export class AvailableResourceAction {
-	type: string;
-	app_name: string;
+	name: string;
+	app_name?: string;
 	actions: string[];
 }
