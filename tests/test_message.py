@@ -30,11 +30,23 @@ class TestMessage(TestCase):
         url = Url('some.url.goes.here.com')
         self.assertEqual(url.message_type, 'url')
         self.assertEqual(url.url, 'some.url.goes.here.com')
+        self.assertIsNone(url.title)
+        self.assertIsInstance(url, MessageComponent)
+
+    def test_url_component_init_with_title(self):
+        url = Url('some.url.goes.here.com', title='Some Better Title')
+        self.assertEqual(url.message_type, 'url')
+        self.assertEqual(url.url, 'some.url.goes.here.com')
+        self.assertEqual(url.title, 'Some Better Title')
         self.assertIsInstance(url, MessageComponent)
 
     def test_url_component_get_component_json(self):
         url = Url('some.url.goes.here.com')
         self.assertDictEqual(url.get_component_json(), {'url': 'some.url.goes.here.com'})
+
+    def test_url_component_with_title_get_component_json(self):
+        url = Url('some.url.goes.here.com', title='Click Here')
+        self.assertDictEqual(url.get_component_json(), {'url': 'some.url.goes.here.com', 'title': 'Click Here'})
 
     def test_accept_decline_component_init(self):
         accept_decline = AcceptDecline()

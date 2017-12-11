@@ -23,12 +23,16 @@ class Text(MessageComponent):
 
 
 class Url(MessageComponent):
-    def __init__(self, url):
+    def __init__(self, url, title=None):
         super(Url, self).__init__('url')
         self.url = url
+        self.title = title
 
     def get_component_json(self):
-        return {'url': self.url}
+        ret = {'url': self.url}
+        if self.title:
+            ret['title'] = self.title
+        return ret
 
 
 class AcceptDecline(MessageComponent):
