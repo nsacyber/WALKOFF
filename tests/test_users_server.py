@@ -153,8 +153,7 @@ class TestUserServer(ServerTestCase):
 
     def setup_guest_user(self):
         user = add_user('guest', 'guest')
-        role = Role('guest', resources=['users'])
-        server.database.resource_roles['users'].add('guest')
+        role = Role('guest', resources=[{'name': 'users', 'permissions': ['create', 'read', 'update', 'delete']}])
         db.session.add(user)
         user.roles.append(role)
         db.session.commit()

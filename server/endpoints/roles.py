@@ -77,8 +77,6 @@ def update_role():
                 role.description = json_data['description']
             if 'resources' in json_data:
                 resources = json_data['resources']
-                if '/roles' in resources:
-                    resources.remove('/roles')
                 role.set_resources(resources)
             running_context.db.session.commit()
             current_app.logger.info('Edited role {0} to {1}'.format(json_data['id'], json_data))
