@@ -294,7 +294,7 @@ class Resource(db.Model, TrackModificationsMixIn):
             new_permissions (list|set[str]): A list of permission names with which the Resource will be associated.
                 These permissions must be in the set ["create", "read", "update", "delete", "execute"].
         """
-        self.permissions[:] = []
+        self.permissions = []
         new_permission_names = set(new_permissions)
         self.permissions.extend([Permission(permission) for permission in new_permission_names])
 

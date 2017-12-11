@@ -91,52 +91,19 @@ class TestRoles(unittest.TestCase):
         db.session.add(role)
         self.assertRoleConstructionIsCorrect(role, 'test', resources=new_resources)
 
-    # def test_set_resources_to_role_shared_resources(self):
-    #     resources1 = ['resource1', 'resource2', 'resource3', 'resource4']
-    #     overlap_resources = ['resource3', 'resource4']
-    #     resources2 = ['resource3', 'resource4', 'resource5', 'resource6']
-    #     role1 = Role(name='test1', resources=resources1)
-    #     db.session.add(role1)
-    #     role2 = Role(name='test2', resources=resources2)
-    #     db.session.add(role2)
-    #     db.session.commit()
-    #     self.assertSetEqual({resource.resource for resource in role1.resources}, set(resources1))
-    #     self.assertSetEqual({resource.resource for resource in role2.resources}, set(resources2))
-    #
-    #     def assert_resources_have_correct_roles(resources, roles):
-    #         for resource in resources:
-    #             resource = Resource.query.filter_by(resource=resource).first()
-    #             self.assertSetEqual({role.name for role in resource.roles}, roles)
-    #
-    #     assert_resources_have_correct_roles(['resource1', 'resource2'], {'test1'})
-    #     assert_resources_have_correct_roles(overlap_resources, {'test1', 'test2'})
-    #     assert_resources_have_correct_roles(['resource5', 'resource6'], {'test2'})
-
-    # def test_resource_as_json_with_multiple_roles(self):
-    #     resources1 = {'resource1': ['create'],
-    #                   'resource2': ['create'],
-    #                   'resource3': ['create'],
-    #                   'resource4': ['create']}
-    #     overlap_resources = ['resource3', 'resource4']
-    #     resources2 = {'resource3': ['create'],
-    #                   'resource4': ['create'],
-    #                   'resource5': ['create'],
-    #                   'resource6': ['create']}
-    #     role1 = Role(name='test1', resources=resources1)
-    #     db.session.add(role1)
-    #     role2 = Role(name='test2', resources=resources2)
-    #     db.session.add(role2)
-    #     db.session.commit()
-    #
-    #     def assert_resource_json_is_correct(resources, roles):
-    #         for resource in resources:
-    #             resource_json = Resource.query.filter_by(name=resource).first().as_json(with_roles=True)
-    #             self.assertEqual(resource_json['resource'], resource)
-    #             self.assertSetEqual(set(resource_json['roles']), roles)
-    #
-    #     assert_resource_json_is_correct(['resource1', 'resource2'], {'test1'})
-    #     assert_resource_json_is_correct(overlap_resources, {'test1', 'test2'})
-    #     assert_resource_json_is_correct(['resource5', 'resource6'], {'test2'})
+    def test_set_resources_update_permissions(self):
+        resources = [{'name': 'resource1', 'permissions': ['create']},
+                     {'name': 'resource2', 'permissions': ['create']},
+                     {'name': 'resource3', 'permissions': ['create']}]
+        role = Role(name='test', resources=resources)
+        db.session.add(role)
+        db.session.commit()
+        new_resources = [{'name': 'resource1', 'permissions': ['read']},
+                         {'name': 'resource2', 'permissions': ['update']},
+                         {'name': 'resource3', 'permissions': ['delete']}]
+        role.set_resources(new_resources)
+        db.session.commit()
+        self.assertRoleConstructionIsCorrect(role, 'test', resources=new_resources)
 
     def test_role_as_json(self):
         resources = [{'name': 'resource1', 'permissions': ['create']},
