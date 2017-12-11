@@ -5,6 +5,8 @@ import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { SettingsService } from './settings.service';
 
 import { WorkingUser } from '../models/workingUser';
+import { Role } from '../models/role';
+import { Select2OptionData } from 'ng2-select2/ng2-select2.interface';
 
 @Component({
 	selector: 'user-modal',
@@ -18,11 +20,41 @@ export class SettingsUserModalComponent {
 	@Input() workingUser: WorkingUser;
 	@Input() title: string;
 	@Input() submitText: string;
+	@Input() roles: Role[];
+
+	roleSelectData: Select2OptionData[];
+	roleSelectConfig: Select2Options;
+	roleSelectInitialValue: number[];
 
 	constructor(
 		private settingsService: SettingsService, private activeModal: NgbActiveModal,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
+	}
+
+	ngOnInit(): void {
+		this.roleSelectData = this.roles.map((role) => {
+			return { id: role.id.toString(), text: role.name };
+		});
+
+		this.roleSelectConfig = {
+			width: '100%',
+			placeholder: 'Select role(s)',
+			multiple: true,
+			allowClear: true,
+			closeOnSelect: false,
+		};
+
+		this.roleSelectInitialValue = JSON.parse(JSON.stringify(this.workingUser.role_ids));
+	}
+
+	/**
+	 * Event fired on the select2 change for roles. Updates the value based on the event value.
+	 * @param $event JS Event Fired
+	 */
+	roleSelectChange($event: any): void {
+		// Convert strings to numbers here
+		this.workingUser.role_ids = $event.value.map((id: string) => +id);
 	}
 
 	submit(): void {
@@ -32,10 +64,13 @@ export class SettingsUserModalComponent {
 			return;
 		}
 
+		const toSubmit = WorkingUser.toUser(this.workingUser);
+		delete toSubmit.roles;
+
 		//If user has an ID, user already exists, call update
-		if (this.workingUser.id) {
+		if (toSubmit.id) {
 			this.settingsService
-				.editUser(WorkingUser.toUser(this.workingUser))
+				.editUser(toSubmit)
 				.then(user => this.activeModal.close({
 					user,
 					isEdit: true,
@@ -43,7 +78,7 @@ export class SettingsUserModalComponent {
 				.catch(e => this.toastyService.error(e.message));
 		} else {
 			this.settingsService
-				.addUser(WorkingUser.toUser(this.workingUser))
+				.addUser(toSubmit)
 				.then(user => this.activeModal.close({
 					user,
 					isEdit: false,

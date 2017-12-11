@@ -2,7 +2,7 @@ import json
 
 import server.database
 import server.flaskserver
-from server.database import Role, db, initialize_resource_roles_from_cleared_database
+from server.database import Role, db
 from server.returncodes import *
 from tests.util import servertestcase
 
@@ -19,7 +19,7 @@ class TestRolesServer(servertestcase.ServerTestCase):
 
     @classmethod
     def tearDownClass(cls):
-        initialize_resource_roles_from_cleared_database()
+        # initialize_resource_roles_from_cleared_database()
         server.flaskserver.running_context.controller.shutdown_pool()
 
     def test_read_all_roles_no_added_roles(self):

@@ -95,14 +95,14 @@ export class SchedulerModalComponent {
 		}
 
 		if (this.workingScheduledTask.task_trigger.type === 'interval') {
-			if (!args.weeks && !args.days && !args.hours && !args.minutes && !args.seconds) {
+			if (!(args.weeks || args.days || args.hours || args.minutes || args.seconds)) {
 				return 'You must specify some interval of time for the actions to occur.';
 			}
 		}
 
 		if (this.workingScheduledTask.task_trigger.type === 'cron') {
-			if (!args.year && !args.month && !args.day && !args.week &&
-				!args.day_of_week && !args.hour && !args.minute && !args.second) {
+			if (!(args.year || args.month || args.day || args.week ||
+				args.day_of_week || args.hour || args.minute || args.second)) {
 				return 'You must specify some cron parameters for the actions to occur.';
 			}
 		}

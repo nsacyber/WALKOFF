@@ -34,7 +34,6 @@ def create_role():
             new_role = running_context.Role(**role_params)
             running_context.db.session.add(new_role)
             running_context.db.session.commit()
-            set_resources_for_role(json_data['name'], resources)
             current_app.logger.info('Role added: {0}'.format(role_params))
             return new_role.as_json(), OBJECT_CREATED
         else:
@@ -81,7 +80,6 @@ def update_role():
                 if '/roles' in resources:
                     resources.remove('/roles')
                 role.set_resources(resources)
-                set_resources_for_role(role.name, resources)
             running_context.db.session.commit()
             current_app.logger.info('Edited role {0} to {1}'.format(json_data['id'], json_data))
             return role.as_json(), SUCCESS

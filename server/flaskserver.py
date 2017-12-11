@@ -13,7 +13,7 @@ from . import database
 
 logger = logging.getLogger(__name__)
 
-database.initialize_resource_roles_from_cleared_database()
+# database.initialize_resource_roles_from_cleared_database()
 
 
 # Custom static data

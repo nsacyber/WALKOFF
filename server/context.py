@@ -10,7 +10,7 @@ class Context(object):
         self.apps = self.get_apps()
 
         from server.app import app
-        from server.database import User, Role, resource_roles, db
+        from server.database import User, Role, db
         from server.casesubscription import CaseSubscription
         import core.controller
         from server.scheduledtasks import ScheduledTask
@@ -19,7 +19,6 @@ class Context(object):
         self.Role = Role
         self.CaseSubscription = CaseSubscription
         self.flask_app = app
-        self.resource_roles = resource_roles
         self.db = db
         self.controller = core.controller.controller
         self.ScheduledTask = ScheduledTask

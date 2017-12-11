@@ -15,6 +15,21 @@ AddRole:
         example: [/users, /cases, /playbooks]
         type: array
         items:
+          $ref: '#/definitions/AddResource'
+
+AddResource:
+    type: object
+    required: [name]
+    properties:
+      name:
+        description: Name of the resource
+        type: string
+        example: playbooks, cases
+      permissions:
+        description: A list of permissions associated with this resource
+        example: [create, read, update, delete, execute]
+        type: array
+        items:
           type: string
 
 Role:
@@ -36,6 +51,25 @@ Role:
       resources:
         description: A list of resources that a user with this role can access
         example: [/users, /cases, /playbooks]
+        type: array
+        items:
+          $ref: '#/definitions/Resource'
+
+Resource:
+    type: object
+    required: [id]
+    properties:
+      id:
+        type: integer
+        minimum: 1
+        description: id of the object
+      name:
+        description: Name of the resource
+        type: string
+        example: playbooks, cases
+      permissions:
+        description: A list of permissions associated with this resource
+        example: [create, read, update, delete, execute]
         type: array
         items:
           type: string
