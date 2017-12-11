@@ -74,8 +74,9 @@ message GeneralPacket {
 
 message UserMessage {
     optional ActionPacket.ActionSender sender = 1;
-    optional string message = 2;
-    optional bool requires_reauth = 3;
-    repeated int32 users = 4;
-    repeated int32 roles = 5;
+    optional string subject = 2;
+    optional string body = 3;
+    optional bool requires_reauth = 4;
+    repeated int32 users = 5;
+    repeated int32 roles = 6;
 }

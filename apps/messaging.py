@@ -43,31 +43,36 @@ class AcceptDecline(MessageComponent):
 
 
 class Message(object):
-    def __init__(self, components=None):
-        self.message = components if components is not None else []
+    def __init__(self, subject=None, components=None):
+        self.subject = subject
+        self.body = components if components is not None else []
 
     def append(self, message_component):
-        self.message.append(message_component)
+        self.body.append(message_component)
 
     def extend(self, message_components):
-        self.message.extend(message_components)
+        self.body.extend(message_components)
 
     def __add__(self, another_message):
-        messages = []
-        messages.extend(self.message)
-        messages.extend(another_message.message)
-        return Message(components=messages)
+        message_components = []
+        message_components.extend(self.body)
+        message_components.extend(another_message.body)
+        return Message(subject=self.subject, components=message_components)
 
     def __len__(self):
-        return len(self.message)
+        return len(self.body)
 
     def __iter__(self):
-        return iter(self.message)
+        return iter(self.body)
 
     def as_json(self):
-        return {'message': [message_component.as_json() for message_component in self.message]}
+        ret = {'body': [message_component.as_json() for message_component in self.body]}
+        if self.subject:
+            ret['subject'] = self.subject
+        return ret
 
 
 def send_message(message, users, requires_reauth=False):
+    #TODO: Add role support here
     WalkoffEvent.CommonWorkflowSignal.send(
         message, event=WalkoffEvent.SendMessage, users=users, requires_reauth=requires_reauth)

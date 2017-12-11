@@ -99,6 +99,8 @@ def convert_send_message_to_protobuf(packet, message, workflow_execution_uid, **
     message_packet = packet.message_packet
     message_packet.message = message
     message_packet.sender.workflow_execution_uid = workflow_execution_uid
+    if 'subject' in kwargs:
+        message_packet.subject = kwargs['subject']
     if 'users' in kwargs:
         message_packet.users = kwargs['users']
     if 'roles' in kwargs:

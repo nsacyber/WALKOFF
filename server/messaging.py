@@ -2,8 +2,10 @@ from server.database import db
 from sqlalchemy import func
 from datetime import datetime
 from core.events import WalkoffEvent
-from server.context import running_context
+import json
+import logging
 
+logger = logging.getLogger(__name__)
 
 user_messages_association = db.Table('user_messages',
                                   db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
@@ -14,6 +16,7 @@ class Message(db.Model):
     __tablename__ = 'message'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    subject = db.Column(db.String())
     body = db.Column(db.String(), nullable=False)
     users = db.relationship('User', secondary=user_messages_association,
                             backref=db.backref('messages', lazy='dynamic'))
@@ -23,7 +26,8 @@ class Message(db.Model):
     created_at = db.Column(db.DateTime, default=func.current_timestamp())
     read_at = db.Column(db.DateTime)
 
-    def __init__(self, body, workflow_execution_uid, users, requires_reauth=False):
+    def __init__(self, subject, body, workflow_execution_uid, users, requires_reauth=False):
+        self.subject = subject
         self.body = body
         self.workflow_execution_uid = workflow_execution_uid
         self.users = users
@@ -32,6 +36,22 @@ class Message(db.Model):
     def read(self):
         self.is_read = True
         self.read_at = datetime.utcnow()
+
+    def unread(self):
+        self.is_read = False
+        self.read_at = None
+
+    def as_json(self):
+        ret = {'id': self.id,
+               'subject': self.subject,
+               'body': json.loads(self.body),
+               'workflow_execution_uid': self.workflow_execution_uid,
+               'requires_reauthorization': self.requires_reauth,
+               'is_read': self.is_read,
+               'created_at': str(self.created_at)}
+        if self.is_read:
+            ret['read_at'] = str(self.read_at)
+        return ret
 
 
 class WorkflowAuthorization(object):
@@ -71,26 +91,50 @@ class WorkflowAuthorizationCache(object):
         return workflow_execution_uid in self._cache
 
 
-_workflow_authorization_cache = WorkflowAuthorizationCache()
+workflow_authorization_cache = WorkflowAuthorizationCache()
 
 
 @WalkoffEvent.SendMessage.connect
-def save_message(sender, **message_data):
-    message = message_data['message']
-    if any(message_component['requires_auth'] for message_component in message):
-        _workflow_authorization_cache.add_authorized_users(
-            sender.workflow_execution_uid, users=message_data['users'], roles=message_data['roles'])
+def save_message_callback(sender, **message_data):
+    message_data = message_data['data']
+    body = message_data['body']
+    is_caching_required = strip_requires_auth_from_message_body(body)
+    if is_caching_required:
+        workflow_authorization_cache.add_authorized_users(
+            sender['workflow_execution_uid'], users=message_data['users'], roles=message_data['roles'])
+    save_message(body, message_data, sender['workflow_execution_uid'])
+
+
+def strip_requires_auth_from_message_body(body):
+    is_caching_required = any(message_component.get('requires_auth', False) for message_component in body)
+    for message_component in body:
+        message_component.pop('requires_auth', None)
+    return is_caching_required
+
+
+def save_message(body, message_data, workflow_execution_uid):
     users = get_all_matching_users_for_message(message_data['users'], message_data['roles'])
-    message_entry = Message(
-        message, sender.workflow_execution_uid, users, requires_reauth=message_data['requires_reauth'])
-    db.session.add(message_entry)
-    db.session.commit()
+    if users:
+        subject = message_data.get('subject', '')
+        message_entry = Message(
+            subject, json.dumps(body), workflow_execution_uid, users, requires_reauth=message_data['requires_reauth'])
+        db.session.add(message_entry)
+        db.session.commit()
+    else:
+        logger.error('Cannot send message. Users {0} or roles {1} do not exist'.format(
+            message_data['users'], message_data['roles']))
 
 
 def get_all_matching_users_for_message(user_ids, role_ids):
+    from server.context import running_context
+
     user_id_set = set()
     if role_ids:
-        roles = running_context.Role.query.filter_by(id in role_ids).all()
+        roles = running_context.Role.query.filter(running_context.Role.id.in_(role_ids)).all()
         for role in roles:
             user_id_set |= {user.id for user in role.users}
-    return running_context.User.query.filter_by(id in set(user_ids) | user_id_set).all()
+    user_id_search = set(user_ids) | user_id_set
+    if user_id_search:
+        return running_context.User.query.filter(running_context.User.id.in_(user_id_search)).all()
+    else:
+        return []

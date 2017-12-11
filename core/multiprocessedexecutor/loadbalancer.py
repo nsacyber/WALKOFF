@@ -231,4 +231,5 @@ def format_message_event_data(message):
     return {'users': message.users,
             'roles': message.roles,
             'requires_reauth': message.requires_reauth,
-            'message': message.message}
+            'body': json.loads(message.body),
+            'subject': message.subject}

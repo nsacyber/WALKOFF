@@ -14,6 +14,7 @@ class Context(object):
         from server.casesubscription import CaseSubscription
         import core.controller
         from server.scheduledtasks import ScheduledTask
+        from server.messaging import Message
 
         self.User = User
         self.Role = Role
@@ -22,6 +23,7 @@ class Context(object):
         self.db = db
         self.controller = core.controller.controller
         self.ScheduledTask = ScheduledTask
+        self.Message = Message
 
     @staticmethod
     def get_apps(path=core.config.paths.apps_path):

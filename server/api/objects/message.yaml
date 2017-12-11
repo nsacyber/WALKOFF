@@ -1,0 +1,51 @@
+Message:
+  type: object
+  required: [id, body, subject, created_at, is_read, workflow_execution_uid, requires_reauthorization]
+  description: A message sent to a user
+  properties:
+    id:
+      description: Id of this message
+      type: integer
+      minimum: 1
+      readOnly: true
+      example: 42
+    subject:
+      description: Subject of this message
+      type: string
+      example: Remove user?
+    body:
+      type: array
+      items:
+        $ref: "#/definitions/MessageComponent"
+      description: The body of the message. Each component is rendered in order
+    workflow_execution_uid:
+      type: string
+      example: abd-12345-aaa
+      description: The UUID of the executing workflow
+    requires_reauthorization:
+      type: boolean
+      default: false
+      description: Does the user need to reauthenticate to respond to this message?
+    is_read:
+      description: Has this message been read yet?
+      type: boolean
+      default: false
+    created_at:
+      description: UTC timestamp of message creation
+      type: string
+    read_at:
+      description: UTC timestamp of when message was read
+      type: string
+
+
+MessageComponent:
+  type: object
+  required: [type, data]
+  properties:
+    type:
+      type: string
+      description: message component type
+      enum: [text, accept_decline, url]
+    data:
+      type: object
+      description: JSON representation of the message component

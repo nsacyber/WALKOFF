@@ -13,7 +13,7 @@ from server.security import roles_accepted_for_resources, ResourcePermissions
 
 def read_all_possible_subscriptions():
     event_dict = {EventType.playbook.name: []}
-    for event in WalkoffEvent:
+    for event in (event for event in WalkoffEvent if event.is_loggable()):
         if event.event_type.name not in event_dict:
             event_dict[event.event_type.name] = [event.signal_name]
         else:
