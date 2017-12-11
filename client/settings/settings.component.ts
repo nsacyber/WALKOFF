@@ -32,6 +32,8 @@ export class SettingsComponent {
 	displayUsers: User[] = [];
 	filterQuery: FormControl = new FormControl();
 
+	roles: Role[] = [];
+
 	constructor(
 		private settingsService: SettingsService, private modalService: NgbModal,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
@@ -40,6 +42,7 @@ export class SettingsComponent {
 
 		this.getConfiguration();
 		this.getUsers();
+		this.getRoles();
 
 		this.filterQuery
 			.valueChanges
@@ -81,17 +84,26 @@ export class SettingsComponent {
 		Object.assign(this.configuration, Configuration.getDefaultConfiguration());
 	}
 
+	getRoles(): void {
+		this.settingsService
+			.getRoles()
+			.then(roles => this.roles = roles)
+			.catch(e => this.toastyService.error(`Error retrieving roles: ${e.message}`));
+
+	}
+
 	getUsers(): void {
 		this.settingsService
 			.getUsers()
 			.then(users => this.displayUsers = this.users = users)
-			.catch(e => this.toastyService.error(e.message));
+			.catch(e => this.toastyService.error(`Error retrieving users: ${e.message}`));
 	}
 
 	addUser(): void {
 		const modalRef = this.modalService.open(SettingsUserModalComponent);
 		modalRef.componentInstance.title = 'Add New User';
 		modalRef.componentInstance.submitText = 'Add User';
+		modalRef.componentInstance.roles = this.roles;
 
 		const workingUser = new WorkingUser();
 		workingUser.active = true;
@@ -104,6 +116,7 @@ export class SettingsComponent {
 		const modalRef = this.modalService.open(SettingsUserModalComponent);
 		modalRef.componentInstance.title = `Edit User: ${user.username}`;
 		modalRef.componentInstance.submitText = 'Save Changes';
+		modalRef.componentInstance.roles = this.roles;
 		modalRef.componentInstance.workingUser = User.toWorkingUser(user);
 
 		this._handleModalClose(modalRef);

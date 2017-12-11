@@ -8,6 +8,7 @@ export class User {
 		returnUser.id = user.id;
 		returnUser.username = user.username;
 		returnUser.roles = user.roles;
+		returnUser.role_ids = user.role_ids;
 		returnUser.active = user.active;
 
 		return returnUser;
@@ -24,6 +25,7 @@ export class User {
 	 * Should never be populated when retrieving data.
 	 */
 	password: string;
-	roles: Role[];
+	roles: Role[] = [];
+	role_ids: number[] = [];
 	active: boolean;
 }

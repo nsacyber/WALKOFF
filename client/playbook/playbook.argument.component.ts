@@ -86,7 +86,7 @@ export class PlaybookArgumentComponent {
 		}
 		if (this.isRoleSelect(this.parameterSchema)) {
 			this.selectData = this.roles.map((role) => {
-				return { id: role.role_id.toString(), text: role.name };
+				return { id: role.id.toString(), text: role.name };
 			});
 
 			this.selectConfig = {

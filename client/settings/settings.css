@@ -77,7 +77,8 @@ select#roles {
 	background-color: #EEE;
 }
 
-#roleModalBody .required {
+#roleModalBody .required,
+#userModalBody .required {
 	color: crimson;
 	margin-left: 5px;
 }

@@ -75,7 +75,7 @@ export class SettingsRoleModalComponent {
 
 		const newResource: Resource = {
 			resource_id: this.newResourceTempIdTracker--,
-			role_id: this.workingRole.role_id,
+			role_id: this.workingRole.id,
 			name: selectedAvailableResourceAction.name,
 			permissions: [],
 		};
@@ -113,7 +113,7 @@ export class SettingsRoleModalComponent {
 		});
 
 		//If role has an ID, it already exists, call update
-		if (this.workingRole.role_id) {
+		if (this.workingRole.id) {
 			this.settingsService
 				.editRole(this.workingRole)
 				.then(role => this.activeModal.close({

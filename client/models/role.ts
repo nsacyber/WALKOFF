@@ -1,7 +1,7 @@
 import { Resource } from './resource';
 
 export class Role {
-	role_id: number;
+	id: number;
 	name: string;
 	description: string;
 	resources: Resource[] = [];

@@ -79,7 +79,7 @@ export class SettingsRolesComponent {
 		modalRef.componentInstance.title = `Edit Rolr: ${role.name}`;
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.availableResourceActions = this.availableResourceActions;
-		modalRef.componentInstance.workingRole = role;
+		modalRef.componentInstance.workingRole = _.cloneDeep(role);
 
 		this._handleModalClose(modalRef);
 	}
@@ -88,9 +88,9 @@ export class SettingsRolesComponent {
 		if (!confirm(`Are you sure you want to delete the role "${roleToDelete.name}"?`)) { return; }
 
 		this.settingsService
-			.deleteRole(roleToDelete.role_id)
+			.deleteRole(roleToDelete.id)
 			.then(() => {
-				this.roles = this.roles.filter(role => role.role_id !== roleToDelete.role_id);
+				this.roles = this.roles.filter(role => role.id !== roleToDelete.id);
 
 				this.filterRoles();
 
@@ -123,7 +123,7 @@ export class SettingsRolesComponent {
 
 				//On edit, find and update the edited item
 				if (result.isEdit) {
-					const toUpdate = this.roles.find(r => r.role_id === result.role.role_id);
+					const toUpdate = this.roles.find(r => r.id === result.role.id);
 					Object.assign(toUpdate, result.role);
 
 					this.filterRoles();
