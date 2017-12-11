@@ -73,8 +73,9 @@ message GeneralPacket {
 }
 
 message UserMessage {
-    optional string message = 1;
-    optional string workflow_execution_uid = 2;
+    optional ActionPacket.ActionSender sender = 1;
+    optional string message = 2;
     optional bool requires_reauth = 3;
     repeated int32 users = 4;
+    repeated int32 roles = 5;
 }

@@ -2,11 +2,12 @@ from core.events import WalkoffEvent
 
 
 class MessageComponent(object):
-    def __init__(self, message_type):
+    def __init__(self, message_type, requires_auth=False):
         self.message_type = message_type
+        self.requires_auth = requires_auth
 
     def as_json(self):
-        return {'type': self.message_type, 'data': self.get_component_json()}
+        return {'type': self.message_type, 'requires_auth': self.requires_auth, 'data': self.get_component_json()}
 
     def get_component_json(self):
         return {}
@@ -38,7 +39,7 @@ class Url(MessageComponent):
 class AcceptDecline(MessageComponent):
 
     def __init__(self):
-        super(AcceptDecline, self).__init__('accept_decline')
+        super(AcceptDecline, self).__init__('accept_decline', requires_auth=True)
 
 
 class Message(object):

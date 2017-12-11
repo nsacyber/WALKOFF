@@ -135,7 +135,8 @@ class TestEvents(TestCase):
 
     def test_walkoff_event_requires_data(self):
         for event in (
-        WalkoffEvent.WorkflowShutdown, WalkoffEvent.ActionExecutionSuccess, WalkoffEvent.ActionExecutionError):
+                WalkoffEvent.WorkflowShutdown, WalkoffEvent.ActionExecutionSuccess,
+                WalkoffEvent.ActionExecutionError, WalkoffEvent.SendMessage):
             self.assertTrue(event.requires_data())
 
     def test_walkoff_event_does_not_require_data(self):

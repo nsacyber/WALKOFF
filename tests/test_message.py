@@ -7,6 +7,12 @@ class TestMessage(TestCase):
     def test_message_component_init(self):
         message_component = MessageComponent('some type')
         self.assertEqual(message_component.message_type, 'some type')
+        self.assertFalse(message_component.requires_auth)
+
+    def test_message_component_init_requires_auth(self):
+        message_component = MessageComponent('some type', requires_auth=True)
+        self.assertEqual(message_component.message_type, 'some type')
+        self.assertTrue(message_component.requires_auth)
 
     def test_message_component_get_component_json(self):
         message_component = MessageComponent('some type')
@@ -14,7 +20,11 @@ class TestMessage(TestCase):
 
     def test_message_component_as_json(self):
         message_component = MessageComponent('some type')
-        self.assertDictEqual(message_component.as_json(), {'type': 'some type', 'data': {}})
+        self.assertDictEqual(message_component.as_json(), {'type': 'some type', 'requires_auth': False, 'data': {}})
+
+    def test_message_component_requires_auth_as_json(self):
+        message_component = MessageComponent('some type',requires_auth=True)
+        self.assertDictEqual(message_component.as_json(), {'type': 'some type', 'requires_auth': True, 'data': {}})
 
     def test_text_component_init(self):
         text = Text('some text here')
@@ -51,6 +61,7 @@ class TestMessage(TestCase):
     def test_accept_decline_component_init(self):
         accept_decline = AcceptDecline()
         self.assertEqual(accept_decline.message_type, 'accept_decline')
+        self.assertTrue(accept_decline.requires_auth)
 
     def test_accept_decline_component_get_component_json(self):
         accept_decline = AcceptDecline()

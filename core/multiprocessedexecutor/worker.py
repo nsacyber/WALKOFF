@@ -98,9 +98,11 @@ def convert_send_message_to_protobuf(packet, message, workflow_execution_uid, **
     packet.type = data_pb2.Message.USERMESSAGE
     message_packet = packet.message_packet
     message_packet.message = message
-    message_packet.workflow_execution_uid = workflow_execution_uid
+    message_packet.sender.workflow_execution_uid = workflow_execution_uid
     if 'users' in kwargs:
         message_packet.users = kwargs['users']
+    if 'roles' in kwargs:
+        message_packet.roles = kwargs['roles']
     if 'requires_reauth' in kwargs:
         message_packet.requires_reauth = kwargs['requires_reauth']
 
@@ -110,6 +112,11 @@ def convert_action_to_proto(packet, sender, workflow_execution_uid, data=None):
     action_packet = packet.action_packet
     if 'data' is not None:
         action_packet.additional_data = json.dumps(data)
+    add_sender_to_action_packet_proto(action_packet, sender, workflow_execution_uid)
+    add_arguments_to_action_proto(action_packet, sender)
+
+
+def add_sender_to_action_packet_proto(action_packet, sender, workflow_execution_uid):
     action_packet.sender.name = sender.name
     action_packet.sender.uid = sender.uid
     action_packet.sender.workflow_execution_uid = workflow_execution_uid
@@ -117,8 +124,6 @@ def convert_action_to_proto(packet, sender, workflow_execution_uid, data=None):
     action_packet.sender.app_name = sender.app_name
     action_packet.sender.action_name = sender.action_name
     action_packet.sender.device_id = sender.device_id if sender.device_id is not None else -1
-
-    add_arguments_to_action_proto(action_packet, sender)
 
 
 def add_arguments_to_action_proto(action_packet, sender):

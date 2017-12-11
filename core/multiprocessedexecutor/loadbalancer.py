@@ -201,6 +201,8 @@ class Receiver:
                 message = message_outer.workflow_packet
             elif message_outer.type == data_pb2.Message.ACTIONPACKET:
                 message = message_outer.action_packet
+            elif message_outer.type == data_pb2.Message.USERMESSAGE:
+                message = message_outer.message_packet
             else:
                 message = message_outer.general_packet
 
@@ -209,7 +211,11 @@ class Receiver:
             event = WalkoffEvent.get_event_from_name(callback_name)
             if event is not None:
                 if event.requires_data():
-                    event.send(sender, data=json.loads(message.additional_data))
+                    if event != WalkoffEvent.SendMessage:
+                        data = json.loads(message.additional_data)
+                    else:
+                        data = format_message_event_data(message)
+                    event.send(sender, data=data)
                 else:
                     event.send(sender)
                 if event == WalkoffEvent.WorkflowShutdown:
@@ -219,3 +225,10 @@ class Receiver:
 
         self.results_sock.close()
         return
+
+
+def format_message_event_data(message):
+    return {'users': message.users,
+            'roles': message.roles,
+            'requires_reauth': message.requires_reauth,
+            'message': message.message}
