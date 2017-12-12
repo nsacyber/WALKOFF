@@ -52,9 +52,9 @@ def read_playbook(playbook_name):
     def __func():
         if playbook_name == "templates":
             templates = {os.path.splitext(workflow)[0]:
-                             helpers.get_workflow_names_from_file(
-                                 os.path.join(core.config.paths.templates_path, workflow))
-                         for workflow in helpers.locate_playbooks_in_directory(core.config.paths.templates_path)}
+                helpers.get_workflow_names_from_file(
+                    os.path.join(core.config.paths.templates_path, workflow))
+                for workflow in helpers.locate_playbooks_in_directory(core.config.paths.templates_path)}
             return templates, SUCCESS
         else:
             try:
@@ -406,7 +406,7 @@ def save_workflow(playbook_name, workflow_name):
     from server.flaskserver import write_playbook_to_file
 
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
+    @roles_accepted_for_resources(ResourcePermissions('playbooks', ['read', 'update']))
     def __func():
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
@@ -459,14 +459,19 @@ def read_results():
     return __func()
 
 
-@jwt_required
 def read_all_results():
-    return [workflow.as_json() for workflow in
-            case_database.case_db.session.query(WorkflowResult).all()], SUCCESS
+    @jwt_required
+    @roles_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
+    def __func():
+        return [workflow.as_json() for workflow in
+                case_database.case_db.session.query(WorkflowResult).all()], SUCCESS
+
+    return __func()
 
 
 def read_result(uid):
     @jwt_required
+    @roles_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     def __func():
         workflow_result = case_database.case_db.session.query(WorkflowResult).filter(WorkflowResult.uid == uid).first()
         if workflow_result is not None:

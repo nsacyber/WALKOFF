@@ -9,15 +9,15 @@ logger = logging.getLogger(__name__)
 
 db = flask_sqlalchemy.SQLAlchemy()
 
-default_resources = ['playbooks', 'configuration', 'interface', 'trigger', 'metrics', 'users', 'cases', 'apps',
-                     'scheduler']
+default_resources = ['app_apis', 'cases', 'configuration', 'devices', 'metrics', 'playbooks', 'roles', 'scheduler',
+                     'users']
 default_permissions = ['create', 'read', 'update', 'delete']
 
 
 def initialize_resource_permissions_from_default():
     resource_permissions = []
     for resource in default_resources:
-        if resource in ['playbooks', 'trigger', 'scheduler']:
+        if resource in ['playbooks', 'scheduler']:
             perms = list(default_permissions)
             perms.append("execute")
             resource_permissions.append({'name': resource, 'permissions': perms})
