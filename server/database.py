@@ -78,7 +78,7 @@ def get_all_available_resource_actions():
     resource_actions = []
     for resource_perm in default_resource_permissions:
         resource_actions.append(
-            {"name": resource_perm['name'], "actions": resource_perm['permissions'], "app_name": None})
+            {"name": resource_perm['name'], "actions": resource_perm['permissions']})
     return resource_actions
 
 
