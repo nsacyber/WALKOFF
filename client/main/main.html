@@ -25,8 +25,8 @@
                 <li *ngFor="let interfaceName of interfaceNames">
                   <a class="installedApp" routerLink="/interfaces/{{interfaceName}}"><i class="fa fa-gear"></i><span>{{interfaceName}}</span></a>
                 </li>
-                <li *ngIf="!interfaceName || !interfaceName.length">
-                  <span class="dropdown-item">No custom WALKOFF interfaces are installed.</span>
+                <li *ngIf="!interfaceNames.length">
+                  <a class="installedApp"><span>No custom WALKOFF interfaces are installed.</span></a>
                 </li>
               </ul>
             </li>
