@@ -12,7 +12,7 @@ from server.security import roles_accepted_for_resources, ResourcePermissions
 
 def read_all_apps():
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('apps', ['read']))
+    @roles_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
     def __func():
         apps = helpers.list_apps()
         return sorted(apps, key=(lambda app_name: app_name.lower())), SUCCESS
@@ -103,7 +103,7 @@ def format_full_app_api(api, app_name):
 
 def read_all_app_apis(field_name=None):
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('apps', ['read']))
+    @roles_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
     def __func():
         ret = []
         for app_name, app_api in core.config.config.app_apis.items():
@@ -118,7 +118,7 @@ def read_all_app_apis(field_name=None):
 
 def read_app_api(app_name):
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('apps', ['read']))
+    @roles_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
     def __func():
         api = core.config.config.app_apis.get(app_name, None)
         if api is not None:
@@ -131,7 +131,7 @@ def read_app_api(app_name):
 
 @jwt_required
 def read_app_api_field(app_name, field_name):
-    @roles_accepted_for_resources(ResourcePermissions('apps', ['read']))
+    @roles_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
     def __func():
         api = core.config.config.app_apis.get(app_name, None)
         if api is not None:

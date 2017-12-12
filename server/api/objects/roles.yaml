@@ -12,7 +12,6 @@ AddRole:
         example: A user with this role can access any resource and has administrative-level privileges.
       resources:
         description: A list of resources that a user with this role can access
-        example: [/users, /cases, /playbooks]
         type: array
         items:
           $ref: '#/definitions/AddResource'
@@ -57,7 +56,6 @@ Role:
 
 Resource:
     type: object
-    required: [id]
     properties:
       id:
         type: integer
@@ -73,3 +71,21 @@ Resource:
         type: array
         items:
           type: string
+
+AvailableResourceAction:
+  type: object
+  properties:
+    name:
+      type: string
+      description: Name of the resource
+      example: playbooks, cases
+    actions:
+      description: A list of actions or permissions available for this resource
+      example: [create, read, update, delete]
+      type: array
+      items:
+        type: string
+    app_name:
+      type: string
+      description: The name of the app associated with this resource, if applicable
+      example: HelloWorld, DailyQuote

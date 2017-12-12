@@ -9,7 +9,7 @@ def send_data_to_trigger():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('trigger', ['execute']))
+    @roles_accepted_for_resources(ResourcePermissions('playbooks', ['execute']))
     def __func():
         data = request.get_json()
         workflows_in = set(data['execution_uids'])

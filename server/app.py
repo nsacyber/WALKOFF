@@ -102,22 +102,30 @@ env = Environment(loader=FileSystemLoader("interfaces"))
 app = create_app()
 
 
-# Creates Test Data
 @app.before_first_request
 def create_user():
     from server.context import running_context
-    from server.database import add_user, User, Resource, Role, initialize_resource_roles_from_database
+    from server.database import add_user, User
 
     running_context.db.create_all()
-    if not User.query.all():
+
+    # Setup admin role
+    admin_role = running_context.Role.query.filter_by(name="admin").first()
+    if admin_role:
+        admin_role.set_resources(server.database.default_resource_permissions)
+    else:
         admin_role = running_context.Role(
             name='admin', description='administrator', resources=server.database.default_resource_permissions)
         running_context.db.session.add(admin_role)
-        admin_user = add_user(username='admin', password='admin')
+
+    # Setup admin user
+    admin_user = User.query.filter_by(username="admin").first()
+    if not admin_user:
+        add_user(username='admin', password='admin', roles=["admin"])
+    elif admin_role not in admin_user.roles:
         admin_user.roles.append(admin_role)
-        running_context.db.session.commit()
-    if Role.query.all() or Resource.query.all():
-        initialize_resource_roles_from_database()
+
+    running_context.db.session.commit()
 
     apps = set(helpers.list_apps()) - set([_app.name
                                            for _app in device_db.session.query(App).all()])

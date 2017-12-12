@@ -31,7 +31,7 @@ def read_all_possible_subscriptions():
 
 def read_all_interfaces():
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('apps', ['read']))
+    @roles_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
     def __func():
         return helpers.list_interfaces(), SUCCESS
 

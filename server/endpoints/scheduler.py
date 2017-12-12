@@ -56,7 +56,7 @@ def create_scheduled_task():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('scheduler', ['create']))
+    @roles_accepted_for_resources(ResourcePermissions('scheduler', ['create', 'execute']))
     def __func():
         data = request.get_json()
         task = running_context.ScheduledTask.query.filter_by(name=data['name']).first()
@@ -94,7 +94,7 @@ def update_scheduled_task():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('scheduler', ['update']))
+    @roles_accepted_for_resources(ResourcePermissions('scheduler', ['update', 'execute']))
     def __func():
         data = request.get_json()
         task = running_context.ScheduledTask.query.filter_by(id=data['id']).first()

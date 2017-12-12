@@ -9,15 +9,20 @@ logger = logging.getLogger(__name__)
 
 db = flask_sqlalchemy.SQLAlchemy()
 
-default_resources = ['/', 'playbooks', 'configuration', 'interface', 'trigger', 'metrics', 'users', 'cases', 'apps',
-                     'scheduler']
-default_permissions = ['create', 'read', 'update', 'delete', 'execute']
+default_resources = ['app_apis', 'cases', 'configuration', 'devices', 'metrics', 'playbooks', 'roles', 'scheduler',
+                     'users']
+default_permissions = ['create', 'read', 'update', 'delete']
 
 
 def initialize_resource_permissions_from_default():
-    resource_permissions = {}
+    resource_permissions = []
     for resource in default_resources:
-        resource_permissions[resource] = list(default_permissions)
+        if resource in ['playbooks', 'scheduler']:
+            perms = list(default_permissions)
+            perms.append("execute")
+            resource_permissions.append({'name': resource, 'permissions': perms})
+        else:
+            resource_permissions.append({'name': resource, 'permissions': list(default_permissions)})
     return resource_permissions
 
 
@@ -67,6 +72,14 @@ def clear_resources_for_role(role_name):
     role = Role.query.filter(Role.name == role_name).first()
     role.resources = []
     db.session.commit()
+
+
+def get_all_available_resource_actions():
+    resource_actions = []
+    for resource_perm in default_resource_permissions:
+        resource_actions.append(
+            {"name": resource_perm['name'], "actions": resource_perm['permissions']})
+    return resource_actions
 
 
 user_roles_association = db.Table('user_roles_association',
@@ -208,7 +221,7 @@ class Role(db.Model, TrackModificationsMixIn):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(80), unique=True, nullable=False)
     description = db.Column(db.String(255))
-    resources = db.relationship('Resource', backref=db.backref('role'))
+    resources = db.relationship('Resource', backref=db.backref('role'), cascade='all, delete-orphan')
 
     def __init__(self, name, description='', resources=None):
         """Initializes a Role object. Each user has one or more Roles associated with it, which determines the user's
@@ -223,7 +236,7 @@ class Role(db.Model, TrackModificationsMixIn):
         self.name = name
         self.description = description
         self.resources = []
-        if resources is not None:
+        if resources:
             self.set_resources(resources)
 
     def set_resources(self, new_resources):
@@ -233,7 +246,7 @@ class Role(db.Model, TrackModificationsMixIn):
             new_resources (list(dict[name:resource, permissions:list[permission])): A list of dictionaries containing
                 the name of the resource, and a list of permission names associated with the resource.
         """
-        new_resource_names = set([resource for resource in new_resources])
+        new_resource_names = set([resource['name'] for resource in new_resources])
         current_resource_names = set([resource.name for resource in self.resources] if self.resources else [])
         resource_names_to_add = new_resource_names - current_resource_names
         resource_names_to_delete = current_resource_names - new_resource_names
@@ -241,13 +254,14 @@ class Role(db.Model, TrackModificationsMixIn):
 
         self.resources[:] = [resource for resource in self.resources if resource.name not in resource_names_to_delete]
 
-        for resource, permissions in new_resources.items():
-            if resource in resource_names_to_add:
-                self.resources.append(Resource(resource, permissions))
-            elif resource in resource_names_intersect:
-                resource = Resource.query.filter_by(role_id=self.id, name=resource).first()
+        for resource_perms in new_resources:
+            if resource_perms['name'] in resource_names_to_add:
+                self.resources.append(Resource(resource_perms['name'], resource_perms['permissions']))
+            elif resource_perms['name'] in resource_names_intersect:
+                resource = Resource.query.filter_by(role_id=self.id, name=resource_perms['name']).first()
                 if resource:
-                    resource.set_permissions(permissions)
+                    resource.set_permissions(resource_perms['permissions'])
+        db.session.commit()
 
     def as_json(self, with_users=False):
         """Returns the dictionary representation of the Role object.
@@ -273,7 +287,7 @@ class Resource(db.Model, TrackModificationsMixIn):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
-    permissions = db.relationship('Permission', backref=db.backref('resource'))
+    permissions = db.relationship('Permission', backref=db.backref('resource'), cascade='all, delete-orphan')
 
     def __init__(self, name, permissions):
         """Initializes a new Resource object, which is a type of Resource that a Role may have access to.
@@ -293,7 +307,7 @@ class Resource(db.Model, TrackModificationsMixIn):
             new_permissions (list|set[str]): A list of permission names with which the Resource will be associated.
                 These permissions must be in the set ["create", "read", "update", "delete", "execute"].
         """
-        self.permissions[:] = []
+        self.permissions = []
         new_permission_names = set(new_permissions)
         self.permissions.extend([Permission(permission) for permission in new_permission_names])
 
@@ -320,18 +334,19 @@ class Permission(db.Model):
         self.name = name
 
 
-def add_user(username, password):
+def add_user(username, password, roles=None):
     """Adds a User object.
 
     Args:
         username (str): The username for the User.
         password (str): The password for the User.
+        roles (list[str]): A list of roles for the User.
 
     Returns:
         The new User object if successful, else None.
     """
     if User.query.filter_by(username=username).first() is None:
-        user = User(username, password)
+        user = User(username, password, roles=roles)
         db.session.add(user)
         db.session.commit()
         return user

@@ -1,16 +1,16 @@
 from flask import request, current_app
 from flask_jwt_extended import jwt_required
 
-from server.database import set_resources_for_role, clear_resources_for_role
+from server.database import clear_resources_for_role, get_all_available_resource_actions
 from server.returncodes import *
-from server.security import roles_accepted
+from server.security import roles_accepted, roles_accepted_for_resources, ResourcePermissions
 
 
 def read_all_roles():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted('admin')
+    @roles_accepted_for_resources(ResourcePermissions('roles', ['read']))
     def __func():
         return [role.as_json() for role in running_context.Role.query.all()], SUCCESS
 
@@ -77,8 +77,6 @@ def update_role():
                 role.description = json_data['description']
             if 'resources' in json_data:
                 resources = json_data['resources']
-                if '/roles' in resources:
-                    resources.remove('/roles')
                 role.set_resources(resources)
             running_context.db.session.commit()
             current_app.logger.info('Edited role {0} to {1}'.format(json_data['id'], json_data))
@@ -104,5 +102,15 @@ def delete_role(role_id):
         else:
             current_app.logger.error('Cannot delete role {0}. Role does not exist.'.format(role_id))
             return {"error": "Role does not exist."}, OBJECT_DNE_ERROR
+
+    return __func()
+
+
+def read_available_resource_actions():
+
+    @jwt_required
+    @roles_accepted_for_resources(ResourcePermissions('roles', ['read']))
+    def __func():
+        return get_all_available_resource_actions(), SUCCESS
 
     return __func()
