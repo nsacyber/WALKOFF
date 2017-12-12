@@ -19,7 +19,6 @@ class TestRolesServer(servertestcase.ServerTestCase):
 
     @classmethod
     def tearDownClass(cls):
-        # initialize_resource_roles_from_cleared_database()
         server.flaskserver.running_context.controller.shutdown_pool()
 
     def test_read_all_roles_no_added_roles(self):
@@ -144,7 +143,7 @@ class TestRolesServer(servertestcase.ServerTestCase):
                                    {'name': 'resource5', 'permissions': ['create']}]
         self.assertRoleJsonIsEqual(response, expected)
 
-    def test_update_role_with_roles_endpoint_in_resources(self):
+    def test_update_role_with_resources_permissions(self):
         data_init = {"name": 'role1', "description": 'desc',
                      "resources": [{'name': 'resource1', 'permissions': ['create']},
                                    {'name': 'resource2', 'permissions': ['create']},
@@ -153,15 +152,15 @@ class TestRolesServer(servertestcase.ServerTestCase):
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
         data = {'id': role_id, 'description': 'new_desc',
-                'resources': [{'name': 'resource4', 'permissions': ['create']},
-                              {'name': 'resource5', 'permissions': ['create']}]}
+                'resources': [{'name': 'resource4', 'permissions': ['read']},
+                              {'name': 'resource5', 'permissions': ['delete']}]}
         response = self.post_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS,
                                                content_type='application/json', data=json.dumps(data))
         expected = dict(data_init)
         expected['description'] = 'new_desc'
         expected['id'] = role_id
-        expected['resources'] = [{'name': 'resource4', 'permissions': ['create']},
-                                 {'name': 'resource5', 'permissions': ['create']}]
+        expected['resources'] = [{'name': 'resource4', 'permissions': ['read']},
+                                   {'name': 'resource5', 'permissions': ['delete']}]
         self.assertRoleJsonIsEqual(response, expected)
 
     def test_update_role_with_invalid_id(self):

@@ -91,6 +91,18 @@ class TestRoles(unittest.TestCase):
         db.session.add(role)
         self.assertRoleConstructionIsCorrect(role, 'test', resources=new_resources)
 
+    def test_set_resources_to_role_with_existing_resources_no_overlap(self):
+        resources = [{'name': 'resource1', 'permissions': ['create']},
+                     {'name': 'resource2', 'permissions': ['create']},
+                     {'name': 'resource3', 'permissions': ['create']}]
+        role = Role(name='test', resources=resources)
+        new_resources = [{'name': 'resource4', 'permissions': ['create']},
+                         {'name': 'resource5', 'permissions': ['create']},
+                         {'name': 'resource6', 'permissions': ['create']}]
+        role.set_resources(new_resources)
+        db.session.add(role)
+        self.assertRoleConstructionIsCorrect(role, 'test', resources=new_resources)
+
     def test_set_resources_update_permissions(self):
         resources = [{'name': 'resource1', 'permissions': ['create']},
                      {'name': 'resource2', 'permissions': ['create']},

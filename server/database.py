@@ -321,18 +321,19 @@ class Permission(db.Model):
         self.name = name
 
 
-def add_user(username, password):
+def add_user(username, password, roles=None):
     """Adds a User object.
 
     Args:
         username (str): The username for the User.
         password (str): The password for the User.
+        roles (list[str]): A list of roles for the User.
 
     Returns:
         The new User object if successful, else None.
     """
     if User.query.filter_by(username=username).first() is None:
-        user = User(username, password)
+        user = User(username, password, roles=roles)
         db.session.add(user)
         db.session.commit()
         return user
