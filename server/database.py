@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 db = flask_sqlalchemy.SQLAlchemy()
 
-default_resources = ['/', 'playbooks', 'configuration', 'interface', 'trigger', 'metrics', 'users', 'cases', 'apps',
+default_resources = ['playbooks', 'configuration', 'interface', 'trigger', 'metrics', 'users', 'cases', 'apps',
                      'scheduler']
 default_permissions = ['create', 'read', 'update', 'delete']
 

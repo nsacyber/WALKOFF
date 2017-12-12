@@ -109,6 +109,8 @@ def delete_role(role_id):
 def read_available_resource_actions():
 
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('roles', ['read']))
+    @roles_accepted_for_resources(ResourcePermissions('configuration', ['read']))
     def __func():
         return get_all_available_resource_actions(), SUCCESS
+
+    return __func()
