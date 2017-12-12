@@ -11,13 +11,18 @@ db = flask_sqlalchemy.SQLAlchemy()
 
 default_resources = ['/', 'playbooks', 'configuration', 'interface', 'trigger', 'metrics', 'users', 'cases', 'apps',
                      'scheduler']
-default_permissions = ['create', 'read', 'update', 'delete', 'execute']
+default_permissions = ['create', 'read', 'update', 'delete']
 
 
 def initialize_resource_permissions_from_default():
     resource_permissions = []
     for resource in default_resources:
-        resource_permissions.append({'name': resource, 'permissions': list(default_permissions)})
+        if resource in ['playbooks', 'trigger', 'scheduler']:
+            perms = list(default_permissions)
+            perms.append("execute")
+            resource_permissions.append({'name': resource, 'permissions': perms})
+        else:
+            resource_permissions.append({'name': resource, 'permissions': list(default_permissions)})
     return resource_permissions
 
 
@@ -67,6 +72,14 @@ def clear_resources_for_role(role_name):
     role = Role.query.filter(Role.name == role_name).first()
     role.resources = []
     db.session.commit()
+
+
+def get_all_available_resource_actions():
+    resource_actions = []
+    for resource_perm in default_resource_permissions:
+        resource_actions.append(
+            {"name": resource_perm['name'], "actions": resource_perm['permissions'], "app_name": None})
+    return resource_actions
 
 
 user_roles_association = db.Table('user_roles_association',
