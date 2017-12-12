@@ -59,6 +59,7 @@ paths:
   $ref: ./configuration.yaml
   $ref: ./devices.yaml
   $ref: ./events.yaml
+  $ref: ./message.yaml
   $ref: ./metadata.yaml
   $ref: ./metrics.yaml
   $ref: ./playbooks.yaml

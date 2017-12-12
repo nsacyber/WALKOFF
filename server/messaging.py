@@ -1,15 +1,31 @@
 from server.database import db
 from sqlalchemy import func
-from datetime import datetime
 from core.events import WalkoffEvent
 import json
 import logging
+from enum import Enum, unique
 
 logger = logging.getLogger(__name__)
 
 user_messages_association = db.Table('user_messages',
                                   db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
                                   db.Column('message_id', db.Integer, db.ForeignKey('message.id')))
+
+
+@unique
+class MessageActions(Enum):
+    read = 1
+    unread = 2
+    delete = 3
+    act = 4
+
+    @classmethod
+    def get_all_action_names(cls):
+        return [action.name for action in cls]
+
+    @classmethod
+    def convert_string(cls, name):
+        return next((action for action in cls if action.name == name), None)
 
 
 class Message(db.Model):
@@ -22,36 +38,99 @@ class Message(db.Model):
                             backref=db.backref('messages', lazy='dynamic'))
     workflow_execution_uid = db.Column(db.String(25))
     requires_reauth = db.Column(db.Boolean, default=False)
-    is_read = db.Column(db.Boolean, default=False)
+    requires_action = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=func.current_timestamp())
-    read_at = db.Column(db.DateTime)
+    history = db.relationship('MessageHistory', backref='message', lazy=True)
 
-    def __init__(self, subject, body, workflow_execution_uid, users, requires_reauth=False):
+    def __init__(self, subject, body, workflow_execution_uid, users, requires_reauth=False, requires_action=False):
         self.subject = subject
         self.body = body
         self.workflow_execution_uid = workflow_execution_uid
         self.users = users
         self.requires_reauth = requires_reauth
+        self.requires_action = requires_action
 
-    def read(self):
-        self.is_read = True
-        self.read_at = datetime.utcnow()
+    def record_user_action(self, user, action):
+        if user in self.users:
+            if ((action == MessageActions.unread and not self.user_has_read(user))
+                    or (action == MessageActions.act and (not self.requires_action or self.is_acted_on()[0]))):
+                return
+            elif action == MessageActions.delete:
+                self.users.remove(user)
+            self.history.append(MessageHistory(user, action))
 
-    def unread(self):
-        self.is_read = False
-        self.read_at = None
+    def user_has_read(self, user):
+        user_history = [history_entry for history_entry in self.history if history_entry.user_id == user.id]
+        for history_entry in user_history[::-1]:
+            if history_entry.action in (MessageActions.read, MessageActions.unread):
+                if history_entry.action == MessageActions.unread:
+                    return False
+                if history_entry.action == MessageActions.read:
+                    return True
+        else:
+            return False
 
-    def as_json(self):
+    def user_last_read_at(self, user):
+        user_history = [history_entry for history_entry in self.history if history_entry.user_id == user.id]
+        for history_entry in user_history[::-1]:
+            if history_entry.action == MessageActions.read:
+                return history_entry.timestamp
+        else:
+            return None
+
+    def get_read_by(self):
+        return {entry.username for entry in self.history if entry.action == MessageActions.read}
+
+    def is_acted_on(self):
+        if not self.requires_action:
+            return False, None, None
+        for history_entry in self.history[::-1]:
+            if history_entry.action == MessageActions.act:
+                return True, history_entry.timestamp, history_entry.username
+        else:
+            return False, None, None
+
+    def as_json(self, with_read_by=True, user=None):
+        is_acted_on, acted_on_timestamp, acted_on_by = self.is_acted_on()
         ret = {'id': self.id,
                'subject': self.subject,
                'body': json.loads(self.body),
                'workflow_execution_uid': self.workflow_execution_uid,
                'requires_reauthorization': self.requires_reauth,
-               'is_read': self.is_read,
-               'created_at': str(self.created_at)}
-        if self.is_read:
-            ret['read_at'] = str(self.read_at)
+               'requires_action': self.requires_action,
+               'created_at': str(self.created_at),
+               'awaiting_action': self.requires_action and not is_acted_on}
+        if is_acted_on:
+            ret['acted_on_at'] = str(acted_on_timestamp)
+            ret['acted_on_by'] = acted_on_by
+        if with_read_by:
+            ret['read_by'] = list(self.get_read_by())
+        if user:
+            ret['is_read'] = self.user_has_read(user)
+            ret['last_read_at'] = str(self.user_last_read_at(user))
         return ret
+
+
+class MessageHistory(db.Model):
+    __tablename__ = 'message_history'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    action = db.Column(db.Enum(MessageActions))
+    timestamp = db.Column(db.DateTime, default=func.current_timestamp())
+    user_id = db.Column(db.Integer)
+    username = db.Column(db.String)
+    message_id = db.Column(db.Integer, db.ForeignKey('message.id'))
+
+    def __init__(self, user, action):
+        self.action = action
+        self.user_id = user.id
+        self.username = user.username
+
+    def as_json(self):
+        return {'action': self.action.name,
+                'user_id': self.user_id,
+                'username': self.username,
+                'id': self.id,
+                'timestamp': str(self.timestamp)}
 
 
 class WorkflowAuthorization(object):
@@ -98,11 +177,11 @@ workflow_authorization_cache = WorkflowAuthorizationCache()
 def save_message_callback(sender, **message_data):
     message_data = message_data['data']
     body = message_data['body']
-    is_caching_required = strip_requires_auth_from_message_body(body)
-    if is_caching_required:
+    requires_action = strip_requires_auth_from_message_body(body)
+    if requires_action:
         workflow_authorization_cache.add_authorized_users(
             sender['workflow_execution_uid'], users=message_data['users'], roles=message_data['roles'])
-    save_message(body, message_data, sender['workflow_execution_uid'])
+    save_message(body, message_data, sender['workflow_execution_uid'], requires_action)
 
 
 def strip_requires_auth_from_message_body(body):
@@ -112,12 +191,13 @@ def strip_requires_auth_from_message_body(body):
     return is_caching_required
 
 
-def save_message(body, message_data, workflow_execution_uid):
+def save_message(body, message_data, workflow_execution_uid, requires_action):
     users = get_all_matching_users_for_message(message_data['users'], message_data['roles'])
     if users:
         subject = message_data.get('subject', '')
         message_entry = Message(
-            subject, json.dumps(body), workflow_execution_uid, users, requires_reauth=message_data['requires_reauth'])
+            subject, json.dumps(body), workflow_execution_uid, users, requires_reauth=message_data['requires_reauth'],
+            requires_action=requires_action)
         db.session.add(message_entry)
         db.session.commit()
     else:

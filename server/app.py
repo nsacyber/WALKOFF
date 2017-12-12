@@ -99,7 +99,6 @@ def create_app():
 
 
 # Template Loader
-env = Environment(loader=FileSystemLoader("interfaces"))
 app = create_app()
 
 

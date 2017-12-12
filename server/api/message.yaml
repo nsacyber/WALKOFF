@@ -1,0 +1,58 @@
+/api/messages:
+  get:
+    tags:
+      - Messages
+    summary: Gets a user's messages
+    description: Gets all the messages for a given user. User is given by JWT
+    operationId: server.endpoints.messages.get_all_messages
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: array
+          description: A list of messages
+          items:
+            $ref: '#/definitions/Message'
+/api/messages/{action}:
+  parameters:
+    - name: action
+      in: path
+      description: The action to take on multiple messages
+      required: true
+      type: string
+      enum: [read, unread, delete, act]
+  get:
+    tags:
+      - Messages
+    summary: Acts on a user's messages
+    operationId: server.endpoints.messages.act_on_messages
+    produces:
+      - application/json
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: The Message IDs to act on
+        required: true
+        schema:
+          type: object
+          required: [ids]
+          properties:
+            ids:
+              type: array
+              items:
+                type: integer
+                minimum: 1
+    responses:
+      200:
+        description: Success
+        schema:
+          type: string
+          enum: [Success]
+      461:
+        description: Action is invalid or User doesn't exist
+        schema:
+          $ref: "#/definitions/Error"
