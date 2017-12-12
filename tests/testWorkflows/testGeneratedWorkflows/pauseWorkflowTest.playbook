@@ -1,0 +1,72 @@
+{
+    "name": "pauseWorkflowTest",
+    "uid": "fdbc5a8b-fa51-482b-98e0-63c273c0ac0e",
+    "walkoff_version": "0.5.0",
+    "workflows": [
+        {
+            "actions": [
+                {
+                    "action_name": "helloWorld",
+                    "app_name": "HelloWorldBounded",
+                    "arguments": [],
+                    "device_id": 1,
+                    "name": "start",
+                    "position": {},
+                    "triggers": [],
+                    "uid": "e2131c32efe44a83913396a0fbb9f34d"
+                },
+                {
+                    "action_name": "pause",
+                    "app_name": "HelloWorldBounded",
+                    "arguments": [
+                        {
+                            "name": "seconds",
+                            "value": 1.0
+                        }
+                    ],
+                    "device_id": 1,
+                    "name": "1",
+                    "position": {},
+                    "triggers": [],
+                    "uid": "6c52b6a75406452a9d85967d80d71bf8"
+                },
+                {
+                    "action_name": "pause",
+                    "app_name": "HelloWorldBounded",
+                    "arguments": [
+                        {
+                            "name": "seconds",
+                            "value": 1.0
+                        }
+                    ],
+                    "device_id": 1,
+                    "name": "2",
+                    "position": {},
+                    "triggers": [],
+                    "uid": "b7725c22c881484ebe2901027f1acd7f"
+                }
+            ],
+            "branches": [
+                {
+                    "conditions": [],
+                    "destination_uid": "6c52b6a75406452a9d85967d80d71bf8",
+                    "priority": 999,
+                    "source_uid": "e2131c32efe44a83913396a0fbb9f34d",
+                    "status": "Success",
+                    "uid": "ac08f9b8fee2430595ce94af71e17a6f"
+                },
+                {
+                    "conditions": [],
+                    "destination_uid": "b7725c22c881484ebe2901027f1acd7f",
+                    "priority": 999,
+                    "source_uid": "6c52b6a75406452a9d85967d80d71bf8",
+                    "status": "Success",
+                    "uid": "a124b4b7648d48aa9ebc5113a5ec7d47"
+                }
+            ],
+            "name": "pauseWorkflow",
+            "start": "e2131c32efe44a83913396a0fbb9f34d",
+            "uid": "f160b324ab6e422b82e0aae54cc34f08"
+        }
+    ]
+}

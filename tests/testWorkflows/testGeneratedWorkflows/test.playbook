@@ -1,6 +1,7 @@
 {
     "name": "test",
     "uid": "67b149ea1d3c4aaaab2550f95f3bb409",
+    "walkoff_version": "0.5.0",
     "workflows": [
         {
             "actions": [
