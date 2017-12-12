@@ -8,7 +8,8 @@ from flask_jwt_extended.jwt_manager import JWTManager
 from flask_jwt_extended.tokens import decode_jwt
 from flask_jwt_extended.view_decorators import _load_user
 
-from server.database import User, Role, Resource, Permission
+from server.database import User
+from server.returncodes import FORBIDDEN
 
 try:
     from flask import _app_ctx_stack as ctx_stack
@@ -49,10 +50,10 @@ def _roles_decorator(roles, all_required=False):
     def wrapper(fn):
         @wraps(fn)
         def decorated_view(*args, **kwargs):
-            if _user_has_correct_roles(roles, all_required=all_required):
+            if user_has_correct_roles(roles, all_required=all_required):
                 return fn(*args, **kwargs)
             else:
-                return "Unauthorized View", 403
+                return "Unauthorized View", FORBIDDEN
 
         return decorated_view
 
@@ -75,22 +76,24 @@ def _permissions_decorator(resource_permissions, all_required=False):
     def wrapper(fn):
         @wraps(fn)
         def decorated_view(*args, **kwargs):
-            if _user_has_correct_roles(_roles_accepted, all_required=all_required):
+            if user_has_correct_roles(_roles_accepted, all_required=all_required):
                 return fn(*args, **kwargs)
-            return "Unauthorized View", 403
+            return "Unauthorized View", FORBIDDEN
 
         return decorated_view
 
     return wrapper
 
 
-def _user_has_correct_roles(accepted_roles, all_required=False):
-    user_id = get_jwt_identity()
+def user_has_correct_roles(accepted_roles, all_required=False, user_id=None):
+    if not accepted_roles:
+        return False
+    user_id = get_jwt_identity() if user_id is None else user_id
     user = server.database.User.query.filter(User.id == user_id).first()
     if user is not None:
         user_roles = {role.name for role in user.roles}
         if all_required:
-            return not accepted_roles & user_roles
+            return not accepted_roles - user_roles
         else:
             return any(role in accepted_roles for role in user_roles)
     return False
