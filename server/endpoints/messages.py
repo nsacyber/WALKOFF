@@ -7,7 +7,7 @@
 #     from server.context import running_context
 #
 #     @jwt_required
-#     @roles_accepted_for_resources(ResourcePermissions('messages', ['read']))
+#     @permissions_accepted_for_resources(ResourcePermissions('messages', ['read']))
 #     def __func():
 #         return [user.as_json() for user in running_context.User.query.all()], SUCCESS
 #

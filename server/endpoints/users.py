@@ -2,14 +2,14 @@ from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt_claims
 
 from server.returncodes import *
-from server.security import roles_accepted_for_resources, ResourcePermissions
+from server.security import permissions_accepted_for_resources, ResourcePermissions
 
 
 def read_all_users():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('users', ['read']))
+    @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
     def __func():
         return [user.as_json() for user in running_context.User.query.all()], SUCCESS
 
@@ -21,7 +21,7 @@ def create_user():
     from server.database import add_user
 
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('users', ['create']))
+    @permissions_accepted_for_resources(ResourcePermissions('users', ['create']))
     def __func():
         data = request.get_json()
         username = data['username']
@@ -44,7 +44,7 @@ def read_user(user_id):
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('users', ['read']))
+    @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
     def __func():
         user = running_context.User.query.filter_by(id=user_id).first()
         if user:
@@ -60,7 +60,7 @@ def update_user():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('users', ['update']))
+    @permissions_accepted_for_resources(ResourcePermissions('users', ['update']))
     def __func():
         data = request.get_json()
         user = running_context.User.query.filter_by(id=data['id']).first()
@@ -103,7 +103,7 @@ def delete_user(user_id):
     from server.flaskserver import running_context
 
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('users', ['delete']))
+    @permissions_accepted_for_resources(ResourcePermissions('users', ['delete']))
     def __func():
         user = running_context.User.query.filter_by(id=user_id).first()
         if user:

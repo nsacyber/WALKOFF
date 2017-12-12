@@ -3,12 +3,12 @@ from flask_jwt_extended import jwt_required
 
 import core.case.database as case_database
 from server.returncodes import *
-from server.security import roles_accepted_for_resources, ResourcePermissions
+from server.security import permissions_accepted_for_resources, ResourcePermissions
 
 
 def update_event_note():
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('cases', ['update']))
+    @permissions_accepted_for_resources(ResourcePermissions('cases', ['update']))
     def __func():
         data = request.get_json()
         valid_event_id = case_database.case_db.session.query(case_database.Event) \
@@ -24,7 +24,7 @@ def update_event_note():
 
 def read_event(event_id):
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('cases', ['read']))
+    @permissions_accepted_for_resources(ResourcePermissions('cases', ['read']))
     def __func():
         valid_event_id = case_database.case_db.session.query(case_database.Event) \
             .filter(case_database.Event.id == event_id).all()

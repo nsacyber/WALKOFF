@@ -50,8 +50,7 @@ class TestAuthorization(unittest.TestCase):
         key = json.loads(response.get_data(as_text=True))
         token = decode_token(key['access_token'])
         self.assertEqual(token['type'], 'access')
-        self.assertEqual(token['identity'], 'admin')
-        self.assertListEqual(token['user_claims']['roles'], ['admin'])
+        self.assertEqual(token['identity'], 1)
         self.assertTrue(token['fresh'])
 
     def test_login_authorization_has_valid_refresh_token(self):
@@ -60,7 +59,7 @@ class TestAuthorization(unittest.TestCase):
         key = json.loads(response.get_data(as_text=True))
         token = decode_token(key['refresh_token'])
         self.assertEqual(token['type'], 'refresh')
-        self.assertEqual(token['identity'], 'admin')
+        self.assertEqual(token['identity'], 1)
 
     def test_login_updates_user(self):
         user = add_user(username='testlogin', password='test')
@@ -98,8 +97,7 @@ class TestAuthorization(unittest.TestCase):
         self.assertSetEqual(set(key.keys()), {'access_token'})
         token = decode_token(key['access_token'])
         self.assertEqual(token['type'], 'access')
-        self.assertEqual(token['identity'], 'admin')
-        self.assertListEqual(token['user_claims']['roles'], ['admin'])
+        self.assertEqual(token['identity'], 1)
         self.assertFalse(token['fresh'])
 
     def test_refresh_invalid_user_blacklists_token(self):

@@ -3,14 +3,14 @@ from flask_jwt_extended import jwt_required
 
 from server.database import clear_resources_for_role, get_all_available_resource_actions
 from server.returncodes import *
-from server.security import roles_accepted, roles_accepted_for_resources, ResourcePermissions
+from server.security import roles_accepted, permissions_accepted_for_resources, ResourcePermissions
 
 
 def read_all_roles():
     from server.context import running_context
 
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('roles', ['read']))
+    @permissions_accepted_for_resources(ResourcePermissions('roles', ['read']))
     def __func():
         return [role.as_json() for role in running_context.Role.query.all()], SUCCESS
 
@@ -109,7 +109,7 @@ def delete_role(role_id):
 def read_available_resource_actions():
 
     @jwt_required
-    @roles_accepted_for_resources(ResourcePermissions('roles', ['read']))
+    @permissions_accepted_for_resources(ResourcePermissions('roles', ['read']))
     def __func():
         return get_all_available_resource_actions(), SUCCESS
 

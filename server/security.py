@@ -1,7 +1,7 @@
 from functools import wraps
 
 from flask import request
-from flask_jwt_extended import get_jwt_claims
+from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended.config import config
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_jwt_extended.jwt_manager import JWTManager
@@ -30,25 +30,26 @@ def is_token_blacklisted(decoded_token):
     return is_token_revoked(decoded_token)
 
 
-@jwt.user_claims_loader
-def add_claims_to_access_token(username):
-    user = User.query.filter_by(username=username).first()
-    return {'roles': [role.name for role in user.roles]} if user is not None else {}
-
-
 @jwt.revoked_token_loader
 def token_is_revoked_loader():
     return json.dumps({'error': 'Token is revoked'}), UNAUTHORIZED_ERROR
 
 
 def roles_accepted(*roles):
-    _roles = set(roles)
+    return _roles_decorator(roles, all_required=False)
+
+
+def roles_required(*roles):
+    return _roles_decorator(roles, all_required=True)
+
+
+def _roles_decorator(roles, all_required=False):
+    roles = set(roles)
 
     def wrapper(fn):
         @wraps(fn)
         def decorated_view(*args, **kwargs):
-            claims = get_jwt_claims()
-            if 'roles' in claims and (_roles & set(claims['roles'])):
+            if _user_has_correct_roles(roles, all_required=all_required):
                 return fn(*args, **kwargs)
             else:
                 return "Unauthorized View", 403
@@ -58,27 +59,41 @@ def roles_accepted(*roles):
     return wrapper
 
 
-def roles_accepted_for_resources(*resource_permissions):
+def permissions_accepted_for_resources(*resource_permissions):
+    return _permissions_decorator(resource_permissions, all_required=False)
+
+
+def permissions_required_for_resources(*resource_permissions):
+    return _permissions_decorator(resource_permissions, all_required=True)
+
+
+def _permissions_decorator(resource_permissions, all_required=False):
     _roles_accepted = set()
     for resource_permission in resource_permissions:
-        try:
-            _roles_accepted |= server.database.get_roles_by_resource_permissions(resource_permission)
-        except KeyError:
-            # logger.error('Unknown resource {}'.format(resource))
-            pass
+        _roles_accepted |= server.database.get_roles_by_resource_permissions(resource_permission)
 
     def wrapper(fn):
         @wraps(fn)
         def decorated_view(*args, **kwargs):
-            claims = get_jwt_claims()
-            if 'roles' in claims and (_roles_accepted & set(claims['roles'])):
+            if _user_has_correct_roles(_roles_accepted, all_required=all_required):
                 return fn(*args, **kwargs)
-            else:
-                return "Unauthorized View", 403
+            return "Unauthorized View", 403
 
         return decorated_view
 
     return wrapper
+
+
+def _user_has_correct_roles(accepted_roles, all_required=False):
+    user_id = get_jwt_identity()
+    user = server.database.User.query.filter(User.id == user_id).first()
+    if user is not None:
+        user_roles = {role.name for role in user.roles}
+        if all_required:
+            return not accepted_roles & user_roles
+        else:
+            return any(role in accepted_roles for role in user_roles)
+    return False
 
 
 @jwt.expired_token_loader
