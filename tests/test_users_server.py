@@ -20,6 +20,14 @@ class TestUserServer(ServerTestCase):
         self.assertIsNotNone(user)
         self.assertEqual(response, user.as_json())
 
+    def setup_guest_user(self):
+        user = add_user('guest', 'guest')
+        role = Role('guest', resources=[{'name': 'users', 'permissions': ['read']}])
+        db.session.add(user)
+        user.roles.append(role)
+        db.session.commit()
+        return user
+
     def test_read_users(self):
         user = User('username', 'asdfghjkl;')
         db.session.add(user)
@@ -33,7 +41,7 @@ class TestUserServer(ServerTestCase):
                                               data=json.dumps(data), status_code=OBJECT_CREATED)
         self.assertUserCreatedResponse('test_user', response)
 
-    def test_create_user_username_alrady_exists(self):
+    def test_create_user_username_already_exists(self):
         user = User('username', 'asdfghjkl;')
         db.session.add(user)
         db.session.commit()
@@ -41,6 +49,7 @@ class TestUserServer(ServerTestCase):
         self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
                                    data=json.dumps(data), status_code=OBJECT_EXISTS_ERROR)
 
+    # TODO: Fix.
     # def test_create_user_with_roles(self):
     #     role = Role('role1')
     #     db.session.add(role)
@@ -80,6 +89,7 @@ class TestUserServer(ServerTestCase):
                                     data=json.dumps(data), status_code=BAD_REQUEST)
         self.assertTrue(user.verify_password('asdfghjkl;'))
 
+    # TODO: Fix.
     # def test_update_user_with_roles(self):
     #     role = Role('role1')
     #     db.session.add(role)
@@ -151,14 +161,6 @@ class TestUserServer(ServerTestCase):
         self.assertTrue(user.verify_password('whisperDieselEngine'))
         self.assertEqual(user.username, 'username')
 
-    def setup_guest_user(self):
-        user = add_user('guest', 'guest')
-        role = Role('guest', resources=[{'name': 'users', 'permissions': ['create', 'read', 'update', 'delete']}])
-        db.session.add(user)
-        user.roles.append(role)
-        db.session.commit()
-        return user
-
     def test_update_active_with_guest_user(self):
         user = self.setup_guest_user()
         response = self.app.post('/api/auth', content_type="application/json",
@@ -188,7 +190,7 @@ class TestUserServer(ServerTestCase):
         admin = User.query.filter_by(username='admin').first()
         data = {'id': admin.id, 'username': 'somethingelse'}
         self.post_with_status_check('/api/users', headers=headers, content_type='application/json',
-                                    data=json.dumps(data), status_code=UNAUTHORIZED_ERROR)
+                                    data=json.dumps(data), status_code=FORBIDDEN_ERROR)
 
     def test_update_user_invalid_id(self):
         data = {'id': 404, 'username': 'new_name'}
@@ -212,4 +214,4 @@ class TestUserServer(ServerTestCase):
         key = json.loads(response.get_data(as_text=True))
         access_token = key['access_token']
         headers = {'Authorization': 'Bearer {}'.format(access_token)}
-        self.delete_with_status_check('/api/users/{}'.format(user.id), headers=headers, status_code=UNAUTHORIZED_ERROR)
+        self.delete_with_status_check('/api/users/{}'.format(user.id), headers=headers, status_code=FORBIDDEN_ERROR)

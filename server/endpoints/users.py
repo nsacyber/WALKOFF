@@ -2,7 +2,7 @@ from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt_claims
 
 from server.returncodes import *
-from server.security import permissions_accepted_for_resources, ResourcePermissions
+from server.security import permissions_accepted_for_resources, ResourcePermissions, user_has_correct_roles
 
 
 def read_all_users():
@@ -60,43 +60,57 @@ def update_user():
     from server.context import running_context
 
     @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('users', ['update']))
     def __func():
         data = request.get_json()
         user = running_context.User.query.filter_by(id=data['id']).first()
         current_user = get_jwt_identity()
-        is_admin = 'admin' in get_jwt_claims()['roles']
         if user is not None:
-            if user.username == current_user or is_admin:
-                original_username = str(user.username)
-                if 'username' in data and data['username']:
-                    user_db = running_context.User.query.filter_by(username=data['username']).first()
-                    if user_db is None or user_db.id == user.id:
-                        user.username = data['username']
-                    else:
-                        return {"error": "Username is taken"}, BAD_REQUEST
-                if 'old_password' in data and 'password' in data:
-                    if user.verify_password(data['old_password']):
-                        user.password = data['password']
-                    else:
-                        user.username = original_username
-                        return {"error": "User's current password was entered incorrectly."}, BAD_REQUEST
-                # if 'roles' in data:
-                #     user.set_roles(data['roles'])
-                if is_admin and 'active' in data:
-                    user.active = data['active']
-                running_context.db.session.commit()
-                current_app.logger.info('Updated user {0}. Updated to: {1}'.format(user.id, user.as_json()))
-                return user.as_json(), SUCCESS
+            if user.id == current_user:
+                return update_user_fields(data, user)
             else:
-                current_app.logger.error('User {0} does not have permission to '
-                                         'update user {1}'.format(current_user, user.id))
-                return {"error": 'Insufficient Permissions'}, UNAUTHORIZED_ERROR
+                message, return_code = role_update_user_fields(data, user)
+                if return_code == FORBIDDEN_ERROR:
+                    current_app.logger.error('User {0} does not have permission to '
+                                             'update user {1}'.format(current_user, user.id))
+                    return {"error": 'Insufficient Permissions'}, FORBIDDEN_ERROR
+                else:
+                    return message, return_code
         else:
             current_app.logger.error('Could not edit user {0}. User does not exist.'.format(data['id']))
             return {"error": 'User {0} does not exist.'.format(data['id'])}, OBJECT_DNE_ERROR
 
     return __func()
+
+
+@permissions_accepted_for_resources(ResourcePermissions('users', ['update']))
+def role_update_user_fields(data, user):
+    if user_has_correct_roles({'admin'}):
+        if 'active' in data:
+            user.active = data['active']
+        if 'roles' in data:
+            user.set_roles(data['roles'])
+    return update_user_fields(data, user)
+
+
+def update_user_fields(data, user):
+    from server.context import running_context
+
+    original_username = str(user.username)
+    if 'username' in data and data['username']:
+        user_db = running_context.User.query.filter_by(username=data['username']).first()
+        if user_db is None or user_db.id == user.id:
+            user.username = data['username']
+        else:
+            return {"error": "Username is taken"}, BAD_REQUEST
+    if 'old_password' in data and 'password' in data:
+        if user.verify_password(data['old_password']):
+            user.password = data['password']
+        else:
+            user.username = original_username
+            return {"error": "User's current password was entered incorrectly."}, BAD_REQUEST
+    running_context.db.session.commit()
+    current_app.logger.info('Updated user {0}. Updated to: {1}'.format(user.id, user.as_json()))
+    return user.as_json(), SUCCESS
 
 
 def delete_user(user_id):
@@ -107,14 +121,14 @@ def delete_user(user_id):
     def __func():
         user = running_context.User.query.filter_by(id=user_id).first()
         if user:
-            if user.username != get_jwt_identity():
+            if user.id != get_jwt_identity():
                 running_context.db.session.delete(user)
                 running_context.db.session.commit()
                 current_app.logger.info('User {0} deleted'.format(user.username))
                 return {}, SUCCESS
             else:
                 current_app.logger.error('Could not delete user {0}. User is current user.'.format(user.id))
-                return {"error": 'User {0} is current user.'.format(user.username)}, UNAUTHORIZED_ERROR
+                return {"error": 'User {0} is current user.'.format(user.username)}, FORBIDDEN_ERROR
         else:
             current_app.logger.error('Could not delete user {0}. User does not exist.'.format(user_id))
             return {"error": 'User with id {0} does not exist.'.format(user_id)}, OBJECT_DNE_ERROR
