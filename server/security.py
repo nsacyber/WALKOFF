@@ -9,7 +9,7 @@ from flask_jwt_extended.tokens import decode_jwt
 from flask_jwt_extended.view_decorators import _load_user
 
 from server.database import User
-from server.returncodes import FORBIDDEN
+from server.returncodes import FORBIDDEN_ERROR
 
 try:
     from flask import _app_ctx_stack as ctx_stack
@@ -53,7 +53,7 @@ def _roles_decorator(roles, all_required=False):
             if user_has_correct_roles(roles, all_required=all_required):
                 return fn(*args, **kwargs)
             else:
-                return "Unauthorized View", FORBIDDEN
+                return "Unauthorized View", FORBIDDEN_ERROR
 
         return decorated_view
 
@@ -79,7 +79,7 @@ def _permissions_decorator(resource_permissions, all_required=False):
 
             if user_has_correct_roles(_roles_accepted, all_required=all_required):
                 return fn(*args, **kwargs)
-            return "Unauthorized View", FORBIDDEN
+            return "Unauthorized View", FORBIDDEN_ERROR
 
         return decorated_view
 
