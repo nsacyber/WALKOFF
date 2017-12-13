@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
@@ -18,6 +18,7 @@ import { GenericObject } from '../models/genericObject';
 	styleUrls: [
 		'client/settings/settings.css',
 	],
+	encapsulation: ViewEncapsulation.None,
 	providers: [SettingsService],
 })
 export class SettingsRolesComponent {
@@ -100,8 +101,6 @@ export class SettingsRolesComponent {
 	}
 
 	getFriendlyPermissions(role: Role): string {
-		return 'test';
-
 		const obj = role.resources.reduce((accumulator: GenericObject, resource) => {
 			let key = resource.name;
 			if (resource.app_name) { key += ` - ${resource.app_name}`; }
@@ -111,7 +110,7 @@ export class SettingsRolesComponent {
 		}, {});
 
 		let out = JSON.stringify(obj, null, 1);
-		out = out.replace(/[\{\[\}\]"]/g, '').trim();
+		out = out.replace(/[\{\}"]/g, '').trim();
 		return out;
 	}
 

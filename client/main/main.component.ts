@@ -22,9 +22,6 @@ export class MainComponent {
 			.then(interfaceNames => this.interfaceNames = interfaceNames);
 
 		this.updateUserInfo();
-
-		//TODO: remove once we fully convert playbook / triggers to angular
-		(window as any).JwtHelper = this.jwtHelper;
 	}
 
 	updateUserInfo(): void {

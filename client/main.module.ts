@@ -18,7 +18,7 @@ import { MainComponent } from './main/main.component';
 import { SchedulerComponent } from './scheduler/scheduler.component';
 import { PlaybookComponent } from './playbook/playbook.component';
 import { DevicesComponent } from './devices/devices.component';
-// import { TriggersComponent } from './triggers/triggers.component';
+import { MessagesComponent } from './messages/messages.component';
 import { CasesComponent } from './cases/cases.component';
 import { SettingsComponent } from './settings/settings.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
@@ -34,6 +34,7 @@ import { PlaybookArgumentComponent } from './playbook/playbook.argument.componen
 import { PlaybookConditionsComponent } from './playbook/playbook.conditions.component';
 import { PlaybookTransformsComponent } from './playbook/playbook.transforms.component';
 import { SettingsRolesComponent } from './settings/settings.roles.component';
+import { MessagesModalComponent } from './messages/messages.modal.component';
 
 import { KeysPipe } from './pipes/keys.pipe';
 
@@ -59,7 +60,7 @@ import { KeysPipe } from './pipes/keys.pipe';
 		DashboardComponent,
 		SchedulerComponent,
 		DevicesComponent,
-		// TriggersComponent,
+		MessagesComponent,
 		CasesComponent,
 		SettingsComponent,
 		InterfacesComponent,
@@ -69,6 +70,7 @@ import { KeysPipe } from './pipes/keys.pipe';
 		CasesModalComponent,
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
+		MessagesModalComponent,
 		// Other subcomponents
 		PlaybookArgumentComponent,
 		PlaybookConditionsComponent,
@@ -88,6 +90,7 @@ import { KeysPipe } from './pipes/keys.pipe';
 		CasesModalComponent,
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
+		MessagesModalComponent,
 	],
 	bootstrap: [MainComponent],
 })

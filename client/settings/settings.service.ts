@@ -91,35 +91,31 @@ export class SettingsService {
 	}
 
 	getAvailableResourceActions(): Promise<AvailableResourceAction[]> {
-		const testData: AvailableResourceAction[] = [
-			{
-				name: 'workflow',
-				actions: [ 'create', 'read', 'update', 'delete', 'execute' ],
-				app_name: null,
-			},
-			{
-				name: 'device',
-				actions: [ 'create', 'read', 'update', 'delete', 'import', 'export' ],
-				app_name: null,
-			},
-			{
-				name: 'user',
-				actions: [ 'create', 'read', 'update', 'delete' ],
-				app_name: null,
-			},
-			{
-				name: 'case',
-				actions: [ 'create', 'read', 'update', 'delete' ],
-				app_name: null,
-			},
-			{
-				name: 'test',
-				actions: ['some', 'actions', 'go', 'here'],
-				app_name: 'Utilities',
-			},
-		];
+		// const testData: AvailableResourceAction[] = [
+		// 	{
+		// 		name: 'workflow',
+		// 		actions: [ 'create', 'read', 'update', 'delete', 'execute' ],
+		// 	},
+		// 	{
+		// 		name: 'device',
+		// 		actions: [ 'create', 'read', 'update', 'delete', 'import', 'export' ],
+		// 	},
+		// 	{
+		// 		name: 'user',
+		// 		actions: [ 'create', 'read', 'update', 'delete' ],
+		// 	},
+		// 	{
+		// 		name: 'case',
+		// 		actions: [ 'create', 'read', 'update', 'delete' ],
+		// 	},
+		// 	{
+		// 		name: 'test',
+		// 		actions: ['some', 'actions', 'go', 'here'],
+		// 		app_name: 'Utilities',
+		// 	},
+		// ];
 
-		return Promise.resolve(testData);
+		// return Promise.resolve(testData);
 		return this.authHttp.get('/api/availableresourceactions')
 			.toPromise()
 			.then(this.extractData)

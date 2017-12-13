@@ -57,6 +57,7 @@ export class SettingsRoleModalComponent {
 		this.workingRole.resources.forEach(resource => {
 			const matchingAvailableResourceAction = this.availableResourceActions
 				.find(a => a.name === resource.name && a.app_name === resource.app_name);
+
 			this.selectPermissionMapping[resource.resource_id] = matchingAvailableResourceAction.actions.map(action => {
 				return {
 					id: action,
@@ -94,6 +95,7 @@ export class SettingsRoleModalComponent {
 
 	removeResource(resource: Resource): void {
 		this.workingRole.resources.splice(this.workingRole.resources.indexOf(resource), 1);
+		delete this.selectPermissionMapping[resource.resource_id];
 	}
 
 	permissionSelectChange(event: any, resource: Resource) {
@@ -107,15 +109,17 @@ export class SettingsRoleModalComponent {
 			return;
 		}
 
+		const toSubmit: Role = _.cloneDeep(this.workingRole);
+		
 		// Remove temp Ids for new resources
-		this.workingRole.resources.forEach(resource => {
+		toSubmit.resources.forEach(resource => {
 			if (resource.resource_id < 0) { delete resource.resource_id; }
 		});
 
 		//If role has an ID, it already exists, call update
-		if (this.workingRole.id) {
+		if (toSubmit.id) {
 			this.settingsService
-				.editRole(this.workingRole)
+				.editRole(toSubmit)
 				.then(role => this.activeModal.close({
 					role,
 					isEdit: true,
@@ -123,7 +127,7 @@ export class SettingsRoleModalComponent {
 				.catch(e => this.toastyService.error(e.message));
 		} else {
 			this.settingsService
-				.addRole(this.workingRole)
+				.addRole(toSubmit)
 				.then(role => this.activeModal.close({
 					role,
 					isEdit: false,
