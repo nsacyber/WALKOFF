@@ -10,151 +10,47 @@
             <li>Refreshs the access token.</li>
             <li>Lists the available workflows.</li>
             <li>If the playbook "Tutorials" has a workflow "Triggers", executes it.</li>
-            <li>Using the resulting <code>execution_uid</code>, provides data to any triggers waiting in that workflow.</li>
+            <li>Using the resulting <code>execution_uid</code>, provides data to any triggers waiting in that workflow.
+            <li>Checks the results of the workflow.</li>
             <li>Logs out.</li>
         </ol>
         <p>This part will detail step 4.</p>
-        <h4><b>1. Create a main function</b></h4>
-        <p>We'll use<code> argparse </code>to take in our arguments, then run each step as detailed above.</p>
+        <h4><b>1. Check if the workflow exists</b></h4>
+        <p>We'll query the <code>/api/playbooks/{playbook_name}/workflows/{workflow_name}</code> endpoint to see if our desired workflow exists.</p>
         <pre><code class="python">
-import argparse
-import requests
-import getpass
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-a", "--address", type=str,
-                        default="https://127.0.0.1:5000")
-    parser.add_argument("-u", "--username", type=str,
-                        default="admin")
-    args = parser.parse_args()
-
-    i = APITutorial(args.address, args.username)
-    i.authenticate()
-    i.refresh()
-    i.logout()
-
-
-if __name__ == "__main__":
-    main()
-        </code></pre>
-        <h4><b>1. Create a class for storing state</b></h4>
-        <p>To start, we will create a class definition to store our session state.</p>
-        <pre><code class="python">
-class APITutorial:
-    def __init__(self, address, username):
-        self.address = address
-        self.username = username
-        self.refresh_token = None
-        self.auth_header = None
-        self.is_connected = False
-        </code></pre>
-        <h4><b>2. Authenticate with the WALKOFF instance</b></h4>
-        <p>To begin, we will need to authenticate ourselves with the WALKOFF instance at <code>/api/auth</code> using a valid username and password. We will prompt for a password in console.</p>
-        <pre><code class="python">
-def prompt_pass(self):
-    return getpass.getpass(
-        prompt="Enter password for WALKOFF user {}@{}: ".format(
-            self.username, self.address))
-
-def authenticate(self):
-    print("Authenticating...")
-    r = requests.post(self.address + "/api/auth",
-                      json=dict(username=self.username,
-                                password=self.prompt_pass()),
-                      timeout=2)
-
-    if r.status_code == 201:
-        r = r.json()
-        self.refresh_token = r['refresh_token']
-        self.auth_header = {'Authorization': 'Bearer {}'.format(
-            r['access_token'])}
-        self.is_connected = True
-        print("Authenticated.")
-
-    elif r.status_code == 401:
-        print("Authentication Error.")
-
-    elif r.status_code == 404:
-        print("WALKOFF instance not found.")
-
-    else:
-        print("Unknown response: {}: {}".format(
-            r.status_code, r.json()))
-
-    return self.is_connected
-        </code></pre>
-        <p>The <code>/api/auth</code> endpoint takes a username/password object and returns an access token and refresh token. The refresh token is used to obtain new access tokens, and access tokens are used to verify whether a user is authorized to access a resource.</p>
-        <h4><b>3. Refreshing Access Tokens</b></h4>
-        <p>It is best practice to obtain a new access token before performing an action to ensure that it will be authorized. To do so, we will use the <code>/api/auth/refresh</code> endpoint.</p>
-        <pre><code class="python">
-def refresh(self):
-    refreshed = False
+def check_workflow_exists(self, playbook_name, workflow_name):
+    exists = False
     if self.is_connected:
-        print("Refreshing access token..."),
-        refresh_header = {'Authorization': 'Bearer {}'.format(
-            self.refresh_token)}
+        print("Querying workflow..."),
+        ep = "/api/playbooks/{}/workflows/{}".format(
+            playbook_name, workflow_name)
 
-        r = requests.post(self.address + "/api/auth/refresh",
-                          headers=refresh_header,
-                          timeout=2)
-
-        if r.status_code == 201:
-            r = r.json()
-            self.auth_header = {'Authorization': 'Bearer {}'.format(
-                r['access_token'])}
-
-            print("Access token refreshed.")
-            refreshed = True
-
-        elif r.status_code == 401:
-            print("Authentication Error.")
-
-        elif r.status_code == 404:
-            print("WALKOFF instance not found.")
-
-        else:
-            print("Unknown response: {}: {}".format(
-                r.status_code, r.json()))
-
-    return refreshed
-        </code></pre>
-        <p>The <code>/api/auth/refresh</code> endpoint requires that the authorization header is set with the refresh token, and returns a new access token.</p>
-        <h4><b>4. Log out.</b></h4>
-        <p>At the end of the session, we will use the <code>/api/auth/logout</code> endpoint to log out of the WALKOFF instance.</p>
-            <pre><code class="python">
-def logout(self):
-    logged_out = False
-    if self.is_connected:
-        print("Logging out..."),
-        r = requests.post(self.address + "/api/auth/logout",
-                          headers=self.auth_header,
-                          json=dict(refresh_token=self.refresh_token),
-                          timeout=2)
+        r = requests.get(self.address + ep,
+                         headers=self.auth_header,
+                         timeout=2)
 
         if r.status_code == 200:
-            self.is_connected = False
-            print("Logged out.")
-            logged_out = True
+            exists = True
+            print("{}:{} exists".format(
+                playbook_name, workflow_name))
 
-        elif r.status_code == 400:
-            print("Bad or missing refresh token.")
+        elif r.status_code == 461:
+            print("Playbook or workflow does not exist.")
 
         else:
             print("Unknown response: {}: {}".format(
                 r.status_code, r.json()))
 
-    return logged_out
-            </code></pre>
-        <p>The <code>/api/auth/logout</code> endpoint requires that the authorization header is set with the refresh token.</p>
-        <p>This concludes the tutorial on the API's authentication functions. In the next tutorial, we will look at querying Playbooks.</p>
+    return exists
+        </code></pre>
+
+        <p>This concludes the tutorial on the API's query functions. Analogous functions can be written to retrieve information on metrics, cases, users, systems, apps, and more. In the next tutorial, we will look at executing, triggering, and checking workflow results.</p>
         <div align="center" style="border:1px solid blue">
-            <h5><a href="Working_with_API_Query.html">Next >></a></h5>
+            <h5><a href="Working_with_API_Trigger.html">Next >></a></h5>
         </div>
         <h4><b>More in this series:</b></h4>
         <ol>
-            <li><a href="Working_with_API_Query.html">Using the API to query a WALKOFF instance.</a></li>
+            <li><a href="Working_with_API_Auth.html">Using the API to authenticate with a WALKOFF instance.</a></li>
             <li><a href="Working_with_API_Trigger.html">Using the API to provide trigger data to a waiting action.</a></li>
       </ol>
     </div>

@@ -10,35 +10,11 @@
             <li>Refreshs the access token.</li>
             <li>Lists the available workflows.</li>
             <li>If the playbook "Tutorials" has a workflow "Triggers", executes it.</li>
-            <li>Using the resulting <code>execution_uid</code>, provides data to any triggers waiting in that workflow.</li>
+            <li>Using the resulting <code>execution_uid</code>, provides data to any triggers waiting in that workflow.
+            <li>Checks the results of the workflow.</li>
             <li>Logs out.</li>
         </ol>
-        <p>This part will detail steps 1, 2, 3, and 7.</p>
-        <h4><b>1. Create a main function</b></h4>
-        <p>We'll use<code> argparse </code>to take in our arguments, then run each step as detailed above.</p>
-        <pre><code class="python">
-import argparse
-import requests
-import getpass
-
-
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-a", "--address", type=str,
-                        default="https://127.0.0.1:5000")
-    parser.add_argument("-u", "--username", type=str,
-                        default="admin")
-    args = parser.parse_args()
-
-    i = APITutorial(args.address, args.username)
-    i.authenticate()
-    i.refresh()
-    i.logout()
-
-
-if __name__ == "__main__":
-    main()
-        </code></pre>
+        <p>This part will detail steps 1, 2, 3, and 8.</p>
         <h4><b>1. Create a class for storing state</b></h4>
         <p>To start, we will create a class definition to store our session state.</p>
         <pre><code class="python">
