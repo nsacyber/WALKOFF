@@ -2,20 +2,18 @@ from server.security import ResourcePermissions, permissions_accepted_for_resour
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from server.returncodes import *
 from flask import request
+from server.database import User
+from server.extensions import db
 
 
 def get_all_messages():
-    from server.context import running_context
 
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('messages', ['read']))
     def __func():
         user_id = get_jwt_identity()
-        user = running_context.User.query.filter(running_context.User.id == user_id).first()
-        if user is not None:
-            return [message.as_json(user=user) for message in user.messages]
-        else:
-            return {'error': 'Unknown user'}, OBJECT_DNE_ERROR
+        user = User.query.filter(User.id == user_id).first()
+        return [message.as_json(user=user) for message in user.messages]
 
     return __func()
 
@@ -45,15 +43,14 @@ def act_on_messages(action):
 
 
 def act_on_message_helper(action):
-    from server.context import running_context
 
     user_id = get_jwt_identity()
-    user = running_context.User.query.filter(running_context.User.id == user_id).first()
+    user = User.query.filter(User.id == user_id).first()
     if user is None:
         return {'error': 'Unknown user'}, OBJECT_DNE_ERROR
     for message in (message for message in user.messages if message.id in request.get_json()['ids']):
-        message.record_user_action(action)
-    running_context.db.session.commit()
+        message.record_user_action(user, action)
+    db.session.commit()
     return 'Success', SUCCESS
 
 

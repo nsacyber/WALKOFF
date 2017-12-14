@@ -23,7 +23,7 @@
       required: true
       type: string
       enum: [read, unread, delete, act]
-  get:
+  post:
     tags:
       - Messages
     summary: Acts on a user's messages

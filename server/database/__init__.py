@@ -9,8 +9,8 @@ from .resource import Resource, Permission
 logger = logging.getLogger(__name__)
 
 
-default_resources = ['app_apis', 'cases', 'configuration', 'devices', 'metrics', 'playbooks', 'roles', 'scheduler',
-                     'users']
+default_resources = ['app_apis', 'cases', 'configuration', 'devices', 'messages', 'metrics', 'playbooks', 'roles',
+                     'scheduler', 'users']
 default_permissions = ['create', 'read', 'update', 'delete']
 
 
