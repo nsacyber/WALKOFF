@@ -25,7 +25,7 @@ const types = ['playbook', 'workflow', 'action', 'branch', 'condition', 'transfo
 /**
  * Types that are used to recursively check for the next level. E.g. branches have conditions.
  */
-const childrenTypes = ['workflows', 'actipns', 'branches', 'conditions', 'transforms'];
+const childrenTypes = ['workflows', 'actions', 'branches', 'conditions', 'transforms'];
 
 @Component({
 	selector: 'cases-component',
