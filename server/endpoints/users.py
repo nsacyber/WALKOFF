@@ -1,5 +1,5 @@
 from flask import request, current_app
-from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt_claims
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from server.returncodes import *
 from server.database import add_user
