@@ -105,63 +105,67 @@ img.media-object.image{
 </header>
 
 <div class="w3-row-padding w3-padding-64 w3-container">
-    <div class="w3-content">
-        <div class="w3-twothird">
-            <h1>Triggers Management</h1>
-            <ul type="1" class="media-list imageList">
-                <li class="media">
-                    <div class="media-body">
-                        <h4><b>Add Trigger</b></h4>
-                        <ol type="1">
-                            <li>Navigate to the trigger page using navigation on the left of the screen</li>
-                            <li>Fill out the trigger form</li>
-                            <li>Click the add Button</li>
-                        </ol>
-                    </div>
-                    <div class="media-left media-middle">
-                        <a href="images/manageTriggers/addTrigger.png">
-                            <img class="media-object image" src="images/manageTriggers/addTrigger.png" alt="...">
-                        </a>
-                    </div>
-                </li>
-                <br/>
-                <li class="media">
-                    <div class="media-body">
-                        <h4><b>Edit Trigger</b></h4>
-                        <ol type="1">
-                            <li>Select the trigger to edit</li>
-                            <li>Click the edit button to prefill the trigger form below</li>
-                            <li>Edit the trigger details</li>
-                            <li>Click "Submit Edits"</li>
-                        </ol>
-                    </div>
-                    <div class="media-left media-middle">
-                        <a href="images/manageTriggers/editTrigger.png">
-                            <img class="media-object image" src="images/manageTriggers/editTrigger.png" alt="...">
-                        </a>
-                    </div>
-                </li>
-                <br/>
-                <li class="media">
-                    <div class="media-body">
-                        <h4><b>Delete Trigger</b></h4>
-                        <ol type="1">
-                            <li>Select the trigger to Delete</li>
-                            <li>Click "Delete Trigger"</li>
-                        </ol>
-                    </div>
-                    <div class="media-left media-middle">
-                        <a href="images/manageTriggers/deleteTrigger.png">
-                            <img class="media-object image" src="images/manageTriggers/deleteTrigger.png" alt="...">
-                        </a>
-                    </div>
-                </li>
-                <br/>
-            </ul>
+  <div class="w3-content">
+    <div class="w3-twothird">
+      <h1>Using the WALKOFF API (Querying)</h1>
+        <p>In this part of the WALKOFF API tutorial, having authenticated with the WALKOFF instance, we will query it to check if a specific workflow exists, as a precursor to executing it. This is not strictly necessary, but it is simply a demonstration of the API.</p>
+        <p>At the end of this tutorial series, we will have developed a script that:</p>
+        <ol>
+            <li>Takes in address and username arguments for a WALKOFF instance.</li>
+            <li>Attempts to authenticate with the WALKOFF instance at that address with the specified username, prompting for a password.</li>
+            <li>Refreshs the access token.</li>
+            <li>Lists the available workflows.</li>
+            <li>If the playbook "Tutorials" has a workflow "Triggers", executes it.</li>
+            <li>Using the resulting <code>execution_uid</code>, provides data to any triggers waiting in that workflow.
+            <li>Checks the results of the workflow.</li>
+            <li>Logs out.</li>
+        </ol>
+        <p>This part will detail step 4.</p>
+        <h4><b>1. Check if the workflow exists</b></h4>
+        <p>We'll query the <code>/api/playbooks/{playbook_name}/workflows/{workflow_name}</code> endpoint to see if our desired workflow exists.</p>
+        <pre><code class="python">
+def check_workflow_exists(self, playbook_name, workflow_name):
+    exists = False
+    if self.is_connected:
+        print("Querying workflow..."),
+        ep = "/api/playbooks/{}/workflows/{}".format(
+            playbook_name, workflow_name)
+
+        r = requests.get(self.address + ep,
+                         headers=self.auth_header,
+                         timeout=2)
+
+        if r.status_code == 200:
+            exists = True
+            print("{}:{} exists".format(
+                playbook_name, workflow_name))
+
+        elif r.status_code == 461:
+            print("Playbook or workflow does not exist.")
+
+        else:
+            print("Unknown response: {}: {}".format(
+                r.status_code, r.json()))
+
+    return exists
+        </code></pre>
+
+        <p>This concludes the tutorial on the API's query functions. Analogous functions can be written to retrieve information on metrics, cases, users, systems, apps, and more. In the next tutorial, we will look at executing, triggering, and checking workflow results.</p>
+        <div align="center" style="border:1px solid blue">
+            <h5><a href="Working_with_API_Trigger.html">Next >></a></h5>
         </div>
+        <h4><b>More in this series:</b></h4>
+        <ol>
+            <li><a href="Working_with_API_Auth.html">Using the API to authenticate with a WALKOFF instance.</a></li>
+            <li><a href="Working_with_API_Trigger.html">Using the API to provide trigger data to a waiting action.</a></li>
+      </ol>
+    </div>
+
+    <div class="w3-third w3-center">
+        <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+    </div>
     </div>
 </div>
-
 <div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
     <h1 class="w3-margin w3-xlarge">Questions? Comments? </h1>
     <h1 class="w3-margin w3-xlarge"> Reach out to us at <a href="mailto:walkoff@nsa.gov"> walkoff@nsa.gov </a> </h1>
