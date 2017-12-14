@@ -7,10 +7,10 @@ import { MessagesService } from './messages.service';
 import { Message } from '../models/message';
 
 @Component({
-	selector: 'settings-role-modal',
-	templateUrl: 'client/settings/settings.roles.modal.html',
+	selector: 'messages-modal',
+	templateUrl: 'client/messages/messages.modal.html',
 	styleUrls: [
-		'client/settings/settings.css',
+		'client/messages/messages.css',
 	],
 	providers: [MessagesService],
 })

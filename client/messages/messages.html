@@ -3,14 +3,14 @@
 
 	<div class="row">
 		<div class="col-xs-6">
-				<button (click)="deleteSelected()" class="btn btn-danger" title="Delete Selected">
-					<i class="fa fa-times"></i>
+				<button (click)="deleteSelected()" class="btn btn-secondary" title="Delete Selected">
+					<i class="fa fa-trash-o"></i>
 				</button>
 				<button (click)="markSelectedAsRead()" class="btn btn-secondary" title="Mark Selected as Read">
-					<i class="fa fa-envelope-o"></i>
+					<i class="fa fa-envelope-open-o"></i>
 				</button>
 				<button (click)="markSelectedAsUnread()" class="btn btn-secondary" title="Mark Selected as Unread">
-					<i class="fa fa-envelope-open-o"></i>
+					<i class="fa fa-envelope-o"></i>
 				</button>
 		</div>
 		<div class="col-xs-6">
@@ -23,22 +23,25 @@
 		</div>
 	</div>
 
+	<template ngbModalContainer></template>
 	<ngx-datatable #messagesTable class='material expandable' [columnMode]="'flex'" [rows]='displayMessages' [sortType]="'multi'"
-	 [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'created_at', dir: 'asc'}]" [limit]="25">
+	 [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'created_at', dir: 'desc'}]" [limit]="25">
 		<!-- Column Templates -->
-		<ngx-datatable-column name="x" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="1">
+		<ngx-datatable-column name="" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				<input type="checkbox" name="{{i.name}}" [(ngModel)]="selectMapping[row.id]">
+				<input type="checkbox" [(ngModel)]="selectMapping[row.id]">
 			</ng-template>
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Subject" [flexGrow]="2">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				<a href="#" [class.unread]="!row.is_read" (click)="openMessage(row)">{{row.subject}}</a>
+				<a class="messageLink" [class.unread]="!row.is_read" (click)="openMessage(row)">{{row.subject}}</a>
 			</ng-template>
 		</ngx-datatable-column>
-		<ngx-datatable-column name="Created At" [flexGrow]="2">
+		<ngx-datatable-column name="Sent" [flexGrow]="2">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				{{row.created_at}}
+				<span [title]="row.created_at">
+					{{getFriendlyTime(row.created_at)}}
+				</span>
 			</ng-template>
 		</ngx-datatable-column>
 		<!-- <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">

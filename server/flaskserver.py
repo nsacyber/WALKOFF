@@ -26,6 +26,7 @@ def client_app_folder(filename):
 @app.route('/playbook')
 @app.route('/scheduler')
 @app.route('/devices')
+@app.route('/messages')
 @app.route('/cases')
 @app.route('/settings')
 def default():

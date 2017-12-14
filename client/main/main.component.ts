@@ -3,6 +3,7 @@ import { JwtHelper } from 'angular2-jwt';
 
 import { MainService } from './main.service';
 import { AuthService } from '../auth/auth.service';
+import { Message } from '_debugger';
 
 @Component({
 	selector: 'main-component',
@@ -22,6 +23,21 @@ export class MainComponent {
 			.then(interfaceNames => this.interfaceNames = interfaceNames);
 
 		this.updateUserInfo();
+		this.getNotificationsSSE();
+	}
+
+	getNotificationsSSE(): void {
+		this.authService.getAccessTokenRefreshed()
+			.then(authToken => {
+				const eventSource = new (window as any).EventSource('/api/notifications?access_token=' + authToken);
+
+				eventSource.addEventListener('message', (message: Message) => {
+					// do something
+				});
+				eventSource.addEventListener('error', (err: Error) => {
+					console.error(err);
+				});
+			});
 	}
 
 	updateUserInfo(): void {

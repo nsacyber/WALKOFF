@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import * as moment from 'moment';
 
 import { MessagesService } from './messages.service';
 
@@ -51,13 +52,14 @@ export class MessagesComponent {
 
 	getMessages(): void {
 		this.messagesService.getMessages()
-			.then(messages => this.messages = messages)
+			.then(messages => this.displayMessages = this.messages = messages)
 			.catch(e => this.toastyService.error(`Error retrieving messages: ${e.message}`));
 	}
 
 	openMessage(message: Message): void {
 		const modalRef = this.modalService.open(MessagesModalComponent);
-		modalRef.componentInstance.message = message;
+
+		modalRef.componentInstance.message = _.cloneDeep(message);
 
 		this._handleModalClose(modalRef);
 	}
@@ -82,7 +84,7 @@ export class MessagesComponent {
 		this.messagesService.readMessages(idsToRead)
 			.then(() => {
 				this.messages.forEach(message => {
-					if (idsToRead.indexOf(message.id) !== -1) { message.read_at = new Date(); }
+					if (idsToRead.indexOf(message.id) !== -1) { message.last_read_at = new Date(); }
 				});
 			})
 			.catch(e => this.toastyService.error(`Error marking messages as read: ${e.message}`));
@@ -94,10 +96,14 @@ export class MessagesComponent {
 		this.messagesService.unreadMessages(idsToUnread)
 			.then(() => {
 				this.messages.forEach(message => {
-					if (idsToUnread.indexOf(message.id) !== -1) { message.read_at = null; }
+					if (idsToUnread.indexOf(message.id) !== -1) { message.last_read_at = null; }
 				});
 			})
 			.catch(e => this.toastyService.error(`Error marking messages as unread: ${e.message}`));
+	}
+
+	getFriendlyTime(createdAt: Date): string {
+		return moment(createdAt).fromNow();
 	}
 
 	private _getSelectedIds(): number[] {

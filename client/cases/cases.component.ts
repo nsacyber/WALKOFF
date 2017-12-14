@@ -25,7 +25,7 @@ const types = ['playbook', 'workflow', 'action', 'branch', 'condition', 'transfo
 /**
  * Types that are used to recursively check for the next level. E.g. branches have conditions.
  */
-const childrenTypes = ['workflows', 'actipns', 'branches', 'conditions', 'transforms'];
+const childrenTypes = ['workflows', 'actions', 'branches', 'conditions', 'transforms'];
 
 @Component({
 	selector: 'cases-component',
@@ -166,7 +166,7 @@ export class CasesComponent {
 		this.casesService
 			.getPlaybooks()
 			.then(playbooks => this.subscriptionTree = this.convertPlaybooksToSubscriptionTree(playbooks))
-			.catch(e => this.toastyService.error(`Error retrieving subscription tree: ${e.message}`));
+			// .catch(e => this.toastyService.error(`Error retrieving subscription tree: ${e.message}`));
 	}
 
 	convertPlaybooksToSubscriptionTree(playbooks: any[]): any {
@@ -236,10 +236,10 @@ export class CasesComponent {
 					childPrefix = 'Transform';
 					break;
 				default:
-					childPrefix = '(unknown)';
 					break;
 			}
 
+			console.log(target, childType);
 			target[childType].forEach(function (sub: any) {
 				node.children.push(self.getNodeRecursive(sub, typeIndex + 1, childPrefix));
 			});
