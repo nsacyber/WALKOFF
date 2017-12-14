@@ -4,11 +4,11 @@ from flask import request
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended.config import config
 from flask_jwt_extended.exceptions import NoAuthorizationError
-from flask_jwt_extended.jwt_manager import JWTManager
 from flask_jwt_extended.tokens import decode_jwt
 from flask_jwt_extended.view_decorators import _load_user
 
 from server.database import User
+from server.extensions import jwt
 from server.returncodes import FORBIDDEN_ERROR
 
 try:
@@ -22,8 +22,6 @@ import json
 import logging
 
 logger = logging.getLogger(__name__)
-
-jwt = JWTManager()
 
 
 @jwt.token_in_blacklist_loader

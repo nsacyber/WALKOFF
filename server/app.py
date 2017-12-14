@@ -10,7 +10,7 @@ from apps.devicedb import App, device_db
 from core import helpers
 from core.config import paths
 from core.helpers import format_db_path
-from server.extensions import db
+from server.extensions import db, jwt
 from server.database.casesubscription import CaseSubscription
 from server.database import add_user, User, Role
 
@@ -85,9 +85,7 @@ def create_app():
         SQLALCHEMY_TRACK_MODIFICATIONS=False
     )
 
-    from server.database import db
     db.init_app(_app)
-    from server.security import jwt
     jwt.init_app(_app)
 
     connexion_app.add_api('composed_api.yaml')
