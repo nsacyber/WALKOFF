@@ -1,7 +1,9 @@
 import json
 
-import server.database
-from server.database import db, User, Role, add_user
+from server.extensions import db
+from server.database.user import User
+from server.database.role import Role
+from server.database import add_user
 from server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
 

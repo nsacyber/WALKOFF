@@ -2,7 +2,7 @@ from datetime import datetime
 
 from flask import current_app
 
-from server.database import db
+from server.extensions import db
 
 number_of_operations = 0
 prune_frequency = 1000

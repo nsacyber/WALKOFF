@@ -4,8 +4,7 @@ from datetime import timedelta
 
 from flask_jwt_extended import decode_token
 
-from server.database import add_user, db, User
-from server.flaskserver import running_context
+from server.database import add_user, User
 from server.returncodes import *
 from server.tokens import *
 
@@ -20,7 +19,7 @@ class TestAuthorization(unittest.TestCase):
 
     def tearDown(self):
         db.session.rollback()
-        running_context.User.query.filter_by(username='test').delete()
+        User.query.filter_by(username='test').delete()
         from server.tokens import BlacklistedToken
         for token in BlacklistedToken.query.all():
             db.session.delete(token)
@@ -103,7 +102,6 @@ class TestAuthorization(unittest.TestCase):
     def test_refresh_invalid_user_blacklists_token(self):
         user = add_user(username='test', password='test')
 
-        from server.database import db
         db.session.commit()
         response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='test', password='test')))
@@ -123,7 +121,6 @@ class TestAuthorization(unittest.TestCase):
     def test_refresh_deactivated_user(self):
         user = add_user(username='test', password='test')
 
-        from server.database import db
         db.session.commit()
         response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='test', password='test')))
@@ -137,7 +134,6 @@ class TestAuthorization(unittest.TestCase):
     def test_refresh_with_blacklisted_token(self):
         user = add_user(username='test', password='test')
 
-        from server.database import db
         db.session.commit()
         response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='test', password='test')))
@@ -169,7 +165,6 @@ class TestAuthorization(unittest.TestCase):
 
         add_user(username='test', password='test')
 
-        from server.database import db
         db.session.commit()
         response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='test', password='test')))

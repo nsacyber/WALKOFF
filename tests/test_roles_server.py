@@ -2,7 +2,10 @@ import json
 
 import server.database
 import server.flaskserver
-from server.database import Role, Resource, default_resources, db
+from server.database.role import Role
+from server.database.resource import Resource
+from server.database import default_resources
+from server.extensions import db
 from server.returncodes import *
 from tests.util import servertestcase
 

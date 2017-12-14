@@ -10,6 +10,9 @@ from apps.devicedb import App, device_db
 from core import helpers
 from core.config import paths
 from core.helpers import format_db_path
+from server.extensions import db
+from server.database.casesubscription import CaseSubscription
+from server.database import add_user, User, Role
 
 logger = logging.getLogger(__name__)
 
@@ -104,19 +107,16 @@ app = create_app()
 
 @app.before_first_request
 def create_user():
-    from server.context import running_context
-    from server.database import add_user, User
-
-    running_context.db.create_all()
+    db.create_all()
 
     # Setup admin role
-    admin_role = running_context.Role.query.filter_by(name="admin").first()
+    admin_role = Role.query.filter_by(name="admin").first()
     if admin_role:
         admin_role.set_resources(server.database.default_resource_permissions)
     else:
-        admin_role = running_context.Role(
+        admin_role = Role(
             name='admin', description='administrator', resources=server.database.default_resource_permissions)
-        running_context.db.session.add(admin_role)
+        db.session.add(admin_role)
 
     # Setup admin user
     admin_user = User.query.filter_by(username="admin").first()
@@ -125,15 +125,15 @@ def create_user():
     elif admin_role not in admin_user.roles:
         admin_user.roles.append(admin_role)
 
-    running_context.db.session.commit()
+    db.session.commit()
 
     apps = set(helpers.list_apps()) - set([_app.name
                                            for _app in device_db.session.query(App).all()])
     app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:
         device_db.session.add(App(name=app_name, devices=[]))
-    running_context.db.session.commit()
+    db.session.commit()
     device_db.session.commit()
-    running_context.CaseSubscription.sync_to_subscriptions()
+    CaseSubscription.sync_to_subscriptions()
 
     app.logger.handlers = logging.getLogger('server').handlers

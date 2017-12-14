@@ -2,38 +2,36 @@ from flask import request, current_app
 from flask_jwt_extended import jwt_required
 
 from server.database import clear_resources_for_role, get_all_available_resource_actions
+from server.database.role import Role
+from server.extensions import db
 from server.returncodes import *
 from server.security import roles_accepted, permissions_accepted_for_resources, ResourcePermissions
 
 
 def read_all_roles():
-    from server.context import running_context
-
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('roles', ['read']))
     def __func():
-        return [role.as_json() for role in running_context.Role.query.all()], SUCCESS
+        return [role.as_json() for role in Role.query.all()], SUCCESS
 
     return __func()
 
 
 def create_role():
-    from server.context import running_context
-
     @jwt_required
     @roles_accepted('admin')
     def __func():
         json_data = request.get_json()
-        if not running_context.Role.query.filter_by(name=json_data['name']).first():
+        if not Role.query.filter_by(name=json_data['name']).first():
             resources = json_data['resources'] if 'resources' in json_data else []
             if '/roles' in resources:
                 resources.remove('/roles')
             role_params = {'name': json_data['name'],
                            'description': json_data['description'] if 'description' in json_data else '',
                            'resources': resources}
-            new_role = running_context.Role(**role_params)
-            running_context.db.session.add(new_role)
-            running_context.db.session.commit()
+            new_role = Role(**role_params)
+            db.session.add(new_role)
+            db.session.commit()
             current_app.logger.info('Role added: {0}'.format(role_params))
             return new_role.as_json(), OBJECT_CREATED
         else:
@@ -44,12 +42,10 @@ def create_role():
 
 
 def read_role(role_id):
-    from server.context import running_context
-
     @jwt_required
     @roles_accepted('admin')
     def __func():
-        role = running_context.Role.query.filter_by(id=role_id).first()
+        role = Role.query.filter_by(id=role_id).first()
         if role:
             return role.as_json(), SUCCESS
         else:
@@ -60,17 +56,15 @@ def read_role(role_id):
 
 
 def update_role():
-    from server.context import running_context
-
     @jwt_required
     @roles_accepted('admin')
     def __func():
         json_data = request.get_json()
-        role = running_context.Role.query.filter_by(id=json_data['id']).first()
+        role = Role.query.filter_by(id=json_data['id']).first()
         if role is not None:
             if 'name' in json_data:
                 new_name = json_data['name']
-                role_db = running_context.Role.query.filter_by(name=new_name).first()
+                role_db = Role.query.filter_by(name=new_name).first()
                 if role_db is None or role_db.id == json_data['id']:
                     role.name = new_name
             if 'description' in json_data:
@@ -78,7 +72,7 @@ def update_role():
             if 'resources' in json_data:
                 resources = json_data['resources']
                 role.set_resources(resources)
-            running_context.db.session.commit()
+            db.session.commit()
             current_app.logger.info('Edited role {0} to {1}'.format(json_data['id'], json_data))
             return role.as_json(), SUCCESS
         else:
@@ -89,15 +83,13 @@ def update_role():
 
 
 def delete_role(role_id):
-    from server.context import running_context
-
     @jwt_required
     @roles_accepted('admin')
     def __func():
-        role = running_context.Role.query.filter_by(id=role_id).first()
+        role = Role.query.filter_by(id=role_id).first()
         if role:
             clear_resources_for_role(role.name)
-            running_context.db.session.delete(role)
+            db.session.delete(role)
             return {}, SUCCESS
         else:
             current_app.logger.error('Cannot delete role {0}. Role does not exist.'.format(role_id))
@@ -107,7 +99,6 @@ def delete_role(role_id):
 
 
 def read_available_resource_actions():
-
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('roles', ['read']))
     def __func():

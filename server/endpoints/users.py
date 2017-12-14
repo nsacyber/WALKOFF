@@ -2,35 +2,33 @@ from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt_claims
 
 from server.returncodes import *
+from server.database import add_user
+from server.extensions import db
+from server.database.user import User
 from server.security import permissions_accepted_for_resources, ResourcePermissions, user_has_correct_roles
 
 
 def read_all_users():
-    from server.context import running_context
-
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
     def __func():
-        return [user.as_json() for user in running_context.User.query.all()], SUCCESS
+        return [user.as_json() for user in User.query.all()], SUCCESS
 
     return __func()
 
 
 def create_user():
-    from server.context import running_context
-    from server.database import add_user
-
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('users', ['create']))
     def __func():
         data = request.get_json()
         username = data['username']
-        if not running_context.User.query.filter_by(username=username).first():
+        if not User.query.filter_by(username=username).first():
             user = add_user(username=username, password=data['password'])
             # if 'roles' in data:
             #     user.set_roles(data['roles'])
 
-            running_context.db.session.commit()
+            db.session.commit()
             current_app.logger.info('User added: {0}'.format(user.as_json()))
             return user.as_json(), OBJECT_CREATED
         else:
@@ -41,12 +39,10 @@ def create_user():
 
 
 def read_user(user_id):
-    from server.context import running_context
-
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
     def __func():
-        user = running_context.User.query.filter_by(id=user_id).first()
+        user = User.query.filter_by(id=user_id).first()
         if user:
             return user.as_json(), SUCCESS
         else:
@@ -57,12 +53,10 @@ def read_user(user_id):
 
 
 def update_user():
-    from server.context import running_context
-
     @jwt_required
     def __func():
         data = request.get_json()
-        user = running_context.User.query.filter_by(id=data['id']).first()
+        user = User.query.filter_by(id=data['id']).first()
         current_user = get_jwt_identity()
         if user is not None:
             if user.id == current_user:
@@ -93,11 +87,9 @@ def role_update_user_fields(data, user):
 
 
 def update_user_fields(data, user):
-    from server.context import running_context
-
     original_username = str(user.username)
     if 'username' in data and data['username']:
-        user_db = running_context.User.query.filter_by(username=data['username']).first()
+        user_db = User.query.filter_by(username=data['username']).first()
         if user_db is None or user_db.id == user.id:
             user.username = data['username']
         else:
@@ -108,22 +100,20 @@ def update_user_fields(data, user):
         else:
             user.username = original_username
             return {"error": "User's current password was entered incorrectly."}, BAD_REQUEST
-    running_context.db.session.commit()
+    db.session.commit()
     current_app.logger.info('Updated user {0}. Updated to: {1}'.format(user.id, user.as_json()))
     return user.as_json(), SUCCESS
 
 
 def delete_user(user_id):
-    from server.flaskserver import running_context
-
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('users', ['delete']))
     def __func():
-        user = running_context.User.query.filter_by(id=user_id).first()
+        user = User.query.filter_by(id=user_id).first()
         if user:
             if user.id != get_jwt_identity():
-                running_context.db.session.delete(user)
-                running_context.db.session.commit()
+                db.session.delete(user)
+                db.session.commit()
                 current_app.logger.info('User {0} deleted'.format(user.username))
                 return {}, SUCCESS
             else:
