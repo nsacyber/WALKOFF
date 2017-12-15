@@ -4,7 +4,7 @@ from flask_jwt_extended import (jwt_refresh_token_required, create_access_token,
 
 from server.database import User, db
 from server.returncodes import *
-from server.tokens import revoke_token
+from server.database.tokens import revoke_token
 
 
 def _authenticate_and_grant_tokens(json_in, with_refresh=False):
@@ -55,7 +55,7 @@ def refresh():
 
 
 def logout():
-    from server.tokens import revoke_token
+    from server.database.tokens import revoke_token
 
     @jwt_required
     def __func():

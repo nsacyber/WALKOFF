@@ -12,7 +12,7 @@ from server.extensions import jwt
 from server.returncodes import FORBIDDEN_ERROR
 import server.database
 from server.returncodes import UNAUTHORIZED_ERROR
-from server.tokens import is_token_revoked
+from server.database.tokens import is_token_revoked
 import json
 import logging
 

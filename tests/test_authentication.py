@@ -6,7 +6,7 @@ from flask_jwt_extended import decode_token
 
 from server.database import add_user, User
 from server.returncodes import *
-from server.tokens import *
+from server.database.tokens import *
 
 
 class TestAuthorization(unittest.TestCase):
@@ -20,7 +20,7 @@ class TestAuthorization(unittest.TestCase):
     def tearDown(self):
         db.session.rollback()
         User.query.filter_by(username='test').delete()
-        from server.tokens import BlacklistedToken
+        from server.database.tokens import BlacklistedToken
         for token in BlacklistedToken.query.all():
             db.session.delete(token)
         for user in (user for user in User.query.all() if user.username != 'admin'):
@@ -114,7 +114,7 @@ class TestAuthorization(unittest.TestCase):
         refresh = self.app.post('/api/auth/refresh', content_type="application/json", headers=headers)
         self.assertEqual(refresh.status_code, UNAUTHORIZED_ERROR)
         token = decode_token(token)
-        from server.tokens import BlacklistedToken
+        from server.database.tokens import BlacklistedToken
 
         tokens = BlacklistedToken.query.filter_by(jti=token['jti']).all()
         self.assertEqual(len(tokens), 1)

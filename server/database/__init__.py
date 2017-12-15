@@ -5,6 +5,7 @@ from .user import User
 from .role import Role
 from .resource import Resource, Permission
 from .message import Message, MessageHistory
+from .tokens import BlacklistedToken
 
 logger = logging.getLogger(__name__)
 
