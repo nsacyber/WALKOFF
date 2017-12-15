@@ -43,7 +43,7 @@ def get_roles_by_resource_permissions(resource_permission):
         roles.extend(Role.query.join(Role.resources).join(Resource.permissions).filter(Resource.name == resource,
                                                                                        Permission.name == permission).all())
 
-    return set([role.name for role in roles])
+    return {role.id for role in roles}
 
 
 def set_resources_for_role(role_name, resources):

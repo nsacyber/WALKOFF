@@ -33,7 +33,7 @@ def is_token_blacklisted(decoded_token):
 @jwt.user_claims_loader
 def add_claims_to_access_token(user_id):
     user = User.query.filter(User.id == user_id).first()
-    return {'roles': [role.name for role in user.roles], 'username': user.username} if user is not None else {}
+    return {'roles': [role.id for role in user.roles], 'username': user.username} if user is not None else {}
 
 
 @jwt.revoked_token_loader

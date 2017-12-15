@@ -51,7 +51,7 @@ class TestAuthorization(unittest.TestCase):
         self.assertEqual(token['type'], 'access')
         self.assertEqual(token['identity'], 1)
         self.assertTrue(token['fresh'])
-        self.assertDictEqual(token['user_claims'], {'username': 'admin', 'roles': ['admin']})
+        self.assertDictEqual(token['user_claims'], {'username': 'admin', 'roles': [1]})
 
     def test_login_authorization_has_valid_refresh_token(self):
         response = self.app.post('/api/auth', content_type="application/json",

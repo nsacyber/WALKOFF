@@ -19,7 +19,7 @@ def read_all_roles():
 
 def create_role():
     @jwt_required
-    @roles_accepted('admin')
+    @permissions_accepted_for_resources(ResourcePermissions('roles', ['create']))
     def __func():
         json_data = request.get_json()
         if not Role.query.filter_by(name=json_data['name']).first():
@@ -43,7 +43,7 @@ def create_role():
 
 def read_role(role_id):
     @jwt_required
-    @roles_accepted('admin')
+    @permissions_accepted_for_resources(ResourcePermissions('roles', ['read']))
     def __func():
         role = Role.query.filter_by(id=role_id).first()
         if role:
@@ -57,7 +57,7 @@ def read_role(role_id):
 
 def update_role():
     @jwt_required
-    @roles_accepted('admin')
+    @permissions_accepted_for_resources(ResourcePermissions('roles', ['update']))
     def __func():
         json_data = request.get_json()
         role = Role.query.filter_by(id=json_data['id']).first()
@@ -84,7 +84,7 @@ def update_role():
 
 def delete_role(role_id):
     @jwt_required
-    @roles_accepted('admin')
+    @permissions_accepted_for_resources(ResourcePermissions('roles', ['delete']))
     def __func():
         role = Role.query.filter_by(id=role_id).first()
         if role:
