@@ -12,10 +12,10 @@ default_resource_permissions = [{"name": "app_apis", "permissions": ["read"]},
                                 {"name": "cases", "permissions": ["create", "read", "update", "delete"]},
                                 {"name": "configuration", "permissions": ["read", "update"]},
                                 {"name": "devices", "permissions": ["create", "read", "update", "delete"]},
-                                {"name": "messages", "permissions": ["create", "read", "update", "delete"]},
+                                {"name": "messages", "permissions": ["read", "update", "delete"]},
                                 {"name": "metrics", "permissions": ["read"]},
                                 {"name": "playbooks", "permissions": ["create", "read", "update", "delete", "execute"]},
-                                {"name": "roles", "permissions": ["read"]},
+                                {"name": "roles", "permissions": ["create", "read", "update", "delete"]},
                                 {"name": "scheduler", "permissions": ["create", "read", "update", "delete", "execute"]},
                                 {"name": "users", "permissions": ["create", "read", "update", "delete"]}]
 
