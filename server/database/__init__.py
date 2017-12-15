@@ -8,25 +8,20 @@ from .resource import Resource, Permission
 
 logger = logging.getLogger(__name__)
 
+default_resource_permissions = [{"name": "app_apis", "permissions": ["read"]},
+                                {"name": "cases", "permissions": ["create", "read", "update", "delete"]},
+                                {"name": "configuration", "permissions": ["read", "update"]},
+                                {"name": "devices", "permissions": ["create", "read", "update", "delete"]},
+                                {"name": "messages", "permissions": ["create", "read", "update", "delete"]},
+                                {"name": "metrics", "permissions": ["read"]},
+                                {"name": "playbooks", "permissions": ["create", "read", "update", "delete", "execute"]},
+                                {"name": "roles", "permissions": ["read"]},
+                                {"name": "scheduler", "permissions": ["create", "read", "update", "delete", "execute"]},
+                                {"name": "users", "permissions": ["create", "read", "update", "delete"]}]
+
 
 default_resources = ['app_apis', 'cases', 'configuration', 'devices', 'messages', 'metrics', 'playbooks', 'roles',
                      'scheduler', 'users']
-default_permissions = ['create', 'read', 'update', 'delete']
-
-
-def initialize_resource_permissions_from_default():
-    resource_permissions = []
-    for resource in default_resources:
-        if resource in ['playbooks', 'scheduler']:
-            perms = list(default_permissions)
-            perms.append("execute")
-            resource_permissions.append({'name': resource, 'permissions': perms})
-        else:
-            resource_permissions.append({'name': resource, 'permissions': list(default_permissions)})
-    return resource_permissions
-
-
-default_resource_permissions = initialize_resource_permissions_from_default()
 
 
 def initialize_default_resources_for_admin():
