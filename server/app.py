@@ -95,6 +95,7 @@ def create_app():
 
     import core.controller
     core.controller.controller.load_playbooks()
+    import server.messaging.utils
     return _app
 
 

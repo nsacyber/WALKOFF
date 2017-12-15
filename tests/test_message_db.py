@@ -1,6 +1,8 @@
 from unittest import TestCase
-from server.messaging import (Message, MessageHistory, MessageAction, get_all_matching_users_for_message, save_message,
-                              strip_requires_auth_from_message_body)
+from server.database import Message, MessageHistory
+from server.messaging import MessageAction
+from server.messaging.utils import strip_requires_auth_from_message_body, save_message, \
+    get_all_matching_users_for_message
 from server.database import db, User, Role
 from server import flaskserver
 from datetime import datetime

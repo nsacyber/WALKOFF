@@ -1,8 +1,9 @@
 from tests.util.servertestcase import ServerTestCase
-from server.messaging import *
-from server.database import User, Role, Resource, Permission
+from server.database import User, Role, Message, MessageHistory
+from server.extensions import db
 from server.returncodes import *
 from server import flaskserver
+import json
 
 
 class UserWrapper(object):

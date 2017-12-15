@@ -1,6 +1,6 @@
 from unittest import TestCase
-from server.messaging import MessageHistory, MessageAction
-from server.database import User, db
+from server.messaging import MessageAction
+from server.database import User, db, MessageHistory
 from server import flaskserver
 from datetime import datetime
 

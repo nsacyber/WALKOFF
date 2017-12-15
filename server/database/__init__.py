@@ -4,7 +4,7 @@ from server.extensions import db
 from .user import User
 from .role import Role
 from .resource import Resource, Permission
-
+from .message import Message, MessageHistory
 
 logger = logging.getLogger(__name__)
 
