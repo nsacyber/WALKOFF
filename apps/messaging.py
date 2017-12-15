@@ -1,5 +1,5 @@
 from core.events import WalkoffEvent
-
+import json
 
 class MessageComponent(object):
     def __init__(self, message_type, requires_auth=False):
@@ -72,7 +72,8 @@ class Message(object):
         return ret
 
 
-def send_message(message, users, requires_reauth=False):
-    #TODO: Add role support here
+def send_message(message, users=None, roles=None, requires_reauth=False):
+    users = users if users is not None else []
+    roles = roles if roles is not None else []
     WalkoffEvent.CommonWorkflowSignal.send(
-        message, event=WalkoffEvent.SendMessage, users=users, requires_reauth=requires_reauth)
+        json.dumps(message), event=WalkoffEvent.SendMessage, users=users, roles=roles, requires_reauth=requires_reauth)

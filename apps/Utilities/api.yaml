@@ -211,16 +211,21 @@ actions:
       Success:
         schema:
           type: string
-  send message:
-    run: actions.send_message
-    description: Send a message to users
+  send text message:
+    run: actions.send_text_message
+    description: Send a text only message to users
     parameters:
       - name: message
         type: string
+        required: true
       - name: users
         type: array
         items:
           type: user
+      - name: roles
+        type: array
+        items:
+          type: role
     returns:
       Success:
         schema:

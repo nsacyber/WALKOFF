@@ -1,4 +1,5 @@
 from apps import action
+from apps.messaging import Text, Message, send_message
 import time
 import json
 import csv
@@ -92,5 +93,7 @@ def write_ips_to_csv(ips_reference, path):
                     writer.writerow({'Host': ip})
 
 @action
-def send_message(message, users):
-    return 'success'
+def send_text_message(subject, message, users=None, roles=None):
+    text = Text(message)
+    message = Message(subject=subject, components=[text])
+    send_message(message, users=users, roles=roles)
