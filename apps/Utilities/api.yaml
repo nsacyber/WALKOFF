@@ -215,6 +215,9 @@ actions:
     run: actions.send_text_message
     description: Send a text only message to users
     parameters:
+      - name: subject
+        type: string
+        required: true
       - name: message
         type: string
         required: true

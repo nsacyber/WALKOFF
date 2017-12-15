@@ -1,9 +1,10 @@
-from server.database import db
+from server.database import db, Role, User
 from sqlalchemy import func
 from core.events import WalkoffEvent
 import json
 import logging
 from enum import Enum, unique
+from server import app
 
 logger = logging.getLogger(__name__)
 
@@ -181,12 +182,13 @@ def save_message_callback(sender, **message_data):
     if requires_action:
         workflow_authorization_cache.add_authorized_users(
             sender['workflow_execution_uid'], users=message_data['users'], roles=message_data['roles'])
-    save_message(body, message_data, sender['workflow_execution_uid'], requires_action)
+    with app.app_context():
+        save_message(body, message_data, sender['workflow_execution_uid'], requires_action)
 
 
 def strip_requires_auth_from_message_body(body):
-    is_caching_required = any(message_component.get('requires_auth', False) for message_component in body)
-    for message_component in body:
+    is_caching_required = any(message_component.get('requires_auth', False) for message_component in body['body'])
+    for message_component in body['body']:
         message_component.pop('requires_auth', None)
     return is_caching_required
 
@@ -196,7 +198,7 @@ def save_message(body, message_data, workflow_execution_uid, requires_action):
     if users:
         subject = message_data.get('subject', '')
         message_entry = Message(
-            subject, json.dumps(body), workflow_execution_uid, users, requires_reauth=message_data['requires_reauth'],
+            subject, json.dumps(body['body']), workflow_execution_uid, users, requires_reauth=message_data['requires_reauth'],
             requires_action=requires_action)
         db.session.add(message_entry)
         db.session.commit()
@@ -206,15 +208,13 @@ def save_message(body, message_data, workflow_execution_uid, requires_action):
 
 
 def get_all_matching_users_for_message(user_ids, role_ids):
-    from server.context import running_context
-
     user_id_set = set()
     if role_ids:
-        roles = running_context.Role.query.filter(running_context.Role.id.in_(role_ids)).all()
+        roles = Role.query.filter(Role.id.in_(role_ids)).all()
         for role in roles:
             user_id_set |= {user.id for user in role.users}
     user_id_search = set(user_ids) | user_id_set
     if user_id_search:
-        return running_context.User.query.filter(running_context.User.id.in_(user_id_search)).all()
+        return User.query.filter(User.id.in_(user_id_search)).all()
     else:
         return []

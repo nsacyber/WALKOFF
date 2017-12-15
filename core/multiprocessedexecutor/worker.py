@@ -97,14 +97,14 @@ def convert_workflow_to_proto(packet, sender, workflow_execution_uid, data=None)
 def convert_send_message_to_protobuf(packet, message, workflow_execution_uid, **kwargs):
     packet.type = data_pb2.Message.USERMESSAGE
     message_packet = packet.message_packet
-    message_packet.message = message
+    message_packet.body = json.dumps(message)
     message_packet.sender.workflow_execution_uid = workflow_execution_uid
     if 'subject' in kwargs:
         message_packet.subject = kwargs['subject']
     if 'users' in kwargs:
-        message_packet.users = kwargs['users']
+        message_packet.users.extend(kwargs['users'])
     if 'roles' in kwargs:
-        message_packet.roles = kwargs['roles']
+        message_packet.roles.extend(kwargs['roles'])
     if 'requires_reauth' in kwargs:
         message_packet.requires_reauth = kwargs['requires_reauth']
 

@@ -316,6 +316,8 @@ def validate_parameter(value, param, message_prefix):
             elif primitive_type == 'array':
                 try:
                     converted_value = convert_array(param, value, message_prefix)
+                    if param['items']['type'] in ('user', 'role'):
+                        handle_user_roles_validation(param['items'])
                     Draft4Validator(
                         param, format_checker=draft4_format_checker).validate(converted_value)
                 except ValidationError as exception:
