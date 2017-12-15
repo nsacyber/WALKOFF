@@ -20,7 +20,9 @@ TYPE_MAP = {
     'integer': int,
     'number': float,
     'boolean': boolean,
-    'string': str
+    'string': str,
+    'user': int,
+    'role': int
 }
 
 reserved_return_codes = ['UnhandledException', 'InvalidInput', 'EventTimedOut']
@@ -264,6 +266,12 @@ def validate_definitions(definitions, dereferencer):
         validate_definition(definition, dereferencer, definition_name)
 
 
+def handle_user_roles_validation(param):
+    param['type'] = 'integer'
+    if 'minimum' not in param:
+        param['minimum'] = 1
+
+
 def validate_primitive_parameter(value, param, parameter_type, message_prefix, hide_input=False):
     try:
         converted_value = convert_primitive_type(value, parameter_type)
@@ -274,6 +282,9 @@ def validate_primitive_parameter(value, param, parameter_type, message_prefix, h
         raise InvalidArgument(message)
     else:
         param = deepcopy(param)
+        if param['type'] in ('user', 'role'):
+            handle_user_roles_validation(param)
+
         if 'required' in param:
             param.pop('required')
         try:
