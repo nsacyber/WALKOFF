@@ -1,5 +1,5 @@
 from unittest import TestCase
-from server.messaging import MessageHistory, MessageActions
+from server.messaging import MessageHistory, MessageAction
 from server.database import User, db
 from server import flaskserver
 from datetime import datetime
@@ -53,19 +53,19 @@ class TestMessageHistoryDatabase(TestCase):
         self.assert_message_history_init_correct(message_history, action, self.user2)
 
     def test_read_message(self):
-        self.check_action_construction(MessageActions.read)
+        self.check_action_construction(MessageAction.read)
 
     def test_unread_message(self):
-        self.check_action_construction(MessageActions.unread)
+        self.check_action_construction(MessageAction.unread)
 
     def test_deleted_message(self):
-        self.check_action_construction(MessageActions.delete)
+        self.check_action_construction(MessageAction.delete)
 
     def test_acted_on_message(self):
-        self.check_action_construction(MessageActions.act)
+        self.check_action_construction(MessageAction.act)
 
     def test_as_json(self):
-        message_history = MessageHistory(self.user1, MessageActions.read)
+        message_history = MessageHistory(self.user1, MessageAction.read)
         db.session.add(message_history)
         db.session.commit()
         message_json = message_history.as_json()
@@ -73,6 +73,6 @@ class TestMessageHistoryDatabase(TestCase):
         self.assertEqual(message_json['action'], 'read')
         self.assertEqual(message_json['user_id'], self.user1.id)
         self.assertEqual(message_json['username'], self.user1.username)
-        message_history = MessageHistory(self.user1, MessageActions.unread)
+        message_history = MessageHistory(self.user1, MessageAction.unread)
         message_json = message_history.as_json()
         self.assertEqual(message_json['action'], 'unread')

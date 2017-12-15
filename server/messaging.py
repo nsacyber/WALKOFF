@@ -13,7 +13,7 @@ user_messages_association = db.Table('user_messages',
 
 
 @unique
-class MessageActions(Enum):
+class MessageAction(Enum):
     read = 1
     unread = 2
     delete = 3
@@ -52,20 +52,20 @@ class Message(db.Model):
 
     def record_user_action(self, user, action):
         if user in self.users:
-            if ((action == MessageActions.unread and not self.user_has_read(user))
-                    or (action == MessageActions.act and (not self.requires_action or self.is_acted_on()[0]))):
+            if ((action == MessageAction.unread and not self.user_has_read(user))
+                    or (action == MessageAction.act and (not self.requires_action or self.is_acted_on()[0]))):
                 return
-            elif action == MessageActions.delete:
+            elif action == MessageAction.delete:
                 self.users.remove(user)
             self.history.append(MessageHistory(user, action))
 
     def user_has_read(self, user):
         user_history = [history_entry for history_entry in self.history if history_entry.user_id == user.id]
         for history_entry in user_history[::-1]:
-            if history_entry.action in (MessageActions.read, MessageActions.unread):
-                if history_entry.action == MessageActions.unread:
+            if history_entry.action in (MessageAction.read, MessageAction.unread):
+                if history_entry.action == MessageAction.unread:
                     return False
-                if history_entry.action == MessageActions.read:
+                if history_entry.action == MessageAction.read:
                     return True
         else:
             return False
@@ -73,19 +73,19 @@ class Message(db.Model):
     def user_last_read_at(self, user):
         user_history = [history_entry for history_entry in self.history if history_entry.user_id == user.id]
         for history_entry in user_history[::-1]:
-            if history_entry.action == MessageActions.read:
+            if history_entry.action == MessageAction.read:
                 return history_entry.timestamp
         else:
             return None
 
     def get_read_by(self):
-        return {entry.username for entry in self.history if entry.action == MessageActions.read}
+        return {entry.username for entry in self.history if entry.action == MessageAction.read}
 
     def is_acted_on(self):
         if not self.requires_action:
             return False, None, None
         for history_entry in self.history[::-1]:
-            if history_entry.action == MessageActions.act:
+            if history_entry.action == MessageAction.act:
                 return True, history_entry.timestamp, history_entry.username
         else:
             return False, None, None
@@ -114,7 +114,7 @@ class Message(db.Model):
 class MessageHistory(db.Model):
     __tablename__ = 'message_history'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    action = db.Column(db.Enum(MessageActions))
+    action = db.Column(db.Enum(MessageAction))
     timestamp = db.Column(db.DateTime, default=func.current_timestamp())
     user_id = db.Column(db.Integer)
     username = db.Column(db.String)

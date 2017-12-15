@@ -19,7 +19,7 @@ def get_all_messages():
 
 
 def act_on_messages(action):
-    from server.messaging import MessageActions
+    from server.messaging import MessageAction
 
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('messages', ['update']))
@@ -29,14 +29,14 @@ def act_on_messages(action):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('messages', ['delete']))
     def delete_message_action():
-        return act_on_message_helper(MessageActions.delete)
+        return act_on_message_helper(MessageAction.delete)
 
-    action = MessageActions.convert_string(action)
+    action = MessageAction.convert_string(action)
     if action is None:
         return {'error': 'Unknown action: {0}. Possible actions are {1}'.format(
-            action, list(MessageActions.get_all_action_names()))}, OBJECT_DNE_ERROR
+            action, list(MessageAction.get_all_action_names()))}, OBJECT_DNE_ERROR
 
-    if action == MessageActions.delete:
+    if action == MessageAction.delete:
         return delete_message_action()
     else:
         return other_action_func(action)

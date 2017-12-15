@@ -1,5 +1,5 @@
 from unittest import TestCase
-from server.messaging import (Message, MessageHistory, MessageActions, get_all_matching_users_for_message, save_message,
+from server.messaging import (Message, MessageHistory, MessageAction, get_all_matching_users_for_message, save_message,
                               strip_requires_auth_from_message_body)
 from server.database import db, User, Role
 from server import flaskserver
@@ -82,10 +82,10 @@ class TestMessageDatabase(TestCase):
 
     def test_user_reads_message(self):
         message = self.get_default_message()
-        message.record_user_action(self.user, MessageActions.read)
+        message.record_user_action(self.user, MessageAction.read)
         self.assertEqual(len(list(message.history)), 1)
         history = list(message.history)[0]
-        self.assertEqual(history.action, MessageActions.read)
+        self.assertEqual(history.action, MessageAction.read)
         self.assertEqual(history.user_id, self.user.id)
         self.assertEqual(history.username, self.user.username)
         self.assertTrue(message.user_has_read(self.user))
@@ -93,63 +93,63 @@ class TestMessageDatabase(TestCase):
 
     def test_invalid_user_reads_message(self):
         message = self.get_default_message()
-        message.record_user_action(self.user3, MessageActions.read)
+        message.record_user_action(self.user3, MessageAction.read)
         self.assertEqual(len(list(message.history)), 0)
         for user in (self.user, self.user2, self.user3):
             self.assertFalse(message.user_has_read(user))
 
     def test_user_unreads_message_which_is_not_read(self):
         message = self.get_default_message()
-        message.record_user_action(self.user, MessageActions.unread)
+        message.record_user_action(self.user, MessageAction.unread)
         self.assertEqual(len(list(message.history)), 0)
         self.assertFalse(message.user_has_read(self.user))
 
     def test_invalid_user_unreads_message(self):
         message = self.get_default_message()
-        message.record_user_action(self.user3, MessageActions.unread)
+        message.record_user_action(self.user3, MessageAction.unread)
         self.assertEqual(len(list(message.history)), 0)
         for user in (self.user, self.user2, self.user3):
             self.assertFalse(message.user_has_read(user))
 
     def test_user_unreads_message(self):
         message = self.get_default_message()
-        message.record_user_action(self.user, MessageActions.read)
-        message.record_user_action(self.user, MessageActions.unread)
+        message.record_user_action(self.user, MessageAction.read)
+        message.record_user_action(self.user, MessageAction.unread)
         self.assertEqual(len(list(message.history)), 2)
         self.assertFalse(message.user_has_read(self.user))
-        self.assertEqual(list(message.history)[1].action, MessageActions.unread)
+        self.assertEqual(list(message.history)[1].action, MessageAction.unread)
 
     def test_user_has_read_message(self):
         message = self.get_default_message()
-        message.record_user_action(self.user, MessageActions.read)
-        message.record_user_action(self.user, MessageActions.unread)
-        message.record_user_action(self.user, MessageActions.read)
+        message.record_user_action(self.user, MessageAction.read)
+        message.record_user_action(self.user, MessageAction.unread)
+        message.record_user_action(self.user, MessageAction.read)
         self.assertTrue(message.user_has_read(self.user))
-        message.record_user_action(self.user, MessageActions.unread)
+        message.record_user_action(self.user, MessageAction.unread)
         self.assertFalse(message.user_has_read(self.user))
 
     def test_user_last_read_at(self):
         message = self.get_default_message()
-        message.record_user_action(self.user, MessageActions.read)
-        message.record_user_action(self.user2, MessageActions.read)
-        message.record_user_action(self.user, MessageActions.read)
+        message.record_user_action(self.user, MessageAction.read)
+        message.record_user_action(self.user2, MessageAction.read)
+        message.record_user_action(self.user, MessageAction.read)
         self.assertIsNone(message.user_last_read_at(self.user3))
         self.assertEqual(message.user_last_read_at(self.user), message.history[2].timestamp)
         self.assertEqual(message.user_last_read_at(self.user2), message.history[1].timestamp)
 
     def test_get_read_by(self):
         message = self.get_default_message()
-        message.record_user_action(self.user, MessageActions.read)
-        message.record_user_action(self.user2, MessageActions.read)
-        message.record_user_action(self.user, MessageActions.unread)
+        message.record_user_action(self.user, MessageAction.read)
+        message.record_user_action(self.user2, MessageAction.read)
+        message.record_user_action(self.user, MessageAction.unread)
         self.assertSetEqual(message.get_read_by(), {self.user.username, self.user2.username})
 
     def test_user_deletes_message(self):
         message = self.get_default_message()
-        message.record_user_action(self.user, MessageActions.delete)
+        message.record_user_action(self.user, MessageAction.delete)
         self.assertEqual(len(list(message.history)), 1)
         history = list(message.history)[0]
-        self.assertEqual(history.action, MessageActions.delete)
+        self.assertEqual(history.action, MessageAction.delete)
         self.assertEqual(history.user_id, self.user.id)
         self.assertEqual(history.username, self.user.username)
         self.assertEqual(len(list(self.user.messages)), 0)
@@ -157,28 +157,28 @@ class TestMessageDatabase(TestCase):
 
     def test_invalid_user_deletes_message(self):
         message = self.get_default_message()
-        message.record_user_action(self.user3, MessageActions.delete)
+        message.record_user_action(self.user3, MessageAction.delete)
         self.assertEqual(len(list(message.history)), 0)
         for user in (self.user, self.user2):
             self.assertEqual(len(list(user.messages)), 1)
 
     def test_user_acts_on_message(self):
         message = self.get_default_message(requires_action=True)
-        message.record_user_action(self.user, MessageActions.act)
+        message.record_user_action(self.user, MessageAction.act)
         self.assertEqual(len(list(message.history)), 1)
         history = list(message.history)[0]
-        self.assertEqual(history.action, MessageActions.act)
+        self.assertEqual(history.action, MessageAction.act)
         self.assertEqual(history.user_id, self.user.id)
         self.assertEqual(history.username, self.user.username)
 
     def test_acts_on_message_which_does_not_require_action(self):
         message = self.get_default_message()
-        message.record_user_action(self.user, MessageActions.act)
+        message.record_user_action(self.user, MessageAction.act)
         self.assertEqual(len(list(message.history)), 0)
 
     def test_invalid_user_acts_on_message(self):
         message = self.get_default_message(requires_action=True)
-        message.record_user_action(self.user3, MessageActions.act)
+        message.record_user_action(self.user3, MessageAction.act)
         self.assertEqual(len(list(message.history)), 0)
 
     def test_is_acted_on(self):
@@ -186,11 +186,11 @@ class TestMessageDatabase(TestCase):
         self.assertFalse(message.is_acted_on()[0])
         self.assertIsNone(message.is_acted_on()[1])
         self.assertIsNone(message.is_acted_on()[2])
-        message.record_user_action(self.user, MessageActions.read)
+        message.record_user_action(self.user, MessageAction.read)
         self.assertFalse(message.is_acted_on()[0])
         self.assertIsNone(message.is_acted_on()[1])
         self.assertIsNone(message.is_acted_on()[2])
-        message.record_user_action(self.user2, MessageActions.act)
+        message.record_user_action(self.user2, MessageAction.act)
         self.assertTrue(message.is_acted_on()[0])
         act_history = message.history[1]
         self.assertEqual(message.is_acted_on()[1], act_history.timestamp)
@@ -198,8 +198,8 @@ class TestMessageDatabase(TestCase):
 
     def test_is_acted_on_already_acted_on(self):
         message = self.get_default_message(requires_action=True)
-        message.record_user_action(self.user, MessageActions.act)
-        message.record_user_action(self.user2, MessageActions.act)
+        message.record_user_action(self.user, MessageAction.act)
+        message.record_user_action(self.user2, MessageAction.act)
         self.assertEqual(len(list(message.history)), 1)
         self.assertEqual(message.history[0].user_id, self.user.id)
 
@@ -229,26 +229,26 @@ class TestMessageDatabase(TestCase):
 
     def test_as_json_with_read_by(self):
         message = self.get_default_message()
-        message.record_user_action(self.user, MessageActions.read)
+        message.record_user_action(self.user, MessageAction.read)
         message_json = message.as_json(with_read_by=True)
         self.assertListEqual(message_json['read_by'], [self.user.username])
-        message.record_user_action(self.user2, MessageActions.read)
+        message.record_user_action(self.user2, MessageAction.read)
         message_json = message.as_json(with_read_by=True)
         self.assertSetEqual(set(message_json['read_by']), {self.user.username, self.user2.username})
 
     def test_as_json_with_read_by_user_has_unread(self):
         message = self.get_default_message()
-        message.record_user_action(self.user, MessageActions.read)
+        message.record_user_action(self.user, MessageAction.read)
         message_json = message.as_json(with_read_by=True)
         self.assertListEqual(message_json['read_by'], [self.user.username])
-        message.record_user_action(self.user2, MessageActions.read)
-        message.record_user_action(self.user2, MessageActions.unread)
+        message.record_user_action(self.user2, MessageAction.read)
+        message.record_user_action(self.user2, MessageAction.unread)
         message_json = message.as_json(with_read_by=True)
         self.assertSetEqual(set(message_json['read_by']), {self.user.username, self.user2.username})
 
     def test_as_json_with_acted_on(self):
         message = self.get_default_message(commit=True, requires_action=True)
-        message.record_user_action(self.user, MessageActions.act)
+        message.record_user_action(self.user, MessageAction.act)
         db.session.commit()
         message_json = message.as_json()
         message_history = message.history[0]
@@ -262,8 +262,8 @@ class TestMessageDatabase(TestCase):
         self.assertFalse(message_json['is_read'])
         message_json = message.as_json(user=self.user2)
         self.assertFalse(message_json['is_read'])
-        message.record_user_action(self.user, MessageActions.read)
-        message.record_user_action(self.user2, MessageActions.read)
+        message.record_user_action(self.user, MessageAction.read)
+        message.record_user_action(self.user2, MessageAction.read)
         db.session.commit()
         user1_history = message.history[0]
         user2_history = message.history[1]
@@ -386,9 +386,9 @@ class TestMessageDatabase(TestCase):
         self.assertTrue(message.requires_action)
 
     def test_message_actions_convert_string(self):
-        self.assertEqual(MessageActions.convert_string('read'), MessageActions.read)
-        self.assertEqual(MessageActions.convert_string('unread'), MessageActions.unread)
-        self.assertIsNone(MessageActions.convert_string('__some_invalid_name'))
+        self.assertEqual(MessageAction.convert_string('read'), MessageAction.read)
+        self.assertEqual(MessageAction.convert_string('unread'), MessageAction.unread)
+        self.assertIsNone(MessageAction.convert_string('__some_invalid_name'))
 
 
 
