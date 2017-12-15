@@ -351,4 +351,4 @@ class TestCaseServer(ServerTestCase):
         for event_type in (event.name for event in EventType if event != EventType.other):
             events = next((event['events'] for event in response if event['type'] == event_type))
             self.assertSetEqual(set(events),
-                                {event.signal_name for event in WalkoffEvent if event.event_type.name == event_type})
+                                {event.signal_name for event in WalkoffEvent if event.event_type.name == event_type and event != WalkoffEvent.SendMessage})

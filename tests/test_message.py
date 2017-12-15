@@ -161,7 +161,7 @@ class TestMessage(TestCase):
         message = Message(components=components)
         send_message(message, [1, 2, 3])
         self.assertTrue(data['called'])
-        self.assertIs(data['sender'], message)
+        self.assertDictEqual(data['sender'], message.as_json())
         self.assertEqual(data['data']['event'], WalkoffEvent.SendMessage)
         self.assertListEqual(data['data']['users'], [1, 2, 3])
         self.assertFalse(data['data']['requires_reauth'])

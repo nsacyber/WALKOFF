@@ -21,15 +21,18 @@ class TestMessageDatabase(TestCase):
             db.session.delete(role)
         for message in Message.query.all():
             db.session.delete(message)
-        cls.user = User('username', 'password')
-        cls.user2 = User('username2', 'password2')
+        db.session.commit()
 
-        cls.role = Role('visitor')
-        db.session.add(cls.role)
-        cls.user3 = User('username3', 'password3', roles=[cls.role.name])
-        db.session.add(cls.user)
-        db.session.add(cls.user2)
-        db.session.add(cls.user3)
+    def setUp(self):
+        self.user = User('username', 'password')
+        self.user2 = User('username2', 'password2')
+
+        self.role = Role('visitor')
+        db.session.add(self.role)
+        self.user3 = User('username3', 'password3', roles=[self.role.name])
+        db.session.add(self.user)
+        db.session.add(self.user2)
+        db.session.add(self.user3)
         db.session.commit()
 
     def tearDown(self):
@@ -38,6 +41,10 @@ class TestMessageDatabase(TestCase):
             db.session.delete(message)
         for history_entry in MessageHistory.query.all():
             db.session.delete(history_entry)
+        for user in [user for user in User.query.all() if user.username != 'admin']:
+            db.session.delete(user)
+        for role in [role for role in Role.query.all() if role.name != 'admin']:
+            db.session.delete(role)
         db.session.commit()
 
     @classmethod
@@ -56,7 +63,6 @@ class TestMessageDatabase(TestCase):
         if commit:
             db.session.commit()
         return message
-
 
     def test_init_message(self):
         message = Message('subject here', 'body goes here', 'workflow_uid1', [self.user, self.user2])
@@ -275,16 +281,16 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(message_json['last_read_at'], str(user2_history.timestamp))
 
     def test_strip_requires_auth_from_message_body(self):
-        body = [{'message': 'look here', 'requires_auth': True},
+        body = {'body': [{'message': 'look here', 'requires_auth': True},
                 {'message': 'also here', 'requires_auth': False},
-                {'message': 'here thing'}]
+                {'message': 'here thing'}]}
         self.assertTrue(strip_requires_auth_from_message_body(body))
-        self.assertListEqual(body, [{'message': 'look here'}, {'message': 'also here'}, {'message': 'here thing'}])
+        self.assertListEqual(body['body'], [{'message': 'look here'}, {'message': 'also here'}, {'message': 'here thing'}])
 
     def test_strip_requires_auth_from_message_body_none_require_auth(self):
-        body = [{'message': 'look here', 'requires_auth': False},
+        body = {'body': [{'message': 'look here', 'requires_auth': False},
                 {'message': 'also here', 'requires_auth': False},
-                {'message': 'here thing'}]
+                {'message': 'here thing'}]}
         self.assertFalse(strip_requires_auth_from_message_body(body))
 
     def test_get_all_matching_members_for_message_no_users_or_roles_in_db(self):
@@ -305,12 +311,17 @@ class TestMessageDatabase(TestCase):
             self.assertIn(user, [self.user, self.user2, self.user3])
 
     def test_save_message(self):
-        message_data = {'users': [self.user.id, self.user2.id],
+        user1 = User('aaaaa', 'passssss')
+        user2 = User('bbbbb', 'passs')
+        db.session.add(user1)
+        db.session.add(user2)
+        db.session.commit()
+        message_data = {'users': [user1.id, user2.id],
                         'roles': [],
                         'subject': 'Re: This thing',
                         'requires_reauth': False}
         workflow_execution_uid = 'workflow_uid1'
-        body = [{'text': 'Here is something to look at'}, {'url': 'look.here.com'}]
+        body = {'body': [{'text': 'Here is something to look at'}, {'url': 'look.here.com'}]}
         save_message(body, message_data, workflow_execution_uid, False)
         messages = Message.query.all()
         self.assertEqual(len(messages), 1)
@@ -318,23 +329,30 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(message.subject, message_data['subject'])
         self.assertEqual(len(message.users), 2)
         for user in message.users:
-            self.assertIn(user, [self.user, self.user2])
-        self.assertEqual(message.body, json.dumps(body))
+            self.assertIn(user, [user1, user2])
+        self.assertEqual(message.body, json.dumps(body['body']))
 
     def test_save_message_with_roles(self):
-        message_data = {'users': [self.user2.id],
-                        'roles': [self.role.id],
+        role = Role('some role')
+        db.session.add(role)
+        user1 = User('aaaaa', 'passssss', roles=[role.name])
+        user2 = User('bbbbb', 'passs', roles=[role.name])
+        db.session.add(user1)
+        db.session.add(user2)
+        db.session.commit()
+        message_data = {'users': [user1.id],
+                        'roles': [role.id],
                         'subject': 'Re: This thing',
                         'requires_reauth': False}
         workflow_execution_uid = 'workflow_uid1'
-        body = [{'text': 'Here is something to look at'}, {'url': 'look.here.com'}]
+        body = {'body': [{'text': 'Here is something to look at'}, {'url': 'look.here.com'}]}
         save_message(body, message_data, workflow_execution_uid, False)
         messages = Message.query.all()
         self.assertEqual(len(messages), 1)
         message = messages[0]
         self.assertEqual(len(message.users), 2)
         for user in message.users:
-            self.assertIn(user, [self.user2, self.user3])
+            self.assertIn(user, [user1, user2])
 
     def test_save_message_no_valid_users(self):
         message_data = {'users': [10, 20],
@@ -342,17 +360,17 @@ class TestMessageDatabase(TestCase):
                         'subject': 'Re: This a thing',
                         'requires_reauth': False}
         workflow_execution_uid = 'workflow_uid4'
-        body = [{'text': 'Here is something to look at'}, {'url': 'look.here.com'}]
+        body = {'body': [{'text': 'Here is something to look at'}, {'url': 'look.here.com'}]}
         save_message(body, message_data, workflow_execution_uid, False)
         messages = Message.query.all()
         self.assertEqual(len(messages), 0)
 
     def test_save_message_callback(self):
-        body = [{'message': 'look here', 'requires_auth': False},
-                {'message': 'also here', 'requires_auth': False},
-                {'message': 'here thing'}]
+        body = {'body': [{'message': 'look here', 'requires_auth': False},
+                         {'message': 'also here', 'requires_auth': False},
+                         {'message': 'here thing'}]}
         message_data = {'body': body,
-                        'users': [self.user2.id],
+                        'users': [self.user.id],
                         'roles': [self.role.id],
                         'subject': 'Warning about thing',
                         'requires_reauth': False}
@@ -366,11 +384,11 @@ class TestMessageDatabase(TestCase):
         self.assertFalse(message.requires_action)
 
     def test_save_message_callback_requires_auth(self):
-        body = [{'message': 'look here', 'requires_auth': False},
-                {'message': 'also here', 'requires_auth': True},
-                {'message': 'here thing'}]
+        body = {'body': [{'message': 'look here', 'requires_auth': False},
+                         {'message': 'also here', 'requires_auth': True},
+                         {'message': 'here thing'}]}
         message_data = {'body': body,
-                        'users': [self.user2.id],
+                        'users': [self.user.id],
                         'roles': [self.role.id],
                         'subject': 'Re: Best chicken recipe',
                         'requires_reauth': False}

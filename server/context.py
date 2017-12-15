@@ -5,11 +5,9 @@ class Context(object):
         """
         from server.app import app
         import core.controller
-        from server.messaging import Message
 
         self.flask_app = app
         self.controller = core.controller.controller
-        self.Message = Message
 
 
 running_context = Context()
