@@ -5,7 +5,7 @@ from server.database import clear_resources_for_role, get_all_available_resource
 from server.database.role import Role
 from server.extensions import db
 from server.returncodes import *
-from server.security import roles_accepted, permissions_accepted_for_resources, ResourcePermissions
+from server.security import permissions_accepted_for_resources, ResourcePermissions
 
 
 def read_all_roles():

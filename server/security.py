@@ -1,7 +1,7 @@
 from functools import wraps
 
 from flask import request
-from flask_jwt_extended import get_jwt_identity, get_jwt_claims
+from flask_jwt_extended import get_jwt_claims
 from flask_jwt_extended.config import config
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_jwt_extended.tokens import decode_jwt
@@ -39,30 +39,6 @@ def add_claims_to_access_token(user_id):
 @jwt.revoked_token_loader
 def token_is_revoked_loader():
     return json.dumps({'error': 'Token is revoked'}), UNAUTHORIZED_ERROR
-
-
-def roles_accepted(*roles):
-    return _roles_decorator(roles, all_required=False)
-
-
-def roles_required(*roles):
-    return _roles_decorator(roles, all_required=True)
-
-
-def _roles_decorator(roles, all_required=False):
-    roles = set(roles)
-
-    def wrapper(fn):
-        @wraps(fn)
-        def decorated_view(*args, **kwargs):
-            if user_has_correct_roles(roles, all_required=all_required):
-                return fn(*args, **kwargs)
-            else:
-                return "Unauthorized View", FORBIDDEN_ERROR
-
-        return decorated_view
-
-    return wrapper
 
 
 def permissions_accepted_for_resources(*resource_permissions):
