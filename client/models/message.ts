@@ -8,10 +8,10 @@ export class Message {
 	subject: string;
 	body: MessageBody[] = [];
 	created_at: Date;
-	last_read_at: Date;
+	last_read_at?: Date;
 	is_read: boolean;
 	awaiting_action: boolean;
-	acted_on_by: string;
-	acted_on_at: Date;
-	read_by: string;
+	acted_on_by?: string;
+	acted_on_at?: Date;
+	read_by?: string[];
 }

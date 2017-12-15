@@ -166,7 +166,7 @@ export class CasesComponent {
 		this.casesService
 			.getPlaybooks()
 			.then(playbooks => this.subscriptionTree = this.convertPlaybooksToSubscriptionTree(playbooks))
-			// .catch(e => this.toastyService.error(`Error retrieving subscription tree: ${e.message}`));
+			.catch(e => this.toastyService.error(`Error retrieving subscription tree: ${e.message}`));
 	}
 
 	convertPlaybooksToSubscriptionTree(playbooks: any[]): any {
@@ -239,7 +239,6 @@ export class CasesComponent {
 					break;
 			}
 
-			console.log(target, childType);
 			target[childType].forEach(function (sub: any) {
 				node.children.push(self.getNodeRecursive(sub, typeIndex + 1, childPrefix));
 			});

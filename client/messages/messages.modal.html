@@ -1,5 +1,10 @@
 <div class="modal-header">
-	<h4 class="modal-title">{{message.subject}}</h4>
+	<h4 class="modal-title">
+		{{message.subject}}
+		<button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="dismiss()">
+		  <span aria-hidden="true">&times;</span>
+		</button>
+	</h4>
 </div>
 <div id="messageModalBody" class="modal-body">
 	<div class="container-fluid">
@@ -14,6 +19,6 @@
 	</div>
 </div>
 <!-- <div class="modal-footer">
-	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
+	<button type="button" class="btn btn-secondary" (click)="dismiss()">Undo Changes and Close</button>
 	<button type="button" class="btn btn-primary" [disabled]="!roleForm.form.valid" (click)="submit()">{{submitText}}</button>
 </div> -->

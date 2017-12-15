@@ -53,6 +53,17 @@
           <!-- Navbar Right Menu -->
           <div class="navbar-custom-menu">
             <ul class="nav navbar-nav navbar-right">
+              <li class="dropdown messages messages-menu">
+                <a href="#" class="dropdown-toggle" [class.newMessages]="messages.length" data-toggle="dropdown">
+                  <i class="fa" [ngClass]="{ 'fa-envelope': messages.length, 'fa-envelope-open-o': !messages.length }"></i>
+                  <span>{{messages.length}}</span>
+                </a>
+                <div class="dropdown-menu">
+                  <div *ngFor="let message of messages">
+                      <a class="dropdown-item" href="#" (click)="openMessage($event, message)">{{message.subject}}</a>
+                  </div>
+                </div>
+              </li>
               <!-- User Account Menu -->
               <li class="dropdown user user-menu">
                 <!-- Menu Toggle Button -->

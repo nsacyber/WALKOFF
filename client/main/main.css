@@ -77,6 +77,11 @@
   color: #3c8dbc;
 }
 
+#walkoffNav .navbar-nav .newMessages {
+  color: orange;
+  font-weight: bold;
+}
+
 .footer {
   position: absolute;
   bottom: 0;

@@ -3,15 +3,15 @@
 
 	<div class="row">
 		<div class="col-xs-6">
-				<button (click)="deleteSelected()" class="btn btn-secondary" title="Delete Selected">
-					<i class="fa fa-trash-o"></i>
-				</button>
-				<button (click)="markSelectedAsRead()" class="btn btn-secondary" title="Mark Selected as Read">
-					<i class="fa fa-envelope-open-o"></i>
-				</button>
-				<button (click)="markSelectedAsUnread()" class="btn btn-secondary" title="Mark Selected as Unread">
-					<i class="fa fa-envelope-o"></i>
-				</button>
+			<button (click)="deleteSelected()" class="btn btn-secondary" title="Delete Selected">
+				<i class="fa fa-trash-o"></i>
+			</button>
+			<button (click)="markSelectedAsRead()" class="btn btn-secondary" title="Mark Selected as Read">
+				<i class="fa fa-envelope-open-o"></i>
+			</button>
+			<button (click)="markSelectedAsUnread()" class="btn btn-secondary" title="Mark Selected as Unread">
+				<i class="fa fa-envelope-o"></i>
+			</button>
 		</div>
 		<div class="col-xs-6">
 			<div class="form-group row">
@@ -34,7 +34,10 @@
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Subject" [flexGrow]="2">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				<a class="messageLink" [class.unread]="!row.is_read" (click)="openMessage(row)">{{row.subject}}</a>
+				<div>
+					<i *ngIf="row.awaiting_action" class="fa fa-exclamation required" title="This message is awaiting action."></i>
+					<a class="messageLink" [class.unread]="!row.is_read" (click)="openMessage(row)">{{row.subject}}</a>
+				</div>
 			</ng-template>
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Sent" [flexGrow]="2">

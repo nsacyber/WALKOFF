@@ -15,12 +15,26 @@ import { Message } from '../models/message';
 	providers: [MessagesService],
 })
 export class MessagesModalComponent {
-	@Input() messages: Message[];
+	@Input() message: Message;
+
 
 	constructor(
 		private messagesService: MessagesService, private activeModal: NgbActiveModal,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
 	) {
 		this.toastyConfig.theme = 'bootstrap';
+	}
+
+	performMessageAction(action: string) {
+		this.messagesService.performMessageAction(this.message.workflow_execution_uid, action)
+			.then(() => {
+				this.message.awaiting_action = false;
+				this.message.acted_on_at = new Date();
+			})
+			.catch(e => this.toastyService.error(`Error performing ${action} on message: ${e.message}`));
+	}
+
+	dismiss(): void {
+		this.activeModal.dismiss();
 	}
 }

@@ -9,3 +9,7 @@
 .messagesMain .unread {
 	font-weight: bold;
 }
+
+.messagesMain .required {
+	color: crimson;
+}
