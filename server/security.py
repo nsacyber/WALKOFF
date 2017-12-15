@@ -1,7 +1,7 @@
 from functools import wraps
 
 from flask import request
-from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import get_jwt_identity, get_jwt_claims
 from flask_jwt_extended.config import config
 from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_jwt_extended.tokens import decode_jwt
@@ -10,16 +10,17 @@ from flask_jwt_extended.view_decorators import _load_user
 from server.database import User
 from server.extensions import jwt
 from server.returncodes import FORBIDDEN_ERROR
-
-try:
-    from flask import _app_ctx_stack as ctx_stack
-except ImportError:  # pragma: no cover
-    from flask import _request_ctx_stack as ctx_stack
 import server.database
 from server.returncodes import UNAUTHORIZED_ERROR
 from server.tokens import is_token_revoked
 import json
 import logging
+
+try:
+    from flask import _app_ctx_stack as ctx_stack
+except ImportError:  # pragma: no cover
+    from flask import _request_ctx_stack as ctx_stack
+
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,12 @@ logger = logging.getLogger(__name__)
 @jwt.token_in_blacklist_loader
 def is_token_blacklisted(decoded_token):
     return is_token_revoked(decoded_token)
+
+
+@jwt.user_claims_loader
+def add_claims_to_access_token(user_id):
+    user = User.query.filter(User.id == user_id).first()
+    return {'roles': [role.name for role in user.roles], 'username': user.username} if user is not None else {}
 
 
 @jwt.revoked_token_loader
@@ -84,18 +91,14 @@ def _permissions_decorator(resource_permissions, all_required=False):
     return wrapper
 
 
-def user_has_correct_roles(accepted_roles, all_required=False, user_id=None):
+def user_has_correct_roles(accepted_roles, all_required=False):
     if not accepted_roles:
         return False
-    user_id = get_jwt_identity() if user_id is None else user_id
-    user = server.database.User.query.filter(User.id == user_id).first()
-    if user is not None:
-        user_roles = {role.name for role in user.roles}
-        if all_required:
-            return not accepted_roles - user_roles
-        else:
-            return any(role in accepted_roles for role in user_roles)
-    return False
+    user_roles = set(get_jwt_claims().get('roles', []))
+    if all_required:
+        return not accepted_roles - user_roles
+    else:
+        return any(role in accepted_roles for role in user_roles)
 
 
 @jwt.expired_token_loader
