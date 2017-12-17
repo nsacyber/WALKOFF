@@ -39,6 +39,7 @@ def save_message(body, message_data, workflow_execution_uid, requires_action):
             requires_action=requires_action)
         db.session.add(message_entry)
         db.session.commit()
+        server.messaging.MessageActionEvent.created.send(message_entry)
     else:
         logger.error('Cannot send message. Users {0} or roles {1} do not exist'.format(
             message_data['users'], message_data['roles']))
@@ -85,5 +86,6 @@ def log_action_taken_on_message(user_id, workflow_execution_uid):
     if user is not None:
         message.record_user_action(user, server.messaging.MessageAction.respond)
         db.session.commit()
+        server.messaging.MessageActionEvent.responded.send(message, data={'user': user})
     else:
         logger.error('User became invalid between triggering workflow resume and logging message')

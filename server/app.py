@@ -20,9 +20,11 @@ logger = logging.getLogger(__name__)
 def register_blueprints(flaskapp):
     from server.blueprints import custominterface
     from server.blueprints import workflowresult
+    from server.blueprints import notifications
 
     flaskapp.register_blueprint(custominterface.custom_interface_page, url_prefix='/custominterfaces/<interface>')
     flaskapp.register_blueprint(workflowresult.workflowresults_page, url_prefix='/workflowresults')
+    flaskapp.register_blueprint(notifications.notifications_page, url_prefix='/notifications')
     __register_all_app_blueprints(flaskapp)
 
 

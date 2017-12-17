@@ -406,6 +406,27 @@ class TestMessageDatabase(TestCase):
         self.assertTrue(messaging.workflow_authorization_cache.workflow_requires_authorization('workflow_uid14'))
         self.assertTrue(message.requires_action)
 
+    def test_save_message_callback_sends_message_created(self):
+        body = {'body': [{'message': 'look here', 'requires_auth': False},
+                         {'message': 'also here', 'requires_auth': True},
+                         {'message': 'here thing'}]}
+        message_data = {'body': body,
+                        'users': [self.user.id],
+                        'roles': [self.role.id],
+                        'subject': 'Re: Best chicken recipe',
+                        'requires_reauth': False}
+        sender = {'workflow_execution_uid': 'workflow_uid14'}
+        res = {'called': False}
+
+        @server.messaging.MessageActionEvent.created.connect
+        def caller(message, **data):
+            res['called'] = True
+            self.assertEqual(len(list(message.users)), 2)
+            self.assertSetEqual({user.id for user in message.users}, {self.user.id, self.user3.id})
+
+        WalkoffEvent.SendMessage.send(sender, data=message_data)
+        self.assertTrue(res['called'])
+
     def test_message_actions_convert_string(self):
         self.assertEqual(MessageAction.convert_string('read'), MessageAction.read)
         self.assertEqual(MessageAction.convert_string('unread'), MessageAction.unread)
@@ -454,11 +475,20 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(message.history[0].action, MessageAction.respond)
         self.assertFalse(server.messaging.workflow_authorization_cache.workflow_requires_authorization('uid1'))
 
-    def test_trigger_action_taken_workflow_invalid_cache(self):
+    def test_trigger_action_taken_workflow_sends_responded_message(self):
         message = Message('subject', 'body', 'uid1', users=[self.user, self.user2], requires_action=True)
         db.session.add(message)
+        db.session.commit()
         server.messaging.workflow_authorization_cache.add_authorized_users('uid1', users=[1, 2])
-        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender('uid1'))
-        self.assertEqual(len(list(message.history)), 0)
-        self.assertFalse(server.messaging.workflow_authorization_cache.workflow_requires_authorization('uid1'))
+        server.messaging.workflow_authorization_cache.add_user_in_progress('uid1', self.user.id)
 
+        res = {'called': False}
+
+        @server.messaging.MessageActionEvent.responded.connect
+        def connected(message_in, **data):
+            res['called'] = True
+            self.assertEqual(message_in.id, message.id)
+            self.assertEqual(data['data']['user'], self.user)
+
+        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender('uid1'))
+        self.assertTrue(res['called'])

@@ -1,6 +1,7 @@
 import logging
 from enum import unique, Enum
-from collections import deque, namedtuple
+from collections import deque
+from blinker import NamedSignal
 
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,20 @@ class MessageAction(Enum):
     @classmethod
     def convert_string(cls, name):
         return next((action for action in cls if action.name == name), None)
+
+
+@unique
+class MessageActionEvent(Enum):
+    created = NamedSignal('message created')
+    read = NamedSignal('message read')
+    responded = NamedSignal('message responded')
+
+    def send(self, message, **data):
+        self.value.send(message, **data)
+
+    def connect(self, func):
+        self.value.connect(func)
+        return func
 
 
 class WorkflowAuthorizedUserSet(object):
