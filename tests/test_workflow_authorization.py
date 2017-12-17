@@ -5,38 +5,42 @@ from server.messaging import WorkflowAuthorization
 class TestWorkflowAuthorization(TestCase):
 
     def test_is_authorized(self):
-        users = ['user1', 'user2']
-        roles = ['admin', 'guest']
-        authorizations = WorkflowAuthorization(users=users, roles=roles)
+        users = [1, 2, 3]
+        roles = [3, 4]
+        auth = WorkflowAuthorization(users, roles)
         for user in users:
-            self.assertTrue(authorizations.is_authorized(user, 'visitor'))
+            self.assertTrue(auth.is_authorized(user, 3))
         for role in roles:
-            self.assertTrue(authorizations.is_authorized('user3', role))
-        self.assertTrue(authorizations.is_authorized('user1', 'admin'))
-        self.assertFalse(authorizations.is_authorized('user3', 'visitor'))
+            self.assertTrue(auth.is_authorized(1, role))
+        self.assertFalse(auth.is_authorized(4, 5))
+        self.assertFalse(auth.is_authorized(10, 10))
 
-    def test_add_authorizations_no_overlap(self):
-        users1 = ['user1', 'user2']
-        roles1 = ['admin', 'guest']
-        authorizations1 = WorkflowAuthorization(users=users1, roles=roles1)
-        users2 = ['user3', 'user4']
-        roles2 = ['admin2', 'guest2']
-        authorizations2 = WorkflowAuthorization(users=users2, roles=roles2)
-        authorizations = authorizations1 + authorizations2
-        for user in users1 + users2:
-            self.assertTrue(authorizations.is_authorized(user, 'visitor'))
-        for role in roles1 + roles2:
-            self.assertTrue(authorizations.is_authorized('user10', role))
+    def test_add_authorized_users(self):
+        users = [1, 2, 3]
+        roles = [3, 4]
+        auth = WorkflowAuthorization(users, roles)
+        users2 = [5, 6]
+        roles2 = [1, 2]
+        auth.add_authorizations(users2, roles2)
+        for user in users + users2:
+            self.assertTrue(auth.is_authorized(user, 3))
+        for role in roles + roles2:
+            self.assertTrue(auth.is_authorized(1, role))
 
-    def test_add_authorizations_with_overlap(self):
-        users1 = ['user1', 'user2']
-        roles1 = ['admin', 'guest']
-        authorizations1 = WorkflowAuthorization(users=users1, roles=roles1)
-        users2 = ['user2', 'user3']
-        roles2 = ['admin', 'guest2']
-        authorizations2 = WorkflowAuthorization(users=users2, roles=roles2)
-        authorizations = authorizations1 + authorizations2
-        for user in ['user1', 'user2', 'user3']:
-            self.assertTrue(authorizations.is_authorized(user, 'visitor'))
-        for role in ['admin', 'guest', 'guest2']:
-            self.assertTrue(authorizations.is_authorized('user10', role))
+    def test_append_user(self):
+        users = [1, 2, 3]
+        roles = [3, 4]
+        auth = WorkflowAuthorization(users, roles)
+        auth.append_user(1)
+        self.assertEqual(auth.peek_user(), 1)
+        auth.append_user(5)
+        self.assertEqual(auth.peek_user(), 5)
+
+    def test_pop_user(self):
+        users = [1, 2, 3]
+        roles = [3, 4]
+        auth = WorkflowAuthorization(users, roles)
+        auth.append_user(1)
+        auth.append_user(5)
+        self.assertEqual(auth.pop_user(), 5)
+        self.assertEqual(auth.pop_user(), 1)

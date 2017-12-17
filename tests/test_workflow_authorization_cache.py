@@ -46,3 +46,30 @@ class TestWorkflowAuthorizationCache(TestCase):
         self.cache.add_authorized_users('workflow_uid1', users=[1], roles=[2])
         self.assertTrue(self.cache.workflow_requires_authorization('workflow_uid1'))
         self.assertFalse(self.cache.workflow_requires_authorization('workflow_uid2'))
+
+    def test_add_user_in_progress_workflow_not_in_cache(self):
+        self.cache.add_user_in_progress('uid1', 1)
+        self.assertIsNone(self.cache.peek_user_in_progress('uid1'))
+
+    def test_add_user_in_progress(self):
+        self.cache.add_authorized_users('uid1', users=[1])
+        self.cache.add_user_in_progress('uid1', 1)
+        self.assertEqual(self.cache.peek_user_in_progress('uid1'), 1)
+        self.cache.add_user_in_progress('uid1', 3)
+        self.assertEqual(self.cache.peek_user_in_progress('uid1'), 3)
+
+    def test_pop_user_in_progress_workflow_not_in_cache(self):
+        self.assertIsNone(self.cache.pop_last_user_in_progress('uid1'))
+
+    def test_pop_user_in_progress_empty_queue(self):
+        self.cache.add_authorized_users('uid1', users=[1])
+        self.assertIsNone(self.cache.pop_last_user_in_progress('uid1'))
+
+    def test_pop_user_in_progress(self):
+        self.cache.add_authorized_users('uid1', users=[1])
+        self.cache.add_user_in_progress('uid1', 1)
+        self.assertEqual(self.cache.pop_last_user_in_progress('uid1'), 1)
+        self.cache.add_user_in_progress('uid1', 7)
+        self.assertEqual(self.cache.pop_last_user_in_progress('uid1'), 7)
+
+

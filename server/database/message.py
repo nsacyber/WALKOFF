@@ -35,7 +35,7 @@ class Message(db.Model):
     def record_user_action(self, user, action):
         if user in self.users:
             if ((action == MessageAction.unread and not self.user_has_read(user))
-                    or (action == MessageAction.act and (not self.requires_action or self.is_acted_on()[0]))):
+                    or (action == MessageAction.respond and (not self.requires_action or self.is_acted_on()[0]))):
                 return
             elif action == MessageAction.delete:
                 self.users.remove(user)
@@ -67,7 +67,7 @@ class Message(db.Model):
         if not self.requires_action:
             return False, None, None
         for history_entry in self.history[::-1]:
-            if history_entry.action == MessageAction.act:
+            if history_entry.action == MessageAction.respond:
                 return True, history_entry.timestamp, history_entry.username
         else:
             return False, None, None

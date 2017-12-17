@@ -22,7 +22,7 @@
       description: The action to take on multiple messages
       required: true
       type: string
-      enum: [read, unread, delete, act]
+      enum: [read, unread, delete]
   post:
     tags:
       - Messages

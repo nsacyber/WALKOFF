@@ -1,8 +1,9 @@
 from unittest import TestCase
 from server.database import Message, MessageHistory
 from server.messaging import MessageAction
+import server.messaging
 from server.messaging.utils import strip_requires_auth_from_message_body, save_message, \
-    get_all_matching_users_for_message
+    get_all_matching_users_for_message, log_action_taken_on_message
 from server.database import db, User, Role
 from server import flaskserver
 from datetime import datetime
@@ -172,21 +173,21 @@ class TestMessageDatabase(TestCase):
 
     def test_user_acts_on_message(self):
         message = self.get_default_message(requires_action=True)
-        message.record_user_action(self.user, MessageAction.act)
+        message.record_user_action(self.user, MessageAction.respond)
         self.assertEqual(len(list(message.history)), 1)
         history = list(message.history)[0]
-        self.assertEqual(history.action, MessageAction.act)
+        self.assertEqual(history.action, MessageAction.respond)
         self.assertEqual(history.user_id, self.user.id)
         self.assertEqual(history.username, self.user.username)
 
     def test_acts_on_message_which_does_not_require_action(self):
         message = self.get_default_message()
-        message.record_user_action(self.user, MessageAction.act)
+        message.record_user_action(self.user, MessageAction.respond)
         self.assertEqual(len(list(message.history)), 0)
 
     def test_invalid_user_acts_on_message(self):
         message = self.get_default_message(requires_action=True)
-        message.record_user_action(self.user3, MessageAction.act)
+        message.record_user_action(self.user3, MessageAction.respond)
         self.assertEqual(len(list(message.history)), 0)
 
     def test_is_acted_on(self):
@@ -198,7 +199,7 @@ class TestMessageDatabase(TestCase):
         self.assertFalse(message.is_acted_on()[0])
         self.assertIsNone(message.is_acted_on()[1])
         self.assertIsNone(message.is_acted_on()[2])
-        message.record_user_action(self.user2, MessageAction.act)
+        message.record_user_action(self.user2, MessageAction.respond)
         self.assertTrue(message.is_acted_on()[0])
         act_history = message.history[1]
         self.assertEqual(message.is_acted_on()[1], act_history.timestamp)
@@ -206,8 +207,8 @@ class TestMessageDatabase(TestCase):
 
     def test_is_acted_on_already_acted_on(self):
         message = self.get_default_message(requires_action=True)
-        message.record_user_action(self.user, MessageAction.act)
-        message.record_user_action(self.user2, MessageAction.act)
+        message.record_user_action(self.user, MessageAction.respond)
+        message.record_user_action(self.user2, MessageAction.respond)
         self.assertEqual(len(list(message.history)), 1)
         self.assertEqual(message.history[0].user_id, self.user.id)
 
@@ -256,7 +257,7 @@ class TestMessageDatabase(TestCase):
 
     def test_as_json_with_acted_on(self):
         message = self.get_default_message(commit=True, requires_action=True)
-        message.record_user_action(self.user, MessageAction.act)
+        message.record_user_action(self.user, MessageAction.respond)
         db.session.commit()
         message_json = message.as_json()
         message_history = message.history[0]
@@ -410,7 +411,54 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(MessageAction.convert_string('unread'), MessageAction.unread)
         self.assertIsNone(MessageAction.convert_string('__some_invalid_name'))
 
+    @staticmethod
+    def construct_mock_trigger_sender(workflow_execution_uid):
+        return {'workflow_execution_uid': workflow_execution_uid,
+                'uid': 'mock',
+                'app_name': 'mock',
+                'action_name': 'mock'}
 
+    def test_invalid_trigger_pops_user_from_cache(self):
+        server.messaging.workflow_authorization_cache.add_authorized_users('uid1', users=[1, 2])
+        server.messaging.workflow_authorization_cache.add_user_in_progress('uid1', 1)
+        server.messaging.workflow_authorization_cache.add_user_in_progress('uid1', 2)
 
+        WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid2'))
+        self.assertEqual(server.messaging.workflow_authorization_cache.peek_user_in_progress('uid1'), 2)
+        self.assertIsNone(server.messaging.workflow_authorization_cache.peek_user_in_progress('uid2'))
+        WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid1'))
+        self.assertEqual(server.messaging.workflow_authorization_cache.peek_user_in_progress('uid1'), 1)
 
+    def test_log_action_taken_on_message(self):
+        message = Message('subject', 'body', 'uid1', users=[self.user, self.user2], requires_action=True)
+        db.session.add(message)
+        log_action_taken_on_message(self.user.id, 'uid1')
+        self.assertEqual(len(list(message.history)), 1)
+        self.assertEqual(message.history[0].action, MessageAction.respond)
+
+    def test_log_action_taken_on_message_invalid_user(self):
+        message = Message('subject', 'body', 'uid1', users=[self.user, self.user2], requires_action=True)
+        db.session.add(message)
+        log_action_taken_on_message(1000, 'uid1')
+        self.assertEqual(len(list(message.history)), 0)
+
+    def test_trigger_action_taken_workflow(self):
+        message = Message('subject', 'body', 'uid1', users=[self.user, self.user2], requires_action=True)
+        db.session.add(message)
+        db.session.commit()
+        server.messaging.workflow_authorization_cache.add_authorized_users('uid1', users=[1, 2])
+        server.messaging.workflow_authorization_cache.add_user_in_progress('uid1', self.user.id)
+        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender('uid1'))
+        message = Message.query.filter(Message.workflow_execution_uid == 'uid1').first()
+        self.assertEqual(len(list(message.history)), 1)
+        self.assertEqual(message.history[0].action, MessageAction.respond)
+        self.assertFalse(server.messaging.workflow_authorization_cache.workflow_requires_authorization('uid1'))
+
+    def test_trigger_action_taken_workflow_invalid_cache(self):
+        message = Message('subject', 'body', 'uid1', users=[self.user, self.user2], requires_action=True)
+        db.session.add(message)
+        server.messaging.workflow_authorization_cache.add_authorized_users('uid1', users=[1, 2])
+        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender('uid1'))
+        self.assertEqual(len(list(message.history)), 0)
+        self.assertFalse(server.messaging.workflow_authorization_cache.workflow_requires_authorization('uid1'))
 

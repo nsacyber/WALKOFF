@@ -62,7 +62,7 @@ class TestMessageHistoryDatabase(TestCase):
         self.check_action_construction(MessageAction.delete)
 
     def test_acted_on_message(self):
-        self.check_action_construction(MessageAction.act)
+        self.check_action_construction(MessageAction.respond)
 
     def test_as_json(self):
         message_history = MessageHistory(self.user1, MessageAction.read)
