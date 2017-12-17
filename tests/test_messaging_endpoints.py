@@ -43,7 +43,7 @@ class TestMessagingEndpoints(ServerTestCase):
     @staticmethod
     def make_message(users, requires_reauth=False, requires_action=False):
         message = Message('subject here', json.dumps({'message': 'some message'}), 'workflow_uid1',
-                          users, requires_reauth=requires_reauth, requires_action=requires_action)
+                          users, requires_reauth=requires_reauth, requires_response=requires_action)
         db.session.add(message)
         return message
 

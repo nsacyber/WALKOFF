@@ -20,22 +20,22 @@ class Message(db.Model):
                             backref=db.backref('messages', lazy='dynamic'))
     workflow_execution_uid = db.Column(db.String(25))
     requires_reauth = db.Column(db.Boolean, default=False)
-    requires_action = db.Column(db.Boolean, default=False)
+    requires_response = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=func.current_timestamp())
     history = db.relationship('MessageHistory', backref='message', lazy=True)
 
-    def __init__(self, subject, body, workflow_execution_uid, users, requires_reauth=False, requires_action=False):
+    def __init__(self, subject, body, workflow_execution_uid, users, requires_reauth=False, requires_response=False):
         self.subject = subject
         self.body = body
         self.workflow_execution_uid = workflow_execution_uid
         self.users = users
         self.requires_reauth = requires_reauth
-        self.requires_action = requires_action
+        self.requires_response = requires_response
 
     def record_user_action(self, user, action):
         if user in self.users:
             if ((action == MessageAction.unread and not self.user_has_read(user))
-                    or (action == MessageAction.respond and (not self.requires_action or self.is_acted_on()[0]))):
+                    or (action == MessageAction.respond and (not self.requires_response or self.is_responded()[0]))):
                 return
             elif action == MessageAction.delete:
                 self.users.remove(user)
@@ -63,8 +63,8 @@ class Message(db.Model):
     def get_read_by(self):
         return {entry.username for entry in self.history if entry.action == MessageAction.read}
 
-    def is_acted_on(self):
-        if not self.requires_action:
+    def is_responded(self):
+        if not self.requires_response:
             return False, None, None
         for history_entry in self.history[::-1]:
             if history_entry.action == MessageAction.respond:
@@ -73,18 +73,18 @@ class Message(db.Model):
             return False, None, None
 
     def as_json(self, with_read_by=True, user=None):
-        is_acted_on, acted_on_timestamp, acted_on_by = self.is_acted_on()
+        is_acted_on, acted_on_timestamp, acted_on_by = self.is_responded()
         ret = {'id': self.id,
                'subject': self.subject,
                'body': json.loads(self.body),
                'workflow_execution_uid': self.workflow_execution_uid,
                'requires_reauthorization': self.requires_reauth,
-               'requires_action': self.requires_action,
+               'requires_response': self.requires_response,
                'created_at': str(self.created_at),
-               'awaiting_action': self.requires_action and not is_acted_on}
+               'awaiting_response': self.requires_response and not is_acted_on}
         if is_acted_on:
-            ret['acted_on_at'] = str(acted_on_timestamp)
-            ret['acted_on_by'] = acted_on_by
+            ret['responded_at'] = str(acted_on_timestamp)
+            ret['responded_by'] = acted_on_by
         if with_read_by:
             ret['read_by'] = list(self.get_read_by())
         if user:

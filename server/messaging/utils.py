@@ -15,7 +15,7 @@ def save_message_callback(sender, **message_data):
 
     message_data = message_data['data']
     body = message_data['body']
-    requires_action = strip_requires_auth_from_message_body(body)
+    requires_action = strip_requires_response_from_message_body(body)
     if requires_action:
         server.messaging.workflow_authorization_cache.add_authorized_users(
             sender['workflow_execution_uid'], users=message_data['users'], roles=message_data['roles'])
@@ -23,10 +23,10 @@ def save_message_callback(sender, **message_data):
         save_message(body, message_data, sender['workflow_execution_uid'], requires_action)
 
 
-def strip_requires_auth_from_message_body(body):
-    is_caching_required = any(message_component.get('requires_auth', False) for message_component in body['body'])
+def strip_requires_response_from_message_body(body):
+    is_caching_required = any(message_component.get('requires_response', False) for message_component in body['body'])
     for message_component in body['body']:
-        message_component.pop('requires_auth', None)
+        message_component.pop('requires_response', None)
     return is_caching_required
 
 
@@ -36,7 +36,7 @@ def save_message(body, message_data, workflow_execution_uid, requires_action):
         subject = message_data.get('subject', '')
         message_entry = Message(
             subject, json.dumps(body['body']), workflow_execution_uid, users, requires_reauth=message_data['requires_reauth'],
-            requires_action=requires_action)
+            requires_response=requires_action)
         db.session.add(message_entry)
         db.session.commit()
         server.messaging.MessageActionEvent.created.send(message_entry)

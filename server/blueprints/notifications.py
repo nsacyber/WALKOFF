@@ -45,13 +45,13 @@ def message_created_callback(message, **data):
     result = {'id': message.id,
               'subject': message.subject,
               'created_at': str(message.created_at),
-              'awaiting_response': message.requires_action}
+              'awaiting_response': message.requires_response}
     send_sse(None, NotificationSseEvent.created, result)
 
 
 @MessageActionEvent.responded.connect
 def message_responded_callback(message, **data):
-    user = data['user']
+    user = data['data']['user']
     result = {'id': message.id,
               'username': user.username,
               'timestamp': str(datetime.utcnow())}
@@ -60,7 +60,7 @@ def message_responded_callback(message, **data):
 
 @MessageActionEvent.read.connect
 def message_read_callback(message, **data):
-    user = data['user']
+    user = data['data']['user']
     result = {'id': message.id,
               'username': data['user'].username,
               'timestamp': str(datetime.utcnow())}
