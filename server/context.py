@@ -3,10 +3,8 @@ class Context(object):
         """Initializes a new Context object. This acts as an interface for objects to access other event specific
             variables that might be needed.
         """
-        from server.app import app
         import core.controller
 
-        self.flask_app = app
         self.controller = core.controller.controller
 
 
