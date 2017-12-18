@@ -56,12 +56,21 @@ export class MessagesComponent {
 			.catch(e => this.toastyService.error(`Error retrieving messages: ${e.message}`));
 	}
 
-	openMessage(message: Message): void {
-		const modalRef = this.modalService.open(MessagesModalComponent);
+	openMessage(event: any, message: Message): void {
+		event.preventDefault();
 
-		modalRef.componentInstance.message = _.cloneDeep(message);
+		this.messagesService.readMessages(message.id)
+			.then(() => {
+				message.is_read = true;
+				message.last_read_at = new Date();
 
-		this._handleModalClose(modalRef);
+				const modalRef = this.modalService.open(MessagesModalComponent);
+		
+				modalRef.componentInstance.message = _.cloneDeep(message);
+		
+				this._handleModalClose(modalRef);
+			})
+			.catch(e => this.toastyService.error(`Error opening message: ${e.message}`));
 	}
 
 	deleteSelected(): void {
@@ -84,7 +93,10 @@ export class MessagesComponent {
 		this.messagesService.readMessages(idsToRead)
 			.then(() => {
 				this.messages.forEach(message => {
-					if (idsToRead.indexOf(message.id) !== -1) { message.last_read_at = new Date(); }
+					if (idsToRead.indexOf(message.id) !== -1) {
+						message.is_read = true;
+						message.last_read_at = new Date();
+					}
 				});
 			})
 			.catch(e => this.toastyService.error(`Error marking messages as read: ${e.message}`));
@@ -96,7 +108,10 @@ export class MessagesComponent {
 		this.messagesService.unreadMessages(idsToUnread)
 			.then(() => {
 				this.messages.forEach(message => {
-					if (idsToUnread.indexOf(message.id) !== -1) { message.last_read_at = null; }
+					if (idsToUnread.indexOf(message.id) !== -1) {
+						message.is_read = false;
+						message.last_read_at = null;
+					}
 				});
 			})
 			.catch(e => this.toastyService.error(`Error marking messages as unread: ${e.message}`));

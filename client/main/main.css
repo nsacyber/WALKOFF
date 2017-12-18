@@ -82,6 +82,23 @@
   font-weight: bold;
 }
 
+#walkoffNav .navbar-nav .required {
+  color: crimson;
+}
+
+#walkoffNav .navbar-nav .messages-menu table,
+#walkoffNav .navbar-nav .messages-menu table a {
+  width: 320px;
+  color: white;
+  margin: 5px;
+}
+
+#walkoffNav .navbar-nav .messages-menu table .oldMessage,
+#walkoffNav .navbar-nav .messages-menu table .oldMessage a {
+  color: #DDD;
+  font-style: italic;
+}
+
 .footer {
   position: absolute;
   bottom: 0;

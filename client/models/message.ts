@@ -10,8 +10,8 @@ export class Message {
 	created_at: Date;
 	last_read_at?: Date;
 	is_read: boolean;
-	awaiting_action: boolean;
-	acted_on_by?: string;
-	acted_on_at?: Date;
+	awaiting_response: boolean;
+	responded_by?: string;
+	responded_at?: Date;
 	read_by?: string[];
 }

@@ -20,7 +20,10 @@
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           <ul class="nav navbar-nav">
             <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Apps <span class="caret"></span></a>
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                Interfaces
+                <span class="caret"></span>
+              </a>
               <ul class="dropdown-menu">
                 <li *ngFor="let interfaceName of interfaceNames">
                   <a class="installedApp" routerLink="/interfaces/{{interfaceName}}"><i class="fa fa-gear"></i><span>{{interfaceName}}</span></a>
@@ -59,9 +62,17 @@
                   <span>{{messages.length}}</span>
                 </a>
                 <div class="dropdown-menu">
-                  <div *ngFor="let message of messages">
-                      <a class="dropdown-item" href="#" (click)="openMessage($event, message)">{{message.subject}}</a>
-                  </div>
+                  <table>
+                    <tr *ngFor="let message of messages" [class.oldMessage]="message.is_read">
+                      <td>
+                          <i *ngIf="message.awaiting_response" class="fa fa-exclamation required" title="This message is awaiting response."></i>
+                      </td>
+                      <td>
+                          <a class="dropdown-item" href="#" (click)="openMessage($event, message)">{{utilitiesService.getTruncatedString(message.subject, 25)}}</a>    
+                      </td>
+                      <td [title]="message.created_at">{{utilitiesService.getRelativeTime(message.created_at)}}</td>
+                    </tr>
+                  </table>
                 </div>
               </li>
               <!-- User Account Menu -->

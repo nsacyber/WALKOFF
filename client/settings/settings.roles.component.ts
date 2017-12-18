@@ -77,7 +77,7 @@ export class SettingsRolesComponent {
 
 	editRole(role: Role): void {
 		const modalRef = this.modalService.open(SettingsRoleModalComponent);
-		modalRef.componentInstance.title = `Edit Rolr: ${role.name}`;
+		modalRef.componentInstance.title = `Edit Role: ${role.name}`;
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.availableResourceActions = this.availableResourceActions;
 		modalRef.componentInstance.workingRole = _.cloneDeep(role);

@@ -7,6 +7,8 @@ import { MessagesModalComponent } from '../messages/messages.modal.component';
 
 import { MainService } from './main.service';
 import { AuthService } from '../auth/auth.service';
+import { UtilitiesService } from '../utilities.service';
+
 import { Message } from '../models/message';
 
 @Component({
@@ -15,50 +17,14 @@ import { Message } from '../models/message';
 	styleUrls: [
 		'client/main/main.css',
 	],
-	providers: [MainService, AuthService],
+	providers: [MainService, AuthService, UtilitiesService],
 })
 export class MainComponent {
+	utilitiesService = new UtilitiesService();
 	currentUser: string;
 	interfaceNames: string[] = [];
 	jwtHelper: JwtHelper = new JwtHelper();
-	messages: Message[] = [
-		{
-			id: 43,
-			workflow_execution_uid: 'some-other-UID-here',
-			workflow_name: 'Blahblahblah',
-			requires_reauthorization: false,
-			subject: 'A shorter subject',
-			created_at: new Date(2017, 11, 10),
-			is_read: false,
-			last_read_at: null as Date,
-			read_by: ['arglebargle', 'morpmorp'],
-			awaiting_action: true,
-			body: [
-				{ type: 'text', data: { text: `There is immense joy in just watching - watching all the little creatures in nature. Let's have a happy little tree in here. When you buy that first tube of paint it gives you an artist license.` } },
-				{ type: 'text', data: { text: `You gotta think like a tree. It is a lot of fun. Let's put some happy little clouds in our world. Every time you practice, you learn more.` } },
-				{ type: 'text', data: { text: `We don't make mistakes we just have happy little accidents. There's nothing wrong with having a tree as a friend. You need the dark in order to show the light. Be so very light. Be a gentle whisper. Of course he's a happy little stone, cause we don't have any other kind.` } },
-				{ type: 'accept_decline', data: {} },
-				{ type: 'url', data: { url: 'https://www.google.com' } },
-			],
-		},
-		{
-			id: 42,
-			workflow_execution_uid: 'some-UID-here',
-			workflow_name: 'MyWorkflow',
-			requires_reauthorization: true,
-			subject: 'Act now for huge savings! Sysadmins hate him! Find out how he tricked them with this one weird trick!',
-			created_at: new Date(),
-			is_read: false,
-			last_read_at: null as Date,
-			read_by: ['username1', 'username2'],
-			awaiting_action: false,
-			body: [
-				{ type: 'text', data: { text: 'The walkoff did a thing. I need you to fill out some more information' } },
-				{ type: 'accept_decline', data: {} },
-				{ type: 'url', data: { url: 'https://go.somewhere.com', title: 'Go Here' } },
-			],
-		},
-	];
+	messages: Message[] = [];
 
 	constructor(
 		private mainService: MainService, private authService: AuthService,
@@ -70,17 +36,37 @@ export class MainComponent {
 			.then(interfaceNames => this.interfaceNames = interfaceNames);
 
 		this.updateUserInfo();
+		this.getInitialNotifications();
 		this.getNotificationsSSE();
+	}
+
+	getInitialNotifications(): void {
+		this.mainService.getInitialNotifications()
+			.then(messages => this.messages = messages.concat(this.messages))
+			.catch(e => this.toastyService.error(`Error retrieving notifications: ${e.message}`));
 	}
 
 	getNotificationsSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				const eventSource = new (window as any).EventSource('/api/notifications?access_token=' + authToken);
+				const eventSource = new (window as any).EventSource('/api/notifications/stream?access_token=' + authToken);
 
 				eventSource.addEventListener('message', (message: any) => {
 					const newMessage: Message = JSON.parse(message.data);
-					this.messages.push(newMessage);
+
+					const existingMessage = this.messages.find(m => m.id === newMessage.id);
+					const index = this.messages.indexOf(existingMessage);
+					// If an existing message exists, replace it with the incoming message. Otherwise add it to the top of the array.
+					if (index > -1) {
+						this.messages[index] = newMessage;
+					} else {
+						this.messages.unshift(newMessage);
+					}
+
+					// Remove the oldest message that is read if we have too many (>5) read messages
+					if (this.messages.filter(m => m.is_read).length > 5) {
+						this.messages.pop();
+					}
 				});
 				eventSource.addEventListener('error', (err: Error) => {
 					console.error(err);
@@ -102,16 +88,18 @@ export class MainComponent {
 			.catch(e => console.error(e));
 	}
 
+	// TODO: call the read endpoint before opening the message
 	openMessage(event: any, message: Message): void {
 		event.preventDefault();
+
+		message.is_read = true;
+		message.last_read_at = new Date();
 
 		const modalRef = this.modalService.open(MessagesModalComponent);
 
 		modalRef.componentInstance.message = _.cloneDeep(message);
 
 		this._handleModalClose(modalRef);
-
-		this.messages.splice(this.messages.indexOf(message), 1);
 	}
 
 	private _handleModalClose(modalRef: NgbModalRef): void {

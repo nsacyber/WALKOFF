@@ -8,12 +8,21 @@
 </div>
 <div id="messageModalBody" class="modal-body">
 	<div class="container-fluid">
+		<div *ngIf="message.read_by.length">
+			<i>Read by: {{message.read_by.join(', ')}}</i>
+		</div>
+		<div *ngIf="message.responded_by">
+			<i>
+				Responded by: {{message.responded_by}}
+				<span [title]="message.responded_at">({{getRelativeTime(message.responded_at)}})</span>
+			</i>
+		</div>
 		<div *ngFor="let body of message.body">
 			<p *ngIf="body.type === 'text'">{{body.data.text}}</p>
 			<a *ngIf="body.type === 'url'" [href]="body.data.url">{{body.data.title ? body.data.title : body.data.url}}</a>
 			<div *ngIf="body.type === 'accept_decline'">
-				<button type="button" class="btn btn-secondary" (click)="performMessageAction('decline')">Decline</button>
-				<button type="button" class="btn btn-primary" (click)="performMessageAction('accept')">Accept</button>
+				<button type="button" class="btn btn-secondary" (click)="performMessageAction('decline')" [disabled]="!message.awaiting_response">Decline</button>
+				<button type="button" class="btn btn-primary" (click)="performMessageAction('accept')" [disabled]="!message.awaiting_response">Accept</button>
 			</div>
 		</div>
 	</div>

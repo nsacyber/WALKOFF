@@ -21,7 +21,9 @@ export class MessagesService {
 				is_read: false,
 				last_read_at: null as Date,
 				read_by: ['username1', 'username2'],
-				awaiting_action: false,
+				awaiting_response: false,
+				responded_at: new Date(2017, 11, 10),
+				responded_by: 'somename',
 				body: [
 					{ type: 'text', data: { text: 'The walkoff did a thing. I need you to fill out some more information' } },
 					{ type: 'accept_decline', data: {} },
@@ -38,7 +40,7 @@ export class MessagesService {
 				is_read: false,
 				last_read_at: null as Date,
 				read_by: ['arglebargle', 'morpmorp'],
-				awaiting_action: true,
+				awaiting_response: true,
 				body: [
 					{ type: 'text', data: { text: `There is immense joy in just watching - watching all the little creatures in nature. Let's have a happy little tree in here. When you buy that first tube of paint it gives you an artist license.` } },
 					{ type: 'text', data: { text: `You gotta think like a tree. It is a lot of fun. Let's put some happy little clouds in our world. Every time you practice, you learn more.` } },
@@ -89,7 +91,7 @@ export class MessagesService {
 		arg.name = 'action';
 		arg.value = action;
 		const body: object = {
-			workflow_execution_uids: [execution_uid],
+			execution_uids: [execution_uid],
 			data_in: '',
 			inputs: [arg],
 		};
