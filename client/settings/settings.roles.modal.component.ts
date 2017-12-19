@@ -23,7 +23,7 @@ export class SettingsRoleModalComponent {
 	@Input() submitText: string;
 	@Input() availableResourceActions: AvailableResourceAction[];
 
-	typeNames: string[] = [];
+	resourceNames: string[] = [];
 	selectPermissionMapping: { [key: string]: Select2OptionData[] } = {};
 	permissionSelectConfig: Select2Options;
 	newResourceTempIdTracker: number = -1;
@@ -50,7 +50,7 @@ export class SettingsRoleModalComponent {
 
 			if (ara.app_name) { typeName += ` - ${ara.app_name}`; }
 
-			this.typeNames.push(typeName);
+			this.resourceNames.push(typeName);
 		});
 
 		// On init, set up our select2 stuff first

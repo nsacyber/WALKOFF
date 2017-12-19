@@ -28,15 +28,15 @@
 			</div>
 			<div class="row">
 				<div class="col-xs-6">
-					<label>Type</label>
+					<label>Resource</label>
 					<select class="form-control" [(ngModel)]="selectedAvailableResourceActionName" name="selectedAvailableResourceActionName">
-						<option *ngFor="let i of typeNames" [value]="i" [label]="i">{{i}}</option>
+						<option *ngFor="let i of resourceNames" [value]="i" [label]="i">{{i}}</option>
 					</select>
 				</div>
 				<div class="col-xs-6">
 					<div class="form-group">
 						<button class="btn btn-primary pull-right" (click)="addResource()" [disabled]="!selectedAvailableResourceActionName">
-							<i class="fa fa-plus"></i>Add Type
+							<i class="fa fa-plus"></i>Add Resource
 						</button>
 					</div>
 				</div>
