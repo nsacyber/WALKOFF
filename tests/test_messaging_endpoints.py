@@ -99,6 +99,10 @@ class TestMessagingEndpoints(ServerTestCase):
     def get_all_messages_for_user(self, user, status_code=SUCCESS):
         return self.get_with_status_check('/api/messages', headers=user.header, status_code=status_code)
 
+    def get_message_for_user(self, message_id, user, status_code=SUCCESS):
+        return self.get_with_status_check('/api/messages/{}'.format(message_id),
+                                          headers=user.header, status_code=status_code)
+
     def assert_message_ids_equal(self, messages, expected_messages=None):
         expected_message_ids = {message.id for message in expected_messages}
         self.assertEqual(len(messages), len(expected_message_ids))
@@ -125,6 +129,20 @@ class TestMessagingEndpoints(ServerTestCase):
         response = self.get_all_messages_for_user(self.user2)
         self.assert_message_ids_equal(response, self.user2.messages)
         self.get_all_messages_for_user(self.user3, status_code=FORBIDDEN_ERROR)
+
+    def get_one_message_does_not_exist(self):
+        self.get_message_for_user(42, self.user1, status_code=OBJECT_DNE_ERROR)
+        self.get_message_for_user(100, self.user1, status_code=OBJECT_DNE_ERROR)
+
+    def get_one_message_not_wrong_user(self):
+        self.get_message_for_user(self.message1.id, self.user3, status_code=FORBIDDEN_ERROR)
+        self.get_message_for_user(self.message3.id, self.user1, status_code=FORBIDDEN_ERROR)
+
+    def get_one_message(self):
+        response = self.get_message_for_user(self.message1.id, self.user1)
+        self.assertEqual(response['id'], self.message1.id)
+        response = self.get_message_for_user(self.message2.id, self.user2)
+        self.assertEqual(response['id'], self.message2.id)
 
     def test_read_all_messages(self):
         for user in (self.user1, self.user2):
