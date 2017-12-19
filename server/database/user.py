@@ -38,6 +38,7 @@ class User(db.Model, TrackModificationsMixIn):
         """
         self.username = name
         self._password = pbkdf2_sha512.hash(password)
+        self.roles = []
         if roles:
             self.set_roles(roles)
 
@@ -71,15 +72,15 @@ class User(db.Model, TrackModificationsMixIn):
         """Sets the roles for a User.
 
         Args:
-            new_roles (list[str]): A list of Role names for the User.
+            new_roles (list[int]|set(int)): A list of Role IDs for the User.
         """
-        self.roles[:] = []
 
-        new_role_names = set(new_roles)
-        new_roles = Role.query.filter(Role.name.in_(new_role_names)).all() if new_role_names else []
-        self.roles.extend(new_roles)
+        new_role_ids = set(new_roles)
+        new_roles = Role.query.filter(Role.id.in_(new_role_ids)).all() if new_role_ids else []
 
-        roles_not_added = new_role_names - {role.name for role in new_roles}
+        self.roles[:] = new_roles
+
+        roles_not_added = new_role_ids - {role.id for role in new_roles}
         if roles_not_added:
             logger.warning('Cannot add roles {0} to user {1}. Roles do not exist'.format(roles_not_added, self.id))
 
@@ -108,12 +109,12 @@ class User(db.Model, TrackModificationsMixIn):
         """Checks if a User has a Role associated with it.
 
         Args:
-            role (str): The name of the Role.
+            role (int): The ID of the Role.
 
         Returns:
             True if the User has the Role, False otherwise.
         """
-        return role in [role.name for role in self.roles]
+        return role in [role.id for role in self.roles]
 
     def as_json(self, with_user_history=False):
         """Returns the dictionary representation of a User object.

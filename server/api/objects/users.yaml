@@ -11,10 +11,13 @@ AddUser:
         type: string
         example: password123
       roles:
-        description: A list of role IDs that this user possesses
+        description: A list of role IDs that this user possesses. Roles can only be assigned to a User by an admin.
         type: array
         items:
           type: integer
+      active:
+        description: activate/deactive a user. Active can only be changed by an admin.
+        type: boolean
 EditUser:
     type: object
     required: [id]
@@ -37,10 +40,10 @@ EditUser:
         type: string
         example: password321
       active:
-        description: activate/deactive a user
+        description: activate/deactive a user. Active can only be changed by an admin.
         type: boolean
       roles:
-        description: A new list of role IDs that this user will possess
+        description: A new list of role IDs that this user will possess. Roles can only be assigned by an admin.
         type: array
         items:
           type: integer

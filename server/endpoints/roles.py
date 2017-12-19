@@ -5,12 +5,12 @@ from server.database import clear_resources_for_role, get_all_available_resource
 from server.database.role import Role
 from server.extensions import db
 from server.returncodes import *
-from server.security import permissions_accepted_for_resources, ResourcePermissions
+from server.security import permissions_accepted_for_resources, ResourcePermissions, admin_required
 
 
 def read_all_roles():
     @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('roles', ['read']))
+    @admin_required
     def __func():
         return [role.as_json() for role in Role.query.all()], SUCCESS
 
@@ -19,7 +19,7 @@ def read_all_roles():
 
 def create_role():
     @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('roles', ['create']))
+    @admin_required
     def __func():
         json_data = request.get_json()
         if not Role.query.filter_by(name=json_data['name']).first():
@@ -43,7 +43,7 @@ def create_role():
 
 def read_role(role_id):
     @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('roles', ['read']))
+    @admin_required
     def __func():
         role = Role.query.filter_by(id=role_id).first()
         if role:
@@ -57,7 +57,7 @@ def read_role(role_id):
 
 def update_role():
     @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('roles', ['update']))
+    @admin_required
     def __func():
         json_data = request.get_json()
         role = Role.query.filter_by(id=json_data['id']).first()
@@ -84,7 +84,7 @@ def update_role():
 
 def delete_role(role_id):
     @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('roles', ['delete']))
+    @admin_required
     def __func():
         role = Role.query.filter_by(id=role_id).first()
         if role:

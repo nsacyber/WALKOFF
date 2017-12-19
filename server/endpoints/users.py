@@ -4,8 +4,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from server.returncodes import *
 from server.database import add_user
 from server.extensions import db
-from server.database.user import User, Role
-from server.security import permissions_accepted_for_resources, ResourcePermissions, user_has_correct_roles
+from server.database.user import User
+from server.security import permissions_accepted_for_resources, ResourcePermissions, admin_required
 
 
 def read_all_users():
@@ -25,6 +25,9 @@ def create_user():
         username = data['username']
         if not User.query.filter_by(username=username).first():
             user = add_user(username=username, password=data['password'])
+
+            if 'roles' in data or 'active' in data:
+                role_update_user_fields(data, user)
 
             db.session.commit()
             current_app.logger.info('User added: {0}'.format(user.as_json()))
@@ -60,7 +63,7 @@ def update_user():
             if user.id == current_user:
                 return update_user_fields(data, user)
             else:
-                message, return_code = role_update_user_fields(data, user)
+                message, return_code = role_update_user_fields(data, user, update=True)
                 if return_code == FORBIDDEN_ERROR:
                     current_app.logger.error('User {0} does not have permission to '
                                              'update user {1}'.format(current_user, user.id))
@@ -74,15 +77,14 @@ def update_user():
     return __func()
 
 
-@permissions_accepted_for_resources(ResourcePermissions('users', ['update']))
-def role_update_user_fields(data, user):
-    admin_role = Role.query.filter(Role.name == 'admin').first()
-    if user_has_correct_roles({admin_role.id}):
-        if 'active' in data:
-            user.active = data['active']
-        if 'roles' in data:
-            user.set_roles(data['roles'])
-    return update_user_fields(data, user)
+@admin_required
+def role_update_user_fields(data, user, update=False):
+    if 'roles' in data:
+        user.set_roles(data['roles'])
+    if 'active' in data:
+        user.active = data['active']
+    if update:
+        return update_user_fields(data, user)
 
 
 def update_user_fields(data, user):

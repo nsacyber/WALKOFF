@@ -21,7 +21,7 @@ class TestUserRolesDatabase(unittest.TestCase):
         db.session.commit()
 
     def assertUserRolesEqual(self, user, roles):
-        self.assertSetEqual({role.name for role in user.roles}, roles)
+        self.assertSetEqual({role.id for role in user.roles}, roles)
 
     def assertLoginCount(self, user, login_count):
         self.assertEqual(user.login_count, login_count)
@@ -117,15 +117,18 @@ class TestUserRolesDatabase(unittest.TestCase):
     @staticmethod
     def add_roles_to_db(num_roles):
         role_names = {'role{}'.format(i) for i in range(1, num_roles + 1)}
+        role_ids = []
         roles = [Role(name=name) for name in role_names]
         for role in roles:
             db.session.add(role)
         db.session.commit()
-        return role_names
+        for role in roles:
+            role_ids.append(role.id)
+        return role_ids
 
     def test_set_roles_none_in_user_none_in_db(self):
         user = User('username', 'password')
-        user.set_roles(['role1', 'role2', 'role3'])
+        user.set_roles([10, 20, 30])
         self.assertUserRolesEqual(user, set())
 
     def test_set_roles_to_none_with_none_in_user(self):
@@ -134,67 +137,70 @@ class TestUserRolesDatabase(unittest.TestCase):
         self.assertUserRolesEqual(user, set())
 
     def test_set_roles_to_none_with_some_in_user(self):
-        role_names = TestUserRolesDatabase.add_roles_to_db(3)
+        role_ids = TestUserRolesDatabase.add_roles_to_db(3)
         user = User('username', 'password')
-        user.set_roles(role_names)
+        user.set_roles(role_ids)
         db.session.commit()
         user.set_roles([])
         db.session.commit()
         self.assertUserRolesEqual(user, set())
 
     def test_set_roles_none_in_user_all_in_db(self):
-        role_names = TestUserRolesDatabase.add_roles_to_db(3)
+        role_ids = TestUserRolesDatabase.add_roles_to_db(3)
         user = User('username', 'password')
-        user.set_roles(role_names)
-        self.assertUserRolesEqual(user, role_names)
+        user.set_roles(role_ids)
+        self.assertUserRolesEqual(user, set(role_ids))
 
     def test_set_roles_none_in_user_some_in_db(self):
-        role_names = TestUserRolesDatabase.add_roles_to_db(3)
+        role_ids = TestUserRolesDatabase.add_roles_to_db(3)
         user = User('username', 'password')
-        added_roles = set(role_names)
-        added_roles.add('role4')
+        added_roles = set(role_ids)
+        added_roles.add(30)
         user.set_roles(added_roles)
         db.session.commit()
-        self.assertUserRolesEqual(user, role_names)
+        self.assertUserRolesEqual(user, set(role_ids))
 
     def test_set_roles_some_in_user_none_in_db(self):
-        TestUserRolesDatabase.add_roles_to_db(3)
+        role_ids = TestUserRolesDatabase.add_roles_to_db(3)
+        x = role_ids.pop()
         user = User('username', 'password')
-        user.set_roles({'role1', 'role2'})
-        user.set_roles({'role4', 'role5', 'role6'})
+        user.set_roles(role_ids)
+        user.set_roles({x+1, x+2, x+3})
         self.assertUserRolesEqual(user, set())
 
     def test_set_roles_some_in_user_all_in_db(self):
-        TestUserRolesDatabase.add_roles_to_db(3)
+        role_ids = TestUserRolesDatabase.add_roles_to_db(3)
+        x = role_ids.pop()
         user = User('username', 'password')
-        user.set_roles({'role1', 'role2'})
-        user.set_roles({'role2', 'role3'})
-        self.assertUserRolesEqual(user, {'role2', 'role3'})
+        user.set_roles(role_ids)
+        user.set_roles({x-1, x})
+        self.assertUserRolesEqual(user, {x-1, x})
 
     def test_set_roles_some_in_user_some_in_db(self):
-        TestUserRolesDatabase.add_roles_to_db(3)
+        role_ids = TestUserRolesDatabase.add_roles_to_db(3)
+        x = role_ids.pop()
         user = User('username', 'password')
-        user.set_roles({'role1', 'role2'})
-        user.set_roles({'role2', 'role3', 'role4'})
+        user.set_roles(role_ids)
+        user.set_roles({x-1, x, x+1})
         db.session.commit()
-        self.assertUserRolesEqual(user, {'role2', 'role3'})
+        self.assertUserRolesEqual(user, {x-1, x})
 
     def test_has_role_user_with_no_roles(self):
         user = User('username', 'password')
-        self.assertFalse(user.has_role('role3'))
+        self.assertFalse(user.has_role(100))
 
     def test_has_role_user_with_role(self):
-        role_names = TestUserRolesDatabase.add_roles_to_db(3)
+        role_ids = TestUserRolesDatabase.add_roles_to_db(3)
         user = User('username', 'password')
-        user.set_roles(role_names)
+        user.set_roles(role_ids)
         db.session.commit()
-        for role in role_names:
+        for role in role_ids:
             self.assertTrue(user.has_role(role))
 
     def test_has_role_user_without_role(self):
-        role_names = TestUserRolesDatabase.add_roles_to_db(3)
+        role_ids = TestUserRolesDatabase.add_roles_to_db(3)
         user = User('username', 'password')
-        user.set_roles(role_names)
+        user.set_roles(role_ids)
         self.assertFalse(user.has_role('invalid'))
 
     def test_add_user(self):
@@ -222,10 +228,10 @@ class TestUserRolesDatabase(unittest.TestCase):
         self.assertIsNone(User.query.filter_by(username='username').first())
 
     def test_as_json(self):
-        role_names = TestUserRolesDatabase.add_roles_to_db(3)
+        role_ids = TestUserRolesDatabase.add_roles_to_db(3)
         user = User('username', 'password')
         db.session.add(user)
-        user.set_roles(role_names)
+        user.set_roles(role_ids)
         user.login('192.168.0.1')
         user.login('192.168.0.2')
         user_json = user.as_json()
@@ -244,10 +250,10 @@ class TestUserRolesDatabase(unittest.TestCase):
             self.assertEqual(role['description'], '')
 
     def test_as_json_with_user_history(self):
-        role_names = TestUserRolesDatabase.add_roles_to_db(3)
+        role_ids = TestUserRolesDatabase.add_roles_to_db(3)
         user = User('username', 'password')
         db.session.add(user)
-        user.set_roles(role_names)
+        user.set_roles(role_ids)
         user.login('192.168.0.1')
         first_login_timestamp = datetime.utcnow()
         user.login('192.168.0.2')
@@ -278,9 +284,10 @@ class TestUserRolesDatabase(unittest.TestCase):
     def test_roles_as_json_with_users_one_user(self):
         role = Role('role1')
         db.session.add(role)
+        db.session.commit()
         user = User('username', 'password')
         db.session.add(user)
-        user.set_roles(['role1'])
+        user.set_roles([role.id])
         expected = {'name': 'role1', 'description': '', 'resources': [], 'users': ['username']}
         role_json = role.as_json(with_users=True)
         role_json.pop('id')
@@ -289,12 +296,13 @@ class TestUserRolesDatabase(unittest.TestCase):
     def test_roles_as_json_with_users_multiple_users(self):
         role = Role('role1')
         db.session.add(role)
+        db.session.commit()
         user = User('username', 'password')
         user2 = User('user2', 'thisisagreatpassword')
         db.session.add(user)
         db.session.add(user2)
-        user.set_roles(['role1'])
-        user2.set_roles(['role1'])
+        user.set_roles([role.id])
+        user2.set_roles([role.id])
         expected = {'name': 'role1', 'description': '', 'resources': [], 'users': ['username', 'user2']}
         role_json = role.as_json(with_users=True)
         role_json.pop('id')
