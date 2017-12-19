@@ -27,7 +27,7 @@
 	<ngx-datatable #messagesTable class='material expandable' [columnMode]="'flex'" [rows]='displayMessages' [sortType]="'multi'"
 	 [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'created_at', dir: 'desc'}]" [limit]="25">
 		<!-- Column Templates -->
-		<ngx-datatable-column name="" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="1">
+		<ngx-datatable-column name="" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="0">
 			<ng-template let-row="row" ngx-datatable-cell-template>
 				<input type="checkbox" [(ngModel)]="selectMapping[row.id]">
 			</ng-template>
@@ -40,10 +40,10 @@
 				</div>
 			</ng-template>
 		</ngx-datatable-column>
-		<ngx-datatable-column name="Sent" [flexGrow]="2">
+		<ngx-datatable-column name="Sent" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				<span [title]="row.created_at">
-					{{getFriendlyTime(row.created_at)}}
+				<span [title]="utils.getLocalTime(row.created_at)">
+					{{utils.getRelativeLocalTime(row.created_at)}}
 				</span>
 			</ng-template>
 		</ngx-datatable-column>

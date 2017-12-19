@@ -5,7 +5,7 @@ import * as moment from 'moment';
 
 import { MessagesService } from './messages.service';
 
-import { Message } from '../models/message';
+import { Message } from '../models/message/message';
 
 @Component({
 	selector: 'messages-modal',
@@ -17,7 +17,6 @@ import { Message } from '../models/message';
 })
 export class MessagesModalComponent {
 	@Input() message: Message;
-
 
 	constructor(
 		private messagesService: MessagesService, private activeModal: NgbActiveModal,

@@ -33,3 +33,4 @@ coverage.*
 .certificates/
 _build/
 sphinx/
+npm-debug.log

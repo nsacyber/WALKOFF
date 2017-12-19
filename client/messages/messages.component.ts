@@ -5,11 +5,12 @@ import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import * as moment from 'moment';
 
 import { MessagesService } from './messages.service';
+import { UtilitiesService } from '../utilities.service';
 
 import { MessagesModalComponent } from './messages.modal.component';
 
 import { GenericObject } from '../models/genericObject';
-import { Message } from '../models/message';
+import { MessageListing } from '../models/message/messageListing';
 
 @Component({
 	selector: 'messages-component',
@@ -20,21 +21,22 @@ import { Message } from '../models/message';
 	providers: [MessagesService],
 })
 export class MessagesComponent {
+	utils: UtilitiesService = new UtilitiesService();
 	//Device Data Table params
-	messages: Message[] = [];
-	displayMessages: Message[] = [];
+	messages: MessageListing[] = [];
+	displayMessages: MessageListing[] = [];
 	messageSelectConfig: Select2Options;
 	filterQuery: FormControl = new FormControl();
 
 	selectMapping: GenericObject = {};
 
 	constructor(
-		private messagesService: MessagesService, private modalService: NgbModal, 
+		private messagesService: MessagesService, private modalService: NgbModal,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
 	) {
 		this.toastyConfig.theme = 'bootstrap';
 
-		this.getMessages();
+		this.listMessages();
 
 		this.filterQuery
 			.valueChanges
@@ -50,19 +52,19 @@ export class MessagesComponent {
 		});
 	}
 
-	getMessages(): void {
-		this.messagesService.getMessages()
+	listMessages(): void {
+		this.messagesService.listMessages()
 			.then(messages => this.displayMessages = this.messages = messages)
 			.catch(e => this.toastyService.error(`Error retrieving messages: ${e.message}`));
 	}
 
-	openMessage(event: any, message: Message): void {
+	openMessage(event: any, messageListing: MessageListing): void {
 		event.preventDefault();
 
-		this.messagesService.readMessages(message.id)
-			.then(() => {
-				message.is_read = true;
-				message.last_read_at = new Date();
+		this.messagesService.getMessage(messageListing.id)
+			.then(message => {
+				messageListing.is_read = true;
+				messageListing.last_read_at = new Date();
 
 				const modalRef = this.modalService.open(MessagesModalComponent);
 		

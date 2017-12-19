@@ -57,20 +57,20 @@
           <div class="navbar-custom-menu">
             <ul class="nav navbar-nav navbar-right">
               <li class="dropdown messages messages-menu">
-                <a href="#" class="dropdown-toggle" [class.newMessages]="messages.length" data-toggle="dropdown">
-                  <i class="fa" [ngClass]="{ 'fa-envelope': messages.length, 'fa-envelope-open-o': !messages.length }"></i>
-                  <span>{{messages.length}}</span>
+                <a href="#" class="dropdown-toggle" [class.newMessages]="messageListings.length" data-toggle="dropdown">
+                  <i class="fa" [ngClass]="{ 'fa-envelope': messageListings.length, 'fa-envelope-open-o': !messageListings.length }"></i>
+                  <span>{{messageListings.length}}</span>
                 </a>
                 <div class="dropdown-menu">
                   <table>
-                    <tr *ngFor="let message of messages" [class.oldMessage]="message.is_read">
+                    <tr *ngFor="let messageListing of messageListings" [class.oldMessage]="messageListing.is_read">
                       <td>
-                          <i *ngIf="message.awaiting_response" class="fa fa-exclamation required" title="This message is awaiting response."></i>
+                          <i *ngIf="messageListing.awaiting_response" class="fa fa-exclamation required" title="This message is awaiting response."></i>
                       </td>
                       <td>
-                          <a class="dropdown-item" href="#" (click)="openMessage($event, message)">{{utilitiesService.getTruncatedString(message.subject, 25)}}</a>    
+                          <a class="dropdown-item" href="#" (click)="openMessage($event, messageListing)">{{utils.getTruncatedString(messageListing.subject, 25)}}</a>    
                       </td>
-                      <td [title]="message.created_at">{{utilitiesService.getRelativeTime(message.created_at)}}</td>
+                      <td [title]="messageListing.created_at">{{utils.getRelativeLocalTime(messageListing.created_at)}}</td>
                     </tr>
                   </table>
                 </div>

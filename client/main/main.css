@@ -103,6 +103,10 @@
   border-bottom: 1px solid #AAA;
 }
 
+#walkoffNav .navbar-nav .messages-menu table tr:last-child {
+  border-bottom: none;
+}
+
 .footer {
   position: absolute;
   bottom: 0;

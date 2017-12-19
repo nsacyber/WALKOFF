@@ -9,7 +9,9 @@ import { MainService } from './main.service';
 import { AuthService } from '../auth/auth.service';
 import { UtilitiesService } from '../utilities.service';
 
-import { Message } from '../models/message';
+import { MessageUpdate } from '../models/message/messageUpdate';
+import { MessageListing } from '../models/message/messageListing';
+import { Message } from '../models/message/message';
 
 @Component({
 	selector: 'main-component',
@@ -20,11 +22,12 @@ import { Message } from '../models/message';
 	providers: [MainService, AuthService, UtilitiesService],
 })
 export class MainComponent {
-	utilitiesService = new UtilitiesService();
+	utils = new UtilitiesService();
 	currentUser: string;
 	interfaceNames: string[] = [];
 	jwtHelper: JwtHelper = new JwtHelper();
-	messages: Message[] = [];
+	messageListings: MessageListing[] = [];
+	messageModalRef: NgbModalRef;
 
 	constructor(
 		private mainService: MainService, private authService: AuthService,
@@ -42,7 +45,7 @@ export class MainComponent {
 
 	getInitialNotifications(): void {
 		this.mainService.getInitialNotifications()
-			.then(messages => this.messages = messages.concat(this.messages))
+			.then(messageListings => this.messageListings = messageListings.concat(this.messageListings))
 			.catch(e => this.toastyService.error(`Error retrieving notifications: ${e.message}`));
 	}
 
@@ -52,20 +55,46 @@ export class MainComponent {
 				const eventSource = new (window as any).EventSource('/api/notifications/stream?access_token=' + authToken);
 
 				eventSource.addEventListener('message', (message: any) => {
-					const newMessage: Message = JSON.parse(message.data);
+					const newMessage: MessageListing = JSON.parse(message.data);
 
-					const existingMessage = this.messages.find(m => m.id === newMessage.id);
-					const index = this.messages.indexOf(existingMessage);
+					const existingMessage = this.messageListings.find(m => m.id === newMessage.id);
+					const index = this.messageListings.indexOf(existingMessage);
 					// If an existing message exists, replace it with the incoming message. Otherwise add it to the top of the array.
 					if (index > -1) {
-						this.messages[index] = newMessage;
+						this.messageListings[index] = newMessage;
 					} else {
-						this.messages.unshift(newMessage);
+						this.messageListings.unshift(newMessage);
 					}
 
 					// Remove the oldest message that is read if we have too many (>5) read messages
-					if (this.messages.filter(m => m.is_read).length > 5) {
-						this.messages.pop();
+					if (this.messageListings.filter(m => m.is_read).length > 5) {
+						this.messageListings.pop();
+					}
+				});
+				eventSource.addEventListener('read', (message: any) => {
+					const update: MessageUpdate = JSON.parse(message.data);
+
+					if (!this.messageModalRef || !this.messageModalRef.componentInstance) { return; }
+
+					if (this.messageModalRef.componentInstance.message.id === update.id) {
+						(this.messageModalRef.componentInstance.message as Message).read_by.push(update.username);
+					}
+				});
+				eventSource.addEventListener('respond', (message: any) => {
+					const update: MessageUpdate = JSON.parse(message.data);
+
+					const existingMessage = this.messageListings.find(m => m.id === update.id);
+
+					if (existingMessage) {
+						existingMessage.awaiting_response = false;
+					}
+
+					if (!this.messageModalRef || !this.messageModalRef.componentInstance) { return; }
+
+					if (this.messageModalRef.componentInstance.message.id === update.id) {
+						(this.messageModalRef.componentInstance.message as Message).responded_at = update.timestamp;
+						(this.messageModalRef.componentInstance.message as Message).responded_by = update.username;
+						(this.messageModalRef.componentInstance.message as Message).awaiting_response = false;
 					}
 				});
 				eventSource.addEventListener('error', (err: Error) => {
@@ -88,18 +117,21 @@ export class MainComponent {
 			.catch(e => console.error(e));
 	}
 
-	// TODO: call the read endpoint before opening the message
-	openMessage(event: any, message: Message): void {
+	openMessage(event: any, messageListing: MessageListing): void {
 		event.preventDefault();
 
-		message.is_read = true;
-		message.last_read_at = new Date();
+		this.mainService.getMessage(messageListing.id)
+			.then(message => {
+				messageListing.is_read = true;
+				messageListing.last_read_at = new Date();
 
-		const modalRef = this.modalService.open(MessagesModalComponent);
-
-		modalRef.componentInstance.message = _.cloneDeep(message);
-
-		this._handleModalClose(modalRef);
+				this.messageModalRef = this.modalService.open(MessagesModalComponent);
+				
+				this.messageModalRef.componentInstance.message = _.cloneDeep(message);
+		
+				this._handleModalClose(this.messageModalRef);
+			})
+			.catch(e => this.toastyService.error(`Error opening message: ${e.message}`));
 	}
 
 	private _handleModalClose(modalRef: NgbModalRef): void {

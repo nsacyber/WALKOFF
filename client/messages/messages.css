@@ -2,10 +2,6 @@
 	padding: 10px 30px;
 }
 
-.messagesMain .messageLink {
-	cursor: pointer;
-}
-
 .messagesMain .unread {
 	font-weight: bold;
 }
