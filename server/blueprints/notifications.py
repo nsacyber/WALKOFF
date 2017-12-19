@@ -22,11 +22,11 @@ class NotificationSseEvent(Enum):
     responded = 3
 
 
-def notification_event_stream(user_id_filter):
+def notification_event_stream(user_id):
     event_id = 1
     while True:
-        user_id, event, data = notification_event_result.get()
-        if event == NotificationSseEvent.created or user_id == user_id_filter:
+        user_ids, event, data = notification_event_result.get()
+        if user_id in user_ids:
             yield create_sse_event(event_id=event_id, event=event.name, data=data)
             event_id += 1
         sync_signal.wait()
@@ -45,8 +45,9 @@ def message_created_callback(message, **data):
     result = {'id': message.id,
               'subject': message.subject,
               'created_at': str(message.created_at),
+              'is_read': False,
               'awaiting_response': message.requires_response}
-    send_sse(None, NotificationSseEvent.created, result)
+    send_sse({user.id for user in message.users}, NotificationSseEvent.created, result)
 
 
 @MessageActionEvent.responded.connect
@@ -55,16 +56,16 @@ def message_responded_callback(message, **data):
     result = {'id': message.id,
               'username': user.username,
               'timestamp': str(datetime.utcnow())}
-    send_sse(user.id, NotificationSseEvent.responded, result)
+    send_sse({user.id for user in message.users}, NotificationSseEvent.responded, result)
 
 
 @MessageActionEvent.read.connect
 def message_read_callback(message, **data):
     user = data['data']['user']
     result = {'id': message.id,
-              'username': data['user'].username,
+              'username': user.username,
               'timestamp': str(datetime.utcnow())}
-    send_sse(user.id, NotificationSseEvent.read, result)
+    send_sse({user.id for user in message.users}, NotificationSseEvent.read, result)
 
 
 @notifications_page.route('/stream', methods=['GET'])

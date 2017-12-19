@@ -19,6 +19,7 @@ def get_all_messages():
 
 
 def get_message(message_id):
+    from server.messaging import MessageActionEvent
 
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('messages', ['read']))
@@ -30,6 +31,7 @@ def get_message(message_id):
             return {'error': 'Message not found'}, OBJECT_DNE_ERROR
         if user not in message.users:
             return {'error': 'User cannot access message'}, FORBIDDEN_ERROR
+        MessageActionEvent.read.send(message, data={'user': user})
         return message.as_json(user=user), SUCCESS
 
     return __func()
@@ -60,15 +62,19 @@ def act_on_messages(action):
         return other_action_func(action)
 
 
-
 def act_on_message_helper(action):
+    from server.messaging import MessageAction, MessageActionEvent
 
     user_id = get_jwt_identity()
     user = User.query.filter(User.id == user_id).first()
     if user is None:
         return {'error': 'Unknown user'}, OBJECT_DNE_ERROR
+    send_read_callback = action == MessageAction.read
     for message in (message for message in user.messages if message.id in request.get_json()['ids']):
         message.record_user_action(user, action)
+        if send_read_callback:
+            MessageActionEvent.read.send(message, data={'user': user})
+
     db.session.commit()
     return 'Success', SUCCESS
 

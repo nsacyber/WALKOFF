@@ -4,7 +4,7 @@ from server.extensions import db
 from server.returncodes import *
 from server import flaskserver
 import json
-
+from server.messaging import MessageActionEvent
 
 class UserWrapper(object):
     def __init__(self, username, password, roles=[]):
@@ -131,30 +131,73 @@ class TestMessagingEndpoints(ServerTestCase):
         self.get_all_messages_for_user(self.user3, status_code=FORBIDDEN_ERROR)
 
     def get_one_message_does_not_exist(self):
+        res = {'called': False}
+
+        @MessageActionEvent.read.connect
+        def callback(message, **data):
+            res['called'] = True
+
         self.get_message_for_user(42, self.user1, status_code=OBJECT_DNE_ERROR)
         self.get_message_for_user(100, self.user1, status_code=OBJECT_DNE_ERROR)
+        self.assertFalse(res['called'])
 
     def get_one_message_not_wrong_user(self):
+        res = {'called': False}
+
+        @MessageActionEvent.read.connect
+        def callback(message, **data):
+            res['called'] = True
+
         self.get_message_for_user(self.message1.id, self.user3, status_code=FORBIDDEN_ERROR)
         self.get_message_for_user(self.message3.id, self.user1, status_code=FORBIDDEN_ERROR)
+        self.assertFalse(res['called'])
 
     def get_one_message(self):
+        res = {'called': []}
+
+        @MessageActionEvent.read.connect
+        def callback(message, **data):
+            res['called'] += (message.id, data['data']['user'].id)
+
         response = self.get_message_for_user(self.message1.id, self.user1)
         self.assertEqual(response['id'], self.message1.id)
         response = self.get_message_for_user(self.message2.id, self.user2)
         self.assertEqual(response['id'], self.message2.id)
+        self.assertListEqual(res['called'],
+                             [(self.message1.id, self.user1.user.id), (self.message2.id, self.user2.user.id)])
 
     def test_read_all_messages(self):
+        res = {'called': set()}
+
+        @MessageActionEvent.read.connect
+        def callback(message, **data):
+            res['called'].add((message.id, data['data']['user'].id))
+
         for user in (self.user1, self.user2):
             self.act_on_messages('read', user)
             self.assert_user_read_status_on_messages(user)
         self.act_on_messages('read', self.user3, status_code=FORBIDDEN_ERROR)
 
+        expected = set()
+        for user in (self.user1, self.user2):
+            for message in user.messages:
+                expected.add((message.id, user.user.id))
+
+        self.assertSetEqual(res['called'], expected)
+
     def test_read_one_message(self):
+        res = {'called': []}
+
+        @MessageActionEvent.read.connect
+        def callback(message, **data):
+            res['called'].append((message.id, data['data']['user'].id))
+
         for user, message in [(self.user1, self.message1), (self.user2, self.message2)]:
             self.act_on_messages('read', user, messages=[message])
             self.assert_user_read_status_on_messages(user, messages=[message])
         self.act_on_messages('read', self.user3, messages=[self.message3], status_code=FORBIDDEN_ERROR)
+        self.assertListEqual(res['called'],
+                             [(self.message1.id, self.user1.user.id), (self.message2.id, self.user2.user.id)])
 
     def test_unread_all_messages(self):
         for user in (self.user1, self.user2):
