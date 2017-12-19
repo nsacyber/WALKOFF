@@ -192,6 +192,10 @@ def validate_actions(actions, dereferencer, app_name):
         if action_params:
             validate_action_params(action_params, dereferencer, app_name,
                                    action_name, get_app_action(app_name, action['run']), event=event)
+        if 'default_return' in action:
+            if action['default_return'] not in action.get('returns', []):
+                raise InvalidApi('Default return {} not in defined return codes {}'.format(action['default_return'], action.get('returns', []).keys()))
+
         validate_app_action_return_codes(action.get('returns', []), app_name, action_name)
         seen.add(action['run'])
     if seen != set(defined_actions):

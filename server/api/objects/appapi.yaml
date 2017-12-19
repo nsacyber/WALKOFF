@@ -98,6 +98,9 @@ ActionApi:
     run:
       type: string
       description: The path to the executable function
+    default_return:
+      type: string
+      description: The name of the default return code (if none specified, defaults to Success
     returns:
       type: array
       items:

@@ -156,6 +156,19 @@ class TestAppApiValidation(unittest.TestCase):
         with self.assertRaises(UnknownApp):
             validate_actions(self.basicapi['actions'], self.dereferencer, 'InvalidApp')
 
+    def test_validate_actions_valid_default_return(self):
+        print("validtest")
+        self.basicapi['actions']['helloWorld']['default_return'] = 'Success'
+        self.__generate_resolver_dereferencer(self.basicapi)
+        validate_actions(self.basicapi['actions'], self.dereferencer, 'HelloWorldBounded')
+
+    def test_validate_actions_invalid_default_return(self):
+        print("invalidtest")
+        self.basicapi['actions']['helloWorld']['default_return'] = 'invalidreturn'
+        self.__generate_resolver_dereferencer(self.basicapi)
+        with self.assertRaises(InvalidApi):
+            validate_actions(self.basicapi['actions'], self.dereferencer, 'HelloWorldBounded')
+
     def test_validate_action_params_no_duplicate_params_matches_signature(self):
         self.basicapi['actions']['Add Three'] = {'run': 'main.Main.addThree',
                                                  'parameters': [{'name': 'num1',
