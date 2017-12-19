@@ -387,6 +387,11 @@
         "parameters": {
           "$ref": "#/definitions/parametersList"
         },
+        "default_return": {
+          "type": "string",
+          "description": "The name of the default return code for this action. Defaults to Success.",
+          "default": "Success"
+        },
         "returns": {
           "$ref": "#/definitions/returns"
         },
