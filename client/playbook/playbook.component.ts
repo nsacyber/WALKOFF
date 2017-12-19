@@ -347,8 +347,8 @@ export class PlaybookComponent {
 							let default_status = ''
 							if (sourceActionApi.default_return) {
 							    default_status = sourceActionApi.default_return;
-							} else if (sourceActionApi.returns.find(x => x.status == 'Success')) {
-                                default_status = 'Success'
+							} else if (sourceActionApi.returns.length) {
+                                default_status = sourceActionApi.returns[0].status;
                             }
 							self.loadedWorkflow.branches.push({
 								uid,

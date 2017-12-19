@@ -157,13 +157,11 @@ class TestAppApiValidation(unittest.TestCase):
             validate_actions(self.basicapi['actions'], self.dereferencer, 'InvalidApp')
 
     def test_validate_actions_valid_default_return(self):
-        print("validtest")
         self.basicapi['actions']['helloWorld']['default_return'] = 'Success'
         self.__generate_resolver_dereferencer(self.basicapi)
         validate_actions(self.basicapi['actions'], self.dereferencer, 'HelloWorldBounded')
 
     def test_validate_actions_invalid_default_return(self):
-        print("invalidtest")
         self.basicapi['actions']['helloWorld']['default_return'] = 'invalidreturn'
         self.__generate_resolver_dereferencer(self.basicapi)
         with self.assertRaises(InvalidApi):
