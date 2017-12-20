@@ -13,7 +13,7 @@ class TestUserServer(ServerTestCase):
         db.session.rollback()
         for user in [user for user in User.query.all() if user.username != 'admin']:
             db.session.delete(user)
-        for role in [role for role in Role.query.all() if role.name != 'admin']:
+        for role in [role for role in Role.query.all() if role.name != 'admin' and role.name != 'guest']:
             db.session.delete(role)
         db.session.commit()
 
@@ -23,10 +23,8 @@ class TestUserServer(ServerTestCase):
         self.assertEqual(response, user.as_json())
 
     def setup_guest_user(self):
-        user = add_user('guest', 'guest')
-        role = Role('guest', resources=[{'name': 'users', 'permissions': ['read']}])
+        user = add_user('guest', 'guest', ['guest'])
         db.session.add(user)
-        user.roles.append(role)
         db.session.commit()
         return user
 

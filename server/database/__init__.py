@@ -9,29 +9,51 @@ from .tokens import BlacklistedToken
 
 logger = logging.getLogger(__name__)
 
-default_resource_permissions = [{"name": "app_apis", "permissions": ["read"]},
-                                {"name": "cases", "permissions": ["create", "read", "update", "delete"]},
-                                {"name": "configuration", "permissions": ["read", "update"]},
-                                {"name": "devices", "permissions": ["create", "read", "update", "delete"]},
-                                {"name": "messages", "permissions": ["read", "update", "delete"]},
-                                {"name": "metrics", "permissions": ["read"]},
-                                {"name": "playbooks", "permissions": ["create", "read", "update", "delete", "execute"]},
-                                {"name": "roles", "permissions": ["create", "read", "update", "delete"]},
-                                {"name": "scheduler", "permissions": ["create", "read", "update", "delete", "execute"]},
-                                {"name": "users", "permissions": ["create", "read", "update", "delete"]}]
+default_resource_permissions_admin = [{"name": "app_apis", "permissions": ["read"]},
+                                      {"name": "cases", "permissions": ["create", "read", "update", "delete"]},
+                                      {"name": "configuration", "permissions": ["read", "update"]},
+                                      {"name": "devices", "permissions": ["create", "read", "update", "delete"]},
+                                      {"name": "messages", "permissions": ["read", "update", "delete"]},
+                                      {"name": "metrics", "permissions": ["read"]},
+                                      {"name": "playbooks",
+                                       "permissions": ["create", "read", "update", "delete", "execute"]},
+                                      {"name": "roles", "permissions": ["create", "read", "update", "delete"]},
+                                      {"name": "scheduler",
+                                       "permissions": ["create", "read", "update", "delete", "execute"]},
+                                      {"name": "users", "permissions": ["create", "read", "update", "delete"]}]
 
+default_resource_permissions_guest = [{"name": "app_apis", "permissions": ["read"]},
+                                      {"name": "cases", "permissions": ["read"]},
+                                      {"name": "configuration", "permissions": ["read"]},
+                                      {"name": "devices", "permissions": ["read"]},
+                                      {"name": "messages", "permissions": ["read", "update", "delete"]},
+                                      {"name": "metrics", "permissions": ["read"]},
+                                      {"name": "playbooks", "permissions": ["read"]},
+                                      {"name": "roles", "permissions": ["read"]},
+                                      {"name": "scheduler", "permissions": ["read"]},
+                                      {"name": "users", "permissions": ["read"]}]
 
 default_resources = ['app_apis', 'cases', 'configuration', 'devices', 'messages', 'metrics', 'playbooks', 'roles',
                      'scheduler', 'users']
 
 
-def initialize_default_resources_for_admin():
-    admin = Role.query.filter(Role.name == "admin").first()
+def initialize_default_resources_admin():
+    admin = Role.query.filter(Role.id == 1).first()
     if not admin:
-        admin = Role("admin", resources=default_resource_permissions)
+        admin = Role("admin", resources=default_resource_permissions_admin)
         db.session.add(admin)
     else:
-        admin.set_resources(default_resource_permissions)
+        admin.set_resources(default_resource_permissions_admin)
+    db.session.commit()
+
+
+def initialize_default_resources_guest():
+    guest = Role.query.filter(Role.name == "guest").first()
+    if not guest:
+        guest = Role("guest", resources=default_resource_permissions_guest)
+        db.session.add(guest)
+    else:
+        guest.set_resources(default_resource_permissions_guest)
     db.session.commit()
 
 
@@ -72,7 +94,7 @@ def clear_resources_for_role(role_name):
 
 def get_all_available_resource_actions():
     resource_actions = []
-    for resource_perm in default_resource_permissions:
+    for resource_perm in default_resource_permissions_admin:
         resource_actions.append(
             {"name": resource_perm['name'], "actions": resource_perm['permissions']})
     return resource_actions

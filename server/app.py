@@ -12,7 +12,8 @@ from core.config import paths
 from core.helpers import format_db_path
 from server.extensions import db, jwt
 from server.database.casesubscription import CaseSubscription
-from server.database import add_user, User, Role
+from server.database import add_user, User, Role, initialize_default_resources_admin, \
+    initialize_default_resources_guest
 
 logger = logging.getLogger(__name__)
 
@@ -109,16 +110,12 @@ app = create_app()
 def create_user():
     db.create_all()
 
-    # Setup admin role
-    admin_role = Role.query.filter_by(name="admin").first()
-    if admin_role:
-        admin_role.set_resources(server.database.default_resource_permissions)
-    else:
-        admin_role = Role(
-            name='admin', description='administrator', resources=server.database.default_resource_permissions)
-        db.session.add(admin_role)
+    # Setup admin and guest roles
+    initialize_default_resources_admin()
+    initialize_default_resources_guest()
 
     # Setup admin user
+    admin_role = Role.query.filter_by(id=1).first()
     admin_user = User.query.filter_by(username="admin").first()
     if not admin_user:
         add_user(username='admin', password='admin', roles=["admin"])

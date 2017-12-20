@@ -13,7 +13,7 @@ from tests.util import servertestcase
 class TestRolesServer(servertestcase.ServerTestCase):
     def tearDown(self):
         db.session.rollback()
-        for role in [role for role in Role.query.all() if role.name != 'admin']:
+        for role in [role for role in Role.query.all() if role.name != 'admin' and role.name != 'guest']:
             db.session.delete(role)
         for resource in [resource for resource in Resource.query.all() if
                          resource.name not in default_resources]:
@@ -26,13 +26,13 @@ class TestRolesServer(servertestcase.ServerTestCase):
 
     def test_read_all_roles_no_added_roles(self):
         response = self.get_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS)
-        self.assertEqual([role['name'] for role in response], ['admin'])
+        self.assertEqual([role['name'] for role in response], ['admin', 'guest'])
 
     def test_read_all_roles_with_extra_added_roles(self):
         role = Role('role1')
         db.session.add(role)
         response = self.get_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS)
-        self.assertSetEqual({role['name'] for role in response}, {'admin', 'role1'})
+        self.assertSetEqual({role['name'] for role in response}, {'admin', 'role1', 'guest'})
 
     def assertRoleJsonIsEqual(self, role, expected):
         self.assertEqual(role['id'], expected['id'])

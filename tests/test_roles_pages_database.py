@@ -1,6 +1,6 @@
 import unittest
 
-from server.database import db, Role, Resource, default_resources, initialize_default_resources_for_admin
+from server.database import db, Role, Resource, default_resources, initialize_default_resources_admin
 
 
 class TestRoles(unittest.TestCase):
@@ -9,12 +9,12 @@ class TestRoles(unittest.TestCase):
         import server.flaskserver
         cls.context = server.flaskserver.app.test_request_context()
         cls.context.push()
-        initialize_default_resources_for_admin()
+        initialize_default_resources_admin()
         db.create_all()
 
     def tearDown(self):
         db.session.rollback()
-        for role in [role for role in Role.query.all() if role.name != 'admin']:
+        for role in [role for role in Role.query.all() if role.name != 'admin' and role.name != 'guest']:
             db.session.delete(role)
         for resource in [resource for resource in Resource.query.all() if
                          resource.name not in default_resources]:

@@ -16,7 +16,7 @@ class TestUserRolesDatabase(unittest.TestCase):
         db.session.rollback()
         for user in [user for user in User.query.all() if user.username != 'admin']:
             db.session.delete(user)
-        for role in [role for role in Role.query.all() if role.name != 'admin']:
+        for role in [role for role in Role.query.all() if role.name != 'admin' and role.name != 'guest']:
             db.session.delete(role)
         db.session.commit()
 
