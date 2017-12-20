@@ -61,20 +61,19 @@ zmq_requests_address = 'tcp://127.0.0.1:5555'
 zmq_results_address = 'tcp://127.0.0.1:5556'
 zmq_communication_address = 'tcp://127.0.0.1:5557'
 
+num_processes = 4
+num_threads_per_process = 3
+
 walkoff_db_type = 'sqlite'
 case_db_type = 'sqlite'
 device_db_type = 'sqlite'
 secret_key = 'SHORTSTOPKEYTEST'
 walkoff_version = '0.5.0'
 
-
-
 # Loads the keywords into the environment filter for use
 JINJA_GLOBALS = {splitext(fn)[0]: getattr(importlib.import_module("core.keywords." + splitext(fn)[0]), "main")
                  for fn in listdir(keywords_path) if
                  isfile(join(keywords_path, fn)) and not splitext(fn)[0] in ["__init__", "."]}
-
-num_processes = 5
 
 # Function Dict Paths/Initialization
 
