@@ -5,27 +5,78 @@ from core.events import WalkoffEvent
 
 class TestMessage(TestCase):
 
+    def tearDown(self):
+        for class_name in ('message_type1', 'message_type2'):
+            MessageComponent.registry.pop(class_name, None)
+
+    def test_class_name_to_tag(self):
+        self.assertEqual(convert_class_name_to_tag('Camel'), 'camel')
+        self.assertEqual(convert_class_name_to_tag('CamelCase'), 'camel_case')
+        self.assertEqual(convert_class_name_to_tag('CamelCamelCase'), 'camel_camel_case')
+        self.assertEqual(convert_class_name_to_tag('Camel2Camel2Case'), 'camel2_camel2_case')
+        self.assertEqual(convert_class_name_to_tag('getHTTPResponseCode'), 'get_http_response_code')
+        self.assertEqual(convert_class_name_to_tag('get2HTTPResponseCode'), 'get2_http_response_code')
+        self.assertEqual(convert_class_name_to_tag('HTTPResponseCodeXYZ'), 'http_response_code_xyz')
+
+    def test_registry(self):
+
+        class MessageType1(MessageComponent): pass
+        self.assertEqual(MessageType1.message_type, convert_class_name_to_tag(MessageType1.__name__))
+        self.assertEqual(MessageComponent.registry[MessageType1.message_type], MessageType1)
+        class MessageType2(MessageComponent): pass
+        self.assertEqual(MessageType2.message_type, convert_class_name_to_tag(MessageType2.__name__))
+        self.assertEqual(MessageComponent.registry[MessageType2.message_type], MessageType2)
+
+    def test_registry_duplicate(self):
+
+        class MessageType1(MessageComponent): pass
+        original_class = MessageType1
+        class MessageType1(MessageComponent): pass
+        self.assertEqual(MessageComponent.registry['message_type1'], original_class)
+
     def test_message_component_init(self):
-        message_component = MessageComponent('some type')
-        self.assertEqual(message_component.message_type, 'some type')
+        message_component = MessageComponent()
+        self.assertEqual(message_component.message_type, '__base')
         self.assertFalse(message_component.requires_response)
 
     def test_message_component_init_requires_response(self):
-        message_component = MessageComponent('some type', requires_response=True)
-        self.assertEqual(message_component.message_type, 'some type')
+        message_component = MessageComponent(requires_response=True)
         self.assertTrue(message_component.requires_response)
 
     def test_message_component_get_component_json(self):
-        message_component = MessageComponent('some type')
+        message_component = MessageComponent()
         self.assertDictEqual(message_component.get_component_json(), {})
 
     def test_message_component_as_json(self):
-        message_component = MessageComponent('some type')
-        self.assertDictEqual(message_component.as_json(), {'type': 'some type', 'requires_response': False, 'data': {}})
+        message_component = MessageComponent()
+        self.assertDictEqual(message_component.as_json(), {'type': '__base', 'requires_response': False, 'data': {}})
 
     def test_message_component_requires_response_as_json(self):
-        message_component = MessageComponent('some type', requires_response=True)
-        self.assertDictEqual(message_component.as_json(), {'type': 'some type', 'requires_response': True, 'data': {}})
+        message_component = MessageComponent(requires_response=True)
+        self.assertDictEqual(message_component.as_json(), {'type': '__base', 'requires_response': True, 'data': {}})
+
+    def test_message_component_from_component_json(self):
+        self.assertIsInstance(MessageComponent.from_component_json({}), MessageComponent)
+        self.assertIsInstance(MessageComponent.from_component_json({'a': 'b'}), MessageComponent)
+
+    def test_message_component_from_json_unknown_type(self):
+        json_in = {'type': 'invalid', 'requires_response': True, 'data': {'a': 42}}
+        self.assertIsInstance(MessageComponent.from_json(json_in), MessageComponent)
+
+    def test_message_component_from_json(self):
+        class MessageType1(MessageComponent):
+            def __init__(self, a):
+                super(MessageType1, self).__init__()
+                self.a = a
+
+            @staticmethod
+            def from_component_json(json_in):
+                return MessageType1(json_in['a'])
+
+        json_in = {'type': MessageType1.message_type, 'requires_response': True, 'data': {'a': 42}}
+        generated = MessageComponent.from_json(json_in)
+        self.assertIsInstance(generated, MessageType1)
+        self.assertEqual(generated.a, 42)
 
     def test_text_component_init(self):
         text = Text('some text here')
@@ -36,6 +87,10 @@ class TestMessage(TestCase):
     def test_text_component_get_component_json(self):
         text = Text('some text here')
         self.assertDictEqual(text.get_component_json(), {'text': 'some text here'})
+
+    def test_text_from_component_json(self):
+        text = Text.from_component_json({'text': 'something'})
+        self.assertEqual(text.text, 'something')
 
     def test_url_component_init(self):
         url = Url('some.url.goes.here.com')
@@ -59,6 +114,16 @@ class TestMessage(TestCase):
         url = Url('some.url.goes.here.com', title='Click Here')
         self.assertDictEqual(url.get_component_json(), {'url': 'some.url.goes.here.com', 'title': 'Click Here'})
 
+    def test_url_component_from_component_json(self):
+        url = Url.from_component_json({'url': 'a.b.c'})
+        self.assertEqual(url.url, 'a.b.c')
+        self.assertIsNone(url.title)
+
+    def test_url_component_from_component_json_with_title(self):
+        url = Url.from_component_json({'url': 'a.b.c', 'title': 'click here'})
+        self.assertEqual(url.url, 'a.b.c')
+        self.assertEqual(url.title, 'click here')
+
     def test_accept_decline_component_init(self):
         accept_decline = AcceptDecline()
         self.assertEqual(accept_decline.message_type, 'accept_decline')
@@ -67,6 +132,10 @@ class TestMessage(TestCase):
     def test_accept_decline_component_get_component_json(self):
         accept_decline = AcceptDecline()
         self.assertDictEqual(accept_decline.get_component_json(), {})
+
+    def test_accept_decline_from_component_json(self):
+        accept_decline = AcceptDecline.from_component_json({})
+        self.assertIsInstance(accept_decline, AcceptDecline)
 
     def test_message_init_(self):
         message = Message()
@@ -142,6 +211,22 @@ class TestMessage(TestCase):
         message = Message(components=components, subject='important!')
         self.assertDictEqual(message.as_json(),
                              {'subject': 'important!', 'body': [component.as_json() for component in components]})
+
+    def test_message_from_json(self):
+        components = [Text('a'), Text('b')]
+        message = Message(components=components)
+        message = Message.from_json(message.as_json())
+        for component in message.body:
+            self.assertIn(component.text, ('a', 'b'))
+        self.assertIsNone(message.subject)
+
+    def test_message_from_json_with_subject(self):
+        components = [Text('a'), Text('b')]
+        message = Message(components=components, subject='important!')
+        message = Message.from_json(message.as_json())
+        for component in message.body:
+            self.assertIn(component.text, ('a', 'b'))
+        self.assertEqual(message.subject, 'important!')
 
     def test_message_iterator(self):
         components = [Text('a'), Text('b')]
