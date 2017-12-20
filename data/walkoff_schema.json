@@ -534,6 +534,11 @@
     "return": {
       "type": "object",
       "properties": {
+        "failure": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, action turns red when it returns this code."
+        },
         "description": {
           "type": "string"
         },

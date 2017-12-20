@@ -293,6 +293,10 @@ ReturnApi:
     description:
       type: string
       description: description of the return type
+    failure:
+      type: boolean
+      description: Whether this return type indicates action failure
+      default: false
     schema:
       $ref: '#/definitions/ParameterSchema'
     examples:
