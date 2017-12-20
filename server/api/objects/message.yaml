@@ -61,6 +61,36 @@ Message:
         type: string
       description: usernames of users who have read the message
 
+MessageSummary:
+  type: object
+  required: [id, subject, created_at, is_read, awaiting_response]
+  description: A message sent to a user
+  properties:
+    id:
+      description: Id of this message
+      type: integer
+      minimum: 1
+      readOnly: true
+      example: 42
+    subject:
+      description: Subject of this message
+      type: string
+      example: Remove user?
+      readOnly: true
+    is_read:
+      description: Has this message been read yet?
+      type: boolean
+      default: false
+    created_at:
+      description: UTC timestamp of message creation
+      type: string
+      readOnly: true
+    last_read_at:
+      description: UTC timestamp of when message was last read
+      type: string
+    awaiting_response:
+      description: Is this message awaiting a response
+      type: boolean
 
 MessageComponent:
   type: object

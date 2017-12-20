@@ -4,7 +4,10 @@ from server.extensions import db
 from server.returncodes import *
 from server import flaskserver
 import json
-from server.messaging import MessageActionEvent
+from server.messaging import MessageActionEvent, MessageAction
+from datetime import timedelta, datetime
+from server.endpoints.messages import max_notifications, min_notifications
+
 
 class UserWrapper(object):
     def __init__(self, username, password, roles=[]):
@@ -31,8 +34,9 @@ class TestMessagingEndpoints(ServerTestCase):
         cls.role_r.set_resources([{'name': 'messages', 'permissions': ['read', 'update']}])
         db.session.add(cls.role_rd)
         db.session.add(cls.role_r)
-        cls.user1 = UserWrapper('username', 'password', roles=[cls.role_rd.name])
-        cls.user2 = UserWrapper('username2', 'password2', roles=[cls.role_r.name])
+        db.session.commit()
+        cls.user1 = UserWrapper('username', 'password', roles=[cls.role_rd.id])
+        cls.user2 = UserWrapper('username2', 'password2', roles=[cls.role_r.id])
         cls.user3 = UserWrapper('username3', 'password3')
         cls.all_users = (cls.user1, cls.user2, cls.user3)
         db.session.add(cls.user1.user)
@@ -103,6 +107,9 @@ class TestMessagingEndpoints(ServerTestCase):
         return self.get_with_status_check('/api/messages/{}'.format(message_id),
                                           headers=user.header, status_code=status_code)
 
+    def get_notifications(self, user):
+        return self.get_with_status_check('/api/notifications', headers=user.header)
+
     def assert_message_ids_equal(self, messages, expected_messages=None):
         expected_message_ids = {message.id for message in expected_messages}
         self.assertEqual(len(messages), len(expected_message_ids))
@@ -130,7 +137,7 @@ class TestMessagingEndpoints(ServerTestCase):
         self.assert_message_ids_equal(response, self.user2.messages)
         self.get_all_messages_for_user(self.user3, status_code=FORBIDDEN_ERROR)
 
-    def get_one_message_does_not_exist(self):
+    def test_get_one_message_does_not_exist(self):
         res = {'called': False}
 
         @MessageActionEvent.read.connect
@@ -141,7 +148,7 @@ class TestMessagingEndpoints(ServerTestCase):
         self.get_message_for_user(100, self.user1, status_code=OBJECT_DNE_ERROR)
         self.assertFalse(res['called'])
 
-    def get_one_message_not_wrong_user(self):
+    def test_get_one_message_not_wrong_user(self):
         res = {'called': False}
 
         @MessageActionEvent.read.connect
@@ -152,19 +159,19 @@ class TestMessagingEndpoints(ServerTestCase):
         self.get_message_for_user(self.message3.id, self.user1, status_code=FORBIDDEN_ERROR)
         self.assertFalse(res['called'])
 
-    def get_one_message(self):
-        res = {'called': []}
+    def test_get_one_message(self):
+        res = {'called': set()}
 
         @MessageActionEvent.read.connect
         def callback(message, **data):
-            res['called'] += (message.id, data['data']['user'].id)
+            res['called'].add((message.id, data['data']['user'].id))
 
         response = self.get_message_for_user(self.message1.id, self.user1)
         self.assertEqual(response['id'], self.message1.id)
         response = self.get_message_for_user(self.message2.id, self.user2)
         self.assertEqual(response['id'], self.message2.id)
-        self.assertListEqual(res['called'],
-                             [(self.message1.id, self.user1.user.id), (self.message2.id, self.user2.user.id)])
+        self.assertSetEqual(res['called'],
+                            {(self.message1.id, self.user1.user.id), (self.message2.id, self.user2.user.id)})
 
     def test_read_all_messages(self):
         res = {'called': set()}
@@ -226,5 +233,100 @@ class TestMessagingEndpoints(ServerTestCase):
         for user in (self.user2, self.user3):
             self.act_on_messages('delete', user, messages=[user.messages[0]], status_code=FORBIDDEN_ERROR)
             self.assert_user_num_messages(user, len(user.messages))
+
+    def test_get_all_notifications_less_than_minimum_all_unread(self):
+        messages = []
+        for i in range(min_notifications - len(self.user1.messages)-1):
+            message = TestMessagingEndpoints.make_message([self.user1.user])
+            db.session.commit()
+            message.created_at += timedelta(seconds=i)
+            db.session.commit()
+            messages.append(message)
+        messages += self.user1.messages
+        notifications = self.get_notifications(self.user1)
+        self.assertLess(len(notifications), min_notifications)
+        self.assertSetEqual({message.id for message in messages},
+                            {notification['id'] for notification in notifications})
+        self.assertTrue(all(not notification['is_read'] for notification in notifications))
+
+    def test_get_all_notifications_exact_minimum_some_read(self):
+        messages = []
+        for i in range(min_notifications - len(self.user1.messages)):
+            message = TestMessagingEndpoints.make_message([self.user1.user])
+            db.session.commit()
+            message.created_at += timedelta(seconds=i)
+            db.session.commit()
+            messages.append(message)
+        messages += self.user1.messages
+        for message in messages[-2:]:
+            message.record_user_action(self.user1.user, MessageAction.read)
+        notifications = self.get_notifications(self.user1)
+        self.assertEqual(len(notifications), min_notifications)
+        self.assertSetEqual({message.id for message in messages},
+                            {notification['id'] for notification in notifications})
+        self.assertEqual(len([notification for notification in notifications if notification['is_read']]), 2)
+        self.assertEqual(len([notification for notification in notifications if not notification['is_read']]), 3)
+
+    def test_get_all_notifications_more_than_minimum_all_unread(self):
+        messages = []
+        for i in range((max_notifications - min_notifications)/2):
+            message = TestMessagingEndpoints.make_message([self.user1.user])
+            db.session.commit()
+            message.created_at += timedelta(seconds=i)
+            db.session.commit()
+            messages.append(message)
+        messages += self.user1.messages
+        notifications = self.get_notifications(self.user1)
+        self.assertEqual(len(notifications), len(messages))
+        self.assertSetEqual({message.id for message in messages},
+                            {notification['id'] for notification in notifications})
+        self.assertTrue(all(not notification['is_read'] for notification in notifications))
+
+    def test_get_all_notifications_more_than_minimum_some_unread(self):
+        messages = []
+        for i in range((max_notifications - min_notifications)/2+3):
+            message = TestMessagingEndpoints.make_message([self.user1.user])
+            db.session.commit()
+            message.created_at += timedelta(seconds=i)
+            db.session.commit()
+            messages.append(message)
+        messages += self.user1.messages
+        num_read = 3
+        for message in messages[-num_read:]:
+            message.record_user_action(self.user1.user, MessageAction.read)
+        notifications = self.get_notifications(self.user1)
+        self.assertEqual(len(notifications), len(messages)-num_read)
+        self.assertSetEqual({message.id for message in messages if not message.user_has_read(self.user1.user)},
+                            {notification['id'] for notification in notifications})
+        self.assertTrue(all(not notification['is_read'] for notification in notifications))
+
+    def test_get_all_notifications_more_than_maximum_all_unread(self):
+        messages = []
+        for i in range(int(1.5*max_notifications)):
+            message = TestMessagingEndpoints.make_message([self.user1.user])
+            db.session.commit()
+            message.created_at += timedelta(seconds=i)
+            db.session.commit()
+            messages.append(message)
+        messages += self.user1.messages
+        notifications = self.get_notifications(self.user1)
+        self.assertEqual(len(notifications), max_notifications)
+        self.assertTrue(all(not notification['is_read'] for notification in notifications))
+
+    def test_get_all_notifications_more_than_maximum_some_unread(self):
+        messages = []
+        for i in range(int(1.5*max_notifications+min_notifications)):
+            message = TestMessagingEndpoints.make_message([self.user1.user])
+            db.session.commit()
+            message.created_at += timedelta(seconds=i)
+            db.session.commit()
+            messages.append(message)
+        messages += self.user1.messages
+        for message in messages[-min_notifications:]:
+            message.record_user_action(self.user1.user, MessageAction.read)
+        notifications = self.get_notifications(self.user1)
+        self.assertEqual(len(notifications), max_notifications)
+        self.assertTrue(all(not notification['is_read'] for notification in notifications))
+
 
 

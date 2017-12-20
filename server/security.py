@@ -69,7 +69,6 @@ def _permissions_decorator(resource_permissions, all_required=False):
             _roles_accepted = set()
             for resource_permission in resource_permissions:
                 _roles_accepted |= server.database.get_roles_by_resource_permissions(resource_permission)
-
             if user_has_correct_roles(_roles_accepted, all_required=all_required):
                 return fn(*args, **kwargs)
             return "Unauthorized View", FORBIDDEN_ERROR

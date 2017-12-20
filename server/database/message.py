@@ -6,8 +6,8 @@ from server.extensions import db
 from server.messaging import MessageAction
 
 user_messages_association = db.Table('user_messages',
-                                  db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-                                  db.Column('message_id', db.Integer, db.ForeignKey('message.id')))
+                                     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+                                     db.Column('message_id', db.Integer, db.ForeignKey('message.id')))
 
 
 class Message(db.Model):
@@ -72,24 +72,26 @@ class Message(db.Model):
         else:
             return False, None, None
 
-    def as_json(self, with_read_by=True, user=None):
-        is_acted_on, acted_on_timestamp, acted_on_by = self.is_responded()
+    def as_json(self, with_read_by=True, user=None, summary=False):
+        responded, responded_at, responded_by = self.is_responded()
         ret = {'id': self.id,
                'subject': self.subject,
-               'body': json.loads(self.body),
-               'workflow_execution_uid': self.workflow_execution_uid,
-               'requires_reauthorization': self.requires_reauth,
-               'requires_response': self.requires_response,
                'created_at': str(self.created_at),
-               'awaiting_response': self.requires_response and not is_acted_on}
-        if is_acted_on:
-            ret['responded_at'] = str(acted_on_timestamp)
-            ret['responded_by'] = acted_on_by
-        if with_read_by:
-            ret['read_by'] = list(self.get_read_by())
+               'awaiting_response': self.requires_response and not responded}
+
         if user:
             ret['is_read'] = self.user_has_read(user)
             ret['last_read_at'] = str(self.user_last_read_at(user))
+        if not summary:
+            ret.update({'body': json.loads(self.body),
+                        'workflow_execution_uid': self.workflow_execution_uid,
+                        'requires_reauthorization': self.requires_reauth,
+                        'requires_response': self.requires_response})
+            if responded:
+                ret['responded_at'] = str(responded_at)
+                ret['responded_by'] = responded_by
+            if with_read_by:
+                ret['read_by'] = list(self.get_read_by())
         return ret
 
 

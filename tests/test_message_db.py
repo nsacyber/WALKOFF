@@ -68,6 +68,7 @@ class TestMessageDatabase(TestCase):
             db.session.commit()
         return message
 
+    def test_init(self):
         message = Message('subject here', 'body goes here', 'workflow_uid1', [self.user, self.user2])
         self.assertEqual(message.subject, 'subject here')
         self.assertEqual(message.body, 'body goes here')
@@ -215,7 +216,7 @@ class TestMessageDatabase(TestCase):
     def test_as_json(self):
         message = self.get_default_message(commit=True)
         message_json = message.as_json(with_read_by=False)
-        self.assertGreater(message_json['id'], 0)
+        self.assertEqual(message_json['id'], message.id)
         self.assertEqual(message_json['subject'], 'subject here')
         self.assertDictEqual(message_json['body'], {'message': 'some message'})
         self.assertEqual(message_json['workflow_execution_uid'], 'workflow_uid1')
@@ -223,6 +224,17 @@ class TestMessageDatabase(TestCase):
         self.assertFalse(message_json['requires_response'])
         self.assertFalse(message_json['awaiting_response'])
         for field in ('read_by', 'responded_at', 'responded_by'):
+            self.assertNotIn(field, message_json)
+
+    def test_as_json_summary(self):
+        message = self.get_default_message(commit=True)
+        message_json = message.as_json(summary=True)
+        self.assertGreater(message_json['id'], message.id)
+        self.assertEqual(message_json['subject'], 'subject here')
+        self.assertFalse(message_json['awaiting_response'])
+        self.assertEqual(message_json['created_at'], str(message.created_at))
+        for field in ('read_by', 'responded_at', 'responded_by', 'body', 'workflow_execution_uid',
+                      'requires_reauthorization', 'requires_response', 'is_read', 'last_read_at'):
             self.assertNotIn(field, message_json)
 
     def test_as_json_requires_reauth(self):
@@ -282,6 +294,17 @@ class TestMessageDatabase(TestCase):
         message_json = message.as_json(user=self.user2)
         self.assertTrue(message_json['is_read'])
         self.assertEqual(message_json['last_read_at'], str(user2_history.timestamp))
+
+    def test_as_json_for_user_summary(self):
+        message = self.get_default_message(commit=True)
+        message_json = message.as_json(user=self.user, summary=True)
+        self.assertFalse(message_json['is_read'])
+        message.record_user_action(self.user, MessageAction.read)
+        db.session.commit()
+        user1_history = message.history[0]
+        message_json = message.as_json(user=self.user, summary=True)
+        self.assertTrue(message_json['is_read'])
+        self.assertEqual(message_json['last_read_at'], str(user1_history.timestamp))
 
     def test_strip_requires_auth_from_message_body(self):
         body = {'body': [{'message': 'look here', 'requires_response': True},

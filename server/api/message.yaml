@@ -14,7 +14,8 @@
           type: array
           description: A list of messages
           items:
-            $ref: '#/definitions/Message'
+            $ref: '#/definitions/MessageSummary'
+
 /api/messages/{action}:
   parameters:
     - name: action
@@ -85,3 +86,17 @@
         description: Message doesn't exist
         schema:
           $ref: "#/definitions/Error"
+
+/api/notifications:
+  get:
+    tags:
+      - Messages
+    summary: Get all notifications
+    operationId: server.endpoints.messages.get_recent_notifications
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          $ref: '#/definitions/MessageSummary'

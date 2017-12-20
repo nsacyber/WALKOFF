@@ -5,6 +5,9 @@ from flask import request
 from server.database import User, Message
 from server.extensions import db
 
+max_notifications = 20
+min_notifications = 5
+
 
 def get_all_messages():
 
@@ -32,7 +35,7 @@ def get_message(message_id):
         if user not in message.users:
             return {'error': 'User cannot access message'}, FORBIDDEN_ERROR
         MessageActionEvent.read.send(message, data={'user': user})
-        return message.as_json(user=user), SUCCESS
+        return message.as_json(user=user, summary=True), SUCCESS
 
     return __func()
 
@@ -79,5 +82,29 @@ def act_on_message_helper(action):
     return 'Success', SUCCESS
 
 
+def get_recent_notifications():
 
+    @jwt_required
+    @permissions_accepted_for_resources(ResourcePermissions('messages', ['read']))
+    def __func():
+        user_id = get_jwt_identity()
+        user = User.query.filter(User.id == user_id).first()
+        # This should probably be replaced by a better SqlAlchemy command!
+        unread_messages = []
+        read_messages = []
+        fill_in_with_read = True
+        for message in user.messages:
+            if not message.user_has_read(user):
+                unread_messages.append(message)
+            elif fill_in_with_read:
+                if len(unread_messages) > min_notifications:
+                    fill_in_with_read = False
+                else:
+                    read_messages.append(message)
+        if fill_in_with_read and len(unread_messages) < min_notifications:
+            unread_messages += read_messages
+            unread_messages = unread_messages[:5]
+        unread_messages.sort(key=(lambda x: x.created_at), reverse=True)
+        return [message.as_json(user=user, summary=True) for message in unread_messages[:max_notifications]]
 
+    return __func()

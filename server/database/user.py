@@ -34,7 +34,7 @@ class User(db.Model, TrackModificationsMixIn):
         Args:
             name (str): The username for the User.
             password (str): The password for the User.
-            roles (list[str]): List of Role names for the User. Defaults to None.
+            roles (list[int]): List of Role ids for the User. Defaults to None.
         """
         self.username = name
         self._password = pbkdf2_sha512.hash(password)
