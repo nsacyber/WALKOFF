@@ -46,7 +46,10 @@ class TestConfigurationServer(ServerTestCase):
                     'clear_case_db_on_startup': bool(core.config.config.reinitialize_case_db_on_startup),
                     'number_processes': int(core.config.config.num_processes),
                     'access_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds / 60),
-                    'refresh_token_duration': int(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days)}
+                    'refresh_token_duration': int(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days),
+                    'zmq_requests_address': core.config.config.zmq_requests_address,
+                    'zmq_results_address': core.config.config.zmq_results_address,
+                    'zmq_communication_address': core.config.config.zmq_communication_address}
         response = self.get_with_status_check('/api/configuration', headers=self.headers)
         self.assertDictEqual(response, expected)
 

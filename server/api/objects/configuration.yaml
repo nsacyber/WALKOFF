@@ -46,5 +46,12 @@ Configuration:
         type: number
         minimum: 1
         description: Time (in days) to allow a refresh token to persist. Should greater than the duration of the refresh token
-
-
+      zmq_requests_address:
+        type: string
+        description: The IP address and port of the ZMQ requests server. Do not change unless necessary.
+      zmq_results_address:
+        type: string
+        description: The IP address and port of the ZMQ results server. Do not change unless necessary.
+      zmq_communication_address:
+        type: string
+        description: The IP address and port of the ZMQ communication server. Do not change unless necessary.
