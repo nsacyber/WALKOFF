@@ -13,6 +13,9 @@ import { MessageUpdate } from '../models/message/messageUpdate';
 import { MessageListing } from '../models/message/messageListing';
 import { Message } from '../models/message/message';
 
+const MAX_READ_MESSAGES = 5;
+const MAX_TOTAL_MESSAGES = 20;
+
 @Component({
 	selector: 'main-component',
 	templateUrl: 'client/main/main.html',
@@ -38,7 +41,7 @@ export class MainComponent {
 		this.mainService.getInterfaceNamess()
 			.then(interfaceNames => this.interfaceNames = interfaceNames);
 
-		this.updateUserInfo();
+		this.currentUser = this.authService.getAndDecodeAccessToken().user_claims.username;
 		this.getInitialNotifications();
 		this.getNotificationsSSE();
 	}
@@ -66,8 +69,9 @@ export class MainComponent {
 						this.messageListings.unshift(newMessage);
 					}
 
-					// Remove the oldest message that is read if we have too many (>5) read messages
-					if (this.messageListings.filter(m => m.is_read).length > 5) {
+					// Remove the oldest message that is read if we have too many (>5) read messages or too many total (>20)
+					if (this.messageListings.filter(m => m.is_read).length > MAX_READ_MESSAGES || 
+						this.messageListings.length > MAX_TOTAL_MESSAGES) {
 						this.messageListings.pop();
 					}
 				});
@@ -101,14 +105,6 @@ export class MainComponent {
 					console.error(err);
 				});
 			});
-	}
-
-	updateUserInfo(): void {
-		const refreshToken = sessionStorage.getItem('refresh_token');
-		
-		const decoded = this.jwtHelper.decodeToken(refreshToken);
-
-		this.currentUser = decoded.identity;
 	}
 
 	logout(): void {

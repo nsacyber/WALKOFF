@@ -62,6 +62,7 @@
                   <span>{{messageListings.length}}</span>
                 </a>
                 <div class="dropdown-menu">
+                  <span *ngIf="!messageListings.length" class="noMessages">You have no messages.</span>
                   <table>
                     <tr *ngFor="let messageListing of messageListings" [class.oldMessage]="messageListing.is_read">
                       <td>

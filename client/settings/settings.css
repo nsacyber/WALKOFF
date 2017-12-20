@@ -23,13 +23,14 @@
 	padding-bottom: 5px;
 }
 
-
 #roleModalBody .required,
 #userModalBody .required {
 	color: crimson;
 	margin-left: 5px;
 }
 
+.settingsMain input[type=checkbox].form-control,
+.settingsMain input[type=radio].form-control,
 #userModalBody input[type=checkbox].form-control,
 #userModalBody input[type=radio].form-control {
 	width: 34px;

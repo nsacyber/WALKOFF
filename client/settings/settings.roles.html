@@ -26,7 +26,9 @@
 	</ngx-datatable-column>
 	<ngx-datatable-column name="Permissions" [flexGrow]="5">
 		<ng-template let-row="row" ngx-datatable-cell-template>
-			{{getFriendlyPermissions(row)}}
+			<div *ngFor="let resource of row.resources">
+				{{resource.name}}: {{resource.permissions.join(', ')}}
+			</div>
 		</ng-template>
 	</ngx-datatable-column>
 	<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
