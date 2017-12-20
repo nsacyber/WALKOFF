@@ -48,7 +48,6 @@ def run(host, port):
     flaskserver.running_context.controller.initialize_threading(pids=pids)
     # The order of these imports matter for initialization (should probably be fixed)
 
-
     import core.case.database as case_database
     case_database.initialize()
 
@@ -109,7 +108,7 @@ if __name__ == "__main__":
     args = parse_args()
     exit_code = 0
     try:
-
+        config.initialize()
         run(*convert_host_port(args))
     except KeyboardInterrupt:
         logger.info('Caught KeyboardInterrupt!')
