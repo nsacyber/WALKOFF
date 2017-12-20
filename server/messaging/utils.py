@@ -24,8 +24,8 @@ def save_message_callback(sender, **message_data):
 
 
 def strip_requires_response_from_message_body(body):
-    is_caching_required = any(message_component.get('requires_response', False) for message_component in body['body'])
-    for message_component in body['body']:
+    is_caching_required = any(message_component.get('requires_response', False) for message_component in body)
+    for message_component in body:
         message_component.pop('requires_response', None)
     return is_caching_required
 
@@ -35,7 +35,7 @@ def save_message(body, message_data, workflow_execution_uid, requires_action):
     if users:
         subject = message_data.get('subject', '')
         message_entry = Message(
-            subject, json.dumps(body['body']), workflow_execution_uid, users, requires_reauth=message_data['requires_reauth'],
+            subject, json.dumps(body), workflow_execution_uid, users, requires_reauth=message_data['requires_reauth'],
             requires_response=requires_action)
         db.session.add(message_entry)
         db.session.commit()

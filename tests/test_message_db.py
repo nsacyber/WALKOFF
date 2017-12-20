@@ -308,17 +308,17 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(message_json['last_read_at'], str(user1_history.timestamp))
 
     def test_strip_requires_auth_from_message_body(self):
-        body = {'body': [{'message': 'look here', 'requires_response': True},
+        body = [{'message': 'look here', 'requires_response': True},
                 {'message': 'also here', 'requires_response': False},
-                {'message': 'here thing'}]}
+                {'message': 'here thing'}]
         self.assertTrue(strip_requires_response_from_message_body(body))
-        self.assertListEqual(body['body'],
+        self.assertListEqual(body,
                              [{'message': 'look here'}, {'message': 'also here'}, {'message': 'here thing'}])
 
     def test_strip_requires_auth_from_message_body_none_require_response(self):
-        body = {'body': [{'message': 'look here', 'requires_response': False},
+        body = [{'message': 'look here', 'requires_response': False},
                 {'message': 'also here', 'requires_response': False},
-                {'message': 'here thing'}]}
+                {'message': 'here thing'}]
         self.assertFalse(strip_requires_response_from_message_body(body))
 
     def test_get_all_matching_members_for_message_no_users_or_roles_in_db(self):
@@ -349,7 +349,7 @@ class TestMessageDatabase(TestCase):
                         'subject': 'Re: This thing',
                         'requires_reauth': False}
         workflow_execution_uid = 'workflow_uid1'
-        body = {'body': [{'text': 'Here is something to look at'}, {'url': 'look.here.com'}]}
+        body = [{'text': 'Here is something to look at'}, {'url': 'look.here.com'}]
         save_message(body, message_data, workflow_execution_uid, False)
         messages = Message.query.all()
         self.assertEqual(len(messages), 1)
@@ -358,7 +358,7 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(len(message.users), 2)
         for user in message.users:
             self.assertIn(user, [user1, user2])
-        self.assertEqual(message.body, json.dumps(body['body']))
+        self.assertEqual(message.body, json.dumps(body))
 
     def test_save_message_with_roles(self):
         role = Role('some role')
@@ -373,7 +373,7 @@ class TestMessageDatabase(TestCase):
                         'subject': 'Re: This thing',
                         'requires_reauth': False}
         workflow_execution_uid = 'workflow_uid1'
-        body = {'body': [{'text': 'Here is something to look at'}, {'url': 'look.here.com'}]}
+        body = [{'text': 'Here is something to look at'}, {'url': 'look.here.com'}]
         save_message(body, message_data, workflow_execution_uid, False)
         messages = Message.query.all()
         self.assertEqual(len(messages), 1)
@@ -394,9 +394,9 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(len(messages), 0)
 
     def test_save_message_callback(self):
-        body = {'body': [{'message': 'look here', 'requires_auth': False},
+        body = [{'message': 'look here', 'requires_auth': False},
                          {'message': 'also here', 'requires_auth': False},
-                         {'message': 'here thing'}]}
+                         {'message': 'here thing'}]
         message_data = {'body': body,
                         'users': [self.user.id],
                         'roles': [self.role.id],
@@ -412,9 +412,9 @@ class TestMessageDatabase(TestCase):
         self.assertFalse(message.requires_response)
 
     def test_save_message_callback_requires_auth(self):
-        body = {'body': [{'message': 'look here', 'requires_response': False},
+        body = [{'message': 'look here', 'requires_response': False},
                          {'message': 'also here', 'requires_response': True},
-                         {'message': 'here thing'}]}
+                         {'message': 'here thing'}]
         message_data = {'body': body,
                         'users': [self.user.id],
                         'roles': [self.role.id],
@@ -432,9 +432,9 @@ class TestMessageDatabase(TestCase):
         self.assertTrue(message.requires_response)
 
     def test_save_message_callback_sends_message_created(self):
-        body = {'body': [{'message': 'look here', 'requires_response': False},
+        body = [{'message': 'look here', 'requires_response': False},
                          {'message': 'also here', 'requires_response': True},
-                         {'message': 'here thing'}]}
+                         {'message': 'here thing'}]
         message_data = {'body': body,
                         'users': [self.user.id],
                         'roles': [self.role.id],
