@@ -16,11 +16,11 @@ __sync_signal = Event()
 __action_signal = Event()
 
 __action_event_id_counter = 0
-__notification_event_id_counter = 0
+__workflow_event_id_counter = 0
 
 
 def __workflow_shutdown_event_stream():
-    global __notification_event_id_counter
+    global __workflow_event_id_counter
     while True:
         data = __workflow_shutdown_event_json.get()
         yield create_sse_event(event_id=__workflow_event_id_counter, event='workflow_shutdown', data=data)

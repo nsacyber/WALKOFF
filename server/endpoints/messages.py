@@ -16,7 +16,7 @@ def get_all_messages():
     def __func():
         user_id = get_jwt_identity()
         user = User.query.filter(User.id == user_id).first()
-        return [message.as_json(user=user) for message in user.messages]
+        return [message.as_json(user=user, summary=True) for message in user.messages]
 
     return __func()
 
@@ -35,7 +35,7 @@ def get_message(message_id):
         if user not in message.users:
             return {'error': 'User cannot access message'}, FORBIDDEN_ERROR
         MessageActionEvent.read.send(message, data={'user': user})
-        return message.as_json(user=user, summary=True), SUCCESS
+        return message.as_json(user=user), SUCCESS
 
     return __func()
 
