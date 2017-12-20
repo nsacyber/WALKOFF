@@ -44,7 +44,7 @@ class JsonPlaybookLoader(object):
                     workflow = Workflow.create(workflow_json)
                     return playbook_name, workflow
                 except ValueError as e:
-                    logger.error('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
+                    logger.exception('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
                 except (InvalidArgument, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
                     logger.error('Error constructing workflow {0}. Reason: {1}'.format(workflow_name,
                                                                                        format_exception_message(e)))
@@ -72,7 +72,7 @@ class JsonPlaybookLoader(object):
                     playbook_json = json.loads(workflow_loaded)
                     return Playbook.create(playbook_json)
                 except ValueError as e:
-                    logger.error('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
+                    logger.exception('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
                 except (InvalidArgument, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
                     logger.error(
                         'Error constructing playbook from {0}. '
