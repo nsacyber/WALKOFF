@@ -32,7 +32,8 @@ class TestMessageDatabase(TestCase):
 
         self.role = Role('visitor')
         db.session.add(self.role)
-        self.user3 = User('username3', 'password3', roles=[self.role.name])
+        db.session.commit()
+        self.user3 = User('username3', 'password3', roles=[self.role.id])
         db.session.add(self.user)
         db.session.add(self.user2)
         db.session.add(self.user3)
@@ -229,7 +230,7 @@ class TestMessageDatabase(TestCase):
     def test_as_json_summary(self):
         message = self.get_default_message(commit=True)
         message_json = message.as_json(summary=True)
-        self.assertGreater(message_json['id'], message.id)
+        self.assertEqual(message_json['id'], message.id)
         self.assertEqual(message_json['subject'], 'subject here')
         self.assertFalse(message_json['awaiting_response'])
         self.assertEqual(message_json['created_at'], str(message.created_at))
@@ -311,7 +312,8 @@ class TestMessageDatabase(TestCase):
                 {'message': 'also here', 'requires_response': False},
                 {'message': 'here thing'}]}
         self.assertTrue(strip_requires_response_from_message_body(body))
-        self.assertListEqual(body['body'], [{'message': 'look here'}, {'message': 'also here'}, {'message': 'here thing'}])
+        self.assertListEqual(body['body'],
+                             [{'message': 'look here'}, {'message': 'also here'}, {'message': 'here thing'}])
 
     def test_strip_requires_auth_from_message_body_none_require_response(self):
         body = {'body': [{'message': 'look here', 'requires_response': False},
@@ -361,8 +363,8 @@ class TestMessageDatabase(TestCase):
     def test_save_message_with_roles(self):
         role = Role('some role')
         db.session.add(role)
-        user1 = User('aaaaa', 'passssss', roles=[role.name])
-        user2 = User('bbbbb', 'passs', roles=[role.name])
+        user1 = User('aaaaa', 'passssss', roles=[role.id])
+        user2 = User('bbbbb', 'passs', roles=[role.id])
         db.session.add(user1)
         db.session.add(user2)
         db.session.commit()

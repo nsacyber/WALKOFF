@@ -306,6 +306,7 @@ def validate_primitive_parameter(value, param, parameter_type, message_prefix, h
 
 
 def validate_parameter(value, param, message_prefix):
+    param = deepcopy(param)
     primitive_type = 'primitive' if 'type' in param else 'object'
     converted_value = None
     if value is not None:
