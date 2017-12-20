@@ -127,7 +127,7 @@ export class PlaybookComponent {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
 				const self = this;
-				const eventSource = new (window as any).EventSource('workflowresults/stream-actions?access_token=' + authToken);
+				const eventSource = new (window as any).EventSource('api/workflowresults/stream-actions?access_token=' + authToken);
 
 				function eventHandler(message: any) {
 					const workflowResult: WorkflowResult = JSON.parse(message.data);

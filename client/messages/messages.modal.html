@@ -8,7 +8,7 @@
 </div>
 <div id="messageModalBody" class="modal-body">
 	<div class="container-fluid">
-		<div *ngIf="message.read_by.length">
+		<div *ngIf="message.read_by && message.read_by.length">
 			<i>Read by: {{message.read_by.join(', ')}}</i>
 		</div>
 		<div *ngIf="message.responded_by">

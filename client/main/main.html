@@ -69,7 +69,7 @@
                           <i *ngIf="messageListing.awaiting_response" class="fa fa-exclamation required" title="This message is awaiting response."></i>
                       </td>
                       <td>
-                          <a class="dropdown-item" href="#" (click)="openMessage($event, messageListing)">{{utils.getTruncatedString(messageListing.subject, 25)}}</a>    
+                          <a class="dropdown-item" href="#" (click)="openMessage($event, messageListing)">{{utils.getTruncatedString(messageListing.subject, 25, '(no subject)')}}</a>    
                       </td>
                       <td [title]="messageListing.created_at">{{utils.getRelativeLocalTime(messageListing.created_at)}}</td>
                     </tr>
