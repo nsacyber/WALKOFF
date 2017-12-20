@@ -1,5 +1,5 @@
 from apps import action
-from apps.messaging import Text, Message, send_message
+from apps.messaging import Text, Message, send_message, Url, AcceptDecline
 import time
 import json
 import csv
@@ -92,8 +92,71 @@ def write_ips_to_csv(ips_reference, path):
                 else:
                     writer.writerow({'Host': ip})
 
+
 @action
 def send_text_message(subject, message, users=None, roles=None):
     text = Text(message)
     message = Message(subject=subject, components=[text])
     send_message(message, users=users, roles=roles)
+
+
+@action
+def create_text_message_component(text):
+    return Text(text).as_json()
+
+
+@action
+def create_url_message_component(url, title=None):
+    return Url(url, title=title).as_json()
+
+
+@action
+def create_accept_decline_message_component():
+    return AcceptDecline().as_json()
+
+
+@action
+def create_empty_message(subject=None):
+    return Message(subject=subject)
+
+
+@action
+def append_text_message_component(message, text):
+    message = Message.from_json(message)
+    message.append(Text(text))
+    return message.as_json()
+
+
+@action
+def append_url_message_component(message, url, title=None):
+    message = Message.from_json(message)
+    message.append(Url(url, title=title))
+    return message.as_json()
+
+
+@action
+def append_accept_decline_message_component(message):
+    message = Message.from_json(message)
+    message.append(AcceptDecline())
+    return message.as_json()
+
+
+@action
+def combine_messages(message1, message2):
+    message1 = Message.from_json(message1)
+    message1 += Message.from_json(message2)
+    return message1.as_json()
+
+
+@action
+def set_message_subject(message, subject):
+    message = Message.from_json(message)
+    message.subject = subject
+    return message.as_json()
+    
+
+@action
+def send_full_message(message, users=None, roles=None):
+    message = Message.from_json(message)
+    send_message(message, users=users, roles=roles)
+    return 'success'
