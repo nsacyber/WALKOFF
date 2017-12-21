@@ -117,7 +117,7 @@ def create_accept_decline_message_component():
 
 @action
 def create_empty_message(subject=None):
-    return Message(subject=subject)
+    return Message(subject=subject).as_json()
 
 
 @action

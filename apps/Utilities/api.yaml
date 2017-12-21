@@ -309,7 +309,8 @@ actions:
     description: Appends a text component to a message
     parameters:
       - name: message
-        type: object
+        schema:
+            type: object
         description: Existing message object
         required: true
       - name: text
@@ -342,7 +343,8 @@ actions:
     description: Appends a url component to a message
     parameters:
       - name: message
-        type: object
+        schema:
+            type: object
         description: Existing message object
         required: true
       - name: url
@@ -379,7 +381,8 @@ actions:
     description: Appends an accept decline component to a message
     parameters:
       - name: message
-        type: object
+        schema:
+            type: object
         description: Existing message object
         required: true
     returns:
@@ -409,11 +412,13 @@ actions:
     description: Combines two messages
     parameters:
       - name: message1
-        type: object
+        schema:
+            type: object
         description: Existing message object
         required: true
       - name: message2
-        type: object
+        schema:
+            type: object
         description: Existing message object to add to message1
         required: true
     returns:
@@ -443,7 +448,8 @@ actions:
     description: Sets the subject of a message
     parameters:
       - name: message
-        type: object
+        schema:
+            type: object
         description: Existing message object
         required: true
       - name: subject
@@ -504,7 +510,8 @@ actions:
     description: Sends a message
     parameters:
       - name: message
-        type: object
+        schema:
+            type: object
         description: Existing message object
         required: true
       - name: users
