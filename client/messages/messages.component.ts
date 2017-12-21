@@ -29,6 +29,7 @@ export class MessagesComponent {
 	filterQuery: FormControl = new FormControl();
 
 	selectMapping: GenericObject = {};
+	messageRelativeTimes: GenericObject = {};
 
 	constructor(
 		private messagesService: MessagesService, private modalService: NgbModal,
@@ -48,13 +49,19 @@ export class MessagesComponent {
 		const searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
 
 		this.displayMessages = this.messages.filter((message) => {
+			// Update our relative time first
+			this.messageRelativeTimes[message.id] = this.utils.getRelativeLocalTime(message.created_at);
+
 			return (message.subject.toLocaleLowerCase().includes(searchFilter));
 		});
 	}
 
 	listMessages(): void {
 		this.messagesService.listMessages()
-			.then(messages => this.displayMessages = this.messages = messages)
+			.then(messages => {
+				this.messages = messages;
+				this.filterMessages();
+			})
 			.catch(e => this.toastyService.error(`Error retrieving messages: ${e.message}`));
 	}
 
