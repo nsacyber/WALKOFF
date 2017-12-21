@@ -35,6 +35,7 @@ def get_message(message_id):
         if user not in message.users:
             return {'error': 'User cannot access message'}, FORBIDDEN_ERROR
         message.record_user_action(user, MessageAction.read)
+        db.session.commit()
         MessageActionEvent.read.send(message, data={'user': user})
         return message.as_json(user=user), SUCCESS
 
