@@ -22,6 +22,7 @@ export class UtilitiesService {
 	 * @param def Default value to use if the string is null of whitespace
 	 */
 	getDefaultString(input: string, def?: string) {
+		if (!input) { input = ''; }
 		const trimmed = input.trim();
 		if (!trimmed) {
 			if (def) { return def; }

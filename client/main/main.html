@@ -57,9 +57,9 @@
           <div class="navbar-custom-menu">
             <ul class="nav navbar-nav navbar-right">
               <li class="dropdown messages messages-menu">
-                <a href="#" class="dropdown-toggle" [class.newMessages]="messageListings.length" data-toggle="dropdown">
-                  <i class="fa" [ngClass]="{ 'fa-envelope': messageListings.length, 'fa-envelope-open-o': !messageListings.length }"></i>
-                  <span>{{messageListings.length}}</span>
+                <a href="#" class="dropdown-toggle" [class.newMessages]="newMessagesCount" data-toggle="dropdown">
+                  <i class="fa" [ngClass]="{ 'fa-envelope': newMessagesCount, 'fa-envelope-open-o': !newMessagesCount }"></i>
+                  <span>{{newMessagesCount}}</span>
                 </a>
                 <div class="dropdown-menu">
                   <span *ngIf="!messageListings.length" class="noMessages">You have no messages.</span>

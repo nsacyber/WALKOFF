@@ -31,6 +31,7 @@ export class MainComponent {
 	jwtHelper: JwtHelper = new JwtHelper();
 	messageListings: MessageListing[] = [];
 	messageModalRef: NgbModalRef;
+	newMessagesCount: number = 0;
 
 	constructor(
 		private mainService: MainService, private authService: AuthService,
@@ -48,7 +49,10 @@ export class MainComponent {
 
 	getInitialNotifications(): void {
 		this.mainService.getInitialNotifications()
-			.then(messageListings => this.messageListings = messageListings.concat(this.messageListings))
+			.then(messageListings => {
+				this.messageListings = messageListings.concat(this.messageListings);
+				this._recalculateNewMessagesCount();
+			})
 			.catch(e => this.toastyService.error(`Error retrieving notifications: ${e.message}`));
 	}
 
@@ -74,6 +78,8 @@ export class MainComponent {
 						this.messageListings.length > MAX_TOTAL_MESSAGES) {
 						this.messageListings.pop();
 					}
+
+					this._recalculateNewMessagesCount();
 				});
 				eventSource.addEventListener('read', (message: any) => {
 					const update: MessageUpdate = JSON.parse(message.data);
@@ -120,6 +126,7 @@ export class MainComponent {
 			.then(message => {
 				messageListing.is_read = true;
 				messageListing.last_read_at = new Date();
+				this._recalculateNewMessagesCount();
 
 				this.messageModalRef = this.modalService.open(MessagesModalComponent);
 				
@@ -128,6 +135,10 @@ export class MainComponent {
 				this._handleModalClose(this.messageModalRef);
 			})
 			.catch(e => this.toastyService.error(`Error opening message: ${e.message}`));
+	}
+
+	private _recalculateNewMessagesCount(): void {
+		this.newMessagesCount = this.messageListings.filter(m => !m.is_read).length;
 	}
 
 	private _handleModalClose(modalRef: NgbModalRef): void {
