@@ -23,10 +23,13 @@ class NotificationSseEvent(Enum):
 
 
 def notification_event_stream(user_id):
+    sync_signal.wait()
+    event_id = 1
     while True:
         user_ids, event, data = notification_event_result.get()
         if user_id in user_ids:
-            yield create_sse_event(event=event.name, data=data)
+            yield create_sse_event(event_id=event_id, event=event.name, data=data)
+            event_id += 1
         sync_signal.wait()
 
 
