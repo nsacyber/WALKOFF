@@ -65,7 +65,8 @@ class ServerTestCase(unittest.TestCase):
         cls.context = server.flaskserver.app.test_request_context()
         cls.context.push()
 
-        db.create_all()
+        from server.app import create_app
+        create_app()
         if cls.patch:
             MultiprocessedExecutor.initialize_threading = mock_initialize_threading
             MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
