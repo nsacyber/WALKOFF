@@ -57,7 +57,7 @@
           <div class="navbar-custom-menu">
             <ul class="nav navbar-nav navbar-right">
               <li class="dropdown messages messages-menu">
-                <a href="#" class="dropdown-toggle" [class.newMessages]="newMessagesCount" data-toggle="dropdown">
+                <a href="#" class="dropdown-toggle" [class.newMessages]="newMessagesCount" data-toggle="dropdown" (click)="recalculateRelativeTimes()">
                   <i class="fa" [ngClass]="{ 'fa-envelope': newMessagesCount, 'fa-envelope-open-o': !newMessagesCount }"></i>
                   <span>{{newMessagesCount}}</span>
                 </a>
@@ -71,7 +71,7 @@
                       <td>
                           <a class="dropdown-item" href="#" (click)="openMessage($event, messageListing)">{{utils.getTruncatedString(messageListing.subject, 25, '(no subject)')}}</a>    
                       </td>
-                      <td [title]="messageListing.created_at">{{utils.getRelativeLocalTime(messageListing.created_at)}}</td>
+                      <td [title]="messageListing.created_at">{{notificationRelativeTimes[messageListing.id]}}</td>
                     </tr>
                   </table>
                 </div>

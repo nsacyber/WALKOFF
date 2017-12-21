@@ -12,6 +12,7 @@ import { UtilitiesService } from '../utilities.service';
 import { MessageUpdate } from '../models/message/messageUpdate';
 import { MessageListing } from '../models/message/messageListing';
 import { Message } from '../models/message/message';
+import { GenericObject } from '../models/genericObject';
 
 const MAX_READ_MESSAGES = 5;
 const MAX_TOTAL_MESSAGES = 20;
@@ -32,6 +33,7 @@ export class MainComponent {
 	messageListings: MessageListing[] = [];
 	messageModalRef: NgbModalRef;
 	newMessagesCount: number = 0;
+	notificationRelativeTimes: GenericObject = {};
 
 	constructor(
 		private mainService: MainService, private authService: AuthService,
@@ -61,7 +63,7 @@ export class MainComponent {
 			.then(authToken => {
 				const eventSource = new (window as any).EventSource('/api/notifications/stream?access_token=' + authToken);
 
-				eventSource.addEventListener('message', (message: any) => {
+				eventSource.addEventListener('created', (message: any) => {
 					const newMessage: MessageListing = JSON.parse(message.data);
 
 					const existingMessage = this.messageListings.find(m => m.id === newMessage.id);
@@ -80,6 +82,7 @@ export class MainComponent {
 					}
 
 					this._recalculateNewMessagesCount();
+					this.recalculateRelativeTimes();
 				});
 				eventSource.addEventListener('read', (message: any) => {
 					const update: MessageUpdate = JSON.parse(message.data);
@@ -135,6 +138,12 @@ export class MainComponent {
 				this._handleModalClose(this.messageModalRef);
 			})
 			.catch(e => this.toastyService.error(`Error opening message: ${e.message}`));
+	}
+
+	recalculateRelativeTimes(): void {
+		this.messageListings.forEach(ml => {
+			this.notificationRelativeTimes[ml.id] = this.utils.getRelativeLocalTime(ml.created_at);
+		});
 	}
 
 	private _recalculateNewMessagesCount(): void {
