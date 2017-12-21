@@ -172,6 +172,8 @@ class TestMessagingEndpoints(ServerTestCase):
         self.assertEqual(response['id'], self.message2.id)
         self.assertSetEqual(res['called'],
                             {(self.message1.id, self.user1.user.id), (self.message2.id, self.user2.user.id)})
+        self.assert_user_read_status_on_messages(self.user1, messages=[self.message1])
+        self.assert_user_read_status_on_messages(self.user2, messages=[self.message2])
 
     def test_read_all_messages(self):
         res = {'called': set()}

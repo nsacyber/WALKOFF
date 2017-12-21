@@ -22,7 +22,7 @@ def get_all_messages():
 
 
 def get_message(message_id):
-    from server.messaging import MessageActionEvent
+    from server.messaging import MessageActionEvent, MessageAction
 
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('messages', ['read']))
@@ -34,6 +34,7 @@ def get_message(message_id):
             return {'error': 'Message not found'}, OBJECT_DNE_ERROR
         if user not in message.users:
             return {'error': 'User cannot access message'}, FORBIDDEN_ERROR
+        message.record_user_action(user, MessageAction.read)
         MessageActionEvent.read.send(message, data={'user': user})
         return message.as_json(user=user), SUCCESS
 
