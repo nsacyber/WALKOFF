@@ -16,24 +16,29 @@ actions:
         description: Timeout on the request (in seconds)
         type: number
         default: 2.0
+    default_return: Success
     returns:
       Success:
         schema:
           type: string
           enum: [Success]
       TimedOut:
+        failure: true
         schema:
           type: string
           enum: [Connection timed out]
       WalkoffNotFound:
+        failure: true
         schema:
           type: string
           enum: [Could not locate Walkoff instance]
       AuthenticationError:
+        failure: true
         schema:
           type: string
           enum: [Invalid login]
       UnknownResponse:
+        failure: true
         schema:
           type: string
           description: Unknown HTTP response from server

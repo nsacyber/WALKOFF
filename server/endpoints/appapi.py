@@ -39,10 +39,10 @@ def format_returns(api, with_event=False):
     for return_name, return_schema in api.items():
         return_schema.update({'status': return_name})
         ret_returns.append(return_schema)
-    ret_returns.extend([{'status': 'UnhandledException', 'description': 'Exception occurred in action'},
-                        {'status': 'InvalidInput', 'description': 'Input into the action was invalid'}])
+    ret_returns.extend([{'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'},
+                        {'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'}])
     if with_event:
-        ret_returns.append({'status': 'EventTimedOut', 'description': 'Action timed out out waiting for event'})
+        ret_returns.append({'status': 'EventTimedOut', 'failure': True, 'description': 'Action timed out out waiting for event'})
     return ret_returns
 
 

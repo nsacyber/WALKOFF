@@ -162,9 +162,13 @@ class Action(ExecutionElement):
                 result = self._action_executable(instance, **args)
             else:
                 result = self._action_executable(**args)
-
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionSuccess,
-                                                   data=result.as_json())
+            result.set_default_status(self.app_name, self.action_name)
+            if result.is_failure(self.app_name, self.action_name):
+                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionError,
+                                                       data=result.as_json())
+            else:
+                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionSuccess,
+                                                       data=result.as_json())
         except InvalidArgument as e:
             formatted_error = format_exception_message(e)
             logger.error('Error calling action {0}. Error: {1}'.format(self.name, formatted_error))

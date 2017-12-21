@@ -54,8 +54,8 @@ class TestAppApiServerFuncs(ServerTestCase):
         returns = {'Success': {'description': 'something 1'}, 'Return2': {'schema': {'type': 'number', 'minimum': 10}}}
         expected = [{'status': 'Success', 'description': 'something 1'},
                     {'status': 'Return2', 'schema': {'type': 'number', 'minimum': 10}},
-                    {'status': 'UnhandledException', 'description': 'Exception occurred in action'},
-                    {'status': 'InvalidInput', 'description': 'Input into the action was invalid'}]
+                    {'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'},
+                    {'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'}]
         formatted = format_returns(returns)
         self.assertEqual(len(formatted), len(expected))
         for return_ in formatted:
@@ -66,9 +66,9 @@ class TestAppApiServerFuncs(ServerTestCase):
                    'Return2': {'schema': {'type': 'number', 'minimum': 10}}}
         expected = [{'status': 'Success', 'description': 'something 1'},
                     {'status': 'Return2', 'schema': {'type': 'number', 'minimum': 10}},
-                    {'status': 'UnhandledException', 'description': 'Exception occurred in action'},
-                    {'status': 'InvalidInput', 'description': 'Input into the action was invalid'},
-                    {'status': 'EventTimedOut', 'description': 'Action timed out out waiting for event'}]
+                    {'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'},
+                    {'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'},
+                    {'status': 'EventTimedOut', 'failure': True, 'description': 'Action timed out out waiting for event'}]
         formatted = format_returns(returns, with_event=True)
         self.assertEqual(len(formatted), len(expected))
         for return_ in formatted:
@@ -78,8 +78,8 @@ class TestAppApiServerFuncs(ServerTestCase):
         action_api = core.config.config.app_apis['HelloWorldBounded']['actions']['pause']
         expected = {
             'returns': [{'status': 'Success', 'description': 'successfully paused', 'schema': {'type': 'number'}},
-                        {'status': 'UnhandledException', 'description': 'Exception occurred in action'},
-                        {'status': 'InvalidInput', 'description': 'Input into the action was invalid'}],
+                        {'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'},
+                        {'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'}],
             'run': 'main.Main.pause',
             'description': 'Pauses execution',
             'parameters': [

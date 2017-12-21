@@ -169,7 +169,7 @@
                     <div class="form-group">
                         <label for="status">Return Type<i class="fa fa-asterisk required" title="This field is required."></i></label>
                         <select class="form-control" [(ngModel)]="selectedBranchParams.branch.status" name="status">
-                            <option *ngFor="let i of selectedBranchParams.returnTypes" [value]="i.status" [label]="i.status">{{i.status}}</option>
+                            <option *ngFor="let i of selectedBranchParams.returnTypes" [value]="i.status" [label]="i.status" [class.failure]="i.failure">{{i.status}}</option>
                         </select>
                     </div>
                     <div class="form-group">

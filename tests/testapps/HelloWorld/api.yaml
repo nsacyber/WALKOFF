@@ -88,6 +88,26 @@ actions:
         description: successfully paused
         schema:
           type: number
+  dummy action:
+    run: main.dummy_action
+    description: Return success if given true or failure if given false
+    parameters:
+        - name: status
+          description: status to return
+          required: true
+          default: false
+          type: boolean
+    default_return: Success
+    returns:
+      Success:
+        description: Action was given True
+        schema:
+          type: boolean
+      Failure:
+        description: Action was given False
+        failure: true
+        schema:
+          type: boolean
   Buggy:
     run: main.buggy_action
     description: raises an exception

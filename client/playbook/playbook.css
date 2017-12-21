@@ -17,6 +17,10 @@
 	color: #255876;
 }
 
+.playbookMain .parametersEditor .failure {
+    color: crimson;
+}
+
 #playbookToolbar {
 	background-color: #aecbdc;
 	margin-left: 0;

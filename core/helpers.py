@@ -281,6 +281,58 @@ def get_app_action_api(app, action):
             raise UnknownAppAction(app, action)
 
 
+def get_app_action_default_return(app, action):
+    """
+    Gets the default return code for a given app and action
+
+    Args:
+        app (str): Name of the app
+        action (str): Name of the action
+
+    Returns:
+        (str): The name of the default return code or Success if none defined
+    """
+    try:
+        app_api = core.config.config.app_apis[app]
+    except KeyError:
+        raise UnknownApp(app)
+    else:
+        try:
+            action_api = app_api['actions'][action]
+            if 'default_return' in action_api:
+                return action_api['default_return']
+            else:
+                return 'Success'
+        except KeyError:
+            raise UnknownAppAction(app, action)
+
+
+def get_app_action_return_is_failure(app, action, status):
+    """
+    Checks the api for whether a status code is a failure code for a given app and action
+
+    Args:
+        app (str): Name of the app
+        action (str): Name of the action
+
+    Returns:
+        (boolean): True if status is a failure code, false otherwise
+    """
+    try:
+        app_api = core.config.config.app_apis[app]
+    except KeyError:
+        raise UnknownApp(app)
+    else:
+        try:
+            action_api = app_api['actions'][action]
+            if 'failure' in action_api['returns'][status]:
+                return True if action_api['returns'][status]['failure'] is True else False
+            else:
+                return False
+        except KeyError:
+            raise UnknownAppAction(app, action)
+
+
 def get_app_device_api(app, device_type):
     try:
         app_api = core.config.config.app_apis[app]
