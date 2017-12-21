@@ -160,3 +160,8 @@ def send_full_message(message, users=None, roles=None):
     message = Message.from_json(message)
     send_message(message, users=users, roles=roles)
     return 'success'
+
+
+@action
+def accept_decline(action):
+    return action.lower() == 'accept'

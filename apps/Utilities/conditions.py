@@ -35,3 +35,29 @@ def count(value, operator, threshold):
         return True
     else:
         return value == threshold
+
+
+@condition
+def always_true(value):
+    return True
+
+
+@condition
+def always_false(value):
+    return False
+
+
+@condition
+def echo_boolean(value):
+    return value
+
+
+@condition
+def reverse_boolean(value):
+    return not value
+
+
+@condition
+def accept_decline(value):
+    return value.lower() == 'accept'
+

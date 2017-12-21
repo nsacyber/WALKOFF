@@ -527,6 +527,17 @@ actions:
         schema:
           type: string
           enum: ['success']
+  'accept/decline':
+    run: actions.accept_decline
+    description: responds to an accept/decline message
+    parameters:
+      - name: action
+        type: string
+        required: true
+    returns:
+      Success:
+        schema:
+          type: boolean
 conditions:
   regex match:
     run: conditions.regMatch
@@ -560,6 +571,48 @@ conditions:
         description: The value with which to compare the input
         required: true
         type: number
+  always true:
+    run: conditions.always_true
+    data_in: value
+    parameters:
+      - name: value
+        description: the input value
+        type: string
+        required: true
+  always false:
+    run: conditions.always_false
+    data_in: value
+    parameters:
+      - name: value
+        description: the input value
+        type: string
+        required: true
+  echo boolean:
+    run: conditions.echo_boolean
+    data_in: value
+    parameters:
+      - name: value
+        description: the input value
+        type: boolean
+        required: true
+  reverse boolean:
+    run: conditions.reverse_boolean
+    description: Returns the inverse of the boolean value provided
+    data_in: value
+    parameters:
+      - name: value
+        description: the input value
+        type: boolean
+        required: true
+  'accept/decline':
+    run: conditions.accept_decline
+    description: Used for accept/decline action from messages. If used as a trigger, next action will only run if authorized user clicks "accept"
+    data_in: value
+    parameters:
+      - name: value
+        description: accept or decline
+        type: string
+        required: true
 transforms:
   length:
     run: transforms.length
