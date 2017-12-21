@@ -3,10 +3,10 @@
 @import '/client/node_modules/@swimlane/ngx-datatable/release/assets/icons.css';*/
 
 .settingsMain {
-	padding: 10px 30px;
+	padding: 10px 15px;
 }
 
-.settingsMain ngx-datatable datatable-body datatable-body-row datatable-body-cell div.datatable-body-cell-label {
+.settingsMain ngx-datatable datatable-body datatable-body-row datatable-body-cell .datatable-body-cell-label {
 	white-space: initial;
 }
 

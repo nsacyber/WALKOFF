@@ -8,33 +8,33 @@
 	list-style: none;
 	padding-left: 0px;
 }
-svg#caseSubscriptionsTree {
+#caseSubscriptionsTree {
 	user-select: none;
 	-webkit-user-select: none;  /* Chrome all / Safari all */
 	-moz-user-select: none;     /* Firefox all */
 	-ms-user-select: none;      /* IE 10+ */
 }
-	svg#caseSubscriptionsTree .node circle {
+	#caseSubscriptionsTree .node circle {
 		fill: #fff;
 		stroke: steelblue;
 		stroke-width: 3px;
 		cursor: pointer;
 	}
-	svg#caseSubscriptionsTree .node.highlighted circle, 
-	svg#caseSubscriptionsTree .node.highlighted.included circle{
+	#caseSubscriptionsTree .node.highlighted circle, 
+	#caseSubscriptionsTree .node.highlighted.included circle{
 		stroke: red;
 	}
-	svg#caseSubscriptionsTree .node.included circle {
+	#caseSubscriptionsTree .node.included circle {
 		stroke: black;
 	}
-	svg#caseSubscriptionsTree .node text {
+	#caseSubscriptionsTree .node text {
 		font: 12px sans-serif;
 		cursor: pointer;
 	}
-	svg#caseSubscriptionsTree .node.included text {
+	#caseSubscriptionsTree .node.included text {
 		font-weight: bold;
 	}
-	svg#caseSubscriptionsTree .link {
+	#caseSubscriptionsTree .link {
 		fill: none;
 		stroke: #ccc;
 		stroke-width: 2px;

@@ -2,6 +2,18 @@
 @import '/client/node_modules/@swimlane/ngx-datatable/release/themes/material.css';
 @import '/client/node_modules/@swimlane/ngx-datatable/release/assets/icons.css';
 
+/* h1 {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
+  font-weight: bold;
+  font-size: 30px;
+  color: #255876;
+}
+
+h3 {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
+  font-weight: bold;
+} */
+
 .contentContainer {
     position: relative;
     padding-bottom: 56.25%; /* 16:9 */

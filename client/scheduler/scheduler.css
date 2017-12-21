@@ -8,6 +8,6 @@
 	display: inline-block;
 }
 
-.schedulerMain ngx-datatable datatable-body datatable-body-row datatable-body-cell div.datatable-body-cell-label {
+.schedulerMain ngx-datatable datatable-body datatable-body-row datatable-body-cell .datatable-body-cell-label {
 	white-space: initial;
 }

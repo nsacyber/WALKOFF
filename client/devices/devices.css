@@ -2,19 +2,7 @@
 	padding: 10px 15px;
 }
 
-.devicesMain h1 {
-	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	font-weight: bold;
-	font-size: 30px;
-	color: #255876;
-}
-
-.devicesMain h3 {
-	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-	font-weight: bold;
-}
-
-.devicesMain ngx-datatable datatable-body datatable-body-row datatable-body-cell div.datatable-body-cell-label {
+.devicesMain ngx-datatable datatable-body datatable-body-row datatable-body-cell .datatable-body-cell-label {
 	white-space: initial;
 }
 

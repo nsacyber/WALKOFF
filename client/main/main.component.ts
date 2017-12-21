@@ -11,7 +11,7 @@ import { UtilitiesService } from '../utilities.service';
 
 import { MessageUpdate } from '../models/message/messageUpdate';
 import { MessageListing } from '../models/message/messageListing';
-import { Message } from '../models/message/message';
+// import { Message } from '../models/message/message';
 import { GenericObject } from '../models/genericObject';
 
 const MAX_READ_MESSAGES = 5;
