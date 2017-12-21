@@ -12,31 +12,28 @@ from core.case.subscription import delete_cases
 from core.helpers import format_exception_message
 from server.database import db
 from server.returncodes import *
-from server.security import roles_accepted_for_resources
+from server.security import permissions_accepted_for_resources, ResourcePermissions
+from server.database.casesubscription import CaseSubscription
 
 
 def read_all_cases():
-    from server.flaskserver import running_context
-
     @jwt_required
-    @roles_accepted_for_resources('cases')
+    @permissions_accepted_for_resources(ResourcePermissions('cases', ['read']))
     def __func():
-        return [case.as_json() for case in running_context.CaseSubscription.query.all()], SUCCESS
+        return [case.as_json() for case in CaseSubscription.query.all()], SUCCESS
 
     return __func()
 
 
 def create_case():
-    from server.flaskserver import running_context
-
     @jwt_required
-    @roles_accepted_for_resources('cases')
+    @permissions_accepted_for_resources(ResourcePermissions('cases', ['create']))
     def __func():
         data = request.get_json()
         case_name = data['name']
-        case_obj = running_context.CaseSubscription.query.filter_by(name=case_name).first()
+        case_obj = CaseSubscription.query.filter_by(name=case_name).first()
         if case_obj is None:
-            case = running_context.CaseSubscription(**data)
+            case = CaseSubscription(**data)
             db.session.add(case)
             db.session.commit()
             current_app.logger.debug('Case added: {0}'.format(case_name))
@@ -50,7 +47,7 @@ def create_case():
 
 def read_case(case_id):
     @jwt_required
-    @roles_accepted_for_resources('cases')
+    @permissions_accepted_for_resources(ResourcePermissions('cases', ['read']))
     def __func():
         case_obj = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.id == case_id).first()
@@ -64,13 +61,11 @@ def read_case(case_id):
 
 
 def update_case():
-    from server.flaskserver import running_context
-
     @jwt_required
-    @roles_accepted_for_resources('cases')
+    @permissions_accepted_for_resources(ResourcePermissions('cases', ['update']))
     def __func():
         data = request.get_json()
-        case_obj = running_context.CaseSubscription.query.filter_by(id=data['id']).first()
+        case_obj = CaseSubscription.query.filter_by(id=data['id']).first()
         if case_obj:
             original_name = case_obj.name
             case_name = data['name'] if 'name' in data else original_name
@@ -97,12 +92,10 @@ def update_case():
 
 
 def delete_case(case_id):
-    from server.flaskserver import running_context
-
     @jwt_required
-    @roles_accepted_for_resources('cases')
+    @permissions_accepted_for_resources(ResourcePermissions('cases', ['delete']))
     def __func():
-        case_obj = running_context.CaseSubscription.query.filter_by(id=case_id).first()
+        case_obj = CaseSubscription.query.filter_by(id=case_id).first()
         if case_obj:
             delete_cases([case_obj.name])
             db.session.delete(case_obj)
@@ -117,10 +110,8 @@ def delete_case(case_id):
 
 
 def import_cases():
-    from server.flaskserver import running_context
-
     @jwt_required
-    @roles_accepted_for_resources('cases')
+    @permissions_accepted_for_resources(ResourcePermissions('cases', ['create']))
     def __func():
         data = request.get_json()
         filename = (data['filename'] if (data is not None and 'filename' in data and data['filename'])
@@ -133,8 +124,8 @@ def import_cases():
                     cases = json.loads(cases_file)
                 case_subscription.add_cases(cases)
                 for case in cases:
-                    db.session.add(running_context.CaseSubscription(name=case))
-                    running_context.CaseSubscription.update(case)
+                    db.session.add(CaseSubscription(name=case))
+                    CaseSubscription.update(case)
                 db.session.commit()
                 return {"cases": case_subscription.subscriptions}, SUCCESS
             except (OSError, IOError) as e:
@@ -154,7 +145,7 @@ def import_cases():
 
 def export_cases():
     @jwt_required
-    @roles_accepted_for_resources('cases')
+    @permissions_accepted_for_resources(ResourcePermissions('cases', ['read']))
     def __func():
         data = request.get_json()
         filename = (data['filename'] if (data is not None and 'filename' in data and data['filename'])
@@ -173,7 +164,7 @@ def export_cases():
 
 def read_all_events(case_id):
     @jwt_required
-    @roles_accepted_for_resources('cases')
+    @permissions_accepted_for_resources(ResourcePermissions('cases', ['read']))
     def __func():
         try:
             result = case_database.case_db.case_events_as_json(case_id)

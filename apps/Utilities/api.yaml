@@ -211,7 +211,333 @@ actions:
       Success:
         schema:
           type: string
-
+  send text message:
+    run: actions.send_text_message
+    description: Send a text only message to users
+    parameters:
+      - name: subject
+        type: string
+        required: true
+      - name: message
+        type: string
+        required: true
+      - name: users
+        type: array
+        items:
+          type: user
+      - name: roles
+        type: array
+        items:
+          type: role
+    returns:
+      Success:
+        schema:
+          type: string
+          enum: ['success']
+  create text message component:
+    run: actions.create_text_message_component
+    description: Creates a text component for a message
+    parameters:
+      - name: text
+        type: string
+        required: true
+    returns:
+      Success:
+        schema:
+          type: object
+          required: [type, data, requires_action]
+          properties:
+            type:
+              type: string
+            requires_action:
+              type: boolean
+              enum: [false]
+            data:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+  create url message component:
+    run: actions.create_url_message_component
+    description: Creates a url component for a message
+    parameters:
+      - name: url
+        type: string
+        required: true
+        format: uri
+      - name: title
+        type: string
+        description: The title to display for this URL link
+    returns:
+      Success:
+        schema:
+          type: object
+          required: [type, data, requires_action]
+          properties:
+            type:
+              type: string
+            requires_action:
+              type: boolean
+              enum: [false]
+            data:
+              type: object
+              required: [url]
+              properties:
+                url:
+                  type: string
+                title:
+                  type: string
+  create accept decline message component:
+    run: actions.create_accept_decline_message_component
+    description: Creates a component for a message with buttons to accept or decline.
+    returns:
+      Success:
+        schema:
+          type: object
+          required: [type, data, requires_action]
+          properties:
+            type:
+              type: string
+            requires_action:
+              type: boolean
+              enum: [true]
+            data:
+              type: object
+  append text message component:
+    run: actions.append_text_message_component
+    description: Appends a text component to a message
+    parameters:
+      - name: message
+        schema:
+            type: object
+        description: Existing message object
+        required: true
+      - name: text
+        type: string
+        required: true
+    returns:
+      Success:
+        schema:
+          type: object
+          required: [body]
+          properties:
+            body:
+              type: array
+              description: body of the message
+              items:
+                type: object
+                required: [type, data, requires_action]
+                properties:
+                  type:
+                    type: string
+                  requires_action:
+                    type: boolean
+                    enum: [false]
+                  data:
+                    type: object
+            subject:
+              type: string
+  append url message component:
+    run: actions.append_url_message_component
+    description: Appends a url component to a message
+    parameters:
+      - name: message
+        schema:
+            type: object
+        description: Existing message object
+        required: true
+      - name: url
+        type: string
+        required: true
+        format: uri
+      - name: title
+        type: string
+        description: The title to display for this URL link
+    returns:
+      Success:
+        schema:
+          type: object
+          required: [body]
+          properties:
+            body:
+              type: array
+              description: body of the message
+              items:
+                type: object
+                required: [type, data, requires_action]
+                properties:
+                  type:
+                    type: string
+                  requires_action:
+                    type: boolean
+                    enum: [false]
+                  data:
+                    type: object
+            subject:
+              type: string
+  append accept decline message component:
+    run: actions.append_accept_decline_message_component
+    description: Appends an accept decline component to a message
+    parameters:
+      - name: message
+        schema:
+            type: object
+        description: Existing message object
+        required: true
+    returns:
+      Success:
+        schema:
+          type: object
+          required: [body]
+          properties:
+            body:
+              type: array
+              description: body of the message
+              items:
+                type: object
+                required: [type, data, requires_action]
+                properties:
+                  type:
+                    type: string
+                  requires_action:
+                    type: boolean
+                    enum: [false]
+                  data:
+                    type: object
+            subject:
+              type: string
+  combine message:
+    run: actions.combine_messages
+    description: Combines two messages
+    parameters:
+      - name: message1
+        schema:
+            type: object
+        description: Existing message object
+        required: true
+      - name: message2
+        schema:
+            type: object
+        description: Existing message object to add to message1
+        required: true
+    returns:
+      Success:
+        schema:
+          type: object
+          required: [body]
+          properties:
+            body:
+              type: array
+              description: body of the message
+              items:
+                type: object
+                required: [type, data, requires_action]
+                properties:
+                  type:
+                    type: string
+                  requires_action:
+                    type: boolean
+                    enum: [false]
+                  data:
+                    type: object
+            subject:
+              type: string
+  set message subject:
+    run: actions.set_message_subject
+    description: Sets the subject of a message
+    parameters:
+      - name: message
+        schema:
+            type: object
+        description: Existing message object
+        required: true
+      - name: subject
+        type: string
+        required: true
+    returns:
+      Success:
+        schema:
+          type: object
+          required: [body]
+          properties:
+            body:
+              type: array
+              description: body of the message
+              items:
+                type: object
+                required: [type, data, requires_action]
+                properties:
+                  type:
+                    type: string
+                  requires_action:
+                    type: boolean
+                    enum: [false]
+                  data:
+                    type: object
+            subject:
+              type: string
+  create empty message:
+    run: actions.create_empty_message
+    description: Creates a message with no body
+    parameters:
+      - name: subject
+        type: string
+    returns:
+      Success:
+        schema:
+          type: object
+          required: [body]
+          properties:
+            body:
+              type: array
+              description: body of the message
+              items:
+                type: object
+                required: [type, data, requires_action]
+                properties:
+                  type:
+                    type: string
+                  requires_action:
+                    type: boolean
+                    enum: [false]
+                  data:
+                    type: object
+            subject:
+              type: string
+  send message:
+    run: actions.send_full_message
+    description: Sends a message
+    parameters:
+      - name: message
+        schema:
+            type: object
+        description: Existing message object
+        required: true
+      - name: users
+        type: array
+        items:
+          type: user
+      - name: roles
+        type: array
+        items:
+          type: role
+    returns:
+      Success:
+        schema:
+          type: string
+          enum: ['success']
+  'accept/decline':
+    run: actions.accept_decline
+    description: responds to an accept/decline message
+    parameters:
+      - name: action
+        type: string
+        required: true
+    returns:
+      Success:
+        schema:
+          type: boolean
 conditions:
   regex match:
     run: conditions.regMatch
@@ -245,6 +571,48 @@ conditions:
         description: The value with which to compare the input
         required: true
         type: number
+  always true:
+    run: conditions.always_true
+    data_in: value
+    parameters:
+      - name: value
+        description: the input value
+        type: string
+        required: true
+  always false:
+    run: conditions.always_false
+    data_in: value
+    parameters:
+      - name: value
+        description: the input value
+        type: string
+        required: true
+  echo boolean:
+    run: conditions.echo_boolean
+    data_in: value
+    parameters:
+      - name: value
+        description: the input value
+        type: boolean
+        required: true
+  reverse boolean:
+    run: conditions.reverse_boolean
+    description: Returns the inverse of the boolean value provided
+    data_in: value
+    parameters:
+      - name: value
+        description: the input value
+        type: boolean
+        required: true
+  'accept/decline':
+    run: conditions.accept_decline
+    description: Used for accept/decline action from messages. If used as a trigger, next action will only run if authorized user clicks "accept"
+    data_in: value
+    parameters:
+      - name: value
+        description: accept or decline
+        type: string
+        required: true
 transforms:
   length:
     run: transforms.length

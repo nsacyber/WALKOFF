@@ -9,7 +9,7 @@ from apps.devicedb import Device, App, device_db
 from core.helpers import get_app_device_api, InvalidArgument, UnknownDevice, UnknownApp, format_exception_message
 from core.validator import validate_device_fields
 from server.returncodes import *
-from server.security import roles_accepted_for_resources
+from server.security import permissions_accepted_for_resources, ResourcePermissions
 
 
 def get_device_json_with_app_name(device):
@@ -21,7 +21,7 @@ def get_device_json_with_app_name(device):
 
 def read_all_devices():
     @jwt_required
-    @roles_accepted_for_resources('apps')
+    @permissions_accepted_for_resources(ResourcePermissions('devices', ['read']))
     def __func():
         return [get_device_json_with_app_name(device) for device in device_db.session.query(Device).all()], SUCCESS
 
@@ -30,7 +30,7 @@ def read_all_devices():
 
 def read_device(device_id):
     @jwt_required
-    @roles_accepted_for_resources('apps')
+    @permissions_accepted_for_resources(ResourcePermissions('devices', ['read']))
     def __func():
         device = device_db.session.query(Device).filter(Device.id == device_id).first()
         if device is not None:
@@ -46,7 +46,7 @@ def read_device(device_id):
 
 def delete_device(device_id):
     @jwt_required
-    @roles_accepted_for_resources('apps')
+    @permissions_accepted_for_resources(ResourcePermissions('devices', ['delete']))
     def __func():
         dev = device_db.session.query(Device).filter(Device.id == device_id).first()
         if dev is not None:
@@ -71,17 +71,9 @@ def add_configuration_keys_to_device_json(device_fields, device_fields_api):
                 field['encrypted'] = device_fields_api[field['name']]['encrypted']
 
 
-# TODO: Delete. No longer used.
-# def remove_configuration_keys_from_device_json(device_json):
-#     for field in device_json['fields']:
-#         field.pop('type')
-#         if 'encrypted' in field:
-#             field.pop('encrypted')
-
-
 def create_device():
     @jwt_required
-    @roles_accepted_for_resources('apps')
+    @permissions_accepted_for_resources(ResourcePermissions('devices', ['create']))
     def __func():
         add_device_json = request.get_json()
         if device_db.session.query(Device).filter(Device.name == add_device_json['name']).first() is not None:
@@ -130,7 +122,7 @@ def create_device():
 
 def update_device():
     @jwt_required
-    @roles_accepted_for_resources('apps')
+    @permissions_accepted_for_resources(ResourcePermissions('devices', ['update']))
     def __func():
         update_device_json = request.get_json()
         device = device_db.session.query(Device).filter(Device.id == update_device_json['id']).first()
@@ -176,7 +168,7 @@ def update_device():
 
 def import_devices():
     @jwt_required
-    @roles_accepted_for_resources('apps')
+    @permissions_accepted_for_resources(ResourcePermissions('devices', ['create']))
     def __func():
         data = request.get_json()
         filename = data['filename'] if 'filename' in data else core.config.paths.default_appdevice_export_path
@@ -231,7 +223,7 @@ def import_devices():
 
 def export_devices():
     @jwt_required
-    @roles_accepted_for_resources('apps')
+    @permissions_accepted_for_resources(ResourcePermissions('devices', ['read']))
     def __func():
         data = request.get_json()
         filename = data['filename'] if 'filename' in data else core.config.paths.default_appdevice_export_path

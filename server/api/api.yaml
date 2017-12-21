@@ -45,6 +45,8 @@ tags:
     description: System Operations
   - name: Client
     description: Serves up client pages
+  - name: Message
+    description: User messages
 
 schemes:
   - http
@@ -57,6 +59,7 @@ paths:
   $ref: ./configuration.yaml
   $ref: ./devices.yaml
   $ref: ./events.yaml
+  $ref: ./message.yaml
   $ref: ./metadata.yaml
   $ref: ./metrics.yaml
   $ref: ./playbooks.yaml
@@ -90,6 +93,7 @@ definitions:
     $ref: ./objects/configuration.yaml
     $ref: ./objects/devices.yaml
     $ref: ./objects/metrics.yaml
+    $ref: ./objects/message.yaml
     $ref: ./objects/playbooks.yaml
     $ref: ./objects/roles.yaml
     $ref: ./objects/scheduler.yaml

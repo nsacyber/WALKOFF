@@ -3,6 +3,8 @@ import { Http, Response, Headers } from '@angular/http';
 import { JwtHelper } from 'angular2-jwt';
 import { JwtHttp } from 'angular2-jwt-refresh';
 
+import { AccessToken } from '../models/accessToken';
+
 const REFRESH_TOKEN_NAME = 'refresh_token';
 const ACCESS_TOKEN_NAME = 'access_token';
 
@@ -42,9 +44,7 @@ export class AuthService {
 	}
 
 	//TODO: figure out how roles are going to be stored 
-	canAccess(): boolean {
-		// const tokenInfo = this.getAndDecodeAccessToken();
-
+	canAccess(resourceName: string, actionName: string): boolean {
 		return false;
 	}
 
@@ -73,12 +73,16 @@ export class AuthService {
 			.catch(this.handleError);
 	}
 
-	getAndDecodeRefreshToken(): any {
+	getAndDecodeRefreshToken(): AccessToken {
 		return this.jwtHelper.decodeToken(this.getRefreshToken());
 	}
 
-	getAndDecodeAccessToken(): any {
+	getAndDecodeAccessToken(): AccessToken {
 		return this.jwtHelper.decodeToken(this.getAccessToken());
+	}
+
+	isAccessTokenFresh(): boolean {
+		return !!this.getAndDecodeAccessToken().fresh;
 	}
 
 	private extractData(res: Response) {

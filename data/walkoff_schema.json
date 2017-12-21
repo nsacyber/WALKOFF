@@ -636,7 +636,14 @@
           "$ref": "#/definitions/placeholder"
         },
         "items": {
-          "$ref": "#/definitions/primitivesItems"
+          "oneOf": [
+            {
+              "$ref": "#/definitions/primitivesItems"
+            },
+            {
+              "$ref": "#/definitions/messagePrimitive"
+            }
+          ]
         },
         "default": {
           "$ref": "#/definitions/default"
@@ -682,6 +689,49 @@
         }
       }
     },
+    "messagePrimitive": {
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x-": {
+          "$ref": "#/definitions/vendorExtension"
+        }
+      },
+      "properties": {
+        "required": {
+          "type": "boolean",
+          "enum": [
+            true
+          ],
+          "description": "Determines whether or not this parameter is required or optional."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the parameter. This could contain examples of use.  GitHub Flavored Markdown is allowed."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the parameter."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["user", "role"]
+        },
+        "format": {
+          "type": "string",
+          "description": "'id' is used for passing by integer, 'name' will be used for passing by string",
+          "enum": ["id", "name"]
+        },
+        "placeholder": {
+          "$ref": "#/definitions/placeholder"
+        },
+        "enum": {
+          "$ref": "#/definitions/enum"
+        },
+        "example": {
+          "type": ["number", "string"]
+        }
+      }
+    },
     "parameter": {
       "oneOf": [
         {
@@ -689,6 +739,9 @@
         },
         {
           "$ref": "#/definitions/primitiveParameter"
+        },
+        {
+          "$ref": "#/definitions/messagePrimitive"
         },
         {
           "$ref": "#/definitions/jsonReference"
@@ -839,7 +892,14 @@
           "type": "string"
         },
         "items": {
-          "$ref": "#/definitions/primitivesItems"
+          "oneOf": [
+            {
+              "$ref": "#/definitions/primitivesItems"
+            },
+            {
+              "$ref": "#/definitions/messagePrimitive"
+            }
+          ]
         },
         "default": {
           "$ref": "#/definitions/default"

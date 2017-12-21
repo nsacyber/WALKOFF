@@ -20,7 +20,9 @@ TYPE_MAP = {
     'integer': int,
     'number': float,
     'boolean': boolean,
-    'string': str
+    'string': str,
+    'user': int,
+    'role': int
 }
 
 reserved_return_codes = ['UnhandledException', 'InvalidInput', 'EventTimedOut']
@@ -268,6 +270,12 @@ def validate_definitions(definitions, dereferencer):
         validate_definition(definition, dereferencer, definition_name)
 
 
+def handle_user_roles_validation(param):
+    param['type'] = 'integer'
+    if 'minimum' not in param:
+        param['minimum'] = 1
+
+
 def validate_primitive_parameter(value, param, parameter_type, message_prefix, hide_input=False):
     try:
         converted_value = convert_primitive_type(value, parameter_type)
@@ -278,6 +286,9 @@ def validate_primitive_parameter(value, param, parameter_type, message_prefix, h
         raise InvalidArgument(message)
     else:
         param = deepcopy(param)
+        if param['type'] in ('user', 'role'):
+            handle_user_roles_validation(param)
+
         if 'required' in param:
             param.pop('required')
         try:
@@ -299,6 +310,7 @@ def validate_primitive_parameter(value, param, parameter_type, message_prefix, h
 
 
 def validate_parameter(value, param, message_prefix):
+    param = deepcopy(param)
     primitive_type = 'primitive' if 'type' in param else 'object'
     converted_value = None
     if value is not None:
@@ -309,6 +321,9 @@ def validate_parameter(value, param, message_prefix):
             elif primitive_type == 'array':
                 try:
                     converted_value = convert_array(param, value, message_prefix)
+                    if 'items' in param and param['items']['type'] in ('user', 'role'):
+                        handle_user_roles_validation(param['items'])
+
                     Draft4Validator(
                         param, format_checker=draft4_format_checker).validate(converted_value)
                 except ValidationError as exception:

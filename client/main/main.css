@@ -2,6 +2,18 @@
 @import '/client/node_modules/@swimlane/ngx-datatable/release/themes/material.css';
 @import '/client/node_modules/@swimlane/ngx-datatable/release/assets/icons.css';
 
+/* h1 {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
+  font-weight: bold;
+  font-size: 30px;
+  color: #255876;
+}
+
+h3 {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
+  font-weight: bold;
+} */
+
 .contentContainer {
     position: relative;
     padding-bottom: 56.25%; /* 16:9 */
@@ -75,6 +87,42 @@
 
 #walkoffNav .navbar-nav>.open>a {
   color: #3c8dbc;
+}
+
+#walkoffNav .navbar-nav .newMessages {
+  color: orange;
+  font-weight: bold;
+}
+
+#walkoffNav .navbar-nav .required {
+  color: crimson;
+}
+
+#walkoffNav .navbar-nav .messages-menu table,
+#walkoffNav .navbar-nav .messages-menu table a {
+  width: 320px;
+  color: white;
+  margin: 5px;
+}
+
+#walkoffNav .navbar-nav .messages-menu table .oldMessage,
+#walkoffNav .navbar-nav .messages-menu table .oldMessage a {
+  color: #DDD;
+  font-style: italic;
+}
+
+#walkoffNav .navbar-nav .messages-menu .noMessages {
+  color: #DDD;
+  font-style: italic;
+  margin-left: 10px;
+}
+
+#walkoffNav .navbar-nav .messages-menu table tr {
+  border-bottom: 1px solid #AAA;
+}
+
+#walkoffNav .navbar-nav .messages-menu table tr:last-child {
+  border-bottom: none;
 }
 
 .footer {

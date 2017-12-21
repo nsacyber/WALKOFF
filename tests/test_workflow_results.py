@@ -16,8 +16,8 @@ class TestWorkflowResults(ServerTestCase):
         flaskserver.running_context.controller.load_playbook(resource=config.test_workflows_path +
                                                                       'multiactionWorkflowTest.playbook')
         uid = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-        with flaskserver.running_context.flask_app.app_context():
-            flaskserver.running_context.controller.wait_and_reset(1)
+
+        flaskserver.running_context.controller.wait_and_reset(1)
 
         workflow_results = case_database.case_db.session.query(WorkflowResult).all()
         self.assertEqual(len(workflow_results), 1)
@@ -43,8 +43,8 @@ class TestWorkflowResults(ServerTestCase):
                                                                       'multiactionWorkflowTest.playbook')
         uid1 = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         uid2 = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-        with flaskserver.running_context.flask_app.app_context():
-            flaskserver.running_context.controller.wait_and_reset(2)
+        
+        flaskserver.running_context.controller.wait_and_reset(2)
 
         workflow_uids = case_database.case_db.session.query(WorkflowResult).with_entities(WorkflowResult.uid).all()
         self.assertSetEqual({uid1, uid2}, {uid[0] for uid in workflow_uids})

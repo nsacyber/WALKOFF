@@ -8,6 +8,7 @@ export class WorkingUser {
 		returnUser.id = workingUser.id;
 		returnUser.username = workingUser.username;
 		returnUser.roles = workingUser.roles;
+		returnUser.role_ids = workingUser.role_ids;
 		returnUser.active = workingUser.active;
 
 		//TODO: update once we merge the pw-fix branch in, need to submit current password as well
@@ -18,7 +19,8 @@ export class WorkingUser {
 
 	id: number;
 	username: string;
-	roles: Role[];
+	roles: Role[] = [];
+	role_ids: number[] = [];
 	active: boolean;
 	currentPassword: string;
 	newPassword: string;

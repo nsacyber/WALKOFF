@@ -2,12 +2,12 @@ from flask_jwt_extended import jwt_required
 
 import server.metrics as metrics
 from server.returncodes import *
-from server.security import roles_accepted_for_resources
+from server.security import permissions_accepted_for_resources, ResourcePermissions
 
 
 def read_app_metrics():
     @jwt_required
-    @roles_accepted_for_resources('metrics')
+    @permissions_accepted_for_resources(ResourcePermissions('metrics', ['read']))
     def __func():
         return _convert_action_time_averages(), SUCCESS
 
@@ -16,7 +16,7 @@ def read_app_metrics():
 
 def read_workflow_metrics():
     @jwt_required
-    @roles_accepted_for_resources('metrics')
+    @permissions_accepted_for_resources(ResourcePermissions('metrics', ['read']))
     def __func():
         return _convert_workflow_time_averages(), SUCCESS
 

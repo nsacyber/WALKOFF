@@ -1,36 +1,35 @@
 from flask import request, current_app
-from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt_claims
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from server.returncodes import *
-from server.security import roles_accepted_for_resources
+from server.database import add_user
+from server.extensions import db
+from server.database.user import User
+from server.security import permissions_accepted_for_resources, ResourcePermissions, admin_required
 
 
 def read_all_users():
-    from server.context import running_context
-
     @jwt_required
-    @roles_accepted_for_resources('users')
+    @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
     def __func():
-        return [user.as_json() for user in running_context.User.query.all()], SUCCESS
+        return [user.as_json() for user in User.query.all()], SUCCESS
 
     return __func()
 
 
 def create_user():
-    from server.context import running_context
-    from server.database import add_user
-
     @jwt_required
-    @roles_accepted_for_resources('users')
+    @permissions_accepted_for_resources(ResourcePermissions('users', ['create']))
     def __func():
         data = request.get_json()
         username = data['username']
-        if not running_context.User.query.filter_by(username=username).first():
+        if not User.query.filter_by(username=username).first():
             user = add_user(username=username, password=data['password'])
-            # if 'roles' in data:
-            #     user.set_roles(data['roles'])
 
-            running_context.db.session.commit()
+            if 'roles' in data or 'active' in data:
+                role_update_user_fields(data, user)
+
+            db.session.commit()
             current_app.logger.info('User added: {0}'.format(user.as_json()))
             return user.as_json(), OBJECT_CREATED
         else:
@@ -41,12 +40,10 @@ def create_user():
 
 
 def read_user(user_id):
-    from server.context import running_context
-
     @jwt_required
-    @roles_accepted_for_resources('users')
+    @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
     def __func():
-        user = running_context.User.query.filter_by(id=user_id).first()
+        user = User.query.filter_by(id=user_id).first()
         if user:
             return user.as_json(), SUCCESS
         else:
@@ -57,41 +54,22 @@ def read_user(user_id):
 
 
 def update_user():
-    from server.context import running_context
-
     @jwt_required
-    @roles_accepted_for_resources('users')
     def __func():
         data = request.get_json()
-        user = running_context.User.query.filter_by(id=data['id']).first()
+        user = User.query.filter_by(id=data['id']).first()
         current_user = get_jwt_identity()
-        is_admin = 'admin' in get_jwt_claims()['roles']
         if user is not None:
-            if user.username == current_user or is_admin:
-                original_username = str(user.username)
-                if 'username' in data and data['username']:
-                    user_db = running_context.User.query.filter_by(username=data['username']).first()
-                    if user_db is None or user_db.id == user.id:
-                        user.username = data['username']
-                    else:
-                        return {"error": "Username is taken"}, BAD_REQUEST
-                if 'old_password' in data and 'password' in data:
-                    if user.verify_password(data['old_password']):
-                        user.password = data['password']
-                    else:
-                        user.username = original_username
-                        return {"error": "User's current password was entered incorrectly."}, BAD_REQUEST
-                # if 'roles' in data:
-                #     user.set_roles(data['roles'])
-                if is_admin and 'active' in data:
-                    user.active = data['active']
-                running_context.db.session.commit()
-                current_app.logger.info('Updated user {0}. Updated to: {1}'.format(user.id, user.as_json()))
-                return user.as_json(), SUCCESS
+            if user.id == current_user:
+                return update_user_fields(data, user)
             else:
-                current_app.logger.error('User {0} does not have permission to '
-                                         'update user {1}'.format(current_user, user.id))
-                return {"error": 'Insufficient Permissions'}, UNAUTHORIZED_ERROR
+                message, return_code = role_update_user_fields(data, user, update=True)
+                if return_code == FORBIDDEN_ERROR:
+                    current_app.logger.error('User {0} does not have permission to '
+                                             'update user {1}'.format(current_user, user.id))
+                    return {"error": 'Insufficient Permissions'}, FORBIDDEN_ERROR
+                else:
+                    return message, return_code
         else:
             current_app.logger.error('Could not edit user {0}. User does not exist.'.format(data['id']))
             return {"error": 'User {0} does not exist.'.format(data['id'])}, OBJECT_DNE_ERROR
@@ -99,22 +77,49 @@ def update_user():
     return __func()
 
 
-def delete_user(user_id):
-    from server.flaskserver import running_context
+@admin_required
+def role_update_user_fields(data, user, update=False):
+    if 'roles' in data:
+        user.set_roles(data['roles'])
+    if 'active' in data:
+        user.active = data['active']
+    if update:
+        return update_user_fields(data, user)
 
+
+def update_user_fields(data, user):
+    original_username = str(user.username)
+    if 'username' in data and data['username']:
+        user_db = User.query.filter_by(username=data['username']).first()
+        if user_db is None or user_db.id == user.id:
+            user.username = data['username']
+        else:
+            return {"error": "Username is taken"}, BAD_REQUEST
+    if 'old_password' in data and 'password' in data:
+        if user.verify_password(data['old_password']):
+            user.password = data['password']
+        else:
+            user.username = original_username
+            return {"error": "User's current password was entered incorrectly."}, BAD_REQUEST
+    db.session.commit()
+    current_app.logger.info('Updated user {0}. Updated to: {1}'.format(user.id, user.as_json()))
+    return user.as_json(), SUCCESS
+
+
+def delete_user(user_id):
     @jwt_required
-    @roles_accepted_for_resources('users')
+    @permissions_accepted_for_resources(ResourcePermissions('users', ['delete']))
     def __func():
-        user = running_context.User.query.filter_by(id=user_id).first()
+        user = User.query.filter_by(id=user_id).first()
         if user:
-            if user.username != get_jwt_identity():
-                running_context.db.session.delete(user)
-                running_context.db.session.commit()
+            if user.id != get_jwt_identity():
+                db.session.delete(user)
+                db.session.commit()
                 current_app.logger.info('User {0} deleted'.format(user.username))
                 return {}, SUCCESS
             else:
                 current_app.logger.error('Could not delete user {0}. User is current user.'.format(user.id))
-                return {"error": 'User {0} is current user.'.format(user.username)}, UNAUTHORIZED_ERROR
+                return {"error": 'User {0} is current user.'.format(user.username)}, FORBIDDEN_ERROR
         else:
             current_app.logger.error('Could not delete user {0}. User does not exist.'.format(user_id))
             return {"error": 'User with id {0} does not exist.'.format(user_id)}, OBJECT_DNE_ERROR

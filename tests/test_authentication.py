@@ -4,10 +4,9 @@ from datetime import timedelta
 
 from flask_jwt_extended import decode_token
 
-from server.database import add_user, db, User
-from server.flaskserver import running_context
+from server.database import add_user, User
 from server.returncodes import *
-from server.tokens import *
+from server.database.tokens import *
 
 
 class TestAuthorization(unittest.TestCase):
@@ -20,8 +19,8 @@ class TestAuthorization(unittest.TestCase):
 
     def tearDown(self):
         db.session.rollback()
-        running_context.User.query.filter_by(username='test').delete()
-        from server.tokens import BlacklistedToken
+        User.query.filter_by(username='test').delete()
+        from server.database.tokens import BlacklistedToken
         for token in BlacklistedToken.query.all():
             db.session.delete(token)
         for user in (user for user in User.query.all() if user.username != 'admin'):
@@ -50,9 +49,9 @@ class TestAuthorization(unittest.TestCase):
         key = json.loads(response.get_data(as_text=True))
         token = decode_token(key['access_token'])
         self.assertEqual(token['type'], 'access')
-        self.assertEqual(token['identity'], 'admin')
-        self.assertListEqual(token['user_claims']['roles'], ['admin'])
+        self.assertEqual(token['identity'], 1)
         self.assertTrue(token['fresh'])
+        self.assertDictEqual(token['user_claims'], {'username': 'admin', 'roles': [1]})
 
     def test_login_authorization_has_valid_refresh_token(self):
         response = self.app.post('/api/auth', content_type="application/json",
@@ -60,7 +59,7 @@ class TestAuthorization(unittest.TestCase):
         key = json.loads(response.get_data(as_text=True))
         token = decode_token(key['refresh_token'])
         self.assertEqual(token['type'], 'refresh')
-        self.assertEqual(token['identity'], 'admin')
+        self.assertEqual(token['identity'], 1)
 
     def test_login_updates_user(self):
         user = add_user(username='testlogin', password='test')
@@ -98,14 +97,12 @@ class TestAuthorization(unittest.TestCase):
         self.assertSetEqual(set(key.keys()), {'access_token'})
         token = decode_token(key['access_token'])
         self.assertEqual(token['type'], 'access')
-        self.assertEqual(token['identity'], 'admin')
-        self.assertListEqual(token['user_claims']['roles'], ['admin'])
+        self.assertEqual(token['identity'], 1)
         self.assertFalse(token['fresh'])
 
     def test_refresh_invalid_user_blacklists_token(self):
         user = add_user(username='test', password='test')
 
-        from server.database import db
         db.session.commit()
         response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='test', password='test')))
@@ -117,7 +114,7 @@ class TestAuthorization(unittest.TestCase):
         refresh = self.app.post('/api/auth/refresh', content_type="application/json", headers=headers)
         self.assertEqual(refresh.status_code, UNAUTHORIZED_ERROR)
         token = decode_token(token)
-        from server.tokens import BlacklistedToken
+        from server.database.tokens import BlacklistedToken
 
         tokens = BlacklistedToken.query.filter_by(jti=token['jti']).all()
         self.assertEqual(len(tokens), 1)
@@ -125,7 +122,6 @@ class TestAuthorization(unittest.TestCase):
     def test_refresh_deactivated_user(self):
         user = add_user(username='test', password='test')
 
-        from server.database import db
         db.session.commit()
         response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='test', password='test')))
@@ -139,7 +135,6 @@ class TestAuthorization(unittest.TestCase):
     def test_refresh_with_blacklisted_token(self):
         user = add_user(username='test', password='test')
 
-        from server.database import db
         db.session.commit()
         response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='test', password='test')))
@@ -171,7 +166,6 @@ class TestAuthorization(unittest.TestCase):
 
         add_user(username='test', password='test')
 
-        from server.database import db
         db.session.commit()
         response = self.app.post('/api/auth', content_type="application/json",
                                  data=json.dumps(dict(username='test', password='test')))

@@ -406,7 +406,7 @@ class AppEventDispatcher(object):
 
 
 class EventDispatcher(object):
-    """Routes as disatches generic WalkoffEvents to their given callbacks
+    """Routes and dispatches generic WalkoffEvents to their given callbacks
 
     Attributes:
         _router (dict(str: dict(WalkoffEvent: CallbackContainer))): The router
@@ -520,7 +520,7 @@ class InterfaceEventDispatcher(object):
 
     def __new__(cls, *args, **kwargs):
         if cls.__instance is None:
-            for event in (event for event in WalkoffEvent if event.event_type != EventType.other):
+            for event in (event for event in WalkoffEvent if event.event_type != EventType.other and event != WalkoffEvent.SendMessage):
                 dispatch_method = cls._make_dispatch_method(event)
                 dispatch_partial = partial(dispatch_method, cls=cls)
                 event.connect(dispatch_partial, weak=False)
@@ -612,7 +612,7 @@ class InterfaceEventDispatcher(object):
             UnknownEvent: If an unknown or non-action event is set for the handler
             InvalidEventHandler: If the wrapped function does not have exactly one argument
         """
-        available_events = {event for event in WalkoffEvent if event.event_type == EventType.action}
+        available_events = {event for event in WalkoffEvent if event.event_type == EventType.action and event != WalkoffEvent.SendMessage}
         events = validate_events(events, available_events)
 
         def handler(func):

@@ -98,3 +98,21 @@
         description: Success
       461:
         description: Object does not exist.
+
+/api/availableresourceactions:
+    get:
+      tags:
+        - Roles
+      summary: Read all available resource actions
+      description: ''
+      operationId: server.endpoints.roles.read_available_resource_actions
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            description: List of available resource actions
+            type: array
+            items:
+              $ref: '#/definitions/AvailableResourceAction'

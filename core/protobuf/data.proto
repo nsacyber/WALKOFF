@@ -10,6 +10,7 @@ message Message {
         ACTIONPACKET = 3;
         ACTIONPACKETDATA = 4;
         GENERALPACKET = 5;
+        USERMESSAGE = 6;
     }
 
     optional Type type = 1;
@@ -18,6 +19,7 @@ message Message {
         WorkflowPacket workflow_packet = 3;
         ActionPacket action_packet = 4;
         GeneralPacket general_packet = 5;
+        UserMessage message_packet = 6;
     }
 }
 
@@ -68,4 +70,13 @@ message GeneralPacket {
     }
 
     optional GeneralSender sender = 1;
+}
+
+message UserMessage {
+    optional ActionPacket.ActionSender sender = 1;
+    optional string subject = 2;
+    optional string body = 3;
+    optional bool requires_reauth = 4;
+    repeated int32 users = 5;
+    repeated int32 roles = 6;
 }

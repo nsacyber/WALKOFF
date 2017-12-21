@@ -9,11 +9,8 @@ import core.config.paths
 from core import helpers
 from server import app
 from server.context import running_context
-from . import database
 
 logger = logging.getLogger(__name__)
-
-database.initialize_resource_roles_from_cleared_database()
 
 
 # Custom static data
@@ -26,6 +23,7 @@ def client_app_folder(filename):
 @app.route('/playbook')
 @app.route('/scheduler')
 @app.route('/devices')
+@app.route('/messages')
 @app.route('/cases')
 @app.route('/settings')
 def default():

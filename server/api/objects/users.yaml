@@ -10,11 +10,14 @@ AddUser:
         description: Password for the user
         type: string
         example: password123
-#      roles:
-#        description: A list of roles that this user possesses
-#        type: array
-#        items:
-#          type: string
+      roles:
+        description: A list of role IDs that this user possesses. Roles can only be assigned to a User by an admin.
+        type: array
+        items:
+          type: integer
+      active:
+        description: activate/deactive a user. Active can only be changed by an admin.
+        type: boolean
 EditUser:
     type: object
     required: [id]
@@ -37,17 +40,13 @@ EditUser:
         type: string
         example: password321
       active:
-        description: activate/deactive a user
+        description: activate/deactive a user. Active can only be changed by an admin.
         type: boolean
-#      roles:
-#        description: New list of role objects that this user possesses
-#        type: array
-#        items:
-#          type: string
-#        example:
-#          - /users
-#          - /cases
-#          - /playbooks
+      roles:
+        description: A new list of role IDs that this user will possess. Roles can only be assigned by an admin.
+        type: array
+        items:
+          type: integer
 DisplayUser:
     type: object
     properties:
@@ -64,7 +63,7 @@ DisplayUser:
         description: activate/deactive a user
         type: boolean
       roles:
-        description: List of role objects that this user possesses
+        description: List of role object IDs that this user possesses
         type: array
         items:
-          type: string
+          type: integer

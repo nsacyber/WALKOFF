@@ -10,6 +10,10 @@ from apps.devicedb import App, device_db
 from core import helpers
 from core.config import paths
 from core.helpers import format_db_path
+from server.extensions import db, jwt
+from server.database.casesubscription import CaseSubscription
+from server.database import add_user, User, Role, initialize_default_resources_admin, \
+    initialize_default_resources_guest
 
 logger = logging.getLogger(__name__)
 
@@ -17,9 +21,11 @@ logger = logging.getLogger(__name__)
 def register_blueprints(flaskapp):
     from server.blueprints import custominterface
     from server.blueprints import workflowresult
+    from server.blueprints import notifications
 
     flaskapp.register_blueprint(custominterface.custom_interface_page, url_prefix='/custominterfaces/<interface>')
-    flaskapp.register_blueprint(workflowresult.workflowresults_page, url_prefix='/workflowresults')
+    flaskapp.register_blueprint(workflowresult.workflowresults_page, url_prefix='/api/workflowresults')
+    flaskapp.register_blueprint(notifications.notifications_page, url_prefix='/api/notifications')
     __register_all_app_blueprints(flaskapp)
 
 
@@ -82,9 +88,7 @@ def create_app():
         SQLALCHEMY_TRACK_MODIFICATIONS=False
     )
 
-    from server.database import db
     db.init_app(_app)
-    from server.security import jwt
     jwt.init_app(_app)
 
     connexion_app.add_api('composed_api.yaml')
@@ -94,38 +98,39 @@ def create_app():
 
     import core.controller
     core.controller.controller.load_playbooks()
+    import server.messaging.utils
     return _app
 
 
 # Template Loader
-env = Environment(loader=FileSystemLoader("interfaces"))
 app = create_app()
 
 
-# Creates Test Data
 @app.before_first_request
 def create_user():
-    from server.context import running_context
-    from server.database import add_user, User, ResourcePermission, Role, initialize_resource_roles_from_database
+    db.create_all()
 
-    running_context.db.create_all()
-    if not User.query.all():
-        admin_role = running_context.Role(
-            name='admin', description='administrator', resources=server.database.default_resources)
-        running_context.db.session.add(admin_role)
-        admin_user = add_user(username='admin', password='admin')
+    # Setup admin and guest roles
+    initialize_default_resources_admin()
+    initialize_default_resources_guest()
+
+    # Setup admin user
+    admin_role = Role.query.filter_by(id=1).first()
+    admin_user = User.query.filter_by(username="admin").first()
+    if not admin_user:
+        add_user(username='admin', password='admin', roles=["admin"])
+    elif admin_role not in admin_user.roles:
         admin_user.roles.append(admin_role)
-        running_context.db.session.commit()
-    if Role.query.all() or ResourcePermission.query.all():
-        initialize_resource_roles_from_database()
+
+    db.session.commit()
 
     apps = set(helpers.list_apps()) - set([_app.name
                                            for _app in device_db.session.query(App).all()])
     app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:
         device_db.session.add(App(name=app_name, devices=[]))
-    running_context.db.session.commit()
+    db.session.commit()
     device_db.session.commit()
-    running_context.CaseSubscription.sync_to_subscriptions()
+    CaseSubscription.sync_to_subscriptions()
 
     app.logger.handlers = logging.getLogger('server').handlers

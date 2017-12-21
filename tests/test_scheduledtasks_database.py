@@ -5,7 +5,7 @@ import server.flaskserver as server
 from core.executionelements.playbook import Playbook
 from core.scheduler import InvalidTriggerArgs
 from server.database import db
-from server.scheduledtasks import ScheduledTask
+from server.database.scheduledtasks import ScheduledTask
 from tests.test_scheduler import MockWorkflow
 
 

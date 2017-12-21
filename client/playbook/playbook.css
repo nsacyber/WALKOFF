@@ -2,19 +2,7 @@
 @import '/client/node_modules/ng2-dnd/bundles/style.css';
 
 #main.playbookMain {
-	padding: 10px 15px 0px 15px;
-}
-
-.playbookMain h3 {
-	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
-	font-weight: bold;
-}
-
-.playbookMain h1 {
-	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
-	font-weight: bold;
-	font-size: 30px;
-	color: #255876;
+	padding: 10px 15px 0 15px;
 }
 
 .playbookMain .parametersEditor .failure {
@@ -160,7 +148,7 @@
 	margin-left: 5px;
 }
 
-.playbookMain ngx-datatable datatable-body datatable-body-row datatable-body-cell div.datatable-body-cell-label {
+.playbookMain ngx-datatable datatable-body datatable-body-row datatable-body-cell .datatable-body-cell-label {
 	white-space: initial;
 }
 

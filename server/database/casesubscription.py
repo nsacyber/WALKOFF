@@ -2,7 +2,8 @@ import json
 import logging
 
 import core.case.subscription
-from .database import db, TrackModificationsMixIn
+from server.extensions import db
+from server.database.mixins import TrackModificationsMixIn
 
 
 class CaseSubscription(db.Model, TrackModificationsMixIn):

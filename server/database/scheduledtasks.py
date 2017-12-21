@@ -2,7 +2,8 @@ import json
 import logging
 
 from core.scheduler import construct_trigger
-from .database import db, TrackModificationsMixIn
+from server.extensions import db
+from server.database.mixins import TrackModificationsMixIn
 
 logger = logging.getLogger(__name__)
 

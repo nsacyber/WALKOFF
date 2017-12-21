@@ -4,10 +4,11 @@ import os
 import core.case.database as case_database
 import core.case.subscription as case_subs
 import core.config.paths
-import server.flaskserver as server
 import tests.config
 from core.case.subscription import set_subscriptions, clear_subscriptions, delete_cases
 from server.returncodes import *
+from server.database.casesubscription import CaseSubscription
+from server.extensions import db
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
 
@@ -30,9 +31,9 @@ class TestCaseServer(ServerTestCase):
     def tearDown(self):
         case_database.case_db.tear_down()
         clear_subscriptions()
-        for case in server.running_context.CaseSubscription.query.all():
-            server.running_context.db.session.delete(case)
-        server.running_context.db.session.commit()
+        for case in CaseSubscription.query.all():
+            db.session.delete(case)
+        db.session.commit()
 
     def __basic_case_setup(self):
         set_subscriptions(self.cases_all)
@@ -45,7 +46,7 @@ class TestCaseServer(ServerTestCase):
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case1']
         orderless_list_compare(self, cases, expected_cases)
-        cases_config = server.running_context.CaseSubscription.query.all()
+        cases_config = CaseSubscription.query.all()
         self.assertEqual(len(cases_config), 1)
         case = cases_config[0]
         self.assertEqual(case.name, 'case1')
@@ -60,7 +61,7 @@ class TestCaseServer(ServerTestCase):
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case1', 'case2', 'case3']
         orderless_list_compare(self, cases, expected_cases)
-        cases_config = server.running_context.CaseSubscription.query.all()
+        cases_config = CaseSubscription.query.all()
         self.assertEqual(len(cases_config), 1)
         orderless_list_compare(self, [case.name for case in cases_config], ['case3'])
         for case in cases_config:
@@ -78,7 +79,7 @@ class TestCaseServer(ServerTestCase):
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case1']
         orderless_list_compare(self, cases, expected_cases)
-        cases_config = server.running_context.CaseSubscription.query.all()
+        cases_config = CaseSubscription.query.all()
         self.assertEqual(len(cases_config), 1)
         orderless_list_compare(self, [case.name for case in cases_config], ['case1'])
         for case in cases_config:
@@ -95,7 +96,7 @@ class TestCaseServer(ServerTestCase):
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case1']
         orderless_list_compare(self, cases, expected_cases)
-        cases_config = server.running_context.CaseSubscription.query.all()
+        cases_config = CaseSubscription.query.all()
         self.assertEqual(len(cases_config), 1)
         orderless_list_compare(self, [case.name for case in cases_config], ['case1'])
         for case in cases_config:
@@ -112,7 +113,7 @@ class TestCaseServer(ServerTestCase):
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case1']
         orderless_list_compare(self, cases, expected_cases)
-        cases_config = server.running_context.CaseSubscription.query.all()
+        cases_config = CaseSubscription.query.all()
         self.assertEqual(len(cases_config), 1)
         orderless_list_compare(self, [case.name for case in cases_config], ['case1'])
         self.assertDictEqual(case_subs.subscriptions, {'case1': {'uid1': ['a', 'b', 'c']}})
@@ -158,7 +159,7 @@ class TestCaseServer(ServerTestCase):
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = []
         orderless_list_compare(self, cases, expected_cases)
-        cases_config = server.running_context.CaseSubscription.query.all()
+        cases_config = CaseSubscription.query.all()
         self.assertListEqual(cases_config, [])
         self.assertDictEqual(case_subs.subscriptions, {})
 
@@ -174,7 +175,7 @@ class TestCaseServer(ServerTestCase):
         expected_cases = ['case2']
         orderless_list_compare(self, cases, expected_cases)
 
-        cases_config = server.running_context.CaseSubscription.query.all()
+        cases_config = CaseSubscription.query.all()
         self.assertEqual(len(cases_config), 1)
 
         self.assertEqual(cases_config[0].name, 'case2')
@@ -196,7 +197,7 @@ class TestCaseServer(ServerTestCase):
         expected_cases = list(self.cases1.keys())
         orderless_list_compare(self, db_cases, expected_cases)
 
-        cases_config = server.running_context.CaseSubscription.query.all()
+        cases_config = CaseSubscription.query.all()
         orderless_list_compare(self, [case.name for case in cases_config], ['case1', 'case2'])
         for case in cases_config:
             self.assertEqual(case.subscriptions, '[]')
@@ -212,7 +213,7 @@ class TestCaseServer(ServerTestCase):
         expected_cases = []
         orderless_list_compare(self, db_cases, expected_cases)
 
-        cases_config = server.running_context.CaseSubscription.query.all()
+        cases_config = CaseSubscription.query.all()
         self.assertListEqual(cases_config, [])
 
     def test_edit_case(self):
@@ -298,7 +299,7 @@ class TestCaseServer(ServerTestCase):
         self.assertDictEqual(read_json, expected_subs)
 
     def __assert_subscriptions_synced(self, case_name):
-        cases_config = server.running_context.CaseSubscription.query.filter_by(name=case_name).all()
+        cases_config = CaseSubscription.query.filter_by(name=case_name).all()
         self.assertEqual(len(cases_config), 1)
         case = cases_config[0]
         self.assertIn(case_name, case_subs.subscriptions)
@@ -350,4 +351,4 @@ class TestCaseServer(ServerTestCase):
         for event_type in (event.name for event in EventType if event != EventType.other):
             events = next((event['events'] for event in response if event['type'] == event_type))
             self.assertSetEqual(set(events),
-                                {event.signal_name for event in WalkoffEvent if event.event_type.name == event_type})
+                                {event.signal_name for event in WalkoffEvent if event.event_type.name == event_type and event != WalkoffEvent.SendMessage})

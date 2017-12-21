@@ -1,7 +1,8 @@
-<div id="main">
+<div id="main" class="settingsMain">
     <ul class="nav nav-tabs" role="tablist">
         <li class="active"><a href="#systemSettings" data-toggle="tab" role="tab">System Settings</a></li>
         <li><a href="#userSettings" data-toggle="tab" role="tab">User Settings</a></li>
+        <li><a href="#roleSettings" data-toggle="tab" role="tab">Role Settings</a></li>
     </ul>
     <div class="tab-content">
         <div id="systemSettings" class="tab-pane fade in active">
@@ -11,31 +12,32 @@
                     <div class="col-md-4">
                         <h3>Path Configuration</h3>
                         <div class="form-group">
+                            <input type="text" class="form-control" [(ngModel)]="configuration.workflows_path" name="workflows_path" required>
                             <label for="name">Workflows Path</label>
                             <input type="text" class="form-control" [(ngModel)]="configuration.workflows_path" name="workflows_path" required>
                         </div>
                         <div class="form-group">
-                            <label for="name">WALKOFF Database Path</label>
+                            <label for="db_path">WALKOFF Database Path</label>
                             <input type="text" class="form-control" [(ngModel)]="configuration.db_path" name="db_path" required>
                         </div>
                         <div class="form-group">
-                            <label for="name">WALKOFF Database Type</label>
+                            <label for="walkoff_db_type">WALKOFF Database Type</label>
                             <select class="form-control" [(ngModel)]="configuration.walkoff_db_type" name="walkoff_db_type">
                                 <option *ngFor="let i of dbTypes" [value]="i" [label]="i">{{i}}</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="name">Case Database Path</label>
+                            <label for="case_db_path">Case Database Path</label>
                             <input type="text" class="form-control" [(ngModel)]="configuration.case_db_path" name="case_db_path" required>
                         </div>
                         <div class="form-group">
-                            <label for="name">Case Database Type</label>
+                            <label for="case_db_type">Case Database Type</label>
                             <select class="form-control" [(ngModel)]="configuration.case_db_type" name="case_db_type">
                                 <option *ngFor="let i of dbTypes" [value]="i" [label]="i">{{i}}</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="name">Clear Case Database on Startup</label>
+                            <label for="clear_case_db_on_startup">Clear Case Database on Startup</label>
                             <input type="checkbox" class="form-control" [(ngModel)]="configuration.clear_case_db_on_startup" name="clear_case_db_on_startup"
                                 required>
                         </div>
@@ -54,12 +56,12 @@
                             </select>
                         </div> -->
                         <div class="form-group">
-                            <label for="name">JWT Access Token Duration (in minutes)</label>
+                            <label for="access_token_duration">JWT Access Token Duration (in minutes)</label>
                             <input type="number" min="1" class="form-control" [(ngModel)]="configuration.access_token_duration" name="access_token_duration"
                                 required>
                         </div>
                         <div class="form-group">
-                            <label for="name">JWT Refresh Token Duration (in days)</label>
+                            <label for="refresh_token_duration">JWT Refresh Token Duration (in days)</label>
                             <input type="number" min="1" class="form-control" [(ngModel)]="configuration.refresh_token_duration" name="refresh_token_duration"
                                 required>
                         </div>
@@ -68,12 +70,24 @@
                     <div class="col-md-4">
                         <h3>Interface Configuration</h3>
                         <div class="form-group">
-                            <label for="name">Host Address</label>
+                            <label for="host">Host Address</label>
                             <input type="text" class="form-control" [(ngModel)]="configuration.host" name="host" required>
                         </div>
                         <div class="form-group">
-                            <label for="name">Port</label>
+                            <label for="port">Port</label>
                             <input type="number" min="1" max="65535" class="form-control" [(ngModel)]="configuration.port" name="port" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="zmq_requests_address">ZMQ Requests Address</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.zmq_requests_address" name="zmq_requests_address" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="zmq_results_address">ZMQ Results Address</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.zmq_results_address" name="zmq_results_address" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="zmq_results_address">ZMQ Communication Address</label>
+                            <input type="text" class="form-control" [(ngModel)]="configuration.zmq_communication_address" name="zmq_communication_address" required>
                         </div>
                     </div>
                 </form>
@@ -126,6 +140,10 @@
                     </ng-template>
                 </ngx-datatable-column>
             </ngx-datatable>
+        </div>
+
+        <div id="roleSettings" class="tab-pane fade">
+            <settings-roles-component></settings-roles-component>
         </div>
     </div>
 </div>

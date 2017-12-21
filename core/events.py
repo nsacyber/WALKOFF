@@ -30,6 +30,7 @@ class WalkoffSignal(object):
         self.name = name
         self.signal = Signal(name)
         self.event_type = event_type
+        self.is_loggable = loggable
         if loggable:
             signal_callback = partial(add_entry_to_case,
                                       data='',
@@ -67,8 +68,8 @@ class WorkflowSignal(WalkoffSignal):
 
 
 class ActionSignal(WalkoffSignal):
-    def __init__(self, name, message):
-        super(ActionSignal, self).__init__(name, EventType.action, message=message)
+    def __init__(self, name, message, loggable=True):
+        super(ActionSignal, self).__init__(name, EventType.action, message=message, loggable=loggable)
 
 
 class BranchSignal(WalkoffSignal):
@@ -112,6 +113,7 @@ class WalkoffEvent(Enum):
     TriggerActionAwaitingData = ActionSignal('Trigger Action Awaiting Data', 'Trigger action awaiting data')
     TriggerActionTaken = ActionSignal('Trigger Action Taken', 'Trigger action taken')
     TriggerActionNotTaken = ActionSignal('Trigger Action Not Taken', 'Trigger action not taken')
+    SendMessage = ActionSignal('Message Sent', 'Walkoff message sent', loggable=False)
 
     BranchTaken = BranchSignal('Branch Taken', 'Branch taken')
     BranchNotTaken = BranchSignal('Branch Not Taken', 'Branch not taken')
@@ -147,7 +149,8 @@ class WalkoffEvent(Enum):
     def requires_data(self):
         return (self in (WalkoffEvent.WorkflowShutdown,
                          WalkoffEvent.ActionExecutionError,
-                         WalkoffEvent.ActionExecutionSuccess))
+                         WalkoffEvent.ActionExecutionSuccess,
+                         WalkoffEvent.SendMessage))
 
     def send(self, sender, **kwargs):
         self.value.send(sender, **kwargs)
@@ -155,3 +158,6 @@ class WalkoffEvent(Enum):
     def connect(self, func, weak=True):
         self.value.connect(func, weak=weak)
         return func
+
+    def is_loggable(self):
+        return self.value.is_loggable

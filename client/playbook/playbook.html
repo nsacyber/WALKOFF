@@ -122,7 +122,7 @@
             <!-- Parameter editors -->
             <div class="col-md-4 graphEditorColumn">
                 <!-- Editor for Actions -->
-                <div *ngIf="selectedAction" class="parametersEditor">
+                <div *ngIf="!waitingOnData && selectedAction" class="parametersEditor">
                     <h3>Action Parameters</h3>
                     <div class="row">
                         <div class="col-xs-4">
@@ -154,7 +154,7 @@
                         <h4>Arguments</h4>
                         <playbook-argument-component *ngFor="let parameterApi of selectedActionApi.parameters; let id = index" [loadedWorkflow]="loadedWorkflow" 
                         [argument]="getOrInitializeSelectedActionArgument(parameterApi)" [parameterApi]="parameterApi"
-                        [id]="id"></playbook-argument-component>
+                        [id]="id" [users]="users" [roles]="roles"></playbook-argument-component>
                     </div>
                     <!-- Triggers -->
                     <div>

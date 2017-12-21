@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 
 from flask import Blueprint, Response
@@ -11,22 +10,10 @@ from server.security import jwt_required_in_query
 
 workflowresults_page = Blueprint('workflowresults_page', __name__)
 
-__workflow_shutdown_event_json = AsyncResult()
 __workflow_action_event_json = AsyncResult()
-__sync_signal = Event()
 __action_signal = Event()
 
 __action_event_id_counter = 0
-__workflow_event_id_counter = 0
-
-
-def __workflow_shutdown_event_stream():
-    global __workflow_event_id_counter
-    while True:
-        data = __workflow_shutdown_event_json.get()
-        yield create_sse_event(event_id=__workflow_event_id_counter, event='workflow_shutdown', data=data)
-        __workflow_event_id_counter += 1
-        __sync_signal.wait()
 
 
 def __workflow_actions_event_stream():
@@ -36,21 +23,6 @@ def __workflow_actions_event_stream():
         yield create_sse_event(event_id=__action_event_id_counter, event=event_type, data=data)
         __action_event_id_counter += 1
         __action_signal.wait()
-
-
-@WalkoffEvent.WorkflowShutdown.connect
-def __workflow_ended_callback(sender, **kwargs):
-    data = 'None'
-    if 'data' in kwargs:
-        data = kwargs['data']
-        if not isinstance(data, str):
-            data = str(data)
-    result = {'name': sender['name'],
-              'timestamp': str(datetime.utcnow()),
-              'result': data}
-    __workflow_shutdown_event_json.set(result)
-    __sync_signal.set()
-    __sync_signal.clear()
 
 
 @WalkoffEvent.ActionExecutionSuccess.connect
@@ -86,12 +58,6 @@ def __action_error_callback(sender, **kwargs):
 
 
 @workflowresults_page.route('/stream', methods=['GET'])
-@jwt_required_in_query('access_token')
-def stream_workflow_success_events():
-    return Response(__workflow_shutdown_event_stream(), mimetype='text/event-stream')
-
-
-@workflowresults_page.route('/stream-actions', methods=['GET'])
 @jwt_required_in_query('access_token')
 def stream_workflow_action_events():
     return Response(__workflow_actions_event_stream(), mimetype='text/event-stream')

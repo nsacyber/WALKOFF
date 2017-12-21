@@ -35,7 +35,7 @@ export class DevicesComponent {
 
 	constructor(
 		private devicesService: DevicesService, private modalService: NgbModal, 
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {		
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.appSelectConfig = {

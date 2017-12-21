@@ -13,7 +13,7 @@ class TestInterfaceEventDispatcher(TestCase):
                                                             'action2': None,
                                                             'action3': None}},
                                        'App2': {}}
-        cls.action_events = {event for event in WalkoffEvent if event.event_type == EventType.action}
+        cls.action_events = {event for event in WalkoffEvent if event.event_type == EventType.action and event != WalkoffEvent.SendMessage}
 
     def setUp(self):
         dispatcher._clear()
@@ -28,7 +28,7 @@ class TestInterfaceEventDispatcher(TestCase):
 
     def test_registration_correct_number_methods_generated(self):
         methods = [method for method in dir(dispatcher) if method.startswith('on_')]
-        expected_number = len([event for event in WalkoffEvent if event.event_type != EventType.other]) + 2
+        expected_number = len([event for event in WalkoffEvent if event.event_type != EventType.other and event != WalkoffEvent.SendMessage]) + 2
         # 2: one for on_app_action and one for on_walkoff_event
         self.assertEqual(len(methods), expected_number)
 

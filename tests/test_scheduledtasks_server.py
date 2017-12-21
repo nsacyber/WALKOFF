@@ -1,8 +1,8 @@
 import json
 
-from server import flaskserver as flask_server
+from server.extensions import db
 from server.returncodes import *
-from server.scheduledtasks import ScheduledTask, ScheduledWorkflow
+from server.database.scheduledtasks import ScheduledTask, ScheduledWorkflow
 from tests.util.servertestcase import ServerTestCase
 
 
@@ -17,7 +17,7 @@ class TestScheduledTasksServer(ServerTestCase):
         scheduled_workflows = ScheduledWorkflow.query.all()
         if scheduled_workflows:
             ScheduledWorkflow.query.delete()
-        flask_server.running_context.db.session.commit()
+        db.session.commit()
 
     def test_read_all_scheduled_tasks_no_tasks(self):
         response = self.get_with_status_check('/api/scheduledtasks', headers=self.headers)
@@ -25,8 +25,8 @@ class TestScheduledTasksServer(ServerTestCase):
 
     def test_read_all_scheduled_tasks_with_tasks(self):
         tasks = [ScheduledTask(name='test-{}'.format(i)) for i in range(4)]
-        flask_server.running_context.db.session.add_all(tasks)
-        expected = [task.as_json() for task in flask_server.running_context.ScheduledTask.query.all()]
+        db.session.add_all(tasks)
+        expected = [task.as_json() for task in ScheduledTask.query.all()]
         response = self.get_with_status_check('/api/scheduledtasks', headers=self.headers)
         self.assertListEqual(response, expected)
 

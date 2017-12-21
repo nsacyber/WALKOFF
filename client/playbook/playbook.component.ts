@@ -3,6 +3,7 @@ import { Component, ViewEncapsulation, ViewChild, ElementRef, ChangeDetectorRef 
 // import { Observable } from 'rxjs';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { UUID } from 'angular2-uuid';
+import { DatatableComponent } from '@swimlane/ngx-datatable';
 
 import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
@@ -22,7 +23,8 @@ import { GraphPosition } from '../models/playbook/graphPosition';
 import { Device } from '../models/device';
 import { Argument } from '../models/playbook/argument';
 import { WorkflowResult } from '../models/playbook/workflowResult';
-import { DatatableComponent } from '@swimlane/ngx-datatable';
+import { User } from '../models/user';
+import { Role } from '../models/role';
 
 @Component({
 	selector: 'playbook-component',
@@ -40,6 +42,8 @@ export class PlaybookComponent {
 
 	devices: Device[] = [];
 	relevantDevices: Device[] = [];
+	users: User[];
+	roles: Role[];
 
 	currentPlaybook: string;
 	currentWorkflow: string;
@@ -60,6 +64,7 @@ export class PlaybookComponent {
 	cyJsonData: string;
 	workflowResults: WorkflowResult[] = [];
 	executionResultsComponentWidth: number;
+	waitingOnData: boolean = false;
 
 	// Simple bootstrap modal params
 	modalParams: {
@@ -122,7 +127,7 @@ export class PlaybookComponent {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
 				const self = this;
-				const eventSource = new (window as any).EventSource('workflowresults/stream-actions?access_token=' + authToken);
+				const eventSource = new (window as any).EventSource('api/workflowresults/stream?access_token=' + authToken);
 
 				function eventHandler(message: any) {
 					const workflowResult: WorkflowResult = JSON.parse(message.data);
@@ -605,9 +610,37 @@ export class PlaybookComponent {
 		// Unselect anything else we might have selected (via ctrl+click basically)
 		self.cy.elements(`[uid!="${data.uid}"]`).unselect();
 
-		self.selectedAction = self.loadedWorkflow.actions.find(s => s.uid === data.uid);
-		self.selectedActionApi = this._getAction(self.selectedAction.app_name, self.selectedAction.action_name);
-		if (!self.selectedAction) { return; }
+		const action = self.loadedWorkflow.actions.find(s => s.uid === data.uid);
+		if (!action) { return; }
+		const actionApi = this._getAction(action.app_name, action.action_name);
+
+		const queryPromises: Array<Promise<any>> = [];
+
+		if (!this.users && 
+			(actionApi.parameters.findIndex(p => p.schema.type === 'user') > -1 ||
+			actionApi.parameters.findIndex(p => p.schema.items && p.schema.items.type === 'user') > -1)) {
+			this.waitingOnData = true;
+			queryPromises.push(this.playbookService.getUsers().then(users => this.users = users));
+		}
+		if (!this.roles && 
+			(actionApi.parameters.findIndex(p => p.schema.type === 'role') > -1 ||
+			actionApi.parameters.findIndex(p => p.schema.items && p.schema.items.type === 'role') > -1)) {
+			queryPromises.push(this.playbookService.getRoles().then(roles => this.roles = roles));
+		}
+
+		if (queryPromises.length) {
+			Promise.all(queryPromises)
+				.then(() => {
+					this.waitingOnData = false;
+				})
+				.catch(error => {
+					this.waitingOnData = false;
+					this.toastyService.error(`Error grabbing users or roles: ${error.message}`);
+				});
+		}
+
+		self.selectedAction = action;
+		self.selectedActionApi = actionApi;
 
 		// Add data to the selectedAction if it does not exist
 		if (!self.selectedAction.triggers) { self.selectedAction.triggers = []; }

@@ -8,12 +8,12 @@ import core.config.paths
 from core import helpers
 from core.events import WalkoffEvent, EventType
 from server.returncodes import SUCCESS
-from server.security import roles_accepted_for_resources
+from server.security import permissions_accepted_for_resources, ResourcePermissions
 
 
 def read_all_possible_subscriptions():
     event_dict = {EventType.playbook.name: []}
-    for event in WalkoffEvent:
+    for event in (event for event in WalkoffEvent if event.is_loggable()):
         if event.event_type.name not in event_dict:
             event_dict[event.event_type.name] = [event.signal_name]
         else:
@@ -22,7 +22,7 @@ def read_all_possible_subscriptions():
            for event_type in EventType if event_type != EventType.other]
 
     @jwt_required
-    @roles_accepted_for_resources('cases')
+    @permissions_accepted_for_resources(ResourcePermissions('cases', ['read']))
     def __func():
         return ret, SUCCESS
 
@@ -31,7 +31,7 @@ def read_all_possible_subscriptions():
 
 def read_all_interfaces():
     @jwt_required
-    @roles_accepted_for_resources('apps')
+    @permissions_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
     def __func():
         return helpers.list_interfaces(), SUCCESS
 

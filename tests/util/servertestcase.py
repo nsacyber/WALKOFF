@@ -11,6 +11,7 @@ import server.flaskserver
 import tests.config
 import tests.config
 from core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
+from server.extensions import db
 from tests.util.mock_objects import *
 from tests.util.thread_control import *
 
@@ -64,7 +65,7 @@ class ServerTestCase(unittest.TestCase):
         cls.context = server.flaskserver.app.test_request_context()
         cls.context.push()
 
-        server.flaskserver.running_context.db.create_all()
+        db.create_all()
         if cls.patch:
             MultiprocessedExecutor.initialize_threading = mock_initialize_threading
             MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
@@ -100,9 +101,6 @@ class ServerTestCase(unittest.TestCase):
 
         self.context = server.flaskserver.app.test_request_context()
         self.context.push()
-
-        from server.database import db
-        server.flaskserver.running_context.db = db
 
         post = self.app.post('/api/auth', content_type="application/json",
                              data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
