@@ -271,7 +271,7 @@ class TestMessagingEndpoints(ServerTestCase):
 
     def test_get_all_notifications_more_than_minimum_all_unread(self):
         messages = []
-        for i in range((max_notifications - min_notifications)/2):
+        for i in range(int((max_notifications - min_notifications)/2)):
             message = TestMessagingEndpoints.make_message([self.user1.user])
             db.session.commit()
             message.created_at += timedelta(seconds=i)
@@ -286,7 +286,7 @@ class TestMessagingEndpoints(ServerTestCase):
 
     def test_get_all_notifications_more_than_minimum_some_unread(self):
         messages = []
-        for i in range((max_notifications - min_notifications)/2+3):
+        for i in range(int((max_notifications - min_notifications)/2)+3):
             message = TestMessagingEndpoints.make_message([self.user1.user])
             db.session.commit()
             message.created_at += timedelta(seconds=i)
