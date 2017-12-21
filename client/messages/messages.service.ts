@@ -102,8 +102,8 @@ export class MessagesService {
 		arg.value = action;
 		const body: object = {
 			execution_uids: [execution_uid],
-			data_in: '',
-			inputs: [arg],
+			data_in: action,
+			arguments: [arg],
 		};
 		return this.authHttp.post('/api/triggers/send_data', body)
 			.toPromise()
