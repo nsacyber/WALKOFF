@@ -24,9 +24,11 @@
                 type: string
             data_in:
               description: Data to send to workflows awaiting data
-            inputs:
-              description: Updated inputs to send to the trigger action
-              type: object
+            arguments:
+              description: Updated arguments to send to the trigger action
+              type: array
+              items:
+                $ref: '#/definitions/Argument'
     responses:
       200:
         description: Success
