@@ -91,6 +91,10 @@ export class MessagesComponent {
 			.then(() => {
 				this.messages = this.messages.filter(message => idsToDelete.indexOf(message.id) === -1);
 
+				idsToDelete.forEach(id => {
+					this.selectMapping[id] = false;
+				});
+
 				this.filterMessages();
 			})
 			.catch(e => this.toastyService.error(`Error deleting messages: ${e.message}`));
