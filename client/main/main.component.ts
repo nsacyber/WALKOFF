@@ -84,15 +84,16 @@ export class MainComponent {
 					this._recalculateNewMessagesCount();
 					this.recalculateRelativeTimes();
 				});
-				eventSource.addEventListener('read', (message: any) => {
-					const update: MessageUpdate = JSON.parse(message.data);
+				// TODO: re-enable this if we can figure out why componentInstance is throwing an error on get
+				// eventSource.addEventListener('read', (message: any) => {
+				// 	const update: MessageUpdate = JSON.parse(message.data);
 
-					if (!this.messageModalRef || !this.messageModalRef.componentInstance) { return; }
+				// 	if (!this.messageModalRef || !this.messageModalRef.componentInstance) { return; }
 
-					if (this.messageModalRef.componentInstance.message.id === update.id) {
-						(this.messageModalRef.componentInstance.message as Message).read_by.push(update.username);
-					}
-				});
+				// 	if (this.messageModalRef.componentInstance.message.id === update.id) {
+				// 		(this.messageModalRef.componentInstance.message as Message).read_by.push(update.username);
+				// 	}
+				// });
 				eventSource.addEventListener('respond', (message: any) => {
 					const update: MessageUpdate = JSON.parse(message.data);
 
@@ -102,13 +103,14 @@ export class MainComponent {
 						existingMessage.awaiting_response = false;
 					}
 
-					if (!this.messageModalRef || !this.messageModalRef.componentInstance) { return; }
+					// TODO: re-enable this if we can figure out why componentInstance is throwing an error on get
+					// if (!this.messageModalRef || !this.messageModalRef.componentInstance) { return; }
 
-					if (this.messageModalRef.componentInstance.message.id === update.id) {
-						(this.messageModalRef.componentInstance.message as Message).responded_at = update.timestamp;
-						(this.messageModalRef.componentInstance.message as Message).responded_by = update.username;
-						(this.messageModalRef.componentInstance.message as Message).awaiting_response = false;
-					}
+					// if (this.messageModalRef.componentInstance.message.id === update.id) {
+					// 	(this.messageModalRef.componentInstance.message as Message).responded_at = update.timestamp;
+					// 	(this.messageModalRef.componentInstance.message as Message).responded_by = update.username;
+					// 	(this.messageModalRef.componentInstance.message as Message).awaiting_response = false;
+					// }
 				});
 				eventSource.addEventListener('error', (err: Error) => {
 					console.error(err);
