@@ -105,28 +105,32 @@ img.media-object.image{
 </header>
 
 <div class="w3-row-padding w3-padding-64 w3-container">
-  <div class="w3-content">
-    <div class="w3-twothird">
-      <h1>Return codes for actions</h1>
-        <p>Up to this point, all of our actions have had a single entry named <code>Success</code> in the
-            <code>returns</code> field of their api YAML file. But WALKOFF can support multiple return codes. Think of
-            them like HTTP response codes (200, 404, 400, 500) for your action. In fact, how Flask manages return codes
-            for HTTP messages was the inspiration for this feature. These return codes can be used for selecting an
-            appropriate next step in your workflow.</p>
-        <p>The default return code for an action is <b>Success</b>. In addition to this return code, there are also the
-            <b>UnhandledException</b> and <b>InvalidInput</b> return codes which respectively occur when an exception is
-            thrown by your action or the input to your action is invalidated against the schema in the YAML metadata
-            file for your app. These return codes are reserved by WALKOFF and cannot be used as your return codes.</p>
-        <p>By default, if you don't explicitly specify a return code in your return statement of your action, the
-            Success code is used.</p>
-        <p>With all that being said, let's make an action which returns multiple return codes. For our use case let's
-            suppose we are making an HTTP request to a URL which is going to return a status indicating if a resource is
-            offline or online, meaning it's return a response which contains a JSON with a single field called "status".
-            We want the ability to take one step after this action if the resource is online and a different step if the
-            resource is offline. We could solve this using a custom flag which, say, takes the value of the "status"
-            field and returns True if the status is "online" and False otherwise. But it would be much more direct to use
-            return codes. Our action would look like this:</p>
-        <pre><code class="python">
+    <div class="w3-content">
+        <div class="w3-twothird">
+            <h1>Return codes for actions</h1>
+            <p>Up to this point, all of our actions have had a single entry named <code>Success</code> in the <code>returns</code>
+                field of their api YAML file. But WALKOFF can support multiple return codes. Think of them like HTTP
+                response codes (200, 404, 400, 500) for your action. In fact, how Flask manages return codes for HTTP
+                messages was the inspiration for this feature. These return codes can be used for selecting an
+                appropriate next step in your workflow.</p>
+            <p>The default return code for an action is <b>Success</b>. In addition to this return code, there are also
+                the <b>UnhandledException</b> and <b>InvalidInput</b> return codes which respectively occur when an
+                exception is thrown by your action or the input to your action is invalidated against the schema in the
+                YAML metadata file for your app. These return codes are reserved by WALKOFF and cannot be used as your
+                return codes. To mark your own return codes as failure states, use the <code>failure</code> return
+                property.</p>
+            <p>By default, if you don't explicitly specify a return code in your return statement of your action, the
+                Success code is used. You can also set your own default return code with the <code>default_return</code>
+                action property.</p>
+            <p>With all that being said, let's make an action which returns multiple return codes. For our use case
+                let's suppose we are making an HTTP request to a URL which is going to return a status indicating if a
+                resource is offline or online, meaning it's return a response which contains a JSON with a single field
+                called "status". We want the ability to take one step after this action if the resource is online and a
+                different step if the resource is offline. Setting the Online return code as the default will make any
+                branches created from the action default to that status code. We will also mark the Offline return code
+                as a failure code so that it the action turns red if it is returned. Our action would look like
+                this:</p>
+            <pre><code class="python">
 from apps import App, action
 import requests
 from datetime import datetime
@@ -142,38 +146,40 @@ class Main(App):
         else:
             return str(datetime.utcnow()), 'Offline'
         </code></pre>
-        <p>This function simply returns a UTC time when the action was completed as the return value and a status as the
-            return code.</p>
-        <p>Now to specify the return codes in the YAML metadata file, we can write the following:</p>
-        <pre><code class="yaml">
+            <p>This function simply returns a UTC time when the action was completed as the return value and a status as
+                the return code.</p>
+            <p>Now to specify the return codes in the YAML metadata file, we can write the following:</p>
+            <pre><code class="yaml">
 actions:
   hello world:
     run: hello_world
+    default_return: Online
     returns:
       Online:
         schema:
           type: string
       Offline:
+        failure: true
         schema:
           type: string
         </code></pre>
-        <div align="center" style="border:1px solid blue">
-            <h5><a href="Manage_app_dependencies.html">Next >></a></h5>
+            <div align="center" style="border:1px solid blue">
+                <h5><a href="Manage_app_dependencies.html">Next >></a></h5>
+            </div>
+            <ol>
+                <li><a href="Develop_an_app.html">Develop an App</a></li>
+                <li><a href="Develop_an_app_with_class.html">Develop an App with Devices</a></li>
+                <li><a href="Develop_conditions_transforms.html">Develop Conditions and Transforms</a></li>
+                <li><a href="App_api_schema.html">App API Schema Examples</a></li>
+                <li><a href="Manage_app_dependencies.html">Managing App Dependencies</a></li>
+                <li><a href="Test_an_app.html">Testing an App</a></li>
+            </ol>
         </div>
-        <ol>
-            <li><a href="Develop_an_app.html">Develop an App</a></li>
-            <li><a href="Develop_an_app_with_class.html">Develop an App with Devices</a></li>
-            <li><a href="Develop_conditions_transforms.html">Develop Conditions and Transforms</a></li>
-            <li><a href="App_api_schema.html">App API Schema Examples</a></li>
-            <li><a href="Manage_app_dependencies.html">Managing App Dependencies</a></li>
-            <li><a href="Test_an_app.html">Testing an App</a></li>
-        </ol>
-    </div>
 
-   <div class="w3-third w3-center">
-      <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+        <div class="w3-third w3-center">
+            <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+        </div>
     </div>
-  </div>
 </div>
 
 <div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
