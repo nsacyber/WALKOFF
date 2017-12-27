@@ -2,16 +2,58 @@
   <div class="w3-content">
     <div class="w3-twothird">
       <h1>Sending Messages in Workflows</h1>
-        <p>In this tutorial, we will create a workflow which sends messages to users and more extensive Workflow with multiple branching paths that is a little
-            more analogous to something that might be used in production.</p>
+        <p> In this tutorial, we will create a workflow which sends Walkoff messages to users.</p>
         <ul type="1" class="media-list imageList">
             <li class="media">
                 <div class="media-body">
-                    <h4 class="media-heading"><b>Create a new Workflow</b></h4>
-                    <p>In the top navigation bar, click "Playbook" to return to the playbook editor. Then, in the
-                        toolbar, click the "New Workflow" button. You can specify an existing Playbook or create a
-                        new one. Enter or select the Playbook name and enter the Workflow name, then click "Create
-                        New Workflow."</p>
+                    <h4 class="media-heading"><b>Create a Workflow which sends a text message</b></h4>
+                    <p> We'll start with a simple workflow which only sends a message containing a single text
+                        component to a user. This workflow contains a single action -- the "send text message" action
+                        from the "Utilities" app.</p>
+                </div>
+                <div class="media-left media-middle">
+                    <a href="images/workflowEditor2/newworkflow.PNG">
+                        <img class="media-object image"
+                             src="images/workflowEditor2/newworkflow.PNG"
+                             alt="...">
+                    </a>
+                </div>
+                <div>
+                    <p> The parameters for this action are the subject of the message and the text of the message as
+                        well as users and roles. If a role is selected, all users with this role will receive the
+                        message.</p>
+                </div>
+                <div class="media-left media-middle">
+                    <a href="images/workflowEditor2/newworkflow.PNG">
+                        <img class="media-object image"
+                             src="images/workflowEditor2/newworkflow.PNG"
+                             alt="...">
+                    </a>
+                </div>
+                <div>
+                    <p> A user will receive a notification when they receive a message, and it will appear beside
+                        their username in the upper-right.</p>
+                </div>
+                <div class="media-left media-middle">
+                    <a href="images/workflowEditor2/newworkflow.PNG">
+                        <img class="media-object image"
+                             src="images/workflowEditor2/newworkflow.PNG"
+                             alt="...">
+                    </a>
+                </div>
+                <div>
+                    <p> When clicked, it will expand to reveal a list of either the last 5 messages received or up to
+                        20 unread messages.</p>
+                </div>
+                <div class="media-left media-middle">
+                    <a href="images/workflowEditor2/newworkflow.PNG">
+                        <img class="media-object image"
+                             src="images/workflowEditor2/newworkflow.PNG"
+                             alt="...">
+                    </a>
+                </div>
+                <div>
+                    <p> Clicking on the notification, we'll be able to see the contents of the message.</p>
                 </div>
                 <div class="media-left media-middle">
                     <a href="images/workflowEditor2/newworkflow.PNG">
@@ -24,10 +66,58 @@
             <br>
             <li class="media">
                 <div class="media-body">
-                    <h4 class="media-heading"><b>Open the newly created Workflow</b></h4>
-                    <p>In the toolbar, click the "Open Workflow" button. You can click Playbook names to expand or
-                        collapse them. You can also rename, duplicate, and delete workflows here. Click on the name
-                        of the Workflow that was just created.</p>
+                    <h4 class="media-heading"><b>Create a message with multiple components</b></h4>
+                    <p> Walkoff also supports attaching URL links in messages through chained construction of the
+                        message. We first construct a blank message containing only a subject and no body. We then
+                        pass add a text component and a URL component to the message, and then send the message.</p>
+                </div>
+                <div class="media-left media-middle">
+                    <a href="images/workflowEditor2/openworkflow.PNG">
+                        <img class="media-object image"
+                             src="images/workflowEditor2/openworkflow.PNG"
+                             alt="...">
+                    </a>
+                </div>
+                <div>
+                    <p> In order the parameters of the actions are as follows: </p>
+                </div>
+                <div class="media-left media-middle">
+                    <a href="images/workflowEditor2/openworkflow.PNG">
+                        <img class="media-object image"
+                             src="images/workflowEditor2/openworkflow.PNG"
+                             alt="...">
+                    </a>
+                </div>
+                <div class="media-left media-middle">
+                    <a href="images/workflowEditor2/openworkflow.PNG">
+                        <img class="media-object image"
+                             src="images/workflowEditor2/openworkflow.PNG"
+                             alt="...">
+                    </a>
+                </div>
+                <div class="media-left media-middle">
+                    <a href="images/workflowEditor2/openworkflow.PNG">
+                        <img class="media-object image"
+                             src="images/workflowEditor2/openworkflow.PNG"
+                             alt="...">
+                    </a>
+                </div>
+                <div class="media-left media-middle">
+                    <a href="images/workflowEditor2/openworkflow.PNG">
+                        <img class="media-object image"
+                             src="images/workflowEditor2/openworkflow.PNG"
+                             alt="...">
+                    </a>
+                </div>
+                <div class="media-left media-middle">
+                    <a href="images/workflowEditor2/openworkflow.PNG">
+                        <img class="media-object image"
+                             src="images/workflowEditor2/openworkflow.PNG"
+                             alt="...">
+                    </a>
+                </div>
+                <div>
+                    <p> When executed the workflow will send the following message: </p>
                 </div>
                 <div class="media-left media-middle">
                     <a href="images/workflowEditor2/openworkflow.PNG">
@@ -40,24 +130,18 @@
             <br>
             <li class="media">
                 <div class="media-body">
-                  <h4 class="media-heading"><b>Add actions to the workspace</b></h4>
-                  <p>In this workflow, we will use actions from the included Utilities app and the FileUtilities app
-                      which can be found <a href="https://github.com/iadgov/WALKOFF-Apps">in the Apps repository</a>.
-                      The outline of the workflow is as follows:</p>
-                  <ol type="1">
-                    <li>Take information from an action. In this example, it will be a random number from the
-                        "System PRNG" action, but it could be retrieving logs, messages,
-                        or other information.</li>
-                    <li>If the number is greater than or equal to 0.5, we will proceed with storing it to a file, otherwise it will only
-                        be logged in console.</li>
-                    <li>Normalize the data by rounding it to 2 decimal points.</li>
-                    <li>Check if the file "test.txt" exists</li>
-                    <li>If it does, output the metadata of the file and make it writable before appending the
-                        information to it. If it doesn't exist, we will first create the file before writing to it.</li>
-                    <li>Then, the file will be marked as read-only and output the metadata again.</li> 
-                  </ol>
-                  <p>Drag the appropriate actions to the workspace, connect them as shown, and ensure that the "System
-                      PRNG" action is the starting node.</p>
+                  <h4 class="media-heading"><b>Human in the loop execution with messages</b></h4>
+                  <p> In the previous examples, we have seen that messages which can be a good alternative to Walkoff's
+                      case management system. An Accept/Decline component can be combined with a trigger to pause a
+                      until some specified user allows it to continue. We send a message with an accept/decline
+                      component in a message. Then the next action is an "accept/decline" action. This action will
+                      return true if the message is accepted and false otherwise. On that message we add a trigger to
+                      cause the workflow to halt execution. This trigger doesn't need to validate any data, in fact the
+                      accept/decline action handles that, so we use the "always true" condition on our trigger
+                      condition. Use use the "echo boolean" and "reverse boolean" conditions on the branches to handle
+                      the accept and decline paths of the workflow.<i>(Note: In future releases we intend to provide event
+                      more ways of interacting with a paused workflow</i></p>
+                    <p>The resulting workflow looks like this:</p>
                 </div>
                 <div class="media-left media-middle">
                     <a href="images/workflowEditorAdv/addactions.PNG">
@@ -66,60 +150,57 @@
                              alt="...">
                     </a>
                 </div>
-            </li>
-            <br>
-            <li class="media">
-                <div class="media-body">
-                  <h4 class="media-heading"><b>Configure actions</b></h4>
-                  <ol type="1">
-                    <li><b>System PRNG:</b> Set the left branch condition with the "Utilities" app's "Number Compare" with inputs "l"
-                        and "0.5". Set the right branch condition with the same, but with inputs "ge" and "0.5" instead.</li>
-                    <li><b>repeatBackToMe:</b> Set the string as "not noteworthy".</li>
-                    <li><b>Round to N:</b> Set the number to round as the output from System PRNG using the dropdown menu, and set the number of places to "2".</li>
-                    <li><b>Exists in Directory:</b> Set the filename as "test.txt." Set the left branch with the return code "NotExists" and right branch with the return code "Exists."</li>
-                    <li><b>Stats:</b> Set the filename as "test.txt"</li>
-                    <li><b>Create File:</b> Set the filename as "test.txt", the contents as "This is the beginning of the file", and overwrite
-                        to "false". Set the only branch with the return code "FileCreated."</li>
-                    <li><b>Make Writable:</b> Set the file name as "test.txt"</li>
-                    <li><b>Append File:</b> Set the file name as "test.txt", the contents as the output from Round to N, and newline as "True". Set the only branch with the return code "FileWritten."</li>
-                    <li><b>Make Read Only:</b> Set the file name as "test.txt"</li>
-                    <li><b>Stats:</b> Set the file name as "test.txt"</li>
-                  </ol>
-                  <p>Once you have all nodes configured as above, save and execute the workflow.</p>
-                </div>
-                <div class="media-left media-middle">
-                    <a href="images/workflowEditorAdv/configactions.PNG">
+                                <div class="media-left media-middle">
+                    <a href="images/workflowEditorAdv/addactions.PNG">
                         <img class="media-object image"
-                             src="images/workflowEditorAdv/configactions.PNG"
+                             src="images/workflowEditorAdv/addactions.PNG"
                              alt="...">
                     </a>
                 </div>
-            </li>
-            <br>
-            <li class="media">
-                <div class="media-body">
-                  <h4 class="media-heading"><b>Examine results</b></h4>
-                  <p>If you configured everything as shown, you should obtain similar results to what is shown. Take a
-                      look at the generated "text.txt" if it gets generated. Run the Workflow a few more times to verify t
-                      hat it was set up correctly.</p>
-                </div>
-                <div class="media-left media-middle">
-                    <a href="images/workflowEditorAdv/flow.PNG">
+                                <div class="media-left media-middle">
+                    <a href="images/workflowEditorAdv/addactions.PNG">
                         <img class="media-object image"
-                             src="images/workflowEditorAdv/flow.PNG"
+                             src="images/workflowEditorAdv/addactions.PNG"
                              alt="...">
                     </a>
                 </div>
-                <div class="media-left media-middle">
-                    <a href="images/workflowEditorAdv/results.PNG">
+                                <div class="media-left media-middle">
+                    <a href="images/workflowEditorAdv/addactions.PNG">
                         <img class="media-object image"
-                             src="images/workflowEditorAdv/results.PNG"
+                             src="images/workflowEditorAdv/addactions.PNG"
                              alt="...">
                     </a>
                 </div>
+                                <div class="media-left media-middle">
+                    <a href="images/workflowEditorAdv/addactions.PNG">
+                        <img class="media-object image"
+                             src="images/workflowEditorAdv/addactions.PNG"
+                             alt="...">
+                    </a>
+                </div>
+                <div>
+                    <p> All admin users will receive a message which looks like this: </p>
+                </div>
+                                </div>
+                                <div class="media-left media-middle">
+                    <a href="images/workflowEditorAdv/addactions.PNG">
+                        <img class="media-object image"
+                             src="images/workflowEditorAdv/addactions.PNG"
+                             alt="...">
+                    </a>
+                </div>
+                </div>
+                                <div class="media-left media-middle">
+                    <a href="images/workflowEditorAdv/addactions.PNG">
+                        <img class="media-object image"
+                             src="images/workflowEditorAdv/addactions.PNG"
+                             alt="...">
+                    </a>
+                </div>
+                <p> More message composition functions are available in the Utilities app, and you can build your own
+                    messaging actions. Look at the tutorial on
+                    <a href="Develop_messaging_actions.html">Developing messaging actions</a> for more information.</p>
             </li>
-        </ul>
-    </div>
 
    <div class="w3-third w3-center">
       <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>

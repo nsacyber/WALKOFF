@@ -107,48 +107,38 @@ img.media-object.image{
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
     <div class="w3-twothird">
-      <h1>Managing app dependencies</h1>
-        <p>WALKOFF allows you to reduce the number of dependencies needed by allowing you to selectively install apps.</p>
-        <h3>Specifying app dependencies</h3>
-        <p>WALKOFF in and of itself already requires several dependencies to run. These are listed in the `requirements.txt` file in the
-            root directory of the repository. However, you may develop an app which needs additional dependencies.
-            For example, if you were developing an app which incorporated machine learning, your app my depend on the popular
-        <code>scikit-learn</code> Python package. However, this package has several other dependencies, and if a user
-            didn't need your app, we can spare them from installing all of these dependencies by including the app-specific requirements in your app's
-        <code>requirements.txt</code> file. For our example, our requirements.txt would look like this:</p>
-        <pre><code class="python">
-scikit-learn >= 0.18.2
-        </code></pre>
-        <p>The <code> >=0.18.2</code> specifies that the app requires scikit-learn with the version at least at 0.18.2</p>
-        <h3>Installing app dependencies</h3>
-        <p>To install an app dependency, you can use the <code>install_dependencies.py</code> script included at the top
-            level of the repository.</p>
-        <pre><code class="console">
-python install_dependencies.py --apps App1
-        </code></pre>
-        <p>You can see more options using </p>
-        <pre><code class="console">
-python install_dependencies.py --help
-        </code></pre>
-        <p>To install the dependencies for all apps in the apps folder, simply run</p>
-        <pre><code class="console">python installDependencies.py</code></pre>
-        <p>Next, you'll learn how to make a custom interface for your app (right now the server will quietly complain if you try to display your app)</p>
-        <ol>
-            <li><a href="Develop_an_app.html">Develop an App</a></li>
-            <li><a href="Develop_an_app_with_class.html">Develop an App with Devices</a></li>
-            <li><a href="Develop_conditions_transforms.html">Develop Conditions and Transforms</a></li>
-            <li><a href="App_api_schema.html">App API Schema Examples</a></li>
-            <li><a href="Actions_with_multiple_return_codes.html">Action Return Codes</a></li>
-            <li><a href="Develop_messaging_actions.html">Develop messaging actions</a></li>
-            <li><a href="Test_an_app.html">Testing an App</a></li>
-        </ol>
-    </div>
-
-   <div class="w3-third w3-center">
-      <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+      <h1>Messages and Notifications</h1>
+        <ul type="1" class="media-list imageList">
+            <li class="media">
+                <div class="media-body">
+                    <p> As workflows are executed, workflows may send users messages. When a new message arrives it will
+                        appear in your notifications drop-down menu. Notifications which are awaiting an action will
+                        have a red "!" beside them.
+                    </p>
+                    <!-- HERE GOES NOTIFICATION DROPDOWN -->
+                    <p> Clicking on a notification will show the full message and mark it as read. The usernames of
+                        those users who have read the message will appear above the body of the message.
+                    </p>
+                    <!-- HERE GOES FILL MESSAGE MODAL -->
+                    <p> To view all your messages, click the Messages tab</p>
+                    <!-- HERE GOES MESSAGES OPENING TAB -->
+                    <p> Clicking on a message will display the full body of the message</p>
+                    <!-- HERE GOES FILL MESSAGE MODAL -->
+                    <p> You can mark messages as read or unread by selecting multiple messages and selecting the
+                        letter icons. <i>Note: Marking a message as unread does not mark it as unread to other users.
+                        Other users' display of this message will still display your username as having read the
+                        message</i>.
+                    </p>
+                    <!-- HERE GOES MARKING MESSAGES -->
+                    <p> You can delete message from your inbox by selecting teh trash icon. <i>Warning: This operation
+                        is unrecoverable.</i>
+                    </p>
+                    <!-- HERE GOES DELETING MESSAGES -->
+                </div>
     </div>
   </div>
 </div>
+
 <div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
     <h1 class="w3-margin w3-xlarge">Questions? Comments? </h1>
     <h1 class="w3-margin w3-xlarge"> Reach out to us at <a href="mailto:walkoff@nsa.gov"> walkoff@nsa.gov </a> </h1>

@@ -107,39 +107,109 @@ img.media-object.image{
 <div class="w3-row-padding w3-padding-64 w3-container">
   <div class="w3-content">
     <div class="w3-twothird">
-      <h1>Managing app dependencies</h1>
-        <p>WALKOFF allows you to reduce the number of dependencies needed by allowing you to selectively install apps.</p>
-        <h3>Specifying app dependencies</h3>
-        <p>WALKOFF in and of itself already requires several dependencies to run. These are listed in the `requirements.txt` file in the
-            root directory of the repository. However, you may develop an app which needs additional dependencies.
-            For example, if you were developing an app which incorporated machine learning, your app my depend on the popular
-        <code>scikit-learn</code> Python package. However, this package has several other dependencies, and if a user
-            didn't need your app, we can spare them from installing all of these dependencies by including the app-specific requirements in your app's
-        <code>requirements.txt</code> file. For our example, our requirements.txt would look like this:</p>
+      <h1>Sending Walkoff messages in Actions</h1>
+        <p> The Utilities app provides some generic actions to construct and send a message, but you can make and send
+            messages inside your action using the <code>messaging</code> module. There are currently three message
+            components Text, Url, and AcceptDecline. The Message class takes two arguments, a subject and a list of
+            components.
+        </p>
         <pre><code class="python">
-scikit-learn >= 0.18.2
+from apps import Text, Url, AcceptDecline, Message
+
+# Message component construction
+text_component = Text('Here is the text')
+assert text.text == 'Here is the text'
+
+url_component = Url('http://iadgov.github.io/WALKOFF')
+assert url_component.url = 'http://iadgov.github.io/WALKOFF'
+assert url_component.title is None
+
+url_component_with_title = Url('http://iadgov.github.io/WALKOFF', title='docs here')
+assert url_component_with_title.url == 'http://iadgov.github.io/WALKOFF'
+assert url_component_with_title.title == 'docs here'
+
+accept_component = AcceptDecline()  # takes no arguments and has no fields
+
+# Message construction and manipulation
+message = Message(subject='Message Subject', components=[text_component, url_component])
+assert message.subject == 'Message Subject'
+assert message.body == [text_component, url_component]
+assert len(message) == 2
+
+text2 = Text('some other message')
+message.append(text2)
+assert message.body == [text_component, url_component, text2]
+
+text3 = Text('text3')
+url2 = Url('http://www.google.com')
+message.extend([text3, url2])
+assert message.body == [text_component, url_component, text2, text3, url2]
+
+text4 = Text('text4')
+message2 = Message(components=[text4])
+assert message2.subject is None
+message2.subject = 'Subject2'
+assert message2.subject == 'Subject2'
+
+message3 = message + message2
+assert message3.subject == 'Message Subject'
+assert message3.body == [text_component, url_component, text2, text3, url2, text4]
         </code></pre>
-        <p>The <code> >=0.18.2</code> specifies that the app requires scikit-learn with the version at least at 0.18.2</p>
-        <h3>Installing app dependencies</h3>
-        <p>To install an app dependency, you can use the <code>install_dependencies.py</code> script included at the top
-            level of the repository.</p>
-        <pre><code class="console">
-python install_dependencies.py --apps App1
+        <p> Because actions cannot receive or return Python objects, <code>as_json()</code> and a static constructor
+            <code>from_json(json_in)</code> methods are provided for each MessageComponent class as well as the Message
+            class.
+        </p>
+        <p> To send a message, you should use the <code>send_message</code> helper function. This function takes two
+            optional arguments, <code>users</code>, and <code>roles</code>, which are lists of the database ids of the
+            users and roles who which should receive this message. Because you cannot and should not be directly
+            querying the server's database in your actions, these should be passed in as parameters. Walkoff has two
+            special data types -- <code>user</code> and <code>role</code> -- which can be used to specify the users.
+            This data type is rendered specially on the webapp to help users select who should receive the message. Here
+            is the implementation of the <code>send_message</code> action already implemented in the Utilities app:
+        </p>
+        <pre><code class="python">
+from apps import action, Message, send_message
+
+@action
+def send_full_message(message, users=None, roles=None):
+    message = Message.from_json(message)
+    send_message(message, users=users, roles=roles)
+    return 'success'
         </code></pre>
-        <p>You can see more options using </p>
-        <pre><code class="console">
-python install_dependencies.py --help
+        <p> Pretty simple right? Just remember that the <code>send_message</code> function requires the message as a
+            Python object, not JSON. The YAML entry in its <code>api.yaml</code> looks like this:
+        </p>
+        <pre><code class="yaml">
+actions:
+  send_message:
+    run: actions.send_full_message
+    description: Sends a message
+    parameters:
+      - name: message
+        schema:
+          type: object
+        description: Existing message object to send
+        required: true
+      - name: users
+        type: array
+        items:
+          type: user
+      - name: roles
+        type: array
+        items:
+          type: role
+    returns:
+      Success:
+        schema:
+          type: string
+          enum: [success]
         </code></pre>
-        <p>To install the dependencies for all apps in the apps folder, simply run</p>
-        <pre><code class="console">python installDependencies.py</code></pre>
-        <p>Next, you'll learn how to make a custom interface for your app (right now the server will quietly complain if you try to display your app)</p>
         <ol>
             <li><a href="Develop_an_app.html">Develop an App</a></li>
             <li><a href="Develop_an_app_with_class.html">Develop an App with Devices</a></li>
             <li><a href="Develop_conditions_transforms.html">Develop Conditions and Transforms</a></li>
             <li><a href="App_api_schema.html">App API Schema Examples</a></li>
-            <li><a href="Actions_with_multiple_return_codes.html">Action Return Codes</a></li>
-            <li><a href="Develop_messaging_actions.html">Develop messaging actions</a></li>
+            <li><a href="Manage_app_dependencies.html">Managing App Dependencies</a></li>
             <li><a href="Test_an_app.html">Testing an App</a></li>
         </ol>
     </div>
@@ -149,6 +219,7 @@ python install_dependencies.py --help
     </div>
   </div>
 </div>
+
 <div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
     <h1 class="w3-margin w3-xlarge">Questions? Comments? </h1>
     <h1 class="w3-margin w3-xlarge"> Reach out to us at <a href="mailto:walkoff@nsa.gov"> walkoff@nsa.gov </a> </h1>
