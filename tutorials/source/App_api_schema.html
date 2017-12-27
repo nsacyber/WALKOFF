@@ -179,6 +179,55 @@ actions:
         </code></pre>
         <p>This default will be displayed on the workflow editor.</p>
 
+        <h4><b>Using default return codes</b></h4>
+        <p>You can set a default return code with the <code>default_return</code> field. The following schema sets the
+            default return code to "FileCreated".</p>
+        <pre><code class="yaml">
+actions:
+  some action:
+  run: the_name_of_the_method_of_the_action
+  parameters:
+  default_return: FileCreated
+  returns:
+    AlreadyExists:
+      schema:
+        type: boolean
+    FileCreated:
+      schema:
+        type: boolean
+    WriteError:
+      schema:
+        type: boolean
+        </code></pre>
+        <p>The default return code will be used to set the default return code in branch parameters in the playbook
+            editor, as well as being the default return code if no return code was specified. If it is not specified,
+            it will default to "Success," and if you do not specify a "Success" return code, the drop-down menu will
+            default to the first return code specified.</p>
+
+        <h4><b>Using failure return codes</b></h4>
+        <p>You can mark a return code as a failure return code for easier diagnosis of errors in a workflow.</p>
+        <pre><code class="yaml">
+actions:
+  some action:
+  run: the_name_of_the_method_of_the_action
+  parameters:
+  default_return: FileCreated
+  returns:
+    AlreadyExists:
+      failure: true
+      schema:
+        type: boolean
+    FileCreated:
+      schema:
+        type: boolean
+    WriteError:
+      failure: true
+      schema:
+        type: boolean
+        </code></pre>
+        <p>A failure return code will be highlighted in red in branch parameters, and will cause the action to be
+            highlighted in red in the playbook editor if it is returned.</p>
+
         <h4><b>Using giving hints</b></h4>
         <p>You can set a default parameter with the <code>default</code> field. The following schema sets the default to
             10.</p>
