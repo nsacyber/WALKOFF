@@ -1,6 +1,6 @@
 from unittest import TestCase
 from apps.messaging import *
-from core.events import WalkoffEvent
+from walkoff.core.events import WalkoffEvent
 
 
 class TestMessage(TestCase):

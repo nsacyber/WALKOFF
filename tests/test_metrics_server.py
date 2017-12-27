@@ -1,9 +1,9 @@
 import json
 from datetime import timedelta
 
-import server.metrics as metrics
-from server import flaskserver as server
-from server.endpoints.metrics import _convert_action_time_averages, _convert_workflow_time_averages
+import walkoff.server.metrics as metrics
+from walkoff.server import flaskserver as server
+from walkoff.server.endpoints.metrics import _convert_action_time_averages, _convert_workflow_time_averages
 from tests import config
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase

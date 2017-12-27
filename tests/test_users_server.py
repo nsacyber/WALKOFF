@@ -1,10 +1,10 @@
 import json
 
-from server.extensions import db
-from server.database.user import User
-from server.database.role import Role
-from server.database import add_user
-from server.returncodes import *
+from walkoff.server.extensions import db
+from walkoff.database.user import User
+from walkoff.database.role import Role
+from walkoff.database import add_user
+from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
 
 

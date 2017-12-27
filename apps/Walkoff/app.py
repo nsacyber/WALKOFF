@@ -2,8 +2,7 @@ import logging
 from apps import App, action
 import requests
 from requests.exceptions import Timeout
-import json
-from core.config.paths import certificate_path
+from walkoff.config.paths import certificate_path
 import time
 
 logger = logging.getLogger(__name__)

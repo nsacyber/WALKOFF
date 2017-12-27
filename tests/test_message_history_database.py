@@ -1,7 +1,7 @@
 from unittest import TestCase
-from server.messaging import MessageAction
-from server.database import User, db, MessageHistory
-from server import flaskserver
+from walkoff.messaging import MessageAction
+from walkoff.database import User, db, MessageHistory
+from walkoff.server import flaskserver
 from datetime import datetime
 
 

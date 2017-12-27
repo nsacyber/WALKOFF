@@ -1,7 +1,7 @@
 import logging
 import os
 
-from core.config import paths
+from walkoff.config import paths
 
 logger = logging.getLogger(__name__)
 

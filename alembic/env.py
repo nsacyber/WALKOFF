@@ -6,7 +6,7 @@ import os
 import sys
 
 sys.path.append(os.getcwd())
-from server.extensions import db
+from walkoff.server.extensions import db
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

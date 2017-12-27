@@ -3,13 +3,13 @@ import shutil
 
 import zmq.auth
 
-import core.config.paths
+import walkoff.config.paths
 
 
 def generate_certificates():
-    keys_dir = core.config.paths.keys_path
-    public_keys_dir = core.config.paths.zmq_public_keys_path
-    secret_keys_dir = core.config.paths.zmq_private_keys_path
+    keys_dir = walkoff.config.paths.keys_path
+    public_keys_dir = walkoff.config.paths.zmq_public_keys_path
+    secret_keys_dir = walkoff.config.paths.zmq_private_keys_path
 
     # Create dirs for certs, remove old content if necessary
     for d in [keys_dir, public_keys_dir, secret_keys_dir]:

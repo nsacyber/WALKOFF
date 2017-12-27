@@ -1,7 +1,7 @@
 from copy import deepcopy
 from unittest import TestCase
 
-from core.events import *
+from walkoff.core.events import *
 
 
 class TestEvents(TestCase):

@@ -7,10 +7,10 @@ from sqlalchemy.ext.declarative import declared_attr, declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 
-import core.config.paths
-from core.config.config import secret_key as key
-from core.helpers import format_db_path
-from core.validator import convert_primitive_type
+import walkoff.config.paths
+from walkoff.config.config import secret_key as key
+from walkoff.core.helpers import format_db_path
+from walkoff.core.validator import convert_primitive_type
 
 logger = logging.getLogger(__name__)
 
@@ -494,7 +494,7 @@ class DeviceDatabase(object):
     """
 
     def __init__(self):
-        self.engine = create_engine(format_db_path(core.config.config.device_db_type, core.config.paths.device_db_path))
+        self.engine = create_engine(format_db_path(walkoff.config.config.device_db_type, walkoff.config.paths.device_db_path))
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 

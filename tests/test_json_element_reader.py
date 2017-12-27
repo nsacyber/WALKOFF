@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from core.executionelements.executionelement import ExecutionElement
-from core.jsonelementreader import JsonElementReader
+from walkoff.core.executionelements.executionelement import ExecutionElement
+from walkoff.core.jsonelementreader import JsonElementReader
 
 
 class A(ExecutionElement):

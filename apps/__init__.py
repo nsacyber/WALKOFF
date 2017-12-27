@@ -2,7 +2,7 @@ import logging
 
 from apps.appcache import AppCache
 from apps.devicedb import get_app as get_db_app
-from core.decorators import *
+from walkoff.core.decorators import *
 
 _logger = logging.getLogger(__name__)
 

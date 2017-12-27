@@ -3,12 +3,12 @@ import unittest
 from os import path
 
 import apps
-import core.case.database as case_database
-import core.case.subscription as case_subscription
-import core.config.config
-import core.controller
-import core.multiprocessedexecutor
-from core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
+import walkoff.case.database as case_database
+import walkoff.case.subscription as case_subscription
+import walkoff.config.config
+import walkoff.core.controller
+import walkoff.core.multiprocessedexecutor
+from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from tests import config
 from tests.util.mock_objects import *
 
@@ -22,15 +22,15 @@ class TestWorkflowManipulation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         apps.cache_apps(config.test_apps_path)
-        core.config.config.load_app_apis(apps_path=config.test_apps_path)
-        core.config.config.num_processes = 2
+        walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
+        walkoff.config.config.num_processes = 2
         MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
-        core.controller.controller.initialize_threading()
+        walkoff.core.controller.controller.initialize_threading()
 
     def setUp(self):
-        self.controller = core.controller.controller
+        self.controller = walkoff.core.controller.controller
         self.controller.workflows = {}
         self.controller.load_playbooks(
             resource_collection=path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows"))
@@ -50,7 +50,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         apps.clear_cache()
-        core.controller.controller.shutdown_pool()
+        walkoff.core.controller.controller.shutdown_pool()
 
     def test_pause_and_resume_workflow(self):
         self.controller.load_playbook(resource=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))

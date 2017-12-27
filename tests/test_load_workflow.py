@@ -1,8 +1,8 @@
 import unittest
 
 import apps
-import core.config.config
-from core import controller
+import walkoff.config.config
+from walkoff.core import controller
 from tests import config
 from tests.config import test_apps_path
 
@@ -11,7 +11,7 @@ class TestLoadWorkflow(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         apps.cache_apps(test_apps_path)
-        core.config.config.load_app_apis(apps_path=test_apps_path)
+        walkoff.config.config.load_app_apis(apps_path=test_apps_path)
 
     def setUp(self):
         self.c = controller.Controller()

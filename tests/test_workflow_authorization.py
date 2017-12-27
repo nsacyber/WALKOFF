@@ -1,5 +1,5 @@
 from unittest import TestCase
-from server.messaging import WorkflowAuthorization
+from walkoff.messaging import WorkflowAuthorization
 
 
 class TestWorkflowAuthorization(TestCase):

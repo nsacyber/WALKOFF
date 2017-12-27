@@ -2,7 +2,7 @@ import importlib
 import unittest
 
 import apps
-from core import appinstance
+from walkoff.core import appinstance
 from tests.config import test_apps_path
 
 

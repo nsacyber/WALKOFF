@@ -5,9 +5,9 @@ from jsonschema.exceptions import RefResolutionError
 
 import apps
 from apps import get_app_action
-from core.config.paths import walkoff_schema_path
-from core.helpers import UnknownApp
-from core.validator import *
+from walkoff.config.paths import walkoff_schema_path
+from walkoff.core.helpers import UnknownApp
+from walkoff.core.validator import *
 from tests.config import basic_app_api, test_apps_path
 
 

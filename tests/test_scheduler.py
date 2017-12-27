@@ -1,6 +1,6 @@
 import unittest
 
-from core.scheduler import *
+from walkoff.core.scheduler import *
 
 
 class MockWorkflow(object):

@@ -1,13 +1,13 @@
 import unittest
 
-from server.database import db, Role, Resource, default_resources, initialize_default_resources_admin
+from walkoff.database import db, Role, Resource, default_resources, initialize_default_resources_admin
 
 
 class TestRoles(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        import server.flaskserver
-        cls.context = server.flaskserver.app.test_request_context()
+        import walkoff.server.flaskserver
+        cls.context = walkoff.server.flaskserver.app.test_request_context()
         cls.context.push()
         initialize_default_resources_admin()
         db.create_all()

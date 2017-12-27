@@ -6,7 +6,7 @@ import unittest
 import sys
 from tests import suites as test_suites
 import logging
-import server.context
+import walkoff.server.context
 
 
 def run_tests():
@@ -33,5 +33,5 @@ if __name__ == '__main__':
         print('\nInterrupted! Ending full test')
         successful = False
     finally:
-        server.context.running_context.controller.shutdown_pool()
+        walkoff.server.context.running_context.controller.shutdown_pool()
         sys.exit(not successful)

@@ -1,5 +1,5 @@
-import server.metrics as metrics
-from server import flaskserver as server
+import walkoff.server.metrics as metrics
+from walkoff.server import flaskserver as server
 from tests import config
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase

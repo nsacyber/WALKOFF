@@ -4,8 +4,8 @@ import os
 import sys
 import unittest
 
-from core.config.paths import apps_path
-from core.helpers import list_apps
+from walkoff.config.paths import apps_path
+from walkoff.core.helpers import list_apps
 
 
 def cmd_line():

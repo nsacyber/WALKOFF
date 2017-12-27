@@ -3,9 +3,9 @@ import unittest
 import yaml
 
 import apps
-import core.config.config
-from core.config.paths import walkoff_schema_path
-from core.validator import *
+import walkoff.config.config
+from walkoff.config.paths import walkoff_schema_path
+from walkoff.core.validator import *
 from tests.config import basic_app_api, test_apps_path
 
 
@@ -14,7 +14,7 @@ class TestConditionTransformValidation(unittest.TestCase):
     def setUpClass(cls):
         apps.clear_cache()
         apps.cache_apps(test_apps_path)
-        core.config.config.load_app_apis(test_apps_path)
+        walkoff.config.config.load_app_apis(test_apps_path)
         cls.conditions = apps.get_all_conditions_for_app('HelloWorld')
         cls.transforms = apps.get_all_transforms_for_app('HelloWorld')
 

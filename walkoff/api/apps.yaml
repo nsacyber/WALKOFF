@@ -1,0 +1,98 @@
+/api/apps:
+  get:
+    tags:
+      - System
+    summary: Gets all apps
+    description: ''
+    operationId: walkoff.server.endpoints.appapi.read_all_apps
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: array
+          description: List of app names
+          items:
+            type: string
+            example: [PhillipsHue, OpenDaylight, PaloAlto]
+
+/api/apps/apis:
+  get:
+    tags:
+      - Apps
+    summary: Get all app apis
+    description: ''
+    operationId: walkoff.server.endpoints.appapi.read_all_app_apis
+    produces:
+      - application/json
+    parameters:
+      - name: field_name
+        in: query
+        description: The name of the field of the api to get for all apps
+        required: false
+        type: string
+        enum: [info, action_apis, condition_apis, transform_apis, device_apis, tags, external_docs]
+    responses:
+      200:
+        description: Success
+        schema:
+          type: array
+          items:
+            type: object
+
+/api/apps/apis/{app_name}:
+  get:
+    tags:
+      - Apps
+    summary: Get and app's api
+    description: ''
+    operationId: walkoff.server.endpoints.appapi.read_app_api
+    produces:
+      - application/json
+    parameters:
+      - name: app_name
+        in: path
+        description: The name of the app to get
+        required: true
+        type: string
+    responses:
+      200:
+        description: Success
+        schema:
+          $ref: '#/definitions/AppApi'
+      461:
+        description: App does not exist
+        schema:
+          $ref: '#/definitions/Error'
+
+/api/apps/apis/{app_name}/{field_name}:
+  get:
+    tags:
+      - Apps
+    summary: Get a field of an app's api
+    description: ''
+    operationId: walkoff.server.endpoints.appapi.read_app_api_field
+    produces:
+      - application/json
+    parameters:
+      - name: app_name
+        in: path
+        description: The name of the app to get
+        required: true
+        type: string
+      - name: field_name
+        in: path
+        description: The name of the field in the app api to get
+        required: true
+        type: string
+        enum: [info, action_apis, condition_apis, transform_apis, device_apis, tags, externalDocs]
+    responses:
+      200:
+        description: Success
+        schema:
+          type: object
+      461:
+        description: App does not exist
+        schema:
+          $ref: '#/definitions/Error'

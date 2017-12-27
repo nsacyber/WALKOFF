@@ -2,12 +2,12 @@ import time
 import unittest
 
 import apps
-import core.case.database as case_database
-import core.case.subscription as case_subscription
-import core.config.config
-import core.config.config
-from core import controller
-from core.events import WalkoffEvent, EventType
+import walkoff.case.database as case_database
+import walkoff.case.subscription as case_subscription
+import walkoff.config.config
+import walkoff.config.config
+from walkoff.core import controller
+from walkoff.core.events import WalkoffEvent, EventType
 from tests import config
 
 
@@ -15,7 +15,7 @@ class TestExecutionModes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         apps.cache_apps(config.test_apps_path)
-        core.config.config.load_app_apis(apps_path=config.test_apps_path)
+        walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
 
     def setUp(self):
         case_database.initialize()

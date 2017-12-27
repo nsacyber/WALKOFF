@@ -3,7 +3,7 @@ import os
 
 import pip
 
-from core.helpers import list_apps
+from walkoff.core.helpers import list_apps
 
 
 def cmd_line():

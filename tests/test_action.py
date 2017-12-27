@@ -1,15 +1,14 @@
 import unittest
 
 import apps
-import core.config.config
-import core.config.paths
-from core.appinstance import AppInstance
-from core.argument import Argument
-from core.decorators import ActionResult
-from core.events import WalkoffEvent
-from core.executionelements.action import Action
-from core.executionelements.condition import Condition
-from core.helpers import UnknownApp, UnknownAppAction, InvalidArgument
+import walkoff.config.config
+from walkoff.core.appinstance import AppInstance
+from walkoff.core.argument import Argument
+from walkoff.core.decorators import ActionResult
+from walkoff.core.events import WalkoffEvent
+from walkoff.core.executionelements.action import Action
+from walkoff.core.executionelements.condition import Condition
+from walkoff.core.helpers import UnknownApp, UnknownAppAction, InvalidArgument
 from tests.config import test_apps_path
 
 
@@ -17,7 +16,7 @@ class TestAction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         apps.cache_apps(test_apps_path)
-        core.config.config.load_app_apis(apps_path=test_apps_path)
+        walkoff.config.config.load_app_apis(apps_path=test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
