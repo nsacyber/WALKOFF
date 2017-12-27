@@ -13,7 +13,6 @@ data/walkoff.db
 data/events.db
 data/devices.db
 data/walkoff.config
-tests/profileVisualizations/*
 build/*
 .idea/dictionaries/*.xml
 .idea/inspectionProfiles/Project_Default.xml
@@ -34,3 +33,8 @@ coverage.*
 _build/
 sphinx/
 npm-debug.log
+!apps/__init__.py
+!apps/appcache.py
+!apps/devicedb.py
+!apps/messaging.py
+*/__pycache__*

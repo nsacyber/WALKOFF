@@ -3,6 +3,7 @@ import logging
 from apps.appcache import AppCache
 from apps.devicedb import get_app as get_db_app
 from core.decorators import *
+from apps.messaging import *
 
 _logger = logging.getLogger(__name__)
 
