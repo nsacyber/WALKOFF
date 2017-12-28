@@ -29,13 +29,22 @@ guarantee is made of the stability of the walkoff module itself until version 1.
 .. automodule:: interfaces
    :members:
 
+.. automodule:: interfaces.exceptions
+   :members:
+
+.. automodule:: interfaces.dispatchers
+   :members:
+
+.. automodule:: interfaces.util
+   :members:
+
 .. automodule:: apps
    :members:
 
 .. automodule:: apps.messaging
    :members:
 
-.. automodule:: apps.devicedb
+.. automodule:: apps.decorators
    :members:
 
 
