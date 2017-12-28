@@ -1,6 +1,6 @@
 import logging
 
-from walkoff.core.helpers import InvalidArgument
+from walkoff.helpers import InvalidArgument
 from walkoff.core.representable import Representable
 
 logger = logging.getLogger(__name__)

@@ -6,7 +6,7 @@ from gevent import sleep
 from gevent.event import AsyncResult, Event
 from datetime import datetime
 from walkoff.security import jwt_required_in_query
-from walkoff.core.helpers import create_sse_event
+from walkoff.helpers import create_sse_event
 
 blueprint = AppBlueprint(blueprint=Blueprint('HelloWorldPage__', __name__))
 

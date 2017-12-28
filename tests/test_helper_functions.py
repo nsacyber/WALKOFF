@@ -3,10 +3,9 @@ import unittest
 from os import sep
 from os.path import join
 
-import apps
 import walkoff.appgateway
 import walkoff.config.paths
-from walkoff.core.helpers import *
+from walkoff.helpers import *
 from tests.config import test_workflows_path, test_apps_path
 from tests.util.assertwrappers import orderless_list_compare
 

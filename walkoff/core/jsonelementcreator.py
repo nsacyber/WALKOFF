@@ -45,7 +45,7 @@ class JsonElementCreator(object):
                 json_in['arguments'] = [Argument(**arg_json) for arg_json in json_in['arguments']]
             return current_class(**json_in)
         except (KeyError, TypeError) as e:
-            from walkoff.core.helpers import format_exception_message
+            from walkoff.helpers import format_exception_message
             raise ValueError(
                 'Improperly formatted JSON for ExecutionElement {0} {1}'.format(current_class.__name__,
                                                                                 format_exception_message(e)))

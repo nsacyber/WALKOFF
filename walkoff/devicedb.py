@@ -9,7 +9,7 @@ from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 
 import walkoff.config.paths
 from walkoff.config.config import secret_key as key
-from walkoff.core.helpers import format_db_path
+from walkoff.helpers import format_db_path
 from walkoff.appgateway.validator import convert_primitive_type
 
 logger = logging.getLogger(__name__)

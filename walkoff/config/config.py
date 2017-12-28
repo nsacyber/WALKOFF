@@ -79,7 +79,7 @@ app_apis = {}
 
 
 def load_app_apis(apps_path=None):
-    from walkoff.core.helpers import list_apps, format_exception_message
+    from walkoff.helpers import list_apps, format_exception_message
     global app_apis
     if apps_path is None:
         apps_path = walkoff.config.paths.apps_path

@@ -6,7 +6,7 @@ import sys
 
 sys.path.append(os.path.abspath('.'))
 from walkoff.config.paths import apps_path
-from walkoff.core.helpers import list_apps
+from walkoff.helpers import list_apps
 
 
 def cmd_line():

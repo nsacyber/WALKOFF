@@ -8,7 +8,7 @@ import walkoff.case.database as case_database
 import walkoff.case.subscription as case_subscription
 import walkoff.config.paths
 from walkoff.case.subscription import delete_cases
-from walkoff.core.helpers import format_exception_message
+from walkoff.helpers import format_exception_message
 from walkoff.database import db
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions

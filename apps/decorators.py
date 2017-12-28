@@ -1,7 +1,7 @@
 from functools import wraps
 
 from walkoff.core.actionresult import ActionResult
-from walkoff.core.helpers import get_function_arg_names
+from walkoff.helpers import get_function_arg_names
 
 
 def format_result(result):

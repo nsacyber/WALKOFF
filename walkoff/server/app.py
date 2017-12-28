@@ -5,9 +5,9 @@ import connexion
 from jinja2 import FileSystemLoader
 
 from walkoff.devicedb import App, device_db
-from walkoff.core import helpers
+from walkoff import helpers
 from walkoff.config import paths
-from walkoff.core.helpers import format_db_path
+from walkoff.helpers import format_db_path
 from walkoff.server.extensions import db, jwt
 from walkoff.database.casesubscription import CaseSubscription
 from walkoff.database import add_user, User, Role, initialize_default_resources_admin, \
@@ -52,7 +52,7 @@ def __register_app_blueprints(flaskapp, app_name, blueprints):
 
 
 def __register_all_app_blueprints(flaskapp):
-    from walkoff.core.helpers import import_submodules
+    from walkoff.helpers import import_submodules
     import interfaces
     imported_apps = import_submodules(interfaces)
     for interface_name, interfaces_module in imported_apps.items():

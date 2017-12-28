@@ -8,7 +8,7 @@ from walkoff.events import WalkoffEvent
 from walkoff.core.executionelements.action import Action
 from walkoff.core.executionelements.branch import Branch
 from walkoff.core.executionelements.executionelement import ExecutionElement
-from walkoff.core.helpers import UnknownAppAction, UnknownApp, InvalidArgument, format_exception_message
+from walkoff.helpers import UnknownAppAction, UnknownApp, InvalidArgument, format_exception_message
 
 logger = logging.getLogger(__name__)
 

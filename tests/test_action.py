@@ -8,7 +8,7 @@ from walkoff.core.actionresult import ActionResult
 from walkoff.events import WalkoffEvent
 from walkoff.core.executionelements.action import Action
 from walkoff.core.executionelements.condition import Condition
-from walkoff.core.helpers import UnknownApp, UnknownAppAction, InvalidArgument
+from walkoff.helpers import UnknownApp, UnknownAppAction, InvalidArgument
 from tests.config import test_apps_path
 
 

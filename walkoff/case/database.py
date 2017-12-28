@@ -8,7 +8,7 @@ from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 
 import walkoff.config.config
 from walkoff.config.paths import case_db_path
-from walkoff.core.helpers import format_db_path
+from walkoff.helpers import format_db_path
 
 logger = logging.getLogger(__name__)
 

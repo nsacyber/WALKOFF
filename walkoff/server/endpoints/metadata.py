@@ -4,7 +4,7 @@ from flask import send_file
 from flask_jwt_extended import jwt_required
 
 import walkoff.config.paths
-from walkoff.core import helpers
+from walkoff import helpers
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.server.returncodes import SUCCESS
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions

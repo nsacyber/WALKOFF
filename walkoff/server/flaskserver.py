@@ -5,7 +5,7 @@ import os
 from flask import render_template, send_from_directory
 
 import walkoff.config.paths
-from walkoff.core import helpers
+from walkoff import helpers
 from walkoff.server import app
 from walkoff.server.context import running_context
 

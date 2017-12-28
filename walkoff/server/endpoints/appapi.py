@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required
 
 import walkoff.config.config
 from walkoff.appgateway import is_app_action_bound
-from walkoff.core import helpers
+from walkoff import helpers
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 

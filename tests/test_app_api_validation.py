@@ -6,7 +6,7 @@ from jsonschema.exceptions import RefResolutionError
 import walkoff.appgateway
 from walkoff.appgateway import get_app_action
 from walkoff.config.paths import walkoff_schema_path
-from walkoff.core.helpers import UnknownApp
+from walkoff.helpers import UnknownApp
 from walkoff.appgateway.validator import *
 from tests.config import basic_app_api, test_apps_path
 

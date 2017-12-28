@@ -1,13 +1,12 @@
 import unittest
 import uuid
 
-import apps
 import walkoff.appgateway
 import walkoff.config.config
 from walkoff.core.argument import Argument
 from walkoff.core.executionelements.condition import Condition
 from walkoff.core.executionelements.transform import Transform
-from walkoff.core.helpers import InvalidArgument
+from walkoff.helpers import InvalidArgument
 from tests.config import test_apps_path
 
 

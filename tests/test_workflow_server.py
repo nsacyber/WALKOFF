@@ -6,7 +6,7 @@ from threading import Event
 
 import walkoff.case.database as case_database
 import walkoff.config.paths
-from walkoff.core import helpers
+from walkoff import helpers
 from walkoff.core.argument import Argument
 from walkoff.events import WalkoffEvent
 from walkoff.core.executionelements.action import Action

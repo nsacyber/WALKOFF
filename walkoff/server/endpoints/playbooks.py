@@ -6,9 +6,9 @@ from flask_jwt_extended import jwt_required
 
 import walkoff.case.database as case_database
 import walkoff.config.paths
-from walkoff.core import helpers
+from walkoff import helpers
 from walkoff.case.workflowresults import WorkflowResult
-from walkoff.core.helpers import UnknownAppAction, UnknownApp, InvalidArgument
+from walkoff.helpers import UnknownAppAction, UnknownApp, InvalidArgument
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 

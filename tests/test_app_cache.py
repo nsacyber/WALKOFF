@@ -4,7 +4,7 @@ from unittest import TestCase
 
 from walkoff.appgateway import AppCache
 from apps.decorators import action
-from walkoff.core.helpers import UnknownApp, UnknownAppAction
+from walkoff.helpers import UnknownApp, UnknownAppAction
 
 
 def f1(): pass

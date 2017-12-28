@@ -11,7 +11,7 @@ from swagger_spec_validator import ref_validators
 from swagger_spec_validator.validator20 import deref
 
 import walkoff.config.paths
-from walkoff.core.helpers import InvalidArgument, get_function_arg_names, InvalidApi, format_exception_message
+from walkoff.helpers import InvalidArgument, get_function_arg_names, InvalidApi, format_exception_message
 
 logger = logging.getLogger(__name__)
 

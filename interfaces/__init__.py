@@ -7,7 +7,7 @@ from six import string_types
 
 import walkoff.config.config
 from walkoff.events import WalkoffEvent, EventType
-from walkoff.core.helpers import UnknownApp, UnknownAppAction, get_function_arg_names
+from walkoff.helpers import UnknownApp, UnknownAppAction, get_function_arg_names
 
 _logger = logging.getLogger(__name__)
 

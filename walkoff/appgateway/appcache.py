@@ -7,7 +7,7 @@ from importlib import import_module
 
 from six import string_types
 
-from walkoff.core.helpers import UnknownApp, UnknownAppAction, UnknownCondition, UnknownTransform
+from walkoff.helpers import UnknownApp, UnknownAppAction, UnknownCondition, UnknownTransform
 
 _logger = logging.getLogger(__name__)
 
