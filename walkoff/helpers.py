@@ -231,14 +231,15 @@ def import_submodules(package, recursive=False):
             logger.warning('Could not import {}. Skipping'.format(package), exc_info=True)
     if successful_base_import:
         results = {}
-        for loader, name, is_package in pkgutil.walk_packages(package.__path__):
-            full_name = '{0}.{1}'.format(package.__name__, name)
-            try:
-                results[full_name] = importlib.import_module(full_name)
-            except ImportError:
-                logger.warning('Could not import {}. Skipping.'.format(full_name), exc_info=True)
-            if recursive and is_package:
-                results.update(import_submodules(full_name))
+        if hasattr(package, '__path__'):
+            for loader, name, is_package in pkgutil.walk_packages(package.__path__):
+                full_name = '{0}.{1}'.format(package.__name__, name)
+                try:
+                    results[full_name] = importlib.import_module(full_name)
+                except ImportError:
+                    logger.warning('Could not import {}. Skipping.'.format(full_name), exc_info=True)
+                if recursive and is_package:
+                    results.update(import_submodules(full_name))
         return results
     return {}
 

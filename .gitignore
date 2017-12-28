@@ -25,7 +25,7 @@ node_modules/
 .idea/markdown-navigator.xml
 .idea/markdown-exported-files.xml
 .idea/markdown-navigator/profiles_settings.xml
-client/build/
+walkoff/client/build/
 tests/testWorkflows/testGeneratedWorkflows_bkup
 .coverage*
 coverage.*
@@ -34,6 +34,7 @@ _build/
 sphinx/
 npm-debug.log
 !apps/*.py
+!interfaces/*.py
 */__pycache__*
 .ipynb_checkpoints/
 backups/*
