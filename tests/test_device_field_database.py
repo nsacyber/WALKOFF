@@ -1,6 +1,6 @@
 import unittest
 
-from apps.devicedb import EncryptedDeviceField, DeviceField
+from walkoff.devicedb import EncryptedDeviceField, DeviceField
 
 
 class TestDeviceField(unittest.TestCase):

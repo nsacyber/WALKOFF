@@ -4,7 +4,7 @@ import os
 import connexion
 from jinja2 import FileSystemLoader
 
-from apps.devicedb import App, device_db
+from walkoff.devicedb import App, device_db
 from walkoff.core import helpers
 from walkoff.config import paths
 from walkoff.core.helpers import format_db_path

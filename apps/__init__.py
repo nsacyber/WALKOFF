@@ -1,9 +1,8 @@
 import logging
 
-from apps.devicedb import get_app as get_db_app
+from walkoff.devicedb import get_app as get_db_app
 from apps.messaging import *
 from walkoff.core.decorators import *
-
 
 _logger = logging.getLogger(__name__)
 
