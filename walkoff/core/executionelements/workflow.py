@@ -3,7 +3,7 @@ import logging
 import threading
 from copy import deepcopy
 
-from walkoff.core.appinstance import AppInstance
+from walkoff.appgateway.appinstance import AppInstance
 from walkoff.events import WalkoffEvent
 from walkoff.core.executionelements.action import Action
 from walkoff.core.executionelements.branch import Branch

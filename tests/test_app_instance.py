@@ -1,9 +1,8 @@
 import importlib
 import unittest
 
-import apps
 import walkoff.appgateway
-from walkoff.core import appinstance
+from walkoff.appgateway import appinstance
 from tests.config import test_apps_path
 
 

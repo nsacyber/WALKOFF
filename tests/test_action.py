@@ -2,7 +2,7 @@ import unittest
 
 import walkoff.appgateway
 import walkoff.config.config
-from walkoff.core.appinstance import AppInstance
+from walkoff.appgateway.appinstance import AppInstance
 from walkoff.core.argument import Argument
 from walkoff.core.actionresult import ActionResult
 from walkoff.events import WalkoffEvent
