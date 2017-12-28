@@ -108,7 +108,7 @@ class App(Device_Base):
             data (dict): The JSON representation of the App
 
         Returns:
-            App: The constructed app
+            apps.devicedb.App: The constructed app
         """
         devices = [Device.from_json(device) for device in data['devices']] if 'devices' in data else None
         return App(data['name'], devices)
@@ -479,7 +479,7 @@ def get_app(app_name):
     Args:
         app_name (str): The name of the app
     Returns:
-        App: The desired device. Returns None if app or device not found.
+        apps.devicedb.App: The desired device. Returns None if app or device not found.
     """
     app = device_db.session.query(App).filter(App.name == app_name).first()
     if app is not None:

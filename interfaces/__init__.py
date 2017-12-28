@@ -93,7 +93,7 @@ def convert_to_iterable(elements):
     """Converts an element or elements to list if it not already iterable
 
     Args:
-        elements (:obj:|iterable(:obj:)): The object to convert to an iterable if necessary
+        elements (obj|iterable): The object to convert to an iterable if necessary
 
     Returns:
         iterable: A list containing only the element passed in if the element was a non-string non-iterable.
