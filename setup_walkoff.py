@@ -10,7 +10,7 @@ def main():
     os.system('python scripts/generate_certificates.py')
 
     print('\nInstalling Node Packages...')
-    os.chdir('./client')
+    os.chdir('./walkoff/client')
     os.system('npm install')
 
     print('\nInstalling Gulp...')
