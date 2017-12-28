@@ -1,8 +1,8 @@
 import json
 import unittest
 
-import core.case.database as case_database
-from core.case.subscription import *
+import walkoff.case.database as case_database
+from walkoff.case.subscription import *
 from tests.util.assertwrappers import orderless_list_compare
 
 

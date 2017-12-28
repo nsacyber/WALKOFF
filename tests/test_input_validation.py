@@ -1,9 +1,9 @@
 import unittest
 
-from core.argument import Argument
-from core.config.config import initialize
-from core.helpers import InvalidArgument
-from core.validator import validate_parameter, validate_parameters, convert_json
+from walkoff.core.argument import Argument
+from walkoff.config.config import initialize
+from walkoff.core.helpers import InvalidArgument
+from walkoff.core.validator import validate_parameter, validate_parameters, convert_json
 
 
 class TestInputValidation(unittest.TestCase):

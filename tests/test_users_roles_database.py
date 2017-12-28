@@ -1,14 +1,14 @@
 import unittest
 from datetime import datetime, timedelta
 
-import server.flaskserver
-from server.database import db, User, Role, add_user, remove_user
+import walkoff.server.flaskserver
+from walkoff.database import db, User, Role, add_user, remove_user
 
 
 class TestUserRolesDatabase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.context = server.flaskserver.app.test_request_context()
+        cls.context = walkoff.server.flaskserver.app.test_request_context()
         cls.context.push()
         db.create_all()
 

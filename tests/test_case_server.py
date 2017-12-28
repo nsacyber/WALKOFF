@@ -1,14 +1,14 @@
 import json
 import os
 
-import core.case.database as case_database
-import core.case.subscription as case_subs
-import core.config.paths
+import walkoff.case.database as case_database
+import walkoff.case.subscription as case_subs
+import walkoff.config.paths
 import tests.config
-from core.case.subscription import set_subscriptions, clear_subscriptions, delete_cases
-from server.returncodes import *
-from server.database.casesubscription import CaseSubscription
-from server.extensions import db
+from walkoff.case.subscription import set_subscriptions, clear_subscriptions, delete_cases
+from walkoff.server.returncodes import *
+from walkoff.database.casesubscription import CaseSubscription
+from walkoff.server.extensions import db
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
 
@@ -278,7 +278,7 @@ class TestCaseServer(ServerTestCase):
         expected_subs = case_subs.subscriptions
         self.post_with_status_check('api/cases/export', headers=self.headers)
         self.assertIn('cases.json', os.listdir(tests.config.test_data_path))
-        with open(core.config.paths.default_case_export_path, 'r') as appdevice_file:
+        with open(walkoff.config.paths.default_case_export_path, 'r') as appdevice_file:
             read_file = appdevice_file.read()
             read_file = read_file.replace('\n', '')
             read_json = json.loads(read_file)
@@ -345,7 +345,7 @@ class TestCaseServer(ServerTestCase):
 
     def test_display_possible_subscriptions(self):
         response = self.get_with_status_check('/api/availablesubscriptions', headers=self.headers)
-        from core.events import EventType, WalkoffEvent
+        from walkoff.core.events import EventType, WalkoffEvent
         self.assertSetEqual({event['type'] for event in response},
                             {event.name for event in EventType if event != EventType.other})
         for event_type in (event.name for event in EventType if event != EventType.other):

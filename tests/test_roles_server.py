@@ -1,12 +1,12 @@
 import json
 
-import server.database
-import server.flaskserver
-from server.database.role import Role
-from server.database.resource import Resource
-from server.database import default_resources
-from server.extensions import db
-from server.returncodes import *
+import walkoff.database
+import walkoff.server.flaskserver
+from walkoff.database.role import Role
+from walkoff.database.resource import Resource
+from walkoff.database import default_resources
+from walkoff.server.extensions import db
+from walkoff.server.returncodes import *
 from tests.util import servertestcase
 
 
@@ -22,7 +22,7 @@ class TestRolesServer(servertestcase.ServerTestCase):
 
     @classmethod
     def tearDownClass(cls):
-        server.flaskserver.running_context.controller.shutdown_pool()
+        walkoff.server.flaskserver.running_context.controller.shutdown_pool()
 
     def test_read_all_roles_no_added_roles(self):
         response = self.get_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS)
@@ -187,10 +187,10 @@ class TestRolesServer(servertestcase.ServerTestCase):
                               {'name': '/roles', 'permissions': ['create']}]}
         self.app.post('/api/roles', headers=self.headers, content_type='application/json', data=json.dumps(data))
         for resource in resources:
-            rsrc = server.database.Resource.query.filter_by(name=resource['name']).first()
+            rsrc = walkoff.database.Resource.query.filter_by(name=resource['name']).first()
             self.assertIsNone(rsrc)
         for resource in ['resource4', 'resource5']:
-            rsrc = server.database.Resource.query.filter_by(name=resource).first()
+            rsrc = walkoff.database.Resource.query.filter_by(name=resource).first()
             self.assertIsNotNone(rsrc)
 
     def test_delete_role(self):
@@ -215,5 +215,5 @@ class TestRolesServer(servertestcase.ServerTestCase):
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
         self.delete_with_status_check('/api/roles/{}'.format(role_id), headers=self.headers, status_code=SUCCESS)
-        role = server.database.Role.query.filter_by(id=role_id).first()
+        role = walkoff.database.Role.query.filter_by(id=role_id).first()
         self.assertIsNone(role)

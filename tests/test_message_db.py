@@ -1,13 +1,13 @@
 from unittest import TestCase
-from server.database import Message, MessageHistory
-from server.messaging import MessageAction
-import server.messaging
-from server.messaging.utils import strip_requires_response_from_message_body, save_message, \
+from walkoff.database import Message, MessageHistory
+from walkoff.messaging import MessageAction
+import walkoff.messaging
+from walkoff.messaging.utils import strip_requires_response_from_message_body, save_message, \
     get_all_matching_users_for_message, log_action_taken_on_message
-from server.database import db, User, Role
-from server import flaskserver
+from walkoff.database import db, User, Role
+from walkoff.server import flaskserver
 from datetime import datetime
-from core.events import WalkoffEvent
+from walkoff.core.events import WalkoffEvent
 import json
 
 
@@ -49,7 +49,7 @@ class TestMessageDatabase(TestCase):
             db.session.delete(user)
         for role in [role for role in Role.query.all() if role.name != 'admin']:
             db.session.delete(role)
-        server.messaging.workflow_authorization_cache._cache = {}
+        walkoff.messaging.workflow_authorization_cache._cache = {}
         db.session.commit()
 
     @classmethod
@@ -427,7 +427,7 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(len(messages), 1)
         message = messages[0]
         self.assertEqual(message.subject, 'Re: Best chicken recipe')
-        from server import messaging
+        from walkoff import messaging
         self.assertTrue(messaging.workflow_authorization_cache.workflow_requires_authorization('workflow_uid14'))
         self.assertTrue(message.requires_response)
 
@@ -443,7 +443,7 @@ class TestMessageDatabase(TestCase):
         sender = {'workflow_execution_uid': 'workflow_uid14'}
         res = {'called': False}
 
-        @server.messaging.MessageActionEvent.created.connect
+        @walkoff.messaging.MessageActionEvent.created.connect
         def caller(message, **data):
             res['called'] = True
             self.assertEqual(len(list(message.users)), 2)
@@ -465,15 +465,15 @@ class TestMessageDatabase(TestCase):
                 'action_name': 'mock'}
 
     def test_invalid_trigger_pops_user_from_cache(self):
-        server.messaging.workflow_authorization_cache.add_authorized_users('uid1', users=[1, 2])
-        server.messaging.workflow_authorization_cache.add_user_in_progress('uid1', 1)
-        server.messaging.workflow_authorization_cache.add_user_in_progress('uid1', 2)
+        walkoff.messaging.workflow_authorization_cache.add_authorized_users('uid1', users=[1, 2])
+        walkoff.messaging.workflow_authorization_cache.add_user_in_progress('uid1', 1)
+        walkoff.messaging.workflow_authorization_cache.add_user_in_progress('uid1', 2)
 
         WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid2'))
-        self.assertEqual(server.messaging.workflow_authorization_cache.peek_user_in_progress('uid1'), 2)
-        self.assertIsNone(server.messaging.workflow_authorization_cache.peek_user_in_progress('uid2'))
+        self.assertEqual(walkoff.messaging.workflow_authorization_cache.peek_user_in_progress('uid1'), 2)
+        self.assertIsNone(walkoff.messaging.workflow_authorization_cache.peek_user_in_progress('uid2'))
         WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid1'))
-        self.assertEqual(server.messaging.workflow_authorization_cache.peek_user_in_progress('uid1'), 1)
+        self.assertEqual(walkoff.messaging.workflow_authorization_cache.peek_user_in_progress('uid1'), 1)
 
     def test_log_action_taken_on_message(self):
         message = Message('subject', 'body', 'uid1', users=[self.user, self.user2], requires_response=True)
@@ -492,24 +492,24 @@ class TestMessageDatabase(TestCase):
         message = Message('subject', 'body', 'uid1', users=[self.user, self.user2], requires_response=True)
         db.session.add(message)
         db.session.commit()
-        server.messaging.workflow_authorization_cache.add_authorized_users('uid1', users=[1, 2])
-        server.messaging.workflow_authorization_cache.add_user_in_progress('uid1', self.user.id)
+        walkoff.messaging.workflow_authorization_cache.add_authorized_users('uid1', users=[1, 2])
+        walkoff.messaging.workflow_authorization_cache.add_user_in_progress('uid1', self.user.id)
         WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender('uid1'))
         message = Message.query.filter(Message.workflow_execution_uid == 'uid1').first()
         self.assertEqual(len(list(message.history)), 1)
         self.assertEqual(message.history[0].action, MessageAction.respond)
-        self.assertFalse(server.messaging.workflow_authorization_cache.workflow_requires_authorization('uid1'))
+        self.assertFalse(walkoff.messaging.workflow_authorization_cache.workflow_requires_authorization('uid1'))
 
     def test_trigger_action_taken_workflow_sends_responded_message(self):
         message = Message('subject', 'body', 'uid1', users=[self.user, self.user2], requires_response=True)
         db.session.add(message)
         db.session.commit()
-        server.messaging.workflow_authorization_cache.add_authorized_users('uid1', users=[1, 2])
-        server.messaging.workflow_authorization_cache.add_user_in_progress('uid1', self.user.id)
+        walkoff.messaging.workflow_authorization_cache.add_authorized_users('uid1', users=[1, 2])
+        walkoff.messaging.workflow_authorization_cache.add_user_in_progress('uid1', self.user.id)
 
         res = {'called': False}
 
-        @server.messaging.MessageActionEvent.responded.connect
+        @walkoff.messaging.MessageActionEvent.responded.connect
         def connected(message_in, **data):
             res['called'] = True
             self.assertEqual(message_in.id, message.id)

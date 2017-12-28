@@ -2,7 +2,7 @@ import json
 
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
 
-from server.returncodes import *
+from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
 
 

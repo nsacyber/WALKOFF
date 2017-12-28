@@ -4,10 +4,11 @@ import yaml
 from jsonschema.exceptions import RefResolutionError
 
 import apps
-from apps import get_app_action
-from core.config.paths import walkoff_schema_path
-from core.helpers import UnknownApp
-from core.validator import *
+import walkoff.appgateway
+from walkoff.appgateway import get_app_action
+from walkoff.config.paths import walkoff_schema_path
+from walkoff.core.helpers import UnknownApp
+from walkoff.core.validator import *
 from tests.config import basic_app_api, test_apps_path
 
 
@@ -18,7 +19,7 @@ class TestAppApiValidation(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        apps.cache_apps(path=test_apps_path)
+        walkoff.appgateway.cache_apps(path=test_apps_path)
 
     def setUp(self):
         with open(basic_app_api, 'r') as f:
@@ -26,7 +27,7 @@ class TestAppApiValidation(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        apps.clear_cache()
+        walkoff.appgateway.clear_cache()
 
     def __generate_resolver_dereferencer(self, spec, expected_success=True):
         try:

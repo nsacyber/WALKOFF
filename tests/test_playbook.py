@@ -1,7 +1,7 @@
 import unittest
 
-from core.config.config import walkoff_version
-from core.executionelements.playbook import Playbook
+from walkoff.config.config import walkoff_version
+from walkoff.core.executionelements.playbook import Playbook
 from tests.test_scheduler import MockWorkflow
 from tests.util.assertwrappers import orderless_list_compare
 

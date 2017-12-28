@@ -1,6 +1,6 @@
 import unittest
 
-import server.flaskserver
+import walkoff.server.flaskserver
 from apps.devicedb import get_device, get_all_devices_for_app, \
     get_all_devices_of_type_from_app, App, Device, device_db
 
@@ -17,10 +17,10 @@ class TestAppUtilities(unittest.TestCase):
 
     def setUp(self):
         self.app_name = 'TestApp'
-        self.app = server.flaskserver.app.test_client(self)
+        self.app = walkoff.server.flaskserver.app.test_client(self)
         self.app.testing = True
 
-        self.context = server.flaskserver.app.test_request_context()
+        self.context = walkoff.server.flaskserver.app.test_request_context()
         self.context.push()
 
         self.device1 = Device('test1', [], [], 'type1')

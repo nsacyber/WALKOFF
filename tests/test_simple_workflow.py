@@ -1,10 +1,10 @@
 import unittest
 
-import core.config.config
-import core.controller
-from core.case import database
-from core.case import subscription
-from core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
+import walkoff.appgateway
+import walkoff.config.config
+import walkoff.core.controller
+from walkoff.case import subscription, database
+from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from tests import config
 from tests.util.case_db_help import *
 from tests.util.mock_objects import *
@@ -13,17 +13,17 @@ from tests.util.mock_objects import *
 class TestSimpleWorkflow(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from apps import cache_apps
+        from walkoff.appgateway import cache_apps
         cache_apps(path=config.test_apps_path)
-        core.config.config.load_app_apis(apps_path=config.test_apps_path)
-        core.config.config.num_processes = 2
+        walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
+        walkoff.config.config.num_processes = 2
         MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
-        core.controller.controller.initialize_threading()
+        walkoff.core.controller.controller.initialize_threading()
 
     def setUp(self):
-        self.controller = core.controller.controller
+        self.controller = walkoff.core.controller.controller
         self.controller.workflows = {}
         self.controller.load_playbooks(resource_collection=config.test_workflows_path)
         self.start = datetime.utcnow()
@@ -37,8 +37,8 @@ class TestSimpleWorkflow(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         import apps
-        apps.clear_cache()
-        core.controller.controller.shutdown_pool()
+        walkoff.appgateway.clear_cache()
+        walkoff.core.controller.controller.shutdown_pool()
 
     def test_simple_workflow_execution(self):
         workflow = self.controller.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')

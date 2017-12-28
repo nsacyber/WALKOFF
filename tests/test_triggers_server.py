@@ -4,13 +4,13 @@ import socket
 import gevent
 from gevent import monkey
 
-import core.case.database as case_database
-import core.case.subscription
-import core.config.paths
-import core.controller
-from core.events import WalkoffEvent
-from server import flaskserver as flask_server
-from server.returncodes import *
+import walkoff.case.database as case_database
+import walkoff.case.subscription
+import walkoff.config.paths
+import walkoff.core.controller
+from walkoff.core.events import WalkoffEvent
+from walkoff.server import flaskserver as flask_server
+from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
 
 try:
@@ -24,15 +24,15 @@ class TestTriggersServer(ServerTestCase):
 
     def setUp(self):
         monkey.patch_socket()
-        core.case.subscription.subscriptions = {}
+        walkoff.case.subscription.subscriptions = {}
         case_database.initialize()
 
     def tearDown(self):
-        core.controller.workflows = {}
-        core.case.subscription.clear_subscriptions()
-        for case in core.case.database.case_db.session.query(core.case.database.Case).all():
-            core.case.database.case_db.session.delete(case)
-        core.case.database.case_db.session.commit()
+        walkoff.core.controller.workflows = {}
+        walkoff.case.subscription.clear_subscriptions()
+        for case in case_database.case_db.session.query(case_database.Case).all():
+            case_database.case_db.session.delete(case)
+        case_database.case_db.session.commit()
         reload(socket)
 
     def test_trigger_multiple_workflows(self):

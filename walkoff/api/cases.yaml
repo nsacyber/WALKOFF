@@ -1,0 +1,203 @@
+/api/cases:
+  get:
+    tags:
+      - Cases
+    summary: Read all cases
+    description: ''
+    operationId: walkoff.server.endpoints.cases.read_all_cases
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Case'
+  put:
+    tags:
+      - Cases
+    summary: Create a case
+    description: ''
+    operationId: walkoff.server.endpoints.cases.create_case
+    produces:
+      - application/json
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: The name of the case to be created
+        required: true
+        schema:
+          type: object
+          properties:
+            name:
+              type: string
+              example: Case_One
+    responses:
+      201:
+        description: Object created
+        schema:
+          $ref: '#/definitions/Case'
+      462:
+        description: Case already exists.
+        schema:
+          $ref: '#/definitions/Error'
+  post:
+    tags:
+      - Cases
+    summary: Update a case
+    description: ''
+    operationId: walkoff.server.endpoints.cases.update_case
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/Case'
+    responses:
+      200:
+        description: Success
+        schema:
+          $ref: '#/definitions/Case'
+      461:
+        description: Case does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+/api/cases/{case_id}:
+  parameters:
+    - name: case_id
+      in: path
+      description: The ID of the case
+      required: true
+      type: integer
+  get:
+    tags:
+      - Cases
+    summary: Read a case
+    description: ''
+    operationId: walkoff.server.endpoints.cases.read_case
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          $ref: '#/definitions/Case'
+      461:
+        description: Case does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+  delete:
+    tags:
+      - Cases
+    summary: Remove a case
+    description: ''
+    operationId: walkoff.server.endpoints.cases.delete_case
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+      461:
+        description: Case does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+
+/api/cases/{case_id}/events:
+  parameters:
+    - name: case_id
+      in: path
+      description: The ID of the case
+      required: true
+      type: integer
+  get:
+    tags:
+      - Cases
+    summary: Read all the events for a case
+    description: ''
+    operationId: walkoff.server.endpoints.cases.read_all_events
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: array
+          items:
+            $ref: '#/definitions/Event'
+      461:
+        description: Case does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+
+/api/cases/import:
+  get:
+    tags:
+      - Cases
+    summary: Import case data
+    description: ''
+    operationId: walkoff.server.endpoints.cases.import_cases
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: Filename of JSON to import into Case database
+        required: false
+        x-nullable: true
+        schema:
+          type: object
+          properties:
+            filename:
+              type: string
+              example: import_list.json
+    responses:
+      200:
+        description: Success
+      463:
+        description: Invalid JSON in file.
+        schema:
+          $ref: '#/definitions/Error'
+      515:
+        description: An error occurred opening the file.
+        schema:
+          $ref: '#/definitions/Error'
+
+/api/cases/export:
+  post:
+    tags:
+      - Cases
+    summary: Export case data
+    description: ''
+    operationId: walkoff.server.endpoints.cases.export_cases
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: The name of the JSON file to export to.
+        required: false
+        x-nullable: true
+        schema:
+          type: object
+          properties:
+            filename:
+              type: string
+              example: export_list.json
+    responses:
+      200:
+        description: Success
+      515:
+        description: Could not write to file.
+        schema:
+          $ref: '#/definitions/Error'

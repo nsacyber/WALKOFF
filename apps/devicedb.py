@@ -7,10 +7,10 @@ from sqlalchemy.ext.declarative import declared_attr, declarative_base
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 
-import core.config.paths
-from core.config.config import secret_key as key
-from core.helpers import format_db_path
-from core.validator import convert_primitive_type
+import walkoff.config.paths
+from walkoff.config.config import secret_key as key
+from walkoff.core.helpers import format_db_path
+from walkoff.core.validator import convert_primitive_type
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +108,7 @@ class App(Device_Base):
             data (dict): The JSON representation of the App
 
         Returns:
-            App: The constructed app
+            apps.devicedb.App: The constructed app
         """
         devices = [Device.from_json(device) for device in data['devices']] if 'devices' in data else None
         return App(data['name'], devices)
@@ -479,7 +479,7 @@ def get_app(app_name):
     Args:
         app_name (str): The name of the app
     Returns:
-        App: The desired device. Returns None if app or device not found.
+        apps.devicedb.App: The desired device. Returns None if app or device not found.
     """
     app = device_db.session.query(App).filter(App.name == app_name).first()
     if app is not None:
@@ -494,7 +494,7 @@ class DeviceDatabase(object):
     """
 
     def __init__(self):
-        self.engine = create_engine(format_db_path(core.config.config.device_db_type, core.config.paths.device_db_path))
+        self.engine = create_engine(format_db_path(walkoff.config.config.device_db_type, walkoff.config.paths.device_db_path))
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 

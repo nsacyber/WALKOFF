@@ -1,8 +1,9 @@
 import unittest
 
 import apps
-import core.config.config
-from core import controller
+import walkoff.appgateway
+import walkoff.config.config
+from walkoff.core import controller
 from tests import config
 from tests.config import test_apps_path
 
@@ -10,8 +11,8 @@ from tests.config import test_apps_path
 class TestLoadWorkflow(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        apps.cache_apps(test_apps_path)
-        core.config.config.load_app_apis(apps_path=test_apps_path)
+        walkoff.appgateway.cache_apps(test_apps_path)
+        walkoff.config.config.load_app_apis(apps_path=test_apps_path)
 
     def setUp(self):
         self.c = controller.Controller()
@@ -21,7 +22,7 @@ class TestLoadWorkflow(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        apps.clear_cache()
+        walkoff.appgateway.clear_cache()
 
     def test_workflow_loaded(self):
         # Tests that helloWorldWorkflow exists

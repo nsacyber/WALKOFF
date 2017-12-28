@@ -5,9 +5,9 @@ from weakref import WeakSet
 
 from six import string_types
 
-import core.config.config
-from core.events import WalkoffEvent, EventType
-from core.helpers import UnknownApp, UnknownAppAction, get_function_arg_names, convert_action_argument
+import walkoff.config.config
+from walkoff.core.events import WalkoffEvent, EventType
+from walkoff.core.helpers import UnknownApp, UnknownAppAction, get_function_arg_names
 
 _logger = logging.getLogger(__name__)
 
@@ -93,7 +93,7 @@ def convert_to_iterable(elements):
     """Converts an element or elements to list if it not already iterable
 
     Args:
-        elements (:obj:|iterable(:obj:)): The object to convert to an iterable if necessary
+        elements (obj|iterable): The object to convert to an iterable if necessary
 
     Returns:
         iterable: A list containing only the element passed in if the element was a non-string non-iterable.
@@ -374,7 +374,7 @@ class AppEventDispatcher(object):
             UnknownAppAction: If the action is not found in the give app's actions
         """
         try:
-            available_actions = set(core.config.config.app_apis[app]['actions'].keys())
+            available_actions = set(walkoff.config.config.app_apis[app]['actions'].keys())
             if actions == 'all':
                 return available_actions
             actions = set(convert_to_iterable(actions))

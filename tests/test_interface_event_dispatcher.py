@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-import core.config.config
-from core.events import WalkoffEvent, EventType
+import walkoff.config.config
+from walkoff.core.events import WalkoffEvent, EventType
 from interfaces import (UnknownEvent, InterfaceEventDispatcher, dispatcher, InvalidEventHandler,
                         UnknownAppAction, UnknownApp)
 
@@ -9,7 +9,7 @@ from interfaces import (UnknownEvent, InterfaceEventDispatcher, dispatcher, Inva
 class TestInterfaceEventDispatcher(TestCase):
     @classmethod
     def setUpClass(cls):
-        core.config.config.app_apis = {'App1': {'actions': {'action1': None,
+        walkoff.config.config.app_apis = {'App1': {'actions': {'action1': None,
                                                             'action2': None,
                                                             'action3': None}},
                                        'App2': {}}
@@ -21,7 +21,7 @@ class TestInterfaceEventDispatcher(TestCase):
     @classmethod
     def tearDownClass(cls):
         dispatcher._clear()
-        core.config.config.app_apis = {}
+        walkoff.config.config.app_apis = {}
 
     def test_singleton(self):
         self.assertEqual(id(dispatcher), id(InterfaceEventDispatcher()))

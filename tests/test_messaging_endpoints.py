@@ -1,12 +1,12 @@
 from tests.util.servertestcase import ServerTestCase
-from server.database import User, Role, Message, MessageHistory
-from server.extensions import db
-from server.returncodes import *
-from server import flaskserver
+from walkoff.database import User, Role, Message, MessageHistory
+from walkoff.server.extensions import db
+from walkoff.server.returncodes import *
+from walkoff.server import flaskserver
 import json
-from server.messaging import MessageActionEvent, MessageAction
-from datetime import timedelta, datetime
-from server.endpoints.messages import max_notifications, min_notifications
+from walkoff.messaging import MessageActionEvent, MessageAction
+from datetime import timedelta
+from walkoff.server.endpoints.messages import max_notifications, min_notifications
 
 
 class UserWrapper(object):

@@ -1,11 +1,11 @@
 import json
 import os
 
-import core.config.config
-import core.config.paths
+import walkoff.config.config
+import walkoff.config.paths
 import tests.config
 from apps.devicedb import Device, App, DeviceField, device_db
-from server.returncodes import *
+from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
 
 
@@ -23,7 +23,7 @@ class TestDevicesServer(ServerTestCase):
         if app is not None:
             device_db.session.delete(app)
         device_db.session.commit()
-        core.config.config.app_apis = {}
+        walkoff.config.config.app_apis = {}
 
     def test_read_all_devices_no_devices_in_db(self):
         response = self.get_with_status_check('/api/devices', headers=self.headers, status_code=SUCCESS)
@@ -82,7 +82,7 @@ class TestDevicesServer(ServerTestCase):
     def test_create_device_app_not_in_apis(self):
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        core.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
+        walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
         device_json = {'app_name': 'Invalid', 'name': 'test', 'type': 'some_type', 'fields': []}
         self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
@@ -91,7 +91,7 @@ class TestDevicesServer(ServerTestCase):
     def test_create_device_device_type_does_not_exist(self):
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        core.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
+        walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
         device_json = {'app_name': 'TestApp', 'name': 'test', 'type': 'invalid', 'fields': []}
         self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
@@ -100,7 +100,7 @@ class TestDevicesServer(ServerTestCase):
     def test_create_device_invalid_fields(self):
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        core.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
+        walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
         device_json = {'app_name': 'TestApp', 'name': 'test', 'type': 'test_type',
                        'fields': [{'name': 'test_name', 'value': 'invalid'}, {'name': 'test2', 'value': 'something'}]}
@@ -110,7 +110,7 @@ class TestDevicesServer(ServerTestCase):
     def test_create_device_app_not_in_db(self):
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        core.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
+        walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
         device_json = {'app_name': 'TestApp', 'name': 'test', 'type': 'test_type',
                        'fields': [{'name': 'test_name', 'value': 123}, {'name': 'test2', 'value': 'something'}]}
@@ -120,7 +120,7 @@ class TestDevicesServer(ServerTestCase):
     def test_create_device(self):
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        core.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
+        walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
         app = App(name=self.test_app_name)
         device_db.session.add(app)
         device_db.session.commit()
@@ -164,7 +164,7 @@ class TestDevicesServer(ServerTestCase):
 
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        core.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
+        walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
         data = {'id': device1.id, 'name': 'renamed', 'app_name': self.test_app_name, 'type': 'Invalid'}
         self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
@@ -179,7 +179,7 @@ class TestDevicesServer(ServerTestCase):
 
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        core.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
+        walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
         fields_json = [{'name': 'test_name', 'value': 'invalid'}, {'name': 'test2', 'value': 'something'}]
 
@@ -197,7 +197,7 @@ class TestDevicesServer(ServerTestCase):
 
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        core.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
+        walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
         fields_json = [{'name': 'test_name', 'value': 123}, {'name': 'test2', 'value': 'something'}]
 
@@ -210,7 +210,7 @@ class TestDevicesServer(ServerTestCase):
         self.assertEqual(device1.get_plaintext_fields(), {field['name']: field['value'] for field in fields_json})
 
     def test_export_apps_devices_no_filename(self):
-        core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
+        walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
 
         fields = [{"name": "Text field", "value": "texts"}, {"name": "Encrypted field", "value": "encrypted"},
                   {"name": "Number field", "value": 5}, {"name": "Enum field", "value": "val 1"},
@@ -223,7 +223,7 @@ class TestDevicesServer(ServerTestCase):
                                     data=json.dumps({}))
 
         self.assertIn('appdevice.json', os.listdir(tests.config.test_data_path))
-        with open(core.config.paths.default_appdevice_export_path, 'r') as appdevice_file:
+        with open(walkoff.config.paths.default_appdevice_export_path, 'r') as appdevice_file:
             read_file = appdevice_file.read()
             read_file = read_file.replace('\n', '')
             read_json = json.loads(read_file)
@@ -241,7 +241,7 @@ class TestDevicesServer(ServerTestCase):
         self.assertEqual(devices_read, 1)
 
     def test_export_apps_devices_with_filename(self):
-        core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
+        walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
 
         fields = [{"name": "Text field", "value": "texts"}, {"name": "Encrypted field", "value": "encrypted"},
                   {"name": "Number field", "value": 5}, {"name": "Enum field", "value": "val 1"},
@@ -276,7 +276,7 @@ class TestDevicesServer(ServerTestCase):
         self.assertEqual(devices_read, 1)
 
     def test_import_apps_devices(self):
-        core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
+        walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
 
         fields = [{"name": "Text field", "value": "texts"}, {"name": "Encrypted field", "value": "encrypted"},
                   {"name": "Number field", "value": 5}, {"name": "Enum field", "value": "val 1"},

@@ -1,4 +1,4 @@
-from core.decorators import transform
+from walkoff.core.decorators import transform
 
 
 @transform
