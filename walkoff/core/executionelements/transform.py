@@ -3,7 +3,7 @@ from copy import deepcopy
 
 from walkoff.appgateway import get_transform
 from walkoff.core.argument import Argument
-from walkoff.core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 from walkoff.core.executionelements.executionelement import ExecutionElement
 from walkoff.core.helpers import get_transform_api, InvalidArgument, split_api_params
 from walkoff.appgateway.validator import validate_transform_parameters

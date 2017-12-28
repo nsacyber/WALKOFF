@@ -6,7 +6,7 @@ from weakref import WeakSet
 from six import string_types
 
 import walkoff.config.config
-from walkoff.core.events import WalkoffEvent, EventType
+from walkoff.events import WalkoffEvent, EventType
 from walkoff.core.helpers import UnknownApp, UnknownAppAction, get_function_arg_names
 
 _logger = logging.getLogger(__name__)

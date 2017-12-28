@@ -2,7 +2,7 @@ import unittest
 
 import walkoff.appgateway
 import walkoff.config.config
-import walkoff.core.controller
+import walkoff.controller
 from walkoff.case import subscription, database
 from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from tests import config
@@ -20,10 +20,10 @@ class TestSimpleWorkflow(unittest.TestCase):
         MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
-        walkoff.core.controller.controller.initialize_threading()
+        walkoff.controller.controller.initialize_threading()
 
     def setUp(self):
-        self.controller = walkoff.core.controller.controller
+        self.controller = walkoff.controller.controller
         self.controller.workflows = {}
         self.controller.load_playbooks(resource_collection=config.test_workflows_path)
         self.start = datetime.utcnow()
@@ -36,9 +36,8 @@ class TestSimpleWorkflow(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        import apps
         walkoff.appgateway.clear_cache()
-        walkoff.core.controller.controller.shutdown_pool()
+        walkoff.controller.controller.shutdown_pool()
 
     def test_simple_workflow_execution(self):
         workflow = self.controller.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')

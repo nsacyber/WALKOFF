@@ -10,7 +10,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from walkoff.core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 
 logger = logging.getLogger(__name__)
 

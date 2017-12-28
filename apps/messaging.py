@@ -1,4 +1,4 @@
-from walkoff.core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 import re
 import logging
 from six import add_metaclass

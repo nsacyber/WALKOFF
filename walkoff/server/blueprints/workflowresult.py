@@ -4,7 +4,7 @@ from flask import Blueprint, Response
 from gevent import sleep
 from gevent.event import Event, AsyncResult
 
-from walkoff.core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 from walkoff.core.helpers import convert_action_argument, create_sse_event
 from walkoff.security import jwt_required_in_query
 

@@ -7,7 +7,7 @@ from gevent import monkey
 import walkoff.case.database as case_database
 import walkoff.case.subscription
 import walkoff.config.paths
-import walkoff.core.controller
+import walkoff.controller
 from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
 from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
@@ -28,7 +28,7 @@ class TestWorkflowServer(ServerTestCase):
         case_database.initialize()
 
     def tearDown(self):
-        walkoff.core.controller.workflows = {}
+        walkoff.controller.workflows = {}
         walkoff.case.subscription.clear_subscriptions()
         for case in case_database.case_db.session.query(case_database.Case).all():
             case_database.case_db.session.delete(case)

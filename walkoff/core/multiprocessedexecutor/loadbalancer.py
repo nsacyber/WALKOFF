@@ -12,7 +12,7 @@ from zmq.utils.strtypes import asbytes
 import walkoff.config.config
 import walkoff.config.paths
 from walkoff.core.argument import Argument
-from walkoff.core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 from walkoff.proto.build import data_pb2
 
 try:

@@ -8,7 +8,7 @@ import walkoff.case.database as case_database
 import walkoff.config.paths
 from walkoff.core import helpers
 from walkoff.core.argument import Argument
-from walkoff.core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 from walkoff.core.executionelements.action import Action
 from walkoff.core.executionelements.branch import Branch
 from walkoff.server import flaskserver as flask_server

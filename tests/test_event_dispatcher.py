@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from walkoff.core.events import WalkoffEvent, EventType
+from walkoff.events import WalkoffEvent, EventType
 from interfaces import EventDispatcher
 
 

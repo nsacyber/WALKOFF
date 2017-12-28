@@ -94,8 +94,8 @@ def create_app():
     walkoff.config.config.initialize()
     register_blueprints(_app)
 
-    import walkoff.core.controller
-    walkoff.core.controller.controller.load_playbooks()
+    import walkoff.controller
+    walkoff.controller.controller.load_playbooks()
     import walkoff.server.workflowresults
     return _app
 

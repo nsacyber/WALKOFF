@@ -2,7 +2,7 @@ import json
 
 import walkoff.case.database as case_database
 from walkoff.case.workflowresults import WorkflowResult, ActionResult
-from walkoff.core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 
 
 @WalkoffEvent.WorkflowShutdown.connect

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from walkoff.core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 
 app_metrics = {}
 

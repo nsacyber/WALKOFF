@@ -1,9 +1,8 @@
 import unittest
 
-import apps
 import walkoff.appgateway
 import walkoff.config.config
-from walkoff.core import controller
+from walkoff import controller
 from tests import config
 from tests.config import test_apps_path
 

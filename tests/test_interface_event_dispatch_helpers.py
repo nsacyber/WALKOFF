@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from walkoff.core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 from interfaces import convert_events, UnknownEvent, validate_events, add_docstring, convert_to_iterable
 
 

@@ -7,8 +7,8 @@ from gevent import monkey
 import walkoff.case.database as case_database
 import walkoff.case.subscription
 import walkoff.config.paths
-import walkoff.core.controller
-from walkoff.core.events import WalkoffEvent
+import walkoff.controller
+from walkoff.events import WalkoffEvent
 from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
@@ -28,7 +28,7 @@ class TestTriggersServer(ServerTestCase):
         case_database.initialize()
 
     def tearDown(self):
-        walkoff.core.controller.workflows = {}
+        walkoff.controller.workflows = {}
         walkoff.case.subscription.clear_subscriptions()
         for case in case_database.case_db.session.query(case_database.Case).all():
             case_database.case_db.session.delete(case)

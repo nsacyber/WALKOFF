@@ -1,14 +1,13 @@
 import time
 import unittest
 
-import apps
 import walkoff.appgateway
 import walkoff.case.database as case_database
 import walkoff.case.subscription as case_subscription
 import walkoff.config.config
 import walkoff.config.config
-from walkoff.core import controller
-from walkoff.core.events import WalkoffEvent, EventType
+from walkoff import controller
+from walkoff.events import WalkoffEvent, EventType
 from tests import config
 
 

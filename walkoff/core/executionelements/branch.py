@@ -1,7 +1,7 @@
 import logging
 from functools import total_ordering
 
-from walkoff.core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 from walkoff.core.executionelements.executionelement import ExecutionElement
 
 logger = logging.getLogger(__name__)

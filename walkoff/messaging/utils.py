@@ -1,7 +1,7 @@
 import json
 import logging
 
-from walkoff.core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 from walkoff.database import Message, Role, User
 from walkoff.server.extensions import db
 import walkoff.messaging

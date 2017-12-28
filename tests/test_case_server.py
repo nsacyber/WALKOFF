@@ -345,7 +345,7 @@ class TestCaseServer(ServerTestCase):
 
     def test_display_possible_subscriptions(self):
         response = self.get_with_status_check('/api/availablesubscriptions', headers=self.headers)
-        from walkoff.core.events import EventType, WalkoffEvent
+        from walkoff.events import EventType, WalkoffEvent
         self.assertSetEqual({event['type'] for event in response},
                             {event.name for event in EventType if event != EventType.other})
         for event_type in (event.name for event in EventType if event != EventType.other):

@@ -6,7 +6,7 @@ from google.protobuf.json_format import MessageToDict
 from zmq.utils.strtypes import cast_unicode
 
 from walkoff.core.argument import Argument
-from walkoff.core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 from walkoff.core.multiprocessedexecutor import loadbalancer
 from walkoff.core.multiprocessedexecutor.worker import convert_to_protobuf, recreate_workflow
 from walkoff.proto.build import data_pb2

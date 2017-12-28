@@ -2,7 +2,7 @@ from datetime import datetime
 
 import walkoff.case.database as case_database
 import walkoff.case.subscription as case_subscription
-from walkoff.core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 
 
 def setup_subscriptions_for_action(workflow_uids, action_uids, action_events=None, workflow_events=None):

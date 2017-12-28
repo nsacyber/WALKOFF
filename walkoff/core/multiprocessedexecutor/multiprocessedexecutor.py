@@ -11,7 +11,7 @@ import zmq.green as zmq
 
 import walkoff.config.config
 import walkoff.config.paths
-from walkoff.core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 from walkoff.core.multiprocessedexecutor import loadbalancer, worker, threadauthenticator
 
 logger = logging.getLogger(__name__)

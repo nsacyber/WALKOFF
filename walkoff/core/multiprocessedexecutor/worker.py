@@ -12,7 +12,7 @@ from six import string_types
 import walkoff.config.config
 import walkoff.config.paths
 from walkoff.core.argument import Argument
-from walkoff.core.events import EventType, WalkoffEvent
+from walkoff.events import EventType, WalkoffEvent
 from walkoff.core.executionelements.workflow import Workflow
 from walkoff.proto.build import data_pb2
 

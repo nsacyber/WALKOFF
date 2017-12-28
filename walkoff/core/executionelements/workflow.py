@@ -4,7 +4,7 @@ import threading
 from copy import deepcopy
 
 from walkoff.core.appinstance import AppInstance
-from walkoff.core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 from walkoff.core.executionelements.action import Action
 from walkoff.core.executionelements.branch import Branch
 from walkoff.core.executionelements.executionelement import ExecutionElement

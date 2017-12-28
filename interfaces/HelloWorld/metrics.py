@@ -1,5 +1,5 @@
 from interfaces import dispatcher, AppBlueprint
-from walkoff.core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 from flask import Blueprint, jsonify, Response
 from flask_jwt_extended import jwt_required
 from gevent import sleep

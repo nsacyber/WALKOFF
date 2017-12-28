@@ -7,7 +7,7 @@ from walkoff.messaging.utils import strip_requires_response_from_message_body, s
 from walkoff.database import db, User, Role
 from walkoff.server import flaskserver
 from datetime import datetime
-from walkoff.core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 import json
 
 
