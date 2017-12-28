@@ -6,7 +6,7 @@ import walkoff.config.config
 from walkoff.appgateway import is_app_action_bound
 from walkoff.core import helpers
 from walkoff.server.returncodes import *
-from walkoff.server.security import permissions_accepted_for_resources, ResourcePermissions
+from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 
 
 def read_all_apps():

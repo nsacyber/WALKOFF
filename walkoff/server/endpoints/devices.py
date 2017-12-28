@@ -8,7 +8,7 @@ from apps.devicedb import Device, App, device_db
 from walkoff.core.helpers import get_app_device_api, InvalidArgument, UnknownDevice, UnknownApp, format_exception_message
 from walkoff.core.validator import validate_device_fields
 from walkoff.server.returncodes import *
-from walkoff.server.security import permissions_accepted_for_resources, ResourcePermissions
+from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 
 
 def get_device_json_with_app_name(device):

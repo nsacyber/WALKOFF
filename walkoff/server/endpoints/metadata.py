@@ -7,7 +7,7 @@ import walkoff.config.paths
 from walkoff.core import helpers
 from walkoff.core.events import WalkoffEvent, EventType
 from walkoff.server.returncodes import SUCCESS
-from walkoff.server.security import permissions_accepted_for_resources, ResourcePermissions
+from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 
 
 def read_all_possible_subscriptions():

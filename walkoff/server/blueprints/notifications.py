@@ -6,7 +6,7 @@ from gevent import sleep
 from gevent.event import Event, AsyncResult
 from enum import Enum, unique
 from walkoff.core.helpers import create_sse_event
-from walkoff.server.security import jwt_required_in_query
+from walkoff.security import jwt_required_in_query
 from walkoff.messaging import MessageActionEvent
 
 notifications_page = Blueprint('notifications_page', __name__)

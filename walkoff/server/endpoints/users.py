@@ -5,7 +5,7 @@ from walkoff.server.returncodes import *
 from walkoff.database import add_user
 from walkoff.server.extensions import db
 from walkoff.database.user import User
-from walkoff.server.security import permissions_accepted_for_resources, ResourcePermissions, admin_required
+from walkoff.security import permissions_accepted_for_resources, ResourcePermissions, admin_required
 
 
 def read_all_users():

@@ -2,7 +2,7 @@ from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt_claims
 
 from walkoff.server.returncodes import *
-from walkoff.server.security import permissions_accepted_for_resources, ResourcePermissions
+from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 import walkoff.messaging
 
 

@@ -6,7 +6,7 @@ from gevent.event import Event, AsyncResult
 
 from walkoff.core.events import WalkoffEvent
 from walkoff.core.helpers import convert_action_argument, create_sse_event
-from walkoff.server.security import jwt_required_in_query
+from walkoff.security import jwt_required_in_query
 
 workflowresults_page = Blueprint('workflowresults_page', __name__)
 

@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 
 import walkoff.case.database as case_database
 from walkoff.server.returncodes import *
-from walkoff.server.security import permissions_accepted_for_resources, ResourcePermissions
+from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 
 
 def update_event_note():

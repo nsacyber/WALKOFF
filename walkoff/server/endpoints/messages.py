@@ -1,4 +1,4 @@
-from walkoff.server.security import ResourcePermissions, permissions_accepted_for_resources
+from walkoff.security import ResourcePermissions, permissions_accepted_for_resources
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from walkoff.server.returncodes import *
 from flask import request

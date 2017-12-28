@@ -6,7 +6,7 @@ from flask_jwt_extended import jwt_required
 import walkoff.config.config
 import walkoff.config.paths
 from walkoff.server.returncodes import *
-from walkoff.server.security import permissions_accepted_for_resources, ResourcePermissions
+from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 
 
 def __get_current_configuration():
