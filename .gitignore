@@ -40,3 +40,4 @@ npm-debug.log
 !apps/messaging.py
 */__pycache__*
 .ipynb_checkpoints/
+backups/*

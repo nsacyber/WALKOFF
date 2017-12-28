@@ -5,9 +5,9 @@ import subprocess
 import shutil
 import time
 import setup_walkoff
-import migrate_api
-import migrate_workflows
-from core.config.config import walkoff_version as version
+import scripts.migrate_api
+import scripts.migrate_workflows
+from walkoff import __version__ as version
 
 
 def prompt(question):
@@ -20,7 +20,10 @@ def prompt(question):
 
 
 def archive():
-    filename = "migrate/backups/" + version + "-" + time.strftime("%Y%m%d-%H%M%S")
+    if not os.path.exists("backups"):
+        os.makedirs("backups")
+
+    filename = "backups/" + version + "-" + time.strftime("%Y%m%d-%H%M%S")
     ext = ""
 
     if os.name == "nt":
@@ -77,9 +80,9 @@ def main():
     if prompt("Do you want to setup WALKOFF now?"):
         setup_walkoff.main()
     if prompt("Do you want to migrate your app apis?"):
-        migrate_api.main()
+        scripts.migrate_api.main()
     if prompt("Do you want to migrate your workflows?"):
-        migrate_workflows.main()
+        scripts.migrate_workflows.main()
     if prompt("Do you wish to use alembic to migrate databases? (This will install alembic if you don't have it.)"):
         alembic()
 

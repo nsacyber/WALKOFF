@@ -4,10 +4,10 @@ import os
 def main():
     print('\nInstalling Python Dependencies...')
     os.system('pip install -r requirements.txt')
-    os.system('python install_dependencies.py')
+    os.system('python scripts/install_dependencies.py')
 
     print('\nGenerating Certificates...')
-    os.system('python generate_certificates.py')
+    os.system('python scripts/generate_certificates.py')
 
     print('\nInstalling Node Packages...')
     os.chdir('./client')
