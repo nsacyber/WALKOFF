@@ -10,6 +10,7 @@ from gevent import monkey
 from gevent import pywsgi
 
 from walkoff.config import paths, config
+import walkoff
 
 logger = logging.getLogger('walkoff')
 
@@ -55,8 +56,7 @@ def run(host, port):
 
 
 def print_banner():
-    from walkoff.config.config import walkoff_version
-    banner = '***** Running WALKOFF v.{} *****'.format(walkoff_version)
+    banner = '***** Running WALKOFF v.{} *****'.format(walkoff.__version__)
     header_footer_banner = '*' * len(banner)
     logger.info(header_footer_banner)
     logger.info(banner)
@@ -85,8 +85,7 @@ def parse_args():
 
     args = parser.parse_args()
     if args.version:
-        from walkoff.config.config import walkoff_version
-        print(walkoff_version)
+        print(walkoff.__version__)
         exit(0)
 
     return args

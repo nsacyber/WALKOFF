@@ -1,10 +1,10 @@
-import walkoff.config.config
+import walkoff
 from walkoff.core.executionelements.executionelement import ExecutionElement
 
 
 class Playbook(ExecutionElement):
     def __init__(self, name, workflows=None, uid=None,
-                 walkoff_version=walkoff.config.config.walkoff_version):
+                 walkoff_version=walkoff.__version__):
         """Creates a Playbook object.
 
         Args:

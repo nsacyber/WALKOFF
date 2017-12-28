@@ -9,8 +9,9 @@ import sys
 sys.path.append(os.path.abspath('.'))
 from walkoff.appgateway import cache_apps, is_app_action_bound
 from apps.devicedb import device_db, App
-from walkoff.config.config import walkoff_version, load_app_apis
+from walkoff.config.config import load_app_apis
 from walkoff.core.helpers import get_app_action_api
+import walkoff
 
 
 def convert_playbooks():
@@ -26,7 +27,7 @@ def convert_playbook(path):
     with open(path, 'r') as f:
         playbook = json.load(f)
         if 'walkoff_version' not in playbook:
-            playbook['walkoff_version'] = walkoff_version
+            playbook['walkoff_version'] = walkoff.__version__
             for workflow in playbook['workflows']:
                 convert_workflow(workflow)
     with open(path, 'w') as f:
