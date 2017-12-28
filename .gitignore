@@ -33,8 +33,7 @@ coverage.*
 _build/
 sphinx/
 npm-debug.log
-!apps/__init__.py
-!apps/messaging.py
+!apps/*.py
 */__pycache__*
 .ipynb_checkpoints/
 backups/*

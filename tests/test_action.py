@@ -5,7 +5,7 @@ import walkoff.appgateway
 import walkoff.config.config
 from walkoff.core.appinstance import AppInstance
 from walkoff.core.argument import Argument
-from walkoff.core.decorators import ActionResult
+from walkoff.core.actionresult import ActionResult
 from walkoff.core.events import WalkoffEvent
 from walkoff.core.executionelements.action import Action
 from walkoff.core.executionelements.condition import Condition
