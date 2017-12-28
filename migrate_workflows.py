@@ -184,7 +184,11 @@ def convert_arg_value(arg, actions):
         return {'value': arg}
 
 
-if __name__ == '__main__':
+def main():
     cache_apps(join('.', 'apps'))
     load_app_apis()
     convert_playbooks()
+
+
+if __name__ == '__main__':
+    main()
