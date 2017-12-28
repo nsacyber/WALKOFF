@@ -2,6 +2,7 @@ import unittest
 import uuid
 
 import apps
+import walkoff.appgateway
 import walkoff.config.config
 from walkoff.core.argument import Argument
 from walkoff.core.decorators import ActionResult
@@ -16,12 +17,12 @@ from tests.config import test_apps_path
 class TestBranch(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        apps.cache_apps(test_apps_path)
+        walkoff.appgateway.cache_apps(test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
-        apps.clear_cache()
+        walkoff.appgateway.clear_cache()
 
     def __compare_init(self, elem, source_uid, destination_uid, conditions=None, status='Success', uid=None,
                        priority=999):

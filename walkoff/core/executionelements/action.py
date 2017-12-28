@@ -4,7 +4,7 @@ import threading
 import uuid
 
 import walkoff.config.config
-from apps import get_app_action, is_app_action_bound
+from walkoff.appgateway import get_app_action, is_app_action_bound
 from walkoff.core import contextdecorator
 from walkoff.core.argument import Argument
 from walkoff.core.decorators import ActionResult

@@ -4,6 +4,7 @@ import stat
 import unittest
 
 import apps
+import walkoff.appgateway
 import walkoff.config.config
 import walkoff.config.paths
 import walkoff.server.flaskserver
@@ -21,7 +22,7 @@ def modified_setup_worker_env():
     import tests.config
     import walkoff.config.config
     import apps
-    apps.cache_apps(tests.config.test_apps_path)
+    walkoff.appgateway.cache_apps(tests.config.test_apps_path)
     walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
 
 
@@ -55,7 +56,7 @@ class ServerTestCase(unittest.TestCase):
             if os.path.isfile(tests.config.test_data_path):
                 os.remove(tests.config.test_data_path)
             os.makedirs(tests.config.test_data_path)
-        apps.cache_apps(path=tests.config.test_apps_path)
+        walkoff.appgateway.cache_apps(path=tests.config.test_apps_path)
         walkoff.config.config.app_apis = {}
         walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
         walkoff.config.config.num_processes = 2
@@ -82,7 +83,7 @@ class ServerTestCase(unittest.TestCase):
                 os.remove(tests.config.test_data_path)
             else:
                 shutil.rmtree(tests.config.test_data_path)
-        apps.clear_cache()
+        walkoff.appgateway.clear_cache()
         walkoff.server.flaskserver.running_context.controller.shutdown_pool()
 
     def setUp(self):

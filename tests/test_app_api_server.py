@@ -1,6 +1,7 @@
 import json
 
 import apps
+import walkoff.appgateway
 import walkoff.config.config
 import walkoff.config.paths
 import tests.config
@@ -13,8 +14,8 @@ class TestAppApiServerFuncs(ServerTestCase):
     def setUp(self):
         self.original_apps_path = walkoff.config.paths.apps_path
         walkoff.config.paths.apps_path = tests.config.test_apps_path
-        apps.clear_cache()
-        apps.cache_apps(tests.config.test_apps_path)
+        walkoff.appgateway.clear_cache()
+        walkoff.appgateway.cache_apps(tests.config.test_apps_path)
 
     def tearDown(self):
         walkoff.config.paths.apps_path = self.original_apps_path

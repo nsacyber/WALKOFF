@@ -2,7 +2,7 @@ import os.path
 from importlib import import_module
 from unittest import TestCase
 
-from apps import AppCache
+from walkoff.appgateway import AppCache
 from walkoff.core.decorators import action
 from walkoff.core.helpers import UnknownApp, UnknownAppAction
 

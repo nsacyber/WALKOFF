@@ -106,6 +106,6 @@ def load_app_apis(apps_path=None):
 
 def initialize():
     load_config()
-    from apps import cache_apps
+    from walkoff.appgateway import cache_apps
     cache_apps(walkoff.config.paths.apps_path)
     load_app_apis()

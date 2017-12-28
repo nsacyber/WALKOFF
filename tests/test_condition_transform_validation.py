@@ -3,6 +3,7 @@ import unittest
 import yaml
 
 import apps
+import walkoff.appgateway
 import walkoff.config.config
 from walkoff.config.paths import walkoff_schema_path
 from walkoff.core.validator import *
@@ -12,15 +13,15 @@ from tests.config import basic_app_api, test_apps_path
 class TestConditionTransformValidation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        apps.clear_cache()
-        apps.cache_apps(test_apps_path)
+        walkoff.appgateway.clear_cache()
+        walkoff.appgateway.cache_apps(test_apps_path)
         walkoff.config.config.load_app_apis(test_apps_path)
-        cls.conditions = apps.get_all_conditions_for_app('HelloWorld')
-        cls.transforms = apps.get_all_transforms_for_app('HelloWorld')
+        cls.conditions = walkoff.appgateway.get_all_conditions_for_app('HelloWorld')
+        cls.transforms = walkoff.appgateway.get_all_transforms_for_app('HelloWorld')
 
     @classmethod
     def tearDownClass(cls):
-        apps.clear_cache()
+        walkoff.appgateway.clear_cache()
 
     def setUp(self):
         with open(basic_app_api, 'r') as f:

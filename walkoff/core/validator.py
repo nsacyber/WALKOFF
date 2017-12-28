@@ -102,7 +102,8 @@ def convert_json(spec, param_in, message_prefix):
 
 
 def validate_app_spec(spec, app_name, spec_url='', http_handlers=None):
-    from apps import get_all_conditions_for_app, get_all_transforms_for_app
+    from walkoff.appgateway import get_all_transforms_for_app
+    from walkoff.appgateway import get_all_conditions_for_app
     walkoff_resolver = validate_spec_json(
         spec,
         os.path.join(walkoff.config.paths.walkoff_schema_path),
@@ -142,7 +143,8 @@ def validate_data_in_param(params, data_in_param_name, message_prefix):
 
 
 def validate_condition_transform_params(spec, app_name, action_type, defined_actions, dereferencer):
-    from apps import get_transform, get_condition
+    from walkoff.appgateway import get_transform
+    from walkoff.appgateway import get_condition
     seen = set()
     for action_name, action in spec.items():
         action = dereferencer(action)
@@ -180,7 +182,8 @@ def validate_spec_json(spec, schema_path, spec_url='', http_handlers=None):
 
 
 def validate_actions(actions, dereferencer, app_name):
-    from apps import get_all_actions_for_app, get_app_action
+    from walkoff.appgateway import get_app_action
+    from walkoff.appgateway import get_all_actions_for_app
     defined_actions = get_all_actions_for_app(app_name)
     seen = set()
     for action_name, action in actions.items():

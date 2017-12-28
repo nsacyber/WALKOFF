@@ -1,5 +1,6 @@
 import unittest
 
+import walkoff.appgateway
 import walkoff.config.config
 import walkoff.core.controller
 from walkoff.case import subscription, database
@@ -12,7 +13,7 @@ from tests.util.mock_objects import *
 class TestSimpleWorkflow(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from apps import cache_apps
+        from walkoff.appgateway import cache_apps
         cache_apps(path=config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
         walkoff.config.config.num_processes = 2
@@ -36,7 +37,7 @@ class TestSimpleWorkflow(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         import apps
-        apps.clear_cache()
+        walkoff.appgateway.clear_cache()
         walkoff.core.controller.controller.shutdown_pool()
 
     def test_simple_workflow_execution(self):

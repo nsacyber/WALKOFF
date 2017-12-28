@@ -3,6 +3,7 @@ import unittest
 from os import path
 
 import apps
+import walkoff.appgateway
 import walkoff.case.database as case_database
 import walkoff.case.subscription as case_subscription
 import walkoff.config.config
@@ -21,7 +22,7 @@ except ImportError:
 class TestWorkflowManipulation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        apps.cache_apps(config.test_apps_path)
+        walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
         walkoff.config.config.num_processes = 2
         MultiprocessedExecutor.initialize_threading = mock_initialize_threading
@@ -49,7 +50,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        apps.clear_cache()
+        walkoff.appgateway.clear_cache()
         walkoff.core.controller.controller.shutdown_pool()
 
     def test_pause_and_resume_workflow(self):

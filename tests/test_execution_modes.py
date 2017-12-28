@@ -2,6 +2,7 @@ import time
 import unittest
 
 import apps
+import walkoff.appgateway
 import walkoff.case.database as case_database
 import walkoff.case.subscription as case_subscription
 import walkoff.config.config
@@ -14,7 +15,7 @@ from tests import config
 class TestExecutionModes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        apps.cache_apps(config.test_apps_path)
+        walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
 
     def setUp(self):
@@ -22,7 +23,7 @@ class TestExecutionModes(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        apps.clear_cache()
+        walkoff.appgateway.clear_cache()
 
     def test_start_stop_execution_loop(self):
         c = controller.Controller()

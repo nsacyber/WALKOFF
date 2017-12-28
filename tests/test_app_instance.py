@@ -2,6 +2,7 @@ import importlib
 import unittest
 
 import apps
+import walkoff.appgateway
 from walkoff.core import appinstance
 from tests.config import test_apps_path
 
@@ -9,11 +10,11 @@ from tests.config import test_apps_path
 class TestInstance(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        apps.cache_apps(test_apps_path)
+        walkoff.appgateway.cache_apps(test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
-        apps.clear_cache()
+        walkoff.appgateway.clear_cache()
 
     def test_create_instance(self):
         # extra janky way to import this because we still need a more predictable and consistent way to import modules

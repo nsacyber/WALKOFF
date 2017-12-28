@@ -3,7 +3,7 @@ from copy import deepcopy
 from flask_jwt_extended import jwt_required
 
 import walkoff.config.config
-from apps import is_app_action_bound
+from walkoff.appgateway import is_app_action_bound
 from walkoff.core import helpers
 from walkoff.server.returncodes import *
 from walkoff.server.security import permissions_accepted_for_resources, ResourcePermissions

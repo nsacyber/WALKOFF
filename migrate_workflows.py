@@ -5,7 +5,7 @@ from os.path import join
 
 from six import string_types
 
-from apps import cache_apps, is_app_action_bound
+from walkoff.appgateway import cache_apps, is_app_action_bound
 from apps.devicedb import device_db, App
 from walkoff.config.config import walkoff_version, load_app_apis
 from walkoff.core.helpers import get_app_action_api

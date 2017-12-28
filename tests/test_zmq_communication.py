@@ -4,6 +4,7 @@ import unittest
 from os import path
 
 import apps
+import walkoff.appgateway
 import walkoff.config.config
 import walkoff.core.controller
 from tests import config
@@ -17,7 +18,7 @@ class TestZMQCommunication(unittest.TestCase):
         from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
         pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)
         walkoff.core.controller.controller.initialize_threading(pids)
-        apps.cache_apps(config.test_apps_path)
+        walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
         walkoff.config.config.num_processes = 2
 
@@ -38,7 +39,7 @@ class TestZMQCommunication(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        apps.clear_cache()
+        walkoff.appgateway.clear_cache()
         walkoff.core.controller.controller.shutdown_pool()
 
     '''Request and Result Socket Testing (Basic Workflow Execution)'''

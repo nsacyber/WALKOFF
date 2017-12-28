@@ -4,6 +4,7 @@ from os import sep
 from os.path import join
 
 import apps
+import walkoff.appgateway
 import walkoff.config.paths
 from walkoff.core.helpers import *
 from tests.config import test_workflows_path, test_apps_path
@@ -13,7 +14,7 @@ from tests.util.assertwrappers import orderless_list_compare
 class TestHelperFunctions(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        apps.cache_apps(test_apps_path)
+        walkoff.appgateway.cache_apps(test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=test_apps_path)
 
     def setUp(self):
@@ -25,7 +26,7 @@ class TestHelperFunctions(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        apps.clear_cache()
+        walkoff.appgateway.clear_cache()
 
     # TODO: Figure out replacement test
     # def test_load_app_function(self):

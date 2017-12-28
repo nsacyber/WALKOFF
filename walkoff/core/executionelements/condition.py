@@ -1,6 +1,6 @@
 import logging
 
-from apps import get_condition
+from walkoff.appgateway import get_condition
 from walkoff.core.argument import Argument
 from walkoff.core.events import WalkoffEvent
 from walkoff.core.executionelements.executionelement import ExecutionElement

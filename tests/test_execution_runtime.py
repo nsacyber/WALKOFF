@@ -2,6 +2,7 @@ import unittest
 from datetime import datetime
 
 import apps
+import walkoff.appgateway
 import walkoff.case.database as case_database
 import walkoff.config.config
 import walkoff.config.config
@@ -16,7 +17,7 @@ from tests.util.mock_objects import *
 class TestExecutionRuntime(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        apps.cache_apps(config.test_apps_path)
+        walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
         MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
@@ -35,7 +36,7 @@ class TestExecutionRuntime(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        apps.clear_cache()
+        walkoff.appgateway.clear_cache()
         walkoff.core.controller.controller.shutdown_pool()
 
     def test_templated_workflow(self):

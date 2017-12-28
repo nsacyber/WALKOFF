@@ -2,6 +2,7 @@ import unittest
 import uuid
 
 import apps
+import walkoff.appgateway
 import walkoff.config.config
 from walkoff.core.argument import Argument
 from walkoff.core.executionelements.transform import Transform
@@ -12,13 +13,13 @@ from tests.config import test_apps_path
 class TestTransform(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        apps.clear_cache()
-        apps.cache_apps(path=test_apps_path)
+        walkoff.appgateway.clear_cache()
+        walkoff.appgateway.cache_apps(path=test_apps_path)
         walkoff.config.config.load_app_apis(test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
-        apps.clear_cache()
+        walkoff.appgateway.clear_cache()
 
     def __compare_init(self, elem, app_name, action_name, arguments=None, uid=None):
         arguments = arguments if arguments is not None else {}

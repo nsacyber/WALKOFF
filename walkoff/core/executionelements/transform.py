@@ -1,7 +1,7 @@
 import logging
 from copy import deepcopy
 
-from apps import get_transform
+from walkoff.appgateway import get_transform
 from walkoff.core.argument import Argument
 from walkoff.core.events import WalkoffEvent
 from walkoff.core.executionelements.executionelement import ExecutionElement

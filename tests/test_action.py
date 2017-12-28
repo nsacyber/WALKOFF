@@ -1,6 +1,7 @@
 import unittest
 
 import apps
+import walkoff.appgateway
 import walkoff.config.config
 from walkoff.core.appinstance import AppInstance
 from walkoff.core.argument import Argument
@@ -15,12 +16,12 @@ from tests.config import test_apps_path
 class TestAction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        apps.cache_apps(test_apps_path)
+        walkoff.appgateway.cache_apps(test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
-        apps.clear_cache()
+        walkoff.appgateway.clear_cache()
 
     def __compare_init(self, elem, name, action_name, app_name, device_id=None, arguments=None, triggers=None,
                        position=None, uid=None, templated=False, raw_representation=None):
