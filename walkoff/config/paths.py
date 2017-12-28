@@ -6,7 +6,7 @@ api_path = join('.', 'walkoff', 'api')
 apps_path = join('.', 'apps')
 case_db_path = join(data_path, 'events.db')
 
-client_path = join('.', 'client')
+client_path = join('.', 'walkoff', 'client')
 config_path = join(data_path, 'walkoff.config')
 db_path = join(data_path, 'walkoff.db')
 default_appdevice_export_path = join(data_path, 'appdevice.json')
