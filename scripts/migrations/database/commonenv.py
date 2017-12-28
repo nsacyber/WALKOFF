@@ -1,12 +1,6 @@
-from __future__ import with_statement
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
-import os
-import sys
-
-sys.path.append(os.getcwd())
-from walkoff.server.extensions import db
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -16,19 +10,8 @@ config = context.config
 # This line sets up loggers basically.
 fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = db.metadata
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
-
-
-def run_migrations_offline():
+def run_migrations_offline(target_metadata):
     """Run migrations in 'offline' mode.
 
     This configures the context with just a URL
@@ -48,7 +31,7 @@ def run_migrations_offline():
         context.run_migrations()
 
 
-def run_migrations_online():
+def run_migrations_online(target_metadata):
     """Run migrations in 'online' mode.
 
     In this scenario we need to create an Engine
@@ -69,7 +52,9 @@ def run_migrations_online():
         with context.begin_transaction():
             context.run_migrations()
 
-if context.is_offline_mode():
-    run_migrations_offline()
-else:
-    run_migrations_online()
+
+def run(target_metadata):
+    if context.is_offline_mode():
+        run_migrations_offline(target_metadata)
+    else:
+        run_migrations_online(target_metadata)
