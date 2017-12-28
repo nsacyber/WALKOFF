@@ -11,7 +11,7 @@ from walkoff.core.actionresult import ActionResult
 from walkoff.core.events import WalkoffEvent
 from walkoff.core.executionelements.executionelement import ExecutionElement
 from walkoff.core.helpers import get_app_action_api, InvalidArgument, format_exception_message
-from walkoff.core.validator import validate_app_action_parameters
+from walkoff.appgateway.validator import validate_app_action_parameters
 
 logger = logging.getLogger(__name__)
 

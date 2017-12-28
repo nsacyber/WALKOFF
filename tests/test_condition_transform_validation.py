@@ -2,11 +2,10 @@ import unittest
 
 import yaml
 
-import apps
 import walkoff.appgateway
 import walkoff.config.config
 from walkoff.config.paths import walkoff_schema_path
-from walkoff.core.validator import *
+from walkoff.appgateway.validator import *
 from tests.config import basic_app_api, test_apps_path
 
 

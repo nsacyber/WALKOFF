@@ -95,7 +95,7 @@ def load_app_apis(apps_path=None):
                 url = join(apps_path, app, 'api.yaml')
                 with open(url) as function_file:
                     api = yaml.load(function_file.read())
-                    from walkoff.core.validator import validate_app_spec
+                    from walkoff.appgateway.validator import validate_app_spec
                     validate_app_spec(api, app)
                     app_apis[app] = api
             except Exception as e:

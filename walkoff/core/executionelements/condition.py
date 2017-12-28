@@ -5,7 +5,7 @@ from walkoff.core.argument import Argument
 from walkoff.core.events import WalkoffEvent
 from walkoff.core.executionelements.executionelement import ExecutionElement
 from walkoff.core.helpers import get_condition_api, InvalidArgument, format_exception_message, split_api_params
-from walkoff.core.validator import validate_condition_parameters
+from walkoff.appgateway.validator import validate_condition_parameters
 
 logger = logging.getLogger(__name__)
 
