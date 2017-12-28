@@ -13,7 +13,6 @@ data/walkoff.db
 data/events.db
 data/devices.db
 data/walkoff.config
-tests/profileVisualizations/*
 build/*
 .idea/dictionaries/*.xml
 .idea/inspectionProfiles/Project_Default.xml
@@ -34,3 +33,4 @@ coverage.*
 _build/
 sphinx/
 npm-debug.log
+.ipynb_checkpoints/

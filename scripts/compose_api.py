@@ -1,7 +1,11 @@
 import logging
 import os
+import sys
+
+sys.path.append(os.path.abspath('.'))
 
 from walkoff.config import paths
+
 
 logger = logging.getLogger(__name__)
 

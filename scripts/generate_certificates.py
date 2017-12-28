@@ -2,6 +2,9 @@ import os
 import shutil
 
 import zmq.auth
+import sys
+
+sys.path.append(os.path.abspath('.'))
 
 import walkoff.config.paths
 
@@ -13,7 +16,6 @@ def generate_certificates():
 
     # Create dirs for certs, remove old content if necessary
     for d in [keys_dir, public_keys_dir, secret_keys_dir]:
-        print(d)
         if os.path.exists(d):
             shutil.rmtree(d)
         os.mkdir(d)

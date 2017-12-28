@@ -4,7 +4,9 @@ from copy import deepcopy
 from os.path import join
 
 from six import string_types
+import sys
 
+sys.path.append(os.path.abspath('.'))
 from walkoff.appgateway import cache_apps, is_app_action_bound
 from apps.devicedb import device_db, App
 from walkoff.config.config import walkoff_version, load_app_apis
