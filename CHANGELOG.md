@@ -48,6 +48,8 @@ Introducing roles, messages, and notifications
   and can be generated using `make html`. Additionally, they now use the
   ReadTheDocs theme.
 * Google Protocol Buffer message structure has been significantly altered.
+* Tags used for action, condition, and transform decorators have been
+  encapsulated in a WalkoffTag enum
 
 ### Security
 * JWT structure changes
