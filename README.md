@@ -137,8 +137,7 @@ considered permanent*
 An update script, `update.py`, is provided to update the repo to the most
 recent release. This script uses SqlAlchemy-Alembic to update database schemas
 and custom upgrade scripts to update the workflow JSON files. To run this
-script in interactive mode run `python update.py -i`, look at other options
-using `python update.py --help`
+script in interactive mode run `python update.py -i`. Other options can be viewed using `python update.py --help`. The most common usage is `python update.py -pcs` for pull, clean, and setup.
 
 ## Stability and Versioning
 
