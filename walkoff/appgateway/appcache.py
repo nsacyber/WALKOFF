@@ -4,6 +4,7 @@ import os.path
 import pkgutil
 import sys
 from importlib import import_module
+from collections import namedtuple
 
 from six import string_types
 
@@ -12,6 +13,8 @@ from .walkofftag import WalkoffTag
 
 _logger = logging.getLogger(__name__)
 
+AppCacheActionEntry = namedtuple('AppCacheEntry', ['run', 'is_bound', 'tags'])
+# AppCacheAppEntry = namedtuple('AppCacheAppEntry', ['main', 'actions'])
 
 class AppCache(object):
     """Object which caches app actions, conditions, and transforms
@@ -20,9 +23,9 @@ class AppCache(object):
         _cache (dict): The cache of the app and functions
     """
     # TODO: Use an enum for this? Something better than this anyways
-    exception_lookup = {'actions': UnknownAppAction,
-                        'conditions': UnknownCondition,
-                        'transforms': UnknownTransform}
+    exception_lookup = {WalkoffTag.action: UnknownAppAction,
+                        WalkoffTag.condition: UnknownCondition,
+                        WalkoffTag.transform: UnknownTransform}
 
     def __init__(self):
         self._cache = {}
@@ -92,7 +95,7 @@ class AppCache(object):
         Raises:
             UnknownApp: If the app is not found in the cache
         """
-        return self._get_function_type_names(app_name, 'actions')
+        return self._get_function_type_names(app_name, WalkoffTag.action)
 
     def get_app_action(self, app_name, action_name):
         """Gets the action function for a given app and action name
@@ -108,7 +111,7 @@ class AppCache(object):
             UnknownApp: If the app is not found in the cache
             UnknownAppAction: If the app does not have the specified action
         """
-        return self._get_function_type(app_name, action_name, 'actions')
+        return self._get_function_type(app_name, action_name, WalkoffTag.action)
 
     def is_app_action_bound(self, app_name, action_name):
         """Determines if the action is bound (meaning it's inside a class) or not
@@ -133,7 +136,7 @@ class AppCache(object):
             _logger.error('Cannot locate app {} in cache!'.format(app_name))
             raise UnknownApp(app_name)
         try:
-            return app_cache['actions'][action_name]['bound']
+            return app_cache['actions'][action_name].is_bound
         except KeyError:
             _logger.error('App {0} has no action {1}'.format(app_name, action_name))
             raise UnknownAppAction(app_name, action_name)
@@ -150,7 +153,7 @@ class AppCache(object):
         Raises:
             UnknownApp: If the app is not found in the cache
         """
-        return self._get_function_type_names(app_name, 'conditions')
+        return self._get_function_type_names(app_name, WalkoffTag.condition)
 
     def get_app_condition(self, app_name, condition_name):
         """Gets the condition function for a given app and action name
@@ -166,7 +169,7 @@ class AppCache(object):
             UnknownApp: If the app is not found in the cache
             UnknownCondition: If the app does not have the specified condition
         """
-        return self._get_function_type(app_name, condition_name, 'conditions')
+        return self._get_function_type(app_name, condition_name, WalkoffTag.condition)
 
     def get_app_transform_names(self, app_name):
         """Gets all the names of the transforms for a given app
@@ -180,7 +183,7 @@ class AppCache(object):
         Raises:
             UnknownApp: If the app is not found in the cache
         """
-        return self._get_function_type_names(app_name, 'transforms')
+        return self._get_function_type_names(app_name, WalkoffTag.transform)
 
     def get_app_transform(self, app_name, transform_name):
         """Gets the transform function for a given app and action name
@@ -196,14 +199,14 @@ class AppCache(object):
             UnknownApp: If the app is not found in the cache
             UnknownCondition: If the app does not have the specified condition
         """
-        return self._get_function_type(app_name, transform_name, 'transforms')
+        return self._get_function_type(app_name, transform_name, WalkoffTag.transform)
 
     def _get_function_type_names(self, app_name, function_type):
-        """Gets all the names for a given function type ('actions', 'conditions', 'transforms') for an app
+        """Gets all the names for a given function type ('action', 'condition', 'transform') for an app
 
         Args:
             app_name (str): The name of the app
-            function_type (str): 'actions', 'conditions' or 'transforms'
+            function_type (WalkoffTag): tag to search for
 
         Returns:
             list[str]: List of all the names of the functions of the given type
@@ -213,9 +216,10 @@ class AppCache(object):
         """
         try:
             app_cache = self._cache[app_name]
-            if function_type not in app_cache:
+            if 'actions' not in app_cache:
                 return []
-            return list(app_cache[function_type].keys())
+            return [action_name for action_name, action_entry in app_cache['actions'].items()
+                    if function_type in action_entry.tags]
         except KeyError:
             _logger.error('Cannot locate app {} in cache!'.format(app_name))
             raise UnknownApp(app_name)
@@ -226,7 +230,7 @@ class AppCache(object):
         Args:
             app_name (str): Name of the app
             function_name(str): Name of the action
-            function_type (str): Type of function, 'actions', 'conditions', or 'transforms'
+            function_type (WalkoffTag): Type of function, 'actions', 'conditions', or 'transforms'
 
         Returns:
             func: The function
@@ -239,16 +243,16 @@ class AppCache(object):
         """
         try:
             app_cache = self._cache[app_name]
-            if function_type not in app_cache:
-                _logger.warning('App {0} has no {1}.'.format(app_name, function_type))
+            if 'actions' not in app_cache:
+                _logger.warning('App {0} has no actions.'.format(app_name))
                 raise self.exception_lookup[function_type](app_name, function_name)
         except KeyError:
             _logger.error('Cannot locate app {} in cache!'.format(app_name))
             raise UnknownApp(app_name)
         try:
-            return app_cache[function_type][function_name]['run']
+            return app_cache['actions'][function_name].run
         except KeyError:
-            _logger.error('App {0} has no {1} {2}'.format(app_name, function_type, function_name))
+            _logger.error('App {0} has no {1} {2}'.format(app_name, function_type.name, function_name))
             raise self.exception_lookup[function_type](app_name, function_name)
 
     @staticmethod
@@ -306,8 +310,9 @@ class AppCache(object):
                     and AppCache._get_qualified_class_name(obj) != 'apps.App'):
                 self._cache_app(obj, app_name, base_path)
             elif inspect.isfunction(obj):
-                for tag in WalkoffTag.get_tags(obj):
-                    self._cache_action(obj, app_name, base_path, tag.name)
+                tags = WalkoffTag.get_tags(obj)
+                if tags:
+                    self._cache_action(obj, app_name, base_path, tags)
 
     def _cache_app(self, app_class, app_name, app_path):
         """Caches an app
@@ -328,44 +333,41 @@ class AppCache(object):
         self._cache[app_name]['main'] = app_class
         app_actions = inspect.getmembers(
             app_class, (lambda field:
-                        (inspect.ismethod(field) or inspect.isfunction(field)) and WalkoffTag.action.is_tagged(field)))
+                        (inspect.ismethod(field) or inspect.isfunction(field)) and WalkoffTag.get_tags(field)))
         if 'actions' not in self._cache[app_name]:
             self._cache[app_name]['actions'] = {}
         if app_actions:
             new_actions = {}
             for _, action_method in app_actions:
+                tags = WalkoffTag.get_tags(action_method)
                 qualified_name = AppCache._get_qualified_function_name(action_method, cls=app_class)
                 qualified_name = AppCache._strip_base_module_from_qualified_name(qualified_name, app_path)
-                new_actions[qualified_name] = {'run': action_method, 'bound': True}
+                new_actions[qualified_name] = AppCacheActionEntry(run=action_method, is_bound=True, tags=tags)
             self._cache[app_name]['actions'].update(new_actions)
 
-    def _cache_action(self, action_method, app_name, app_path, tag, cls=None):
+    def _cache_action(self, action_method, app_name, app_path, tags, cls=None):
         """Caches an action
 
         Args:
             action_method (func): The action to cache
             app_name (str): The name of the app associated with the action
         """
-        plural_tag = tag + 's'
         if app_name not in self._cache:
             self._cache[app_name] = {}
-        if plural_tag not in self._cache[app_name]:
-            self._cache[app_name][plural_tag] = {}
+        if 'actions' not in self._cache[app_name]:
+            self._cache[app_name]['actions'] = {}
         qualified_action_name = AppCache._get_qualified_function_name(action_method, cls=cls)
         qualified_action_name = AppCache._strip_base_module_from_qualified_name(qualified_action_name, app_path)
-        if qualified_action_name in self._cache[app_name][plural_tag]:
+        if qualified_action_name in self._cache[app_name]['actions']:
             _logger.warning(
-                'App {0} already has {1}{2} {3} defined as {4}. Overwriting it with {5}'.format(
+                'App {0} already has {1} defined as {2}. Overwriting it with {3}'.format(
                     app_name,
-                    ('unbound' if tag == 'action' else ''),
-                    tag,
                     qualified_action_name,
                     AppCache._get_qualified_function_name(
-                        self._cache[app_name][plural_tag][qualified_action_name]['run']),
+                        self._cache[app_name]['actions'][qualified_action_name].run),
                     qualified_action_name))
-        self._cache[app_name][plural_tag][qualified_action_name] = {'run': action_method}
-        if tag == 'action':
-            self._cache[app_name][plural_tag][qualified_action_name]['bound'] = False
+        self._cache[app_name]['actions'][qualified_action_name] = AppCacheActionEntry(
+            run=action_method, is_bound=False, tags=tags)
 
     def _clear_existing_bound_functions(self, app_name):
         """Clears existing bound functions from an app
@@ -376,7 +378,7 @@ class AppCache(object):
         if 'actions' in self._cache[app_name]:
             self._cache[app_name]['actions'] = {
                 action_name: action for action_name, action in self._cache[app_name]['actions'].items()
-                if not action['bound']}
+                if not action.is_bound}
 
     @staticmethod
     def _get_qualified_class_name(obj):
