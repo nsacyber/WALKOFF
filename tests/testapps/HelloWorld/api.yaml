@@ -97,6 +97,10 @@ actions:
           required: true
           default: false
           type: boolean
+        - name: other
+          description: whether to return with nothing
+          default: false
+          type: boolean
     default_return: Success
     returns:
       Success:

@@ -154,6 +154,32 @@ class TestAction(unittest.TestCase):
         self.assertTrue(result['started_triggered'])
         self.assertTrue(result['result_triggered'])
 
+    def test_execute_default_return_success(self):
+        action = Action(app_name='HelloWorld', action_name='dummy action',
+                        arguments=[Argument('status', value=True), Argument('other', value=True)])
+        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
+        result = {'started_triggered': False, 'result_triggered': False}
+
+        def callback_is_sent(sender, **kwargs):
+            if isinstance(sender, Action):
+                self.assertIn('event', kwargs)
+                self.assertIn(kwargs['event'], (WalkoffEvent.ActionStarted, WalkoffEvent.ActionExecutionSuccess))
+                if kwargs['event'] == WalkoffEvent.ActionStarted:
+                    result['started_triggered'] = True
+                else:
+                    self.assertIn('data', kwargs)
+                    data = kwargs['data']
+                    self.assertEqual(data['status'], 'Success')
+                    self.assertEqual(data['result'], None)
+                    result['result_triggered'] = True
+
+        WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
+
+        action.execute(instance.instance, {})
+
+        self.assertTrue(result['started_triggered'])
+        self.assertTrue(result['result_triggered'])
+
     def test_execute_generates_uid(self):
         action = Action(app_name='HelloWorld', action_name='helloWorld')
         original_execution_uid = action.get_execution_uid()

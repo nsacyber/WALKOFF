@@ -39,7 +39,10 @@ def json_sample(json_in):
             sum([x['b'] for x in json_in['d']]))
 
 @action
-def dummy_action(status):
+def dummy_action(status, other=False):
+    if other:
+        return
+
     if status:
         return True, 'Success'
     else:

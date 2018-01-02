@@ -23,7 +23,7 @@ class TestDecorators(unittest.TestCase):
         def add_three(a, b, c):
             return a + b + c
 
-        self.assertEqual(add_three(1, 2, 3), ActionResult(6, 'Success'))
+        self.assertEqual(add_three(1, 2, 3), ActionResult(6, None))
 
     def test_action_wraps_execution_return_specified(self):
         @action

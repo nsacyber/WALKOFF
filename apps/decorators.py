@@ -6,7 +6,7 @@ from walkoff.helpers import get_function_arg_names
 
 def format_result(result):
     if not isinstance(result, tuple):
-        return ActionResult(result, 'Success')
+        return ActionResult(result, None)
     else:
         return ActionResult(*result)
 

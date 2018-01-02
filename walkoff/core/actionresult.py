@@ -16,7 +16,7 @@ class ActionResult(object):
             return {"result": str(self.result), "status": self.status}
 
     def set_default_status(self, app_name, action_name):
-        if not self.status:
+        if self.status is None:
             self.status = get_app_action_default_return(app_name, action_name)
 
     def is_failure(self, app_name, action_name):
