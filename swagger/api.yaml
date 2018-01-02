@@ -4,7 +4,7 @@ info:
     An active cyber defense development framework enabling orchestration
     capabilities to be written once and deployed across WALKOFF-enabled
     orchestration tools. https://iadgov.github.io/WALKOFF/
-  version: 0.5.0
+  version: 0.6.0
   title: WALKOFF
   contact:
     email: walkoff@nsa.gov
@@ -45,6 +45,8 @@ tags:
     description: System Operations
   - name: Client
     description: Serves up client pages
+  - name: Message
+    description: User messages
 
 schemes:
   - http
@@ -57,7 +59,7 @@ paths:
         - System
       summary: Gets all apps
       description: ''
-      operationId: server.endpoints.appapi.read_all_apps
+      operationId: walkoff.server.endpoints.appapi.read_all_apps
       produces:
         - application/json
       responses:
@@ -76,7 +78,7 @@ paths:
         - Apps
       summary: Get all app apis
       description: ''
-      operationId: server.endpoints.appapi.read_all_app_apis
+      operationId: walkoff.server.endpoints.appapi.read_all_app_apis
       produces:
         - application/json
       parameters:
@@ -100,7 +102,7 @@ paths:
         - Apps
       summary: Get and app's api
       description: ''
-      operationId: server.endpoints.appapi.read_app_api
+      operationId: walkoff.server.endpoints.appapi.read_app_api
       produces:
         - application/json
       parameters:
@@ -125,7 +127,7 @@ paths:
         - Apps
       summary: Get a field of an app's api
       description: ''
-      operationId: server.endpoints.appapi.read_app_api_field
+      operationId: walkoff.server.endpoints.appapi.read_app_api_field
       produces:
         - application/json
       parameters:
@@ -156,7 +158,7 @@ paths:
         - Authorization
       summary: Login and get access and refresh tokens
       description: ''
-      operationId: server.endpoints.auth.login
+      operationId: walkoff.server.endpoints.auth.login
       consumes:
         - application/json
       produces:
@@ -184,7 +186,7 @@ paths:
         - Authorization
       summary: Get a fresh access token
       description: ''
-      operationId: server.endpoints.auth.refresh
+      operationId: walkoff.server.endpoints.auth.refresh
       produces:
         - application/json
       responses:
@@ -202,7 +204,7 @@ paths:
       tags:
         - Authorization
       summary: Logout of walkoff
-      operationId: server.endpoints.auth.logout
+      operationId: walkoff.server.endpoints.auth.logout
       produces:
         - application/json
       consumes:
@@ -228,7 +230,7 @@ paths:
         - Cases
       summary: Read all cases
       description: ''
-      operationId: server.endpoints.cases.read_all_cases
+      operationId: walkoff.server.endpoints.cases.read_all_cases
       produces:
         - application/json
       responses:
@@ -243,7 +245,7 @@ paths:
         - Cases
       summary: Create a case
       description: ''
-      operationId: server.endpoints.cases.create_case
+      operationId: walkoff.server.endpoints.cases.create_case
       produces:
         - application/json
       consumes:
@@ -273,7 +275,7 @@ paths:
         - Cases
       summary: Update a case
       description: ''
-      operationId: server.endpoints.cases.update_case
+      operationId: walkoff.server.endpoints.cases.update_case
       consumes:
         - application/json
       produces:
@@ -305,7 +307,7 @@ paths:
         - Cases
       summary: Read a case
       description: ''
-      operationId: server.endpoints.cases.read_case
+      operationId: walkoff.server.endpoints.cases.read_case
       produces:
         - application/json
       responses:
@@ -322,7 +324,7 @@ paths:
         - Cases
       summary: Remove a case
       description: ''
-      operationId: server.endpoints.cases.delete_case
+      operationId: walkoff.server.endpoints.cases.delete_case
       produces:
         - application/json
       responses:
@@ -345,7 +347,7 @@ paths:
         - Cases
       summary: Read all the events for a case
       description: ''
-      operationId: server.endpoints.cases.read_all_events
+      operationId: walkoff.server.endpoints.cases.read_all_events
       produces:
         - application/json
       responses:
@@ -366,7 +368,7 @@ paths:
         - Cases
       summary: Import case data
       description: ''
-      operationId: server.endpoints.cases.import_cases
+      operationId: walkoff.server.endpoints.cases.import_cases
       consumes:
         - application/json
       produces:
@@ -401,7 +403,7 @@ paths:
         - Cases
       summary: Export case data
       description: ''
-      operationId: server.endpoints.cases.export_cases
+      operationId: walkoff.server.endpoints.cases.export_cases
       consumes:
         - application/json
       produces:
@@ -430,7 +432,7 @@ paths:
       tags:
         - Configuration
       summary: Reads the configuration
-      operationId: server.endpoints.configuration.read_config_values
+      operationId: walkoff.server.endpoints.configuration.read_config_values
       produces:
         - application/json
       responses:
@@ -446,7 +448,7 @@ paths:
       tags:
         - Configuration
       summary: Updates the configuration
-      operationId: server.endpoints.configuration.update_configuration
+      operationId: walkoff.server.endpoints.configuration.update_configuration
       consumes:
         - application/json
       produces:
@@ -475,7 +477,7 @@ paths:
         - Devices
       summary: Import devices
       description: ''
-      operationId: server.endpoints.devices.import_devices
+      operationId: walkoff.server.endpoints.devices.import_devices
       consumes:
         - application/json
       produces:
@@ -508,7 +510,7 @@ paths:
         - Devices
       summary: Export devices
       description: ''
-      operationId: server.endpoints.devices.export_devices
+      operationId: walkoff.server.endpoints.devices.export_devices
       produces:
         - application/json
       parameters:
@@ -541,7 +543,7 @@ paths:
         - Devices
       summary: Get a device
       description: ''
-      operationId: server.endpoints.devices.read_device
+      operationId: walkoff.server.endpoints.devices.read_device
       produces:
         - application/json
       responses:
@@ -556,7 +558,7 @@ paths:
         - Devices
       summary: Remove a device
       description: ''
-      operationId: server.endpoints.devices.delete_device
+      operationId: walkoff.server.endpoints.devices.delete_device
       produces:
         - application/json
       responses:
@@ -572,7 +574,7 @@ paths:
         - Devices
       summary: Get all devices
       description: ''
-      operationId: server.endpoints.devices.read_all_devices
+      operationId: walkoff.server.endpoints.devices.read_all_devices
       produces:
         - application/json
       responses:
@@ -588,7 +590,7 @@ paths:
         - Devices
       summary: Add a device
       description: ''
-      operationId: server.endpoints.devices.create_device
+      operationId: walkoff.server.endpoints.devices.create_device
       consumes:
         - application/json
       produces:
@@ -615,7 +617,7 @@ paths:
         - Devices
       summary: Update a device
       description: ''
-      operationId: server.endpoints.devices.update_device
+      operationId: walkoff.server.endpoints.devices.update_device
       consumes:
         - application/json
       produces:
@@ -648,7 +650,7 @@ paths:
         - Events
       summary: Read an event
       description: ''
-      operationId: server.endpoints.events.read_event
+      operationId: walkoff.server.endpoints.events.read_event
       produces:
         - application/json
       responses:
@@ -666,7 +668,7 @@ paths:
         - Events
       summary: Update an event note
       description: ''
-      operationId: server.endpoints.events.update_event_note
+      operationId: walkoff.server.endpoints.events.update_event_note
       consumes:
         - application/json
       produces:
@@ -695,19 +697,109 @@ paths:
           description: Object does not exist
           schema:
             $ref: '#/definitions/Error'
+
+  /api/messages:
+    get:
+      tags:
+        - Messages
+      summary: Gets a user's messages
+      description: Gets all the messages for a given user. User is given by JWT
+      operationId: walkoff.server.endpoints.messages.get_all_messages
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            description: A list of messages
+            items:
+              $ref: '#/definitions/MessageSummary'
   
-  #/events:
-  #    get:
-  #      tags:
-  #        - Cases
-  #      summary: Stream of the case events
-  #      description: ''
-  #      operationId: server.endpoints.cases.stream_case_events
-  #      produces:
-  #        - text/event-stream
-  #      responses:
-  #        200:
-  #          description: Success
+  /api/messages/{action}:
+    parameters:
+      - name: action
+        in: path
+        description: The action to take on multiple messages
+        required: true
+        type: string
+        enum: [read, unread, delete]
+    post:
+      tags:
+        - Messages
+      summary: Acts on a user's messages
+      operationId: walkoff.server.endpoints.messages.act_on_messages
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: The Message IDs to act on
+          required: true
+          schema:
+            type: object
+            required: [ids]
+            properties:
+              ids:
+                type: array
+                items:
+                  type: integer
+                  minimum: 1
+      responses:
+        200:
+          description: Success
+          schema:
+            type: string
+            enum: [Success]
+        461:
+          description: Action is invalid or User doesn't exist
+          schema:
+            $ref: "#/definitions/Error"
+  
+  /api/messages/{message_id}:
+    parameters:
+      - name: message_id
+        in: path
+        description: The action to take on multiple messages
+        required: true
+        type: integer
+        minimum: 1
+    get:
+      tags:
+        - Messages
+      summary: Get a message
+      operationId: walkoff.server.endpoints.messages.get_message
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Message'
+        403:
+          description: User does not have access to message
+          schema:
+            $ref: '#/definitions/Error'
+        461:
+          description: Message doesn't exist
+          schema:
+            $ref: "#/definitions/Error"
+  
+  /api/notifications:
+    get:
+      tags:
+        - Messages
+      summary: Get all notifications
+      operationId: walkoff.server.endpoints.messages.get_recent_notifications
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/MessageSummary'
 
   /api/availablesubscriptions:
     get:
@@ -715,7 +807,7 @@ paths:
         - System
       summary: Read all available subscription options
       description: ''
-      operationId: server.endpoints.metadata.read_all_possible_subscriptions
+      operationId: walkoff.server.endpoints.metadata.read_all_possible_subscriptions
       produces:
         - application/json
       responses:
@@ -733,7 +825,7 @@ paths:
         - System
       summary: Read all interfaces
       description: ''
-      operationId: server.endpoints.metadata.read_all_interfaces
+      operationId: walkoff.server.endpoints.metadata.read_all_interfaces
       produces:
         - application/json
       responses:
@@ -752,7 +844,7 @@ paths:
         - Client
       summary: Get a client file
       description: ''
-      operationId: server.endpoints.metadata.read_client_file
+      operationId: walkoff.server.endpoints.metadata.read_client_file
       produces:
         - application/json
       parameters:
@@ -773,7 +865,7 @@ paths:
         - Metrics
       summary: Read app usage metrics
       description: ''
-      operationId: server.endpoints.metrics.read_app_metrics
+      operationId: walkoff.server.endpoints.metrics.read_app_metrics
       produces:
         - application/json
       responses:
@@ -787,7 +879,7 @@ paths:
         - Metrics
       summary: Read Workflow Metrics
       description: ''
-      operationId: server.endpoints.metrics.read_workflow_metrics
+      operationId: walkoff.server.endpoints.metrics.read_workflow_metrics
       produces:
         - application/json
       responses:
@@ -801,7 +893,7 @@ paths:
         - Playbooks
       summary: Read all playbooks
       description: ''
-      operationId: server.endpoints.playbooks.get_playbooks
+      operationId: walkoff.server.endpoints.playbooks.get_playbooks
       produces:
         - application/json
       parameters:
@@ -821,7 +913,7 @@ paths:
         - Playbooks
       summary: Create a playbook
       description: ''
-      operationId: server.endpoints.playbooks.create_playbook
+      operationId: walkoff.server.endpoints.playbooks.create_playbook
       consumes:
         - application/json
       produces:
@@ -853,7 +945,7 @@ paths:
         - Playbooks
       summary: Update a playbook
       description: ''
-      operationId: server.endpoints.playbooks.update_playbook
+      operationId: walkoff.server.endpoints.playbooks.update_playbook
       consumes:
         - application/json
       produces:
@@ -895,7 +987,7 @@ paths:
         - Playbooks
       summary: Read a playbook
       description: ''
-      operationId: server.endpoints.playbooks.read_playbook
+      operationId: walkoff.server.endpoints.playbooks.read_playbook
       produces:
         - application/json
       responses:
@@ -917,7 +1009,7 @@ paths:
         - Playbooks
       summary: Delete a playbook
       description: ''
-      operationId: server.endpoints.playbooks.delete_playbook
+      operationId: walkoff.server.endpoints.playbooks.delete_playbook
       produces:
         - application/json
       responses:
@@ -937,7 +1029,7 @@ paths:
         - Playbooks
       summary: Copy a playbook
       description: ''
-      operationId: server.endpoints.playbooks.copy_playbook
+      operationId: walkoff.server.endpoints.playbooks.copy_playbook
       parameters:
         - name: playbook_name
           in: path
@@ -983,7 +1075,7 @@ paths:
         - Playbooks
       summary: Read all workflows in playbook
       description: ''
-      operationId: server.endpoints.playbooks.get_workflows
+      operationId: walkoff.server.endpoints.playbooks.get_workflows
       produces:
         - application/json
       responses:
@@ -1010,7 +1102,7 @@ paths:
         - Workflows
       summary: Create a workflow
       description: ''
-      operationId: server.endpoints.playbooks.create_workflow
+      operationId: walkoff.server.endpoints.playbooks.create_workflow
       consumes:
         - application/json
       produces:
@@ -1044,7 +1136,7 @@ paths:
         - Workflows
       summary: Update a workflow
       description: ''
-      operationId: server.endpoints.playbooks.update_workflow
+      operationId: walkoff.server.endpoints.playbooks.update_workflow
       consumes:
         - application/json
       produces:
@@ -1094,7 +1186,7 @@ paths:
         - Workflows
       summary: Read a workflow
       description: ''
-      operationId: server.endpoints.playbooks.read_workflow
+      operationId: walkoff.server.endpoints.playbooks.read_workflow
       produces:
         - application/json
       responses:
@@ -1115,7 +1207,7 @@ paths:
         - Workflows
       summary: Delete a workflow
       description: ''
-      operationId: server.endpoints.playbooks.delete_workflow
+      operationId: walkoff.server.endpoints.playbooks.delete_workflow
       produces:
         - application/json
       responses:
@@ -1132,7 +1224,7 @@ paths:
         - Workflows
       summary: Copy a workflow
       description: ''
-      operationId: server.endpoints.playbooks.copy_workflow
+      operationId: walkoff.server.endpoints.playbooks.copy_workflow
       parameters:
         - name: playbook_name
           in: path
@@ -1173,7 +1265,7 @@ paths:
         - Workflows
       summary: Execute a workflow
       description: ''
-      operationId: server.endpoints.playbooks.execute_workflow
+      operationId: walkoff.server.endpoints.playbooks.execute_workflow
       parameters:
         - name: playbook_name
           in: path
@@ -1216,7 +1308,7 @@ paths:
         - Workflows
       summary: Pause a workflow
       description: ''
-      operationId: server.endpoints.playbooks.pause_workflow
+      operationId: walkoff.server.endpoints.playbooks.pause_workflow
       parameters:
         - name: playbook_name
           in: path
@@ -1250,7 +1342,7 @@ paths:
         - Workflows
       summary: Resume a workflow
       description: ''
-      operationId: server.endpoints.playbooks.resume_workflow
+      operationId: walkoff.server.endpoints.playbooks.resume_workflow
       parameters:
         - name: playbook_name
           in: path
@@ -1288,7 +1380,7 @@ paths:
         - Workflows
       summary: Save a workflow
       description: ''
-      operationId: server.endpoints.playbooks.save_workflow
+      operationId: walkoff.server.endpoints.playbooks.save_workflow
       parameters:
         - name: playbook_name
           in: path
@@ -1343,7 +1435,7 @@ paths:
         - Roles
       summary: Read all roles
       description: ''
-      operationId: server.endpoints.roles.read_all_roles
+      operationId: walkoff.server.endpoints.roles.read_all_roles
       produces:
         - application/json
       responses:
@@ -1359,7 +1451,7 @@ paths:
         - Roles
       summary: Create a role
       description: ''
-      operationId: server.endpoints.roles.create_role
+      operationId: walkoff.server.endpoints.roles.create_role
       consumes:
         - application/json
       produces:
@@ -1383,7 +1475,7 @@ paths:
         - Roles
       summary: Update a role
       description: ''
-      operationId: server.endpoints.roles.update_role
+      operationId: walkoff.server.endpoints.roles.update_role
       consumes:
         - application/json
       produces:
@@ -1414,7 +1506,7 @@ paths:
         - Roles
       summary: Read a role
       description: ''
-      operationId: server.endpoints.roles.read_role
+      operationId: walkoff.server.endpoints.roles.read_role
       produces:
         - application/json
       responses:
@@ -1429,7 +1521,7 @@ paths:
         - Roles
       summary: Delete a role
       description: ''
-      operationId: server.endpoints.roles.delete_role
+      operationId: walkoff.server.endpoints.roles.delete_role
       produces:
         - application/json
       responses:
@@ -1437,6 +1529,24 @@ paths:
           description: Success
         461:
           description: Object does not exist.
+  
+  /api/availableresourceactions:
+      get:
+        tags:
+          - Roles
+        summary: Read all available resource actions
+        description: ''
+        operationId: walkoff.server.endpoints.roles.read_available_resource_actions
+        produces:
+          - application/json
+        responses:
+          200:
+            description: Success
+            schema:
+              description: List of available resource actions
+              type: array
+              items:
+                $ref: '#/definitions/AvailableResourceAction'
 
   /api/scheduler:
     get:
@@ -1444,7 +1554,7 @@ paths:
         - Scheduler
       summary: Get the current scheduler status.
       description: ''
-      operationId: server.endpoints.scheduler.get_scheduler_status
+      operationId: walkoff.server.endpoints.scheduler.get_scheduler_status
       produces:
         - application/json
       responses:
@@ -1465,7 +1575,7 @@ paths:
         - Scheduler
       summary: Update the status of the scheduler
       description: ''
-      operationId: server.endpoints.scheduler.update_scheduler_status
+      operationId: walkoff.server.endpoints.scheduler.update_scheduler_status
       produces:
         - application/json
       responses:
@@ -1479,7 +1589,7 @@ paths:
       tags:
         - Scheduler
       summary: Get all the scheduled tasks
-      operationId: server.endpoints.scheduler.read_all_scheduled_tasks
+      operationId: walkoff.server.endpoints.scheduler.read_all_scheduled_tasks
       produces:
         - application/json
       responses:
@@ -1494,7 +1604,7 @@ paths:
       tags:
         - Scheduler
       summary: Create a new Scheduled Task
-      operationId: server.endpoints.scheduler.create_scheduled_task
+      operationId: walkoff.server.endpoints.scheduler.create_scheduled_task
       produces:
         - application/json
       consumes:
@@ -1522,7 +1632,7 @@ paths:
       tags:
         - Scheduler
       summary: Update a new Scheduled Task
-      operationId: server.endpoints.scheduler.update_scheduled_task
+      operationId: walkoff.server.endpoints.scheduler.update_scheduled_task
       produces:
         - application/json
       consumes:
@@ -1559,7 +1669,7 @@ paths:
       tags:
         - Scheduler
       summary: Get the scheduled task
-      operationId: server.endpoints.scheduler.read_scheduled_task
+      operationId: walkoff.server.endpoints.scheduler.read_scheduled_task
       produces:
         - application/json
       responses:
@@ -1575,7 +1685,7 @@ paths:
       tags:
         - Scheduler
       summary: Delete the scheduled task
-      operationId: server.endpoints.scheduler.delete_scheduled_task
+      operationId: walkoff.server.endpoints.scheduler.delete_scheduled_task
       produces:
         - application/json
       responses:
@@ -1591,7 +1701,7 @@ paths:
       tags:
         - Scheduler
       summary: Enable the scheduled task
-      operationId: server.endpoints.scheduler.control_scheduled_task
+      operationId: walkoff.server.endpoints.scheduler.control_scheduled_task
       produces:
         - application/json
       parameters:
@@ -1617,7 +1727,9 @@ paths:
     post:
       summary: Send data to one or more workflows with trigger actions awaiting data before continuing execution
       description: ''
-      operationId: server.endpoints.triggers.send_data_to_trigger
+      operationId: walkoff.server.endpoints.triggers.send_data_to_trigger
+      tags:
+        - Triggers
       consumes:
         - application/json
       produces:
@@ -1637,9 +1749,11 @@ paths:
                   type: string
               data_in:
                 description: Data to send to workflows awaiting data
-              inputs:
-                description: Updated inputs to send to the trigger action
-                type: object
+              arguments:
+                description: Updated arguments to send to the trigger action
+                type: array
+                items:
+                  $ref: '#/definitions/Argument'
       responses:
         200:
           description: Success
@@ -1655,7 +1769,7 @@ paths:
         - Users
       summary: Read all users
       description: ''
-      operationId: server.endpoints.users.read_all_users
+      operationId: walkoff.server.endpoints.users.read_all_users
       produces:
         - application/json
       responses:
@@ -1671,7 +1785,7 @@ paths:
         - Users
       summary: Create a user
       description: ''
-      operationId: server.endpoints.users.create_user
+      operationId: walkoff.server.endpoints.users.create_user
       consumes:
         - application/json
       produces:
@@ -1698,7 +1812,7 @@ paths:
         - Users
       summary: Update a user
       description: ''
-      operationId: server.endpoints.users.update_user
+      operationId: walkoff.server.endpoints.users.update_user
       consumes:
         - application/json
       produces:
@@ -1738,7 +1852,7 @@ paths:
         - Users
       summary: Get a user
       description: ''
-      operationId: server.endpoints.users.read_user
+      operationId: walkoff.server.endpoints.users.read_user
       produces:
         - application/json
       responses:
@@ -1756,7 +1870,7 @@ paths:
         - Users
       summary: Delete a user
       description: ''
-      operationId: server.endpoints.users.delete_user
+      operationId: walkoff.server.endpoints.users.delete_user
       produces:
         - application/json
       responses:
@@ -1774,7 +1888,7 @@ paths:
     get:
       tags: [Workflow]
       summary: Gets all the results from all the executed workflows
-      operationId: server.endpoints.playbooks.read_all_results
+      operationId: walkoff.server.endpoints.playbooks.read_all_results
       produces: [application/json]
       responses:
         200:
@@ -1786,7 +1900,7 @@ paths:
     get:
       tags: [Workflow]
       summary: Gets the results from an executed workflow
-      operationId: server.endpoints.playbooks.read_result
+      operationId: walkoff.server.endpoints.playbooks.read_result
       produces: [application/json]
       parameters:
         - name: uid
@@ -1834,19 +1948,6 @@ definitions:
           type: boolean
         default:
           description: default value for the argument
-    Action:
-      type: object
-      required: [args]
-      properties:
-        description:
-          description: description of the action
-          type: string
-        args:
-          description: accepted arguments to the action
-          type: array
-          items:
-            $ref: '#/definitions/ActionArgument'
-    
     Error:
       type: object
       required: [error]
@@ -1856,7 +1957,6 @@ definitions:
           type: string
           description: error message
           example: Something really bad happened
-    
     AvailableSubscriptions:
       type: object
       required: [type, events]
@@ -1973,6 +2073,9 @@ definitions:
         run:
           type: string
           description: The path to the executable function
+        default_return:
+          type: string
+          description: The name of the default return code (if none specified, defaults to Success
         returns:
           type: array
           items:
@@ -2165,6 +2268,10 @@ definitions:
         description:
           type: string
           description: description of the return type
+        failure:
+          type: boolean
+          description: Whether this return type indicates action failure
+          default: false
         schema:
           $ref: '#/definitions/ParameterSchema'
         examples:
@@ -2414,8 +2521,15 @@ definitions:
             type: number
             minimum: 1
             description: Time (in days) to allow a refresh token to persist. Should greater than the duration of the refresh token
-    
-    
+          zmq_requests_address:
+            type: string
+            description: The IP address and port of the ZMQ requests server. Do not change unless necessary.
+          zmq_results_address:
+            type: string
+            description: The IP address and port of the ZMQ results server. Do not change unless necessary.
+          zmq_communication_address:
+            type: string
+            description: The IP address and port of the ZMQ communication server. Do not change unless necessary.
 
     AddDevice:
       type: object
@@ -2601,6 +2715,111 @@ definitions:
           items:
             $ref: '#/definitions/WorkflowMetric'
 
+    Message:
+      type: object
+      required: [id, body, subject, created_at, is_read, workflow_execution_uid, requires_reauthorization, requires_response,
+        awaiting_response]
+      description: A message sent to a user
+      properties:
+        id:
+          description: Id of this message
+          type: integer
+          minimum: 1
+          readOnly: true
+          example: 42
+        subject:
+          description: Subject of this message
+          type: string
+          example: Remove user?
+          readOnly: true
+        body:
+          type: array
+          items:
+            $ref: "#/definitions/MessageComponent"
+          description: The body of the message. Each component is rendered in order
+          readOnly: true
+        workflow_execution_uid:
+          type: string
+          example: abd-12345-aaa
+          description: The UUID of the executing workflow
+          readOnly: true
+        requires_reauthorization:
+          type: boolean
+          default: false
+          description: Does the user need to reauthenticate to respond to this message?
+          readOnly: true
+        requires_response:
+          type: boolean
+          description: Does this message require a response
+          readOnly: true
+        is_read:
+          description: Has this message been read yet?
+          type: boolean
+          default: false
+        created_at:
+          description: UTC timestamp of message creation
+          type: string
+          readOnly: true
+        last_read_at:
+          description: UTC timestamp of when message was last read
+          type: string
+        awaiting_response:
+          description: Is this message awaiting a response
+          type: boolean
+        responded_at:
+          type: string
+          description: UTC timestamp of when the message was responded
+        responded_by:
+          type: string
+          description: username of user who responded to the action
+        read_by:
+          type: array
+          items:
+            type: string
+          description: usernames of users who have read the message
+    
+    MessageSummary:
+      type: object
+      required: [id, subject, created_at, is_read, awaiting_response]
+      description: A message sent to a user
+      properties:
+        id:
+          description: Id of this message
+          type: integer
+          minimum: 1
+          readOnly: true
+          example: 42
+        subject:
+          description: Subject of this message
+          type: string
+          example: Remove user?
+          readOnly: true
+        is_read:
+          description: Has this message been read yet?
+          type: boolean
+          default: false
+        created_at:
+          description: UTC timestamp of message creation
+          type: string
+          readOnly: true
+        last_read_at:
+          description: UTC timestamp of when message was last read
+          type: string
+        awaiting_response:
+          description: Is this message awaiting a response
+          type: boolean
+    
+    MessageComponent:
+      type: object
+      required: [type, data]
+      properties:
+        type:
+          type: string
+          description: message component type
+          enum: [text, accept_decline, url]
+        data:
+          type: object
+          description: JSON representation of the message component
     Playbook:
         type: object
         required: [name]
@@ -2925,7 +3144,21 @@ definitions:
             example: A user with this role can access any resource and has administrative-level privileges.
           resources:
             description: A list of resources that a user with this role can access
-            example: [/users, /cases, /playbooks]
+            type: array
+            items:
+              $ref: '#/definitions/AddResource'
+    
+    AddResource:
+        type: object
+        required: [name]
+        properties:
+          name:
+            description: Name of the resource
+            type: string
+            example: playbooks, cases
+          permissions:
+            description: A list of permissions associated with this resource
+            example: [create, read, update, delete, execute]
             type: array
             items:
               type: string
@@ -2951,7 +3184,43 @@ definitions:
             example: [/users, /cases, /playbooks]
             type: array
             items:
+              $ref: '#/definitions/Resource'
+    
+    Resource:
+        type: object
+        properties:
+          id:
+            type: integer
+            minimum: 1
+            description: id of the object
+          name:
+            description: Name of the resource
+            type: string
+            example: playbooks, cases
+          permissions:
+            description: A list of permissions associated with this resource
+            example: [create, read, update, delete, execute]
+            type: array
+            items:
               type: string
+    
+    AvailableResourceAction:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the resource
+          example: playbooks, cases
+        actions:
+          description: A list of actions or permissions available for this resource
+          example: [create, read, update, delete]
+          type: array
+          items:
+            type: string
+        app_name:
+          type: string
+          description: The name of the app associated with this resource, if applicable
+          example: HelloWorld, DailyQuote
 
     Scheduler:
       type: object
@@ -3038,11 +3307,14 @@ definitions:
             description: Password for the user
             type: string
             example: password123
-    #      roles:
-    #        description: A list of roles that this user possesses
-    #        type: array
-    #        items:
-    #          type: string
+          roles:
+            description: A list of role IDs that this user possesses. Roles can only be assigned to a User by an admin.
+            type: array
+            items:
+              type: integer
+          active:
+            description: activate/deactive a user. Active can only be changed by an admin.
+            type: boolean
     EditUser:
         type: object
         required: [id]
@@ -3065,17 +3337,13 @@ definitions:
             type: string
             example: password321
           active:
-            description: activate/deactive a user
+            description: activate/deactive a user. Active can only be changed by an admin.
             type: boolean
-    #      roles:
-    #        description: New list of role objects that this user possesses
-    #        type: array
-    #        items:
-    #          type: string
-    #        example:
-    #          - /users
-    #          - /cases
-    #          - /playbooks
+          roles:
+            description: A new list of role IDs that this user will possess. Roles can only be assigned by an admin.
+            type: array
+            items:
+              type: integer
     DisplayUser:
         type: object
         properties:
@@ -3092,10 +3360,10 @@ definitions:
             description: activate/deactive a user
             type: boolean
           roles:
-            description: List of role objects that this user possesses
+            description: List of role object IDs that this user possesses
             type: array
             items:
-              type: string
+              type: integer
     CompleteWorkflowResults:
       type: object
       required: [id]
