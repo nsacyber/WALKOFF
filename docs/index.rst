@@ -43,6 +43,7 @@ guarantee is made of the stability of the walkoff module itself until version 1.
 
 .. automodule:: apps.messaging
    :members:
+   :undoc-members:
 
 
 API Reference

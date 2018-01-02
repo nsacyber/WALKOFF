@@ -150,7 +150,7 @@ class TestMessage(TestCase):
 
     def test_message_init_with_initial_components(self):
         components = [AcceptDecline(), Text('a')]
-        message = Message(components=components)
+        message = Message(body=components)
         self.assertListEqual(message.body, components)
 
     def test_message_append_empty_message(self):
@@ -162,7 +162,7 @@ class TestMessage(TestCase):
 
     def test_message_append(self):
         components = [AcceptDecline(), Text('a')]
-        message = Message(components=components)
+        message = Message(body=components)
         component = Text('b')
         message.append(component)
         self.assertEqual(len(message.body), 3)
@@ -177,45 +177,45 @@ class TestMessage(TestCase):
 
     def test_message_extend(self):
         components = [AcceptDecline(), Text('a')]
-        message = Message(components=components)
+        message = Message(body=components)
         new_components = [Text('a'), Text('b')]
         message.extend(new_components)
         self.assertEqual(len(message.body), 4)
 
     def test_message_extend_empty_components(self):
         components = [AcceptDecline(), Text('a')]
-        message = Message(components=components)
+        message = Message(body=components)
         message.extend([])
         self.assertEqual(len(message.body), 2)
 
     def test_message_add(self):
         components1 = [Text('a'), Text('b')]
         components2 = [AcceptDecline(), Text('c'), Text('d')]
-        message1 = Message(components=components1, subject='some subject')
-        message2 = Message(components=components2)
+        message1 = Message(body=components1, subject='some subject')
+        message2 = Message(body=components2)
         message = message1 + message2
         self.assertEqual(len(message.body), 5)
         self.assertEqual(message.subject, 'some subject')
 
     def test_message_length(self):
         components = [Text('a'), Text('b')]
-        message = Message(components=components)
+        message = Message(body=components)
         self.assertEqual(len(message), 2)
 
     def test_message_as_json(self):
         components = [Text('a'), Text('b')]
-        message = Message(components=components)
+        message = Message(body=components)
         self.assertDictEqual(message.as_json(), {'body': [component.as_json() for component in components]})
 
     def test_message_as_json_with_subject(self):
         components = [Text('a'), Text('b')]
-        message = Message(components=components, subject='important!')
+        message = Message(body=components, subject='important!')
         self.assertDictEqual(message.as_json(),
                              {'subject': 'important!', 'body': [component.as_json() for component in components]})
 
     def test_message_from_json(self):
         components = [Text('a'), Text('b')]
-        message = Message(components=components)
+        message = Message(body=components)
         message = Message.from_json(message.as_json())
         for component in message.body:
             self.assertIn(component.text, ('a', 'b'))
@@ -223,7 +223,7 @@ class TestMessage(TestCase):
 
     def test_message_from_json_with_subject(self):
         components = [Text('a'), Text('b')]
-        message = Message(components=components, subject='important!')
+        message = Message(body=components, subject='important!')
         message = Message.from_json(message.as_json())
         for component in message.body:
             self.assertIn(component.text, ('a', 'b'))
@@ -231,7 +231,7 @@ class TestMessage(TestCase):
 
     def test_message_iterator(self):
         components = [Text('a'), Text('b')]
-        message = Message(components=components)
+        message = Message(body=components)
         self.assertEqual(list(message), components)
 
     def test_send_message(self):
@@ -245,7 +245,7 @@ class TestMessage(TestCase):
             data['data'] = kwargs
 
         components = [Text('a'), Text('b')]
-        message = Message(components=components)
+        message = Message(body=components)
         send_message(message, [1, 2, 3])
         self.assertTrue(data['called'])
         self.assertDictEqual(data['sender'], message.as_json())

@@ -96,7 +96,7 @@ def write_ips_to_csv(ips_reference, path):
 @action
 def send_text_message(subject, message, users=None, roles=None):
     text = Text(message)
-    message = Message(subject=subject, components=[text])
+    message = Message(subject=subject, body=[text])
     send_message(message, users=users, roles=roles)
 
 
