@@ -17,9 +17,10 @@ class Condition(ExecutionElement):
         Args:
             app_name (str): The name of the app which contains this condition
             action_name (str): The action name for the Condition. Defaults to an empty string.
-            arguments (list[Argument], optional): Dictionary of Argument keys to Argument values. This dictionary will be
-                converted to a dictionary of str:Argument. Defaults to None.
-            transforms(list[Transform], optional): A list of Transform objects for the Condition object. Defaults to None.
+            arguments (list[Argument], optional): Dictionary of Argument keys to Argument values.
+                This dictionary will be converted to a dictionary of str:Argument. Defaults to None.
+            transforms(list[Transform], optional): A list of Transform objects for the Condition object.
+                Defaults to None.
             uid (str, optional): A universally unique identifier for this object.
                 Created from uuid.uuid4() in Python
         """

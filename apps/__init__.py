@@ -46,5 +46,3 @@ class App(object):
         """When implemented, this method performs shutdown procedures for the app
         """
         pass
-
-

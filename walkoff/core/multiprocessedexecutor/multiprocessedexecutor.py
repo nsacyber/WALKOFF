@@ -200,7 +200,7 @@ class MultiprocessedExecutor(object):
             execution_uid (str): The execution uid of the workflow.
         """
         if (execution_uid in self.workflow_status
-            and self.workflow_status[execution_uid] == WORKFLOW_RUNNING):
+                and self.workflow_status[execution_uid] == WORKFLOW_RUNNING):
             self.manager.pause_workflow(execution_uid)
             self.workflow_status[execution_uid] = WORKFLOW_PAUSED
             return True
@@ -256,8 +256,8 @@ class MultiprocessedExecutor(object):
         Args:
             data_in (dict): Data to be used to match against the triggers for an Action awaiting data.
             workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
-            arguments (list[Argument]): An optional list of Arguments to update for an Action awaiting data for a trigger.
-                Defaults to None.
+            arguments (list[Argument]): An optional list of Arguments to update for an
+                Action awaiting data for a trigger. Defaults to None.
         """
         arguments = arguments if arguments is not None else []
         self.manager.send_data_to_trigger(data_in, workflow_uids, arguments)

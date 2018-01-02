@@ -155,10 +155,11 @@ def validate_condition_transform_params(spec, app_name, action_type, defined_act
 
         data_in_param_name = action['data_in']
         validate_data_in_param(action_params, data_in_param_name, '{0} action {1}'.format(action_type, action_name))
-        function = get_condition(app_name, action['run']) if action_type == 'Condition' else get_transform(app_name,
-                                                                                                           action[
-                                                                                                               'run'])
-        validate_action_params(action_params, dereferencer, action_type, action_name, function)
+        if action_type == 'Condition':
+            function_ = get_condition(app_name, action['run'])
+        else:
+            function_ = get_transform(app_name, action['run'])
+        validate_action_params(action_params, dereferencer, action_type, action_name, function_)
         seen.add(action['run'])
 
     if seen != set(defined_actions):
@@ -198,7 +199,9 @@ def validate_actions(actions, dereferencer, app_name):
                                    action_name, get_app_action(app_name, action['run']), event=event)
         if 'default_return' in action:
             if action['default_return'] not in action.get('returns', []):
-                raise InvalidApi('Default return {} not in defined return codes {}'.format(action['default_return'], action.get('returns', []).keys()))
+                raise InvalidApi(
+                    'Default return {} not in defined return codes {}'.format(
+                        action['default_return'], action.get('returns', []).keys()))
 
         validate_app_action_return_codes(action.get('returns', []), app_name, action_name)
         seen.add(action['run'])

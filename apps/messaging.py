@@ -33,7 +33,8 @@ class MessageComponent(object):
         self.requires_response = requires_response
 
     def as_json(self):
-        return {'type': self.message_type, 'requires_response': self.requires_response, 'data': self.get_component_json()}
+        return {'type': self.message_type, 'requires_response': self.requires_response,
+                'data': self.get_component_json()}
 
     def get_component_json(self):
         return {}

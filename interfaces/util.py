@@ -11,7 +11,7 @@ def convert_events(events):
         events (str|WalkoffEvent|iterable(str|WalkoffEvent)): The events to convert
 
     Returns:
-        set(WalkoffEvent): The converted events
+        set{WalkoffEvent}: The converted events
 
     Raises:
         UnknownEvent: If any signal name has no corresponding WalkoffEvent

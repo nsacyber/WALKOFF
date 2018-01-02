@@ -121,5 +121,3 @@ class WorkflowAuthorizationCache(object):
 
 
 workflow_authorization_cache = WorkflowAuthorizationCache()
-
-

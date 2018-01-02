@@ -47,8 +47,8 @@ def act_on_messages(action):
 
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('messages', ['update']))
-    def other_action_func(action):
-        return act_on_message_helper(action)
+    def other_action_func(action_):
+        return act_on_message_helper(action_)
 
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('messages', ['delete']))

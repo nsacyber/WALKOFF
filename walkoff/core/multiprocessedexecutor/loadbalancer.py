@@ -126,8 +126,8 @@ class LoadBalancer:
         Args:
             data_in (dict): Data to be used to match against the triggers for an Action awaiting data.
             workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
-            arguments (list[Argument]): An optional list of Arguments to update for a Action awaiting data for a trigger.
-                Defaults to None.
+            arguments (list[Argument]): An optional list of Arguments to update for an
+                Action awaiting data for a trigger. Defaults to None.
         """
         data = dict()
         data['data_in'] = data_in

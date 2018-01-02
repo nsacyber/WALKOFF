@@ -21,7 +21,8 @@ def static_request_handler(endpoint, values):
 def read_app(page):
     # This is terrible and I'm sorry
     path = '{0}/interface/templates/{1}.html'.format(g.interface, page)
-    # path = url_for('custom_interface.static', interface=g.interface, filename='../interface/templates/{}.html'.format(page))
+    # path = url_for('custom_interface.static', interface=g.interface,
+    #                filename='../interface/templates/{}.html'.format(page))
     # path = path[len('custominterfaces/')+1:]
     try:
         return render_template(path)

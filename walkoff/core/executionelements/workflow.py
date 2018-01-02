@@ -291,7 +291,7 @@ class Workflow(ExecutionElement):
         """
         return self._execution_uid
 
-    def regenerate_uids(self):
+    def regenerate_uids(self, *args):
         start_action = deepcopy(self.actions.pop(self.start, None))
         if start_action is not None:
             start_action = deepcopy(start_action)

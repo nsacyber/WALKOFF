@@ -273,7 +273,8 @@ def delete_workflow(playbook_name, workflow_name):
 
             if len(running_context.controller.get_all_workflows_by_playbook(playbook_name)) == 0:
                 current_app.logger.debug('Removing playbook {0} since it is empty.'.format(playbook_name))
-                playbook_filename = os.path.join(walkoff.config.paths.workflows_path, '{0}.playbook'.format(playbook_name))
+                playbook_filename = os.path.join(
+                    walkoff.config.paths.workflows_path, '{0}.playbook'.format(playbook_name))
                 try:
                     os.remove(playbook_filename)
                 except OSError:
@@ -370,9 +371,10 @@ def pause_workflow(playbook_name, workflow_name):
         if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
             execution_uid = data['id']
             status = running_context.controller.executor.get_workflow_status(execution_uid)
-            if status == 1: #WORKFLOW_RUNNING
+            if status == 1:  # WORKFLOW_RUNNING
                 if running_context.controller.pause_workflow(execution_uid):
-                    current_app.logger.info('Paused workflow {0}-{1}:{2}'.format(playbook_name, workflow_name, execution_uid))
+                    current_app.logger.info(
+                        'Paused workflow {0}-{1}:{2}'.format(playbook_name, workflow_name, execution_uid))
                     return {"info": "Workflow paused"}, SUCCESS
                 else:
                     return {"error": "Invalid UUID."}, INVALID_INPUT_ERROR
@@ -434,7 +436,7 @@ def save_workflow(playbook_name, workflow_name):
                 workflow.update_from_json(request.get_json())
             except UnknownApp as e:
                 return {"error": "Unknown app {0}.".format(e.app)}, INVALID_INPUT_ERROR
-            except UnknownAppAction as e:
+            except UnknownAppAction:
                 return {'error': 'Unknown action for app'}, INVALID_INPUT_ERROR
             except InvalidArgument as e:
                 return {'error': 'Invalid input to action. Error: {0}'.format(str(e))}, INVALID_INPUT_ERROR

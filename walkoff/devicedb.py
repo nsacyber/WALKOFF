@@ -494,7 +494,8 @@ class DeviceDatabase(object):
     """
 
     def __init__(self):
-        self.engine = create_engine(format_db_path(walkoff.config.config.device_db_type, walkoff.config.paths.device_db_path))
+        self.engine = create_engine(format_db_path(
+            walkoff.config.config.device_db_type, walkoff.config.paths.device_db_path))
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 

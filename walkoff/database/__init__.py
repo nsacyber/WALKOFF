@@ -63,8 +63,8 @@ def get_roles_by_resource_permissions(resource_permission):
 
     roles = []
     for permission in permissions:
-        roles.extend(Role.query.join(Role.resources).join(Resource.permissions).filter(Resource.name == resource,
-                                                                                       Permission.name == permission).all())
+        roles.extend(Role.query.join(Role.resources).join(Resource.permissions).filter(
+            Resource.name == resource, Permission.name == permission).all())
 
     return {role.id for role in roles}
 
@@ -106,7 +106,7 @@ def add_user(username, password, roles=None):
     Args:
         username (str): The username for the User.
         password (str): The password for the User.
-        roles (list[str]): A list of roles for the User.
+        roles (list[int]): A list of roles for the User.
 
     Returns:
         The new User object if successful, else None.

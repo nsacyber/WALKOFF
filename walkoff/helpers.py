@@ -315,6 +315,7 @@ def get_app_action_return_is_failure(app, action, status):
     Args:
         app (str): Name of the app
         action (str): Name of the action
+        status (str): Name of the status
 
     Returns:
         (boolean): True if status is a failure code, false otherwise

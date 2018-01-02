@@ -18,8 +18,8 @@ class Transform(ExecutionElement):
         Args:
             app_name (str): The app name associated with this transform
             action_name (str): The action name for the transform.
-            arguments (list[Argument], optional): Dictionary of Argument keys to Argument values. This dictionary will be
-                converted to a dictionary of str:Argument. Defaults to None.
+            arguments (list[Argument], optional): Dictionary of Argument keys to Argument values.
+                This dictionary will be converted to a dictionary of str:Argument. Defaults to None.
             uid (str, optional): A universally unique identifier for this object.
                 Created from uuid.uuid4() in Python
         """

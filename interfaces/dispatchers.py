@@ -171,7 +171,8 @@ class AppActionEventDispatcher(object):
             bool: Is the function registered?
         """
         if event in self._event_router:
-            all_is_registered = 'all' in self._event_router[event] and self._event_router[event]['all'].is_registered(func)
+            all_is_registered = ('all' in self._event_router[event]
+                                 and self._event_router[event]['all'].is_registered(func))
             if device_id == 'all':
                 return all_is_registered
             return (all_is_registered or
