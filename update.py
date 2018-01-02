@@ -19,16 +19,15 @@ def prompt(question):
     while True:
         sys.stdout.write("\n* " + question + " yes/no? ")
         try:
-            return strtobool(input().lower())
+            s = input()
+            return strtobool(s.lower())
         except ValueError:
             print("Please respond with 'yes' or 'no'.")
 
 
 def archive(flagged, inter):
 
-    if inter and not prompt("Do you want to make a backup of the current directory?"):
-        return
-    elif not flagged:
+    if not (flagged or (inter and prompt("Do you want to make a backup of the current directory?"))):
         return
 
     if not os.path.exists("backups"):
@@ -49,21 +48,17 @@ def archive(flagged, inter):
 
 def git(flagged, inter):
 
-    if inter and not prompt("Do you want to git pull from the current branch?"):
-        return
-    elif not flagged:
+    if not (flagged or (inter and prompt("Do you want to git pull from the current branch?"))):
         return
 
     print("Pulling from current branch: ")
-    print(subprocess.check_output(["git", "branch"], stderr=subprocess.STDOUT))
-    print(subprocess.check_output(["git", "pull"], stderr=subprocess.STDOUT))
+    print(subprocess.check_output(["git", "branch"], stderr=subprocess.STDOUT, universal_newlines=True))
+    print(subprocess.check_output(["git", "pull"], stderr=subprocess.STDOUT, universal_newlines=True))
 
 
 def clean_pycache(flagged, inter):
 
-    if inter and not prompt("Do you want to clear pycache files?"):
-        return
-    elif not flagged:
+    if not (flagged or (inter and prompt("Do you want to clear pycache files?"))):
         return
 
     my_dir = os.path.dirname(os.path.abspath(__file__))
@@ -77,9 +72,7 @@ def clean_pycache(flagged, inter):
 
 def setup(flagged, inter):
 
-    if inter and not prompt("Do you want to setup WALKOFF now?"):
-        return
-    elif not flagged:
+    if not (flagged or (inter and prompt("Do you want to setup WALKOFF now?"))):
         return
 
     setup_walkoff.main()
@@ -87,35 +80,43 @@ def setup(flagged, inter):
 
 def migrate_apps(flagged, inter):
 
-    if inter and not prompt("Do you want to migrate your app APIs?"):
-        return
-    elif not flagged:
+    if not (flagged or (inter and prompt("Do you want to migrate your app APIs?"))):
         return
 
     scripts.migrate_api.main()
 
 
-def migrate_workflows(flagged, inter, target):
-
-    if inter and not prompt("Do you want to migrate your workflows?"):
-        return
-    elif not flagged:
-        return
+def validate_version(target):
+    if target is None:
+        return None, None
 
     if target.startswith("d"):
         mode = "downgrade"
     elif target.startswith("u"):
         mode = "upgrade"
     else:
-        print("Use 'd' or 'u' to specify whether to downgrade or upgrade workflows to the specified version.")
-        return
+        print("Use 'd' or 'u' at the start to specify whether to downgrade or upgrade to the specified version.")
+        return None, None
 
     tgt_version = target[1:]
     try:
         semver.parse(tgt_version)
     except ValueError:
         print("{} is not a valid semver string".format(tgt_version))
+        return None, None
+
+    return mode, tgt_version
+
+
+def migrate_workflows(flagged, inter, target):
+
+    if not (flagged or (inter and prompt("Do you want to migrate your workflows?"))):
         return
+
+    mode, tgt_version = validate_version(target)
+    while inter and (mode is None):
+        target = input("Enter the version target, e.g. 'u0.5.2' to upgrade to 0.5.2 or 'd0.5.0' to downgrade to 0.5.0: ")
+        mode, tgt_version = validate_version(target)
 
     print("{} workflows to version {}".format(mode, tgt_version))
     scripts.migrate_workflows.convert_playbooks(mode, tgt_version)
@@ -123,9 +124,7 @@ def migrate_workflows(flagged, inter, target):
 
 def alembic(flagged, inter):
 
-    if inter and not prompt("Do you want alembic to migrate databases? (This will install alembic.)"):
-        return
-    elif not flagged:
+    if not (flagged or (inter and prompt("Do you want alembic to migrate databases? (This will install alembic.)"))):
         return
 
     for i in range(0, 1):
@@ -133,15 +132,19 @@ def alembic(flagged, inter):
             # names = ["device", "events", "walkoff"]
             names = ["walkoff"]
             for name in names:
-                r = (subprocess.check_output(["alembic", "--name", name, "current"], stderr=subprocess.STDOUT))
-                if "(head)" in r:
-                    print("Already up to date, no alembic upgrade needed.")
-                else:
-                    print(subprocess.check_output(["alembic", "--name", name, "upgrade", "head"],
-                                                  stderr=subprocess.STDOUT))
+                try:
+                    r = (subprocess.check_output(["alembic", "--name", name, "current"], stderr=subprocess.STDOUT, universal_newlines=True))
+                    if "(head)" in r:
+                        print("Already up to date, no alembic upgrade needed.")
+                    else:
+                        print(subprocess.check_output(["alembic", "--name", name, "upgrade", "head"],
+                                                      stderr=subprocess.STDOUT, universal_newlines=True))
+                except subprocess.CalledProcessError as e:
+                    print("Alembic encountered an error.")
+                    print("Try manually running 'alembic --name {} upgrade head".format(name))
+                    print("You may already be on the latest revision.")
 
-            return
-
+                return
         except OSError:
             print("alembic not installed, installing alembic...")
             import pip
@@ -183,7 +186,7 @@ def main():
 
     parser.add_argument("-mw", "--migrateworkflows",
                         help="Runs workflow migration script to upgrade/downgrade to the specified version,"
-                             " e.g. u0.5.2 to upgrade to 0.5.2 or d0.5.0 to downgrade to 0.5.0")
+                             " e.g. 'u0.5.2' to upgrade to 0.5.2 or 'd0.5.0' to downgrade to 0.5.0")
 
     parser.add_argument("-md", "--migratedatabase",
                         help="Runs alembic database migration.",
@@ -196,7 +199,7 @@ def main():
 
     args = parser.parse_args()
 
-    if args.everything or args.setup or args.migratedatabase:
+    if args.everything or args.setup or args.migratedatabase or args.interactive:
         if (os.name == 'posix' and os.geteuid() != 0) or (os.name == 'nt' and cts.windll.shell32.IsUserAnAdmin() != 0):
             if not prompt("Using --setup or --migratedatabase requires root/administrator. Try anyways?"):
                 return
