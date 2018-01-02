@@ -22,7 +22,6 @@ class JsonElementCreator(object):
             (ExecutionElement) The constructed ExecutionElement
         """
         from walkoff.core.executionelements.playbook import Playbook
-        from walkoff.core.argument import Argument
         cls._setup_ordering()
         if element_class is None:
             element_class = Playbook
@@ -34,21 +33,26 @@ class JsonElementCreator(object):
             except StopIteration:
                 raise ValueError('Unknown class {}'.format(element_class.__class__.__name__))
         try:
-            if subfield_lookup is not None:
-                for subfield_name, next_class in subfield_lookup.items():
-                    if subfield_name in json_in:
-                        subfield_json = json_in[subfield_name]
-                        if hasattr(current_class, '_templatable'):
-                            json_in['raw_representation'] = dict(json_in)
-                        json_in[subfield_name] = [next_class.create(element_json) for element_json in subfield_json]
-            if 'arguments' in json_in:
-                json_in['arguments'] = [Argument(**arg_json) for arg_json in json_in['arguments']]
-            return current_class(**json_in)
+            return cls.construct_current_class(current_class, json_in, subfield_lookup)
         except (KeyError, TypeError) as e:
             from walkoff.helpers import format_exception_message
             raise ValueError(
                 'Improperly formatted JSON for ExecutionElement {0} {1}'.format(current_class.__name__,
                                                                                 format_exception_message(e)))
+
+    @classmethod
+    def construct_current_class(cls, current_class, json_in, subfield_lookup):
+        from walkoff.core.argument import Argument
+        if subfield_lookup is not None:
+            for subfield_name, next_class in subfield_lookup.items():
+                if subfield_name in json_in:
+                    subfield_json = json_in[subfield_name]
+                    if hasattr(current_class, '_templatable'):
+                        json_in['raw_representation'] = dict(json_in)
+                    json_in[subfield_name] = [next_class.create(element_json) for element_json in subfield_json]
+        if 'arguments' in json_in:
+            json_in['arguments'] = [Argument(**arg_json) for arg_json in json_in['arguments']]
+        return current_class(**json_in)
 
     @classmethod
     def _setup_ordering(cls):
