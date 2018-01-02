@@ -2,6 +2,7 @@ from functools import wraps
 
 from walkoff.core.actionresult import ActionResult
 from walkoff.helpers import get_function_arg_names
+from .walkofftag import WalkoffTag
 
 
 def format_result(result):
@@ -28,8 +29,7 @@ def action(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         return format_result(func(*args, **kwargs))
-
-    tag(wrapper, 'action')
+    WalkoffTag.action.tag(wrapper)
     wrapper.__arg_names = get_function_arg_names(func)
     return wrapper
 
@@ -43,7 +43,7 @@ def condition(func):
     Returns:
         (func) Tagged function
     """
-    tag(func, 'condition')
+    WalkoffTag.condition.tag(func)
     return func
 
 
@@ -56,5 +56,5 @@ def transform(func):
     Returns:
         (func) Tagged function
     """
-    tag(func, 'transform')
+    WalkoffTag.transform.tag(func)
     return func

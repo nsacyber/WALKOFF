@@ -1,4 +1,4 @@
-from apps.decorators import action
+from walkoff.appgateway.decorators import action
 
 @action
 def global2(arg1):

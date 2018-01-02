@@ -8,6 +8,7 @@ from importlib import import_module
 from six import string_types
 
 from walkoff.helpers import UnknownApp, UnknownAppAction, UnknownCondition, UnknownTransform
+from .walkofftag import WalkoffTag
 
 _logger = logging.getLogger(__name__)
 
@@ -302,12 +303,11 @@ class AppCache(object):
         base_path = '.'.join([app_path, app_name])
         for field, obj in inspect.getmembers(module):
             if (inspect.isclass(obj) and getattr(obj, '_is_walkoff_app', False)
-                and AppCache._get_qualified_class_name(obj) != 'apps.App'):
+                    and AppCache._get_qualified_class_name(obj) != 'apps.App'):
                 self._cache_app(obj, app_name, base_path)
             elif inspect.isfunction(obj):
-                for attr in ('action', 'condition', 'transform'):
-                    if hasattr(obj, attr):
-                        self._cache_action(obj, app_name, base_path, attr)
+                for tag in WalkoffTag.get_tags(obj):
+                    self._cache_action(obj, app_name, base_path, tag.name)
 
     def _cache_app(self, app_class, app_name, app_path):
         """Caches an app
@@ -328,7 +328,7 @@ class AppCache(object):
         self._cache[app_name]['main'] = app_class
         app_actions = inspect.getmembers(
             app_class, (lambda field:
-                        (inspect.ismethod(field) or inspect.isfunction(field)) and hasattr(field, 'action')))
+                        (inspect.ismethod(field) or inspect.isfunction(field)) and WalkoffTag.action.is_tagged(field)))
         if 'actions' not in self._cache[app_name]:
             self._cache[app_name]['actions'] = {}
         if app_actions:

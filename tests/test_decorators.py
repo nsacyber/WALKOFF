@@ -1,6 +1,6 @@
 import unittest
 
-from apps.decorators import *
+from walkoff.appgateway.decorators import *
 
 
 class TestDecorators(unittest.TestCase):
