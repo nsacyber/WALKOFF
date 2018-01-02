@@ -2,7 +2,7 @@ import os.path
 from importlib import import_module
 from unittest import TestCase
 
-from walkoff.appgateway import AppCache
+from walkoff.appgateway.appcache import AppCache, AppCacheActionEntry, WalkoffTag
 from walkoff.appgateway.decorators import action
 from walkoff.helpers import UnknownApp, UnknownAppAction
 
@@ -11,8 +11,25 @@ def f1(): pass
 
 
 class TestAppCache(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.action_tag = [WalkoffTag.action]
+        cls.condition_tag = [WalkoffTag.condition]
+        cls.transform_tag = [WalkoffTag.transform]
+        cls.maxDiff = None
+
     def setUp(self):
         self.cache = AppCache()
+
+    def assert_cache_has_apps(self, apps):
+        self.assertSetEqual(set(self.cache._cache.keys()), set(apps))
+
+    def assert_cached_app_has_actions(self, app='app1', actions={}):
+        self.assertDictEqual(self.cache._cache[app]['actions'], actions)
+
+    def assert_cache_has_main(self, main, app='A'):
+        self.assertEqual(self.cache._cache[app]['main'], main)
 
     def test_init(self):
         self.assertDictEqual(self.cache._cache, {})
@@ -38,78 +55,98 @@ class TestAppCache(TestCase):
         self.assertEqual(AppCache._strip_base_module_from_qualified_name('tests.test_app_cache.f1', 'invalid'),
                          'tests.test_app_cache.f1')
 
+    def cache_action(self, func, app='app1', tags=None):
+        tags = self.action_tag if tags is None else tags
+        self.cache._cache_action(
+            func, app, 'tests.test_app_cache.TestAppCache', tags, cls=TestAppCache)
+
     def test_cache_action_empty_cache(self):
         def x(): pass
-
-        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
-        self.assertDictEqual(self.cache._cache, {'app1': {'actions': {'x': {'run': x, 'bound': False}}}})
+        self.cache_action(x)
+        self.assert_cache_has_apps({'app1'})
+        self.assert_cached_app_has_actions(
+            actions={'x': AppCacheActionEntry(run=x, is_bound=False, tags=self.action_tag)})
 
     def test_cache_action_existing_app_name_entry(self):
         def x(): pass
 
         self.cache._cache['app1'] = {}
-        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
-        self.assertDictEqual(self.cache._cache, {'app1': {'actions': {'x': {'run': x, 'bound': False}}}})
+        self.cache_action(x)
+        self.assert_cache_has_apps({'app1'})
+        self.assert_cached_app_has_actions(
+            actions={'x': AppCacheActionEntry(run=x, is_bound=False, tags=self.action_tag)})
 
     def test_cache_action_existing_app_name_and_actions_tag(self):
         def x(): pass
 
         self.cache._cache['app1'] = {'actions': {}}
-        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
-        self.assertDictEqual(self.cache._cache, {'app1': {'actions': {'x': {'run': x, 'bound': False}}}})
+        self.cache_action(x)
+        self.assert_cache_has_apps({'app1'})
+        self.assert_cached_app_has_actions(
+            actions={'x': AppCacheActionEntry(run=x, is_bound=False, tags=self.action_tag)})
 
     def test_cache_action_multiple_actions_same_app(self):
         def x(): pass
 
         def y(): pass
-
-        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
-        self.cache._cache_action(y, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
-        self.assertDictEqual(self.cache._cache, {'app1': {'actions': {'x': {'run': x, 'bound': False},
-                                                                      'y': {'run': y, 'bound': False}}}})
+        self.cache_action(x)
+        self.cache_action(y)
+        self.assert_cache_has_apps({'app1'})
+        self.assert_cached_app_has_actions(
+            actions={'x': AppCacheActionEntry(run=x, is_bound=False, tags=self.action_tag),
+                     'y': AppCacheActionEntry(run=y, is_bound=False, tags=self.action_tag)})
 
     def test_cache_action_multiple_actions_different_app(self):
         def x(): pass
 
         def y(): pass
-
-        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
-        self.cache._cache_action(y, 'app2', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
-        self.assertDictEqual(self.cache._cache, {'app1': {'actions': {'x': {'run': x, 'bound': False}}},
-                                                 'app2': {'actions': {'y': {'run': y, 'bound': False}}}})
+        self.cache_action(x)
+        self.cache_action(y, app='app2')
+        self.assert_cache_has_apps({'app1', 'app2'})
+        self.assert_cached_app_has_actions(
+            actions={'x': AppCacheActionEntry(run=x, is_bound=False, tags=self.action_tag)})
+        self.assert_cached_app_has_actions(app='app2',
+            actions={'y': AppCacheActionEntry(run=y, is_bound=False, tags=self.action_tag)})
 
     def test_cache_action_overwrite(self):
         def x(): pass
 
         original_id = id(x)
 
-        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
-
+        self.cache_action(x)
         def x(): pass
-
-        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
-        self.assertDictEqual(self.cache._cache, {'app1': {'actions': {'x': {'run': x, 'bound': False}}}})
-        self.assertNotEqual(id(self.cache._cache['app1']['actions']['x']['run']), original_id)
+        self.cache_action(x)
+        self.assert_cache_has_apps({'app1'})
+        self.assert_cached_app_has_actions(
+            actions={'x': AppCacheActionEntry(run=x, is_bound=False, tags=self.action_tag)}
+        )
+        self.assertNotEqual(id(self.cache._cache['app1']['actions']['x'].run), original_id)
 
     def test_cache_app_no_actions_empty_cache(self):
         class A: pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
-        self.assertDictEqual(self.cache._cache, {'A': {'main': A, 'actions': {}}})
+        self.cache_app(A)
+        self.assert_cache_has_main(A)
+        self.assert_cached_app_has_actions(app='A')
 
     def test_cache_app_no_actions_app_name_exists(self):
         class A: pass
 
         self.cache._cache['A'] = {}
+        self.cache_app(A)
+        self.assert_cache_has_main(A)
+        self.assert_cached_app_has_actions(app='A')
+
+    def cache_app(self, A):
         self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
-        self.assertDictEqual(self.cache._cache, {'A': {'main': A, 'actions': {}}})
 
     def test_cache_app_no_actions_app_name_exists_main_is_empty(self):
         class A: pass
 
         self.cache._cache['A'] = {'main': None}
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
-        self.assertDictEqual(self.cache._cache, {'A': {'main': A, 'actions': {}}})
+        self.cache_app(A)
+        self.assert_cache_has_main(A)
+        self.assert_cached_app_has_actions(app='A')
 
     def test_cache_app_with_actions_empty_cache(self):
         class A:
@@ -121,12 +158,12 @@ class TestAppCache(TestCase):
 
             def z(self): pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
-        self.maxDiff = None
-        self.assertDictEqual(self.cache._cache, {'A': {'main': A,
-                                                       'actions': {
-                                                           'tests.test_app_cache.A.x': {'run': A.x, 'bound': True},
-                                                           'tests.test_app_cache.A.y': {'run': A.y, 'bound': True}}}})
+        self.cache_app(A)
+        self.assert_cache_has_main(A)
+        self.assert_cached_app_has_actions(
+            app='A',
+            actions={'tests.test_app_cache.A.x': AppCacheActionEntry(run=A.x, is_bound=True, tags=self.action_tag),
+                     'tests.test_app_cache.A.y': AppCacheActionEntry(run=A.y, is_bound=True, tags=self.action_tag)})
 
     def test_cache_app_with_actions_app_name_exists(self):
         class A:
@@ -139,11 +176,12 @@ class TestAppCache(TestCase):
             def z(self): pass
 
         self.cache._cache['A'] = {}
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
-        self.assertDictEqual(self.cache._cache, {'A': {'main': A,
-                                                       'actions': {
-                                                           'tests.test_app_cache.A.x': {'run': A.x, 'bound': True},
-                                                           'tests.test_app_cache.A.y': {'run': A.y, 'bound': True}}}})
+        self.cache_app(A)
+        self.assert_cache_has_main(A)
+        self.assert_cached_app_has_actions(
+            app='A',
+            actions={'tests.test_app_cache.A.x': AppCacheActionEntry(run=A.x, is_bound=True, tags=self.action_tag),
+                     'tests.test_app_cache.A.y': AppCacheActionEntry(run=A.y, is_bound=True, tags=self.action_tag)})
 
     def test_cache_app_with_actions_app_name_exists_main_is_empty(self):
         class A:
@@ -156,10 +194,12 @@ class TestAppCache(TestCase):
             def z(self): pass
 
         self.cache._cache['A'] = {'main': None}
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
-        self.assertDictEqual(self.cache._cache,
-                             {'A': {'main': A, 'actions': {'tests.test_app_cache.A.x': {'run': A.x, 'bound': True},
-                                                           'tests.test_app_cache.A.y': {'run': A.y, 'bound': True}}}})
+        self.cache_app(A)
+        self.assert_cache_has_main(A)
+        self.assert_cached_app_has_actions(
+            app='A',
+            actions={'tests.test_app_cache.A.x': AppCacheActionEntry(run=A.x, is_bound=True, tags=self.action_tag),
+                     'tests.test_app_cache.A.y': AppCacheActionEntry(run=A.y, is_bound=True, tags=self.action_tag)})
 
     def test_cache_app_with_actions_and_global_actions(self):
         class A:
@@ -173,12 +213,14 @@ class TestAppCache(TestCase):
 
         def z(): pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
-        self.cache._cache_action(z, 'A', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
-        self.assertDictEqual(self.cache._cache,
-                             {'A': {'main': A, 'actions': {'tests.test_app_cache.A.x': {'run': A.x, 'bound': True},
-                                                           'tests.test_app_cache.A.y': {'run': A.y, 'bound': True},
-                                                           'z': {'run': z, 'bound': False}}}})
+        self.cache_app(A)
+        self.cache_action(z, app='A')
+        self.assert_cache_has_main(A)
+        self.assert_cached_app_has_actions(
+            app='A',
+            actions={'tests.test_app_cache.A.x': AppCacheActionEntry(run=A.x, is_bound=True, tags=self.action_tag),
+                     'tests.test_app_cache.A.y': AppCacheActionEntry(run=A.y, is_bound=True, tags=self.action_tag),
+                     'z': AppCacheActionEntry(run=z, is_bound=False, tags=self.action_tag)})
 
     def test_cache_app_with_actions_and_global_actions_name_conflict_resolved(self):
         class A:
@@ -193,18 +235,20 @@ class TestAppCache(TestCase):
 
         def z(): pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
-        self.cache._cache_action(z, 'A', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
-        self.assertDictEqual(self.cache._cache,
-                             {'A': {'main': A, 'actions': {'tests.test_app_cache.A.x': {'run': A.x, 'bound': True},
-                                                           'tests.test_app_cache.A.y': {'run': A.y, 'bound': True},
-                                                           'tests.test_app_cache.A.z': {'run': A.z, 'bound': True},
-                                                           'z': {'run': z, 'bound': False}}}})
+        self.cache_app(A)
+        self.cache_action(z, app='A')
+        self.assert_cache_has_main(A)
+        self.assert_cached_app_has_actions(
+            app='A',
+            actions={'tests.test_app_cache.A.x': AppCacheActionEntry(run=A.x, is_bound=True, tags=self.action_tag),
+                     'tests.test_app_cache.A.y': AppCacheActionEntry(run=A.y, is_bound=True, tags=self.action_tag),
+                     'tests.test_app_cache.A.z': AppCacheActionEntry(run=A.z, is_bound=True, tags=self.action_tag),
+                     'z': AppCacheActionEntry(run=z, is_bound=False, tags=self.action_tag)})
 
     def test_clear_existing_bound_functions_no_actions(self):
         class A: pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
+        self.cache_app(A)
         self.cache._cache['A'].pop('actions')
         self.cache._clear_existing_bound_functions('A')
         self.assertDictEqual(self.cache._cache, {'A': {'main': A}})
@@ -214,11 +258,12 @@ class TestAppCache(TestCase):
 
         def y(): pass
 
-        self.cache._cache_action(x, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
-        self.cache._cache_action(y, 'app1', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
+        self.cache_action(x)
+        self.cache_action(y)
         self.cache._clear_existing_bound_functions('app1')
-        self.assertDictEqual(self.cache._cache, {'app1': {'actions': {'x': {'run': x, 'bound': False},
-                                                                      'y': {'run': y, 'bound': False}}}})
+        self.assertDictEqual(self.cache._cache,
+                         {'app1': {'actions': {'x': AppCacheActionEntry(run=x, is_bound=False, tags=self.action_tag),
+                                               'y': AppCacheActionEntry(run=y, is_bound=False, tags=self.action_tag)}}})
 
     def test_clear_existing_bound_functions(self):
         class A:
@@ -232,29 +277,35 @@ class TestAppCache(TestCase):
 
         def z(): pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
-        self.cache._cache_action(z, 'A', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
+        self.cache_app(A)
+        self.cache_action(z, app='A')
         self.cache._clear_existing_bound_functions('A')
-        self.assertDictEqual(self.cache._cache, {'A': {'main': A, 'actions': {'z': {'run': z, 'bound': False}}}})
+        self.assertDictEqual(
+            self.cache._cache,
+            {'A': {'main': A, 'actions': {'z': AppCacheActionEntry(run=z, is_bound=False, tags=self.action_tag)}}})
 
     def test_cache_module(self):
         module = import_module('tests.testapps.HelloWorldBounded.main')
         from tests.testapps.HelloWorldBounded.main import Main, global1
         self.cache._cache_module(module, 'HelloWorldBounded', 'tests.testapps')
-        self.maxDiff = None
-        expected = {'HelloWorldBounded': {'main': Main,
-                                          'actions': {'main.Main.helloWorld': {'run': Main.helloWorld, 'bound': True},
-                                                      'main.Main.repeatBackToMe': {'run': Main.repeatBackToMe,
-                                                                                   'bound': True},
-                                                      'main.Main.returnPlusOne': {'run': Main.returnPlusOne,
-                                                                                  'bound': True},
-                                                      'main.Main.pause': {'run': Main.pause, 'bound': True},
-                                                      'main.Main.addThree': {'run': Main.addThree, 'bound': True},
-                                                      'main.Main.buggy_action': {'run': Main.buggy_action,
-                                                                                 'bound': True},
-                                                      'main.Main.json_sample': {'run': Main.json_sample, 'bound': True},
-                                                      'main.global1': {'run': global1, 'bound': False}}}}
-        self.assertDictEqual(self.cache._cache, expected)
+        self.assert_cache_has_main(Main, app='HelloWorldBounded')
+        self.assert_cached_app_has_actions(
+            app='HelloWorldBounded',
+            actions={'main.Main.helloWorld':
+                         AppCacheActionEntry(run=Main.helloWorld, is_bound=True, tags=self.action_tag),
+                     'main.Main.repeatBackToMe':
+                         AppCacheActionEntry(run=Main.repeatBackToMe, is_bound=True, tags=self.action_tag),
+                     'main.Main.returnPlusOne':
+                         AppCacheActionEntry(run=Main.returnPlusOne, is_bound=True, tags=self.action_tag),
+                     'main.Main.pause':
+                         AppCacheActionEntry(run=Main.pause, is_bound=True, tags=self.action_tag),
+                     'main.Main.addThree':
+                        AppCacheActionEntry(run=Main.addThree, is_bound=True, tags=self.action_tag),
+                     'main.Main.buggy_action':
+                         AppCacheActionEntry(run=Main.buggy_action, is_bound=True, tags=self.action_tag),
+                     'main.Main.json_sample':
+                         AppCacheActionEntry(run=Main.json_sample, is_bound=True, tags=self.action_tag),
+                     'main.global1': AppCacheActionEntry(run=global1, is_bound=False, tags=self.action_tag)})
 
     def test_cache_module_nothing_found(self):
         module = import_module('tests.testapps.HelloWorldBounded.display')
@@ -265,8 +316,9 @@ class TestAppCache(TestCase):
         module = import_module('tests.testapps.HelloWorldBounded.actions')
         self.cache._cache_module(module, 'HelloWorldBounded', 'tests.testapps')
         from tests.testapps.HelloWorldBounded.actions import global2
-        self.assertDictEqual(self.cache._cache,
-                             {'HelloWorldBounded': {'actions': {'actions.global2': {'run': global2, 'bound': False}}}})
+        self.assert_cached_app_has_actions(
+            app='HelloWorldBounded',
+            actions={'actions.global2': AppCacheActionEntry(run=global2, is_bound=False, tags=self.action_tag)})
 
     def test_import_and_cache_submodules_from_string(self):
         self.cache._import_and_cache_submodules('tests.testapps.HelloWorldBounded', 'HelloWorldBounded',
@@ -278,35 +330,38 @@ class TestAppCache(TestCase):
         from tests.testapps.HelloWorldBounded.transforms import (top_level_filter, filter1, filter2, filter3,
                                                                  complex_filter,
                                                                  length, json_select, sub1_top_filter)
-        expected = {'HelloWorldBounded': {'main': Main,
-                                          'actions': {'main.Main.helloWorld': {'run': Main.helloWorld, 'bound': True},
-                                                      'main.Main.repeatBackToMe': {'run': Main.repeatBackToMe,
-                                                                                   'bound': True},
-                                                      'main.Main.returnPlusOne': {'run': Main.returnPlusOne,
-                                                                                  'bound': True},
-                                                      'main.Main.pause': {'run': Main.pause, 'bound': True},
-                                                      'main.Main.addThree': {'run': Main.addThree, 'bound': True},
-                                                      'main.Main.buggy_action': {'run': Main.buggy_action,
-                                                                                 'bound': True},
-                                                      'main.Main.json_sample': {'run': Main.json_sample, 'bound': True},
-                                                      'main.global1': {'run': global1, 'bound': False},
-                                                      'actions.global2': {'run': global2, 'bound': False}},
-                                          'conditions': {'conditions.top_level_flag': {'run': top_level_flag},
-                                                         'conditions.flag1': {'run': flag1},
-                                                         'conditions.flag2': {'run': flag2},
-                                                         'conditions.flag3': {'run': flag3},
-                                                         'conditions.sub1_top_flag': {'run': sub1_top_flag},
-                                                         'conditions.regMatch': {'run': regMatch},
-                                                         'conditions.count': {'run': count}},
-                                          'transforms': {'transforms.top_level_filter': {'run': top_level_filter},
-                                                         'transforms.filter2': {'run': filter2},
-                                                         'transforms.sub1_top_filter': {'run': sub1_top_filter},
-                                                         'transforms.filter3': {'run': filter3},
-                                                         'transforms.filter1': {'run': filter1},
-                                                         'transforms.complex_filter': {'run': complex_filter},
-                                                         'transforms.length': {'run': length},
-                                                         'transforms.json_select': {'run': json_select}}}}
-        self.assertDictEqual(self.cache._cache, expected)
+        self.assert_cache_has_main(Main, app='HelloWorldBounded')
+        expected = {
+            'main.Main.helloWorld': AppCacheActionEntry(run=Main.helloWorld, is_bound=True, tags=self.action_tag),
+            'main.Main.repeatBackToMe':
+                AppCacheActionEntry(run=Main.repeatBackToMe, is_bound=True, tags=self.action_tag),
+            'main.Main.returnPlusOne': AppCacheActionEntry(run=Main.returnPlusOne, is_bound=True, tags=self.action_tag),
+            'main.Main.pause': AppCacheActionEntry(run=Main.pause, is_bound=True, tags=self.action_tag),
+            'main.Main.addThree': AppCacheActionEntry(run=Main.addThree, is_bound=True, tags=self.action_tag),
+            'main.Main.buggy_action': AppCacheActionEntry(run=Main.buggy_action, is_bound=True, tags=self.action_tag),
+            'main.Main.json_sample': AppCacheActionEntry(run=Main.json_sample, is_bound=True, tags=self.action_tag),
+            'main.global1': AppCacheActionEntry(run=global1, is_bound=False, tags=self.action_tag),
+            'actions.global2': AppCacheActionEntry(run=global2, is_bound=False, tags=self.action_tag),
+            'conditions.top_level_flag':
+                AppCacheActionEntry(run=top_level_flag, is_bound=False, tags=self.condition_tag),
+            'conditions.flag1': AppCacheActionEntry(run=flag1, is_bound=False, tags=self.condition_tag),
+            'conditions.flag2': AppCacheActionEntry(run=flag2, is_bound=False, tags=self.condition_tag),
+            'conditions.flag3': AppCacheActionEntry(run=flag3, is_bound=False, tags=self.condition_tag),
+            'conditions.sub1_top_flag': AppCacheActionEntry(run=sub1_top_flag, is_bound=False, tags=self.condition_tag),
+            'conditions.regMatch': AppCacheActionEntry(run=regMatch, is_bound=False, tags=self.condition_tag),
+            'conditions.count': AppCacheActionEntry(run=count, is_bound=False, tags=self.condition_tag),
+            'transforms.top_level_filter':
+                AppCacheActionEntry(run=top_level_filter, is_bound=False, tags=self.transform_tag),
+            'transforms.filter2': AppCacheActionEntry(run=filter2, is_bound=False, tags=self.transform_tag),
+            'transforms.sub1_top_filter':
+                AppCacheActionEntry(run=sub1_top_filter, is_bound=False, tags=self.transform_tag),
+            'transforms.filter3': AppCacheActionEntry(run=filter3, is_bound=False, tags=self.transform_tag),
+            'transforms.filter1':AppCacheActionEntry(run=filter1, is_bound=False, tags=self.transform_tag),
+            'transforms.complex_filter':
+                AppCacheActionEntry(run=complex_filter, is_bound=False, tags=self.transform_tag),
+            'transforms.length': AppCacheActionEntry(run=length, is_bound=False, tags=self.transform_tag),
+            'transforms.json_select': AppCacheActionEntry(run=json_select, is_bound=False, tags=self.transform_tag)}
+        self.assert_cached_app_has_actions(app='HelloWorldBounded', actions=expected)
 
     def test_import_and_cache_submodules_from_module(self):
         module = import_module('tests.testapps.HelloWorldBounded')
@@ -318,35 +373,38 @@ class TestAppCache(TestCase):
         from tests.testapps.HelloWorldBounded.transforms import (top_level_filter, filter1, filter2, filter3,
                                                                  complex_filter,
                                                                  length, json_select, sub1_top_filter)
-        expected = {'HelloWorldBounded': {'main': Main,
-                                          'actions': {'main.Main.helloWorld': {'run': Main.helloWorld, 'bound': True},
-                                                      'main.Main.repeatBackToMe': {'run': Main.repeatBackToMe,
-                                                                                   'bound': True},
-                                                      'main.Main.returnPlusOne': {'run': Main.returnPlusOne,
-                                                                                  'bound': True},
-                                                      'main.Main.pause': {'run': Main.pause, 'bound': True},
-                                                      'main.Main.addThree': {'run': Main.addThree, 'bound': True},
-                                                      'main.Main.buggy_action': {'run': Main.buggy_action,
-                                                                                 'bound': True},
-                                                      'main.Main.json_sample': {'run': Main.json_sample, 'bound': True},
-                                                      'main.global1': {'run': global1, 'bound': False},
-                                                      'actions.global2': {'run': global2, 'bound': False}},
-                                          'conditions': {'conditions.top_level_flag': {'run': top_level_flag},
-                                                         'conditions.flag1': {'run': flag1},
-                                                         'conditions.flag2': {'run': flag2},
-                                                         'conditions.flag3': {'run': flag3},
-                                                         'conditions.sub1_top_flag': {'run': sub1_top_flag},
-                                                         'conditions.regMatch': {'run': regMatch},
-                                                         'conditions.count': {'run': count}},
-                                          'transforms': {'transforms.top_level_filter': {'run': top_level_filter},
-                                                         'transforms.filter2': {'run': filter2},
-                                                         'transforms.sub1_top_filter': {'run': sub1_top_filter},
-                                                         'transforms.filter3': {'run': filter3},
-                                                         'transforms.filter1': {'run': filter1},
-                                                         'transforms.complex_filter': {'run': complex_filter},
-                                                         'transforms.length': {'run': length},
-                                                         'transforms.json_select': {'run': json_select}}}}
-        self.assertDictEqual(self.cache._cache, expected)
+        self.assert_cache_has_main(Main, app='HelloWorldBounded')
+        expected = {
+            'main.Main.helloWorld': AppCacheActionEntry(run=Main.helloWorld, is_bound=True, tags=self.action_tag),
+            'main.Main.repeatBackToMe':
+                AppCacheActionEntry(run=Main.repeatBackToMe, is_bound=True, tags=self.action_tag),
+            'main.Main.returnPlusOne': AppCacheActionEntry(run=Main.returnPlusOne, is_bound=True, tags=self.action_tag),
+            'main.Main.pause': AppCacheActionEntry(run=Main.pause, is_bound=True, tags=self.action_tag),
+            'main.Main.addThree': AppCacheActionEntry(run=Main.addThree, is_bound=True, tags=self.action_tag),
+            'main.Main.buggy_action': AppCacheActionEntry(run=Main.buggy_action, is_bound=True, tags=self.action_tag),
+            'main.Main.json_sample': AppCacheActionEntry(run=Main.json_sample, is_bound=True, tags=self.action_tag),
+            'main.global1': AppCacheActionEntry(run=global1, is_bound=False, tags=self.action_tag),
+            'actions.global2': AppCacheActionEntry(run=global2, is_bound=False, tags=self.action_tag),
+            'conditions.top_level_flag':
+                AppCacheActionEntry(run=top_level_flag, is_bound=False, tags=self.condition_tag),
+            'conditions.flag1': AppCacheActionEntry(run=flag1, is_bound=False, tags=self.condition_tag),
+            'conditions.flag2': AppCacheActionEntry(run=flag2, is_bound=False, tags=self.condition_tag),
+            'conditions.flag3': AppCacheActionEntry(run=flag3, is_bound=False, tags=self.condition_tag),
+            'conditions.sub1_top_flag': AppCacheActionEntry(run=sub1_top_flag, is_bound=False, tags=self.condition_tag),
+            'conditions.regMatch': AppCacheActionEntry(run=regMatch, is_bound=False, tags=self.condition_tag),
+            'conditions.count': AppCacheActionEntry(run=count, is_bound=False, tags=self.condition_tag),
+            'transforms.top_level_filter':
+                AppCacheActionEntry(run=top_level_filter, is_bound=False, tags=self.transform_tag),
+            'transforms.filter2': AppCacheActionEntry(run=filter2, is_bound=False, tags=self.transform_tag),
+            'transforms.sub1_top_filter':
+                AppCacheActionEntry(run=sub1_top_filter, is_bound=False, tags=self.transform_tag),
+            'transforms.filter3': AppCacheActionEntry(run=filter3, is_bound=False, tags=self.transform_tag),
+            'transforms.filter1': AppCacheActionEntry(run=filter1, is_bound=False, tags=self.transform_tag),
+            'transforms.complex_filter':
+                AppCacheActionEntry(run=complex_filter, is_bound=False, tags=self.transform_tag),
+            'transforms.length': AppCacheActionEntry(run=length, is_bound=False, tags=self.transform_tag),
+            'transforms.json_select': AppCacheActionEntry(run=json_select, is_bound=False, tags=self.transform_tag)}
+        self.assert_cached_app_has_actions(app='HelloWorldBounded', actions=expected)
 
     def test_path_to_module_no_slashes(self):
         self.assertEqual(AppCache._path_to_module('apppath'), 'apppath')
@@ -370,44 +428,48 @@ class TestAppCache(TestCase):
                                                                  length, json_select, sub1_top_filter)
         from tests.testapps.HelloWorldBounded.actions import global2
         from tests.testapps.DailyQuote.main import Main as DailyMain
-        self.maxDiff = None
-        expected = {'HelloWorldBounded': {'main': Main,
-                                          'actions': {'main.Main.helloWorld': {'run': Main.helloWorld, 'bound': True},
-                                                      'main.Main.repeatBackToMe': {'run': Main.repeatBackToMe,
-                                                                                   'bound': True},
-                                                      'main.Main.returnPlusOne': {'run': Main.returnPlusOne,
-                                                                                  'bound': True},
-                                                      'main.Main.pause': {'run': Main.pause, 'bound': True},
-                                                      'main.Main.addThree': {'run': Main.addThree, 'bound': True},
-                                                      'main.Main.buggy_action': {'run': Main.buggy_action,
-                                                                                 'bound': True},
-                                                      'main.Main.json_sample': {'run': Main.json_sample, 'bound': True},
-                                                      'main.global1': {'run': global1, 'bound': False},
-                                                      'actions.global2': {'run': global2, 'bound': False}},
-                                          'conditions': {'conditions.top_level_flag': {'run': top_level_flag},
-                                                         'conditions.flag1': {'run': flag1},
-                                                         'conditions.flag2': {'run': flag2},
-                                                         'conditions.flag3': {'run': flag3},
-                                                         'conditions.sub1_top_flag': {'run': sub1_top_flag},
-                                                         'conditions.regMatch': {'run': regMatch},
-                                                         'conditions.count': {'run': count}},
-                                          'transforms': {'transforms.top_level_filter': {'run': top_level_filter},
-                                                         'transforms.filter2': {'run': filter2},
-                                                         'transforms.sub1_top_filter': {'run': sub1_top_filter},
-                                                         'transforms.filter3': {'run': filter3},
-                                                         'transforms.filter1': {'run': filter1},
-                                                         'transforms.complex_filter': {'run': complex_filter},
-                                                         'transforms.length': {'run': length},
-                                                         'transforms.json_select': {'run': json_select}}},
-                    'DailyQuote': {'main': DailyMain,
-                                   'actions': {'main.Main.quoteIntro': {'run': DailyMain.quoteIntro, 'bound': True},
-                                               'main.Main.repeatBackToMe': {'run': DailyMain.repeatBackToMe,
-                                                                            'bound': True},
-                                               'main.Main.forismaticQuote': {'run': DailyMain.forismaticQuote,
-                                                                             'bound': True},
-                                               'main.Main.getQuote': {'run': DailyMain.getQuote, 'bound': True}}}}
-        self.cache._cache.pop("HelloWorld")
-        self.assertDictEqual(self.cache._cache, expected)
+        self.assert_cache_has_main(Main, app='HelloWorldBounded')
+        hello_world_expected = {
+            'main.Main.helloWorld': AppCacheActionEntry(run=Main.helloWorld, is_bound=True, tags=self.action_tag),
+            'main.Main.repeatBackToMe':
+                AppCacheActionEntry(run=Main.repeatBackToMe, is_bound=True, tags=self.action_tag),
+            'main.Main.returnPlusOne': AppCacheActionEntry(run=Main.returnPlusOne, is_bound=True, tags=self.action_tag),
+            'main.Main.pause': AppCacheActionEntry(run=Main.pause, is_bound=True, tags=self.action_tag),
+            'main.Main.addThree': AppCacheActionEntry(run=Main.addThree, is_bound=True, tags=self.action_tag),
+            'main.Main.buggy_action': AppCacheActionEntry(run=Main.buggy_action, is_bound=True, tags=self.action_tag),
+            'main.Main.json_sample': AppCacheActionEntry(run=Main.json_sample, is_bound=True, tags=self.action_tag),
+            'main.global1': AppCacheActionEntry(run=global1, is_bound=False, tags=self.action_tag),
+            'actions.global2': AppCacheActionEntry(run=global2, is_bound=False, tags=self.action_tag),
+            'conditions.top_level_flag':
+                AppCacheActionEntry(run=top_level_flag, is_bound=False, tags=self.condition_tag),
+            'conditions.flag1': AppCacheActionEntry(run=flag1, is_bound=False, tags=self.condition_tag),
+            'conditions.flag2': AppCacheActionEntry(run=flag2, is_bound=False, tags=self.condition_tag),
+            'conditions.flag3': AppCacheActionEntry(run=flag3, is_bound=False, tags=self.condition_tag),
+            'conditions.sub1_top_flag': AppCacheActionEntry(run=sub1_top_flag, is_bound=False, tags=self.condition_tag),
+            'conditions.regMatch': AppCacheActionEntry(run=regMatch, is_bound=False, tags=self.condition_tag),
+            'conditions.count': AppCacheActionEntry(run=count, is_bound=False, tags=self.condition_tag),
+            'transforms.top_level_filter':
+                AppCacheActionEntry(run=top_level_filter, is_bound=False, tags=self.transform_tag),
+            'transforms.filter2': AppCacheActionEntry(run=filter2, is_bound=False, tags=self.transform_tag),
+            'transforms.sub1_top_filter':
+                AppCacheActionEntry(run=sub1_top_filter, is_bound=False, tags=self.transform_tag),
+            'transforms.filter3': AppCacheActionEntry(run=filter3, is_bound=False, tags=self.transform_tag),
+            'transforms.filter1': AppCacheActionEntry(run=filter1, is_bound=False, tags=self.transform_tag),
+            'transforms.complex_filter':
+                AppCacheActionEntry(run=complex_filter, is_bound=False, tags=self.transform_tag),
+            'transforms.length': AppCacheActionEntry(run=length, is_bound=False, tags=self.transform_tag),
+            'transforms.json_select': AppCacheActionEntry(run=json_select, is_bound=False, tags=self.transform_tag)}
+        self.assert_cached_app_has_actions(app='HelloWorldBounded', actions=hello_world_expected)
+        self.assert_cache_has_main(DailyMain, app='DailyQuote')
+        daily_quote_expected = {
+            'main.Main.quoteIntro': AppCacheActionEntry(run=DailyMain.quoteIntro, is_bound=True, tags=self.action_tag),
+            'main.Main.repeatBackToMe':
+                AppCacheActionEntry(run=DailyMain.repeatBackToMe, is_bound=True, tags=self.action_tag),
+            'main.Main.forismaticQuote':
+                AppCacheActionEntry(run=DailyMain.forismaticQuote, is_bound=True, tags=self.action_tag),
+            'main.Main.getQuote': AppCacheActionEntry(run=DailyMain.getQuote, is_bound=True, tags=self.action_tag)}
+        self.assert_cache_has_apps({'HelloWorldBounded', 'HelloWorld', 'DailyQuote'})
+        self.assert_cached_app_has_actions(app='DailyQuote', actions=daily_quote_expected)
 
     def test_clear_cache_empty_cache(self):
         self.cache.clear()
@@ -423,7 +485,7 @@ class TestAppCache(TestCase):
 
         class B: pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
+        self.cache_app(A)
         self.cache._cache_app(B, 'B', 'tests.test_app_cache.TestAppCache')
         self.assertSetEqual(set(self.cache.get_app_names()), {'A', 'B'})
 
@@ -437,7 +499,7 @@ class TestAppCache(TestCase):
     def test_get_app_missing_app(self):
         class A: pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
+        self.cache_app(A)
         with self.assertRaises(UnknownApp):
             self.cache.get_app('B')
 
@@ -453,7 +515,7 @@ class TestAppCache(TestCase):
 
         class B: pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
+        self.cache_app(A)
         self.cache._cache_app(B, 'B', 'tests.test_app_cache.TestAppCache')
         self.assertEqual(self.cache.get_app('A'), A)
 
@@ -464,14 +526,14 @@ class TestAppCache(TestCase):
     def test_get_app_action_names_unknown_app(self):
         class A: pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
+        self.cache_app(A)
         with self.assertRaises(UnknownApp):
             self.cache.get_app_action_names('B')
 
     def test_get_app_action_names_no_actions(self):
         class A: pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
+        self.cache_app(A)
         self.assertListEqual(self.cache.get_app_action_names('A'), [])
 
     def test_get_app_action_names(self):
@@ -489,7 +551,7 @@ class TestAppCache(TestCase):
             @action
             def b(self): pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
+        self.cache_app(A)
         self.cache._cache_app(B, 'B', 'tests.test_app_cache.TestAppCache')
         app_actions = self.cache.get_app_action_names('A')
         self.assertEqual(len(app_actions), 2)
@@ -507,14 +569,14 @@ class TestAppCache(TestCase):
             @action
             def y(self): pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
+        self.cache_app(A)
         with self.assertRaises(UnknownApp):
             self.cache.get_app_action('B', 'x')
 
     def test_get_app_action_no_actions(self):
         class A: pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
+        self.cache_app(A)
         with self.assertRaises(UnknownAppAction):
             self.cache.get_app_action('A', 'x')
 
@@ -526,7 +588,7 @@ class TestAppCache(TestCase):
             @action
             def y(self): pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
+        self.cache_app(A)
         with self.assertRaises(UnknownAppAction):
             self.cache.get_app_action('A', 'z')
 
@@ -545,7 +607,7 @@ class TestAppCache(TestCase):
             @action
             def b(self): pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
+        self.cache_app(A)
         self.cache._cache_app(B, 'B', 'tests.test_app_cache.TestAppCache')
         self.assertEqual(self.cache.get_app_action('A', 'tests.test_app_cache.A.x'), A.x)
 
@@ -561,14 +623,14 @@ class TestAppCache(TestCase):
             @action
             def y(self): pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
+        self.cache_app(A)
         with self.assertRaises(UnknownApp):
             self.cache.is_app_action_bound('B', 'tests.test_app_cache.B.x')
 
     def test_is_app_action_bound_no_actions(self):
         class A: pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
+        self.cache_app(A)
         with self.assertRaises(UnknownAppAction):
             self.cache.is_app_action_bound('A', 'tests.test_app_cache.A.x')
 
@@ -580,7 +642,7 @@ class TestAppCache(TestCase):
             @action
             def y(self): pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
+        self.cache_app(A)
         with self.assertRaises(UnknownAppAction):
             self.cache.is_app_action_bound('A', 'tests.test_app_cache.A.z')
 
@@ -599,7 +661,7 @@ class TestAppCache(TestCase):
             @action
             def b(self): pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
+        self.cache_app(A)
         self.cache._cache_app(B, 'B', 'tests.test_app_cache.TestAppCache')
         self.assertTrue(self.cache.is_app_action_bound('A', 'tests.test_app_cache.A.x'))
 
@@ -620,7 +682,9 @@ class TestAppCache(TestCase):
 
         def xx(): pass
 
-        self.cache._cache_app(A, 'A', 'tests.test_app_cache.TestAppCache')
+        self.cache_app(A)
         self.cache._cache_app(B, 'B', 'tests.test_app_cache.TestAppCache')
         self.cache._cache_action(xx, 'A', 'tests.test_app_cache.TestAppCache', 'action', cls=TestAppCache)
         self.assertFalse(self.cache.is_app_action_bound('A', 'xx'))
+
+
