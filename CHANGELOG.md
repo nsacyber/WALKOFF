@@ -1,7 +1,8 @@
 # Changelog
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
-## [Unreleased]
+## [0.6.0]
+###### 2018-01-02
 
 Introducing roles, messages, and notifications
 
