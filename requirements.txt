@@ -12,3 +12,4 @@ passlib >= 1.7.0
 blinker >= 1.4
 protobuf
 enum34
+semver

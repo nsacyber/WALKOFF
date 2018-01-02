@@ -9,7 +9,9 @@ import argparse
 import setup_walkoff
 import scripts.migrate_api
 import scripts.migrate_workflows
+import semver
 from walkoff import __version__ as version
+from six.moves import input
 
 
 def prompt(question):
@@ -17,7 +19,7 @@ def prompt(question):
     while True:
         sys.stdout.write("\n* " + question + " yes/no? ")
         try:
-            return strtobool(raw_input().lower())
+            return strtobool(input().lower())
         except ValueError:
             print("Please respond with 'yes' or 'no'.")
 
@@ -93,14 +95,30 @@ def migrate_apps(flagged, inter):
     scripts.migrate_api.main()
 
 
-def migrate_workflows(flagged, inter):
+def migrate_workflows(flagged, inter, target):
 
     if inter and not prompt("Do you want to migrate your workflows?"):
         return
     elif not flagged:
         return
 
-    scripts.migrate_workflows.main()
+    if target.startswith("d"):
+        mode = "downgrade"
+    elif target.startswith("u"):
+        mode = "upgrade"
+    else:
+        print("Use 'd' or 'u' to specify whether to downgrade or upgrade workflows to the specified version.")
+        return
+
+    tgt_version = target[1:]
+    try:
+        semver.parse(tgt_version)
+    except ValueError:
+        print("{} is not a valid semver string".format(tgt_version))
+        return
+
+    print("{} workflows to version {}".format(mode, tgt_version))
+    scripts.migrate_workflows.convert_playbooks(mode, tgt_version)
 
 
 def alembic(flagged, inter):
@@ -112,11 +130,16 @@ def alembic(flagged, inter):
 
     for i in range(0, 1):
         try:
-            r = (subprocess.check_output(["alembic", "current"], stderr=subprocess.STDOUT))
-            if "(head)" in r:
-                print("Already up to date, no alembic upgrade needed.")
-            else:
-                print(subprocess.check_output(["alembic", "upgrade", "head"], stderr=subprocess.STDOUT))
+            # names = ["device", "events", "walkoff"]
+            names = ["walkoff"]
+            for name in names:
+                r = (subprocess.check_output(["alembic", "--name", name, "current"], stderr=subprocess.STDOUT))
+                if "(head)" in r:
+                    print("Already up to date, no alembic upgrade needed.")
+                else:
+                    print(subprocess.check_output(["alembic", "--name", name, "upgrade", "head"],
+                                                  stderr=subprocess.STDOUT))
+
             return
 
         except OSError:
@@ -159,8 +182,8 @@ def main():
                         action="store_true")
 
     parser.add_argument("-mw", "--migrateworkflows",
-                        help="Runs workflow migration script. Not reversible at this time.",
-                        action="store_true")
+                        help="Runs workflow migration script to upgrade/downgrade to the specified version,"
+                             " e.g. u0.5.2 to upgrade to 0.5.2 or d0.5.0 to downgrade to 0.5.0")
 
     parser.add_argument("-md", "--migratedatabase",
                         help="Runs alembic database migration.",
@@ -183,7 +206,7 @@ def main():
     clean_pycache(args.everything or args.clean, args.interactive)
     setup(args.everything or args.setup, args.interactive)
     migrate_apps(args.everything or args.migrateapps, args.interactive)
-    migrate_workflows(args.everything or args.migrateworkflows, args.interactive)
+    migrate_workflows(args.everything or args.migrateworkflows, args.interactive, args.migrateworkflows)
     alembic(args.everything or args.migratedatabase, args.interactive)
 
 
