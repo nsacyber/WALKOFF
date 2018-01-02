@@ -44,9 +44,6 @@ guarantee is made of the stability of the walkoff module itself until version 1.
 .. automodule:: apps.messaging
    :members:
 
-.. automodule:: apps.decorators
-   :members:
-
 
 API Reference
 ==================
