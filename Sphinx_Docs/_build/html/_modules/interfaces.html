@@ -1,0 +1,483 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>interfaces &mdash; Walkoff 0.6.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="Walkoff 0.6.0 documentation" href="../index.html"/>
+        <link rel="up" title="Module code" href="index.html"/> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Walkoff
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.6.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Walkoff</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>interfaces</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for interfaces</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="k">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">partial</span>
+
+<span class="kn">from</span> <span class="nn">.util</span> <span class="k">import</span> <span class="n">validate_events</span><span class="p">,</span> <span class="n">add_docstring</span>
+<span class="kn">from</span> <span class="nn">.dispatchers</span> <span class="k">import</span> <span class="n">AppEventDispatcher</span><span class="p">,</span> <span class="n">EventDispatcher</span>
+<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="k">import</span> <span class="n">UnknownEvent</span><span class="p">,</span> <span class="n">InvalidEventHandler</span>
+<span class="kn">from</span> <span class="nn">walkoff.events</span> <span class="k">import</span> <span class="n">WalkoffEvent</span><span class="p">,</span> <span class="n">EventType</span>
+<span class="kn">from</span> <span class="nn">walkoff.helpers</span> <span class="k">import</span> <span class="n">get_function_arg_names</span>
+
+<span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="AppBlueprint"><a class="viewcode-back" href="../index.html#interfaces.AppBlueprint">[docs]</a><span class="k">class</span> <span class="nc">AppBlueprint</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Class to create blueprints for custom server endpoints in apps</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        blueprint (flask.Blueprint): The blueprint to register with Walkoff</span>
+<span class="sd">        rule (str): The URL rule for the blueprint</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        blueprint (flask.Blueprint): The blueprint to register with Walkoff</span>
+<span class="sd">        rule (str, optional): The URL rule for the blueprint. Defaults to /custominterfaces/&lt;interface_name&gt;/</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blueprint</span><span class="p">,</span> <span class="n">rule</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blueprint</span> <span class="o">=</span> <span class="n">blueprint</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rule</span> <span class="o">=</span> <span class="n">rule</span></div>
+
+
+<div class="viewcode-block" id="InterfaceEventDispatcher"><a class="viewcode-back" href="../index.html#interfaces.InterfaceEventDispatcher">[docs]</a><span class="k">class</span> <span class="nc">InterfaceEventDispatcher</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Primary dispatcher of events to interfaces</span>
+
+<span class="sd">    This class generates event registration methods of the form &quot;on_&lt;signal_name&gt;&quot; on __new__ for all WalkoffEvents</span>
+<span class="sd">    (provided that their EventType is not `other`).</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        This class is a singleton.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        event_dispatcher (interfaces.disatchers.EventDispatcher): Router and dispatcher for WalkoffEvents</span>
+<span class="sd">        app_action_dispatcher (interfaces.disatchers.AppEventDispatcher): Router and dispatcher for action WalkfoffEvents</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">__instance</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># to make this class a singleton</span>
+    <span class="n">event_dispatcher</span> <span class="o">=</span> <span class="n">EventDispatcher</span><span class="p">()</span>
+    <span class="n">app_action_dispatcher</span> <span class="o">=</span> <span class="n">AppEventDispatcher</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">cls</span><span class="o">.</span><span class="n">__instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="p">(</span><span class="n">event</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">WalkoffEvent</span> <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">event_type</span> <span class="o">!=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">other</span> <span class="ow">and</span> <span class="n">event</span> <span class="o">!=</span> <span class="n">WalkoffEvent</span><span class="o">.</span><span class="n">SendMessage</span><span class="p">):</span>
+                <span class="n">dispatch_method</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_make_dispatch_method</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+                <span class="n">dispatch_partial</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">dispatch_method</span><span class="p">,</span> <span class="n">cls</span><span class="o">=</span><span class="n">cls</span><span class="p">)</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dispatch_partial</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+                <span class="n">register_method</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_make_register_method</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+                <span class="n">event_name</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">signal_name</span>
+                <span class="n">event_name</span> <span class="o">=</span> <span class="n">event_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
+                <span class="n">event_name</span> <span class="o">=</span> <span class="n">event_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="n">register_method_name</span> <span class="o">=</span> <span class="s1">&#39;on_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">event_name</span><span class="p">)</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">register_method_name</span><span class="p">,</span> <span class="n">register_method</span><span class="p">)</span>
+
+            <span class="n">cls</span><span class="o">.</span><span class="n">__instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">InterfaceEventDispatcher</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">__instance</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_make_dispatch_method</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructs a method used to connect to the WalkoffEvent and dispatch events</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            event (WalkoffEvent): The event to construct a dispatch method for</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            func: The dispatch method</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">dispatch_method</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">event_type</span> <span class="o">!=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">controller</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">sender</span><span class="p">)</span>
+                <span class="n">additional_data</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="n">additional_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;cls&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">additional_data</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s1">&#39;uid&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;sender_uid&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;uid&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;sender_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">event_dispatcher</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">event_type</span> <span class="o">==</span> <span class="n">EventType</span><span class="o">.</span><span class="n">action</span><span class="p">:</span>
+                <span class="n">cls</span><span class="o">.</span><span class="n">app_action_dispatcher</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dispatch_method</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_make_register_method</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructs a method used by interface event handlers to connect to the dispatcher and register their callbacks</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            event (WalkoffEvent): Event used to construct the registration method</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            func: The registration method for the event</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nd">@add_docstring</span><span class="p">(</span><span class="n">InterfaceEventDispatcher</span><span class="o">.</span><span class="n">_make_on_walkoff_event_docstring</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>
+        <span class="k">def</span> <span class="nf">on_event</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">sender_uids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+                <span class="n">InterfaceEventDispatcher</span><span class="o">.</span><span class="n">_validate_handler_function_args</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+                <span class="n">cls</span><span class="o">.</span><span class="n">event_dispatcher</span><span class="o">.</span><span class="n">register_events</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="p">{</span><span class="n">event</span><span class="p">},</span> <span class="n">sender_uids</span><span class="o">=</span><span class="n">sender_uids</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">names</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="n">weak</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">func</span>  <span class="c1"># Needed so weak references aren&#39;t deleted</span>
+            <span class="k">return</span> <span class="n">handler</span>
+
+        <span class="nd">@add_docstring</span><span class="p">(</span><span class="n">InterfaceEventDispatcher</span><span class="o">.</span><span class="n">_make_on_walkoff_event_docstring</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>
+        <span class="k">def</span> <span class="nf">on_controller_event</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+                <span class="n">InterfaceEventDispatcher</span><span class="o">.</span><span class="n">_validate_handler_function_args</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+                <span class="n">cls</span><span class="o">.</span><span class="n">event_dispatcher</span><span class="o">.</span><span class="n">register_events</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="p">{</span><span class="n">event</span><span class="p">},</span> <span class="n">weak</span><span class="o">=</span><span class="n">weak</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">func</span>
+            <span class="k">return</span> <span class="n">handler</span>
+
+        <span class="k">return</span> <span class="n">on_event</span> <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">event_type</span> <span class="o">!=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">controller</span> <span class="k">else</span> <span class="n">on_controller_event</span>
+
+<div class="viewcode-block" id="InterfaceEventDispatcher.on_app_actions"><a class="viewcode-back" href="../index.html#interfaces.InterfaceEventDispatcher.on_app_actions">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">on_app_actions</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">events</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Decorator to register a function as a callback for a given app, action(s), event(s), and device(s)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            app (str): The app whose events should be handled</span>
+<span class="sd">            actions (str|iterable(str), optional): The actions whose events should be handled, Defaults to all actions</span>
+<span class="sd">            events (str|WalkoffEvent|iterable(str|WalkoffEvent)): The events which should be handled. an use either a</span>
+<span class="sd">                WalkoffEvent or its signal name. Defaults to all action-type events</span>
+<span class="sd">            device_ids (int|iterable(int), optional): The IDs of the devices whose events should be handled. Defaults to</span>
+<span class="sd">                all devices</span>
+<span class="sd">            weak (bool, optional): Should the callback be registered as a weak function? Defaults to True. Warning!</span>
+<span class="sd">                Setting this to False could causes memory leaks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            func: The original function</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            UnknownEvent: If an unknown or non-action event is set for the handler</span>
+<span class="sd">            InvalidEventHandler: If the wrapped function does not have exactly one argument</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">available_events</span> <span class="o">=</span> <span class="p">{</span><span class="n">event</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">WalkoffEvent</span> <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">event_type</span> <span class="o">==</span> <span class="n">EventType</span><span class="o">.</span><span class="n">action</span> <span class="ow">and</span> <span class="n">event</span> <span class="o">!=</span> <span class="n">WalkoffEvent</span><span class="o">.</span><span class="n">SendMessage</span><span class="p">}</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">validate_events</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">available_events</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+            <span class="n">InterfaceEventDispatcher</span><span class="o">.</span><span class="n">_validate_handler_function_args</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">app_action_dispatcher</span><span class="o">.</span><span class="n">register_app_actions</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">events</span><span class="o">=</span><span class="n">events</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="n">device_ids</span><span class="p">,</span>
+                                                           <span class="n">weak</span><span class="o">=</span><span class="n">weak</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">func</span>
+        <span class="k">return</span> <span class="n">handler</span></div>
+
+<div class="viewcode-block" id="InterfaceEventDispatcher.on_walkoff_events"><a class="viewcode-back" href="../index.html#interfaces.InterfaceEventDispatcher.on_walkoff_events">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">on_walkoff_events</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">sender_uids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Decorator to register a function as a callback for given WalkoffEvent(s)</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            events (str|WalkoffEvent|iterable(str|WalkoffEvent)): The events which should be handled. an use either a</span>
+<span class="sd">                WalkoffEvent or its signal name. Defaults to all action-type events</span>
+<span class="sd">            sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.</span>
+<span class="sd">            names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note</span>
+<span class="sd">                that unlike UIDS, these are not guaranteed to be unique.</span>
+<span class="sd">            weak (bool, optional): Should the callback be registered as a weak function? Defaults to True. Warning!</span>
+<span class="sd">                Setting this to False could causes memory leaks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            func: The original function wrapped</span>
+
+<span class="sd">         Raises:</span>
+<span class="sd">            UnknownEvent: If an unknown event is set for the handler</span>
+<span class="sd">            ValueError: If a mix of controller and non-controller events are set for the handler</span>
+<span class="sd">            InvalidEventHandler: If the wrapped function does not have the correct number of arguments</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">events</span> <span class="o">=</span> <span class="n">validate_events</span><span class="p">(</span><span class="n">events</span><span class="p">)</span>
+        <span class="n">are_controller_events</span> <span class="o">=</span> <span class="n">InterfaceEventDispatcher</span><span class="o">.</span><span class="n">_all_events_are_controller</span><span class="p">(</span><span class="n">events</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">are_controller_events</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sender_uids</span> <span class="ow">or</span> <span class="n">names</span><span class="p">:</span>
+                <span class="n">_logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Sender UIDs and names are invalid for controller events&#39;</span><span class="p">)</span>
+            <span class="n">sender_uids</span> <span class="o">=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">name</span>
+
+        <span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+            <span class="n">InterfaceEventDispatcher</span><span class="o">.</span><span class="n">_validate_handler_function_args</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">are_controller_events</span><span class="p">)</span>
+            <span class="n">cls</span><span class="o">.</span><span class="n">event_dispatcher</span><span class="o">.</span><span class="n">register_events</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">sender_uids</span><span class="o">=</span><span class="n">sender_uids</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">names</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="n">weak</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">func</span>
+        <span class="k">return</span> <span class="n">handler</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_clear</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Clears all the registered callbacks</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">event_dispatcher</span> <span class="o">=</span> <span class="n">EventDispatcher</span><span class="p">()</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">app_action_dispatcher</span> <span class="o">=</span> <span class="n">AppEventDispatcher</span><span class="p">()</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_validate_handler_function_args</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">is_controller</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validates a handler function by checking how many arguments it has</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            func (func): The function to check</span>
+<span class="sd">            is_controller (bool): Is the function intended to handle controller events?</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            InvalidEventHandler: If the number of arguments is incorrect</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">num_args</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">get_function_arg_names</span><span class="p">(</span><span class="n">func</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">is_controller</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">num_args</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">InvalidEventHandler</span><span class="p">(</span><span class="s1">&#39;Handlers for controller events take no arguments&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">num_args</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidEventHandler</span><span class="p">(</span><span class="s1">&#39;Handlers for events non-controller events take one argument&#39;</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_all_events_are_controller</span><span class="p">(</span><span class="n">events</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Are all the events controller type?</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            events (iterable(WalkoffEvent)): The events to check</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if all the events are controller type. False otherwise</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If a mix of controller type and non-controller type events are found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">event_type</span> <span class="o">==</span> <span class="n">EventType</span><span class="o">.</span><span class="n">controller</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">events</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">event_type</span> <span class="o">==</span> <span class="n">EventType</span><span class="o">.</span><span class="n">controller</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">events</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Cannot combine controller events and non-controller events&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_make_on_walkoff_event_docstring</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Makes a docstring for the `on_&lt;event&gt;` registration methods</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            event (WalkoffEvent): The event the handler function is handling</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: The docstring for the registration method</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">args_string</span> <span class="o">=</span> <span class="s1">&#39;Args:</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">is_controller</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">event_type</span> <span class="o">==</span> <span class="n">EventType</span><span class="o">.</span><span class="n">controller</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_controller</span><span class="p">:</span>
+            <span class="n">args_string</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span>
+                <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike &#39;</span>
+                <span class="s1">&#39;UIDS, these are not guaranteed to be unique.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">args_string</span><span class="p">))</span>
+        <span class="n">args_string</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="se">\t</span><span class="s1">weak (boolean, optional): Should the callback persist even if function leaves scope? Warning! &#39;</span>
+                       <span class="s1">&#39;Could cause memory leaks&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">args_string</span><span class="p">))</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;&#39;</span>
+
+<span class="s1">Creates a callback for the </span><span class="si">{0}</span><span class="s1"> WalkoffEvent. Requires that the function being decorated have the signature `</span><span class="si">{1}</span><span class="s1">`.</span>
+
+<span class="si">{2}</span><span class="s1"></span>
+<span class="s1">Raises:</span>
+<span class="s1">    InvalidEventHandler: If the wrapped function has the incorrect number of arguments for the event type</span>
+<span class="s1">&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">signal_name</span><span class="p">,</span>
+           <span class="s1">&#39;def handler(data)&#39;</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">is_controller</span> <span class="k">else</span> <span class="s1">&#39;def handler()&#39;</span><span class="p">,</span> <span class="n">args_string</span><span class="p">)</span></div>
+
+
+<span class="n">dispatcher</span> <span class="o">=</span> <span class="n">InterfaceEventDispatcher</span><span class="p">()</span>
+<span class="sd">&quot;&quot;&quot;InterfaceEventDispatcher: The global dispatcher to use when registering interface event handlers</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, United States Government.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.6.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

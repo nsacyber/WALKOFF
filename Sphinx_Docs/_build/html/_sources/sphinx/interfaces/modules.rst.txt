@@ -1,7 +1,0 @@
-interfaces
-==========
-
-.. toctree::
-   :maxdepth: 4
-
-   interfaces
