@@ -41,12 +41,13 @@ def run(host, port):
     print_banner()
     pids = spawn_worker_processes()
     monkey.patch_all()
+    
     from scripts.compose_api import compose_api
     compose_api()
+    
     from walkoff.server import flaskserver
     flaskserver.running_context.controller.initialize_threading(pids=pids)
     # The order of these imports matter for initialization (should probably be fixed)
-    
 
     import walkoff.case.database as case_database
     case_database.initialize()
@@ -106,7 +107,7 @@ if __name__ == "__main__":
     args = parse_args()
     exit_code = 0
     try:
-
+        config.initialize()
         run(*convert_host_port(args))
     except KeyboardInterrupt:
         logger.info('Caught KeyboardInterrupt!')
