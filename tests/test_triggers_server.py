@@ -111,7 +111,18 @@ class TestTriggersServer(ServerTestCase):
 
         @WalkoffEvent.TriggerActionAwaitingData.connect
         def send_data(sender, **kwargs):
-            gevent.spawn(gevent_wait_thread)
+            # gevent.spawn(gevent_wait_thread)
+            execd_ids = set([])
+            timeout = 0
+            threshold = 5
+            while len(execd_ids) != len(ids) and timeout < threshold:
+                resp = self.post_with_status_check('/api/triggers/send_data', headers=self.headers,
+                                                   data=json.dumps(data),
+                                                   status_code=SUCCESS, content_type='application/json')
+                execd_ids.update(set.intersection(set(ids), set(resp)))
+                gevent.sleep(0.1)
+                timeout += 0.1
+            return
 
         @WalkoffEvent.TriggerActionTaken.connect
         def trigger_taken(sender, **kwargs):
