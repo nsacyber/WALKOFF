@@ -2,7 +2,7 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 ## [0.6.0]
-###### 2018-01-02
+###### 2018-01-03
 
 Introducing roles, messages, and notifications
 
