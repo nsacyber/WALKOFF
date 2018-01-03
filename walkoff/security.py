@@ -113,7 +113,6 @@ def _decode_jwt_from_query_string(param_name):
     if not token:
         raise NoAuthorizationError("Missing {} query param".format(param_name))
 
-    print(config)
     return decode_jwt(
         encoded_token=token,
         secret=config.decode_key,
