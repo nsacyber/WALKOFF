@@ -13,6 +13,3 @@ private_keys/*
 composed_api.yaml
 data/log
 .certificates
-apps/*
-data/*
-client/*
