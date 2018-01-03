@@ -2,7 +2,7 @@
   <div class="w3-content">
     <div class="w3-twothird">
       <h1>LinuxShell tutorial</h1>
-        <p>A flexible solution for interacting with devices when no app is available (or needed) is to simply access the device with SSH. The LinuxShell app (available in the WALKOFF-Apps repo) uses the Paramiko library to allow users to remotely log in, execute commands, and copy files to and from the remote server. This tutorial will demonstrate the basic functionality of the Paramiko library that has been placed into actions by. We will run a shell script on a remote host which creates a file, then copy that file locally, then copy that file to a second remote host and verify its contents.</p>
+        <p>A flexible solution for interacting with devices when no app is available (or needed) is to simply access the device with SSH. The LinuxShell app (available in the WALKOFF-Apps repo) uses the Paramiko library to allow users to remotely log in, execute commands, and copy files to and from the remote server. This tutorial will demonstrate the basic functionality of the Paramiko library that has been placed into actions. We will run a shell script on a remote host which creates a file, copy that file to our local storage, then copy that file to a second remote host and verify its contents.</p>
         <ul type="1" class="media-list imageList">
             <li class="media">
                 <div class="media-body">
@@ -21,7 +21,8 @@
             <li class="media">
                 <div class="media-body">
                   <h4 class="media-heading"><b>2. Execute script</b></h4>
-                  <p>The "Run Shell Script Remotely" action takes a filepath to a local shell script and runs the commands on the remote server specified in the device field. To run other types of scripts such as Python or Ruby, use SCP or SFTP to transfer the script first, then execute it with the "Execute Command" action.</p>
+                    <p>The "Run Shell Script Remotely" action takes a filepath to a local shell script and runs the commands on the remote server specified in the device field. Keep in mind that any relative local paths will originate from the WALKOFF folder in which <code>walkoff.py</code> is located. To run other types of scripts such as Python or Ruby, use SCP or SFTP to transfer the script first, then execute it with the "Execute Command" action.</p>
+                    <p>Our example script lists the directory contents, then uses <code>tee</code> to output the results to both <code>stdout</code> and a file called "Remote1File.txt"</p>
                 </div>
                 <div class="media-left media-middle">
                     <a href="images/LinuxShell/scripts.PNG">
@@ -49,7 +50,7 @@
             <li class="media">
                 <div class="media-body">
                   <h4 class="media-heading"><b>4. Copy file from Remote 1 to local</b></h4>
-                  <p>The app is bundled with SCP and SFTP actions for copying files to and from the remote device. These actions assume that both files already exist.</p>
+                  <p>The app is bundled with SFTP actions for copying files to and from the remote device. These actions assume that both files already exist. Keep in mind that any relative remote file paths will originate from the home folder of the remote user (or other configured folder).</p>
                 </div>
                 <div class="media-left media-middle">
                     <a href="images/LinuxShell/sftp.PNG">
@@ -63,7 +64,7 @@
             <li class="media">
                 <div class="media-body">
                     <h4 class="media-heading"><b>5. Create file on Remote 2</b></h4>
-                    <p>The most basic functionality available is in the "Execute Command" action. This action takes a list of strings, where each string is a command (including arguments), and executes them in sequence. It will return the <code>stdout</code> of each command in a list.</p>
+                    <p>The most basic functionality available is in the "Execute Command" action. This action takes a list of strings, where each string is a command (including arguments), and executes them in sequence. It will return the <code>stdout</code> of each command in a list. We will use the <code>touch</code> command to create the file Remote2File.txt if it does not exist.</p>
                 </div>
                 <div class="media-left media-middle">
                     <a href="images/LinuxShell/commands.PNG">
@@ -77,7 +78,7 @@
             <li class="media">
                 <div class="media-body">
                     <h4 class="media-heading"><b>6. Copy file from local to Remote 2</b></h4>
-                    <p>The most basic functionality available is in the "Execute Command" action. This action takes a list of strings, where each string is a command (including arguments), and executes them in sequence. It will return the <code>stdout</code> of each command in a list.</p>
+                    <p>Now we will use the SFTP Put action to copy the file from local storage to the remote server.</p>
                 </div>
                 <div class="media-left media-middle">
                     <a href="images/LinuxShell/sftp2.PNG">
@@ -91,7 +92,7 @@
             <li class="media">
                 <div class="media-body">
                     <h4 class="media-heading"><b>7. Read file on Remote 2</b></h4>
-                    <p>To verify that the file was copied correctly to Remote 2, we'll read its contents.</p>
+                    <p>To verify that the file was copied correctly to Remote 2, we'll read its contents into <code>stdout</code> using the <code>cat</code> command.</p>
                 </div>
                 <div class="media-left media-middle">
                     <a href="images/LinuxShell/commands2.PNG">
