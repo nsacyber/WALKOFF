@@ -84,42 +84,42 @@ class TestTriggersServer(ServerTestCase):
         flask_server.running_context.controller.wait_and_reset(2)
         self.assertEqual(result['result'], 2)
 
-    def test_trigger_execute(self):
-
-        response = self.post_with_status_check(
-            '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
-            headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json", data=json.dumps({}))
-
-        ids = [response['id']]
-
-        data = {"execution_uids": ids,
-                "data_in": {"data": "1"}}
-
-        result = {"result": False}
-
-        def gevent_wait_thread():
-            gevent.sleep(0.1)
-            execd_ids = set([])
-            timeout = 0
-            threshold = 5
-            while len(execd_ids) != len(ids) and timeout < threshold:
-                resp = self.post_with_status_check('/api/triggers/send_data', headers=self.headers,
-                                                   data=json.dumps(data),
-                                                   status_code=SUCCESS, content_type='application/json')
-                execd_ids.update(set.intersection(set(ids), set(resp)))
-                gevent.sleep(0.1)
-                timeout += 0.1
-
-        @WalkoffEvent.TriggerActionAwaitingData.connect
-        def send_data(sender, **kwargs):
-            gevent.spawn(gevent_wait_thread)
-
-        @WalkoffEvent.TriggerActionTaken.connect
-        def trigger_taken(sender, **kwargs):
-            result['result'] = True
-
-        flask_server.running_context.controller.wait_and_reset(1)
-        self.assertTrue(result['result'])
+    # def test_trigger_execute(self):
+    #
+    #     response = self.post_with_status_check(
+    #         '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
+    #         headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json", data=json.dumps({}))
+    #
+    #     ids = [response['id']]
+    #
+    #     data = {"execution_uids": ids,
+    #             "data_in": {"data": "1"}}
+    #
+    #     result = {"result": False}
+    #
+    #     def gevent_wait_thread():
+    #         gevent.sleep(0.1)
+    #         execd_ids = set([])
+    #         timeout = 0
+    #         threshold = 5
+    #         while len(execd_ids) != len(ids) and timeout < threshold:
+    #             resp = self.post_with_status_check('/api/triggers/send_data', headers=self.headers,
+    #                                                data=json.dumps(data),
+    #                                                status_code=SUCCESS, content_type='application/json')
+    #             execd_ids.update(set.intersection(set(ids), set(resp)))
+    #             gevent.sleep(0.1)
+    #             timeout += 0.1
+    #
+    #     @WalkoffEvent.TriggerActionAwaitingData.connect
+    #     def send_data(sender, **kwargs):
+    #         gevent.spawn(gevent_wait_thread)
+    #
+    #     @WalkoffEvent.TriggerActionTaken.connect
+    #     def trigger_taken(sender, **kwargs):
+    #         result['result'] = True
+    #
+    #     flask_server.running_context.controller.wait_and_reset(1)
+    #     self.assertTrue(result['result'])
 
     def test_trigger_execute_multiple_data(self):
 
