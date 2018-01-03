@@ -19,14 +19,13 @@ def __get_current_configuration():
             'walkoff_db_type': core.config.config.walkoff_db_type,
             'case_db_type': core.config.config.case_db_type,
             'clear_case_db_on_startup': bool(core.config.config.reinitialize_case_db_on_startup),
-            'number_processes': int(core.config.config.num_processes),
             'access_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds / 60),
             'refresh_token_duration': int(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days),
             'zmq_requests_address': core.config.config.zmq_requests_address,
             'zmq_results_address': core.config.config.zmq_results_address,
             'zmq_communication_address': core.config.config.zmq_communication_address,
-            'num_processes': int(core.config.config.num_processes),
-            'num_threads_per_process': int(core.config.config.num_threads_per_process)}
+            'number_processes': int(core.config.config.num_processes),
+            'number_threads_per_process': int(core.config.config.num_threads_per_process)}
 
 
 def read_config_values():

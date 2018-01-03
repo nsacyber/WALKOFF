@@ -62,8 +62,7 @@ class TestWorkflowServer(ServerTestCase):
         self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers,
                       content_type="application/json", data=json.dumps({}))
 
-        with flask_server.running_context.flask_app.app_context():
-            flask_server.running_context.controller.wait_and_reset(3)
+        flask_server.running_context.controller.wait_and_reset(3)
 
         response = self.get_with_status_check('/api/workflowresults', headers=self.headers)
         self.assertEqual(len(response), 3)

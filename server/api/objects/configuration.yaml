@@ -56,8 +56,8 @@ Configuration:
         type: string
         description: The IP address and port of the ZMQ communication server. Do not change unless necessary.
       num_processes:
-        type: int
+        type: number
         description: The number of worker processes for executing workflows.
       num_threads_per_process:
-        type: int
+        type: number
         description: The number of threads per worker process for executing workflows.

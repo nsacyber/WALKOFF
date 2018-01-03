@@ -5,7 +5,6 @@ import connexion
 from jinja2 import Environment, FileSystemLoader
 
 import core.config.config
-import server.database
 from apps.devicedb import App, device_db
 from core import helpers
 from core.config import paths
@@ -106,12 +105,13 @@ app = create_app()
 @app.before_first_request
 def create_user():
     from server.context import running_context
-    from server.database import add_user, User, ResourcePermission, Role, initialize_resource_roles_from_database
+    from server.database import add_user, User, ResourcePermission, Role, initialize_resource_roles_from_database, \
+        default_resources
 
     running_context.db.create_all()
     if not User.query.all():
         admin_role = running_context.Role(
-            name='admin', description='administrator', resources=server.database.default_resources)
+            name='admin', description='administrator', resources=default_resources)
         running_context.db.session.add(admin_role)
         admin_user = add_user(username='admin', password='admin')
         admin_user.roles.append(admin_role)

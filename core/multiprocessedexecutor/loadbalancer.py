@@ -7,19 +7,19 @@ import zmq.auth as auth
 import zmq.green as zmq
 from gevent.queue import Queue
 from google.protobuf.json_format import MessageToDict
+from six import string_types
 from zmq.utils.strtypes import asbytes
 
 import core.config.config
 import core.config.paths
 from core.argument import Argument
 from core.events import WalkoffEvent
-from core.protobuf.build import data_pb2
+from core.protobuf.build.data_pb2 import Message, CommunicationPacket
 
 try:
     from Queue import Queue
 except ImportError:
     from queue import Queue
-
 
 logger = logging.getLogger(__name__)
 
@@ -31,11 +31,20 @@ class LoadBalancer:
         Args:
             ctx (Context object): A Context object, shared with the Receiver thread.
         """
-        self.available_workers = []
-        self.registered_workers = []
+
+        self.workers = {}
+        for i in range(core.config.config.num_processes):
+            self.workers["Worker-{}".format(i)] = core.config.config.num_threads_per_process
+
         self.workflow_comms = {}
         self.thread_exit = False
         self.pending_workflows = Queue()
+
+        @WalkoffEvent.WorkflowShutdown.connect
+        def handle_workflow_shutdown(sender, **kwargs):
+            self.on_workflow_shutdown(sender, **kwargs)
+
+        self.handle_workflow_shutdown = handle_workflow_shutdown
 
         self.ctx = ctx
         server_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "server.key_secret")
@@ -60,30 +69,30 @@ class LoadBalancer:
         while True:
             if self.thread_exit:
                 break
+
             # There is a worker available and a workflow in the queue, so pop it off and send it to the worker
-            if self.available_workers and not self.pending_workflows.empty():
+            if any(val > 0 for val in self.workers.values()) and not self.pending_workflows.empty():
                 workflow = self.pending_workflows.get()
-                worker = self.available_workers.pop()
+                worker = self.__get_available_worker()
                 self.workflow_comms[workflow['execution_uid']] = worker
-                self.request_socket.send_multipart([worker, b"", asbytes(json.dumps(workflow))])
-            # If there is a worker available but no pending workflows, then see if there are any other workers
-            # available, but do not block in case a workflow becomes available
-            else:
-                try:
-                    worker, empty, ready = self.request_socket.recv_multipart(flags=zmq.NOBLOCK)
-                    if ready == b"Done":
-                        self.available_workers.append(worker)
-                        self.workflow_comms = {uid: worker for uid, proc in self.workflow_comms.items() if
-                                               proc != worker}
-                    elif ready == b"Ready":
-                        self.registered_workers.append(worker)
-                        self.available_workers.append(worker)
-                except zmq.ZMQError:
-                    gevent.sleep(0.1)
-                    continue
+                self.request_socket.send_multipart([worker, asbytes(json.dumps(workflow))])
+
+            gevent.sleep(0.1)
+
         self.request_socket.close()
         self.comm_socket.close()
         return
+
+    def __get_available_worker(self):
+        max_avail = 0
+        available_worker = None
+        for worker, value in self.workers.items():
+            if value > max_avail:
+                max_avail = value
+                available_worker = worker
+        if available_worker:
+            self.workers[available_worker] -= 1
+        return available_worker
 
     def add_workflow(self, workflow_json):
         """Adds a workflow to the queue to be executed.
@@ -102,7 +111,11 @@ class LoadBalancer:
         """
         logger.info('Pausing workflow {0}'.format(workflow_execution_uid))
         if workflow_execution_uid in self.workflow_comms:
-            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Pause'])
+            message = CommunicationPacket()
+            message.type = CommunicationPacket.PAUSE
+            message.workflow_execution_uid = workflow_execution_uid
+            message_bytes = message.SerializeToString()
+            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], message_bytes])
             return True
         else:
             return False
@@ -115,7 +128,11 @@ class LoadBalancer:
         """
         logger.info('Resuming workflow {0}'.format(workflow_execution_uid))
         if workflow_execution_uid in self.workflow_comms:
-            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], b'', b'Resume'])
+            message = CommunicationPacket()
+            message.type = CommunicationPacket.RESUME
+            message.workflow_execution_uid = workflow_execution_uid
+            message_bytes = message.SerializeToString()
+            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], message_bytes])
             return True
         else:
             return False
@@ -131,17 +148,45 @@ class LoadBalancer:
         """
         data = dict()
         data['data_in'] = data_in
-        data['arguments'] = arguments if arguments else []
+        message = CommunicationPacket()
+        message.type = CommunicationPacket.TRIGGER
+        message.data_in = json.dumps(data)
+
+        if arguments:
+            for argument in arguments:
+                arg = message.arguments.add()
+                arg.name = argument.name
+                for field in ('value', 'reference', 'selection'):
+                    val = getattr(argument, field)
+                    if val is not None:
+                        if not isinstance(val, string_types):
+                            try:
+                                setattr(arg, field, json.dumps(val))
+                            except ValueError:
+                                setattr(arg, field, str(val))
+                        else:
+                            setattr(arg, field, val)
+
         for uid in workflow_uids:
             if uid in self.workflow_comms:
-                self.comm_socket.send_multipart(
-                    [self.workflow_comms[uid], b'', str.encode(json.dumps(data))])
+                message.workflow_execution_uid = uid
+                message_bytes = message.SerializeToString()
+                self.comm_socket.send_multipart([self.workflow_comms[uid], message_bytes])
 
     def send_exit_to_worker_comms(self):
         """Sends the exit message over the communication sockets, otherwise worker receiver threads will hang
         """
-        for worker in self.registered_workers:
-            self.comm_socket.send_multipart([worker, b'', b'Exit'])
+        message = CommunicationPacket()
+        message.type = CommunicationPacket.EXIT
+        message_bytes = message.SerializeToString()
+        for worker in self.workers:
+            self.comm_socket.send_multipart([worker, message_bytes])
+
+    def on_workflow_shutdown(self, sender, **kwargs):
+        if sender['workflow_execution_uid'] in self.workflow_comms:
+            worker = self.workflow_comms[sender['workflow_execution_uid']]
+            self.workers[worker] += 1
+            self.workflow_comms.pop(sender['workflow_execution_uid'])
 
 
 class Receiver:
@@ -192,14 +237,14 @@ class Receiver:
                 gevent.sleep(0.1)
                 continue
 
-            message_outer = data_pb2.Message()
+            message_outer = Message()
 
             message_outer.ParseFromString(message_bytes)
             callback_name = message_outer.event_name
 
-            if message_outer.type == data_pb2.Message.WORKFLOWPACKET:
+            if message_outer.type == Message.WORKFLOWPACKET:
                 message = message_outer.workflow_packet
-            elif message_outer.type == data_pb2.Message.ACTIONPACKET:
+            elif message_outer.type == Message.ACTIONPACKET:
                 message = message_outer.action_packet
             else:
                 message = message_outer.general_packet

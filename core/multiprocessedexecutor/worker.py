@@ -3,6 +3,7 @@ import logging
 import os
 import signal
 import threading
+from concurrent.futures import ThreadPoolExecutor
 
 import zmq
 import zmq.auth as auth
@@ -14,13 +15,14 @@ import core.config.paths
 from core.argument import Argument
 from core.events import EventType, WalkoffEvent
 from core.executionelements.workflow import Workflow
-from core.protobuf.build import data_pb2
+from core.protobuf.build.data_pb2 import Message, CommunicationPacket
+from google.protobuf.json_format import MessageToDict
+
 
 try:
     from Queue import Queue
 except ImportError:
     from queue import Queue
-
 
 logger = logging.getLogger(__name__)
 
@@ -68,10 +70,10 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         The newly formed protobuf object, serialized as a string to send over the ZMQ socket.
     """
     event = kwargs['event']
-    packet = data_pb2.Message()
+    packet = Message()
     packet.event_name = event.name
     if event.event_type == EventType.workflow:
-        packet.type = data_pb2.Message.WORKFLOWPACKET
+        packet.type = Message.WORKFLOWPACKET
         wf_packet = packet.workflow_packet
         if 'data' in kwargs:
             wf_packet.additional_data = json.dumps(kwargs['data'])
@@ -80,7 +82,7 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         wf_packet.sender.workflow_execution_uid = workflow_execution_uid
 
     elif event.event_type == EventType.action:
-        packet.type = data_pb2.Message.ACTIONPACKET
+        packet.type = Message.ACTIONPACKET
         action_packet = packet.action_packet
         if 'data' in kwargs:
             action_packet.additional_data = json.dumps(kwargs['data'])
@@ -107,7 +109,7 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
                         setattr(arg, field, val)
 
     elif event.event_type in (EventType.branch, EventType.condition, EventType.transform):
-        packet.type = data_pb2.Message.GENERALPACKET
+        packet.type = Message.GENERALPACKET
         general_packet = packet.general_packet
         general_packet.sender.uid = sender.uid
         general_packet.sender.workflow_execution_uid = workflow_execution_uid
@@ -125,6 +127,9 @@ class Worker:
             id_ (str): The ID of the worker. Needed for ZMQ socket communication.
             worker_environment_setup (func, optional): Function to setup globals in the worker.
         """
+
+        self.id_ = id_
+
         signal.signal(signal.SIGINT, self.exit_handler)
         signal.signal(signal.SIGABRT, self.exit_handler)
 
@@ -135,7 +140,6 @@ class Worker:
         self.handle_data_sent = handle_data_sent
 
         self.thread_exit = False
-        self.workflow = None
 
         server_secret_file = os.path.join(core.config.paths.zmq_private_keys_path, "server.key_secret")
         server_public, server_secret = auth.load_certificate(server_secret_file)
@@ -144,14 +148,14 @@ class Worker:
 
         self.ctx = zmq.Context()
 
-        self.request_sock = self.ctx.socket(zmq.REQ)
-        self.request_sock.identity = u"Worker-{}".format(id_).encode("ascii")
+        self.request_sock = self.ctx.socket(zmq.DEALER)
+        self.request_sock.setsockopt(zmq.IDENTITY, b"Worker-{}".format(id_))
         self.request_sock.curve_secretkey = client_secret
         self.request_sock.curve_publickey = client_public
         self.request_sock.curve_serverkey = server_public
         self.request_sock.connect(core.config.config.zmq_requests_address)
 
-        self.comm_sock = self.ctx.socket(zmq.REQ)
+        self.comm_sock = self.ctx.socket(zmq.DEALER)
         self.comm_sock.identity = u"Worker-{}".format(id_).encode("ascii")
         self.comm_sock.curve_secretkey = client_secret
         self.comm_sock.curve_publickey = client_public
@@ -173,12 +177,17 @@ class Worker:
         self.comm_thread = threading.Thread(target=self.receive_data)
         self.comm_thread.start()
 
-        self.execute_workflow_worker()
+        self.workflows = {}
+        self.threadpool = ThreadPoolExecutor(max_workers=core.config.config.num_threads_per_process)
+
+        self.receive_requests()
 
     def exit_handler(self, signum, frame):
         """Clean up upon receiving a SIGINT or SIGABT.
         """
         self.thread_exit = True
+        if self.threadpool:
+            self.threadpool.shutdown()
         if self.comm_thread:
             self.comm_thread.join(timeout=2)
         if self.request_sock:
@@ -189,49 +198,57 @@ class Worker:
             self.comm_sock.close()
         os._exit(0)
 
-    def execute_workflow_worker(self):
-        """Keep executing workflows as they come in over the ZMQ socket from the manager.
-        """
-        self.request_sock.send(b"Ready")
-        self.comm_sock.send(b"Executing")
-
+    def receive_requests(self):
         while True:
             workflow_in = self.request_sock.recv()
 
-            self.workflow, start_arguments = recreate_workflow(json.loads(cast_unicode(workflow_in)))
+            self.threadpool.submit(self.execute_workflow_worker, workflow_in)
 
-            self.workflow.execute(execution_uid=self.workflow.get_execution_uid(), start=self.workflow.start,
-                                  start_arguments=start_arguments)
-            self.request_sock.send(b"Done")
+    def execute_workflow_worker(self, workflow_in):
+        """Execute a workflow.
+        """
+        workflow, start_arguments = recreate_workflow(json.loads(cast_unicode(workflow_in)))
+
+        self.workflows[threading._get_ident()] = workflow
+
+        workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start,
+                         start_arguments=start_arguments)
+
+        self.workflows.pop(threading._get_ident())
+        return
 
     def receive_data(self):
         """Constantly receives data from the ZMQ socket and handles it accordingly.
         """
+
         while True:
             if self.thread_exit:
                 break
             try:
-                message = self.comm_sock.recv()
+                message_bytes = self.comm_sock.recv()
             except zmq.ZMQError:
                 continue
 
-            if message == b'Exit':
+            message = CommunicationPacket()
+            message.ParseFromString(message_bytes)
+
+            if message.type == CommunicationPacket.EXIT:
                 break
-            if message == b'Pause':
-                self.workflow.pause()
-                self.comm_sock.send(b"Paused")
-            elif message == b'Resume':
-                self.workflow.resume()
-                self.comm_sock.send(b"Resumed")
-            else:
-                decoded_message = json.loads(message.decode("utf-8"))
-                if "arguments" in decoded_message:
-                    arguments = []
-                    for arg in decoded_message["arguments"]:
-                        arguments.append(Argument(**arg))
-                    decoded_message["arguments"] = arguments
-                self.workflow.send_data_to_action(decoded_message)
-                self.comm_sock.send(b"Received")
+
+            workflow = self.__get_workflow_by_execution_uid(message.workflow_execution_uid)
+            if workflow:
+                if message.type == CommunicationPacket.PAUSE:
+                    workflow.pause()
+                elif message.type == CommunicationPacket.RESUME:
+                    workflow.resume()
+                elif message.type == CommunicationPacket.TRIGGER:
+                    trigger_data = json.loads(message.data_in)
+                    if len(message.arguments) > 0:
+                        arguments = []
+                        for arg in message.arguments:
+                            arguments.append(Argument(**(MessageToDict(arg, preserving_proto_field_name=True))))
+                        trigger_data["arguments"] = arguments
+                    workflow.send_data_to_action(trigger_data)
 
         return
 
@@ -243,5 +260,11 @@ class Worker:
                 sender (execution element): The execution element that sent the signal.
                 kwargs (dict): Any extra data to send.
         """
-        packet_bytes = convert_to_protobuf(sender, self.workflow.get_execution_uid(), **kwargs)
+        packet_bytes = convert_to_protobuf(sender, self.workflows[threading._get_ident()].get_execution_uid(), **kwargs)
         self.results_sock.send(packet_bytes)
+
+    def __get_workflow_by_execution_uid(self, workflow_execution_uid):
+        for workflow in self.workflows.values():
+            if workflow.get_execution_uid() == workflow_execution_uid:
+                return workflow
+        return None

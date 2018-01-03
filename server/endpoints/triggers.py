@@ -1,6 +1,7 @@
 from flask import request
 from flask_jwt_extended import jwt_required
 
+from core.argument import Argument
 from server.returncodes import *
 from server.security import roles_accepted_for_resources
 
@@ -19,7 +20,11 @@ def send_data_to_trigger():
         workflows_awaiting_data = set(running_context.controller.get_waiting_workflows())
         uids = set.intersection(workflows_in, workflows_awaiting_data)
 
-        running_context.controller.send_data_to_trigger(data_in, uids, arguments)
+        arg_objects = []
+        for arg in arguments:
+            arg_objects.append(Argument(**arg))
+
+        running_context.controller.send_data_to_trigger(data_in, uids, arg_objects)
         return list(uids), SUCCESS
 
     return __func()
