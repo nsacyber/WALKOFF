@@ -27,12 +27,7 @@
     }
   },
   "loggers": {
-    "server": {
-      "level": "INFO",
-      "handlers": ["file_handler", "console"],
-      "propagate": 0
-    },
-    "core": {
+    "walkoff": {
       "level": "INFO",
       "handlers": ["file_handler"]
     },
@@ -53,6 +48,10 @@
       "handlers": ["file_handler"]
     },
     "swagger_spec_validator": {
+      "level": "ERROR",
+      "handlers": ["file_handler"]
+    },
+    "walkoff.appgateway.appcache": {
       "level": "ERROR",
       "handlers": ["file_handler"]
     }
