@@ -8,7 +8,6 @@ import zmq.green as zmq
 from gevent.queue import Queue
 from google.protobuf.json_format import MessageToDict
 from six import string_types
-from zmq.utils.strtypes import asbytes
 
 import walkoff.config.config
 import walkoff.config.paths
@@ -34,7 +33,7 @@ class LoadBalancer:
 
         self.workers = {}
         for i in range(walkoff.config.config.num_processes):
-            self.workers["Worker-{}".format(i)] = walkoff.config.config.num_threads_per_process
+            self.workers[str.encode("Worker-{}".format(i))] = walkoff.config.config.num_threads_per_process
 
         self.workflow_comms = {}
         self.thread_exit = False
@@ -75,7 +74,7 @@ class LoadBalancer:
                 workflow = self.pending_workflows.get()
                 worker = self.__get_available_worker()
                 self.workflow_comms[workflow['execution_uid']] = worker
-                self.request_socket.send_multipart([worker, asbytes(json.dumps(workflow))])
+                self.request_socket.send_multipart([worker, str.encode(json.dumps(workflow))])
 
             gevent.sleep(0.1)
 

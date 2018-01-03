@@ -183,7 +183,7 @@ class Worker:
         self.ctx = zmq.Context()
 
         self.request_sock = self.ctx.socket(zmq.DEALER)
-        self.request_sock.setsockopt(zmq.IDENTITY, b"Worker-{}".format(id_))
+        self.request_sock.setsockopt(zmq.IDENTITY, str.encode("Worker-{}".format(id_)))
         self.request_sock.curve_secretkey = client_secret
         self.request_sock.curve_publickey = client_public
         self.request_sock.curve_serverkey = server_public
@@ -243,12 +243,12 @@ class Worker:
         """
         workflow, start_arguments = recreate_workflow(json.loads(cast_unicode(workflow_in)))
 
-        self.workflows[threading._get_ident()] = workflow
+        self.workflows[threading.current_thread().name] = workflow
 
         workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start,
                          start_arguments=start_arguments)
 
-        self.workflows.pop(threading._get_ident())
+        self.workflows.pop(threading.current_thread().name)
         return
 
     def receive_data(self):
@@ -294,7 +294,8 @@ class Worker:
                 sender (execution element): The execution element that sent the signal.
                 kwargs (dict): Any extra data to send.
         """
-        packet_bytes = convert_to_protobuf(sender, self.workflows[threading._get_ident()].get_execution_uid(), **kwargs)
+        packet_bytes = convert_to_protobuf(sender, self.workflows[threading.current_thread().name].get_execution_uid(),
+                                           **kwargs)
         self.results_sock.send(packet_bytes)
 
     def __get_workflow_by_execution_uid(self, workflow_execution_uid):
