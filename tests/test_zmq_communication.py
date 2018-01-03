@@ -3,9 +3,9 @@ import time
 import unittest
 from os import path
 
-import apps
-import core.config.config
-import core.controller
+import walkoff.appgateway
+import walkoff.config.config
+import walkoff.controller
 from tests import config
 from tests.util.case_db_help import *
 from tests.util.thread_control import modified_setup_worker_env
@@ -14,15 +14,16 @@ from tests.util.thread_control import modified_setup_worker_env
 class TestZMQCommunication(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        from core.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
-        core.config.config.num_processes = 2
+        from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
+        walkoff.config.config.num_processes = 2
         pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)
-        core.controller.controller.initialize_threading(pids)
-        apps.cache_apps(config.test_apps_path)
-        core.config.config.load_app_apis(apps_path=config.test_apps_path)
+        walkoff.controller.controller.initialize_threading(pids)
+        walkoff.appgateway.cache_apps(config.test_apps_path)
+        walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
+        walkoff.config.config.num_processes = 2
 
     def setUp(self):
-        self.controller = core.controller.controller
+        self.controller = walkoff.controller.controller
         self.controller.workflows = {}
         self.controller.load_playbooks(resource_collection=config.test_workflows_path)
         self.id_tuple = ('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
@@ -38,8 +39,8 @@ class TestZMQCommunication(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        apps.clear_cache()
-        core.controller.controller.shutdown_pool()
+        walkoff.appgateway.clear_cache()
+        walkoff.controller.controller.shutdown_pool()
 
     '''Request and Result Socket Testing (Basic Workflow Execution)'''
 
@@ -121,7 +122,7 @@ class TestZMQCommunication(unittest.TestCase):
         action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
         setup_subscriptions_for_action(workflow.uid, action_uids)
 
-        capacity = core.config.config.num_processes * core.config.config.num_threads_per_process
+        capacity = walkoff.config.config.num_processes * walkoff.config.config.num_threads_per_process
 
         for i in range(capacity*2):
             self.controller.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')

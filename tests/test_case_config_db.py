@@ -1,16 +1,16 @@
-import core.case.subscription as case_subs
-from core.case.subscription import set_subscriptions, clear_subscriptions
-from server import flaskserver as server
-from server.casesubscription import CaseSubscription
+import walkoff.case.subscription as case_subs
+from walkoff.case.subscription import set_subscriptions, clear_subscriptions
+from walkoff.database.casesubscription import CaseSubscription
+from walkoff.server.extensions import db
 from tests.util.servertestcase import ServerTestCase
 
 
 class TestCaseConfigDatabase(ServerTestCase):
     def tearDown(self):
         clear_subscriptions()
-        for case in server.running_context.CaseSubscription.query.all():
-            server.running_context.db.session.delete(case)
-        server.running_context.db.session.commit()
+        for case in CaseSubscription.query.all():
+            db.session.delete(case)
+        db.session.commit()
 
     def __help_test_init(self, case, name, subscription):
         self.assertIsNotNone(case)
@@ -55,9 +55,9 @@ class TestCaseConfigDatabase(ServerTestCase):
         set_subscriptions(cases)
         case_db_entry_1 = CaseSubscription('case3', subscriptions=case3)
         case_db_entry_2 = CaseSubscription('case4', subscriptions=case4)
-        server.running_context.db.session.add(case_db_entry_1)
-        server.running_context.db.session.add(case_db_entry_2)
-        server.running_context.db.session.commit()
+        db.session.add(case_db_entry_1)
+        db.session.add(case_db_entry_2)
+        db.session.commit()
         CaseSubscription.sync_to_subscriptions()
         self.assertIn('case3', case_subs.subscriptions)
         self.assertIn('case4', case_subs.subscriptions)

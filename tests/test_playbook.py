@@ -1,7 +1,7 @@
 import unittest
 
-from core.config.config import walkoff_version
-from core.executionelements.playbook import Playbook
+import walkoff
+from walkoff.core.executionelements.playbook import Playbook
 from tests.test_scheduler import MockWorkflow
 from tests.util.assertwrappers import orderless_list_compare
 
@@ -12,13 +12,13 @@ class TestPlaybook(unittest.TestCase):
         self.assertEqual(playbook.name, 'test')
         self.assertIsNotNone(playbook.uid)
         self.assertDictEqual(playbook.workflows, {})
-        self.assertEqual(playbook.walkoff_version, walkoff_version)
+        self.assertEqual(playbook.walkoff_version, walkoff.__version__)
 
     def test_init_with_workflows(self):
         workflows = [MockWorkflow(i, i + 1) for i in range(3)]
         playbook = Playbook('test', workflows)
         self.assertEqual(playbook.name, 'test')
-        self.assertEqual(playbook.walkoff_version, walkoff_version)
+        self.assertEqual(playbook.walkoff_version, walkoff.__version__)
         orderless_list_compare(self, list(playbook.workflows.keys()), [workflow.name for workflow in workflows])
 
     def test_init_with_uid(self):
@@ -26,7 +26,7 @@ class TestPlaybook(unittest.TestCase):
         self.assertEqual(playbook.name, 'test')
         self.assertEqual(playbook.uid, 'uuu')
         self.assertDictEqual(playbook.workflows, {})
-        self.assertEqual(playbook.walkoff_version, walkoff_version)
+        self.assertEqual(playbook.walkoff_version, walkoff.__version__)
 
     def test_init_with_walkoff_version_number(self):
         playbook = Playbook('test', walkoff_version='0.4.0')

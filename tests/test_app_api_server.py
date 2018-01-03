@@ -1,24 +1,25 @@
 import json
 
 import apps
-import core.config.config
-import core.config.paths
+import walkoff.appgateway
+import walkoff.config.config
+import walkoff.config.paths
 import tests.config
-from server.endpoints.appapi import *
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
+from walkoff.server.endpoints.appapi import *
 
 
 class TestAppApiServerFuncs(ServerTestCase):
     def setUp(self):
-        self.original_apps_path = core.config.paths.apps_path
-        core.config.paths.apps_path = tests.config.test_apps_path
-        apps.clear_cache()
-        apps.cache_apps(tests.config.test_apps_path)
+        self.original_apps_path = walkoff.config.paths.apps_path
+        walkoff.config.paths.apps_path = tests.config.test_apps_path
+        walkoff.appgateway.clear_cache()
+        walkoff.appgateway.cache_apps(tests.config.test_apps_path)
 
     def tearDown(self):
-        core.config.paths.apps_path = self.original_apps_path
-        core.config.config.app_apis.pop('TestApp', None)
+        walkoff.config.paths.apps_path = self.original_apps_path
+        walkoff.config.config.app_apis.pop('TestApp', None)
 
     def test_read_all_apps(self):
         expected_apps = ['HelloWorldBounded', 'DailyQuote', 'HelloWorld']
@@ -54,8 +55,8 @@ class TestAppApiServerFuncs(ServerTestCase):
         returns = {'Success': {'description': 'something 1'}, 'Return2': {'schema': {'type': 'number', 'minimum': 10}}}
         expected = [{'status': 'Success', 'description': 'something 1'},
                     {'status': 'Return2', 'schema': {'type': 'number', 'minimum': 10}},
-                    {'status': 'UnhandledException', 'description': 'Exception occurred in action'},
-                    {'status': 'InvalidInput', 'description': 'Input into the action was invalid'}]
+                    {'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'},
+                    {'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'}]
         formatted = format_returns(returns)
         self.assertEqual(len(formatted), len(expected))
         for return_ in formatted:
@@ -66,20 +67,20 @@ class TestAppApiServerFuncs(ServerTestCase):
                    'Return2': {'schema': {'type': 'number', 'minimum': 10}}}
         expected = [{'status': 'Success', 'description': 'something 1'},
                     {'status': 'Return2', 'schema': {'type': 'number', 'minimum': 10}},
-                    {'status': 'UnhandledException', 'description': 'Exception occurred in action'},
-                    {'status': 'InvalidInput', 'description': 'Input into the action was invalid'},
-                    {'status': 'EventTimedOut', 'description': 'Action timed out out waiting for event'}]
+                    {'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'},
+                    {'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'},
+                    {'status': 'EventTimedOut', 'failure': True, 'description': 'Action timed out out waiting for event'}]
         formatted = format_returns(returns, with_event=True)
         self.assertEqual(len(formatted), len(expected))
         for return_ in formatted:
             self.assertIn(return_, expected)
 
     def test_format_app_action_api(self):
-        action_api = core.config.config.app_apis['HelloWorldBounded']['actions']['pause']
+        action_api = walkoff.config.config.app_apis['HelloWorldBounded']['actions']['pause']
         expected = {
             'returns': [{'status': 'Success', 'description': 'successfully paused', 'schema': {'type': 'number'}},
-                        {'status': 'UnhandledException', 'description': 'Exception occurred in action'},
-                        {'status': 'InvalidInput', 'description': 'Input into the action was invalid'}],
+                        {'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'},
+                        {'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'}],
             'run': 'main.Main.pause',
             'description': 'Pauses execution',
             'parameters': [

@@ -5,11 +5,11 @@ import gevent
 from google.protobuf.json_format import MessageToDict
 from zmq.utils.strtypes import cast_unicode
 
-from core.argument import Argument
-from core.events import WalkoffEvent
-from core.multiprocessedexecutor import loadbalancer
-from core.multiprocessedexecutor.worker import convert_to_protobuf, recreate_workflow
-from core.protobuf.build import data_pb2
+from walkoff.core.argument import Argument
+from walkoff.events import WalkoffEvent
+from walkoff.core.multiprocessedexecutor import loadbalancer
+from walkoff.core.multiprocessedexecutor.worker import convert_to_protobuf, recreate_workflow
+from walkoff.proto.build import data_pb2
 
 try:
     from Queue import Queue

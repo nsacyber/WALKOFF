@@ -9,7 +9,8 @@ from os.path import isfile
 from gevent import monkey
 from gevent import pywsgi
 
-from core.config import config, paths
+from walkoff.config import paths, config
+import walkoff
 
 logger = logging.getLogger('walkoff')
 
@@ -35,19 +36,20 @@ def setup_logger():
 
 
 def run(host, port):
-    from core.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
+    from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
     setup_logger()
     print_banner()
     pids = spawn_worker_processes()
     monkey.patch_all()
-    from compose_api import compose_api
+    
+    from scripts.compose_api import compose_api
     compose_api()
-    from server import flaskserver
+    
+    from walkoff.server import flaskserver
     flaskserver.running_context.controller.initialize_threading(pids=pids)
     # The order of these imports matter for initialization (should probably be fixed)
-    
 
-    import core.case.database as case_database
+    import walkoff.case.database as case_database
     case_database.initialize()
 
     server = setup_server(flaskserver.app, host, port)
@@ -55,8 +57,7 @@ def run(host, port):
 
 
 def print_banner():
-    from core.config.config import walkoff_version
-    banner = '***** Running WALKOFF v.{} *****'.format(walkoff_version)
+    banner = '***** Running WALKOFF v.{} *****'.format(walkoff.__version__)
     header_footer_banner = '*' * len(banner)
     logger.info(header_footer_banner)
     logger.info(banner)
@@ -85,8 +86,7 @@ def parse_args():
 
     args = parser.parse_args()
     if args.version:
-        from core.config.config import walkoff_version
-        print(walkoff_version)
+        print(walkoff.__version__)
         exit(0)
 
     return args
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     args = parse_args()
     exit_code = 0
     try:
-
+        config.initialize()
         run(*convert_host_port(args))
     except KeyboardInterrupt:
         logger.info('Caught KeyboardInterrupt!')
@@ -116,7 +116,7 @@ if __name__ == "__main__":
         traceback.print_exc()
         exit_code = 1
     finally:
-        from server import flaskserver
+        from walkoff.server import flaskserver
 
         flaskserver.running_context.controller.shutdown_pool()
         logger.info('Shutting down server')

@@ -1,6 +1,6 @@
 import unittest
 
-from core.validator import validate_device_fields, InvalidArgument
+from walkoff.appgateway.validator import validate_device_fields, InvalidArgument
 
 
 class TestDeviceValidation(unittest.TestCase):

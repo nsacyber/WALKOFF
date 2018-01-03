@@ -1,27 +1,26 @@
 import unittest
 
-import apps
-import core.config.config
-import core.config.paths
-from core.appinstance import AppInstance
-from core.argument import Argument
-from core.decorators import ActionResult
-from core.events import WalkoffEvent
-from core.executionelements.action import Action
-from core.executionelements.condition import Condition
-from core.helpers import UnknownApp, UnknownAppAction, InvalidArgument
+import walkoff.appgateway
+import walkoff.config.config
+from walkoff.appgateway.appinstance import AppInstance
+from walkoff.core.argument import Argument
+from walkoff.core.actionresult import ActionResult
+from walkoff.events import WalkoffEvent
+from walkoff.core.executionelements.action import Action
+from walkoff.core.executionelements.condition import Condition
+from walkoff.helpers import UnknownApp, UnknownAppAction, InvalidArgument
 from tests.config import test_apps_path
 
 
 class TestAction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        apps.cache_apps(test_apps_path)
-        core.config.config.load_app_apis(apps_path=test_apps_path)
+        walkoff.appgateway.cache_apps(test_apps_path)
+        walkoff.config.config.load_app_apis(apps_path=test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
-        apps.clear_cache()
+        walkoff.appgateway.clear_cache()
 
     def __compare_init(self, elem, name, action_name, app_name, device_id=None, arguments=None, triggers=None,
                        position=None, uid=None, templated=False, raw_representation=None):
@@ -129,6 +128,57 @@ class TestAction(unittest.TestCase):
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         self.assertEqual(action.execute(instance.instance, {}), ActionResult({'message': 'HELLO WORLD'}, 'Success'))
         self.assertEqual(action._output, ActionResult({'message': 'HELLO WORLD'}, 'Success'))
+
+    def test_execute_return_failure(self):
+        action = Action(app_name='HelloWorld', action_name='dummy action',
+                        arguments=[Argument('status', value=False)])
+        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
+        result = {'started_triggered': False, 'result_triggered': False}
+
+        def callback_is_sent(sender, **kwargs):
+            if isinstance(sender, Action):
+                self.assertIn('event', kwargs)
+                self.assertIn(kwargs['event'], (WalkoffEvent.ActionStarted, WalkoffEvent.ActionExecutionError))
+                if kwargs['event'] == WalkoffEvent.ActionStarted:
+                    result['started_triggered'] = True
+                else:
+                    self.assertIn('data', kwargs)
+                    data = kwargs['data']
+                    self.assertEqual(data['status'], 'Failure')
+                    self.assertEqual(data['result'], False)
+                    result['result_triggered'] = True
+
+        WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
+
+        action.execute(instance.instance, {})
+        self.assertTrue(result['started_triggered'])
+        self.assertTrue(result['result_triggered'])
+
+    def test_execute_default_return_success(self):
+        action = Action(app_name='HelloWorld', action_name='dummy action',
+                        arguments=[Argument('status', value=True), Argument('other', value=True)])
+        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
+        result = {'started_triggered': False, 'result_triggered': False}
+
+        def callback_is_sent(sender, **kwargs):
+            if isinstance(sender, Action):
+                self.assertIn('event', kwargs)
+                self.assertIn(kwargs['event'], (WalkoffEvent.ActionStarted, WalkoffEvent.ActionExecutionSuccess))
+                if kwargs['event'] == WalkoffEvent.ActionStarted:
+                    result['started_triggered'] = True
+                else:
+                    self.assertIn('data', kwargs)
+                    data = kwargs['data']
+                    self.assertEqual(data['status'], 'Success')
+                    self.assertEqual(data['result'], None)
+                    result['result_triggered'] = True
+
+        WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
+
+        action.execute(instance.instance, {})
+
+        self.assertTrue(result['started_triggered'])
+        self.assertTrue(result['result_triggered'])
 
     def test_execute_generates_uid(self):
         action = Action(app_name='HelloWorld', action_name='helloWorld')

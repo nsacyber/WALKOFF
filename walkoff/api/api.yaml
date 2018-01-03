@@ -1,0 +1,102 @@
+swagger: '2.0'
+info:
+  description: >-
+    An active cyber defense development framework enabling orchestration
+    capabilities to be written once and deployed across WALKOFF-enabled
+    orchestration tools. https://iadgov.github.io/WALKOFF/
+  version: 0.6.0
+  title: WALKOFF
+  contact:
+    email: walkoff@nsa.gov
+  license:
+    name: Creative-Commons
+    url: 'http://creativecommons.org/licenses/by/4.0/'
+
+tags:
+  - name: Authorization
+    description: Authorization Operations
+  - name: Apps
+    description: App Management Operations
+  - name: Cases
+    description: WALKOFF logging and case management operations
+  - name: Subscriptions
+    description: WALKOFF case subscription operations
+  - name: Configuration
+    description: System Configuration Operations
+  - name: Devices
+    description: Device Operations
+  - name: Users
+    description: User operations
+  - name: Roles
+    description: Role Operations
+  - name: Metrics
+    description: Metric Operations
+  - name: Playbooks
+    description: Playbook Operations
+  - name: Workflows
+    description: Workflow Operations
+  - name: Events
+    description: Event Operations
+  - name: Scheduler
+    description: Scheduler Operations
+  - name: Triggers
+    description: Trigger Operations
+  - name: System
+    description: System Operations
+  - name: Client
+    description: Serves up client pages
+  - name: Message
+    description: User messages
+
+schemes:
+  - http
+  - https
+
+paths:
+  $ref: ./apps.yaml
+  $ref: ./auth.yaml
+  $ref: ./cases.yaml
+  $ref: ./configuration.yaml
+  $ref: ./devices.yaml
+  $ref: ./events.yaml
+  $ref: ./message.yaml
+  $ref: ./metadata.yaml
+  $ref: ./metrics.yaml
+  $ref: ./playbooks.yaml
+  $ref: ./roles.yaml
+  $ref: ./scheduler.yaml
+  $ref: ./triggers.yaml
+  $ref: ./users.yaml
+  $ref: ./workflowresult.yaml
+
+securityDefinitions:
+  AuthenticationToken:
+    type: apiKey
+    name: Authorization
+    in: header
+    description: >
+      We use a JWT authorization workflow. Use the /api/auth endpoint to get JWT access and refresh tokens. Then use the
+      access token in the header "Authorization: Bearer accesstoken.goes.here".  That token will expire in 15 minutes by
+      default. When it expires, you'll receive a 401 response code. At that point, use the /api/auth/refresh
+      with the header "Authorization: Bearer refreshtoken.goes.here" to receive a fresh access token. When you're done,
+      please use the /api/auth/logout endpoint to log out.  See the implementation in the Walkoff App for an example
+      implementation.
+
+security:
+  - AuthenticationToken: []
+
+definitions:
+    $ref: ./objects/objects.yaml
+    $ref: ./objects/appapi.yaml
+    $ref: ./objects/auth.yaml
+    $ref: ./objects/cases.yaml
+    $ref: ./objects/configuration.yaml
+    $ref: ./objects/devices.yaml
+    $ref: ./objects/metrics.yaml
+    $ref: ./objects/message.yaml
+    $ref: ./objects/playbooks.yaml
+    $ref: ./objects/roles.yaml
+    $ref: ./objects/scheduler.yaml
+    $ref: ./objects/users.yaml
+    $ref: ./objects/workflowresult.yaml
+

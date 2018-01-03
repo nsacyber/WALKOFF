@@ -1,9 +1,9 @@
 import unittest
 
-from core.argument import Argument
-from core.config.config import initialize
-from core.helpers import InvalidArgument
-from core.validator import validate_parameter, validate_parameters, convert_json
+from walkoff.core.argument import Argument
+from walkoff.config.config import initialize
+from walkoff.helpers import InvalidArgument
+from walkoff.appgateway.validator import validate_parameter, validate_parameters, convert_json
 
 
 class TestInputValidation(unittest.TestCase):
@@ -43,6 +43,16 @@ class TestInputValidation(unittest.TestCase):
         parameter_api = {'name': 'name1', 'type': 'integer'}
         value = '-3'
         self.assertEqual(validate_parameter(value, parameter_api, self.message), -3)
+
+    def test_validate_parameter_primitive_user(self):
+        parameter_api = {'name': 'name1', 'type': 'user'}
+        value = '3'
+        self.assertEqual(validate_parameter(value, parameter_api, self.message), 3)
+
+    def test_validate_parameter_primitive_role(self):
+        parameter_api = {'name': 'name1', 'type': 'role'}
+        value = '42'
+        self.assertEqual(validate_parameter(value, parameter_api, self.message), 42)
 
     def test_validate_parameter_primitive_no_formats_not_required_valid_bool(self):
         parameter_api = {'name': 'name1', 'type': 'boolean'}
@@ -86,6 +96,30 @@ class TestInputValidation(unittest.TestCase):
     def test_validate_parameter_primitive_no_formats_invalid_integer_cause_string(self):
         parameter_api = {'name': 'name1', 'type': 'integer'}
         value = 'abc'
+        with self.assertRaises(InvalidArgument):
+            validate_parameter(value, parameter_api, self.message)
+
+    def test_validate_parameter_primitive_no_formats_invalid_user_cause_string(self):
+        parameter_api = {'name': 'name1', 'type': 'user'}
+        value = 'abc'
+        with self.assertRaises(InvalidArgument):
+            validate_parameter(value, parameter_api, self.message)
+
+    def test_validate_parameter_primitive_no_formats_invalid_role_cause_string(self):
+        parameter_api = {'name': 'name1', 'type': 'role'}
+        value = 'admin'
+        with self.assertRaises(InvalidArgument):
+            validate_parameter(value, parameter_api, self.message)
+
+    def test_validate_parameter_primitive_no_formats_invalid_user_cause_0(self):
+        parameter_api = {'name': 'name1', 'type': 'user'}
+        value = '0'
+        with self.assertRaises(InvalidArgument):
+            validate_parameter(value, parameter_api, self.message)
+
+    def test_validate_parameter_primitive_no_formats_invalid_role_cause_0(self):
+        parameter_api = {'name': 'name1', 'type': 'role'}
+        value = '0'
         with self.assertRaises(InvalidArgument):
             validate_parameter(value, parameter_api, self.message)
 

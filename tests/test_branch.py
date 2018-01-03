@@ -1,27 +1,27 @@
 import unittest
 import uuid
 
-import apps
-import core.config.config
-from core.argument import Argument
-from core.decorators import ActionResult
-from core.events import WalkoffEvent
-from core.executionelements.action import Action
-from core.executionelements.branch import Branch
-from core.executionelements.condition import Condition
-from core.executionelements.workflow import Workflow
+import walkoff.appgateway
+import walkoff.config.config
+from walkoff.core.argument import Argument
+from walkoff.core.actionresult import ActionResult
+from walkoff.events import WalkoffEvent
+from walkoff.core.executionelements.action import Action
+from walkoff.core.executionelements.branch import Branch
+from walkoff.core.executionelements.condition import Condition
+from walkoff.core.executionelements.workflow import Workflow
 from tests.config import test_apps_path
 
 
 class TestBranch(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        apps.cache_apps(test_apps_path)
-        core.config.config.load_app_apis(apps_path=test_apps_path)
+        walkoff.appgateway.cache_apps(test_apps_path)
+        walkoff.config.config.load_app_apis(apps_path=test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
-        apps.clear_cache()
+        walkoff.appgateway.clear_cache()
 
     def __compare_init(self, elem, source_uid, destination_uid, conditions=None, status='Success', uid=None,
                        priority=999):

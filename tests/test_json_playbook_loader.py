@@ -4,9 +4,9 @@ import os.path
 import stat
 from unittest import TestCase
 
-from core.executionelements.playbook import Playbook
-from core.executionelements.workflow import Workflow
-from core.jsonplaybookloader import JsonPlaybookLoader as Loader
+from walkoff.core.executionelements.playbook import Playbook
+from walkoff.core.executionelements.workflow import Workflow
+from walkoff.core.jsonplaybookloader import JsonPlaybookLoader as Loader
 from tests.config import test_data_path
 
 

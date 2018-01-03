@@ -1,19 +1,20 @@
 from unittest import TestCase
 
-import core.config.config
-from core.events import WalkoffEvent, EventType
-from interfaces import (UnknownEvent, InterfaceEventDispatcher, dispatcher, InvalidEventHandler,
-                        UnknownAppAction, UnknownApp)
+import walkoff.config.config
+from walkoff.events import WalkoffEvent, EventType
+from interfaces import InterfaceEventDispatcher, dispatcher
+from interfaces.exceptions import UnknownEvent, InvalidEventHandler
+from walkoff.helpers import UnknownAppAction, UnknownApp
 
 
 class TestInterfaceEventDispatcher(TestCase):
     @classmethod
     def setUpClass(cls):
-        core.config.config.app_apis = {'App1': {'actions': {'action1': None,
+        walkoff.config.config.app_apis = {'App1': {'actions': {'action1': None,
                                                             'action2': None,
                                                             'action3': None}},
                                        'App2': {}}
-        cls.action_events = {event for event in WalkoffEvent if event.event_type == EventType.action}
+        cls.action_events = {event for event in WalkoffEvent if event.event_type == EventType.action and event != WalkoffEvent.SendMessage}
 
     def setUp(self):
         dispatcher._clear()
@@ -21,14 +22,14 @@ class TestInterfaceEventDispatcher(TestCase):
     @classmethod
     def tearDownClass(cls):
         dispatcher._clear()
-        core.config.config.app_apis = {}
+        walkoff.config.config.app_apis = {}
 
     def test_singleton(self):
         self.assertEqual(id(dispatcher), id(InterfaceEventDispatcher()))
 
     def test_registration_correct_number_methods_generated(self):
         methods = [method for method in dir(dispatcher) if method.startswith('on_')]
-        expected_number = len([event for event in WalkoffEvent if event.event_type != EventType.other]) + 2
+        expected_number = len([event for event in WalkoffEvent if event.event_type != EventType.other and event != WalkoffEvent.SendMessage]) + 2
         # 2: one for on_app_action and one for on_walkoff_event
         self.assertEqual(len(methods), expected_number)
 

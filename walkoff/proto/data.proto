@@ -1,0 +1,98 @@
+syntax = "proto2";
+
+package core;
+
+message Message {
+
+    enum Type {
+        WORKFLOWPACKET = 1;
+        WORKFLOWPACKETDATA = 2;
+        ACTIONPACKET = 3;
+        ACTIONPACKETDATA = 4;
+        GENERALPACKET = 5;
+        USERMESSAGE = 6;
+    }
+
+    optional Type type = 1;
+    optional string event_name = 2;
+    oneof packet {
+        WorkflowPacket workflow_packet = 3;
+        ActionPacket action_packet = 4;
+        GeneralPacket general_packet = 5;
+        UserMessage message_packet = 6;
+    }
+}
+
+message WorkflowPacket {
+
+    message WorkflowSender {
+        optional string name = 1;
+        optional string uid = 2;
+        optional string workflow_execution_uid = 3;
+    }
+
+    optional WorkflowSender sender = 1;
+    optional string additional_data = 2;
+
+}
+
+message ActionPacket {
+
+    message ActionArgument {
+        optional string name = 1;
+        optional string value = 2;
+        optional string reference = 3;
+        optional string selection = 4;
+    }
+
+    message ActionSender {
+        optional string name = 1;
+        optional string uid = 2;
+        optional string execution_uid = 3;
+        optional string app_name = 4;
+        optional string action_name = 5;
+        repeated ActionArgument arguments = 6;
+        optional string workflow_execution_uid = 7;
+        optional int32 device_id = 8;
+    }
+
+    optional ActionSender sender = 1;
+    optional string additional_data = 2;
+
+}
+
+message GeneralPacket {
+
+    message GeneralSender {
+        optional string uid = 1;
+        optional string app_name = 2;
+        optional string workflow_execution_uid = 3;
+    }
+
+    optional GeneralSender sender = 1;
+}
+
+message CommunicationPacket {
+
+    enum Type {
+        PAUSE = 1;
+        RESUME = 2;
+        TRIGGER = 3;
+        EXIT = 4;
+    }
+
+    optional Type type = 1;
+    optional string workflow_execution_uid = 2;
+    optional string data_in = 3;
+    repeated ActionPacket.ActionArgument arguments = 4;
+
+}
+
+message UserMessage {
+    optional ActionPacket.ActionSender sender = 1;
+    optional string subject = 2;
+    optional string body = 3;
+    optional bool requires_reauth = 4;
+    repeated int32 users = 5;
+    repeated int32 roles = 6;
+}

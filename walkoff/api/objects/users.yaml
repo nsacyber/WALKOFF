@@ -1,0 +1,69 @@
+AddUser:
+    type: object
+    required: [username, password]
+    properties:
+      username:
+        description: Username or email of the user
+        type: string
+        example: administrator
+      password:
+        description: Password for the user
+        type: string
+        example: password123
+      roles:
+        description: A list of role IDs that this user possesses. Roles can only be assigned to a User by an admin.
+        type: array
+        items:
+          type: integer
+      active:
+        description: activate/deactive a user. Active can only be changed by an admin.
+        type: boolean
+EditUser:
+    type: object
+    required: [id]
+    properties:
+      id:
+        description: Database id of the user
+        type: integer
+        example: 123
+        readOnly: true
+      username:
+        description: New username or email of the user
+        type: string
+        example: administrator
+      old_password:
+        description: Previous password for the user
+        type: string
+        example: password123
+      password:
+        description: New password for the user
+        type: string
+        example: password321
+      active:
+        description: activate/deactive a user. Active can only be changed by an admin.
+        type: boolean
+      roles:
+        description: A new list of role IDs that this user will possess. Roles can only be assigned by an admin.
+        type: array
+        items:
+          type: integer
+DisplayUser:
+    type: object
+    properties:
+      id:
+        description: Database id of the user
+        type: integer
+        example: 123
+        readOnly: true
+      username:
+        description: Username or email of the user
+        type: string
+        example: administrator
+      active:
+        description: activate/deactive a user
+        type: boolean
+      roles:
+        description: List of role object IDs that this user possesses
+        type: array
+        items:
+          type: integer

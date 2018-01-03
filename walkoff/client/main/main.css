@@ -1,0 +1,135 @@
+@import '/client/node_modules/@swimlane/ngx-datatable/release/index.css';
+@import '/client/node_modules/@swimlane/ngx-datatable/release/themes/material.css';
+@import '/client/node_modules/@swimlane/ngx-datatable/release/assets/icons.css';
+
+/* h1 {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
+  font-weight: bold;
+  font-size: 30px;
+  color: #255876;
+}
+
+h3 {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;
+  font-weight: bold;
+} */
+
+.contentContainer {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 */
+    padding-top: 25px;
+    height: 0;
+}
+
+/* .contentContainer iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+} */
+
+#walkoffNav {
+  background-color: #3c8dbc;
+}
+
+#walkoffNav a {
+  color: #f6f6f6;
+}
+
+#walkoffNav a .navLink {
+  margin-left: 5px;
+}
+
+#walkoffNav .dropdown-item {
+  color: #333333;
+}
+
+#walkoffNav {
+  margin-bottom: 0;
+  border: none;
+  border-radius: 0;
+}
+
+#walkoffNav .navbar-nav > .user-menu .user-image {
+  float: left;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  margin-right: 10px;
+  margin-top: -2px;
+}
+
+@media (max-width: 767px) {
+  #walkoffNav .navbar-nav > .user-menu .user-image {
+    float: none;
+    margin-right: 0;
+    margin-top: -8px;
+    line-height: 10px;
+  }
+}
+
+#walkoffNav .navbar-nav .dropdown .dropdown-menu {
+  background-color: #3c8dbc;
+}
+
+#walkoffNav .navbar-nav .dropdown .dropdown-menu .installedApp {
+  color: white;
+}
+
+#walkoffNav .navbar-nav .dropdown .dropdown-menu .installedApp:hover {
+  color: #3c8dbc;
+}
+
+#walkoffNav .navbar-nav .dropdown .dropdown-menu .installedApp span {
+  margin-left: 5px;
+}
+
+#walkoffNav .navbar-nav>.open>a {
+  color: #3c8dbc;
+}
+
+#walkoffNav .navbar-nav .newMessages {
+  color: orange;
+  font-weight: bold;
+}
+
+#walkoffNav .navbar-nav .required {
+  color: crimson;
+}
+
+#walkoffNav .navbar-nav .messages-menu table,
+#walkoffNav .navbar-nav .messages-menu table a {
+  width: 320px;
+  color: white;
+  margin: 5px;
+}
+
+#walkoffNav .navbar-nav .messages-menu table .oldMessage,
+#walkoffNav .navbar-nav .messages-menu table .oldMessage a {
+  color: #DDD;
+  font-style: italic;
+}
+
+#walkoffNav .navbar-nav .messages-menu .noMessages {
+  color: #DDD;
+  font-style: italic;
+  margin-left: 10px;
+}
+
+#walkoffNav .navbar-nav .messages-menu table tr {
+  border-bottom: 1px solid #AAA;
+}
+
+#walkoffNav .navbar-nav .messages-menu table tr:last-child {
+  border-bottom: none;
+}
+
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 51px;
+  background-color: #e7e7e7;
+  padding: 15px;
+}

@@ -1,8 +1,8 @@
 import copy
 import unittest
 
-import core.case.database as db
-import core.case.subscription as subs
+import walkoff.case.database as db
+import walkoff.case.subscription as subs
 
 
 class TestCases(unittest.TestCase):

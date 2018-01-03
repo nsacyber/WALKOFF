@@ -1,7 +1,7 @@
 from copy import deepcopy
 from unittest import TestCase
 
-from core.events import *
+from walkoff.events import *
 
 
 class TestEvents(TestCase):
@@ -23,6 +23,7 @@ class TestEvents(TestCase):
         self.assertEqual(signal.event_type, EventType.action)
         self.assertIsInstance(signal.signal, Signal)
         self.assertEqual(len(WalkoffSignal._signals), 1)
+        self.assertTrue(signal.is_loggable)
 
     def test_walkoff_signal_init_loggable_false(self):
         signal = WalkoffSignal('name', EventType.action, loggable=False)
@@ -30,6 +31,7 @@ class TestEvents(TestCase):
         self.assertEqual(signal.event_type, EventType.action)
         self.assertIsInstance(signal.signal, Signal)
         self.assertEqual(len(WalkoffSignal._signals), 0)
+        self.assertFalse(signal.is_loggable)
 
     def test_walkoff_signal_connect_strong_ref(self):
         def xx(): pass
@@ -85,31 +87,43 @@ class TestEvents(TestCase):
         self.assertEqual(signal.name, 'name')
         self.assertEqual(signal.scheduler_event, 16)
         self.assertEqual(signal.event_type, EventType.controller)
+        self.assertTrue(signal.is_loggable)
 
     def test_workflow_signal_init(self):
         signal = WorkflowSignal('name', 'message')
         self.assertEqual(signal.name, 'name')
         self.assertEqual(signal.event_type, EventType.workflow)
+        self.assertTrue(signal.is_loggable)
 
     def test_action_signal_init(self):
         signal = ActionSignal('name', 'message')
         self.assertEqual(signal.name, 'name')
         self.assertEqual(signal.event_type, EventType.action)
+        self.assertTrue(signal.is_loggable)
+
+    def test_action_signal_init_unloggable(self):
+        signal = ActionSignal('name', 'message', loggable=False)
+        self.assertEqual(signal.name, 'name')
+        self.assertEqual(signal.event_type, EventType.action)
+        self.assertFalse(signal.is_loggable)
 
     def test_branch_signal_init(self):
         signal = BranchSignal('name', 'message')
         self.assertEqual(signal.name, 'name')
         self.assertEqual(signal.event_type, EventType.branch)
+        self.assertTrue(signal.is_loggable)
 
     def test_condition_signal_init(self):
         signal = ConditionSignal('name', 'message')
         self.assertEqual(signal.name, 'name')
         self.assertEqual(signal.event_type, EventType.condition)
+        self.assertTrue(signal.is_loggable)
 
     def test_transform_signal_init(self):
         signal = TransformSignal('name', 'message')
         self.assertEqual(signal.name, 'name')
         self.assertEqual(signal.event_type, EventType.transform)
+        self.assertTrue(signal.is_loggable)
 
     def test_walkoff_event_signal_name(self):
         self.assertEqual(WalkoffEvent.CommonWorkflowSignal.signal_name, 'Common Workflow Signal')
@@ -135,12 +149,19 @@ class TestEvents(TestCase):
 
     def test_walkoff_event_requires_data(self):
         for event in (
-        WalkoffEvent.WorkflowShutdown, WalkoffEvent.ActionExecutionSuccess, WalkoffEvent.ActionExecutionError):
+                WalkoffEvent.WorkflowShutdown, WalkoffEvent.ActionExecutionSuccess,
+                WalkoffEvent.ActionExecutionError, WalkoffEvent.SendMessage):
             self.assertTrue(event.requires_data())
 
     def test_walkoff_event_does_not_require_data(self):
         for event in (WalkoffEvent.TransformError, WalkoffEvent.SchedulerStart, WalkoffEvent.SchedulerShutdown):
             self.assertFalse(event.requires_data())
+
+    def test_walkoff_event_is_loggable(self):
+        for event in (WalkoffEvent.CommonWorkflowSignal, WalkoffEvent.SendMessage):
+            self.assertFalse(event.is_loggable())
+        for event in (WalkoffEvent.SchedulerStart, WalkoffEvent.ActionStarted):
+            self.assertTrue(event.is_loggable())
 
     def test_walkoff_event_connect_strong_reference(self):
         def xx(): pass

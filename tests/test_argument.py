@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from core.argument import Argument
-from core.helpers import InvalidArgument
+from walkoff.core.argument import Argument
+from walkoff.helpers import InvalidArgument
 
 
 class TestArgument(TestCase):

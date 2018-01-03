@@ -1,6 +1,6 @@
 import re
 
-from core.decorators import condition
+from walkoff.appgateway.decorators import condition
 
 
 @condition

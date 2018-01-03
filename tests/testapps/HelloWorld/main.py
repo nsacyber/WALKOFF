@@ -38,6 +38,16 @@ def json_sample(json_in):
     return (json_in['a'] + json_in['b']['a'] + json_in['b']['b'] + sum(json_in['c']) +
             sum([x['b'] for x in json_in['d']]))
 
+@action
+def dummy_action(status, other=False):
+    if other:
+        return
+
+    if status:
+        return True, 'Success'
+    else:
+        return False, 'Failure'
+
 
 class Main(App):
     def __init__(self, name=None, device=None):

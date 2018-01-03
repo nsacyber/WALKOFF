@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/iadgov/WALKOFF.svg?branch=master)](https://travis-ci.org/iadgov/WALKOFF)
+[![Maintainability](https://api.codeclimate.com/v1/badges/330249e13845a07a69a2/maintainability)](https://codeclimate.com/github/iadgov/WALKOFF/maintainability)
 
 <img src="https://iadgov.github.io/WALKOFF/files/images/flyingLogoWithTextSmall.png">
 
@@ -45,21 +46,20 @@ First, install the dependencies with the following command:
 
 To install the dependencies for each individual app, run:
 
-   `python install_dependencies.py`
+   `python scripts/install_dependencies.py`
 
 Or to just install the dependencies for specific apps:
 
-   `python install_dependencies -a AppOne,AppTwo,AppThree`
+   `python scripts/install_dependencies -a AppOne,AppTwo,AppThree`
 
-Next, navigate to /client and install the client dependencies with the
+Next, navigate to /walkoff/client and install the client dependencies with the
 following commands:
 
    `npm install`
-   `npm install gulp-cli -g` (If you need to install gulp)
 
 Next, use gulp to build the client:
 
-   `gulp ts`
+   `npm run build`
 
 That's it! To start up the server, just navigate back to the walkoff root and
 run:
@@ -121,26 +121,40 @@ WALKOFF-enabled apps can be found at www.github.com/iadgov/walkoff-apps
 
 ## Branches
 
-1. Master - Main branch for WALKOFF version 2 will be updated from development
+1. master - Main branch for WALKOFF version 2 will be updated from development
    periodically
-2. Development - Development branch for WALKOFF version 2.  Updated frequently
-3. Walkoff-Experimental - WALKOFF version 1  *No longer under development*
+2. development - Development branch for WALKOFF version 2.  Updated frequently
+3. gh-pages - Pages used to generate documentation at our
+   [github.io](https://iadgov.github.io/WALKOFF "GitHub IO") site
+4. gh-pages-development - Branch used to document new features in development.
+3. walkoff-experimental - WALKOFF version 1  *No longer under development*
 
 *Other development-centric branches may be created but should not be
 considered permanent*
 
+## Updating Walkoff
+An update script, `update.py`, is provided to update the repo to the most
+recent release. This script uses SqlAlchemy-Alembic to update database schemas
+and custom upgrade scripts to update the workflow JSON files. To run this
+script in interactive mode run `python update.py -i`. Other options can be viewed using `python update.py --help`. The most common usage is `python update.py -pcs` for pull, clean, and setup.
+
 ## Stability and Versioning
 
 WALKOFF uses Semantic Versioning. Until the full feature set is developed, the
-versions will begin with 0.x.y. The "x" version will be updated when a breaking
-change is made, a breaking change being defined as one which modifies either a
-database schema, the REST API, the workflow format, or API used to develop and
-specify the apps is modified in a way which breaks backward compatibility. No
-guarantees are yet made for the stability of the backend Python modules. The
-"y" version will be updated for patches, bug fixes, and non-breaking features.
+versions will begin with `0.x.y`. The `x` version will be updated when a
+breaking change is made, a breaking change being defined as one which modifies
+either the REST API or API used to develop and specify the apps is modified in
+a way which breaks backward compatibility. No guarantees are yet made for the
+stability of the backend Python modules. The `y` version will be updated for
+patches, and bug fixes.
 
 ## Contributions
 
 WALKOFF is a community focused effort and contributions are welcome.
+Please submit pull requests to the `development` branch. Issues marked
+`help wanted` and `good first issue` are great places to start
+contributing. Additionally, you can always look at our
+[CodeClimate Issues page](https://codeclimate.com/github/iadgov/WALKOFF/issues "CodeClimate Issues")
+and help us improve our code quality.
 
 Comments or questions?  walkoff@nsa.gov

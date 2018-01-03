@@ -2,9 +2,9 @@ import os.path
 from importlib import import_module
 from unittest import TestCase
 
-from apps import AppCache
-from core.decorators import action
-from core.helpers import UnknownApp, UnknownAppAction
+from walkoff.appgateway import AppCache
+from walkoff.appgateway.decorators import action
+from walkoff.helpers import UnknownApp, UnknownAppAction
 
 
 def f1(): pass

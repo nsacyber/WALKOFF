@@ -4,16 +4,15 @@ from copy import deepcopy
 from os import path
 from threading import Event
 
-import core.case.database as case_database
-import core.case.subscription
-import core.config.paths
-from core import helpers
-from core.argument import Argument
-from core.events import WalkoffEvent
-from core.executionelements.action import Action
-from core.executionelements.branch import Branch
-from server import flaskserver as flask_server
-from server.returncodes import *
+import walkoff.case.database as case_database
+import walkoff.config.paths
+from walkoff import helpers
+from walkoff.core.argument import Argument
+from walkoff.events import WalkoffEvent
+from walkoff.core.executionelements.action import Action
+from walkoff.core.executionelements.branch import Branch
+from walkoff.server import flaskserver as flask_server
+from walkoff.server.returncodes import *
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.case_db_help import setup_subscriptions_for_action
 from tests.util.servertestcase import ServerTestCase
@@ -118,8 +117,8 @@ class TestWorkflowServer(ServerTestCase):
                                                content_type='application/json')
         self.assertListEqual(response, expected_keys)
         self.assertTrue(
-            os.path.isfile(os.path.join(core.config.paths.workflows_path, 'editedPlaybookName.playbook')))
-        self.assertFalse(os.path.isfile(os.path.join(core.config.paths.workflows_path, 'test.playbook')))
+            os.path.isfile(os.path.join(walkoff.config.paths.workflows_path, 'editedPlaybookName.playbook')))
+        self.assertFalse(os.path.isfile(os.path.join(walkoff.config.paths.workflows_path, 'test.playbook')))
 
     def test_edit_playbook_no_name(self):
         expected = flask_server.running_context.controller.get_all_workflows()
@@ -127,7 +126,7 @@ class TestWorkflowServer(ServerTestCase):
                                  data=json.dumps({}))
         self.assertEqual(response._status_code, 400)
         self.assertListEqual(flask_server.running_context.controller.get_all_workflows(), expected)
-        self.assertTrue(os.path.isfile(os.path.join(core.config.paths.workflows_path, 'test.playbook')))
+        self.assertTrue(os.path.isfile(os.path.join(walkoff.config.paths.workflows_path, 'test.playbook')))
 
     def test_edit_playbook_invalid_name(self):
         expected = flask_server.running_context.controller.get_all_workflows()
@@ -138,8 +137,8 @@ class TestWorkflowServer(ServerTestCase):
         self.assertListEqual(flask_server.running_context.controller.get_all_workflows(), expected)
 
         self.assertFalse(
-            os.path.isfile(os.path.join(core.config.paths.workflows_path, 'junkPlaybookName.playbook')))
-        self.assertTrue(os.path.isfile(os.path.join(core.config.paths.workflows_path, 'test.playbook')))
+            os.path.isfile(os.path.join(walkoff.config.paths.workflows_path, 'junkPlaybookName.playbook')))
+        self.assertTrue(os.path.isfile(os.path.join(walkoff.config.paths.workflows_path, 'test.playbook')))
 
     def test_edit_playbook_no_file(self):
         data = {"name": "test2"}
@@ -154,10 +153,10 @@ class TestWorkflowServer(ServerTestCase):
                                                content_type='application/json')
         self.assertListEqual(response, expected_keys)
 
-        self.assertFalse(os.path.isfile(os.path.join(core.config.paths.workflows_path, 'test2.playbook')))
+        self.assertFalse(os.path.isfile(os.path.join(walkoff.config.paths.workflows_path, 'test2.playbook')))
         self.assertFalse(
-            os.path.isfile(os.path.join(core.config.paths.workflows_path, 'editedPlaybookName.playbook')))
-        self.assertTrue(os.path.isfile(os.path.join(core.config.paths.workflows_path, 'test.playbook')))
+            os.path.isfile(os.path.join(walkoff.config.paths.workflows_path, 'editedPlaybookName.playbook')))
+        self.assertTrue(os.path.isfile(os.path.join(walkoff.config.paths.workflows_path, 'test.playbook')))
 
     def test_edit_workflow_name_only(self):
         expected_json = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').read()
@@ -250,13 +249,13 @@ class TestWorkflowServer(ServerTestCase):
 
         # assert that the file has been saved to a file
         workflows = [path.splitext(workflow)[0]
-                     for workflow in os.listdir(core.config.paths.workflows_path) if workflow.endswith('.playbook')]
+                     for workflow in os.listdir(walkoff.config.paths.workflows_path) if workflow.endswith('.playbook')]
         matching_workflows = [workflow for workflow in workflows if workflow == 'test']
         self.assertEqual(len(matching_workflows), 1)
 
         # assert that the file loads properly after being saved
         flask_server.running_context.controller.workflows = {}
-        flask_server.running_context.controller.load_playbook(os.path.join(core.config.paths.workflows_path,
+        flask_server.running_context.controller.load_playbook(os.path.join(walkoff.config.paths.workflows_path,
                                                                            'test.playbook'))
         loaded_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
         # compare the actions in loaded and expected workflow
@@ -390,7 +389,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertFalse(flask_server.running_context.controller.is_playbook_registered('test'))
 
         playbooks = [os.path.splitext(playbook)[0]
-                     for playbook in helpers.locate_playbooks_in_directory(core.config.paths.workflows_path)]
+                     for playbook in helpers.locate_playbooks_in_directory(walkoff.config.paths.workflows_path)]
         self.assertNotIn('test', playbooks)
 
     def test_delete_playbook_no_file(self):

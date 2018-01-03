@@ -4,7 +4,7 @@ import unittest
 from apscheduler.util import convert_to_datetime
 from tzlocal import get_localzone
 
-from core.scheduler import *
+from walkoff.core.scheduler import *
 
 
 class TestSchedulerUtils(unittest.TestCase):

@@ -4,13 +4,13 @@ import stat
 import unittest
 
 import apps
-import core.config.config
-import core.config.paths
-import core.controller
-import server.flaskserver
+import walkoff.appgateway
+import walkoff.config.config
+import walkoff.config.paths
+import walkoff.server.flaskserver
 import tests.config
 import tests.config
-from core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
+from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from tests.util.mock_objects import *
 from tests.util.thread_control import *
 
@@ -20,10 +20,10 @@ if not getattr(__builtins__, 'WindowsError', None):
 
 def modified_setup_worker_env():
     import tests.config
-    import core.config.config
+    import walkoff.config.config
     import apps
-    apps.cache_apps(tests.config.test_apps_path)
-    core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
+    walkoff.appgateway.cache_apps(tests.config.test_apps_path)
+    walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
 
 
 class ServerTestCase(unittest.TestCase):
@@ -56,24 +56,25 @@ class ServerTestCase(unittest.TestCase):
             if os.path.isfile(tests.config.test_data_path):
                 os.remove(tests.config.test_data_path)
             os.makedirs(tests.config.test_data_path)
-        apps.cache_apps(path=tests.config.test_apps_path)
-        core.config.config.app_apis = {}
-        core.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
-        core.config.config.num_processes = 2
+        walkoff.appgateway.cache_apps(path=tests.config.test_apps_path)
+        walkoff.config.config.app_apis = {}
+        walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
+        walkoff.config.config.num_processes = 2
 
-        cls.context = server.flaskserver.app.test_request_context()
+        cls.context = walkoff.server.flaskserver.app.test_request_context()
         cls.context.push()
 
-        server.flaskserver.running_context.db.create_all()
+        from walkoff.server.app import create_user
+        create_user()
         if cls.patch:
             MultiprocessedExecutor.initialize_threading = mock_initialize_threading
             MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
             MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
-            server.flaskserver.running_context.controller.initialize_threading()
+            walkoff.server.flaskserver.running_context.controller.initialize_threading()
         else:
-            from core.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
+            from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
             pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)
-            server.flaskserver.running_context.controller.initialize_threading(pids)
+            walkoff.server.flaskserver.running_context.controller.initialize_threading(pids)
 
     @classmethod
     def tearDownClass(cls):
@@ -82,39 +83,36 @@ class ServerTestCase(unittest.TestCase):
                 os.remove(tests.config.test_data_path)
             else:
                 shutil.rmtree(tests.config.test_data_path)
-        apps.clear_cache()
-        server.flaskserver.running_context.controller.shutdown_pool()
+        walkoff.appgateway.clear_cache()
+        walkoff.server.flaskserver.running_context.controller.shutdown_pool()
 
     def setUp(self):
-        core.config.paths.workflows_path = tests.config.test_workflows_path_with_generated
-        core.config.paths.apps_path = tests.config.test_apps_path
-        core.config.paths.default_appdevice_export_path = tests.config.test_appdevice_backup
-        core.config.paths.default_case_export_path = tests.config.test_cases_backup
+        walkoff.config.paths.workflows_path = tests.config.test_workflows_path_with_generated
+        walkoff.config.paths.apps_path = tests.config.test_apps_path
+        walkoff.config.paths.default_appdevice_export_path = tests.config.test_appdevice_backup
+        walkoff.config.paths.default_case_export_path = tests.config.test_cases_backup
         if os.path.exists(tests.config.test_workflows_backup_path):
             shutil.rmtree(tests.config.test_workflows_backup_path)
 
-        shutil.copytree(core.config.paths.workflows_path, tests.config.test_workflows_backup_path)
+        shutil.copytree(walkoff.config.paths.workflows_path, tests.config.test_workflows_backup_path)
 
-        self.app = server.flaskserver.app.test_client(self)
+        self.app = walkoff.server.flaskserver.app.test_client(self)
         self.app.testing = True
 
-        self.context = server.flaskserver.app.test_request_context()
+        self.context = walkoff.server.flaskserver.app.test_request_context()
         self.context.push()
-
-        from server.database import db
-        server.flaskserver.running_context.db = db
 
         post = self.app.post('/api/auth', content_type="application/json",
                              data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
         key = json.loads(post.get_data(as_text=True))
         self.headers = {'Authorization': 'Bearer {}'.format(key['access_token'])}
 
-        server.flaskserver.running_context.controller.workflows = {}
-        server.flaskserver.running_context.controller.load_playbooks()
+        walkoff.server.flaskserver.running_context.controller.workflows = {}
+        walkoff.server.flaskserver.running_context.controller.load_playbooks()
 
     def tearDown(self):
-        shutil.rmtree(core.config.paths.workflows_path)
-        shutil.copytree(tests.config.test_workflows_backup_path, core.config.paths.workflows_path)
+        shutil.rmtree(walkoff.config.paths.workflows_path)
+        shutil.copytree(tests.config.test_workflows_backup_path, walkoff.config.paths.workflows_path)
         shutil.rmtree(tests.config.test_workflows_backup_path)
         for data_file in os.listdir(tests.config.test_data_path):
             try:

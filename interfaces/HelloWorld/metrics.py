@@ -1,13 +1,12 @@
 from interfaces import dispatcher, AppBlueprint
-from core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 from flask import Blueprint, jsonify, Response
 from flask_jwt_extended import jwt_required
 from gevent import sleep
 from gevent.event import AsyncResult, Event
-import json
 from datetime import datetime
-from server.security import jwt_required_in_query
-from core.helpers import create_sse_event
+from walkoff.security import jwt_required_in_query
+from walkoff.helpers import create_sse_event
 
 blueprint = AppBlueprint(blueprint=Blueprint('HelloWorldPage__', __name__))
 
