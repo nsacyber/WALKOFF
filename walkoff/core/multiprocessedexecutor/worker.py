@@ -69,51 +69,6 @@ def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
         The newly formed protobuf object, serialized as a string to send over the ZMQ socket.
     """
     event = kwargs['event']
-    # packet = Message()
-    # packet.event_name = event.name
-    # if event.event_type == EventType.workflow:
-    #     packet.type = Message.WORKFLOWPACKET
-    #     wf_packet = packet.workflow_packet
-    #     if 'data' in kwargs:
-    #         wf_packet.additional_data = json.dumps(kwargs['data'])
-    #     wf_packet.sender.name = sender.name
-    #     wf_packet.sender.uid = sender.uid
-    #     wf_packet.sender.workflow_execution_uid = workflow_execution_uid
-    #
-    # elif event.event_type == EventType.action:
-    #     packet.type = Message.ACTIONPACKET
-    #     action_packet = packet.action_packet
-    #     if 'data' in kwargs:
-    #         action_packet.additional_data = json.dumps(kwargs['data'])
-    #     action_packet.sender.name = sender.name
-    #     action_packet.sender.uid = sender.uid
-    #     action_packet.sender.workflow_execution_uid = workflow_execution_uid
-    #     action_packet.sender.execution_uid = sender.get_execution_uid()
-    #     action_packet.sender.app_name = sender.app_name
-    #     action_packet.sender.action_name = sender.action_name
-    #     action_packet.sender.device_id = sender.device_id if sender.device_id is not None else -1
-    #
-    #     for argument in sender.arguments.values():
-    #         arg = action_packet.sender.arguments.add()
-    #         arg.name = argument.name
-    #         for field in ('value', 'reference', 'selection'):
-    #             val = getattr(argument, field)
-    #             if val is not None:
-    #                 if not isinstance(val, string_types):
-    #                     try:
-    #                         setattr(arg, field, json.dumps(val))
-    #                     except ValueError:
-    #                         setattr(arg, field, str(val))
-    #                 else:
-    #                     setattr(arg, field, val)
-    #
-    # elif event.event_type in (EventType.branch, EventType.condition, EventType.transform):
-    #     packet.type = Message.GENERALPACKET
-    #     general_packet = packet.general_packet
-    #     general_packet.sender.uid = sender.uid
-    #     general_packet.sender.workflow_execution_uid = workflow_execution_uid
-    #     if hasattr(sender, 'app_name'):
-    #         general_packet.sender.app_name = sender.app_name
     data = kwargs['data'] if 'data' in kwargs else None
     packet = Message()
     packet.event_name = event.name
