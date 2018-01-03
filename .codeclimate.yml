@@ -40,7 +40,7 @@ exclude_paths:
   - walkoff/proto
   - walkoff/client/build
   - walkoff/keywords
-  - **.js
+  - "**.js"
   - apps/DailyQuote/
   - apps/HelloWorld/
   - apps/SkeletonApp/
