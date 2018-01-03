@@ -13,8 +13,16 @@ from .walkofftag import WalkoffTag
 
 _logger = logging.getLogger(__name__)
 
-AppCacheActionEntry = namedtuple('AppCacheEntry', ['run', 'is_bound', 'tags'])
-# AppCacheAppEntry = namedtuple('AppCacheAppEntry', ['main', 'actions'])
+FunctionEntry = namedtuple('AppCacheEntry', ['run', 'is_bound', 'tags'])
+
+
+class AppCacheEntry(object):
+    __slots__ = ['main', 'functions']
+
+    def __init__(self, main=None, functions=None):
+        self.main = main
+        self.functions = functions if functions is not None else {}
+
 
 class AppCache(object):
     """Object which caches app actions, conditions, and transforms
@@ -322,27 +330,28 @@ class AppCache(object):
             app_name (str): The name of the app associated with the class
         """
         if app_name not in self._cache:
-            self._cache[app_name] = {}
-        if 'main' in self._cache[app_name] and self._cache[app_name]['main']:
+            self._cache[app_name] = AppCacheEntry()
+        if self._cache[app_name].main is not None:
             _logger.warning(
                 'App {0} already has class defined as {1}. Overwriting it with {2}'.format(
                     app_name,
-                    AppCache._get_qualified_class_name(self._cache[app_name]['main']),
+                    AppCache._get_qualified_class_name(self._cache[app_name].main),
                     AppCache._get_qualified_class_name(app_class)))
             self._clear_existing_bound_functions(app_name)
-        self._cache[app_name]['main'] = app_class
-        app_actions = inspect.getmembers(
+        self._cache[app_name].main = app_class
+        app_methods = inspect.getmembers(
             app_class, (lambda field:
                         (inspect.ismethod(field) or inspect.isfunction(field)) and WalkoffTag.get_tags(field)))
+        self._cache[app_name].cache_methods(app_methods)
         if 'actions' not in self._cache[app_name]:
             self._cache[app_name]['actions'] = {}
-        if app_actions:
+        if app_methods:
             new_actions = {}
-            for _, action_method in app_actions:
+            for _, action_method in app_methods:
                 tags = WalkoffTag.get_tags(action_method)
                 qualified_name = AppCache._get_qualified_function_name(action_method, cls=app_class)
                 qualified_name = AppCache._strip_base_module_from_qualified_name(qualified_name, app_path)
-                new_actions[qualified_name] = AppCacheActionEntry(run=action_method, is_bound=True, tags=tags)
+                new_actions[qualified_name] = FunctionEntry(run=action_method, is_bound=True, tags=tags)
             self._cache[app_name]['actions'].update(new_actions)
 
     def _cache_action(self, action_method, app_name, app_path, tags, cls=None):
@@ -366,7 +375,7 @@ class AppCache(object):
                     AppCache._get_qualified_function_name(
                         self._cache[app_name]['actions'][qualified_action_name].run),
                     qualified_action_name))
-        self._cache[app_name]['actions'][qualified_action_name] = AppCacheActionEntry(
+        self._cache[app_name]['actions'][qualified_action_name] = FunctionEntry(
             run=action_method, is_bound=False, tags=tags)
 
     def _clear_existing_bound_functions(self, app_name):
