@@ -99,7 +99,7 @@ def jwt_required_in_query(query_name):
         def wrapper(*args, **kwargs):
             jwt_data = _decode_jwt_from_query_string(query_name)
             ctx_stack.top.jwt = jwt_data
-            _load_user(jwt_data[config.identity_claim])
+            _load_user(jwt_data[config.identity_claim_key])
             return fn(*args, **kwargs)
 
         return wrapper
@@ -117,8 +117,9 @@ def _decode_jwt_from_query_string(param_name):
         encoded_token=token,
         secret=config.decode_key,
         algorithm=config.algorithm,
-        csrf=False,
-        identity_claim=config.identity_claim
+        csrf_value=None,
+        user_claims_key=config.user_claims_key,
+        identity_claim_key=config.identity_claim_key
     )
 
 

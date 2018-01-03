@@ -37,6 +37,16 @@ ratings:
     - "**.md"
 exclude_paths:
   - tests/
-  - server/static
-  - core/protobuf
-  - "**.js"
+  - walkoff/proto
+  - walkoff/client/build
+  - walkoff/keywords
+  - **.js
+  - apps/DailyQuote/
+  - apps/HelloWorld/
+  - apps/SkeletonApp/
+  - apps/Utilities/
+  - apps/Walkoff/
+  - interfaces/HelloWorld/
+  - interfaces/Sample/
+  - scripts/migration/database/
+  - docs/

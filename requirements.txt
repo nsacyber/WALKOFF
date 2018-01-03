@@ -1,6 +1,6 @@
 Flask >= 0.10.0
 Flask_SQLAlchemy == 2.1
-flask_jwt_extended > 3.0.0
+flask_jwt_extended >= 3.4.0
 sqlalchemy >= 1.1.0
 APscheduler >= 3.0.0
 gevent >= 1.2
@@ -12,6 +12,7 @@ passlib >= 1.7.0
 blinker >= 1.4
 protobuf
 enum34
+futures
 semver
 jsonschema
 six >= 1.10.0

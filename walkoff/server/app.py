@@ -97,6 +97,7 @@ def create_app():
     import walkoff.controller
     walkoff.controller.controller.load_playbooks()
     import walkoff.server.workflowresults
+    import walkoff.messaging.utils
     return _app
 
 
@@ -116,7 +117,7 @@ def create_user():
     admin_role = Role.query.filter_by(id=1).first()
     admin_user = User.query.filter_by(username="admin").first()
     if not admin_user:
-        add_user(username='admin', password='admin', roles=["admin"])
+        add_user(username='admin', password='admin', roles=[1])
     elif admin_role not in admin_user.roles:
         admin_user.roles.append(admin_role)
 
