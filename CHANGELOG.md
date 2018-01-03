@@ -1,6 +1,19 @@
 # Changelog
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
+## [0.6.1]
+###### 2018-01-03
+
+Multithreaded workflow worker processes and bug fixes
+
+### Added
+* Multiple workflows can be executed on each worker process
+
+### Fixed
+* Default logging config issue
+* Removed `walkoff/client/build` which was accidentally version controlled
+* CodeClimate misconfiguration
+
 ## [0.6.0]
 ###### 2018-01-03
 
