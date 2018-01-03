@@ -15,4 +15,4 @@ class WalkoffTag(Enum):
 
     @classmethod
     def get_tags(cls, func):
-        return [tag for tag in cls if getattr(func, tag.value, False)]
+        return {tag for tag in cls if getattr(func, tag.value, False)}
