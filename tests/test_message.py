@@ -35,6 +35,11 @@ class TestMessage(TestCase):
         class MessageType1(MessageComponent): pass
         self.assertEqual(MessageComponent.registry['message_type1'], original_class)
 
+    def test_registry_duplicate_wrong_class(self):
+        class messageType1(MessageComponent): pass
+        class MessageType1(MessageComponent): pass
+        self.assertEqual(MessageComponent.registry['message_type1'], messageType1)
+
     def test_message_component_init(self):
         message_component = MessageComponent()
         self.assertEqual(message_component.message_type, '__base')
