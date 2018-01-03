@@ -50,6 +50,7 @@ Introducing roles, messages, and notifications
 * Google Protocol Buffer message structure has been significantly altered.
 * Tags used for action, condition, and transform decorators have been
   encapsulated in a WalkoffTag enum
+* `setup_walkoff.py` no longer explicitly calls Gulp
 
 ### Security
 * JWT structure changes

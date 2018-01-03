@@ -13,11 +13,8 @@ def main():
     os.chdir('./walkoff/client')
     os.system('npm install')
 
-    print('\nInstalling Gulp...')
-    os.system('npm install gulp-cli -g')
-
-    print('\nGulping TypeScript Files...')
-    os.system('gulp ts')
+    print('\nCompiling TypeScript Files...')
+    os.system('npm run build')
 
 
 if __name__ == '__main__':

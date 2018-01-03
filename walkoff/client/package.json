@@ -2,6 +2,10 @@
   "name": "WALKOFF",
   "description": "WALKOFF",
   "license": "MIT",
+  "scripts": {
+    "build": "gulp ts",
+    "watch": "gulp"
+  },
   "dependencies": {
     "@angular/animations": "~4.0.3",
     "@angular/common": "~4.0.3",
