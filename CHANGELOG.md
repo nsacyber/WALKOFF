@@ -9,10 +9,15 @@ Multithreaded workflow worker processes and bug fixes
 ### Added
 * Multiple workflows can be executed on each worker process
 
+### Changed
+* Bumped dependency of `flask-jwt-extended` to version 3.4.0
+
 ### Fixed
 * Default logging config issue
 * Removed `walkoff/client/build` which was accidentally version controlled
 * CodeClimate misconfiguration
+* Bug fixes to messaging caused by messaging callback not being registered in
+  the server
 
 ## [0.6.0]
 ###### 2018-01-03
