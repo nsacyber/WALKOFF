@@ -44,6 +44,7 @@ class TestConfigurationServer(ServerTestCase):
                     'walkoff_db_type': walkoff.config.config.walkoff_db_type,
                     'case_db_type': walkoff.config.config.case_db_type,
                     'clear_case_db_on_startup': bool(walkoff.config.config.reinitialize_case_db_on_startup),
+                    'number_threads_per_process': int(walkoff.config.config.num_threads_per_process),
                     'number_processes': int(walkoff.config.config.num_processes),
                     'access_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds / 60),
                     'refresh_token_duration': int(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days),

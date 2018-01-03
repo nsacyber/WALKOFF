@@ -1,6 +1,7 @@
 from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt_claims
 
+from walkoff.core.argument import Argument
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 import walkoff.messaging
@@ -19,12 +20,18 @@ def send_data_to_trigger():
 
         workflows_awaiting_data = set(running_context.controller.get_waiting_workflows())
         uids = set.intersection(workflows_in, workflows_awaiting_data)
+
         user_id = get_jwt_identity()
         authorization_not_required, authorized_uids = get_authorized_uids(
             uids, user_id, get_jwt_claims().get('roles', []))
         add_user_in_progress(authorized_uids, user_id)
         uids = list(authorized_uids | authorization_not_required)
-        running_context.controller.send_data_to_trigger(data_in, uids, arguments)
+
+        arg_objects = []
+        for arg in arguments:
+            arg_objects.append(Argument(**arg))
+
+        running_context.controller.send_data_to_trigger(data_in, uids, arg_objects)
         return list(uids), SUCCESS
 
     return __func()

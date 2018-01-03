@@ -12,6 +12,7 @@ passlib >= 1.7.0
 blinker >= 1.4
 protobuf
 enum34
+futures
 semver
 jsonschema
 six >= 1.10.0

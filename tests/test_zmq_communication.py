@@ -15,6 +15,7 @@ class TestZMQCommunication(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
+        walkoff.config.config.num_processes = 2
         pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)
         walkoff.controller.controller.initialize_threading(pids)
         walkoff.appgateway.cache_apps(config.test_apps_path)
@@ -115,6 +116,24 @@ class TestZMQCommunication(unittest.TestCase):
                             {'result': 15, 'status': 'Success'}]
         for result in [action['data'] for action in actions]:
             self.assertIn(result, expected_results)
+
+    def test_execute_multiple_workflows(self):
+        workflow = self.controller.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
+        setup_subscriptions_for_action(workflow.uid, action_uids)
+
+        capacity = walkoff.config.config.num_processes * walkoff.config.config.num_threads_per_process
+
+        for i in range(capacity*2):
+            self.controller.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+
+        self.controller.wait_and_reset(capacity*2)
+
+        actions = []
+        for uid in action_uids:
+            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+
+        self.assertEqual(len(actions), capacity*2)
 
     '''Communication Socket Testing'''
 
