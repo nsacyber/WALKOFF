@@ -10,13 +10,9 @@ install:
   - pip install -r requirements.txt
   - pip install coverage
 before_script:
-  - python scripts/generate_certificates.py && python scripts/compose_api.py
+  - python scripts/generate_certificates.py
 script:
-  - coverage run -m unittest tests.suites.workflow_suite
-  - coverage run --append -m unittest tests.suites.execution_suite
-  - coverage run --append -m unittest tests.suites.case_suite
-  - coverage run --append -m unittest tests.suites.server_suite
-  - coverage run --append -m unittest tests.suites.interface_suite
+  - coverage run python run_all_tests.py
   - coverage combine
   - coverage report
 branches:

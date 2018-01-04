@@ -13,6 +13,8 @@ def run_tests():
     logging.disable(logging.CRITICAL)
 
     ret = True
+    print('Testing Triggers:')
+    ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.triggers_suite).wasSuccessful()
     print('Testing Workflows:')
     ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.workflow_suite).wasSuccessful()
     print('\nTesting Execution:')

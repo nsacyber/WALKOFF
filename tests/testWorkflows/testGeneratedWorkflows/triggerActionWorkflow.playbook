@@ -27,14 +27,6 @@
                                     "value": "1"
                                 }
                             ],
-                            "transforms": [
-                                {
-                                    "action_name": "length",
-                                    "app_name": "HelloWorldBounded",
-                                    "arguments": [],
-                                    "uid": "48bbcbd8009e47f7b2d368d596850d86"
-                                }
-                            ],
                             "uid": "c2698e219c9a4525a343bd051b1f0e7d"
                         }
                     ],
