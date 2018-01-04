@@ -37,7 +37,7 @@ __triggers_tests = [test_triggers_server]
 triggers_suite = TestSuite()
 add_tests_to_suite(triggers_suite, __triggers_tests)
 
-__integration_tests = [test_zmq_communication, test_zmq_communication_server]
+__integration_tests = [test_zmq_communication_server, test_zmq_communication]
 integration_suite = TestSuite()
 add_tests_to_suite(integration_suite, __integration_tests)
 
