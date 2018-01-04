@@ -233,6 +233,8 @@ class Worker:
         os._exit(0)
 
     def receive_requests(self):
+        self.request_sock.send(b"Ready")
+        
         while True:
             workflow_in = self.request_sock.recv()
 

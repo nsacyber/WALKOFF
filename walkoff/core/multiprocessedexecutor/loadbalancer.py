@@ -32,8 +32,8 @@ class LoadBalancer:
         """
 
         self.workers = {}
-        for i in range(walkoff.config.config.num_processes):
-            self.workers[str.encode("Worker-{}".format(i))] = walkoff.config.config.num_threads_per_process
+        # for i in range(walkoff.config.config.num_processes):
+        #     self.workers[str.encode("Worker-{}".format(i))] = walkoff.config.config.num_threads_per_process
 
         self.workflow_comms = {}
         self.thread_exit = False
@@ -68,6 +68,14 @@ class LoadBalancer:
         while True:
             if self.thread_exit:
                 break
+
+            if len(self.workers) < walkoff.config.config.num_processes:
+                try:
+                    worker, message = self.request_socket.recv_multipart(flags=zmq.NOBLOCK)
+                    if message == b"Ready":
+                        self.workers[worker] = walkoff.config.config.num_threads_per_process
+                except zmq.ZMQError:
+                    pass
 
             # There is a worker available and a workflow in the queue, so pop it off and send it to the worker
             if any(val > 0 for val in self.workers.values()) and not self.pending_workflows.empty():
