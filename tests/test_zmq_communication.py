@@ -37,11 +37,6 @@ class TestZMQCommunication(unittest.TestCase):
         case_database.case_db.tear_down()
         case_subscription.clear_subscriptions()
 
-    @classmethod
-    def tearDownClass(cls):
-        walkoff.appgateway.clear_cache()
-        walkoff.controller.controller.shutdown_pool()
-
     '''Request and Result Socket Testing (Basic Workflow Execution)'''
 
     def test_simple_workflow_execution(self):
