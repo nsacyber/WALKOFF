@@ -32,8 +32,6 @@ class LoadBalancer:
         """
 
         self.workers = {}
-        # for i in range(walkoff.config.config.num_processes):
-        #     self.workers[str.encode("Worker-{}".format(i))] = walkoff.config.config.num_threads_per_process
 
         self.workflow_comms = {}
         self.thread_exit = False
