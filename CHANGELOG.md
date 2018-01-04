@@ -1,10 +1,20 @@
 # Changelog
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
+
+## [0.6.2]
+###### 2018-01-05
+
+Multithreaded workers for increased asynchronous workflow execution
+
+### Added
+* Multiple workflows can be executed on each worker process
+* Decorator factory to simplify endpoint logic
+
+
 ## [0.6.1]
 ###### 2018-01-03
 
-Multithreaded workflow worker processes and bug fixes
 
 ### Added
 * Multiple workflows can be executed on each worker process
