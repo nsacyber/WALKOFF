@@ -29,14 +29,17 @@ __execution_tests = [test_argument, test_execution_runtime, test_execution_eleme
 execution_suite = TestSuite()
 add_tests_to_suite(execution_suite, __execution_tests)
 
-__workflow_tests = [test_zmq_communication_server, test_zmq_communication, test_load_workflow, test_simple_workflow,
-                    test_workflow_manipulation]
+__workflow_tests = [test_load_workflow, test_simple_workflow, test_workflow_manipulation]
 workflow_suite = TestSuite()
 add_tests_to_suite(workflow_suite, __workflow_tests)
 
 __triggers_tests = [test_triggers_server]
 triggers_suite = TestSuite()
 add_tests_to_suite(triggers_suite, __triggers_tests)
+
+__integration_tests = [test_zmq_communication, test_zmq_communication_server]
+integration_suite = TestSuite()
+add_tests_to_suite(integration_suite, __integration_tests)
 
 __interface_tests = [test_callback_container, test_interface_event_dispatch_helpers, test_app_action_event_dispatcher,
                      test_app_event_dispatcher, test_event_dispatcher, test_interface_event_dispatcher, test_events]
