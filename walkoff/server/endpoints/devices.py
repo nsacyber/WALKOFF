@@ -64,10 +64,14 @@ def delete_device(device_id):
 def add_configuration_keys_to_device_json(device_fields, device_fields_api):
     device_fields_api = {field['name']: field for field in device_fields_api}
     for field in device_fields:
-        if field['name'] in device_fields_api:
-            field['type'] = device_fields_api[field['name']]['type']
-            if 'encrypted' in device_fields_api[field['name']]:
-                field['encrypted'] = device_fields_api[field['name']]['encrypted']
+        add_configuration_keys_to_field(device_fields_api, field)
+
+
+def add_configuration_keys_to_field(device_fields_api, field):
+    if field['name'] in device_fields_api:
+        field['type'] = device_fields_api[field['name']]['type']
+        if 'encrypted' in device_fields_api[field['name']]:
+            field['encrypted'] = device_fields_api[field['name']]['encrypted']
 
 
 def create_device():
@@ -87,19 +91,8 @@ def create_device():
             device_api = get_app_device_api(app, device_type)
             device_fields_api = device_api['fields']
             validate_device_fields(device_fields_api, fields, device_type, app)
-        except UnknownApp:
-            current_app.logger.error('Cannot create device for app {0}, type {1}. '
-                                     'App does not exist'.format(app, device_type))
-            return {'error': 'Unknown app'}, INVALID_INPUT_ERROR
-        except UnknownDevice:
-            current_app.logger.error('Cannot create device for app {0}, type {1}. '
-                                     'Type does not exist'.format(app, device_type))
-            return {'error': 'Unknown device type'}, INVALID_INPUT_ERROR
-        except InvalidArgument as e:
-            current_app.logger.error('Cannot create device for app {0}, type {1}. '
-                                     'Invalid input'.format(app, device_type,
-                                                            format_exception_message(e)))
-            return {'error': 'Invalid device fields'}, INVALID_INPUT_ERROR
+        except (UnknownApp, UnknownDevice, InvalidArgument) as e:
+            return __crud_device_error_handler('create', e, app, device_type)
         else:
             fields = add_device_json['fields']
             add_configuration_keys_to_device_json(fields, device_fields_api)
@@ -139,19 +132,8 @@ def update_device():
             device_fields_api = device_api['fields']
             if fields is not None:
                 validate_device_fields(device_fields_api, fields, device_type, app)
-        except UnknownApp:
-            current_app.logger.error('Cannot update device for app {0}, type {1}. '
-                                     'App does not exist'.format(app, device_type))
-            return {'error': 'Unknown app'}, INVALID_INPUT_ERROR
-        except UnknownDevice:
-            current_app.logger.error('Cannot update device for app {0}, type {1}. '
-                                     'Type does not exist'.format(app, device_type))
-            return {'error': 'Unknown device type'}, INVALID_INPUT_ERROR
-        except InvalidArgument as e:
-            current_app.logger.error('Cannot update device for app {0}, type {1}. '
-                                     'Invalid input'.format(app, device_type,
-                                                            format_exception_message(e)))
-            return {'error': 'Invalid device fields'}, INVALID_INPUT_ERROR
+        except (UnknownApp, UnknownDevice, InvalidArgument) as e:
+            return __crud_device_error_handler('update', e, app, device_type)
         else:
             if fields is not None:
                 fields = update_device_json['fields'] if 'fields' in update_device_json else None
@@ -163,6 +145,18 @@ def update_device():
             return device_json, SUCCESS
 
     return __func()
+
+
+__device_error_messages = {UnknownApp: ('App does not exist', 'Unknown app'),
+                           UnknownDevice: ('Type does not exist', 'Unknown device type'),
+                           InvalidArgument: ('Invalid input', 'Invalid device fields')}
+
+
+def __crud_device_error_handler(operation, exception, app, device_type):
+    ret = __device_error_messages[exception.__class__]
+    current_app.logger.error(
+        'Could not {0} device for app {1}, type {2}. {3}'.format(operation, app, device_type, ret[0]))
+    return {'error': ret[1]}, INVALID_INPUT_ERROR
 
 
 def import_devices():
@@ -187,37 +181,40 @@ def import_devices():
                     continue
                 fields = {field['name']: field['value'] for field in device['fields']}
                 device_type = device['type']
-                try:
-                    device_api = get_app_device_api(app, device_type)
-                    device_fields_api = device_api['fields']
-                    validate_device_fields(device_fields_api, fields, device_type, app)
-                except UnknownDevice:
-                    current_app.logger.error('Cannot import device for app {0}, type {1}. '
-                                             'Type does not exist'.format(app, device_type))
-                    continue
-                except InvalidArgument as e:
-                    current_app.logger.error('Cannot import device for app {0}, type {1}. '
-                                             'Invalid input'.format(app, device_type,
-                                                                    format_exception_message(e)))
-                    continue
-                else:
-                    fields = device['fields']
-                    add_configuration_keys_to_device_json(fields, device_fields_api)
-                    app = device_db.session.query(App).filter(App.name == app).first()
-                    if app is None:
-                        current_app.logger.error(
-                            'SEVERE: App defined in api does not have corresponding entry in database. '
-                            'Cannot import device')
-                        continue
-                    device_obj = Device.from_json(device)
-                    app.add_device(device_obj)
-                    device_db.session.add(device_obj)
-                    device_db.session.commit()
+                app = import_device(app, device, device_type, fields)
 
         current_app.logger.debug('Imported devices from {0}'.format(filename))
         return {}, SUCCESS
 
     return __func()
+
+
+def import_device(app, device, device_type, fields):
+    try:
+        device_api = get_app_device_api(app, device_type)
+        device_fields_api = device_api['fields']
+        validate_device_fields(device_fields_api, fields, device_type, app)
+    except UnknownDevice:
+        current_app.logger.error('Cannot import device for app {0}, type {1}. '
+                                 'Type does not exist'.format(app, device_type))
+    except InvalidArgument as e:
+        current_app.logger.error('Cannot import device for app {0}, type {1}. '
+                                 'Invalid input'.format(app, device_type,
+                                                        format_exception_message(e)))
+    else:
+        fields = device['fields']
+        add_configuration_keys_to_device_json(fields, device_fields_api)
+        app = device_db.session.query(App).filter(App.name == app).first()
+        if app is not None:
+            device_obj = Device.from_json(device)
+            app.add_device(device_obj)
+            device_db.session.add(device_obj)
+            device_db.session.commit()
+        else:
+            current_app.logger.error(
+                'SEVERE: App defined in api does not have corresponding entry in database. '
+                'Cannot import device')
+    return app
 
 
 def export_devices():
@@ -226,16 +223,7 @@ def export_devices():
     def __func():
         data = request.get_json()
         filename = data['filename'] if 'filename' in data else walkoff.config.paths.default_appdevice_export_path
-        returned_json = {}
-        apps = device_db.session.query(App).all()
-        for app in apps:
-            devices = []
-            for device in app.devices:
-                device_json = device.as_json(export=True)
-                device_json.pop('app', None)
-                device_json.pop('id', None)
-                devices.append(device_json)
-            returned_json[app.as_json()['name']] = devices
+        returned_json = get_exported_json()
         try:
             with open(filename, 'w') as appdevice_file:
                 appdevice_file.write(json.dumps(returned_json, indent=4, sort_keys=True))
@@ -247,3 +235,17 @@ def export_devices():
             return {}, SUCCESS
 
     return __func()
+
+
+def get_exported_json():
+    returned_json = {}
+    apps = device_db.session.query(App).all()
+    for app in apps:
+        devices = []
+        for device in app.devices:
+            device_json = device.as_json(export=True)
+            device_json.pop('app', None)
+            device_json.pop('id', None)
+            devices.append(device_json)
+        returned_json[app.as_json()['name']] = devices
+    return returned_json
