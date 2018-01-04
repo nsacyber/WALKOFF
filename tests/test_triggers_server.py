@@ -1,5 +1,7 @@
 import json
 import socket
+import threading
+import time
 
 import gevent
 from gevent import monkey
@@ -57,7 +59,8 @@ class TestTriggersServer(ServerTestCase):
         result = {"result": 0,
                   "num_trigs": 0}
 
-        def gevent_wait_thread():
+        def wait_thread():
+            time.sleep(0.1)
             execd_ids = set([])
             timeout = 0
             threshold = 5
@@ -66,14 +69,14 @@ class TestTriggersServer(ServerTestCase):
                                                    data=json.dumps(data),
                                                    status_code=SUCCESS, content_type='application/json')
                 execd_ids.update(set.intersection(set(ids), set(resp)))
-                gevent.sleep(0.1)
+                time.sleep(0.1)
                 timeout += 0.1
             return
 
         @WalkoffEvent.TriggerActionAwaitingData.connect
         def send_data(sender, **kwargs):
             if result["num_trigs"] == 1:
-                gevent.spawn(gevent_wait_thread)
+                threading.Thread(target=wait_thread).start()
             else:
                 result["num_trigs"] += 1
 
@@ -84,42 +87,43 @@ class TestTriggersServer(ServerTestCase):
         flask_server.running_context.controller.wait_and_reset(2)
         self.assertEqual(result['result'], 2)
 
-    # def test_trigger_execute(self):
-    #
-    #     response = self.post_with_status_check(
-    #         '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
-    #         headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json", data=json.dumps({}))
-    #
-    #     ids = [response['id']]
-    #
-    #     data = {"execution_uids": ids,
-    #             "data_in": {"data": "1"}}
-    #
-    #     result = {"result": False}
-    #
-    #     def gevent_wait_thread():
-    #         gevent.sleep(0.1)
-    #         execd_ids = set([])
-    #         timeout = 0
-    #         threshold = 5
-    #         while len(execd_ids) != len(ids) and timeout < threshold:
-    #             resp = self.post_with_status_check('/api/triggers/send_data', headers=self.headers,
-    #                                                data=json.dumps(data),
-    #                                                status_code=SUCCESS, content_type='application/json')
-    #             execd_ids.update(set.intersection(set(ids), set(resp)))
-    #             gevent.sleep(0.1)
-    #             timeout += 0.1
-    #
-    #     @WalkoffEvent.TriggerActionAwaitingData.connect
-    #     def send_data(sender, **kwargs):
-    #         gevent.spawn(gevent_wait_thread)
-    #
-    #     @WalkoffEvent.TriggerActionTaken.connect
-    #     def trigger_taken(sender, **kwargs):
-    #         result['result'] = True
-    #
-    #     flask_server.running_context.controller.wait_and_reset(1)
-    #     self.assertTrue(result['result'])
+    def test_trigger_execute(self):
+
+        response = self.post_with_status_check(
+            '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
+            headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json", data=json.dumps({}))
+
+        ids = [response['id']]
+
+        data = {"execution_uids": ids,
+                "data_in": {"data": "1"}}
+
+        result = {"result": False}
+
+        def wait_thread():
+            time.sleep(0.1)
+            execd_ids = set([])
+            timeout = 0
+            threshold = 5
+            while len(execd_ids) != len(ids) and timeout < threshold:
+                resp = self.post_with_status_check('/api/triggers/send_data', headers=self.headers,
+                                                   data=json.dumps(data),
+                                                   status_code=SUCCESS, content_type='application/json')
+                execd_ids.update(set.intersection(set(ids), set(resp)))
+                time.sleep(0.1)
+                timeout += 0.1
+            return
+
+        @WalkoffEvent.TriggerActionAwaitingData.connect
+        def send_data(sender, **kwargs):
+            threading.Thread(target=wait_thread).start()
+
+        @WalkoffEvent.TriggerActionTaken.connect
+        def trigger_taken(sender, **kwargs):
+            result['result'] = True
+
+        flask_server.running_context.controller.wait_and_reset(1)
+        self.assertTrue(result['result'])
 
     def test_trigger_execute_multiple_data(self):
 
@@ -134,7 +138,8 @@ class TestTriggersServer(ServerTestCase):
 
         result = {"result": 0}
 
-        def gevent_wait_thread():
+        def wait_thread():
+            time.sleep(0.1)
             execd_ids = set([])
             timeout = 0
             threshold = 5
@@ -143,7 +148,7 @@ class TestTriggersServer(ServerTestCase):
                                                    data=json.dumps(data),
                                                    status_code=SUCCESS, content_type='application/json')
                 execd_ids.update(set.intersection(set(ids), set(resp)))
-                gevent.sleep(0.1)
+                time.sleep(0.1)
                 timeout += 0.1
 
             data_correct = {"execution_uids": [response['id']], "data_in": {"data": "1"}}
@@ -154,12 +159,13 @@ class TestTriggersServer(ServerTestCase):
                                                    data=json.dumps(data_correct),
                                                    status_code=SUCCESS, content_type='application/json')
                 execd_ids.update(set.intersection(set(ids), set(resp)))
-                gevent.sleep(0.1)
+                time.sleep(0.1)
                 timeout += 0.1
+            return
 
         @WalkoffEvent.TriggerActionAwaitingData.connect
         def send_data(sender, **kwargs):
-            gevent.spawn(gevent_wait_thread)
+            threading.Thread(target=wait_thread).start()
 
         @WalkoffEvent.TriggerActionTaken.connect
         def trigger_taken(sender, **kwargs):
@@ -187,7 +193,8 @@ class TestTriggersServer(ServerTestCase):
         def action_finished_listener(sender, **kwargs):
             result['value'] = kwargs['data']
 
-        def gevent_wait_thread():
+        def wait_thread():
+            time.sleep(0.1)
             execd_ids = set([])
             timeout = 0
             threshold = 5
@@ -196,12 +203,13 @@ class TestTriggersServer(ServerTestCase):
                                                    data=json.dumps(data),
                                                    status_code=SUCCESS, content_type='application/json')
                 execd_ids.update(set.intersection(set(ids), set(resp)))
-                gevent.sleep(0.1)
+                time.sleep(0.1)
                 timeout += 0.1
+            return
 
         @WalkoffEvent.TriggerActionAwaitingData.connect
         def send_data(sender, **kwargs):
-            gevent.spawn(gevent_wait_thread)
+            threading.Thread(target=wait_thread).start()
 
         flask_server.running_context.controller.wait_and_reset(1)
 
@@ -226,7 +234,8 @@ class TestTriggersServer(ServerTestCase):
         def action_input_invalids(sender, **kwargs):
             result['result'] = True
 
-        def gevent_wait_thread():
+        def wait_thread():
+            time.sleep(0.1)
             execd_ids = set([])
             timeout = 0
             threshold = 5
@@ -235,12 +244,13 @@ class TestTriggersServer(ServerTestCase):
                                                    data=json.dumps(data),
                                                    status_code=SUCCESS, content_type='application/json')
                 execd_ids.update(set.intersection(set(ids), set(resp)))
-                gevent.sleep(0.1)
+                time.sleep(0.1)
                 timeout += 0.1
+            return
 
         @WalkoffEvent.TriggerActionAwaitingData.connect
         def send_data(sender, **kwargs):
-            gevent.spawn(gevent_wait_thread)
+            threading.Thread(target=wait_thread).start()
 
         flask_server.running_context.controller.wait_and_reset(1)
         self.assertTrue(result['result'])
