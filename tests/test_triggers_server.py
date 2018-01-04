@@ -25,7 +25,7 @@ class TestTriggersServer(ServerTestCase):
     patch = False
 
     def setUp(self):
-        monkey.patch_socket()
+        #monkey.patch_socket()
         walkoff.case.subscription.subscriptions = {}
         case_database.initialize()
 
@@ -35,7 +35,7 @@ class TestTriggersServer(ServerTestCase):
         for case in case_database.case_db.session.query(case_database.Case).all():
             case_database.case_db.session.delete(case)
         case_database.case_db.session.commit()
-        reload(socket)
+        #reload(socket)
 
     def test_trigger_multiple_workflows(self):
 
