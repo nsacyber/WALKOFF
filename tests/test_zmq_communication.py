@@ -2,6 +2,8 @@ import threading
 import time
 import unittest
 from os import path
+import os
+import shutil
 
 import walkoff.appgateway
 import walkoff.config.config
@@ -37,8 +39,17 @@ class TestZMQCommunication(unittest.TestCase):
         case_database.case_db.tear_down()
         case_subscription.clear_subscriptions()
 
-    '''Request and Result Socket Testing (Basic Workflow Execution)'''
+    @classmethod
+    def tearDownClass(cls):
+        if config.test_data_path in os.listdir(config.test_path):
+            if os.path.isfile(config.test_data_path):
+                os.remove(config.test_data_path)
+            else:
+                shutil.rmtree(config.test_data_path)
+        walkoff.appgateway.clear_cache()
+        walkoff.controller.controller.shutdown_pool()
 
+    '''Request and Result Socket Testing (Basic Workflow Execution)'''
     def test_simple_workflow_execution(self):
         workflow = self.controller.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
