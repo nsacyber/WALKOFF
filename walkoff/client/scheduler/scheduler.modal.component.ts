@@ -10,6 +10,7 @@ import { ScheduledTask } from '../models/scheduledTask';
 import { ScheduledTaskCron } from '../models/scheduledTaskCron';
 import { ScheduledTaskInterval } from '../models/scheduledTaskInterval';
 import { ScheduledTaskDate } from '../models/scheduledTaskDate';
+import { GenericObject } from '../models/genericObject';
 
 @Component({
 	selector: 'scheduler-modal',
@@ -95,19 +96,38 @@ export class SchedulerModalComponent {
 		}
 
 		if (this.workingScheduledTask.task_trigger.type === 'interval') {
-			if (!(args.weeks || args.days || args.hours || args.minutes || args.seconds)) {
+			if (!this._doesArgsHaveAnything(args)) {
 				return 'You must specify some interval of time for the actions to occur.';
 			}
 		}
 
 		if (this.workingScheduledTask.task_trigger.type === 'cron') {
-			if (!(args.year || args.month || args.day || args.week ||
-				args.day_of_week || args.hour || args.minute || args.second)) {
+			if (!this._doesArgsHaveAnything(args)) {
 				return 'You must specify some cron parameters for the actions to occur.';
 			}
 		}
 
 		return '';
+	}
+
+	_doesArgsHaveAnything(args: GenericObject) {
+		let ret = false;
+		Object.keys(args).forEach(key => {
+			// Will reject falsy values (including 0 as that is not an applicable value here)
+			// Will also ignore start/end dates here
+			if (ret || key === 'start_date' || key === 'end_date' || !args[key]) { return; }
+
+			// For strings, trim and check if they're wildcards (0/*)
+			if (typeof(args[key]) === 'string') {
+				args[key] = (args[key] as string).trim();
+				if (args[key] && !(args[key] === '0' || args[key] === '*')) { ret = true; }
+			// For other types (int), return true (aka it's != 0)
+			} else {
+				ret = true;
+			}
+		});
+
+		return ret;
 	}
 
 	changeType(e: string): void {
