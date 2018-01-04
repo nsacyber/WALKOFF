@@ -61,7 +61,7 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_display_workflow_invalid_name(self):
         self.get_with_status_check('/api/playbooks/multiactionWorkflowTest/workflows/multiactionWorkflow',
-                                   error='Playbook or workflow does not exist.',
+                                   error='Workflow does not exist',
                                    headers=self.headers, status_code=OBJECT_DNE_ERROR)
 
     def test_add_playbook_default(self):
@@ -211,7 +211,7 @@ class TestWorkflowServer(ServerTestCase):
         data = {"new_name": workflow_name, "name": "junkworkflow"}
         initial_workflows = flask_server.running_context.controller.workflows.keys()
         self.post_with_status_check('/api/playbooks/test/workflows',
-                                    error='Playbook or workflow does not exist.',
+                                    error='Workflow does not exist',
                                     data=json.dumps(data), headers=self.headers, content_type="application/json",
                                     status_code=OBJECT_DNE_ERROR)
         final_workflows = flask_server.running_context.controller.workflows.keys()
@@ -379,7 +379,7 @@ class TestWorkflowServer(ServerTestCase):
     def test_save_workflow_invalid_name(self):
         data = {"actions": []}
         self.post_with_status_check('/api/playbooks/test/workflows/junkworkflowname/save',
-                                    error='Playbook or workflow does not exist.',
+                                    error='Workflow does not exist',
                                     headers=self.headers, status_code=OBJECT_DNE_ERROR, data=json.dumps(data),
                                     content_type="application/json")
 
@@ -409,7 +409,7 @@ class TestWorkflowServer(ServerTestCase):
     def test_delete_playbook_invalid_name(self):
         initial_playbook_files = [os.path.splitext(playbook)[0] for playbook in
                                   helpers.locate_playbooks_in_directory()]
-        self.delete_with_status_check('/api/playbooks/junkPlaybookName', error='Playbook does not exist.',
+        self.delete_with_status_check('/api/playbooks/junkPlaybookName', error='Playbook does not exist',
                                       headers=self.headers,
                                       status_code=OBJECT_DNE_ERROR)
         self.assertFalse(flask_server.running_context.controller.is_playbook_registered('junkPlaybookName'))
@@ -437,7 +437,7 @@ class TestWorkflowServer(ServerTestCase):
     def test_delete_workflow_invalid(self):
         workflow_name = 'junkworkflowname'
         self.delete_with_status_check('/api/playbooks/test/workflows/{0}'.format(workflow_name),
-                                      error='Playbook or workflow does not exist.',
+                                      error='Workflow does not exist',
                                       headers=self.headers, status_code=OBJECT_DNE_ERROR)
         self.assertFalse(flask_server.running_context.controller.is_workflow_registered('test', workflow_name))
 
@@ -561,13 +561,13 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_execute_workflow_playbook_dne(self):
         self.post_with_status_check('/api/playbooks/junkPlay/workflows/helloWorldWorkflow/execute',
-                                    error='Playbook or workflow does not exist.',
+                                    error='Workflow does not exist',
                                     headers=self.headers, status_code=OBJECT_DNE_ERROR,
                                     content_type="application/json", data=json.dumps({}))
 
     def test_execute_workflow_workflow_dne(self):
         self.post_with_status_check('/api/playbooks/test/workflows/junkWorkflow/execute',
-                                    error='Playbook or workflow does not exist.',
+                                    error='Workflow does not exist',
                                     headers=self.headers, status_code=OBJECT_DNE_ERROR,
                                     content_type="application/json", data=json.dumps({}))
 

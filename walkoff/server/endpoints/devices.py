@@ -9,6 +9,11 @@ from walkoff.helpers import get_app_device_api, InvalidArgument, UnknownDevice, 
 from walkoff.appgateway.validator import validate_device_fields
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
+from walkoff.server.decorators import with_resource_factory
+
+
+with_device = with_resource_factory(
+    'device', lambda device_id: device_db.session.query(Device).filter(Device.id == device_id).first())
 
 
 def get_device_json_with_app_name(device):
@@ -30,15 +35,9 @@ def read_all_devices():
 def read_device(device_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('devices', ['read']))
-    def __func():
-        device = device_db.session.query(Device).filter(Device.id == device_id).first()
-        if device is not None:
-            return get_device_json_with_app_name(device), SUCCESS
-
-        else:
-            current_app.logger.error('Could not read device {0}. '
-                                     'Device does not exist'.format(device_id))
-            return {"error": "Device does not exist."}, OBJECT_DNE_ERROR
+    @with_device('read', device_id)
+    def __func(device):
+        return get_device_json_with_app_name(device), SUCCESS
 
     return __func()
 
@@ -46,17 +45,12 @@ def read_device(device_id):
 def delete_device(device_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('devices', ['delete']))
-    def __func():
-        dev = device_db.session.query(Device).filter(Device.id == device_id).first()
-        if dev is not None:
-            device_db.session.delete(dev)
-            current_app.logger.info('Device removed {0}'.format(device_id))
-            device_db.session.commit()
-            return {}, SUCCESS
-        else:
-            current_app.logger.error('Could not delete device {0}. '
-                                     'Device does not exist'.format(device_id))
-            return {"error": "Device does not exist"}, OBJECT_DNE_ERROR
+    @with_device('delete', device_id)
+    def __func(device):
+        device_db.session.delete(device)
+        current_app.logger.info('Device removed {0}'.format(device_id))
+        device_db.session.commit()
+        return {}, SUCCESS
 
     return __func()
 
@@ -115,13 +109,9 @@ def create_device():
 def update_device():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('devices', ['update']))
-    def __func():
+    @with_device('update', request.get_json()['id'])
+    def __func(device):
         update_device_json = request.get_json()
-        device = device_db.session.query(Device).filter(Device.id == update_device_json['id']).first()
-        if device is None:
-            current_app.logger.error('Could not update device {0}. '
-                                     'Device does not exist.'.format(update_device_json['id']))
-            return {"error": "Device does not exist."}, OBJECT_DNE_ERROR
 
         fields = ({field['name']: field['value'] for field in update_device_json['fields']}
                   if 'fields' in update_device_json else None)

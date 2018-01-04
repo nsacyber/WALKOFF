@@ -11,8 +11,23 @@ from walkoff.case.workflowresults import WorkflowResult
 from walkoff.helpers import UnknownAppAction, UnknownApp, InvalidArgument
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
+from walkoff.server.decorators import validate_resource_exists_factory
 
 
+def does_playbook_exist(playbook_name):
+    from walkoff.server.context import running_context
+    return running_context.controller.is_playbook_registered(playbook_name)
+
+
+def does_workflow_exist(playbook_name, workflow_name):
+    from walkoff.server.context import running_context
+    return running_context.controller.is_workflow_registered(playbook_name, workflow_name)
+
+
+validate_playbook_is_registered = validate_resource_exists_factory('playbook', does_playbook_exist)
+validate_workflow_is_registered = validate_resource_exists_factory('workflow', does_workflow_exist)
+
+'''
 def validate_playbook_is_registered(operation, playbook_name):
     from walkoff.server.context import running_context
 
@@ -22,7 +37,7 @@ def validate_playbook_is_registered(operation, playbook_name):
         else:
             current_app.logger.error(
                 'Could not {0} playbook {1}. Playbook does not exist.'.format(operation, playbook_name))
-            return lambda: ({"error": 'Playbook does not exist.'.format(playbook_name)}, OBJECT_DNE_ERROR)
+            return lambda: ({"error": 'Playbook does not exist'.format(playbook_name)}, OBJECT_DNE_ERROR)
 
     return wrapper
 
@@ -37,10 +52,10 @@ def validate_workflow_is_registered(operation, playbook_name, workflow_name):
             current_app.logger.error(
                 'Could not {0} workflow {1}-{2}. Workflow does not exist.'.format(
                     operation, playbook_name, workflow_name))
-            return lambda: ({"error": 'Playbook or workflow does not exist.'.format(playbook_name)}, OBJECT_DNE_ERROR)
+            return lambda: ({"error": 'Workflow does not exist'.format(playbook_name)}, OBJECT_DNE_ERROR)
 
     return wrapper
-
+'''
 
 def get_playbooks(full=None):
     from walkoff.server.context import running_context
