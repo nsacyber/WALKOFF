@@ -12,7 +12,11 @@ install:
 before_script:
   - python scripts/generate_certificates.py
 script:
-  - coverage run run_all_tests.py
+  - coverage run -m unittest tests.suites.workflow_suite
+  - coverage run --append -m unittest tests.suites.execution_suite
+  - coverage run --append -m unittest tests.suites.case_suite
+  - coverage run --append -m unittest tests.suites.server_suite
+  - coverage run --append -m unittest tests.suites.interface_suite
   - coverage combine
   - coverage report
 branches:
