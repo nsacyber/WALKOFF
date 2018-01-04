@@ -43,5 +43,5 @@ interface_suite = TestSuite()
 add_tests_to_suite(interface_suite, __interface_tests)
 
 full_suite = TestSuite()
-for tests in [__workflow_tests, __triggers_tests, __execution_tests, __case_tests, __server_tests, __interface_tests]:
+for tests in [__workflow_tests, __execution_tests, __case_tests, __server_tests, __interface_tests]:
     add_tests_to_suite(full_suite, tests)
