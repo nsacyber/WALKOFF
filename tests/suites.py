@@ -33,11 +33,7 @@ __workflow_tests = [test_load_workflow, test_simple_workflow, test_workflow_mani
 workflow_suite = TestSuite()
 add_tests_to_suite(workflow_suite, __workflow_tests)
 
-__triggers_tests = [test_triggers_server]
-triggers_suite = TestSuite()
-add_tests_to_suite(triggers_suite, __triggers_tests)
-
-__integration_tests = [test_zmq_communication_server, test_zmq_communication]
+__integration_tests = [test_zmq_communication, test_zmq_communication_server, test_triggers_server]
 integration_suite = TestSuite()
 add_tests_to_suite(integration_suite, __integration_tests)
 
