@@ -14,7 +14,8 @@ __server_tests = [test_workflow_server, test_app_api_server, test_case_server, t
                   test_scheduledtasks_database, test_scheduledtasks_server, test_authentication, test_roles_server,
                   test_users_server, test_message_history_database, test_message_db,
                   test_message, test_messaging_endpoints, test_workflow_authorization,
-                  test_workflow_authorized_user_set, test_workflow_authorization_cache, test_trigger_helpers]
+                  test_workflow_authorized_user_set, test_workflow_authorization_cache, test_trigger_helpers,
+                  test_system_server]
 server_suite = TestSuite()
 add_tests_to_suite(server_suite, __server_tests)
 
