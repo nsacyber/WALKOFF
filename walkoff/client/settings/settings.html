@@ -10,9 +10,8 @@
             <div class="row">
                 <form (ngSubmit)="updateConfiguration()" #systemSettingsForm="ngForm">
                     <div class="col-md-4">
-                        <h3>Path Configuration</h3>
+                        <h3>Data Configuration</h3>
                         <div class="form-group">
-                            <input type="text" class="form-control" [(ngModel)]="configuration.workflows_path" name="workflows_path" required>
                             <label for="name">Workflows Path</label>
                             <input type="text" class="form-control" [(ngModel)]="configuration.workflows_path" name="workflows_path" required>
                         </div>
@@ -44,30 +43,6 @@
                     </div>
 
                     <div class="col-md-4">
-                        <h3>Authorization Configuration</h3>
-                        <!-- <div class="form-group">
-                            <label for="name">Use HTTPS</label>
-                            <input type="checkbox" class="form-control" [(ngModel)]="configuration.https" name="https" required>
-                        </div> -->
-                        <!-- <div class="form-group">
-                            <label for="name">TLS Version (if enabled)</label>
-                            <select class="form-control" [(ngModel)]="configuration.tls_version" name="tls_version">
-                                <option *ngFor="let i of tlsVersions" [value]="i" [label]="i">{{i}}</option>
-                            </select>
-                        </div> -->
-                        <div class="form-group">
-                            <label for="access_token_duration">JWT Access Token Duration (in minutes)</label>
-                            <input type="number" min="1" class="form-control" [(ngModel)]="configuration.access_token_duration" name="access_token_duration"
-                                required>
-                        </div>
-                        <div class="form-group">
-                            <label for="refresh_token_duration">JWT Refresh Token Duration (in days)</label>
-                            <input type="number" min="1" class="form-control" [(ngModel)]="configuration.refresh_token_duration" name="refresh_token_duration"
-                                required>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
                         <h3>Interface Configuration</h3>
                         <div class="form-group">
                             <label for="host">Host Address</label>
@@ -90,9 +65,41 @@
                             <input type="text" class="form-control" [(ngModel)]="configuration.zmq_communication_address" name="zmq_communication_address" required>
                         </div>
                     </div>
+
+                    <div class="col-md-4">
+                        <h3>Other Configuration</h3>
+                        <!-- <div class="form-group">
+                            <label for="name">Use HTTPS</label>
+                            <input type="checkbox" class="form-control" [(ngModel)]="configuration.https" name="https" required>
+                        </div> -->
+                        <!-- <div class="form-group">
+                            <label for="name">TLS Version (if enabled)</label>
+                            <select class="form-control" [(ngModel)]="configuration.tls_version" name="tls_version">
+                                <option *ngFor="let i of tlsVersions" [value]="i" [label]="i">{{i}}</option>
+                            </select>
+                        </div> -->
+                        <div class="form-group">
+                            <label for="access_token_duration">JWT Access Token Duration (in minutes)</label>
+                            <input type="number" min="1" class="form-control" [(ngModel)]="configuration.access_token_duration" name="access_token_duration"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="refresh_token_duration">JWT Refresh Token Duration (in days)</label>
+                            <input type="number" min="1" class="form-control" [(ngModel)]="configuration.refresh_token_duration" name="refresh_token_duration"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="number_processes">Number of Processes</label>
+                            <input type="number" min="1" max="100" class="form-control" [(ngModel)]="configuration.number_processes" name="number_processes" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="number_threads_per_process">Number of Threads per Process</label>
+                            <input type="number" min="1" max="100" class="form-control" [(ngModel)]="configuration.number_threads_per_process" name="number_threads_per_process" required>
+                        </div>
+                    </div>
                 </form>
             </div>
-            <div class="row">
+            <div>
                 <button (click)="updateConfiguration()" id="formSubmit" class="btn btn-primary">Submit Changes</button>
                 <button (click)="resetConfiguration()" id="resetConfiguration" class="btn btn-danger">Reset to Defaults</button>
             </div>
