@@ -1,7 +1,11 @@
 import logging
 
+from sqlalchemy import Column, Integer, ForeignKey, String
+from sqlalchemy.orm import relationship, backref
+
 from walkoff.appgateway import get_condition
 from walkoff.core.argument import Argument
+from walkoff.devicedb import Device_Base
 from walkoff.events import WalkoffEvent
 from walkoff.core.executionelements.executionelement import ExecutionElement
 from walkoff.helpers import get_condition_api, InvalidArgument, format_exception_message, split_api_params
@@ -10,8 +14,17 @@ from walkoff.appgateway.validator import validate_condition_parameters
 logger = logging.getLogger(__name__)
 
 
-class Condition(ExecutionElement):
-    def __init__(self, app_name, action_name, arguments=None, transforms=None, uid=None):
+class Condition(ExecutionElement, Device_Base):
+    __tablename__ = 'condition'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    action_id = Column(Integer, ForeignKey('action.id'))
+    branch_id = Column(Integer, ForeignKey('branch.id'))
+    app_name = Column(String(80), nullable=False)
+    action_name = Column(String(80), nullable=False)
+    arguments = relationship('Argument', backref=backref('condition'), cascade='all, delete-orphan')
+    transforms = relationship('Transform', backref=backref('condition'), cascade='all, delete-orphan')
+
+    def __init__(self, app_name, action_name, arguments=None, transforms=None):
         """Initializes a new Condition object.
         
         Args:
@@ -21,19 +34,36 @@ class Condition(ExecutionElement):
                 This dictionary will be converted to a dictionary of str:Argument. Defaults to None.
             transforms(list[Transform], optional): A list of Transform objects for the Condition object.
                 Defaults to None.
-            uid (str, optional): A universally unique identifier for this object.
-                Created from uuid.uuid4() in Python
         """
-        ExecutionElement.__init__(self, uid)
+        ExecutionElement.__init__(self)
         self.app_name = app_name
         self.action_name = action_name
+
         self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
         self._condition_executable = get_condition(self.app_name, self._run)
-        arguments = {arg.name: arg for arg in arguments} if arguments is not None else {}
+        args = {arg.name: arg for arg in arguments} if arguments is not None else {}
         tmp_api = split_api_params(self._api, self._data_param_name)
-        validate_condition_parameters(tmp_api, arguments, self.action_name)
-        self.arguments = arguments
-        self.transforms = transforms if transforms is not None else []
+        validate_condition_parameters(tmp_api, args, self.action_name)
+
+        self.arguments = []
+        if arguments:
+            self.set_arguments(arguments)
+
+        self.transforms = []
+        if transforms:
+            self.set_transforms(transforms)
+
+    def set_args(self, new_arguments):
+        new_argument_ids = set(new_arguments)
+        new_arguments = Argument.query.filter(Argument.id.in_(new_argument_ids)).all() if new_argument_ids else []
+
+        self.arguments[:] = new_arguments
+
+    def set_transforms(self, new_transforms):
+        new_transform_ids = set(new_transforms)
+        new_transforms = Transform.query.filter(Transform.id.in_(new_transform_ids)).all() if new_transform_ids else []
+
+        self.transforms[:] = new_transforms
 
     def execute(self, data_in, accumulator):
         """Executes the Condition object, determining if the Condition evaluates to True or False.

@@ -3,7 +3,11 @@ import logging
 import threading
 from copy import deepcopy
 
+from sqlalchemy import Column, Integer, ForeignKey, String
+from sqlalchemy.orm import relationship, backref
+
 from walkoff.appgateway.appinstance import AppInstance
+from walkoff.devicedb import Device_Base
 from walkoff.events import WalkoffEvent
 from walkoff.core.executionelements.action import Action
 from walkoff.core.executionelements.branch import Branch
@@ -13,42 +17,58 @@ from walkoff.helpers import UnknownAppAction, UnknownApp, InvalidArgument, forma
 logger = logging.getLogger(__name__)
 
 
-class Workflow(ExecutionElement):
-    def __init__(self, name='', uid=None, actions=None, branches=None, start=None):
+class Workflow(ExecutionElement, Device_Base):
+    __tablename__ = 'workflow'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(80))
+    actions = relationship('Action', backref=backref('workflow'), cascade='all, delete-orphan')
+    branches = relationship('Branch', backref=backref('workflow'), cascade='all, delete-orphan')
+    start = Column(String(80))
+
+    def __init__(self, name='', actions=None, branches=None, start=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Actions
             within it that get executed.
-            
+
         Args:
             name (str, optional): The name of the Workflow object. Defaults to an empty string.
-            uid (str, optional): Optional UID to pass in for the workflow. Defaults to uuid.uuid4().
             actions (dict, optional): Optional Action objects. Defaults to None.
             branches (list[Branch], optional): A list of Branch objects for the Action object. Defaults to None.
             start (str, optional): Optional UID of the starting Action. Defaults to None.
         """
-        ExecutionElement.__init__(self, uid)
+        ExecutionElement.__init__(self)
         self.name = name
-        self.actions = {action.uid: action for action in actions} if actions is not None else {}
 
-        self.branches = {}
-        if actions:
-            for action in actions:
-                self.branches[action.uid] = []
+        self.actions = []
+        if self.actions:
+            self.set_actions(actions)
 
+        self.branches = []
         if branches:
-            for branch in branches:
-                if branch.source_uid in self.branches:
-                    self.branches[branch.source_uid].append(branch)
+            self.set_branches(branches)
 
         self.start = start if start is not None else 'start'
 
+        # TODO: Initialize these to None and then reinitialize in the Worker
         self._is_paused = False
         self._resume = threading.Event()
         self._accumulator = {}
         self._execution_uid = 'default'
 
+    def set_actions(self, new_actions):
+        new_action_ids = set(new_actions)
+        new_actions = Action.query.filter(Action.id.in_(new_action_ids)).all() if new_action_ids else []
+
+        self.actions[:] = new_actions
+
+    def set_branches(self, new_branches):
+        new_branch_ids = set(new_branches)
+        new_branches = Branch.query.filter(Branch.id.in_(new_branch_ids)).all() if new_branch_ids else []
+
+        self.branches[:] = new_branches
+
     def create_action(self, name='', action='', app='', device='', arguments=None, risk=0):
         """Creates a new Action object and adds it to the Workflow's list of Actions.
-        
+
         Args:
             name (str, optional): The name of the Action object. Defaults to an empty string.
             action (str, optional): The name of the action associated with a Action. Defaults to an empty string.
@@ -58,7 +78,7 @@ class Workflow(ExecutionElement):
             arguments (list[Argument]): A list of Argument objects that are parameters to the action execution. Defaults
                 to None.
             risk (int, optional): The risk associated with the Action. Defaults to 0.
-            
+
         """
         arguments = arguments if arguments is not None else []
         action = Action(name=name, action_name=action, app_name=app, device_id=device, arguments=arguments, risk=risk)
@@ -69,10 +89,10 @@ class Workflow(ExecutionElement):
 
     def remove_action(self, uid):
         """Removes a Action object from the Workflow's list of Actions given the Action UID.
-        
+
         Args:
             uid (str): The UID of the Action object to be removed.
-            
+
         Returns:
             True on success, False otherwise.
         """

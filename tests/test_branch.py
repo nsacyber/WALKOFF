@@ -38,20 +38,20 @@ class TestBranch(unittest.TestCase):
             self.assertEqual(elem.uid, uid)
 
     def test_init(self):
-        branch = Branch(source_uid="1", destination_uid="2")
+        branch = Branch(source_id="1", destination_id="2")
         self.__compare_init(branch, "1", "2")
 
     def test_init_wth_uid(self):
         uid = uuid.uuid4().hex
-        branch = Branch(source_uid="1", destination_uid="2", uid=uid)
+        branch = Branch(source_id="1", destination_id="2", uid=uid)
         self.__compare_init(branch, "1", "2", uid=uid)
 
     def test_init_with_status(self):
-        branch = Branch(source_uid="1", destination_uid="2", status='test_status')
+        branch = Branch(source_id="1", destination_id="2", status='test_status')
         self.__compare_init(branch, "1", "2", status='test_status')
 
     def test_init_with_empty_conditions(self):
-        branch = Branch(source_uid="1", destination_uid="2", conditions=[])
+        branch = Branch(source_id="1", destination_id="2", conditions=[])
         self.__compare_init(branch, '1', '2')
 
     def test_init_with_conditions(self):
@@ -63,9 +63,9 @@ class TestBranch(unittest.TestCase):
 
     def test_eq(self):
         conditions = [Condition('HelloWorld', 'mod1_flag1'), Condition('HelloWorld', 'Top Condition')]
-        branches = [Branch(source_uid="1", destination_uid="2"),
-                    Branch(source_uid="1", destination_uid="2", status='TestStatus'),
-                    Branch(source_uid="1", destination_uid="2", conditions=conditions)]
+        branches = [Branch(source_id="1", destination_id="2"),
+                    Branch(source_id="1", destination_id="2", status='TestStatus'),
+                    Branch(source_id="1", destination_id="2", conditions=conditions)]
         for i in range(len(branches)):
             for j in range(len(branches)):
                 if i == j:
@@ -85,9 +85,9 @@ class TestBranch(unittest.TestCase):
                   ('name4', conditions2, ActionResult('aaaa', 'Custom'), False)]
 
         for name, conditions, input_str, expect_name in inputs:
-            branch = Branch(source_uid="1", destination_uid="2", conditions=conditions)
+            branch = Branch(source_id="1", destination_id="2", conditions=conditions)
             if expect_name:
-                expected_name = branch.destination_uid
+                expected_name = branch.destination_id
                 self.assertEqual(branch.execute(input_str, {}), expected_name)
             else:
                 self.assertIsNone(branch.execute(input_str, {}))
@@ -98,7 +98,7 @@ class TestBranch(unittest.TestCase):
 
     def test_get_branch_invalid_action(self):
         flag = Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])
-        branch = Branch(source_uid="1", destination_uid='next', conditions=[flag])
+        branch = Branch(source_id="1", destination_id='next', conditions=[flag])
         action = Action('HelloWorld', 'helloWorld', uid="2")
         action._output = ActionResult(result='bbb', status='Success')
         workflow = Workflow(actions=[action], branches=[branch])
@@ -106,7 +106,7 @@ class TestBranch(unittest.TestCase):
 
     def test_get_branch(self):
         flag = Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])
-        branch = Branch(source_uid="1", destination_uid="2", conditions=[flag])
+        branch = Branch(source_id="1", destination_id="2", conditions=[flag])
         action = Action('HelloWorld', 'helloWorld', uid="1")
         action._output = ActionResult(result='aaa', status='Success')
         workflow = Workflow(actions=[action], branches=[branch])
@@ -126,8 +126,8 @@ class TestBranch(unittest.TestCase):
 
     def test_branch_with_priority(self):
         flag = Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])
-        branch_one = Branch(source_uid="1", destination_uid='five', conditions=[flag], priority="5")
-        branch_two = Branch(source_uid="1", destination_uid='one', conditions=[flag], priority="1")
+        branch_one = Branch(source_id="1", destination_id='five', conditions=[flag], priority="5")
+        branch_two = Branch(source_id="1", destination_id='one', conditions=[flag], priority="1")
         action = Action('HelloWorld', 'helloWorld', uid="1")
         action._output = ActionResult(result='aaa', status='Success')
         workflow = Workflow(actions=[action], branches=[branch_one, branch_two])

@@ -1,20 +1,34 @@
 import logging
 from functools import total_ordering
 
+from sqlalchemy import Column, Integer, ForeignKey, String
+from sqlalchemy.orm import relationship, backref
+
+from walkoff.devicedb import Device_Base
 from walkoff.events import WalkoffEvent
 from walkoff.core.executionelements.executionelement import ExecutionElement
+from walkoff.core.executionelements.condition import Condition
 
 logger = logging.getLogger(__name__)
 
 
 @total_ordering
-class Branch(ExecutionElement):
-    def __init__(self, source_uid, destination_uid, status='Success', conditions=None, priority=999, uid=None):
+class Branch(ExecutionElement, Device_Base):
+    __tablename__ = 'branch'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    workflow_id = Column(Integer, ForeignKey('workflow.id'))
+    source_id = Column(String(80), nullable=False)
+    destination_id = Column(String(80), nullable=False)
+    status = Column(String(80))
+    conditions = relationship('Condition', backref=backref('branch'), cascade='all, delete-orphan')
+    priority = Column(Integer)
+
+    def __init__(self, source_id, destination_id, status='Success', conditions=None, priority=999):
         """Initializes a new Branch object.
         
         Args:
-            source_uid (str): The UID of the source action that will be sending inputs to this Branch.
-            destination_uid (str): The UID of the destination action that will be returned if the conditions for this
+            source_id (str): The ID of the source action that will be sending inputs to this Branch.
+            destination_id (str): The ID of the destination action that will be returned if the conditions for this
                 Branch are met.
             status (str, optional): Optional field to keep track of the status of the Branch. Defaults to
                 "Success".
@@ -23,17 +37,25 @@ class Branch(ExecutionElement):
             priority (int, optional): Optional priority parameter to specify which Branch in the Workflow's
                 list of Branches should be executed if multiple have conditions resulting to True.
                 Defaults to 999 (lowest priority).
-            uid (str, optional): A universally unique identifier for this object. Created from uuid.uuid4() in Python.
         """
-        ExecutionElement.__init__(self, uid)
-        self.source_uid = source_uid
-        self.destination_uid = destination_uid
+        ExecutionElement.__init__(self)
+        self.source_id = source_id
+        self.destination_id = destination_id
         self.status = status
-        self.conditions = conditions if conditions is not None else []
         self.priority = priority
 
+        self.conditions = []
+        if conditions:
+            self.set_conditions(conditions)
+
+    def set_conditions(self, new_conditions):
+        new_condition_ids = set(new_conditions)
+        new_conditions = Condition.query.filter(Condition.id.in_(new_condition_ids)).all() if new_condition_ids else []
+
+        self.conditions[:] = new_conditions
+
     def __eq__(self, other):
-        return self.source_uid == other.source_uid and self.destination_uid == other.destination_uid and self.status == other.status \
+        return self.source_id == other.source_uid and self.destination_id == other.destination_uid and self.status == other.status \
                and set(self.conditions) == set(other.conditions)
 
     def __lt__(self, other):
@@ -54,7 +76,7 @@ class Branch(ExecutionElement):
             if all(condition.execute(data_in=data_in.result, accumulator=accumulator) for condition in self.conditions):
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.BranchTaken)
                 logger.debug('Branch is valid for input {0}'.format(data_in))
-                return self.destination_uid
+                return self.destination_id
             else:
                 logger.debug('Branch is not valid for input {0}'.format(data_in))
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.BranchNotTaken)

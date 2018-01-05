@@ -1,12 +1,39 @@
+import json
 import logging
 
+from sqlalchemy import Column, Integer, ForeignKey, String
+from sqlalchemy.types import TypeDecorator
+
+from walkoff.devicedb import Device_Base
 from walkoff.helpers import InvalidArgument
 from walkoff.core.representable import Representable
 
 logger = logging.getLogger(__name__)
 
 
-class Argument(Representable):
+class Json(TypeDecorator):
+    impl = String
+
+    def process_bind_param(self, value, dialect):
+        return json.dumps(value)
+
+    def process_result_value(self, value, dialect):
+        return json.loads(value)
+
+    def copy(self, **kw):
+        return None
+
+
+class Argument(Representable, Device_Base):
+    __tablename__ = 'argument'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    action_id = Column(Integer, ForeignKey('action.id'))
+    condition_id = Column(Integer, ForeignKey('condition.id'))
+    transform_id = Column(Integer, ForeignKey('transform.id'))
+    value = Column(String(255))
+    reference = Column(String(255))
+    selection = Column(Json(255))
+
     def __init__(self, name, value=None, reference=None, selection=None):
         """Initializes an Argument object.
 

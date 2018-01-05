@@ -3,24 +3,43 @@ import logging
 import threading
 import uuid
 
+from sqlalchemy import Column, Integer, ForeignKey, String, Boolean
+from sqlalchemy.orm import relationship, backref
+
 import walkoff.config.config
 from walkoff.appgateway import get_app_action, is_app_action_bound
 from walkoff.core import contextdecorator
 from walkoff.core.argument import Argument
 from walkoff.core.actionresult import ActionResult
+from walkoff.devicedb import Device_Base
 from walkoff.events import WalkoffEvent
 from walkoff.core.executionelements.executionelement import ExecutionElement
+from walkoff.core.executionelements.condition import Condition
 from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
 from walkoff.appgateway.validator import validate_app_action_parameters
 
 logger = logging.getLogger(__name__)
 
 
-class Action(ExecutionElement):
+class Action(ExecutionElement, Device_Base):
     _templatable = True
 
-    def __init__(self, app_name, action_name, name='', device_id=None, arguments=None, triggers=None, position=None,
-                 uid=None, templated=False, raw_representation=None):
+    __tablename__ = 'action'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    workflow_id = Column(Integer, ForeignKey('workflow.id'))
+    app_name = Column(String(80), nullable=False)
+    action_name = Column(String(80), nullable=False)
+    name = Column(String(80))
+    device_id = Column(Integer)
+    arguments = relationship('Argument', backref=backref('action'), cascade='all, delete-orphan')
+    triggers = relationship('Condition', backref=backref('action'), cascade='all, delete-orphan')
+    x_coordinate = Column(Integer)
+    y_coordinate = Column(Integer)
+    templated = Column(Boolean)
+    raw_representation = Column(String)
+
+    def __init__(self, app_name, action_name, name='', device_id=None, arguments=None, triggers=None, x_coordinate=None,
+                 y_coordinate=None, templated=False, raw_representation=None):
         """Initializes a new Action object. A Workflow has many actions that it executes.
 
         Args:
@@ -31,44 +50,64 @@ class Action(ExecutionElement):
                 to None.
             arguments ([Argument], optional): A list of Argument objects that are parameters to the action.
                 Defaults to None.
-            triggers (list[Flag], optional): A list of Flag objects for the Action. If a Action should wait for data
-                before continuing, then include these Trigger objects in the Action init. Defaults to None.
-            position (dict, optional): A dictionary with the x and y coordinates of the Action object. This is used
-                for UI display purposes. Defaults to None.
-            uid (str, optional): A universally unique identifier for this object.
-                Created from uuid.uuid4().hex in Python
+            triggers (list[Condition], optional): A list of Condition objects for the Action. If a Action should wait
+                for data before continuing, then include these Trigger objects in the Action init. Defaults to None.
+            x_coordinate(int, optional): X coordinate of the Action object, used for UI display purposes. Defaults
+                to None.
+            y_coordinate(int, optional): Y coordinate of the Action object, used for UI display purposes. Defaults
+                to None.
             templated (bool, optional): Whether or not the Action is templated. Used for Jinja templating.
             raw_representation (dict, optional): JSON representation of this object. Used for Jinja templating.
         """
-        ExecutionElement.__init__(self, uid)
+        ExecutionElement.__init__(self)
 
-        self.triggers = triggers if triggers is not None else []
-        self._incoming_data = None
-        self._event = threading.Event()
+        self.triggers = []
+        if triggers:
+            self.set_triggers(triggers)
 
         self.name = name
         self.device_id = device_id
         self.app_name = app_name
         self.action_name = action_name
-        self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
 
+        # TODO: Must be reinitialized when the worker picks this up
+        self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
         if is_app_action_bound(self.app_name, self._run) and not self.device_id:
             raise InvalidArgument(
                 "Cannot initialize Action {}. App action is bound but no device ID was provided.".format(self.name))
-
         self._action_executable = get_app_action(self.app_name, self._run)
 
-        arguments = {argument.name: argument for argument in arguments} if arguments is not None else {}
+        args_dict = {argument.name: argument for argument in arguments} if arguments is not None else {}
 
         self.templated = templated
         if not self.templated:
-            validate_app_action_parameters(self._arguments_api, arguments, self.app_name, self.action_name)
-        self.arguments = arguments
-        self.position = position if position is not None else {}
+            validate_app_action_parameters(self._arguments_api, args_dict, self.app_name, self.action_name)
 
+        self.arguments = []
+        if arguments:
+            self.set_args(arguments)
+
+        self.x_coordinate = x_coordinate
+        self.y_coordinate = y_coordinate
+
+        # TODO: Initialize these to None
+        self._incoming_data = None
+        self._event = threading.Event()
         self._output = None
         self._raw_representation = raw_representation if raw_representation is not None else {}
         self._execution_uid = 'default'
+
+    def set_triggers(self, new_triggers):
+        new_trigger_ids = set(new_triggers)
+        new_triggers = Condition.query.filter(Condition.id.in_(new_trigger_ids)).all() if new_trigger_ids else []
+
+        self.triggers[:] = new_triggers
+
+    def set_args(self, new_arguments):
+        new_argument_ids = set(new_arguments)
+        new_arguments = Argument.query.filter(Argument.id.in_(new_argument_ids)).all() if new_argument_ids else []
+
+        self.arguments[:] = new_arguments
 
     def get_output(self):
         """Gets the output of an Action (the result)

@@ -229,7 +229,7 @@ class TestWorkflowServer(ServerTestCase):
         initial_actions.append(added_action)
 
         action_uid = "e1db14e0cc8d4179aff5f1080a2b7e91"
-        added_branch = Branch(source_uid=action_uid, destination_uid="2").read()
+        added_branch = Branch(source_id=action_uid, destination_id="2").read()
 
         data = {"actions": initial_actions, "branches": [added_branch]}
         self.post_with_status_check('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
