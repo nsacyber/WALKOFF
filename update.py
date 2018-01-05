@@ -115,7 +115,8 @@ def migrate_workflows(flagged, inter, target):
 
     mode, tgt_version = validate_version(target)
     while inter and (mode is None):
-        target = input("Enter the version target, e.g. 'u0.5.2' to upgrade to 0.5.2 or 'd0.5.0' to downgrade to 0.5.0: ")
+        target = input(
+            "Enter the version target, e.g. 'u0.5.2' to upgrade to 0.5.2 or 'd0.5.0' to downgrade to 0.5.0: ")
         mode, tgt_version = validate_version(target)
 
     print("{} workflows to version {}".format(mode, tgt_version))
@@ -133,7 +134,8 @@ def alembic(flagged, inter):
             names = ["walkoff"]
             for name in names:
                 try:
-                    r = (subprocess.check_output(["alembic", "--name", name, "current"], stderr=subprocess.STDOUT, universal_newlines=True))
+                    r = (subprocess.check_output(["alembic", "--name", name, "current"], stderr=subprocess.STDOUT,
+                                                 universal_newlines=True))
                     if "(head)" in r:
                         print("Already up to date, no alembic upgrade needed.")
                     else:
@@ -153,44 +155,41 @@ def alembic(flagged, inter):
     print("Could not install alembic, are you root/administrator?")
 
 
-def main():
-
+def create_cli_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--interactive",
                         help="Interactively prompt 'yes or no' for each choice.",
                         action="store_true")
-
     parser.add_argument("-e", "--everything",
                         help="Equivalent to using all flags",
                         action="store_true")
-
     parser.add_argument("-a", "--archive",
                         help="Creates a backup archive of the entire WALKOFF directory in backups/",
                         action="store_true")
-
     parser.add_argument("-p", "--pull",
                         help="Performs a 'git pull' from the currently set branch",
                         action="store_true")
-
     parser.add_argument("-c", "--clean",
                         help="Removes all .pyc and .pyo cache files.",
                         action="store_true")
-
     parser.add_argument("-s", "--setup",
                         help="Performs WALKOFF setup. Requires root/administrator privileges.",
                         action="store_true")
-
     parser.add_argument("-ma", "--migrateapps",
                         help="Runs app API migration script. Not reversible at this time.",
                         action="store_true")
-
     parser.add_argument("-mw", "--migrateworkflows",
                         help="Runs workflow migration script to upgrade/downgrade to the specified version,"
                              " e.g. 'u0.5.2' to upgrade to 0.5.2 or 'd0.5.0' to downgrade to 0.5.0")
-
     parser.add_argument("-md", "--migratedatabase",
                         help="Runs alembic database migration.",
                         action="store_true")
+    return parser
+
+
+def main():
+
+    parser = create_cli_parser()
 
     if not len(sys.argv) > 1:
         parser.print_help()

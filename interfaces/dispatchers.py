@@ -308,12 +308,15 @@ class EventDispatcher(object):
         if not entry_ids:
             raise ValueError('Either sender_uid or name must specified')
         for entry_id in entry_ids:
-            if entry_id not in self._router:
-                self._router[entry_id] = {}
-            for event in events:
-                if event not in self._router[entry_id]:
-                    self._router[entry_id][event] = CallbackContainer()
-                self._router[entry_id][event].register(func, weak=weak)
+            self.__register_entry(entry_id, events, func, weak)
+
+    def __register_entry(self, entry_id, events, func, weak):
+        if entry_id not in self._router:
+            self._router[entry_id] = {}
+        for event in events:
+            if event not in self._router[entry_id]:
+                self._router[entry_id][event] = CallbackContainer()
+            self._router[entry_id][event].register(func, weak=weak)
 
     def dispatch(self, event_, data):
         """Dispatches an event to all its registered callbacks
@@ -325,21 +328,24 @@ class EventDispatcher(object):
             event_ (WalkoffEvent): The event to dispatch
             data (dict): The data to send to all the events
         """
+        sender_name, sender_uid = self.__get_sender_ids(data, event_)
+        callbacks = self._get_callbacks(sender_uid, sender_name, event_)
+        for func in callbacks:
+            try:
+                args = (data,) if event_.event_type != EventType.controller else tuple()
+                func(*args)
+            except Exception as e:
+                _logger.exception('Error calling interface event handler: {}'.format(e))
+
+    @staticmethod
+    def __get_sender_ids(data, event_):
         if event_.event_type != EventType.controller:
             sender_uid = data['sender_uid']
             sender_name = data['sender_name'] if 'sender_name' in data else None
         else:
             sender_uid = EventType.controller.name
             sender_name = None
-        callbacks = self._get_callbacks(sender_uid, sender_name, event_)
-        for func in callbacks:
-            try:
-                if event_.event_type != EventType.controller:
-                    func(data)
-                else:
-                    func()
-            except Exception as e:
-                _logger.exception('Error calling interface event handler: {}'.format(e))
+        return sender_name, sender_uid
 
     def _get_callbacks(self, sender_uid, sender_name, event):
         """Gets all the callbacks associated with a given sender UID, name, and event
@@ -353,12 +359,14 @@ class EventDispatcher(object):
             set(func): The callbacks registered
         """
         all_callbacks = set()
-        if sender_uid in self._router and event in self._router[sender_uid]:
-            all_callbacks |= set(self._router[sender_uid][event])
+        for sender_id in (sender_uid, sender_name):
+            if self.__is_event_registered_to_sender(sender_id, event):
+                all_callbacks |= set(self._router[sender_id][event])
 
-        if sender_name is not None and sender_name in self._router and event in self._router[sender_name]:
-            all_callbacks |= set(self._router[sender_name][event])
         return all_callbacks
+
+    def __is_event_registered_to_sender(self, sender_id, event):
+        return sender_id is not None and sender_id in self._router and event in self._router[sender_id]
 
     def is_registered(self, entry, event, func):
         """Is a function registered for a given entry ID and event?
