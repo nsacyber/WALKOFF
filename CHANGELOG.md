@@ -21,6 +21,8 @@ Multithreaded workers for increased asynchronous workflow execution
 ### Fixed
 * Bug where roles couldn't be assigned to a user on creation
 
+### Contributor
+* Added AppVeyor to test Walkoff on Windows
 
 ## [0.6.1]
 ###### 2018-01-03
@@ -70,6 +72,7 @@ Introducing roles, messages, and notifications
   * The default return code for an action can be specified with
     `default_return: YourReturnHere`
 * Internal ZeroMQ addresses can be configured through the UI
+* Added this change log
 
 ### Changed
 * Significant repository restructure
