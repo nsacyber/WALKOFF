@@ -47,6 +47,8 @@ tags:
     description: Serves up client pages
   - name: Message
     description: User messages
+  - name: Resources
+    description: System Resources
 
 schemes:
   - http
@@ -64,6 +66,7 @@ paths:
   $ref: ./metrics.yaml
   $ref: ./playbooks.yaml
   $ref: ./roles.yaml
+  $ref: ./resources.yaml
   $ref: ./scheduler.yaml
   $ref: ./triggers.yaml
   $ref: ./users.yaml
@@ -95,6 +98,7 @@ definitions:
     $ref: ./objects/metrics.yaml
     $ref: ./objects/message.yaml
     $ref: ./objects/playbooks.yaml
+    $ref: ./objects/resources.yaml
     $ref: ./objects/roles.yaml
     $ref: ./objects/scheduler.yaml
     $ref: ./objects/users.yaml

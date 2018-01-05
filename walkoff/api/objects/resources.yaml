@@ -1,0 +1,8 @@
+ResourceUsageDetails:
+  type: object
+  required: [usage_data]
+  properties:
+    usage_data:
+      description: System Usage Data
+      type: string
+      readOnly: true

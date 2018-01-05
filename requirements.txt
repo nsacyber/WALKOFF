@@ -15,4 +15,5 @@ enum34
 futures
 semver
 jsonschema
+psutil
 six >= 1.10.0

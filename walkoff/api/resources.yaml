@@ -1,0 +1,14 @@
+/api/resources:
+  get:
+    tags:
+      - Resources
+    summary: Get system resource usage
+    description: ''
+    operationId: walkoff.server.endpoints.resources.get_resource_usage
+    produces:
+      - application/json
+    responses:
+      '200':
+        description: Success
+        schema:
+          $ref: '#/definitions/ResourceUsageDetails'
