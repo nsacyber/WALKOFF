@@ -1,5 +1,6 @@
 Linux [![Build Status](https://travis-ci.org/iadgov/WALKOFF.svg?branch=master)](https://travis-ci.org/iadgov/WALKOFF) Windows [![Build status](https://ci.appveyor.com/api/projects/status/wsuo57tb1u593hox/branch/development?svg=true)](https://ci.appveyor.com/project/JustinTervala/walkoff-u1gc1/branch/master)
-[![Maintainability](https://api.codeclimate.com/v1/badges/330249e13845a07a69a2/maintainability)](https://codeclimate.com/github/iadgov/WALKOFF/maintainability)
+[![Maintainability](https://api.codeclimate.com/v1/badges/330249e13845a07a69a2/maintainability)](https://codeclimate.com/github/iadgov/WALKOFF/maintainability)[![GitHub (pre-)release](https://img.shields.io/github/release/iadgov/WALKOFF/all.svg?style=flat)](release)
+
 
 <img src="https://iadgov.github.io/WALKOFF/files/images/flyingLogoWithTextSmall.png">
 
