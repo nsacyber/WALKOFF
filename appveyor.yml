@@ -1,3 +1,12 @@
+version: 0.6.2.{build}
+
+branches:
+  only:
+    - master
+    - development
+
+skip_tags: true
+
 environment:
   matrix:
     - PYTHON: "C:\\Python27"
