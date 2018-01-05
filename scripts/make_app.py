@@ -34,36 +34,38 @@ def make_template(app_name):
         os.makedirs(new_app_dir)
         for (dirpath, dirnames, filenames) in walk(skeleton_app_dir):
             if '__pycache__' not in dirpath:
-                for fn in filenames:
-                    if dirpath == skeleton_app_dir:
-                        write_fp = new_app_dir + '/' + fn
-                    else:
-                        sub_dir = dirpath.replace(skeleton_app_dir, new_app_dir)
-                        if not os.path.exists(sub_dir):
-                            os.makedirs(sub_dir)
-                        write_fp = sub_dir + '/' + fn
-                    with open(dirpath + '/' + fn) as read_from_file:
-                        with open(write_fp, 'w') as write_to_file:
-                            for line in read_from_file:
-                                if 'SkeletonApp' in line:
-                                    line = line.replace('SkeletonApp', app_name)
-                                elif 'Skeleton App' in line:
-                                    line = line.replace('Skeleton App', _separate_camelcase(app_name))
-                                write_to_file.write(line)
+                for filename in filenames:
+                    write_fp = get_write_filepath(dirpath, filename, new_app_dir, skeleton_app_dir)
+                    write_app_to_file(app_name, dirpath, filename, write_fp)
         print('Finished generating the template at', new_app_dir)
     else:
         print('Template already exist at', new_app_dir)
 
 
-def generate_methods(input_fp):
-    actual_fp = ''
-    if input_fp.count('/') > 0:
-        if os.path.isfile(input_fp):
-            actual_fp = input_fp
+def write_app_to_file(app_name, dirpath, filename, write_fp):
+    with open(dirpath + '/' + filename) as read_from_file:
+        with open(write_fp, 'w') as write_to_file:
+            for line in read_from_file:
+                if 'SkeletonApp' in line:
+                    line = line.replace('SkeletonApp', app_name)
+                elif 'Skeleton App' in line:
+                    line = line.replace('Skeleton App', _separate_camelcase(app_name))
+                write_to_file.write(line)
+
+
+def get_write_filepath(dirpath, filename, new_app_dir, skeleton_app_dir):
+    if dirpath == skeleton_app_dir:
+        write_fp = new_app_dir + '/' + filename
     else:
-        for (dirpath, dirnames, filenames) in walk(main_dir):
-            if input_fp in filenames:
-                actual_fp = dirpath + '/' + input_fp
+        sub_dir = dirpath.replace(skeleton_app_dir, new_app_dir)
+        if not os.path.exists(sub_dir):
+            os.makedirs(sub_dir)
+        write_fp = sub_dir + '/' + filename
+    return write_fp
+
+
+def generate_methods(input_fp):
+    actual_fp = get_actual_filepath(input_fp)
     if actual_fp == '':
         print('Unable to find file. Please check that the yaml file exist at', input_fp)
         return
@@ -89,34 +91,8 @@ def generate_methods(input_fp):
         write_to_file.writelines(init_lines[:max(loc for loc, val in enumerate(init_lines) if val == '\n') + 1])
     with open(main_py, 'a') as write_to_file:
         actions = yaml_dict['actions']
-        for action in actions:
-            action_val = actions[action]
-            lines = []
-            if 'description' in action_val:
-                lines.append("'''")
-                lines.append(action_val['description'])
-            parameters_args = ''
-            if 'parameters' in action_val:
-                parameters0 = action_val['parameters'][0]
-                lines.append('Inputs:')
-                parameters_str = '{0} ({1}): {2}'.format(parameters0['name'], parameters0['type'],
-                                                         parameters0['description'])
-                parameters_args = ', ' + parameters0['name']
-                required_val = parameters0['required']
-                if not required_val:
-                    parameters_str += ' (Optional)'
-                    parameters_args += '=None'
-                lines.append(parameters_str)
-            if 'returns' in action_val:
-                success_val = action_val['returns']['Success']
-                lines.append('Output:')
-                lines.append('{0}: {1}'.format(success_val['schema']['type'], success_val['description']))
-                lines.append("'''")
-            lines.append('@action')
-            lines.append('def {0}(self{1}):'.format(action.replace(' ', '_'), parameters_args))
-            lines.append('\tpass')
-            lines.append('\n')
-            write_to_file.writelines('\n'.join(['\t' + line for line in lines]))
+        for action, action_val in actions.items():
+            write_action(action, action_val, write_to_file)
     cur_fp = new_app_dir + '/api.yaml'
     if actual_fp != cur_fp:
         with open(actual_fp) as yaml_file:
@@ -125,6 +101,56 @@ def generate_methods(input_fp):
                     write_to_file.write(line)
         print('Updated', cur_fp)
     print('Successfully generated methods for {0} at {1}'.format(_separate_camelcase(app_name), new_app_dir))
+
+
+def get_actual_filepath(input_fp):
+    actual_fp = ''
+    if input_fp.count('/') > 0:
+        if os.path.isfile(input_fp):
+            actual_fp = input_fp
+    else:
+        for (dirpath, dirnames, filenames) in walk(main_dir):
+            if input_fp in filenames:
+                actual_fp = dirpath + '/' + input_fp
+    return actual_fp
+
+
+def write_action(action, action_val, write_to_file):
+    lines = []
+    if 'description' in action_val:
+        lines.append("'''")
+        lines.append(action_val['description'])
+    parameters_args = ''
+    if 'parameters' in action_val:
+        parameters_args = add_parameters(action_val, lines)
+    if 'returns' in action_val:
+        add_returns(action_val, lines)
+    lines.append('@action')
+    lines.append('def {0}(self{1}):'.format(action.replace(' ', '_'), parameters_args))
+    lines.append('\tpass')
+    lines.append('\n')
+    write_to_file.writelines('\n'.join(['\t' + line for line in lines]))
+
+
+def add_returns(action_val, lines):
+    success_val = action_val['returns']['Success']
+    lines.append('Output:')
+    lines.append('{0}: {1}'.format(success_val['schema']['type'], success_val['description']))
+    lines.append("'''")
+
+
+def add_parameters(action_val, lines):
+    parameters0 = action_val['parameters'][0]
+    lines.append('Inputs:')
+    parameters_str = '{0} ({1}): {2}'.format(parameters0['name'], parameters0['type'],
+                                             parameters0['description'])
+    parameters_args = ', ' + parameters0['name']
+    required_val = parameters0['required']
+    if not required_val:
+        parameters_str += ' (Optional)'
+        parameters_args += '=None'
+    lines.append(parameters_str)
+    return parameters_args
 
 
 help_msg_app_name = 'make template for app with name provided by app_name. The new app is stored under the "apps" ' \
