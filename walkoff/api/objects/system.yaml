@@ -1,0 +1,102 @@
+SystemUsageDetails:
+  type: object
+  required: [cpu, memory, disk, net]
+  properties:
+    cpu:
+      $ref: '#/definitions/CpuUsageDetails'
+    memory:
+      $ref: '#/definitions/MemoryUsageDetails'
+    disk:
+      $ref: '#/definitions/DiskUsageDetails'
+    net:
+      $ref: '#/definitions/NetworkUsageDetails'
+
+CpuUsageDetails:
+  description: Measurements of CPU usage
+  type: object
+  required: [percents]
+  properties:
+    percents:
+      type: array
+      items:
+        type: number
+      description: Percentage usage by CPU
+      readOnly: true
+
+MemoryUsageDetails:
+  description: Meaurements of memory usage
+  type: object
+  required: [total, available, percent]
+  properties:
+    total:
+      description: Total physical memory
+      type: string
+      readOnly: true
+    available:
+      description: Amount of memory that can be given instantly to a process without going to swap space
+      type: string
+      readOnly: true
+    percent:
+      description: Percentage of memory free
+      type: number
+      readOnly: true
+
+DiskUsageDetails:
+  description: Measurements of disk usage
+  type: object
+  required: [total, used, free, percent]
+  properties:
+    total:
+      description: Total disk space used
+      type: string
+      readOnly: true
+    used:
+      description: Disk space used
+      type: string
+      readOnly: true
+    free:
+      description: Disk space free
+      type: string
+      readOnly: true
+    percent:
+      description: Percentage of disk space used
+      type: number
+      readOnly: true
+
+NetworkUsageDetails:
+  description: Measurements of network usage
+  type: object
+  required: [bytes_sent, bytes_received, packets_sent, packets_received, error_in, error_out, dropped_in, dropped_out]
+  properties:
+    bytes_sent:
+      description: Bytes sent over the network
+      type: string
+      readOnly: true
+    bytes_received:
+      description: Bytes received over the network
+      type: string
+      readOnly: true
+    packets_sent:
+      description: Packets sent
+      type: integer
+      readOnly: true
+    packets_received:
+      description: Packets received
+      type: integer
+      readOnly: true
+    error_in:
+      description: Number of errors while receiving
+      type: integer
+      readOnly: true
+    error_out:
+      description: Number of errors while sending
+      type: integer
+      readOnly: true
+    dropped_in:
+      description: Number of incoming packets dropped
+      type: integer
+      readOnly: true
+    dropped_out:
+      description: Number of outgoing packets dropped
+      type: integer
+      readOnly: true
