@@ -30,7 +30,7 @@ def create_user():
         if not User.query.filter_by(username=username).first():
             user = add_user(username=username, password=data['password'])
 
-            if 'role_ids' in data or 'active' in data:
+            if 'roles' in data or 'active' in data:
                 role_update_user_fields(data, user)
 
             db.session.commit()
@@ -78,8 +78,8 @@ def update_user():
 
 @admin_required
 def role_update_user_fields(data, user, update=False):
-    if 'role_ids' in data:
-        user.set_roles(data['role_ids'])
+    if 'roles' in data:
+        user.set_roles(data['roles'])
     if 'active' in data:
         user.active = data['active']
     if update:
