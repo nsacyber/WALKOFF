@@ -10,6 +10,10 @@ Multithreaded workers for increased asynchronous workflow execution
 ### Added
 * Multiple workflows can be executed on each worker process
 * Decorator factory to simplify endpoint logic
+* Endpoint to get system stats
+
+### Fixed
+* Bug where roles couldn't be assigned to a user on creation
 
 
 ## [0.6.1]
