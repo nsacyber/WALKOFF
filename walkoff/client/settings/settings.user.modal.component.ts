@@ -45,7 +45,8 @@ export class SettingsUserModalComponent {
 			closeOnSelect: false,
 		};
 
-		this.roleSelectInitialValue = JSON.parse(JSON.stringify(this.workingUser.role_ids));
+		if (!this.workingUser.roles) { this.workingUser.roles = []; }
+		this.roleSelectInitialValue = JSON.parse(JSON.stringify(this.workingUser.roles));
 	}
 
 	/**
@@ -54,7 +55,7 @@ export class SettingsUserModalComponent {
 	 */
 	roleSelectChange($event: any): void {
 		// Convert strings to numbers here
-		this.workingUser.role_ids = $event.value.map((id: string) => +id);
+		this.workingUser.roles = $event.value.map((id: string) => +id);
 	}
 
 	submit(): void {
@@ -64,9 +65,8 @@ export class SettingsUserModalComponent {
 			return;
 		}
 
-		const toSubmit = WorkingUser.toUser(this.workingUser);
-		delete toSubmit.roles;
-
+		const toSubmit = WorkingUser.toSave(this.workingUser);
+		
 		//If user has an ID, user already exists, call update
 		if (toSubmit.id) {
 			this.settingsService

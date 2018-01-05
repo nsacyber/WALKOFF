@@ -1,17 +1,16 @@
 import { User } from './user';
-import { Role } from './role';
 
 export class WorkingUser {
-	static toUser(workingUser: WorkingUser): User {
+	static toSave(workingUser: WorkingUser): User {
 		const returnUser = new User();
 
 		returnUser.id = workingUser.id;
 		returnUser.username = workingUser.username;
-		returnUser.roles = workingUser.roles;
-		returnUser.role_ids = workingUser.role_ids;
+		// TODO: currently the API requires roles, not role_ids. Update this when we change the API to role_ids
+		returnUser.roles = (workingUser.roles as any);
+		// returnUser.role_ids = workingUser.role_ids;
 		returnUser.active = workingUser.active;
 
-		//TODO: update once we merge the pw-fix branch in, need to submit current password as well
 		returnUser.old_password = workingUser.currentPassword;
 		returnUser.password = workingUser.newPassword;
 		return returnUser;
@@ -19,8 +18,8 @@ export class WorkingUser {
 
 	id: number;
 	username: string;
-	roles: Role[] = [];
-	role_ids: number[] = [];
+	roles: number[] = [];
+	// role_ids: number[] = [];
 	active: boolean;
 	currentPassword: string;
 	newPassword: string;
