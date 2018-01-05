@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/iadgov/WALKOFF.svg?branch=master)](https://travis-ci.org/iadgov/WALKOFF)
+Linux [![Build Status](https://travis-ci.org/iadgov/WALKOFF.svg?branch=master)](https://travis-ci.org/iadgov/WALKOFF) Windows [![Build status](https://ci.appveyor.com/api/projects/status/wsuo57tb1u593hox/branch/development?svg=true)](https://ci.appveyor.com/project/JustinTervala/walkoff-u1gc1/branch/master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/330249e13845a07a69a2/maintainability)](https://codeclimate.com/github/iadgov/WALKOFF/maintainability)
 
 <img src="https://iadgov.github.io/WALKOFF/files/images/flyingLogoWithTextSmall.png">
@@ -136,17 +136,20 @@ considered permanent*
 An update script, `update.py`, is provided to update the repo to the most
 recent release. This script uses SqlAlchemy-Alembic to update database schemas
 and custom upgrade scripts to update the workflow JSON files. To run this
-script in interactive mode run `python update.py -i`. Other options can be viewed using `python update.py --help`. The most common usage is `python update.py -pcs` for pull, clean, and setup.
+script in interactive mode run `python update.py -i`. Other options can be
+viewed using `python update.py --help`. The most common usage is
+`python update.py -pcs` for pull, clean, and setup.
 
 ## Stability and Versioning
 
 WALKOFF uses Semantic Versioning. Until the full feature set is developed, the
 versions will begin with `0.x.y`. The `x` version will be updated when a
 breaking change is made, a breaking change being defined as one which modifies
-either the REST API or API used to develop and specify the apps is modified in
-a way which breaks backward compatibility. No guarantees are yet made for the
-stability of the backend Python modules. The `y` version will be updated for
-patches, and bug fixes.
+either the REST API or the API used to develop and specify the apps is modified
+in a way which breaks backward compatibility. No guarantees are yet made for
+the stability of the backend Python modules. The `y` version will be updated
+for patches, and bug fixes. The REST API will have an independent versioning
+system which may not follow Walkoff's version number.
 
 ## Contributions
 

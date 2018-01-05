@@ -4,7 +4,7 @@ info:
     An active cyber defense development framework enabling orchestration
     capabilities to be written once and deployed across WALKOFF-enabled
     orchestration tools. https://iadgov.github.io/WALKOFF/
-  version: 0.6.0
+  version: 0.6.1
   title: WALKOFF
   contact:
     email: walkoff@nsa.gov
@@ -47,6 +47,8 @@ tags:
     description: Serves up client pages
   - name: Message
     description: User messages
+  - name: System
+    description: System Resources
 
 schemes:
   - http
@@ -65,6 +67,7 @@ paths:
   $ref: ./playbooks.yaml
   $ref: ./roles.yaml
   $ref: ./scheduler.yaml
+  $ref: ./system.yaml
   $ref: ./triggers.yaml
   $ref: ./users.yaml
   $ref: ./workflowresult.yaml
@@ -97,6 +100,7 @@ definitions:
     $ref: ./objects/playbooks.yaml
     $ref: ./objects/roles.yaml
     $ref: ./objects/scheduler.yaml
+    $ref: ./objects/system.yaml
     $ref: ./objects/users.yaml
     $ref: ./objects/workflowresult.yaml
 

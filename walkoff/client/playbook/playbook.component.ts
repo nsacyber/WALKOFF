@@ -348,18 +348,21 @@ export class PlaybookComponent {
 
 							const sourceAction = self.loadedWorkflow.actions.find(a => a.uid === sourceUid);
 							const sourceActionApi = self._getAction(sourceAction.app_name, sourceAction.action_name);
-							// Add our branch to the actual loadedWorkflow model
-							let default_status = ''
+
+							// Get our default status either from the default return if specified, or the first return status
+							let defaultStatus = '';
 							if (sourceActionApi.default_return) {
-							    default_status = sourceActionApi.default_return;
+								defaultStatus = sourceActionApi.default_return;
 							} else if (sourceActionApi.returns.length) {
-                                default_status = sourceActionApi.returns[0].status;
-                            }
+								defaultStatus = sourceActionApi.returns[0].status;
+							}
+
+							// Add our branch to the actual loadedWorkflow model
 							self.loadedWorkflow.branches.push({
 								uid,
 								source_uid: sourceUid,
 								destination_uid: destinationUid,
-								status: default_status,
+								status: defaultStatus,
 								priority: 1,
 								conditions: [],
 							});

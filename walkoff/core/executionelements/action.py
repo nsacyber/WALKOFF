@@ -169,23 +169,25 @@ class Action(ExecutionElement):
             else:
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionSuccess,
                                                        data=result.as_json())
-        except InvalidArgument as e:
-            formatted_error = format_exception_message(e)
-            logger.error('Error calling action {0}. Error: {1}'.format(self.name, formatted_error))
-            # TODO: Should this event return the error?
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionArgumentsInvalid)
-            self._output = ActionResult('error: {0}'.format(formatted_error), 'InvalidArguments')
         except Exception as e:
-            formatted_error = format_exception_message(e)
-            logger.exception('Error calling action {0}. Error: {1}'.format(self.name, formatted_error))
-            self._output = ActionResult('error: {0}'.format(formatted_error), 'UnhandledException')
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionError,
-                                                   data=self._output.as_json())
+            self.__handle_execution_error(e)
         else:
             self._output = result
             logger.debug(
                 'Action {0}-{1} (uid {2}) executed successfully'.format(self.app_name, self.action_name, self.uid))
             return result
+
+    def __handle_execution_error(self, e):
+        formatted_error = format_exception_message(e)
+        if isinstance(e, InvalidArgument):
+            event = WalkoffEvent.ActionArgumentsInvalid
+            return_type = 'InvalidArguments'
+        else:
+            event = WalkoffEvent.ActionExecutionError
+            return_type = 'UnhandledException'
+        logger.error('Error calling action {0}. Error: {1}'.format(self.name, formatted_error))
+        self._output = ActionResult('error: {0}'.format(formatted_error), return_type)
+        WalkoffEvent.CommonWorkflowSignal.send(self, event=event, data=self._output.as_json())
 
     def _wait_for_trigger(self, accumulator):
         while True:
@@ -198,17 +200,19 @@ class Action(ExecutionElement):
             self._event.clear()
 
             if all(condition.execute(data_in=data_in, accumulator=accumulator) for condition in self.triggers):
-                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionTaken)
-                logger.debug('Trigger is valid for input {0}'.format(data_in))
-                accumulator[self.name] = data_in
-
-                arguments = data['arguments'] if 'arguments' in data else []
-                if arguments:
-                    new_args = {}
-                    for argument in arguments:
-                        new_args[argument.name] = argument
-                    self.arguments.update(new_args)
+                self.__accept_trigger(accumulator, data, data_in)
                 break
             else:
                 logger.debug('Trigger is not valid for input {0}'.format(data_in))
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionNotTaken)
+
+    def __accept_trigger(self, accumulator, data, data_in):
+        WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionTaken)
+        logger.debug('Trigger is valid for input {0}'.format(data_in))
+        accumulator[self.name] = data_in
+        arguments = data['arguments'] if 'arguments' in data else []
+        if arguments:
+            new_args = {}
+            for argument in arguments:
+                new_args[argument.name] = argument
+            self.arguments.update(new_args)

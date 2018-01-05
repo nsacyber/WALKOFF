@@ -24,6 +24,8 @@ export class Configuration {
 			zmq_requests_address: 'tcp://127.0.0.1:5555',
 			zmq_results_address: 'tcp://127.0.0.1:5556',
 			zmq_communication_address: 'tcp://127.0.0.1:5557',
+			number_processes: 4,
+			number_threads_per_process: 3,
 		};
 	}
 
@@ -50,4 +52,6 @@ export class Configuration {
 	zmq_requests_address: string;
 	zmq_results_address: string;
 	zmq_communication_address: string;
+	number_processes: number;
+	number_threads_per_process: number;
 }

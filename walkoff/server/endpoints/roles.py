@@ -6,6 +6,10 @@ from walkoff.database.role import Role
 from walkoff.server.extensions import db
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions, admin_required
+from walkoff.server.decorators import with_resource_factory
+
+
+with_role = with_resource_factory('role', lambda role_id: Role.query.filter_by(id=role_id).first())
 
 
 def read_all_roles():
@@ -44,13 +48,9 @@ def create_role():
 def read_role(role_id):
     @jwt_required
     @admin_required
-    def __func():
-        role = Role.query.filter_by(id=role_id).first()
-        if role:
-            return role.as_json(), SUCCESS
-        else:
-            current_app.logger.error('Cannot display role {0}. Role does not exist.'.format(role_id))
-            return {"error": "Role does not exist."}, OBJECT_DNE_ERROR
+    @with_role('read', role_id)
+    def __func(role):
+        return role.as_json(), SUCCESS
 
     return __func()
 
@@ -58,26 +58,22 @@ def read_role(role_id):
 def update_role():
     @jwt_required
     @admin_required
-    def __func():
+    @with_role('update', request.get_json()['id'])
+    def __func(role):
         json_data = request.get_json()
-        role = Role.query.filter_by(id=json_data['id']).first()
-        if role is not None:
-            if 'name' in json_data:
-                new_name = json_data['name']
-                role_db = Role.query.filter_by(name=new_name).first()
-                if role_db is None or role_db.id == json_data['id']:
-                    role.name = new_name
-            if 'description' in json_data:
-                role.description = json_data['description']
-            if 'resources' in json_data:
-                resources = json_data['resources']
-                role.set_resources(resources)
-            db.session.commit()
-            current_app.logger.info('Edited role {0} to {1}'.format(json_data['id'], json_data))
-            return role.as_json(), SUCCESS
-        else:
-            current_app.logger.error('Cannot edit role. Role does not exist.')
-            return {"error": "Role does not exist."}, OBJECT_DNE_ERROR
+        if 'name' in json_data:
+            new_name = json_data['name']
+            role_db = Role.query.filter_by(name=new_name).first()
+            if role_db is None or role_db.id == json_data['id']:
+                role.name = new_name
+        if 'description' in json_data:
+            role.description = json_data['description']
+        if 'resources' in json_data:
+            resources = json_data['resources']
+            role.set_resources(resources)
+        db.session.commit()
+        current_app.logger.info('Edited role {0} to {1}'.format(json_data['id'], json_data))
+        return role.as_json(), SUCCESS
 
     return __func()
 
@@ -85,15 +81,11 @@ def update_role():
 def delete_role(role_id):
     @jwt_required
     @admin_required
-    def __func():
-        role = Role.query.filter_by(id=role_id).first()
-        if role:
-            clear_resources_for_role(role.name)
-            db.session.delete(role)
-            return {}, SUCCESS
-        else:
-            current_app.logger.error('Cannot delete role {0}. Role does not exist.'.format(role_id))
-            return {"error": "Role does not exist."}, OBJECT_DNE_ERROR
+    @with_role('delete', role_id)
+    def __func(role):
+        clear_resources_for_role(role.name)
+        db.session.delete(role)
+        return {}, SUCCESS
 
     return __func()
 

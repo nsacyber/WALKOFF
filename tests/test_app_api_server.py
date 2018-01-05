@@ -99,14 +99,16 @@ class TestAppApiServerFuncs(ServerTestCase):
     def test_format_device_api(self):
         device_api = {'description': 'Something',
                       'fields': [
-                          {'name': 'username', 'placeholder': 'user', 'type': 'string', 'required': True},
+                          {'name': 'username', 'placeholder': 'user', 'type': 'string', 'required': True,
+                           'description': 'something'},
                           {'name': 'password', 'placeholder': 'pass', 'type': 'string', 'required': True, 'encrypted':
                               True, 'minimumLength': 6}]}
         formatted = format_device_api_full(device_api, 'TestDev')
         expected = {'description': 'Something',
                     'name': 'TestDev',
                     'fields': [
-                        {'name': 'username', 'placeholder': 'user', 'required': True, 'schema': {'type': 'string'}},
+                        {'name': 'username', 'placeholder': 'user', 'required': True, 'schema': {'type': 'string'},
+                         'description': 'something'},
                         {'name': 'password', 'placeholder': 'pass', 'encrypted': True, 'required': True,
                          'schema': {'type': 'string', 'minimumLength': 6}}]}
         self.assertSetEqual(set(formatted.keys()), set(expected.keys()))

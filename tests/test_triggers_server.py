@@ -1,5 +1,7 @@
 import json
 import socket
+import threading
+import time
 
 import gevent
 from gevent import monkey
@@ -23,7 +25,7 @@ class TestTriggersServer(ServerTestCase):
     patch = False
 
     def setUp(self):
-        monkey.patch_socket()
+        #monkey.patch_socket()
         walkoff.case.subscription.subscriptions = {}
         case_database.initialize()
 
@@ -33,7 +35,7 @@ class TestTriggersServer(ServerTestCase):
         for case in case_database.case_db.session.query(case_database.Case).all():
             case_database.case_db.session.delete(case)
         case_database.case_db.session.commit()
-        reload(socket)
+        #reload(socket)
 
     def test_trigger_multiple_workflows(self):
 
@@ -57,7 +59,8 @@ class TestTriggersServer(ServerTestCase):
         result = {"result": 0,
                   "num_trigs": 0}
 
-        def gevent_wait_thread():
+        def wait_thread():
+            time.sleep(0.1)
             execd_ids = set([])
             timeout = 0
             threshold = 5
@@ -66,14 +69,14 @@ class TestTriggersServer(ServerTestCase):
                                                    data=json.dumps(data),
                                                    status_code=SUCCESS, content_type='application/json')
                 execd_ids.update(set.intersection(set(ids), set(resp)))
-                gevent.sleep(0.1)
+                time.sleep(0.1)
                 timeout += 0.1
             return
 
         @WalkoffEvent.TriggerActionAwaitingData.connect
         def send_data(sender, **kwargs):
             if result["num_trigs"] == 1:
-                gevent.spawn(gevent_wait_thread)
+                threading.Thread(target=wait_thread).start()
             else:
                 result["num_trigs"] += 1
 
@@ -97,7 +100,8 @@ class TestTriggersServer(ServerTestCase):
 
         result = {"result": False}
 
-        def gevent_wait_thread():
+        def wait_thread():
+            time.sleep(0.1)
             execd_ids = set([])
             timeout = 0
             threshold = 5
@@ -106,12 +110,13 @@ class TestTriggersServer(ServerTestCase):
                                                    data=json.dumps(data),
                                                    status_code=SUCCESS, content_type='application/json')
                 execd_ids.update(set.intersection(set(ids), set(resp)))
-                gevent.sleep(0.1)
+                time.sleep(0.1)
                 timeout += 0.1
+            return
 
         @WalkoffEvent.TriggerActionAwaitingData.connect
         def send_data(sender, **kwargs):
-            gevent.spawn(gevent_wait_thread)
+            threading.Thread(target=wait_thread).start()
 
         @WalkoffEvent.TriggerActionTaken.connect
         def trigger_taken(sender, **kwargs):
@@ -133,7 +138,8 @@ class TestTriggersServer(ServerTestCase):
 
         result = {"result": 0}
 
-        def gevent_wait_thread():
+        def wait_thread():
+            time.sleep(0.1)
             execd_ids = set([])
             timeout = 0
             threshold = 5
@@ -142,7 +148,7 @@ class TestTriggersServer(ServerTestCase):
                                                    data=json.dumps(data),
                                                    status_code=SUCCESS, content_type='application/json')
                 execd_ids.update(set.intersection(set(ids), set(resp)))
-                gevent.sleep(0.1)
+                time.sleep(0.1)
                 timeout += 0.1
 
             data_correct = {"execution_uids": [response['id']], "data_in": {"data": "1"}}
@@ -153,12 +159,13 @@ class TestTriggersServer(ServerTestCase):
                                                    data=json.dumps(data_correct),
                                                    status_code=SUCCESS, content_type='application/json')
                 execd_ids.update(set.intersection(set(ids), set(resp)))
-                gevent.sleep(0.1)
+                time.sleep(0.1)
                 timeout += 0.1
+            return
 
         @WalkoffEvent.TriggerActionAwaitingData.connect
         def send_data(sender, **kwargs):
-            gevent.spawn(gevent_wait_thread)
+            threading.Thread(target=wait_thread).start()
 
         @WalkoffEvent.TriggerActionTaken.connect
         def trigger_taken(sender, **kwargs):
@@ -186,7 +193,8 @@ class TestTriggersServer(ServerTestCase):
         def action_finished_listener(sender, **kwargs):
             result['value'] = kwargs['data']
 
-        def gevent_wait_thread():
+        def wait_thread():
+            time.sleep(0.1)
             execd_ids = set([])
             timeout = 0
             threshold = 5
@@ -195,12 +203,13 @@ class TestTriggersServer(ServerTestCase):
                                                    data=json.dumps(data),
                                                    status_code=SUCCESS, content_type='application/json')
                 execd_ids.update(set.intersection(set(ids), set(resp)))
-                gevent.sleep(0.1)
+                time.sleep(0.1)
                 timeout += 0.1
+            return
 
         @WalkoffEvent.TriggerActionAwaitingData.connect
         def send_data(sender, **kwargs):
-            gevent.spawn(gevent_wait_thread)
+            threading.Thread(target=wait_thread).start()
 
         flask_server.running_context.controller.wait_and_reset(1)
 
@@ -225,7 +234,8 @@ class TestTriggersServer(ServerTestCase):
         def action_input_invalids(sender, **kwargs):
             result['result'] = True
 
-        def gevent_wait_thread():
+        def wait_thread():
+            time.sleep(0.1)
             execd_ids = set([])
             timeout = 0
             threshold = 5
@@ -234,12 +244,13 @@ class TestTriggersServer(ServerTestCase):
                                                    data=json.dumps(data),
                                                    status_code=SUCCESS, content_type='application/json')
                 execd_ids.update(set.intersection(set(ids), set(resp)))
-                gevent.sleep(0.1)
+                time.sleep(0.1)
                 timeout += 0.1
+            return
 
         @WalkoffEvent.TriggerActionAwaitingData.connect
         def send_data(sender, **kwargs):
-            gevent.spawn(gevent_wait_thread)
+            threading.Thread(target=wait_thread).start()
 
         flask_server.running_context.controller.wait_and_reset(1)
         self.assertTrue(result['result'])

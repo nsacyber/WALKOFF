@@ -368,24 +368,20 @@ class EncryptedDeviceField(Device_Base, DeviceFieldMixin):
 
     @hybrid_property
     def value(self):
-        if sys.version_info[0] == 2:
-            aes = pyaes.AESModeOfOperationCTR(key)
-            val = aes.decrypt(self._value)
-            if val == '':
-                return val
-            elif val is None or val == 'None':
-                return None
-            else:
-                return convert_primitive_type(val, self.type)
+        is_py2 = sys.version_info[0] == 2
+        aes_key = key if is_py2 else bytearray(key, 'utf-8')
+        none_string = 'None' if is_py2 else b'None'
+
+        aes = pyaes.AESModeOfOperationCTR(aes_key)
+        val = aes.decrypt(self._value)
+        if val is None or val == none_string:
+            return None
+        elif not val:
+            return val
         else:
-            aes = pyaes.AESModeOfOperationCTR(bytearray(key, 'utf-8'))
-            val = aes.decrypt(self._value)
-            if val == b'':
-                return ''
-            elif val is None or val == b'None':
-                return None
-            else:
-                return convert_primitive_type(val.decode('utf-8'), self.type)
+            if not is_py2:
+                val = val.decode('utf-8')
+            return convert_primitive_type(val, self.type)
 
     @value.setter
     def value(self, new_value):

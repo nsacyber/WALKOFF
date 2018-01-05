@@ -517,3 +517,6 @@ class TestMessageDatabase(TestCase):
 
         WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender('uid1'))
         self.assertTrue(res['called'])
+
+    def test_message_action_get_all_names(self):
+        self.assertListEqual(MessageAction.get_all_action_names(), [action.name for action in MessageAction])

@@ -14,7 +14,8 @@ __server_tests = [test_workflow_server, test_app_api_server, test_case_server, t
                   test_scheduledtasks_database, test_scheduledtasks_server, test_authentication, test_roles_server,
                   test_users_server, test_message_history_database, test_message_db,
                   test_message, test_messaging_endpoints, test_workflow_authorization,
-                  test_workflow_authorized_user_set, test_workflow_authorization_cache, test_trigger_helpers]
+                  test_workflow_authorized_user_set, test_workflow_authorization_cache, test_trigger_helpers,
+                  test_system_server]
 server_suite = TestSuite()
 add_tests_to_suite(server_suite, __server_tests)
 
@@ -29,10 +30,13 @@ __execution_tests = [test_argument, test_execution_runtime, test_execution_eleme
 execution_suite = TestSuite()
 add_tests_to_suite(execution_suite, __execution_tests)
 
-__workflow_tests = [test_zmq_communication_server, test_zmq_communication, test_triggers_server, test_load_workflow, test_simple_workflow,
-                    test_workflow_manipulation]
+__workflow_tests = [test_load_workflow, test_simple_workflow, test_workflow_manipulation]
 workflow_suite = TestSuite()
 add_tests_to_suite(workflow_suite, __workflow_tests)
+
+__integration_tests = [test_zmq_communication, test_zmq_communication_server, test_triggers_server]
+integration_suite = TestSuite()
+add_tests_to_suite(integration_suite, __integration_tests)
 
 __interface_tests = [test_callback_container, test_interface_event_dispatch_helpers, test_app_action_event_dispatcher,
                      test_app_event_dispatcher, test_event_dispatcher, test_interface_event_dispatcher, test_events]

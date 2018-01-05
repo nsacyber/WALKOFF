@@ -72,6 +72,22 @@ message GeneralPacket {
     optional GeneralSender sender = 1;
 }
 
+message CommunicationPacket {
+
+    enum Type {
+        PAUSE = 1;
+        RESUME = 2;
+        TRIGGER = 3;
+        EXIT = 4;
+    }
+
+    optional Type type = 1;
+    optional string workflow_execution_uid = 2;
+    optional string data_in = 3;
+    repeated ActionPacket.ActionArgument arguments = 4;
+
+}
+
 message UserMessage {
     optional ActionPacket.ActionSender sender = 1;
     optional string subject = 2;

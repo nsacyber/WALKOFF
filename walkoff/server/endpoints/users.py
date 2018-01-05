@@ -6,6 +6,10 @@ from walkoff.database import add_user
 from walkoff.server.extensions import db
 from walkoff.database.user import User
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions, admin_required
+from walkoff.server.decorators import with_resource_factory
+
+
+with_user = with_resource_factory('user', lambda user_id: User.query.filter_by(id=user_id).first())
 
 
 def read_all_users():
@@ -42,37 +46,32 @@ def create_user():
 def read_user(user_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
-    def __func():
-        user = User.query.filter_by(id=user_id).first()
-        if user:
-            return user.as_json(), SUCCESS
-        else:
-            current_app.logger.error('Could not display user {0}. User does not exist.'.format(user_id))
-            return {"error": 'User with id {0} does not exist.'.format(user_id)}, OBJECT_DNE_ERROR
+    @with_user('read', user_id)
+    def __func(user):
+        return user.as_json(), SUCCESS
 
     return __func()
 
 
 def update_user():
+
+    user_id = request.get_json()['id']
+
     @jwt_required
-    def __func():
+    @with_user('update', user_id)
+    def __func(user):
         data = request.get_json()
-        user = User.query.filter_by(id=data['id']).first()
         current_user = get_jwt_identity()
-        if user is not None:
-            if user.id == current_user:
-                return update_user_fields(data, user)
-            else:
-                message, return_code = role_update_user_fields(data, user, update=True)
-                if return_code == FORBIDDEN_ERROR:
-                    current_app.logger.error('User {0} does not have permission to '
-                                             'update user {1}'.format(current_user, user.id))
-                    return {"error": 'Insufficient Permissions'}, FORBIDDEN_ERROR
-                else:
-                    return message, return_code
+        if user.id == current_user:
+            return update_user_fields(data, user)
         else:
-            current_app.logger.error('Could not edit user {0}. User does not exist.'.format(data['id']))
-            return {"error": 'User {0} does not exist.'.format(data['id'])}, OBJECT_DNE_ERROR
+            message, return_code = role_update_user_fields(data, user, update=True)
+            if return_code == FORBIDDEN_ERROR:
+                current_app.logger.error('User {0} does not have permission to '
+                                         'update user {1}'.format(current_user, user.id))
+                return {"error": 'Insufficient Permissions'}, FORBIDDEN_ERROR
+            else:
+                return message, return_code
 
     return __func()
 
@@ -109,19 +108,15 @@ def update_user_fields(data, user):
 def delete_user(user_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('users', ['delete']))
-    def __func():
-        user = User.query.filter_by(id=user_id).first()
-        if user:
-            if user.id != get_jwt_identity():
-                db.session.delete(user)
-                db.session.commit()
-                current_app.logger.info('User {0} deleted'.format(user.username))
-                return {}, SUCCESS
-            else:
-                current_app.logger.error('Could not delete user {0}. User is current user.'.format(user.id))
-                return {"error": 'User {0} is current user.'.format(user.username)}, FORBIDDEN_ERROR
+    @with_user('delete', user_id)
+    def __func(user):
+        if user.id != get_jwt_identity():
+            db.session.delete(user)
+            db.session.commit()
+            current_app.logger.info('User {0} deleted'.format(user.username))
+            return {}, SUCCESS
         else:
-            current_app.logger.error('Could not delete user {0}. User does not exist.'.format(user_id))
-            return {"error": 'User with id {0} does not exist.'.format(user_id)}, OBJECT_DNE_ERROR
+            current_app.logger.error('Could not delete user {0}. User is current user.'.format(user.id))
+            return {"error": 'User {0} is current user.'.format(user.username)}, FORBIDDEN_ERROR
 
     return __func()

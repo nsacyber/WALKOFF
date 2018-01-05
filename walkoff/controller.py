@@ -277,6 +277,16 @@ class Controller(object):
         """
         return self.playbook_store.get_playbook_representation(playbook_name, reader=reader)
 
+    def get_playbook(self, playbook_name):
+        """Returns a playbook of a given name
+
+        Args:
+            playbook_name (str): The name of the playbook
+
+        Returns:
+            (Playbook): The playbook of the given name. None if no playbook has that name
+        """
+
     def copy_workflow(self, old_playbook_name, new_playbook_name, old_workflow_name, new_workflow_name):
         """Duplicates a workflow into its current playbook, or a different playbook.
         
