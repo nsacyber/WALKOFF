@@ -38,15 +38,21 @@ export class MainComponent {
 	constructor(
 		private mainService: MainService, private authService: AuthService,
 		private modalService: NgbModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig,
-	) {
+	) {}
+
+	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
 
-		this.mainService.getInterfaceNamess()
-			.then(interfaceNames => this.interfaceNames = interfaceNames);
-
 		this.currentUser = this.authService.getAndDecodeAccessToken().user_claims.username;
+		this.getInterfaceNames();
 		this.getInitialNotifications();
 		this.getNotificationsSSE();
+	}
+
+	getInterfaceNames(): void {
+		this.mainService.getInterfaceNames()
+			.then(interfaceNames => this.interfaceNames = interfaceNames)
+			.catch(e => this.toastyService.error(`Error retrieving interfaces: ${e.message}`));
 	}
 
 	getInitialNotifications(): void {
