@@ -9,13 +9,21 @@ import { MessageListing } from '../models/message/messageListing';
 export class MainService {
 	constructor (private authHttp: JwtHttp) { }
 
-	getInterfaceNamess(): Promise<string[]> {
+	/**
+	 * Returns a list of imported interface names from the server.
+	 */
+	getInterfaceNames(): Promise<string[]> {
 		return this.authHttp.get('/api/interfaces')
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
 	}
 
+	/**
+	 * Returns a listing of initial notifications for the initial WALKOFF page load.
+	 * Should return only a subset of notifications if many unread notifications exist.
+	 * Will fill up to 5 read notifications if unread notifications do not exist.
+	 */
 	getInitialNotifications(): Promise<MessageListing[]> {
 		return this.authHttp.get('/api/notifications')
 			.toPromise()
@@ -24,6 +32,10 @@ export class MainService {
 			.catch(this.handleError);
 	}
 
+	/**
+	 * Retrieves a message by ID, marks it as read, and returns the message data.
+	 * @param messageId DB ID of message to retrieve
+	 */
 	getMessage(messageId: number): Promise<Message> {
 		return this.authHttp.get(`/api/messages/${messageId}`)
 			.toPromise()

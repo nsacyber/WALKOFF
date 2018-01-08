@@ -11,7 +11,8 @@
     "preserveConstEnums": true,
     // "outFile": "site.js",
     "target": "es5",
-    "sourceMap": true
+    "sourceMap": true,
+    "typeRoots": ["./node_modules/@types/"]
   },
   "include": [
       "**/*.ts"

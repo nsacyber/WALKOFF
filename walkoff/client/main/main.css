@@ -73,15 +73,15 @@ h3 {
   background-color: #3c8dbc;
 }
 
-#walkoffNav .navbar-nav .dropdown .dropdown-menu .installedApp {
+#walkoffNav .navbar-nav .dropdown .dropdown-menu .installedInterface {
   color: white;
 }
 
-#walkoffNav .navbar-nav .dropdown .dropdown-menu .installedApp:hover {
+#walkoffNav .navbar-nav .dropdown .dropdown-menu .installedInterface:hover {
   color: #3c8dbc;
 }
 
-#walkoffNav .navbar-nav .dropdown .dropdown-menu .installedApp span {
+#walkoffNav .navbar-nav .dropdown .dropdown-menu .installedInterface span {
   margin-left: 5px;
 }
 

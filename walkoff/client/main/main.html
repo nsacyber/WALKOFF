@@ -26,7 +26,7 @@
               </a>
               <ul class="dropdown-menu">
                 <li *ngFor="let interfaceName of interfaceNames">
-                  <a class="installedApp" routerLink="/interfaces/{{interfaceName}}"><i class="fa fa-gear"></i><span>{{interfaceName}}</span></a>
+                  <a class="installedInterface" routerLink="/interfaces/{{interfaceName}}"><i class="fa fa-gear"></i><span>{{interfaceName}}</span></a>
                 </li>
                 <li *ngIf="!interfaceNames || !interfaceNames.length">
                   <span class="dropdown-item">No custom WALKOFF interfaces are installed.</span>
@@ -63,7 +63,7 @@
                 </a>
                 <div class="dropdown-menu">
                   <span *ngIf="!messageListings.length" class="noMessages">You have no messages.</span>
-                  <table>
+                  <table class="messageTable">
                     <tr *ngFor="let messageListing of messageListings" [class.oldMessage]="messageListing.is_read">
                       <td>
                           <i *ngIf="messageListing.awaiting_response" class="fa fa-exclamation required" title="This message is awaiting response."></i>
@@ -83,7 +83,7 @@
                   <!-- The user image in the navbar-->
                   <img src="client/main/img/genericUser.png" class="user-image" alt="User Image">
                   <!-- hidden-xs hides the username on small devices so only the image appears. -->
-                  <span class="hidden-xs">{{currentUser}}</span>
+                  <span class="userName">{{currentUser}}</span>
                 </a>
                 <ul class="dropdown-menu">
                   <!-- The user image in the menu -->
