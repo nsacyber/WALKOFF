@@ -40,30 +40,19 @@ class Condition(ExecutionElement, Device_Base):
         self.action_name = action_name
 
         self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
-        self._condition_executable = get_condition(self.app_name, self._run)
-        args = {arg.name: arg for arg in arguments} if arguments is not None else {}
         tmp_api = split_api_params(self._api, self._data_param_name)
-        validate_condition_parameters(tmp_api, args, self.action_name)
+        validate_condition_parameters(tmp_api, arguments, self.action_name)
 
         self.arguments = []
         if arguments:
-            self.set_arguments(arguments)
+            self.arguments = arguments
 
         self.transforms = []
         if transforms:
-            self.set_transforms(transforms)
+            self.transforms = transforms
 
-    def set_args(self, new_arguments):
-        new_argument_ids = set(new_arguments)
-        new_arguments = Argument.query.filter(Argument.id.in_(new_argument_ids)).all() if new_argument_ids else []
-
-        self.arguments[:] = new_arguments
-
-    def set_transforms(self, new_transforms):
-        new_transform_ids = set(new_transforms)
-        new_transforms = Transform.query.filter(Transform.id.in_(new_transform_ids)).all() if new_transform_ids else []
-
-        self.transforms[:] = new_transforms
+        # TODO: Reset variables
+        self._condition_executable = get_condition(self.app_name, self._run)
 
     def execute(self, data_in, accumulator):
         """Executes the Condition object, determining if the Condition evaluates to True or False.
@@ -80,7 +69,7 @@ class Condition(ExecutionElement, Device_Base):
         for transform in self.transforms:
             data = transform.execute(data, accumulator)
         try:
-            self.arguments.update({self._data_param_name: Argument(self._data_param_name, value=data)})
+            self.__update_arguments(data)
             args = validate_condition_parameters(self._api, self.arguments, self.action_name, accumulator=accumulator)
             logger.debug('Arguments passed to condition {} are valid'.format(self.uid))
             ret = self._condition_executable(**args)
@@ -98,3 +87,11 @@ class Condition(ExecutionElement, Device_Base):
                                                              format_exception_message(e)))
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionError)
             return False
+
+    def __update_arguments(self, data):
+        arg = None
+        for argument in self.arguments:
+            if argument.name == self._data_param_name:
+                arg = None
+        self.arguments.remove(arg)
+        self.arguments.append(Argument(self._data_param_name, value=data))

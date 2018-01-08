@@ -7,7 +7,6 @@ from sqlalchemy.orm import relationship, backref
 from walkoff.devicedb import Device_Base
 from walkoff.events import WalkoffEvent
 from walkoff.core.executionelements.executionelement import ExecutionElement
-from walkoff.core.executionelements.condition import Condition
 
 logger = logging.getLogger(__name__)
 
@@ -46,17 +45,11 @@ class Branch(ExecutionElement, Device_Base):
 
         self.conditions = []
         if conditions:
-            self.set_conditions(conditions)
-
-    def set_conditions(self, new_conditions):
-        new_condition_ids = set(new_conditions)
-        new_conditions = Condition.query.filter(Condition.id.in_(new_condition_ids)).all() if new_condition_ids else []
-
-        self.conditions[:] = new_conditions
+            self.conditions = conditions
 
     def __eq__(self, other):
-        return self.source_id == other.source_uid and self.destination_id == other.destination_uid and self.status == other.status \
-               and set(self.conditions) == set(other.conditions)
+        return self.source_id == other.source_uid and self.destination_id == other.destination_uid and \
+               self.status == other.status and set(self.conditions) == set(other.conditions)
 
     def __lt__(self, other):
         return self.priority < other.priority

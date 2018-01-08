@@ -3,7 +3,7 @@ import logging
 import threading
 from copy import deepcopy
 
-from sqlalchemy import Column, Integer, ForeignKey, String
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship, backref
 
 from walkoff.appgateway.appinstance import AppInstance
@@ -31,20 +31,22 @@ class Workflow(ExecutionElement, Device_Base):
 
         Args:
             name (str, optional): The name of the Workflow object. Defaults to an empty string.
-            actions (dict, optional): Optional Action objects. Defaults to None.
-            branches (list[Branch], optional): A list of Branch objects for the Action object. Defaults to None.
-            start (str, optional): Optional UID of the starting Action. Defaults to None.
+            actions (list[Action]): Optional Action objects. Defaults to None.
+            branches (list[Branch], optional): A list of Branch objects for the Workflow object. Defaults to None.
+            start (str, optional): Optional ID of the starting Action. Defaults to None.
         """
         ExecutionElement.__init__(self)
         self.name = name
 
         self.actions = []
         if self.actions:
-            self.set_actions(actions)
+            for action in actions:
+                self.actions.append(action)
 
         self.branches = []
         if branches:
-            self.set_branches(branches)
+            for branch in self.branches:
+                self.branches.append(branch)
 
         self.start = start if start is not None else 'start'
 
@@ -54,61 +56,21 @@ class Workflow(ExecutionElement, Device_Base):
         self._accumulator = {}
         self._execution_uid = 'default'
 
-    def set_actions(self, new_actions):
-        new_action_ids = set(new_actions)
-        new_actions = Action.query.filter(Action.id.in_(new_action_ids)).all() if new_action_ids else []
-
-        self.actions[:] = new_actions
-
-    def set_branches(self, new_branches):
-        new_branch_ids = set(new_branches)
-        new_branches = Branch.query.filter(Branch.id.in_(new_branch_ids)).all() if new_branch_ids else []
-
-        self.branches[:] = new_branches
-
-    def create_action(self, name='', action='', app='', device='', arguments=None, risk=0):
-        """Creates a new Action object and adds it to the Workflow's list of Actions.
-
-        Args:
-            name (str, optional): The name of the Action object. Defaults to an empty string.
-            action (str, optional): The name of the action associated with a Action. Defaults to an empty string.
-            app (str, optional): The name of the app associated with the Action. Defaults to an empty string.
-            device (str, optional): The name of the device associated with the app associated with the Action. Defaults
-                to an empty string.
-            arguments (list[Argument]): A list of Argument objects that are parameters to the action execution. Defaults
-                to None.
-            risk (int, optional): The risk associated with the Action. Defaults to 0.
-
-        """
-        arguments = arguments if arguments is not None else []
-        action = Action(name=name, action_name=action, app_name=app, device_id=device, arguments=arguments, risk=risk)
-        self.actions[action.uid] = action
-        self.branches[action.uid] = []
-        self._total_risk += risk
-        logger.info('Action added to workflow {0}. Action: {1}'.format(self.name, self.actions[action.uid].read()))
-
     def remove_action(self, uid):
         """Removes a Action object from the Workflow's list of Actions given the Action UID.
 
         Args:
-            uid (str): The UID of the Action object to be removed.
+            uid (str): The ID of the Action object to be removed.
 
         Returns:
             True on success, False otherwise.
         """
-        if uid in self.actions:
-            self.actions.pop(uid)
+        self.actions[:] = [action for action in self.actions if action.id != uid]
+        self.branches[:] = [branch for branch in self.branches if
+                            (branch.source_id != uid and branch.destination_id != uid)]
 
-            self.branches.pop(uid)
-            for action in self.branches.keys():
-                for branch in list(self.branches[action]):
-                    if branch.destination_uid == uid:
-                        self.branches[action].remove(branch)
-
-            logger.debug('Removed action {0} from workflow {1}'.format(uid, self.name))
-            return True
-        logger.warning('Could not remove action {0} from workflow {1}. Action does not exist'.format(uid, self.name))
-        return False
+        logger.debug('Removed action {0} from workflow {1}'.format(uid, self.name))
+        return True
 
     def pause(self):
         """Pauses the execution of the Workflow. The Workflow will pause execution before starting the next Action.
@@ -132,7 +94,7 @@ class Workflow(ExecutionElement, Device_Base):
 
         Args:
             execution_uid (str): The UUID4 hex string uniquely identifying this workflow instance
-            start (str, optional): The name of the first Action. Defaults to None.
+            start (str, optional): The ID of the first Action. Defaults to None.
             start_arguments (list[Argument]): Argument parameters into the first Action. Defaults to None.
         """
         self._execution_uid = execution_uid
@@ -164,7 +126,7 @@ class Workflow(ExecutionElement, Device_Base):
                 if start_arguments:
                     self.__swap_action_arguments(action, start_arguments)
             action.execute(instance=instances[device_id](), accumulator=self._accumulator)
-            self._accumulator[action.uid] = action.get_output().result
+            self._accumulator[action.id] = action.get_output().result
             total_actions.append(action)
         self.__shutdown(instances)
         yield
@@ -188,16 +150,23 @@ class Workflow(ExecutionElement, Device_Base):
         self._executing_action.send_data_to_trigger(data)
 
     def __actions(self, start):
-        initial_action_uid = start
-        current_uid = initial_action_uid
-        current_action = self.actions[current_uid] if self.actions else None
+        current_uid = start
+        current_action = self.__get_action_by_uid(current_uid)
+
         while current_action:
             yield current_action
-            branch_uid = self.get_branch(current_action, self._accumulator)
-            current_uid = self.__go_to_branch(branch_uid)
-            current_action = self.actions[current_uid] if current_uid is not None else None
+            current_uid = self.get_branch(current_action, self._accumulator)
+            current_action = self.__get_action_by_uid(current_uid) if current_uid is not None else None
             yield  # needed so that when for-loop calls next() it doesn't advance too far
         yield  # needed so you can avoid catching StopIteration exception
+
+    def __get_action_by_uid(self, uid):
+        ret_action = None
+        if self.actions:
+            for action in self.actions:
+                if action.id == uid:
+                    ret_action = action
+        return ret_action
 
     def get_branch(self, current_action, accumulator):
         """Executes the Branch objects associated with this Workflow to determine which Action should be
@@ -208,24 +177,28 @@ class Workflow(ExecutionElement, Device_Base):
             accumulator (dict): The accumulated results of previous Actions.
 
         Returns:
-            The UID of the next Action to be executed if successful, else None.
+            The ID of the next Action to be executed if successful, else None.
         """
         if self.branches:
-            for branch in sorted(self.branches[current_action.uid]):
+            branches = sorted(self.__get_branches_by_action_uid(current_action.id))
+            for branch in branches:
                 # TODO: This here is the only hold up from getting rid of action._output.
                 # Keep whole result in accumulator
-                branch = branch.execute(current_action.get_output(), accumulator)
-                if branch is not None:
-                    return branch
+                destination_uid = branch.execute(current_action.get_output(), accumulator)
+                for action in self.actions:
+                    if action.id == destination_uid:
+                        return destination_uid
+            return None
         else:
             return None
 
-    def __go_to_branch(self, branch_uid):
-        if branch_uid not in self.actions:
-            current = None
-        else:
-            current = branch_uid
-        return current
+    def __get_branches_by_action_uid(self, uid):
+        branches = []
+        if self.branches:
+            for branch in self.branches:
+                if branch.source_id == uid:
+                    branches.append(branch)
+        return branches
 
     def __swap_action_arguments(self, action, start_arguments):
         logger.debug('Swapping arguments to first action of workflow {0}'.format(self.name))
@@ -262,6 +235,7 @@ class Workflow(ExecutionElement, Device_Base):
         WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowShutdown, data=data_json)
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self._accumulator))
 
+    # TODO: Get rid of this function.
     def update_from_json(self, json_in):
         """Reconstruct a Workflow object based on JSON data.
 
@@ -311,6 +285,7 @@ class Workflow(ExecutionElement, Device_Base):
         """
         return self._execution_uid
 
+    # TODO: Delete all of these below functions(?)
     def regenerate_uids(self, *args):
         start_action = deepcopy(self.actions.pop(self.start, None))
         if start_action is not None:

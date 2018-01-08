@@ -35,21 +35,15 @@ class Transform(ExecutionElement, Device_Base):
         ExecutionElement.__init__(self)
         self.app_name = app_name
         self.action_name = action_name
+
         self._data_param_name, self._run, self._api = get_transform_api(self.app_name, self.action_name)
         self._transform_executable = get_transform(self.app_name, self._run)
-        args = {arg.name: arg for arg in arguments} if arguments is not None else {}
         tmp_api = split_api_params(self._api, self._data_param_name)
-        validate_transform_parameters(tmp_api, args, self.action_name)
+        validate_transform_parameters(tmp_api, arguments, self.action_name)
 
         self.arguments = []
         if arguments:
-            self.set_args(arguments)
-
-    def set_args(self, new_arguments):
-        new_argument_ids = set(new_arguments)
-        new_arguments = Argument.query.filter(Argument.id.in_(new_argument_ids)).all() if new_argument_ids else []
-
-        self.arguments[:] = new_arguments
+            self.arguments = arguments
 
     def execute(self, data_in, accumulator):
         """Executes the transform.
@@ -63,7 +57,7 @@ class Transform(ExecutionElement, Device_Base):
         """
         original_data_in = deepcopy(data_in)
         try:
-            self.arguments.update({self._data_param_name: Argument(self._data_param_name, value=data_in)})
+            self.__update_arguments(data_in)
             args = validate_transform_parameters(self._api, self.arguments, self.action_name, accumulator=accumulator)
             result = self._transform_executable(**args)
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformSuccess)
@@ -77,3 +71,11 @@ class Transform(ExecutionElement, Device_Base):
             logger.error(
                 'Transform {0} encountered an error: {1}. Returning unmodified data'.format(self.action_name, str(e)))
         return original_data_in
+
+    def __update_arguments(self, data):
+        arg = None
+        for argument in self.arguments:
+            if argument.name == self._data_param_name:
+                arg = None
+        self.arguments.remove(arg)
+        self.arguments.append(Argument(self._data_param_name, value=data))

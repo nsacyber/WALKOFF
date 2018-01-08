@@ -14,7 +14,6 @@ from walkoff.core.actionresult import ActionResult
 from walkoff.devicedb import Device_Base
 from walkoff.events import WalkoffEvent
 from walkoff.core.executionelements.executionelement import ExecutionElement
-from walkoff.core.executionelements.condition import Condition
 from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
 from walkoff.appgateway.validator import validate_app_action_parameters
 
@@ -48,7 +47,7 @@ class Action(ExecutionElement, Device_Base):
             name (str, optional): The name of the Action object. Defaults to an empty string.
             device_id (int, optional): The id of the device associated with the app associated with the Action. Defaults
                 to None.
-            arguments ([Argument], optional): A list of Argument objects that are parameters to the action.
+            arguments (list[Argument], optional): A list of Argument objects that are parameters to the action.
                 Defaults to None.
             triggers (list[Condition], optional): A list of Condition objects for the Action. If a Action should wait
                 for data before continuing, then include these Trigger objects in the Action init. Defaults to None.
@@ -63,7 +62,8 @@ class Action(ExecutionElement, Device_Base):
 
         self.triggers = []
         if triggers:
-            self.set_triggers(triggers)
+            for trigger in triggers:
+                self.triggers.append(trigger)
 
         self.name = name
         self.device_id = device_id
@@ -75,17 +75,14 @@ class Action(ExecutionElement, Device_Base):
         if is_app_action_bound(self.app_name, self._run) and not self.device_id:
             raise InvalidArgument(
                 "Cannot initialize Action {}. App action is bound but no device ID was provided.".format(self.name))
-        self._action_executable = get_app_action(self.app_name, self._run)
-
-        args_dict = {argument.name: argument for argument in arguments} if arguments is not None else {}
 
         self.templated = templated
         if not self.templated:
-            validate_app_action_parameters(self._arguments_api, args_dict, self.app_name, self.action_name)
+            validate_app_action_parameters(self._arguments_api, arguments, self.app_name, self.action_name)
 
         self.arguments = []
         if arguments:
-            self.set_args(arguments)
+            self.arguments = arguments
 
         self.x_coordinate = x_coordinate
         self.y_coordinate = y_coordinate
@@ -96,18 +93,7 @@ class Action(ExecutionElement, Device_Base):
         self._output = None
         self._raw_representation = raw_representation if raw_representation is not None else {}
         self._execution_uid = 'default'
-
-    def set_triggers(self, new_triggers):
-        new_trigger_ids = set(new_triggers)
-        new_triggers = Condition.query.filter(Condition.id.in_(new_trigger_ids)).all() if new_trigger_ids else []
-
-        self.triggers[:] = new_triggers
-
-    def set_args(self, new_arguments):
-        new_argument_ids = set(new_arguments)
-        new_arguments = Argument.query.filter(Argument.id.in_(new_argument_ids)).all() if new_argument_ids else []
-
-        self.arguments[:] = new_arguments
+        self._action_executable = get_app_action(self.app_name, self._run)
 
     def get_output(self):
         """Gets the output of an Action (the result)
@@ -140,11 +126,11 @@ class Action(ExecutionElement, Device_Base):
         self.action_name = updated_json['action_name']
         self.app_name = updated_json['app_name']
         self.device_id = updated_json['device_id'] if 'device_id' in updated_json else None
-        arguments = {}
+        arguments = []
         if 'arguments' in updated_json:
             for argument_json in updated_json['arguments']:
                 argument = Argument(**argument_json)
-                arguments[argument.name] = argument
+                arguments.append(argument)
         if arguments is not None:
             if not self.templated:
                 validate_app_action_parameters(self._arguments_api, arguments, self.app_name, self.action_name)
@@ -171,7 +157,6 @@ class Action(ExecutionElement, Device_Base):
         Args:
             new_arguments ([Argument]): The new Arguments for the Action object.
         """
-        new_arguments = {arg.name: arg for arg in new_arguments}
         validate_app_action_parameters(self._arguments_api, new_arguments, self.app_name, self.action_name)
         self.arguments = new_arguments
 
@@ -238,7 +223,7 @@ class Action(ExecutionElement, Device_Base):
             self._incoming_data = None
             self._event.clear()
 
-            if all(condition.execute(data_in=data_in, accumulator=accumulator) for condition in self.triggers):
+            if all(trigger.execute(data_in=data_in, accumulator=accumulator) for trigger in self.triggers):
                 self.__accept_trigger(accumulator, data, data_in)
                 break
             else:
@@ -251,7 +236,14 @@ class Action(ExecutionElement, Device_Base):
         accumulator[self.name] = data_in
         arguments = data['arguments'] if 'arguments' in data else []
         if arguments:
-            new_args = {}
             for argument in arguments:
-                new_args[argument.name] = argument
-            self.arguments.update(new_args)
+                check_arg = self.__get_argument_by_name(argument.name)
+                if check_arg:
+                    self.arguments.remove(check_arg)
+                self.arguments.append(argument)
+
+    def __get_argument_by_name(self, name):
+        for argument in self.arguments:
+            if argument.name == name:
+                return argument
+        return None
