@@ -141,7 +141,7 @@ export class MainComponent {
 
 				this.messageModalRef = this.modalService.open(MessagesModalComponent);
 				
-				this.messageModalRef.componentInstance.message = _.cloneDeep(message);
+				this.messageModalRef.componentInstance.message = this.utils.cloneDeep(message);
 		
 				this._handleModalClose(this.messageModalRef);
 			})

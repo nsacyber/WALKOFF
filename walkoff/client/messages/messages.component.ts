@@ -75,7 +75,7 @@ export class MessagesComponent {
 
 				const modalRef = this.modalService.open(MessagesModalComponent);
 		
-				modalRef.componentInstance.message = _.cloneDeep(message);
+				modalRef.componentInstance.message = this.utils.cloneDeep(message);
 		
 				this._handleModalClose(modalRef);
 			})

@@ -1,6 +1,5 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import * as _ from 'lodash';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { Select2OptionData } from 'ng2-select2';
@@ -106,7 +105,7 @@ export class DevicesComponent {
 		this.devicesService
 			.deleteDevice(deviceToDelete.id)
 			.then(() => {
-				this.devices = _.reject(this.devices, device => device.id === deviceToDelete.id);
+				this.devices = this.devices.filter(device => device.id !== deviceToDelete.id);
 
 				this.filterDevices();
 
@@ -144,7 +143,7 @@ export class DevicesComponent {
 
 				//On edit, find and update the edited item
 				if (result.isEdit) {
-					const toUpdate = _.find(this.devices, d => d.id === result.device.id);
+					const toUpdate = this.devices.find(d => d.id === result.device.id);
 					Object.assign(toUpdate, result.device);
 
 					this.filterDevices();

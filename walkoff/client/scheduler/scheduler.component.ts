@@ -110,7 +110,7 @@ export class SchedulerComponent implements OnInit {
 		this.schedulerService
 			.deleteScheduledTask(taskToDelete.id)
 			.then(() => {
-				this.scheduledTasks = _.reject(this.scheduledTasks, scheduledTask => scheduledTask.id === taskToDelete.id);
+				this.scheduledTasks = this.scheduledTasks.filter(scheduledTask => scheduledTask.id !== taskToDelete.id);
 
 				this.filterScheduledTasks();
 
@@ -193,7 +193,7 @@ export class SchedulerComponent implements OnInit {
 
 				//On edit, find and update the edited item
 				if (result.isEdit) {
-					const toUpdate = _.find(this.scheduledTasks, st => st.id === result.scheduledTask.id);
+					const toUpdate = this.scheduledTasks.find(st => st.id === result.scheduledTask.id);
 					Object.assign(toUpdate, result.scheduledTask);
 
 					this.filterScheduledTasks();
