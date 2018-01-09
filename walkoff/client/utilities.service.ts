@@ -45,4 +45,12 @@ export class UtilitiesService {
 	getRelativeLocalTime(time: Date | string): string {
 		return moment.utc(time).local().fromNow();
 	}
+
+	/**
+	 * Clones JSON into a new value.
+	 * @param val Value to clone
+	 */
+	cloneDeep<T>(val: T): T {
+		return JSON.parse(JSON.stringify(val));
+	}
 }

@@ -146,7 +146,7 @@ export class CasesComponent {
 		this.casesService
 			.deleteCase(caseToDelete.id)
 			.then(() => {
-				this.cases = _.reject(this.cases, c => c.id === caseToDelete.id);
+				this.cases = this.cases.filter(c => c.id !== caseToDelete.id);
 
 				this.filterCases();
 
@@ -267,7 +267,7 @@ export class CasesComponent {
 
 				//On edit, find and update the edited item
 				if (result.isEdit) {
-					const toUpdate = _.find(this.cases, c => c.id === result.case.id);
+					const toUpdate = this.cases.find(c => c.id === result.case.id);
 					Object.assign(toUpdate, result.case);
 
 					this.filterCases();
