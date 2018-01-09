@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from walkoff.core.executionelements.executionelement import ExecutionElement
+from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.core.jsonelementreader import JsonElementReader
 
 

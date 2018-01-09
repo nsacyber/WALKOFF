@@ -2,10 +2,10 @@ import json
 import unittest
 
 import walkoff.server.flaskserver as server
-from walkoff.core.executionelements.playbook import Playbook
+from walkoff.coredb.playbook import Playbook
 from walkoff.core.scheduler import InvalidTriggerArgs
 from walkoff.database import db
-from walkoff.database.scheduledtasks import ScheduledTask
+from walkoff.database import ScheduledTask
 from tests.test_scheduler import MockWorkflow
 
 

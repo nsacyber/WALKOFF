@@ -1,7 +1,7 @@
 import unittest
 
 import walkoff
-from walkoff.core.executionelements.playbook import Playbook
+from walkoff.coredb.playbook import Playbook
 from tests.test_scheduler import MockWorkflow
 from tests.util.assertwrappers import orderless_list_compare
 
@@ -62,17 +62,17 @@ class TestPlaybook(unittest.TestCase):
 
     def test_has_workflow_uid_no_workflows(self):
         playbook = Playbook('test', [])
-        self.assertFalse(playbook.has_workflow_uid('anything'))
+        self.assertFalse(playbook.has_workflow_id('anything'))
 
     def test_has_workflow_uid(self):
         workflow = MockWorkflow('uid', 'wf_name')
         playbook = Playbook('test', [workflow])
-        self.assertTrue(playbook.has_workflow_uid('uid'))
+        self.assertTrue(playbook.has_workflow_id('uid'))
 
     def test_has_workflow_uid_no_uid(self):
         workflow = MockWorkflow('uid', 'wf_name')
         playbook = Playbook('test', [workflow])
-        self.assertFalse(playbook.has_workflow_uid('invalid'))
+        self.assertFalse(playbook.has_workflow_id('invalid'))
 
     def test_get_workflow_by_name_no_workflows(self):
         playbook = Playbook('test', [])
@@ -90,17 +90,17 @@ class TestPlaybook(unittest.TestCase):
 
     def test_get_workflow_by_uid_no_workflows(self):
         playbook = Playbook('test', [])
-        self.assertIsNone(playbook.get_workflow_by_uid('anything'))
+        self.assertIsNone(playbook.get_workflow_by_id('anything'))
 
     def test_get_workflow_by_uid(self):
         workflow = MockWorkflow('uid', 'wf_name')
         playbook = Playbook('test', [workflow])
-        self.assertEqual(playbook.get_workflow_by_uid('uid'), workflow)
+        self.assertEqual(playbook.get_workflow_by_id('uid'), workflow)
 
     def test_get_workflow_by_uid_no_name(self):
         workflow = MockWorkflow('uid', 'wf_name')
         playbook = Playbook('test', [workflow])
-        self.assertIsNone(playbook.get_workflow_by_uid('invalid'))
+        self.assertIsNone(playbook.get_workflow_by_id('invalid'))
 
     def test_get_all_workflow_names_no_workflows(self):
         playbook = Playbook('test', [])
@@ -113,12 +113,12 @@ class TestPlaybook(unittest.TestCase):
 
     def test_get_all_workflow_uids_no_workflows(self):
         playbook = Playbook('test', [])
-        self.assertListEqual(playbook.get_all_workflow_uids(), [])
+        self.assertListEqual(playbook.get_all_workflow_ids(), [])
 
     def test_get_all_workflow_uids(self):
         workflows = [MockWorkflow(i, i + 1) for i in range(3)]
         playbook = Playbook('test', workflows)
-        orderless_list_compare(self, playbook.get_all_workflow_uids(), list(range(3)))
+        orderless_list_compare(self, playbook.get_all_workflow_ids(), list(range(3)))
 
     def test_get_all_workflows_as_json_no_workflows(self):
         playbook = Playbook('test', [])
@@ -153,7 +153,7 @@ class TestPlaybook(unittest.TestCase):
         workflows = [MockWorkflow(i, i + 1) for i in range(3)]
         playbook = Playbook('test', workflows)
         playbook.rename_workflow('invalid', 'new_name')
-        self.assertTrue(all(playbook.has_workflow_uid(uid) for uid in range(3)))
+        self.assertTrue(all(playbook.has_workflow_id(uid) for uid in range(3)))
         self.assertFalse(playbook.has_workflow_name('invalid'))
 
     def test_rename_workflow(self):

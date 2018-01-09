@@ -5,8 +5,8 @@ from six import string_types
 import sys
 
 sys.path.append(os.path.abspath('.'))
-from walkoff.appgateway import cache_apps, is_app_action_bound
-from walkoff.devicedb import device_db, App
+from walkoff.appgateway import is_app_action_bound
+from walkoff.coredb.devicedb import device_db, App
 from walkoff.helpers import get_app_action_api
 import walkoff.__version__ as walkoff_version
 

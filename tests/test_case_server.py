@@ -7,7 +7,7 @@ import walkoff.config.paths
 import tests.config
 from walkoff.case.subscription import set_subscriptions, clear_subscriptions, delete_cases
 from walkoff.server.returncodes import *
-from walkoff.database.casesubscription import CaseSubscription
+from walkoff.database import CaseSubscription
 from walkoff.server.extensions import db
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase

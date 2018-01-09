@@ -7,10 +7,10 @@ from threading import Event
 import walkoff.case.database as case_database
 import walkoff.config.paths
 from walkoff import helpers
-from walkoff.core.argument import Argument
+from walkoff.coredb.argument import Argument
 from walkoff.events import WalkoffEvent
-from walkoff.core.executionelements.action import Action
-from walkoff.core.executionelements.branch import Branch
+from walkoff.coredb.action import Action
+from walkoff.coredb.branch import Branch
 from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
 from tests.util.assertwrappers import orderless_list_compare

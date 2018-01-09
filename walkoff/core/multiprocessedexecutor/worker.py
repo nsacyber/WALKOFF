@@ -13,9 +13,9 @@ from google.protobuf.json_format import MessageToDict
 
 import walkoff.config.config
 import walkoff.config.paths
-from walkoff.core.argument import Argument
+from walkoff.coredb.argument import Argument
 from walkoff.events import EventType, WalkoffEvent
-from walkoff.core.executionelements.workflow import Workflow
+from walkoff.coredb.workflow import Workflow
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket
 
 try:

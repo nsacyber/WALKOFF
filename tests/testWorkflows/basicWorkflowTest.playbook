@@ -3,35 +3,7 @@
     "workflows": [
         {
             "name": "helloWorldWorkflow",
-            "branches": [
-                {
-                    "conditions": [
-                        {
-                            "action_name": "regMatch",
-                            "app_name": "HelloWorldBounded",
-                            "arguments": [
-                                {
-                                    "name": "regex",
-                                    "value": "(.*)"
-                                }
-                            ],
-                            "transforms": [
-                                {
-                                    "action_name": "length",
-                                    "app_name": "HelloWorldBounded",
-                                    "arguments": [],
-                                    "uid": "48bbcbd8009e47f7b2d368d596850d86"
-                                }
-                            ],
-                            "uid": "c2698e219c9a4525a343bd051b1f0e7d"
-                        }
-                    ],
-                    "destination_uid": "1",
-                    "source_uid": "c5a7c29a0f844b69a59901bb542e9305",
-                    "status": "Success",
-                    "uid": "55541eee50774accbf70a8d7df17a027"
-                }
-            ],
+            "branches": [],
             "start": "c5a7c29a0f844b69a59901bb542e9305",
             "actions": [
                 {

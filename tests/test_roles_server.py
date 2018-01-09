@@ -2,8 +2,8 @@ import json
 
 import walkoff.database
 import walkoff.server.flaskserver
-from walkoff.database.role import Role
-from walkoff.database.resource import Resource
+from walkoff.database import Role
+from walkoff.database import Resource
 from walkoff.database import default_resources
 from walkoff.server.extensions import db
 from walkoff.server.returncodes import *

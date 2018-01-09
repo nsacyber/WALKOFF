@@ -4,12 +4,12 @@ import os
 import connexion
 from jinja2 import FileSystemLoader
 
-from walkoff.devicedb import App, device_db
+from walkoff.coredb.devicedb import App, device_db
 from walkoff import helpers
 from walkoff.config import paths
 from walkoff.helpers import format_db_path
 from walkoff.server.extensions import db, jwt
-from walkoff.database.casesubscription import CaseSubscription
+from walkoff.database import CaseSubscription
 from walkoff.database import add_user, User, Role, initialize_default_resources_admin, \
     initialize_default_resources_guest
 
@@ -96,8 +96,6 @@ def create_app():
 
     import walkoff.controller
     walkoff.controller.controller.load_playbooks()
-    import walkoff.server.workflowresults
-    import walkoff.messaging.utils
     return _app
 
 

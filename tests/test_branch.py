@@ -3,13 +3,13 @@ import uuid
 
 import walkoff.appgateway
 import walkoff.config.config
-from walkoff.core.argument import Argument
+from walkoff.coredb.argument import Argument
 from walkoff.core.actionresult import ActionResult
 from walkoff.events import WalkoffEvent
-from walkoff.core.executionelements.action import Action
-from walkoff.core.executionelements.branch import Branch
-from walkoff.core.executionelements.condition import Condition
-from walkoff.core.executionelements.workflow import Workflow
+from walkoff.coredb.action import Action
+from walkoff.coredb.branch import Branch
+from walkoff.coredb.condition import Condition
+from walkoff.coredb.workflow import Workflow
 from tests.config import test_apps_path
 
 

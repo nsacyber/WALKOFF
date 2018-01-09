@@ -21,7 +21,7 @@ class JsonElementCreator(object):
         Returns:
             (ExecutionElement) The constructed ExecutionElement
         """
-        from walkoff.core.executionelements.playbook import Playbook
+        from walkoff.coredb.playbook import Playbook
         cls._setup_ordering()
         if element_class is None:
             element_class = Playbook
@@ -33,7 +33,8 @@ class JsonElementCreator(object):
             except StopIteration:
                 raise ValueError('Unknown class {}'.format(element_class.__class__.__name__))
         try:
-            return cls.construct_current_class(current_class, json_in, subfield_lookup)
+            elem = cls.construct_current_class(current_class, json_in, subfield_lookup)
+            return elem
         except (KeyError, TypeError) as e:
             from walkoff.helpers import format_exception_message
             raise ValueError(
@@ -42,7 +43,7 @@ class JsonElementCreator(object):
 
     @classmethod
     def construct_current_class(cls, current_class, json_in, subfield_lookup):
-        from walkoff.core.argument import Argument
+        from walkoff.coredb.argument import Argument
         if subfield_lookup is not None:
             for subfield_name, next_class in subfield_lookup.items():
                 if subfield_name in json_in:
@@ -57,12 +58,12 @@ class JsonElementCreator(object):
     @classmethod
     def _setup_ordering(cls):
         if cls.playbook_class_ordering is None:
-            from walkoff.core.executionelements.playbook import Playbook
-            from walkoff.core.executionelements.workflow import Workflow
-            from walkoff.core.executionelements.action import Action
-            from walkoff.core.executionelements.branch import Branch
-            from walkoff.core.executionelements.condition import Condition
-            from walkoff.core.executionelements.transform import Transform
+            from walkoff.coredb.playbook import Playbook
+            from walkoff.coredb.workflow import Workflow
+            from walkoff.coredb.action import Action
+            from walkoff.coredb.branch import Branch
+            from walkoff.coredb.condition import Condition
+            from walkoff.coredb.transform import Transform
             cls.playbook_class_ordering = OrderedDict([
                 (Playbook, {'workflows': Workflow}),
                 (Workflow, {'actions': Action, 'branches': Branch}),

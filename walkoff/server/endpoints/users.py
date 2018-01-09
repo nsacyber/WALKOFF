@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from walkoff.server.returncodes import *
 from walkoff.database import add_user
 from walkoff.server.extensions import db
-from walkoff.database.user import User
+from walkoff.database import User
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions, admin_required
 from walkoff.server.decorators import with_resource_factory
 

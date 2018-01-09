@@ -4,7 +4,7 @@ from flask_jwt_extended import (jwt_refresh_token_required, create_access_token,
 
 from walkoff.database import User, db
 from walkoff.server.returncodes import *
-from walkoff.database.tokens import revoke_token
+from walkoff.database import revoke_token
 
 
 def _authenticate_and_grant_tokens(json_in, with_refresh=False):
@@ -55,7 +55,7 @@ def refresh():
 
 
 def logout():
-    from walkoff.database.tokens import revoke_token
+    from walkoff.database import revoke_token
 
     @jwt_required
     def __func():

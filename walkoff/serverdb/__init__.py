@@ -1,11 +1,9 @@
 import logging
 
 from walkoff.server.extensions import db
-from .user import User
-from .role import Role
-from .resource import Resource, Permission
-from .message import Message, MessageHistory
-from .tokens import BlacklistedToken
+from walkoff.serverdb.user import User
+from walkoff.serverdb.role import Role
+from walkoff.serverdb.resource import Resource, Permission
 
 logger = logging.getLogger(__name__)
 

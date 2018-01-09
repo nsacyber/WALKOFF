@@ -3,7 +3,7 @@ import logging
 
 from walkoff.core.scheduler import construct_trigger
 from walkoff.server.extensions import db
-from walkoff.database.mixins import TrackModificationsMixIn
+from walkoff.database import TrackModificationsMixIn
 
 logger = logging.getLogger(__name__)
 

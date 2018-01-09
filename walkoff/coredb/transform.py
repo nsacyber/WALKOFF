@@ -5,10 +5,10 @@ from sqlalchemy import Column, Integer, ForeignKey, String
 from sqlalchemy.orm import relationship, backref
 
 from walkoff.appgateway import get_transform
-from walkoff.core.argument import Argument
-from walkoff.devicedb import Device_Base
+from walkoff.coredb.argument import Argument
+from walkoff.coredb import Device_Base
 from walkoff.events import WalkoffEvent
-from walkoff.core.executionelements.executionelement import ExecutionElement
+from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import get_transform_api, InvalidArgument, split_api_params
 from walkoff.appgateway.validator import validate_transform_parameters
 

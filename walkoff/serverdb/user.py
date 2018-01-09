@@ -4,8 +4,8 @@ from passlib.hash import pbkdf2_sha512
 from sqlalchemy.ext.hybrid import hybrid_property
 
 from walkoff.server.extensions import db
-from walkoff.database.mixins import TrackModificationsMixIn
-from walkoff.database.role import Role
+from walkoff.database import TrackModificationsMixIn
+from walkoff.database import Role
 
 logger = logging.getLogger(__name__)
 

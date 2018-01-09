@@ -4,7 +4,7 @@ import os
 import walkoff.config.config
 import walkoff.config.paths
 import tests.config
-from walkoff.devicedb import Device, App, DeviceField, device_db
+from walkoff.coredb.devicedb import Device, App, DeviceField, device_db
 from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
 

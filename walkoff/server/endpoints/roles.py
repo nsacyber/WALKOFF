@@ -2,7 +2,7 @@ from flask import request, current_app
 from flask_jwt_extended import jwt_required
 
 from walkoff.database import clear_resources_for_role, get_all_available_resource_actions
-from walkoff.database.role import Role
+from walkoff.database import Role
 from walkoff.server.extensions import db
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions, admin_required

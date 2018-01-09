@@ -1,7 +1,7 @@
 import unittest
 import uuid
 
-from walkoff.core.executionelements.executionelement import ExecutionElement
+from walkoff.coredb.executionelement import ExecutionElement
 
 
 class B(ExecutionElement):

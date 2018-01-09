@@ -3,15 +3,15 @@ import logging
 import threading
 from copy import deepcopy
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship, backref
 
 from walkoff.appgateway.appinstance import AppInstance
-from walkoff.devicedb import Device_Base
+from walkoff.coredb import Device_Base
 from walkoff.events import WalkoffEvent
-from walkoff.core.executionelements.action import Action
-from walkoff.core.executionelements.branch import Branch
-from walkoff.core.executionelements.executionelement import ExecutionElement
+from walkoff.coredb.action import Action
+from walkoff.coredb.branch import Branch
+from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import UnknownAppAction, UnknownApp, InvalidArgument, format_exception_message
 
 logger = logging.getLogger(__name__)
@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 class Workflow(ExecutionElement, Device_Base):
     __tablename__ = 'workflow'
     id = Column(Integer, primary_key=True, autoincrement=True)
+    playbook_id = Column(Integer, ForeignKey('playbook.id'))
     name = Column(String(80))
     actions = relationship('Action', backref=backref('workflow'), cascade='all, delete-orphan')
     branches = relationship('Branch', backref=backref('workflow'), cascade='all, delete-orphan')

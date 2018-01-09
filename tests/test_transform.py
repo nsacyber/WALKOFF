@@ -3,8 +3,8 @@ import uuid
 
 import walkoff.appgateway
 import walkoff.config.config
-from walkoff.core.argument import Argument
-from walkoff.core.executionelements.transform import Transform
+from walkoff.coredb.argument import Argument
+from walkoff.coredb.transform import Transform
 from walkoff.helpers import UnknownTransform, InvalidArgument
 from tests.config import test_apps_path
 

@@ -1,8 +1,8 @@
 import json
 
 from walkoff.server.extensions import db
-from walkoff.database.user import User
-from walkoff.database.role import Role
+from walkoff.database import User
+from walkoff.database import Role
 from walkoff.database import add_user
 from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase

@@ -1,8 +1,9 @@
 import logging
 from copy import deepcopy
 
-from walkoff.core.executionelements.playbook import Playbook
-from walkoff.core.executionelements.workflow import Workflow
+from walkoff.coredb.devicedb import device_db
+from walkoff.coredb.playbook import Playbook
+from walkoff.coredb.workflow import Workflow
 from walkoff.core.jsonplaybookloader import JsonPlaybookLoader
 
 logger = logging.getLogger(__name__)
@@ -86,6 +87,8 @@ class PlaybookStore(object):
         """
         for playbook in loader.load_playbooks(resource_collection):
             self.add_playbook(playbook)
+        print(self.playbooks)
+        device_db.session.commit()
 
     def create_workflow(self, playbook_name, workflow_name):
         """
@@ -327,7 +330,7 @@ class PlaybookStore(object):
         playbook_workflows = {}
         for playbook_name, playbook in self.playbooks.items():
             for workflow_uid in workflow_uids:
-                workflow = playbook.get_workflow_by_uid(workflow_uid)
+                workflow = playbook.get_workflow_by_id(workflow_uid)
                 if workflow is not None:
                     if playbook_name in playbook_workflows:
                         playbook_workflows[playbook_name].append(workflow)

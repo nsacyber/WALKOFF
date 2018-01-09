@@ -4,9 +4,9 @@ from functools import total_ordering
 from sqlalchemy import Column, Integer, ForeignKey, String
 from sqlalchemy.orm import relationship, backref
 
-from walkoff.devicedb import Device_Base
+from walkoff.coredb import Device_Base
 from walkoff.events import WalkoffEvent
-from walkoff.core.executionelements.executionelement import ExecutionElement
+from walkoff.coredb.executionelement import ExecutionElement
 
 logger = logging.getLogger(__name__)
 

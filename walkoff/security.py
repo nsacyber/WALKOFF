@@ -12,7 +12,7 @@ from walkoff.server.extensions import jwt
 from walkoff.server.returncodes import FORBIDDEN_ERROR
 import walkoff.database
 from walkoff.server.returncodes import UNAUTHORIZED_ERROR
-from walkoff.database.tokens import is_token_revoked
+from walkoff.database import is_token_revoked
 import json
 import logging
 

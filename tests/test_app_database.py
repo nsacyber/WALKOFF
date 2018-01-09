@@ -1,6 +1,6 @@
 import unittest
 
-from walkoff.devicedb import App, Device
+from walkoff.coredb.devicedb import App, Device
 
 
 class TestAppDatabase(unittest.TestCase):

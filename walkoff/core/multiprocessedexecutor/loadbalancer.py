@@ -11,7 +11,7 @@ from six import string_types
 
 import walkoff.config.config
 import walkoff.config.paths
-from walkoff.core.argument import Argument
+from walkoff.coredb.argument import Argument
 from walkoff.events import WalkoffEvent
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket
 

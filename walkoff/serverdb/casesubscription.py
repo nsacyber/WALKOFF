@@ -3,7 +3,7 @@ import logging
 
 import walkoff.case.subscription
 from walkoff.server.extensions import db
-from walkoff.database.mixins import TrackModificationsMixIn
+from walkoff.serverdb.mixins import TrackModificationsMixIn
 
 
 class CaseSubscription(db.Model, TrackModificationsMixIn):

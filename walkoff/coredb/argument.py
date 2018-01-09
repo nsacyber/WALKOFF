@@ -4,7 +4,7 @@ import logging
 from sqlalchemy import Column, Integer, ForeignKey, String
 from sqlalchemy.types import TypeDecorator
 
-from walkoff.devicedb import Device_Base
+from walkoff.coredb import Device_Base
 from walkoff.helpers import InvalidArgument
 from walkoff.core.representable import Representable
 
@@ -15,13 +15,21 @@ class Json(TypeDecorator):
     impl = String
 
     def process_bind_param(self, value, dialect):
-        return json.dumps(value)
+        try:
+            ret = json.dumps(value)
+        except ValueError:
+            ret = value
+        return ret
 
     def process_result_value(self, value, dialect):
-        return json.loads(value)
+        try:
+            ret = json.loads(value)
+        except ValueError:
+            ret = json.loads(value)
+        return ret
 
     def copy(self, **kw):
-        return None
+        return self.adapt(self.__class__)
 
 
 class Argument(Representable, Device_Base):
@@ -30,7 +38,8 @@ class Argument(Representable, Device_Base):
     action_id = Column(Integer, ForeignKey('action.id'))
     condition_id = Column(Integer, ForeignKey('condition.id'))
     transform_id = Column(Integer, ForeignKey('transform.id'))
-    value = Column(String(255))
+    name = Column(String(255), nullable=False)
+    value = Column(Json(255))
     reference = Column(String(255))
     selection = Column(Json(255))
 

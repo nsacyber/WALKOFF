@@ -4,9 +4,8 @@ from datetime import timedelta
 
 from flask_jwt_extended import decode_token
 
-from walkoff.database import add_user, User
 from walkoff.server.returncodes import *
-from walkoff.database.tokens import *
+from walkoff.database import *
 
 
 class TestAuthorization(unittest.TestCase):
@@ -20,7 +19,7 @@ class TestAuthorization(unittest.TestCase):
     def tearDown(self):
         db.session.rollback()
         User.query.filter_by(username='test').delete()
-        from walkoff.database.tokens import BlacklistedToken
+        from walkoff.database import BlacklistedToken
         for token in BlacklistedToken.query.all():
             db.session.delete(token)
         for user in (user for user in User.query.all() if user.username != 'admin'):
@@ -114,7 +113,7 @@ class TestAuthorization(unittest.TestCase):
         refresh = self.app.post('/api/auth/refresh', content_type="application/json", headers=headers)
         self.assertEqual(refresh.status_code, UNAUTHORIZED_ERROR)
         token = decode_token(token)
-        from walkoff.database.tokens import BlacklistedToken
+        from walkoff.database import BlacklistedToken
 
         tokens = BlacklistedToken.query.filter_by(jti=token['jti']).all()
         self.assertEqual(len(tokens), 1)

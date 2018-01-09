@@ -9,11 +9,11 @@ from sqlalchemy.orm import relationship, backref
 import walkoff.config.config
 from walkoff.appgateway import get_app_action, is_app_action_bound
 from walkoff.core import contextdecorator
-from walkoff.core.argument import Argument
+from walkoff.coredb.argument import Argument
 from walkoff.core.actionresult import ActionResult
-from walkoff.devicedb import Device_Base
+from walkoff.coredb import Device_Base
 from walkoff.events import WalkoffEvent
-from walkoff.core.executionelements.executionelement import ExecutionElement
+from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
 from walkoff.appgateway.validator import validate_app_action_parameters
 

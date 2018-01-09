@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from apps import App as AppBase
-from walkoff.devicedb import App, Device, DeviceField, EncryptedDeviceField, device_db
+from walkoff.coredb.devicedb import App, Device, DeviceField, EncryptedDeviceField, device_db
 
 
 class TestAppBase(TestCase):

@@ -3,18 +3,16 @@ import sys
 
 import pyaes
 from sqlalchemy import Column, Integer, ForeignKey, String, create_engine, LargeBinary, Enum, DateTime, func
-from sqlalchemy.ext.declarative import declared_attr, declarative_base
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 
 import walkoff.config.paths
 from walkoff.config.config import secret_key as key
+from walkoff.coredb import Device_Base
 from walkoff.helpers import format_db_path
 from walkoff.appgateway.validator import convert_primitive_type
-
 logger = logging.getLogger(__name__)
-
-Device_Base = declarative_base()
 
 
 class UnknownDeviceField(Exception):
@@ -490,6 +488,14 @@ class DeviceDatabase(object):
     """
 
     def __init__(self):
+        from walkoff.coredb.argument import Argument
+        from walkoff.coredb.action import Action
+        from walkoff.coredb.branch import Branch
+        from walkoff.coredb.condition import Condition
+        from walkoff.coredb.playbook import Playbook
+        from walkoff.coredb.transform import Transform
+        from walkoff.coredb.workflow import Workflow
+
         self.engine = create_engine(format_db_path(
             walkoff.config.config.device_db_type, walkoff.config.paths.device_db_path))
         self.connection = self.engine.connect()
