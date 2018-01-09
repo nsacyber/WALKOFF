@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import * as _ from 'lodash';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import 'rxjs/add/operator/debounceTime';
@@ -128,7 +127,7 @@ export class SettingsComponent {
 		this.settingsService
 			.deleteUser(userToDelete.id)
 			.then(() => {
-				this.users = _.reject(this.users, user => user.id === userToDelete.id);
+				this.users = this.users.filter(user => user.id !== userToDelete.id);
 
 				this.filterUsers();
 
@@ -138,7 +137,7 @@ export class SettingsComponent {
 	}
 
 	getFriendlyRoles(roles: Role[]): string {
-		return _.map(roles, 'name').join(', ');
+		return roles.map(r => r.name).join(', ');
 	}
 
 	getFriendlyBool(val: boolean): string {
@@ -153,7 +152,7 @@ export class SettingsComponent {
 
 				//On edit, find and update the edited item
 				if (result.isEdit) {
-					const toUpdate = _.find(this.users, u => u.id === result.user.id);
+					const toUpdate = this.users.find(u => u.id === result.user.id);
 					Object.assign(toUpdate, result.user);
 
 					this.filterUsers();
