@@ -28,9 +28,9 @@ import { Role } from '../models/role';
 
 @Component({
 	selector: 'playbook-component',
-	templateUrl: 'client/playbook/playbook.html',
+	templateUrl: './playbook.html',
 	styleUrls: [
-		'client/playbook/playbook.css',
+		'./playbook.css',
 	],
 	encapsulation: ViewEncapsulation.None,
 	providers: [PlaybookService, AuthService],

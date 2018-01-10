@@ -4,9 +4,9 @@ import { DashboardService } from './dashboard.service';
 
 @Component({
 	selector: 'dashboard-component',
-	templateUrl: 'client/dashboard/dashboard.html',
+	templateUrl: './dashboard.html',
 	styleUrls: [
-		'client/dashboard/dashboard.css',
+		'./dashboard.css',
 	],
 	providers: [DashboardService],
 })

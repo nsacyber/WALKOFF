@@ -12,9 +12,9 @@ import { Subscription } from '../models/subscription';
 @Component({
 	encapsulation: ViewEncapsulation.None,
 	selector: 'case-modal',
-	templateUrl: 'client/cases/cases.modal.html',
+	templateUrl: './cases.modal.html',
 	styleUrls: [
-		'client/cases/cases.modal.css',
+		'./cases.modal.css',
 	],
 	providers: [CasesService],
 })

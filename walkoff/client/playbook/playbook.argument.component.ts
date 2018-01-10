@@ -16,7 +16,7 @@ const AVAILABLE_TYPES = ['string', 'number', 'boolean'];
 
 @Component({
 	selector: 'playbook-argument-component',
-	templateUrl: 'client/playbook/playbook.argument.html',
+	templateUrl: './playbook.argument.html',
 	styleUrls: [],
 	encapsulation: ViewEncapsulation.None,
 	providers: [PlaybookService],

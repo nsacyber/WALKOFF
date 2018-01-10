@@ -13,9 +13,9 @@ import { AppApi } from '../models/api/appApi';
 
 @Component({
 	selector: 'devices-component',
-	templateUrl: 'client/devices/devices.html',
+	templateUrl: './devices.html',
 	styleUrls: [
-		'client/devices/devices.css',
+		'./devices.css',
 	],
 	encapsulation: ViewEncapsulation.None,
 	providers: [DevicesService],

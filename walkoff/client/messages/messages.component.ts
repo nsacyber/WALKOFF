@@ -14,9 +14,9 @@ import { MessageListing } from '../models/message/messageListing';
 
 @Component({
 	selector: 'messages-component',
-	templateUrl: 'client/messages/messages.html',
+	templateUrl: './messages.html',
 	styleUrls: [
-		'client/messages/messages.css',
+		'./messages.css',
 	],
 	providers: [MessagesService],
 })

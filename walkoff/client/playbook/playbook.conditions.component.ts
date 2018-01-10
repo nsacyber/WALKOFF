@@ -11,7 +11,7 @@ import { Condition } from '../models/playbook/condition';
 
 @Component({
 	selector: 'playbook-conditions-component',
-	templateUrl: 'client/playbook/playbook.conditions.html',
+	templateUrl: './playbook.conditions.html',
 	styleUrls: [],
 	encapsulation: ViewEncapsulation.None,
 	providers: [PlaybookService],

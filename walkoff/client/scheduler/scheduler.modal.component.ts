@@ -14,9 +14,9 @@ import { GenericObject } from '../models/genericObject';
 
 @Component({
 	selector: 'scheduler-modal',
-	templateUrl: 'client/scheduler/scheduler.modal.html',
+	templateUrl: './scheduler.modal.html',
 	styleUrls: [
-		'client/scheduler/scheduler.css',
+		'./scheduler.css',
 	],
 	providers: [SchedulerService],
 })

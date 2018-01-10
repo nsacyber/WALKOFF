@@ -10,9 +10,9 @@ import { Select2OptionData } from 'ng2-select2/ng2-select2.interface';
 
 @Component({
 	selector: 'user-modal',
-	templateUrl: 'client/settings/settings.user.modal.html',
+	templateUrl: './settings.user.modal.html',
 	styleUrls: [
-		'client/settings/settings.css',
+		'./settings.css',
 	],
 	providers: [SettingsService],
 })

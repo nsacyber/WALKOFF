@@ -15,9 +15,9 @@ import { Role } from '../models/role';
 
 @Component({
 	selector: 'settings-component',
-	templateUrl: 'client/settings/settings.html',
+	templateUrl: './settings.html',
 	styleUrls: [
-		'client/settings/settings.css',
+		'./settings.css',
 	],
 	providers: [SettingsService],
 })
