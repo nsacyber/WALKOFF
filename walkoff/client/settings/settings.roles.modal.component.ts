@@ -11,9 +11,9 @@ import { Resource } from '../models/resource';
 
 @Component({
 	selector: 'settings-role-modal',
-	templateUrl: 'client/settings/settings.roles.modal.html',
+	templateUrl: './settings.roles.modal.html',
 	styleUrls: [
-		'client/settings/settings.css',
+		'./settings.css',
 	],
 	providers: [SettingsService],
 })

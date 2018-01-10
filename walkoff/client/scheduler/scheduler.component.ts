@@ -14,9 +14,9 @@ import { ScheduledTask } from '../models/scheduledTask';
 
 @Component({
 	selector: 'scheduler-component',
-	templateUrl: 'client/scheduler/scheduler.html',
+	templateUrl: './scheduler.html',
 	styleUrls: [
-		'client/scheduler/scheduler.css',
+		'./scheduler.css',
 	],
 	encapsulation: ViewEncapsulation.None,
 	providers: [SchedulerService],

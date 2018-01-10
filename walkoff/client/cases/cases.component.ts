@@ -25,10 +25,10 @@ interface ICaseHierarchy {
 
 @Component({
 	selector: 'cases-component',
-	templateUrl: 'client/cases/cases.html',
+	templateUrl: './cases.html',
 	encapsulation: ViewEncapsulation.None,
 	styleUrls: [
-		'client/cases/cases.css',
+		'./cases.css',
 	],
 	providers: [CasesService],
 })

@@ -14,9 +14,9 @@ import { GenericObject } from '../models/genericObject';
 
 @Component({
 	selector: 'settings-roles-component',
-	templateUrl: 'client/settings/settings.roles.html',
+	templateUrl: './settings.roles.html',
 	styleUrls: [
-		'client/settings/settings.css',
+		'./settings.css',
 	],
 	encapsulation: ViewEncapsulation.None,
 	providers: [SettingsService],

@@ -11,7 +11,7 @@ import { Transform } from '../models/playbook/transform';
 
 @Component({
 	selector: 'playbook-transforms-component',
-	templateUrl: 'client/playbook/playbook.transforms.html',
+	templateUrl: './playbook.transforms.html',
 	styleUrls: [],
 	encapsulation: ViewEncapsulation.None,
 	providers: [PlaybookService],

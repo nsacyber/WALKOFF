@@ -6,8 +6,8 @@ import { AuthService } from '../auth/auth.service';
 
 @Component({
 	selector: 'interfaces-component',
-	templateUrl: 'client/interfaces/interfaces.html',
-	styleUrls: ['client/interfaces/interfaces.css'],
+	templateUrl: './interfaces.html',
+	styleUrls: ['./interfaces.css'],
 	encapsulation: ViewEncapsulation.None,
 	providers: [AuthService],
 })

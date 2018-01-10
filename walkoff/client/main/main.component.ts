@@ -19,9 +19,9 @@ const MAX_TOTAL_MESSAGES = 20;
 
 @Component({
 	selector: 'main-component',
-	templateUrl: 'client/main/main.html',
+	templateUrl: './main.html',
 	styleUrls: [
-		'client/main/main.css',
+		'./main.css',
 	],
 	providers: [MainService, AuthService, UtilitiesService],
 })

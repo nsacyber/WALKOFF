@@ -11,9 +11,9 @@ import { ParameterSchema } from '../models/api/parameterSchema';
 
 @Component({
 	selector: 'device-modal',
-	templateUrl: 'client/devices/devices.modal.html',
+	templateUrl: './devices.modal.html',
 	styleUrls: [
-		'client/devices/devices.css',
+		'./devices.css',
 	],
 	providers: [DevicesService],
 })

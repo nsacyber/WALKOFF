@@ -9,9 +9,9 @@ import { Message } from '../models/message/message';
 
 @Component({
 	selector: 'messages-modal',
-	templateUrl: 'client/messages/messages.modal.html',
+	templateUrl: './messages.modal.html',
 	styleUrls: [
-		'client/messages/messages.css',
+		'./messages.css',
 	],
 	providers: [MessagesService],
 })
