@@ -4,6 +4,7 @@ data_path = join('.', 'data')
 
 api_path = join('.', 'walkoff', 'api')
 apps_path = join('.', 'apps')
+cache_path = join('.', 'data', 'cache')
 case_db_path = join(data_path, 'events.db')
 
 client_path = join('.', 'walkoff', 'client')
