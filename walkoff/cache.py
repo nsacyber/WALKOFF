@@ -53,11 +53,18 @@ class DiskCacheAdapter(object):
     def shutdown(self):
         self.cache.close()
 
+    def clear(self):
+        self.cache.clear()
+
+
 class RedisCacheAdapter(object):
 
-    def __init__(self, **opts):
-        from redis import StrictRedis
-        self.cache = StrictRedis(**opts)
+    def __init__(self, redis_cache=None, **opts):
+        if redis_cache is None:
+            from redis import StrictRedis
+            self.cache = StrictRedis(**opts)
+        else:
+            self.cache = redis_cache
 
     def set(self, key, value, expire=None, **opts):  # expire can be datetime or ms
         return self.cache.set(key, value, px=expire, **opts)
@@ -88,3 +95,6 @@ class RedisCacheAdapter(object):
 
     def shutdown(self):
         pass  # Redis's ConnectionPool should handle it
+
+    def clear(self):
+        self.cache.flushdb()
