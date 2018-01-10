@@ -81,6 +81,8 @@ class Condition(ExecutionElement, Device_Base):
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionError)
             return False
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             logger.error('Error encountered executing '
                          'condition {0} with arguments {1} and value {2}: '
                          'Error {3}. Returning False'.format(self.action_name, self.arguments, data,
@@ -92,6 +94,8 @@ class Condition(ExecutionElement, Device_Base):
         arg = None
         for argument in self.arguments:
             if argument.name == self._data_param_name:
-                arg = None
-        self.arguments.remove(arg)
+                arg = argument
+                break
+        if arg:
+            self.arguments.remove(arg)
         self.arguments.append(Argument(self._data_param_name, value=data))

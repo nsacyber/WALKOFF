@@ -2,7 +2,8 @@ from walkoff.security import ResourcePermissions, permissions_accepted_for_resou
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from walkoff.server.returncodes import *
 from flask import request
-from walkoff.database import User, Message
+from walkoff.serverdb import User
+from walkoff.serverdb.message import Message
 from walkoff.server.extensions import db
 
 max_notifications = 20

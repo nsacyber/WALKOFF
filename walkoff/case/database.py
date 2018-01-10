@@ -213,7 +213,7 @@ def get_case_db(_singleton=CaseDatabase()):
     return _singleton
 
 
-case_db = get_case_db()
+case_db = None
 
 
 # Initialize Module

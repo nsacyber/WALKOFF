@@ -362,7 +362,8 @@ def validate_parameters(api, arguments, message_prefix, accumulator=None):
         api_dict[param['name']] = param
     converted = {}
     seen_params = set()
-    arguments_set = set([argument.name for argument in arguments])
+    arg_names = [argument.name for argument in arguments] if arguments else []
+    arguments_set = set(arg_names)
     for param_name, param_api in api_dict.items():
         argument = get_argument_by_name(arguments, param_name)
         if argument:

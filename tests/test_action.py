@@ -2,6 +2,8 @@ import unittest
 
 import walkoff.appgateway
 import walkoff.config.config
+import walkoff.config.paths
+from walkoff import initialize_databases
 from walkoff.appgateway.appinstance import AppInstance
 from walkoff.coredb.argument import Argument
 from walkoff.core.actionresult import ActionResult
@@ -9,83 +11,72 @@ from walkoff.events import WalkoffEvent
 from walkoff.coredb.action import Action
 from walkoff.coredb.condition import Condition
 from walkoff.helpers import UnknownApp, UnknownAppAction, InvalidArgument
-from tests.config import test_apps_path
+import tests.config
 
 
 class TestAction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.appgateway.cache_apps(test_apps_path)
-        walkoff.config.config.load_app_apis(apps_path=test_apps_path)
+        walkoff.config.paths.db_path = tests.config.test_db_path
+        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
+        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+        initialize_databases()
+        walkoff.appgateway.cache_apps(tests.config.test_apps_path)
+        walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
 
-    def __compare_init(self, elem, name, action_name, app_name, device_id=None, arguments=None, triggers=None,
-                       position=None, uid=None, templated=False, raw_representation=None):
+    def __compare_init(self, elem, app_name, action_name, name=None, device_id=None, arguments=None, triggers=None,
+                       x_coordinate=None, y_coordinate=None, templated=False, raw_representation=None):
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.action_name, action_name)
         self.assertEqual(elem.app_name, app_name)
         self.assertEqual(elem.device_id, device_id)
         if arguments:
-            arguments = {arg.name: arg for arg in arguments}
-            self.assertDictEqual(elem.arguments, arguments)
-            self.assertDictEqual({key: argument for key, argument in elem.arguments.items()}, arguments)
+            self.assertListEqual(elem.arguments, arguments)
         if triggers:
             self.assertEqual(len(elem.triggers), len(triggers))
             self.assertSetEqual({trigger.action_name for trigger in elem.triggers}, set(triggers))
-        position = position if position is not None else {}
-        self.assertDictEqual(elem.position, position)
+        self.assertEqual(elem.x_coordinate, x_coordinate)
+        self.assertEqual(elem.y_coordinate, y_coordinate)
         if templated:
             self.assertTrue(elem.templated)
             self.assertDictEqual(elem._raw_representation, raw_representation)
         else:
             self.assertFalse(elem.templated)
             self.assertDictEqual(elem._raw_representation, {})
-        if uid is None:
-            self.assertIsNotNone(elem.uid)
-        else:
-            self.assertEqual(elem.uid, uid)
         self.assertIsNone(elem._output)
         self.assertEqual(elem._execution_uid, 'default')
 
     def test_init_default(self):
         action = Action('HelloWorld', 'helloWorld')
-        self.__compare_init(action, '', 'helloWorld', 'HelloWorld')
+        self.__compare_init(action, 'HelloWorld', 'helloWorld')
 
     def test_init_with_name(self):
         action = Action('HelloWorld', 'helloWorld', name='test')
-        self.__compare_init(action, 'test', 'helloWorld', 'HelloWorld')
-
-    def test_init_with_uid(self):
-        action = Action('HelloWorld', 'helloWorld', uid='test')
-        self.__compare_init(action, '', 'helloWorld', 'HelloWorld', uid='test')
+        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'test')
 
     def test_init_with_position(self):
-        action = Action('HelloWorld', 'helloWorld', position={'x': 13, 'y': 42})
-        self.__compare_init(action, '', 'helloWorld', 'HelloWorld', position={'x': 13, 'y': 42})
+        action = Action('HelloWorld', 'helloWorld', x_coordinate=13, y_coordinate=42)
+        self.__compare_init(action, 'HelloWorld', 'helloWorld', x_coordinate=13, y_coordinate=42)
 
     def test_init_templated(self):
         action = Action('HelloWorld', 'helloWorld', templated=True, raw_representation={'a': 42})
-        self.__compare_init(action, '', 'helloWorld', 'HelloWorld', templated=True, raw_representation={'a': 42})
+        self.__compare_init(action, 'HelloWorld', 'helloWorld', templated=True, raw_representation={'a': 42})
 
     def test_get_execution_uid(self):
         action = Action('HelloWorld', 'helloWorld')
         self.assertEqual(action.get_execution_uid(), action._execution_uid)
 
-    def test_init_super_class_is_constructed(self):
-        action = Action('HelloWorld', 'helloWorld')
-        self.assertIsInstance(action, Action)
-        self.assertIsNotNone(action.uid)
-
     def test_init_app_action_only(self):
         action = Action('HelloWorld', 'helloWorld')
-        self.__compare_init(action, '', 'helloWorld', 'HelloWorld')
+        self.__compare_init(action, 'HelloWorld', 'helloWorld')
 
     def test_init_app_and_action_name_different_than_method_name(self):
         action = Action(app_name='HelloWorld', action_name='Hello World')
-        self.__compare_init(action, '', 'Hello World', 'HelloWorld')
+        self.__compare_init(action, 'HelloWorld', 'Hello World')
 
     def test_init_invalid_app(self):
         with self.assertRaises(UnknownApp):
@@ -97,16 +88,16 @@ class TestAction(unittest.TestCase):
 
     def test_init_app_action_only_with_device(self):
         action = Action('HelloWorld', 'helloWorld', device_id='test')
-        self.__compare_init(action, '', 'helloWorld', 'HelloWorld', device_id='test')
+        self.__compare_init(action, 'HelloWorld', 'helloWorld', device_id='test')
 
     def test_init_with_arguments_no_conversion(self):
         action = Action('HelloWorld', 'returnPlusOne', arguments=[Argument('number', value=-5.6)])
-        self.__compare_init(action, '', 'returnPlusOne', 'HelloWorld',
+        self.__compare_init(action, 'HelloWorld', 'returnPlusOne',
                             arguments=[Argument('number', value=-5.6)])
 
     def test_init_with_arguments_with_conversion(self):
         action = Action('HelloWorld', 'returnPlusOne', arguments=[Argument('number', value='-5.6')])
-        self.__compare_init(action, '', 'returnPlusOne', 'HelloWorld',
+        self.__compare_init(action, 'HelloWorld', 'returnPlusOne',
                             arguments=[Argument('number', value='-5.6')])
 
     def test_init_with_invalid_argument_name(self):
@@ -117,11 +108,11 @@ class TestAction(unittest.TestCase):
         with self.assertRaises(InvalidArgument):
             Action('HelloWorld', 'returnPlusOne', arguments=[Argument('number', value='invalid')])
 
-    def test_init_with_flags(self):
+    def test_init_with_triggers(self):
         triggers = [Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='(.*)')]),
                     Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='a')])]
         action = Action('HelloWorld', 'helloWorld', triggers=triggers)
-        self.__compare_init(action, '', 'helloWorld', 'HelloWorld', triggers=['regMatch', 'regMatch'])
+        self.__compare_init(action, 'HelloWorld', 'helloWorld', triggers=['regMatch', 'regMatch'])
 
     def test_execute_no_args(self):
         action = Action(app_name='HelloWorld', action_name='helloWorld')
@@ -340,13 +331,9 @@ class TestAction(unittest.TestCase):
         arguments = [Argument('num1', value='-5.62'), Argument('num2', value='5'), Argument('num3', value='42.42')]
         action.set_arguments(arguments)
 
-        arguments = {'num1': Argument('num1', value='-5.62'),
-                     'num2': Argument('num2', value='5'),
-                     'num3': Argument('num3', value='42.42')}
         self.assertEqual(len(action.arguments), len(arguments))
-        for arg_name, arg in action.arguments.items():
-            self.assertIn(arg_name, arguments)
-            self.assertEqual(arg, arguments[arg_name])
+        for arg in action.arguments:
+            self.assertIn(arg, arguments)
 
     def test_set_args_invalid_name(self):
         action = Action(app_name='HelloWorld', action_name='Add Three',

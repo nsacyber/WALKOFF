@@ -9,8 +9,8 @@ from walkoff import helpers
 from walkoff.config import paths
 from walkoff.helpers import format_db_path
 from walkoff.server.extensions import db, jwt
-from walkoff.database import CaseSubscription
-from walkoff.database import add_user, User, Role, initialize_default_resources_admin, \
+from walkoff.serverdb.casesubscription import CaseSubscription
+from walkoff.serverdb import add_user, User, Role, initialize_default_resources_admin, \
     initialize_default_resources_guest
 
 logger = logging.getLogger(__name__)

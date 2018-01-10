@@ -108,6 +108,8 @@ if __name__ == "__main__":
     exit_code = 0
     try:
         config.initialize()
+        from walkoff import initialize_databases
+        initialize_databases()
         run(*convert_host_port(args))
     except KeyboardInterrupt:
         logger.info('Caught KeyboardInterrupt!')

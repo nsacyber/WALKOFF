@@ -5,8 +5,10 @@ from os import path
 import os
 import shutil
 
+from walkoff import initialize_databases
 import walkoff.appgateway
 import walkoff.config.config
+import walkoff.config.paths
 import walkoff.controller
 from tests import config
 from tests.util.case_db_help import *
@@ -18,6 +20,10 @@ class TestZMQCommunication(unittest.TestCase):
     def setUpClass(cls):
         from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
         walkoff.config.config.num_processes = 2
+        walkoff.config.paths.db_path = config.test_db_path
+        walkoff.config.paths.case_db_path = config.test_case_db_path
+        walkoff.config.paths.device_db_path = config.test_device_db_path
+        initialize_databases()
         pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)
         walkoff.controller.controller.initialize_threading(pids)
         walkoff.appgateway.cache_apps(config.test_apps_path)

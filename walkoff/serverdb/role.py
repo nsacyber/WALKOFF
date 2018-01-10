@@ -1,6 +1,6 @@
 from walkoff.server.extensions import db
-from walkoff.database import TrackModificationsMixIn
-from walkoff.database import Resource
+from walkoff.serverdb.mixins import TrackModificationsMixIn
+from walkoff.serverdb.resource import Resource
 
 
 class Role(db.Model, TrackModificationsMixIn):

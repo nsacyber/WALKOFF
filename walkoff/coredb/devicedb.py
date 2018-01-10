@@ -514,6 +514,6 @@ def get_device_db(_singleton=DeviceDatabase()):
     return _singleton
 
 
-device_db = get_device_db()
+device_db = None
 """The SQLAlchemy engine/connection object for the device database
 """

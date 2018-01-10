@@ -12,6 +12,7 @@ from walkoff.core import contextdecorator
 from walkoff.coredb.argument import Argument
 from walkoff.core.actionresult import ActionResult
 from walkoff.coredb import Device_Base
+from walkoff.coredb.type_decorators import Json
 from walkoff.events import WalkoffEvent
 from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
@@ -35,16 +36,16 @@ class Action(ExecutionElement, Device_Base):
     x_coordinate = Column(Integer)
     y_coordinate = Column(Integer)
     templated = Column(Boolean)
-    raw_representation = Column(String)
+    raw_representation = Column(Json)
 
-    def __init__(self, app_name, action_name, name='', device_id=None, arguments=None, triggers=None, x_coordinate=None,
-                 y_coordinate=None, templated=False, raw_representation=None):
+    def __init__(self, app_name, action_name, name=None, device_id=None, arguments=None, triggers=None,
+                 x_coordinate=None, y_coordinate=None, templated=False, raw_representation=None):
         """Initializes a new Action object. A Workflow has many actions that it executes.
 
         Args:
             app_name (str): The name of the app associated with the Action
             action_name (str): The name of the action associated with a Action
-            name (str, optional): The name of the Action object. Defaults to an empty string.
+            name (str, optional): The name of the Action object. Defaults to None.
             device_id (int, optional): The id of the device associated with the app associated with the Action. Defaults
                 to None.
             arguments (list[Argument], optional): A list of Argument objects that are parameters to the action.

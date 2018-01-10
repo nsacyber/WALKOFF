@@ -7,12 +7,12 @@ import apps
 import walkoff.appgateway
 import walkoff.config.config
 import walkoff.config.paths
-import walkoff.server.flaskserver
-import tests.config
+from walkoff import initialize_databases
 import tests.config
 from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from tests.util.mock_objects import *
 from tests.util.thread_control import *
+from walkoff.server.endpoints.appapi import *
 
 if not getattr(__builtins__, 'WindowsError', None):
     class WindowsError(OSError): pass
@@ -56,11 +56,18 @@ class ServerTestCase(unittest.TestCase):
             if os.path.isfile(tests.config.test_data_path):
                 os.remove(tests.config.test_data_path)
             os.makedirs(tests.config.test_data_path)
+
+        walkoff.config.paths.db_path = tests.config.test_db_path
+        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
+        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+        initialize_databases()
+
         walkoff.appgateway.cache_apps(path=tests.config.test_apps_path)
         walkoff.config.config.app_apis = {}
         walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
         walkoff.config.config.num_processes = 2
 
+        import walkoff.server.flaskserver
         cls.context = walkoff.server.flaskserver.app.test_request_context()
         cls.context.push()
 
@@ -78,6 +85,7 @@ class ServerTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        import walkoff.server.flaskserver
         if tests.config.test_data_path in os.listdir(tests.config.test_path):
             if os.path.isfile(tests.config.test_data_path):
                 os.remove(tests.config.test_data_path)
@@ -87,6 +95,7 @@ class ServerTestCase(unittest.TestCase):
         walkoff.server.flaskserver.running_context.controller.shutdown_pool()
 
     def setUp(self):
+        import walkoff.server.flaskserver
         walkoff.config.paths.workflows_path = tests.config.test_workflows_path_with_generated
         walkoff.config.paths.apps_path = tests.config.test_apps_path
         walkoff.config.paths.default_appdevice_export_path = tests.config.test_appdevice_backup

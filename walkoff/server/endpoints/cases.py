@@ -9,10 +9,10 @@ import walkoff.case.subscription as case_subscription
 import walkoff.config.paths
 from walkoff.case.subscription import delete_cases
 from walkoff.helpers import format_exception_message
-from walkoff.database import db
+from walkoff.serverdb import db
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
-from walkoff.database import CaseSubscription
+from walkoff.serverdb.casesubscription import CaseSubscription
 
 
 def read_all_cases():
