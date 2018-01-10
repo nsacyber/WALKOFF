@@ -8,7 +8,6 @@ import sys
 sys.path.append(os.path.abspath('.'))
 from walkoff.appgateway import cache_apps, clear_cache
 from walkoff.config.config import load_app_apis
-from tests import config as test_config
 import importlib
 import scripts.migrations.workflows.versions as versions
 import walkoff.config.paths
@@ -71,8 +70,8 @@ def convert_playbooks(mode, tgt_version):
     # walkoff.config.paths.case_db_path = tests.config.test_case_db_path
     # walkoff.config.paths.device_db_path = tests.config.test_device_db_path
     # initialize_databases()
-    # cache_apps(test_config.test_apps_path)
-    # load_app_apis(apps_path=test_config.test_apps_path)
+    # cache_apps(tests.config.test_apps_path)
+    # load_app_apis(apps_path=tests.config.test_apps_path)
     # for subd, d, files in os.walk(join('tests')):
     #     for f in files:
     #         if f.endswith('.playbook'):
