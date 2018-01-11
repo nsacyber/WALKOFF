@@ -227,12 +227,14 @@ export class PlaybookArgumentComponent {
 	 */
 	isNormalArray(schema: ParameterSchema): boolean {
 		if (schema.type !== 'array') { return false; }
-		if (Array.isArray(schema.items)) {
-			(schema.items as GenericObject[]).forEach(i => {
-				if (i.type === 'user' || i.type === 'role') { return false; }
-			});
-		} else if (schema.items.type === 'user' || schema.items.type === 'role') { return false; }
-
+		//Is Array Empty?
+		if(typeof schema.items !== 'undefined' && schema.items.length > 0){
+            if (Array.isArray(schema.items)) {
+                    (schema.items as GenericObject[]).forEach(i => {
+                        if (i.type === 'user' || i.type === 'role') { return false; }
+                    });
+		    } else if (schema.items.type === 'user' || schema.items.type === 'role') { return false; }
+		}
 		return true;
 	}
 
