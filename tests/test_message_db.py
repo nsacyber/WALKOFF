@@ -1,10 +1,10 @@
 from unittest import TestCase
-from walkoff.database import Message, MessageHistory
+from walkoff.serverdb.message import Message, MessageHistory
 from walkoff.messaging import MessageAction
 import walkoff.messaging
 from walkoff.messaging.utils import strip_requires_response_from_message_body, save_message, \
     get_all_matching_users_for_message, log_action_taken_on_message
-from walkoff.database import db, User, Role
+from walkoff.serverdb import db, User, Role
 from walkoff.server import flaskserver
 from datetime import datetime
 from walkoff.events import WalkoffEvent

@@ -217,9 +217,9 @@ class TestInputValidation(unittest.TestCase):
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
             {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725}]
-        arguments = {'name1': Argument('name1', value='test'),
-                     'name2': Argument('name2', value='5'),
-                     'name3': Argument('name3', value='10.2378')}
+        arguments = [Argument('name1', value='test'),
+                     Argument('name2', value='5'),
+                     Argument('name3', value='10.2378')]
         expected = {'name1': 'test', 'name2': 5, 'name3': 10.2378}
         self.assertDictEqual(validate_parameters(parameter_apis, arguments, self.message), expected)
 
@@ -228,9 +228,9 @@ class TestInputValidation(unittest.TestCase):
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
             {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725}]
-        arguments = {'name1': Argument('name1', value='test'),
-                     'name2': Argument('name2', value='5'),
-                     'name3': Argument('name3', value='-11.2378')}
+        arguments = [Argument('name1', value='test'),
+                     Argument('name2', value='5'),
+                     Argument('name3', value='-11.2378')]
         with self.assertRaises(InvalidArgument):
             validate_parameters(parameter_apis, arguments, self.message)
 
@@ -239,8 +239,8 @@ class TestInputValidation(unittest.TestCase):
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
             {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725, 'default': 10.25}]
-        arguments = {'name1': Argument('name1', value='test'),
-                     'name2': Argument('name2', value='5')}
+        arguments = [Argument('name1', value='test'),
+                     Argument('name2', value='5')]
         expected = {'name1': 'test', 'name2': 5, 'name3': 10.25}
         self.assertDictEqual(validate_parameters(parameter_apis, arguments, self.message), expected)
 
@@ -249,8 +249,8 @@ class TestInputValidation(unittest.TestCase):
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
             {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725, 'default': 'abc'}]
-        arguments = {'name1': Argument('name1', value='test'),
-                     'name2': Argument('name2', value='5')}
+        arguments = [Argument('name1', value='test'),
+                     Argument('name2', value='5')]
         expected = {'name1': 'test', 'name2': 5, 'name3': 'abc'}
         self.assertDictEqual(validate_parameters(parameter_apis, arguments, self.message), expected)
 
@@ -259,8 +259,8 @@ class TestInputValidation(unittest.TestCase):
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
             {'name': 'name3', 'type': 'number', 'minimum': -10.5, 'maximum': 30.725}]
-        arguments = {'name1': Argument('name1', value='test'),
-                     'name2': Argument('name2', value='5')}
+        arguments = [Argument('name1', value='test'),
+                     Argument('name2', value='5')]
         expected = {'name1': 'test', 'name2': 5, 'name3': None}
         self.assertAlmostEqual(validate_parameters(parameter_apis, arguments, self.message), expected)
 
@@ -269,8 +269,8 @@ class TestInputValidation(unittest.TestCase):
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
             {'name': 'name3', 'type': 'number', 'required': True, 'minimum': -10.5, 'maximum': 30.725}]
-        arguments = {'name1': Argument('name1', value='test'),
-                     'name2': Argument('name2', value='5')}
+        arguments = [Argument('name1', value='test'),
+                     Argument('name2', value='5')]
         with self.assertRaises(InvalidArgument):
             validate_parameters(parameter_apis, arguments, self.message)
 
@@ -278,9 +278,9 @@ class TestInputValidation(unittest.TestCase):
         parameter_apis = [
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25}]
-        arguments = {'name1': Argument('name1', value='test'),
-                     'name2': Argument('name2', value='5'),
-                     'name3': Argument('name3', value='-11.2378')}
+        arguments = [Argument('name1', value='test'),
+                     Argument('name2', value='5'),
+                     Argument('name3', value='-11.2378')]
         with self.assertRaises(InvalidArgument):
             validate_parameters(parameter_apis, arguments, self.message)
 
@@ -289,9 +289,9 @@ class TestInputValidation(unittest.TestCase):
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
             {'name': 'name3', 'type': 'number', 'required': True, 'minimum': -10.5, 'maximum': 30.725}]
-        arguments = {'name1': Argument('name1', value='test'),
-                     'name2': Argument('name2', value='5'),
-                     'name3': Argument('name3', reference='action1')}
+        arguments = [Argument('name1', value='test'),
+                     Argument('name2', value='5'),
+                     Argument('name3', reference='action1')]
         expected = {'name1': 'test', 'name2': 5}
         self.assertDictEqual(validate_parameters(parameter_apis, arguments, self.message), expected)
 
@@ -300,9 +300,9 @@ class TestInputValidation(unittest.TestCase):
             {'name': 'name1', 'type': 'string', 'minLength': 1, 'maxLength': 25, 'enum': ['test', 'test3']},
             {'name': 'name2', 'type': 'integer', 'minimum': -3, 'maximum': 25},
             {'name': 'name3', 'type': 'number', 'required': True, 'minimum': -10.5, 'maximum': 30.725}]
-        arguments = {'name1': Argument('name1', value='test'),
-                     'name2': Argument('name2', value=5),
-                     'name3': Argument('name3', reference='action1')}
+        arguments = [Argument('name1', value='test'),
+                     Argument('name2', value=5),
+                     Argument('name3', reference='action1')]
         expected = {'name1': 'test', 'name2': 5}
         self.assertDictEqual(validate_parameters(parameter_apis, arguments, self.message), expected)
 

@@ -2,6 +2,7 @@ import os
 import sys
 
 sys.path.append(os.path.abspath('.'))
+import walkoff.coredb.devicedb
 from walkoff.coredb.argument import Argument
 from walkoff.coredb.action import Action
 from walkoff.coredb.branch import Branch
@@ -9,7 +10,6 @@ from walkoff.coredb.condition import Condition
 from walkoff.coredb.playbook import Playbook
 from walkoff.coredb.transform import Transform
 from walkoff.coredb.workflow import Workflow
-from walkoff.coredb.devicedb import device_db
 
 # import walkoff.__version__ as walkoff_version
 
@@ -36,8 +36,8 @@ def upgrade_playbook(playbook):
 
     playbook_obj = Playbook(name=playbook['name'], workflows=workflows)
 
-    device_db.session.add(playbook_obj)
-    device_db.session.commit()
+    walkoff.coredb.devicedb.device_db.session.add(playbook_obj)
+    walkoff.coredb.devicedb.device_db.session.commit()
 
 
 def upgrade_workflow(workflow):
@@ -59,8 +59,8 @@ def upgrade_workflow(workflow):
     name = workflow['name'] if 'name' in workflow else None
     workflow_obj = Workflow(name=name, actions=actions, branches=branches, start=start)
 
-    device_db.session.add(workflow_obj)
-    device_db.session.commit()
+    walkoff.coredb.devicedb.device_db.session.add(workflow_obj)
+    walkoff.coredb.devicedb.device_db.session.commit()
     return workflow_obj
 
 
@@ -90,8 +90,8 @@ def convert_action(action):
                         x_coordinate=x_coordinate, y_coordinate=y_coordinate, templated=templated,
                         raw_representation=raw_representation, arguments=arguments, triggers=triggers)
 
-    device_db.session.add(action_obj)
-    device_db.session.commit()
+    walkoff.coredb.devicedb.device_db.session.add(action_obj)
+    walkoff.coredb.devicedb.device_db.session.commit()
 
     action['id'] = action_obj.id
 
@@ -104,8 +104,8 @@ def convert_arg(arg):
     selection = arg['selection'] if 'selection' in arg else None
 
     arg_obj = Argument(name=arg['name'], value=value, reference=reference, selection=selection)
-    device_db.session.add(arg_obj)
-    device_db.session.commit()
+    walkoff.coredb.devicedb.device_db.session.add(arg_obj)
+    walkoff.coredb.devicedb.device_db.session.commit()
 
     return arg_obj
 
@@ -124,8 +124,8 @@ def convert_condition(condition):
     condition_obj = Condition(app_name=condition['app_name'], action_name=condition['action_name'], arguments=arguments,
                               transforms=transforms)
 
-    device_db.session.add(condition_obj)
-    device_db.session.commit()
+    walkoff.coredb.devicedb.device_db.session.add(condition_obj)
+    walkoff.coredb.devicedb.device_db.session.commit()
     return condition_obj
 
 
@@ -137,8 +137,8 @@ def convert_transform(transform):
 
     transform_obj = Transform(app_name=transform['app_name'], action_name=transform['action_name'], arguments=arguments)
 
-    device_db.session.add(transform_obj)
-    device_db.session.commit()
+    walkoff.coredb.devicedb.device_db.session.add(transform_obj)
+    walkoff.coredb.devicedb.device_db.session.commit()
     return transform_obj
 
 
@@ -164,6 +164,6 @@ def convert_branch(branch, actions):
     else:
         branch_obj = Branch(source_id=source_id, destination_id=destination_id, status=status, conditions=conditions)
 
-    device_db.session.add(branch_obj)
-    device_db.session.commit()
+    walkoff.coredb.devicedb.device_db.session.add(branch_obj)
+    walkoff.coredb.devicedb.device_db.session.commit()
     return branch_obj

@@ -16,8 +16,8 @@ class Branch(ExecutionElement, Device_Base):
     __tablename__ = 'branch'
     id = Column(Integer, primary_key=True, autoincrement=True)
     workflow_id = Column(Integer, ForeignKey('workflow.id'))
-    source_id = Column(String(80), nullable=False)
-    destination_id = Column(String(80), nullable=False)
+    source_id = Column(Integer, nullable=False)
+    destination_id = Column(Integer, nullable=False)
     status = Column(String(80))
     conditions = relationship('Condition', backref=backref('branch'), cascade='all, delete-orphan')
     priority = Column(Integer)
@@ -26,8 +26,8 @@ class Branch(ExecutionElement, Device_Base):
         """Initializes a new Branch object.
         
         Args:
-            source_id (str): The ID of the source action that will be sending inputs to this Branch.
-            destination_id (str): The ID of the destination action that will be returned if the conditions for this
+            source_id (int): The ID of the source action that will be sending inputs to this Branch.
+            destination_id (int): The ID of the destination action that will be returned if the conditions for this
                 Branch are met.
             status (str, optional): Optional field to keep track of the status of the Branch. Defaults to
                 "Success".
@@ -48,7 +48,7 @@ class Branch(ExecutionElement, Device_Base):
             self.conditions = conditions
 
     def __eq__(self, other):
-        return self.source_id == other.source_uid and self.destination_id == other.destination_uid and \
+        return self.source_id == other.source_id and self.destination_id == other.destination_id and \
                self.status == other.status and set(self.conditions) == set(other.conditions)
 
     def __lt__(self, other):

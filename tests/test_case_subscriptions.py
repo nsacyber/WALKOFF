@@ -3,9 +3,19 @@ import unittest
 
 import walkoff.case.database as db
 import walkoff.case.subscription as subs
+import walkoff.config.paths
+import tests.config
+from walkoff import initialize_databases
 
 
 class TestCases(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        walkoff.config.paths.db_path = tests.config.test_db_path
+        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
+        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+        initialize_databases()
+
     def setUp(self):
         subs.clear_subscriptions()
         self.cases1 = {'case1': {'uid1': ['e1', 'e2', 'e3'],

@@ -5,10 +5,23 @@ from datetime import timedelta
 from flask_jwt_extended import decode_token
 
 from walkoff.server.returncodes import *
-from walkoff.database import *
+from walkoff.serverdb.tokens import BlacklistedToken
+from walkoff.serverdb.user import User
+from walkoff.serverdb import add_user
+from walkoff.server.extensions import db
+import walkoff.config.paths
+import tests.config
+from walkoff import initialize_databases
 
 
 class TestAuthorization(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        walkoff.config.paths.db_path = tests.config.test_db_path
+        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
+        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+        initialize_databases()
+
     def setUp(self):
         import walkoff.server.flaskserver
         self.app = walkoff.server.flaskserver.app.test_client(self)
@@ -19,7 +32,6 @@ class TestAuthorization(unittest.TestCase):
     def tearDown(self):
         db.session.rollback()
         User.query.filter_by(username='test').delete()
-        from walkoff.database import BlacklistedToken
         for token in BlacklistedToken.query.all():
             db.session.delete(token)
         for user in (user for user in User.query.all() if user.username != 'admin'):
@@ -113,7 +125,6 @@ class TestAuthorization(unittest.TestCase):
         refresh = self.app.post('/api/auth/refresh', content_type="application/json", headers=headers)
         self.assertEqual(refresh.status_code, UNAUTHORIZED_ERROR)
         token = decode_token(token)
-        from walkoff.database import BlacklistedToken
 
         tokens = BlacklistedToken.query.filter_by(jti=token['jti']).all()
         self.assertEqual(len(tokens), 1)

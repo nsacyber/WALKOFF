@@ -1,6 +1,10 @@
 import unittest
 
-from walkoff.database import db, Role, Resource, default_resources, initialize_default_resources_admin
+try:
+    from walkoff.serverdb import db, Role, Resource, default_resources, initialize_default_resources_admin
+except Exception:
+    import traceback
+    traceback.print_exc()
 
 
 class TestRoles(unittest.TestCase):

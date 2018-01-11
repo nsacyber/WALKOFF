@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import Column, Integer, ForeignKey, String
+from sqlalchemy import Column, Integer, ForeignKey, String, orm
 from sqlalchemy.orm import relationship, backref
 
 from walkoff.appgateway import get_condition
@@ -51,7 +51,11 @@ class Condition(ExecutionElement, Device_Base):
         if transforms:
             self.transforms = transforms
 
-        # TODO: Reset variables
+        self._condition_executable = get_condition(self.app_name, self._run)
+
+    @orm.reconstructor
+    def init_on_load(self):
+        self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
         self._condition_executable = get_condition(self.app_name, self._run)
 
     def execute(self, data_in, accumulator):
@@ -81,8 +85,6 @@ class Condition(ExecutionElement, Device_Base):
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionError)
             return False
         except Exception as e:
-            import traceback
-            traceback.print_exc()
             logger.error('Error encountered executing '
                          'condition {0} with arguments {1} and value {2}: '
                          'Error {3}. Returning False'.format(self.action_name, self.arguments, data,

@@ -1,6 +1,9 @@
 import importlib
 import unittest
 
+import walkoff.config.paths
+import tests.config
+from walkoff import initialize_databases
 import walkoff.appgateway
 from walkoff.appgateway import appinstance
 from tests.config import test_apps_path
@@ -9,6 +12,10 @@ from tests.config import test_apps_path
 class TestInstance(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        walkoff.config.paths.db_path = tests.config.test_db_path
+        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
+        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+        initialize_databases()
         walkoff.appgateway.cache_apps(test_apps_path)
 
     @classmethod

@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import Column, Integer, ForeignKey, String
+from sqlalchemy import Column, Integer, ForeignKey, String, orm
 
 from walkoff.coredb.type_decorators import Json
 from walkoff.coredb import Device_Base
@@ -45,6 +45,10 @@ class Argument(Representable, Device_Base):
         self.reference = reference if reference else None
         self.selection = selection if selection else None
         self._is_reference = True if value is None else False
+
+    @orm.reconstructor
+    def init_on_load(self):
+        self._is_reference = True if self.value is None else False
 
     def is_ref(self):
         """Returns whether the reference field is being used, or the value field.

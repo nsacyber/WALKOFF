@@ -173,25 +173,25 @@ class MultiprocessedExecutor(object):
         Returns:
             The execution UID of the Workflow.
         """
-        uid = str(uuid.uuid4())
+        execution_uid = str(uuid.uuid4())
 
         if start is not None:
             logger.info('Executing workflow {0} for action {1}'.format(workflow.name, start))
         else:
             logger.info('Executing workflow {0} with default starting action'.format(workflow.name, start))
-        self.workflow_status[uid] = WORKFLOW_RUNNING
+        self.workflow_status[execution_uid] = WORKFLOW_RUNNING
 
         workflow_json = workflow.read()
         if start:
             workflow_json['start'] = start
         if start_arguments:
             workflow_json['start_arguments'] = start_arguments
-        workflow_json['execution_uid'] = uid
+        workflow_json['execution_uid'] = execution_uid
         self.manager.add_workflow(workflow_json)
 
         WalkoffEvent.SchedulerJobExecuted.send(self)
         # TODO: Find some way to catch a validation error. Maybe pre-validate the argument in the controller?
-        return uid
+        return execution_uid
 
     def pause_workflow(self, execution_uid):
         """Pauses a workflow that is currently executing.

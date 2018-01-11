@@ -9,11 +9,19 @@ import walkoff.core.multiprocessedexecutor
 from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from tests import config
 from tests.util.mock_objects import *
+import tests.config
+import walkoff.config.paths
+from walkoff import initialize_databases
+import walkoff.coredb.devicedb
 
 
 class TestExecutionEvents(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        walkoff.config.paths.db_path = tests.config.test_db_path
+        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
+        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+        initialize_databases()
         walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
         MultiprocessedExecutor.initialize_threading = mock_initialize_threading
@@ -34,10 +42,10 @@ class TestExecutionEvents(unittest.TestCase):
         walkoff.controller.controller.shutdown_pool()
 
     def test_workflow_execution_events(self):
-        self.c.load_playbook(resource=config.test_workflows_path + 'multiactionWorkflowTest.playbook')
-        workflow_uid = self.c.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow').uid
-        subs = {'case1': {workflow_uid: [WalkoffEvent.AppInstanceCreated.signal_name,
-                                         WalkoffEvent.WorkflowShutdown.signal_name]}}
+        # self.c.load_playbook(resource=config.test_workflows_path + 'multiactionWorkflowTest.playbook')
+        workflow_id = self.c.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow').id
+        subs = {'case1': {workflow_id: [WalkoffEvent.AppInstanceCreated.signal_name,
+                                        WalkoffEvent.WorkflowShutdown.signal_name]}}
         case_subscription.set_subscriptions(subs)
         self.c.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 

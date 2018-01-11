@@ -2,7 +2,7 @@ import unittest
 from datetime import datetime, timedelta
 
 import walkoff.server.flaskserver
-from walkoff.database import db, User, Role, add_user, remove_user
+from walkoff.serverdb import db, User, Role, add_user, remove_user
 
 
 class TestUserRolesDatabase(unittest.TestCase):

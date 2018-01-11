@@ -1,10 +1,7 @@
 import json
 
-import walkoff.database
 import walkoff.server.flaskserver
-from walkoff.database import Role
-from walkoff.database import Resource
-from walkoff.database import default_resources
+from walkoff.serverdb import Role, Resource, default_resources
 from walkoff.server.extensions import db
 from walkoff.server.returncodes import *
 from tests.util import servertestcase
@@ -143,7 +140,7 @@ class TestRolesServer(servertestcase.ServerTestCase):
         expected['description'] = 'new_desc'
         expected['id'] = role_id
         expected['resources'] = [{'name': 'resource4', 'permissions': ['create']},
-                                   {'name': 'resource5', 'permissions': ['create']}]
+                                 {'name': 'resource5', 'permissions': ['create']}]
         self.assertRoleJsonIsEqual(response, expected)
 
     def test_update_role_with_resources_permissions(self):
@@ -163,7 +160,7 @@ class TestRolesServer(servertestcase.ServerTestCase):
         expected['description'] = 'new_desc'
         expected['id'] = role_id
         expected['resources'] = [{'name': 'resource4', 'permissions': ['read']},
-                                   {'name': 'resource5', 'permissions': ['delete']}]
+                                 {'name': 'resource5', 'permissions': ['delete']}]
         self.assertRoleJsonIsEqual(response, expected)
 
     def test_update_role_with_invalid_id(self):
@@ -187,10 +184,10 @@ class TestRolesServer(servertestcase.ServerTestCase):
                               {'name': '/roles', 'permissions': ['create']}]}
         self.app.post('/api/roles', headers=self.headers, content_type='application/json', data=json.dumps(data))
         for resource in resources:
-            rsrc = walkoff.database.Resource.query.filter_by(name=resource['name']).first()
+            rsrc = Resource.query.filter_by(name=resource['name']).first()
             self.assertIsNone(rsrc)
         for resource in ['resource4', 'resource5']:
-            rsrc = walkoff.database.Resource.query.filter_by(name=resource).first()
+            rsrc = Resource.query.filter_by(name=resource).first()
             self.assertIsNotNone(rsrc)
 
     def test_delete_role(self):
@@ -215,5 +212,5 @@ class TestRolesServer(servertestcase.ServerTestCase):
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
         self.delete_with_status_check('/api/roles/{}'.format(role_id), headers=self.headers, status_code=SUCCESS)
-        role = walkoff.database.Role.query.filter_by(id=role_id).first()
+        role = Role.query.filter_by(id=role_id).first()
         self.assertIsNone(role)

@@ -4,21 +4,22 @@ from flask import current_app, request
 from flask_jwt_extended import jwt_required
 
 import walkoff.config.paths
-from walkoff.coredb.devicedb import Device, App, device_db
+from walkoff.coredb.devicedb import Device, App
+import walkoff.coredb.devicedb
 from walkoff.helpers import get_app_device_api, InvalidArgument, UnknownDevice, UnknownApp, format_exception_message
 from walkoff.appgateway.validator import validate_device_fields
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import with_resource_factory
 
-
 with_device = with_resource_factory(
-    'device', lambda device_id: device_db.session.query(Device).filter(Device.id == device_id).first())
+    'device',
+    lambda device_id: walkoff.coredb.devicedb.device_db.session.query(Device).filter(Device.id == device_id).first())
 
 
 def get_device_json_with_app_name(device):
     device_json = device.as_json()
-    app = device_db.session.query(App).filter(App.id == device.app_id).first()
+    app = walkoff.coredb.devicedb.device_db.session.query(App).filter(App.id == device.app_id).first()
     device_json['app_name'] = app.name if app is not None else ''
     return device_json
 
@@ -27,7 +28,8 @@ def read_all_devices():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('devices', ['read']))
     def __func():
-        return [get_device_json_with_app_name(device) for device in device_db.session.query(Device).all()], SUCCESS
+        return [get_device_json_with_app_name(device) for device in
+                walkoff.coredb.devicedb.device_db.session.query(Device).all()], SUCCESS
 
     return __func()
 
@@ -47,9 +49,9 @@ def delete_device(device_id):
     @permissions_accepted_for_resources(ResourcePermissions('devices', ['delete']))
     @with_device('delete', device_id)
     def __func(device):
-        device_db.session.delete(device)
+        walkoff.coredb.devicedb.device_db.session.delete(device)
         current_app.logger.info('Device removed {0}'.format(device_id))
-        device_db.session.commit()
+        walkoff.coredb.devicedb.device_db.session.commit()
         return {}, SUCCESS
 
     return __func()
@@ -73,7 +75,8 @@ def create_device():
     @permissions_accepted_for_resources(ResourcePermissions('devices', ['create']))
     def __func():
         add_device_json = request.get_json()
-        if device_db.session.query(Device).filter(Device.name == add_device_json['name']).first() is not None:
+        if walkoff.coredb.devicedb.device_db.session.query(Device).filter(
+                Device.name == add_device_json['name']).first() is not None:
             current_app.logger.error('Could not create device {0}. '
                                      'Device already exists.'.format(add_device_json['name']))
             return {"error": "Device already exists."}, OBJECT_EXISTS_ERROR
@@ -90,15 +93,15 @@ def create_device():
         else:
             fields = add_device_json['fields']
             add_configuration_keys_to_device_json(fields, device_fields_api)
-            app = device_db.session.query(App).filter(App.name == app).first()
+            app = walkoff.coredb.devicedb.device_db.session.query(App).filter(App.name == app).first()
             if app is None:
                 current_app.logger.error('SEVERE: App defined in api does not have corresponding entry in database. '
                                          'Cannot add device')
                 return {'error': 'Unknown app'}, INVALID_INPUT_ERROR
             device = Device.from_json(add_device_json)
             app.add_device(device)
-            device_db.session.add(device)
-            device_db.session.commit()
+            walkoff.coredb.devicedb.device_db.session.add(device)
+            walkoff.coredb.devicedb.device_db.session.commit()
             device_json = get_device_json_with_app_name(device)
             # remove_configuration_keys_from_device_json(device_json)
             return device_json, OBJECT_CREATED
@@ -114,7 +117,7 @@ def update_device():
         update_device_json = request.get_json()
 
         fields = ({field['name']: field['value'] for field in update_device_json['fields']}
-                  if 'fields' in update_device_json else None)
+        if 'fields' in update_device_json else None)
         app = update_device_json['app_name']
         device_type = update_device_json['type'] if 'type' in update_device_json else device.type
         try:
@@ -129,7 +132,7 @@ def update_device():
                 fields = update_device_json['fields'] if 'fields' in update_device_json else None
                 add_configuration_keys_to_device_json(fields, device_fields_api)
             device.update_from_json(update_device_json)
-            device_db.session.commit()
+            walkoff.coredb.devicedb.device_db.session.commit()
             device_json = get_device_json_with_app_name(device)
             # remove_configuration_keys_from_device_json(device_json)
             return device_json, SUCCESS
@@ -165,7 +168,8 @@ def import_devices():
             return {"error": "Error reading file."}, IO_ERROR
         for app in apps:
             for device in apps[app]:
-                if device_db.session.query(Device).filter(Device.name == device['name']).first() is not None:
+                if walkoff.coredb.devicedb.device_db.session.query(Device).filter(
+                        Device.name == device['name']).first() is not None:
                     current_app.logger.error('Could not import device {0}. '
                                              'Device already exists.'.format(device['name']))
                     continue
@@ -194,12 +198,12 @@ def import_device(app, device, device_type, fields):
     else:
         fields = device['fields']
         add_configuration_keys_to_device_json(fields, device_fields_api)
-        app = device_db.session.query(App).filter(App.name == app).first()
+        app = walkoff.coredb.devicedb.device_db.session.query(App).filter(App.name == app).first()
         if app is not None:
             device_obj = Device.from_json(device)
             app.add_device(device_obj)
-            device_db.session.add(device_obj)
-            device_db.session.commit()
+            walkoff.coredb.devicedb.device_db.session.add(device_obj)
+            walkoff.coredb.devicedb.device_db.session.commit()
         else:
             current_app.logger.error(
                 'SEVERE: App defined in api does not have corresponding entry in database. '
@@ -229,7 +233,7 @@ def export_devices():
 
 def get_exported_json():
     returned_json = {}
-    apps = device_db.session.query(App).all()
+    apps = walkoff.coredb.devicedb.device_db.session.query(App).all()
     for app in apps:
         devices = []
         for device in app.devices:

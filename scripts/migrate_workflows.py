@@ -11,6 +11,9 @@ from walkoff.config.config import load_app_apis
 from tests import config as test_config
 import importlib
 import scripts.migrations.workflows.versions as versions
+import walkoff.config.paths
+import tests.config
+from walkoff import initialize_databases
 
 UPGRADE = "upgrade"
 DOWNGRADE = "downgrade"
@@ -53,16 +56,20 @@ def get_next_version(mode, cur):
 
 
 def convert_playbooks(mode, tgt_version):
-    cache_apps(join('.', 'apps'))
-    load_app_apis()
-    for subd, d, files in os.walk(join('workflows')):
-        for f in files:
-            if f.endswith('.playbook'):
-                path = os.path.join(subd, f)
-                convert_playbook(path, mode, tgt_version)
+    # cache_apps(join('.', 'apps'))
+    # load_app_apis()
+    # for subd, d, files in os.walk(join('workflows')):
+    #     for f in files:
+    #         if f.endswith('.playbook'):
+    #             path = os.path.join(subd, f)
+    #             convert_playbook(path, mode, tgt_version)
 
     # For Converting Test Workflows
-    clear_cache()
+    # clear_cache()
+    walkoff.config.paths.db_path = tests.config.test_db_path
+    walkoff.config.paths.case_db_path = tests.config.test_case_db_path
+    walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+    initialize_databases()
     cache_apps(test_config.test_apps_path)
     load_app_apis(apps_path=test_config.test_apps_path)
     for subd, d, files in os.walk(join('tests')):

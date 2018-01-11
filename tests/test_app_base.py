@@ -1,11 +1,23 @@
 from unittest import TestCase
 
 from apps import App as AppBase
-from walkoff.coredb.devicedb import App, Device, DeviceField, EncryptedDeviceField, device_db
+import walkoff.config.paths
+from walkoff import initialize_databases
+import tests.config
+from walkoff.coredb.devicedb import App, Device, DeviceField, EncryptedDeviceField
 
 
 class TestAppBase(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        walkoff.config.paths.db_path = tests.config.test_db_path
+        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
+        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+        initialize_databases()
+
     def setUp(self):
+        from walkoff.coredb.devicedb import device_db
         self.test_app_name = 'TestApp'
         self.device1 = Device('test', [], [], 'type1')
         plaintext_fields = [DeviceField('test_name', 'integer', 123), DeviceField('test2', 'string', 'something')]
@@ -18,6 +30,7 @@ class TestAppBase(TestCase):
         device_db.session.commit()
 
     def tearDown(self):
+        from walkoff.coredb.devicedb import device_db
         device_db.session.rollback()
         for device in device_db.session.query(Device).all():
             device_db.session.delete(device)

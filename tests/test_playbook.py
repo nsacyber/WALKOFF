@@ -21,15 +21,8 @@ class TestPlaybook(unittest.TestCase):
         self.assertEqual(playbook.walkoff_version, walkoff.__version__)
         orderless_list_compare(self, list(playbook.workflows.keys()), [workflow.name for workflow in workflows])
 
-    def test_init_with_uid(self):
-        playbook = Playbook('test', uid='uuu')
-        self.assertEqual(playbook.name, 'test')
-        self.assertEqual(playbook.uid, 'uuu')
-        self.assertDictEqual(playbook.workflows, {})
-        self.assertEqual(playbook.walkoff_version, walkoff.__version__)
-
     def test_init_with_walkoff_version_number(self):
-        playbook = Playbook('test', walkoff_version='0.4.0')
+        playbook = Playbook('test')
         self.assertEqual(playbook.name, 'test')
         self.assertDictEqual(playbook.workflows, {})
         self.assertEqual(playbook.walkoff_version, '0.4.0')

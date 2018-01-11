@@ -22,6 +22,7 @@ class JsonElementCreator(object):
             (ExecutionElement) The constructed ExecutionElement
         """
         from walkoff.coredb.playbook import Playbook
+        import walkoff.coredb.devicedb
         cls._setup_ordering()
         if element_class is None:
             element_class = Playbook
@@ -34,6 +35,8 @@ class JsonElementCreator(object):
                 raise ValueError('Unknown class {}'.format(element_class.__class__.__name__))
         try:
             elem = cls.construct_current_class(current_class, json_in, subfield_lookup)
+            walkoff.coredb.devicedb.device_db.session.add(elem)
+            walkoff.coredb.devicedb.device_db.session.commit()
             return elem
         except (KeyError, TypeError) as e:
             from walkoff.helpers import format_exception_message

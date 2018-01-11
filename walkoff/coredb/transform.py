@@ -1,7 +1,7 @@
 import logging
 from copy import deepcopy
 
-from sqlalchemy import Column, Integer, ForeignKey, String
+from sqlalchemy import Column, Integer, ForeignKey, String, orm
 from sqlalchemy.orm import relationship, backref
 
 from walkoff.appgateway import get_transform
@@ -45,6 +45,11 @@ class Transform(ExecutionElement, Device_Base):
         if arguments:
             self.arguments = arguments
 
+    @orm.reconstructor
+    def init_on_load(self):
+        self._data_param_name, self._run, self._api = get_transform_api(self.app_name, self.action_name)
+        self._transform_executable = get_transform(self.app_name, self._run)
+
     def execute(self, data_in, accumulator):
         """Executes the transform.
 
@@ -76,6 +81,8 @@ class Transform(ExecutionElement, Device_Base):
         arg = None
         for argument in self.arguments:
             if argument.name == self._data_param_name:
-                arg = None
-        self.arguments.remove(arg)
+                arg = argument
+                break
+        if arg:
+            self.arguments.remove(arg)
         self.arguments.append(Argument(self._data_param_name, value=data))

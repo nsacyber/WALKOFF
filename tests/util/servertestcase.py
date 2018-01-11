@@ -67,8 +67,8 @@ class ServerTestCase(unittest.TestCase):
         walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
         walkoff.config.config.num_processes = 2
 
-        import walkoff.server.flaskserver
-        cls.context = walkoff.server.flaskserver.app.test_request_context()
+        from walkoff.server import flaskserver
+        cls.context = flaskserver.app.test_request_context()
         cls.context.push()
 
         from walkoff.server.app import create_user
@@ -77,11 +77,11 @@ class ServerTestCase(unittest.TestCase):
             MultiprocessedExecutor.initialize_threading = mock_initialize_threading
             MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
             MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
-            walkoff.server.flaskserver.running_context.controller.initialize_threading()
+            flaskserver.running_context.controller.initialize_threading()
         else:
             from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
             pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)
-            walkoff.server.flaskserver.running_context.controller.initialize_threading(pids)
+            flaskserver.running_context.controller.initialize_threading(pids)
 
     @classmethod
     def tearDownClass(cls):

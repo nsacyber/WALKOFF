@@ -1,5 +1,6 @@
 from tests.util.servertestcase import ServerTestCase
-from walkoff.database import User, Role, Message, MessageHistory
+from walkoff.serverdb import User, Role
+from walkoff.serverdb.message import Message, MessageHistory
 from walkoff.server.extensions import db
 from walkoff.server.returncodes import *
 from walkoff.server import flaskserver
@@ -7,6 +8,9 @@ import json
 from walkoff.messaging import MessageActionEvent, MessageAction
 from datetime import timedelta
 from walkoff.server.endpoints.messages import max_notifications, min_notifications
+import walkoff.config.paths
+import tests.config
+from walkoff import initialize_databases
 
 
 class UserWrapper(object):
@@ -22,6 +26,11 @@ class TestMessagingEndpoints(ServerTestCase):
 
     @classmethod
     def setUpClass(cls):
+        walkoff.config.paths.db_path = tests.config.test_db_path
+        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
+        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+        initialize_databases()
+
         cls.context = flaskserver.app.test_request_context()
         cls.context.push()
         cls.app = flaskserver.app.test_client(cls)

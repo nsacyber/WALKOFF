@@ -3,7 +3,7 @@ import logging
 import threading
 from copy import deepcopy
 
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, orm
 from sqlalchemy.orm import relationship, backref
 
 from walkoff.appgateway.appinstance import AppInstance
@@ -40,18 +40,22 @@ class Workflow(ExecutionElement, Device_Base):
         self.name = name
 
         self.actions = []
-        if self.actions:
-            for action in actions:
-                self.actions.append(action)
+        if actions:
+            self.actions = actions
 
         self.branches = []
         if branches:
-            for branch in self.branches:
-                self.branches.append(branch)
+            self.branches = branches
 
         self.start = start if start is not None else 'start'
 
-        # TODO: Initialize these to None and then reinitialize in the Worker
+        self._is_paused = False
+        self._resume = threading.Event()
+        self._accumulator = {}
+        self._execution_uid = 'default'
+
+    @orm.reconstructor
+    def init_on_load(self):
         self._is_paused = False
         self._resume = threading.Event()
         self._accumulator = {}
@@ -186,9 +190,7 @@ class Workflow(ExecutionElement, Device_Base):
                 # TODO: This here is the only hold up from getting rid of action._output.
                 # Keep whole result in accumulator
                 destination_uid = branch.execute(current_action.get_output(), accumulator)
-                for action in self.actions:
-                    if action.id == destination_uid:
-                        return destination_uid
+                return destination_uid
             return None
         else:
             return None

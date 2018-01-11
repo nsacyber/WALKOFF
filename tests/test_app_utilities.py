@@ -1,21 +1,30 @@
 import unittest
 
-import walkoff.server.flaskserver
+import walkoff.config.paths
+import tests.config
+from walkoff import initialize_databases
 from walkoff.coredb.devicedb import get_device, get_all_devices_for_app, \
-    get_all_devices_of_type_from_app, App, Device, device_db
+    get_all_devices_of_type_from_app, App, Device
+import walkoff.coredb.devicedb
 
 
 class TestAppUtilities(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        app = device_db.session.query(App).filter(App.name == 'TestApp').first()
+        walkoff.config.paths.db_path = tests.config.test_db_path
+        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
+        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+        initialize_databases()
+
+        app = walkoff.coredb.devicedb.device_db.session.query(App).filter(App.name == 'TestApp').first()
         if app is not None:
-            device_db.session.delete(app)
-        for device in device_db.session.query(Device).all():
-            device_db.session.delete(device)
-        device_db.session.commit()
+            walkoff.coredb.devicedb.device_db.session.delete(app)
+        for device in walkoff.coredb.devicedb.device_db.session.query(Device).all():
+            walkoff.coredb.devicedb.device_db.session.delete(device)
+        walkoff.coredb.devicedb.device_db.session.commit()
 
     def setUp(self):
+        import walkoff.server.flaskserver
         self.app_name = 'TestApp'
         self.app = walkoff.server.flaskserver.app.test_client(self)
         self.app.testing = True
@@ -29,19 +38,19 @@ class TestAppUtilities(unittest.TestCase):
         self.device4 = Device('test4', [], [], 'type2')
 
     def tearDown(self):
-        device_db.session.rollback()
-        app = device_db.session.query(App).filter(App.name == self.app_name).first()
+        walkoff.coredb.devicedb.device_db.session.rollback()
+        app = walkoff.coredb.devicedb.device_db.session.query(App).filter(App.name == self.app_name).first()
         if app is not None:
-            device_db.session.delete(app)
-        for device in device_db.session.query(Device).all():
-            device_db.session.delete(device)
-        device_db.session.commit()
+            walkoff.coredb.devicedb.device_db.session.delete(app)
+        for device in walkoff.coredb.devicedb.device_db.session.query(Device).all():
+            walkoff.coredb.devicedb.device_db.session.delete(device)
+        walkoff.coredb.devicedb.device_db.session.commit()
 
     def add_test_app(self, devices=None):
         devices = devices if devices is not None else []
         app = App(self.app_name, devices=devices)
-        device_db.session.add(app)
-        device_db.session.commit()
+        walkoff.coredb.devicedb.device_db.session.add(app)
+        walkoff.coredb.devicedb.device_db.session.commit()
 
     def test_get_all_devices_for_app_dne(self):
         self.assertListEqual(get_all_devices_for_app('invalid'), [])

@@ -1,8 +1,8 @@
 import unittest
-import uuid
 
 import walkoff.appgateway
 import walkoff.config.config
+import walkoff.config.paths
 from walkoff.coredb.argument import Argument
 from walkoff.core.actionresult import ActionResult
 from walkoff.events import WalkoffEvent
@@ -11,11 +11,18 @@ from walkoff.coredb.branch import Branch
 from walkoff.coredb.condition import Condition
 from walkoff.coredb.workflow import Workflow
 from tests.config import test_apps_path
+import walkoff.coredb.devicedb
+import tests.config
+from walkoff import initialize_databases
 
 
 class TestBranch(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        walkoff.config.paths.db_path = tests.config.test_db_path
+        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
+        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+        initialize_databases()
         walkoff.appgateway.cache_apps(test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=test_apps_path)
 
@@ -23,49 +30,38 @@ class TestBranch(unittest.TestCase):
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
 
-    def __compare_init(self, elem, source_uid, destination_uid, conditions=None, status='Success', uid=None,
-                       priority=999):
-        self.assertEqual(elem.source_uid, source_uid)
-        self.assertEqual(elem.destination_uid, destination_uid)
+    def __compare_init(self, elem, source_id, destination_id, conditions=None, status='Success', priority=999):
+        self.assertEqual(elem.source_id, source_id)
+        self.assertEqual(elem.destination_id, destination_id)
         self.assertEqual(elem.status, status)
         self.assertEqual(elem.priority, priority)
         if conditions:
-            self.assertListEqual([condition.action_name for condition in elem.conditions],
-                                 [condition['action_name'] for condition in conditions])
-        if uid is None:
-            self.assertIsNotNone(elem.uid)
-        else:
-            self.assertEqual(elem.uid, uid)
+            self.assertListEqual(elem.conditions, conditions)
 
     def test_init(self):
-        branch = Branch(source_id="1", destination_id="2")
-        self.__compare_init(branch, "1", "2")
-
-    def test_init_wth_uid(self):
-        uid = uuid.uuid4().hex
-        branch = Branch(source_id="1", destination_id="2", uid=uid)
-        self.__compare_init(branch, "1", "2", uid=uid)
+        branch = Branch(source_id=1, destination_id=2)
+        self.__compare_init(branch, 1, 2)
 
     def test_init_with_status(self):
-        branch = Branch(source_id="1", destination_id="2", status='test_status')
-        self.__compare_init(branch, "1", "2", status='test_status')
+        branch = Branch(source_id=1, destination_id=2, status='test_status')
+        self.__compare_init(branch, 1, 2, status='test_status')
 
     def test_init_with_empty_conditions(self):
-        branch = Branch(source_id="1", destination_id="2", conditions=[])
-        self.__compare_init(branch, '1', '2')
+        branch = Branch(source_id=1, destination_id=2, conditions=[])
+        self.__compare_init(branch, 1, 2)
 
-    def test_init_with_conditions(self):
-        conditions = [Condition('HelloWorld', 'Top Condition'), Condition('HelloWorld', 'mod1_flag1')]
-        expected_condition_json = [{'action_name': 'Top Condition', 'args': [], 'filters': []},
-                                   {'action_name': 'mod1_flag1', 'args': [], 'filters': []}]
-        branch = Branch("1", "2", conditions=conditions)
-        self.__compare_init(branch, "1", "2", expected_condition_json)
+    # def test_init_with_conditions(self):
+    #     conditions = [Condition('HelloWorld', 'Top Condition'), Condition('HelloWorld', 'mod1_flag1')]
+    #     expected_condition_json = [{'action_name': 'Top Condition', 'args': [], 'filters': []},
+    #                                {'action_name': 'mod1_flag1', 'args': [], 'filters': []}]
+    #     branch = Branch("1", "2", conditions=conditions)
+    #     self.__compare_init(branch, "1", "2", expected_condition_json)
 
     def test_eq(self):
         conditions = [Condition('HelloWorld', 'mod1_flag1'), Condition('HelloWorld', 'Top Condition')]
-        branches = [Branch(source_id="1", destination_id="2"),
-                    Branch(source_id="1", destination_id="2", status='TestStatus'),
-                    Branch(source_id="1", destination_id="2", conditions=conditions)]
+        branches = [Branch(source_id=1, destination_id=2),
+                    Branch(source_id=1, destination_id=2, status='TestStatus'),
+                    Branch(source_id=1, destination_id=2, conditions=conditions)]
         for i in range(len(branches)):
             for j in range(len(branches)):
                 if i == j:
@@ -85,7 +81,7 @@ class TestBranch(unittest.TestCase):
                   ('name4', conditions2, ActionResult('aaaa', 'Custom'), False)]
 
         for name, conditions, input_str, expect_name in inputs:
-            branch = Branch(source_id="1", destination_id="2", conditions=conditions)
+            branch = Branch(source_id=1, destination_id=2, conditions=conditions)
             if expect_name:
                 expected_name = branch.destination_id
                 self.assertEqual(branch.execute(input_str, {}), expected_name)
@@ -98,16 +94,19 @@ class TestBranch(unittest.TestCase):
 
     def test_get_branch_invalid_action(self):
         flag = Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])
-        branch = Branch(source_id="1", destination_id='next', conditions=[flag])
-        action = Action('HelloWorld', 'helloWorld', uid="2")
+        branch = Branch(source_id=1, destination_id=2, conditions=[flag])
+        action = Action('HelloWorld', 'helloWorld')
         action._output = ActionResult(result='bbb', status='Success')
         workflow = Workflow(actions=[action], branches=[branch])
         self.assertIsNone(workflow.get_branch(action, {}))
 
     def test_get_branch(self):
-        flag = Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])
-        branch = Branch(source_id="1", destination_id="2", conditions=[flag])
-        action = Action('HelloWorld', 'helloWorld', uid="1")
+        action = Action('HelloWorld', 'helloWorld')
+        walkoff.coredb.devicedb.device_db.session.add(action)
+        walkoff.coredb.devicedb.device_db.session.commit()
+
+        condition = Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])
+        branch = Branch(source_id=action.id, destination_id=2, conditions=[condition])
         action._output = ActionResult(result='aaa', status='Success')
         workflow = Workflow(actions=[action], branches=[branch])
 
@@ -121,14 +120,22 @@ class TestBranch(unittest.TestCase):
 
         WalkoffEvent.CommonWorkflowSignal.connect(validate_sent_data)
 
-        self.assertEqual(workflow.get_branch(action, {}), '2')
+        self.assertEqual(workflow.get_branch(action, {}), 2)
         self.assertTrue(result['triggered'])
 
     def test_branch_with_priority(self):
-        flag = Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])
-        branch_one = Branch(source_id="1", destination_id='five', conditions=[flag], priority="5")
-        branch_two = Branch(source_id="1", destination_id='one', conditions=[flag], priority="1")
-        action = Action('HelloWorld', 'helloWorld', uid="1")
+        action = Action('HelloWorld', 'helloWorld')
+        walkoff.coredb.devicedb.device_db.session.add(action)
+        walkoff.coredb.devicedb.device_db.session.commit()
+
+        condition = Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])
+
+        branch_one = Branch(source_id=action.id, destination_id=5, conditions=[condition], priority=5)
+        branch_two = Branch(source_id=action.id, destination_id=1, conditions=[condition], priority=1)
+
         action._output = ActionResult(result='aaa', status='Success')
         workflow = Workflow(actions=[action], branches=[branch_one, branch_two])
-        self.assertEqual(workflow.get_branch(action, {}), "one")
+        walkoff.coredb.devicedb.device_db.session.add(workflow)
+        walkoff.coredb.devicedb.device_db.session.commit()
+
+        self.assertEqual(workflow.get_branch(action, {}), 1)

@@ -3,7 +3,7 @@ import logging
 import threading
 import uuid
 
-from sqlalchemy import Column, Integer, ForeignKey, String, Boolean
+from sqlalchemy import Column, Integer, ForeignKey, String, Boolean, orm
 from sqlalchemy.orm import relationship, backref
 
 import walkoff.config.config
@@ -88,13 +88,23 @@ class Action(ExecutionElement, Device_Base):
         self.x_coordinate = x_coordinate
         self.y_coordinate = y_coordinate
 
+        self.raw_representation = raw_representation if raw_representation is not None else {}
+
         # TODO: Initialize these to None
         self._incoming_data = None
         self._event = threading.Event()
         self._output = None
-        self._raw_representation = raw_representation if raw_representation is not None else {}
         self._execution_uid = 'default'
         self._action_executable = get_app_action(self.app_name, self._run)
+
+    @orm.reconstructor
+    def init_on_load(self):
+        self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
+        self._incoming_data = None
+        self._event = threading.Event()
+        self._output = None
+        self._action_executable = get_app_action(self.app_name, self._run)
+        self._execution_uid = 'default'
 
     def get_output(self):
         """Gets the output of an Action (the result)

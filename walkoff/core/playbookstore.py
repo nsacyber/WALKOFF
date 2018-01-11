@@ -1,7 +1,8 @@
 import logging
 from copy import deepcopy
+from sqlalchemy import exists
 
-from walkoff.coredb.devicedb import device_db
+import walkoff.coredb.devicedb
 from walkoff.coredb.playbook import Playbook
 from walkoff.coredb.workflow import Workflow
 from walkoff.core.jsonplaybookloader import JsonPlaybookLoader
@@ -87,8 +88,7 @@ class PlaybookStore(object):
         """
         for playbook in loader.load_playbooks(resource_collection):
             self.add_playbook(playbook)
-        print(self.playbooks)
-        device_db.session.commit()
+        walkoff.coredb.devicedb.device_db.session.commit()
 
     def create_workflow(self, playbook_name, workflow_name):
         """
@@ -182,7 +182,8 @@ class PlaybookStore(object):
         Returns:
             True if the workflow is registered, false otherwise.
         """
-        return playbook_name in self.playbooks and self.playbooks[playbook_name].has_workflow_name(workflow_name)
+        return walkoff.coredb.devicedb.device_db.session.query(
+            exists().where(Workflow.name == workflow_name and Workflow.playbook.name == playbook_name)).scalar()
 
     def is_playbook_registered(self, playbook_name):
         """Checks whether or not a playbook is currently registered in the system.
@@ -236,9 +237,12 @@ class PlaybookStore(object):
         Returns:
             The workflow object if found, else None.
         """
-        if playbook_name in self.playbooks:
-            return self.playbooks[playbook_name].get_workflow_by_name(workflow_name)
-        return None
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter(
+            Workflow.name == workflow_name and Workflow.playbook.name == playbook_name).first()
+        return workflow
+        # if playbook_name in self.playbooks:
+        #     return self.playbooks[playbook_name].get_workflow_by_name(workflow_name)
+        # return None
 
     def get_playbook(self, playbook_name):
         """Gets a playbook

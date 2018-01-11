@@ -2,8 +2,8 @@ __version__ = '0.6.1'
 
 
 def initialize_databases():
-    from walkoff.coredb import devicedb
-    from walkoff.case import database
+    import walkoff.coredb.devicedb
+    import walkoff.case.database
 
-    devicedb.device_db = devicedb.get_device_db()
-    database.case_db = database.get_case_db()
+    walkoff.coredb.devicedb.device_db = walkoff.coredb.devicedb.get_device_db()
+    walkoff.case.database.case_db = walkoff.case.database.get_case_db()
