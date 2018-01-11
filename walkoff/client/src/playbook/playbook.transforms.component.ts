@@ -1,7 +1,5 @@
 import { Component, ViewEncapsulation, Input } from '@angular/core';
 
-import { PlaybookService } from './playbook.service';
-
 import { Workflow } from '../models/playbook/workflow';
 import { AppApi } from '../models/api/appApi';
 import { TransformApi } from '../models/api/transformApi';
@@ -14,7 +12,7 @@ import { Transform } from '../models/playbook/transform';
 	templateUrl: './playbook.transforms.html',
 	styleUrls: [],
 	encapsulation: ViewEncapsulation.None,
-	providers: [PlaybookService],
+	providers: [],
 })
 export class PlaybookTransformsComponent {
 	@Input() selectedAppName: string;

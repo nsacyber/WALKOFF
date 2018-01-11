@@ -3,8 +3,8 @@
   "description": "WALKOFF automation and orchestration framework.",
   "license": "MIT",
   "scripts": {
-    "build": "gulp ts",
-    "build:dev": "webpack -p --progress --config webpack.config.js",
+    "build": "npm run build:dev",
+    "build:dev": "npm run clean:dist && npm run webpack -p --progress --config webpack.config.js",
     "clean:dist": "npm run rimraf -- dist",
     "clean:install": "npm set progress=false && npm install",
     "clean": "npm cache clean --force && npm run rimraf -- node_modules coverage dist",
@@ -12,7 +12,8 @@
     "watch": "gulp",
     "watch:dev": "webpack -p --progress --config webpack.config.js --watch",
     "watch:test": "npm run test -- --auto-watch --no-single-run",
-    "test": "karma start"
+    "test": "karma start",
+    "webpack": "node --max_old_space_size=4096 node_modules/webpack/bin/webpack.js"
   },
   "dependencies": {
     "@angular/animations": "~4.0.3",

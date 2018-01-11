@@ -1,6 +1,5 @@
 import { Component, ViewEncapsulation, Input } from '@angular/core';
-
-import { PlaybookService } from './playbook.service';
+import { Select2OptionData } from 'ng2-select2/ng2-select2';
 
 import { Workflow } from '../models/playbook/workflow';
 import { Action } from '../models/playbook/action';
@@ -10,7 +9,6 @@ import { Argument } from '../models/playbook/argument';
 import { GenericObject } from '../models/genericObject';
 import { User } from '../models/user';
 import { Role } from '../models/role';
-import { Select2OptionData } from 'ng2-select2/ng2-select2.interface';
 
 const AVAILABLE_TYPES = ['string', 'number', 'boolean'];
 
@@ -19,7 +17,7 @@ const AVAILABLE_TYPES = ['string', 'number', 'boolean'];
 	templateUrl: './playbook.argument.html',
 	styleUrls: [],
 	encapsulation: ViewEncapsulation.None,
-	providers: [PlaybookService],
+	providers: [],
 })
 export class PlaybookArgumentComponent {
 	@Input() id: number;
