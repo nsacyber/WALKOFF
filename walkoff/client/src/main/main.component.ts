@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { JwtHelper } from 'angular2-jwt';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
@@ -25,7 +25,7 @@ const MAX_TOTAL_MESSAGES = 20;
 	],
 	providers: [MainService, AuthService, UtilitiesService],
 })
-export class MainComponent {
+export class MainComponent implements OnInit {
 	utils = new UtilitiesService();
 	currentUser: string;
 	interfaceNames: string[] = [];

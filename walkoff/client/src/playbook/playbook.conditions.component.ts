@@ -1,7 +1,5 @@
 import { Component, ViewEncapsulation, Input } from '@angular/core';
 
-import { PlaybookService } from './playbook.service';
-
 import { AppApi } from '../models/api/appApi';
 import { ConditionApi } from '../models/api/conditionApi';
 import { ParameterApi } from '../models/api/parameterApi';
@@ -14,7 +12,7 @@ import { Condition } from '../models/playbook/condition';
 	templateUrl: './playbook.conditions.html',
 	styleUrls: [],
 	encapsulation: ViewEncapsulation.None,
-	providers: [PlaybookService],
+	providers: [],
 })
 export class PlaybookConditionsComponent {
 	@Input() selectedAppName: string;
