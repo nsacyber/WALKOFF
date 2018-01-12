@@ -12,7 +12,7 @@ from six import string_types
 import walkoff.config.config
 import walkoff.config.paths
 from walkoff.events import WalkoffEvent
-from walkoff.proto.build.data_pb2 import Message, CommunicationPacket
+from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
 
 try:
     from Queue import Queue
@@ -76,10 +76,15 @@ class LoadBalancer:
 
             # There is a worker available and a workflow in the queue, so pop it off and send it to the worker
             if any(val > 0 for val in self.workers.values()) and not self.pending_workflows.empty():
-                workflow = self.pending_workflows.get()
+                workflow_id, workflow_execution_uid = self.pending_workflows.get()
                 worker = self.__get_available_worker()
-                self.workflow_comms[workflow['execution_uid']] = worker
-                self.request_socket.send_multipart([worker, str.encode(json.dumps(workflow))])
+                self.workflow_comms[workflow_execution_uid] = worker
+
+                message = ExecuteWorkflowMessage()
+                message.workflow_id = workflow_id
+                message.workflow_execution_uid = workflow_execution_uid
+
+                self.request_socket.send_multipart([worker, message.SerializeToString()])
 
             gevent.sleep(0.1)
 
@@ -98,14 +103,14 @@ class LoadBalancer:
             self.workers[available_worker] -= 1
         return available_worker
 
-    def add_workflow(self, workflow_json):
-        """Adds a workflow to the queue to be executed.
+    def add_workflow(self, workflow_id, workflow_execution_uid):
+        """Adds a workflow ID to the queue to be executed.
 
         Args:
-            workflow_json (dict): Dict representation of a workflow, along with some additional fields necessary for
-                reconstructing the workflow.
+            workflow_id (int): The ID of the workflow to be executed.
+            workflow_execution_uid (str): The execution UID of the workflow to be executed.
         """
-        self.pending_workflows.put(workflow_json)
+        self.pending_workflows.put((workflow_id, workflow_execution_uid))
 
     def pause_workflow(self, workflow_execution_uid):
         """Pauses a workflow currently executing.

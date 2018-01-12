@@ -7,7 +7,6 @@ from concurrent.futures import ThreadPoolExecutor
 
 import zmq
 import zmq.auth as auth
-from zmq.utils.strtypes import cast_unicode
 from six import string_types
 from google.protobuf.json_format import MessageToDict
 
@@ -16,7 +15,8 @@ import walkoff.config.paths
 from walkoff.coredb.argument import Argument
 from walkoff.events import EventType, WalkoffEvent
 from walkoff.coredb.workflow import Workflow
-from walkoff.proto.build.data_pb2 import Message, CommunicationPacket
+from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
+import walkoff.coredb.devicedb
 
 try:
     from Queue import Queue
@@ -24,35 +24,6 @@ except ImportError:
     from queue import Queue
 
 logger = logging.getLogger(__name__)
-
-
-def recreate_workflow(workflow_json):
-    """Recreates a workflow from a JSON to prepare for it to be executed.
-
-    Args:
-        workflow_json (JSON dict): The input workflow JSON, with some other fields as well.
-
-    Returns:
-        (Workflow object, start_arguments): A tuple containing the reconstructed Workflow object, and the arguments to
-            the start action.
-    """
-    uid = workflow_json['uid']
-    del workflow_json['uid']
-    execution_uid = workflow_json['execution_uid']
-    del workflow_json['execution_uid']
-    start = workflow_json['start']
-
-    start_arguments = {}
-    if 'start_arguments' in workflow_json:
-        start_arguments = [Argument(**arg) for arg in workflow_json['start_arguments']]
-        workflow_json.pop("start_arguments")
-
-    workflow = Workflow.create(workflow_json)
-    workflow.uid = uid
-    workflow.set_execution_uid(execution_uid)
-    workflow.start = start
-
-    return workflow, start_arguments
 
 
 def convert_to_protobuf(sender, workflow_execution_uid='', **kwargs):
@@ -91,7 +62,7 @@ def convert_workflow_to_proto(packet, sender, workflow_execution_uid, data=None)
     if 'data' is not None:
         workflow_packet.additional_data = json.dumps(data)
     workflow_packet.sender.name = sender.name
-    workflow_packet.sender.uid = sender.uid
+    workflow_packet.sender.uid = sender.id
     workflow_packet.sender.workflow_execution_uid = workflow_execution_uid
 
 
@@ -120,7 +91,7 @@ def convert_action_to_proto(packet, sender, workflow_execution_uid, data=None):
 
 def add_sender_to_action_packet_proto(action_packet, sender, workflow_execution_uid):
     action_packet.sender.name = sender.name
-    action_packet.sender.uid = sender.uid
+    action_packet.sender.uid = sender.id
     action_packet.sender.workflow_execution_uid = workflow_execution_uid
     action_packet.sender.execution_uid = sender.get_execution_uid()
     action_packet.sender.app_name = sender.app_name
@@ -129,7 +100,7 @@ def add_sender_to_action_packet_proto(action_packet, sender, workflow_execution_
 
 
 def add_arguments_to_action_proto(action_packet, sender):
-    for argument in sender.arguments.values():
+    for argument in sender.arguments:
         arg = action_packet.sender.arguments.add()
         arg.name = argument.name
         for field in ('value', 'reference', 'selection'):
@@ -147,7 +118,7 @@ def add_arguments_to_action_proto(action_packet, sender):
 def convert_branch_transform_condition_to_proto(packet, sender, workflow_execution_uid):
     packet.type = Message.GENERALPACKET
     general_packet = packet.general_packet
-    general_packet.sender.uid = sender.uid
+    general_packet.sender.uid = sender.id
     general_packet.sender.workflow_execution_uid = workflow_execution_uid
     if hasattr(sender, 'app_name'):
         general_packet.sender.app_name = sender.app_name
@@ -234,21 +205,27 @@ class Worker:
 
     def receive_requests(self):
         self.request_sock.send(b"Ready")
-        
+
         while True:
-            workflow_in = self.request_sock.recv()
+            message_bytes = self.request_sock.recv()
 
-            self.threadpool.submit(self.execute_workflow_worker, workflow_in)
+            message = ExecuteWorkflowMessage()
+            message.ParseFromString(message_bytes)
 
-    def execute_workflow_worker(self, workflow_in):
+            self.threadpool.submit(self.execute_workflow_worker, message.workflow_id, message.workflow_execution_uid)
+
+    def execute_workflow_worker(self, workflow_id, workflow_execution_uid):
         """Execute a workflow.
         """
-        workflow, start_arguments = recreate_workflow(json.loads(cast_unicode(workflow_in)))
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter(
+            Workflow.id == workflow_id).first()
+        workflow._execution_uid = workflow_execution_uid
+
+        print("Worker got workflow {}".format(workflow.get_execution_uid()))
 
         self.workflows[threading.current_thread().name] = workflow
 
-        workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start,
-                         start_arguments=start_arguments)
+        workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start)
 
         self.workflows.pop(threading.current_thread().name)
         return
@@ -296,8 +273,14 @@ class Worker:
                 sender (execution element): The execution element that sent the signal.
                 kwargs (dict): Any extra data to send.
         """
-        packet_bytes = convert_to_protobuf(sender, self.workflows[threading.current_thread().name].get_execution_uid(),
+        print(kwargs['event'])
+        try:
+            packet_bytes = convert_to_protobuf(sender, self.workflows[threading.current_thread().name].get_execution_uid(),
                                            **kwargs)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+
         self.results_sock.send(packet_bytes)
 
     def __get_workflow_by_execution_uid(self, workflow_execution_uid):

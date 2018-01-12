@@ -9,7 +9,7 @@ class Playbook(ExecutionElement, Device_Base):
     __tablename__ = 'playbook'
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), nullable=False)
-    workflows = relationship('Workflow', backref=backref('playbook'), cascade='all, delete-orphan')
+    workflows = relationship('Workflow', backref=backref('_playbook'), cascade='all, delete-orphan')
 
     def __init__(self, name, workflows=None):
         """Creates a Playbook object.

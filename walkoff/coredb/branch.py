@@ -19,7 +19,7 @@ class Branch(ExecutionElement, Device_Base):
     source_id = Column(Integer, nullable=False)
     destination_id = Column(Integer, nullable=False)
     status = Column(String(80))
-    conditions = relationship('Condition', backref=backref('branch'), cascade='all, delete-orphan')
+    conditions = relationship('Condition', backref=backref('_branch'), cascade='all, delete-orphan')
     priority = Column(Integer)
 
     def __init__(self, source_id, destination_id, status='Success', conditions=None, priority=999):

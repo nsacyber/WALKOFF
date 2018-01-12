@@ -21,7 +21,7 @@ class Transform(ExecutionElement, Device_Base):
     condition_id = Column(Integer, ForeignKey('condition.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
-    arguments = relationship('Argument', backref=backref('transform'), cascade='all, delete-orphan')
+    arguments = relationship('Argument', backref=backref('_transform'), cascade='all, delete-orphan')
 
     def __init__(self, app_name, action_name, arguments=None):
         """Initializes a new Transform object. A Transform is used to transform input into a workflow.

@@ -45,6 +45,20 @@ def upgrade_workflow(workflow):
     for action in workflow['actions']:
         actions.append(convert_action(action))
 
+    all_args = [argument for action in actions for argument in action.arguments]
+
+    # Convert all references in arguments
+    for argument in all_args:
+        if argument.reference:
+            for action in workflow['actions']:
+                print("Arg ref: {}".format(argument.reference))
+                print("Action uid: {}".format(action['uid']))
+                if argument.reference == action['uid']:
+                    print("updating to: {}".format(action['id']))
+                    argument.reference = action['id']
+                    walkoff.coredb.devicedb.device_db.session.add(argument)
+                    break
+
     branches = []
     if 'branches' in workflow:
         for branch in workflow['branches']:
@@ -61,6 +75,11 @@ def upgrade_workflow(workflow):
 
     walkoff.coredb.devicedb.device_db.session.add(workflow_obj)
     walkoff.coredb.devicedb.device_db.session.commit()
+
+    for action in workflow_obj.actions:
+        for arg in action.arguments:
+            print(arg.__dict__)
+
     return workflow_obj
 
 

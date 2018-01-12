@@ -21,8 +21,8 @@ class Condition(ExecutionElement, Device_Base):
     branch_id = Column(Integer, ForeignKey('branch.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
-    arguments = relationship('Argument', backref=backref('condition'), cascade='all, delete-orphan')
-    transforms = relationship('Transform', backref=backref('condition'), cascade='all, delete-orphan')
+    arguments = relationship('Argument', backref=backref('_condition'), cascade='all, delete-orphan')
+    transforms = relationship('Transform', backref=backref('_condition'), cascade='all, delete-orphan')
 
     def __init__(self, app_name, action_name, arguments=None, transforms=None):
         """Initializes a new Condition object.
@@ -75,7 +75,7 @@ class Condition(ExecutionElement, Device_Base):
         try:
             self.__update_arguments(data)
             args = validate_condition_parameters(self._api, self.arguments, self.action_name, accumulator=accumulator)
-            logger.debug('Arguments passed to condition {} are valid'.format(self.uid))
+            logger.debug('Arguments passed to condition {} are valid'.format(self.id))
             ret = self._condition_executable(**args)
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionSuccess)
             return ret

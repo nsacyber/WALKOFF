@@ -237,12 +237,9 @@ class PlaybookStore(object):
         Returns:
             The workflow object if found, else None.
         """
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter(
-            Workflow.name == workflow_name and Workflow.playbook.name == playbook_name).first()
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+            Workflow.name == workflow_name, Playbook.name == playbook_name).first()
         return workflow
-        # if playbook_name in self.playbooks:
-        #     return self.playbooks[playbook_name].get_workflow_by_name(workflow_name)
-        # return None
 
     def get_playbook(self, playbook_name):
         """Gets a playbook

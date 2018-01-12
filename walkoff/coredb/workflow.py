@@ -22,8 +22,8 @@ class Workflow(ExecutionElement, Device_Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     playbook_id = Column(Integer, ForeignKey('playbook.id'))
     name = Column(String(80))
-    actions = relationship('Action', backref=backref('workflow'), cascade='all, delete-orphan')
-    branches = relationship('Branch', backref=backref('workflow'), cascade='all, delete-orphan')
+    actions = relationship('Action', backref=backref('_workflow'), cascade='all, delete-orphan')
+    branches = relationship('Branch', backref=backref('_workflow'), cascade='all, delete-orphan')
     start = Column(String(80))
 
     def __init__(self, name='', actions=None, branches=None, start=None):
@@ -115,6 +115,7 @@ class Workflow(ExecutionElement, Device_Base):
         actions = self.__actions(start=start)
         first = True
         for action in (action_ for action_ in actions if action_ is not None):
+            print(action)
             self._executing_action = action
             logger.debug('Executing action {0} of workflow {1}'.format(action, self.name))
             if self._is_paused:
@@ -155,7 +156,8 @@ class Workflow(ExecutionElement, Device_Base):
         self._executing_action.send_data_to_trigger(data)
 
     def __actions(self, start):
-        current_uid = start
+        # TODO: Remove option to have start as a string. Should be an int ID.
+        current_uid = int(start)
         current_action = self.__get_action_by_uid(current_uid)
 
         while current_action:

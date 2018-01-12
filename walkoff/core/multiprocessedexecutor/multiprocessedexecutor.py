@@ -12,7 +12,10 @@ import zmq.green as zmq
 import walkoff.config.config
 import walkoff.config.paths
 from walkoff.events import WalkoffEvent
-from walkoff.core.multiprocessedexecutor import loadbalancer, worker, threadauthenticator
+from walkoff.core.multiprocessedexecutor.loadbalancer import LoadBalancer, Receiver
+from walkoff.core.multiprocessedexecutor.worker import Worker
+from walkoff.core.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
+import walkoff.coredb.devicedb
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +35,7 @@ def spawn_worker_processes(worker_environment_setup=None):
     for i in range(walkoff.config.config.num_processes):
         args = (i, worker_environment_setup) if worker_environment_setup else (i,)
 
-        pid = multiprocessing.Process(target=worker.Worker, args=args)
+        pid = multiprocessing.Process(target=Worker, args=args)
         pid.start()
         pids.append(pid)
     return pids
@@ -94,13 +97,13 @@ class MultiprocessedExecutor(object):
             sys.exit(0)
         self.pids = pids
         self.ctx = zmq.Context.instance()
-        self.auth = threadauthenticator.ThreadAuthenticator(self.ctx)
+        self.auth = ThreadAuthenticator(self.ctx)
         self.auth.start()
         self.auth.allow('127.0.0.1')
         self.auth.configure_curve(domain='*', location=walkoff.config.paths.zmq_public_keys_path)
 
-        self.manager = loadbalancer.LoadBalancer(self.ctx)
-        self.receiver = loadbalancer.Receiver(self.ctx)
+        self.manager = LoadBalancer(self.ctx)
+        self.receiver = Receiver(self.ctx)
 
         self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
         self.receiver_thread.start()
@@ -168,12 +171,13 @@ class MultiprocessedExecutor(object):
         Args:
             workflow (Workflow): The Workflow to be executed.
             start (str, optional): The name of the first, or starting action. Defaults to None.
-            start_arguments (dict, optional): The arguments to the starting action of the workflow. Defaults to None.
+            start_arguments (list[Argument]): The arguments to the starting action of the workflow. Defaults to None.
 
         Returns:
             The execution UID of the Workflow.
         """
         execution_uid = str(uuid.uuid4())
+        workflow._execution_uid = execution_uid
 
         if start is not None:
             logger.info('Executing workflow {0} for action {1}'.format(workflow.name, start))
@@ -181,16 +185,19 @@ class MultiprocessedExecutor(object):
             logger.info('Executing workflow {0} with default starting action'.format(workflow.name, start))
         self.workflow_status[execution_uid] = WORKFLOW_RUNNING
 
-        workflow_json = workflow.read()
         if start:
-            workflow_json['start'] = start
+            workflow.start = start
         if start_arguments:
-            workflow_json['start_arguments'] = start_arguments
-        workflow_json['execution_uid'] = execution_uid
-        self.manager.add_workflow(workflow_json)
+            for action in workflow.actions:
+                # TODO: Remove the int() function. Start should always be an ID of the starting Action.
+                if action.id == int(workflow.start):
+                    action.arguments = start_arguments
+
+        walkoff.coredb.devicedb.device_db.session.commit()
+
+        self.manager.add_workflow(workflow.id, execution_uid)
 
         WalkoffEvent.SchedulerJobExecuted.send(self)
-        # TODO: Find some way to catch a validation error. Maybe pre-validate the argument in the controller?
         return execution_uid
 
     def pause_workflow(self, execution_uid):

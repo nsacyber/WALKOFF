@@ -18,7 +18,7 @@ class Argument(Representable, Device_Base):
     transform_id = Column(Integer, ForeignKey('transform.id'))
     name = Column(String(255), nullable=False)
     value = Column(Json(255))
-    reference = Column(String(255))
+    reference = Column(Integer)
     selection = Column(Json(255))
 
     def __init__(self, name, value=None, reference=None, selection=None):
@@ -27,7 +27,7 @@ class Argument(Representable, Device_Base):
         Args:
             name (str): The name of the Argument.
             value (optional): The value of the Argument. Defaults to None. Value or reference must be included.
-            reference (str, optional): The UID of the Action from which to grab the result. Defaults to None.
+            reference (int, optional): The ID of the Action from which to grab the result. Defaults to None.
                 If value is not provided, then reference must be included.
             selection (list, optional): A list of fields from which to dereference the Action result. Defaults
                 to None.
@@ -82,6 +82,8 @@ class Argument(Representable, Device_Base):
 
     def _get_action_from_reference(self, accumulator):
         try:
+            print(self.reference)
+            print(accumulator)
             return accumulator[self.reference]
         except KeyError:
             message = ('Referenced action {} '

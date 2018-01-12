@@ -6,6 +6,7 @@ from sqlalchemy import Column, Integer, ForeignKey, String, create_engine, Large
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
+from sqlalchemy.pool import NullPool
 
 import walkoff.config.paths
 from walkoff.config.config import secret_key as key
@@ -497,7 +498,7 @@ class DeviceDatabase(object):
         from walkoff.coredb.workflow import Workflow
 
         self.engine = create_engine(format_db_path(
-            walkoff.config.config.device_db_type, walkoff.config.paths.device_db_path))
+            walkoff.config.config.device_db_type, walkoff.config.paths.device_db_path), poolclass=NullPool)
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 
@@ -508,9 +509,17 @@ class DeviceDatabase(object):
         Device_Base.metadata.bind = self.engine
         Device_Base.metadata.create_all(self.engine)
 
+    def tear_down(self):
+        self.session.rollback()
+        self.connection.close()
+        self.engine.dispose()
 
-def get_device_db(_singleton=DeviceDatabase()):
+
+def get_device_db(_singleton=None):
     """Singleton factory which returns the database"""
+    # TODO: I may have done this incorrectly, but this fixed the import order...
+    if not _singleton:
+        _singleton=DeviceDatabase()
     return _singleton
 
 

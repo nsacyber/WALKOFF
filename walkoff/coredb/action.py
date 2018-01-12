@@ -31,8 +31,8 @@ class Action(ExecutionElement, Device_Base):
     action_name = Column(String(80), nullable=False)
     name = Column(String(80))
     device_id = Column(Integer)
-    arguments = relationship('Argument', backref=backref('action'), cascade='all, delete-orphan')
-    triggers = relationship('Condition', backref=backref('action'), cascade='all, delete-orphan')
+    arguments = relationship('Argument', backref=backref('_action'), cascade='all, delete-orphan')
+    triggers = relationship('Condition', backref=backref('_action'), cascade='all, delete-orphan')
     x_coordinate = Column(Integer)
     y_coordinate = Column(Integer)
     templated = Column(Boolean)
@@ -209,7 +209,7 @@ class Action(ExecutionElement, Device_Base):
         else:
             self._output = result
             logger.debug(
-                'Action {0}-{1} (uid {2}) executed successfully'.format(self.app_name, self.action_name, self.uid))
+                'Action {0}-{1} (id {2}) executed successfully'.format(self.app_name, self.action_name, self.id))
             return result
 
     def __handle_execution_error(self, e):

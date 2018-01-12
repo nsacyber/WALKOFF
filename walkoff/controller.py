@@ -226,7 +226,7 @@ class Controller(object):
             playbook_name (str): Playbook name under which the workflow is located.
             workflow_name (str): Workflow to execute.
             start (str, optional): The name of the first, or starting action. Defaults to None.
-            start_arguments (list[Argument JSON]): The input to the starting action of the workflow. Defaults to None.
+            start_arguments (list[Argument]): The input to the starting action of the workflow. Defaults to None.
 
         Returns:
             The execution UID if successful, None otherwise.
