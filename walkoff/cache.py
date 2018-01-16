@@ -120,8 +120,13 @@ class RedisCacheAdapter(object):
 
 cache_translation = {'disk': DiskCacheAdapter, 'redis': RedisCacheAdapter}
 
+cache = None
 
-def make_cache(config):
+
+def make_cache(config=None):
+    if config is None:
+        config = {}
+    global cache
     cache_type = config.pop('type', 'disk').lower()
     try:
         cache = cache_translation[cache_type].from_json(config)

@@ -11,6 +11,7 @@ from gevent import pywsgi
 
 from walkoff.config import paths, config
 import walkoff
+import walkoff.cache
 
 logger = logging.getLogger('walkoff')
 
@@ -103,11 +104,16 @@ def convert_host_port(args):
     return host, port
 
 
+def connect_to_cache():
+    walkoff.cache.cache = walkoff.cache.make_cache(config.cache_config)
+
+
 if __name__ == "__main__":
     args = parse_args()
     exit_code = 0
     try:
         config.initialize()
+        connect_to_cache()
         run(*convert_host_port(args))
     except KeyboardInterrupt:
         logger.info('Caught KeyboardInterrupt!')

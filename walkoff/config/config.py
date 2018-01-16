@@ -12,10 +12,13 @@ from walkoff.config.paths import keywords_path
 
 __logger = logging.getLogger(__name__)
 
+cache_config = None
+
 
 def load_config():
     """ Loads Walkoff configuration from JSON file
     """
+    global cache_config
     self = sys.modules[__name__]
     if isfile(walkoff.config.paths.config_path):
         try:
@@ -23,7 +26,9 @@ def load_config():
                 config = json.loads(config_file.read())
                 for key, value in config.items():
                     if value:
-                        if hasattr(walkoff.config.paths, key):
+                        if key == 'cache':
+                            cache_config = value
+                        elif hasattr(walkoff.config.paths, key):
                             setattr(walkoff.config.paths, key, value)
                         elif hasattr(self, key):
                             setattr(self, key, value)
