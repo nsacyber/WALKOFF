@@ -2,7 +2,7 @@ import json
 
 from sqlalchemy import func
 
-from walkoff.server.extensions import db
+from walkoff.extensions import db
 from walkoff.messaging import MessageAction
 
 user_messages_association = db.Table('user_messages',

@@ -1,16 +1,23 @@
 from unittest import TestCase
 from walkoff.messaging import MessageAction
+from walkoff.server import flaskserver
 from walkoff.serverdb import db
 from walkoff.serverdb.user import User
 from walkoff.serverdb.message import MessageHistory
-from walkoff.server import flaskserver
 from datetime import datetime
+import walkoff.config.paths
+import tests.config
+from walkoff import initialize_databases
 
 
 class TestMessageHistoryDatabase(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        walkoff.config.paths.db_path = tests.config.test_db_path
+        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
+        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+        initialize_databases()
         cls.context = flaskserver.app.test_request_context()
         cls.context.push()
         db.create_all()

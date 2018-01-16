@@ -43,10 +43,10 @@ class TestAction(unittest.TestCase):
         self.assertEqual(elem.y_coordinate, y_coordinate)
         if templated:
             self.assertTrue(elem.templated)
-            self.assertDictEqual(elem._raw_representation, raw_representation)
+            self.assertDictEqual(elem.raw_representation, raw_representation)
         else:
             self.assertFalse(elem.templated)
-            self.assertDictEqual(elem._raw_representation, {})
+            self.assertDictEqual(elem.raw_representation, {})
         self.assertIsNone(elem._output)
         self.assertEqual(elem._execution_uid, 'default')
 

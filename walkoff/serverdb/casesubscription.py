@@ -2,7 +2,7 @@ import json
 import logging
 
 import walkoff.case.subscription
-from walkoff.server.extensions import db
+from walkoff.extensions import db
 from walkoff.serverdb.mixins import TrackModificationsMixIn
 
 

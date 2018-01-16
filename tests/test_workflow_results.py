@@ -1,7 +1,6 @@
 import walkoff.case.database as case_database
 from walkoff.case.workflowresults import WorkflowResult
 from walkoff.server import flaskserver
-from tests import config
 from tests.util.servertestcase import ServerTestCase
 
 
@@ -13,8 +12,6 @@ class TestWorkflowResults(ServerTestCase):
         case_database.case_db.tear_down()
 
     def test_workflow_result_format(self):
-        flaskserver.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                      'multiactionWorkflowTest.playbook')
         uid = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
         flaskserver.running_context.controller.wait_and_reset(1)
@@ -39,11 +36,9 @@ class TestWorkflowResults(ServerTestCase):
                               'result': {"status": "Success", "result": {"message": "HELLO WORLD"}}})
 
     def test_workflow_result_multiple_workflows(self):
-        flaskserver.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                      'multiactionWorkflowTest.playbook')
         uid1 = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         uid2 = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-        
+
         flaskserver.running_context.controller.wait_and_reset(2)
 
         workflow_uids = case_database.case_db.session.query(WorkflowResult).with_entities(WorkflowResult.uid).all()

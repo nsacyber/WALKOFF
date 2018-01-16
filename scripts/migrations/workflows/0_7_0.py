@@ -1,5 +1,7 @@
+import json
 import os
 import sys
+from copy import deepcopy
 
 sys.path.append(os.path.abspath('.'))
 import walkoff.coredb.devicedb
@@ -77,13 +79,19 @@ def upgrade_workflow(workflow):
     walkoff.coredb.devicedb.device_db.session.commit()
 
     for action in workflow_obj.actions:
-        for arg in action.arguments:
-            print(arg.__dict__)
+        if action.templated:
+            print(action.raw_representation)
+
+    walkoff.coredb.devicedb.device_db.session.commit()
 
     return workflow_obj
 
 
 def convert_action(action):
+    action_copy = deepcopy(action)
+    action_copy.pop("uid")
+    action_copy.pop("position")
+
     arguments = []
     if 'arguments' in action:
         for argument in action['arguments']:
@@ -103,11 +111,10 @@ def convert_action(action):
         x_coordinate = None
         y_coordinate = None
     templated = action['templated'] if 'templated' in action else None
-    raw_representation = action['raw_representation'] if 'raw_representation' in action else None
 
     action_obj = Action(app_name=action['app_name'], action_name=action['action_name'], name=name, device_id=device_id,
                         x_coordinate=x_coordinate, y_coordinate=y_coordinate, templated=templated,
-                        raw_representation=raw_representation, arguments=arguments, triggers=triggers)
+                        raw_representation=action_copy, arguments=arguments, triggers=triggers)
 
     walkoff.coredb.devicedb.device_db.session.add(action_obj)
     walkoff.coredb.devicedb.device_db.session.commit()

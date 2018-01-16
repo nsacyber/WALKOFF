@@ -273,13 +273,9 @@ class Worker:
                 sender (execution element): The execution element that sent the signal.
                 kwargs (dict): Any extra data to send.
         """
-        print(kwargs['event'])
-        try:
-            packet_bytes = convert_to_protobuf(sender, self.workflows[threading.current_thread().name].get_execution_uid(),
+        print("Worker sending: {}".format(kwargs['event']))
+        packet_bytes = convert_to_protobuf(sender, self.workflows[threading.current_thread().name].get_execution_uid(),
                                            **kwargs)
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
 
         self.results_sock.send(packet_bytes)
 

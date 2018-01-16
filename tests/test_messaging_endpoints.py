@@ -1,7 +1,7 @@
 from tests.util.servertestcase import ServerTestCase
 from walkoff.serverdb import User, Role
 from walkoff.serverdb.message import Message, MessageHistory
-from walkoff.server.extensions import db
+from walkoff.extensions import db
 from walkoff.server.returncodes import *
 from walkoff.server import flaskserver
 import json

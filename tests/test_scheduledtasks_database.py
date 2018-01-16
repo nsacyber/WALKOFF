@@ -7,11 +7,18 @@ from walkoff.core.scheduler import InvalidTriggerArgs
 from walkoff.serverdb import db
 from walkoff.serverdb.scheduledtasks import ScheduledTask
 from tests.test_scheduler import MockWorkflow
+import walkoff.config.paths
+import tests.config
+from walkoff import initialize_databases
 
 
 class TestScheduledTask(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        walkoff.config.paths.db_path = tests.config.test_db_path
+        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
+        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+        initialize_databases()
         cls.context = server.app.test_request_context()
         cls.context.push()
         db.create_all()

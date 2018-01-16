@@ -8,7 +8,7 @@ from walkoff.coredb.devicedb import App
 from walkoff import helpers
 from walkoff.config import paths
 from walkoff.helpers import format_db_path
-from walkoff.server.extensions import db, jwt
+from walkoff.extensions import db, jwt
 from walkoff.serverdb.casesubscription import CaseSubscription
 
 logger = logging.getLogger(__name__)

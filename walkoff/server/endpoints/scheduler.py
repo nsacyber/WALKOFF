@@ -5,7 +5,7 @@ from walkoff.core.scheduler import InvalidTriggerArgs
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.serverdb.scheduledtasks import ScheduledTask
-from walkoff.server.extensions import db
+from walkoff.extensions import db
 from walkoff.server.decorators import with_resource_factory
 
 

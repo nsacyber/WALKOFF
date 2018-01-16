@@ -11,6 +11,10 @@ import walkoff.core.multiprocessedexecutor
 from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from tests import config
 from tests.util.mock_objects import *
+import walkoff.config.paths
+import tests.config
+from walkoff import initialize_databases
+
 
 try:
     from importlib import reload
@@ -21,6 +25,11 @@ except ImportError:
 class TestWorkflowManipulation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        walkoff.config.paths.db_path = tests.config.test_db_path
+        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
+        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+        initialize_databases()
+
         walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
         walkoff.config.config.num_processes = 2
@@ -32,10 +41,10 @@ class TestWorkflowManipulation(unittest.TestCase):
     def setUp(self):
         self.controller = walkoff.controller.controller
         self.controller.workflows = {}
-        self.controller.load_playbooks(
-            resource_collection=path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows"))
-        self.controller.load_playbook(
-            resource=path.join(config.test_workflows_path, 'simpleDataManipulationWorkflow.playbook'))
+        # self.controller.load_playbooks(
+        #     resource_collection=path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows"))
+        # self.controller.load_playbook(
+        #     resource=path.join(config.test_workflows_path, 'simpleDataManipulationWorkflow.playbook'))
         self.id_tuple = ('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
         self.testWorkflow = self.controller.get_workflow(*self.id_tuple)
         self.testWorkflow.set_execution_uid('some_uid')
@@ -53,7 +62,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         walkoff.controller.controller.shutdown_pool()
 
     def test_pause_and_resume_workflow(self):
-        self.controller.load_playbook(resource=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
+        # self.controller.load_playbook(resource=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
 
         uid = None
         result = dict()
@@ -86,7 +95,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertTrue(result['resumed'])
 
     def test_change_action_input(self):
-        arguments = [{'name': 'call', 'value': 'CHANGE INPUT'}]
+        arguments = [Argument(name='call', value='CHANGE INPUT')]
 
         result = {'value': None}
 

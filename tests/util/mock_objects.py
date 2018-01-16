@@ -8,8 +8,10 @@ from zmq.utils.strtypes import cast_unicode
 from walkoff.coredb.argument import Argument
 from walkoff.events import WalkoffEvent
 from walkoff.core.multiprocessedexecutor import loadbalancer
-from walkoff.core.multiprocessedexecutor.worker import convert_to_protobuf, recreate_workflow
+from walkoff.core.multiprocessedexecutor.worker import convert_to_protobuf
 from walkoff.proto.build import data_pb2
+import walkoff.coredb.devicedb
+from walkoff.coredb.workflow import Workflow
 
 try:
     from Queue import Queue
@@ -45,7 +47,7 @@ def mock_wait_and_reset(self, num_workflows):
 
 def mock_shutdown_pool(self):
     if self.manager_thread and self.manager_thread.is_alive():
-        self.manager.pending_workflows.put("Exit")
+        self.manager.pending_workflows.put(("Exit", "Exit"))
         self.manager_thread.join(timeout=1)
     self.threading_is_initialized = False
     WalkoffEvent.CommonWorkflowSignal.signal.receivers = {}
@@ -56,7 +58,6 @@ def mock_shutdown_pool(self):
 class MockLoadBalancer(object):
     def __init__(self):
         self.pending_workflows = MockRequestQueue()
-        # self.comm_queue = MockCommQueue()
         self.results_queue = MockReceiveQueue()
         self.workflow_comms = {}
         self.exec_uid = ''
@@ -90,24 +91,22 @@ class MockLoadBalancer(object):
         sender = message.sender
         self.results_queue.send(sender, kwargs)
 
-    def add_workflow(self, workflow_json):
-        self.pending_workflows.put(workflow_json)
+    def add_workflow(self, workflow_id, workflow_execution_uid):
+        self.pending_workflows.put((workflow_id, workflow_execution_uid))
 
     def manage_workflows(self):
         while True:
-            workflow_json = self.pending_workflows.recv()
-            if workflow_json == "Exit":
+            workflow_id, workflow_execution_uid = self.pending_workflows.recv()
+            if workflow_id == "Exit":
                 return
 
-            exec_uid = workflow_json['execution_uid']
+            workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
 
-            workflow, start_arguments = recreate_workflow(workflow_json)
-            self.workflow_comms[exec_uid] = workflow
+            self.workflow_comms[workflow_execution_uid] = workflow
 
-            self.exec_uid = exec_uid
+            self.exec_uid = workflow_execution_uid
 
-            workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start,
-                             start_arguments=start_arguments)
+            workflow.execute(execution_uid=workflow_execution_uid, start=workflow.start)
             self.exec_uid = ''
 
     def pause_workflow(self, workflow_execution_uid):

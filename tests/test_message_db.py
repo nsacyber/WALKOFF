@@ -1,20 +1,27 @@
 from unittest import TestCase
+from walkoff.server import flaskserver
 from walkoff.serverdb.message import Message, MessageHistory
 from walkoff.messaging import MessageAction
 import walkoff.messaging
 from walkoff.messaging.utils import strip_requires_response_from_message_body, save_message, \
     get_all_matching_users_for_message, log_action_taken_on_message
 from walkoff.serverdb import db, User, Role
-from walkoff.server import flaskserver
 from datetime import datetime
 from walkoff.events import WalkoffEvent
 import json
+import walkoff.config.paths
+import tests.config
+from walkoff import initialize_databases
 
 
 class TestMessageDatabase(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        walkoff.config.paths.db_path = tests.config.test_db_path
+        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
+        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+        initialize_databases()
         cls.context = flaskserver.app.test_request_context()
         cls.context.push()
         db.create_all()
@@ -395,8 +402,8 @@ class TestMessageDatabase(TestCase):
 
     def test_save_message_callback(self):
         body = [{'message': 'look here', 'requires_auth': False},
-                         {'message': 'also here', 'requires_auth': False},
-                         {'message': 'here thing'}]
+                {'message': 'also here', 'requires_auth': False},
+                {'message': 'here thing'}]
         message_data = {'body': body,
                         'users': [self.user.id],
                         'roles': [self.role.id],
@@ -413,8 +420,8 @@ class TestMessageDatabase(TestCase):
 
     def test_save_message_callback_requires_auth(self):
         body = [{'message': 'look here', 'requires_response': False},
-                         {'message': 'also here', 'requires_response': True},
-                         {'message': 'here thing'}]
+                {'message': 'also here', 'requires_response': True},
+                {'message': 'here thing'}]
         message_data = {'body': body,
                         'users': [self.user.id],
                         'roles': [self.role.id],
@@ -433,8 +440,8 @@ class TestMessageDatabase(TestCase):
 
     def test_save_message_callback_sends_message_created(self):
         body = [{'message': 'look here', 'requires_response': False},
-                         {'message': 'also here', 'requires_response': True},
-                         {'message': 'here thing'}]
+                {'message': 'also here', 'requires_response': True},
+                {'message': 'here thing'}]
         message_data = {'body': body,
                         'users': [self.user.id],
                         'roles': [self.role.id],

@@ -10,6 +10,7 @@ from walkoff.events import WalkoffEvent
 from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import get_condition_api, InvalidArgument, format_exception_message, split_api_params
 from walkoff.appgateway.validator import validate_condition_parameters
+import walkoff.coredb.devicedb
 
 logger = logging.getLogger(__name__)
 
@@ -101,3 +102,4 @@ class Condition(ExecutionElement, Device_Base):
         if arg:
             self.arguments.remove(arg)
         self.arguments.append(Argument(self._data_param_name, value=data))
+        walkoff.coredb.devicedb.device_db.session.commit()

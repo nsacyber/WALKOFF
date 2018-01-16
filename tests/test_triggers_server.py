@@ -1,10 +1,6 @@
 import json
-import socket
 import threading
 import time
-
-import gevent
-from gevent import monkey
 
 import walkoff.case.database as case_database
 import walkoff.case.subscription
@@ -25,7 +21,6 @@ class TestTriggersServer(ServerTestCase):
     patch = False
 
     def setUp(self):
-        #monkey.patch_socket()
         walkoff.case.subscription.subscriptions = {}
         case_database.initialize()
 
@@ -35,7 +30,6 @@ class TestTriggersServer(ServerTestCase):
         for case in case_database.case_db.session.query(case_database.Case).all():
             case_database.case_db.session.delete(case)
         case_database.case_db.session.commit()
-        #reload(socket)
 
     def test_trigger_multiple_workflows(self):
 

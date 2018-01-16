@@ -55,22 +55,22 @@ class TestZMQCommunication(unittest.TestCase):
         walkoff.controller.controller.shutdown_pool()
 
     '''Request and Result Socket Testing (Basic Workflow Execution)'''
-    # def test_simple_workflow_execution(self):
-    #     workflow = self.controller.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-    #     action_ids = [action.id for action in workflow.actions if action.name == 'start']
-    #     setup_subscriptions_for_action(workflow.id, action_ids)
-    #     self.controller.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-    #
-    #     self.controller.wait_and_reset(1)
-    #
-    #     actions = []
-    #     for uid in action_ids:
-    #         actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
-    #
-    #     self.assertEqual(len(actions), 1)
-    #     action = actions[0]
-    #     result = action['data']
-    #     self.assertDictEqual(result, {'result': "REPEATING: Hello World", 'status': 'Success'})
+    def test_simple_workflow_execution(self):
+        workflow = self.controller.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        setup_subscriptions_for_action(workflow.id, action_ids)
+        self.controller.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+
+        self.controller.wait_and_reset(1)
+
+        actions = []
+        for uid in action_ids:
+            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+
+        self.assertEqual(len(actions), 1)
+        action = actions[0]
+        result = action['data']
+        self.assertDictEqual(result, {'result': "REPEATING: Hello World", 'status': 'Success'})
 
     def test_multi_action_workflow(self):
         workflow = self.controller.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
@@ -90,94 +90,94 @@ class TestZMQCommunication(unittest.TestCase):
         for result in [action['data'] for action in actions]:
             self.assertIn(result, expected_results)
 
-    # def test_error_workflow(self):
-    #     workflow = self.controller.get_workflow('multiactionError', 'multiactionErrorWorkflow')
-    #     action_names = ['start', '1', 'error']
-    #     action_ids = [action.id for action in workflow.actions if action.name in action_names]
-    #     setup_subscriptions_for_action(workflow.id, action_ids)
-    #     self.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
-    #
-    #     self.controller.wait_and_reset(1)
-    #
-    #     actions = []
-    #     for uid in action_ids:
-    #         actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
-    #     self.assertEqual(len(actions), 2)
-    #
-    #     expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
-    #                         {'status': 'Success', 'result': 'REPEATING: Hello World'}]
-    #     for result in [action['data'] for action in actions]:
-    #         self.assertIn(result, expected_results)
-    #
-    # def test_workflow_with_dataflow(self):
-    #     workflow = self.controller.get_workflow('dataflowTest', 'dataflowWorkflow')
-    #     action_names = ['start', '1', '2']
-    #     action_ids = [action.id for action in workflow.actions if action.name in action_names]
-    #     setup_subscriptions_for_action(workflow.id, action_ids)
-    #     self.controller.execute_workflow('dataflowTest', 'dataflowWorkflow')
-    #
-    #     self.controller.wait_and_reset(1)
-    #
-    #     actions = []
-    #     for uid in action_ids:
-    #         actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
-    #     self.assertEqual(len(actions), 3)
-    #     expected_results = [{'result': 6, 'status': 'Success'},
-    #                         {'result': 6, 'status': 'Success'},
-    #                         {'result': 15, 'status': 'Success'}]
-    #     for result in [action['data'] for action in actions]:
-    #         self.assertIn(result, expected_results)
-    #
-    # def test_execute_multiple_workflows(self):
-    #     workflow = self.controller.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-    #     action_ids = [action.id for action in workflow.actions if action.name == 'start']
-    #     setup_subscriptions_for_action(workflow.id, action_ids)
-    #
-    #     capacity = walkoff.config.config.num_processes * walkoff.config.config.num_threads_per_process
-    #
-    #     for i in range(capacity*2):
-    #         self.controller.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-    #
-    #     self.controller.wait_and_reset(capacity*2)
-    #
-    #     actions = []
-    #     for uid in action_ids:
-    #         actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
-    #
-    #     self.assertEqual(len(actions), capacity*2)
-    #
-    # '''Communication Socket Testing'''
-    #
-    # def test_pause_and_resume_workflow(self):
-    #     self.controller.load_playbook(resource=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
-    #
-    #     uid = None
-    #     result = dict()
-    #     result['paused'] = False
-    #     result['resumed'] = False
-    #
-    #     def workflow_paused_listener(sender, **kwargs):
-    #         result['paused'] = True
-    #         self.controller.resume_workflow(uid)
-    #
-    #     WalkoffEvent.WorkflowPaused.connect(workflow_paused_listener)
-    #
-    #     def workflow_resumed_listener(sender, **kwargs):
-    #         result['resumed'] = True
-    #
-    #     WalkoffEvent.WorkflowResumed.connect(workflow_resumed_listener)
-    #
-    #     def pause_resume_thread():
-    #         self.controller.pause_workflow(uid)
-    #         return
-    #
-    #     def action_1_about_to_begin_listener(sender, **kwargs):
-    #         threading.Thread(target=pause_resume_thread).start()
-    #         time.sleep(0)
-    #
-    #     WalkoffEvent.WorkflowExecutionStart.connect(action_1_about_to_begin_listener)
-    #
-    #     uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
-    #     self.controller.wait_and_reset(1)
-    #     self.assertTrue(result['paused'])
-    #     self.assertTrue(result['resumed'])
+    def test_error_workflow(self):
+        workflow = self.controller.get_workflow('multiactionError', 'multiactionErrorWorkflow')
+        action_names = ['start', '1', 'error']
+        action_ids = [action.id for action in workflow.actions if action.name in action_names]
+        setup_subscriptions_for_action(workflow.id, action_ids)
+        self.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
+
+        self.controller.wait_and_reset(1)
+
+        actions = []
+        for uid in action_ids:
+            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        self.assertEqual(len(actions), 2)
+
+        expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
+                            {'status': 'Success', 'result': 'REPEATING: Hello World'}]
+        for result in [action['data'] for action in actions]:
+            self.assertIn(result, expected_results)
+
+    def test_workflow_with_dataflow(self):
+        workflow = self.controller.get_workflow('dataflowTest', 'dataflowWorkflow')
+        action_names = ['start', '1', '2']
+        action_ids = [action.id for action in workflow.actions if action.name in action_names]
+        setup_subscriptions_for_action(workflow.id, action_ids)
+        self.controller.execute_workflow('dataflowTest', 'dataflowWorkflow')
+
+        self.controller.wait_and_reset(1)
+
+        actions = []
+        for uid in action_ids:
+            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        self.assertEqual(len(actions), 3)
+        expected_results = [{'result': 6, 'status': 'Success'},
+                            {'result': 6, 'status': 'Success'},
+                            {'result': 15, 'status': 'Success'}]
+        for result in [action['data'] for action in actions]:
+            self.assertIn(result, expected_results)
+
+    def test_execute_multiple_workflows(self):
+        workflow = self.controller.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        setup_subscriptions_for_action(workflow.id, action_ids)
+
+        capacity = walkoff.config.config.num_processes * walkoff.config.config.num_threads_per_process
+
+        for i in range(capacity*2):
+            self.controller.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+
+        self.controller.wait_and_reset(capacity*2)
+
+        actions = []
+        for uid in action_ids:
+            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+
+        self.assertEqual(len(actions), capacity*2)
+
+    '''Communication Socket Testing'''
+
+    def test_pause_and_resume_workflow(self):
+        self.controller.load_playbook(resource=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
+
+        uid = None
+        result = dict()
+        result['paused'] = False
+        result['resumed'] = False
+
+        def workflow_paused_listener(sender, **kwargs):
+            result['paused'] = True
+            self.controller.resume_workflow(uid)
+
+        WalkoffEvent.WorkflowPaused.connect(workflow_paused_listener)
+
+        def workflow_resumed_listener(sender, **kwargs):
+            result['resumed'] = True
+
+        WalkoffEvent.WorkflowResumed.connect(workflow_resumed_listener)
+
+        def pause_resume_thread():
+            self.controller.pause_workflow(uid)
+            return
+
+        def action_1_about_to_begin_listener(sender, **kwargs):
+            threading.Thread(target=pause_resume_thread).start()
+            time.sleep(0)
+
+        WalkoffEvent.WorkflowExecutionStart.connect(action_1_about_to_begin_listener)
+
+        uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
+        self.controller.wait_and_reset(1)
+        self.assertTrue(result['paused'])
+        self.assertTrue(result['resumed'])

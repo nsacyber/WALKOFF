@@ -22,7 +22,8 @@ class JsonElementReader(object):
         for field, value in ((field, getattr(element, field)) for field in dir(element)
                              if not field.startswith('_')
                              and not callable(getattr(element, field))
-                             and field != 'raw_representation'):
+                             and field != 'raw_representation'
+                             and field != 'metadata'):
             if isinstance(value, Representable):
                 accumulator[field] = JsonElementReader.read(value)
             elif isinstance(value, list):

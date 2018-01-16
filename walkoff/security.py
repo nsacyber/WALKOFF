@@ -8,7 +8,7 @@ from flask_jwt_extended.tokens import decode_jwt
 from flask_jwt_extended.view_decorators import _load_user
 
 from walkoff.serverdb import User
-from walkoff.server.extensions import jwt
+from walkoff.extensions import jwt
 from walkoff.server.returncodes import FORBIDDEN_ERROR
 import walkoff.serverdb
 from walkoff.server.returncodes import UNAUTHORIZED_ERROR

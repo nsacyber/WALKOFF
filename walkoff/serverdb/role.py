@@ -1,4 +1,4 @@
-from walkoff.server.extensions import db
+from walkoff.extensions import db
 from walkoff.serverdb.mixins import TrackModificationsMixIn
 from walkoff.serverdb.resource import Resource
 

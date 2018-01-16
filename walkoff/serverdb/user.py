@@ -2,8 +2,7 @@ import logging
 from datetime import datetime
 from passlib.hash import pbkdf2_sha512
 from sqlalchemy.ext.hybrid import hybrid_property
-
-from walkoff.server.extensions import db
+from walkoff.extensions import db
 from walkoff.serverdb.mixins import TrackModificationsMixIn
 from walkoff.serverdb.role import Role
 

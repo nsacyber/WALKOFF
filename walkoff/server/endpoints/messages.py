@@ -4,7 +4,7 @@ from walkoff.server.returncodes import *
 from flask import request
 from walkoff.serverdb import User
 from walkoff.serverdb.message import Message
-from walkoff.server.extensions import db
+from walkoff.extensions import db
 
 max_notifications = 20
 min_notifications = 5

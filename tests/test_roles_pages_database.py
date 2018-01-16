@@ -1,10 +1,8 @@
 import unittest
 
-try:
-    from walkoff.serverdb import db, Role, Resource, default_resources, initialize_default_resources_admin
-except Exception:
-    import traceback
-    traceback.print_exc()
+from walkoff.serverdb import db, Role, Resource, default_resources, initialize_default_resources_admin
+import tests.config
+from walkoff import initialize_databases
 
 
 class TestRoles(unittest.TestCase):
@@ -13,6 +11,13 @@ class TestRoles(unittest.TestCase):
         import walkoff.server.flaskserver
         cls.context = walkoff.server.flaskserver.app.test_request_context()
         cls.context.push()
+
+        import walkoff.config.paths
+        walkoff.config.paths.db_path = tests.config.test_db_path
+        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
+        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+        initialize_databases()
+
         initialize_default_resources_admin()
         db.create_all()
 

@@ -1,6 +1,6 @@
 import json
 
-from walkoff.server.extensions import db
+from walkoff.extensions import db
 from walkoff.server.returncodes import *
 from walkoff.serverdb.scheduledtasks import ScheduledTask, ScheduledWorkflow
 from tests.util.servertestcase import ServerTestCase

@@ -1,5 +1,4 @@
 import unittest
-import uuid
 
 import walkoff.appgateway
 import walkoff.config.config
@@ -7,12 +6,18 @@ from walkoff.coredb.argument import Argument
 from walkoff.coredb.condition import Condition
 from walkoff.coredb.transform import Transform
 from walkoff.helpers import InvalidArgument
-from tests.config import test_apps_path
+from tests.config import test_apps_path, test_db_path, test_case_db_path, test_device_db_path
+import walkoff.config.paths
+from walkoff import initialize_databases
 
 
 class TestCondition(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        walkoff.config.paths.db_path = test_db_path
+        walkoff.config.paths.case_db_path = test_case_db_path
+        walkoff.config.paths.device_db_path = test_device_db_path
+        initialize_databases()
         walkoff.appgateway.clear_cache()
         walkoff.appgateway.cache_apps(path=test_apps_path)
         walkoff.config.config.load_app_apis(test_apps_path)

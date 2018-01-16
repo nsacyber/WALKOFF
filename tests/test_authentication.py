@@ -8,7 +8,7 @@ from walkoff.server.returncodes import *
 from walkoff.serverdb.tokens import BlacklistedToken
 from walkoff.serverdb.user import User
 from walkoff.serverdb import add_user
-from walkoff.server.extensions import db
+from walkoff.extensions import db
 import walkoff.config.paths
 import tests.config
 from walkoff import initialize_databases

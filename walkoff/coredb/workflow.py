@@ -115,7 +115,6 @@ class Workflow(ExecutionElement, Device_Base):
         actions = self.__actions(start=start)
         first = True
         for action in (action_ for action_ in actions if action_ is not None):
-            print(action)
             self._executing_action = action
             logger.debug('Executing action {0} of workflow {1}'.format(action, self.name))
             if self._is_paused:

@@ -2,7 +2,7 @@ import json
 
 import walkoff.server.flaskserver
 from walkoff.serverdb import Role, Resource, default_resources
-from walkoff.server.extensions import db
+from walkoff.extensions import db
 from walkoff.server.returncodes import *
 from tests.util import servertestcase
 

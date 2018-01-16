@@ -134,8 +134,8 @@ class Action(ExecutionElement, Device_Base):
         self._event.set()
 
     def _update_json(self, updated_json):
-        self.action_name = updated_json['action_name']
         self.app_name = updated_json['app_name']
+        self.action_name = updated_json['action_name']
         self.device_id = updated_json['device_id'] if 'device_id' in updated_json else None
         arguments = []
         if 'arguments' in updated_json:
@@ -158,7 +158,7 @@ class Action(ExecutionElement, Device_Base):
         """
         if self.templated:
             from jinja2 import Environment
-            env = Environment().from_string(json.dumps(self._raw_representation)).render(
+            env = Environment().from_string(json.dumps(self.raw_representation)).render(
                 walkoff.config.config.JINJA_GLOBALS, **kwargs)
             self._update_json(updated_json=json.loads(env))
 

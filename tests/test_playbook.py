@@ -4,9 +4,19 @@ import walkoff
 from walkoff.coredb.playbook import Playbook
 from tests.test_scheduler import MockWorkflow
 from tests.util.assertwrappers import orderless_list_compare
+import walkoff.config.paths
+import tests.config
+from walkoff import initialize_databases
 
 
 class TestPlaybook(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        walkoff.config.paths.db_path = tests.config.test_db_path
+        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
+        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+        initialize_databases()
+
     def test_init(self):
         playbook = Playbook('test')
         self.assertEqual(playbook.name, 'test')

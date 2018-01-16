@@ -2,7 +2,7 @@ from datetime import datetime
 
 from flask import current_app
 
-from walkoff.server.extensions import db
+from walkoff.extensions import db
 
 number_of_operations = 0
 prune_frequency = 1000

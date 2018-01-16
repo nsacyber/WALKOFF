@@ -1,9 +1,7 @@
 import json
-import socket
 from datetime import datetime
 
-from gevent import monkey
-
+from tests.util.servertestcase import ServerTestCase
 import walkoff.case.database as case_database
 import walkoff.case.subscription
 import walkoff.config.paths
@@ -11,7 +9,7 @@ import walkoff.controller
 from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
 from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
-from tests.util.servertestcase import ServerTestCase
+
 
 try:
     from importlib import reload
@@ -23,7 +21,6 @@ class TestWorkflowServer(ServerTestCase):
     patch = False
 
     def setUp(self):
-        #monkey.patch_socket()
         walkoff.case.subscription.subscriptions = {}
         case_database.initialize()
 
@@ -33,12 +30,11 @@ class TestWorkflowServer(ServerTestCase):
         for case in case_database.case_db.session.query(case_database.Case).all():
             case_database.case_db.session.delete(case)
         case_database.case_db.session.commit()
-    #    reload(socket)
 
     def test_execute_workflow(self):
         workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
-        setup_subscriptions_for_action(workflow.uid, action_uids)
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        setup_subscriptions_for_action(workflow.id, action_ids)
         start = datetime.utcnow()
 
         response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
@@ -47,7 +43,7 @@ class TestWorkflowServer(ServerTestCase):
         flask_server.running_context.controller.wait_and_reset(1)
         self.assertIn('id', response)
         actions = []
-        for uid in action_uids:
+        for uid in action_ids:
             actions.extend(executed_actions(uid, start, datetime.utcnow()))
         self.assertEqual(len(actions), 1)
         action = actions[0]

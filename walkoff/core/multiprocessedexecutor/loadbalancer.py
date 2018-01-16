@@ -219,20 +219,6 @@ class Receiver:
         self.results_sock.curve_server = True
         self.results_sock.bind(walkoff.config.config.zmq_results_address)
 
-    @staticmethod
-    def send_callback(callback, sender, data):
-        """Sends a callback, received from an execution element over a ZMQ socket.
-
-        Args:
-            callback (callback object): The callback object to be sent.
-            sender (dict): The sender information.
-            data (dict): The data associated with the callback.
-        """
-        if data:
-            callback.send(sender, data=data)
-        else:
-            callback.send(sender)
-
     def receive_results(self):
         """Keep receiving results from execution elements over a ZMQ socket, and trigger the callbacks.
         """

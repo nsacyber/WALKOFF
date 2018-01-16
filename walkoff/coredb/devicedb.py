@@ -488,7 +488,10 @@ class DeviceDatabase(object):
     """Wrapper for the SQLAlchemy database connection object
     """
 
+    __instance = None
+
     def __init__(self):
+        # All of these imports are necessary
         from walkoff.coredb.argument import Argument
         from walkoff.coredb.action import Action
         from walkoff.coredb.branch import Branch
@@ -509,18 +512,15 @@ class DeviceDatabase(object):
         Device_Base.metadata.bind = self.engine
         Device_Base.metadata.create_all(self.engine)
 
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            cls.__instance = super(DeviceDatabase, cls).__new__(cls)
+        return cls.__instance
+
     def tear_down(self):
         self.session.rollback()
         self.connection.close()
         self.engine.dispose()
-
-
-def get_device_db(_singleton=None):
-    """Singleton factory which returns the database"""
-    # TODO: I may have done this incorrectly, but this fixed the import order...
-    if not _singleton:
-        _singleton=DeviceDatabase()
-    return _singleton
 
 
 device_db = None

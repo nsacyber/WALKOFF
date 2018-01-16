@@ -1,9 +1,9 @@
 import logging
 
-from walkoff.server.extensions import db
-from walkoff.serverdb.user import User
+from walkoff.extensions import db
 from walkoff.serverdb.role import Role
 from walkoff.serverdb.resource import Resource, Permission
+from walkoff.serverdb.user import User
 
 logger = logging.getLogger(__name__)
 
