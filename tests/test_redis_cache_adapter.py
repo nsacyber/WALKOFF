@@ -1,18 +1,11 @@
 from unittest import TestCase
-from walkoff.cache import RedisCacheAdapter
-from tests.config import cache_path
-from fakeredis import FakeStrictRedis
-
-import os
-import shutil
-from datetime import timedelta
+from tests.util.mock_objects import MockRedisCacheAdapter
 
 
 class TestRedisCacheAdapter(TestCase):
 
     def setUp(self):
-        redis_cache = FakeStrictRedis()
-        self.cache = RedisCacheAdapter(redis_cache=redis_cache)
+        self.cache = MockRedisCacheAdapter()
 
     def tearDown(self):
         self.cache.clear()
@@ -83,7 +76,7 @@ class TestRedisCacheAdapter(TestCase):
         self.cache.lpush('queue', 10)
         self.assertEqual(self.cache.lpop('queue'), '10')
 
-    def test_r_push_pop_multiple_values(self):
+    def test_l_push_pop_multiple_values(self):
         self.cache.rpush('big', 10, 11, 12)
         self.assertEqual(self.cache.lpop('big'), '10')
         self.assertEqual(self.cache.rpop('big'), '12')

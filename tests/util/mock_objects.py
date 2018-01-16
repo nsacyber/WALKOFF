@@ -10,7 +10,8 @@ from walkoff.events import WalkoffEvent
 from walkoff.core.multiprocessedexecutor import loadbalancer
 from walkoff.core.multiprocessedexecutor.worker import convert_to_protobuf, recreate_workflow
 from walkoff.proto.build import data_pb2
-
+from walkoff.cache import RedisCacheAdapter
+from fakeredis import FakeStrictRedis
 try:
     from Queue import Queue
 except ImportError:
@@ -180,3 +181,8 @@ class MockRequestQueue(object):
             self.push(workflow_json)
         except:
             self.push(data)
+
+
+class MockRedisCacheAdapter(RedisCacheAdapter):
+    def __init__(self, **opts):
+        self.cache = FakeStrictRedis(**opts)

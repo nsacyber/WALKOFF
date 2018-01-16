@@ -93,7 +93,7 @@ class TestDiskCacheAdapter(TestCase):
         self.cache.lpush('queue', 10)
         self.assertEqual(self.cache.lpop('queue'), 10)
 
-    def test_r_push_pop_multiple_values(self):
+    def test_l_push_pop_multiple_values(self):
         self.cache.rpush('big', 10, 11, 12)
         self.assertEqual(self.cache.lpop('big'), 10)
         self.assertEqual(self.cache.rpop('big'), 12)
@@ -103,4 +103,11 @@ class TestDiskCacheAdapter(TestCase):
 
     def test_convert_expire_to_seconds_int(self):
         self.assertEqual(DiskCacheAdapter._convert_expire_to_seconds(1500), 1.5)
-    
+
+    def test_from_json(self):
+        data = {'directory': cache_path, 'shards': 4, 'timeout': 30, 'retry': False, 'statistics': True}
+        cache = DiskCacheAdapter.from_json(data)
+        self.assertEqual(cache.directory, cache_path)
+        self.assertEqual(cache.cache.directory, cache_path)
+        self.assertEqual(cache.cache._count, 4)
+        self.assertFalse(cache.retry)

@@ -23,6 +23,7 @@ data/walkoff.config
 docs/_*/
 npm-debug.log
 tests/testWorkflows/testGeneratedWorkflows_bkup
+tests/tmp
 walkoff/api/composed_api.yaml
 walkoff/client/node_modules/
 walkoff/client/build/

@@ -1,6 +1,10 @@
 from datetime import timedelta
-from diskcache import FanoutCache, Deque
-from os.path import join
+from diskcache import FanoutCache, DEFAULT_SETTINGS
+import logging
+import os
+from walkoff.config.paths import cache_path
+
+logger = logging.getLogger(__name__)
 
 
 class DiskCacheAdapter(object):
@@ -56,15 +60,22 @@ class DiskCacheAdapter(object):
     def clear(self):
         self.cache.clear()
 
+    @classmethod
+    def from_json(cls, json_in):
+        directory = json_in.pop('directory', cache_path)
+        shards = json_in.pop('shards', 8)
+        timeout = json_in.pop('timeout', 60)
+        retry = json_in.pop('retry', True)
+        settings = {key: value for key, value in json_in.items() if key in DEFAULT_SETTINGS}
+        return cls(directory, shards=shards, timeout=timeout, retry=retry, **settings)
+
 
 class RedisCacheAdapter(object):
+    _requires = ['redis']
 
-    def __init__(self, redis_cache=None, **opts):
-        if redis_cache is None:
-            from redis import StrictRedis
-            self.cache = StrictRedis(**opts)
-        else:
-            self.cache = redis_cache
+    def __init__(self, **opts):
+        from redis import StrictRedis
+        self.cache = StrictRedis(**opts)
 
     def set(self, key, value, expire=None, **opts):  # expire can be datetime or ms
         return self.cache.set(key, value, px=expire, **opts)
@@ -98,3 +109,31 @@ class RedisCacheAdapter(object):
 
     def clear(self):
         self.cache.flushdb()
+
+    @classmethod
+    def from_json(cls, json_in):
+        password = os.getenv('WALKOFF_REDIS_PASS')
+        if password is not None:
+            json_in['password'] = password
+        return cls(**json_in)
+
+
+cache_translation = {'disk': DiskCacheAdapter, 'redis': RedisCacheAdapter}
+
+
+def make_cache(config):
+    cache_type = config.pop('type', 'disk').lower()
+    try:
+        cache = cache_translation[cache_type].from_json(config)
+    except KeyError:
+        logger.error('Unknown cache type {} selected. Creating default DiskCache'.format(cache_type))
+        cache = DiskCacheAdapter.from_json(config)
+    except ImportError:
+        logger.error(
+            'Could not import required packages to create cache type {0}. '
+            'Cache type requires the following packages {1}. '
+            'Using default DiskCache'.format(cache_type, getattr(cache_translation[cache_type], '_requires', [])))
+        cache = DiskCacheAdapter.from_json(config)
+
+    logger.info('Created {} cache connection'.format(cache_type))
+    return cache
