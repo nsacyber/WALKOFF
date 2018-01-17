@@ -186,3 +186,18 @@ class MockRequestQueue(object):
 class MockRedisCacheAdapter(RedisCacheAdapter):
     def __init__(self, **opts):
         self.cache = FakeStrictRedis(**opts)
+
+
+class PubSubCacheSpy(object):
+    def __init__(self):
+        self.subscribed = []
+        self.published = {}
+
+    def subscribe(self, channel):
+        self.subscribed.append(channel)
+
+    def publish(self, channel, data):
+        if channel not in self.published:
+            self.published[channel] = [data]
+        else:
+            self.published[channel].append(data)

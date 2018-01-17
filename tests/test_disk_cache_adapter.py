@@ -1,7 +1,7 @@
 from unittest import TestCase
-from walkoff.cache import DiskCacheAdapter
+from walkoff.cache import DiskCacheAdapter, unsubscribe_message
 from tests.config import cache_path
-
+from tests.util.mock_objects import PubSubCacheSpy
 import os
 import shutil
 from datetime import timedelta
@@ -111,3 +111,18 @@ class TestDiskCacheAdapter(TestCase):
         self.assertEqual(cache.cache.directory, cache_path)
         self.assertEqual(cache.cache._count, 4)
         self.assertFalse(cache.retry)
+
+    def test_publish(self):
+        self.cache.pubsub_cache = PubSubCacheSpy()
+        self.cache.publish('channel1', 87)
+        self.assertDictEqual(self.cache.pubsub_cache.published, {'channel1': [87]})
+
+    def test_publish(self):
+        self.cache.pubsub_cache = PubSubCacheSpy()
+        self.cache.unsubscribe('channel1')
+        self.assertDictEqual(self.cache.pubsub_cache.published, {'channel1': [unsubscribe_message]})
+
+    def test_subscribe(self):
+        self.cache.pubsub_cache = PubSubCacheSpy()
+        self.cache.subscribe('my_channel')
+        self.assertListEqual(self.cache.pubsub_cache.subscribed, ['my_channel'])

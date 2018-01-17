@@ -1,5 +1,6 @@
 from unittest import TestCase
 from tests.util.mock_objects import MockRedisCacheAdapter
+from walkoff.cache import unsubscribe_message
 
 
 class TestRedisCacheAdapter(TestCase):
@@ -80,3 +81,19 @@ class TestRedisCacheAdapter(TestCase):
         self.cache.rpush('big', 10, 11, 12)
         self.assertEqual(self.cache.lpop('big'), '10')
         self.assertEqual(self.cache.rpop('big'), '12')
+
+    def test_subscribe(self):
+        sub = self.cache.subscribe('channel1')
+        self.assertEqual(sub.channel, 'channel1')
+
+    def test_publish(self):
+        sub = self.cache.subscribe('channel_a')
+        self.cache.publish('channel_a', '42')
+        result = sub._pubsub.get_message()
+        self.assertEqual(result['data'], '42')
+
+    def test_unsubscribe(self):
+        sub = self.cache.subscribe('channel_a')
+        self.cache.unsubscribe('channel_a')
+        result = sub._pubsub.get_message()
+        self.assertEqual(result['data'], unsubscribe_message)
