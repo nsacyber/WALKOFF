@@ -2,8 +2,9 @@ import logging
 
 import walkoff.config.config
 from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
-from walkoff.core.playbookstore import PlaybookStore
 from walkoff.core.scheduler import Scheduler
+import walkoff.coredb.devicedb
+from walkoff.coredb.workflow import Workflow
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,6 @@ class Controller(object):
             executor (cls, optional): The executor to use in the controller. Defaults to MultiprocessedExecutor
         """
         self.uid = 'controller'
-        self.playbook_store = PlaybookStore()
         self.scheduler = Scheduler()
         self.executor = executor()
 
@@ -65,247 +65,41 @@ class Controller(object):
         """
         return self.executor.resume_workflow(workflow_execution_uid)
 
-    def load_workflow(self, resource, workflow_name):
-        """Loads a workflow from a file.
-
-        Args:
-            resource (str): Path to the workflow.
-            workflow_name (str): Name of the workflow to load.
-
-        Returns:
-            True on success, False otherwise.
-        """
-        return self.playbook_store.load_workflow(resource, workflow_name)
-
-    def load_playbook(self, resource):
-        """Loads playbook from a file.
-
-        Args:
-            resource (str): Path to the workflow.
-        """
-        return self.playbook_store.load_playbook(resource)
-
-    def load_playbooks(self, resource_collection=None):
-        """Loads all playbooks from a directory.
-
-        Args:
-            resource_collection (str, optional): Path to the directory to load from. Defaults to the
-                configuration workflows_path.
-        """
-        return self.playbook_store.load_playbooks(resource_collection)
-
-    def schedule_workflows(self, task_id, workflow_uids, trigger):
+    def schedule_workflows(self, task_id, workflow_ids, trigger):
         """Schedules workflows to be run by the scheduler
 
         Args:
             task_id (str|int): Id of the task to run
-            workflow_uids (list[str]): UIDs of the workflows to schedule
+            workflow_ids (list[int]): IDs of the workflows to schedule
             trigger: The type of scheduler trigger to use
         """
-        playbook_workflows = self.playbook_store.get_workflows_by_uid(workflow_uids)
+        playbook_workflows = self.playbook_store.get_workflows_by_uid(workflow_ids)
         schedule_workflows = []
         for playbook_name, workflows in playbook_workflows.items():
             for workflow in workflows:
                 schedule_workflows.append((playbook_name, workflow.name, workflow.uid))
         self.scheduler.schedule_workflows(task_id, self.execute_workflow, schedule_workflows, trigger)
 
-    def create_workflow(self, playbook_name, workflow_name):
-        """Creates a workflow from a workflow template.
-        
-        Args:
-            playbook_name (str): The name of the new playbook. 
-            workflow_name (str): The name of the new workflow.
-
-        Returns:
-            True on success, False if otherwise.
-        """
-        return self.playbook_store.create_workflow(playbook_name, workflow_name)
-
-    def create_playbook(self, playbook_name, workflows=None):
-        """Creates a playbook from a playbook template.
-
-        Args:
-            playbook_name (str): The name of the new playbook.
-            workflows (list[Workflow], optional): An optional list of Workflows to be associated with this
-                Playbook. Defaults to None.
-        """
-        return self.playbook_store.create_playbook(playbook_name, workflows)
-
-    def remove_workflow(self, playbook_name, workflow_name):
-        """Removes a workflow.
-        
-        Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): The name of the workflow to remove.
-            
-        Returns:
-            True on success, False otherwise.
-        """
-        self.playbook_store.remove_workflow(playbook_name, workflow_name)
-
-    def remove_playbook(self, playbook_name):
-        """Removes a playbook and all workflows within it.
-        
-        Args:
-            playbook_name (str): The name of the playbook to remove.
-            
-        Returns:
-            True on success, False otherwise.
-        """
-        self.playbook_store.remove_playbook(playbook_name)
-
-    def get_all_workflows(self, full_representation=False, reader=None):
-        """Gets all of the currently loaded workflows.
-
-        Args:
-            full_representation (bool, optional): A boolean specifying whether or not to include the JSON representation
-                of all the workflows, or just their names. Defaults to False.
-            reader (cls): The reader to specify how to display the Workflows. Defaults to None, which will show
-                basic JSON representation of the Workflows.
-        
-        Returns:
-            A dict with key being the playbook, mapping to a list of workflow names for each playbook.
-        """
-        return self.playbook_store.get_all_workflows(full_representation, reader=reader)
-
-    def get_all_playbooks(self):
-        """Gets a list of all playbooks.
-        
-        Returns:
-            A list containing all currently loaded playbook names.
-        """
-        return self.playbook_store.get_all_playbooks()
-
-    def is_workflow_registered(self, playbook_name, workflow_name):
-        """Checks whether or not a workflow is currently registered in the system.
-        
-        Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): The name of the workflow.
-            
-        Returns:
-            True if the workflow is registered, false otherwise.
-        """
-        return self.playbook_store.is_workflow_registered(playbook_name, workflow_name)
-
-    def is_playbook_registered(self, playbook_name):
-        """Checks whether or not a playbook is currently registered in the system.
-        
-        Args:
-            playbook_name (str): The name of the playbook.
-            
-        Returns:
-            True if the playbook is registered, false otherwise.
-        """
-        return self.playbook_store.is_playbook_registered(playbook_name)
-
-    def update_workflow_name(self, old_playbook, old_workflow, new_playbook, new_workflow):
-        """Update the name of a workflow.
-        
-        Args:
-            old_playbook (str): Name of the current playbook.
-            old_workflow (str): Name of the current workflow.
-            new_playbook (str): The new name of the playbook.
-            new_workflow (str): The new name of the workflow.
-        """
-        self.playbook_store.update_workflow_name(old_playbook, old_workflow, new_playbook, new_workflow)
-
-    def update_playbook_name(self, old_playbook, new_playbook):
-        """Update the name of a playbook.
-        
-        Args:
-            old_playbook (str): Name of the current playbook.
-            new_playbook (str): The new name of the playbook.
-        """
-        self.playbook_store.update_playbook_name(old_playbook, new_playbook)
-
-    def execute_workflow(self, playbook_name, workflow_name, start=None, start_arguments=None):
+    def execute_workflow(self, workflow_id, start=None, start_arguments=None):
         """Executes a workflow.
 
         Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): Workflow to execute.
-            start (str, optional): The name of the first, or starting action. Defaults to None.
+            workflow_id (int): ID of the workflow to execute.
+            start (int, optional): The ID of the first, or starting action. Defaults to None.
             start_arguments (list[Argument]): The input to the starting action of the workflow. Defaults to None.
 
         Returns:
             The execution UID if successful, None otherwise.
         """
-        if self.playbook_store.is_workflow_registered(playbook_name, workflow_name):
-            workflow = self.playbook_store.get_workflow(playbook_name, workflow_name)
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
+        if workflow:
             return self.executor.execute_workflow(workflow, start, start_arguments)
         else:
-            logger.error('Attempted to execute playbook which does not exist in controller')
-            return None, 'Attempted to execute playbook which does not exist in controller'
+            logger.error('Attempted to execute playbook which does not exist')
+            return None, 'Attempted to execute playbook which does not exist'
 
     def get_waiting_workflows(self):
         return self.executor.get_waiting_workflows()
-
-    def get_workflow(self, playbook_name, workflow_name):
-        """Get a workflow object.
-        
-        Args:
-            playbook_name (str): Playbook name under which the workflow is located.
-            workflow_name (str): The name of the workflow.
-            
-        Returns:
-            The workflow object if found, else None.
-        """
-        return self.playbook_store.get_workflow(playbook_name, workflow_name)
-
-    def get_all_workflows_by_playbook(self, playbook_name):
-        """Get a list of all workflow objects in a playbook.
-        
-        Args:
-            playbook_name: The name of the playbook.
-            
-        Returns:
-            A list of all workflow objects in a playbook.
-        """
-        return self.playbook_store.get_all_workflows_by_playbook(playbook_name)
-
-    def get_playbook_representation(self, playbook_name, reader=None):
-        """Returns the JSON representation of a playbook.
-
-        Args:
-            playbook_name: The name of the playbook.
-            reader (cls, optional): An optional different way to represent the Playbook. Defaults to None,
-                meaning that it will show basic JSON representation.
-
-        Returns:
-            The JSON representation of the playbook if the playbook has any workflows under it, else None.
-        """
-        return self.playbook_store.get_playbook_representation(playbook_name, reader=reader)
-
-    def get_playbook(self, playbook_name):
-        """Returns a playbook of a given name
-
-        Args:
-            playbook_name (str): The name of the playbook
-
-        Returns:
-            (Playbook): The playbook of the given name. None if no playbook has that name
-        """
-
-    def copy_workflow(self, old_playbook_name, new_playbook_name, old_workflow_name, new_workflow_name):
-        """Duplicates a workflow into its current playbook, or a different playbook.
-        
-        Args:
-            old_playbook_name (str): Playbook name under which the workflow is located.
-            new_playbook_name (str): The new playbook name for the duplicated workflow.
-            old_workflow_name (str): The name of the workflow to be copied.
-            new_workflow_name (str): The new name of the duplicated workflow.
-        """
-        self.playbook_store.copy_workflow(old_playbook_name, new_playbook_name, old_workflow_name, new_workflow_name)
-
-    def copy_playbook(self, old_playbook_name, new_playbook_name):
-        """Copies a playbook.
-        
-        Args:
-            old_playbook_name (str): The name of the playbook to be copied.
-            new_playbook_name (str): The new name of the duplicated playbook.
-        """
-        self.playbook_store.copy_playbook(old_playbook_name, new_playbook_name)
 
     def send_data_to_trigger(self, data_in, workflow_uids, arguments=None):
         """Tries to match the data in against the conditionals of all the triggers registered in the database.

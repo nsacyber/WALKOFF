@@ -103,7 +103,7 @@ class TestWorkflowServer(ServerTestCase):
         final_playbooks = flask_server.running_context.controller.get_all_workflows()
         final_workflows = next(playbook['workflows'] for playbook in final_playbooks if playbook['name'] == 'test')
         self.assertEqual(len(final_workflows), len(initial_workflows) + 1)
-        self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'test_name'))
+        self.assertTrue(flask_server.running_context.controller.is_workflow_registered_by_name('test', 'test_name'))
 
     def test_edit_playbook(self):
         expected_keys = next(x for x in flask_server.running_context.controller.get_all_workflows()
@@ -159,7 +159,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertTrue(os.path.isfile(os.path.join(walkoff.config.paths.workflows_path, 'test.playbook')))
 
     def test_edit_workflow_name_only(self):
-        expected_json = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').read()
+        expected_json = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow').read()
         workflow_name = "test_name"
         data = {"new_name": workflow_name, "name": "helloWorldWorkflow"}
         response = self.post_with_status_check('/api/playbooks/test/workflows',
@@ -171,12 +171,12 @@ class TestWorkflowServer(ServerTestCase):
 
         self.assertDictEqual(response, expected_json)
 
-        self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'test_name'))
+        self.assertTrue(flask_server.running_context.controller.is_workflow_registered_by_name('test', 'test_name'))
         self.assertFalse(
-            flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
+            flask_server.running_context.controller.is_workflow_registered_by_name('test', 'helloWorldWorkflow'))
 
     def test_edit_workflow_empty_name(self):
-        expected_json = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').read()
+        expected_json = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow').read()
         data = {"new_name": "", "name": "helloWorldWorkflow"}
         response = self.post_with_status_check('/api/playbooks/test/workflows',
                                                data=json.dumps(data),
@@ -185,14 +185,14 @@ class TestWorkflowServer(ServerTestCase):
 
         self.assertDictEqual(response, expected_json)
 
-        self.assertFalse(flask_server.running_context.controller.is_workflow_registered('test', 'test_name'))
+        self.assertFalse(flask_server.running_context.controller.is_workflow_registered_by_name('test', 'test_name'))
         self.assertTrue(
-            flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
+            flask_server.running_context.controller.is_workflow_registered_by_name('test', 'helloWorldWorkflow'))
         self.assertFalse(
-            flask_server.running_context.controller.is_workflow_registered('test', ''))
+            flask_server.running_context.controller.is_workflow_registered_by_name('test', ''))
 
     def test_edit_workflow_(self):
-        expected_json = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').read()
+        expected_json = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow').read()
         workflow_name = "test_name"
         data = {"new_name": workflow_name, "name": "helloWorldWorkflow"}
         response = self.post_with_status_check('/api/playbooks/test/workflows',
@@ -204,7 +204,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertDictEqual(response, expected_json)
 
         self.assertFalse(
-            flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
+            flask_server.running_context.controller.is_workflow_registered_by_name('test', 'helloWorldWorkflow'))
 
     def test_edit_workflow_invalid_workflow(self):
         workflow_name = 'test_name'
@@ -218,7 +218,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertSetEqual(set(final_workflows), set(initial_workflows))
 
     def test_save_workflow(self):
-        initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        initial_workflow = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
         initial_actions[0]['position']['x'] = 0.0
@@ -237,7 +237,7 @@ class TestWorkflowServer(ServerTestCase):
                                     headers=self.headers,
                                     content_type='application/json')
 
-        resulting_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
+        resulting_workflow = flask_server.running_context.controller.get_workflow_by_name('test', workflow_name)
         # compare the actions in initial and final workflow
         self.assertEqual(len(resulting_workflow.actions.keys()), len(list(initial_actions)))
         for initial_action in initial_actions:
@@ -257,7 +257,7 @@ class TestWorkflowServer(ServerTestCase):
         flask_server.running_context.controller.workflows = {}
         flask_server.running_context.controller.load_playbook(os.path.join(walkoff.config.paths.workflows_path,
                                                                            'test.playbook'))
-        loaded_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
+        loaded_workflow = flask_server.running_context.controller.get_workflow_by_name('test', workflow_name)
         # compare the actions in loaded and expected workflow
         self.assertEqual(len(loaded_workflow.actions.keys()), len(list(resulting_workflow.actions.keys())))
 
@@ -271,7 +271,7 @@ class TestWorkflowServer(ServerTestCase):
             self.assertDictEqual(loaded_action.read(), resulting_workflow.actions[action_name].read())
 
     def test_save_workflow_invalid_app_reload_actions(self):
-        initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        initial_workflow = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
         actions_unmod = deepcopy(initial_actions)
@@ -290,7 +290,7 @@ class TestWorkflowServer(ServerTestCase):
                                     content_type='application/json',
                                     status_code=INVALID_INPUT_ERROR)
 
-        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        workflow = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow')
         new_actions = [action.read() for action in workflow.actions.values()]
         for action in actions_unmod:
             action.pop('position')
@@ -300,7 +300,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertListEqual(actions_unmod, new_actions)
 
     def test_save_workflow_invalid_action(self):
-        initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        initial_workflow = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
         initial_actions[0]['position']['x'] = 0.0
@@ -319,7 +319,7 @@ class TestWorkflowServer(ServerTestCase):
                                     status_code=INVALID_INPUT_ERROR)
 
     def test_save_workflow_invalid_input_name(self):
-        initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        initial_workflow = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
         initial_actions[0]['position']['x'] = 0.0
@@ -338,7 +338,7 @@ class TestWorkflowServer(ServerTestCase):
                                     status_code=INVALID_INPUT_ERROR)
 
     def test_save_workflow_invalid_input_format(self):
-        initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        initial_workflow = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
         initial_actions[0]['position']['x'] = 0.0
@@ -357,7 +357,7 @@ class TestWorkflowServer(ServerTestCase):
                                     status_code=INVALID_INPUT_ERROR)
 
     def test_save_workflow_new_start_action(self):
-        initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        initial_workflow = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow')
         workflow_name = initial_workflow.name
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
         initial_actions[0]['position']['x'] = 0.0
@@ -373,7 +373,7 @@ class TestWorkflowServer(ServerTestCase):
                                     headers=self.headers,
                                     content_type='application/json')
 
-        resulting_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
+        resulting_workflow = flask_server.running_context.controller.get_workflow_by_name('test', workflow_name)
         self.assertEqual(resulting_workflow.start, "new_start")
 
     def test_save_workflow_invalid_name(self):
@@ -386,7 +386,7 @@ class TestWorkflowServer(ServerTestCase):
     def test_delete_playbook(self):
         self.delete_with_status_check('/api/playbooks/test', headers=self.headers)
 
-        self.assertFalse(flask_server.running_context.controller.is_playbook_registered('test'))
+        self.assertFalse(flask_server.running_context.controller.is_playbook_registered_by_name('test'))
 
         playbooks = [os.path.splitext(playbook)[0]
                      for playbook in helpers.locate_playbooks_in_directory(walkoff.config.paths.workflows_path)]
@@ -399,8 +399,8 @@ class TestWorkflowServer(ServerTestCase):
         self.app.put('/api/playbooks', headers=self.headers, content_type="application/json", data=json.dumps(data))
         self.delete_with_status_check('/api/playbooks/test_playbook', headers=self.headers)
 
-        self.assertTrue(flask_server.running_context.controller.is_playbook_registered('test'))
-        self.assertFalse(flask_server.running_context.controller.is_playbook_registered('test_playbook'))
+        self.assertTrue(flask_server.running_context.controller.is_playbook_registered_by_name('test'))
+        self.assertFalse(flask_server.running_context.controller.is_playbook_registered_by_name('test_playbook'))
 
         final_playbook_files = [os.path.splitext(playbook)[0] for playbook in
                                 helpers.locate_playbooks_in_directory()]
@@ -412,7 +412,7 @@ class TestWorkflowServer(ServerTestCase):
         self.delete_with_status_check('/api/playbooks/junkPlaybookName', error='Playbook does not exist',
                                       headers=self.headers,
                                       status_code=OBJECT_DNE_ERROR)
-        self.assertFalse(flask_server.running_context.controller.is_playbook_registered('junkPlaybookName'))
+        self.assertFalse(flask_server.running_context.controller.is_playbook_registered_by_name('junkPlaybookName'))
         final_playbook_files = [os.path.splitext(playbook)[0] for playbook in
                                 helpers.locate_playbooks_in_directory()]
         orderless_list_compare(self, final_playbook_files, initial_playbook_files)
@@ -423,7 +423,7 @@ class TestWorkflowServer(ServerTestCase):
         self.app.put('/api/playbooks/test/workflows', headers=self.headers, data=json.dumps(data),
                      content_type="application/json")
 
-        initial_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
+        initial_workflow = flask_server.running_context.controller.get_workflow_by_name('test', workflow_name)
         initial_actions = [action.read() for action in initial_workflow.actions.values()]
 
         data = {"actions": initial_actions}
@@ -432,14 +432,14 @@ class TestWorkflowServer(ServerTestCase):
                       headers=self.headers,
                       content_type='application/json')
         self.delete_with_status_check('/api/playbooks/test/workflows/{0}'.format(workflow_name), headers=self.headers)
-        self.assertFalse(flask_server.running_context.controller.is_workflow_registered('test', workflow_name))
+        self.assertFalse(flask_server.running_context.controller.is_workflow_registered_by_name('test', workflow_name))
 
     def test_delete_workflow_invalid(self):
         workflow_name = 'junkworkflowname'
         self.delete_with_status_check('/api/playbooks/test/workflows/{0}'.format(workflow_name),
                                       error='Workflow does not exist',
                                       headers=self.headers, status_code=OBJECT_DNE_ERROR)
-        self.assertFalse(flask_server.running_context.controller.is_workflow_registered('test', workflow_name))
+        self.assertFalse(flask_server.running_context.controller.is_workflow_registered_by_name('test', workflow_name))
 
     def test_invalid_operation_on_playbook_crud(self):
         response = self.app.post('/api/playbooks/junkPlaybookName/junkOperation',
@@ -468,12 +468,12 @@ class TestWorkflowServer(ServerTestCase):
                                     content_type="application/json")
         self.assertEqual(
             len(flask_server.running_context.controller.playbook_store.get_all_workflows_by_playbook('test')), 2)
-        self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
+        self.assertTrue(flask_server.running_context.controller.is_workflow_registered_by_name('test', 'helloWorldWorkflow'))
         self.assertTrue(
-            flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow_Copy'))
+            flask_server.running_context.controller.is_workflow_registered_by_name('test', 'helloWorldWorkflow_Copy'))
 
-        workflow_original = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        workflow_copy = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow_Copy')
+        workflow_original = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow')
+        workflow_copy = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow_Copy')
         new_workflow_name = 'helloWorldWorkflow_Copy'
         self.assertEqual(workflow_copy.name, new_workflow_name)
         copy_workflow_json = workflow_copy.read()
@@ -495,7 +495,7 @@ class TestWorkflowServer(ServerTestCase):
                                     headers=self.headers, status_code=OBJECT_EXISTS_ERROR,
                                     content_type="application/json")
 
-        self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
+        self.assertTrue(flask_server.running_context.controller.is_workflow_registered_by_name('test', 'helloWorldWorkflow'))
         self.assertEqual(
             flask_server.running_context.controller.get_all_workflows_by_playbook('test').count('helloWorldWorkflow'),
             1)
@@ -514,12 +514,12 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(
             len(flask_server.running_context.controller.playbook_store.get_all_workflows_by_playbook('new_playbook')),
             1)
-        self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
+        self.assertTrue(flask_server.running_context.controller.is_workflow_registered_by_name('test', 'helloWorldWorkflow'))
         self.assertTrue(
-            flask_server.running_context.controller.is_workflow_registered('new_playbook', 'helloWorldWorkflow_Copy'))
+            flask_server.running_context.controller.is_workflow_registered_by_name('new_playbook', 'helloWorldWorkflow_Copy'))
 
-        workflow_original = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        workflow_copy = flask_server.running_context.controller.get_workflow('new_playbook', 'helloWorldWorkflow_Copy')
+        workflow_original = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow')
+        workflow_copy = flask_server.running_context.controller.get_workflow_by_name('new_playbook', 'helloWorldWorkflow_Copy')
         new_workflow_name = 'helloWorldWorkflow_Copy'
         self.assertEqual(workflow_copy.name, new_workflow_name)
         copy_workflow_json = workflow_copy.read()
@@ -541,8 +541,8 @@ class TestWorkflowServer(ServerTestCase):
                                     headers=self.headers, status_code=OBJECT_CREATED, data=json.dumps({}),
                                     content_type="application/json")
 
-        self.assertTrue(flask_server.running_context.controller.is_playbook_registered('test'))
-        self.assertTrue(flask_server.running_context.controller.is_playbook_registered('test_Copy'))
+        self.assertTrue(flask_server.running_context.controller.is_playbook_registered_by_name('test'))
+        self.assertTrue(flask_server.running_context.controller.is_playbook_registered_by_name('test_Copy'))
 
         workflows_original = flask_server.running_context.controller.get_all_workflows_by_playbook('test')
         workflows_copy = flask_server.running_context.controller.get_all_workflows_by_playbook('test_Copy')
@@ -555,9 +555,9 @@ class TestWorkflowServer(ServerTestCase):
                                     headers=self.headers, status_code=OBJECT_EXISTS_ERROR,
                                     content_type="application/json")
 
-        self.assertTrue(flask_server.running_context.controller.is_playbook_registered('test'))
+        self.assertTrue(flask_server.running_context.controller.is_playbook_registered_by_name('test'))
         self.assertEqual(flask_server.running_context.controller.get_all_playbooks().count('test'), 1)
-        self.assertFalse(flask_server.running_context.controller.is_playbook_registered('test_Copy'))
+        self.assertFalse(flask_server.running_context.controller.is_playbook_registered_by_name('test_Copy'))
 
     def test_execute_workflow_playbook_dne(self):
         self.post_with_status_check('/api/playbooks/junkPlay/workflows/helloWorldWorkflow/execute',
@@ -573,7 +573,7 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_execute_workflow(self):
         sync = Event()
-        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        workflow = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow')
         action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
         setup_subscriptions_for_action(workflow.uid, action_uids)
 
@@ -604,7 +604,7 @@ class TestWorkflowServer(ServerTestCase):
         flask_server.running_context.controller.load_playbook(
             os.path.join(".", "tests", "testWorkflows", "pauseWorkflowTest.playbook"))
 
-        workflow = flask_server.running_context.controller.get_workflow('pauseWorkflowTest', 'pauseWorkflow')
+        workflow = flask_server.running_context.controller.get_workflow_by_name('pauseWorkflowTest', 'pauseWorkflow')
         action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
         setup_subscriptions_for_action(workflow.uid, action_uids)
 
@@ -659,7 +659,7 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_execute_workflow_change_arguments(self):
 
-        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        workflow = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow')
         action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
         setup_subscriptions_for_action(workflow.uid, action_uids)
 
@@ -685,7 +685,7 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_read_results(self):
 
-        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        workflow = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow')
         workflow.execute('a')
         workflow.execute('b')
         workflow.execute('c')
@@ -694,7 +694,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertSetEqual(set(response.keys()), {'status', 'uid', 'results', 'started_at', 'completed_at', 'name'})
 
     def test_read_all_results(self):
-        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        workflow = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow')
 
         workflow.execute('a')
         workflow.execute('b')
@@ -713,7 +713,7 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_execute_workflow_trigger_action(self):
         sync = Event()
-        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        workflow = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow')
         action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
         setup_subscriptions_for_action(workflow.uid, action_uids)
 

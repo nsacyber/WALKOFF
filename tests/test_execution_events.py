@@ -43,7 +43,7 @@ class TestExecutionEvents(unittest.TestCase):
 
     def test_workflow_execution_events(self):
         # self.c.load_playbook(resource=config.test_workflows_path + 'multiactionWorkflowTest.playbook')
-        workflow_id = self.c.get_workflow('multiactionWorkflowTest', 'multiactionWorkflow').id
+        workflow_id = self.c.get_workflow_by_name('multiactionWorkflowTest', 'multiactionWorkflow').id
         subs = {'case1': {workflow_id: [WalkoffEvent.AppInstanceCreated.signal_name,
                                         WalkoffEvent.WorkflowShutdown.signal_name]}}
         case_subscription.set_subscriptions(subs)
@@ -59,7 +59,7 @@ class TestExecutionEvents(unittest.TestCase):
 
     def test_action_execution_events(self):
         # self.c.load_playbook(resource=config.test_workflows_path + 'basicWorkflowTest.playbook')
-        workflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        workflow = self.c.get_workflow_by_name('basicWorkflowTest', 'helloWorldWorkflow')
         action_ids = [action.id for action in workflow.actions]
         action_events = [WalkoffEvent.ActionExecutionSuccess.signal_name, WalkoffEvent.ActionStarted.signal_name]
         subs = {'case1': {action_uid: action_events for action_uid in action_ids}}

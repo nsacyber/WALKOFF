@@ -32,7 +32,7 @@ class TestWorkflowServer(ServerTestCase):
         case_database.case_db.session.commit()
 
     def test_execute_workflow(self):
-        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        workflow = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow')
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
         start = datetime.utcnow()

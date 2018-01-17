@@ -48,7 +48,7 @@ class TestExecutionRuntime(unittest.TestCase):
     def test_templated_workflow(self):
         action_names = ['start', '1']
 
-        workflow = self.controller.get_workflow('templatedWorkflowTest', 'templatedWorkflow')
+        workflow = self.controller.get_workflow_by_name('templatedWorkflowTest', 'templatedWorkflow')
         action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
         self.controller.execute_workflow('templatedWorkflowTest', 'templatedWorkflow')

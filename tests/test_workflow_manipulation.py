@@ -46,7 +46,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         # self.controller.load_playbook(
         #     resource=path.join(config.test_workflows_path, 'simpleDataManipulationWorkflow.playbook'))
         self.id_tuple = ('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
-        self.testWorkflow = self.controller.get_workflow(*self.id_tuple)
+        self.testWorkflow = self.controller.get_workflow_by_name(*self.id_tuple)
         self.testWorkflow.set_execution_uid('some_uid')
         case_database.initialize()
 

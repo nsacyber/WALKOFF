@@ -2,14 +2,13 @@ import json
 import unittest
 
 import walkoff.server.flaskserver as server
-from walkoff.coredb.playbook import Playbook
 from walkoff.core.scheduler import InvalidTriggerArgs
 from walkoff.serverdb import db
 from walkoff.serverdb.scheduledtasks import ScheduledTask
-from tests.test_scheduler import MockWorkflow
 import walkoff.config.paths
 import tests.config
 from walkoff import initialize_databases
+from walkoff.coredb.devicedb import DeviceDatabase
 
 
 class TestScheduledTask(unittest.TestCase):
@@ -22,11 +21,13 @@ class TestScheduledTask(unittest.TestCase):
         cls.context = server.app.test_request_context()
         cls.context.push()
         db.create_all()
+        cls.db = DeviceDatabase()
 
     def setUp(self):
         self.date_trigger = {'type': 'date', 'args': {'run_date': '2017-01-25 10:00:00'}}
 
     def tearDown(self):
+        self.db.tear_down()
         tasks = ScheduledTask.query.all()
         if tasks:
             ScheduledTask.query.delete()
@@ -61,11 +62,6 @@ class TestScheduledTask(unittest.TestCase):
             self.assertEqual(task.trigger_args, '{}')
         self.assertSchedulerWorkflowsRunningEqual(expected_running_workflows)
 
-    def patch_controller_workflows(self, workflow_uids):
-        server.running_context.controller.playbook_store.playbooks = {
-        i: Playbook(i, [MockWorkflow(workflow_uids[i], i + 1)])
-        for i, uid in enumerate(workflow_uids)}
-
     def test_init_default(self):
         task = ScheduledTask(name='test')
         self.assertStructureIsCorrect(task, 'test')
@@ -98,7 +94,6 @@ class TestScheduledTask(unittest.TestCase):
 
     def test_init_with_status_with_trigger_with_workflows(self):
         workflows = ['uid1', 'uid2', 'uid3', 'uid4']
-        self.patch_controller_workflows(workflows)
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, status='running', workflows=workflows)
         self.assertStructureIsCorrect(task, 'test', trigger_type='date',
                                       trigger_args={'run_date': '2017-01-25 10:00:00'},

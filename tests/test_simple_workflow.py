@@ -48,7 +48,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         walkoff.controller.controller.shutdown_pool()
 
     def test_simple_workflow_execution(self):
-        workflow = self.controller.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        workflow = self.controller.get_workflow_by_name('basicWorkflowTest', 'helloWorldWorkflow')
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
         self.controller.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')

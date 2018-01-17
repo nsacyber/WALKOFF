@@ -28,6 +28,7 @@ class TestAuthorization(unittest.TestCase):
         self.app.testing = True
         self.context = walkoff.server.flaskserver.app.test_request_context()
         self.context.push()
+        self.admin_id = db.session.query(User).filter_by(username='admin').first().id
 
     def tearDown(self):
         db.session.rollback()
@@ -60,9 +61,9 @@ class TestAuthorization(unittest.TestCase):
         key = json.loads(response.get_data(as_text=True))
         token = decode_token(key['access_token'])
         self.assertEqual(token['type'], 'access')
-        self.assertEqual(token['identity'], 1)
+        self.assertEqual(token['identity'], self.admin_id)
         self.assertTrue(token['fresh'])
-        self.assertDictEqual(token['user_claims'], {'username': 'admin', 'roles': [1]})
+        self.assertDictEqual(token['user_claims'], {'username': 'admin', 'roles': [self.admin_id]})
 
     def test_login_authorization_has_valid_refresh_token(self):
         response = self.app.post('/api/auth', content_type="application/json",
@@ -70,13 +71,13 @@ class TestAuthorization(unittest.TestCase):
         key = json.loads(response.get_data(as_text=True))
         token = decode_token(key['refresh_token'])
         self.assertEqual(token['type'], 'refresh')
-        self.assertEqual(token['identity'], 1)
+        self.assertEqual(token['identity'], self.admin_id)
 
     def test_login_updates_user(self):
         user = add_user(username='testlogin', password='test')
         self.app.post('/api/auth', content_type="application/json",
                       data=json.dumps(dict(username='testlogin', password='test')))
-        self.assertEqual(user.login_count, 1)
+        self.assertEqual(user.login_count, self.admin_id)
         self.assertTrue(user.active)
 
     def test_login_authorization_invalid_username(self):
@@ -108,7 +109,7 @@ class TestAuthorization(unittest.TestCase):
         self.assertSetEqual(set(key.keys()), {'access_token'})
         token = decode_token(key['access_token'])
         self.assertEqual(token['type'], 'access')
-        self.assertEqual(token['identity'], 1)
+        self.assertEqual(token['identity'], self.admin_id)
         self.assertFalse(token['fresh'])
 
     def test_refresh_invalid_user_blacklists_token(self):

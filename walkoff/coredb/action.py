@@ -38,14 +38,14 @@ class Action(ExecutionElement, Device_Base):
     templated = Column(Boolean)
     raw_representation = Column(Json)
 
-    def __init__(self, app_name, action_name, name=None, device_id=None, arguments=None, triggers=None,
+    def __init__(self, app_name, action_name, name, device_id=None, arguments=None, triggers=None,
                  x_coordinate=None, y_coordinate=None, templated=False, raw_representation=None):
         """Initializes a new Action object. A Workflow has many actions that it executes.
 
         Args:
             app_name (str): The name of the app associated with the Action
             action_name (str): The name of the action associated with a Action
-            name (str, optional): The name of the Action object. Defaults to None.
+            name (str): The name of the Action object.
             device_id (int, optional): The id of the device associated with the app associated with the Action. Defaults
                 to None.
             arguments (list[Argument], optional): A list of Argument objects that are parameters to the action.

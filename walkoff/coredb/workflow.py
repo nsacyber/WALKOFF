@@ -21,20 +21,20 @@ class Workflow(ExecutionElement, Device_Base):
     __tablename__ = 'workflow'
     id = Column(Integer, primary_key=True, autoincrement=True)
     playbook_id = Column(Integer, ForeignKey('playbook.id'))
-    name = Column(String(80))
+    name = Column(String(80), nullable=False)
     actions = relationship('Action', backref=backref('_workflow'), cascade='all, delete-orphan')
     branches = relationship('Branch', backref=backref('_workflow'), cascade='all, delete-orphan')
-    start = Column(String(80))
+    start = Column(String(80), nullable=False)
 
-    def __init__(self, name='', actions=None, branches=None, start=None):
+    def __init__(self, name, actions=None, branches=None, start=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Actions
             within it that get executed.
 
         Args:
-            name (str, optional): The name of the Workflow object. Defaults to an empty string.
+            name (str): The name of the Workflow object.
+            start (int): ID of the starting Action.
             actions (list[Action]): Optional Action objects. Defaults to None.
             branches (list[Branch], optional): A list of Branch objects for the Workflow object. Defaults to None.
-            start (str, optional): Optional ID of the starting Action. Defaults to None.
         """
         ExecutionElement.__init__(self)
         self.name = name
@@ -47,7 +47,7 @@ class Workflow(ExecutionElement, Device_Base):
         if branches:
             self.branches = branches
 
-        self.start = start if start is not None else 'start'
+        self.start = start
 
         self._is_paused = False
         self._resume = threading.Event()

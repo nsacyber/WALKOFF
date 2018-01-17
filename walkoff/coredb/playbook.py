@@ -50,7 +50,7 @@ class Playbook(ExecutionElement, Device_Base):
         """Checks if there is a Workflow with the specified ID associated with the Playbook
 
         Args:
-            workflow_id (str): The ID of the Workflow
+            workflow_id (int): The ID of the Workflow
 
         Returns:
             True if there is a Workflow with that ID associated with the Playbook, False otherwise
