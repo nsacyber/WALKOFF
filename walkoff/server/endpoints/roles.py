@@ -85,6 +85,7 @@ def delete_role(role_id):
     def __func(role):
         clear_resources_for_role(role.name)
         db.session.delete(role)
+        db.session.commit()
         return {}, SUCCESS
 
     return __func()
