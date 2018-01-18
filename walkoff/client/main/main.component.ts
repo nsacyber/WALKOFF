@@ -100,7 +100,7 @@ export class MainComponent {
 				// 		(this.messageModalRef.componentInstance.message as Message).read_by.push(update.username);
 				// 	}
 				// });
-				eventSource.addEventListener('respond', (message: any) => {
+				eventSource.addEventListener('responded', (message: any) => {
 					const update: MessageUpdate = JSON.parse(message.data);
 
 					const existingMessage = this.messageListings.find(m => m.id === update.id);
