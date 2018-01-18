@@ -11,6 +11,8 @@
 
 ### Fixed
 * Fixed a bug where roles weren't being deleted from the database
+* Fixed a bug on the UI where correct permissions weren't being displayed for
+  roles
 
 ## [0.6.3]
 ###### 2018-01-18
