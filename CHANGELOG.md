@@ -1,8 +1,16 @@
 # Changelog
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
-## [Unreleased]
-###### unreleased
+## [0.6.4]
+###### 2018-01-18
+
+### Changed
+* The accept/decline method returns status codes indicating if the action was
+  accepted or declined instead of true/false
+
+
+### Fixed
+* Fixed a bug where roles weren't being deleted from the database
 
 ## [0.6.3]
 ###### 2018-01-18
