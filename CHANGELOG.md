@@ -11,8 +11,8 @@
 
 ### Fixed
 * Fixed a bug where roles weren't being deleted from the database
-* Fixed a bug on the UI where correct permissions weren't being displayed for
-  roles
+* Fixed issue preventing permissions to be removed on editing roles
+* Fixed issue with messages not properly being marked as responded
 
 ## [0.6.3]
 ###### 2018-01-18
