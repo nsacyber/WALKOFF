@@ -95,7 +95,7 @@ export class SettingsRoleModalComponent {
 
 	removeResource(resource: Resource): void {
 		this.workingRole.resources.splice(this.workingRole.resources.indexOf(resource), 1);
-		delete this.selectPermissionMapping[resource.resource_id];
+		// delete this.selectPermissionMapping[resource.resource_id];
 	}
 
 	permissionSelectChange(event: any, resource: Resource) {

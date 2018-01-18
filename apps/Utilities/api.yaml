@@ -550,8 +550,13 @@ actions:
       - name: action
         type: string
         required: true
+    default_return: Accepted
     returns:
-      Success:
+      Accepted:
+        schema:
+          type: boolean
+      Declined:
+        failure: true
         schema:
           type: boolean
 conditions:
