@@ -9,8 +9,8 @@ export class Action extends ExecutionElement {
 	position: GraphPosition;
 	app_name: string;
 	action_name: string;
-	device_id: number;
-	risk: number;
+	device_id?: number;
+	risk?: number;
 	arguments: Argument[] = [];
 	// output: string;
 	triggers: Condition[] = [];

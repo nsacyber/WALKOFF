@@ -235,8 +235,6 @@ export class CasesComponent implements OnInit {
 					if (matchingAction) { (b as any).name = matchingAction.name; }
 					(w.actions.find(s => s.id === b.source_id) as any).branches.push(b);
 				});
-
-				delete w.branches;
 			});
 		});
 

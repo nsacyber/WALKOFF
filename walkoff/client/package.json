@@ -1,18 +1,30 @@
 {
   "name": "walkoff",
   "description": "WALKOFF automation and orchestration framework.",
+  "keywords": [
+    "automation",
+    "orchestration",
+    "framework",
+    "workflow",
+    "python",
+    "angular",
+    "angular4",
+    "webpack",
+    "typescript"
+  ],
   "license": "MIT",
   "scripts": {
-    "build": "npm run build:dev",
-    "build:dev": "npm run clean:dist && npm run webpack -p --progress --config webpack.config.js",
+    "build:dev": "npm run clean:dist && npm run webpack -- --config webpack.dev.js --progress --profile",
+    "build:prod": "npm run clean:dist && npm run webpack -- --config webpack.prod.js  --progress --profile --bail",
+    "build": "npm run build:prod",
     "clean:dist": "npm run rimraf -- dist",
     "clean:install": "npm set progress=false && npm install",
     "clean": "npm cache clean --force && npm run rimraf -- node_modules coverage dist",
     "rimraf": "rimraf",
-    "watch": "gulp",
-    "watch:dev": "webpack -p --progress --config webpack.config.js --watch",
-    "watch:test": "npm run test -- --auto-watch --no-single-run",
     "test": "karma start",
+    "watch:dev": "npm run build:dev -- --watch",
+    "watch:test": "npm run test -- --auto-watch --no-single-run",
+    "watch": "npm run watch:dev",
     "webpack": "node --max_old_space_size=4096 node_modules/webpack/bin/webpack.js"
   },
   "dependencies": {
@@ -76,9 +88,13 @@
     "@types/jstree": "^3.3.35",
     "@types/lodash": "~4.14.68",
     "@types/select2": "~4.0.38",
+    "add-asset-html-webpack-plugin": "^2.1.2",
     "angular2-template-loader": "^0.6.2",
+    "assets-webpack-plugin": "^3.5.1",
     "awesome-typescript-loader": "^3.4.1",
     "css-loader": "^0.28.8",
+    "extract-text-webpack-plugin": "^3.0.2",
+    "file-loader": "^1.1.6",
     "gulp": "~3.9.1",
     "gulp-concat": "~2.6.1",
     "gulp-sourcemaps": "~2.6.0",
@@ -95,6 +111,7 @@
     "karma-remap-coverage": "^0.1.4",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^2.0.9",
+    "optimize-js-plugin": "^0.0.4",
     "raw-loader": "^0.5.1",
     "rimraf": "~2.6.2",
     "sass-loader": "^6.0.6",
@@ -103,6 +120,8 @@
     "ts-loader": "^3.2.0",
     "tslint": "^5.8.0",
     "typescript": "~2.3.2",
-    "webpack": "^3.10.0"
+    "webpack": "^3.10.0",
+    "webpack-dll-bundles-plugin": "^1.0.0-beta.5",
+    "webpack-merge": "^4.1.1"
   }
 }

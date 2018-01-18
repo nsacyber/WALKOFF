@@ -63,45 +63,52 @@ export class PlaybookArgumentComponent {
 		}
 		this.selectedType = this.availableTypes[0];
 
-		if (this.isUserSelect(this.parameterSchema)) {
-			this.selectData = this.users.map(user => {
-				return { id: user.id.toString(), text: user.username };
-			});
+		this.initUserSelect();
+		this.initRoleSelect();
+	}
 
-			this.selectConfig = {
-				width: '100%',
-				placeholder: 'Select user',
-			};
+	initUserSelect(): void {
+		if (!this.isUserSelect(this.parameterSchema)) { return; }
 
-			if (this.parameterSchema.type === 'array') {
-				this.selectConfig.placeholder += '(s)';
-				this.selectConfig.multiple = true;
-				this.selectConfig.allowClear = true;
-				this.selectConfig.closeOnSelect = false;
-			}
+		this.selectData = this.users.map((user) => {
+			return { id: user.id.toString(), text: user.username };
+		});
 
-			this.selectInitialValue = JSON.parse(JSON.stringify(this.argument.value));
-		}
-		if (this.isRoleSelect(this.parameterSchema)) {
-			this.selectData = this.roles.map(role => {
-				return { id: role.id.toString(), text: role.name };
-			});
+		this.selectConfig = {
+			width: '100%',
+			placeholder: 'Select user',
+		};
 
-			this.selectConfig = {
-				width: '100%',
-				placeholder: 'Select role',
-			};
-
-			if (this.parameterSchema.type === 'array') {
-				this.selectConfig.placeholder += '(s)';
-				this.selectConfig.multiple = true;
-				this.selectConfig.allowClear = true;
-				this.selectConfig.closeOnSelect = false;
-			}
-
-			this.selectInitialValue = JSON.parse(JSON.stringify(this.argument.value));
+		if (this.parameterSchema.type === 'array') {
+			this.selectConfig.placeholder += '(s)';
+			this.selectConfig.multiple = true;
+			this.selectConfig.allowClear = true;
+			this.selectConfig.closeOnSelect = false;
 		}
 
+		this.selectInitialValue = JSON.parse(JSON.stringify(this.argument.value));
+	}
+
+	initRoleSelect(): void {
+		if (!this.isRoleSelect(this.parameterSchema)) { return; }
+
+		this.selectData = this.roles.map((role) => {
+			return { id: role.id.toString(), text: role.name };
+		});
+
+		this.selectConfig = {
+			width: '100%',
+			placeholder: 'Select role',
+		};
+
+		if (this.parameterSchema.type === 'array') {
+			this.selectConfig.placeholder += '(s)';
+			this.selectConfig.multiple = true;
+			this.selectConfig.allowClear = true;
+			this.selectConfig.closeOnSelect = false;
+		}
+
+		this.selectInitialValue = JSON.parse(JSON.stringify(this.argument.value));
 	}
 
 	/**
@@ -225,14 +232,13 @@ export class PlaybookArgumentComponent {
 	 */
 	isNormalArray(schema: ParameterSchema): boolean {
 		if (schema.type !== 'array') { return false; }
-		//Is Array Empty?
-		if(typeof schema.items !== 'undefined' && schema.items.length > 0){
-            if (Array.isArray(schema.items)) {
-                    (schema.items as GenericObject[]).forEach(i => {
-                        if (i.type === 'user' || i.type === 'role') { return false; }
-                    });
-		    } else if (schema.items.type === 'user' || schema.items.type === 'role') { return false; }
-		}
+
+		if (Array.isArray(schema.items)) {
+			(schema.items as GenericObject[]).forEach(i => {
+				if (i.type === 'user' || i.type === 'role') { return false; }
+			});
+		} else if (schema.items && (schema.items.type === 'user' || schema.items.type === 'role')) { return false; }
+
 		return true;
 	}
 

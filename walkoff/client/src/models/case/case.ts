@@ -5,5 +5,4 @@ export class Case {
 	name: string;
 	note: string;
 	subscriptions: Subscription[] = [];
-	events: Event[];
 }

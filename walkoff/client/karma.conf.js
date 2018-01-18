@@ -52,7 +52,7 @@ module.exports = (config) => {
 		},
 
 		preprocessors: {
-			'spec-bundle.js': ['coverage', 'webpack', 'sourcemap']
+			'spec-bundle.js': ['webpack', 'sourcemap', 'coverage']
 			// './src/tests.entry.ts': [
 			// 	'webpack',
 			// 	'sourcemap',
@@ -62,7 +62,7 @@ module.exports = (config) => {
 			// ],
 		},
 
-		webpack: require('./webpack.test.config')({ env: 'test' }),
+		webpack: require('./webpack.test')({ env: 'test' }),
 		// {
 		// 	plugins,
 		// 	entry: './tests.entry.ts',

@@ -3,13 +3,6 @@ const helpers = require('./helpers');
 module.exports = () => {
 	return {
 		devtool: 'inline-source-map',
-		// entry: {
-		// 	main: './main.ts'
-		// },
-		// output: {
-		// 	path: './dist',
-		// 	filename: '[name].bundle.js'
-		// },
 		resolve: {
 			extensions: ['.js', '.ts'],
 			modules: [helpers.root('src'), 'node_modules']

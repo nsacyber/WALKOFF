@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
@@ -20,8 +20,7 @@ import { AppApi } from '../models/api/appApi';
 	encapsulation: ViewEncapsulation.None,
 	providers: [DevicesService],
 })
-export class DevicesComponent {
-
+export class DevicesComponent implements OnInit {
 	//Device Data Table params
 	devices: Device[] = [];
 	displayDevices: Device[] = [];
@@ -34,7 +33,9 @@ export class DevicesComponent {
 
 	constructor(
 		private devicesService: DevicesService, private modalService: NgbModal, 
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {}
+
+	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.appSelectConfig = {
@@ -64,9 +65,7 @@ export class DevicesComponent {
 
 		this.displayDevices = this.devices.filter((device) => {
 			return (device.name.toLocaleLowerCase().includes(searchFilter) ||
-				device.app_name.toLocaleLowerCase().includes(searchFilter) ||
-				device.ip.includes(searchFilter) ||
-				device.port.toString().includes(searchFilter)) &&
+				device.app_name.toLocaleLowerCase().includes(searchFilter)) &&
 				(this.selectedApps.length ? this.selectedApps.indexOf(device.app_name) > -1 : true);
 		});
 	}

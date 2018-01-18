@@ -114,10 +114,6 @@ describe('App', () => {
 		// 	.and.returnValue(Promise.resolve(testInterfaceNames));
 		spyOn(authService, 'getAndDecodeAccessToken')
 			.and.returnValue(testDecodedJwt);
-
-		/**
-		 * Trigger initial data binding
-		 */
 	});
 
 	it('should properly load the username', () => {
