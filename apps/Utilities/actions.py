@@ -173,4 +173,5 @@ def send_full_message(message, users=None, roles=None):
 
 @action
 def accept_decline(action):
-    return action.lower() == 'accept'
+    r = action.lower() == 'accept'
+    return r, "Success" if r else "Declined"

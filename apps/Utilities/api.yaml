@@ -554,6 +554,10 @@ actions:
       Success:
         schema:
           type: boolean
+      Declined:
+        failure: true
+        schema:
+          type: boolean
 conditions:
   regex match:
     run: conditions.regMatch
