@@ -60,4 +60,4 @@ def reverse_boolean(value):
 @condition
 def accept_decline(value):
     r = value.lower() == 'accept'
-    return r, "Success" if r else "Declined"
+    return r, "Accepted" if r else "Declined"
