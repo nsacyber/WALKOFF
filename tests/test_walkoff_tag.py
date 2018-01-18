@@ -16,12 +16,10 @@ class TestWalkoffTag(TestCase):
 
     def test_get_tags_no_tags(self):
         def foo(): pass
-        self.assertListEqual(WalkoffTag.get_tags(foo), [])
+        self.assertSetEqual(WalkoffTag.get_tags(foo), set())
 
     def test_get_tags(self):
         @action
         @condition
         def foo(): pass
-        self.assertSetEqual(set(WalkoffTag.get_tags(foo)), {WalkoffTag.action, WalkoffTag.condition})
-
-    
+        self.assertSetEqual(WalkoffTag.get_tags(foo), {WalkoffTag.action, WalkoffTag.condition})
