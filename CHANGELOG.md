@@ -1,8 +1,23 @@
 # Changelog
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
-## [Unreleased]
-###### unreleased
+## [0.6.3]
+###### 2018-01-18
+
+### Added
+* Added a simple action in the Utilities app named "request user approval"
+  which sends a message with some text to a user and has an accept/decline
+  component.
+
+### Changed
+* Refactoring of AppCache to use multiple objects. We had been storing it as
+  a large dict which was becoming difficult to reason about. This is the
+  first step of a larger planned refactoring of how apps are cached and
+  validated
+
+### Fixed
+* Bug on UI when arguments using an array type without item types specified
+* Fixed issue with workflow migration caused to erroneously deleting a script
 
 
 ## [Unreleased]
