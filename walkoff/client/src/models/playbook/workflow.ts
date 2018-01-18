@@ -27,5 +27,5 @@ export class Workflow {
 	/**
 	 * A factor of how often the workflow fails.
 	 */
-	accumulated_risk: number;
+	accumulated_risk?: number;
 }

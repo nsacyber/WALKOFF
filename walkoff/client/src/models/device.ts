@@ -23,10 +23,4 @@ export class Device {
 	type: string;
 	app_name: string;
 	fields: Array<{ name: string; value: any }> = [];
-	//Below should be removed
-	username: string;
-	password: string;
-	ip: string;
-	port: number;
-	extra_fields: object;
 }

@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -14,9 +14,7 @@ import { Case } from '../models/case';
 import { CaseEvent } from '../models/caseEvent';
 import { AvailableSubscription } from '../models/availableSubscription';
 import { Playbook } from '../models/playbook/playbook';
-import { Workflow } from '../models/playbook/workflow';
-import { Action } from '../models/playbook/action';
-import { Branch } from '../models/playbook/branch';
+import { GenericObject } from '../models/genericObject';
 
 /**
  * Types as the backend calls them for adding a new CaseEvent.
@@ -36,7 +34,7 @@ const childrenTypes = ['workflows', 'actions', 'branches', 'conditions', 'transf
 	],
 	providers: [CasesService],
 })
-export class CasesComponent {
+export class CasesComponent implements OnInit {
 	cases: Case[] = [];
 	availableCases: Select2OptionData[] = [];
 	availableSubscriptions: AvailableSubscription[] = [];
@@ -46,11 +44,14 @@ export class CasesComponent {
 	displayCaseEvents: CaseEvent[] = [];
 	eventFilterQuery: FormControl = new FormControl();
 	caseFilterQuery: FormControl = new FormControl();
-	subscriptionTree: any;
+	subscriptionTree: GenericObject = {};
 
 	constructor(
 		private casesService: CasesService, private modalService: NgbModal,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
+	}
+	
+	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.caseSelectConfig = {
@@ -169,25 +170,22 @@ export class CasesComponent {
 			.catch(e => this.toastyService.error(`Error retrieving subscription tree: ${e.message}`));
 	}
 
-	convertPlaybooksToSubscriptionTree(playbooks: any[]): any {
+	convertPlaybooksToSubscriptionTree(playbooks: Playbook[]): GenericObject {
 		const self = this;
 		//Top level controller data
 		const tree = { name: 'Controller', uid: 'controller', type: 'controller', children: [] as object[] };
-
 		// Remap the branches to be under actions as they used to be
-		playbooks.forEach((p: Playbook) => {
-			p.workflows.forEach((w: Workflow) => {
-				w.actions.forEach((s: Action) => {
-					(s as any).branches = [];
+		playbooks.forEach(p => {
+			p.workflows.forEach(w => {
+				w.actions.forEach(a => {
+					(a as any).branches = [];
 				});
 
-				w.branches.forEach((ns: Branch) => {
-					const matchingAction = w.actions.find(s => s.uid === ns.destination_uid);
-					if (matchingAction) { (ns as any).name = matchingAction.name; }
-					(w.actions.find(s => s.uid === ns.source_uid) as any).branches.push(ns);
+				w.branches.forEach(b => {
+					const matchingAction = w.actions.find(s => s.uid === b.destination_uid);
+					if (matchingAction) { (b as any).name = matchingAction.name; }
+					(w.actions.find(s => s.uid === b.source_uid) as any).branches.push(b);
 				});
-
-				delete w.branches;
 			});
 		});
 

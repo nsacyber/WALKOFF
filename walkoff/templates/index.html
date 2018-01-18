@@ -30,8 +30,6 @@
 
     <!-- 1. Load libraries -->
     <!-- Polyfill(s) for older browsers -->
-    <script src="client/node_modules/core-js/client/shim.min.js"></script>
-    <script src="client/node_modules/zone.js/dist/zone.js"></script>
     <!-- jQuery 3.2.1 -->
     <script src="client/node_modules/jquery/dist/jquery.min.js"></script>
     <!-- Bootstrap 3.3.7 -->
@@ -40,7 +38,6 @@
     <!-- Select2 4.0.3 -->
     <script src="client/node_modules/select2/dist/js/select2.full.min.js"></script>
     <!-- EventSource polyfill 0.9.0 -->
-    <script src="client/node_modules/event-source-polyfill/eventsource.js"></script>
     <script src="client/node_modules/lodash/lodash.min.js"></script>
     <script src="client/node_modules/cytoscape/dist/cytoscape.min.js"></script>
     <script src="client/node_modules/cytoscape-clipboard/cytoscape-clipboard.js"></script>
@@ -48,19 +45,9 @@
     <script src="client/node_modules/cytoscape-grid-guide/cytoscape-grid-guide.js"></script>
     <script src="client/node_modules/cytoscape-panzoom/cytoscape-panzoom.js"></script>
     <script src="client/node_modules/cytoscape-undo-redo/cytoscape-undo-redo.js"></script>
-    <script src="client/node_modules/systemjs/dist/system.js"></script>
-    <!-- 2. Configure SystemJS -->
-    <!-- <script src="client/systemjs.config.js"></script> -->
+    <script src="client/dist/polyfills.bundle.js"></script>
+    <script src="client/dist/vendor.bundle.js"></script>
     <script src="client/dist/main.bundle.js"></script>
-    <!-- <script type="application/javascript">
-        SystemJS.import('main').catch(function(err){ console.error(err); });
-
-        document.addEventListener("DOMContentLoaded", function(e){
-            if (Notification.permission !== "granted"){
-                Notification.requestPermission();
-            }
-        });
-    </script> -->
 </head>
 <body>
     <main-component>Loading...</main-component>
