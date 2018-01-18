@@ -84,6 +84,7 @@ class TestDiskCacheAdapter(TestCase):
     def test_r_push_pop_single_value(self):
         self.cache.rpush('queue', 10)
         self.assertEqual(self.cache.rpop('queue'), 10)
+        self.assertIsNone(self.cache.rpop('queue'))
 
     def test_r_push_pop_multiple_values(self):
         self.cache.rpush('big', 10, 11, 12)
@@ -92,6 +93,7 @@ class TestDiskCacheAdapter(TestCase):
     def test_l_push_pop_single_value(self):
         self.cache.lpush('queue', 10)
         self.assertEqual(self.cache.lpop('queue'), 10)
+        self.assertIsNone(self.cache.lpop('queue'))
 
     def test_l_push_pop_multiple_values(self):
         self.cache.rpush('big', 10, 11, 12)

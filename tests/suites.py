@@ -9,17 +9,20 @@ __case_tests = [test_case_subscriptions, test_case_database, test_case_config_db
 case_suite = TestSuite()
 add_tests_to_suite(case_suite, __case_tests)
 
-__server_tests = [test_workflow_server, test_app_api_server, test_case_server, test_configuration_server, test_scheduler_actions,
+__server_tests = [test_workflow_server, test_app_api_server, test_case_server, test_configuration_server,
+                  test_scheduler_actions,
                   test_device_server, test_app_blueprint, test_metrics_server,
                   test_scheduledtasks_database, test_scheduledtasks_server, test_authentication, test_roles_server,
                   test_users_server, test_message_history_database, test_message_db,
                   test_message, test_messaging_endpoints, test_workflow_authorization,
                   test_workflow_authorized_user_set, test_workflow_authorization_cache, test_trigger_helpers,
-                  test_system_server, test_disk_cache_adapter, test_redis_cache_adapter]
+                  test_system_server, test_disk_cache_adapter, test_redis_cache_adapter, test_redis_subscription,
+                  test_disk_subscription, test_sse_stream, test_workflow_result_stream]
 server_suite = TestSuite()
 add_tests_to_suite(server_suite, __server_tests)
 
-__execution_tests = [test_argument, test_execution_runtime, test_execution_element, test_execution_events, test_execution_modes,
+__execution_tests = [test_argument, test_execution_runtime, test_execution_element, test_execution_events,
+                     test_execution_modes,
                      test_action, test_helper_functions, test_transform, test_condition, test_branch,
                      test_app_instance, test_controller, test_metrics,
                      test_app_utilities, test_input_validation, test_decorators,

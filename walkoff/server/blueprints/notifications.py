@@ -8,6 +8,7 @@ from enum import Enum, unique
 from walkoff.helpers import create_sse_event
 from walkoff.security import jwt_required_in_query
 from walkoff.messaging import MessageActionEvent
+from walkoff.sse import SseStream
 
 notifications_page = Blueprint('notifications_page', __name__)
 
@@ -21,7 +22,7 @@ class NotificationSseEvent(Enum):
     read = 2
     responded = 3
 
-
+'''
 def notification_event_stream(user_id):
     sync_signal.wait()
     event_id = 1
@@ -39,7 +40,6 @@ def send_sse(user_id, event, data):
     sync_signal.set()
     sync_signal.clear()
     sleep(0)
-
 
 @MessageActionEvent.created.connect
 def message_created_callback(message, **data):
@@ -74,3 +74,36 @@ def message_read_callback(message, **data):
 def stream_workflow_success_events():
     user_id = get_jwt_identity()
     return Response(notification_event_stream(user_id), mimetype='text/event-stream')
+'''
+
+
+sse_stream = SseStream('notifications')
+
+
+def format_workflow_result(sender, **kwargs):
+    action_arguments = [convert_action_argument(argument) for argument in sender.get('arguments', [])]
+    return {'action_name': sender['name'],
+            'action_uid': sender['uid'],
+            'timestamp': str(datetime.utcnow()),
+            'arguments': action_arguments,
+            'result': kwargs['data']['result'],
+            'status': kwargs['data']['status']}
+
+
+@WalkoffEvent.ActionExecutionSuccess.connect
+@sse_stream.push('action_success')
+def action_ended_callback(sender, **kwargs):
+    return format_workflow_result(sender, **kwargs)
+
+
+@WalkoffEvent.ActionExecutionError.connect
+@sse_stream.push('action_error')
+def action_error_callback(sender, **kwargs):
+    return format_workflow_result(sender, **kwargs)
+
+
+@workflowresults_page.route('/stream', methods=['GET'])
+@jwt_required_in_query('access_token')
+def stream_workflow_action_events():
+    user_id = get_jwt_identity()
+    return sse_stream.stream()

@@ -102,7 +102,7 @@ class MultiprocessedExecutor(object):
         self.manager = loadbalancer.LoadBalancer(self.ctx)
         self.receiver = loadbalancer.Receiver(self.ctx)
 
-        self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
+        self.receiver_thread = gevent.spawn(self.receiver.receive_results)
         self.receiver_thread.start()
 
         self.manager_thread = threading.Thread(target=self.manager.manage_workflows)
