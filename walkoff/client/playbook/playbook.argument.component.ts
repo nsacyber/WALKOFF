@@ -45,7 +45,7 @@ export class PlaybookArgumentComponent {
 
 	ngOnInit(): void {
 		this.parameterSchema = this.parameterApi.schema;
-		if (this.argument.reference == null) { this.argument.reference = ''; }
+		if (this.argument.reference == null) { this.argument.reference = 0; }
 		if (this.argument.value == null) {
 			if (this.parameterSchema.type === 'array') { 
 				this.argument.value = [];

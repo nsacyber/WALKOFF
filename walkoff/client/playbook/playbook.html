@@ -71,7 +71,12 @@
                 <i class="fa fa-eraser"></i>
             </button>
         </div>
-        <label id="currentWorkflowText">{{currentPlaybook}} - {{currentWorkflow}}</label>
+        <label id="currentWorkflowText" [hidden]="!loadedWorkflow">
+            {{currentPlaybook.name}} -
+            <div class="form-group">
+                <input type="text" class="form-control" [(ngModel)]="loadedWorkflow.name" name="name" required>
+            </div>
+        </label>
     
     <!-- Graph editor -->
     </div>
@@ -134,8 +139,8 @@
                             <span>{{selectedAction.action_name}}</span>
                         </div>
                         <div class="col-xs-4">
-                            <button [disabled]="selectedAction.uid === loadedWorkflow.start" class="btn btn-primary pull-right"
-                            (click)="setStartNode(selectedAction.uid)">Set as Start Action</button>
+                            <button [disabled]="selectedAction.id === loadedWorkflow.start" class="btn btn-primary pull-right"
+                            (click)="setStartNode(selectedAction.id)">Set as Start Action</button>
                         </div>
                     </div>
                     <div class="form-group">
@@ -199,9 +204,9 @@
                     <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]="workflowResults" [sortType]="'multi'"
                     [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]" [limit]="10">
                         <!-- Column Templates -->
-                        <ngx-datatable-column name="Action UID" [flexGrow]="1">
+                        <ngx-datatable-column name="Action ID" [flexGrow]="1">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                {{row.action_uid}}
+                                {{row.action_id}}
                             </ng-template>
                         </ngx-datatable-column>
                         <ngx-datatable-column name="Action Name" [flexGrow]="1">
@@ -248,12 +253,11 @@
                 <div class="modal-body">
                     <div *ngIf="modalParams.shouldShowPlaybook" class="form-group">
                         <h6>{{modalParams.shouldShowExistingPlaybooks ? 'Select a Playbook' : 'Enter a Playbook'}}</h6>
-                        <select *ngIf="modalParams.shouldShowExistingPlaybooks" name="playbookSelect" id="playbookSelect" [(ngModel)]="modalParams.selectedPlaybook"
+                        <select *ngIf="modalParams.shouldShowExistingPlaybooks" name="playbookSelect" id="playbookSelect" [(ngModel)]="modalParams.selectedPlaybookId"
                             class="form-control">
-                            <option value="">-- Create new Playbook --</option>
-                            <option *ngFor="let i of getPlaybooks()" [value]="i" [label]="i">{{i}}</option>
+                            <option *ngFor="let i of playbooks" [value]="i.id" [label]="i.name">{{i.name}}</option>
                         </select>
-                        <input type="text" *ngIf="modalParams.selectedPlaybook === '' || !modalParams.shouldShowExistingPlaybooks" [(ngModel)]="modalParams.newPlaybook"
+                        <input type="text" *ngIf="!modalParams.shouldShowExistingPlaybooks" [(ngModel)]="modalParams.newPlaybook"
                             class="form-control" placeholder="Enter a new playbook name">
                     </div>
                     <div *ngIf="modalParams.shouldShowWorkflow" class="form-group">
@@ -285,13 +289,13 @@
                                 <h4 class="panel-title">
                                     {{playbook.name}}
                                     <div class="pull-right">
-                                        <button (click)="renamePlaybookModal(playbook.name)" class="btn btn-primary" title="Rename Playbook">
+                                        <button (click)="renamePlaybookModal(playbook.id)" class="btn btn-primary" title="Rename Playbook">
                                             <i class="fa fa-i-cursor"></i>
                                         </button>
-                                        <button (click)="duplicatePlaybookModal(playbook.name)" class="btn btn-primary" title="Duplicate Playbook">
+                                        <button (click)="duplicatePlaybookModal(playbook.id)" class="btn btn-primary" title="Duplicate Playbook">
                                             <i class="fa fa-copy"></i>
                                         </button>
-                                        <button (click)="deletePlaybook(playbook.name)" class="btn btn-danger" title="Delete Playbook">
+                                        <button (click)="deletePlaybook(playbook)" class="btn btn-danger" title="Delete Playbook">
                                             <i class="fa fa-times"></i>
                                         </button>
                                     </div>
@@ -301,15 +305,15 @@
                                 <div class="panel-body">
                                     <div *ngFor="let workflow of playbook.workflows" class="panel panel-default workflowPanel">
                                         <div class="panel-body">
-                                            <a (click)="loadWorkflow(playbook.name, workflow.name)">{{workflow.name}}</a>
+                                            <a (click)="loadWorkflow(playbook.id, workflow.id)">{{workflow.name}}</a>
                                             <div class="pull-right">
-                                                <button (click)="renameWorkflowModal(playbook.name, workflow.name)" class="btn btn-primary" title="Rename Workflow">
+                                                <button (click)="renameWorkflowModal(playbook.id, workflow.id)" class="btn btn-primary" title="Rename Workflow">
                                                     <i class="fa fa-i-cursor"></i>
                                                 </button>
-                                                <button (click)="duplicateWorkflowModal(playbook.name, workflow.name)" class="btn btn-primary" title="Duplicate Workflow">
+                                                <button (click)="duplicateWorkflowModal(playbook.id, workflow.id)" class="btn btn-primary" title="Duplicate Workflow">
                                                     <i class="fa fa-copy"></i>
                                                 </button>
-                                                <button (click)="deleteWorkflow(playbook.name, workflow.name)" class="btn btn-danger" title="Delete Workflow">
+                                                <button (click)="deleteWorkflow(playbook, workflow)" class="btn btn-danger" title="Delete Workflow">
                                                     <i class="fa fa-times"></i>
                                                 </button>
                                             </div>

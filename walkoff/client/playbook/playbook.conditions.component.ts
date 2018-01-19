@@ -118,7 +118,7 @@ export class PlaybookConditionsComponent {
 		return {
 			name: parameterApi.name,
 			value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
-			reference: '',
+			reference: 0,
 			selection: '',
 		};
 	}

@@ -1,4 +1,8 @@
 export class Argument {
+	id?: number;
+	// _action_id: number;
+	// _condition_id: number;
+	// _transform_id: number;
 	/**
 	 * Name of the argument in question
 	 */
@@ -9,9 +13,9 @@ export class Argument {
 	 */
 	value: any;
 	/**
-	 * Reference to an Action UID to use the output of
+	 * Reference to an Action DBID to use the output of
 	 */
-	reference: string;
+	reference: number;
 	/**
 	 * Selection is currently specified in the UI as a string,
 	 * but is split and sent/ingested as an array containing strings and numbers

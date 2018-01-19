@@ -2,7 +2,6 @@ import { Component, ViewEncapsulation, ViewChild, ElementRef, ChangeDetectorRef 
 // import * as _ from 'lodash';
 // import { Observable } from 'rxjs';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
-import { UUID } from 'angular2-uuid';
 import { DatatableComponent } from '@swimlane/ngx-datatable';
 
 import { PlaybookService } from './playbook.service';
@@ -45,8 +44,7 @@ export class PlaybookComponent {
 	users: User[];
 	roles: Role[];
 
-	currentPlaybook: string;
-	currentWorkflow: string;
+	currentPlaybook: Playbook;
 	loadedWorkflow: Workflow;
 	playbooks: Playbook[] = [];
 	cy: any;
@@ -65,6 +63,7 @@ export class PlaybookComponent {
 	workflowResults: WorkflowResult[] = [];
 	executionResultsComponentWidth: number;
 	waitingOnData: boolean = false;
+	temporaryIdReference: number = -1;
 
 	// Simple bootstrap modal params
 	modalParams: {
@@ -72,7 +71,7 @@ export class PlaybookComponent {
 		submitText: string,
 		shouldShowPlaybook?: boolean,
 		shouldShowExistingPlaybooks?: boolean,
-		selectedPlaybook?: string,
+		selectedPlaybookId?: number,
 		newPlaybook?: string,
 		shouldShowWorkflow?: boolean,
 		newWorkflow?: string,
@@ -82,7 +81,7 @@ export class PlaybookComponent {
 		submitText: '',
 		shouldShowPlaybook: false,
 		shouldShowExistingPlaybooks: false,
-		selectedPlaybook: '',
+		// selectedPlaybookId: 0,
 		newPlaybook: '',
 		shouldShowWorkflow: false,
 		newWorkflow: '',
@@ -132,7 +131,7 @@ export class PlaybookComponent {
 				function eventHandler(message: any) {
 					const workflowResult: WorkflowResult = JSON.parse(message.data);
 					if (self.cy) {
-						const matchingNode = self.cy.elements(`node[uid="${workflowResult.action_uid}"]`);
+						const matchingNode = self.cy.elements(`node[_id="${workflowResult.action_id}"]`);
 
 						if (message.type === 'action_success') {
 							matchingNode.addClass('good-highlighted');
@@ -189,26 +188,27 @@ export class PlaybookComponent {
 	 * Executes the loaded workflow as it exists on the server. Will not currently execute the workflow as it stands.
 	 */
 	executeWorkflow(): void {
+		if (!this.loadedWorkflow) { return; }
 		this.clearExecutionHighlighting();
-		this.playbookService.executeWorkflow(this.currentPlaybook, this.currentWorkflow)
-			.then(() => this.toastyService.success(`Starting execution of ${this.currentPlaybook} - ${this.currentWorkflow}.`))
+		this.playbookService.executeWorkflow(this.currentPlaybook.id, this.loadedWorkflow.id)
+			.then(() => this.toastyService
+				.success(`Starting execution of ${this.currentPlaybook.name} - ${this.loadedWorkflow.name}.`))
 			.catch(e => this.toastyService
-				.error(`Error starting execution of ${this.currentPlaybook} - ${this.currentWorkflow}: ${e.message}`));
+				.error(`Error starting execution of ${this.currentPlaybook.name} - ${this.loadedWorkflow.name}: ${e.message}`));
 	}
 
 	/**
 	 * Loads a workflow from a given playbook / workflow name pair.
 	 * Configures the cytoscape graph and binds cytoscape events.
-	 * @param playbookName Playbook to load
-	 * @param workflowName Workflow to load
+	 * @param playbookId ID of Playbook to load
+	 * @param workflowId ID of Workflow to load
 	 */
-	loadWorkflow(playbookName: string, workflowName: string): void {
+	loadWorkflow(playbookId: number, workflowId: number): void {
 		const self = this;
 
-		this.playbookService.loadWorkflow(playbookName, workflowName)
+		this.playbookService.loadWorkflow(playbookId, workflowId)
 			.then(workflow => {
-				this.currentPlaybook = playbookName;
-				this.currentWorkflow = workflowName;
+				this.currentPlaybook = this.playbooks.find(p => p.id === playbookId);
 				this.loadedWorkflow = workflow;
 
 				// Convert our selection arrays to a string
@@ -327,13 +327,12 @@ export class PlaybookComponent {
 						// remove the edge just added and add back in again using the undo/redo
 						// extension. Also add info to edge which is displayed when user clicks on it.
 						for (let i = 0; i < targetNodes.length; i++) {
-							// Get the ID from the added node and use it; uses the same UUID method seemingluy
-							const uid: string = addedEntities[i].data('id');
-							const sourceUid: string = sourceNode.data('uid');
-							const destinationUid = targetNodes[i].data('uid');
+							const tempId = this.temporaryIdReference--;
+							const sourceId: number = sourceNode.data('_id');
+							const destinationId: number = targetNodes[i].data('_id');
 
 							addedEntities[i].data({
-								uid,
+								_id: tempId,
 								// We set temp because this actually triggers onEdgeRemove since we manually remove and re-add the edge later
 								// There is logic in onEdgeRemove to bypass that logic if temp is true
 								temp: true,
@@ -341,12 +340,12 @@ export class PlaybookComponent {
 
 							//If we attempt to draw an edge that already exists, please remove it and take no further action
 							if (self.loadedWorkflow.branches
-								.find(ns => ns.source_uid === sourceUid && ns.destination_uid === destinationUid)) {
+								.find(b => b.source_id === sourceId && b.destination_id === destinationId)) {
 								self.cy.remove(addedEntities);
 								return;
 							}
 
-							const sourceAction = self.loadedWorkflow.actions.find(a => a.uid === sourceUid);
+							const sourceAction = self.loadedWorkflow.actions.find(a => a.id === sourceId);
 							const sourceActionApi = self._getAction(sourceAction.app_name, sourceAction.action_name);
 
 							// Get our default status either from the default return if specified, or the first return status
@@ -359,9 +358,9 @@ export class PlaybookComponent {
 
 							// Add our branch to the actual loadedWorkflow model
 							self.loadedWorkflow.branches.push({
-								uid,
-								source_uid: sourceUid,
-								destination_uid: destinationUid,
+								id: tempId,
+								source_id: sourceId,
+								destination_id: destinationId,
 								status: defaultStatus,
 								priority: 1,
 								conditions: [],
@@ -414,10 +413,10 @@ export class PlaybookComponent {
 				const edges = workflow.branches.map(branch => {
 					const edge: any = { group: 'edges' };
 					edge.data = {
-						id: branch.uid,
-						uid: branch.uid,
-						source: branch.source_uid,
-						target: branch.destination_uid,
+						id: branch.id,
+						_id: branch.id,
+						source: branch.source_id,
+						target: branch.destination_id,
 					};
 					return edge;
 				});
@@ -425,10 +424,10 @@ export class PlaybookComponent {
 				const nodes = workflow.actions.map(action => {
 					const node: any = { group: 'nodes', position: _.clone(action.position) };
 					node.data = {
-						id: action.uid,
-						uid: action.uid,
+						id: action.id,
+						_id: action.id,
 						label: action.name,
-						isStartNode: action.uid === workflow.start,
+						isStartNode: action.id === workflow.start,
 					};
 					self._setNodeDisplayProperties(node, action);
 					return node;
@@ -454,15 +453,14 @@ export class PlaybookComponent {
 
 				this._closeWorkflowsModal();
 			})
-			.catch(e => this.toastyService.error(`Error loading workflow ${playbookName} - ${workflowName}: ${e.message}`));
+			.catch(e => this.toastyService.error(`Error loading workflow ${playbookId} - ${workflowId}: ${e.message}`));
 	}
 
 	/**
 	 * Closes the active workflow and clears all relevant variables.
 	 */
 	closeWorkflow(): void {
-		this.currentPlaybook = '';
-		this.currentWorkflow = '';
+		this.currentPlaybook = null;
 		this.loadedWorkflow = null;
 		this.selectedBranchParams = null;
 		this.selectedAction = null;
@@ -499,38 +497,38 @@ export class PlaybookComponent {
 		}
 
 		// Go through our workflow and update some parameters
-		workflowToSave.actions.forEach(s => {
+		workflowToSave.actions.forEach(action => {
 			// Set the new cytoscape positions on our loadedworkflow
-			s.position = cyData.find(cyAction => cyAction.data.uid === s.uid).position;
+			action.position = cyData.find(cyAction => cyAction.data._id === action.id).position;
 
-			if (s.device_id === 0) { delete s.device_id; }
+			if (action.device_id === 0) { delete action.device_id; }
 
 			// Properly sanitize arguments through the tree
-			this._sanitizeArgumentsForSave(s.arguments);
+			this._sanitizeArgumentsForSave(action.arguments);
 
-			s.triggers.forEach(t => {
-				this._sanitizeArgumentsForSave(t.arguments);
+			action.triggers.forEach(trigger => {
+				this._sanitizeArgumentsForSave(trigger.arguments);
 
-				t.transforms.forEach(tr => {
-					this._sanitizeArgumentsForSave(tr.arguments);
+				trigger.transforms.forEach(transform => {
+					this._sanitizeArgumentsForSave(transform.arguments);
 				});
 			});
 		});
-		workflowToSave.branches.forEach(ns => {
-			ns.conditions.forEach(c => {
-				this._sanitizeArgumentsForSave(c.arguments);
+		workflowToSave.branches.forEach(branch => {
+			branch.conditions.forEach(condition => {
+				this._sanitizeArgumentsForSave(condition.arguments);
 
-				c.transforms.forEach(tr => {
-					this._sanitizeArgumentsForSave(tr.arguments);
+				condition.transforms.forEach(transform => {
+					this._sanitizeArgumentsForSave(transform.arguments);
 				});
 			});
 		});
 
-		this.playbookService.saveWorkflow(this.currentPlaybook, this.currentWorkflow, workflowToSave)
+		this.playbookService.saveWorkflow(this.currentPlaybook.id, workflowToSave)
 			.then(() => this.toastyService
-				.success(`Successfully saved workflow ${this.currentPlaybook} - ${this.currentWorkflow}.`))
+				.success(`Successfully saved workflow ${this.currentPlaybook.name} - ${workflowToSave.name}.`))
 			.catch(e => this.toastyService
-				.error(`Error saving workflow ${this.currentPlaybook} - ${this.currentWorkflow}: ${e.message}`));
+				.error(`Error saving workflow ${this.currentPlaybook.name} - ${workflowToSave.name}: ${e.message}`));
 	}
 
 	/**
@@ -563,11 +561,11 @@ export class PlaybookComponent {
 			if (typeof (argument.value) === 'string') { argument.value = argument.value.trim(); }
 			// If value and reference are blank, add this argument's ID in the array to the list
 			// Add them in reverse so we don't have problems with the IDs sliding around on the splice
-			if ((argument.value == null || argument.value === '') && argument.reference === '') {
+			if ((argument.value == null || argument.value === '') && argument.reference === 0) {
 				idsToRemove.unshift(args.indexOf(argument));
 			}
 			// Additionally, remove "value" if reference is specified
-			if (argument.reference && argument.value) {
+			if (argument.reference !== 0 && argument.value) {
 				delete argument.value;
 			}
 		}
@@ -611,9 +609,9 @@ export class PlaybookComponent {
 		const data = e.target.data();
 
 		// Unselect anything else we might have selected (via ctrl+click basically)
-		self.cy.elements(`[uid!="${data.uid}"]`).unselect();
+		self.cy.elements(`[_id!="${data._id}"]`).unselect();
 
-		const action = self.loadedWorkflow.actions.find(s => s.uid === data.uid);
+		const action = self.loadedWorkflow.actions.find(a => a.id === data._id);
 		if (!action) { return; }
 		const actionApi = this._getAction(action.app_name, action.action_name);
 
@@ -628,6 +626,7 @@ export class PlaybookComponent {
 		if (!this.roles && 
 			(actionApi.parameters.findIndex(p => p.schema.type === 'role') > -1 ||
 			actionApi.parameters.findIndex(p => p.schema.items && p.schema.items.type === 'role') > -1)) {
+			this.waitingOnData = true;
 			queryPromises.push(this.playbookService.getRoles().then(roles => this.roles = roles));
 		}
 
@@ -661,13 +660,13 @@ export class PlaybookComponent {
 		self.selectedAction = null;
 		self.selectedBranchParams = null;
 
-		const uid = e.target.data('uid');
+		const id = e.target.data('_id');
 
 		// Unselect anything else we might have selected (via ctrl+click basically)
-		self.cy.elements(`[uid!="${uid}"]`).unselect();
+		self.cy.elements(`[_id!="${id}"]`).unselect();
 
-		const branch = self.loadedWorkflow.branches.find(ns => ns.uid === uid);
-		const sourceAction = self.loadedWorkflow.actions.find(s => s.uid === branch.source_uid);
+		const branch = self.loadedWorkflow.branches.find(b => b.id === id);
+		const sourceAction = self.loadedWorkflow.actions.find(a => a.id === branch.source_id);
 
 		self.selectedBranchParams = {
 			branch,
@@ -685,7 +684,7 @@ export class PlaybookComponent {
 	onUnselect(event: any, self: PlaybookComponent): void {
 		// Update our labels if possible
 		if (self.selectedAction) {
-			this.cy.elements(`node[uid="${self.selectedAction.uid}"]`).data('label', self.selectedAction.name);
+			this.cy.elements(`node[_id="${self.selectedAction.id}"]`).data('label', self.selectedAction.name);
 		}
 
 		if (!self.cy.$(':selected').length) {
@@ -705,12 +704,12 @@ export class PlaybookComponent {
 		// (edgehandles do not have paramters, and we mark temp edges on edgehandle completion)
 		if (!edgeData || edgeData.temp) { return; }
 
-		const sourceUid = edgeData.source;
-		const destinationUid = edgeData.target;
+		const sourceId: number = edgeData.source;
+		const destinationId: number = edgeData.target;
 
 		// Filter out the one that matches
 		this.loadedWorkflow.branches = this.loadedWorkflow.branches
-			.filter(ns => !(ns.source_uid === sourceUid && ns.destination_uid === destinationUid));
+			.filter(b => !(b.source_id === sourceId && b.destination_id === destinationId));
 	}
 
 	/**
@@ -722,7 +721,7 @@ export class PlaybookComponent {
 		const node = event.target;
 
 		// If the number of nodes in the graph is one, set the start node to it.
-		if (node.isNode() && self.cy.nodes().size() === 1) { self.setStartNode(node.data('uid')); }
+		if (node.isNode() && self.cy.nodes().size() === 1) { self.setStartNode(node.data('_id')); }
 	}
 
 	/**
@@ -736,13 +735,13 @@ export class PlaybookComponent {
 		const data = node.data();
 
 		// If the start node was deleted, set it to one of the roots of the graph
-		if (data && node.isNode() && self.loadedWorkflow.start === data.uid) { self.setStartNode(null); }
-		if (self.selectedAction && self.selectedAction.uid === data.uid) { self.selectedAction = null; }
+		if (data && node.isNode() && self.loadedWorkflow.start === data._id) { self.setStartNode(null); }
+		if (self.selectedAction && self.selectedAction.id === data._id) { self.selectedAction = null; }
 
 		// Delete the action from the workflow and delete any branches that reference this action
-		this.loadedWorkflow.actions = this.loadedWorkflow.actions.filter(s => s.uid !== data.uid);
+		this.loadedWorkflow.actions = this.loadedWorkflow.actions.filter(a => a.id !== data._id);
 		this.loadedWorkflow.branches = this.loadedWorkflow.branches
-			.filter(ns => !(ns.source_uid === data.uid || ns.destination_uid === data.uid));
+			.filter(ns => !(ns.source_id === data._id || ns.destination_id === data._id));
 	}
 
 	/**
@@ -776,10 +775,12 @@ export class PlaybookComponent {
 
 		const extent = this.cy.extent();
 
-		function avg(a: number, b: number) { return (a + b) / 2; }
-
-		const centerGraphPosition = { x: avg(extent.x1, extent.x2), y: avg(extent.y1, extent.y2) };
+		const centerGraphPosition = { x: this.avg(extent.x1, extent.x2), y: this.avg(extent.y1, extent.y2) };
 		this.insertNode(appName, actionName, centerGraphPosition, false);
+	}
+
+	avg(a: number, b: number): number {
+		return (a + b) / 2;
 	}
 
 	/**
@@ -790,10 +791,10 @@ export class PlaybookComponent {
 	 * @param shouldUseRenderedPosition Whether or not to use rendered or "real" graph position
 	 */
 	insertNode(appName: string, actionName: string, location: GraphPosition, shouldUseRenderedPosition: boolean): void {
-		// Grab a new uid for both the ID of the node and the ID of the action in the workflow
+		// Grab a new ID for both the ID of the node and the ID of the action in the workflow
 		// TODO: other aspects of the playbook editor use the uids generated in cytoscape
 		// Should we change this logic to do a similar thing?
-		const uid = UUID.UUID();
+		const tempId = this.temporaryIdReference--;
 
 		const args: Argument[] = [];
 		const parameters = this._getAction(appName, actionName).parameters;
@@ -807,12 +808,12 @@ export class PlaybookComponent {
 
 		let actionToBeAdded: Action;
 		let numExistingActions = 0;
-		this.loadedWorkflow.actions.forEach(s => s.action_name === actionName ? numExistingActions++ : null);
+		this.loadedWorkflow.actions.forEach(a => a.action_name === actionName ? numExistingActions++ : null);
 		// Set our name to be something like "action 2" if "action" already exists
 		const uniqueActionName = numExistingActions ? `${actionName} ${numExistingActions + 1}` : actionName;
 
 		if (appName && actionName) { actionToBeAdded = new Action(); }
-		actionToBeAdded.uid = uid;
+		actionToBeAdded.id = tempId;
 		actionToBeAdded.name = uniqueActionName;
 		actionToBeAdded.app_name = appName;
 		actionToBeAdded.action_name = actionName;
@@ -825,8 +826,8 @@ export class PlaybookComponent {
 		const nodeToBeAdded = {
 			group: 'nodes',
 			data: {
-				id: uid,
-				uid,
+				id: tempId,
+				_id: tempId,
 				label: uniqueActionName,
 			},
 			renderedPosition: null as GraphPosition,
@@ -870,16 +871,18 @@ export class PlaybookComponent {
 
 		newNodes.forEach((n: any) => {
 			// Get a copy of the action we just copied
-			const pastedAction: Action = _.clone(this.loadedWorkflow.actions.find(s => s.uid === n.data('uid')));
+			const pastedAction: Action = _.clone(this.loadedWorkflow.actions.find(a => a.id === n.data('_id')));
 
 			// Note: we just grab the new uid from the pasted object.
 			// Looks like the clipboard plugin uses the same sort of UUIDs we use...
-			const uid = n.data('id');
+			// const tempId = n.data('id');
+			const tempId = this.temporaryIdReference--;
 
-			pastedAction.uid = uid;
+			pastedAction.id = tempId;
 
 			n.data({
-				uid,
+				id: tempId,
+				_id: tempId,
 				isStartNode: false,
 			});
 
@@ -907,25 +910,25 @@ export class PlaybookComponent {
 	}
 
 	/**
-	 * Sets the start action / node to be the one matching the UID specified.
-	 * Not specifying a UID just grabs the first root.
-	 * @param start UID of the new start node (optional)
+	 * Sets the start action / node to be the one matching the ID specified.
+	 * Not specifying a ID just grabs the first root.
+	 * @param start DB ID of the new start node (optional)
 	 */
-	setStartNode(start: string): void {
+	setStartNode(start: number): void {
 		// If no start was given set it to one of the root nodes
 		if (start) {
 			this.loadedWorkflow.start = start;
 		} else {
 			const roots = this.cy.nodes().roots();
 			if (roots.size() > 0) {
-				this.loadedWorkflow.start = roots[0].data('uid');
+				this.loadedWorkflow.start = roots[0].data('_id');
 			}
 		}
 
 		// Clear start node highlighting of the previous start node(s)
 		this.cy.elements('node[?isStartNode]').data('isStartNode', false);
 		// Apply start node highlighting to the new start node.
-		this.cy.elements(`node[uid="${start}"]`).data('isStartNode', true);
+		this.cy.elements(`node[_id="${start}"]`).data('isStartNode', true);
 	}
 
 	/**
@@ -987,7 +990,7 @@ export class PlaybookComponent {
 	 * Opens a modal to rename a given playbook and performs the rename action on submit.
 	 * @param playbook Name of the playbook to rename
 	 */
-	renamePlaybookModal(playbook: string): void {
+	renamePlaybookModal(playbook: Playbook): void {
 		this._closeWorkflowsModal();
 
 		this.modalParams = {
@@ -995,9 +998,9 @@ export class PlaybookComponent {
 			submitText: 'Rename Playbook',
 			shouldShowPlaybook: true,
 			submit: () => {
-				this.playbookService.renamePlaybook(playbook, this.modalParams.newPlaybook)
+				this.playbookService.renamePlaybook(playbook.id, this.modalParams.newPlaybook)
 					.then(() => {
-						this.playbooks.find(pb => pb.name === playbook).name = this.modalParams.newPlaybook;
+						this.playbooks.find(pb => pb.id === playbook.id).name = this.modalParams.newPlaybook;
 						this.toastyService.success(`Successfully renamed playbook "${this.modalParams.newPlaybook}".`);
 						this._closeModal();
 					})
@@ -1012,7 +1015,7 @@ export class PlaybookComponent {
 	 * Opens a modal to copy a given playbook and performs the copy action on submit.
 	 * @param playbook Name of the playbook to copy
 	 */
-	duplicatePlaybookModal(playbook: string): void {
+	duplicatePlaybookModal(playbook: Playbook): void {
 		this._closeWorkflowsModal();
 
 		this.modalParams = {
@@ -1020,14 +1023,14 @@ export class PlaybookComponent {
 			submitText: 'Duplicate Playbook',
 			shouldShowPlaybook: true,
 			submit: () => {
-				this.playbookService.duplicatePlaybook(playbook, this.modalParams.newPlaybook)
+				this.playbookService.duplicatePlaybook(playbook.id, this.modalParams.newPlaybook)
 					.then(() => {
-						const duplicatedPb: Playbook = _.cloneDeep(this.playbooks.find(pb => pb.name === playbook));
+						const duplicatedPb: Playbook = _.cloneDeep(this.playbooks.find(pb => pb.id === playbook.id));
 						duplicatedPb.name = this.modalParams.newPlaybook;
 						this.playbooks.push(duplicatedPb);
 						this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
 						this.toastyService
-							.success(`Successfully duplicated playbook "${playbook}" as "${this.modalParams.newPlaybook}".`);
+							.success(`Successfully duplicated playbook "${playbook.name}" as "${this.modalParams.newPlaybook}".`);
 						this._closeModal();
 					})
 					.catch(e => this.toastyService
@@ -1040,23 +1043,23 @@ export class PlaybookComponent {
 
 	/**
 	 * Opens a modal to delete a given playbook and performs the delete action on submit.
-	 * @param playbook Name of the playbook to delete
+	 * @param playbook Playbook to delete
 	 */
-	deletePlaybook(playbook: string): void {
-		if (!confirm(`Are you sure you want to delete playbook "${playbook}"?`)) { return; }
+	deletePlaybook(playbook: Playbook): void {
+		if (!confirm(`Are you sure you want to delete playbook "${playbook.name}"?`)) { return; }
 
 		this.playbookService
-			.deletePlaybook(playbook)
+			.deletePlaybook(playbook.id)
 			.then(() => {
-				this.playbooks = this.playbooks.filter(p => p.name !== playbook);
+				this.playbooks = this.playbooks.filter(p => p.id !== playbook.id);
 
 				// If our loaded workflow is in this playbook, close it.
-				if (playbook === this.currentPlaybook) { this.closeWorkflow(); }
+				if (playbook.id === this.currentPlaybook.id) { this.closeWorkflow(); }
 
-				this.toastyService.success(`Successfully deleted playbook "${playbook}".`);
+				this.toastyService.success(`Successfully deleted playbook "${playbook.name}".`);
 			})
 			.catch(e => this.toastyService
-				.error(`Error deleting playbook "${playbook}": ${e.message}`));
+				.error(`Error deleting playbook "${playbook.name}": ${e.message}`));
 	}
 
 	/**
@@ -1072,101 +1075,109 @@ export class PlaybookComponent {
 			shouldShowPlaybook: true,
 			shouldShowWorkflow: true,
 			submit: () => {
-				const playbookName = this._getModalPlaybookName();
-				this.playbookService.newWorkflow(playbookName, this.modalParams.newWorkflow)
+				const pb = this.playbooks.find(p => p.id === this.modalParams.selectedPlaybookId);
+				if (!pb) {
+					this.toastyService.error(`Error creating workflow "${this.modalParams.newWorkflow}". Playbook does not exist.`);
+					return;
+				}
+
+				this.playbookService.newWorkflow(this.modalParams.selectedPlaybookId, this.modalParams.newWorkflow)
 					.then(newWorkflow => {
-						const pb = this.playbooks.find(p => p.name === playbookName);
-						if (pb) {
-							pb.workflows.push(newWorkflow);
-							pb.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
-						} else {
-							this.playbooks.push({ name: playbookName, workflows: [newWorkflow], uid: null });
-							this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
-						}
-						if (!this.loadedWorkflow) { this.loadWorkflow(playbookName, this.modalParams.newWorkflow); }
-						this.toastyService.success(`Created workflow "${playbookName} - ${this.modalParams.newWorkflow}".`);
+						pb.workflows.push(newWorkflow);
+						pb.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
+						// else {
+						// 	this.playbooks.push({ name: playbookName, workflows: [newWorkflow], uid: null });
+						// 	this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
+						// }
+						if (!this.loadedWorkflow) { this.loadWorkflow(this.modalParams.selectedPlaybookId, newWorkflow.id); }
+						this.toastyService.success(`Created workflow "${pb.name} - ${this.modalParams.newWorkflow}".`);
 						this._closeModal();
 					})
 					.catch(e => this.toastyService
-						.error(`Error creating workflow "${playbookName} - ${this.modalParams.newWorkflow}": ${e.message}`));
+						.error(`Error creating workflow "${pb.name} - ${this.modalParams.newWorkflow}": ${e.message}`));
 			},
 		};
 
 		this._openModal();
 	}
 
-	/**
-	 * Opens a modal to delete a given workflow and performs the rename action on submit.
-	 * @param playbook Name of the playbook the workflow resides under
-	 * @param workflow Name of the workflow to rename
-	 */
-	renameWorkflowModal(playbook: string, workflow: string): void {
-		this._closeWorkflowsModal();
+	// /**
+	//  * Opens a modal to delete a given workflow and performs the rename action on submit.
+	//  * @param playbook Name of the playbook the workflow resides under
+	//  * @param workflow Name of the workflow to rename
+	//  */
+	// renameWorkflowModal(playbook: string, workflow: string): void {
+	// 	this._closeWorkflowsModal();
 
-		this.modalParams = {
-			title: 'Rename Existing Workflow',
-			submitText: 'Rename Workflow',
-			shouldShowWorkflow: true,
-			submit: () => {
-				const playbookName = this._getModalPlaybookName();
-				this.playbookService.renameWorkflow(playbook, workflow, this.modalParams.newWorkflow)
-					.then(() => {
-						this.playbooks
-							.find(pb => pb.name === playbook).workflows
-							.find(wf => wf.name === workflow).name = this.modalParams.newWorkflow;
+	// 	this.modalParams = {
+	// 		title: 'Rename Existing Workflow',
+	// 		submitText: 'Rename Workflow',
+	// 		shouldShowWorkflow: true,
+	// 		submit: () => {
+	// 			const playbookName = this._getModalPlaybookName();
+	// 			this.playbookService.renameWorkflow(playbook, workflow, this.modalParams.newWorkflow)
+	// 				.then(() => {
+	// 					this.playbooks
+	// 						.find(pb => pb.name === playbook).workflows
+	// 						.find(wf => wf.name === workflow).name = this.modalParams.newWorkflow;
 
-						// Rename our loaded workflow if necessary.
-						if (this.currentPlaybook === playbook && this.currentWorkflow === workflow && this.loadedWorkflow) {
-							this.loadedWorkflow.name = this.modalParams.newWorkflow;
-							this.currentWorkflow = this.modalParams.newWorkflow;
-						}
-						this.toastyService.success(`Successfully renamed workflow "${playbookName} - ${this.modalParams.newWorkflow}".`);
-						this._closeModal();
-					})
-					.catch(e => this.toastyService
-						.error(`Error renaming workflow "${playbookName} - ${this.modalParams.newWorkflow}": ${e.message}`));
-			},
-		};
+	// 					// Rename our loaded workflow if necessary.
+	// 					if (this.currentPlaybook === playbook && this.currentWorkflow === workflow && this.loadedWorkflow) {
+	// 						this.loadedWorkflow.name = this.modalParams.newWorkflow;
+	// 						this.currentWorkflow = this.modalParams.newWorkflow;
+	// 					}
+	// 					this.toastyService
+	// 						.success(`Successfully renamed workflow "${playbookName} - ${this.modalParams.newWorkflow}".`);
+	// 					this._closeModal();
+	// 				})
+	// 				.catch(e => this.toastyService
+	// 					.error(`Error renaming workflow "${playbookName} - ${this.modalParams.newWorkflow}": ${e.message}`));
+	// 		},
+	// 	};
 
-		this._openModal();
-	}
+	// 	this._openModal();
+	// }
 
 	/**
 	 * Opens a modal to copy a given workflow and performs the copy action on submit.
-	 * @param playbook Name of the playbook the workflow resides under
-	 * @param workflow Name of the workflow to copy
+	 * @param playbookId ID of the playbook the workflow resides under
+	 * @param workflowId ID of the workflow to copy
 	 */
-	duplicateWorkflowModal(playbook: string, workflow: string): void {
+	duplicateWorkflowModal(playbookId: number, workflowId: number): void {
 		this._closeWorkflowsModal();
 
 		this.modalParams = {
 			title: 'Duplicate Existing Workflow',
 			submitText: 'Duplicate Workflow',
-			// shouldShowPlaybook: true,
-			// shouldShowExistingPlaybooks: true,
-			selectedPlaybook: playbook,
+			shouldShowPlaybook: true,
+			shouldShowExistingPlaybooks: true,
+			selectedPlaybookId: playbookId,
 			shouldShowWorkflow: true,
 			submit: () => {
-				const playbookName = this._getModalPlaybookName();
-				this.playbookService.duplicateWorkflow(playbook, workflow, this.modalParams.newWorkflow)
-					.then(duplicatedWorkflow => {
-						let pb = this.playbooks.find(p => p.name === playbook);
+				const pb = this.playbooks.find(p => p.id === playbookId);
 
-						if (!pb) {
-							pb = { uid: null, name: this._getModalPlaybookName(), workflows: [] };
-							this.playbooks.push(pb);
-							this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
-						}
+				if (!pb) {
+					this.toastyService.error(`Error duplicating workflow "${this.modalParams.newWorkflow}". Playbook does not exist.`);
+					return;
+				}
+
+				this.playbookService.duplicateWorkflow(playbookId, workflowId, this.modalParams.newWorkflow)
+					.then(duplicatedWorkflow => {
+						// if (!pb) {
+						// 	pb = { uid: null, name: this._getModalPlaybookName(), workflows: [] };
+						// 	this.playbooks.push(pb);
+						// 	this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
+						// }
 
 						pb.workflows.push(duplicatedWorkflow);
 						pb.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
 
 						this.toastyService
-							.success(`Successfully duplicated workflow "${playbookName} - ${this.modalParams.newWorkflow}".`);
+							.success(`Successfully duplicated workflow "${pb.name} - ${this.modalParams.newWorkflow}".`);
 						this._closeModal();
 					})
 					.catch(e => this.toastyService
-						.error(`Error duplicating workflow "${playbookName} - ${this.modalParams.newWorkflow}": ${e.message}`));
+						.error(`Error duplicating workflow "${pb.name} - ${this.modalParams.newWorkflow}": ${e.message}`));
 			},
 		};
 
@@ -1175,26 +1186,26 @@ export class PlaybookComponent {
 
 	/**
 	 * Opens a modal to delete a given workflow and performs the delete action on submit.
-	 * @param playbook Name of the playbook the workflow resides under
-	 * @param workflow Name of the workflow to delete
+	 * @param playbook Playbook the workflow resides under
+	 * @param workflow Workflow to delete
 	 */
-	deleteWorkflow(playbook: string, workflow: string): void {
-		if (!confirm(`Are you sure you want to delete workflow "${playbook} - ${workflow}"?`)) { return; }
+	deleteWorkflow(playbook: Playbook, workflow: Workflow): void {
+		if (!confirm(`Are you sure you want to delete workflow "${playbook.name} - ${workflow.name}"?`)) { return; }
 
 		this.playbookService
-			.deleteWorkflow(playbook, workflow)
+			.deleteWorkflow(playbook.id, workflow.id)
 			.then(() => {
-				const pb = this.playbooks.find(p => p.name === playbook);
-				pb.workflows = pb.workflows.filter(w => w.name !== workflow);
+				const pb = this.playbooks.find(p => p.id === playbook.id);
+				pb.workflows = pb.workflows.filter(w => w.id !== workflow.id);
 
-				if (!pb.workflows.length) { this.playbooks = this.playbooks.filter(p => p.name !== pb.name); }
+				if (!pb.workflows.length) { this.playbooks = this.playbooks.filter(p => p.id !== pb.id); }
 
 				// Close the workflow if the deleted workflow matches the loaded one
-				if (playbook === this.currentPlaybook && workflow === this.currentWorkflow) { this.closeWorkflow(); }
+				if (playbook.id === this.currentPlaybook.id && workflow.id === this.loadedWorkflow.id) { this.closeWorkflow(); }
 
-				this.toastyService.success(`Successfully deleted workflow "${playbook} - ${workflow}".`);
+				this.toastyService.success(`Successfully deleted workflow "${playbook.name} - ${workflow.name}".`);
 			})
-			.catch(e => this.toastyService.error(`Error deleting workflow "${playbook} - ${workflow}": ${e.message}`));
+			.catch(e => this.toastyService.error(`Error deleting workflow "${playbook.name} - ${workflow.name}": ${e.message}`));
 	}
 
 	/**
@@ -1218,27 +1229,27 @@ export class PlaybookComponent {
 		($('#workflowsModal') as any).modal('hide');
 	}
 
-	/**
-	 * Gets the playbook name from a given modal:
-	 * either by the selected playbook or whatever's specified under new playbook.
-	 */
-	_getModalPlaybookName(): string {
-		if (this.modalParams.selectedPlaybook && this.modalParams.selectedPlaybook !== '') {
-			return this.modalParams.selectedPlaybook;
-		}
+	// /**
+	//  * Gets the playbook name from a given modal:
+	//  * either by the selected playbook or whatever's specified under new playbook.
+	//  */
+	// _getModalPlaybookName(): string {
+	// 	if (this.modalParams.selectedPlaybook && this.modalParams.selectedPlaybook !== '') {
+	// 		return this.modalParams.selectedPlaybook;
+	// 	}
 
-		return this.modalParams.newPlaybook;
-	}
+	// 	return this.modalParams.newPlaybook;
+	// }
 
 	///------------------------------------------------------------------------------------------------------
 	/// Utility functions
 	///------------------------------------------------------------------------------------------------------
-	/**
-	 * Gets a list of playbook names from our list of playbooks.
-	 */
-	getPlaybooks(): string[] {
-		return this.playbooks.map(pb => pb.name);
-	}
+	// /**
+	//  * Gets a list of playbook names from our list of playbooks.
+	//  */
+	// getPlaybooks(): string[] {
+	// 	return this.playbooks.map(pb => pb.name);
+	// }
 
 	/**
 	 * Checks if a workflow exists by playbook and workflow name.
@@ -1293,7 +1304,7 @@ export class PlaybookComponent {
 		return {
 			name: parameterApi.name,
 			value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
-			reference: '',
+			reference: 0,
 			selection: '',
 		};
 	}
@@ -1352,7 +1363,7 @@ export class PlaybookComponent {
 		const obj: { [key: string]: string } = {};
 		args.forEach(element => {
 			if (element.value) { obj[element.name] = element.value; }
-			if (element.reference) { obj[element.name] = element.reference; }
+			if (element.reference) { obj[element.name] = element.reference.toString(); }
 			if (element.selection) {
 				const selectionString = (element.selection as any[]).join('.');
 				obj[element.name] = `${obj[element.name]} (${selectionString})`;

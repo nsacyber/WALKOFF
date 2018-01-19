@@ -172,7 +172,7 @@ export class CasesComponent {
 	convertPlaybooksToSubscriptionTree(playbooks: any[]): any {
 		const self = this;
 		//Top level controller data
-		const tree = { name: 'Controller', uid: 'controller', type: 'controller', children: [] as object[] };
+		const tree = { name: 'Controller', id: 'controller', type: 'controller', children: [] as object[] };
 
 		// Remap the branches to be under actions as they used to be
 		playbooks.forEach((p: Playbook) => {
@@ -182,9 +182,9 @@ export class CasesComponent {
 				});
 
 				w.branches.forEach((ns: Branch) => {
-					const matchingAction = w.actions.find(s => s.uid === ns.destination_uid);
+					const matchingAction = w.actions.find(s => s.id === ns.destination_id);
 					if (matchingAction) { (ns as any).name = matchingAction.name; }
-					(w.actions.find(s => s.uid === ns.source_uid) as any).branches.push(ns);
+					(w.actions.find(s => s.id === ns.source_id) as any).branches.push(ns);
 				});
 
 				delete w.branches;
@@ -213,7 +213,7 @@ export class CasesComponent {
 
 		const node = { 
 			name: nodeName, 
-			uid: target.uid ? target.uid : '', 
+			id: target.id ? target.id : '', 
 			type: types[typeIndex], 
 			children: [] as object[],
 		};

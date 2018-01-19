@@ -1,7 +1,7 @@
 import { Workflow } from './workflow';
 
 export class Playbook {
-	uid: string;
+	id: number;
 	name: string;
 	workflows: Workflow[] = [];
 }

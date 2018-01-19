@@ -151,12 +151,12 @@ export class SchedulerComponent {
 		this.schedulerService
 			.getPlaybooks()
 			.then((playbooks) => {
-				//[ { name: <name>, workflows: [ { name: <name>, uid: <uid> } ] }, ... ]
-				playbooks.forEach(function (pb: any) {
-					pb.workflows.forEach(function (w: any) {
+				//[ { name: <name>, workflows: [ { name: <name>, id: <id> } ] }, ... ]
+				playbooks.forEach(function (playbook: any) {
+					playbook.workflows.forEach(function (workflow: any) {
 						self.availableWorkflows.push({
-							id: w.uid,
-							text: `${pb.name} - ${w.name}`,
+							id: workflow.id,
+							text: `${playbook.name} - ${workflow.name}`,
 						});
 					});
 				});
