@@ -1,9 +1,8 @@
 import json
 import logging
 import threading
-from copy import deepcopy
 
-from sqlalchemy import Column, Integer, String, ForeignKey, orm
+from sqlalchemy import Column, Integer, String, ForeignKey, orm, UniqueConstraint
 from sqlalchemy.orm import relationship, backref
 
 from walkoff.appgateway.appinstance import AppInstance
@@ -12,7 +11,9 @@ from walkoff.events import WalkoffEvent
 from walkoff.coredb.action import Action
 from walkoff.coredb.branch import Branch
 from walkoff.coredb.executionelement import ExecutionElement
-from walkoff.helpers import UnknownAppAction, UnknownApp, InvalidArgument, format_exception_message
+from walkoff.helpers import InvalidArgument, format_exception_message, InvalidExecutionElement, UnknownApp, \
+    UnknownAppAction, UnknownCondition, UnknownTransform
+import walkoff.coredb.devicedb
 
 logger = logging.getLogger(__name__)
 
@@ -20,13 +21,14 @@ logger = logging.getLogger(__name__)
 class Workflow(ExecutionElement, Device_Base):
     __tablename__ = 'workflow'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    playbook_id = Column(Integer, ForeignKey('playbook.id'))
+    _playbook_id = Column(Integer, ForeignKey('playbook.id'))
     name = Column(String(80), nullable=False)
     actions = relationship('Action', backref=backref('_workflow'), cascade='all, delete-orphan')
     branches = relationship('Branch', backref=backref('_workflow'), cascade='all, delete-orphan')
-    start = Column(String(80), nullable=False)
+    start = Column(Integer, nullable=False)
+    __table_args__ = (UniqueConstraint('_playbook_id', 'name', name='_playbook_workflow'),)
 
-    def __init__(self, name, actions=None, branches=None, start=None):
+    def __init__(self, name, start, actions=None, branches=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Actions
             within it that get executed.
 
@@ -99,7 +101,7 @@ class Workflow(ExecutionElement, Device_Base):
 
         Args:
             execution_uid (str): The UUID4 hex string uniquely identifying this workflow instance
-            start (str, optional): The ID of the first Action. Defaults to None.
+            start (int, optional): The ID of the first Action. Defaults to None.
             start_arguments (list[Argument]): Argument parameters into the first Action. Defaults to None.
         """
         self._execution_uid = execution_uid
@@ -155,24 +157,27 @@ class Workflow(ExecutionElement, Device_Base):
         self._executing_action.send_data_to_trigger(data)
 
     def __actions(self, start):
-        # TODO: Remove option to have start as a string. Should be an int ID.
-        current_uid = int(start)
-        current_action = self.__get_action_by_uid(current_uid)
+        current_uid = start
+        current_action = self.__get_action_by_id(current_uid)
 
         while current_action:
             yield current_action
             current_uid = self.get_branch(current_action, self._accumulator)
-            current_action = self.__get_action_by_uid(current_uid) if current_uid is not None else None
+            current_action = self.__get_action_by_id(current_uid) if current_uid is not None else None
             yield  # needed so that when for-loop calls next() it doesn't advance too far
         yield  # needed so you can avoid catching StopIteration exception
 
-    def __get_action_by_uid(self, uid):
-        ret_action = None
-        if self.actions:
-            for action in self.actions:
-                if action.id == uid:
-                    ret_action = action
-        return ret_action
+    def __get_action_by_id(self, action_id):
+        for action in self.actions:
+            if action.id == action_id:
+                return action
+        return None
+
+    def __get_branch_by_id(self, branch_id):
+        for branch in self.branches:
+            if branch.id == branch_id:
+                return branch
+        return None
 
     def get_branch(self, current_action, accumulator):
         """Executes the Branch objects associated with this Workflow to determine which Action should be
@@ -239,40 +244,6 @@ class Workflow(ExecutionElement, Device_Base):
         WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowShutdown, data=data_json)
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self._accumulator))
 
-    # TODO: Get rid of this function.
-    def update_from_json(self, json_in):
-        """Reconstruct a Workflow object based on JSON data.
-
-           Args:
-               json_in (JSON dict): The JSON data to be parsed and reconstructed into a Workflow object.
-        """
-
-        backup_actions = self.deepcopy_actions_with_events()
-        backup_branches = deepcopy(self.branches)
-        self.actions = {}
-        if 'name' in json_in:
-            self.name = json_in['name']
-        uid = json_in['uid'] if 'uid' in json_in else self.uid
-        try:
-            if 'start' in json_in and json_in['start']:
-                self.start = json_in['start']
-            self.actions = {}
-            self.uid = uid
-            for action_json in json_in['actions']:
-                action = Action.create(action_json)
-                self.actions[action_json['uid']] = action
-            if "branches" in json_in:
-                branches = [Branch.create(cond_json) for cond_json in json_in['branches']]
-                self.branches = {}
-                for branch in branches:
-                    if branch.source_uid not in self.branches:
-                        self.branches[branch.source_uid] = []
-                    self.branches[branch.source_uid].append(branch)
-        except (UnknownApp, UnknownAppAction, InvalidArgument):
-            self.restore_actions_and_events(backup_actions)
-            self.branches = backup_branches
-            raise
-
     def set_execution_uid(self, execution_uid):
         """Sets the execution UID for the Workflow
 
@@ -289,54 +260,94 @@ class Workflow(ExecutionElement, Device_Base):
         """
         return self._execution_uid
 
-    # TODO: Delete all of these below functions(?)
-    def regenerate_uids(self, *args):
-        start_action = deepcopy(self.actions.pop(self.start, None))
-        if start_action is not None:
-            start_action = deepcopy(start_action)
-            super(Workflow, self).regenerate_uids()
-            self.actions = {action.uid: action for action in self.actions.values()}
-            start_action.regenerate_uids()
-            self.start = start_action.uid
-            self.actions[self.start] = start_action
+    def update(self, data):
+        self.name = data['name']
+        self.start = data['start']
+
+        if 'actions' in data:
+            actions_dict = self.update_actions(data['actions'])
         else:
-            super(Workflow, self).regenerate_uids()
+            self.actions[:] = []
+            actions_dict = {}
 
-    def deepcopy_actions_with_events(self):
-        """Makes a deepcopy of all actions, including their event objects
+        if 'branches' in data:
+            self.update_branches(data['branches'], actions_dict)
+        else:
+            self.branches[:] = []
 
-        Returns:
-            A dict of action_uid: (action, event)
-        """
-        actions = {}
-        for action in self.actions.values():
-            event = action._event
-            action._event = None
-            actions[action.uid] = (deepcopy(action), event)
-        return actions
+    def update_actions(self, actions):
+        actions_seen = []
+        actions_dict = {}
+        for action in actions:
+            if 'id' in action and action['id'] > 0:
+                action_obj = self.__get_action_by_id(action['id'])
 
-    def restore_actions_and_events(self, backup_actions):
-        """Restores all actions that were previously deepcopied
+                if action_obj is None:
+                    raise InvalidExecutionElement(action['id'], action['name'], "Invalid Action ID")
 
-        Args:
-            backup_actions (dict): The actions to be restored
-        """
-        self.actions = {}
-        for action, event in backup_actions.values():
-            action.event = event
-            self.actions[action.uid] = action
+                action_obj.update(action)
+                actions_seen.append(action_obj.id)
+            else:
+                action_id = None
+                if 'id' in action:
+                    action_id = action.pop('id')
 
-    def strip_events(self):
-        """Removes the Event object from all of the Actions and the Workflow, necessary to do a deepcopy
-        """
-        for action in self.actions.values():
-            action._event = None
-        self._resume = None
+                try:
+                    action_obj = Action(**action)
+                except (ValueError, InvalidArgument, UnknownApp, UnknownAppAction, UnknownCondition, UnknownTransform):
+                    raise InvalidExecutionElement(action_id, action['name'], "Invalid Action construction")
 
-    def reset_event(self):
-        """Reinitialize an Event object for all of the Actions and the Workflow when a Workflow is copied
-        """
-        from threading import Event
-        for action in self.actions.values():
-            action._event = Event()
-        self._resume = Event()
+                walkoff.coredb.devicedb.device_db.session.add(action_obj)
+                walkoff.coredb.devicedb.device_db.session.flush()
+
+                self.actions.append(action_obj)
+                actions_seen.append(action_obj.id)
+
+                if action_id:
+                    actions_dict[action_id] = action_obj.id
+
+        for action in self.actions:
+            if action.id not in actions_seen:
+                walkoff.coredb.devicedb.device_db.session.delete(action)
+
+        return actions_dict
+
+    def update_branches(self, branches, actions_dict):
+        branches_seen = []
+        for branch in branches:
+            id_ = branch['id'] if 'id' in branch else None
+            if branch['source_id'] < 0:
+                if branch['source_id'] in actions_dict:
+                    branch['source_id'] = actions_dict[branch.source_id]
+                else:
+                    raise InvalidExecutionElement(id_, None, "Invalid Branch source ID")
+            if branch['destination_id'] < 0:
+                if branch['destination_id'] in actions_dict:
+                    branch['destination_id'] = actions_dict[branch.destination_id]
+                else:
+                    raise InvalidExecutionElement(id_, None, "Invalid Branch destination ID")
+
+            if 'id' in branch and branch['id']:
+                branch_obj = self.__get_branch_by_id(branch['id'])
+                if branch_obj is None:
+                    raise InvalidExecutionElement(id_, None, "Invalid Branch ID")
+
+                branch_obj.update(branch)
+                branches_seen.append(branch_obj.id)
+            else:
+                if 'id' in branch:
+                    branch.pop('id')
+
+                try:
+                    branch_obj = Branch(**branch)
+                except (ValueError, InvalidArgument, UnknownApp, UnknownCondition, UnknownTransform):
+                    raise InvalidExecutionElement(id_, None, "Invalid Branch construction")
+
+                self.branches.append(branch_obj)
+                walkoff.coredb.devicedb.device_db.session.add(branch_obj)
+                walkoff.coredb.devicedb.device_db.session.commit()
+                branches_seen.append(branch_obj.id)
+
+        for branch in self.branches:
+            if branch.id not in branches_seen:
+                walkoff.coredb.devicedb.device_db.session.delete(branch)

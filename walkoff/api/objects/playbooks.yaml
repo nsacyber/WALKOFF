@@ -10,165 +10,6 @@ CreatePlaybook:
         items:
           $ref: '#/definitions/CreateWorkflow'
 
-CreateWorkflow:
-  type: object
-  required: [name]
-  description: A workflow object
-  additionalProperties: false
-  properties:
-    name:
-      description: The name of the workflow. Composed of both its enclosing playbook and its own name
-      type: string
-      example: HelloWorldWorkflow
-    actions:
-      description: The actions defined in this workflow.
-      type: array
-      items:
-        $ref: "#/definitions/CreateAction"
-    branches:
-      description: The possible branches
-      type: array
-      items:
-        $ref: '#/definitions/CreateBranch'
-    start:
-      description: ID of the starting action
-      type: integer
-
-CreateAction:
-  type: object
-  required: [app_name, action_name, name]
-  description: Encapsulation of executing an action in an app
-  additionalProperties: false
-  properties:
-    app_name:
-      description: The app to which the action belongs
-      type: string
-      example: CyberAnalytics
-    action_name:
-      description: The action the action will take
-      type: string
-      example: pause
-    name:
-      description: Name of the action
-      type: string
-      example: action1
-    device_id:
-      description: ID of the device to use
-      type: integer
-      example: 42
-    arguments:
-      description: The input arguments to the action
-      type: array
-      items:
-        $ref: '#/definitions/CreateArgument'
-    triggers:
-      description: String representation of a list of Trigger objects
-      type: array
-      items:
-        $ref: '#/definitions/CreateCondition'
-    x_coordinate:
-      description: The X coordinate of the action on the workflow editor
-      type: number
-      example: 443.22
-    y_coordinate:
-      description: The Y coordinate of the action on the workflow editor
-      type: number
-      example: -12.036
-
-CreateBranch:
-  type: object
-  required: [source_id, destination_id]
-  description: Encapsualtion of a list of possible actions to take and conditionals required to be met before taking that action
-  additionalProperties: false
-  properties:
-    source_id:
-      description: The source Action ID for this Branch
-      type: integer
-    destination_id:
-      description: The destination Action ID for this Branch, if the conditions evaluate to True
-      type: integer
-    priority:
-      description: The priority for this Branch, which will be compared to other Branches with the same source_uid Action, ascending, i.e. 1 is the highest priority.
-      type: integer
-    status:
-      description: The status return code to use
-      type: string
-      example: Success
-    conditions:
-      description: List of conditions to evaluate
-      type: array
-      items:
-        $ref: '#/definitions/CreateCondition'
-
-CreateArgument:
-  type: object
-  required: [name]
-  description: Object used for passing an argument into actions. Either reference or value must be selected.
-  minProperties: 2
-  additionalProperties: false
-  properties:
-    name:
-      type: string
-      example: regex
-    value:
-      description: The value of the argument
-      example: WALK(.*)
-    reference:
-      description: The UID of the action whose output should be used
-      type: string
-    selection:
-      description: >-
-        The path to a subsection of the output of the action to use. For example [1, "a"] would use the second element
-        of a list, and the "a" field of that object.
-      type: array
-      items:
-        type: [string, integer]
-
-CreateCondition:
-  type: object
-  required: [app_name, action_name]
-  description: Takes data and checks it against a condition given by its action Optionally filters the data before checking.
-  additionalProperties: false
-  properties:
-    app_name:
-      description: The app to which the conditon belongs
-      type: string
-      example: Utilities
-    action_name:
-      description: The action encapsulated by this condition
-      type: string
-      example: regMatch
-    arguments:
-      description: The inputs to the condition
-      type: array
-      items:
-        $ref: '#/definitions/CreateArgument'
-    transforms:
-      description: transforms for the data before passing it into the condition
-      type: array
-      items:
-        $ref: '#/definitions/CreateTransform'
-
-CreateTransform:
-  type: object
-  required: [app_name, action_name]
-  description: Filters or otherwise transforms the data given to it
-  additionalProperties: false
-  properties:
-    app_name:
-      description: The app to which the transform belongs
-      type: string
-      example: Utilities
-    action_name:
-      description: The action encapsulated by this transform
-      type: string
-      example: count
-    arguments:
-      description: The inputs to the transform
-      type: array
-      items:
-        $ref: '#/definitions/CreateArgument'
-
 Playbook:
     type: object
     required: [id]
@@ -183,18 +24,19 @@ Playbook:
         items:
           $ref: '#/definitions/Workflow'
 
-Workflow:
+CreateWorkflow:
   type: object
-  required: [id]
+  required: [name, start]
   description: A workflow object
   additionalProperties: false
   properties:
-    id:
-      type: integer
     name:
       description: The name of the workflow. Composed of both its enclosing playbook and its own name
       type: string
       example: HelloWorldWorkflow
+    start:
+      description: ID of the starting action
+      type: integer
     actions:
       description: The actions defined in this workflow.
       type: array
@@ -205,19 +47,42 @@ Workflow:
       type: array
       items:
         $ref: '#/definitions/Branch'
+
+Workflow:
+  type: object
+  required: [id, name, start]
+  description: A workflow object
+  additionalProperties: false
+  properties:
+    id:
+      type: integer
+    name:
+      description: The name of the workflow. Composed of both its enclosing playbook and its own name
+      type: string
+      example: HelloWorldWorkflow
     start:
       description: ID of the starting action
       type: integer
+    actions:
+      description: The actions defined in this workflow.
+      type: array
+      items:
+        $ref: "#/definitions/Action"
+    branches:
+      description: The possible branches
+      type: array
+      items:
+        $ref: '#/definitions/Branch'
 
 Action:
   type: object
-  required: [name]
+  required: [app_name, action_name, name]
   description: Encapsulation of executing an action in an app
   additionalProperties: false
   properties:
     id:
       type: integer
-      description: The ID of the object. If updating a workflow and the Action object already exists, ID is required. Otherwise, do not include it.
+      description: The ID of the object. If updating a workflow and the Action object already exists, ID is required. Otherwise, this ID must be a temporary negative value corresponding to a src/dst ID in a Branch.
     app_name:
       description: The app to which the action belongs
       type: string
@@ -255,7 +120,7 @@ Action:
 
 Branch:
   type: object
-  required: [name]
+  required: [source_id, destination_id]
   description: Encapsualtion of a list of possible actions to take and conditionals required to be met before taking that action
   additionalProperties: false
   properties:
@@ -310,7 +175,7 @@ Argument:
 
 Condition:
   type: object
-  required: [id]
+  required: [app_name, action_name]
   description: Takes data and checks it against a condition given by its action Optionally filters the data before checking.
   additionalProperties: false
   properties:
@@ -338,7 +203,7 @@ Condition:
 
 Transform:
   type: object
-  required: [id]
+  required: [app_name, action_name]
   description: Filters or otherwise transforms the data given to it
   additionalProperties: false
   properties:
@@ -362,7 +227,7 @@ Transform:
 CopyWorkflow:
     type: object
     properties:
-      playbook:
+      playbook_id:
         type: string
       workflow:
         type: string

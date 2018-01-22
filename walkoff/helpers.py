@@ -429,6 +429,13 @@ class UnknownTransform(Exception):
         super(UnknownTransform, self).__init__(app, transform_name, 'transform')
 
 
+class InvalidExecutionElement(Exception):
+    def __init__(self, id_, name, message):
+        self.id = id_
+        self.name = name
+        super(InvalidExecutionElement, self).__init__(message)
+
+
 def get_function_arg_names(func):
     if __new_inspection:
         return list(getsignature(func).parameters.keys())

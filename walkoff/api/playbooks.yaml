@@ -7,6 +7,11 @@
     operationId: walkoff.server.endpoints.playbooks.get_playbooks
     produces:
       - application/json
+    parameters:
+      - in: query
+        name: full
+        type: boolean
+        required: false
     responses:
       200:
         description: Success
@@ -36,6 +41,10 @@
         description: Object created
         schema:
           $ref: '#/definitions/Playbook'
+      463:
+        description: Invalid input error.
+        schema:
+          $ref: '#/definitions/Error'
   post:
     tags:
       - Playbooks
@@ -60,6 +69,10 @@
           $ref: '#/definitions/Playbook'
       461:
         description: Playbook does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+      462:
+        description: Playbook already exists.
         schema:
           $ref: '#/definitions/Error'
 
@@ -131,7 +144,7 @@
         schema:
           type: object
           properties:
-            playbook:
+            name:
               type: string
     consumes:
       - application/json
@@ -144,6 +157,10 @@
           $ref: '#/definitions/Playbook'
       461:
         description: Playbook does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+      462:
+        description: Playbook already exists.
         schema:
           $ref: '#/definitions/Error'
 

@@ -11,6 +11,7 @@ from walkoff.events import WalkoffEvent
 from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import get_transform_api, InvalidArgument, split_api_params
 from walkoff.appgateway.validator import validate_transform_parameters
+import walkoff.coredb.devicedb
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 class Transform(ExecutionElement, Device_Base):
     __tablename__ = 'transform'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    condition_id = Column(Integer, ForeignKey('condition.id'))
+    _condition_id = Column(Integer, ForeignKey('condition.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     arguments = relationship('Argument', backref=backref('_transform'), cascade='all, delete-orphan')
@@ -86,3 +87,37 @@ class Transform(ExecutionElement, Device_Base):
         if arg:
             self.arguments.remove(arg)
         self.arguments.append(Argument(self._data_param_name, value=data))
+
+    def update(self, data):
+        if self.app_name != data['app_name']:
+            self.app_name = data['app_name']
+        if self.action_name != data['action_name']:
+            self.action_name = data['action_name']
+
+        if 'arguments' in data:
+            arguments_seen = []
+            for argument in data['arguments']:
+                if 'id' in argument and argument['id']:
+                    argument_obj = self.__get_argument_by_id(argument['id'])
+                    argument_obj.update(argument)
+                    arguments_seen.append(argument_obj.id)
+                else:
+                    if 'id' in argument:
+                        argument.pop('id')
+                    argument_obj = Argument(**argument)
+                    self.arguments.append(argument_obj)
+                    walkoff.coredb.devicedb.device_db.session.add(argument_obj)
+                    walkoff.coredb.devicedb.device_db.session.commit()
+                    arguments_seen.append(argument_obj.id)
+
+            for argument in self.arguments:
+                if argument.id not in arguments_seen:
+                    walkoff.coredb.devicedb.device_db.session.delete(argument)
+        else:
+            self.arguments[:] = []
+
+    def __get_argument_by_id(self, argument_id):
+        for argument in self.arguments:
+            if argument.id == argument_id:
+                return argument
+        return None

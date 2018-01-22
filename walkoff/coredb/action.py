@@ -15,7 +15,7 @@ from walkoff.coredb import Device_Base
 from walkoff.coredb.type_decorators import Json
 from walkoff.events import WalkoffEvent
 from walkoff.coredb.executionelement import ExecutionElement
-from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
+from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message, InvalidExecutionElement
 from walkoff.appgateway.validator import validate_app_action_parameters
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ class Action(ExecutionElement, Device_Base):
 
     __tablename__ = 'action'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    workflow_id = Column(Integer, ForeignKey('workflow.id'))
+    _workflow_id = Column(Integer, ForeignKey('workflow.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     name = Column(String(80))
@@ -258,3 +258,22 @@ class Action(ExecutionElement, Device_Base):
             if argument.name == name:
                 return argument
         return None
+
+    def update(self, data):
+        # app_name, action_name, name, device_id, arguments, triggers, x_coordinate, y_coordinate
+        self.app_name = data['app_name']
+        self.action_name = data['action_name']
+        self.name = data['name']
+        self.device_id = data['device_id'] if 'device_id' in data else self.device_id
+        self.x_coordinate = data['x_coordinate'] if 'x_coordinate' in data else self.x_coordinate
+        self.y_coordinate = data['y_coordinate'] if 'y_coordinate' in data else self.y_coordinate
+
+        if 'arguments' in data:
+            self.update_arguments(data['arguments'])
+        else:
+            self.arguments[:] = []
+
+        if 'triggers' in data:
+            self.update_triggers(data['triggers'])
+        else:
+            self.triggers[:] = []

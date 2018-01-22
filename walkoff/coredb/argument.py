@@ -13,9 +13,9 @@ logger = logging.getLogger(__name__)
 class Argument(Representable, Device_Base):
     __tablename__ = 'argument'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    action_id = Column(Integer, ForeignKey('action.id'))
-    condition_id = Column(Integer, ForeignKey('condition.id'))
-    transform_id = Column(Integer, ForeignKey('transform.id'))
+    _action_id = Column(Integer, ForeignKey('action.id'))
+    _condition_id = Column(Integer, ForeignKey('condition.id'))
+    _transform_id = Column(Integer, ForeignKey('transform.id'))
     name = Column(String(255), nullable=False)
     value = Column(Json(255))
     reference = Column(Integer)
@@ -108,6 +108,29 @@ class Argument(Representable, Device_Base):
             return input_[int(selection)]
         else:
             raise ValueError
+
+    def update(self, data):
+        if self.name != data['name']:
+            self.name = data['name']
+
+        value = data['value'] if 'value' in data else None
+        reference = data['reference'] if 'reference' in data else None
+        selection = data['selection'] if 'selection' in data else None
+
+        if value is None and not reference:
+            message = 'Input {} must have either value or reference. Input has neither'.format(self.name)
+            logger.error(message)
+            raise InvalidArgument(message)
+        elif value is not None and reference:
+            message = 'Input {} must have either value or reference. Input has both. Using "value"'.format(self.name)
+            logger.warning(message)
+
+        if self.value != value:
+            self.value = value
+        if self.reference != reference:
+            self.reference = reference
+        if self.selection != selection:
+            self.selection = selection
 
     def __eq__(self, other):
         return self.name == other.name and self.value == other.value and self.reference == other.reference and \
