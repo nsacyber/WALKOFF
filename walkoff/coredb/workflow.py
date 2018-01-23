@@ -264,13 +264,13 @@ class Workflow(ExecutionElement, Device_Base):
         self.name = data['name']
         self.start = data['start']
 
-        if 'actions' in data:
+        if 'actions' in data and data['actions']:
             actions_dict = self.update_actions(data['actions'])
         else:
             self.actions[:] = []
             actions_dict = {}
 
-        if 'branches' in data:
+        if 'branches' in data and data['branches']:
             self.update_branches(data['branches'], actions_dict)
         else:
             self.branches[:] = []
@@ -345,7 +345,7 @@ class Workflow(ExecutionElement, Device_Base):
 
                 self.branches.append(branch_obj)
                 walkoff.coredb.devicedb.device_db.session.add(branch_obj)
-                walkoff.coredb.devicedb.device_db.session.commit()
+                walkoff.coredb.devicedb.device_db.session.flush()
                 branches_seen.append(branch_obj.id)
 
         for branch in self.branches:

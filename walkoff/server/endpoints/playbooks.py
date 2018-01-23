@@ -15,6 +15,7 @@ import walkoff.coredb.devicedb
 from walkoff.coredb.playbook import Playbook
 from walkoff.coredb.workflow import Workflow
 from walkoff.coredb.argument import Argument
+from walkoff.helpers import InvalidExecutionElement, InvalidArgument
 
 
 def does_playbook_exist(playbook_id):
@@ -201,15 +202,12 @@ def get_workflows(playbook_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     def __func():
-        try:
-            playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=playbook_id).first()
-            if playbook:
-                return [workflow.read() for workflow in playbook.workflows], SUCCESS
-            else:
-                current_app.logger.error('Playbook {0} not found. Cannot be displayed'.format(playbook_id))
-                return {"error": "Playbook does not exist."}, OBJECT_DNE_ERROR
-        except Exception as e:
-            return {"error": "{0}".format(e)}, INVALID_INPUT_ERROR
+        playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=playbook_id).first()
+        if playbook:
+            return [workflow.read() for workflow in playbook.workflows], SUCCESS
+        else:
+            current_app.logger.error('Playbook {0} not found. Cannot be displayed'.format(playbook_id))
+            return {"error": "Playbook does not exist."}, OBJECT_DNE_ERROR
 
     return __func()
 
@@ -221,8 +219,9 @@ def create_workflow(playbook_id):
         data = request.get_json()
         workflow_name = data['name']
 
+        workflow = Workflow(**data)
+
         try:
-            workflow = Workflow(**data)
             walkoff.coredb.devicedb.device_db.session.add(workflow)
             walkoff.coredb.devicedb.device_db.session.commit(workflow)
         except ValueError:
@@ -260,7 +259,13 @@ def update_workflow(playbook_id):
     @validate_workflow_is_registered('update', playbook_id, workflow_id)
     def __func():
         workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
-        workflow.update(data)
+
+        try:
+            workflow.update(data)
+        except InvalidExecutionElement as e:
+            walkoff.coredb.devicedb.device_db.session.rollback()
+            current_app.logger.error(e.message)
+            return {"error": e.message}, INVALID_INPUT_ERROR
 
         try:
             walkoff.coredb.devicedb.device_db.session.add(workflow)
@@ -325,7 +330,8 @@ def copy_workflow(playbook_id, workflow_id):
 
         if new_playbook_name and walkoff.coredb.devicedb.device_db.session.query(
                 exists().where(Playbook.name == new_playbook_name)).scalar():
-            playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(name=new_playbook_name).first()
+            playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(
+                name=new_playbook_name).first()
         else:
             playbook = Playbook(new_playbook_name)
             walkoff.coredb.devicedb.device_db.session.add(playbook)
@@ -358,7 +364,11 @@ def execute_workflow(playbook_id, workflow_id):
 
         arguments = []
         for arg in args:
-            arguments.append(Argument(**arg))
+            try:
+                arguments.append(Argument(**arg))
+            except InvalidArgument:
+                current_app.logger.error('Could not execute workflow. Invalid Argument construction')
+                return {"error": "Could not execute workflow. Invalid argument construction"}, INVALID_INPUT_ERROR
 
         uid = running_context.controller.execute_workflow(workflow_id, start=start, start_arguments=arguments)
         current_app.logger.info('Executed workflow {0}-{1}'.format(playbook_id, workflow_id))

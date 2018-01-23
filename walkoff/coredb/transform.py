@@ -9,7 +9,8 @@ from walkoff.coredb.argument import Argument
 from walkoff.coredb import Device_Base
 from walkoff.events import WalkoffEvent
 from walkoff.coredb.executionelement import ExecutionElement
-from walkoff.helpers import get_transform_api, InvalidArgument, split_api_params
+from walkoff.helpers import get_transform_api, InvalidArgument, split_api_params, InvalidExecutionElement, UnknownApp, \
+    UnknownTransform
 from walkoff.appgateway.validator import validate_transform_parameters
 import walkoff.coredb.devicedb
 
@@ -63,7 +64,7 @@ class Transform(ExecutionElement, Device_Base):
         """
         original_data_in = deepcopy(data_in)
         try:
-            self.__update_arguments(data_in)
+            self.__update_arguments_with_data(data_in)
             args = validate_transform_parameters(self._api, self.arguments, self.action_name, accumulator=accumulator)
             result = self._transform_executable(**args)
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformSuccess)
@@ -78,7 +79,7 @@ class Transform(ExecutionElement, Device_Base):
                 'Transform {0} encountered an error: {1}. Returning unmodified data'.format(self.action_name, str(e)))
         return original_data_in
 
-    def __update_arguments(self, data):
+    def __update_arguments_with_data(self, data):
         arg = None
         for argument in self.arguments:
             if argument.name == self._data_param_name:
@@ -89,32 +90,51 @@ class Transform(ExecutionElement, Device_Base):
         self.arguments.append(Argument(self._data_param_name, value=data))
 
     def update(self, data):
-        if self.app_name != data['app_name']:
-            self.app_name = data['app_name']
-        if self.action_name != data['action_name']:
-            self.action_name = data['action_name']
+        self.app_name = data['app_name']
+        self.action_name = data['action_name']
 
-        if 'arguments' in data:
-            arguments_seen = []
-            for argument in data['arguments']:
-                if 'id' in argument and argument['id']:
-                    argument_obj = self.__get_argument_by_id(argument['id'])
-                    argument_obj.update(argument)
-                    arguments_seen.append(argument_obj.id)
-                else:
-                    if 'id' in argument:
-                        argument.pop('id')
-                    argument_obj = Argument(**argument)
-                    self.arguments.append(argument_obj)
-                    walkoff.coredb.devicedb.device_db.session.add(argument_obj)
-                    walkoff.coredb.devicedb.device_db.session.commit()
-                    arguments_seen.append(argument_obj.id)
-
-            for argument in self.arguments:
-                if argument.id not in arguments_seen:
-                    walkoff.coredb.devicedb.device_db.session.delete(argument)
+        if 'arguments' in data and data['arguments']:
+            self.update_arguments(data['arguments'])
         else:
             self.arguments[:] = []
+
+        try:
+            self._data_param_name, self._run, self._api = get_transform_api(self.app_name, self.action_name)
+            self._transform_executable = get_transform(self.app_name, self._run)
+            tmp_api = split_api_params(self._api, self._data_param_name)
+            validate_transform_parameters(tmp_api, self.arguments, self.action_name)
+        except (UnknownApp, UnknownTransform, InvalidArgument):
+            raise InvalidExecutionElement(self.id, None, "Invalid Transform construction")
+
+    def update_arguments(self, arguments):
+        arguments_seen = []
+        for argument in arguments:
+            if 'id' in argument and argument['id']:
+                argument_obj = self.__get_argument_by_id(argument['id'])
+
+                if argument_obj is None:
+                    raise InvalidExecutionElement(argument['id'], argument['name'], "Invalid Argument ID")
+
+                argument_obj.update(argument)
+                arguments_seen.append(argument_obj.id)
+            else:
+                if 'id' in argument:
+                    argument.pop('id')
+
+                try:
+                    argument_obj = Argument(**argument)
+                except (ValueError, InvalidArgument):
+                    raise InvalidExecutionElement(argument['id'], argument['name'], "Invalid Argument construction")
+
+                self.arguments.append(argument_obj)
+                walkoff.coredb.devicedb.device_db.session.add(argument_obj)
+                walkoff.coredb.devicedb.device_db.session.flush()
+
+                arguments_seen.append(argument_obj.id)
+
+        for argument in self.arguments:
+            if argument.id not in arguments_seen:
+                walkoff.coredb.devicedb.device_db.session.delete(argument)
 
     def __get_argument_by_id(self, argument_id):
         for argument in self.arguments:

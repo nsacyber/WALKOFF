@@ -194,10 +194,6 @@
         description: Playbook does not exist.
         schema:
           $ref: '#/definitions/Error'
-      463:
-        description: Invalid input error.
-        schema:
-          $ref: '#/definitions/Error'
   put:
     tags:
       - Workflows
@@ -395,6 +391,10 @@
           $ref: '#/definitions/WorkflowId'
       461:
         description: Playbook or workflow does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+      463:
+        description: Invalid input error.
         schema:
           $ref: '#/definitions/Error'
 

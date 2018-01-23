@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, ForeignKey, String, orm
 
 from walkoff.coredb.type_decorators import Json
 from walkoff.coredb import Device_Base
-from walkoff.helpers import InvalidArgument
+from walkoff.helpers import InvalidArgument, InvalidExecutionElement
 from walkoff.core.representable import Representable
 
 logger = logging.getLogger(__name__)
@@ -110,8 +110,7 @@ class Argument(Representable, Device_Base):
             raise ValueError
 
     def update(self, data):
-        if self.name != data['name']:
-            self.name = data['name']
+        self.name = data['name']
 
         value = data['value'] if 'value' in data else None
         reference = data['reference'] if 'reference' in data else None
@@ -120,17 +119,14 @@ class Argument(Representable, Device_Base):
         if value is None and not reference:
             message = 'Input {} must have either value or reference. Input has neither'.format(self.name)
             logger.error(message)
-            raise InvalidArgument(message)
+            raise InvalidExecutionElement(None, None, "Invalid Argument construction")
         elif value is not None and reference:
             message = 'Input {} must have either value or reference. Input has both. Using "value"'.format(self.name)
             logger.warning(message)
 
-        if self.value != value:
-            self.value = value
-        if self.reference != reference:
-            self.reference = reference
-        if self.selection != selection:
-            self.selection = selection
+        self.value = value
+        self.reference = reference
+        self.selection = selection
 
     def __eq__(self, other):
         return self.name == other.name and self.value == other.value and self.reference == other.reference and \
