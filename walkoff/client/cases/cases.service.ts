@@ -5,9 +5,9 @@ import { JwtHttp } from 'angular2-jwt-refresh';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 
-import { Case } from '../models/case';
-import { CaseEvent } from '../models/caseEvent';
-import { AvailableSubscription } from '../models/availableSubscription';
+import { Case } from '../models/case/case';
+import { CaseEvent } from '../models/case/caseEvent';
+import { AvailableSubscription } from '../models/case/availableSubscription';
 import { Playbook } from '../models/playbook/playbook';
 
 @Injectable()

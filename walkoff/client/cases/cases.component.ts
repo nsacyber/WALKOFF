@@ -10,13 +10,11 @@ import { CasesService } from './cases.service';
 
 import { CasesModalComponent } from './cases.modal.component';
 
-import { Case } from '../models/case';
-import { CaseEvent } from '../models/caseEvent';
-import { AvailableSubscription } from '../models/availableSubscription';
+import { Case } from '../models/case/case';
+import { CaseEvent } from '../models/case/caseEvent';
+import { CaseNode } from '../models/case/caseNode';
+import { AvailableSubscription } from '../models/case/availableSubscription';
 import { Playbook } from '../models/playbook/playbook';
-import { Workflow } from '../models/playbook/workflow';
-import { Action } from '../models/playbook/action';
-import { Branch } from '../models/playbook/branch';
 
 /**
  * Types as the backend calls them for adding a new CaseEvent.
@@ -169,22 +167,22 @@ export class CasesComponent {
 			.catch(e => this.toastyService.error(`Error retrieving subscription tree: ${e.message}`));
 	}
 
-	convertPlaybooksToSubscriptionTree(playbooks: any[]): any {
+	convertPlaybooksToSubscriptionTree(playbooks: Playbook[]): CaseNode {
 		const self = this;
 		//Top level controller data
-		const tree = { name: 'Controller', id: 'controller', type: 'controller', children: [] as object[] };
+		const tree: CaseNode = { name: 'Controller', id: 0, type: 'controller', children: [] };
 
 		// Remap the branches to be under actions as they used to be
-		playbooks.forEach((p: Playbook) => {
-			p.workflows.forEach((w: Workflow) => {
-				w.actions.forEach((s: Action) => {
-					(s as any).branches = [];
+		playbooks.forEach(p => {
+			p.workflows.forEach(w => {
+				w.actions.forEach(a => {
+					(a as any).branches = [];
 				});
 
-				w.branches.forEach((ns: Branch) => {
-					const matchingAction = w.actions.find(s => s.id === ns.destination_id);
-					if (matchingAction) { (ns as any).name = matchingAction.name; }
-					(w.actions.find(s => s.id === ns.source_id) as any).branches.push(ns);
+				w.branches.forEach(b => {
+					const matchingAction = w.actions.find(s => s.id === b.destination_id);
+					if (matchingAction) { (b as any).name = matchingAction.name; }
+					(w.actions.find(s => s.id === b.source_id) as any).branches.push(b);
 				});
 
 				delete w.branches;
@@ -197,7 +195,7 @@ export class CasesComponent {
 		return tree;
 	}
 
-	getNodeRecursive(target: any, typeIndex: number, prefix?: string): any {
+	getNodeRecursive(target: any, typeIndex: number, prefix?: string): CaseNode {
 		const self = this;
 		// types = ['playbook', 'workflow', 'action', 'branch', 'condition', 'transform'];
 		// childrenTypes = ['workflows', 'actions', 'branches', 'conditions', 'transforms'];
@@ -211,11 +209,11 @@ export class CasesComponent {
 			nodeName += target.action_name;
 		} else { nodeName = '(name unknown)'; }
 
-		const node = { 
+		const node: CaseNode = { 
 			name: nodeName, 
-			id: target.id ? target.id : '', 
+			id: target.id ? target.id : 0, 
 			type: types[typeIndex], 
-			children: [] as object[],
+			children: [],
 		};
 
 		const childType = childrenTypes[typeIndex];
