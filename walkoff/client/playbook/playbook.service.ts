@@ -84,14 +84,16 @@ export class PlaybookService {
 
 	/**
 	 * Duplicates a workflow under a given playbook, it's actions, branches, etc. under a new name.
-	 * @param playbookId ID of playbook the workflow exists under
-	 * @param workflowId Current workflow ID to be duplicated
+	 * @param sourcePlaybookId ID of playbook the workflow exists under
+	 * @param sourceWorkflowId Current workflow ID to be duplicated
+	 * @param destinationPlaybookId ID of playbook the workflow will be duplicated to
 	 * @param newName Name for the new copy to be saved
 	 */
-	// TODO: probably don't need playbook in body, verify on server
-	duplicateWorkflow(playbookId: number, workflowId: number, newName: string): Promise<Workflow> {
-		return this.authHttp
-			.post(`/api/playbooks/${playbookId}/workflows/${workflowId}/copy`, { playbook_id: playbookId, name: newName })
+	duplicateWorkflow(
+		sourcePlaybookId: number, sourceWorkflowId: number, destinationPlaybookId: number, newName: string,
+	): Promise<Workflow> {
+		return this.authHttp.post(`/api/playbooks/${sourcePlaybookId}/workflows/${sourceWorkflowId}/copy`,
+				{ playbook_id: destinationPlaybookId, name: newName })
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Workflow)
@@ -116,6 +118,15 @@ export class PlaybookService {
 	 * @param workflowName Name of the new workflow to be saved
 	 */
 	newWorkflow(playbookId: number, workflowName: string): Promise<Workflow> {
+		// let addPlaybookPromise: Promise<any>;
+		// if (newPlaybookName) {
+		// 	addPlaybookPromise = this.authHttp.put('/api/playbooks', { name: newPlaybookName })
+		// 		.toPromise()
+		// 		.then(() => { return; });
+		// } else {
+		// 	addPlaybookPromise = Promise.resolve();
+		// }
+
 		return this.authHttp.put(`/api/playbooks/${playbookId}/workflows`, { name: workflowName })
 			.toPromise()
 			.then(this.extractData)

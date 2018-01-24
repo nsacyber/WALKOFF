@@ -253,9 +253,10 @@
                         <h6>{{modalParams.shouldShowExistingPlaybooks ? 'Select a Playbook' : 'Enter a Playbook'}}</h6>
                         <select *ngIf="modalParams.shouldShowExistingPlaybooks" name="playbookSelect" id="playbookSelect" [(ngModel)]="modalParams.selectedPlaybookId"
                             class="form-control">
+                            <option [ngValue]="0">-- Create new Playbook --</option>
                             <option *ngFor="let i of playbooks" [value]="i.id" [label]="i.name">{{i.name}}</option>
                         </select>
-                        <input type="text" *ngIf="!modalParams.shouldShowExistingPlaybooks" [(ngModel)]="modalParams.newPlaybook"
+                        <input type="text" *ngIf="modalParams.selectedPlaybookId === 0 || !modalParams.shouldShowExistingPlaybooks" [(ngModel)]="modalParams.newPlaybook"
                             class="form-control" placeholder="Enter a new playbook name">
                     </div>
                     <div *ngIf="modalParams.shouldShowWorkflow" class="form-group">
@@ -305,9 +306,9 @@
                                         <div class="panel-body">
                                             <a (click)="loadWorkflow(playbook.id, workflow.id)">{{workflow.name}}</a>
                                             <div class="pull-right">
-                                                <button (click)="renameWorkflowModal(playbook.id, workflow.id)" class="btn btn-primary" title="Rename Workflow">
+                                                <!-- <button (click)="renameWorkflowModal(playbook.id, workflow.id)" class="btn btn-primary" title="Rename Workflow">
                                                     <i class="fa fa-i-cursor"></i>
-                                                </button>
+                                                </button> -->
                                                 <button (click)="duplicateWorkflowModal(playbook.id, workflow.id)" class="btn btn-primary" title="Duplicate Workflow">
                                                     <i class="fa fa-copy"></i>
                                                 </button>

@@ -1075,20 +1075,30 @@ export class PlaybookComponent {
 			shouldShowPlaybook: true,
 			shouldShowWorkflow: true,
 			submit: () => {
-				const pb = this.playbooks.find(p => p.id === this.modalParams.selectedPlaybookId);
-				if (!pb) {
-					this.toastyService.error(`Error creating workflow "${this.modalParams.newWorkflow}". Playbook does not exist.`);
-					return;
+				// Grab our playbook. If it doesn't exist, set our new playbook name to add
+				let pb = this.playbooks.find(p => p.id === this.modalParams.selectedPlaybookId);
+				let newPlaybookName: string;
+				if (!pb) { newPlaybookName = this.modalParams.newPlaybook; }
+
+				// Make a new playbook if we're adding this under a new playbook
+				let newPlaybookPromise: Promise<void>;
+				if (newPlaybookName) {
+					newPlaybookPromise = this.playbookService.newPlaybook(newPlaybookName)
+						.then(newPlaybook => {
+							this.playbooks.push(newPlaybook);
+							this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
+							pb = newPlaybook;
+						});
+				} else {
+					newPlaybookPromise = Promise.resolve();
 				}
 
-				this.playbookService.newWorkflow(this.modalParams.selectedPlaybookId, this.modalParams.newWorkflow)
+				newPlaybookPromise
+					.then(() => this.playbookService
+						.newWorkflow(this.modalParams.selectedPlaybookId, this.modalParams.newWorkflow))
 					.then(newWorkflow => {
 						pb.workflows.push(newWorkflow);
 						pb.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
-						// else {
-						// 	this.playbooks.push({ name: playbookName, workflows: [newWorkflow], uid: null });
-						// 	this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
-						// }
 						if (!this.loadedWorkflow) { this.loadWorkflow(this.modalParams.selectedPlaybookId, newWorkflow.id); }
 						this.toastyService.success(`Created workflow "${pb.name} - ${this.modalParams.newWorkflow}".`);
 						this._closeModal();
@@ -1101,49 +1111,12 @@ export class PlaybookComponent {
 		this._openModal();
 	}
 
-	// /**
-	//  * Opens a modal to delete a given workflow and performs the rename action on submit.
-	//  * @param playbook Name of the playbook the workflow resides under
-	//  * @param workflow Name of the workflow to rename
-	//  */
-	// renameWorkflowModal(playbook: string, workflow: string): void {
-	// 	this._closeWorkflowsModal();
-
-	// 	this.modalParams = {
-	// 		title: 'Rename Existing Workflow',
-	// 		submitText: 'Rename Workflow',
-	// 		shouldShowWorkflow: true,
-	// 		submit: () => {
-	// 			const playbookName = this._getModalPlaybookName();
-	// 			this.playbookService.renameWorkflow(playbook, workflow, this.modalParams.newWorkflow)
-	// 				.then(() => {
-	// 					this.playbooks
-	// 						.find(pb => pb.name === playbook).workflows
-	// 						.find(wf => wf.name === workflow).name = this.modalParams.newWorkflow;
-
-	// 					// Rename our loaded workflow if necessary.
-	// 					if (this.currentPlaybook === playbook && this.currentWorkflow === workflow && this.loadedWorkflow) {
-	// 						this.loadedWorkflow.name = this.modalParams.newWorkflow;
-	// 						this.currentWorkflow = this.modalParams.newWorkflow;
-	// 					}
-	// 					this.toastyService
-	// 						.success(`Successfully renamed workflow "${playbookName} - ${this.modalParams.newWorkflow}".`);
-	// 					this._closeModal();
-	// 				})
-	// 				.catch(e => this.toastyService
-	// 					.error(`Error renaming workflow "${playbookName} - ${this.modalParams.newWorkflow}": ${e.message}`));
-	// 		},
-	// 	};
-
-	// 	this._openModal();
-	// }
-
 	/**
 	 * Opens a modal to copy a given workflow and performs the copy action on submit.
-	 * @param playbookId ID of the playbook the workflow resides under
-	 * @param workflowId ID of the workflow to copy
+	 * @param sourcePlaybookId ID of the playbook the workflow resides under
+	 * @param sourceWorkflowId ID of the workflow to copy
 	 */
-	duplicateWorkflowModal(playbookId: number, workflowId: number): void {
+	duplicateWorkflowModal(sourcePlaybookId: number, sourceWorkflowId: number): void {
 		this._closeWorkflowsModal();
 
 		this.modalParams = {
@@ -1151,33 +1124,41 @@ export class PlaybookComponent {
 			submitText: 'Duplicate Workflow',
 			shouldShowPlaybook: true,
 			shouldShowExistingPlaybooks: true,
-			selectedPlaybookId: playbookId,
+			selectedPlaybookId: sourcePlaybookId,
 			shouldShowWorkflow: true,
 			submit: () => {
-				const pb = this.playbooks.find(p => p.id === playbookId);
+				// const sourcePb = this.playbooks.find(p => p.id === sourcePlaybookId);
+				// Grab our playbook. If it doesn't exist, set our new playbook name to add
+				let destinationPb = this.playbooks.find(p => p.id === this.modalParams.selectedPlaybookId);
+				let newPlaybookName: string;
+				if (!destinationPb) { newPlaybookName = this.modalParams.newPlaybook; }
 
-				if (!pb) {
-					this.toastyService.error(`Error duplicating workflow "${this.modalParams.newWorkflow}". Playbook does not exist.`);
-					return;
+				// Make a new playbook if we're adding this under a new playbook
+				let newPlaybookPromise: Promise<void>;
+				if (newPlaybookName) {
+					newPlaybookPromise = this.playbookService.newPlaybook(newPlaybookName)
+						.then(newPlaybook => {
+							this.playbooks.push(newPlaybook);
+							this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
+							destinationPb = newPlaybook;
+						});
+				} else {
+					newPlaybookPromise = Promise.resolve();
 				}
 
-				this.playbookService.duplicateWorkflow(playbookId, workflowId, this.modalParams.newWorkflow)
+				newPlaybookPromise
+					.then(() => this.playbookService
+						.duplicateWorkflow(sourcePlaybookId, sourceWorkflowId, destinationPb.id, this.modalParams.newWorkflow))
 					.then(duplicatedWorkflow => {
-						// if (!pb) {
-						// 	pb = { uid: null, name: this._getModalPlaybookName(), workflows: [] };
-						// 	this.playbooks.push(pb);
-						// 	this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
-						// }
-
-						pb.workflows.push(duplicatedWorkflow);
-						pb.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
+						destinationPb.workflows.push(duplicatedWorkflow);
+						destinationPb.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
 
 						this.toastyService
-							.success(`Successfully duplicated workflow "${pb.name} - ${this.modalParams.newWorkflow}".`);
+							.success(`Successfully duplicated workflow "${destinationPb.name} - ${this.modalParams.newWorkflow}".`);
 						this._closeModal();
 					})
 					.catch(e => this.toastyService
-						.error(`Error duplicating workflow "${pb.name} - ${this.modalParams.newWorkflow}": ${e.message}`));
+						.error(`Error duplicating workflow "${destinationPb.name} - ${this.modalParams.newWorkflow}": ${e.message}`));
 			},
 		};
 
@@ -1228,18 +1209,6 @@ export class PlaybookComponent {
 	_closeWorkflowsModal(): void {
 		($('#workflowsModal') as any).modal('hide');
 	}
-
-	// /**
-	//  * Gets the playbook name from a given modal:
-	//  * either by the selected playbook or whatever's specified under new playbook.
-	//  */
-	// _getModalPlaybookName(): string {
-	// 	if (this.modalParams.selectedPlaybook && this.modalParams.selectedPlaybook !== '') {
-	// 		return this.modalParams.selectedPlaybook;
-	// 	}
-
-	// 	return this.modalParams.newPlaybook;
-	// }
 
 	///------------------------------------------------------------------------------------------------------
 	/// Utility functions

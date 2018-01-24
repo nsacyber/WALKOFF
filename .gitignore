@@ -18,7 +18,7 @@ apps/*
 backups/
 coverage.*
 data/*.db
-tests/tmp/events_test.db
+tests/tmp/*
 data/log/*.log
 data/walkoff.config
 docs/_*/
