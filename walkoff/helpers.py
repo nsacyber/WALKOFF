@@ -401,7 +401,7 @@ class UnknownFunction(Exception):
         self.function = function_name
 
 
-class UnknownAppAction(Exception):
+class UnknownAppAction(UnknownFunction):
     def __init__(self, app, action_name):
         super(UnknownAppAction, self).__init__(app, action_name, 'action')
 
@@ -424,7 +424,7 @@ class UnknownCondition(UnknownFunction):
         super(UnknownCondition, self).__init__(app, condition_name, 'condition')
 
 
-class UnknownTransform(Exception):
+class UnknownTransform(UnknownFunction):
     def __init__(self, app, transform_name):
         super(UnknownTransform, self).__init__(app, transform_name, 'transform')
 
