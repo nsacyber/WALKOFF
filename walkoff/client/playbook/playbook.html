@@ -71,11 +71,9 @@
                 <i class="fa fa-eraser"></i>
             </button>
         </div>
-        <label id="currentWorkflowText" [hidden]="!loadedWorkflow">
+        <label id="currentWorkflowText" *ngIf="loadedWorkflow">
             {{currentPlaybook.name}} -
-            <div class="form-group">
-                <input type="text" class="form-control" [(ngModel)]="loadedWorkflow.name" name="name" required>
-            </div>
+            <input type="text" class="form-control" [(ngModel)]="loadedWorkflow.name" name="name" required>
         </label>
     
     <!-- Graph editor -->

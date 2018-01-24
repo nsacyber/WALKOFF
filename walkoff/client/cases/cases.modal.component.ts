@@ -71,7 +71,9 @@ export class CasesModalComponent {
 		if (this.existingSubscriptions.find(s => s.type === 'controller')) { this.root.data._included = true; }
 
 		// Check for collapse after the second level
-		this.root.children.forEach(this.checkInclusionAndCheckChildrenForExpansion);
+		if (this.root.children && this.root.children.length) {
+			this.root.children.forEach(this.checkInclusionAndCheckChildrenForExpansion);
+		}
 
 		this.update(this.root);
 	}
@@ -80,7 +82,7 @@ export class CasesModalComponent {
 		const self = this;
 		const duration = 400;
 		// Assigns the x and y position for the nodes
-		const treeData = this.treemap(this.root);
+		const treeData = this.treemap(self.root);
 
 		// Compute the new tree layout.
 		const nodes = treeData.descendants();
@@ -91,7 +93,7 @@ export class CasesModalComponent {
 
 		// ****************** Nodes section ***************************
 		// Update the nodes...
-		const node = this.svg.selectAll('g.node')
+		const node = self.svg.selectAll('g.node')
 			.data(nodes, function (d: any) { return d.id || (d.id = ++self.i); });
 
 		// Enter any new modes at the parent's previous position.
@@ -99,9 +101,9 @@ export class CasesModalComponent {
 			.classed('node', true)
 			.classed('included', (d: any) => d.data._included)
 			.attr('transform', d => `translate(${source.y0},${source.x0})`)
-			.attr('id', (d: any) => `uid-${d.data.uid}`)
-			.on('click', this.click)
-			.on('dblclick', this.dblclick);
+			.attr('id', (d: any) => self.getUid(d.data))
+			.on('click', d => self.click(d, self))
+			.on('dblclick', d => self.dblclick(d, self));
 
 		// Add Circle for the nodes
 		nodeEnter.append('circle')
@@ -154,7 +156,7 @@ export class CasesModalComponent {
 			.classed('link', true)
 			.attr('d', d => {
 				const o = { x: source.x0, y: source.y0 };
-				return this.diagonal(o, o);
+				return self.diagonal(o, o);
 			});
 
 		// UPDATE
@@ -163,14 +165,14 @@ export class CasesModalComponent {
 		// Transition back to the parent element position
 		linkUpdate.transition()
 			.duration(duration)
-			.attr('d', d => this.diagonal(d, d.parent));
+			.attr('d', d => self.diagonal(d, d.parent));
 
 		// Remove any exiting links
 		link.exit().transition()
 			.duration(duration)
 			.attr('d', d => {
 				const o = { x: source.x, y: source.y };
-				return this.diagonal(o, o);
+				return self.diagonal(o, o);
 			})
 			.remove();
 
@@ -208,7 +210,7 @@ export class CasesModalComponent {
 	 * @param s Source node
 	 * @param d Destination node
 	 */
-	diagonal(s: any, d: any) {
+	diagonal(s: any, d: any): string {
 		return `M ${s.y} ${s.x}
 			C ${(s.y + d.y) / 2} ${s.x},
 			${(s.y + d.y) / 2} ${d.x},
@@ -218,12 +220,12 @@ export class CasesModalComponent {
 	/**
 	 * Selects our node on click.
 	 * @param d Node data
+	 * @param self This component reference
 	 */
-	click(d: any) {
-		const self = this;
+	click(d: any, self: CasesModalComponent): void {
 		if (!d.data.type) { return; }
 
-		this.selectedNode = { name: d.data.name, id: d.data.id, type: d.data.type };
+		self.selectedNode = { name: d.data.name, id: d.data.id, type: d.data.type };
 
 		const availableEvents = self.availableSubscriptions.find(a => a.type === d.data.type).events;
 
@@ -245,15 +247,16 @@ export class CasesModalComponent {
 			.classed('highlighted', false);
 
 		//Highlight this node now.
-		d3.select(d)
+		d3.select(`g.node#${this.getUid(self.selectedNode)}`)
 			.classed('highlighted', true);
 	}
 
 	/**
 	 * Toggle children on double click.
 	 * @param d Node data
+	 * @param self This component reference
 	 */
-	dblclick(d: any) {
+	dblclick(d: any, self: CasesModalComponent): void {
 		if (d.children) {
 			d._children = d.children;
 			d.children = null;
@@ -261,7 +264,7 @@ export class CasesModalComponent {
 			d.children = d._children;
 			d._children = null;
 		}
-		this.update(d);
+		self.update(d);
 	}
 
 	handleEventSelectionChange(event: any, isChecked: boolean): void {
