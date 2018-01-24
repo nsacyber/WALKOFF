@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from six import iteritems
+import walkoff.coredb.devicedb
 
 
 class JsonElementCreator(object):
@@ -34,6 +35,8 @@ class JsonElementCreator(object):
                 raise ValueError('Unknown class {}'.format(element_class.__class__.__name__))
         try:
             elem = cls.construct_current_class(current_class, json_in, subfield_lookup)
+            walkoff.coredb.devicedb.device_db.session.add(elem)
+            walkoff.coredb.devicedb.device_db.session.flush()
             return elem
         except (KeyError, TypeError) as e:
             from walkoff.helpers import format_exception_message
@@ -44,13 +47,24 @@ class JsonElementCreator(object):
     @classmethod
     def construct_current_class(cls, current_class, json_in, subfield_lookup):
         from walkoff.coredb.argument import Argument
+        from walkoff.coredb.action import Action
         if subfield_lookup is not None:
             for subfield_name, next_class in subfield_lookup.items():
                 if subfield_name in json_in:
                     subfield_json = json_in[subfield_name]
                     if hasattr(current_class, '_templatable'):
                         json_in['raw_representation'] = dict(json_in)
-                    json_in[subfield_name] = [next_class.create(element_json) for element_json in subfield_json]
+
+                    if isinstance(next_class, Action):
+                        element_lookup = {}
+                        json_in[subfield_name] = []
+                        for element_json in subfield_json:
+                            prev_id = subfield_json.pop('id')
+                            element = next_class.create(element_json)
+                            json_in[subfield_name].append(element)
+                            element_lookup[prev_id] = element.id
+                    else:
+                        json_in[subfield_name] = [next_class.create(element_json) for element_json in subfield_json]
         if 'arguments' in json_in:
             json_in['arguments'] = [Argument(**arg_json) for arg_json in json_in['arguments']]
         return current_class(**json_in)
@@ -66,7 +80,7 @@ class JsonElementCreator(object):
             from walkoff.coredb.transform import Transform
             cls.playbook_class_ordering = OrderedDict([
                 (Playbook, {'workflows': Workflow}),
-                (Workflow, {'actions': Action, 'branches': Branch}),
+                (Workflow, OrderedDict([('actions', Action), ('branches', Branch)])),
                 (Action, {'triggers': Condition}),
                 (Branch, {'conditions': Condition}),
                 (Condition, {'transforms': Transform}),

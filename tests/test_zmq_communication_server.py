@@ -9,7 +9,9 @@ import walkoff.controller
 from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
 from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
-
+import walkoff.coredb.devicedb
+from walkoff.coredb.workflow import Workflow
+from walkoff.coredb.playbook import Playbook
 
 try:
     from importlib import reload
@@ -32,14 +34,15 @@ class TestWorkflowServer(ServerTestCase):
         case_database.case_db.session.commit()
 
     def test_execute_workflow(self):
-        workflow = flask_server.running_context.controller.get_workflow_by_name('test', 'helloWorldWorkflow')
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+            Workflow.name == 'helloWorldWorkflow', Playbook.name == 'test').first()
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
         start = datetime.utcnow()
 
-        response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
-                                               headers=self.headers, data=json.dumps({}),
-                                               status_code=SUCCESS_ASYNC, content_type="application/json")
+        response = self.post_with_status_check(
+            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
+            headers=self.headers, data=json.dumps({}), status_code=SUCCESS_ASYNC, content_type="application/json")
         flask_server.running_context.controller.wait_and_reset(1)
         self.assertIn('id', response)
         actions = []
@@ -51,12 +54,14 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(result, {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     def test_read_all_results(self):
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers,
-                      content_type="application/json", data=json.dumps({}))
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers,
-                      content_type="application/json", data=json.dumps({}))
-        self.app.post('/api/playbooks/test/workflows/helloWorldWorkflow/execute', headers=self.headers,
-                      content_type="application/json", data=json.dumps({}))
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+            Workflow.name == 'helloWorldWorkflow', Playbook.name == 'test').first()
+        self.app.post('/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
+                      headers=self.headers,content_type="application/json", data=json.dumps({}))
+        self.app.post('/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
+                      headers=self.headers, content_type="application/json", data=json.dumps({}))
+        self.app.post('/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
+                      headers=self.headers, content_type="application/json", data=json.dumps({}))
 
         flask_server.running_context.controller.wait_and_reset(3)
 
@@ -64,7 +69,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(len(response), 3)
 
         for result in response:
-            self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'uid'})
+            self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'id'})
             for action_result in result['results']:
                 self.assertSetEqual(set(action_result.keys()),
                                     {'arguments', 'type', 'name', 'timestamp', 'result', 'app_name', 'action_name'})

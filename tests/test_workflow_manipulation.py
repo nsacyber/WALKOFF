@@ -1,6 +1,5 @@
 import socket
 import unittest
-from os import path
 
 import walkoff.appgateway
 import walkoff.case.database as case_database
@@ -14,6 +13,8 @@ from tests.util.mock_objects import *
 import walkoff.config.paths
 import tests.config
 from walkoff import initialize_databases
+import walkoff.coredb.devicedb
+from walkoff.coredb.playbook import Playbook
 
 
 try:
@@ -40,14 +41,6 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     def setUp(self):
         self.controller = walkoff.controller.controller
-        self.controller.workflows = {}
-        # self.controller.load_playbooks(
-        #     resource_collection=path.join(".", "tests", "testWorkflows", "testGeneratedWorkflows"))
-        # self.controller.load_playbook(
-        #     resource=path.join(config.test_workflows_path, 'simpleDataManipulationWorkflow.playbook'))
-        self.id_tuple = ('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
-        self.testWorkflow = self.controller.get_workflow_by_name(*self.id_tuple)
-        self.testWorkflow.set_execution_uid('some_uid')
         case_database.initialize()
 
     def tearDown(self):
@@ -62,8 +55,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         walkoff.controller.controller.shutdown_pool()
 
     def test_pause_and_resume_workflow(self):
-        # self.controller.load_playbook(resource=path.join(config.test_workflows_path, 'pauseWorkflowTest.playbook'))
-
         uid = None
         result = dict()
         result['paused'] = False
@@ -89,7 +80,10 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         WalkoffEvent.WorkflowExecutionStart.connect(action_1_about_to_begin_listener)
 
-        uid = self.controller.execute_workflow('pauseWorkflowTest', 'pauseWorkflow')
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+            Workflow.name == 'pauseWorkflow', Playbook.name == 'pauseWorkflowTest').first()
+
+        uid = self.controller.execute_workflow(workflow.id)
         self.controller.wait_and_reset(1)
         self.assertTrue(result['paused'])
         self.assertTrue(result['resumed'])
@@ -104,8 +98,10 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         WalkoffEvent.ActionExecutionSuccess.connect(action_finished_listener)
 
-        self.controller.execute_workflow('simpleDataManipulationWorkflow', 'helloWorldWorkflow',
-                                         start_arguments=arguments)
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+            Workflow.name == 'helloWorldWorkflow', Playbook.name == 'simpleDataManipulationWorkflow').first()
+
+        self.controller.execute_workflow(workflow.id, start_arguments=arguments)
         self.controller.wait_and_reset(1)
         self.assertDictEqual(result['value'],
                              {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'})

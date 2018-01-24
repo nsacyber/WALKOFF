@@ -326,12 +326,12 @@ class EventDispatcher(object):
             data (dict): The data to send to all the events
         """
         if event_.event_type != EventType.controller:
-            sender_uid = data['sender_uid']
+            sender_id = data['id']
             sender_name = data['sender_name'] if 'sender_name' in data else None
         else:
-            sender_uid = EventType.controller.name
+            sender_id = EventType.controller.name
             sender_name = None
-        callbacks = self._get_callbacks(sender_uid, sender_name, event_)
+        callbacks = self._get_callbacks(sender_id, sender_name, event_)
         for func in callbacks:
             try:
                 if event_.event_type != EventType.controller:

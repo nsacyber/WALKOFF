@@ -33,15 +33,15 @@ class TestPlaybook(unittest.TestCase):
         self.assertListEqual(playbook.workflows, [])
 
     def test_init_with_workflows(self):
-        workflows = [Workflow(str(i)) for i in range(3)]
+        workflows = [Workflow(str(i), 0) for i in range(3)]
         playbook = Playbook('test', workflows)
         self.assertEqual(playbook.name, 'test')
         self.assertListEqual(playbook.workflows, workflows)
 
     def test_add_workflow(self):
-        workflow = Workflow('wf_name')
+        workflow = Workflow('wf_name', 0)
         playbook = Playbook('test', [workflow])
-        playbook.add_workflow(Workflow('test2'))
+        playbook.add_workflow(Workflow('test2', 0))
         orderless_list_compare(self, [workflow.name for workflow in playbook.workflows], ['wf_name', 'test2'])
 
     def test_has_workflow_name_no_workflows(self):
@@ -49,12 +49,12 @@ class TestPlaybook(unittest.TestCase):
         self.assertFalse(playbook.has_workflow_name('anything'))
 
     def test_has_workflow_name(self):
-        workflow = Workflow('wf_name')
+        workflow = Workflow('wf_name', 0)
         playbook = Playbook('test', [workflow])
         self.assertTrue(playbook.has_workflow_name('wf_name'))
 
     def test_has_workflow_name_no_name(self):
-        workflow = Workflow('wf_name')
+        workflow = Workflow('wf_name', 0)
         playbook = Playbook('test', [workflow])
         self.assertFalse(playbook.has_workflow_name('invalid'))
 
@@ -63,9 +63,9 @@ class TestPlaybook(unittest.TestCase):
         self.assertFalse(playbook.has_workflow_id(1))
 
     def test_has_workflow_id(self):
-        workflow = Workflow('wf_name')
+        workflow = Workflow('wf_name', 0)
         walkoff.coredb.devicedb.device_db.session.add(workflow)
-        walkoff.coredb.devicedb.device_db.session.commit()
+        walkoff.coredb.devicedb.device_db.session.flush()
         playbook = Playbook('test', [workflow])
         self.assertTrue(playbook.has_workflow_id(workflow.id))
 
@@ -74,12 +74,12 @@ class TestPlaybook(unittest.TestCase):
         self.assertIsNone(playbook.get_workflow_by_name('anything'))
 
     def test_get_workflow_by_name(self):
-        workflow = Workflow('wf_name')
+        workflow = Workflow('wf_name', 0)
         playbook = Playbook('test', [workflow])
         self.assertEqual(playbook.get_workflow_by_name('wf_name'), workflow)
 
     def test_get_workflow_by_name_no_name(self):
-        workflow = Workflow('wf_name')
+        workflow = Workflow('wf_name', 0)
         playbook = Playbook('test', [workflow])
         self.assertIsNone(playbook.get_workflow_by_name('invalid'))
 
@@ -88,9 +88,9 @@ class TestPlaybook(unittest.TestCase):
         self.assertIsNone(playbook.get_workflow_by_id('anything'))
 
     def test_get_workflow_by_id(self):
-        workflow = Workflow('wf_name')
+        workflow = Workflow('wf_name', 0)
         walkoff.coredb.devicedb.device_db.session.add(workflow)
-        walkoff.coredb.devicedb.device_db.session.commit()
+        walkoff.coredb.devicedb.device_db.session.flush()
         playbook = Playbook('test', [workflow])
         self.assertEqual(playbook.get_workflow_by_id(workflow.id), workflow)
 
@@ -99,7 +99,7 @@ class TestPlaybook(unittest.TestCase):
         self.assertListEqual(playbook.get_all_workflow_names(), [])
 
     def test_get_all_workflow_names(self):
-        workflows = [Workflow(str(i)) for i in range(3)]
+        workflows = [Workflow(str(i), 0) for i in range(3)]
         playbook = Playbook('test', workflows)
         orderless_list_compare(self, playbook.get_all_workflow_names(), ['0', '1', '2'])
 
@@ -108,9 +108,9 @@ class TestPlaybook(unittest.TestCase):
         self.assertListEqual(playbook.get_all_workflow_ids(), [])
 
     def test_get_all_workflow_ids(self):
-        workflows = [Workflow(str(i)) for i in range(3)]
+        workflows = [Workflow(str(i), 0) for i in range(3)]
         walkoff.coredb.devicedb.device_db.session.add_all(workflows)
-        walkoff.coredb.devicedb.device_db.session.commit()
+        walkoff.coredb.devicedb.device_db.session.flush()
         playbook = Playbook('test', workflows)
         orderless_list_compare(self, playbook.get_all_workflow_ids(), list(workflow.id for workflow in workflows))
 
@@ -124,16 +124,16 @@ class TestPlaybook(unittest.TestCase):
         self.assertListEqual(playbook.workflows, [])
 
     def test_rename_workflow_not_found(self):
-        workflows = [Workflow(str(i)) for i in range(3)]
+        workflows = [Workflow(str(i), 0) for i in range(3)]
         playbook = Playbook('test', workflows)
         playbook.rename_workflow('invalid', 'new_name')
         self.assertFalse(playbook.has_workflow_name('invalid'))
 
     def test_rename_workflow(self):
-        workflows = [Workflow(str(i)) for i in range(3)]
+        workflows = [Workflow(str(i), 0) for i in range(3)]
         playbook = Playbook('test', workflows)
         playbook.rename_workflow('2', 'new_name')
-        walkoff.coredb.devicedb.device_db.session.commit()
+        walkoff.coredb.devicedb.device_db.session.flush()
         self.assertTrue(playbook.has_workflow_name('new_name'))
         self.assertFalse(playbook.has_workflow_name('2'))
 
@@ -143,13 +143,13 @@ class TestPlaybook(unittest.TestCase):
         self.assertListEqual(playbook.workflows, [])
 
     def test_remove_workflow_by_name_workflow_not_found(self):
-        workflows = [Workflow(str(i)) for i in range(3)]
+        workflows = [Workflow(str(i), 0) for i in range(3)]
         playbook = Playbook('test', workflows)
         playbook.remove_workflow_by_name('invalid')
         self.assertEqual(len(playbook.workflows), 3)
 
     def test_remove_workflow_by_name(self):
-        workflows = [Workflow(str(i)) for i in range(3)]
+        workflows = [Workflow(str(i), 0) for i in range(3)]
         playbook = Playbook('test', workflows)
         playbook.remove_workflow_by_name('2')
         self.assertEqual(len(playbook.workflows), 2)

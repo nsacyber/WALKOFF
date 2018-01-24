@@ -22,7 +22,7 @@ def does_playbook_exist(playbook_id):
     return walkoff.coredb.devicedb.device_db.session.query(exists().where(Playbook.id == playbook_id)).scalar()
 
 
-def does_workflow_exist(workflow_id):
+def does_workflow_exist(playbook_id, workflow_id):
     return walkoff.coredb.devicedb.device_db.session.query(exists().where(Workflow.id == workflow_id)).scalar()
 
 
@@ -77,11 +77,11 @@ def get_playbooks(full=None):
                 workflows = []
                 for workflow in playbook.workflows:
                     workflows.append({'id': workflow.id, 'name': workflow.name})
-                entry['workflows'] = sorted(workflows, key=(lambda wf: workflow['name'].lower()))
+                entry['workflows'] = sorted(workflows, key=(lambda wf: workflow.name.lower()))
 
                 ret_playbooks.append(entry)
 
-        return sorted(ret_playbooks, key=(lambda pb: playbook['name'].lower())), SUCCESS
+        return sorted(ret_playbooks, key=(lambda pb: playbook.name.lower())), SUCCESS
 
     return __func()
 
@@ -100,7 +100,7 @@ def create_playbook():
         except IntegrityError:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not create Playbook {}. Unique constraint failed'.format(playbook_name))
-            return {"error": "Unique constraint failed."}, INVALID_INPUT_ERROR
+            return {"error": "Unique constraint failed."}, OBJECT_EXISTS_ERROR
 
         current_app.logger.info('Playbook {0} created'.format(playbook_name))
         return playbook.read(), OBJECT_CREATED
@@ -216,14 +216,17 @@ def create_workflow(playbook_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create']))
     def __func():
+        playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=playbook_id).first()
+
         data = request.get_json()
         workflow_name = data['name']
 
         workflow = Workflow(**data)
+        playbook.workflows.append(workflow)
 
         try:
             walkoff.coredb.devicedb.device_db.session.add(workflow)
-            walkoff.coredb.devicedb.device_db.session.commit(workflow)
+            walkoff.coredb.devicedb.device_db.session.commit()
         except ValueError:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not add workflow {0}-{1}'.format(playbook_id, workflow_name))
@@ -363,12 +366,13 @@ def execute_workflow(playbook_id, workflow_id):
         start = data['start'] if 'start' in data else None
 
         arguments = []
-        for arg in args:
-            try:
-                arguments.append(Argument(**arg))
-            except InvalidArgument:
-                current_app.logger.error('Could not execute workflow. Invalid Argument construction')
-                return {"error": "Could not execute workflow. Invalid argument construction"}, INVALID_INPUT_ERROR
+        if args:
+            for arg in args:
+                try:
+                    arguments.append(Argument(**arg))
+                except InvalidArgument:
+                    current_app.logger.error('Could not execute workflow. Invalid Argument construction')
+                    return {"error": "Could not execute workflow. Invalid argument construction"}, INVALID_INPUT_ERROR
 
         uid = running_context.controller.execute_workflow(workflow_id, start=start, start_arguments=arguments)
         current_app.logger.info('Executed workflow {0}-{1}'.format(playbook_id, workflow_id))

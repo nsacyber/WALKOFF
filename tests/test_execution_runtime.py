@@ -14,6 +14,8 @@ from tests.util.mock_objects import *
 import walkoff.config.paths
 import tests.config
 from walkoff import initialize_databases
+from walkoff.coredb.playbook import Playbook
+import walkoff.coredb.devicedb
 
 
 class TestExecutionRuntime(unittest.TestCase):
@@ -35,7 +37,6 @@ class TestExecutionRuntime(unittest.TestCase):
         case_database.initialize()
         self.controller = walkoff.controller.controller
         self.controller.workflows = {}
-        # self.controller.load_playbooks(resource_collection=config.test_workflows_path)
 
     def tearDown(self):
         subscription.clear_subscriptions()
@@ -48,10 +49,13 @@ class TestExecutionRuntime(unittest.TestCase):
     def test_templated_workflow(self):
         action_names = ['start', '1']
 
-        workflow = self.controller.get_workflow_by_name('templatedWorkflowTest', 'templatedWorkflow')
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+            Workflow.name == 'templatedWorkflow', Playbook.name == 'templatedWorkflowTest').first()
+
         action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
-        self.controller.execute_workflow('templatedWorkflowTest', 'templatedWorkflow')
+
+        self.controller.execute_workflow(workflow.id)
 
         self.controller.wait_and_reset(1)
 

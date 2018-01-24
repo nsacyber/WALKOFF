@@ -13,6 +13,7 @@ import tests.config
 import walkoff.config.paths
 from walkoff import initialize_databases
 import walkoff.coredb.devicedb
+from walkoff.coredb.playbook import Playbook
 
 
 class TestExecutionEvents(unittest.TestCase):
@@ -42,12 +43,12 @@ class TestExecutionEvents(unittest.TestCase):
         walkoff.controller.controller.shutdown_pool()
 
     def test_workflow_execution_events(self):
-        # self.c.load_playbook(resource=config.test_workflows_path + 'multiactionWorkflowTest.playbook')
-        workflow_id = self.c.get_workflow_by_name('multiactionWorkflowTest', 'multiactionWorkflow').id
+        workflow_id = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+            Workflow.name == 'multiactionWorkflow', Playbook.name == 'multiactionWorkflowTest').first().id
         subs = {'case1': {workflow_id: [WalkoffEvent.AppInstanceCreated.signal_name,
                                         WalkoffEvent.WorkflowShutdown.signal_name]}}
         case_subscription.set_subscriptions(subs)
-        self.c.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
+        self.c.execute_workflow(workflow_id)
 
         self.c.wait_and_reset(1)
         execution_events = case_database.case_db.session.query(case_database.Case) \
@@ -58,14 +59,14 @@ class TestExecutionEvents(unittest.TestCase):
                          'Expected {0}, got {1}'.format(2, len(execution_events)))
 
     def test_action_execution_events(self):
-        # self.c.load_playbook(resource=config.test_workflows_path + 'basicWorkflowTest.playbook')
-        workflow = self.c.get_workflow_by_name('basicWorkflowTest', 'helloWorldWorkflow')
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+            Workflow.name == 'helloWorldWorkflow', Playbook.name == 'basicWorkflowTest').first()
         action_ids = [action.id for action in workflow.actions]
         action_events = [WalkoffEvent.ActionExecutionSuccess.signal_name, WalkoffEvent.ActionStarted.signal_name]
         subs = {'case1': {action_uid: action_events for action_uid in action_ids}}
         case_subscription.set_subscriptions(subs)
 
-        self.c.execute_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        self.c.execute_workflow(workflow.id)
 
         self.c.wait_and_reset(1)
 

@@ -10,6 +10,9 @@ from walkoff.events import WalkoffEvent
 from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
+import walkoff.coredb.devicedb
+from walkoff.coredb.playbook import Playbook
+from walkoff.coredb.workflow import Workflow
 
 try:
     from importlib import reload
@@ -33,16 +36,19 @@ class TestTriggersServer(ServerTestCase):
 
     def test_trigger_multiple_workflows(self):
 
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+            Workflow.name == 'triggerActionWorkflow', Playbook.name == 'triggerActionWorkflow').first()
+
         ids = []
 
         response = self.post_with_status_check(
-            '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
+            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
             headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json",
             data=json.dumps({}))
         ids.append(response['id'])
 
         response = self.post_with_status_check(
-            '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
+            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
             headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json",
             data=json.dumps({}))
         ids.append(response['id'])
@@ -83,8 +89,11 @@ class TestTriggersServer(ServerTestCase):
 
     def test_trigger_execute(self):
 
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+            Workflow.name == 'triggerActionWorkflow', Playbook.name == 'triggerActionWorkflow').first()
+
         response = self.post_with_status_check(
-            '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
+            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
             headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json", data=json.dumps({}))
 
         ids = [response['id']]
@@ -121,8 +130,11 @@ class TestTriggersServer(ServerTestCase):
 
     def test_trigger_execute_multiple_data(self):
 
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+            Workflow.name == 'triggerActionWorkflow', Playbook.name == 'triggerActionWorkflow').first()
+
         response = self.post_with_status_check(
-            '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
+            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
             headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json", data=json.dumps({}))
 
         ids = [response['id']]
@@ -170,8 +182,11 @@ class TestTriggersServer(ServerTestCase):
 
     def test_trigger_execute_change_input(self):
 
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+            Workflow.name == 'triggerActionWorkflow', Playbook.name == 'triggerActionWorkflow').first()
+
         response = self.post_with_status_check(
-            '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
+            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
             headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json", data=json.dumps({}))
 
         ids = [response['id']]
@@ -211,8 +226,11 @@ class TestTriggersServer(ServerTestCase):
 
     def test_trigger_execute_with_change_input_invalid_input(self):
 
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+            Workflow.name == 'triggerActionWorkflow', Playbook.name == 'triggerActionWorkflow').first()
+
         response = self.post_with_status_check(
-            '/api/playbooks/triggerActionWorkflow/workflows/triggerActionWorkflow/execute',
+            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
             headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json", data=json.dumps({}))
 
         ids = [response['id']]

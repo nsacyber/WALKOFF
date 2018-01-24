@@ -62,7 +62,7 @@ def convert_workflow_to_proto(packet, sender, workflow_execution_uid, data=None)
     if 'data' is not None:
         workflow_packet.additional_data = json.dumps(data)
     workflow_packet.sender.name = sender.name
-    workflow_packet.sender.uid = sender.id
+    workflow_packet.sender.id = sender.id
     workflow_packet.sender.workflow_execution_uid = workflow_execution_uid
 
 
@@ -91,7 +91,7 @@ def convert_action_to_proto(packet, sender, workflow_execution_uid, data=None):
 
 def add_sender_to_action_packet_proto(action_packet, sender, workflow_execution_uid):
     action_packet.sender.name = sender.name
-    action_packet.sender.uid = sender.id
+    action_packet.sender.id = sender.id
     action_packet.sender.workflow_execution_uid = workflow_execution_uid
     action_packet.sender.execution_uid = sender.get_execution_uid()
     action_packet.sender.app_name = sender.app_name
@@ -118,7 +118,7 @@ def add_arguments_to_action_proto(action_packet, sender):
 def convert_branch_transform_condition_to_proto(packet, sender, workflow_execution_uid):
     packet.type = Message.GENERALPACKET
     general_packet = packet.general_packet
-    general_packet.sender.uid = sender.id
+    general_packet.sender.id = sender.id
     general_packet.sender.workflow_execution_uid = workflow_execution_uid
     if hasattr(sender, 'app_name'):
         general_packet.sender.app_name = sender.app_name

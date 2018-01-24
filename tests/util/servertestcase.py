@@ -116,10 +116,13 @@ class ServerTestCase(unittest.TestCase):
         key = json.loads(post.get_data(as_text=True))
         self.headers = {'Authorization': 'Bearer {}'.format(key['access_token'])}
 
-        walkoff.server.flaskserver.running_context.controller.workflows = {}
-        walkoff.server.flaskserver.running_context.controller.load_playbooks()
+        # walkoff.server.flaskserver.running_context.controller.workflows = {}
+        # walkoff.server.flaskserver.running_context.controller.load_playbooks()
 
     def tearDown(self):
+        import walkoff.coredb.devicedb
+        walkoff.coredb.devicedb.device_db.tear_down()
+
         shutil.rmtree(walkoff.config.paths.workflows_path)
         shutil.copytree(tests.config.test_workflows_backup_path, walkoff.config.paths.workflows_path)
         shutil.rmtree(tests.config.test_workflows_backup_path)

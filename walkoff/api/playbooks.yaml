@@ -41,8 +41,8 @@
         description: Object created
         schema:
           $ref: '#/definitions/Playbook'
-      463:
-        description: Invalid input error.
+      462:
+        description: Object exists
         schema:
           $ref: '#/definitions/Error'
   post:

@@ -76,7 +76,7 @@ Workflow:
 
 Action:
   type: object
-  required: [app_name, action_name, name]
+  required: [id, app_name, action_name, name]
   description: Encapsulation of executing an action in an app
   additionalProperties: false
   properties:

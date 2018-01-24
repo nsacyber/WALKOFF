@@ -46,7 +46,7 @@ class MultiprocessedExecutor(object):
         """Initializes a multiprocessed executor, which will handle the execution of workflows.
         """
         self.threading_is_initialized = False
-        self.uid = "executor"
+        self.id = "executor"
         self.pids = None
         self.workflow_status = {}
         self.workflows_executed = 0

@@ -28,7 +28,7 @@ class TestAction(unittest.TestCase):
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
 
-    def __compare_init(self, elem, app_name, action_name, name=None, device_id=None, arguments=None, triggers=None,
+    def __compare_init(self, elem, app_name, action_name, name, device_id=None, arguments=None, triggers=None,
                        x_coordinate=None, y_coordinate=None, templated=False, raw_representation=None):
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.action_name, action_name)
@@ -51,77 +51,78 @@ class TestAction(unittest.TestCase):
         self.assertEqual(elem._execution_uid, 'default')
 
     def test_init_default(self):
-        action = Action('HelloWorld', 'helloWorld')
-        self.__compare_init(action, 'HelloWorld', 'helloWorld')
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld')
+        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld')
 
     def test_init_with_name(self):
-        action = Action('HelloWorld', 'helloWorld', name='test')
+        action = Action('HelloWorld', 'helloWorld', 'test')
         self.__compare_init(action, 'HelloWorld', 'helloWorld', 'test')
 
     def test_init_with_position(self):
-        action = Action('HelloWorld', 'helloWorld', x_coordinate=13, y_coordinate=42)
-        self.__compare_init(action, 'HelloWorld', 'helloWorld', x_coordinate=13, y_coordinate=42)
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld', x_coordinate=13, y_coordinate=42)
+        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', x_coordinate=13, y_coordinate=42)
 
     def test_init_templated(self):
-        action = Action('HelloWorld', 'helloWorld', templated=True, raw_representation={'a': 42})
-        self.__compare_init(action, 'HelloWorld', 'helloWorld', templated=True, raw_representation={'a': 42})
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld', templated=True, raw_representation={'a': 42})
+        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', templated=True,
+                            raw_representation={'a': 42})
 
     def test_get_execution_uid(self):
-        action = Action('HelloWorld', 'helloWorld')
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld')
         self.assertEqual(action.get_execution_uid(), action._execution_uid)
 
     def test_init_app_action_only(self):
-        action = Action('HelloWorld', 'helloWorld')
-        self.__compare_init(action, 'HelloWorld', 'helloWorld')
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld')
+        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld')
 
     def test_init_app_and_action_name_different_than_method_name(self):
-        action = Action(app_name='HelloWorld', action_name='Hello World')
-        self.__compare_init(action, 'HelloWorld', 'Hello World')
+        action = Action('HelloWorld', 'Hello World', 'helloWorld')
+        self.__compare_init(action, 'HelloWorld', 'Hello World', 'helloWorld')
 
     def test_init_invalid_app(self):
         with self.assertRaises(UnknownApp):
-            Action('InvalidApp', 'helloWorld')
+            Action('InvalidApp', 'helloWorld', 'helloWorld')
 
     def test_init_invalid_action(self):
         with self.assertRaises(UnknownAppAction):
-            Action(app_name='HelloWorld', action_name='invalid')
+            Action('HelloWorld', 'invalid', 'helloWorld')
 
     def test_init_app_action_only_with_device(self):
-        action = Action('HelloWorld', 'helloWorld', device_id='test')
-        self.__compare_init(action, 'HelloWorld', 'helloWorld', device_id='test')
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld', device_id='test')
+        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', device_id='test')
 
     def test_init_with_arguments_no_conversion(self):
-        action = Action('HelloWorld', 'returnPlusOne', arguments=[Argument('number', value=-5.6)])
-        self.__compare_init(action, 'HelloWorld', 'returnPlusOne',
+        action = Action('HelloWorld', 'returnPlusOne', 'returnPlusOne', arguments=[Argument('number', value=-5.6)])
+        self.__compare_init(action, 'HelloWorld', 'returnPlusOne', 'returnPlusOne',
                             arguments=[Argument('number', value=-5.6)])
 
     def test_init_with_arguments_with_conversion(self):
-        action = Action('HelloWorld', 'returnPlusOne', arguments=[Argument('number', value='-5.6')])
-        self.__compare_init(action, 'HelloWorld', 'returnPlusOne',
+        action = Action('HelloWorld', 'returnPlusOne', 'returnPlusOne', arguments=[Argument('number', value='-5.6')])
+        self.__compare_init(action, 'HelloWorld', 'returnPlusOne', 'returnPlusOne',
                             arguments=[Argument('number', value='-5.6')])
 
     def test_init_with_invalid_argument_name(self):
         with self.assertRaises(InvalidArgument):
-            Action('HelloWorld', 'returnPlusOne', arguments=[Argument('invalid', value='-5.6')])
+            Action('HelloWorld', 'returnPlusOne', 'helloWorld', arguments=[Argument('invalid', value='-5.6')])
 
     def test_init_with_invalid_argument_type(self):
         with self.assertRaises(InvalidArgument):
-            Action('HelloWorld', 'returnPlusOne', arguments=[Argument('number', value='invalid')])
+            Action('HelloWorld', 'returnPlusOne', 'helloWorld', arguments=[Argument('number', value='invalid')])
 
     def test_init_with_triggers(self):
         triggers = [Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='(.*)')]),
                     Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='a')])]
-        action = Action('HelloWorld', 'helloWorld', triggers=triggers)
-        self.__compare_init(action, 'HelloWorld', 'helloWorld', triggers=['regMatch', 'regMatch'])
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld', triggers=triggers)
+        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', triggers=['regMatch', 'regMatch'])
 
     def test_execute_no_args(self):
-        action = Action(app_name='HelloWorld', action_name='helloWorld')
+        action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld')
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         self.assertEqual(action.execute(instance.instance, {}), ActionResult({'message': 'HELLO WORLD'}, 'Success'))
         self.assertEqual(action._output, ActionResult({'message': 'HELLO WORLD'}, 'Success'))
 
     def test_execute_return_failure(self):
-        action = Action(app_name='HelloWorld', action_name='dummy action',
+        action = Action(app_name='HelloWorld', action_name='dummy action', name='helloWorld',
                         arguments=[Argument('status', value=False)])
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         result = {'started_triggered': False, 'result_triggered': False}
@@ -146,7 +147,7 @@ class TestAction(unittest.TestCase):
         self.assertTrue(result['result_triggered'])
 
     def test_execute_default_return_success(self):
-        action = Action(app_name='HelloWorld', action_name='dummy action',
+        action = Action(app_name='HelloWorld', action_name='dummy action', name='helloWorld',
                         arguments=[Argument('status', value=True), Argument('other', value=True)])
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         result = {'started_triggered': False, 'result_triggered': False}
@@ -172,14 +173,14 @@ class TestAction(unittest.TestCase):
         self.assertTrue(result['result_triggered'])
 
     def test_execute_generates_uid(self):
-        action = Action(app_name='HelloWorld', action_name='helloWorld')
+        action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld')
         original_execution_uid = action.get_execution_uid()
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         action.execute(instance.instance, {})
         self.assertNotEqual(action.get_execution_uid(), original_execution_uid)
 
     def test_execute_with_args(self):
-        action = Action(app_name='HelloWorld', action_name='Add Three',
+        action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
                         arguments=[Argument('num1', value='-5.6'),
                                    Argument('num2', value='4.3'),
                                    Argument('num3', value='10.2')])
@@ -190,7 +191,7 @@ class TestAction(unittest.TestCase):
         self.assertEqual(action._output, result)
 
     def test_execute_sends_callbacks(self):
-        action = Action(app_name='HelloWorld', action_name='Add Three',
+        action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
                         arguments=[Argument('num1', value='-5.6'),
                                    Argument('num2', value='4.3'),
                                    Argument('num3', value='10.2')])
@@ -218,7 +219,7 @@ class TestAction(unittest.TestCase):
         self.assertTrue(result['result_triggered'])
 
     def test_execute_with_accumulator_with_conversion(self):
-        action = Action(app_name='HelloWorld', action_name='Add Three',
+        action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
                         arguments=[Argument('num1', reference='1'),
                                    Argument('num2', reference='action2'),
                                    Argument('num3', value='10.2')])
@@ -230,7 +231,7 @@ class TestAction(unittest.TestCase):
         self.assertEqual(action._output, result)
 
     def test_execute_with_accumulator_with_extra_actions(self):
-        action = Action(app_name='HelloWorld', action_name='Add Three',
+        action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
                         arguments=[Argument('num1', reference='1'),
                                    Argument('num2', reference='action2'),
                                    Argument('num3', value='10.2')])
@@ -242,7 +243,7 @@ class TestAction(unittest.TestCase):
         self.assertEqual(action._output, result)
 
     def test_execute_with_accumulator_missing_action(self):
-        action = Action(app_name='HelloWorld', action_name='Add Three',
+        action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
                         arguments=[Argument('num1', reference='1'),
                                    Argument('num2', reference='action2'),
                                    Argument('num3', value='10.2')])
@@ -251,7 +252,7 @@ class TestAction(unittest.TestCase):
         action.execute(instance.instance, accumulator)
 
     def test_execute_with_accumulator_missing_action_callbacks(self):
-        action = Action(app_name='HelloWorld', action_name='Add Three',
+        action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
                         arguments=[Argument('num1', reference='1'),
                                    Argument('num2', reference='action2'),
                                    Argument('num3', value='10.2')])
@@ -276,7 +277,7 @@ class TestAction(unittest.TestCase):
         self.assertTrue(result['result_triggered'])
 
     def test_execute_with_complex_args(self):
-        action = Action(app_name='HelloWorld', action_name='Json Sample',
+        action = Action(app_name='HelloWorld', action_name='Json Sample', name='helloWorld',
                         arguments=[
                             Argument('json_in', value={'a': '-5.6', 'b': {'a': '4.3', 'b': 5.3}, 'c': ['1', '2', '3'],
                                                        'd': [{'a': '', 'b': 3}, {'a': '', 'b': -1.5},
@@ -288,13 +289,13 @@ class TestAction(unittest.TestCase):
         self.assertEqual(action._output, result)
 
     def test_execute_action_which_raises_exception(self):
-        action = Action(app_name='HelloWorld', action_name='Buggy')
+        action = Action(app_name='HelloWorld', action_name='Buggy', name='helloWorld')
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         action.execute(instance.instance, {})
         self.assertIsNotNone(action.get_output())
 
     def test_execute_action_which_raises_exception_sends_callbacks(self):
-        action = Action(app_name='HelloWorld', action_name='Buggy')
+        action = Action(app_name='HelloWorld', action_name='Buggy', name='helloWorld')
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
 
         result = {'started_triggered': False, 'result_triggered': False}
@@ -316,7 +317,8 @@ class TestAction(unittest.TestCase):
         self.assertTrue(result['result_triggered'])
 
     def test_execute_global_action(self):
-        action = Action(app_name='HelloWorld', action_name='global2', arguments=[Argument('arg1', value='something')])
+        action = Action(app_name='HelloWorld', action_name='global2', name='helloWorld',
+                        arguments=[Argument('arg1', value='something')])
         instance = AppInstance.create(app_name='HelloWorld', device_name='')
         result = action.execute(instance.instance, {})
         self.assertAlmostEqual(result.result, 'something')
@@ -324,7 +326,7 @@ class TestAction(unittest.TestCase):
         self.assertEqual(action._output, result)
 
     def test_set_args_valid(self):
-        action = Action(app_name='HelloWorld', action_name='Add Three',
+        action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
                         arguments=[Argument('num1', value='-5.6'),
                                    Argument('num2', value='4.3'),
                                    Argument('num3', value='10.2')])
@@ -336,7 +338,7 @@ class TestAction(unittest.TestCase):
             self.assertIn(arg, arguments)
 
     def test_set_args_invalid_name(self):
-        action = Action(app_name='HelloWorld', action_name='Add Three',
+        action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
                         arguments=[Argument('num1', value='-5.6'),
                                    Argument('num2', value='4.3'),
                                    Argument('num3', value='10.2')])
@@ -345,7 +347,7 @@ class TestAction(unittest.TestCase):
                 [Argument('num1', value='-5.62'), Argument('invalid', value='5'), Argument('num3', value='42.42')])
 
     def test_set_args_invalid_format(self):
-        action = Action(app_name='HelloWorld', action_name='Add Three',
+        action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
                         arguments=[Argument('num1', value='-5.6'),
                                    Argument('num2', value='4.3'),
                                    Argument('num3', value='10.2')])
@@ -355,7 +357,7 @@ class TestAction(unittest.TestCase):
 
     def test_execute_with_triggers(self):
         triggers = [Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])]
-        action = Action(app_name='HelloWorld', action_name='helloWorld', triggers=triggers)
+        action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld', triggers=triggers)
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         action.send_data_to_trigger({"data_in": {"data": 'aaa'}})
 
@@ -371,7 +373,7 @@ class TestAction(unittest.TestCase):
 
     def test_execute_multiple_triggers(self):
         triggers = [Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])]
-        action = Action(app_name='HelloWorld', action_name='helloWorld', triggers=triggers)
+        action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld', triggers=triggers)
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         action.send_data_to_trigger({"data_in": {"data": 'a'}})
 

@@ -2,6 +2,9 @@ import walkoff.case.database as case_database
 from walkoff.case.workflowresults import WorkflowResult
 from walkoff.server import flaskserver
 from tests.util.servertestcase import ServerTestCase
+import walkoff.coredb.devicedb
+from walkoff.coredb.playbook import Playbook
+from walkoff.coredb.workflow import Workflow
 
 
 class TestWorkflowResults(ServerTestCase):
@@ -12,7 +15,9 @@ class TestWorkflowResults(ServerTestCase):
         case_database.case_db.tear_down()
 
     def test_workflow_result_format(self):
-        uid = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+            Workflow.name == 'multiactionWorkflow', Playbook.name == 'multiactionWorkflowTest').first()
+        uid = flaskserver.running_context.controller.execute_workflow(workflow.id)
 
         flaskserver.running_context.controller.wait_and_reset(1)
 
@@ -36,8 +41,11 @@ class TestWorkflowResults(ServerTestCase):
                               'result': {"status": "Success", "result": {"message": "HELLO WORLD"}}})
 
     def test_workflow_result_multiple_workflows(self):
-        uid1 = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-        uid2 = flaskserver.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+            Workflow.name == 'multiactionWorkflow', Playbook.name == 'multiactionWorkflowTest').first()
+
+        uid1 = flaskserver.running_context.controller.execute_workflow(workflow.id)
+        uid2 = flaskserver.running_context.controller.execute_workflow(workflow.id)
 
         flaskserver.running_context.controller.wait_and_reset(2)
 
