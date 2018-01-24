@@ -272,90 +272,90 @@ class Action(ExecutionElement, Device_Base):
                 return trigger
         return None
 
-    def update(self, data):
-        self.app_name = data['app_name']
-        self.action_name = data['action_name']
-        self.name = data['name']
-        self.device_id = data['device_id'] if 'device_id' in data else self.device_id
-        self.x_coordinate = data['x_coordinate'] if 'x_coordinate' in data else self.x_coordinate
-        self.y_coordinate = data['y_coordinate'] if 'y_coordinate' in data else self.y_coordinate
-
-        self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
-        if is_app_action_bound(self.app_name, self._run) and not self.device_id:
-            raise InvalidExecutionElement(self.id, self.name, "App action is bound but no device ID was provided.")
-
-        if 'arguments' in data and data['arguments']:
-            self.update_arguments(data['arguments'])
-        else:
-            self.arguments[:] = []
-
-        if not self.templated:
-            try:
-                validate_app_action_parameters(self._arguments_api, self.arguments, self.app_name, self.action_name)
-            except InvalidArgument:
-                raise InvalidExecutionElement(self.id, self.name, "Invalid Action Arguments")
-
-        if 'triggers' in data and data['triggers']:
-            self.update_triggers(data['triggers'])
-        else:
-            self.triggers[:] = []
-
-    def update_arguments(self, arguments):
-        arguments_seen = []
-        for argument in arguments:
-            if 'id' in argument and argument['id']:
-                argument_obj = self.__get_argument_by_id(argument['id'])
-
-                if argument_obj is None:
-                    raise InvalidExecutionElement(argument['id'], argument['name'], "Invalid Argument ID")
-
-                argument_obj.update(argument)
-                arguments_seen.append(argument_obj.id)
-            else:
-                if 'id' in argument:
-                    argument.pop('id')
-
-                try:
-                    argument_obj = Argument(**argument)
-                except (ValueError, InvalidArgument):
-                    raise InvalidExecutionElement(argument['id'], argument['name'], "Invalid Argument construction")
-
-                self.arguments.append(argument_obj)
-                walkoff.coredb.devicedb.device_db.session.add(argument_obj)
-                walkoff.coredb.devicedb.device_db.session.flush()
-
-                arguments_seen.append(argument_obj.id)
-
-        for argument in self.arguments:
-            if argument.id not in arguments_seen:
-                walkoff.coredb.devicedb.device_db.session.delete(argument)
-
-    def update_triggers(self, triggers):
-        triggers_seen = []
-        for trigger in triggers:
-            if 'id' in trigger and trigger['id']:
-                trigger_obj = self.__get_trigger_by_id(trigger['id'])
-
-                if trigger_obj is None:
-                    raise InvalidExecutionElement(trigger['id'], None, "Invalid Trigger ID")
-
-                trigger_obj.update(trigger)
-                triggers_seen.append(trigger_obj.id)
-            else:
-                if 'id' in trigger:
-                    trigger.pop('id')
-
-                try:
-                    trigger_obj = Condition(**trigger)
-                except (ValueError, InvalidArgument, UnknownApp, UnknownCondition, UnknownTransform):
-                    raise InvalidExecutionElement(trigger['id'], None, "Invalid Trigger construction")
-
-                self.arguments.append(trigger_obj)
-                walkoff.coredb.devicedb.device_db.session.add(trigger_obj)
-                walkoff.coredb.devicedb.device_db.session.flush()
-
-                triggers_seen.append(trigger_obj.id)
-
-        for trigger in self.triggers:
-            if trigger.id not in triggers_seen:
-                walkoff.coredb.devicedb.device_db.session.delete(trigger)
+    # def update(self, data):
+    #     self.app_name = data['app_name']
+    #     self.action_name = data['action_name']
+    #     self.name = data['name']
+    #     self.device_id = data['device_id'] if 'device_id' in data else self.device_id
+    #     self.x_coordinate = data['x_coordinate'] if 'x_coordinate' in data else self.x_coordinate
+    #     self.y_coordinate = data['y_coordinate'] if 'y_coordinate' in data else self.y_coordinate
+    #
+    #     self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
+    #     if is_app_action_bound(self.app_name, self._run) and not self.device_id:
+    #         raise InvalidExecutionElement(self.id, self.name, "App action is bound but no device ID was provided.")
+    #
+    #     if 'arguments' in data and data['arguments']:
+    #         self.update_arguments(data['arguments'])
+    #     else:
+    #         self.arguments[:] = []
+    #
+    #     if not self.templated:
+    #         try:
+    #             validate_app_action_parameters(self._arguments_api, self.arguments, self.app_name, self.action_name)
+    #         except InvalidArgument:
+    #             raise InvalidExecutionElement(self.id, self.name, "Invalid Action Arguments")
+    #
+    #     if 'triggers' in data and data['triggers']:
+    #         self.update_triggers(data['triggers'])
+    #     else:
+    #         self.triggers[:] = []
+    #
+    # def update_arguments(self, arguments):
+    #     arguments_seen = []
+    #     for argument in arguments:
+    #         if 'id' in argument and argument['id']:
+    #             argument_obj = self.__get_argument_by_id(argument['id'])
+    #
+    #             if argument_obj is None:
+    #                 raise InvalidExecutionElement(argument['id'], argument['name'], "Invalid Argument ID")
+    #
+    #             argument_obj.update(argument)
+    #             arguments_seen.append(argument_obj.id)
+    #         else:
+    #             if 'id' in argument:
+    #                 argument.pop('id')
+    #
+    #             try:
+    #                 argument_obj = Argument(**argument)
+    #             except (ValueError, InvalidArgument):
+    #                 raise InvalidExecutionElement(argument['id'], argument['name'], "Invalid Argument construction")
+    #
+    #             self.arguments.append(argument_obj)
+    #             walkoff.coredb.devicedb.device_db.session.add(argument_obj)
+    #             walkoff.coredb.devicedb.device_db.session.flush()
+    #
+    #             arguments_seen.append(argument_obj.id)
+    #
+    #     for argument in self.arguments:
+    #         if argument.id not in arguments_seen:
+    #             walkoff.coredb.devicedb.device_db.session.delete(argument)
+    #
+    # def update_triggers(self, triggers):
+    #     triggers_seen = []
+    #     for trigger in triggers:
+    #         if 'id' in trigger and trigger['id']:
+    #             trigger_obj = self.__get_trigger_by_id(trigger['id'])
+    #
+    #             if trigger_obj is None:
+    #                 raise InvalidExecutionElement(trigger['id'], None, "Invalid Trigger ID")
+    #
+    #             trigger_obj.update(trigger)
+    #             triggers_seen.append(trigger_obj.id)
+    #         else:
+    #             if 'id' in trigger:
+    #                 trigger.pop('id')
+    #
+    #             try:
+    #                 trigger_obj = Condition(**trigger)
+    #             except (ValueError, InvalidArgument, UnknownApp, UnknownCondition, UnknownTransform):
+    #                 raise InvalidExecutionElement(trigger['id'], None, "Invalid Trigger construction")
+    #
+    #             self.arguments.append(trigger_obj)
+    #             walkoff.coredb.devicedb.device_db.session.add(trigger_obj)
+    #             walkoff.coredb.devicedb.device_db.session.flush()
+    #
+    #             triggers_seen.append(trigger_obj.id)
+    #
+    #     for trigger in self.triggers:
+    #         if trigger.id not in triggers_seen:
+    #             walkoff.coredb.devicedb.device_db.session.delete(trigger)

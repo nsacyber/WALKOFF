@@ -260,94 +260,94 @@ class Workflow(ExecutionElement, Device_Base):
         """
         return self._execution_uid
 
-    def update(self, data):
-        self.name = data['name']
-        self.start = data['start']
-
-        if 'actions' in data and data['actions']:
-            actions_dict = self.update_actions(data['actions'])
-        else:
-            self.actions[:] = []
-            actions_dict = {}
-
-        if 'branches' in data and data['branches']:
-            self.update_branches(data['branches'], actions_dict)
-        else:
-            self.branches[:] = []
-
-    def update_actions(self, actions):
-        actions_seen = []
-        actions_dict = {}
-        for action in actions:
-            if 'id' in action and action['id'] > 0:
-                action_obj = self.__get_action_by_id(action['id'])
-
-                if action_obj is None:
-                    raise InvalidExecutionElement(action['id'], action['name'], "Invalid Action ID")
-
-                action_obj.update(action)
-                actions_seen.append(action_obj.id)
-            else:
-                action_id = None
-                if 'id' in action:
-                    action_id = action.pop('id')
-
-                try:
-                    action_obj = Action(**action)
-                except (ValueError, InvalidArgument, UnknownApp, UnknownAppAction, UnknownCondition, UnknownTransform):
-                    raise InvalidExecutionElement(action_id, action['name'], "Invalid Action construction")
-
-                walkoff.coredb.devicedb.device_db.session.add(action_obj)
-                walkoff.coredb.devicedb.device_db.session.flush()
-
-                self.actions.append(action_obj)
-                actions_seen.append(action_obj.id)
-
-                if action_id:
-                    actions_dict[action_id] = action_obj.id
-
-        for action in self.actions:
-            if action.id not in actions_seen:
-                walkoff.coredb.devicedb.device_db.session.delete(action)
-
-        return actions_dict
-
-    def update_branches(self, branches, actions_dict):
-        branches_seen = []
-        for branch in branches:
-            id_ = branch['id'] if 'id' in branch else None
-            if branch['source_id'] < 0:
-                if branch['source_id'] in actions_dict:
-                    branch['source_id'] = actions_dict[branch.source_id]
-                else:
-                    raise InvalidExecutionElement(id_, None, "Invalid Branch source ID")
-            if branch['destination_id'] < 0:
-                if branch['destination_id'] in actions_dict:
-                    branch['destination_id'] = actions_dict[branch.destination_id]
-                else:
-                    raise InvalidExecutionElement(id_, None, "Invalid Branch destination ID")
-
-            if 'id' in branch and branch['id']:
-                branch_obj = self.__get_branch_by_id(branch['id'])
-                if branch_obj is None:
-                    raise InvalidExecutionElement(id_, None, "Invalid Branch ID")
-
-                branch_obj.update(branch)
-                branches_seen.append(branch_obj.id)
-            else:
-                if 'id' in branch:
-                    branch.pop('id')
-
-                try:
-                    branch_obj = Branch(**branch)
-                except (ValueError, InvalidArgument, UnknownApp, UnknownCondition, UnknownTransform):
-                    raise InvalidExecutionElement(id_, None, "Invalid Branch construction")
-
-                self.branches.append(branch_obj)
-                walkoff.coredb.devicedb.device_db.session.add(branch_obj)
-                walkoff.coredb.devicedb.device_db.session.flush()
-                branches_seen.append(branch_obj.id)
-
-        for branch in self.branches:
-            if branch.id not in branches_seen:
-                walkoff.coredb.devicedb.device_db.session.delete(branch)
+    # def update(self, data):
+    #     self.name = data['name']
+    #     self.start = data['start']
+    #
+    #     if 'actions' in data and data['actions']:
+    #         actions_dict = self.update_actions(data['actions'])
+    #     else:
+    #         self.actions[:] = []
+    #         actions_dict = {}
+    #
+    #     if 'branches' in data and data['branches']:
+    #         self.update_branches(data['branches'], actions_dict)
+    #     else:
+    #         self.branches[:] = []
+    #
+    # def update_actions(self, actions):
+    #     actions_seen = []
+    #     actions_dict = {}
+    #     for action in actions:
+    #         if 'id' in action and action['id'] > 0:
+    #             action_obj = self.__get_action_by_id(action['id'])
+    #
+    #             if action_obj is None:
+    #                 raise InvalidExecutionElement(action['id'], action['name'], "Invalid Action ID")
+    #
+    #             action_obj.update(action)
+    #             actions_seen.append(action_obj.id)
+    #         else:
+    #             action_id = None
+    #             if 'id' in action:
+    #                 action_id = action.pop('id')
+    #
+    #             try:
+    #                 action_obj = Action(**action)
+    #             except (ValueError, InvalidArgument, UnknownApp, UnknownAppAction, UnknownCondition, UnknownTransform):
+    #                 raise InvalidExecutionElement(action_id, action['name'], "Invalid Action construction")
+    #
+    #             walkoff.coredb.devicedb.device_db.session.add(action_obj)
+    #             walkoff.coredb.devicedb.device_db.session.flush()
+    #
+    #             self.actions.append(action_obj)
+    #             actions_seen.append(action_obj.id)
+    #
+    #             if action_id:
+    #                 actions_dict[action_id] = action_obj.id
+    #
+    #     for action in self.actions:
+    #         if action.id not in actions_seen:
+    #             walkoff.coredb.devicedb.device_db.session.delete(action)
+    #
+    #     return actions_dict
+    #
+    # def update_branches(self, branches, actions_dict):
+    #     branches_seen = []
+    #     for branch in branches:
+    #         id_ = branch['id'] if 'id' in branch else None
+    #         if branch['source_id'] < 0:
+    #             if branch['source_id'] in actions_dict:
+    #                 branch['source_id'] = actions_dict[branch.source_id]
+    #             else:
+    #                 raise InvalidExecutionElement(id_, None, "Invalid Branch source ID")
+    #         if branch['destination_id'] < 0:
+    #             if branch['destination_id'] in actions_dict:
+    #                 branch['destination_id'] = actions_dict[branch.destination_id]
+    #             else:
+    #                 raise InvalidExecutionElement(id_, None, "Invalid Branch destination ID")
+    #
+    #         if 'id' in branch and branch['id']:
+    #             branch_obj = self.__get_branch_by_id(branch['id'])
+    #             if branch_obj is None:
+    #                 raise InvalidExecutionElement(id_, None, "Invalid Branch ID")
+    #
+    #             branch_obj.update(branch)
+    #             branches_seen.append(branch_obj.id)
+    #         else:
+    #             if 'id' in branch:
+    #                 branch.pop('id')
+    #
+    #             try:
+    #                 branch_obj = Branch(**branch)
+    #             except (ValueError, InvalidArgument, UnknownApp, UnknownCondition, UnknownTransform):
+    #                 raise InvalidExecutionElement(id_, None, "Invalid Branch construction")
+    #
+    #             self.branches.append(branch_obj)
+    #             walkoff.coredb.devicedb.device_db.session.add(branch_obj)
+    #             walkoff.coredb.devicedb.device_db.session.flush()
+    #             branches_seen.append(branch_obj.id)
+    #
+    #     for branch in self.branches:
+    #         if branch.id not in branches_seen:
+    #             walkoff.coredb.devicedb.device_db.session.delete(branch)

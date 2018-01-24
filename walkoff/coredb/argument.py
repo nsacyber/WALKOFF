@@ -109,24 +109,24 @@ class Argument(Representable, Device_Base):
         else:
             raise ValueError
 
-    def update(self, data):
-        self.name = data['name']
-
-        value = data['value'] if 'value' in data else None
-        reference = data['reference'] if 'reference' in data else None
-        selection = data['selection'] if 'selection' in data else None
-
-        if value is None and not reference:
-            message = 'Input {} must have either value or reference. Input has neither'.format(self.name)
-            logger.error(message)
-            raise InvalidExecutionElement(None, None, "Invalid Argument construction")
-        elif value is not None and reference:
-            message = 'Input {} must have either value or reference. Input has both. Using "value"'.format(self.name)
-            logger.warning(message)
-
-        self.value = value
-        self.reference = reference
-        self.selection = selection
+    # def update(self, data):
+    #     self.name = data['name']
+    #
+    #     value = data['value'] if 'value' in data else None
+    #     reference = data['reference'] if 'reference' in data else None
+    #     selection = data['selection'] if 'selection' in data else None
+    #
+    #     if value is None and not reference:
+    #         message = 'Input {} must have either value or reference. Input has neither'.format(self.name)
+    #         logger.error(message)
+    #         raise InvalidExecutionElement(None, None, "Invalid Argument construction")
+    #     elif value is not None and reference:
+    #         message = 'Input {} must have either value or reference. Input has both. Using "value"'.format(self.name)
+    #         logger.warning(message)
+    #
+    #     self.value = value
+    #     self.reference = reference
+    #     self.selection = selection
 
     def __eq__(self, other):
         return self.name == other.name and self.value == other.value and self.reference == other.reference and \

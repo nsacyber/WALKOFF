@@ -92,7 +92,7 @@ def create_playbook():
     def __func():
         data = request.get_json()
         playbook_name = data['name']
-        playbook = Playbook(**data)
+        playbook = Playbook.create(data)
 
         try:
             walkoff.coredb.devicedb.device_db.session.add(playbook)
@@ -181,7 +181,7 @@ def copy_playbook(playbook_id):
 
         playbook_json = playbook.read()
         playbook_json.pop('id')
-        new_playbook = Playbook(**playbook_json)
+        new_playbook = Playbook.create(playbook_json)
 
         try:
             walkoff.coredb.devicedb.device_db.session.add(new_playbook)
@@ -221,7 +221,7 @@ def create_workflow(playbook_id):
         data = request.get_json()
         workflow_name = data['name']
 
-        workflow = Workflow(**data)
+        workflow = Workflow.create(data)
         playbook.workflows.append(workflow)
 
         try:
@@ -328,7 +328,7 @@ def copy_workflow(playbook_id, workflow_id):
         workflow_json.pop('playbook_id')
         workflow_json['name'] = new_workflow_name
 
-        new_workflow = Workflow(**workflow_json)
+        new_workflow = Workflow.create(workflow_json)
         walkoff.coredb.devicedb.device_db.session.add(new_workflow)
 
         if new_playbook_name and walkoff.coredb.devicedb.device_db.session.query(
@@ -369,7 +369,7 @@ def execute_workflow(playbook_id, workflow_id):
         if args:
             for arg in args:
                 try:
-                    arguments.append(Argument(**arg))
+                    arguments.append(Argument.create(arg))
                 except InvalidArgument:
                     current_app.logger.error('Could not execute workflow. Invalid Argument construction')
                     return {"error": "Could not execute workflow. Invalid argument construction"}, INVALID_INPUT_ERROR
