@@ -55,8 +55,8 @@ def upgrade_workflow(workflow):
         if argument.reference:
             for action in workflow['actions']:
                 print("Arg ref: {}".format(argument.reference))
-                print("Action uid: {}".format(action['uid']))
-                if argument.reference == action['uid']:
+                print("Action prev id: {}".format(action['prev_id']))
+                if argument.reference == action['prev_id']:
                     print("updating to: {}".format(action['id']))
                     argument.reference = action['id']
                     walkoff.coredb.devicedb.device_db.session.add(argument)
@@ -70,7 +70,7 @@ def upgrade_workflow(workflow):
     start = None
     if 'start' in workflow:
         for action in workflow['actions']:
-            if action['uid'] == workflow['start']:
+            if action['prev_id'] == workflow['start']:
                 start = action['id']
 
     name = workflow['name'] if 'name' in workflow else None
@@ -90,8 +90,8 @@ def upgrade_workflow(workflow):
 
 def convert_action(action):
     action_copy = deepcopy(action)
-    action_copy.pop("uid")
-    action_copy.pop("position")
+    action_copy.pop("id", None)
+    action_copy.pop("position", None)
 
     arguments = []
     if 'arguments' in action:
@@ -122,6 +122,7 @@ def convert_action(action):
     walkoff.coredb.devicedb.device_db.session.add(action_obj)
     walkoff.coredb.devicedb.device_db.session.commit()
 
+    action['prev_id'] = action['id']
     action['id'] = action_obj.id
 
     return action_obj
@@ -182,9 +183,9 @@ def convert_branch(branch, actions):
     status = branch['status'] if 'status' in branch else None
 
     for action in actions:
-        if action['uid'] == branch['source_uid']:
+        if action['prev_id'] == branch['source_id']:
             source_id = action['id']
-        if action['uid'] == branch['destination_uid']:
+        if action['prev_id'] == branch['destination_id']:
             destination_id = action['id']
 
     if 'priority' in branch:

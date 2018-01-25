@@ -4,7 +4,7 @@
         {
             "name": "helloWorldWorkflow",
             "branches": [],
-            "start": "7aeb492a73c345bbb4e8570bb682c87d",
+            "start": -1,
             "actions": [
                 {
                     "action_name": "repeatBackToMe",
@@ -16,12 +16,10 @@
                         }
                     ],
                     "name": "start",
-                    "position": {},
-                    "uid": "7aeb492a73c345bbb4e8570bb682c87d",
+                    "id": -1,
                     "device_id": 1
                 }
-            ],
-            "uid": "127560fb39eb44ddbdea6af70fb86e26"
+            ]
         }
     ]
 }

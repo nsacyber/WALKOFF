@@ -6,36 +6,13 @@
             "branches": [
                 {
                     "conditions": [],
-                    "destination_uid": "0ed91d07f1774d16a991d7815814fff1",
-                    "source_uid": "9fd0559779a84bd584c1ecd43b156656",
-                    "status": "Success",
-                    "uid": "3b4fca83078e4eb8881ee5c4e7ac50ed"
+                    "destination_id": -2,
+                    "source_id": -1,
+                    "status": "Success"
                 }
             ],
-            "start": "9fd0559779a84bd584c1ecd43b156656",
+            "start": -1,
             "actions": [
-                {
-                    "action_name": "Add Three",
-                    "app_name": "HelloWorldBounded",
-                    "arguments": [
-                        {
-                            "name": "num1",
-                            "reference": "9fd0559779a84bd584c1ecd43b156656"
-                        },
-                        {
-                            "name": "num2",
-                            "reference": "de45a29e29864b39998f60743055a452"
-                        },
-                        {
-                            "name": "num3",
-                            "value": 3.0
-                        }
-                    ],
-                    "name": "1",
-                    "position": {},
-                    "uid": "0ed91d07f1774d16a991d7815814fff1",
-                    "device_id": 1
-                },
                 {
                     "action_name": "Add Three",
                     "app_name": "HelloWorldBounded",
@@ -54,8 +31,28 @@
                         }
                     ],
                     "name": "start",
-                    "position": {},
-                    "uid": "9fd0559779a84bd584c1ecd43b156656",
+                    "id": -1,
+                    "device_id": 1
+                },
+                {
+                    "action_name": "Add Three",
+                    "app_name": "HelloWorldBounded",
+                    "arguments": [
+                        {
+                            "name": "num1",
+                            "reference": -1
+                        },
+                        {
+                            "name": "num2",
+                            "reference": -3
+                        },
+                        {
+                            "name": "num3",
+                            "value": 3.0
+                        }
+                    ],
+                    "name": "1",
+                    "id": -2,
                     "device_id": 1
                 },
                 {
@@ -76,12 +73,10 @@
                         }
                     ],
                     "name": "2",
-                    "position": {},
-                    "uid": "de45a29e29864b39998f60743055a452",
+                    "id": -3,
                     "device_id": 1
                 }
-            ],
-            "uid": "06e80ec0a9b543d29dcd227f04a9c90e"
+            ]
         }
     ]
 }

@@ -19,20 +19,17 @@
                                 {
                                     "action_name": "length",
                                     "app_name": "HelloWorldBounded",
-                                    "arguments": [],
-                                    "uid": "fead248eba064defbf25b33cccc734fc"
+                                    "arguments": []
                                 }
-                            ],
-                            "uid": "8f698454d6a74978a730f9f4e429e1f6"
+                            ]
                         }
                     ],
-                    "destination_uid": "01204c1451c44f99b828b2367690801b",
-                    "source_uid": "704c94c112fa49c3a4a3b30cf1586fc2",
-                    "status": "Success",
-                    "uid": "f54edf0644ae4bd4878de898bf3997a7"
+                    "destination_id": -2,
+                    "source_id": -1,
+                    "status": "Success"
                 }
             ],
-            "start": "704c94c112fa49c3a4a3b30cf1586fc2",
+            "start": -1,
             "actions": [
                 {
                     "action_name": "repeatBackToMe",
@@ -44,8 +41,7 @@
                         }
                     ],
                     "name": "1",
-                    "position": {},
-                    "uid": "01204c1451c44f99b828b2367690801b",
+                    "id": -2,
                     "device_id": 1
                 },
                 {
@@ -53,12 +49,10 @@
                     "app_name": "HelloWorldBounded",
                     "arguments": [],
                     "name": "start",
-                    "position": {},
-                    "uid": "704c94c112fa49c3a4a3b30cf1586fc2",
+                    "id": -1,
                     "device_id": 1
                 }
-            ],
-            "uid": "81f0ae4aaf4b4eda905d35cbab0cd36d"
+            ]
         }
     ]
 }

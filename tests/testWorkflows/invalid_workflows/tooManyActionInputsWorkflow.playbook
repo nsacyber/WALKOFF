@@ -24,12 +24,12 @@
                             ]
                         }
                     ],
-                    "destination_uid": "1",
-                    "source_uid": "2",
+                    "destination_id": -2,
+                    "source_id": -1,
                     "status": "Success"
                 }
             ],
-            "start": "2",
+            "start": -1,
             "actions": [
                 {
                     "action_name": "returnPlusOne",
@@ -44,9 +44,8 @@
                             "value": "2"
                         }
                     ],
-                    "name": "1",
-                    "position": {},
-                    "uid": "1",
+                    "name": "one",
+                    "id": -2,
                     "device_id": 1
                 },
                 {
@@ -54,8 +53,7 @@
                     "app_name": "Invalid",
                     "arguments": [],
                     "name": "start",
-                    "position": {},
-                    "uid": "2",
+                    "id": -1,
                     "device_id": 1
                 }
             ]

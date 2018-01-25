@@ -6,20 +6,18 @@
             "branches": [
                 {
                     "conditions": [],
-                    "destination_uid": "9515a631ba4f4d6f8fcd6b843a277c40",
-                    "source_uid": "811b1acdc3ec48a9abbdc0cf01c66176",
-                    "status": "Success",
-                    "uid": "8b7b97775dba4b0a9dda0db213483cd1"
+                    "destination_id": -3,
+                    "source_id": -2,
+                    "status": "Success"
                 },
                 {
                     "conditions": [],
-                    "destination_uid": "811b1acdc3ec48a9abbdc0cf01c66176",
-                    "source_uid": "5ed04d7e28354ee7b81619dab9d34fe2",
-                    "status": "Success",
-                    "uid": "4a21e9e1ea0f4286b14643d59ebdda2b"
+                    "destination_id": -2,
+                    "source_id": -1,
+                    "status": "Success"
                 }
             ],
-            "start": "5ed04d7e28354ee7b81619dab9d34fe2",
+            "start": -1,
             "actions": [
                 {
                     "action_name": "Add Three",
@@ -38,9 +36,8 @@
                             "value": 3.0
                         }
                     ],
-                    "name": "1",
-                    "position": {},
-                    "uid": "811b1acdc3ec48a9abbdc0cf01c66176",
+                    "name": "start",
+                    "id": -1,
                     "device_id": 1
                 },
                 {
@@ -60,9 +57,8 @@
                             "value": 3.0
                         }
                     ],
-                    "name": "start",
-                    "position": {},
-                    "uid": "5ed04d7e28354ee7b81619dab9d34fe2",
+                    "name": "1",
+                    "id": -2,
                     "device_id": 1
                 },
                 {
@@ -71,11 +67,11 @@
                     "arguments": [
                         {
                             "name": "num1",
-                            "reference": "5ed04d7e28354ee7b81619dab9d34fe2"
+                            "reference": -1
                         },
                         {
                             "name": "num2",
-                            "reference": "811b1acdc3ec48a9abbdc0cf01c66176"
+                            "reference": -2
                         },
                         {
                             "name": "num3",
@@ -83,12 +79,10 @@
                         }
                     ],
                     "name": "2",
-                    "position": {},
-                    "uid": "9515a631ba4f4d6f8fcd6b843a277c40",
+                    "id": -3,
                     "device_id": 1
                 }
-            ],
-            "uid": "3dd54e7df3bc414a962426d92ce3e6d2"
+            ]
         }
     ]
 }
