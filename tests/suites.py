@@ -17,7 +17,7 @@ __server_tests = [test_workflow_server, test_app_api_server, test_case_server, t
                   test_message, test_messaging_endpoints, test_workflow_authorization,
                   test_workflow_authorized_user_set, test_workflow_authorization_cache, test_trigger_helpers,
                   test_system_server, test_disk_cache_adapter, test_redis_cache_adapter, test_redis_subscription,
-                  test_disk_subscription, test_sse_stream, test_workflow_result_stream]
+                  test_disk_subscription, test_sse_stream, test_workflow_result_stream, test_filtered_sse_stream]
 server_suite = TestSuite()
 add_tests_to_suite(server_suite, __server_tests)
 

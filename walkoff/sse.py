@@ -3,7 +3,8 @@ from functools import wraps
 from flask import Response
 import json
 from walkoff.cache import unsubscribe_message
-
+import collections
+from six import string_types
 
 class SseEvent(object):
     """Class which creates and formats Server-Sent Events
@@ -165,11 +166,12 @@ class SimpleFilteredSseStream(SseStream):
     def push(self, event):
         """Decorator to use to over a function which pushes data to the SSE stream.
 
-        This function should return data formatted in the way it should appear to the client as well as an identifier
-        to use for the subchannel. If the stream should push JSON, then the function should return a `dict`
-        (do not use json.dumps()). The subchannel identifier should be something which can be quickly converted to a
-        string. If a `tuple` of (data, subchannel_id) is returned, then the event passed into the decorator will be
-        used. If a `tuple` of (data, subchannel_id, event) is returned, then that event is used.
+        This function should return data formatted in the way it should appear to the client as well as an identifier or
+        an iterable of identifiers to publish to the subchannel or subchannels. If the stream should push JSON, then the
+        function should return a `dict` (do not use json.dumps()). The subchannel identifier should be something which
+        can be quickly converted to a string. If a `tuple` of (data, subchannel_ids) is returned, then the event passed
+        into the decorator will be used. If a `tuple` of (data, subchannel_id, event) is returned, then that event is
+        used.
 
         Args:
             event (str): The default event to use on this stream. This can be overwritten by returning a `tuple` of
@@ -187,7 +189,14 @@ class SimpleFilteredSseStream(SseStream):
                     data = {'data': response[0], 'event': response[2]}
                 else:
                     data = {'data': response[0], 'event': event}
-                self.cache.publish(self.create_channel_name(response[1]), data)
+
+                subchannels = response[1]
+                if not isinstance(subchannels, string_types) and isinstance(subchannels, collections.Iterable):
+                    for subchannel in response[1]:
+                        self.cache.publish(self.create_channel_name(subchannel), data)
+                else:
+                    self.cache.publish(self.create_channel_name(subchannels), data)
+
                 return response
             return wrapper
 

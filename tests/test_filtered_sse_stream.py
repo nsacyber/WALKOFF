@@ -4,6 +4,7 @@ from tests.util.mock_objects import MockRedisCacheAdapter
 import gevent
 from gevent.monkey import patch_all
 
+
 class TestSimpleFilteredSseStream(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -49,9 +50,9 @@ class TestSimpleFilteredSseStream(TestCase):
         def pusher(a, ev, sub):
             return {'a': a}, sub, ev
 
-        subs = ('a', 'b')
+        subs = ('aaa', 'bbb')
 
-        result = {'a': [], 'b': []}
+        result = {sub: [] for sub in subs}
 
         def listen(sub):
             for event in self.stream.send(subchannel=sub):
@@ -75,91 +76,66 @@ class TestSimpleFilteredSseStream(TestCase):
         for sub in subs:
             self.assertListEqual(result[sub], formatted_sses[sub])
 
-    '''
+    def test_send_publish_multiple(self):
+
+        subs = ('a', 'bbb')
+
+        @self.stream.push('event1')
+        def pusher(a, ev):
+            return {'a': a}, subs, ev
+
+        result = {sub: [] for sub in subs}
+
+        def listen(sub):
+            for event in self.stream.send(subchannel=sub):
+                result[sub].append(event)
+
+        base_args = [('event1', 1), ('event2', 2)]
+
+        def publish():
+            for event, data in base_args:
+                pusher(data, event)
+            for sub in subs:
+                self.stream.unsubscribe(sub)
+
+        sses = {sub: [SseEvent(event, {'a': arg}) for event, arg in base_args] for sub in subs}
+        formatted_sses = {sub: [sse.format(i + 1) for i, sse in enumerate(sse_vals)] for sub, sse_vals in sses.items()}
+
+        listen_threads = [gevent.spawn(listen, sub) for sub in subs]
+        publish_thread = gevent.spawn(publish)
+        gevent.joinall(listen_threads, timeout=2)
+        publish_thread.join(timeout=2)
+        for sub in subs:
+            self.assertListEqual(result[sub], formatted_sses[sub])
+
     def test_send_with_retry(self):
 
         @self.stream.push('event1')
-        def pusher(a, ev):
-            return {'a': a}, ev
+        def pusher(a, ev, sub):
+            return {'a': a}, sub, ev
 
-        result = []
+        subs = ('a', 'b')
 
-        def listen():
-            for event in self.stream.send(retry=50):
-                result.append(event)
+        result = {'a': [], 'b': []}
 
-        args = [('event1', 1), ('event2', 2)]
-        sses = [SseEvent(event, {'a': arg}) for event, arg in args]
-        formatted_sses = [sse.format(i+1, retry=50) for i, sse in enumerate(sses)]
+        def listen(sub):
+            for event in self.stream.send(subchannel=sub, retry=50):
+                result[sub].append(event)
 
-        def publish():
-            for event, data in args:
-                pusher(data, event)
-            self.stream.unsubscribe()
+        base_args = [('event1', 1), ('event2', 2)]
+        args = {sub: [(event, data + i) for (event, data) in base_args] for i, sub in enumerate(subs)}
 
-        thread = gevent.spawn(listen)
-        thread2 = gevent.spawn(publish)
-        thread.start()
-        thread2.start()
-        thread.join(timeout=2)
-        thread2.join(timeout=2)
-        self.assertListEqual(result, formatted_sses)
+        def publish(sub):
+            for event, data in args[sub]:
+                pusher(data, event, sub)
+            self.stream.unsubscribe(sub)
 
-    def test_stream_with_data(self):
-        @self.stream.push('event1')
-        def pusher(a, ev):
-            return {'a': a}, ev
+        sses = {sub: [SseEvent(event, {'a': arg}) for event, arg in args[sub]] for sub in subs}
+        formatted_sses = {sub: [sse.format(i + 1, retry=50) for i, sse in enumerate(sse_vals)] for sub, sse_vals in sses.items()}
 
-        result = []
-
-        def listen():
-            response = self.stream.stream()
-            for event in response.response:
-                result.append(event)
-
-        args = [('event1', 1), ('event2', 2)]
-        sses = [SseEvent(event, {'a': arg}) for event, arg in args]
-        formatted_sses = [sse.format(i+1) for i, sse in enumerate(sses)]
-
-        def publish():
-            for event, data in args:
-                pusher(data, event)
-            self.stream.unsubscribe()
-
-        thread = gevent.spawn(listen)
-        thread2 = gevent.spawn(publish)
-        thread.start()
-        thread2.start()
-        thread.join(timeout=2)
-        thread2.join(timeout=2)
-        self.assertListEqual(result, formatted_sses)
-
-    def test_stream_with_data_with_retry(self):
-        @self.stream.push('event1')
-        def pusher(a, ev):
-            return {'a': a}, ev
-
-        result = []
-
-        def listen():
-            response = self.stream.stream(retry=100)
-            for event in response.response:
-                result.append(event)
-
-        args = [('event1', 1), ('event2', 2)]
-        sses = [SseEvent(event, {'a': arg}) for event, arg in args]
-        formatted_sses = [sse.format(i+1, retry=100) for i, sse in enumerate(sses)]
-
-        def publish():
-            for event, data in args:
-                pusher(data, event)
-            self.stream.unsubscribe()
-
-        thread = gevent.spawn(listen)
-        thread2 = gevent.spawn(publish)
-        thread.start()
-        thread2.start()
-        thread.join(timeout=2)
-        thread2.join(timeout=2)
-        self.assertListEqual(result, formatted_sses)
-    '''
+        listen_threads = [gevent.spawn(listen, sub) for sub in subs]
+        publish_threads = [gevent.spawn(publish, sub) for sub in subs]
+        gevent.joinall(listen_threads, timeout=2)
+        gevent.joinall(publish_threads, timeout=2)
+        for sub in subs:
+            self.assertListEqual(result[sub], formatted_sses[sub])
