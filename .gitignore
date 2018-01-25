@@ -29,3 +29,4 @@ walkoff/client/node_modules/
 walkoff/client/build/
 !apps/*.py
 !interfaces/*.py
+tests/tmp/*
