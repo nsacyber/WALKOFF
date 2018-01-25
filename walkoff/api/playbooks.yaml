@@ -186,10 +186,7 @@
           type: array
           description: The JSON representation of all the workflows for the playbook
           items:
-            type: object
-            properties:
-              schema:
-                $ref: '#/definitions/Workflow'
+            $ref: '#/definitions/Workflow'
       461:
         description: Playbook does not exist.
         schema:

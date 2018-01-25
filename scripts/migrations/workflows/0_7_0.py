@@ -12,6 +12,7 @@ from walkoff.coredb.condition import Condition
 from walkoff.coredb.playbook import Playbook
 from walkoff.coredb.transform import Transform
 from walkoff.coredb.workflow import Workflow
+from walkoff.coredb.position import Position
 
 # import walkoff.__version__ as walkoff_version
 
@@ -104,17 +105,19 @@ def convert_action(action):
 
     name = action['name'] if 'name' in action else None
     device_id = action['device_id'] if 'device_id' in action else None
+
+    x = None
+    y = None
     if 'position' in action and action['position']:
-        x_coordinate = action['position']['x']
-        y_coordinate = action['position']['y']
-    else:
-        x_coordinate = None
-        y_coordinate = None
+        x = action['position']['x']
+        y = action['position']['y']
+    position = Position(x, y) if x and y else None
+
     templated = action['templated'] if 'templated' in action else None
 
     action_obj = Action(app_name=action['app_name'], action_name=action['action_name'], name=name, device_id=device_id,
-                        x_coordinate=x_coordinate, y_coordinate=y_coordinate, templated=templated,
-                        raw_representation=action_copy, arguments=arguments, triggers=triggers)
+                        position=position, templated=templated, raw_representation=action_copy, arguments=arguments,
+                        triggers=triggers)
 
     walkoff.coredb.devicedb.device_db.session.add(action_obj)
     walkoff.coredb.devicedb.device_db.session.commit()

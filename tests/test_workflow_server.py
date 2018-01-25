@@ -61,157 +61,215 @@ class TestWorkflowServer(ServerTestCase):
         case_database.case_db.tear_down()
         walkoff.coredb.devicedb.device_db.tear_down()
 
-    def copy_playbook(self, playbook):
-        playbook_json = playbook.read()
-        playbook_json.pop('id')
+    def test_put_playbook(self):
+        workflow = {'name': 'ihopethisworksWorkflow',
+                    'start': -1,
+                    'id': 15,
+                    'actions': [{
+                        'action_name': 'repeatBackToMe',
+                        'app_name': 'HelloWorldBounded',
+                        'arguments': [{
+                            'name': 'call',
+                            'value': 'Hello World'
+                        }],
+                        'name': 'start',
+                        'x_coordinate': 0,
+                        'y_coordinate': 0,
+                        'id': 26,
+                        'device_id': 1
+                    },
+                        {
+                            'action_name': 'repeatBackToMe',
+                            'app_name': 'HelloWorldBounded',
+                            'arguments': [{
+                                'name': 'call',
+                                'value': 'Hello World'
+                            }],
+                            'name': 'start',
+                            'x_coordinate': 0,
+                            'y_coordinate': 0,
+                            'id': 27,
+                            'device_id': 1
+                        },
+                        {
+                            'action_name': 'repeatBackToMe',
+                            'app_name': 'HelloWorldBounded',
+                            'arguments': [{
+                                'name': 'call',
+                                'value': 'Hello World'
+                            }],
+                            'name': 'start',
+                            'x_coordinate': 0,
+                            'y_coordinate': 0,
+                            'id': -1,
+                            'device_id': 1
+                        }],
+                    'branches': [{
+                        'id': 12,
+                        'source_id': 26,
+                        'destination_id': 27,
+                        'status': 'Success',
+                        'priority': 1
+                    },
+                        {
+                            'source_id': 27,
+                            'destination_id': -1,
+                            'status': 'Success',
+                            'priority': 1
+                        }]
+                    }
+        response = self.post_with_status_check('/api/playbooks/15/workflows', headers=self.headers,
+                                               data=json.dumps(workflow), content_type='application/json',
+                                               status_code=SUCCESS)
+        print(response)
 
-    def test_display_all_playbooks(self):
-        num_playbooks = len(walkoff.coredb.devicedb.device_db.session.query(Playbook).all())
-        response = self.get_with_status_check('/api/playbooks', headers=self.headers)
-        for playbook in response:
-            for workflow in playbook['workflows']:
-                workflow.pop('id')
-
-        for playbook in response:
-            if playbook['name'] == 'test':
-                self.assertEqual(playbook['workflows'], [{'name': 'helloWorldWorkflow'}])
-            elif playbook['name'] == 'triggerActionWorkflow':
-                self.assertEqual(playbook['workflows'], [{"name": "triggerActionWorkflow"}])
-            elif playbook['name'] == 'pauseWorkflowTest':
-                self.assertEqual(playbook['workflows'], [{"name": "pauseWorkflow"}])
-
-        self.assertEqual(len(response), num_playbooks)
-
-    def test_display_playbook_workflows(self):
-        playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(name='test').first()
-        response = self.get_with_status_check('/api/playbooks/{}'.format(playbook.id), headers=self.headers)
-
-        workflows = [workflow.read() for workflow in playbook.workflows]
-
-        self.assertEqual(response['name'], 'test')
-        self.assertEqual(len(response['workflows']), len(workflows))
-        self.assertListEqual(response['workflows'], workflows)
-
-    def test_display_playbook_workflows_invalid_id(self):
-        self.get_with_status_check('/api/playbooks/0', error='Playbook does not exist.', headers=self.headers,
-                                   status_code=OBJECT_DNE_ERROR)
-
-    def test_display_workflow_invalid_id(self):
-        self.get_with_status_check('/api/playbooks/2/workflows/0',
-                                   error='Workflow does not exist',
-                                   headers=self.headers, status_code=OBJECT_DNE_ERROR)
-
-    def test_add_playbook(self):
-        expected_playbooks = walkoff.coredb.devicedb.device_db.session.query(Playbook).all()
-        original_length = len(list(expected_playbooks))
-        data = {"name": self.add_playbook_name}
-        self.playbooks_added.append(self.add_playbook_name)
-        self.update_playbooks = True
-        response = self.put_with_status_check('/api/playbooks', headers=self.headers,
-                                              status_code=OBJECT_CREATED, data=json.dumps(data),
-                                              content_type="application/json")
-
-        response.pop('id')
-
-        self.assertDictEqual(response, {'name': self.add_playbook_name, 'workflows': []})
-        self.assertEqual(len(list(walkoff.coredb.devicedb.device_db.session.query(Playbook).all())), original_length+1)
-
-    def test_add_playbook_already_exists(self):
-        data = {"name": self.add_playbook_name}
-        self.playbooks_added.append(self.add_playbook_name)
-        self.update_playbooks = True
-        self.put_with_status_check('/api/playbooks',
-                                   data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
-                                   content_type="application/json")
-        self.put_with_status_check('/api/playbooks',
-                                   error='Unique constraint failed.',
-                                   data=json.dumps(data), headers=self.headers, status_code=OBJECT_EXISTS_ERROR,
-                                   content_type="application/json")
-
-    def test_add_workflow(self):
-        initial_playbooks = walkoff.coredb.devicedb.device_db.session.query(Playbook).all()
-        initial_workflows = next(playbook.workflows for playbook in initial_playbooks if playbook.name == 'test')
-        initial_workflows_len = len(initial_workflows)
-
-        playbook_id = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(name='test').first().id
-
-        data = {"name": self.add_workflow_name, "start": 0}
-        self.workflows_added.append(self.add_workflow_name)
-        self.update_workflows = True
-        response = self.put_with_status_check('/api/playbooks/{}/workflows'.format(playbook_id),
-                                              headers=self.headers, status_code=OBJECT_CREATED, data=json.dumps(data),
-                                              content_type="application/json")
-        self.empty_workflow_json['id'] = response['id']
-        self.assertDictEqual(response, self.empty_workflow_json)
-
-        final_playbooks = walkoff.coredb.devicedb.device_db.session.query(Playbook).all()
-        final_workflows = next(playbook.workflows for playbook in final_playbooks if playbook.name == 'test')
-        self.assertEqual(len(final_workflows), initial_workflows_len + 1)
-
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == self.add_workflow_name, Playbook.name == 'test').first()
-        self.assertIsNotNone(workflow)
-
-    def test_edit_playbook(self):
-        playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(name='test').first()
-        expected_workflows = [workflow.read() for workflow in playbook.workflows]
-        data = {'name': self.change_playbook_name, "id": playbook.id}
-        self.update_playbooks = True
-        response = self.post_with_status_check('/api/playbooks',
-                                               data=json.dumps(data),
-                                               headers=self.headers,
-                                               content_type='application/json')
-        self.assertEqual(response['name'], self.change_playbook_name)
-        self.assertEqual(response['id'], playbook.id)
-        self.assertEqual(len(response['workflows']), len(expected_workflows))
-        self.assertListEqual(response['workflows'], expected_workflows)
-
-    def test_edit_playbook_no_name(self):
-        expected = walkoff.coredb.devicedb.device_db.session.query(Playbook).all()
-        response = self.app.post('/api/playbooks', headers=self.headers, content_type="application/json",
-                                 data=json.dumps({}))
-        self.assertEqual(response._status_code, 400)
-        self.assertListEqual(walkoff.coredb.devicedb.device_db.session.query(Playbook).all(), expected)
-
-    def test_edit_playbook_invalid_id(self):
-        expected = walkoff.coredb.devicedb.device_db.session.query(Playbook).all()
-        data = {"id": 0}
-        response = self.app.post('/api/playbooks', headers=self.headers, content_type="application/json",
-                                 data=json.dumps(data))
-        self.assertEqual(response._status_code, 461)
-        self.assertListEqual(walkoff.coredb .devicedb.device_db.session.query(Playbook).all(), expected)
-
-    def test_edit_workflow_name_only(self):
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'helloWorldWorkflow', Playbook.name == 'test').first()
-        expected_json = workflow.read()
-        workflow_name = self.change_workflow_name
-        self.update_workflows = True
-        expected_json['name'] = workflow_name
-        response = self.post_with_status_check('/api/playbooks/{}/workflows'.format(workflow._playbook_id),
-                                               data=json.dumps(expected_json),
-                                               headers=self.headers,
-                                               content_type='application/json')
-
-        self.assertDictEqual(response, expected_json)
-
-        self.assertIsNotNone(walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == self.change_workflow_name, Playbook.name == 'test').first())
-        self.assertIsNone(
-            walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-                Workflow.name == 'helloWorldWorkflow', Playbook.name == 'test').first())
-
-    def test_edit_workflow_invalid_id(self):
-        playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(name='test').first()
-        workflow = playbook.workflows[0].read()
-        workflow['id'] = 0
-        initial_workflows = walkoff.coredb.devicedb.device_db.session.query(Workflow).all()
-        self.post_with_status_check('/api/playbooks/{}/workflows'.format(playbook.id),
-                                    error='Workflow does not exist',
-                                    data=json.dumps(workflow), headers=self.headers, content_type="application/json",
-                                    status_code=OBJECT_DNE_ERROR)
-        final_workflows = walkoff.coredb.devicedb.device_db.session.query(Workflow).all()
-        self.assertSetEqual(set(final_workflows), set(initial_workflows))
+    # def test_display_all_playbooks(self):
+    #     num_playbooks = len(walkoff.coredb.devicedb.device_db.session.query(Playbook).all())
+    #     response = self.get_with_status_check('/api/playbooks', headers=self.headers)
+    #     for playbook in response:
+    #         for workflow in playbook['workflows']:
+    #             workflow.pop('id')
+    #
+    #     for playbook in response:
+    #         if playbook['name'] == 'test':
+    #             self.assertEqual(playbook['workflows'], [{'name': 'helloWorldWorkflow'}])
+    #         elif playbook['name'] == 'triggerActionWorkflow':
+    #             self.assertEqual(playbook['workflows'], [{"name": "triggerActionWorkflow"}])
+    #         elif playbook['name'] == 'pauseWorkflowTest':
+    #             self.assertEqual(playbook['workflows'], [{"name": "pauseWorkflow"}])
+    #
+    #     self.assertEqual(len(response), num_playbooks)
+    #
+    # def test_display_playbook_workflows(self):
+    #     playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(name='test').first()
+    #     response = self.get_with_status_check('/api/playbooks/{}'.format(playbook.id), headers=self.headers)
+    #
+    #     workflows = [workflow.read() for workflow in playbook.workflows]
+    #
+    #     self.assertEqual(response['name'], 'test')
+    #     self.assertEqual(len(response['workflows']), len(workflows))
+    #     self.assertListEqual(response['workflows'], workflows)
+    #
+    # def test_display_playbook_workflows_invalid_id(self):
+    #     self.get_with_status_check('/api/playbooks/0', error='Playbook does not exist.', headers=self.headers,
+    #                                status_code=OBJECT_DNE_ERROR)
+    #
+    # def test_display_workflow_invalid_id(self):
+    #     self.get_with_status_check('/api/playbooks/2/workflows/0',
+    #                                error='Workflow does not exist',
+    #                                headers=self.headers, status_code=OBJECT_DNE_ERROR)
+    #
+    # def test_add_playbook(self):
+    #     expected_playbooks = walkoff.coredb.devicedb.device_db.session.query(Playbook).all()
+    #     original_length = len(list(expected_playbooks))
+    #     data = {"name": self.add_playbook_name}
+    #     self.playbooks_added.append(self.add_playbook_name)
+    #     self.update_playbooks = True
+    #     response = self.put_with_status_check('/api/playbooks', headers=self.headers,
+    #                                           status_code=OBJECT_CREATED, data=json.dumps(data),
+    #                                           content_type="application/json")
+    #
+    #     response.pop('id')
+    #
+    #     self.assertDictEqual(response, {'name': self.add_playbook_name, 'workflows': []})
+    #     self.assertEqual(len(list(walkoff.coredb.devicedb.device_db.session.query(Playbook).all())), original_length+1)
+    #
+    # def test_add_playbook_already_exists(self):
+    #     data = {"name": self.add_playbook_name}
+    #     self.playbooks_added.append(self.add_playbook_name)
+    #     self.update_playbooks = True
+    #     self.put_with_status_check('/api/playbooks',
+    #                                data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
+    #                                content_type="application/json")
+    #     self.put_with_status_check('/api/playbooks',
+    #                                error='Unique constraint failed.',
+    #                                data=json.dumps(data), headers=self.headers, status_code=OBJECT_EXISTS_ERROR,
+    #                                content_type="application/json")
+    #
+    # def test_add_workflow(self):
+    #     initial_playbooks = walkoff.coredb.devicedb.device_db.session.query(Playbook).all()
+    #     initial_workflows = next(playbook.workflows for playbook in initial_playbooks if playbook.name == 'test')
+    #     initial_workflows_len = len(initial_workflows)
+    #
+    #     playbook_id = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(name='test').first().id
+    #
+    #     data = {"name": self.add_workflow_name, "start": 0}
+    #     self.workflows_added.append(self.add_workflow_name)
+    #     self.update_workflows = True
+    #     response = self.put_with_status_check('/api/playbooks/{}/workflows'.format(playbook_id),
+    #                                           headers=self.headers, status_code=OBJECT_CREATED, data=json.dumps(data),
+    #                                           content_type="application/json")
+    #     self.empty_workflow_json['id'] = response['id']
+    #     self.assertDictEqual(response, self.empty_workflow_json)
+    #
+    #     final_playbooks = walkoff.coredb.devicedb.device_db.session.query(Playbook).all()
+    #     final_workflows = next(playbook.workflows for playbook in final_playbooks if playbook.name == 'test')
+    #     self.assertEqual(len(final_workflows), initial_workflows_len + 1)
+    #
+    #     workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+    #         Workflow.name == self.add_workflow_name, Playbook.name == 'test').first()
+    #     self.assertIsNotNone(workflow)
+    #
+    # def test_edit_playbook(self):
+    #     playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(name='test').first()
+    #     expected_workflows = [workflow.read() for workflow in playbook.workflows]
+    #     data = {'name': self.change_playbook_name, "id": playbook.id}
+    #     self.update_playbooks = True
+    #     response = self.post_with_status_check('/api/playbooks',
+    #                                            data=json.dumps(data),
+    #                                            headers=self.headers,
+    #                                            content_type='application/json')
+    #     self.assertEqual(response['name'], self.change_playbook_name)
+    #     self.assertEqual(response['id'], playbook.id)
+    #     self.assertEqual(len(response['workflows']), len(expected_workflows))
+    #     self.assertListEqual(response['workflows'], expected_workflows)
+    #
+    # def test_edit_playbook_no_name(self):
+    #     expected = walkoff.coredb.devicedb.device_db.session.query(Playbook).all()
+    #     response = self.app.post('/api/playbooks', headers=self.headers, content_type="application/json",
+    #                              data=json.dumps({}))
+    #     self.assertEqual(response._status_code, 400)
+    #     self.assertListEqual(walkoff.coredb.devicedb.device_db.session.query(Playbook).all(), expected)
+    #
+    # def test_edit_playbook_invalid_id(self):
+    #     expected = walkoff.coredb.devicedb.device_db.session.query(Playbook).all()
+    #     data = {"id": 0}
+    #     response = self.app.post('/api/playbooks', headers=self.headers, content_type="application/json",
+    #                              data=json.dumps(data))
+    #     self.assertEqual(response._status_code, 461)
+    #     self.assertListEqual(walkoff.coredb .devicedb.device_db.session.query(Playbook).all(), expected)
+    #
+    # def test_edit_workflow_name_only(self):
+    #     workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+    #         Workflow.name == 'helloWorldWorkflow', Playbook.name == 'test').first()
+    #     expected_json = workflow.read()
+    #     workflow_name = self.change_workflow_name
+    #     self.update_workflows = True
+    #     expected_json['name'] = workflow_name
+    #     response = self.post_with_status_check('/api/playbooks/{}/workflows'.format(workflow._playbook_id),
+    #                                            data=json.dumps(expected_json),
+    #                                            headers=self.headers,
+    #                                            content_type='application/json')
+    #
+    #     self.assertDictEqual(response, expected_json)
+    #
+    #     self.assertIsNotNone(walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+    #         Workflow.name == self.change_workflow_name, Playbook.name == 'test').first())
+    #     self.assertIsNone(
+    #         walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+    #             Workflow.name == 'helloWorldWorkflow', Playbook.name == 'test').first())
+    #
+    # def test_edit_workflow_invalid_id(self):
+    #     playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(name='test').first()
+    #     workflow = playbook.workflows[0].read()
+    #     workflow['id'] = 0
+    #     initial_workflows = walkoff.coredb.devicedb.device_db.session.query(Workflow).all()
+    #     self.post_with_status_check('/api/playbooks/{}/workflows'.format(playbook.id),
+    #                                 error='Workflow does not exist',
+    #                                 data=json.dumps(workflow), headers=self.headers, content_type="application/json",
+    #                                 status_code=OBJECT_DNE_ERROR)
+    #     final_workflows = walkoff.coredb.devicedb.device_db.session.query(Workflow).all()
+    #     self.assertSetEqual(set(final_workflows), set(initial_workflows))
 
     # def test_delete_playbook(self):
     #     self.delete_with_status_check('/api/playbooks/test', headers=self.headers)

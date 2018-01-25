@@ -109,14 +109,10 @@ Action:
       type: array
       items:
         $ref: '#/definitions/Condition'
-    x_coordinate:
-      description: The X coordinate of the action on the workflow editor
-      type: number
-      example: 443.22
-    y_coordinate:
-      description: The Y coordinate of the action on the workflow editor
-      type: number
-      example: -12.036
+    position:
+      description: Position object representing various fields of the position of the Action in the playbook editor.
+      type: object
+      $ref: '#/definitions/Position'
 
 Branch:
   type: object
@@ -223,6 +219,19 @@ Transform:
       type: array
       items:
         $ref: '#/definitions/Argument'
+
+Position:
+  type: object
+  required: [x, y]
+  description: Various specifications for how the Action is displayed in the playbook editor
+  additionalProperties: false
+  properties:
+    x:
+      type: number
+      description: The X coordinate for the Action
+    y:
+      type: number
+      description: The Y coordinate for the Action
 
 CopyWorkflow:
     type: object

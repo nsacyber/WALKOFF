@@ -33,13 +33,12 @@ class Action(ExecutionElement, Device_Base):
     device_id = Column(Integer)
     arguments = relationship('Argument', backref=backref('_action'), cascade='all, delete-orphan')
     triggers = relationship('Condition', backref=backref('_action'), cascade='all, delete-orphan')
-    x_coordinate = Column(Integer)
-    y_coordinate = Column(Integer)
+    position = relationship('Position', uselist=False, backref=backref('_action'), cascade='all, delete-orphan')
     templated = Column(Boolean)
     raw_representation = Column(Json)
 
     def __init__(self, app_name, action_name, name, device_id=None, arguments=None, triggers=None,
-                 x_coordinate=None, y_coordinate=None, templated=False, raw_representation=None):
+                 position=None, templated=False, raw_representation=None):
         """Initializes a new Action object. A Workflow has many actions that it executes.
 
         Args:
@@ -52,10 +51,7 @@ class Action(ExecutionElement, Device_Base):
                 Defaults to None.
             triggers (list[Condition], optional): A list of Condition objects for the Action. If a Action should wait
                 for data before continuing, then include these Trigger objects in the Action init. Defaults to None.
-            x_coordinate(int, optional): X coordinate of the Action object, used for UI display purposes. Defaults
-                to None.
-            y_coordinate(int, optional): Y coordinate of the Action object, used for UI display purposes. Defaults
-                to None.
+            position (Position, optional): Position object for the Action. Defaults to None.
             templated (bool, optional): Whether or not the Action is templated. Used for Jinja templating.
             raw_representation (dict, optional): JSON representation of this object. Used for Jinja templating.
         """
@@ -84,8 +80,7 @@ class Action(ExecutionElement, Device_Base):
         if arguments:
             self.arguments = arguments
 
-        self.x_coordinate = x_coordinate
-        self.y_coordinate = y_coordinate
+        self.position = position
 
         self.raw_representation = raw_representation if raw_representation is not None else {}
 

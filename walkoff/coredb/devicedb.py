@@ -497,6 +497,7 @@ class DeviceDatabase(object):
         from walkoff.coredb.branch import Branch
         from walkoff.coredb.condition import Condition
         from walkoff.coredb.playbook import Playbook
+        from walkoff.coredb.position import Position
         from walkoff.coredb.transform import Transform
         from walkoff.coredb.workflow import Workflow
 
