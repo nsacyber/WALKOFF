@@ -594,6 +594,8 @@ export class PlaybookComponent {
 			if (argument.reference !== 0 && argument.value !== undefined) {
 				delete argument.value;
 			}
+			// Remove reference if unspecified
+			if (argument.reference === 0) { delete argument.reference; }
 		}
 		// Actually splice out all the args
 		for (const id of idsToRemove) {
