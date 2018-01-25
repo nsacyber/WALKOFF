@@ -271,7 +271,6 @@ def update_workflow(playbook_id):
             return {"error": e.message}, INVALID_INPUT_ERROR
 
         try:
-            walkoff.coredb.devicedb.device_db.session.add(workflow)
             walkoff.coredb.devicedb.device_db.session.commit()
         except IntegrityError:
             walkoff.coredb.devicedb.device_db.session.rollback()

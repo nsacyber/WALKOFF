@@ -7,9 +7,6 @@ from sqlalchemy.orm import relationship, backref
 from walkoff.coredb import Device_Base
 from walkoff.events import WalkoffEvent
 from walkoff.coredb.executionelement import ExecutionElement
-from walkoff.coredb.condition import Condition
-import walkoff.coredb.devicedb
-from walkoff.helpers import InvalidArgument, InvalidExecutionElement, UnknownApp, UnknownCondition, UnknownTransform
 
 logger = logging.getLogger(__name__)
 
@@ -79,50 +76,3 @@ class Branch(ExecutionElement, Device_Base):
                 return None
         else:
             return None
-
-    # def update(self, data):
-    #     self.source_id = data['source_id']
-    #     self.destination_id = data['destination_id']
-    #     self.status = data['status']
-    #     self.priority = data['priority']
-    #
-    #     if 'conditions' in data and data['conditions']:
-    #         self.update_conditions(data['conditions'])
-    #     else:
-    #         self.conditions[:] = []
-    #
-    # def update_conditions(self, conditions):
-    #     conditions_seen = []
-    #     for condition in conditions:
-    #         if 'id' in condition and condition['id']:
-    #             condition_obj = self.__get_condition_by_id(condition['id'])
-    #
-    #             if condition_obj is None:
-    #                 raise InvalidExecutionElement(condition['id'], None, "Invalid Condition ID")
-    #
-    #             condition_obj.update(condition)
-    #             conditions_seen.append(condition_obj.id)
-    #         else:
-    #             if 'id' in condition:
-    #                 condition.pop('id')
-    #
-    #             try:
-    #                 condition_obj = Condition(**condition)
-    #             except (ValueError, InvalidArgument, UnknownApp, UnknownCondition, UnknownTransform):
-    #                 raise InvalidExecutionElement(condition['id'], None, "Invalid Condition construction")
-    #
-    #             self.arguments.append(condition_obj)
-    #             walkoff.coredb.devicedb.device_db.session.add(condition_obj)
-    #             walkoff.coredb.devicedb.device_db.session.flush()
-    #
-    #             conditions_seen.append(condition_obj.id)
-    #
-    #     for condition in self.conditions:
-    #         if condition.id not in conditions_seen:
-    #             walkoff.coredb.devicedb.device_db.session.delete(condition)
-
-    def __get_condition_by_id(self, condition_id):
-        for condition in self.conditions:
-            if condition.id == condition_id:
-                return condition
-        return None

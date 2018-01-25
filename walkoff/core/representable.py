@@ -1,5 +1,6 @@
 from walkoff.core.jsonelementcreator import JsonElementCreator
 from walkoff.core.jsonelementreader import JsonElementReader
+from walkoff.core.jsonelementupdater import JsonElementUpdater
 
 
 class Representable(object):
@@ -31,3 +32,6 @@ class Representable(object):
         if reader is None:
             reader = JsonElementReader
         return reader.read(self)
+
+    def update(self, json_in, updater=JsonElementUpdater):
+        return updater.update(self, json_in)

@@ -1,5 +1,4 @@
 import walkoff.coredb.devicedb
-from sqlalchemy.orm import relationship
 
 
 class JsonElementUpdater(object):
@@ -22,14 +21,13 @@ class JsonElementUpdater(object):
         for field, value in fields_to_update:
             if field in json_in:
                 json_value = json_in[field]
-                if isinstance(value, relationship):
-                    if not isinstance(json_value, list):
-                        raise Exception()
+                if isinstance(json_value, list):
 
                     if is_workflow and field == 'branches':
                         json_value = JsonElementUpdater.update_branch_ids(json_value, action_id_map)
 
-                    id_map = JsonElementUpdater.update_relationship(json_value, value)
+                    cls = getattr(element.__class__, field).property.mapper.class_
+                    id_map = JsonElementUpdater.update_relationship(json_value, value, cls)
 
                     if is_workflow and field == 'actions':
                         action_id_map = id_map
@@ -50,30 +48,39 @@ class JsonElementUpdater(object):
 
     @staticmethod
     def enforce_iteration_order(fields_to_update):
-        field_order = ['actions', 'branches', 'start']
+        items_to_store = {}
+        field_order = ['start', 'branches', 'actions']
+
+        for field, value in fields_to_update:
+            if field in field_order:
+                items_to_store[field] = (field, value)
+
         for field in field_order:
-            fields_to_update.remove(field)
-        for field in reversed(field_order):
-            fields_to_update.append(field)
-        fields_to_update.reverse()
+            fields_to_update.remove(items_to_store[field])
+            fields_to_update.insert(0, items_to_store[field])
 
     @staticmethod
-    def update_relationship(json_value, value):
+    def update_relationship(json_value, value, cls):
+        from walkoff.coredb.argument import Argument
         json_ids = {element['id'] for element in json_value if 'id' in element}
 
         old_elements = {element.id: element for element in value}
-        elements_to_discard = [element for element_id, element in old_elements.values() if
+        elements_to_discard = [element for element_id, element in old_elements.items() if
                                element_id not in json_ids]
         id_map = {}
         for json_element in json_value:
             json_element_id = json_element.pop('id', None)
-            if json_element_id is not None:
-                json_element.pop('id')
-                old_elements['id'].update(json_element)
+            if json_element_id is not None and json_element_id > 0:
+                old_elements[json_element_id].update(json_element)
+                id_map[json_element_id] = json_element_id
             else:
-                new_element = value.property.mapper.class_.create(json_element)
+                if cls is Argument:
+                    new_element = Argument(**json_element)
+                else:
+                    new_element = cls.create(json_element)
                 value.append(new_element)
-                id_map[json_element_id] = new_element.id
+                if json_element_id is not None:
+                    id_map[json_element_id] = new_element.id
 
         for element in elements_to_discard:
             walkoff.coredb.devicedb.device_db.session.delete(element)
