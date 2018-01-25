@@ -7,6 +7,7 @@ import sys
 
 import walkoff.config.config
 import walkoff.config.paths
+import warnings
 
 try:
     from importlib import reload as reload_module
@@ -457,6 +458,9 @@ def convert_action_argument(argument):
 
 
 def create_sse_event(event_id=None, event=None, data=None):
+    warnings.warn('create_sse_event is deprecated. Please use the walkoff.sse.SseStream class to construct SSE streams.'
+                  ' This function will be removed in version 0.9.0',
+                  DeprecationWarning)
     if data is None and event_id is None and event is None:
         return ''
     response = ''
