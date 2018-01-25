@@ -76,6 +76,10 @@ class JsonElementCreator(object):
             start = json_in['start']
             json_in['start'] = action_id_lookup[start]
         if 'arguments' in json_in:
+            for argument in json_in['arguments']:
+                if 'reference' in argument and argument['reference']:
+                    prev_ref = argument['reference']
+                    argument['reference'] = action_id_lookup[prev_ref]
             json_in['arguments'] = [Argument(**arg_json) for arg_json in json_in['arguments']]
         return current_class(**json_in)
 
