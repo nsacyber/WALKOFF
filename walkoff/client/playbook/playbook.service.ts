@@ -23,11 +23,11 @@ export class PlaybookService {
 	}
 
 	/**
-	 * Creates a new blank playbook.
-	 * @param playbookName Name of the new playbook to be saved
+	 * Saves a new playbook.
+	 * @param playbook New playbook to be saved
 	 */
-	newPlaybook(playbookName: string): Promise<Playbook> {
-		return this.authHttp.put('/api/playbooks', { name: playbookName })
+	newPlaybook(playbook: Playbook): Promise<Playbook> {
+		return this.authHttp.put('/api/playbooks', playbook)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Playbook)
@@ -113,11 +113,11 @@ export class PlaybookService {
 	}
 
 	/**
-	 * Creates a new blank workflow under a given playbook.
+	 * Creates a new workflow under a given playbook.
 	 * @param playbookId ID of the playbook the new workflow should be added under
-	 * @param workflowName Name of the new workflow to be saved
+	 * @param workflow Workflow to be saved
 	 */
-	newWorkflow(playbookId: number, workflowName: string): Promise<Workflow> {
+	newWorkflow(playbookId: number, workflow: Workflow): Promise<Workflow> {
 		// let addPlaybookPromise: Promise<any>;
 		// if (newPlaybookName) {
 		// 	addPlaybookPromise = this.authHttp.put('/api/playbooks', { name: newPlaybookName })
@@ -127,7 +127,7 @@ export class PlaybookService {
 		// 	addPlaybookPromise = Promise.resolve();
 		// }
 
-		return this.authHttp.put(`/api/playbooks/${playbookId}/workflows`, { name: workflowName })
+		return this.authHttp.put(`/api/playbooks/${playbookId}/workflows`, workflow)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Workflow)
@@ -139,10 +139,11 @@ export class PlaybookService {
 	 * @param playbookId ID of the playbook the workflow exists under
 	 * @param workflow Data to be saved under the workflow (actions, etc.)
 	 */
-	saveWorkflow(playbookId: number, workflow: Workflow): Promise<void> {
+	saveWorkflow(playbookId: number, workflow: Workflow): Promise<Workflow> {
 		return this.authHttp.post(`/api/playbooks/${playbookId}/workflows`, workflow)
 			.toPromise()
 			.then(this.extractData)
+			.then(data => data as Workflow)
 			.catch(this.handleError);
 	}
 
