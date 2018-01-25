@@ -1,0 +1,41 @@
+#modal-dialog-override {
+    max-height: 100%;
+    max-width: 100%;
+    width: 80%;
+    top: 5%;
+}
+
+#button-override {
+    position: absolute;
+    left: 100.5%;
+    color: white;
+}
+
+#player {
+    width: 85%;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+
+.modal-content {
+    width: inherit;
+    max-width: inherit;
+    height: inherit;
+    margin: 0 auto;
+    pointer-events: all;
+    background-color: #000;
+}
+
+.vertical-alignment-helper {
+    display: table;
+    height: 100%;
+    width: 100%;
+    pointer-events: none;
+}
+
+.vertical-align-center {
+    display: table-cell;
+    vertical-align: middle;
+    pointer-events: none;
+}

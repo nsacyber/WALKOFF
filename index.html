@@ -1,165 +1,263 @@
 <!DOCTYPE html>
-<html>
-<title>WALKOFF-Automation for All</title>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="w3.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Montserrat">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-<style>
+<html lang="en">
 
+  <head>
 
-body,h1,h2,h3,h4,h5,h6 {font-family: "Lato", sans-serif}
-.w3-navbar,h1,button {font-family: "Montserrat", sans-serif}
-.fa-plus-circle,.fa-cogs, .fa-wrench {font-size:200px}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-#headerDiv{
-    background-image:url("files/images/headerBackground2.png");
-    background-size: 50% auto;
-    background-repeat: no-repeat;
-    background-position:50% 50%;
-}
+    <title>WALKOFF</title>
 
-.headerText{
-    position:relative;
-    bottom:40px;
-}
+    <!-- Bootstrap Core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
-#headerButton{
-    background-color:#607d8b;
-}
-</style>
-<body>
+    <!-- Custom Fonts -->
+    <link href="vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+    <link href="vendor/simple-line-icons/css/simple-line-icons.css" rel="stylesheet">
 
-<!-- Navbar -->
-<div class="w3-top">
-  <div class="w3-bar w3-blue-grey w3-card-2 w3-left-align w3-large">
-    <a class="w3-bar-item w3-button w3-hide-medium w3-hide-large w3-opennav w3-right w3-padding-large w3-hover-white w3-large w3-red" href="javascript:void(0);" onclick="myFunction()" title="Toggle Navigation Menu"><i class="fa fa-bars"></i></a>
-    <a href="#" class="w3-bar-item w3-button w3-padding-large w3-white">Home</a>
-    <a href="documentation/build/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Documentation</a>
-    <a href="https://github.com/iadgov/WALKOFF" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Source</a>
-    <a href="swagger/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">API</a>
-    <a href="tutorials/build/index.html" class="w3-bar-item w3-button w3-hide-small w3-padding-large w3-hover-white">Tutorials</a>
-  </div>
+    <!-- Custom CSS -->
+    <link href="css/stylish-portfolio.css" rel="stylesheet">
+    <link href="css/vidpopups.css" rel="stylesheet">
 
-  <!-- Navbar on small screens -->
-  <div id="navDemo" class="w3-navblock w3-white w3-hide w3-hide-large w3-hide-medium w3-large">
-    <a class="w3-padding-large" href="documentation/build/index.html">Documentation</a>
-    <a class="w3-padding-large" href="https://github.com/iadgov/WALKOFF">Source</a>
-    <a class="w3-padding-large" href="swagger/index.html">API</a>
-    <a class="w3-padding-large" href="tutorials/build/index.html">Tutorials</a>
-  </div>
-</div>
+  </head>
 
-<!-- Header -->
-<header id="headerDiv" class="w3-container w3-black w3-center w3-padding-128">
-  <h1 class="headerText w3-margin w3-jumbo">WALKOFF</h1>
-  <p class="headerText w3-xlarge">Automation for All</p>
-  <button id="headerButton" class="headerText w3-btn w3-padding-16 w3-large w3-margin-top" onclick="getStartedButton();">Get Started</button>
-</header>
+  <body id="page-top">
+    <!-- Navigation -->
+    <a class="menu-toggle rounded" href="#">
+      <i class="fa fa-bars"></i>
+    </a>
+    <nav id="sidebar-wrapper">
+      <ul class="sidebar-nav">
+        <li class="sidebar-brand">
+          <a class="js-scroll-trigger" href="#page-top">WALKOFF</a>
+        </li>
+        <li class="sidebar-nav-item">
+          <a class="js-scroll-trigger" href="#page-top">Home</a>
+        </li>
+		<li class="sidebar-nav-item">
+          <a class="js-scroll-trigger" href="http://www.github.com/iadgov/walkoff-apps">Apps</a>
+        </li>
+        <li class="sidebar-nav-item">
+          <a class="js-scroll-trigger" href="https://iadgov.github.io/WALKOFF/documentation/build/index.html">Documentation</a>
+        </li>
+        <li class="sidebar-nav-item">
+          <a class="js-scroll-trigger" href="https://github.com/iadgov/WALKOFF">Source</a>
+        </li>
+        <li class="sidebar-nav-item">
+          <a class="js-scroll-trigger" href="https://iadgov.github.io/WALKOFF/swagger/index.html">API</a>
+        </li>
+        <li class="sidebar-nav-item">
+          <a class="js-scroll-trigger" href="https://iadgov.github.io/WALKOFF/tutorials/build/index.html">Tutorials</a>
+        </li>
+      </ul>
+    </nav>
 
-<!-- First Grid -->
-<div class="w3-row-padding w3-padding-64 w3-container">
-  <div class="w3-content">
-    <div class="w3-twothird">
-      <h3>Is your environment suffering from... </h3>
-      <h4><i> Too many devices? </i></h4>
-        <h4><i> Too much data? </i></h4>
-        <h4><i> Repetitive manual processes? </i></h4>
-        <h1><b>WALKOFF</b> can help</h1>
-      <h5 class="w3-padding-32">WALKOFF is an open source community supported platform whose goal is to make integrating and automating components faster, cheaper, and easier
-      than ever before. </h5>
+    <!-- Header -->
+    <header class="masthead d-flex">
+      <div class="container text-center my-auto">
+        <h1 class="mb-1">WALKOFF</h1>
+        <h3 class="mb-5">
+          <em>Faster, smarter, cheaper operations through automation.</em>
+        </h3>
+        <a class="btn btn-primary btn-xl js-scroll-trigger" href="#about">Find Out More</a>
+      </div>
+      <div class="overlay"></div>
+    </header>
 
-        <p class="w3-text-grey">The WALKOFF platform makes integrating across disparate devices, services, data, and capabilities easier than ever in a multitude of use cases including </p>
-        <ul class="w3-text-grey">
-            <li>Cybersecurity</li>
-            <li>Systems Administration</li>
-            <li>Analytics</li>
-            <li>Internet of Things</li>
-            <li>And more...</li>
+    <!-- About -->
+    <section class="content-section bg-light" id="about">
+      <div class="container text-center">
+        <div class="row">
+          <div class="col-lg-10 mx-auto">
+            <h2>WALKOFF puts the tools in your hands to easily automate the tedious repetitive tasks dragging your operations down.</h2>
+			
+            <p class="lead mb-5"> Act <strong> smarter </strong> with WALKOFF by automatically gathering data, analyzing data, or visualizing data customized to your requirements. </p>
+			<p class="lead mb-5"> Act <strong> faster </strong> with WALKOFF by integrating the capabilities you already own to dynamically respond on your terms to your fast moving environment. </p>
+            <a class="btn btn-dark btn-xl js-scroll-trigger" href="#services">What We Offer</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services -->
+    <section class="content-section bg-primary text-white text-center" id="services">
+      <div class="container">
+        <div class="content-section-heading">
+          <h3 class="text-secondary mb-0">Features</h3>
+          <h2 class="mb-5">Automate Faster</h2>
+        </div>
+        <div class="row">
+		  <div class="col-lg-3 col-md-6 mb-5 mb-md-0">
+            <span class="service-icon rounded-circle mx-auto mb-3">
+              <i class="icon-magic-wand"></i>
+            </span>
+            <h4>
+              <strong>Easy to Use</strong>
+            </h4>
+            <p class="text-faded mb-0">Drag and drop workflow editor. Sharable apps and workflows. </p>
+          </div>
+		  
+		  <div class="col-lg-3 col-md-6 mb-5 mb-lg-0">
+            <span class="service-icon rounded-circle mx-auto mb-3">
+              <i class="icon-paper-plane"></i>
+            </span>
+            <h4>
+              <strong>Flexible</strong>
+            </h4>
+            <p class="text-faded mb-0">Deploy on Windows or Linux.  Python 2.7 and 3.4+.  Scale to your needs. </p>
+          </div>
+		  
+          <div class="col-lg-3 col-md-6 mb-5 mb-lg-0">
+            <span class="service-icon rounded-circle mx-auto mb-3">
+              <i class="icon-organization"></i>
+            </span>
+            <h4>
+              <strong>Modular</strong>
+            </h4>
+			<p class="text-faded mb-0">Plug and play integration of almost anything with easy to develop apps.</p>
+          </div>
+           
+          <div class="col-lg-3 col-md-6">
+            <span class="service-icon rounded-circle mx-auto mb-3">
+              <i class="icon-chart"></i>
+            </span>
+            <h4>
+              <strong>Visual Analytics</strong>
+            </h4>
+            <p class="text-faded mb-0">Send workflow data to custom visual interfaces to act with confidence. </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Callout -->
+    <section class="callout">
+      <div class="container text-center">
+        <h3 class="mx-auto mb-5">Save time. </h2>
+		<h3 class="mx-auto mb-5">Save money. </h2>
+		<h3 class="mx-auto mb-5">Do more. </h2>
+		<h2 class="mx-auto mb-5">Harness the power of automation on <em> your </em> terms. </h2>
+		
+		<!-- Place this tag where you want the button to render. -->
+        <a class="btn btn-primary btn-xl" href="https://github.com/iadgov/walkoff/archive/master.zip">Download Now!</a>
+		<a class="btn btn-primary btn-xl" href="https://iadgov.github.io/WALKOFF/tutorials/build/index.html">Users Guide </a>
+      </div>
+    </section>
+
+    <div class="modal fade" id="video-modal" role="dialog" aria-labelledby="video-modal" aria-hidden="true">
+      <div class="vertical-alignment-helper">
+        <div id="modal-dialog-override" class="modal-dialog vertical-align-center">
+          <div class="modal-content">
+            <button id="button-override" type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <video id="player" controls autoplay>
+              <source type="video/mp4">
+            </video>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Portfolio -->
+    <section class="content-section" id="portfolio">
+      <div class="container">
+        <div class="content-section-heading text-center">
+          <h3 class="text-secondary mb-0">Infinite Possibilities</h3>
+          <h2 class="mb-5">Example Workflows and Demos</h2>
+        </div>
+        <div class="row no-gutters">
+          <div class="col-lg-6" data-toggle="modal" data-target="#video-modal" onclick="setSrc('vid/SplunkES.mp4')">
+            <a class="portfolio-item">
+              <span class="caption">
+                <span class="caption-content">
+                  <h2>Respond faster. </h2>
+                  <p class="mb-0">Splunk Enterprise Security detects malware.  WALKOFF produces detailed report about the host. </p>
+                </span>
+              </span>
+              <img class="img-fluid" src="img/portfolio-1.jpg" alt="">
+            </a>
+          </div>
+          <div class="col-lg-6" data-toggle="modal" data-target="#video-modal" onclick="setSrc('vid/nmap2.mp4')">
+            <a class="portfolio-item">
+              <span class="caption">
+                <span class="caption-content">
+                  <h2>Act smarter. </h2>
+                  <p class="mb-0">Identify assets with NMAP. Scan them with openVAS. Visualize vulnerabilities with WALKOFF.  </p>
+                </span>
+              </span>
+              <img class="img-fluid" src="img/portfolio-2.jpg" alt="">
+            </a>
+          </div>
+          <div class="col-lg-6" data-toggle="modal" data-target="#video-modal" onclick="setSrc('vid/bro.mp4')">
+            <a class="portfolio-item">
+              <span class="caption">
+                <span class="caption-content">
+                  <h2>Act confidently. </h2>
+                  <p class="mb-0">Workflow detects malicious behavior.  Notification sent to analyst who approves further actions. </p>
+                </span>
+              </span>
+              <img class="img-fluid" src="img/portfolio-3.jpg" alt="">
+            </a>
+          </div>
+          <div class="col-lg-6" data-toggle="modal" data-target="#video-modal" onclick="setSrc('vid/openFlow.mp4')">
+            <a class="portfolio-item">
+              <span class="caption">
+                <span class="caption-content">
+                  <h2>Ensure Compliance. </h2>
+                  <p class="mb-0">Detect unauthorized user behavior.  Move user to more secure network using OpenFlow FloodLight. </p>
+                </span>
+              </span>
+              <img class="img-fluid" src="img/portfolio-4.jpg" alt="">
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="content-section bg-primary text-white">
+      <div class="container text-center">
+        <h2 class="mb-4"> WALKOFF needs <em>you</em>! </h2>
+		
+		<p class="text-faded mb-5">An active community is <strong> essential </strong> for our success. Help us to develop and promote a common integration format that would enable the seamless deployment of WALKOFF apps 
+		across participating platforms. This way we can all spend less time repeatedly developing <em> [or buying] </em> the same integrations for every seperate platform and framework and spend more time solving problems.  </p>
+		
+        <a href="#" class="btn btn-xl btn-light mr-4">Learn More</a>
+        <a href="mailto:walkoff@nsa.gov" class="btn btn-xl btn-dark">Contact Us</a>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer text-center">
+      <div class="container">
+        <ul class="list-inline mb-5">
+          <li class="list-inline-item">
+            <a class="social-link rounded-circle text-white" href="http://www.github.com/iadgov/WALKOFF">
+              <i class="icon-social-github"></i>
+            </a>
+          </li>
         </ul>
-        <p class="w3-text-grey"> Allowing you to spend less time integrating and more time taking control of your environment.</p>
+      </div>
+    </footer>
 
-    </div>
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded js-scroll-trigger" href="#page-top">
+      <i class="fa fa-angle-up"></i>
+    </a>
 
-    <div class="w3-third w3-center">
-      <i class="fa fa-plus-circle w3-padding-128 w3-text-red"></i>
-    </div>
-  </div>
-</div>
+    <!-- Bootstrap core JavaScript -->
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
-<!-- Second Grid -->
-<div class="w3-row-padding w3-light-grey w3-padding-64 w3-container">
-  <div class="w3-content">
-    <div class="w3-third w3-center">
-      <i class="fa fa-cogs w3-padding-64 w3-text-blue-grey w3-margin-right"></i>
-    </div>
+    <!-- Plugin JavaScript -->
+    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
 
-    <div class="w3-twothird">
-        <h1><b>WALKOFF</b> is a Community Effort</h1>
-      <h5 class="w3-padding-32">WALKOFF is working together to build a community and create a common integration format so that we can spend less resources on
-      building the same integrations repetitively and more resources on accomplishing your mission. </h5>
-      <p class="w3-text-grey">Anyone is welcome to build WALKOFF-enabled apps or contribute to the WALKOFF open source orchestrator.  These apps can be deployed across any
-      WALKOFF-enabled orchestrator or platform.  Anyone is also welcome to make their products or platforms WALKOFF-enabled as well making it easier than ever to integrate with more, faster. </p>
+    <!-- Custom scripts for this template -->
+    <script src="js/stylish-portfolio.min.js"></script>
+    <script src="js/vidpopups.js"></script>
 
-    </div>
-  </div>
-</div>
+  </body>
 
-<!-- Third Grid -->
-<!-- First Grid -->
-<div class="w3-row-padding w3-padding-64 w3-container">
-  <div class="w3-content">
-    <div class="w3-twothird">
-        <h1><b>WALKOFF</b> is designed to be </h1>
-        <h1>Scalable Accessible and Versatile </h1>
-      <h5 class="w3-padding-32">WALKOFF aims to bring automation to as many environments as possible by creating a community-supported platform that is easy to install, maintain, and use.
-      Helping you to become automated faster. </h5>
-
-        <p class="w3-text-grey">WALKOFF was tested with Python 2.7 and 3.5 on both Linux and Windows environments allowing maximum flexibility in your deployments. </p>
-        <p class="w3-text-grey">The platform is actively being refined and currently include these features:</p>
-        <ul class="w3-text-grey">
-            <li>XML Workflows</li>
-            <li>App based modular plug and play integration</li>
-            <li>Custom visual interfaces for apps </li>
-            <li>User and Role Management</li>
-            <li>Case based granular logging </li>
-        </ul>
-        <p class="w3-text-grey">WALKOFF depends on community engagement therefore the more active the community the more powerful the platform becomes. </p>
-    </div>
-
-    <div class="w3-third w3-center">
-      <i class="fa fa-wrench w3-padding-128 w3-text-blue-grey"></i>
-    </div>
-  </div>
-</div>
-
-<div class="w3-container w3-black w3-center w3-opacity w3-padding-64">
-    <h1 class="w3-margin w3-xlarge">Questions? Comments? </h1>
-    <h1 class="w3-margin w3-xlarge"> Reach out to us at <a href="mailto:walkoff@nsa.gov"> walkoff@nsa.gov </a> </h1>
-</div>
-
-<!-- Footer -->
-<footer class="w3-container w3-padding-64 w3-center w3-opacity">
- <!-- <p>Powered by <a href="https://www.w3schools.com/w3css/default.asp" target="_blank"> </a></p> -->
-</footer>
-
-<script>
-// Used to toggle the menu on small screens when clicking on the menu button
-function myFunction() {
-    var x = document.getElementById("navDemo");
-    if (x.className.indexOf("w3-show") == -1) {
-        x.className += " w3-show";
-    } else {
-        x.className = x.className.replace(" w3-show", "");
-    }
-}
-
-function getStartedButton(){
-    window.location='tutorials/build/index.html';
-}
-</script>
-
-</body>
 </html>
