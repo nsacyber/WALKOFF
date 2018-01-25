@@ -23,11 +23,11 @@ export class PlaybookService {
 	}
 
 	/**
-	 * Creates a new blank playbook.
-	 * @param playbookName Name of the new playbook to be saved
+	 * Saves a new playbook.
+	 * @param playbook New playbook to be saved
 	 */
-	newPlaybook(playbookName: string): Promise<Playbook> {
-		return this.authHttp.put('/api/playbooks', { name: playbookName })
+	newPlaybook(playbook: Playbook): Promise<Playbook> {
+		return this.authHttp.put('/api/playbooks', playbook)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Playbook)
@@ -84,14 +84,16 @@ export class PlaybookService {
 
 	/**
 	 * Duplicates a workflow under a given playbook, it's actions, branches, etc. under a new name.
-	 * @param playbookId ID of playbook the workflow exists under
-	 * @param workflowId Current workflow ID to be duplicated
+	 * @param sourcePlaybookId ID of playbook the workflow exists under
+	 * @param sourceWorkflowId Current workflow ID to be duplicated
+	 * @param destinationPlaybookId ID of playbook the workflow will be duplicated to
 	 * @param newName Name for the new copy to be saved
 	 */
-	// TODO: probably don't need playbook in body, verify on server
-	duplicateWorkflow(playbookId: number, workflowId: number, newName: string): Promise<Workflow> {
-		return this.authHttp
-			.post(`/api/playbooks/${playbookId}/workflows/${workflowId}/copy`, { playbook_id: playbookId, name: newName })
+	duplicateWorkflow(
+		sourcePlaybookId: number, sourceWorkflowId: number, destinationPlaybookId: number, newName: string,
+	): Promise<Workflow> {
+		return this.authHttp.post(`/api/playbooks/${sourcePlaybookId}/workflows/${sourceWorkflowId}/copy`,
+				{ playbook_id: destinationPlaybookId, name: newName })
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Workflow)
@@ -111,12 +113,21 @@ export class PlaybookService {
 	}
 
 	/**
-	 * Creates a new blank workflow under a given playbook.
+	 * Creates a new workflow under a given playbook.
 	 * @param playbookId ID of the playbook the new workflow should be added under
-	 * @param workflowName Name of the new workflow to be saved
+	 * @param workflow Workflow to be saved
 	 */
-	newWorkflow(playbookId: number, workflowName: string): Promise<Workflow> {
-		return this.authHttp.put(`/api/playbooks/${playbookId}/workflows`, { name: workflowName })
+	newWorkflow(playbookId: number, workflow: Workflow): Promise<Workflow> {
+		// let addPlaybookPromise: Promise<any>;
+		// if (newPlaybookName) {
+		// 	addPlaybookPromise = this.authHttp.put('/api/playbooks', { name: newPlaybookName })
+		// 		.toPromise()
+		// 		.then(() => { return; });
+		// } else {
+		// 	addPlaybookPromise = Promise.resolve();
+		// }
+
+		return this.authHttp.put(`/api/playbooks/${playbookId}/workflows`, workflow)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Workflow)
@@ -128,10 +139,11 @@ export class PlaybookService {
 	 * @param playbookId ID of the playbook the workflow exists under
 	 * @param workflow Data to be saved under the workflow (actions, etc.)
 	 */
-	saveWorkflow(playbookId: number, workflow: Workflow): Promise<void> {
+	saveWorkflow(playbookId: number, workflow: Workflow): Promise<Workflow> {
 		return this.authHttp.post(`/api/playbooks/${playbookId}/workflows`, workflow)
 			.toPromise()
 			.then(this.extractData)
+			.then(data => data as Workflow)
 			.catch(this.handleError);
 	}
 

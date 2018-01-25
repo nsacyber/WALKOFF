@@ -11,7 +11,7 @@
 		<div class="col-xs-4">
 			<select name="playbookSelect" class="form-control" [(ngModel)]="argument.reference">
 				<option [ngValue]="0">-- Set Static Value --</option>
-				<option *ngFor="let i of getPreviousActions()" [value]="i.id" [label]="i.name">{{i.name}}</option>
+				<option *ngFor="let i of getPreviousActions()" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
 			</select>
 		</div>
 		<div class="col-xs-8">

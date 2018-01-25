@@ -44,7 +44,7 @@ export class PlaybookComponent {
 	users: User[];
 	roles: Role[];
 
-	currentPlaybook: Playbook;
+	loadedPlaybook: Playbook;
 	loadedWorkflow: Workflow;
 	playbooks: Playbook[] = [];
 	cy: any;
@@ -131,7 +131,7 @@ export class PlaybookComponent {
 				function eventHandler(message: any) {
 					const workflowResult: WorkflowResult = JSON.parse(message.data);
 					if (self.cy) {
-						const matchingNode = self.cy.elements(`node[_id="${workflowResult.action_id}"]`);
+						const matchingNode = self.cy.elements(`node[_id=${workflowResult.action_id}]`);
 
 						if (message.type === 'action_success') {
 							matchingNode.addClass('good-highlighted');
@@ -190,277 +190,282 @@ export class PlaybookComponent {
 	executeWorkflow(): void {
 		if (!this.loadedWorkflow) { return; }
 		this.clearExecutionHighlighting();
-		this.playbookService.executeWorkflow(this.currentPlaybook.id, this.loadedWorkflow.id)
+		this.playbookService.executeWorkflow(this.loadedPlaybook.id, this.loadedWorkflow.id)
 			.then(() => this.toastyService
-				.success(`Starting execution of ${this.currentPlaybook.name} - ${this.loadedWorkflow.name}.`))
+				.success(`Starting execution of ${this.loadedPlaybook.name} - ${this.loadedWorkflow.name}.`))
 			.catch(e => this.toastyService
-				.error(`Error starting execution of ${this.currentPlaybook.name} - ${this.loadedWorkflow.name}: ${e.message}`));
+				.error(`Error starting execution of ${this.loadedPlaybook.name} - ${this.loadedWorkflow.name}: ${e.message}`));
 	}
 
 	/**
-	 * Loads a workflow from a given playbook / workflow name pair.
-	 * Configures the cytoscape graph and binds cytoscape events.
-	 * @param playbookId ID of Playbook to load
-	 * @param workflowId ID of Workflow to load
+	 * Loads a workflow from a given playbook / workflow name pair and calls function to set up graph.
+	 * @param playbook Playbook to load
+	 * @param workflow Workflow to load
 	 */
-	loadWorkflow(playbookId: number, workflowId: number): void {
+	loadWorkflow(playbook: Playbook, workflow: Workflow): void {
+		if (playbook.id && workflow.id) {
+			this.playbookService.loadWorkflow(playbook.id, workflow.id)
+				.then(loadedWorkflow => {
+					this.loadedPlaybook = playbook;
+					this.loadedWorkflow = loadedWorkflow;
+					this.setupGraph();
+					this._closeWorkflowsModal();
+				})
+				.catch(e => this.toastyService.error(`Error loading workflow "${playbook.name} - ${workflow.name}": ${e.message}`));
+		} else {
+			this.loadedPlaybook = playbook;
+			this.loadedWorkflow = workflow;
+			this.setupGraph();
+		}
+	}
+
+	setupGraph(): void {
 		const self = this;
+		// Convert our selection arrays to a string
+		if (!this.loadedWorkflow.actions) { this.loadedWorkflow.actions = []; }
+		this.loadedWorkflow.actions.forEach(s => {
+			s.arguments.forEach(i => {
+				if (i.selection && Array.isArray(i.selection)) {
+					i.selection = (i.selection as Array<string | number>).join('.');
+				}
+			});
+		});
 
-		this.playbookService.loadWorkflow(playbookId, workflowId)
-			.then(workflow => {
-				this.currentPlaybook = this.playbooks.find(p => p.id === playbookId);
-				this.loadedWorkflow = workflow;
+		// Create the Cytoscape graph
+		this.cy = cytoscape({
+			container: document.getElementById('cy'),
+			boxSelectionEnabled: false,
+			autounselectify: false,
+			wheelSensitivity: 0.1,
+			layout: { name: 'preset' },
+			style: [
+				{
+					selector: 'node',
+					css: {
+						'content': 'data(label)',
+						'text-valign': 'center',
+						'text-halign': 'center',
+						'shape': 'roundrectangle',
+						'background-color': '#bbb',
+						'selection-box-color': 'red',
+						'font-family': 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif, sans-serif',
+						'font-weight': 'lighter',
+						'font-size': '15px',
+						'width': '40',
+						'height': '40',
+					},
+				},
+				{
+					selector: 'node[type="action"]',
+					css: {
+						'background-color': '#bbb',
+					},
+				},
+				{
+					selector: 'node[type="eventAction"]',
+					css: {
+						'shape': 'star',
+						'background-color': '#edbd21',
+					},
+				},
+				{
+					selector: 'node[?isStartNode]',
+					css: {
+						'border-width': '2px',
+						'border-color': '#991818',
+					},
+				},
+				{
+					selector: 'node:selected',
+					css: {
+						'background-color': '#77b0d0',
+					},
+				},
+				{
+					selector: '.good-highlighted',
+					css: {
+						'background-color': '#399645',
+						'transition-property': 'background-color',
+						'transition-duration': '0.5s',
+					},
+				},
+				{
+					selector: '.bad-highlighted',
+					css: {
+						'background-color': '#8e3530',
+						'transition-property': 'background-color',
+						'transition-duration': '0.5s',
+					},
+				},
+				{
+					selector: '$node > node',
+					css: {
+						'padding-top': '10px',
+						'padding-left': '10px',
+						'padding-bottom': '10px',
+						'padding-right': '10px',
+						'text-valign': 'top',
+						'text-halign': 'center',
+					},
+				},
+				{
+					selector: 'edge',
+					css: {
+						'target-arrow-shape': 'triangle',
+						'curve-style': 'bezier',
+					},
+				},
+			],
+		});
 
-				// Convert our selection arrays to a string
-				if (!this.loadedWorkflow.actions) { this.loadedWorkflow.actions = []; }
-				this.loadedWorkflow.actions.forEach(s => {
-					s.arguments.forEach(i => {
-						if (i.selection && Array.isArray(i.selection)) {
-							i.selection = (i.selection as Array<string | number>).join('.');
-						}
+		// Enable various Cytoscape extensions
+		// Undo/Redo extension
+		this.ur = this.cy.undoRedo({});
+
+		// Panzoom extension
+		this.cy.panzoom({});
+
+		// Extension for drawing edges
+		this.cy.edgehandles({
+			preview: false,
+			toggleOffOnLeave: true,
+			complete(sourceNode: any, targetNodes: any[], addedEntities: any[]) {
+				if (!self.loadedWorkflow.branches) { self.loadedWorkflow.branches = []; }
+
+				// The edge handles extension is not integrated into the undo/redo extension.
+				// So in order that adding edges is contained in the undo stack,
+				// remove the edge just added and add back in again using the undo/redo
+				// extension. Also add info to edge which is displayed when user clicks on it.
+				for (let i = 0; i < targetNodes.length; i++) {
+					const tempId = self.temporaryIdReference--;
+					const sourceId: number = sourceNode.data('_id');
+					const destinationId: number = targetNodes[i].data('_id');
+
+					addedEntities[i].data({
+						_id: tempId,
+						// We set temp because this actually triggers onEdgeRemove since we manually remove and re-add the edge later
+						// There is logic in onEdgeRemove to bypass that logic if temp is true
+						temp: true,
 					});
-				});
 
-				// Create the Cytoscape graph
-				this.cy = cytoscape({
-					container: document.getElementById('cy'),
-					boxSelectionEnabled: false,
-					autounselectify: false,
-					wheelSensitivity: 0.1,
-					layout: { name: 'preset' },
-					style: [
-						{
-							selector: 'node',
-							css: {
-								'content': 'data(label)',
-								'text-valign': 'center',
-								'text-halign': 'center',
-								'shape': 'roundrectangle',
-								'background-color': '#bbb',
-								'selection-box-color': 'red',
-								'font-family': 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif, sans-serif',
-								'font-weight': 'lighter',
-								'font-size': '15px',
-								'width': '40',
-								'height': '40',
-							},
-						},
-						{
-							selector: 'node[type="action"]',
-							css: {
-								'background-color': '#bbb',
-							},
-						},
-						{
-							selector: 'node[type="eventAction"]',
-							css: {
-								'shape': 'star',
-								'background-color': '#edbd21',
-							},
-						},
-						{
-							selector: 'node[?isStartNode]',
-							css: {
-								'border-width': '2px',
-								'border-color': '#991818',
-							},
-						},
-						{
-							selector: 'node:selected',
-							css: {
-								'background-color': '#77b0d0',
-							},
-						},
-						{
-							selector: '.good-highlighted',
-							css: {
-								'background-color': '#399645',
-								'transition-property': 'background-color',
-								'transition-duration': '0.5s',
-							},
-						},
-						{
-							selector: '.bad-highlighted',
-							css: {
-								'background-color': '#8e3530',
-								'transition-property': 'background-color',
-								'transition-duration': '0.5s',
-							},
-						},
-						{
-							selector: '$node > node',
-							css: {
-								'padding-top': '10px',
-								'padding-left': '10px',
-								'padding-bottom': '10px',
-								'padding-right': '10px',
-								'text-valign': 'top',
-								'text-halign': 'center',
-							},
-						},
-						{
-							selector: 'edge',
-							css: {
-								'target-arrow-shape': 'triangle',
-								'curve-style': 'bezier',
-							},
-						},
-					],
-				});
-
-				// Enable various Cytoscape extensions
-				// Undo/Redo extension
-				this.ur = this.cy.undoRedo({});
-
-				// Panzoom extension
-				this.cy.panzoom({});
-
-				// Extension for drawing edges
-				this.cy.edgehandles({
-					preview: false,
-					toggleOffOnLeave: true,
-					complete(sourceNode: any, targetNodes: any[], addedEntities: any[]) {
-						if (!self.loadedWorkflow.branches) { self.loadedWorkflow.branches = []; }
-
-						// The edge handles extension is not integrated into the undo/redo extension.
-						// So in order that adding edges is contained in the undo stack,
-						// remove the edge just added and add back in again using the undo/redo
-						// extension. Also add info to edge which is displayed when user clicks on it.
-						for (let i = 0; i < targetNodes.length; i++) {
-							const tempId = this.temporaryIdReference--;
-							const sourceId: number = sourceNode.data('_id');
-							const destinationId: number = targetNodes[i].data('_id');
-
-							addedEntities[i].data({
-								_id: tempId,
-								// We set temp because this actually triggers onEdgeRemove since we manually remove and re-add the edge later
-								// There is logic in onEdgeRemove to bypass that logic if temp is true
-								temp: true,
-							});
-
-							//If we attempt to draw an edge that already exists, please remove it and take no further action
-							if (self.loadedWorkflow.branches
-								.find(b => b.source_id === sourceId && b.destination_id === destinationId)) {
-								self.cy.remove(addedEntities);
-								return;
-							}
-
-							const sourceAction = self.loadedWorkflow.actions.find(a => a.id === sourceId);
-							const sourceActionApi = self._getAction(sourceAction.app_name, sourceAction.action_name);
-
-							// Get our default status either from the default return if specified, or the first return status
-							let defaultStatus = '';
-							if (sourceActionApi.default_return) {
-								defaultStatus = sourceActionApi.default_return;
-							} else if (sourceActionApi.returns.length) {
-								defaultStatus = sourceActionApi.returns[0].status;
-							}
-
-							// Add our branch to the actual loadedWorkflow model
-							self.loadedWorkflow.branches.push({
-								id: tempId,
-								source_id: sourceId,
-								destination_id: destinationId,
-								status: defaultStatus,
-								priority: 1,
-								conditions: [],
-							});
-						}
-
+					//If we attempt to draw an edge that already exists, please remove it and take no further action
+					if (self.loadedWorkflow.branches.find(b => b.source_id === sourceId && b.destination_id === destinationId)) {
 						self.cy.remove(addedEntities);
+						return;
+					}
 
-						// Get rid of our temp flag
-						addedEntities.forEach(ae => ae.data('temp', false));
+					const sourceAction = self.loadedWorkflow.actions.find(a => a.id === sourceId);
+					const sourceActionApi = self._getAction(sourceAction.app_name, sourceAction.action_name);
 
-						// Re-add with the undo-redo extension.
-						self.ur.do('add', addedEntities); // Added back in using undo/redo extension
-					},
-				});
+					// Get our default status either from the default return if specified, or the first return status
+					let defaultStatus = '';
+					if (sourceActionApi.default_return) {
+						defaultStatus = sourceActionApi.default_return;
+					} else if (sourceActionApi.returns.length) {
+						defaultStatus = sourceActionApi.returns[0].status;
+					}
 
-				// Extension for copy and paste
-				this.cy.clipboard();
+					// Add our branch to the actual loadedWorkflow model
+					self.loadedWorkflow.branches.push({
+						id: tempId,
+						source_id: sourceId,
+						destination_id: destinationId,
+						status: defaultStatus,
+						priority: 1,
+						conditions: [],
+					});
+				}
 
-				//Extension for grid and guidelines
-				this.cy.gridGuide({
-					snapToGridDuringDrag: true,
-					zoomDash: true,
-					panGrid: true,
-					centerToEdgeAlignment: true,
-					distributionGuidelines: true, // Distribution guidelines
-					geometricGuideline: true, // Geometric guidelines
-					// Guidelines
-					guidelinesStackOrder: 4, // z-index of guidelines
-					guidelinesTolerance: 2.00, // Tolerance distance for rendered positions of nodes' interaction.
-					guidelinesStyle: { // Set ctx properties of line. Properties are here:
-						strokeStyle: '#8b7d6b', // color of geometric guidelines
-						geometricGuidelineRange: 400, // range of geometric guidelines
-						range: 100, // max range of distribution guidelines
-						minDistRange: 10, // min range for distribution guidelines
-						distGuidelineOffset: 10, // shift amount of distribution guidelines
-						horizontalDistColor: '#ff0000', // color of horizontal distribution alignment
-						verticalDistColor: '#00ff00', // color of vertical distribution alignment
-						initPosAlignmentColor: '#0000ff', // color of alignment to initial mouse location
-						lineDash: [0, 0], // line style of geometric guidelines
-						horizontalDistLine: [0, 0], // line style of horizontal distribution guidelines
-						verticalDistLine: [0, 0], // line style of vertical distribution guidelines
-						initPosAlignmentLine: [0, 0], // line style of alignment to initial mouse position
-					},
-				});
+				self.cy.remove(addedEntities);
 
-				// Load the data into the graph
-				// If a node does not have a label field, set it to
-				// the action. The label is what is displayed in the graph.
-				const edges = workflow.branches.map(branch => {
-					const edge: any = { group: 'edges' };
-					edge.data = {
-						id: branch.id,
-						_id: branch.id,
-						source: branch.source_id,
-						target: branch.destination_id,
-					};
-					return edge;
-				});
+				// Get rid of our temp flag
+				addedEntities.forEach(ae => ae.data('temp', false));
 
-				const nodes = workflow.actions.map(action => {
-					const node: any = { group: 'nodes', position: _.clone(action.position) };
-					node.data = {
-						id: action.id,
-						_id: action.id,
-						label: action.name,
-						isStartNode: action.id === workflow.start,
-					};
-					self._setNodeDisplayProperties(node, action);
-					return node;
-				});
+				// Re-add with the undo-redo extension.
+				self.ur.do('add', addedEntities); // Added back in using undo/redo extension
+			},
+		});
 
-				this.cy.add(nodes.concat(edges));
+		// Extension for copy and paste
+		this.cy.clipboard();
 
-				this.cy.fit(null, 50);
+		//Extension for grid and guidelines
+		this.cy.gridGuide({
+			snapToGridDuringDrag: true,
+			zoomDash: true,
+			panGrid: true,
+			centerToEdgeAlignment: true,
+			distributionGuidelines: true, // Distribution guidelines
+			geometricGuideline: true, // Geometric guidelines
+			// Guidelines
+			guidelinesStackOrder: 4, // z-index of guidelines
+			guidelinesTolerance: 2.00, // Tolerance distance for rendered positions of nodes' interaction.
+			guidelinesStyle: { // Set ctx properties of line. Properties are here:
+				strokeStyle: '#8b7d6b', // color of geometric guidelines
+				geometricGuidelineRange: 400, // range of geometric guidelines
+				range: 100, // max range of distribution guidelines
+				minDistRange: 10, // min range for distribution guidelines
+				distGuidelineOffset: 10, // shift amount of distribution guidelines
+				horizontalDistColor: '#ff0000', // color of horizontal distribution alignment
+				verticalDistColor: '#00ff00', // color of vertical distribution alignment
+				initPosAlignmentColor: '#0000ff', // color of alignment to initial mouse location
+				lineDash: [0, 0], // line style of geometric guidelines
+				horizontalDistLine: [0, 0], // line style of horizontal distribution guidelines
+				verticalDistLine: [0, 0], // line style of vertical distribution guidelines
+				initPosAlignmentLine: [0, 0], // line style of alignment to initial mouse position
+			},
+		});
 
-				this.setStartNode(workflow.start);
+		// Load the data into the graph
+		// If a node does not have a label field, set it to
+		// the action. The label is what is displayed in the graph.
+		const edges = this.loadedWorkflow.branches.map(branch => {
+			const edge: any = { group: 'edges' };
+			edge.data = {
+				id: branch.id,
+				_id: branch.id,
+				source: branch.source_id,
+				target: branch.destination_id,
+			};
+			return edge;
+		});
 
-				// Configure handler when user clicks on node or edge
-				this.cy.on('select', 'node', (e: any) => this.onNodeSelect(e, this));
-				this.cy.on('select', 'edge', (e: any) => this.onEdgeSelect(e, this));
-				this.cy.on('unselect', (e: any) => this.onUnselect(e, this));
+		const nodes = this.loadedWorkflow.actions.map(action => {
+			const node: any = { group: 'nodes', position: _.clone(action.position) };
+			node.data = {
+				id: action.id,
+				_id: action.id,
+				label: action.name,
+				isStartNode: action.id === this.loadedWorkflow.start,
+			};
+			self._setNodeDisplayProperties(node, action);
+			return node;
+		});
 
-				// Configure handlers when nodes/edges are added or removed
-				this.cy.on('add', 'node', (e: any) => this.onNodeAdded(e, this));
-				this.cy.on('remove', 'node', (e: any) => this.onNodeRemoved(e, this));
-				this.cy.on('remove', 'edge', (e: any) => this.onEdgeRemove(e, this));
+		this.cy.add(nodes.concat(edges));
 
-				this.cyJsonData = JSON.stringify(workflow, null, 2);
+		this.cy.fit(null, 50);
 
-				this._closeWorkflowsModal();
-			})
-			.catch(e => this.toastyService.error(`Error loading workflow ${playbookId} - ${workflowId}: ${e.message}`));
+		this.setStartNode(this.loadedWorkflow.start);
+
+		// Configure handler when user clicks on node or edge
+		this.cy.on('select', 'node', (e: any) => this.onNodeSelect(e, this));
+		this.cy.on('select', 'edge', (e: any) => this.onEdgeSelect(e, this));
+		this.cy.on('unselect', (e: any) => this.onUnselect(e, this));
+
+		// Configure handlers when nodes/edges are added or removed
+		this.cy.on('add', 'node', (e: any) => this.onNodeAdded(e, this));
+		this.cy.on('remove', 'node', (e: any) => this.onNodeRemoved(e, this));
+		this.cy.on('remove', 'edge', (e: any) => this.onEdgeRemove(e, this));
+
+		// this.cyJsonData = JSON.stringify(this.loadedWorkflow, null, 2);
 	}
 
 	/**
 	 * Closes the active workflow and clears all relevant variables.
 	 */
 	closeWorkflow(): void {
-		this.currentPlaybook = null;
+		this.loadedPlaybook = null;
 		this.loadedWorkflow = null;
 		this.selectedBranchParams = null;
 		this.selectedAction = null;
@@ -496,6 +501,7 @@ export class PlaybookComponent {
 			return;
 		}
 
+		console.log(workflowToSave);
 		// Go through our workflow and update some parameters
 		workflowToSave.actions.forEach(action => {
 			// Set the new cytoscape positions on our loadedworkflow
@@ -524,11 +530,31 @@ export class PlaybookComponent {
 			});
 		});
 
-		this.playbookService.saveWorkflow(this.currentPlaybook.id, workflowToSave)
-			.then(() => this.toastyService
-				.success(`Successfully saved workflow ${this.currentPlaybook.name} - ${workflowToSave.name}.`))
+		let savePromise: Promise<Workflow>;
+		if (this.loadedPlaybook.id) {
+			if (this.loadedWorkflow.id) {
+				savePromise = this.playbookService.newWorkflow(this.loadedPlaybook.id, workflowToSave);
+			} else {
+				savePromise = this.playbookService.saveWorkflow(this.loadedPlaybook.id, workflowToSave);
+			}
+		} else {
+			const playbookToSave: Playbook = _.cloneDeep(this.loadedPlaybook);
+			playbookToSave.workflows = [workflowToSave];
+			savePromise = this.playbookService.newPlaybook(playbookToSave)
+				.then(newPlaybook => {
+					this.loadedPlaybook = newPlaybook;
+					return newPlaybook.workflows[0];
+				});
+		}
+		
+		savePromise
+			.then(savedWorkflow => {
+				this.loadedWorkflow = savedWorkflow;
+				this.setupGraph();
+				this.toastyService.success(`Successfully saved workflow ${this.loadedPlaybook.name} - ${workflowToSave.name}.`);
+			})
 			.catch(e => this.toastyService
-				.error(`Error saving workflow ${this.currentPlaybook.name} - ${workflowToSave.name}: ${e.message}`));
+				.error(`Error saving workflow ${this.loadedPlaybook.name} - ${workflowToSave.name}: ${e.message}`));
 	}
 
 	/**
@@ -565,7 +591,7 @@ export class PlaybookComponent {
 				idsToRemove.unshift(args.indexOf(argument));
 			}
 			// Additionally, remove "value" if reference is specified
-			if (argument.reference !== 0 && argument.value) {
+			if (argument.reference !== 0 && argument.value !== undefined) {
 				delete argument.value;
 			}
 		}
@@ -609,7 +635,7 @@ export class PlaybookComponent {
 		const data = e.target.data();
 
 		// Unselect anything else we might have selected (via ctrl+click basically)
-		self.cy.elements(`[_id!="${data._id}"]`).unselect();
+		self.cy.elements(`[_id!=${data._id}]`).unselect();
 
 		const action = self.loadedWorkflow.actions.find(a => a.id === data._id);
 		if (!action) { return; }
@@ -663,8 +689,9 @@ export class PlaybookComponent {
 		const id = e.target.data('_id');
 
 		// Unselect anything else we might have selected (via ctrl+click basically)
-		self.cy.elements(`[_id!="${id}"]`).unselect();
+		self.cy.elements(`[_id!=${id}]`).unselect();
 
+		console.log(id, self.loadedWorkflow.branches);
 		const branch = self.loadedWorkflow.branches.find(b => b.id === id);
 		const sourceAction = self.loadedWorkflow.actions.find(a => a.id === branch.source_id);
 
@@ -684,7 +711,7 @@ export class PlaybookComponent {
 	onUnselect(event: any, self: PlaybookComponent): void {
 		// Update our labels if possible
 		if (self.selectedAction) {
-			this.cy.elements(`node[_id="${self.selectedAction.id}"]`).data('label', self.selectedAction.name);
+			this.cy.elements(`node[_id=${self.selectedAction.id}]`).data('label', self.selectedAction.name);
 		}
 
 		if (!self.cy.$(':selected').length) {
@@ -915,6 +942,7 @@ export class PlaybookComponent {
 	 * @param start DB ID of the new start node (optional)
 	 */
 	setStartNode(start: number): void {
+		console.log(start);
 		// If no start was given set it to one of the root nodes
 		if (start) {
 			this.loadedWorkflow.start = start;
@@ -928,7 +956,7 @@ export class PlaybookComponent {
 		// Clear start node highlighting of the previous start node(s)
 		this.cy.elements('node[?isStartNode]').data('isStartNode', false);
 		// Apply start node highlighting to the new start node.
-		this.cy.elements(`node[_id="${start}"]`).data('isStartNode', true);
+		this.cy.elements(`node[_id=${start}]`).data('isStartNode', true);
 	}
 
 	/**
@@ -1054,7 +1082,7 @@ export class PlaybookComponent {
 				this.playbooks = this.playbooks.filter(p => p.id !== playbook.id);
 
 				// If our loaded workflow is in this playbook, close it.
-				if (playbook.id === this.currentPlaybook.id) { this.closeWorkflow(); }
+				if (playbook.id === this.loadedPlaybook.id) { this.closeWorkflow(); }
 
 				this.toastyService.success(`Successfully deleted playbook "${playbook.name}".`);
 			})
@@ -1066,7 +1094,10 @@ export class PlaybookComponent {
 	 * Opens a modal to add a new workflow to a given playbook or under a new playbook.
 	 */
 	newWorkflowModal(): void {
-		this._closeWorkflowsModal();
+		if (this.loadedWorkflow && 
+			!confirm(`Are you sure you want to create a new workflow? Any unsaved changes on "${this.loadedWorkflow.name}" will be lost!`)) {
+			return;
+		}
 
 		this.modalParams = {
 			title: 'Create New Workflow',
@@ -1075,75 +1106,33 @@ export class PlaybookComponent {
 			shouldShowPlaybook: true,
 			shouldShowWorkflow: true,
 			submit: () => {
-				const pb = this.playbooks.find(p => p.id === this.modalParams.selectedPlaybookId);
+				let newWorkflow = new Workflow();
+				newWorkflow.name = this.modalParams.newWorkflow;
+				newWorkflow.start = 0;
+
+				// Grab our playbook.
+				let pb = this.playbooks.find(p => p.id === this.modalParams.selectedPlaybookId);
+				// If it doesn't exist, create a new temp playbook and add our temp workflow under it.
 				if (!pb) {
-					this.toastyService.error(`Error creating workflow "${this.modalParams.newWorkflow}". Playbook does not exist.`);
-					return;
+					pb = new Playbook();
+					pb.name = this.modalParams.newPlaybook;
+					pb.workflows.push(newWorkflow);
 				}
 
-				this.playbookService.newWorkflow(this.modalParams.selectedPlaybookId, this.modalParams.newWorkflow)
-					.then(newWorkflow => {
-						pb.workflows.push(newWorkflow);
-						pb.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
-						// else {
-						// 	this.playbooks.push({ name: playbookName, workflows: [newWorkflow], uid: null });
-						// 	this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
-						// }
-						if (!this.loadedWorkflow) { this.loadWorkflow(this.modalParams.selectedPlaybookId, newWorkflow.id); }
-						this.toastyService.success(`Created workflow "${pb.name} - ${this.modalParams.newWorkflow}".`);
-						this._closeModal();
-					})
-					.catch(e => this.toastyService
-						.error(`Error creating workflow "${pb.name} - ${this.modalParams.newWorkflow}": ${e.message}`));
+				this.loadWorkflow(pb, newWorkflow);
+				this._closeModal();
 			},
 		};
 
 		this._openModal();
 	}
 
-	// /**
-	//  * Opens a modal to delete a given workflow and performs the rename action on submit.
-	//  * @param playbook Name of the playbook the workflow resides under
-	//  * @param workflow Name of the workflow to rename
-	//  */
-	// renameWorkflowModal(playbook: string, workflow: string): void {
-	// 	this._closeWorkflowsModal();
-
-	// 	this.modalParams = {
-	// 		title: 'Rename Existing Workflow',
-	// 		submitText: 'Rename Workflow',
-	// 		shouldShowWorkflow: true,
-	// 		submit: () => {
-	// 			const playbookName = this._getModalPlaybookName();
-	// 			this.playbookService.renameWorkflow(playbook, workflow, this.modalParams.newWorkflow)
-	// 				.then(() => {
-	// 					this.playbooks
-	// 						.find(pb => pb.name === playbook).workflows
-	// 						.find(wf => wf.name === workflow).name = this.modalParams.newWorkflow;
-
-	// 					// Rename our loaded workflow if necessary.
-	// 					if (this.currentPlaybook === playbook && this.currentWorkflow === workflow && this.loadedWorkflow) {
-	// 						this.loadedWorkflow.name = this.modalParams.newWorkflow;
-	// 						this.currentWorkflow = this.modalParams.newWorkflow;
-	// 					}
-	// 					this.toastyService
-	// 						.success(`Successfully renamed workflow "${playbookName} - ${this.modalParams.newWorkflow}".`);
-	// 					this._closeModal();
-	// 				})
-	// 				.catch(e => this.toastyService
-	// 					.error(`Error renaming workflow "${playbookName} - ${this.modalParams.newWorkflow}": ${e.message}`));
-	// 		},
-	// 	};
-
-	// 	this._openModal();
-	// }
-
 	/**
 	 * Opens a modal to copy a given workflow and performs the copy action on submit.
-	 * @param playbookId ID of the playbook the workflow resides under
-	 * @param workflowId ID of the workflow to copy
+	 * @param sourcePlaybookId ID of the playbook the workflow resides under
+	 * @param sourceWorkflowId ID of the workflow to copy
 	 */
-	duplicateWorkflowModal(playbookId: number, workflowId: number): void {
+	duplicateWorkflowModal(sourcePlaybookId: number, sourceWorkflowId: number): void {
 		this._closeWorkflowsModal();
 
 		this.modalParams = {
@@ -1151,33 +1140,44 @@ export class PlaybookComponent {
 			submitText: 'Duplicate Workflow',
 			shouldShowPlaybook: true,
 			shouldShowExistingPlaybooks: true,
-			selectedPlaybookId: playbookId,
+			selectedPlaybookId: sourcePlaybookId,
 			shouldShowWorkflow: true,
 			submit: () => {
-				const pb = this.playbooks.find(p => p.id === playbookId);
+				// const sourcePb = this.playbooks.find(p => p.id === sourcePlaybookId);
+				// Grab our playbook. If it doesn't exist, set our new playbook name to add
+				let destinationPb = this.playbooks.find(p => p.id === this.modalParams.selectedPlaybookId);
+				let newPlaybookName: string;
+				if (!destinationPb) { newPlaybookName = this.modalParams.newPlaybook; }
 
-				if (!pb) {
-					this.toastyService.error(`Error duplicating workflow "${this.modalParams.newWorkflow}". Playbook does not exist.`);
-					return;
+				// Make a new playbook if we're adding this under a new playbook
+				let newPlaybookPromise: Promise<void>;
+				if (newPlaybookName) {
+					let playbookToAdd = new Playbook();
+					playbookToAdd.name = newPlaybookName;
+					newPlaybookPromise = this.playbookService.newPlaybook(playbookToAdd)
+						.then(newPlaybook => {
+							this.playbooks.push(newPlaybook);
+							this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
+							destinationPb = newPlaybook;
+							this.modalParams.selectedPlaybookId = newPlaybook.id;
+						});
+				} else {
+					newPlaybookPromise = Promise.resolve();
 				}
 
-				this.playbookService.duplicateWorkflow(playbookId, workflowId, this.modalParams.newWorkflow)
+				newPlaybookPromise
+					.then(() => this.playbookService
+						.duplicateWorkflow(sourcePlaybookId, sourceWorkflowId, destinationPb.id, this.modalParams.newWorkflow))
 					.then(duplicatedWorkflow => {
-						// if (!pb) {
-						// 	pb = { uid: null, name: this._getModalPlaybookName(), workflows: [] };
-						// 	this.playbooks.push(pb);
-						// 	this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
-						// }
-
-						pb.workflows.push(duplicatedWorkflow);
-						pb.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
+						destinationPb.workflows.push(duplicatedWorkflow);
+						destinationPb.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
 
 						this.toastyService
-							.success(`Successfully duplicated workflow "${pb.name} - ${this.modalParams.newWorkflow}".`);
+							.success(`Successfully duplicated workflow "${destinationPb.name} - ${this.modalParams.newWorkflow}".`);
 						this._closeModal();
 					})
 					.catch(e => this.toastyService
-						.error(`Error duplicating workflow "${pb.name} - ${this.modalParams.newWorkflow}": ${e.message}`));
+						.error(`Error duplicating workflow "${destinationPb.name} - ${this.modalParams.newWorkflow}": ${e.message}`));
 			},
 		};
 
@@ -1201,7 +1201,7 @@ export class PlaybookComponent {
 				if (!pb.workflows.length) { this.playbooks = this.playbooks.filter(p => p.id !== pb.id); }
 
 				// Close the workflow if the deleted workflow matches the loaded one
-				if (playbook.id === this.currentPlaybook.id && workflow.id === this.loadedWorkflow.id) { this.closeWorkflow(); }
+				if (playbook.id === this.loadedPlaybook.id && workflow.id === this.loadedWorkflow.id) { this.closeWorkflow(); }
 
 				this.toastyService.success(`Successfully deleted workflow "${playbook.name} - ${workflow.name}".`);
 			})
@@ -1228,18 +1228,6 @@ export class PlaybookComponent {
 	_closeWorkflowsModal(): void {
 		($('#workflowsModal') as any).modal('hide');
 	}
-
-	// /**
-	//  * Gets the playbook name from a given modal:
-	//  * either by the selected playbook or whatever's specified under new playbook.
-	//  */
-	// _getModalPlaybookName(): string {
-	// 	if (this.modalParams.selectedPlaybook && this.modalParams.selectedPlaybook !== '') {
-	// 		return this.modalParams.selectedPlaybook;
-	// 	}
-
-	// 	return this.modalParams.newPlaybook;
-	// }
 
 	///------------------------------------------------------------------------------------------------------
 	/// Utility functions

@@ -11,7 +11,6 @@ export class WorkingUser {
 		returnUser.role_ids = workingUser.role_ids;
 		returnUser.active = workingUser.active;
 
-		//TODO: update once we merge the pw-fix branch in, need to submit current password as well
 		returnUser.old_password = workingUser.currentPassword;
 		returnUser.password = workingUser.newPassword;
 		return returnUser;

@@ -42,6 +42,11 @@
 	margin-left: 0;
 }
 
+#playbookToolbar .form-control.workflowNameInput {
+	display: inline-block;
+	width: auto;
+}
+
 #currentWorkflowText {
 	margin-left: 20px;
 	margin-top: 10px;

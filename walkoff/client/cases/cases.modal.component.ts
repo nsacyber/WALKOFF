@@ -72,7 +72,7 @@ export class CasesModalComponent {
 
 		// Check for collapse after the second level
 		if (this.root.children && this.root.children.length) {
-			this.root.children.forEach(this.checkInclusionAndCheckChildrenForExpansion);
+			this.root.children.forEach((d: any) => this.checkInclusionAndCheckChildrenForExpansion(d, this));
 		}
 
 		this.update(this.root);
@@ -186,14 +186,15 @@ export class CasesModalComponent {
 	/**
 	 * This function recursively checks if each node should be included or expanded.
 	 * @param d Node data
+	 * @param self This component reference
 	 */
-	checkInclusionAndCheckChildrenForExpansion(d: any): boolean {
-		if (this.existingSubscriptions.find(s => s.id === d.data.id && s.type === d.data.type)) { d.data._included = true; }
+	checkInclusionAndCheckChildrenForExpansion(d: any, self: CasesModalComponent): boolean {
+		if (self.existingSubscriptions.find(s => s.id === d.data.id && s.type === d.data.type)) { d.data._included = true; }
 		let expanded = false;
 
 		if (d.children) {
 			d.children.forEach(function (child: any) {
-				expanded = this.checkInclusionAndCheckChildrenForExpansion(child) || expanded;
+				expanded = self.checkInclusionAndCheckChildrenForExpansion(child, self) || expanded;
 			});
 		}
 
