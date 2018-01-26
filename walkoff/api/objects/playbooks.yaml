@@ -226,6 +226,9 @@ Position:
   description: Various specifications for how the Action is displayed in the playbook editor
   additionalProperties: false
   properties:
+    id:
+      type: integer
+      description: The ID of the object. If updating a workflow and the Position object already exists, ID is required. Otherwise, do not include it.
     x:
       type: number
       description: The X coordinate for the Action
