@@ -92,9 +92,9 @@ def create_playbook():
     def __func():
         data = request.get_json()
         playbook_name = data['name']
-        playbook = Playbook.create(data)
 
         try:
+            playbook = Playbook.create(data)
             walkoff.coredb.devicedb.device_db.session.add(playbook)
             walkoff.coredb.devicedb.device_db.session.commit()
         except IntegrityError:

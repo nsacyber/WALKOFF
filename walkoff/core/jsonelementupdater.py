@@ -22,7 +22,7 @@ class JsonElementUpdater(object):
         for field, value in fields_to_update:
             if field in json_in:
                 json_value = json_in[field]
-                if isinstance(json_value, list):
+                if isinstance(json_value, list) and field != 'selection':
 
                     if is_workflow and field == 'branches':
                         json_value = JsonElementUpdater.update_branch_ids(json_value, action_id_map)
