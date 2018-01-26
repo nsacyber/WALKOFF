@@ -46,6 +46,11 @@ class JsonElementUpdater(object):
                     if is_workflow and field == 'start':
                         json_value = action_id_map[json_value]
                     setattr(element, field, json_value)
+            elif field != 'id':
+                if isinstance(value, list):
+                    setattr(element, field, [])
+                else:
+                    setattr(element, field, None)
 
     @staticmethod
     def update_branch_ids(json_value, action_id_map):

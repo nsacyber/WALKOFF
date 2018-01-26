@@ -101,6 +101,10 @@ def create_playbook():
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not create Playbook {}. Unique constraint failed'.format(playbook_name))
             return {"error": "Unique constraint failed."}, OBJECT_EXISTS_ERROR
+        except ValueError as e:
+            walkoff.coredb.devicedb.device_db.session.rollback()
+            current_app.logger.error('Could not create Playbook {}. Invalid input'.format(playbook_name))
+            return {"error": e.message}, INVALID_INPUT_ERROR
 
         current_app.logger.info('Playbook {0} created'.format(playbook_name))
         return playbook.read(), OBJECT_CREATED
@@ -181,15 +185,19 @@ def copy_playbook(playbook_id):
 
         playbook_json = playbook.read()
         playbook_json.pop('id')
-        new_playbook = Playbook.create(playbook_json)
 
         try:
+            new_playbook = Playbook.create(playbook_json)
             walkoff.coredb.devicedb.device_db.session.add(new_playbook)
             walkoff.coredb.devicedb.device_db.session.commit()
         except IntegrityError:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not copy Playbook {}. Unique constraint failed'.format(playbook_id))
             return {"error": "Unique constraint failed."}, OBJECT_EXISTS_ERROR
+        except ValueError as e:
+            walkoff.coredb.devicedb.device_db.session.rollback()
+            current_app.logger.error('Could not copy Playbook {}. Invalid input'.format(playbook_id))
+            return {"error": e.message}, INVALID_INPUT_ERROR
 
         current_app.logger.info('Copied playbook {0} to {1}'.format(playbook_id, new_playbook_name))
 
@@ -221,16 +229,15 @@ def create_workflow(playbook_id):
         data = request.get_json()
         workflow_name = data['name']
 
-        workflow = Workflow.create(data)
-        playbook.workflows.append(workflow)
-
         try:
+            workflow = Workflow.create(data)
+            playbook.workflows.append(workflow)
             walkoff.coredb.devicedb.device_db.session.add(workflow)
             walkoff.coredb.devicedb.device_db.session.commit()
-        except ValueError:
+        except ValueError as e:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not add workflow {0}-{1}'.format(playbook_id, workflow_name))
-            return {'error': 'Could not add workflow.'}, INVALID_INPUT_ERROR
+            return {'error': e.message}, INVALID_INPUT_ERROR
         except IntegrityError:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not create workflow {}. Unique constraint failed'.format(workflow_name))
@@ -263,6 +270,7 @@ def update_workflow(playbook_id):
     def __func():
         workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
 
+        # TODO: Come back to this...
         try:
             workflow.update(data)
         except InvalidExecutionElement as e:
@@ -338,9 +346,8 @@ def copy_workflow(playbook_id, workflow_id):
             playbook = Playbook(new_playbook_name)
             walkoff.coredb.devicedb.device_db.session.add(playbook)
 
-        playbook.add_workflow(new_workflow)
-
         try:
+            playbook.add_workflow(new_workflow)
             walkoff.coredb.devicedb.device_db.session.commit()
         except IntegrityError:
             walkoff.coredb.devicedb.device_db.session.rollback()

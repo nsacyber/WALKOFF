@@ -45,6 +45,10 @@
         description: Object exists
         schema:
           $ref: '#/definitions/Error'
+      463:
+        description: Invalid input error.
+        schema:
+          $ref: '#/definitions/Error'
   post:
     tags:
       - Playbooks
@@ -161,6 +165,10 @@
           $ref: '#/definitions/Error'
       462:
         description: Playbook already exists.
+        schema:
+          $ref: '#/definitions/Error'
+      463:
+        description: Invalid input error.
         schema:
           $ref: '#/definitions/Error'
 
