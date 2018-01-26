@@ -13,6 +13,7 @@ class JsonElementUpdater(object):
             element (ExecutionElement): The ExecutionElement
         """
         from walkoff.coredb.workflow import Workflow
+        from walkoff.coredb.position import Position
         fields_to_update = list(JsonElementUpdater.updatable_fields(element))
         is_workflow = isinstance(element, Workflow)
         if is_workflow:
@@ -31,6 +32,15 @@ class JsonElementUpdater(object):
 
                     if is_workflow and field == 'actions':
                         action_id_map = id_map
+                        for action_json in json_value:
+                            if action_json['arguments']:
+                                JsonElementUpdater.update_arg_ref_ids(action_json['arguments'], action_id_map)
+
+                elif field == 'position':
+                    if 'id' not in json_value:
+                        value.position = Position(**json_in)
+                    else:
+                        value.update(json_value)
 
                 else:
                     if is_workflow and field == 'start':
@@ -45,6 +55,13 @@ class JsonElementUpdater(object):
             if branch_json['destination_id'] in action_id_map:
                 branch_json['destination_id'] = action_id_map[branch_json['destination_id']]
         return json_value
+
+    @staticmethod
+    def update_arg_ref_ids(arguments_json, action_id_map):
+        for argument_json in arguments_json:
+            if 'reference' in argument_json:
+                if argument_json['reference'] in action_id_map:
+                    argument_json['reference'] = action_id_map[argument_json['reference']]
 
     @staticmethod
     def enforce_iteration_order(fields_to_update):
@@ -91,4 +108,5 @@ class JsonElementUpdater(object):
         return ((field, getattr(element, field)) for field in dir(element)
                 if not field.startswith('_')
                 and not callable(getattr(element, field))
-                and field != 'raw_representation')
+                and field != 'raw_representation'
+                and field != 'metadata')
