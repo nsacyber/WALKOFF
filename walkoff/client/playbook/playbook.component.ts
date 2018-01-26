@@ -501,7 +501,6 @@ export class PlaybookComponent {
 			return;
 		}
 
-		console.log(workflowToSave);
 		// Go through our workflow and update some parameters
 		workflowToSave.actions.forEach(action => {
 			// Set the new cytoscape positions on our loadedworkflow
@@ -521,6 +520,8 @@ export class PlaybookComponent {
 			});
 		});
 		workflowToSave.branches.forEach(branch => {
+			if (branch.id < 0) { delete branch.id; }
+
 			branch.conditions.forEach(condition => {
 				this._sanitizeArgumentsForSave(condition.arguments);
 
@@ -533,9 +534,9 @@ export class PlaybookComponent {
 		let savePromise: Promise<Workflow>;
 		if (this.loadedPlaybook.id) {
 			if (this.loadedWorkflow.id) {
-				savePromise = this.playbookService.newWorkflow(this.loadedPlaybook.id, workflowToSave);
-			} else {
 				savePromise = this.playbookService.saveWorkflow(this.loadedPlaybook.id, workflowToSave);
+			} else {
+				savePromise = this.playbookService.newWorkflow(this.loadedPlaybook.id, workflowToSave);
 			}
 		} else {
 			const playbookToSave: Playbook = _.cloneDeep(this.loadedPlaybook);
@@ -693,7 +694,6 @@ export class PlaybookComponent {
 		// Unselect anything else we might have selected (via ctrl+click basically)
 		self.cy.elements(`[_id!=${id}]`).unselect();
 
-		console.log(id, self.loadedWorkflow.branches);
 		const branch = self.loadedWorkflow.branches.find(b => b.id === id);
 		const sourceAction = self.loadedWorkflow.actions.find(a => a.id === branch.source_id);
 
@@ -944,7 +944,6 @@ export class PlaybookComponent {
 	 * @param start DB ID of the new start node (optional)
 	 */
 	setStartNode(start: number): void {
-		console.log(start);
 		// If no start was given set it to one of the root nodes
 		if (start) {
 			this.loadedWorkflow.start = start;
@@ -1108,7 +1107,7 @@ export class PlaybookComponent {
 			shouldShowPlaybook: true,
 			shouldShowWorkflow: true,
 			submit: () => {
-				let newWorkflow = new Workflow();
+				const newWorkflow = new Workflow();
 				newWorkflow.name = this.modalParams.newWorkflow;
 				newWorkflow.start = 0;
 
@@ -1154,7 +1153,7 @@ export class PlaybookComponent {
 				// Make a new playbook if we're adding this under a new playbook
 				let newPlaybookPromise: Promise<void>;
 				if (newPlaybookName) {
-					let playbookToAdd = new Playbook();
+					const playbookToAdd = new Playbook();
 					playbookToAdd.name = newPlaybookName;
 					newPlaybookPromise = this.playbookService.newPlaybook(playbookToAdd)
 						.then(newPlaybook => {
