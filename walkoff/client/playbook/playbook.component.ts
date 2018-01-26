@@ -492,6 +492,9 @@ export class PlaybookComponent {
 	 * @param cyData Nodes and edges from the cytoscape graph. Only really used to grab the new positions of nodes.
 	 */
 	saveWorkflow(cyData: any[]): void {
+		// Unselect anything selected first (will trigger onUnselect)
+		this.cy.$(':selected').unselect();
+
 		// Clone the loadedWorkflow first, so we don't change the parameters 
 		// in the editor when converting it to the format the backend expects.
 		const workflowToSave: Workflow = _.cloneDeep(this.loadedWorkflow);
@@ -1037,6 +1040,7 @@ export class PlaybookComponent {
 				this.playbookService.renamePlaybook(playbook.id, this.modalParams.newPlaybook)
 					.then(() => {
 						this.playbooks.find(pb => pb.id === playbook.id).name = this.modalParams.newPlaybook;
+						this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
 						this.toastyService.success(`Successfully renamed playbook "${this.modalParams.newPlaybook}".`);
 						this._closeModal();
 					})
