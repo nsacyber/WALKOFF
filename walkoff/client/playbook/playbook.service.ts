@@ -40,7 +40,7 @@ export class PlaybookService {
 	 * @param newName New name for the updated playbook
 	 */
 	renamePlaybook(playbookId: number, newName: string): Promise<void> {
-		return this.authHttp.post('/api/playbooks', { id: playbookId, new_name: newName })
+		return this.authHttp.post('/api/playbooks', { id: playbookId, name: newName })
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
