@@ -184,6 +184,7 @@ def copy_playbook(playbook_id):
             new_playbook_name = playbook.name + "_Copy"
 
         playbook_json = playbook.read()
+        playbook_json['name'] = new_playbook_name
         playbook_json.pop('id')
 
         try:

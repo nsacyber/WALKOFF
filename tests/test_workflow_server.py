@@ -32,9 +32,11 @@ class TestWorkflowServer(ServerTestCase):
         self.update_playbooks = False
         self.update_workflows = False
         self.empty_workflow_json = \
-            {'actions': [],
+            {'actions': [
+                {"app_name": "HelloWorld", "action_name": "helloWorld", "name": "helloworld", "id": -1, "triggers": [],
+                 "arguments": []}],
              'name': self.add_workflow_name,
-             'start': 0,
+             'start': -1,
              'branches': []}
 
         case_database.initialize()
@@ -61,65 +63,10 @@ class TestWorkflowServer(ServerTestCase):
         case_database.case_db.tear_down()
         walkoff.coredb.devicedb.device_db.tear_down()
 
-    def test_put_playbook(self):
-        workflow = {'name': 'ihopethisworksWorkflow',
-                    'start': -1,
-                    'id': 15,
-                    'actions': [{
-                        'action_name': 'repeatBackToMe',
-                        'app_name': 'HelloWorldBounded',
-                        'arguments': [{
-                            'name': 'call',
-                            'value': 'Hello World'
-                        }],
-                        'name': 'start',
-                        'x_coordinate': 0,
-                        'y_coordinate': 0,
-                        'id': 26,
-                        'device_id': 1
-                    },
-                        {
-                            'action_name': 'repeatBackToMe',
-                            'app_name': 'HelloWorldBounded',
-                            'arguments': [{
-                                'name': 'call',
-                                'value': 'Hello World'
-                            }],
-                            'name': 'start',
-                            'x_coordinate': 0,
-                            'y_coordinate': 0,
-                            'id': 27,
-                            'device_id': 1
-                        },
-                        {
-                            'action_name': 'repeatBackToMe',
-                            'app_name': 'HelloWorldBounded',
-                            'arguments': [{
-                                'name': 'call',
-                                'value': 'Hello World'
-                            }],
-                            'name': 'start',
-                            'x_coordinate': 0,
-                            'y_coordinate': 0,
-                            'id': -1,
-                            'device_id': 1
-                        }],
-                    'branches': [{
-                        'id': 12,
-                        'source_id': 26,
-                        'destination_id': 27,
-                        'status': 'Success',
-                        'priority': 1
-                    },
-                        {
-                            'source_id': 27,
-                            'destination_id': -1,
-                            'status': 'Success',
-                            'priority': 1
-                        }]
-                    }
-        response = self.post_with_status_check('/api/playbooks/15/workflows', headers=self.headers,
-                                               data=json.dumps(workflow), content_type='application/json',
+    def test_copy_playbook(self):
+
+        response = self.post_with_status_check('/api/playbooks/1/copy', headers=self.headers,
+                                               data=json.dumps({}), content_type='application/json',
                                                status_code=SUCCESS)
         print(response)
 
@@ -172,7 +119,8 @@ class TestWorkflowServer(ServerTestCase):
     #     response.pop('id')
     #
     #     self.assertDictEqual(response, {'name': self.add_playbook_name, 'workflows': []})
-    #     self.assertEqual(len(list(walkoff.coredb.devicedb.device_db.session.query(Playbook).all())), original_length+1)
+    #     self.assertEqual(len(list(walkoff.coredb.devicedb.device_db.session.query(Playbook).all())),
+    #                      original_length + 1)
     #
     # def test_add_playbook_already_exists(self):
     #     data = {"name": self.add_playbook_name}
@@ -185,30 +133,6 @@ class TestWorkflowServer(ServerTestCase):
     #                                error='Unique constraint failed.',
     #                                data=json.dumps(data), headers=self.headers, status_code=OBJECT_EXISTS_ERROR,
     #                                content_type="application/json")
-    #
-    # def test_add_workflow(self):
-    #     initial_playbooks = walkoff.coredb.devicedb.device_db.session.query(Playbook).all()
-    #     initial_workflows = next(playbook.workflows for playbook in initial_playbooks if playbook.name == 'test')
-    #     initial_workflows_len = len(initial_workflows)
-    #
-    #     playbook_id = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(name='test').first().id
-    #
-    #     data = {"name": self.add_workflow_name, "start": 0}
-    #     self.workflows_added.append(self.add_workflow_name)
-    #     self.update_workflows = True
-    #     response = self.put_with_status_check('/api/playbooks/{}/workflows'.format(playbook_id),
-    #                                           headers=self.headers, status_code=OBJECT_CREATED, data=json.dumps(data),
-    #                                           content_type="application/json")
-    #     self.empty_workflow_json['id'] = response['id']
-    #     self.assertDictEqual(response, self.empty_workflow_json)
-    #
-    #     final_playbooks = walkoff.coredb.devicedb.device_db.session.query(Playbook).all()
-    #     final_workflows = next(playbook.workflows for playbook in final_playbooks if playbook.name == 'test')
-    #     self.assertEqual(len(final_workflows), initial_workflows_len + 1)
-    #
-    #     workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-    #         Workflow.name == self.add_workflow_name, Playbook.name == 'test').first()
-    #     self.assertIsNotNone(workflow)
     #
     # def test_edit_playbook(self):
     #     playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(name='test').first()
@@ -237,8 +161,34 @@ class TestWorkflowServer(ServerTestCase):
     #     response = self.app.post('/api/playbooks', headers=self.headers, content_type="application/json",
     #                              data=json.dumps(data))
     #     self.assertEqual(response._status_code, 461)
-    #     self.assertListEqual(walkoff.coredb .devicedb.device_db.session.query(Playbook).all(), expected)
+    #     self.assertListEqual(walkoff.coredb.devicedb.device_db.session.query(Playbook).all(), expected)
     #
+    # def test_add_workflow(self):
+    #     initial_playbooks = walkoff.coredb.devicedb.device_db.session.query(Playbook).all()
+    #     initial_workflows = next(playbook.workflows for playbook in initial_playbooks if playbook.name == 'test')
+    #     initial_workflows_len = len(initial_workflows)
+    #
+    #     playbook_id = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(name='test').first().id
+    #
+    #     self.workflows_added.append(self.add_workflow_name)
+    #     self.update_workflows = True
+    #     response = self.put_with_status_check('/api/playbooks/{}/workflows'.format(playbook_id),
+    #                                           headers=self.headers, status_code=OBJECT_CREATED,
+    #                                           data=json.dumps(self.empty_workflow_json),
+    #                                           content_type="application/json")
+    #     self.empty_workflow_json['id'] = response['id']
+    #     self.empty_workflow_json['actions'][0]['id'] = response['actions'][0]['id']
+    #     self.empty_workflow_json['start'] = response['actions'][0]['id']
+    #     self.assertDictEqual(response, self.empty_workflow_json)
+    #
+    #     final_playbooks = walkoff.coredb.devicedb.device_db.session.query(Playbook).all()
+    #     final_workflows = next(playbook.workflows for playbook in final_playbooks if playbook.name == 'test')
+    #     self.assertEqual(len(final_workflows), initial_workflows_len + 1)
+    #
+    #     workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+    #         Workflow.name == self.add_workflow_name, Playbook.name == 'test').first()
+    #     self.assertIsNotNone(workflow)
+
     # def test_edit_workflow_name_only(self):
     #     workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
     #         Workflow.name == 'helloWorldWorkflow', Playbook.name == 'test').first()

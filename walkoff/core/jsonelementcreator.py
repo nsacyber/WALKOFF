@@ -41,8 +41,6 @@ class JsonElementCreator(object):
             return elem
         except (KeyError, TypeError, InvalidArgument, UnknownApp, UnknownFunction) as e:
             from walkoff.helpers import format_exception_message
-            import traceback
-            traceback.print_exc()
             raise ValueError(
                 'Improperly formatted JSON for ExecutionElement {0} {1}'.format(current_class.__name__,
                                                                                 format_exception_message(e)))
@@ -88,7 +86,7 @@ class JsonElementCreator(object):
                 arg_json.pop('id', None)
             json_in['arguments'] = [Argument(**arg_json) for arg_json in json_in['arguments']]
         if 'position' in json_in:
-            json_in.pop('id', None)
+            json_in['position'].pop('id', None)
             json_in['position'] = Position(**json_in['position'])
         return current_class(**json_in)
 
