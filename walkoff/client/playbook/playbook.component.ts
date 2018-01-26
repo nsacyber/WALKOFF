@@ -544,12 +544,19 @@ export class PlaybookComponent {
 			savePromise = this.playbookService.newPlaybook(playbookToSave)
 				.then(newPlaybook => {
 					this.loadedPlaybook = newPlaybook;
+					this.playbooks.push(newPlaybook);
+					this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
 					return newPlaybook.workflows[0];
 				});
 		}
 		
 		savePromise
 			.then(savedWorkflow => {
+				// If this workflow doesn't exist, add it to our loaded playbook (and master list for loading)
+				if (!this.loadedPlaybook.workflows.find(w => w.id === savedWorkflow.id)) {
+					this.loadedPlaybook.workflows.push(savedWorkflow);
+					this.loadedPlaybook.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
+				}
 				this.loadedWorkflow = savedWorkflow;
 				this.setupGraph();
 				this.toastyService.success(`Successfully saved workflow ${this.loadedPlaybook.name} - ${workflowToSave.name}.`);
