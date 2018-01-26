@@ -181,7 +181,7 @@ def copy_playbook(playbook_id):
         if 'playbook' in data and data['playbook']:
             new_playbook_name = data['playbook']
         else:
-            new_playbook_name = playbook_id + "_Copy"
+            new_playbook_name = playbook.name + "_Copy"
 
         playbook_json = playbook.read()
         playbook_json.pop('id')
@@ -319,20 +319,20 @@ def copy_workflow(playbook_id, workflow_id):
     @validate_workflow_is_registered('copy', playbook_id, workflow_id)
     def __func():
         data = request.get_json()
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id,
+                                                                                       _playbook_id=playbook_id).first()
 
         if 'playbook' in data and data['playbook']:
             new_playbook_name = data['playbook']
         else:
-            new_playbook_name = None
+            new_playbook_name = workflow._playbook.name
         if 'workflow' in data and data['workflow']:
             new_workflow_name = data['workflow']
         else:
-            new_workflow_name = workflow_id + "_Copy"
+            new_workflow_name = workflow.name + "_Copy"
 
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
         workflow_json = workflow.read()
         workflow_json.pop('id')
-        workflow_json.pop('playbook_id')
         workflow_json['name'] = new_workflow_name
 
         new_workflow = Workflow.create(workflow_json)

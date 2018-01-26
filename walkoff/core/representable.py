@@ -17,6 +17,9 @@ class Representable(object):
         Returns:
             (ExecutionElement) The created execution element
         """
+        from walkoff.coredb.action import Action
+        if cls is not Action:
+            representation.pop('id', None)
         return creator.create(representation, element_class=cls)
 
     def read(self, reader=None):

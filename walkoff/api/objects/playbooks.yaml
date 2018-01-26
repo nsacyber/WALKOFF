@@ -240,7 +240,7 @@ CopyWorkflow:
     type: object
     properties:
       playbook_id:
-        type: string
+        type: integer
       workflow:
         type: string
 
