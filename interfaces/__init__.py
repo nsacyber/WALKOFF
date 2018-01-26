@@ -1,12 +1,11 @@
 import logging
 from copy import deepcopy
 from functools import partial
-
 from .util import validate_events, add_docstring
 from .dispatchers import AppEventDispatcher, EventDispatcher
 from .exceptions import UnknownEvent, InvalidEventHandler
 from walkoff.events import WalkoffEvent, EventType
-from walkoff.helpers import get_function_arg_names
+from walkoff.helpers import split_function_arg_names
 
 _logger = logging.getLogger(__name__)
 
@@ -201,12 +200,19 @@ class InterfaceEventDispatcher(object):
         Raises:
             InvalidEventHandler: If the number of arguments is incorrect
         """
-        num_args = len(get_function_arg_names(func))
-        if is_controller:
-            if num_args != 0:
-                raise InvalidEventHandler('Handlers for controller events take no arguments')
-        elif num_args != 1:
-            raise InvalidEventHandler('Handlers for events non-controller events take one argument')
+        args = split_function_arg_names(func)
+        print(func.__name__)
+        print(args)
+
+        num_args = len(args['args'])
+        is_generic = 'varargs' in args and not num_args  # allow (*args)
+        print(is_generic)
+        if not is_generic:
+            if is_controller:
+                if num_args != 0:
+                    raise InvalidEventHandler('Handlers for controller events take no arguments')
+            elif num_args != 1:
+                raise InvalidEventHandler('Handlers for events non-controller events take one argument')
 
     @staticmethod
     def _all_events_are_controller(events):

@@ -1,5 +1,5 @@
 from unittest import TestCase
-from walkoff.sse import SimpleFilteredSseStream, SseEvent
+from walkoff.sse import FilteredSseStream, SseEvent, create_interface_channel_name, FilteredInterfaceSseStream
 from tests.util.mock_objects import MockRedisCacheAdapter
 import gevent
 from gevent.monkey import patch_all
@@ -13,7 +13,7 @@ class TestSimpleFilteredSseStream(TestCase):
     def setUp(self):
         self.cache = MockRedisCacheAdapter()
         self.channel = 'channel1'
-        self.stream = SimpleFilteredSseStream(self.channel, self.cache)
+        self.stream = FilteredSseStream(self.channel, self.cache)
 
     def tearDown(self):
         self.cache.clear()
@@ -23,8 +23,8 @@ class TestSimpleFilteredSseStream(TestCase):
         self.assertEqual(self.stream.cache, self.cache)
 
     def test_create_channel_name(self):
-        self.assertEqual(self.stream.create_channel_name('a'), '{}.a'.format(self.channel))
-        self.assertEqual(self.stream.create_channel_name(14), '{}.14'.format(self.channel))
+        self.assertEqual(self.stream.create_subchannel_name('a'), '{}.a'.format(self.channel))
+        self.assertEqual(self.stream.create_subchannel_name(14), '{}.14'.format(self.channel))
 
     def assert_header_in_response(self, response, header, value):
         header_tuple = next((header_ for header_ in response.headers if header_[0] == header), None)
@@ -139,3 +139,11 @@ class TestSimpleFilteredSseStream(TestCase):
         gevent.joinall(publish_threads, timeout=2)
         for sub in subs:
             self.assertListEqual(result[sub], formatted_sses[sub])
+
+
+class TestFilteredInterfaceSseStream(TestCase):
+
+    def test_init(self):
+        stream = FilteredInterfaceSseStream('HelloWorld3', 'random_filtered')
+        self.assertEqual(stream.interface, 'HelloWorld3')
+        self.assertEqual(stream.channel, create_interface_channel_name('HelloWorld2', 'random_filtered'))

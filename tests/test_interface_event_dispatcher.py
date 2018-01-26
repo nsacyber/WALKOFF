@@ -80,6 +80,12 @@ class TestInterfaceEventDispatcher(TestCase):
         with self.assertRaises(InvalidEventHandler):
             InterfaceEventDispatcher._validate_handler_function_args(x, True)
 
+    def test_validate_handler_function_args_generic(self):
+        def x(*args): pass
+
+        InterfaceEventDispatcher._validate_handler_function_args(x, True)
+
+
     def test_make_on_event_docstring_not_controller(self):
         doc = InterfaceEventDispatcher._make_on_walkoff_event_docstring(WalkoffEvent.ActionStarted)
         self.assertIn('sender_uids', doc)
@@ -208,6 +214,13 @@ class TestInterfaceEventDispatcher(TestCase):
         with self.assertRaises(InvalidEventHandler):
             @dispatcher.on_app_actions('App1')
             def x(): pass
+
+    def test_on_app_action_invalid_handler_function_arg_count_generic(self):
+        @dispatcher.on_app_actions('App1')
+        def x(*args): pass
+
+        @dispatcher.on_app_actions('App1')
+        def x(*args, **kwargs): pass
 
     def test_on_app_action_with_invalid_app(self):
         with self.assertRaises(UnknownApp):

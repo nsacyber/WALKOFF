@@ -1,4 +1,4 @@
-from walkoff.sse import SseEvent, SseStream
+from walkoff.sse import SseEvent, SseStream, InterfaceSseStream, create_interface_channel_name
 from unittest import TestCase
 from tests.util.mock_objects import MockRedisCacheAdapter
 import json
@@ -19,6 +19,14 @@ class TestSseEvent(TestCase):
     def test_format(self):
         event = SseEvent('ev', 'abc')
         self.assertEqual(event.format(42), 'id: 42\nevent: ev\ndata: abc\n\n')
+
+    def test_format_no_event(self):
+        event = SseEvent('', 123)
+        self.assertEqual(event.format(2), 'id: 2\ndata: 123\n\n')
+
+    def test_format_no_data(self):
+        event = SseEvent('ev2', {})
+        self.assertEqual(event.format(3), 'id: 3\nevent: ev2\n\n')
 
     def test_format_with_retry(self):
         event = SseEvent('ev', 'abc')
@@ -210,26 +218,15 @@ class TestRedisSseStream(TestCase, SseStreamTestBase):
     def tearDown(self):
         self.cache.clear()
 
-    def test_push(self):
 
-        @self.stream.push('event1')
-        def pusher(a, b, c):
-            if a == 1:
-                return {'b': b, 'c': c}
-            else:
-                return {'b': b, 'c': c}, 'event2'
+class TestInterfaceSseStream(TestCase):
 
-        sub = self.cache.subscribe(self.channel)
-        self.assertDictEqual(pusher(1, 2, 3),
-                         {'data': {'b': 2, 'c': 3}, 'event': 'event1'})
-        result = sub._pubsub.get_message()['data']
-        self.assertDictEqual(result['data'], {'b': 2, 'c': 3})
-        self.assertEqual(result['event'], 'event1')
-        self.assertDictEqual(pusher(2, 3, 4),
-                             {'data': {'b': 3, 'c': 4}, 'event': 'event2'})
-        result = sub._pubsub.get_message()['data']
-        self.assertDictEqual(result['data'], {'b': 3, 'c': 4})
-        self.assertEqual(result['event'], 'event2')
+    def test_create_interface_channel_name(self):
+        self.assertEqual(create_interface_channel_name('HelloWorld', 'count'), 'HelloWorld::count')
 
+    def test_init(self):
+        stream = InterfaceSseStream('HelloWorld2', 'random')
+        self.assertEqual(stream.interface, 'HelloWorld2')
+        self.assertEqual(stream.channel, create_interface_channel_name('HelloWorld2', 'random'))
 
 

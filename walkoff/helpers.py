@@ -437,6 +437,42 @@ def get_function_arg_names(func):
         return getsignature(func).args
 
 
+def split_function_arg_names(func):
+    if __new_inspection:
+        return __split_args_py3(func)
+    else:
+        return __split_args_py2(func)
+
+
+def __split_args_py2(func):
+    args = getsignature(func)
+    split_args = {'args': [], 'kwargs': []}
+    if args.varargs:
+        split_args['varargs'] = args.varargs
+    if args.keywords:
+        split_args['keywords'] = args.keywords
+    defaults = args.defaults if args.defaults else ()
+    for arg_name, default in zip(defaults, args.args[::-1]):
+        split_args['kwargs'].append(arg_name)
+    split_args['args'] = args.args[:-len(defaults)]
+    return split_args
+
+
+def __split_args_py3(func):
+    args = {'args': [], 'kwargs': []}
+    for name, param in getsignature(func).parameters.items():
+        kind = param.kind
+        if kind in (param.POSITIONAL_OR_KEYWORD, param.POSITIONAL_ONLY):
+            args['args'].append(name)
+        elif kind == param.KEYWORD_ONLY:
+            args['kwargs'].append(name)
+        elif kind == param.VAR_POSITIONAL:
+            args['varargs'] = name
+        elif kind == param.VAR_KEYWORD:
+            args['keywords'] = name
+    return args
+
+
 class InvalidApi(Exception):
     pass
 

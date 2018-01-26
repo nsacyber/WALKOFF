@@ -5,7 +5,7 @@ from flask_jwt_extended import get_jwt_identity
 from enum import Enum, unique
 from walkoff.security import jwt_required_in_query
 from walkoff.messaging import MessageActionEvent
-from walkoff.sse import SimpleFilteredSseStream
+from walkoff.sse import FilteredSseStream
 
 notifications_page = Blueprint('notifications_page', __name__)
 
@@ -17,7 +17,7 @@ class NotificationSseEvent(Enum):
     responded = 3
 
 
-sse_stream = SimpleFilteredSseStream('notifications')
+sse_stream = FilteredSseStream('notifications')
 
 
 @MessageActionEvent.created.connect
