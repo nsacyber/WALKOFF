@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 from copy import deepcopy
@@ -16,8 +15,8 @@ from walkoff.coredb.position import Position
 
 # import walkoff.__version__ as walkoff_version
 
-down_version = "0.4.2"
-up_version = "0.5.0"
+down_version = "0.6.4"
+up_version = "0.7.0"
 
 downgrade_supported = False
 upgrade_supported = True
@@ -37,7 +36,7 @@ def upgrade_playbook(playbook):
     for workflow in playbook['workflows']:
         workflows.append(upgrade_workflow(workflow))
 
-    playbook_obj = Playbook(name=playbook['name'], workflows=workflows)
+    playbook_obj = Playbook(name=playbook['name'], workflows=workflows, id=playbook.get('uid', None))
 
     walkoff.coredb.devicedb.device_db.session.add(playbook_obj)
     walkoff.coredb.devicedb.device_db.session.commit()
@@ -48,40 +47,31 @@ def upgrade_workflow(workflow):
     for action in workflow['actions']:
         actions.append(convert_action(action))
 
-    all_args = [argument for action in actions for argument in action.arguments]
-
-    # Convert all references in arguments
-    for argument in all_args:
-        if argument.reference:
-            for action in workflow['actions']:
-                print("Arg ref: {}".format(argument.reference))
-                print("Action prev id: {}".format(action['prev_id']))
-                if argument.reference == action['prev_id']:
-                    print("updating to: {}".format(action['id']))
-                    argument.reference = action['id']
-                    walkoff.coredb.devicedb.device_db.session.add(argument)
-                    break
-
     branches = []
     if 'branches' in workflow:
         for branch in workflow['branches']:
             branches.append(convert_branch(branch, workflow['actions']))
 
-    start = None
-    if 'start' in workflow:
-        for action in workflow['actions']:
-            if action['prev_id'] == workflow['start']:
-                start = action['id']
-
     name = workflow['name'] if 'name' in workflow else None
-    workflow_obj = Workflow(name=name, actions=actions, branches=branches, start=start)
+
+    if 'start' not in workflow:
+        start = actions[0].id
+        print('WARNING: "start" is now a required field for workflows. Setting start for workflow {0} to {1}'.format(
+            name, start))
+    else:
+        start = workflow['start']
+        for action in actions:
+            if action.id == start:
+                break
+        else:
+            start = actions[0].id
+            print('WARNING: "start" field does not refer to a valid action for workflow {0}. '
+                  'Setting "start" to {1}'.format(name, start))
+
+    workflow_obj = Workflow(name=name, actions=actions, branches=branches, start=start, id=workflow.get('uid', None))
 
     walkoff.coredb.devicedb.device_db.session.add(workflow_obj)
     walkoff.coredb.devicedb.device_db.session.commit()
-
-    for action in workflow_obj.actions:
-        if action.templated:
-            print(action.raw_representation)
 
     walkoff.coredb.devicedb.device_db.session.commit()
 
@@ -113,17 +103,20 @@ def convert_action(action):
         y = action['position']['y']
     position = Position(x, y) if x and y else None
 
-    templated = action['templated'] if 'templated' in action else None
+    templated = action['templated'] if 'templated' in action else False
 
-    action_obj = Action(app_name=action['app_name'], action_name=action['action_name'], name=name, device_id=device_id,
-                        position=position, templated=templated, raw_representation=action_copy, arguments=arguments,
+    action_obj = Action(app_name=action['app_name'],
+                        action_name=action['action_name'],
+                        id=action.get('uid', None),
+                        name=name, device_id=device_id,
+                        position=position,
+                        templated=templated,
+                        raw_representation=action_copy,
+                        arguments=arguments,
                         triggers=triggers)
 
     walkoff.coredb.devicedb.device_db.session.add(action_obj)
     walkoff.coredb.devicedb.device_db.session.commit()
-
-    action['prev_id'] = action['id']
-    action['id'] = action_obj.id
 
     return action_obj
 
@@ -151,7 +144,10 @@ def convert_condition(condition):
         for transform in condition['transforms']:
             transforms.append(convert_transform(transform))
 
-    condition_obj = Condition(app_name=condition['app_name'], action_name=condition['action_name'], arguments=arguments,
+    condition_obj = Condition(app_name=condition['app_name'],
+                              action_name=condition['action_name'],
+                              id=condition.get('uid', None),
+                              arguments=arguments,
                               transforms=transforms)
 
     walkoff.coredb.devicedb.device_db.session.add(condition_obj)
@@ -165,7 +161,10 @@ def convert_transform(transform):
         for argument in transform['arguments']:
             arguments.append(convert_arg(argument))
 
-    transform_obj = Transform(app_name=transform['app_name'], action_name=transform['action_name'], arguments=arguments)
+    transform_obj = Transform(app_name=transform['app_name'],
+                              action_name=transform['action_name'],
+                              id=transform.get('uid', None),
+                              arguments=arguments)
 
     walkoff.coredb.devicedb.device_db.session.add(transform_obj)
     walkoff.coredb.devicedb.device_db.session.commit()

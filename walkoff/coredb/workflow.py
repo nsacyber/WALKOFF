@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 class Workflow(ExecutionElement, Device_Base):
     __tablename__ = 'workflow'
-    id = Column(Integer, primary_key=True, autoincrement=True)
     _playbook_id = Column(Integer, ForeignKey('playbook.id'))
     name = Column(String(80), nullable=False)
     actions = relationship('Action', backref=backref('_workflow'), cascade='all, delete-orphan')
@@ -25,7 +24,7 @@ class Workflow(ExecutionElement, Device_Base):
     start = Column(Integer, nullable=False)
     __table_args__ = (UniqueConstraint('_playbook_id', 'name', name='_playbook_workflow'),)
 
-    def __init__(self, name, start, actions=None, branches=None):
+    def __init__(self, name, start, id=None, actions=None, branches=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Actions
             within it that get executed.
 
@@ -35,7 +34,7 @@ class Workflow(ExecutionElement, Device_Base):
             actions (list[Action]): Optional Action objects. Defaults to None.
             branches (list[Branch], optional): A list of Branch objects for the Workflow object. Defaults to None.
         """
-        ExecutionElement.__init__(self)
+        ExecutionElement.__init__(self, id)
         self.name = name
 
         self.actions = []

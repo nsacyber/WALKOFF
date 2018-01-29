@@ -7,11 +7,10 @@ from walkoff.coredb.executionelement import ExecutionElement
 
 class Playbook(ExecutionElement, Device_Base):
     __tablename__ = 'playbook'
-    id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), nullable=False, unique=True)
     workflows = relationship('Workflow', backref=backref('_playbook'), cascade='all, delete-orphan')
 
-    def __init__(self, name, workflows=None):
+    def __init__(self, name, workflows=None, id=None):
         """Creates a Playbook object.
 
         Args:
@@ -19,7 +18,7 @@ class Playbook(ExecutionElement, Device_Base):
             workflows (list[Workflow], optional): An optional list of Workflows associated with this Playbook.
                 Defaults to None.
         """
-        ExecutionElement.__init__(self)
+        ExecutionElement.__init__(self, id)
         self.name = name
         if workflows:
             self.workflows = workflows

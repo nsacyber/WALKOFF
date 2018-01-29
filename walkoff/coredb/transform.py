@@ -17,13 +17,12 @@ logger = logging.getLogger(__name__)
 
 class Transform(ExecutionElement, Device_Base):
     __tablename__ = 'transform'
-    id = Column(Integer, primary_key=True, autoincrement=True)
     _condition_id = Column(Integer, ForeignKey('condition.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     arguments = relationship('Argument', backref=backref('_transform'), cascade='all, delete-orphan')
 
-    def __init__(self, app_name, action_name, arguments=None):
+    def __init__(self, app_name, action_name, id=None, arguments=None):
         """Initializes a new Transform object. A Transform is used to transform input into a workflow.
         
         Args:
@@ -32,7 +31,7 @@ class Transform(ExecutionElement, Device_Base):
             arguments (list[Argument], optional): Dictionary of Argument keys to Argument values.
                 This dictionary will be converted to a dictionary of str:Argument. Defaults to None.
         """
-        ExecutionElement.__init__(self)
+        ExecutionElement.__init__(self, id)
         self.app_name = app_name
         self.action_name = action_name
 

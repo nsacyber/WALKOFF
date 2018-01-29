@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 @total_ordering
 class Branch(ExecutionElement, Device_Base):
     __tablename__ = 'branch'
-    id = Column(Integer, primary_key=True, autoincrement=True)
     _workflow_id = Column(Integer, ForeignKey('workflow.id'))
     source_id = Column(Integer, nullable=False)
     destination_id = Column(Integer, nullable=False)
@@ -22,7 +21,7 @@ class Branch(ExecutionElement, Device_Base):
     conditions = relationship('Condition', backref=backref('_branch'), cascade='all, delete-orphan')
     priority = Column(Integer)
 
-    def __init__(self, source_id, destination_id, status='Success', conditions=None, priority=999):
+    def __init__(self, source_id, destination_id, id=None, status='Success', conditions=None, priority=999):
         """Initializes a new Branch object.
         
         Args:
@@ -37,7 +36,7 @@ class Branch(ExecutionElement, Device_Base):
                 list of Branches should be executed if multiple have conditions resulting to True.
                 Defaults to 999 (lowest priority).
         """
-        ExecutionElement.__init__(self)
+        ExecutionElement.__init__(self, id)
         self.source_id = source_id
         self.destination_id = destination_id
         self.status = status

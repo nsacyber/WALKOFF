@@ -25,7 +25,6 @@ class Action(ExecutionElement, Device_Base):
     _templatable = True
 
     __tablename__ = 'action'
-    id = Column(Integer, primary_key=True, autoincrement=True)
     _workflow_id = Column(Integer, ForeignKey('workflow.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
@@ -37,7 +36,7 @@ class Action(ExecutionElement, Device_Base):
     templated = Column(Boolean)
     raw_representation = Column(Json)
 
-    def __init__(self, app_name, action_name, name, device_id=None, arguments=None, triggers=None,
+    def __init__(self, app_name, action_name, name, device_id=None, id=None, arguments=None, triggers=None,
                  position=None, templated=False, raw_representation=None):
         """Initializes a new Action object. A Workflow has many actions that it executes.
 
@@ -55,7 +54,7 @@ class Action(ExecutionElement, Device_Base):
             templated (bool, optional): Whether or not the Action is templated. Used for Jinja templating.
             raw_representation (dict, optional): JSON representation of this object. Used for Jinja templating.
         """
-        ExecutionElement.__init__(self)
+        ExecutionElement.__init__(self, id)
 
         self.triggers = []
         if triggers:

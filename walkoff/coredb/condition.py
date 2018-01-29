@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 class Condition(ExecutionElement, Device_Base):
     __tablename__ = 'condition'
-    id = Column(Integer, primary_key=True, autoincrement=True)
     _action_id = Column(Integer, ForeignKey('action.id'))
     _branch_id = Column(Integer, ForeignKey('branch.id'))
     app_name = Column(String(80), nullable=False)
@@ -25,7 +24,7 @@ class Condition(ExecutionElement, Device_Base):
     arguments = relationship('Argument', backref=backref('_condition'), cascade='all, delete-orphan')
     transforms = relationship('Transform', backref=backref('_condition'), cascade='all, delete-orphan')
 
-    def __init__(self, app_name, action_name, arguments=None, transforms=None):
+    def __init__(self, app_name, action_name, id=None, arguments=None, transforms=None):
         """Initializes a new Condition object.
         
         Args:
@@ -36,7 +35,7 @@ class Condition(ExecutionElement, Device_Base):
             transforms(list[Transform], optional): A list of Transform objects for the Condition object.
                 Defaults to None.
         """
-        ExecutionElement.__init__(self)
+        ExecutionElement.__init__(self, id)
         self.app_name = app_name
         self.action_name = action_name
 

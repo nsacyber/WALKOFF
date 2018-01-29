@@ -5,7 +5,11 @@ from uuid import uuid4
 
 
 class ExecutionElement(Representable):
-    uid = Column(Guid(), default=uuid4, nullable=False, unique=True)
+    id = Column(Guid(), primary_key=True, default=uuid4, nullable=False, unique=True)
+
+    def __init__(self, id):
+        if id:
+            self.uid = id
 
     def __repr__(self):
         representation = self.read()
