@@ -2,7 +2,7 @@ import json
 
 from flask import request, current_app
 from flask_jwt_extended import jwt_required
-from sqlalchemy import exists
+from sqlalchemy import exists, and_
 from sqlalchemy.exc import IntegrityError
 
 import walkoff.case.database as case_database
@@ -23,7 +23,8 @@ def does_playbook_exist(playbook_id):
 
 
 def does_workflow_exist(playbook_id, workflow_id):
-    return walkoff.coredb.devicedb.device_db.session.query(exists().where(Workflow.id == workflow_id)).scalar()
+    return walkoff.coredb.devicedb.device_db.session.query(
+        exists().where(and_(Workflow.id == workflow_id, Workflow._playbook_id == playbook_id))).scalar()
 
 
 validate_playbook_is_registered = validate_resource_exists_factory('playbook', does_playbook_exist)
@@ -339,7 +340,7 @@ def copy_workflow(playbook_id, workflow_id):
         new_workflow = Workflow.create(workflow_json)
         walkoff.coredb.devicedb.device_db.session.add(new_workflow)
 
-        if walkoff.coredb.devicedb.device_db.session.query( exists().where(Playbook.id == new_playbook_id)).scalar():
+        if walkoff.coredb.devicedb.device_db.session.query(exists().where(Playbook.id == new_playbook_id)).scalar():
             playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=new_playbook_id).first()
         else:
             walkoff.coredb.devicedb.device_db.session.rollback()
@@ -375,7 +376,7 @@ def execute_workflow(playbook_id, workflow_id):
         if args:
             for arg in args:
                 try:
-                    arguments.append(Argument.create(arg))
+                    arguments.append(Argument(**arg))
                 except InvalidArgument:
                     current_app.logger.error('Could not execute workflow. Invalid Argument construction')
                     return {"error": "Could not execute workflow. Invalid argument construction"}, INVALID_INPUT_ERROR

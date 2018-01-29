@@ -259,6 +259,10 @@
         description: Playbook or workflow does not exist.
         schema:
           $ref: '#/definitions/Error'
+      462:
+        description: Workflow already exists.
+        schema:
+          $ref: '#/definitions/Error'
       463:
         description: Invalid input error.
         schema:
