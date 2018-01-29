@@ -4,7 +4,7 @@ export class CaseEvent {
 	id: number;
 	timestamp: Date;
 	type: string;
-	ancestry: string[];
+	originator: string;
 	message: string;
 	note: string;
 	data: object;

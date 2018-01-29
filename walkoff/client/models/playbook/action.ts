@@ -1,8 +1,9 @@
 import { Argument } from './argument';
 import { GraphPosition } from './graphPosition';
 import { Condition } from './condition';
+import { ExecutionElement } from './executionElement';
 
-export class Action {
+export class Action extends ExecutionElement {
 	id: number;
 	// _workflow_id: number;
 	name: string;

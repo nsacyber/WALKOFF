@@ -1038,10 +1038,10 @@ export class PlaybookComponent {
 			shouldShowPlaybook: true,
 			submit: () => {
 				this.playbookService.renamePlaybook(playbook.id, this.modalParams.newPlaybook)
-					.then(() => {
-						this.playbooks.find(pb => pb.id === playbook.id).name = this.modalParams.newPlaybook;
+					.then(renamedPlaybook => {
+						this.playbooks.find(pb => pb.id === renamedPlaybook.id).name = renamedPlaybook.name;
 						this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
-						this.toastyService.success(`Successfully renamed playbook "${this.modalParams.newPlaybook}".`);
+						this.toastyService.success(`Successfully renamed playbook "${renamedPlaybook.name}".`);
 						this._closeModal();
 					})
 					.catch(e => this.toastyService.error(`Error renaming playbook "${this.modalParams.newPlaybook}": ${e.message}`));
@@ -1064,13 +1064,11 @@ export class PlaybookComponent {
 			shouldShowPlaybook: true,
 			submit: () => {
 				this.playbookService.duplicatePlaybook(playbook.id, this.modalParams.newPlaybook)
-					.then(() => {
-						const duplicatedPb: Playbook = _.cloneDeep(this.playbooks.find(pb => pb.id === playbook.id));
-						duplicatedPb.name = this.modalParams.newPlaybook;
-						this.playbooks.push(duplicatedPb);
+					.then(duplicatedPlaybook => {
+						this.playbooks.push(duplicatedPlaybook);
 						this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
 						this.toastyService
-							.success(`Successfully duplicated playbook "${playbook.name}" as "${this.modalParams.newPlaybook}".`);
+							.success(`Successfully duplicated playbook "${playbook.name}" as "${duplicatedPlaybook.name}".`);
 						this._closeModal();
 					})
 					.catch(e => this.toastyService
@@ -1094,8 +1092,7 @@ export class PlaybookComponent {
 				this.playbooks = this.playbooks.filter(p => p.id !== playbook.id);
 
 				// If our loaded workflow is in this playbook, close it.
-				if (playbook.id === this.loadedPlaybook.id) { this.closeWorkflow(); }
-
+				if (this.loadedPlaybook && playbook.id === this.loadedPlaybook.id) { this.closeWorkflow(); }
 				this.toastyService.success(`Successfully deleted playbook "${playbook.name}".`);
 			})
 			.catch(e => this.toastyService
@@ -1107,7 +1104,8 @@ export class PlaybookComponent {
 	 */
 	newWorkflowModal(): void {
 		if (this.loadedWorkflow && 
-			!confirm(`Are you sure you want to create a new workflow? Any unsaved changes on "${this.loadedWorkflow.name}" will be lost!`)) {
+			!confirm('Are you sure you want to create a new workflow? ' +
+				`Any unsaved changes on "${this.loadedWorkflow.name}" will be lost!`)) {
 			return;
 		}
 
@@ -1213,7 +1211,8 @@ export class PlaybookComponent {
 				if (!pb.workflows.length) { this.playbooks = this.playbooks.filter(p => p.id !== pb.id); }
 
 				// Close the workflow if the deleted workflow matches the loaded one
-				if (playbook.id === this.loadedPlaybook.id && workflow.id === this.loadedWorkflow.id) { this.closeWorkflow(); }
+				if (this.loadedPlaybook && this.loadedWorkflow &&
+					playbook.id === this.loadedPlaybook.id && workflow.id === this.loadedWorkflow.id) { this.closeWorkflow(); }
 
 				this.toastyService.success(`Successfully deleted workflow "${playbook.name} - ${workflow.name}".`);
 			})

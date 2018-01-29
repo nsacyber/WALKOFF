@@ -1,7 +1,8 @@
 import { Action } from './action';
 import { Branch } from './branch';
+import { ExecutionElement } from './executionElement';
 
-export class Workflow {
+export class Workflow extends ExecutionElement {
 	/**
 	 * UUID of the workflow.
 	 */

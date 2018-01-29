@@ -1,5 +1,4 @@
 export class Subscription {
-	id: number;
-	type: string;
+	uid: string;
 	events: string[];
 }

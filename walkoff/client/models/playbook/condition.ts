@@ -1,7 +1,8 @@
 import { Transform } from './transform';
 import { Argument } from './argument';
+import { ExecutionElement } from './executionElement';
 
-export class Condition {
+export class Condition extends ExecutionElement {
 	id: number;
 	// _action_id?: number;
 	// _branch_id?: number;

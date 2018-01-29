@@ -39,10 +39,11 @@ export class PlaybookService {
 	 * @param playbookId Current playbook ID to change
 	 * @param newName New name for the updated playbook
 	 */
-	renamePlaybook(playbookId: number, newName: string): Promise<void> {
+	renamePlaybook(playbookId: number, newName: string): Promise<Playbook> {
 		return this.authHttp.post('/api/playbooks', { id: playbookId, name: newName })
 			.toPromise()
 			.then(this.extractData)
+			.then(data => data as Playbook)
 			.catch(this.handleError);
 	}
 
@@ -51,10 +52,11 @@ export class PlaybookService {
 	 * @param playbookId ID of the playbook to duplicate
 	 * @param newName Name of the new copy to be saved
 	 */
-	duplicatePlaybook(playbookId: number, newName: string): Promise<void> {
-		return this.authHttp.post(`/api/playbooks/${playbookId}/copy`, { name: newName })
+	duplicatePlaybook(playbookId: number, newName: string): Promise<Playbook> {
+		return this.authHttp.post(`/api/playbooks/${playbookId}/copy`, { playbook_name: newName })
 			.toPromise()
 			.then(this.extractData)
+			.then(data => data as Playbook)
 			.catch(this.handleError);
 	}
 
@@ -93,7 +95,7 @@ export class PlaybookService {
 		sourcePlaybookId: number, sourceWorkflowId: number, destinationPlaybookId: number, newName: string,
 	): Promise<Workflow> {
 		return this.authHttp.post(`/api/playbooks/${sourcePlaybookId}/workflows/${sourceWorkflowId}/copy`,
-				{ playbook_id: destinationPlaybookId, name: newName })
+				{ playbook_id: destinationPlaybookId, workflow_name: newName })
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Workflow)

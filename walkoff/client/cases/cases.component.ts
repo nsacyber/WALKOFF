@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -32,7 +32,7 @@ interface ICaseHierarchy {
 	],
 	providers: [CasesService],
 })
-export class CasesComponent {
+export class CasesComponent implements OnInit {
 	cases: Case[] = [];
 	availableCases: Select2OptionData[] = [];
 	availableSubscriptions: AvailableSubscription[] = [];
@@ -97,7 +97,9 @@ export class CasesComponent {
 
 	constructor(
 		private casesService: CasesService, private modalService: NgbModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {}
+
+	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.caseSelectConfig = {
@@ -219,7 +221,7 @@ export class CasesComponent {
 	convertPlaybooksToSubscriptionTree(playbooks: Playbook[]): CaseNode {
 		const self = this;
 		//Top level controller data
-		const tree: CaseNode = { name: 'Controller', id: 0, type: 'controller', children: [] };
+		const tree: CaseNode = { name: 'Controller', uid: 'controller', type: 'controller', children: [] };
 
 		// Remap the branches to be under actions as they used to be
 		playbooks.forEach(p => {
@@ -258,7 +260,7 @@ export class CasesComponent {
 
 		const node: CaseNode = { 
 			name: nodeName, 
-			id: target.id ? target.id : 0, 
+			uid: target.uid ? target.uid : '', 
 			type: hierarchy.name, 
 			children: [],
 		};
