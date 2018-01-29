@@ -1,10 +1,11 @@
 from walkoff.core.representable import Representable
+from walkoff.dbtypes import Guid
+from sqlalchemy import Column
+from uuid import uuid4
 
 
 class ExecutionElement(Representable):
-    def __init__(self):
-        """Initializes a new ExecutionElement object. This is the parent class.
-        """
+    uid = Column(Guid(), default=uuid4, nullable=False, unique=True)
 
     def __repr__(self):
         representation = self.read()

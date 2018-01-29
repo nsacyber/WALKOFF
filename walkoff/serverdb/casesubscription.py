@@ -1,9 +1,9 @@
-import json
 import logging
-
+import json
 import walkoff.case.subscription
 from walkoff.extensions import db
 from walkoff.serverdb.mixins import TrackModificationsMixIn
+from walkoff.dbtypes import Json
 
 
 class CaseSubscription(db.Model, TrackModificationsMixIn):
@@ -14,7 +14,7 @@ class CaseSubscription(db.Model, TrackModificationsMixIn):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
-    subscriptions = db.Column(db.Text())
+    subscriptions = db.Column(Json())
     note = db.Column(db.String)
 
     def __init__(self, name, subscriptions=None, note=''):
@@ -31,7 +31,7 @@ class CaseSubscription(db.Model, TrackModificationsMixIn):
         if subscriptions is None:
             subscriptions = []
         try:
-            self.subscriptions = json.dumps(subscriptions)
+            self.subscriptions = subscriptions
         except json.JSONDecodeError:
             self.subscriptions = '[]'
         finally:
@@ -46,7 +46,7 @@ class CaseSubscription(db.Model, TrackModificationsMixIn):
         """
         return {"id": self.id,
                 "name": self.name,
-                "subscriptions": json.loads(self.subscriptions),
+                "subscriptions": self.subscriptions,
                 "note": self.note}
 
     @staticmethod
@@ -59,7 +59,7 @@ class CaseSubscription(db.Model, TrackModificationsMixIn):
         case = CaseSubscription.query.filter_by(name=case_name).first()
         if case and case_name in walkoff.case.subscription.subscriptions:
             case_subs = walkoff.case.subscription.subscriptions[case_name]
-            case.subscriptions = json.dumps([{'uid': uid, 'events': events} for uid, events in case_subs.items()])
+            case.subscriptions = [{'uid': uid, 'events': events} for uid, events in case_subs.items()]
 
     @staticmethod
     def from_json(name, subscription_json):
@@ -81,5 +81,5 @@ class CaseSubscription(db.Model, TrackModificationsMixIn):
         logging.getLogger(__name__).debug('Syncing cases')
         cases = CaseSubscription.query.all()
         subscriptions = {case.name: {subscription['uid']: subscription['events']
-                                     for subscription in json.loads(case.subscriptions)} for case in cases}
+                                     for subscription in case.subscriptions} for case in cases}
         walkoff.case.subscription.set_subscriptions(subscriptions)

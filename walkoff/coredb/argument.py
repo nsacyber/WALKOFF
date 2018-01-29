@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy import Column, Integer, ForeignKey, String, orm
 
-from walkoff.coredb.type_decorators import Json
+from walkoff.type_decorators import Json
 from walkoff.coredb import Device_Base
 from walkoff.helpers import InvalidArgument
 from walkoff.core.representable import Representable
@@ -32,6 +32,7 @@ class Argument(Representable, Device_Base):
             selection (list, optional): A list of fields from which to dereference the Action result. Defaults
                 to None.
         """
+        Representable.__init__(self)
         if value is None and not reference:
             message = 'Input {} must have either value or reference. Input has neither'.format(name)
             logger.error(message)

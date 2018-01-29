@@ -12,7 +12,7 @@ from walkoff.core import contextdecorator
 from walkoff.coredb.argument import Argument
 from walkoff.core.actionresult import ActionResult
 from walkoff.coredb import Device_Base
-from walkoff.coredb.type_decorators import Json
+from walkoff.type_decorators import Json
 from walkoff.events import WalkoffEvent
 from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
