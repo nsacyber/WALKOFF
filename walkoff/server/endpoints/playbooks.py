@@ -10,7 +10,7 @@ import walkoff.config.paths
 from walkoff.case.workflowresults import WorkflowResult
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
-from walkoff.server.decorators import validate_resource_exists_factory
+from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory
 import walkoff.coredb.devicedb
 from walkoff.coredb.playbook import Playbook
 from walkoff.coredb.workflow import Workflow
@@ -18,47 +18,23 @@ from walkoff.coredb.argument import Argument
 from walkoff.helpers import InvalidExecutionElement, InvalidArgument
 
 
-def does_playbook_exist(playbook_id):
-    return walkoff.coredb.devicedb.device_db.session.query(exists().where(Playbook.id == playbook_id)).scalar()
-
-
 def does_workflow_exist(playbook_id, workflow_id):
     return walkoff.coredb.devicedb.device_db.session.query(
         exists().where(and_(Workflow.id == workflow_id, Workflow._playbook_id == playbook_id))).scalar()
 
 
-validate_playbook_is_registered = validate_resource_exists_factory('playbook', does_playbook_exist)
+def playbook_getter(playbook_id):
+    return walkoff.coredb.devicedb.device_db.session.query(Playbook.id == playbook_id).first()
+
+
+def workflow_getter(playbook_id, workflow_id):
+    return walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(
+        id=workflow_id, _playbook_id=playbook_id).first()
+
+
+with_playbook = with_resource_factory('playbook', playbook_getter)
+with_workflow = with_resource_factory('workflow', workflow_getter)
 validate_workflow_is_registered = validate_resource_exists_factory('workflow', does_workflow_exist)
-
-'''
-def validate_playbook_is_registered(operation, playbook_name):
-    from walkoff.server.context import running_context
-
-    def wrapper(func):
-        if running_context.controller.is_playbook_registered(playbook_name):
-            return func
-        else:
-            current_app.logger.error(
-                'Could not {0} playbook {1}. Playbook does not exist.'.format(operation, playbook_name))
-            return lambda: ({"error": 'Playbook does not exist'.format(playbook_name)}, OBJECT_DNE_ERROR)
-
-    return wrapper
-
-
-def validate_workflow_is_registered(operation, playbook_name, workflow_name):
-    from walkoff.server.context import running_context
-
-    def wrapper(func):
-        if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            return func
-        else:
-            current_app.logger.error(
-                'Could not {0} workflow {1}-{2}. Workflow does not exist.'.format(
-                    operation, playbook_name, workflow_name))
-            return lambda: ({"error": 'Workflow does not exist'.format(playbook_name)}, OBJECT_DNE_ERROR)
-
-    return wrapper
-'''
 
 
 def get_playbooks(full=None):
@@ -116,16 +92,9 @@ def create_playbook():
 def read_playbook(playbook_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
-    def __func():
-        try:
-            playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=playbook_id).first()
-            if playbook is not None:
-                return playbook.read(), SUCCESS
-            else:
-                current_app.logger.error('Playbook {0} was not found'.format(playbook_id))
-                return {"error": "Playbook does not exist."}, OBJECT_DNE_ERROR
-        except Exception as e:
-            return {"error": "{0}".format(e)}, INVALID_INPUT_ERROR
+    @with_playbook('read', playbook_id)
+    def __func(playbook):
+        return playbook.read(), SUCCESS
 
     return __func()
 
@@ -136,10 +105,8 @@ def update_playbook():
 
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['update']))
-    @validate_playbook_is_registered('edit', playbook_id)
-    def __func():
-        playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=playbook_id).first()
-
+    @with_playbook('update', playbook_id)
+    def __func(playbook):
         if 'name' in data and playbook.name != data['name']:
             playbook.name = data['name']
 
@@ -160,9 +127,8 @@ def update_playbook():
 def delete_playbook(playbook_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['delete']))
-    @validate_playbook_is_registered('delete', playbook_id)
-    def __func():
-        playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=playbook_id).first()
+    @with_playbook('delete', playbook_id)
+    def __func(playbook):
         walkoff.coredb.devicedb.device_db.session.delete(playbook)
         walkoff.coredb.devicedb.device_db.session.commit()
         current_app.logger.info('Deleted playbook {0} '.format(playbook_id))
@@ -174,10 +140,9 @@ def delete_playbook(playbook_id):
 def copy_playbook(playbook_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create', 'read']))
-    @validate_playbook_is_registered('copy', playbook_id)
-    def __func():
+    @with_playbook('copy', playbook_id)
+    def __func(playbook):
         data = request.get_json()
-        playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=playbook_id).first()
 
         if 'playbook_name' in data and data['playbook_name']:
             new_playbook_name = data['playbook_name']
@@ -254,9 +219,8 @@ def create_workflow(playbook_id):
 def read_workflow(playbook_id, workflow_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
-    @validate_workflow_is_registered('read', playbook_id, workflow_id)
-    def __func():
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
+    @with_workflow('read', playbook_id, workflow_id)
+    def __func(workflow):
         return workflow.read(), SUCCESS
 
     return __func()
@@ -268,9 +232,8 @@ def update_workflow(playbook_id):
 
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['update']))
-    @validate_workflow_is_registered('update', playbook_id, workflow_id)
-    def __func():
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
+    @with_workflow('update', playbook_id, workflow_id)
+    def __func(workflow):
 
         # TODO: Come back to this...
         try:
@@ -318,11 +281,9 @@ def delete_workflow(playbook_id, workflow_id):
 def copy_workflow(playbook_id, workflow_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create', 'read']))
-    @validate_workflow_is_registered('copy', playbook_id, workflow_id)
-    def __func():
+    @with_workflow('copy', playbook_id, workflow_id)
+    def __func(workflow):
         data = request.get_json()
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id,
-                                                                                       _playbook_id=playbook_id).first()
 
         if 'playbook_id' in data and data['playbook_id']:
             new_playbook_id = data['playbook_id']
