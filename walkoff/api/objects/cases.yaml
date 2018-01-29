@@ -42,10 +42,11 @@ Case:
 
 Subscription:
   type: object
-  required: uid, type, events]
+  required: [uid, events]
   properties:
-    originator:
-      $ref: '#/definitions/Originator'
+    uid:
+      type: string
+      description: A UUID used to identify a specific execution element
     events:
       description: A list of events subscribed to
       type: array
@@ -58,7 +59,7 @@ Subscription:
 
 Event:
   type: object
-  required: [timestamp, event_type, originator, message, note, data]
+  required: [timestamp, type, message, note, data]
   properties:
     id:
       description: Unique identifier for the event
@@ -77,7 +78,8 @@ Event:
       enum: [controller, workflow, action, branch, condition, transform]
       example: Action
     originator:
-      $ref: '#/definitions/Originator'
+      type: string
+      description: A UUID used to identify a specific execution element
     message:
       description: The message attached to the event
       type: string
@@ -99,7 +101,3 @@ Event:
       example: [case1, mycase, thatonecase, thatothercase]
       items:
         $ref: '#/definitions/Case'
-
-Originator:
-  type: string
-  description: A UUID used to identify a specific execution element

@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy import Column, Integer, ForeignKey, String, orm
 
-from walkoff.type_decorators import Json
+from walkoff.dbtypes import Json
 from walkoff.coredb import Device_Base
 from walkoff.helpers import InvalidArgument
 from walkoff.core.representable import Representable
