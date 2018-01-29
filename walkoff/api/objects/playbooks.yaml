@@ -16,7 +16,7 @@ Playbook:
     additionalProperties: false
     properties:
       id:
-        type: integer
+        $ref: '#/definitions/Uid'
       name:
         type: string
       workflows:
@@ -55,7 +55,7 @@ Workflow:
   additionalProperties: false
   properties:
     id:
-      type: integer
+      $ref: '#/definitions/Uid'
     name:
       description: The name of the workflow. Composed of both its enclosing playbook and its own name
       type: string
@@ -77,12 +77,12 @@ Workflow:
 Action:
   type: object
   required: [id, app_name, action_name, name]
-  description: Encapsulation of executing an action in an app
+  description: Encapsulation of executing an action in an app.
   additionalProperties: false
   properties:
     id:
-      type: integer
-      description: The ID of the object. If updating a workflow and the Action object already exists, ID is required. Otherwise, this ID must be a temporary negative value corresponding to a src/dst ID in a Branch.
+      $ref: '#/definitions/Uid'
+      description: The ID of the object. If updating a workflow and the Action object already exists, ID is required. Otherwise, this ID must be UUID4.
     app_name:
       description: The app to which the action belongs
       type: string
@@ -121,14 +121,14 @@ Branch:
   additionalProperties: false
   properties:
     id:
-      type: integer
+      $ref: '#/definitions/Uid'
       description: The ID of the object. If updating a workflow and the Branch object already exists, ID is required. Otherwise, do not include it.
     source_id:
       description: The source Action ID for this Branch
-      type: integer
+      $ref: '#/definitions/Uid'
     destination_id:
       description: The destination Action ID for this Branch, if the conditions evaluate to True
-      type: integer
+      $ref: '#/definitions/Uid'
     priority:
       description: The priority for this Branch, which will be compared to other Branches with the same source_uid Action, ascending, i.e. 1 is the highest priority.
       type: integer
@@ -176,7 +176,7 @@ Condition:
   additionalProperties: false
   properties:
     id:
-      type: integer
+      $ref: '#/definitions/Uid'
       description: The ID of the object. If updating a workflow and the Condition object already exists, ID is required. Otherwise, do not include it.
     app_name:
       description: The app to which the conditon belongs
@@ -204,7 +204,7 @@ Transform:
   additionalProperties: false
   properties:
     id:
-      type: integer
+      $ref: '#/definitions/Uid'
       description: The ID of the object. If updating a workflow and the Transform object already exists, ID is required. Otherwise, do not include it.
     app_name:
       description: The app to which the transform belongs
@@ -243,15 +243,6 @@ CopyWorkflow:
         type: integer
       workflow_name:
         type: string
-
-WorkflowId:
-  type: object
-  required: [id]
-  properties:
-    id:
-      type: string
-      description: 32-byte hexidecimal string representing the ID of the workflow
-      readOnly: true
 
 UpdatePlaybook:
   type: object

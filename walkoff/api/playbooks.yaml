@@ -397,7 +397,7 @@
       202:
         description: Success asynchronous.
         schema:
-          $ref: '#/definitions/WorkflowId'
+          $ref: '#/definitions/Uid'
       461:
         description: Playbook or workflow does not exist.
         schema:
@@ -429,7 +429,7 @@
         in: body
         required: true
         schema:
-          $ref: '#/definitions/WorkflowId'
+          $ref: '#/definitions/Uid'
     consumes:
       - application/json
     produces:
@@ -464,7 +464,7 @@
         in: body
         required: true
         schema:
-          $ref: '#/definitions/WorkflowId'
+          $ref: '#/definitions/Uid'
     consumes:
       - application/json
     produces:
