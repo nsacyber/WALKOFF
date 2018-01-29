@@ -178,8 +178,8 @@ def copy_playbook(playbook_id):
         data = request.get_json()
         playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=playbook_id).first()
 
-        if 'playbook' in data and data['playbook']:
-            new_playbook_name = data['playbook']
+        if 'playbook_name' in data and data['playbook_name']:
+            new_playbook_name = data['playbook_name']
         else:
             new_playbook_name = playbook.name + "_Copy"
 
@@ -323,12 +323,12 @@ def copy_workflow(playbook_id, workflow_id):
         workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id,
                                                                                        _playbook_id=playbook_id).first()
 
-        if 'playbook' in data and data['playbook']:
-            new_playbook_name = data['playbook']
+        if 'playbook_id' in data and data['playbook_id']:
+            new_playbook_id = data['playbook_id']
         else:
-            new_playbook_name = workflow._playbook.name
-        if 'workflow' in data and data['workflow']:
-            new_workflow_name = data['workflow']
+            new_playbook_id = playbook_id
+        if 'workflow_name' in data and data['workflow_name']:
+            new_workflow_name = data['workflow_name']
         else:
             new_workflow_name = workflow.name + "_Copy"
 
@@ -339,13 +339,12 @@ def copy_workflow(playbook_id, workflow_id):
         new_workflow = Workflow.create(workflow_json)
         walkoff.coredb.devicedb.device_db.session.add(new_workflow)
 
-        if new_playbook_name and walkoff.coredb.devicedb.device_db.session.query(
-                exists().where(Playbook.name == new_playbook_name)).scalar():
-            playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(
-                name=new_playbook_name).first()
+        if walkoff.coredb.devicedb.device_db.session.query( exists().where(Playbook.id == new_playbook_id)).scalar():
+            playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=new_playbook_id).first()
         else:
-            playbook = Playbook(new_playbook_name)
-            walkoff.coredb.devicedb.device_db.session.add(playbook)
+            walkoff.coredb.devicedb.device_db.session.rollback()
+            current_app.logger.error('Could not copy workflow {}. Playbook does not exist'.format(new_playbook_id))
+            return {"error": "Playbook does not exist."}, OBJECT_DNE_ERROR
 
         try:
             playbook.add_workflow(new_workflow)

@@ -241,7 +241,7 @@ CopyWorkflow:
     properties:
       playbook_id:
         type: integer
-      workflow:
+      workflow_name:
         type: string
 
 WorkflowId:
