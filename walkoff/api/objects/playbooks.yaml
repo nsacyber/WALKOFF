@@ -36,7 +36,7 @@ CreateWorkflow:
       example: HelloWorldWorkflow
     start:
       description: ID of the starting action
-      type: integer
+      $ref: '#/definitions/Uid'
     actions:
       description: The actions defined in this workflow.
       type: array
@@ -62,7 +62,7 @@ Workflow:
       example: HelloWorldWorkflow
     start:
       description: ID of the starting action
-      type: integer
+      $ref: '#/definitions/Uid'
     actions:
       description: The actions defined in this workflow.
       type: array
@@ -250,7 +250,7 @@ UpdatePlaybook:
   additionalProperties: false
   properties:
     id:
-      type: integer
+      $ref: '#/definitions/Uid'
     name:
       type: string
       description: The new name of the playbook

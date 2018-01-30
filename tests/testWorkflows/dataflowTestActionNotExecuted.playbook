@@ -2,16 +2,6 @@
     "name": "dataflowTestActionNotExecuted",
     "workflows": [
         {
-            "name": "dataflowWorkflow",
-            "branches": [
-                {
-                    "conditions": [],
-                    "destination_id": -2,
-                    "source_id": -1,
-                    "status": "Success"
-                }
-            ],
-            "start": -1,
             "actions": [
                 {
                     "action_name": "Add Three",
@@ -30,9 +20,9 @@
                             "value": 3.0
                         }
                     ],
-                    "name": "start",
-                    "id": -1,
-                    "device_id": 1
+                    "device_id": 1,
+                    "id": "96ae7509-1d86-45c8-a938-19ca2a293dc0",
+                    "name": "start"
                 },
                 {
                     "action_name": "Add Three",
@@ -40,20 +30,20 @@
                     "arguments": [
                         {
                             "name": "num1",
-                            "reference": -1
+                            "reference": "96ae7509-1d86-45c8-a938-19ca2a293dc0"
                         },
                         {
                             "name": "num2",
-                            "reference": -3
+                            "reference": "8ef77f8c-faef-441a-8a52-b31fa9874c1f"
                         },
                         {
                             "name": "num3",
                             "value": 3.0
                         }
                     ],
-                    "name": "1",
-                    "id": -2,
-                    "device_id": 1
+                    "device_id": 1,
+                    "id": "d3dccc61-bb03-43b2-b8be-c1a284f07cdf",
+                    "name": "1"
                 },
                 {
                     "action_name": "Add Three",
@@ -72,11 +62,21 @@
                             "value": 3.0
                         }
                     ],
-                    "name": "2",
-                    "id": -3,
-                    "device_id": 1
+                    "device_id": 1,
+                    "id": "8ef77f8c-faef-441a-8a52-b31fa9874c1f",
+                    "name": "2"
                 }
-            ]
+            ],
+            "branches": [
+                {
+                    "conditions": [],
+                    "destination_id": "d3dccc61-bb03-43b2-b8be-c1a284f07cdf",
+                    "source_id": "96ae7509-1d86-45c8-a938-19ca2a293dc0",
+                    "status": "Success"
+                }
+            ],
+            "name": "dataflowWorkflow",
+            "start": "96ae7509-1d86-45c8-a938-19ca2a293dc0"
         }
     ]
 }

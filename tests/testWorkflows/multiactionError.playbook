@@ -2,7 +2,37 @@
     "name": "multiactionError",
     "workflows": [
         {
-            "name": "multiactionErrorWorkflow",
+            "actions": [
+                {
+                    "action_name": "Buggy",
+                    "app_name": "HelloWorldBounded",
+                    "arguments": [],
+                    "device_id": 1,
+                    "id": "872a73b3-e737-4231-9ee2-0cc03da8fd24",
+                    "name": "1"
+                },
+                {
+                    "action_name": "helloWorld",
+                    "app_name": "HelloWorldBounded",
+                    "arguments": [],
+                    "device_id": 1,
+                    "id": "55fd66b0-e109-43a6-bf70-0ae5702b375e",
+                    "name": "start"
+                },
+                {
+                    "action_name": "repeatBackToMe",
+                    "app_name": "HelloWorldBounded",
+                    "arguments": [
+                        {
+                            "name": "call",
+                            "value": "Hello World"
+                        }
+                    ],
+                    "device_id": 1,
+                    "id": "99dbbc9c-cf08-43ee-aa73-260b55e0d0b4",
+                    "name": "error"
+                }
+            ],
             "branches": [
                 {
                     "conditions": [
@@ -18,8 +48,8 @@
                             "transforms": []
                         }
                     ],
-                    "destination_id": -3,
-                    "source_id": -2,
+                    "destination_id": "99dbbc9c-cf08-43ee-aa73-260b55e0d0b4",
+                    "source_id": "872a73b3-e737-4231-9ee2-0cc03da8fd24",
                     "status": "UnhandledException"
                 },
                 {
@@ -42,43 +72,13 @@
                             ]
                         }
                     ],
-                    "destination_id": -2,
-                    "source_id": -1,
+                    "destination_id": "872a73b3-e737-4231-9ee2-0cc03da8fd24",
+                    "source_id": "55fd66b0-e109-43a6-bf70-0ae5702b375e",
                     "status": "Success"
                 }
             ],
-            "start": -1,
-            "actions": [
-                {
-                    "action_name": "Buggy",
-                    "app_name": "HelloWorldBounded",
-                    "arguments": [],
-                    "name": "1",
-                    "id": -2,
-                    "device_id": 1
-                },
-                {
-                    "action_name": "helloWorld",
-                    "app_name": "HelloWorldBounded",
-                    "arguments": [],
-                    "name": "start",
-                    "id": -1,
-                    "device_id": 1
-                },
-                {
-                    "action_name": "repeatBackToMe",
-                    "app_name": "HelloWorldBounded",
-                    "arguments": [
-                        {
-                            "name": "call",
-                            "value": "Hello World"
-                        }
-                    ],
-                    "name": "error",
-                    "id": -3,
-                    "device_id": 1
-                }
-            ]
+            "name": "multiactionErrorWorkflow",
+            "start": "55fd66b0-e109-43a6-bf70-0ae5702b375e"
         }
     ]
 }

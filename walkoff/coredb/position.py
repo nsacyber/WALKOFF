@@ -4,14 +4,14 @@ from sqlalchemy import Column, Float, ForeignKey, Integer
 
 from walkoff.core.representable import Representable
 from walkoff.coredb import Device_Base
-
+from walkoff.dbtypes import Guid
 logger = logging.getLogger(__name__)
 
 
 class Position(Representable, Device_Base):
     __tablename__ = 'position'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    _action_id = Column(Integer, ForeignKey('action.id'))
+    _action_id = Column(Guid(), ForeignKey('action.id'))
     x = Column(Float, nullable=False)
     y = Column(Float, nullable=False)
 

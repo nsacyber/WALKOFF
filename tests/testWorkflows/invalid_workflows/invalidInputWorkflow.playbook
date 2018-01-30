@@ -2,7 +2,29 @@
     "name": "invalidInputWorkflow",
     "workflows": [
         {
-            "name": "multiactionWorkflow",
+            "actions": [
+                {
+                    "action_name": "returnPlusOne",
+                    "app_name": "HelloWorldBounded",
+                    "arguments": [
+                        {
+                            "name": "number",
+                            "value": "abc"
+                        }
+                    ],
+                    "device_id": 1,
+                    "id": "0d108ac1-579c-4da7-89e8-b0c08a2232c0",
+                    "name": "2"
+                },
+                {
+                    "action_name": "helloWorld",
+                    "app_name": "Invalid",
+                    "arguments": [],
+                    "device_id": 1,
+                    "id": "9252885c-8a3b-405c-8b66-a60b5d74733d",
+                    "name": "start"
+                }
+            ],
             "branches": [
                 {
                     "conditions": [
@@ -24,35 +46,13 @@
                             ]
                         }
                     ],
-                    "destination_id": -2,
-                    "source_id": -1,
+                    "destination_id": "0d108ac1-579c-4da7-89e8-b0c08a2232c0",
+                    "source_id": "9252885c-8a3b-405c-8b66-a60b5d74733d",
                     "status": "Success"
                 }
             ],
-            "start": -1,
-            "actions": [
-                {
-                    "action_name": "returnPlusOne",
-                    "app_name": "HelloWorldBounded",
-                    "arguments": [
-                        {
-                            "name": "number",
-                            "value": "abc"
-                        }
-                    ],
-                    "name": "2",
-                    "id": -2,
-                    "device_id": 1
-                },
-                {
-                    "action_name": "helloWorld",
-                    "app_name": "Invalid",
-                    "arguments": [],
-                    "name": "start",
-                    "id": -1,
-                    "device_id": 1
-                }
-            ]
+            "name": "multiactionWorkflow",
+            "start": "9252885c-8a3b-405c-8b66-a60b5d74733d"
         }
     ]
 }

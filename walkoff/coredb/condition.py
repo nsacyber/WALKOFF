@@ -11,14 +11,14 @@ from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import get_condition_api, InvalidArgument, format_exception_message, split_api_params
 from walkoff.appgateway.validator import validate_condition_parameters
 import walkoff.coredb.devicedb
-
+from walkoff.dbtypes import Guid
 logger = logging.getLogger(__name__)
 
 
 class Condition(ExecutionElement, Device_Base):
     __tablename__ = 'condition'
-    _action_id = Column(Integer, ForeignKey('action.id'))
-    _branch_id = Column(Integer, ForeignKey('branch.id'))
+    _action_id = Column(Guid(), ForeignKey('action.id'))
+    _branch_id = Column(Guid(), ForeignKey('branch.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     arguments = relationship('Argument', backref=backref('_condition'), cascade='all, delete-orphan')

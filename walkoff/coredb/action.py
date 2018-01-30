@@ -17,7 +17,7 @@ from walkoff.events import WalkoffEvent
 from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
 from walkoff.appgateway.validator import validate_app_action_parameters
-
+from walkoff.dbtypes import Guid
 logger = logging.getLogger(__name__)
 
 
@@ -25,7 +25,7 @@ class Action(ExecutionElement, Device_Base):
     _templatable = True
 
     __tablename__ = 'action'
-    _workflow_id = Column(Integer, ForeignKey('workflow.id'))
+    _workflow_id = Column(Guid(), ForeignKey('workflow.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     name = Column(String(80))

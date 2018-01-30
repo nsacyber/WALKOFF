@@ -24,7 +24,8 @@ def does_workflow_exist(playbook_id, workflow_id):
 
 
 def playbook_getter(playbook_id):
-    return walkoff.coredb.devicedb.device_db.session.query(Playbook.id == playbook_id).first()
+    playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=playbook_id).first()
+    return playbook
 
 
 def workflow_getter(playbook_id, workflow_id):
@@ -44,29 +45,6 @@ def is_valid_uid(*ids):
 with_playbook = with_resource_factory('playbook', playbook_getter, validator=is_valid_uid)
 with_workflow = with_resource_factory('workflow', workflow_getter, validator=is_valid_uid)
 validate_workflow_is_registered = validate_resource_exists_factory('workflow', does_workflow_exist)
-
-
-def with_valid_playbook(operation, id_):
-    print('with_valid_id: {}'.format(id_))
-
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            print('in dec')
-            try:
-                print('inside try')
-                UUID(id_)
-                print(UUID(id_))
-            except ValueError as e:
-                print('CAUGHT')
-                print(e.__class__)
-                return {'error': 'ID must be a UUID'}, BAD_REQUEST
-            else:
-                return func(*args, **kwargs)
-        print('ret wrap')
-        return wrapper
-    print('ret dec')
-    return decorator
 
 
 def get_playbooks(full=None):
@@ -113,7 +91,7 @@ def create_playbook():
         except ValueError as e:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not create Playbook {}. Invalid input'.format(playbook_name))
-            return {"error": e.message}, INVALID_INPUT_ERROR
+            return {"error": 'Invalid object'}, BAD_REQUEST
 
         current_app.logger.info('Playbook {0} created'.format(playbook_name))
         return playbook.read(), OBJECT_CREATED
@@ -170,7 +148,6 @@ def delete_playbook(playbook_id):
 
 
 def copy_playbook(playbook_id):
-    print('IN HERE')
 
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create', 'read']))
@@ -189,6 +166,7 @@ def copy_playbook(playbook_id):
 
         try:
             new_playbook = Playbook.create(playbook_json)
+            print(new_playbook)
             walkoff.coredb.devicedb.device_db.session.add(new_playbook)
             walkoff.coredb.devicedb.device_db.session.commit()
         except IntegrityError:
@@ -210,13 +188,9 @@ def copy_playbook(playbook_id):
 def get_workflows(playbook_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
-    def __func():
-        playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=playbook_id).first()
-        if playbook:
-            return [workflow.read() for workflow in playbook.workflows], SUCCESS
-        else:
-            current_app.logger.error('Playbook {0} not found. Cannot be displayed'.format(playbook_id))
-            return {"error": "Playbook does not exist."}, OBJECT_DNE_ERROR
+    @with_playbook('read workflows', playbook_id)
+    def __func(playbook):
+        return [workflow.read() for workflow in playbook.workflows], SUCCESS
 
     return __func()
 
@@ -224,8 +198,8 @@ def get_workflows(playbook_id):
 def create_workflow(playbook_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create']))
-    def __func():
-        playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=playbook_id).first()
+    @with_playbook('create workflow', playbook_id)
+    def __func(playbook):
 
         data = request.get_json()
         workflow_name = data['name']
@@ -293,9 +267,9 @@ def update_workflow(playbook_id):
 def delete_workflow(playbook_id, workflow_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['delete']))
-    @validate_workflow_is_registered('delete', playbook_id, workflow_id)
-    def __func():
-        playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=playbook_id).first()
+    @with_workflow('delete', playbook_id, workflow_id)
+    def __func(workflow):
+        playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=workflow._playbook_id).first()
         playbook_workflows = len(playbook.workflows) - 1
         workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
         walkoff.coredb.devicedb.device_db.session.delete(workflow)

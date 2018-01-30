@@ -9,7 +9,7 @@ class ExecutionElement(Representable):
 
     def __init__(self, id):
         if id:
-            self.uid = id
+            self.id = id
 
     def __repr__(self):
         representation = self.read()

@@ -2,7 +2,30 @@
     "name": "templatedWorkflowTest",
     "workflows": [
         {
-            "name": "templatedWorkflow",
+            "actions": [
+                {
+                    "action_name": "repeatBackToMe",
+                    "app_name": "HelloWorldBounded",
+                    "arguments": [
+                        {
+                            "name": "call",
+                            "value": "{{ outputFrom(actions, -1) }}"
+                        }
+                    ],
+                    "device_id": 1,
+                    "id": "5ddff0e6-1773-4df9-8d7e-3461ec1347e0",
+                    "name": "1",
+                    "templated": true
+                },
+                {
+                    "action_name": "helloWorld",
+                    "app_name": "HelloWorldBounded",
+                    "arguments": [],
+                    "device_id": 1,
+                    "id": "fa804570-18b9-4762-9701-590931458c8c",
+                    "name": "start"
+                }
+            ],
             "branches": [
                 {
                     "conditions": [
@@ -24,37 +47,14 @@
                             ]
                         }
                     ],
-                    "destination_id": -2,
-                    "source_id": -1,
+                    "destination_id": "5ddff0e6-1773-4df9-8d7e-3461ec1347e0",
+                    "source_id": "fa804570-18b9-4762-9701-590931458c8c",
                     "status": "Success"
                 }
             ],
-            "start": -1,
-            "actions": [
-                {
-                    "action_name": "repeatBackToMe",
-                    "app_name": "HelloWorldBounded",
-                    "arguments": [
-                        {
-                            "name": "call",
-                            "value": "{{ outputFrom(actions, -1) }}"
-                        }
-                    ],
-                    "name": "1",
-                    "templated": true,
-                    "id": -2,
-                    "device_id": 1
-                },
-                {
-                    "action_name": "helloWorld",
-                    "app_name": "HelloWorldBounded",
-                    "arguments": [],
-                    "name": "start",
-                    "id": -1,
-                    "device_id": 1
-                }
-            ],
-            "id": "3c144dc81686489cb98766bdbbdf180a"
+            "id": "08f995c5-8d70-40ac-8861-6c1ae6199eab",
+            "name": "templatedWorkflow",
+            "start": "fa804570-18b9-4762-9701-590931458c8c"
         }
     ]
 }

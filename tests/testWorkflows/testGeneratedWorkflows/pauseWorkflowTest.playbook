@@ -1,6 +1,5 @@
 {
     "name": "pauseWorkflowTest",
-    "walkoff_version": "0.5.0",
     "workflows": [
         {
             "actions": [
@@ -9,9 +8,9 @@
                     "app_name": "HelloWorldBounded",
                     "arguments": [],
                     "device_id": 1,
+                    "id": "34364801-f9a9-4bd9-8ce6-26d361174481",
                     "name": "start",
-                    "triggers": [],
-                    "id": -1
+                    "triggers": []
                 },
                 {
                     "action_name": "pause",
@@ -23,9 +22,9 @@
                         }
                     ],
                     "device_id": 1,
+                    "id": "8e4ab14a-2503-496d-a32c-1310c08c8995",
                     "name": "1",
-                    "triggers": [],
-                    "id": -2
+                    "triggers": []
                 },
                 {
                     "action_name": "pause",
@@ -37,29 +36,29 @@
                         }
                     ],
                     "device_id": 1,
+                    "id": "be506d7d-cf8d-4e17-8bdc-06ade4005dbb",
                     "name": "2",
-                    "triggers": [],
-                    "id": -3
+                    "triggers": []
                 }
             ],
             "branches": [
                 {
                     "conditions": [],
-                    "destination_id": -2,
+                    "destination_id": "8e4ab14a-2503-496d-a32c-1310c08c8995",
                     "priority": 999,
-                    "source_id": -1,
+                    "source_id": "34364801-f9a9-4bd9-8ce6-26d361174481",
                     "status": "Success"
                 },
                 {
                     "conditions": [],
-                    "destination_id": -3,
+                    "destination_id": "be506d7d-cf8d-4e17-8bdc-06ade4005dbb",
                     "priority": 999,
-                    "source_id": -2,
+                    "source_id": "8e4ab14a-2503-496d-a32c-1310c08c8995",
                     "status": "Success"
                 }
             ],
             "name": "pauseWorkflow",
-            "start": -1
+            "start": "34364801-f9a9-4bd9-8ce6-26d361174481"
         }
     ]
 }

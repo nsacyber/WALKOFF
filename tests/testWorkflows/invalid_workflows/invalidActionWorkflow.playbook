@@ -2,7 +2,29 @@
     "name": "invalidActionWorkflow",
     "workflows": [
         {
-            "name": "multiactionWorkflow",
+            "actions": [
+                {
+                    "action_name": "invalid",
+                    "app_name": "HelloWorldBounded",
+                    "arguments": [
+                        {
+                            "name": "call",
+                            "value": "Hello World"
+                        }
+                    ],
+                    "device_id": 1,
+                    "id": "4aa1a63e-cc09-4b90-9547-3947120b5126",
+                    "name": -2
+                },
+                {
+                    "action_name": "helloWorld",
+                    "app_name": "HelloWorldBounded",
+                    "arguments": [],
+                    "device_id": 1,
+                    "id": "85f33f9a-a5e1-484b-8add-3f7565a192a8",
+                    "name": "start"
+                }
+            ],
             "branches": [
                 {
                     "conditions": [
@@ -24,35 +46,13 @@
                             ]
                         }
                     ],
-                    "destination_id": -2,
-                    "source_id": -1,
+                    "destination_id": "4aa1a63e-cc09-4b90-9547-3947120b5126",
+                    "source_id": "85f33f9a-a5e1-484b-8add-3f7565a192a8",
                     "status": "Success"
                 }
             ],
-            "start": -1,
-            "actions": [
-                {
-                    "action_name": "invalid",
-                    "app_name": "HelloWorldBounded",
-                    "arguments": [
-                        {
-                            "name": "call",
-                            "value": "Hello World"
-                        }
-                    ],
-                    "name": -2,
-                    "id": -2,
-                    "device_id": 1
-                },
-                {
-                    "action_name": "helloWorld",
-                    "app_name": "HelloWorldBounded",
-                    "arguments": [],
-                    "name": "start",
-                    "id": -1,
-                    "device_id": 1
-                }
-            ]
+            "name": "multiactionWorkflow",
+            "start": "85f33f9a-a5e1-484b-8add-3f7565a192a8"
         }
     ]
 }

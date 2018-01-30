@@ -2,22 +2,6 @@
     "name": "dataflowTest",
     "workflows": [
         {
-            "name": "dataflowWorkflow",
-            "branches": [
-                {
-                    "conditions": [],
-                    "destination_id": -3,
-                    "source_id": -2,
-                    "status": "Success"
-                },
-                {
-                    "conditions": [],
-                    "destination_id": -2,
-                    "source_id": -1,
-                    "status": "Success"
-                }
-            ],
-            "start": -1,
             "actions": [
                 {
                     "action_name": "Add Three",
@@ -36,9 +20,9 @@
                             "value": 3.0
                         }
                     ],
-                    "name": "start",
-                    "id": -1,
-                    "device_id": 1
+                    "device_id": 1,
+                    "id": "837e5874-5251-4a33-a927-239c55699423",
+                    "name": "start"
                 },
                 {
                     "action_name": "Add Three",
@@ -57,9 +41,9 @@
                             "value": 3.0
                         }
                     ],
-                    "name": "1",
-                    "id": -2,
-                    "device_id": 1
+                    "device_id": 1,
+                    "id": "b714d23b-6cd0-4de2-9361-67cae24c8e6b",
+                    "name": "1"
                 },
                 {
                     "action_name": "Add Three",
@@ -67,22 +51,38 @@
                     "arguments": [
                         {
                             "name": "num1",
-                            "reference": -1
+                            "reference": "837e5874-5251-4a33-a927-239c55699423"
                         },
                         {
                             "name": "num2",
-                            "reference": -2
+                            "reference": "b714d23b-6cd0-4de2-9361-67cae24c8e6b"
                         },
                         {
                             "name": "num3",
                             "value": 3.0
                         }
                     ],
-                    "name": "2",
-                    "id": -3,
-                    "device_id": 1
+                    "device_id": 1,
+                    "id": "6bd6ad07-bc96-418a-8841-76552cbc5caf",
+                    "name": "2"
                 }
-            ]
+            ],
+            "branches": [
+                {
+                    "conditions": [],
+                    "destination_id": "6bd6ad07-bc96-418a-8841-76552cbc5caf",
+                    "source_id": "b714d23b-6cd0-4de2-9361-67cae24c8e6b",
+                    "status": "Success"
+                },
+                {
+                    "conditions": [],
+                    "destination_id": "b714d23b-6cd0-4de2-9361-67cae24c8e6b",
+                    "source_id": "837e5874-5251-4a33-a927-239c55699423",
+                    "status": "Success"
+                }
+            ],
+            "name": "dataflowWorkflow",
+            "start": "837e5874-5251-4a33-a927-239c55699423"
         }
     ]
 }

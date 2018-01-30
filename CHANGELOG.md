@@ -2,6 +2,12 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
+## [Unreleased]
+##### unreleased
+
+### Changed
+* Removed workflow_version from playbook JSON
+
 ## [0.6.2]
 ###### 2018-01-05
 

@@ -2,9 +2,6 @@
     "name": "testExecutionWorkflow",
     "workflows": [
         {
-            "name": "helloWorldWorkflow",
-            "branches": [],
-            "start": -1,
             "actions": [
                 {
                     "action_name": "repeatBackToMe",
@@ -15,11 +12,14 @@
                             "value": "Hello World"
                         }
                     ],
-                    "name": "start",
-                    "id": -1,
-                    "device_id": 1
+                    "device_id": 1,
+                    "id": "678838f3-5ef8-47d3-90a9-32b3692685fe",
+                    "name": "start"
                 }
-            ]
+            ],
+            "branches": [],
+            "name": "helloWorldWorkflow",
+            "start": "678838f3-5ef8-47d3-90a9-32b3692685fe"
         }
     ]
 }

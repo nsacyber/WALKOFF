@@ -2,7 +2,36 @@
     "name": "loopWorkflow",
     "workflows": [
         {
-            "name": "loopWorkflow",
+            "actions": [
+                {
+                    "action_name": "repeatBackToMe",
+                    "app_name": "HelloWorldBounded",
+                    "arguments": [
+                        {
+                            "name": "call",
+                            "value": "{{outputFrom(actions, -1)}}"
+                        }
+                    ],
+                    "device_id": 1,
+                    "id": "b1a6a77f-0ae2-46fc-b56e-49528bb7fec4",
+                    "name": "1",
+                    "templated": true
+                },
+                {
+                    "action_name": "returnPlusOne",
+                    "app_name": "HelloWorldBounded",
+                    "arguments": [
+                        {
+                            "name": "number",
+                            "value": "{%- if actions | length > 0 -%}\n                        {%- set x = outputFrom(actions, -1) -%}\n                    {%- endif -%}\n\n                    {%- if x is not none and x is defined -%}\n                        {{ x }}\n                    {%- else -%}\n                        1\n                    {%- endif -%}\n                "
+                        }
+                    ],
+                    "device_id": 1,
+                    "id": "f764e108-722b-4082-a9c5-86d4870e6203",
+                    "name": "start",
+                    "templated": true
+                }
+            ],
             "branches": [
                 {
                     "conditions": [
@@ -18,8 +47,8 @@
                             "transforms": []
                         }
                     ],
-                    "destination_id": -1,
-                    "source_id": -1,
+                    "destination_id": "f764e108-722b-4082-a9c5-86d4870e6203",
+                    "source_id": "f764e108-722b-4082-a9c5-86d4870e6203",
                     "status": "Success"
                 },
                 {
@@ -36,42 +65,13 @@
                             "transforms": []
                         }
                     ],
-                    "destination_id": -2,
-                    "source_id": -1,
+                    "destination_id": "b1a6a77f-0ae2-46fc-b56e-49528bb7fec4",
+                    "source_id": "f764e108-722b-4082-a9c5-86d4870e6203",
                     "status": "Success"
                 }
             ],
-            "start": -1,
-            "actions": [
-                {
-                    "action_name": "repeatBackToMe",
-                    "app_name": "HelloWorldBounded",
-                    "arguments": [
-                        {
-                            "name": "call",
-                            "value": "{{outputFrom(actions, -1)}}"
-                        }
-                    ],
-                    "name": "1",
-                    "templated": true,
-                    "id": -2,
-                    "device_id": 1
-                },
-                {
-                    "action_name": "returnPlusOne",
-                    "app_name": "HelloWorldBounded",
-                    "arguments": [
-                        {
-                            "name": "number",
-                            "value": "{%- if actions | length > 0 -%}\n                        {%- set x = outputFrom(actions, -1) -%}\n                    {%- endif -%}\n\n                    {%- if x is not none and x is defined -%}\n                        {{ x }}\n                    {%- else -%}\n                        1\n                    {%- endif -%}\n                "
-                        }
-                    ],
-                    "name": "start",
-                    "templated": true,
-                    "id": -1,
-                    "device_id": 1
-                }
-            ]
+            "name": "loopWorkflow",
+            "start": "f764e108-722b-4082-a9c5-86d4870e6203"
         }
     ]
 }

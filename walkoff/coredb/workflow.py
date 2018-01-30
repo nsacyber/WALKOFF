@@ -11,17 +11,18 @@ from walkoff.events import WalkoffEvent
 from walkoff.coredb.action import Action
 from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import InvalidArgument, format_exception_message
+from walkoff.dbtypes import Guid
 
 logger = logging.getLogger(__name__)
 
 
 class Workflow(ExecutionElement, Device_Base):
     __tablename__ = 'workflow'
-    _playbook_id = Column(Integer, ForeignKey('playbook.id'))
+    _playbook_id = Column(Guid(), ForeignKey('playbook.id'))
     name = Column(String(80), nullable=False)
     actions = relationship('Action', backref=backref('_workflow'), cascade='all, delete-orphan')
     branches = relationship('Branch', backref=backref('_workflow'), cascade='all, delete-orphan')
-    start = Column(Integer, nullable=False)
+    start = Column(Guid(), nullable=False)
     __table_args__ = (UniqueConstraint('_playbook_id', 'name', name='_playbook_workflow'),)
 
     def __init__(self, name, start, id=None, actions=None, branches=None):

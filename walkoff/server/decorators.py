@@ -29,7 +29,6 @@ def with_resource_factory(resource_name, getter_func, validator=None):
     def validate_resource_exists(operation, *ids):
         def wrapper(func):
             if validator and validator(*ids):
-
                 obj = getter_func(*ids)
                 if obj is not None:
                     return lambda: func(obj)

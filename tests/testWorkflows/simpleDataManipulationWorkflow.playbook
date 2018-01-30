@@ -2,9 +2,6 @@
     "name": "simpleDataManipulationWorkflow",
     "workflows": [
         {
-            "name": "helloWorldWorkflow",
-            "branches": [],
-            "start": -1,
             "actions": [
                 {
                     "action_name": "repeatBackToMe",
@@ -15,11 +12,14 @@
                             "value": "Hello World"
                         }
                     ],
-                    "name": "start",
-                    "id": -1,
-                    "device_id": 1
+                    "device_id": 1,
+                    "id": "7be80d01-34ff-40a1-9873-f7e179fce5c0",
+                    "name": "start"
                 }
-            ]
+            ],
+            "branches": [],
+            "name": "helloWorldWorkflow",
+            "start": "7be80d01-34ff-40a1-9873-f7e179fce5c0"
         }
     ]
 }

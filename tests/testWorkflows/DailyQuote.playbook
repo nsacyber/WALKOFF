@@ -2,19 +2,19 @@
     "name": "DailyQuote",
     "workflows": [
         {
-            "name": "DailyQuoteWorkflow",
-            "branches": [],
-            "start": -1,
             "actions": [
                 {
                     "action_name": "getQuote",
                     "app_name": "DailyQuote",
                     "arguments": [],
-                    "name": "start",
-                    "id": -1,
-                    "device_id": 1
+                    "device_id": 1,
+                    "id": "c5fe00b7-f5dd-42d2-ad56-ba720c9eccff",
+                    "name": "start"
                 }
-            ]
+            ],
+            "branches": [],
+            "name": "DailyQuoteWorkflow",
+            "start": "c5fe00b7-f5dd-42d2-ad56-ba720c9eccff"
         }
     ]
 }

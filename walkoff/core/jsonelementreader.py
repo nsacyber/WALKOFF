@@ -1,5 +1,5 @@
 from six import string_types
-
+from uuid import UUID
 
 class JsonElementReader(object):
     """
@@ -26,6 +26,8 @@ class JsonElementReader(object):
                              and field != 'metadata'):
             if isinstance(value, Representable):
                 accumulator[field] = JsonElementReader.read(value)
+            elif isinstance(value, UUID):
+                accumulator[field] = str(value)
             elif isinstance(value, list):
                 JsonElementReader._read_list(field, value, accumulator)
             elif isinstance(value, dict):
