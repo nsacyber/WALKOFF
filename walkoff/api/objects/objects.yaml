@@ -28,3 +28,4 @@ AvailableSubscriptions:
 Uid:
   type: string
   description: A 32-bit hexadecimal string representing a globallu unique identifier
+  format: uuid

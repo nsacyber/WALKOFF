@@ -1,10 +1,10 @@
 import json
-
+from uuid import UUID
 from flask import request, current_app
 from flask_jwt_extended import jwt_required
 from sqlalchemy import exists, and_
 from sqlalchemy.exc import IntegrityError
-
+from functools import wraps
 import walkoff.case.database as case_database
 import walkoff.config.paths
 from walkoff.case.workflowresults import WorkflowResult
@@ -32,9 +32,41 @@ def workflow_getter(playbook_id, workflow_id):
         id=workflow_id, _playbook_id=playbook_id).first()
 
 
-with_playbook = with_resource_factory('playbook', playbook_getter)
-with_workflow = with_resource_factory('workflow', workflow_getter)
+def is_valid_uid(*ids):
+    try:
+        for id_ in ids:
+            UUID(id_)
+        return True
+    except ValueError:
+        return False
+
+
+with_playbook = with_resource_factory('playbook', playbook_getter, validator=is_valid_uid)
+with_workflow = with_resource_factory('workflow', workflow_getter, validator=is_valid_uid)
 validate_workflow_is_registered = validate_resource_exists_factory('workflow', does_workflow_exist)
+
+
+def with_valid_playbook(operation, id_):
+    print('with_valid_id: {}'.format(id_))
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            print('in dec')
+            try:
+                print('inside try')
+                UUID(id_)
+                print(UUID(id_))
+            except ValueError as e:
+                print('CAUGHT')
+                print(e.__class__)
+                return {'error': 'ID must be a UUID'}, BAD_REQUEST
+            else:
+                return func(*args, **kwargs)
+        print('ret wrap')
+        return wrapper
+    print('ret dec')
+    return decorator
 
 
 def get_playbooks(full=None):
@@ -138,6 +170,8 @@ def delete_playbook(playbook_id):
 
 
 def copy_playbook(playbook_id):
+    print('IN HERE')
+
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create', 'read']))
     @with_playbook('copy', playbook_id)

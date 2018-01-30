@@ -86,7 +86,8 @@
       in: path
       description: The ID that needs to be fetched.
       required: true
-      type: integer
+      type: string
+      format: uuid
   get:
     tags:
       - Playbooks
@@ -140,7 +141,8 @@
         in: path
         description: 'The ID that needs to be fetched. '
         required: true
-        type: integer
+        type: string
+        format: uuid
       - in: body
         name: body
         description: New playbook name (defaults to <Current_Name>_Copy)
@@ -178,7 +180,8 @@
       in: path
       description: 'The ID that needs to be fetched. '
       required: true
-      type: integer
+      type: string
+      format: uuid
   get:
     tags:
       - Playbooks
@@ -274,12 +277,14 @@
     in: path
     description: The ID that needs to be fetched.
     required: true
-    type: integer
+    type: string
+    format: uuid
   - name: workflow_id
     in: path
     description: 'The ID that needs to be fetched. '
     required: true
-    type: integer
+    type: string
+    format: uuid
   get:
     tags:
       - Workflows
@@ -329,12 +334,14 @@
         in: path
         description: 'The ID that needs to be fetched. '
         required: true
-        type: integer
+        type: string
+        format: uuid
       - name: workflow_id
         in: path
         description: 'The ID that needs to be fetched. '
         required: true
-        type: integer
+        type: string
+        format: uuid
       - in: body
         name: body
         description: The new playbook and/or workflow name
@@ -371,12 +378,14 @@
         in: path
         description: 'The ID that needs to be fetched. '
         required: true
-        type: integer
+        type: string
+        format: uuid
       - name: workflow_id
         in: path
         description: 'The ID that needs to be fetched. '
         required: true
-        type: integer
+        type: string
+        format: uuid
       - name: body
         in: body
         schema:
@@ -419,12 +428,14 @@
         in: path
         description: 'The ID that needs to be fetched. '
         required: true
-        type: integer
+        type: string
+        format: uuid
       - name: workflow_id
         in: path
         description: 'The ID that needs to be fetched. '
         required: true
-        type: integer
+        type: string
+        format: uuid
       - name: id
         in: body
         required: true
@@ -454,12 +465,14 @@
         in: path
         description: 'The name that needs to be fetched. '
         required: true
-        type: integer
+        type: string
+        format: uuid
       - name: workflow_id
         in: path
         description: 'The name that needs to be fetched. '
         required: true
-        type: integer
+        type: string
+        format: uuid
       - name: id
         in: body
         required: true

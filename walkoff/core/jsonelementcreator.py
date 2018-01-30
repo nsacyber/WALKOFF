@@ -48,12 +48,8 @@ class JsonElementCreator(object):
     @classmethod
     def construct_current_class(cls, current_class, json_in, subfield_lookup):
         from walkoff.coredb.argument import Argument
-        from walkoff.coredb.action import Action
-        from walkoff.coredb.branch import Branch
-        from walkoff.coredb.workflow import Workflow
         from walkoff.coredb.position import Position
 
-        action_id_lookup = {}
         if subfield_lookup is not None:
             for subfield_name, next_class in subfield_lookup.items():
                 if subfield_name in json_in:
@@ -61,26 +57,7 @@ class JsonElementCreator(object):
                     if hasattr(current_class, '_templatable'):
                         json_in['raw_representation'] = dict(json_in)
 
-                    if next_class is Action:
-                        json_in[subfield_name] = []
-                        for element_json in subfield_json:
-                            prev_id = element_json.pop('id', None)
-                            element = next_class.create(element_json)
-                            json_in[subfield_name].append(element)
-                            action_id_lookup[prev_id] = element.id
-                    elif next_class is Branch:
-                        json_in[subfield_name] = [next_class.create(element_json) for element_json in
-                                                  cls.update_branch_ids(subfield_json, action_id_lookup)]
-                    else:
-                        json_in[subfield_name] = [next_class.create(element_json) for element_json in subfield_json]
-        if current_class is Workflow:
-            start = json_in['start']
-            json_in['start'] = action_id_lookup[start]
-            for action in json_in['actions']:
-                for argument in action.arguments:
-                    if argument.reference:
-                        prev_ref = argument.reference
-                        argument.reference = action_id_lookup[prev_ref]
+                    json_in[subfield_name] = [next_class.create(element_json) for element_json in subfield_json]
         if 'arguments' in json_in:
             for arg_json in json_in['arguments']:
                 arg_json.pop('id', None)
@@ -108,11 +85,3 @@ class JsonElementCreator(object):
                 (Transform, None)
             ])
 
-    @classmethod
-    def update_branch_ids(cls, branches, action_id_lookup):
-        for branch in branches:
-            source_id = branch['source_id']
-            dest_id = branch['destination_id']
-            branch['source_id'] = action_id_lookup[source_id]
-            branch['destination_id'] = action_id_lookup[dest_id]
-        return branches
