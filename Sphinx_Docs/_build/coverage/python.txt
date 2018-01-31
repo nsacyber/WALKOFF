@@ -1,0 +1,11 @@
+Undocumented Python objects
+===========================
+apps.messaging
+--------------
+Functions:
+ * convert_class_name_to_tag
+
+Classes:
+ * MessageComponent
+ * MessageComponentTypeRegistry
+
