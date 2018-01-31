@@ -108,11 +108,11 @@ module.exports = function (options) {
 		},
 
 		plugins: [
-			new AssetsPlugin({
-				path: helpers.root('dist'),
-				filename: 'webpack-assets.json',
-				prettyPrint: true
-			}),
+			// new AssetsPlugin({
+			// 	path: helpers.root('dist'),
+			// 	filename: 'webpack-assets.json',
+			// 	prettyPrint: true
+			// }),
 
 			new CheckerPlugin(),
 

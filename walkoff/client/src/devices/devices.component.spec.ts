@@ -13,10 +13,8 @@ import { ToastyModule } from 'ng2-toasty';
 import { JwtHttp } from 'angular2-jwt-refresh';
 import { GetJwtHttp } from '../jwthttp.factory';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
-import { DevicesModalComponent } from './devices.modal.component';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-fdescribe('DevicesComponent', () => {
+describe('DevicesComponent', () => {
 	let comp: DevicesComponent;
 	let fixture: ComponentFixture<DevicesComponent>;
 	let service: DevicesService;

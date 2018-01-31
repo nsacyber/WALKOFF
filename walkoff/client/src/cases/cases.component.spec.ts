@@ -11,14 +11,12 @@ import { ToastyModule } from 'ng2-toasty';
 import { JwtHttp } from 'angular2-jwt-refresh';
 import { GetJwtHttp } from '../jwthttp.factory';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
-import { CasesModalComponent } from './cases.modal.component';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { Case } from '../models/case';
 import { AvailableSubscription } from '../models/availableSubscription';
 import { Playbook } from '../models/playbook/playbook';
 
-fdescribe('CasesComponent', () => {
+describe('CasesComponent', () => {
 	let comp: CasesComponent;
 	let fixture: ComponentFixture<CasesComponent>;
 	let service: CasesService;

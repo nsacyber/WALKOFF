@@ -41,12 +41,13 @@ module.exports = function (env) {
 		env: ENV
 	}), {
 			devtool: 'source-map',
-			output: {
-				path: helpers.root('dist'),
-				filename: '[name].[chunkhash].bundle.js',
-				sourceMapFilename: '[name].[chunkhash].bundle.map',
-				chunkFilename: '[id].[chunkhash].chunk.js'
-			},
+			// TODO: enable assets plugin for cache busting
+			// output: {
+			// 	path: helpers.root('dist'),
+			// 	filename: '[name].[chunkhash].bundle.js',
+			// 	sourceMapFilename: '[name].[chunkhash].bundle.map',
+			// 	chunkFilename: '[id].[chunkhash].chunk.js'
+			// },
 			module: {
 				rules: [
 					{
