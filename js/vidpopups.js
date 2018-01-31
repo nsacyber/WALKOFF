@@ -7,5 +7,6 @@ $(document).ready(function() {
 
 function setSrc(path) {
     document.getElementById("player").src = path
+    document.getElementById("vidtext").innerHTML = document.getElementById(path).innerHTML
 }
 
