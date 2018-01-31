@@ -34,7 +34,7 @@
 		</div>
 	</div>
 
-	<ngx-datatable #scheduleTable class='material expandable' [columnMode]="'flex'" [rows]='displayScheduledTasks' [sorts]="[{prop: 'name', dir: 'asc'}]"
+	<ngx-datatable #scheduleTable class='material expandable scheduledTasksTable' [columnMode]="'flex'" [rows]='displayScheduledTasks' [sorts]="[{prop: 'name', dir: 'asc'}]"
 	 [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [limit]="25">
 		<!-- Column Templates -->
 		<ngx-datatable-column name="Name" [flexGrow]="2">
