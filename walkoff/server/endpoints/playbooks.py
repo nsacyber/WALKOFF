@@ -4,7 +4,6 @@ from flask import request, current_app
 from flask_jwt_extended import jwt_required
 from sqlalchemy import exists, and_
 from sqlalchemy.exc import IntegrityError
-from functools import wraps
 import walkoff.case.database as case_database
 import walkoff.config.paths
 from walkoff.case.workflowresults import WorkflowResult
@@ -15,7 +14,7 @@ import walkoff.coredb.devicedb
 from walkoff.coredb.playbook import Playbook
 from walkoff.coredb.workflow import Workflow
 from walkoff.coredb.argument import Argument
-from walkoff.helpers import InvalidExecutionElement, InvalidArgument
+from walkoff.helpers import InvalidExecutionElement, InvalidArgument, regenerate_workflow_ids
 
 
 def does_workflow_exist(playbook_id, workflow_id):
@@ -38,7 +37,7 @@ def is_valid_uid(*ids):
         for id_ in ids:
             UUID(id_)
         return True
-    except ValueError:
+    except ValueError as e:
         return False
 
 
@@ -89,6 +88,7 @@ def create_playbook():
             current_app.logger.error('Could not create Playbook {}. Unique constraint failed'.format(playbook_name))
             return {"error": "Unique constraint failed."}, OBJECT_EXISTS_ERROR
         except ValueError as e:
+            print(e)
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not create Playbook {}. Invalid input'.format(playbook_name))
             return {"error": 'Invalid object'}, BAD_REQUEST
@@ -164,9 +164,12 @@ def copy_playbook(playbook_id):
         playbook_json['name'] = new_playbook_name
         playbook_json.pop('id')
 
+        if 'workflows' in playbook_json:
+            for workflow in playbook_json['workflows']:
+                regenerate_workflow_ids(workflow)
+
         try:
             new_playbook = Playbook.create(playbook_json)
-            print(new_playbook)
             walkoff.coredb.devicedb.device_db.session.add(new_playbook)
             walkoff.coredb.devicedb.device_db.session.commit()
         except IntegrityError:
@@ -306,8 +309,7 @@ def copy_workflow(playbook_id, workflow_id):
         workflow_json.pop('id')
         workflow_json['name'] = new_workflow_name
 
-        new_workflow = Workflow.create(workflow_json)
-        walkoff.coredb.devicedb.device_db.session.add(new_workflow)
+        regenerate_workflow_ids(workflow_json)
 
         if walkoff.coredb.devicedb.device_db.session.query(exists().where(Playbook.id == new_playbook_id)).scalar():
             playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=new_playbook_id).first()
@@ -317,6 +319,8 @@ def copy_workflow(playbook_id, workflow_id):
             return {"error": "Playbook does not exist."}, OBJECT_DNE_ERROR
 
         try:
+            new_workflow = Workflow.create(workflow_json)
+            walkoff.coredb.devicedb.device_db.session.add(new_workflow)
             playbook.add_workflow(new_workflow)
             walkoff.coredb.devicedb.device_db.session.commit()
         except IntegrityError:

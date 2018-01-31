@@ -12,6 +12,7 @@ from walkoff.coredb.action import Action
 from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import InvalidArgument, format_exception_message
 from walkoff.dbtypes import Guid
+from uuid import uuid4
 
 logger = logging.getLogger(__name__)
 
@@ -250,3 +251,27 @@ class Workflow(ExecutionElement, Device_Base):
             The execution UID of the Workflow
         """
         return self._execution_uid
+
+    def regenerate_ids(self, with_children=True, action_mapping=None):
+        """
+        Regenerates the IDs of the workflow and its children
+        Args:
+            with_children (bool optional): Regenerate the childrens' IDs of this object? Defaults to True
+            action_mapping (dict, optional): The dictionary of prev action IDs to new action IDs. Defaults to None.
+        """
+        self.id = str(uuid4())
+        action_mapping = {}
+
+        for action in self.actions:
+            prev_id = action.id
+            action_mapping[prev_id] = action.id
+
+        for action in self.actions:
+            action.regenerate_ids(action_mapping)
+
+        for branch in self.branches:
+            branch.source_id = action_mapping[branch.source_id]
+            branch.destination_id = action_mapping[branch.destination_id]
+            branch.regenerate_ids(action_mapping)
+
+        self.start = action_mapping[self.start]

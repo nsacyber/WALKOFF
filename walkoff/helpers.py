@@ -4,6 +4,7 @@ import logging
 import os
 import pkgutil
 import sys
+from uuid import uuid4
 
 import walkoff.config.config
 import walkoff.config.paths
@@ -477,3 +478,43 @@ def create_sse_event(event_id=None, event=None, data=None):
         except ValueError:
             response += 'data: {}\n'.format(data)
     return response + '\n'
+
+
+def regenerate_workflow_ids(workflow):
+    workflow['id'] = str(uuid4())
+    action_mapping = {}
+
+    for action in workflow['actions']:
+        prev_id = action['id']
+        action['id'] = str(uuid4())
+        action_mapping[prev_id] = action['id']
+
+    for action in workflow['actions']:
+        regenerate_ids(action, action_mapping, False)
+
+    for branch in workflow['branches']:
+        branch['source_id'] = action_mapping[branch['source_id']]
+        branch['destination_id'] = action_mapping[branch['destination_id']]
+        regenerate_ids(branch, action_mapping)
+
+    workflow['start'] = action_mapping[workflow['start']]
+
+
+def regenerate_ids(json_in, action_mapping=None, regenerate_id=True):
+    if regenerate_id:
+        json_in['id'] = str(uuid4())
+
+    if 'reference' in json_in and json_in['reference']:
+        json_in['reference'] = action_mapping[json_in['reference']]
+
+    for field, value in json_in.items():
+        if isinstance(value, list):
+            __regenerate_ids_of_list(value, action_mapping)
+        elif isinstance(value, dict):
+            regenerate_ids(value, action_mapping=action_mapping)
+
+
+def __regenerate_ids_of_list(value, action_mapping):
+    for list_element in (list_element_ for list_element_ in value
+                         if isinstance(list_element_, dict)):
+        regenerate_ids(list_element, action_mapping=action_mapping)

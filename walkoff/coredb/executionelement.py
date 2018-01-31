@@ -11,6 +11,40 @@ class ExecutionElement(Representable):
         if id:
             self.id = id
 
+    # def regenerate_ids(self, with_children=True, action_mapping=None):
+    #     """
+    #     Regenerates the IDs of the execution element and its children
+    #     Args:
+    #         with_children (bool optional): Regenerate the childrens' IDs of this object? Defaults to True
+    #         action_mapping (dict, optional): The dictionary of prev action IDs to new action IDs. Defaults to None.
+    #     """
+    #     self.id = str(uuid4())
+    #
+    #     if hasattr(self, 'reference') and self.reference is not None:
+    #         self.reference = action_mapping[self.reference]
+    #
+    #     if with_children:
+    #         for field, value in ((field, getattr(self, field)) for field in dir(self)
+    #                              if not callable(getattr(self, field))):
+    #             if isinstance(value, list):
+    #                 self.__regenerate_ids_of_list(value, action_mapping)
+    #             elif isinstance(value, dict):
+    #                 self.__regenerate_ids_of_dict(value, action_mapping)
+    #             elif isinstance(value, ExecutionElement):
+    #                 value.regenerate_ids(action_mapping=action_mapping)
+    #
+    # @staticmethod
+    # def __regenerate_ids_of_dict(value, action_mapping=None):
+    #     for dict_element in (element for element in value.values() if
+    #                          isinstance(element, ExecutionElement)):
+    #         dict_element.regenerate_ids(action_mapping=action_mapping)
+    #
+    # @staticmethod
+    # def __regenerate_ids_of_list(value, action_mapping):
+    #     for list_element in (list_element_ for list_element_ in value
+    #                          if isinstance(list_element_, ExecutionElement)):
+    #         list_element.regenerate_ids(action_mapping=action_mapping)
+
     def __repr__(self):
         representation = self.read()
         out = '<{0} at {1} : '.format(self.__class__.__name__, hex(id(self)))

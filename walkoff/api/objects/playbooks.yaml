@@ -240,7 +240,7 @@ CopyWorkflow:
     type: object
     properties:
       playbook_id:
-        type: integer
+        $ref: '#/definitions/Uid'
       workflow_name:
         type: string
 

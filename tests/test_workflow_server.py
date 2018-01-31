@@ -19,6 +19,7 @@ from walkoff.coredb.argument import Argument
 from walkoff.coredb.position import Position
 from tests.config import test_workflows_path, test_workflows_path_with_generated
 from uuid import uuid4
+from walkoff.core.jsonplaybookloader import JsonPlaybookLoader
 
 
 class TestWorkflowServer(ServerTestCase):
@@ -50,20 +51,13 @@ class TestWorkflowServer(ServerTestCase):
         devicedb.device_db.session.commit()
         case_database.case_db.tear_down()
 
-    def copy_playbook(self):
-        data = {'playbook_name': self.add_playbook_name}
-        self.update_playbooks = True
-        response = self.post_with_status_check('/api/playbooks/1/copy', data=json.dumps(data), headers=self.headers,
-                                               content_type='application/json', status_code=OBJECT_CREATED)
-        return response
+    @staticmethod
+    def load_playbook(self, playbook_name):
+        return JsonPlaybookLoader.load_playbook(os.path.join(test_workflows_path, playbook_name))
 
-    def copy_workflow(self):
-        data = {'workflow_name': self.add_workflow_name}
-        self.update_workflows = True
-        response = self.post_with_status_check('/api/playbooks/1/workflows/1/copy', data=json.dumps(data),
-                                               headers=self.headers,
-                                               content_type='application/json', status_code=OBJECT_CREATED)
-        return response
+    @staticmethod
+    def load_workflow(self, playbook_name, workflow_name):
+        return JsonPlaybookLoader.load_workflow(os.path.join(test_workflows_path, playbook_name), workflow_name)
 
     @staticmethod
     def strip_uids(element):
@@ -95,7 +89,12 @@ class TestWorkflowServer(ServerTestCase):
 
     def check_invalid_id(self, verb, path, element_type, **kwargs):
         self.verb_lookup[verb](path, error='{} does not exist'.format(element_type.title()), headers=self.headers,
-                                status_code=OBJECT_DNE_ERROR, **kwargs)
+                               status_code=OBJECT_DNE_ERROR, **kwargs)
+
+    def standard_load(self):
+        self.load_playbooks(['test', 'dataflowTest'])
+        playbook = devicedb.device_db.session.query(Playbook).filter_by(name='test').first()
+        return playbook
 
     def test_read_all_playbooks(self):
         playbook_names = ('basicWorkflowTest', 'dataflowTest')
@@ -107,11 +106,6 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(len(response), len(playbook_names))
         for playbook in response:
             self.assertIn(playbook['name'], playbook_names)
-
-    def standard_load(self):
-        self.load_playbooks(['test', 'dataflowTest'])
-        playbook = devicedb.device_db.session.query(Playbook).filter_by(name='test').first()
-        return playbook
 
     # All the reads
 
@@ -349,14 +343,16 @@ class TestWorkflowServer(ServerTestCase):
         self.standard_load()
         expected = {playbook.name for playbook in devicedb.device_db.session.query(Playbook).all()}
         data = {'id': str(uuid4()), 'name': self.change_playbook_name}
-        self.check_invalid_id('post', '/api/playbooks', 'playbook', content_type="application/json", data=json.dumps(data))
+        self.check_invalid_id('post', '/api/playbooks', 'playbook', content_type="application/json",
+                              data=json.dumps(data))
         self.assertSetEqual({playbook.name for playbook in devicedb.device_db.session.query(Playbook).all()}, expected)
 
     def test_update_playbook_invalid_id_format(self):
         self.standard_load()
         expected = {playbook.name for playbook in devicedb.device_db.session.query(Playbook).all()}
         data = {'id': '475', 'name': self.change_playbook_name}
-        self.check_invalid_uuid('post', '/api/playbooks', 'playbook', content_type="application/json", data=json.dumps(data))
+        self.check_invalid_uuid('post', '/api/playbooks', 'playbook', content_type="application/json",
+                                data=json.dumps(data))
         self.assertSetEqual({playbook.name for playbook in devicedb.device_db.session.query(Playbook).all()}, expected)
 
     def test_update_workflow(self):
@@ -390,18 +386,18 @@ class TestWorkflowServer(ServerTestCase):
         workflow = playbook.workflows[0].read()
         initial_workflows = devicedb.device_db.session.query(Workflow).all()
         self.check_invalid_uuid('post', '/api/playbooks/874fe/workflows', 'workflow',
-                              data=json.dumps(workflow), content_type="application/json")
+                                data=json.dumps(workflow), content_type="application/json")
         final_workflows = devicedb.device_db.session.query(Workflow).all()
         self.assertSetEqual(set(final_workflows), set(initial_workflows))
-    
-    '''
+
     def test_copy_workflow(self):
-        self.update_workflows = True
-        response = self.post_with_status_check('/api/playbooks/1/workflows/1/copy',
+        playbook = self.standard_load()
+        for workflow in playbook.workflows:
+            workflow_id = workflow.id
+        response = self.post_with_status_check('/api/playbooks/{0}/workflows/{1}/copy'.format(playbook.id, workflow_id),
                                                headers=self.headers, status_code=OBJECT_CREATED,
                                                data=json.dumps({'workflow_name': self.add_workflow_name}),
                                                content_type="application/json")
-        playbook = devicedb.device_db.session.query(Playbook).filter_by(id=1).first()
         self.assertEqual(len(playbook.workflows), 2)
 
         for workflow in playbook.workflows:
@@ -421,51 +417,47 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(len(workflow_original.actions), len(workflow_copy.actions))
 
     def test_copy_workflow_different_playbook(self):
-        self.update_workflows = True
-        data = {"workflow_name": self.add_workflow_name, "playbook_id": 2}
-        self.post_with_status_check('/api/playbooks/1/workflows/1/copy', data=json.dumps(data),
+        playbook = self.standard_load()
+        for workflow in playbook.workflows:
+            workflow_id = workflow.id
+
+        transfer_playbook = devicedb.device_db.session.query(Playbook).filter_by(name='dataflowTest').first()
+
+        data = {"workflow_name": self.add_workflow_name, "playbook_id": str(transfer_playbook.id)}
+        self.post_with_status_check('/api/playbooks/{0}/workflows/{1}/copy'.format(playbook.id, workflow_id), data=json.dumps(data),
                                     headers=self.headers, status_code=OBJECT_CREATED, content_type="application/json")
 
-        original_playbook = devicedb.device_db.session.query(Playbook).filter_by(id=1).first()
-        new_playbook = devicedb.device_db.session.query(Playbook).filter_by(id=2).first()
-        for workflow in original_playbook.workflows:
+        for workflow in playbook.workflows:
             if workflow.name == 'helloWorldWorkflow':
                 original_workflow = workflow
         copy_workflow = devicedb.device_db.session.query(Workflow).filter_by(name=self.add_workflow_name).first()
 
-        self.assertEqual(len(original_playbook.workflows), 1)
-        self.assertEqual(len(new_playbook.workflows), 2)
+        self.assertEqual(len(playbook.workflows), 1)
+        self.assertEqual(len(transfer_playbook.workflows), 2)
         self.assertIsNotNone(copy_workflow)
 
         self.assertNotEqual(original_workflow.start, copy_workflow.start)
         self.assertEqual(len(original_workflow.actions), len(copy_workflow.actions))
 
     def test_copy_playbook(self):
-        response = self.copy_playbook()
+        playbook = self.standard_load()
 
-        original_playbook = devicedb.device_db.session.query(Playbook).filter_by(name='test').first()
+        data = {"playbook_name": self.add_playbook_name}
+        self.post_with_status_check('/api/playbooks/{0}/copy'.format(playbook.id),
+                                    data=json.dumps(data),
+                                    headers=self.headers, status_code=OBJECT_CREATED, content_type="application/json")
+
         copy_playbook = devicedb.device_db.session.query(Playbook).filter_by(name=self.add_playbook_name).first()
 
-        self.assertIsNotNone(original_playbook)
         self.assertIsNotNone(copy_playbook)
 
-        self.assertEqual(len(original_playbook.workflows), len(copy_playbook.workflows))
-
-    def test_execute_workflow_playbook_dne(self):
-        self.post_with_status_check('/api/playbooks/0/workflows/1/execute',
-                                    error='Workflow does not exist',
-                                    headers=self.headers, status_code=OBJECT_DNE_ERROR,
-                                    content_type="application/json", data=json.dumps({}))
-
-    def test_execute_workflow_workflow_dne(self):
-        self.post_with_status_check('/api/playbooks/1/workflows/0/execute',
-                                    error='Workflow does not exist',
-                                    headers=self.headers, status_code=OBJECT_DNE_ERROR,
-                                    content_type="application/json", data=json.dumps({}))
+        self.assertEqual(len(playbook.workflows), len(copy_playbook.workflows))
 
     def test_execute_workflow(self):
+        playbook = self.standard_load()
+
         sync = Event()
-        workflow = devicedb.device_db.session.query(Workflow).filter_by(id=1).first()
+        workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
         action_uids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_uids)
 
@@ -480,7 +472,7 @@ class TestWorkflowServer(ServerTestCase):
             result['count'] += 1
             result['data'] = kwargs['data']
 
-        response = self.post_with_status_check('/api/playbooks/1/workflows/1/execute',
+        response = self.post_with_status_check('/api/playbooks/{0}/workflows/{1}/execute'.format(playbook.id, workflow.id),
                                                headers=self.headers,
                                                status_code=SUCCESS_ASYNC,
                                                content_type="application/json", data=json.dumps({}))
@@ -490,144 +482,143 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(result['count'], 1)
         self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
-    def test_execute_workflow_pause_resume(self):
-        sync = Event()
-
-        workflow = devicedb.device_db.session.query(Workflow).filter_by(name='pauseWorkflow').first()
-
-        action_uids = [action.id for action in workflow.actions if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_uids)
-
-        result = {'paused': False, 'count': 0, 'data': []}
-
-        @WalkoffEvent.ActionExecutionSuccess.connect
-        def y(sender, **kwargs):
-            result['count'] += 1
-            result['data'].append(kwargs['data'])
-            if not result['paused']:
-                result['response2'] = self.post_with_status_check(
-                    '/api/playbooks/{0}/workflows/{1}/pause'.format(workflow._playbook_id, workflow.id),
-                    headers=self.headers,
-                    status_code=SUCCESS,
-                    content_type="application/json", data=json.dumps(response))
-
-        @WalkoffEvent.WorkflowPaused.connect
-        def workflow_paused_listener(sender, **kwargs):
-            result['paused'] = True
-            result['response3'] = self.post_with_status_check(
-                '/api/playbooks/{0}/workflows/{1}/resume'.format(workflow._playbook_id, workflow.id),
-                headers=self.headers,
-                status_code=SUCCESS,
-                content_type="application/json", data=json.dumps(response))
-
-        @WalkoffEvent.WorkflowResumed.connect
-        def workflow_resumed_listner(sender, **kwargs):
-            result['resumed'] = True
-
-        @WalkoffEvent.WorkflowShutdown.connect
-        def wait_for_completion(sender, **kwargs):
-            sync.set()
-
-        response = self.post_with_status_check('/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
-                                               headers=self.headers,
-                                               status_code=SUCCESS_ASYNC,
-                                               content_type="application/json", data=json.dumps({}))
-
-        flask_server.running_context.controller.wait_and_reset(1)
-        sync.wait(timeout=10)
-        self.assertIn('id', response)
-        self.assertTrue(result['paused'])
-        self.assertTrue(result['resumed'])
-        self.assertEqual(result['count'], 3)
-        self.assertDictEqual(result['response2'], {'info': 'Workflow paused'})
-        self.assertDictEqual(result['response3'], {'info': 'Workflow resumed'})
-        expected_data = [{'status': 'Success', 'result': {'message': 'HELLO WORLD'}},
-                         {'status': 'Success', 'result': None}, {'status': 'Success', 'result': None}]
-        self.assertEqual(len(result['data']), len(expected_data))
-        for exp, act in zip(expected_data, result['data']):
-            self.assertDictEqual(exp, act)
-
-    def test_execute_workflow_change_arguments(self):
-
-        response = self.copy_workflow()
-        workflow = devicedb.device_db.session.query(Workflow).filter_by(id=response['id']).first()
-
-        action_uids = [action.id for action in workflow.actions if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_uids)
-
-        result = {'count': 0}
-
-        @WalkoffEvent.ActionExecutionSuccess.connect
-        def y(sender, **kwargs):
-            result['count'] += 1
-            result['data'] = kwargs['data']
-
-        data = {"arguments": [{"name": "call",
-                               "value": "CHANGE INPUT"}]}
-
-        self.post_with_status_check('/api/playbooks/1/workflows/{}/execute'.format(workflow.id),
-                                    headers=self.headers,
-                                    status_code=SUCCESS_ASYNC,
-                                    content_type="application/json", data=json.dumps(data))
-
-        flask_server.running_context.controller.wait_and_reset(1)
-
-        self.assertEqual(result['count'], 1)
-        self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: CHANGE INPUT'})
-
-    def test_read_results(self):
-
-        workflow = devicedb.device_db.session.query(Workflow).filter_by(id=1).first()
-        workflow.execute('a')
-        workflow.execute('b')
-        workflow.execute('c')
-
-        response = self.get_with_status_check('/api/workflowresults/a', headers=self.headers)
-        self.assertSetEqual(set(response.keys()), {'status', 'id', 'results', 'started_at', 'completed_at', 'name'})
-
-    def test_read_all_results(self):
-        workflow = devicedb.device_db.session.query(Workflow).filter_by(id=1).first()
-
-        workflow.execute('a')
-        workflow.execute('b')
-        workflow.execute('c')
-
-        flask_server.running_context.controller.wait_and_reset(3)
-
-        response = self.get_with_status_check('/api/workflowresults', headers=self.headers)
-        self.assertEqual(len(response), 3)
-
-        for result in response:
-            self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'id'})
-            for action_result in result['results']:
-                self.assertSetEqual(set(action_result.keys()),
-                                    {'input', 'type', 'name', 'timestamp', 'result', 'app_name', 'action_name'})
-
-    def test_execute_workflow_trigger_action(self):
-        sync = Event()
-        workflow = devicedb.device_db.session.query(Workflow).filter_by(id=1).first()
-        action_uids = [action.id for action in workflow.actions if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_uids)
-
-        @WalkoffEvent.WorkflowShutdown.connect
-        def wait_for_completion(sender, **kwargs):
-            sync.set()
-
-        result = {'count': 0}
-
-        @WalkoffEvent.ActionExecutionSuccess.connect
-        def y(sender, **kwargs):
-            result['count'] += 1
-            result['data'] = kwargs['data']
-
-        response = self.post_with_status_check('/api/playbooks/1/workflows/1/execute',
-                                               headers=self.headers,
-                                               status_code=SUCCESS_ASYNC,
-                                               content_type="application/json", data=json.dumps({}))
-
-        flask_server.running_context.controller.wait_and_reset(1)
-        self.assertIn('id', response)
-        sync.wait(timeout=10)
-        self.assertEqual(result['count'], 1)
-        self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
-    '''
+    # def test_execute_workflow_pause_resume(self):
+    #     sync = Event()
+    #
+    #     workflow = devicedb.device_db.session.query(Workflow).filter_by(name='pauseWorkflow').first()
+    #
+    #     action_uids = [action.id for action in workflow.actions if action.name == 'start']
+    #     setup_subscriptions_for_action(workflow.id, action_uids)
+    #
+    #     result = {'paused': False, 'count': 0, 'data': []}
+    #
+    #     @WalkoffEvent.ActionExecutionSuccess.connect
+    #     def y(sender, **kwargs):
+    #         result['count'] += 1
+    #         result['data'].append(kwargs['data'])
+    #         if not result['paused']:
+    #             result['response2'] = self.post_with_status_check(
+    #                 '/api/playbooks/{0}/workflows/{1}/pause'.format(workflow._playbook_id, workflow.id),
+    #                 headers=self.headers,
+    #                 status_code=SUCCESS,
+    #                 content_type="application/json", data=json.dumps(response))
+    #
+    #     @WalkoffEvent.WorkflowPaused.connect
+    #     def workflow_paused_listener(sender, **kwargs):
+    #         result['paused'] = True
+    #         result['response3'] = self.post_with_status_check(
+    #             '/api/playbooks/{0}/workflows/{1}/resume'.format(workflow._playbook_id, workflow.id),
+    #             headers=self.headers,
+    #             status_code=SUCCESS,
+    #             content_type="application/json", data=json.dumps(response))
+    #
+    #     @WalkoffEvent.WorkflowResumed.connect
+    #     def workflow_resumed_listner(sender, **kwargs):
+    #         result['resumed'] = True
+    #
+    #     @WalkoffEvent.WorkflowShutdown.connect
+    #     def wait_for_completion(sender, **kwargs):
+    #         sync.set()
+    #
+    #     response = self.post_with_status_check('/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
+    #                                            headers=self.headers,
+    #                                            status_code=SUCCESS_ASYNC,
+    #                                            content_type="application/json", data=json.dumps({}))
+    #
+    #     flask_server.running_context.controller.wait_and_reset(1)
+    #     sync.wait(timeout=10)
+    #     self.assertIn('id', response)
+    #     self.assertTrue(result['paused'])
+    #     self.assertTrue(result['resumed'])
+    #     self.assertEqual(result['count'], 3)
+    #     self.assertDictEqual(result['response2'], {'info': 'Workflow paused'})
+    #     self.assertDictEqual(result['response3'], {'info': 'Workflow resumed'})
+    #     expected_data = [{'status': 'Success', 'result': {'message': 'HELLO WORLD'}},
+    #                      {'status': 'Success', 'result': None}, {'status': 'Success', 'result': None}]
+    #     self.assertEqual(len(result['data']), len(expected_data))
+    #     for exp, act in zip(expected_data, result['data']):
+    #         self.assertDictEqual(exp, act)
+    #
+    # def test_execute_workflow_change_arguments(self):
+    #
+    #     response = self.copy_workflow()
+    #     workflow = devicedb.device_db.session.query(Workflow).filter_by(id=response['id']).first()
+    #
+    #     action_uids = [action.id for action in workflow.actions if action.name == 'start']
+    #     setup_subscriptions_for_action(workflow.id, action_uids)
+    #
+    #     result = {'count': 0}
+    #
+    #     @WalkoffEvent.ActionExecutionSuccess.connect
+    #     def y(sender, **kwargs):
+    #         result['count'] += 1
+    #         result['data'] = kwargs['data']
+    #
+    #     data = {"arguments": [{"name": "call",
+    #                            "value": "CHANGE INPUT"}]}
+    #
+    #     self.post_with_status_check('/api/playbooks/1/workflows/{}/execute'.format(workflow.id),
+    #                                 headers=self.headers,
+    #                                 status_code=SUCCESS_ASYNC,
+    #                                 content_type="application/json", data=json.dumps(data))
+    #
+    #     flask_server.running_context.controller.wait_and_reset(1)
+    #
+    #     self.assertEqual(result['count'], 1)
+    #     self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: CHANGE INPUT'})
+    #
+    # def test_read_results(self):
+    #
+    #     workflow = devicedb.device_db.session.query(Workflow).filter_by(id=1).first()
+    #     workflow.execute('a')
+    #     workflow.execute('b')
+    #     workflow.execute('c')
+    #
+    #     response = self.get_with_status_check('/api/workflowresults/a', headers=self.headers)
+    #     self.assertSetEqual(set(response.keys()), {'status', 'id', 'results', 'started_at', 'completed_at', 'name'})
+    #
+    # def test_read_all_results(self):
+    #     workflow = devicedb.device_db.session.query(Workflow).filter_by(id=1).first()
+    #
+    #     workflow.execute('a')
+    #     workflow.execute('b')
+    #     workflow.execute('c')
+    #
+    #     flask_server.running_context.controller.wait_and_reset(3)
+    #
+    #     response = self.get_with_status_check('/api/workflowresults', headers=self.headers)
+    #     self.assertEqual(len(response), 3)
+    #
+    #     for result in response:
+    #         self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'id'})
+    #         for action_result in result['results']:
+    #             self.assertSetEqual(set(action_result.keys()),
+    #                                 {'input', 'type', 'name', 'timestamp', 'result', 'app_name', 'action_name'})
+    #
+    # def test_execute_workflow_trigger_action(self):
+    #     sync = Event()
+    #     workflow = devicedb.device_db.session.query(Workflow).filter_by(id=1).first()
+    #     action_uids = [action.id for action in workflow.actions if action.name == 'start']
+    #     setup_subscriptions_for_action(workflow.id, action_uids)
+    #
+    #     @WalkoffEvent.WorkflowShutdown.connect
+    #     def wait_for_completion(sender, **kwargs):
+    #         sync.set()
+    #
+    #     result = {'count': 0}
+    #
+    #     @WalkoffEvent.ActionExecutionSuccess.connect
+    #     def y(sender, **kwargs):
+    #         result['count'] += 1
+    #         result['data'] = kwargs['data']
+    #
+    #     response = self.post_with_status_check('/api/playbooks/1/workflows/1/execute',
+    #                                            headers=self.headers,
+    #                                            status_code=SUCCESS_ASYNC,
+    #                                            content_type="application/json", data=json.dumps({}))
+    #
+    #     flask_server.running_context.controller.wait_and_reset(1)
+    #     self.assertIn('id', response)
+    #     sync.wait(timeout=10)
+    #     self.assertEqual(result['count'], 1)
+    #     self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: Hello World'})

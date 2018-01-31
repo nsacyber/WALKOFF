@@ -20,7 +20,7 @@ class JsonElementUpdater(object):
                 if isinstance(json_value, list) and field != 'selection':
 
                     cls = getattr(element.__class__, field).property.mapper.class_
-                    id_map = JsonElementUpdater.update_relationship(json_value, value, cls)
+                    JsonElementUpdater.update_relationship(json_value, value, cls)
 
                 elif field == 'position':
                     if 'id' not in json_value:
