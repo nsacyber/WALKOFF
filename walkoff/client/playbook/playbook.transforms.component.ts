@@ -117,7 +117,7 @@ export class PlaybookTransformsComponent {
 		return {
 			name: parameterApi.name,
 			value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
-			reference: 0,
+			reference: '',
 			selection: '',
 		};
 	}

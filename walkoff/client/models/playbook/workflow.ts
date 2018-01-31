@@ -3,11 +3,6 @@ import { Branch } from './branch';
 import { ExecutionElement } from './executionElement';
 
 export class Workflow extends ExecutionElement {
-	/**
-	 * UUID of the workflow.
-	 */
-	id: number;
-
 	// _playbook_id: number;
 
 	/**
@@ -23,9 +18,9 @@ export class Workflow extends ExecutionElement {
 	 */
 	branches: Branch[] = [];
 	/**
-	 * DB ID of the action designated as the start action.
+	 * ID of the action designated as the start action.
 	 */
-	start: number;
+	start: string;
 	/**
 	 * A factor of how often the workflow fails.
 	 */

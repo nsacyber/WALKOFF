@@ -39,7 +39,7 @@ export class PlaybookService {
 	 * @param playbookId Current playbook ID to change
 	 * @param newName New name for the updated playbook
 	 */
-	renamePlaybook(playbookId: number, newName: string): Promise<Playbook> {
+	renamePlaybook(playbookId: string, newName: string): Promise<Playbook> {
 		return this.authHttp.post('/api/playbooks', { id: playbookId, name: newName })
 			.toPromise()
 			.then(this.extractData)
@@ -52,7 +52,7 @@ export class PlaybookService {
 	 * @param playbookId ID of the playbook to duplicate
 	 * @param newName Name of the new copy to be saved
 	 */
-	duplicatePlaybook(playbookId: number, newName: string): Promise<Playbook> {
+	duplicatePlaybook(playbookId: string, newName: string): Promise<Playbook> {
 		return this.authHttp.post(`/api/playbooks/${playbookId}/copy`, { playbook_name: newName })
 			.toPromise()
 			.then(this.extractData)
@@ -64,25 +64,12 @@ export class PlaybookService {
 	 * Deletes a playbook by name.
 	 * @param playbookIdToDelete ID of playbook to be deleted.
 	 */
-	deletePlaybook(playbookIdToDelete: number): Promise<void> {
+	deletePlaybook(playbookIdToDelete: string): Promise<void> {
 		return this.authHttp.delete(`/api/playbooks/${playbookIdToDelete}`)
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
 	}
-
-	// /**
-	//  * Renames a workflow under a given playbook.
-	//  * @param playbookId ID of playbook the workflow exists under
-	//  * @param workflowId Current workflow ID to be changed
-	//  * @param newName New name for the updated workflow
-	//  */
-	// renameWorkflow(playbookId: number, workflowId: number, newName: string): Promise<void> {
-	// 	return this.authHttp.post(`/api/playbooks/${playbookId}/workflows`, { id: workflowId, name: newName })
-	// 		.toPromise()
-	// 		.then(this.extractData)
-	// 		.catch(this.handleError);
-	// }
 
 	/**
 	 * Duplicates a workflow under a given playbook, it's actions, branches, etc. under a new name.
@@ -92,7 +79,7 @@ export class PlaybookService {
 	 * @param newName Name for the new copy to be saved
 	 */
 	duplicateWorkflow(
-		sourcePlaybookId: number, sourceWorkflowId: number, destinationPlaybookId: number, newName: string,
+		sourcePlaybookId: string, sourceWorkflowId: string, destinationPlaybookId: string, newName: string,
 	): Promise<Workflow> {
 		return this.authHttp.post(`/api/playbooks/${sourcePlaybookId}/workflows/${sourceWorkflowId}/copy`,
 				{ playbook_id: destinationPlaybookId, workflow_name: newName })
@@ -107,7 +94,7 @@ export class PlaybookService {
 	 * @param playbookId ID of the playbook the workflow exists under
 	 * @param workflowIdToDelete ID of the workflow to be deleted
 	 */
-	deleteWorkflow(playbookId: number, workflowIdToDelete: number): Promise<void> {
+	deleteWorkflow(playbookId: string, workflowIdToDelete: string): Promise<void> {
 		return this.authHttp.delete(`/api/playbooks/${playbookId}/workflows/${workflowIdToDelete}`)
 			.toPromise()
 			.then(this.extractData)
@@ -119,16 +106,7 @@ export class PlaybookService {
 	 * @param playbookId ID of the playbook the new workflow should be added under
 	 * @param workflow Workflow to be saved
 	 */
-	newWorkflow(playbookId: number, workflow: Workflow): Promise<Workflow> {
-		// let addPlaybookPromise: Promise<any>;
-		// if (newPlaybookName) {
-		// 	addPlaybookPromise = this.authHttp.put('/api/playbooks', { name: newPlaybookName })
-		// 		.toPromise()
-		// 		.then(() => { return; });
-		// } else {
-		// 	addPlaybookPromise = Promise.resolve();
-		// }
-
+	newWorkflow(playbookId: string, workflow: Workflow): Promise<Workflow> {
 		return this.authHttp.put(`/api/playbooks/${playbookId}/workflows`, workflow)
 			.toPromise()
 			.then(this.extractData)
@@ -141,7 +119,7 @@ export class PlaybookService {
 	 * @param playbookId ID of the playbook the workflow exists under
 	 * @param workflow Data to be saved under the workflow (actions, etc.)
 	 */
-	saveWorkflow(playbookId: number, workflow: Workflow): Promise<Workflow> {
+	saveWorkflow(playbookId: string, workflow: Workflow): Promise<Workflow> {
 		return this.authHttp.post(`/api/playbooks/${playbookId}/workflows`, workflow)
 			.toPromise()
 			.then(this.extractData)
@@ -154,7 +132,7 @@ export class PlaybookService {
 	 * @param playbookId ID of playbook the workflow exists under
 	 * @param workflowId ID of the workflow to load
 	 */
-	loadWorkflow(playbookId: number, workflowId: number): Promise<Workflow> {
+	loadWorkflow(playbookId: string, workflowId: string): Promise<Workflow> {
 		return this.authHttp.get(`/api/playbooks/${playbookId}/workflows/${workflowId}`)
 			.toPromise()
 			.then(this.extractData)
@@ -168,7 +146,7 @@ export class PlaybookService {
 	 * @param playbookId ID of the playbook the workflow exists under
 	 * @param workflowId ID of the workflow to execute
 	 */
-	executeWorkflow(playbookId: number, workflowId: number): Promise<void> {
+	executeWorkflow(playbookId: string, workflowId: string): Promise<void> {
 		return this.authHttp.post(`/api/playbooks/${playbookId}/workflows/${workflowId}/execute`, {})
 			.toPromise()
 			.then(this.extractData)

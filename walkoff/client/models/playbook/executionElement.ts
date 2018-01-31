@@ -1,3 +1,3 @@
 export class ExecutionElement {
-	uid?: string;
+	id: string;
 }

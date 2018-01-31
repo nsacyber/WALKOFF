@@ -3,7 +3,6 @@ import { Argument } from './argument';
 import { ExecutionElement } from './executionElement';
 
 export class Condition extends ExecutionElement {
-	id: number;
 	// _action_id?: number;
 	// _branch_id?: number;
 	app_name: string;

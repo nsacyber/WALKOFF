@@ -4,7 +4,6 @@ import { Condition } from './condition';
 import { ExecutionElement } from './executionElement';
 
 export class Action extends ExecutionElement {
-	id: number;
 	// _workflow_id: number;
 	name: string;
 	position: GraphPosition;

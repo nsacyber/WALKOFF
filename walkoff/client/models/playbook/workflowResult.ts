@@ -6,9 +6,9 @@ export class WorkflowResult {
 	 */
 	uid: string;
 	/**
-	 * DB ID of the given action that is executing as stored in the workflow.
+	 * UUID of the given action that is executing as stored in the workflow.
 	 */
-	action_id: number;
+	action_id: string;
 	/**
 	 * Name of the action to be executed as it is stored in the workflow.
 	 */

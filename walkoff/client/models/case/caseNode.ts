@@ -4,9 +4,9 @@ export class CaseNode {
 	 */
 	name: string;
 	/**
-	 * UID of execution element
+	 * ID of execution element
 	 */
-	uid: string;
+	id: string;
 	/**
 	 * Execution element type (e.g. workflow, condition
 	 */

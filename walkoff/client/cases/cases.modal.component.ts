@@ -29,12 +29,12 @@ export class CasesModalComponent {
 	@Input() subscriptionTree: CaseNode;
 	@Input() workingEvents: Array<{ name: string, isChecked: boolean }> = [];
 
-	selectedNode: { name: string, uid: string, type: string } = { name: '', uid: '', type: '' };
+	selectedNode: { name: string, id: string, type: string } = { name: '', id: '', type: '' };
 	treemap: TreeLayout<{}>;
 	svg: Selection<Element | EnterElement | Document | Window, {}, HTMLElement, Window> ;
 	root: any;
 	i = 0;
-	existingSubscriptionUids: string[];
+	existingSubscriptionIds: string[];
 
 	constructor(
 		private casesService: CasesService, private activeModal: NgbActiveModal,
@@ -42,7 +42,7 @@ export class CasesModalComponent {
 
 	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
-		this.existingSubscriptionUids = this.workingCase.subscriptions.map(s => s.uid);
+		this.existingSubscriptionIds = this.workingCase.subscriptions.map(s => s.id);
 
 		// Set the dimensions and margins of the diagram
 		const margin = { top: 20, right: 90, bottom: 30, left: 90 };
@@ -66,7 +66,7 @@ export class CasesModalComponent {
 		this.root.y0 = 0;
 
 		//Mark our controller as included if necessary
-		if (this.existingSubscriptionUids.indexOf('controller') >= 0) { this.root.data._included = true; }
+		if (this.existingSubscriptionIds.indexOf('controller') >= 0) { this.root.data._included = true; }
 
 		// Check for collapse after the second level
 		if (this.root.children && this.root.children.length) {
@@ -99,7 +99,7 @@ export class CasesModalComponent {
 			.classed('node', true)
 			.classed('included', (d: any) => d.data._included)
 			.attr('transform', d => `translate(${source.y0},${source.x0})`)
-			.attr('id', (d: any) => self.getUid())
+			.attr('id', (d: any) => self.getId())
 			.on('click', d => self.click(d, self))
 			.on('dblclick', d => self.dblclick(d, self));
 
@@ -187,7 +187,7 @@ export class CasesModalComponent {
 	 * @param self This component reference
 	 */
 	checkInclusionAndCheckChildrenForExpansion(d: any, self: CasesModalComponent): boolean {
-		if (self.existingSubscriptionUids.indexOf(d.data.uid) >= 0) { d.data._included = true; }
+		if (self.existingSubscriptionIds.indexOf(d.data.id) >= 0) { d.data._included = true; }
 		let expanded = false;
 
 		if (d.children) {
@@ -224,11 +224,11 @@ export class CasesModalComponent {
 	click(d: any, self: CasesModalComponent): void {
 		if (!d.data.type) { return; }
 
-		self.selectedNode = { name: d.data.name, uid: d.data.uid, type: d.data.type };
+		self.selectedNode = { name: d.data.name, id: d.data.id, type: d.data.type };
 
 		const availableEvents = self.availableSubscriptions.find(a => a.type === d.data.type).events;
 
-		const subscription = self.workingCase.subscriptions.find(s => s.uid === d.data.uid);
+		const subscription = self.workingCase.subscriptions.find(s => s.id === d.data.id);
 
 		const subscriptionEvents = subscription ? subscription.events : [];
 
@@ -246,7 +246,7 @@ export class CasesModalComponent {
 			.classed('highlighted', false);
 
 		//Highlight this node now.
-		d3.select(`g.node#${this.getUid()}`)
+		d3.select(`g.node#${this.getId()}`)
 			.classed('highlighted', true);
 	}
 
@@ -274,17 +274,17 @@ export class CasesModalComponent {
 
 		event.isChecked = isChecked;
 
-		let matchingSubscription = this.workingCase.subscriptions.find(s => s.uid === this.selectedNode.uid);
+		let matchingSubscription = this.workingCase.subscriptions.find(s => s.id === this.selectedNode.id);
 
 		//If no subscription is returned, it doesn't exist yet; add it.
 		if (!matchingSubscription) {
 			matchingSubscription = new Subscription();
-			matchingSubscription.uid = this.selectedNode.uid;
+			matchingSubscription.id = this.selectedNode.id;
 
 			this.workingCase.subscriptions.push(matchingSubscription);
 
 			//style the node in d3 as well
-			d3.select('svg#caseSubscriptionsTree').select(`g.node#${this.getUid()}`)
+			d3.select('svg#caseSubscriptionsTree').select(`g.node#${this.getId()}`)
 				.classed('included', true)
 				.datum(function (d: any) {
 					d.data._included = true;
@@ -301,7 +301,7 @@ export class CasesModalComponent {
 			this.workingCase.subscriptions.splice(indexToDelete, 1);
 
 			//style the node in d3 as well
-			d3.select('svg#caseSubscriptionsTree').select(`g.node#${this.getUid()}`)
+			d3.select('svg#caseSubscriptionsTree').select(`g.node#${this.getId()}`)
 				.classed('included', false)
 				.datum((d: any) => {
 					d.data._included = false;
@@ -310,8 +310,8 @@ export class CasesModalComponent {
 		}
 	}
 
-	getUid(): string {
-		return `uid-${this.selectedNode.uid}`;
+	getId(): string {
+		return `id-${this.selectedNode.id}`;
 	}
 
 	submit(): void {

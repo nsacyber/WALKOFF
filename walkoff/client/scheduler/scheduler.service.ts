@@ -6,6 +6,7 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 
 import { ScheduledTask } from '../models/scheduledTask';
+import { Playbook } from '../models/playbook/playbook';
 
 const schedulerStatusNumberMapping: any = {
 	0: 'stopped',
@@ -80,10 +81,11 @@ export class SchedulerService {
 			.catch(this.handleError);
 	}
 
-	getPlaybooks(): Promise<any> {
+	getPlaybooks(): Promise<Playbook[]> {
 		return this.authHttp.get('/api/playbooks')
 			.toPromise()
 			.then(this.extractData)
+			.then(playbooks => playbooks as Playbook[])
 			.catch(this.handleError);
 	}
 

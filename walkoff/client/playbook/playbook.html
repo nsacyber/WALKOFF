@@ -258,10 +258,10 @@
                         <h6>{{modalParams.shouldShowExistingPlaybooks ? 'Select a Playbook' : 'Enter a Playbook'}}</h6>
                         <select *ngIf="modalParams.shouldShowExistingPlaybooks" name="playbookSelect" id="playbookSelect" [(ngModel)]="modalParams.selectedPlaybookId"
                             class="form-control">
-                            <option [ngValue]="0">-- Create new Playbook --</option>
+                            <option [ngValue]="''">-- Create new Playbook --</option>
                             <option *ngFor="let i of playbooks" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
                         </select>
-                        <input type="text" *ngIf="modalParams.selectedPlaybookId === 0 || !modalParams.shouldShowExistingPlaybooks" [(ngModel)]="modalParams.newPlaybook"
+                        <input type="text" *ngIf="modalParams.selectedPlaybookId === '' || !modalParams.shouldShowExistingPlaybooks" [(ngModel)]="modalParams.newPlaybook"
                             class="form-control" placeholder="Enter a new playbook name">
                     </div>
                     <div *ngIf="modalParams.shouldShowWorkflow" class="form-group">

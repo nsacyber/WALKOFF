@@ -1,4 +1,4 @@
 export class Subscription {
-	uid: string;
+	id: string;
 	events: string[];
 }

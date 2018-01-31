@@ -13,9 +13,9 @@ export class Argument {
 	 */
 	value: any;
 	/**
-	 * Reference to an Action DBID to use the output of
+	 * Reference to an Action ID to use the output of
 	 */
-	reference: number;
+	reference: string;
 	/**
 	 * Selection is currently specified in the UI as a string,
 	 * but is split and sent/ingested as an array containing strings and numbers

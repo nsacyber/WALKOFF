@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -21,7 +21,7 @@ import { ScheduledTask } from '../models/scheduledTask';
 	encapsulation: ViewEncapsulation.None,
 	providers: [SchedulerService],
 })
-export class SchedulerComponent {
+export class SchedulerComponent implements OnInit {
 	currentController: string;
 	schedulerStatus: string;
 	scheduledTasks: ScheduledTask[] = [];
@@ -32,7 +32,9 @@ export class SchedulerComponent {
 
 	constructor(
 		private schedulerService: SchedulerService, private modalService: NgbModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {		
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {}
+
+	ngOnInit(): void {
 		this.currentController = 'Default Controller';
 		this.toastyConfig.theme = 'bootstrap';
 
@@ -67,7 +69,7 @@ export class SchedulerComponent {
 
 		this.schedulerService
 			.changeSchedulerStatus(status)
-			.then((newStatus) => {
+			.then(newStatus => {
 				if (newStatus) { this.schedulerStatus = newStatus; }
 			})
 			.catch(e => this.toastyService.error(`Error changing scheduler status: ${e.message}`));
@@ -150,10 +152,9 @@ export class SchedulerComponent {
 
 		this.schedulerService
 			.getPlaybooks()
-			.then((playbooks) => {
-				//[ { name: <name>, workflows: [ { name: <name>, id: <id> } ] }, ... ]
-				playbooks.forEach(function (playbook: any) {
-					playbook.workflows.forEach(function (workflow: any) {
+			.then(playbooks => {
+				playbooks.forEach(playbook => {
+					playbook.workflows.forEach(workflow => {
 						self.availableWorkflows.push({
 							id: workflow.id,
 							text: `${playbook.name} - ${workflow.name}`,
@@ -179,11 +180,9 @@ export class SchedulerComponent {
 	getFriendlyWorkflows(scheduledTask: ScheduledTask): string {
 		if (!this.availableWorkflows || !scheduledTask.workflows || !scheduledTask.workflows.length) { return ''; }
 
-		return this.availableWorkflows.filter(function (workflow) {
+		return this.availableWorkflows.filter(workflow => {
 			return scheduledTask.workflows.indexOf(workflow.id) >= 0;
-		}).map(function (workflow) {
-			return workflow.text;
-		}).join(', ');
+		}).map(workflow => workflow.text).join(', ');
 	}
 
 	private _handleModalClose(modalRef: NgbModalRef): void {

@@ -221,7 +221,7 @@ export class CasesComponent implements OnInit {
 	convertPlaybooksToSubscriptionTree(playbooks: Playbook[]): CaseNode {
 		const self = this;
 		//Top level controller data
-		const tree: CaseNode = { name: 'Controller', uid: 'controller', type: 'controller', children: [] };
+		const tree: CaseNode = { name: 'Controller', id: 'controller', type: 'controller', children: [] };
 
 		// Remap the branches to be under actions as they used to be
 		playbooks.forEach(p => {
@@ -260,7 +260,7 @@ export class CasesComponent implements OnInit {
 
 		const node: CaseNode = { 
 			name: nodeName, 
-			uid: target.uid ? target.uid : '', 
+			id: target.id ? target.id : '', 
 			type: hierarchy.name, 
 			children: [],
 		};

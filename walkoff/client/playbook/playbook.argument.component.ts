@@ -45,7 +45,7 @@ export class PlaybookArgumentComponent {
 
 	ngOnInit(): void {
 		this.parameterSchema = this.parameterApi.schema;
-		if (this.argument.reference == null) { this.argument.reference = 0; }
+		if (this.argument.reference == null) { this.argument.reference = ''; }
 		if (this.argument.value == null) {
 			if (this.parameterSchema.type === 'array') { 
 				this.argument.value = [];
@@ -66,7 +66,7 @@ export class PlaybookArgumentComponent {
 		this.selectedType = this.availableTypes[0];
 
 		if (this.isUserSelect(this.parameterSchema)) {
-			this.selectData = this.users.map((user) => {
+			this.selectData = this.users.map(user => {
 				return { id: user.id.toString(), text: user.username };
 			});
 
@@ -85,7 +85,7 @@ export class PlaybookArgumentComponent {
 			this.selectInitialValue = JSON.parse(JSON.stringify(this.argument.value));
 		}
 		if (this.isRoleSelect(this.parameterSchema)) {
-			this.selectData = this.roles.map((role) => {
+			this.selectData = this.roles.map(role => {
 				return { id: role.id.toString(), text: role.name };
 			});
 
