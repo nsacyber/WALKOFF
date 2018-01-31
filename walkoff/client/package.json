@@ -23,6 +23,7 @@
     "rimraf": "rimraf",
     "test": "karma start",
     "watch:dev": "npm run build:dev -- --watch",
+    "watch:prod": "npm run build:prod -- --watch",
     "watch:test": "npm run test -- --auto-watch --no-single-run",
     "watch": "npm run watch:dev",
     "webpack": "node --max_old_space_size=4096 node_modules/webpack/bin/webpack.js"
