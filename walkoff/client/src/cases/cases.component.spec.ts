@@ -12,8 +12,8 @@ import { JwtHttp } from 'angular2-jwt-refresh';
 import { GetJwtHttp } from '../jwthttp.factory';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 
-import { Case } from '../models/case';
-import { AvailableSubscription } from '../models/availableSubscription';
+import { Case } from '../models/case/case';
+import { AvailableSubscription } from '../models/case/availableSubscription';
 import { Playbook } from '../models/playbook/playbook';
 
 describe('CasesComponent', () => {
@@ -28,7 +28,7 @@ describe('CasesComponent', () => {
 			note: 'something',
 			subscriptions: [
 				{
-					uid: '12345',
+					id: '12345',
 					events: ['some', 'events', 'go', 'here'],
 				},
 			],
@@ -102,15 +102,15 @@ describe('CasesComponent', () => {
 
 	const testPlaybooks: Playbook[] = [
 		{
-			uid: 'pb-12345',
+			id: 'pb-12345',
 			name: 'test playbook',
 			workflows: [
 				{
-					uid: 'wf-12345',
+					id: 'wf-12345',
 					name: 'TestWorkflow',
 					actions: [
 						{
-							uid: 'ac-12345',
+							id: 'ac-12345',
 							name: 'test action',
 							position: { x: 0, y: 0 },
 							app_name: 'TestApp',
