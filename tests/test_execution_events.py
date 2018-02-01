@@ -44,7 +44,7 @@ class TestExecutionEvents(unittest.TestCase):
 
     def test_workflow_execution_events(self):
         workflow = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-        subs = {'case1': {workflow.id: [WalkoffEvent.AppInstanceCreated.signal_name,
+        subs = {'case1': {str(workflow.id): [WalkoffEvent.AppInstanceCreated.signal_name,
                                         WalkoffEvent.WorkflowShutdown.signal_name]}}
         case_subscription.set_subscriptions(subs)
         self.c.execute_workflow(workflow.id)

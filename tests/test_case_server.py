@@ -50,7 +50,7 @@ class TestCaseServer(ServerTestCase):
         self.assertEqual(len(cases_config), 1)
         case = cases_config[0]
         self.assertEqual(case.name, 'case1')
-        self.assertEqual(case.subscriptions, '[]')
+        self.assertEqual(case.subscriptions, [])
         self.assertDictEqual(case_subs.subscriptions, {'case1': {}})
 
     def test_add_case_existing_cases(self):
@@ -65,7 +65,7 @@ class TestCaseServer(ServerTestCase):
         self.assertEqual(len(cases_config), 1)
         orderless_list_compare(self, [case.name for case in cases_config], ['case3'])
         for case in cases_config:
-            self.assertEqual(case.subscriptions, '[]')
+            self.assertEqual(case.subscriptions, [])
         self.cases1.update({'case1': {}})
         self.assertDictEqual(case_subs.subscriptions, self.cases1)
 
@@ -83,7 +83,7 @@ class TestCaseServer(ServerTestCase):
         self.assertEqual(len(cases_config), 1)
         orderless_list_compare(self, [case.name for case in cases_config], ['case1'])
         for case in cases_config:
-            self.assertEqual(case.subscriptions, '[]')
+            self.assertEqual(case.subscriptions, [])
         self.assertDictEqual(case_subs.subscriptions, {'case1': {}})
 
     def test_add_case_duplicate_case_in_sync(self):
@@ -100,7 +100,7 @@ class TestCaseServer(ServerTestCase):
         self.assertEqual(len(cases_config), 1)
         orderless_list_compare(self, [case.name for case in cases_config], ['case1'])
         for case in cases_config:
-            self.assertEqual(case.subscriptions, '[]')
+            self.assertEqual(case.subscriptions, [])
         self.assertDictEqual(case_subs.subscriptions, {'case1': {}})
 
     def test_add_case_with_subscriptions(self):
@@ -179,7 +179,7 @@ class TestCaseServer(ServerTestCase):
         self.assertEqual(len(cases_config), 1)
 
         self.assertEqual(cases_config[0].name, 'case2')
-        self.assertEqual(cases_config[0].subscriptions, '[]')
+        self.assertEqual(cases_config[0].subscriptions, [])
         self.assertDictEqual(case_subs.subscriptions, {'case2': {}})
 
     def test_delete_case_invalid_case(self):
@@ -200,7 +200,7 @@ class TestCaseServer(ServerTestCase):
         cases_config = CaseSubscription.query.all()
         orderless_list_compare(self, [case.name for case in cases_config], ['case1', 'case2'])
         for case in cases_config:
-            self.assertEqual(case.subscriptions, '[]')
+            self.assertEqual(case.subscriptions, [])
         self.assertDictEqual(case_subs.subscriptions, self.cases1)
 
     def test_delete_case_no_cases(self):
@@ -229,6 +229,7 @@ class TestCaseServer(ServerTestCase):
         response = self.post_with_status_check('api/cases', data=json.dumps(data), headers=self.headers,
                                                content_type='application/json', status_code=SUCCESS)
 
+        print(response)
         self.assertDictEqual(response, {'note': 'note1', 'subscriptions': [{"uid": 'uid1', "events": ['a', 'b', 'c']}],
                                         'id': 1, 'name': 'renamed'})
 

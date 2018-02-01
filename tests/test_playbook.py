@@ -61,8 +61,6 @@ class TestPlaybook(unittest.TestCase):
 
     def test_has_workflow_id(self):
         workflow = Workflow('wf_name', 0)
-        walkoff.coredb.devicedb.device_db.session.add(workflow)
-        walkoff.coredb.devicedb.device_db.session.flush()
         playbook = Playbook('test', [workflow])
         self.assertTrue(playbook.has_workflow_id(workflow.id))
 
@@ -86,8 +84,6 @@ class TestPlaybook(unittest.TestCase):
 
     def test_get_workflow_by_id(self):
         workflow = Workflow('wf_name', 0)
-        walkoff.coredb.devicedb.device_db.session.add(workflow)
-        walkoff.coredb.devicedb.device_db.session.flush()
         playbook = Playbook('test', [workflow])
         self.assertEqual(playbook.get_workflow_by_id(workflow.id), workflow)
 
@@ -106,8 +102,6 @@ class TestPlaybook(unittest.TestCase):
 
     def test_get_all_workflow_ids(self):
         workflows = [Workflow(str(i), 0) for i in range(3)]
-        walkoff.coredb.devicedb.device_db.session.add_all(workflows)
-        walkoff.coredb.devicedb.device_db.session.flush()
         playbook = Playbook('test', workflows)
         orderless_list_compare(self, playbook.get_all_workflow_ids(), list(workflow.id for workflow in workflows))
 
@@ -130,7 +124,6 @@ class TestPlaybook(unittest.TestCase):
         workflows = [Workflow(str(i), 0) for i in range(3)]
         playbook = Playbook('test', workflows)
         playbook.rename_workflow('2', 'new_name')
-        walkoff.coredb.devicedb.device_db.session.flush()
         self.assertTrue(playbook.has_workflow_name('new_name'))
         self.assertFalse(playbook.has_workflow_name('2'))
 

@@ -81,7 +81,7 @@ class LoadBalancer:
                 self.workflow_comms[workflow_execution_uid] = worker
 
                 message = ExecuteWorkflowMessage()
-                message.workflow_id = workflow_id
+                message.workflow_id = str(workflow_id)
                 message.workflow_execution_uid = workflow_execution_uid
 
                 self.request_socket.send_multipart([worker, message.SerializeToString()])

@@ -466,7 +466,7 @@ class TestMessageDatabase(TestCase):
     @staticmethod
     def construct_mock_trigger_sender(workflow_execution_uid):
         return {'workflow_execution_uid': workflow_execution_uid,
-                'uid': 'mock',
+                'id': 'mock',
                 'app_name': 'mock',
                 'action_name': 'mock'}
 

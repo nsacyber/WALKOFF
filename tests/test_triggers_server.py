@@ -13,6 +13,7 @@ from tests.util.servertestcase import ServerTestCase
 import walkoff.coredb.devicedb
 from walkoff.coredb.playbook import Playbook
 from walkoff.coredb.workflow import Workflow
+from tests.util import device_db_help
 
 try:
     from importlib import reload
@@ -33,11 +34,10 @@ class TestTriggersServer(ServerTestCase):
         for case in case_database.case_db.session.query(case_database.Case).all():
             case_database.case_db.session.delete(case)
         case_database.case_db.session.commit()
+        device_db_help.cleanup_device_db()
 
     def test_trigger_multiple_workflows(self):
-
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'triggerActionWorkflow', Playbook.name == 'triggerActionWorkflow').first()
+        workflow = device_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
 
         ids = []
 
@@ -88,9 +88,7 @@ class TestTriggersServer(ServerTestCase):
         self.assertEqual(result['result'], 2)
 
     def test_trigger_execute(self):
-
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'triggerActionWorkflow', Playbook.name == 'triggerActionWorkflow').first()
+        workflow = device_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
 
         response = self.post_with_status_check(
             '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
@@ -129,9 +127,7 @@ class TestTriggersServer(ServerTestCase):
         self.assertTrue(result['result'])
 
     def test_trigger_execute_multiple_data(self):
-
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'triggerActionWorkflow', Playbook.name == 'triggerActionWorkflow').first()
+        workflow = device_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
 
         response = self.post_with_status_check(
             '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
@@ -181,9 +177,7 @@ class TestTriggersServer(ServerTestCase):
         self.assertEqual(result['result'], 1)
 
     def test_trigger_execute_change_input(self):
-
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'triggerActionWorkflow', Playbook.name == 'triggerActionWorkflow').first()
+        workflow = device_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
 
         response = self.post_with_status_check(
             '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
@@ -225,9 +219,7 @@ class TestTriggersServer(ServerTestCase):
         self.assertDictEqual(result['value'], {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'})
 
     def test_trigger_execute_with_change_input_invalid_input(self):
-
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'triggerActionWorkflow', Playbook.name == 'triggerActionWorkflow').first()
+        workflow = device_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
 
         response = self.post_with_status_check(
             '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),

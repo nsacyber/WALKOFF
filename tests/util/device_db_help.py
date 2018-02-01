@@ -36,8 +36,8 @@ def load_playbook(playbook_name):
 
 def load_workflow(playbook_name, workflow_name):
     JsonPlaybookLoader.load_playbook(os.path.join(test_workflows_path, playbook_name+'.playbook'))
-    return devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(and_(
-        Workflow.name == workflow_name, Workflow._playbook.name == playbook_name)).first()
+    return devicedb.device_db.session.query(Workflow).join(Playbook).filter(and_(
+        Workflow.name == workflow_name, Playbook.name == playbook_name)).first()
 
 
 def setup_dbs():

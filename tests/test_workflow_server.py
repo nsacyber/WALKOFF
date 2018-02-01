@@ -126,7 +126,7 @@ class TestWorkflowServer(ServerTestCase):
         self.check_invalid_id('get', '/api/playbooks/{0}/workflows/{1}'.format(uuid4(), uuid4()), 'workflow')
 
     def test_read_workflow_invalid_playbook_id_format(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         target_workflow = playbook.workflows[0]
         self.check_invalid_uuid('get', '/api/playbooks/1/workflows/{}'.format(target_workflow.id), 'workflow')
 

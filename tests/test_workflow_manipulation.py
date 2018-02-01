@@ -75,7 +75,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         WalkoffEvent.WorkflowExecutionStart.connect(action_1_about_to_begin_listener)
 
-        workflow = device_db_help.load_workflow('pauseWorkflowTest', 'pauseWorkflow')
+        workflow = device_db_help.load_workflow('testGeneratedWorkflows/pauseWorkflowTest', 'pauseWorkflow')
 
         uid = self.controller.execute_workflow(workflow.id)
         self.controller.wait_and_reset(1)

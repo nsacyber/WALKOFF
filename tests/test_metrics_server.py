@@ -6,14 +6,15 @@ from walkoff.server import flaskserver as server
 from walkoff.server.endpoints.metrics import _convert_action_time_averages, _convert_workflow_time_averages
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
-from walkoff.coredb import devicedb
-from walkoff.coredb.workflow import Workflow
-from walkoff.coredb.playbook import Playbook
+from tests.util import device_db_help
 
 
 class MetricsServerTest(ServerTestCase):
     def setUp(self):
         metrics.app_metrics = {}
+
+    def tearDown(self):
+        device_db_help.cleanup_device_db()
 
     def test_convert_action_time_average(self):
         '''
@@ -101,10 +102,9 @@ class MetricsServerTest(ServerTestCase):
 
     def test_action_metrics(self):
 
-        workflow_id = devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'multiactionErrorWorkflow', Playbook.name == 'multiactionError').first().id
+        workflow = device_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
 
-        server.running_context.controller.execute_workflow(workflow_id)
+        server.running_context.controller.execute_workflow(workflow.id)
         server.running_context.controller.wait_and_reset(1)
 
         response = self.app.get('/metrics/apps', headers=self.headers)
@@ -113,10 +113,8 @@ class MetricsServerTest(ServerTestCase):
         self.assertDictEqual(response, _convert_action_time_averages())
 
     def test_workflow_metrics(self):
-        error_id = devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'multiactionErrorWorkflow', Playbook.name == 'multiactionError').first().id
-        test_id = devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'multiactionWorkflow', Playbook.name == 'multiactionWorkflowTest').first().id
+        error_id = device_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow').id
+        test_id = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow').id
 
         server.running_context.controller.execute_workflow(error_id)
         server.running_context.controller.execute_workflow(error_id)

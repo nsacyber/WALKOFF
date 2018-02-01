@@ -40,7 +40,7 @@ class JsonElementCreator(object):
             walkoff.coredb.devicedb.device_db.session.flush()
             return elem
         except (KeyError, TypeError, InvalidArgument, UnknownApp, UnknownFunction) as e:
-            walkoff.coredb.devicedb.device_db.sesson.rollback()
+            walkoff.coredb.devicedb.device_db.session.rollback()
             from walkoff.helpers import format_exception_message
             raise ValueError(
                 'Improperly formatted JSON for ExecutionElement {0} {1}'.format(current_class.__name__,

@@ -107,7 +107,7 @@ class TestEventDispatcher(TestCase):
         self.assertEqual(len(list(self.router._get_callbacks('a', 'b', WalkoffEvent.ActionStarted))), 2)
 
     def test_dispatch_nothing_in_router(self):
-        self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_uid': 42})
+        self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_id': 42})
 
     def test_dispatch_sender_uid_only_weak(self):
         result = {'x': True, 'count': 0}
@@ -118,11 +118,11 @@ class TestEventDispatcher(TestCase):
 
         self.router.register_events(x, {WalkoffEvent.ActionStarted}, names='a')
 
-        self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_uid': 'a'})
-        self.assertDictEqual(result, {'x': {'sender_uid': 'a'}, 'count': 1})
+        self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_id': 'a'})
+        self.assertDictEqual(result, {'x': {'sender_id': 'a'}, 'count': 1})
         del x
-        self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_uid': 'a'})
-        self.assertDictEqual(result, {'x': {'sender_uid': 'a'}, 'count': 1})
+        self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_id': 'a'})
+        self.assertDictEqual(result, {'x': {'sender_id': 'a'}, 'count': 1})
 
     def test_dispatch_sender_uid_only_strong(self):
         result = {'x': True, 'count': 0}
@@ -133,11 +133,11 @@ class TestEventDispatcher(TestCase):
 
         self.router.register_events(x, {WalkoffEvent.ActionStarted}, names='a', weak=False)
 
-        self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_uid': 'a'})
-        self.assertDictEqual(result, {'x': {'sender_uid': 'a'}, 'count': 1})
+        self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_id': 'a'})
+        self.assertDictEqual(result, {'x': {'sender_id': 'a'}, 'count': 1})
         del x
-        self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_uid': 'a'})
-        self.assertDictEqual(result, {'x': {'sender_uid': 'a'}, 'count': 2})
+        self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_id': 'a'})
+        self.assertDictEqual(result, {'x': {'sender_id': 'a'}, 'count': 2})
 
     def test_dispatch_sender_name(self):
         result = {'x': True, 'count': 0}
@@ -148,8 +148,8 @@ class TestEventDispatcher(TestCase):
 
         self.router.register_events(x, {WalkoffEvent.ActionStarted}, names='b')
 
-        self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_uid': 'a', 'sender_name': 'b'})
-        self.assertDictEqual(result, {'x': {'sender_uid': 'a', 'sender_name': 'b'}, 'count': 1})
+        self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_id': 'a', 'sender_name': 'b'})
+        self.assertDictEqual(result, {'x': {'sender_id': 'a', 'sender_name': 'b'}, 'count': 1})
 
     def test_dispatch_sender_name_and_uid(self):
         result = {'x': True, 'count': 0}
@@ -165,8 +165,8 @@ class TestEventDispatcher(TestCase):
         self.router.register_events(x, {WalkoffEvent.ActionStarted}, names='b')
         self.router.register_events(y, {WalkoffEvent.ActionStarted}, names='a')
 
-        self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_uid': 'a', 'sender_name': 'b'})
-        self.assertDictEqual(result, {'x': {'sender_uid': 'a', 'sender_name': 'b'}, 'count': 1})
+        self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_id': 'a', 'sender_name': 'b'})
+        self.assertDictEqual(result, {'x': {'sender_id': 'a', 'sender_name': 'b'}, 'count': 1})
         self.assertTrue(result2['x'])
 
     def test_dispatch_controller_event(self):
