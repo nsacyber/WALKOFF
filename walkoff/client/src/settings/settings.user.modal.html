@@ -23,7 +23,7 @@
 						<input type="checkbox" class="form-control" [(ngModel)]="workingUser.active" name="active">
 					</div>
 					<div class="form-group">
-						<label for="roles">
+						<label for="role_ids">
 							Roles
 							<i class="fa fa-asterisk required" title="At least one role is required."></i>
 						</label>
@@ -73,5 +73,5 @@
 </div>
 <div class="modal-footer">
 	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
-	<button type="button" class="btn btn-primary" [disabled]="!userForm.form.valid || !workingUser.roles.length" (click)="submit()">{{submitText}}</button>
+	<button type="button" class="btn btn-primary" [disabled]="!userForm.form.valid || !workingUser.role_ids.length" (click)="submit()">{{submitText}}</button>
 </div>
