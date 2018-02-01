@@ -1,22 +1,45 @@
-language: python
-os:
-    - linux
-python:
-    - "2.7"
-    - "3.4"
-    - "3.5"
-    - "3.6"
-install:
-  - pip install -r requirements.txt
-  - pip install coverage
-before_script:
-  - python scripts/generate_certificates.py
-script:
-  - coverage run run_all_tests.py
-  - coverage combine
-  - coverage report
-branches:
-    only: 
-      - master
-      - development
-
+matrix:
+  include:
+    - language: python
+      os:
+        - linux
+      python:
+        - "2.7"
+        - "3.4"
+        - "3.5"
+        - "3.6"
+      install:
+        - pip install -r requirements.txt
+        - pip install coverage
+      before_script:
+        - python generate_certificates.py
+      script:
+        - coverage run run_all_tests.py
+        - coverage combine
+        - coverage report
+      branches:
+        only: 
+          - master
+          - development
+    - language: node_js
+      node_js:
+        - "iojs"
+        - "node"
+      addons:
+      apt:
+        sources:
+          - google-chrome
+        packages:
+          - google-chrome-stable
+          - google-chrome-beta
+      before_install:
+        - export CHROME_BIN=chromium-browser
+        - export DISPLAY=:99.0
+        - sh -e /etc/init.d/xvfb start
+      before_script:
+        - npm install
+      script: npm run test -- --single-run
+      branches:
+        only: 
+          - master
+          - development
