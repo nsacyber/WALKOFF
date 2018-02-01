@@ -24,7 +24,6 @@ matrix:
           - travis_karma
     - language: node_js
       node_js:
-        - "iojs"
         - "node"
       addons:
       apt:
