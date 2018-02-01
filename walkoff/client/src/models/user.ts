@@ -8,11 +8,7 @@ export class User {
 		returnUser.id = user.id;
 		returnUser.username = user.username;
 		// returnUser.roles = user.roles;
-
-		Array.isArray(user.roles) ?
-			returnUser.role_ids = user.roles.map(r => r.id) :
-			returnUser.role_ids = [];
-
+		returnUser.roles = user.roles.map(r => r.id);
 		returnUser.active = user.active;
 
 		return returnUser;
@@ -30,6 +26,6 @@ export class User {
 	 */
 	password: string;
 	roles: Role[] = [];
-	role_ids: number[] = [];
+	// role_ids: number[] = [];
 	active: boolean;
 }
