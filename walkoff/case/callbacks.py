@@ -14,7 +14,7 @@ def add_entry_to_case(sender, data, event_type, entry_message, message_name):
     """Adds an entry to all appropriate case logs
     """
     if isinstance(sender, dict):
-        originator = sender['uid']
+        originator = sender['id']
     else:
         originator = sender.id
     cases_to_add = case_subscription.get_cases_subscribed(originator, message_name)

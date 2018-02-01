@@ -189,8 +189,7 @@ class MultiprocessedExecutor(object):
             workflow.start = start
         if start_arguments:
             for action in workflow.actions:
-                # TODO: Remove the int() function. Start should always be an ID of the starting Action.
-                if action.id == int(workflow.start):
+                if action.id == workflow.start:
                     action.arguments = start_arguments
 
         walkoff.coredb.devicedb.device_db.session.commit()

@@ -432,11 +432,14 @@
         required: true
         type: string
         format: uuid
-      - name: id
+      - name: body
         in: body
         required: true
         schema:
-          $ref: '#/definitions/Uid'
+          type: object
+          properties:
+            id:
+              $ref: '#/definitions/Uid'
     consumes:
       - application/json
     produces:
@@ -469,11 +472,14 @@
         required: true
         type: string
         format: uuid
-      - name: id
+      - name: body
         in: body
         required: true
         schema:
-          $ref: '#/definitions/Uid'
+          type: object
+          properties:
+            id:
+              $ref: '#/definitions/Uid'
     consumes:
       - application/json
     produces:
