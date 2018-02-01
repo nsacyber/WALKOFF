@@ -6,7 +6,9 @@ export class WorkingUser {
 
 		returnUser.id = workingUser.id;
 		returnUser.username = workingUser.username;
-		returnUser.role_ids = workingUser.role_ids;
+		// TODO: currently the API requires roles, not role_ids. Update this when we change the API to role_ids
+		returnUser.roles = (workingUser.roles as any);
+		// returnUser.role_ids = workingUser.role_ids;
 		returnUser.active = workingUser.active;
 
 		returnUser.old_password = workingUser.currentPassword;
@@ -16,8 +18,8 @@ export class WorkingUser {
 
 	id: number;
 	username: string;
-	// roles: number[] = [];
-	role_ids: number[] = [];
+	roles: number[] = [];
+	// role_ids: number[] = [];
 	active: boolean;
 	currentPassword: string;
 	newPassword: string;
