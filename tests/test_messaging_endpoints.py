@@ -8,9 +8,7 @@ import json
 from walkoff.messaging import MessageActionEvent, MessageAction
 from datetime import timedelta
 from walkoff.server.endpoints.messages import max_notifications, min_notifications
-import walkoff.config.paths
-import tests.config
-from walkoff import initialize_databases
+from tests.util import device_db_help
 
 
 class UserWrapper(object):
@@ -26,10 +24,7 @@ class TestMessagingEndpoints(ServerTestCase):
 
     @classmethod
     def setUpClass(cls):
-        walkoff.config.paths.db_path = tests.config.test_db_path
-        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
-        initialize_databases()
+        device_db_help.setup_dbs()
 
         cls.context = flaskserver.app.test_request_context()
         cls.context.push()
@@ -89,6 +84,9 @@ class TestMessagingEndpoints(ServerTestCase):
         for role in [role for role in Role.query.all() if role.name != 'admin']:
             db.session.delete(role)
         db.session.commit()
+
+        from walkoff.coredb import devicedb
+        devicedb.device_db.tear_down()
 
     def login_user(self, user):
         post = self.app.post('/api/auth', content_type="application/json",

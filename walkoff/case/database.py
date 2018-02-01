@@ -95,8 +95,6 @@ class CaseDatabase(object):
     __instance = None
 
     def __init__(self):
-        print(walkoff.config.paths.case_db_path)
-
         self.engine = create_engine(
             format_db_path(walkoff.config.config.case_db_type, walkoff.config.paths.case_db_path))
         self.connection = self.engine.connect()
@@ -221,7 +219,6 @@ class CaseDatabase(object):
 def get_case_db(_singleton=None):
     """ Singleton factory which returns the case database"""
     if not _singleton:
-        print("singleton")
         _singleton = CaseDatabase()
     return _singleton
 

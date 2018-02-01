@@ -1,8 +1,7 @@
 import unittest
 
 from walkoff.serverdb import db, Role, Resource, default_resources, initialize_default_resources_admin
-import tests.config
-from walkoff import initialize_databases
+from tests.util import device_db_help
 
 
 class TestRoles(unittest.TestCase):
@@ -12,14 +11,15 @@ class TestRoles(unittest.TestCase):
         cls.context = walkoff.server.flaskserver.app.test_request_context()
         cls.context.push()
 
-        import walkoff.config.paths
-        walkoff.config.paths.db_path = tests.config.test_db_path
-        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
-        initialize_databases()
+        device_db_help.setup_dbs()
 
         initialize_default_resources_admin()
         db.create_all()
+
+    @classmethod
+    def tearDownClass(cls):
+        from walkoff.coredb import devicedb
+        devicedb.device_db.tear_down()
 
     def tearDown(self):
         db.session.rollback()

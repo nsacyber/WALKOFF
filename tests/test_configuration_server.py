@@ -55,8 +55,7 @@ class TestConfigurationServer(ServerTestCase):
         self.assertDictEqual(response, expected)
 
     def test_set_configuration(self):
-        data = {"workflows_path": 'workflows_path_reset',
-                "db_path": 'db_path_reset',
+        data = {"db_path": 'db_path_reset',
                 "host": 'host_reset',
                 "port": 1100,
                 "access_token_duration": 20,
@@ -64,8 +63,7 @@ class TestConfigurationServer(ServerTestCase):
         self.post_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
                                     content_type='application/json')
 
-        expected = {walkoff.config.paths.workflows_path: 'workflows_path_reset',
-                    walkoff.config.paths.db_path: 'db_path_reset',
+        expected = {walkoff.config.paths.db_path: 'db_path_reset',
                     walkoff.config.config.host: 'host_reset',
                     walkoff.config.config.port: 1100}
 

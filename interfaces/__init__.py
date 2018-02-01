@@ -79,8 +79,8 @@ class InterfaceEventDispatcher(object):
                 additional_data = deepcopy(kwargs)
                 additional_data.pop('cls', None)
                 data.update(additional_data)
-                if 'uid' in data:
-                    data['sender_uid'] = data.pop('uid')
+                if 'id' in data:
+                    data['sender_id'] = data.pop('id')
                 if 'name' in data:
                     data['sender_name'] = data.pop('name')
             else:

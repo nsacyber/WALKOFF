@@ -4,10 +4,9 @@ from datetime import timedelta
 import walkoff.server.metrics as metrics
 from walkoff.server import flaskserver as server
 from walkoff.server.endpoints.metrics import _convert_action_time_averages, _convert_workflow_time_averages
-from tests import config
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
-import walkoff.coredb.devicedb
+from walkoff.coredb import devicedb
 from walkoff.coredb.workflow import Workflow
 from walkoff.coredb.playbook import Playbook
 
@@ -102,7 +101,7 @@ class MetricsServerTest(ServerTestCase):
 
     def test_action_metrics(self):
 
-        workflow_id = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+        workflow_id = devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
             Workflow.name == 'multiactionErrorWorkflow', Playbook.name == 'multiactionError').first().id
 
         server.running_context.controller.execute_workflow(workflow_id)
@@ -114,9 +113,9 @@ class MetricsServerTest(ServerTestCase):
         self.assertDictEqual(response, _convert_action_time_averages())
 
     def test_workflow_metrics(self):
-        error_id = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+        error_id = devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
             Workflow.name == 'multiactionErrorWorkflow', Playbook.name == 'multiactionError').first().id
-        test_id = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+        test_id = devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
             Workflow.name == 'multiactionWorkflow', Playbook.name == 'multiactionWorkflowTest').first().id
 
         server.running_context.controller.execute_workflow(error_id)

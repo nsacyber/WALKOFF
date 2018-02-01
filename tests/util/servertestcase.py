@@ -7,7 +7,7 @@ import apps
 import walkoff.appgateway
 import walkoff.config.config
 import walkoff.config.paths
-from walkoff import initialize_databases
+from tests.util import device_db_help
 import tests.config
 from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from tests.util.mock_objects import *
@@ -57,10 +57,7 @@ class ServerTestCase(unittest.TestCase):
                 os.remove(tests.config.test_data_path)
             os.makedirs(tests.config.test_data_path)
 
-        walkoff.config.paths.db_path = tests.config.test_db_path
-        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
-        initialize_databases()
+        device_db_help.setup_dbs()
 
         walkoff.appgateway.cache_apps(path=tests.config.test_apps_path)
         walkoff.config.config.app_apis = {}
@@ -94,6 +91,13 @@ class ServerTestCase(unittest.TestCase):
         walkoff.appgateway.clear_cache()
         walkoff.server.flaskserver.running_context.controller.shutdown_pool()
 
+        import walkoff.coredb.devicedb
+        device_db_help.cleanup_device_db()
+        walkoff.coredb.devicedb.device_db.tear_down()
+
+        import walkoff.case.database as case_database
+        case_database.case_db.tear_down()
+
     def setUp(self):
         import walkoff.server.flaskserver
         walkoff.config.paths.workflows_path = tests.config.test_workflows_path_with_generated
@@ -121,7 +125,7 @@ class ServerTestCase(unittest.TestCase):
 
     def tearDown(self):
         import walkoff.coredb.devicedb
-        walkoff.coredb.devicedb.device_db.tear_down()
+        walkoff.coredb.devicedb.device_db.session.rollback()
 
         shutil.rmtree(walkoff.config.paths.workflows_path)
         shutil.copytree(tests.config.test_workflows_backup_path, walkoff.config.paths.workflows_path)

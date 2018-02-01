@@ -501,6 +501,8 @@ class DeviceDatabase(object):
         from walkoff.coredb.transform import Transform
         from walkoff.coredb.workflow import Workflow
 
+        print(walkoff.config.paths.device_db_path)
+
         self.engine = create_engine(format_db_path(
             walkoff.config.config.device_db_type, walkoff.config.paths.device_db_path), poolclass=NullPool)
         self.connection = self.engine.connect()

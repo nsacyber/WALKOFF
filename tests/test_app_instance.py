@@ -2,24 +2,21 @@ import importlib
 import unittest
 
 import walkoff.config.paths
-import tests.config
-from walkoff import initialize_databases
 import walkoff.appgateway
 from walkoff.appgateway import appinstance
 from tests.config import test_apps_path
+from tests.util import device_db_help
 
 
 class TestInstance(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.config.paths.db_path = tests.config.test_db_path
-        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
-        initialize_databases()
+        device_db_help.setup_dbs()
         walkoff.appgateway.cache_apps(test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
+        device_db_help.tear_down_device_db()
         walkoff.appgateway.clear_cache()
 
     def test_create_instance(self):

@@ -12,19 +12,15 @@ from tests import config
 from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
 from tests.util.mock_objects import *
 import walkoff.config.paths
-import tests.config
-from walkoff import initialize_databases
-from walkoff.coredb.playbook import Playbook
-import walkoff.coredb.devicedb
+from walkoff.coredb import devicedb
+from tests.util import device_db_help
 
 
 class TestExecutionRuntime(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.config.paths.db_path = tests.config.test_db_path
-        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
-        initialize_databases()
+        device_db_help.setup_dbs()
+
         walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
         MultiprocessedExecutor.initialize_threading = mock_initialize_threading
@@ -39,18 +35,25 @@ class TestExecutionRuntime(unittest.TestCase):
         self.controller.workflows = {}
 
     def tearDown(self):
+        device_db_help.cleanup_device_db()
+
+        case_database.case_db.session.query(case_database.Event).delete()
+        case_database.case_db.session.query(case_database.Case).delete()
+
+        case_database.case_db.session.commit()
+        case_database.case_db.tear_down()
         subscription.clear_subscriptions()
 
     @classmethod
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
         walkoff.controller.controller.shutdown_pool()
+        device_db_help.tear_down_device_db()
 
     def test_templated_workflow(self):
         action_names = ['start', '1']
 
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'templatedWorkflow', Playbook.name == 'templatedWorkflowTest').first()
+        workflow = device_db_help.load_workflow('templatedWorkflowTest', 'templatedWorkflow')
 
         action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)

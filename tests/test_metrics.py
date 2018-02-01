@@ -1,11 +1,13 @@
+from sqlalchemy import and_
+
 import walkoff.server.metrics as metrics
 from walkoff.server import flaskserver as server
-from tests import config
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
 from walkoff.coredb.playbook import Playbook
 from walkoff.coredb.workflow import Workflow
-import walkoff.coredb.devicedb
+from walkoff.coredb import devicedb
+from tests.util import device_db_help
 
 
 class MetricsTest(ServerTestCase):
@@ -13,10 +15,13 @@ class MetricsTest(ServerTestCase):
         metrics.app_metrics = {}
         metrics.workflow_metrics = {}
 
-    def test_action_metrics(self):
+    def tearDown(self):
+        device_db_help.cleanup_device_db()
 
-        workflow_id = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'multiactionErrorWorkflow', Playbook.name == 'multiactionError').first().id
+    def test_action_metrics(self):
+        playbook = device_db_help.load_playbook('multiactionError')
+        workflow_id = devicedb.device_db.session.query(Workflow).filter(and_(
+            Workflow.name == 'multiactionErrorWorkflow', Workflow._playbook_id == playbook.id)).first().id
 
         server.running_context.controller.execute_workflow(workflow_id)
 
@@ -46,10 +51,11 @@ class MetricsTest(ServerTestCase):
         self.assertEqual(metrics.app_metrics['HelloWorldBounded']['actions']['helloWorld']['success']['count'], 1)
 
     def test_workflow_metrics(self):
-        error_id = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'multiactionErrorWorkflow', Playbook.name == 'multiactionError').first().id
-        test_id = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'multiactionWorkflow', Playbook.name == 'multiactionWorkflowTest').first().id
+        device_db_help.load_playbooks(['multiactionError', 'multiactionWorkflowTest'])
+        error_id = devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(and_(
+            Workflow.name == 'multiactionErrorWorkflow', Playbook.name == 'multiactionError')).first().id
+        test_id = devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(and_(
+            Workflow.name == 'multiactionWorkflow', Playbook.name == 'multiactionWorkflowTest')).first().id
 
         error_key = 'multiactionErrorWorkflow'
         multiaction_key = 'multiactionWorkflow'

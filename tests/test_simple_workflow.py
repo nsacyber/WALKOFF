@@ -9,19 +9,13 @@ from tests import config
 from tests.util.case_db_help import *
 from tests.util.mock_objects import *
 import walkoff.config.paths
-import tests.config
-from walkoff import initialize_databases
-import walkoff.coredb.devicedb
-from walkoff.coredb.playbook import Playbook
+from tests.util import device_db_help
 
 
 class TestSimpleWorkflow(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.config.paths.db_path = tests.config.test_db_path
-        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
-        initialize_databases()
+        device_db_help.setup_dbs()
 
         from walkoff.appgateway import cache_apps
         cache_apps(path=config.test_apps_path)
@@ -39,6 +33,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         database.initialize()
 
     def tearDown(self):
+        device_db_help.cleanup_device_db()
         database.case_db.tear_down()
         subscription.clear_subscriptions()
 
@@ -46,10 +41,10 @@ class TestSimpleWorkflow(unittest.TestCase):
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
         walkoff.controller.controller.shutdown_pool()
+        device_db_help.tear_down_device_db()
 
     def test_simple_workflow_execution(self):
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'helloWorldWorkflow', Playbook.name == 'basicWorkflowTest').first()
+        workflow = device_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
         self.controller.execute_workflow(workflow.id)
@@ -66,8 +61,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.assertDictEqual(result, {'result': "REPEATING: Hello World", 'status': 'Success'})
 
     def test_multi_action_workflow(self):
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'multiactionWorkflow', Playbook.name == 'multiactionWorkflowTest').first()
+        workflow = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         action_names = ['start', '1']
         action_uids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_uids)
@@ -85,8 +79,7 @@ class TestSimpleWorkflow(unittest.TestCase):
             self.assertIn(result, expected_results)
 
     def test_error_workflow(self):
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'multiactionErrorWorkflow', Playbook.name == 'multiactionError').first()
+        workflow = device_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
         action_names = ['start', '1', 'error']
         action_uids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_uids)
@@ -105,8 +98,7 @@ class TestSimpleWorkflow(unittest.TestCase):
             self.assertIn(result, expected_results)
 
     def test_workflow_with_dataflow(self):
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'dataflowWorkflow', Playbook.name == 'dataflowTest').first()
+        workflow = device_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
         action_names = ['start', '1', '2']
         action_uids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_uids)
@@ -125,8 +117,7 @@ class TestSimpleWorkflow(unittest.TestCase):
             self.assertIn(result, expected_results)
 
     def test_workflow_with_dataflow_action_not_executed(self):
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'dataflowWorkflow', Playbook.name == 'dataflowTest').first()
+        workflow = device_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
         action_names = ['start', '1']
         action_uids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_uids)

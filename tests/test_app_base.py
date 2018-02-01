@@ -1,20 +1,19 @@
 from unittest import TestCase
 
 from apps import App as AppBase
-import walkoff.config.paths
-from walkoff import initialize_databases
-import tests.config
 from walkoff.coredb.devicedb import App, Device, DeviceField, EncryptedDeviceField
+from tests.util import device_db_help
 
 
 class TestAppBase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        walkoff.config.paths.db_path = tests.config.test_db_path
-        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
-        initialize_databases()
+        device_db_help.setup_dbs()
+
+    @classmethod
+    def tearDownClass(cls):
+        device_db_help.tear_down_device_db()
 
     def setUp(self):
         from walkoff.coredb.devicedb import device_db

@@ -83,8 +83,6 @@ class Argument(Representable, Device_Base):
 
     def _get_action_from_reference(self, accumulator):
         try:
-            print(self.reference)
-            print(accumulator)
             return accumulator[self.reference]
         except KeyError:
             message = ('Referenced action {} '

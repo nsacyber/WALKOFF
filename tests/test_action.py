@@ -3,33 +3,32 @@ import unittest
 import walkoff.appgateway
 import walkoff.config.config
 import walkoff.config.paths
-from walkoff import initialize_databases
 from walkoff.appgateway.appinstance import AppInstance
 from walkoff.coredb.argument import Argument
 from walkoff.core.actionresult import ActionResult
 from walkoff.events import WalkoffEvent
 from walkoff.coredb.action import Action
 from walkoff.coredb.condition import Condition
+from walkoff.coredb.position import Position
 from walkoff.helpers import UnknownApp, UnknownAppAction, InvalidArgument
 import tests.config
+from tests.util import device_db_help
 
 
 class TestAction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.config.paths.db_path = tests.config.test_db_path
-        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
-        initialize_databases()
+        device_db_help.setup_dbs()
         walkoff.appgateway.cache_apps(tests.config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
+        device_db_help.tear_down_device_db()
 
     def __compare_init(self, elem, app_name, action_name, name, device_id=None, arguments=None, triggers=None,
-                       x_coordinate=None, y_coordinate=None, templated=False, raw_representation=None):
+                       position=None, templated=False, raw_representation=None):
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.action_name, action_name)
         self.assertEqual(elem.app_name, app_name)
@@ -39,8 +38,9 @@ class TestAction(unittest.TestCase):
         if triggers:
             self.assertEqual(len(elem.triggers), len(triggers))
             self.assertSetEqual({trigger.action_name for trigger in elem.triggers}, set(triggers))
-        self.assertEqual(elem.x_coordinate, x_coordinate)
-        self.assertEqual(elem.y_coordinate, y_coordinate)
+        if position:
+            self.assertEqual(elem.position.x, position.x)
+            self.assertEqual(elem.position.y, position.y)
         if templated:
             self.assertTrue(elem.templated)
             self.assertDictEqual(elem.raw_representation, raw_representation)
@@ -59,8 +59,8 @@ class TestAction(unittest.TestCase):
         self.__compare_init(action, 'HelloWorld', 'helloWorld', 'test')
 
     def test_init_with_position(self):
-        action = Action('HelloWorld', 'helloWorld', 'helloWorld', x_coordinate=13, y_coordinate=42)
-        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', x_coordinate=13, y_coordinate=42)
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld', position=Position(13, 42))
+        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', position=Position(13, 42))
 
     def test_init_templated(self):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld', templated=True, raw_representation={'a': 42})

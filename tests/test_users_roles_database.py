@@ -4,8 +4,7 @@ from datetime import datetime, timedelta
 import walkoff.server.flaskserver
 from walkoff.serverdb import db, User, Role, add_user, remove_user
 import walkoff.config.paths
-import tests.config
-from walkoff import initialize_databases
+from tests.util import device_db_help
 
 
 class TestUserRolesDatabase(unittest.TestCase):
@@ -15,10 +14,11 @@ class TestUserRolesDatabase(unittest.TestCase):
         cls.context.push()
         db.create_all()
 
-        walkoff.config.paths.db_path = tests.config.test_db_path
-        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
-        initialize_databases()
+        device_db_help.setup_dbs()
+
+    @classmethod
+    def tearDownClass(cls):
+        device_db_help.tear_down_device_db()
 
     def tearDown(self):
         db.session.rollback()

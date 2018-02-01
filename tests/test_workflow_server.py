@@ -1,8 +1,5 @@
 import json
-from threading import Event
-import os
 import walkoff.case.database as case_database
-import walkoff.config.paths
 from walkoff.events import WalkoffEvent
 from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
@@ -11,15 +8,8 @@ from tests.util.servertestcase import ServerTestCase
 import walkoff.coredb.devicedb as devicedb
 from walkoff.coredb.playbook import Playbook
 from walkoff.coredb.workflow import Workflow
-from walkoff.coredb.action import Action
-from walkoff.coredb.branch import Branch
-from walkoff.coredb.condition import Condition
-from walkoff.coredb.transform import Transform
-from walkoff.coredb.argument import Argument
-from walkoff.coredb.position import Position
-from tests.config import test_workflows_path, test_workflows_path_with_generated
 from uuid import uuid4
-from walkoff.core.jsonplaybookloader import JsonPlaybookLoader
+from tests.util import device_db_help
 
 
 class TestWorkflowServer(ServerTestCase):
@@ -45,24 +35,11 @@ class TestWorkflowServer(ServerTestCase):
         case_database.initialize()
 
     def tearDown(self):
-        devicedb.device_db.session.rollback()
-        for class_ in (Playbook, Workflow, Action, Branch, Condition, Transform, Argument, Position):
-            for instance in devicedb.device_db.session.query(class_).all():
-                devicedb.device_db.session.delete(instance)
+        device_db_help.cleanup_device_db()
 
         case_database.case_db.session.query(case_database.Event).delete()
         case_database.case_db.session.query(case_database.Case).delete()
-
         case_database.case_db.session.commit()
-        devicedb.device_db.session.commit()
-
-    @staticmethod
-    def load_playbook(playbook_name):
-        return JsonPlaybookLoader.load_playbook(os.path.join(test_workflows_path, playbook_name))
-
-    @staticmethod
-    def load_workflow(playbook_name, workflow_name):
-        return JsonPlaybookLoader.load_workflow(os.path.join(test_workflows_path, playbook_name), workflow_name)
 
     @staticmethod
     def strip_uids(element):
@@ -76,18 +53,6 @@ class TestWorkflowServer(ServerTestCase):
                     TestWorkflowServer.strip_uids(dict_element)
         return element
 
-    @staticmethod
-    def load_playbooks(playbooks):
-        paths = []
-        for directory in (test_workflows_path_with_generated, test_workflows_path):
-            paths.extend([os.path.join(directory, filename) for filename in os.listdir(directory)
-                          if filename.endswith('.playbook') and filename.split('.')[0] in playbooks])
-        for path in paths:
-            with open(path, 'r') as playbook_file:
-                playbook = Playbook.create(json.load(playbook_file))
-                devicedb.device_db.session.add(playbook)
-        devicedb.device_db.session.flush()
-
     def check_invalid_uuid(self, verb, path, element_type, **kwargs):
         self.verb_lookup[verb](path, headers=self.headers, error='Invalid ID for {}'.format(element_type),
                                status_code=BAD_REQUEST, **kwargs)
@@ -96,14 +61,9 @@ class TestWorkflowServer(ServerTestCase):
         self.verb_lookup[verb](path, error='{} does not exist'.format(element_type.title()), headers=self.headers,
                                status_code=OBJECT_DNE_ERROR, **kwargs)
 
-    def standard_load(self):
-        self.load_playbooks(['test', 'dataflowTest'])
-        playbook = devicedb.device_db.session.query(Playbook).filter_by(name='test').first()
-        return playbook
-
     def test_read_all_playbooks(self):
-        playbook_names = ('basicWorkflowTest', 'dataflowTest')
-        self.load_playbooks(playbook_names)
+        playbook_names = ['basicWorkflowTest', 'dataflowTest']
+        device_db_help.load_playbooks(playbook_names)
         response = self.get_with_status_check('/api/playbooks', headers=self.headers)
         for playbook in response:
             for workflow in playbook['workflows']:
@@ -115,7 +75,7 @@ class TestWorkflowServer(ServerTestCase):
     # All the reads
 
     def test_read_playbook(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         response = self.get_with_status_check('/api/playbooks/{}'.format(playbook.id), headers=self.headers)
 
         expected_workflows = [self.strip_uids(workflow.read()) for workflow in playbook.workflows]
@@ -131,7 +91,7 @@ class TestWorkflowServer(ServerTestCase):
         self.check_invalid_uuid('get', '/api/playbooks/0', 'playbook')
 
     def test_read_playbook_workflows(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         response = self.get_with_status_check('/api/playbooks/{}/workflows'.format(playbook.id), headers=self.headers)
 
         expected_workflows = [self.strip_uids(workflow.read()) for workflow in playbook.workflows]
@@ -146,7 +106,7 @@ class TestWorkflowServer(ServerTestCase):
         self.check_invalid_uuid('get', '/api/playbooks/0/workflows', 'playbook')
 
     def test_read_workflow(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         target_workflow = playbook.workflows[0]
         response = self.get_with_status_check(
             '/api/playbooks/{0}/workflows/{1}'.format(playbook.id, target_workflow.id),
@@ -154,12 +114,12 @@ class TestWorkflowServer(ServerTestCase):
         self.assertDictEqual(self.strip_uids(response), self.strip_uids(target_workflow.read()))
 
     def test_read_workflow_invalid_playbook_id(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         target_workflow = playbook.workflows[0]
         self.check_invalid_id('get', '/api/playbooks/{0}/workflows/{1}'.format(uuid4(), target_workflow.id), 'workflow')
 
     def test_read_workflow_invalid_workflow_id(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         self.check_invalid_id('get', '/api/playbooks/{0}/workflows/{1}'.format(playbook.id, uuid4()), 'workflow')
 
     def test_read_workflow_invalid_playbook_and_workflow_id(self):
@@ -171,7 +131,7 @@ class TestWorkflowServer(ServerTestCase):
         self.check_invalid_uuid('get', '/api/playbooks/1/workflows/{}'.format(target_workflow.id), 'workflow')
 
     def test_read_workflow_invalid_workflow_id_format(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         self.check_invalid_uuid('get', '/api/playbooks/{}/workflows/42'.format(playbook.id), 'workflow')
 
     def test_read_workflow_invalid_playbook_and_workflow_id_format(self):
@@ -180,26 +140,26 @@ class TestWorkflowServer(ServerTestCase):
     # All the deletes
 
     def test_delete_playbook(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         self.delete_with_status_check('/api/playbooks/{}'.format(playbook.id), headers=self.headers)
 
         self.assertIsNone(
             devicedb.device_db.session.query(Playbook).filter_by(id=playbook.id).first())
 
     def test_delete_playbook_invalid_id(self):
-        self.standard_load()
+        device_db_help.standard_load()
         previous_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
         self.check_invalid_id('delete', '/api/playbooks/{}'.format(uuid4()), 'playbook')
         self.assertEqual(previous_num_playbooks, len(devicedb.device_db.session.query(Playbook).all()))
 
     def test_delete_playbook_invalid_id_format(self):
-        self.standard_load()
+        device_db_help.standard_load()
         previous_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
         self.check_invalid_id('delete', '/api/playbooks/{}'.format(uuid4()), 'playbook')
         self.assertEqual(previous_num_playbooks, len(devicedb.device_db.session.query(Playbook).all()))
 
     def test_delete_workflow(self):
-        self.standard_load()
+        device_db_help.standard_load()
 
         workflows = [Workflow('wf{}'.format(i), uuid4()) for i in range(2)]
 
@@ -218,7 +178,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks)
 
     def test_delete_last_workflow(self):
-        self.standard_load()
+        device_db_help.standard_load()
 
         workflow = Workflow('wf', uuid4())
         devicedb.device_db.session.add(workflow)
@@ -232,38 +192,38 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks - 1)
 
     def test_delete_workflow_invalid_playbook_id(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         original_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
         self.check_invalid_id('delete', '/api/playbooks/{0}/workflows/{1}'.format(uuid4(), playbook.workflows[0].id),
                               'workflow')
         self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks)
 
     def test_delete_workflow_invalid_workflow_id(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         original_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
         self.check_invalid_id('delete', '/api/playbooks/{0}/workflows/{1}'.format(playbook.id, uuid4()), 'workflow')
         self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks)
 
     def test_delete_workflow_invalid_playbook_and_workflow_id(self):
-        self.standard_load()
+        device_db_help.standard_load()
         original_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
         self.check_invalid_id('delete', '/api/playbooks/{0}/workflows/{1}'.format(uuid4(), uuid4()), 'workflow')
         self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks)
 
     def test_delete_workflow_invalid_playbook_id_format(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         original_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
         self.check_invalid_uuid('delete', '/api/playbooks/af/workflows/{}'.format(playbook.workflows[0].id), 'workflow')
         self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks)
 
     def test_delete_workflow_invalid_workflow_id_format(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         original_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
         self.check_invalid_uuid('delete', '/api/playbooks/{}/workflows/37b'.format(playbook.id, uuid4()), 'workflow')
         self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks)
 
     def test_delete_workflow_invalid_playbook_and_workflow_id_format(self):
-        self.standard_load()
+        device_db_help.standard_load()
         original_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
         self.check_invalid_uuid('delete', '/api/playbooks/10/workflows/108', 'workflow')
         self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks)
@@ -306,7 +266,7 @@ class TestWorkflowServer(ServerTestCase):
                                    content_type="application/json")
 
     def test_create_workflow(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         initial_workflows_len = len(playbook.workflows)
 
         response = self.put_with_status_check('/api/playbooks/{}/workflows'.format(playbook.id),
@@ -335,7 +295,7 @@ class TestWorkflowServer(ServerTestCase):
     # All the updates
 
     def test_update_playbook_name(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
 
         data = {'id': str(playbook.id), 'name': self.change_playbook_name}
         response = self.post_with_status_check('/api/playbooks',
@@ -345,7 +305,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(response['name'], self.change_playbook_name)
 
     def test_update_playbook_invalid_id(self):
-        self.standard_load()
+        device_db_help.standard_load()
         expected = {playbook.name for playbook in devicedb.device_db.session.query(Playbook).all()}
         data = {'id': str(uuid4()), 'name': self.change_playbook_name}
         self.check_invalid_id('post', '/api/playbooks', 'playbook', content_type="application/json",
@@ -353,7 +313,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertSetEqual({playbook.name for playbook in devicedb.device_db.session.query(Playbook).all()}, expected)
 
     def test_update_playbook_invalid_id_format(self):
-        self.standard_load()
+        device_db_help.standard_load()
         expected = {playbook.name for playbook in devicedb.device_db.session.query(Playbook).all()}
         data = {'id': '475', 'name': self.change_playbook_name}
         self.check_invalid_uuid('post', '/api/playbooks', 'playbook', content_type="application/json",
@@ -361,7 +321,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertSetEqual({playbook.name for playbook in devicedb.device_db.session.query(Playbook).all()}, expected)
 
     def test_update_workflow(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         workflow = playbook.workflows[0]
         expected_json = workflow.read()
         expected_json['name'] = self.change_workflow_name
@@ -378,7 +338,7 @@ class TestWorkflowServer(ServerTestCase):
                 Workflow.name == self.add_workflow_name).first())
 
     def test_update_workflow_invalid_id(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         workflow = playbook.workflows[0].read()
         initial_workflows = devicedb.device_db.session.query(Workflow).all()
         self.check_invalid_id('post', '/api/playbooks/{}/workflows'.format(uuid4()), 'workflow',
@@ -387,7 +347,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertSetEqual(set(final_workflows), set(initial_workflows))
 
     def test_update_workflow_invalid_id_format(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         workflow = playbook.workflows[0].read()
         initial_workflows = devicedb.device_db.session.query(Workflow).all()
         self.check_invalid_uuid('post', '/api/playbooks/874fe/workflows', 'workflow',
@@ -396,7 +356,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertSetEqual(set(final_workflows), set(initial_workflows))
 
     def test_copy_workflow(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         for workflow in playbook.workflows:
             workflow_id = workflow.id
         response = self.post_with_status_check('/api/playbooks/{0}/workflows/{1}/copy'.format(playbook.id, workflow_id),
@@ -422,7 +382,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(len(workflow_original.actions), len(workflow_copy.actions))
 
     def test_copy_workflow_different_playbook(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         for workflow in playbook.workflows:
             workflow_id = workflow.id
 
@@ -446,7 +406,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(len(original_workflow.actions), len(copy_workflow.actions))
 
     def test_copy_playbook(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
 
         data = {"playbook_name": self.add_playbook_name}
         self.post_with_status_check('/api/playbooks/{0}/copy'.format(playbook.id),
@@ -486,7 +446,7 @@ class TestWorkflowServer(ServerTestCase):
 
     # TODO: Come back to workflow pause/resume.
     def test_execute_workflow_pause_resume(self):
-        self.load_playbook('testGeneratedWorkflows/pauseWorkflowTest.playbook')
+        device_db_help.load_playbook('testGeneratedWorkflows/pauseWorkflowTest')
 
         workflow = devicedb.device_db.session.query(Workflow).filter_by(name='pauseWorkflow').first()
 
@@ -540,7 +500,7 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_execute_workflow_change_arguments(self):
 
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
 
         action_uids = [action.id for action in workflow.actions if action.name == 'start']
@@ -568,7 +528,7 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_read_results(self):
 
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
         playbook.workflows[0].execute('a')
         playbook.workflows[0].execute('b')
         playbook.workflows[0].execute('c')
@@ -577,7 +537,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertSetEqual(set(response.keys()), {'status', 'id', 'results', 'started_at', 'completed_at', 'name'})
 
     def test_read_all_results(self):
-        playbook = self.standard_load()
+        playbook = device_db_help.standard_load()
 
         playbook.workflows[0].execute('a')
         playbook.workflows[0].execute('b')

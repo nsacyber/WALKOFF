@@ -305,12 +305,12 @@ class TestInterfaceEventDispatcher(TestCase):
             result['x'] = True
             result['data'] = data
 
-        self.uid = 'test'
-        data = {'uid': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+        self.id = 'test'
+        data = {'id': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
                 'execution_uid': 'cc'}
         WalkoffEvent.ActionStarted.send(data)
         expected = data
-        expected['sender_uid'] = expected.pop('uid')
+        expected['sender_id'] = expected.pop('id')
         expected['sender_name'] = expected.pop('name')
         self.assertTrue(result['x'])
         self.assertDictEqual(result['data'], expected)
@@ -323,12 +323,12 @@ class TestInterfaceEventDispatcher(TestCase):
         def x(data):
             result['data'] = data
 
-        self.uid = 'test'
-        data = {'uid': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+        self.id = 'test'
+        data = {'id': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
                 'execution_uid': 'cc'}
         WalkoffEvent.ActionStarted.send(data)
         expected = data
-        expected['sender_uid'] = expected.pop('uid')
+        expected['sender_id'] = expected.pop('id')
         expected['sender_name'] = expected.pop('name')
         self.assertDictEqual(result['data'], expected)
 
@@ -345,12 +345,12 @@ class TestInterfaceEventDispatcher(TestCase):
             result['y'] = True
             raise ValueError()
 
-        self.uid = 'test'
-        data = {'uid': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+        self.id = 'test'
+        data = {'id': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
                 'execution_uid': 'cc'}
         WalkoffEvent.ActionStarted.send(data)
         expected = data
-        expected['sender_uid'] = expected.pop('uid')
+        expected['sender_id'] = expected.pop('id')
         expected['sender_name'] = expected.pop('name')
         self.assertDictEqual(result['data'], expected)
         self.assertTrue(result['y'])
@@ -362,11 +362,11 @@ class TestInterfaceEventDispatcher(TestCase):
         def x(data):
             result['data'] = data
 
-        self.uid = 'test'
-        data = {'uid': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+        self.id = 'test'
+        data = {'id': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
                 'execution_uid': 'cc'}
         WalkoffEvent.ActionStarted.send(data)
         expected = data
-        expected['sender_uid'] = expected.pop('uid')
+        expected['sender_id'] = expected.pop('id')
         expected['sender_name'] = expected.pop('name')
         self.assertDictEqual(result['data'], expected)

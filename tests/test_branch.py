@@ -11,32 +11,20 @@ from walkoff.coredb.branch import Branch
 from walkoff.coredb.condition import Condition
 from walkoff.coredb.workflow import Workflow
 from tests.config import test_apps_path
-import walkoff.coredb.devicedb
-import tests.config
-from walkoff import initialize_databases
+from tests.util import device_db_help
 
 
 class TestBranch(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.config.paths.db_path = tests.config.test_db_path
-        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
-        initialize_databases()
+        device_db_help.setup_dbs()
         walkoff.appgateway.cache_apps(test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
-
-    def tearDown(self):
-        walkoff.coredb.devicedb.device_db.tear_down()
-        workflows = walkoff.coredb.devicedb.device_db.session.query(Workflow).all()
-        for workflow in workflows:
-            if workflow._playbook_id is None:
-                walkoff.coredb.devicedb.device_db.session.delete(workflow)
-        walkoff.coredb.devicedb.device_db.session.commit()
+        device_db_help.tear_down_device_db()
 
     def __compare_init(self, elem, source_id, destination_id, conditions=None, status='Success', priority=999):
         self.assertEqual(elem.source_id, source_id)
@@ -109,9 +97,7 @@ class TestBranch(unittest.TestCase):
         self.assertIsNone(workflow.get_branch(action, {}))
 
     def test_get_branch(self):
-        action = Action('HelloWorld', 'helloWorld', 'helloWorld')
-        walkoff.coredb.devicedb.device_db.session.add(action)
-        walkoff.coredb.devicedb.device_db.session.flush()
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld', id=10)
 
         condition = Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])
         branch = Branch(source_id=action.id, destination_id=2, conditions=[condition])
@@ -132,9 +118,7 @@ class TestBranch(unittest.TestCase):
         self.assertTrue(result['triggered'])
 
     def test_branch_with_priority(self):
-        action = Action('HelloWorld', 'helloWorld', 'helloWorld')
-        walkoff.coredb.devicedb.device_db.session.add(action)
-        walkoff.coredb.devicedb.device_db.session.flush()
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld', id=10)
 
         condition = Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])
 
@@ -143,7 +127,5 @@ class TestBranch(unittest.TestCase):
 
         action._output = ActionResult(result='aaa', status='Success')
         workflow = Workflow('test', 1, actions=[action], branches=[branch_one, branch_two])
-        walkoff.coredb.devicedb.device_db.session.add(workflow)
-        walkoff.coredb.devicedb.device_db.session.flush()
 
         self.assertEqual(workflow.get_branch(action, {}), 1)

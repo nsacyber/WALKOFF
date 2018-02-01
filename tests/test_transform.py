@@ -1,5 +1,4 @@
 import unittest
-import uuid
 
 import walkoff.appgateway
 import walkoff.config.config

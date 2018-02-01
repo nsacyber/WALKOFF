@@ -11,20 +11,13 @@ import walkoff.controller
 from tests import config
 from tests.util.case_db_help import *
 from tests.util.thread_control import modified_setup_worker_env
-from walkoff import initialize_databases
-from walkoff.coredb.devicedb import DeviceDatabase
-from walkoff.coredb.playbook import Playbook
-from walkoff.coredb.workflow import Workflow
+from tests.util import device_db_help
 
 
 class TestZMQCommunication(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.config.paths.db_path = config.test_db_path
-        walkoff.config.paths.case_db_path = config.test_case_db_path
-        walkoff.config.paths.device_db_path = config.test_device_db_path
-        initialize_databases()
-        cls.device_db = DeviceDatabase()
+        device_db_help.setup_dbs()
 
         from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
         walkoff.config.config.num_processes = 2
@@ -36,13 +29,11 @@ class TestZMQCommunication(unittest.TestCase):
 
     def setUp(self):
         self.controller = walkoff.controller.controller
-        self.controller.workflows = {}
         self.start = datetime.utcnow()
         case_database.initialize()
 
     def tearDown(self):
-        self.controller.workflows = None
-        self.device_db.tear_down()
+        device_db_help.cleanup_device_db()
         case_database.case_db.tear_down()
         case_subscription.clear_subscriptions()
 
@@ -55,11 +46,11 @@ class TestZMQCommunication(unittest.TestCase):
                 shutil.rmtree(config.test_data_path)
         walkoff.appgateway.clear_cache()
         walkoff.controller.controller.shutdown_pool()
+        device_db_help.tear_down_device_db()
 
     '''Request and Result Socket Testing (Basic Workflow Execution)'''
     def test_simple_workflow_execution(self):
-        workflow = self.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'helloWorldWorkflow', Playbook.name == 'basicWorkflowTest').first()
+        workflow = device_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
         self.controller.execute_workflow(workflow.id)
@@ -76,8 +67,7 @@ class TestZMQCommunication(unittest.TestCase):
         self.assertDictEqual(result, {'result': "REPEATING: Hello World", 'status': 'Success'})
 
     def test_multi_action_workflow(self):
-        workflow = self.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'multiactionWorkflow', Playbook.name == 'multiactionWorkflowTest').first()
+        workflow = device_db_help.load_workflow('mutliactionWorkflowTest', 'multiactionWorkflow')
         action_names = ['start', '1']
         action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
@@ -95,8 +85,7 @@ class TestZMQCommunication(unittest.TestCase):
             self.assertIn(result, expected_results)
 
     def test_error_workflow(self):
-        workflow = self.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'multiactionErrorWorkflow', Playbook.name == 'multiactionError').first()
+        workflow = device_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
         action_names = ['start', '1', 'error']
         action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
@@ -115,8 +104,7 @@ class TestZMQCommunication(unittest.TestCase):
             self.assertIn(result, expected_results)
 
     def test_workflow_with_dataflow(self):
-        workflow = self.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'dataflowWorkflow', Playbook.name == 'dataflowTest').first()
+        workflow = device_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
         action_names = ['start', '1', '2']
         action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
@@ -135,8 +123,7 @@ class TestZMQCommunication(unittest.TestCase):
             self.assertIn(result, expected_results)
 
     def test_execute_multiple_workflows(self):
-        workflow = self.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'helloWorldWorkflow', Playbook.name == 'basicWorkflowTest').first()
+        workflow = device_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
@@ -182,8 +169,8 @@ class TestZMQCommunication(unittest.TestCase):
 
         WalkoffEvent.WorkflowExecutionStart.connect(action_1_about_to_begin_listener)
 
-        workflow = self.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'pauseWorkflow', Playbook.name == 'pauseWorkflowTest').first()
+        workflow = device_db_help.load_workflow('pauseWorkflowTest', 'pauseWorkflow')
+
         uid = self.controller.execute_workflow(workflow.id)
         self.controller.wait_and_reset(1)
         self.assertTrue(result['paused'])

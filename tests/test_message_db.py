@@ -10,18 +10,14 @@ from datetime import datetime
 from walkoff.events import WalkoffEvent
 import json
 import walkoff.config.paths
-import tests.config
-from walkoff import initialize_databases
+from tests.util import device_db_help
 
 
 class TestMessageDatabase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        walkoff.config.paths.db_path = tests.config.test_db_path
-        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
-        initialize_databases()
+        device_db_help.setup_dbs()
         cls.context = flaskserver.app.test_request_context()
         cls.context.push()
         db.create_all()
@@ -67,6 +63,9 @@ class TestMessageDatabase(TestCase):
         for role in [role for role in Role.query.all() if role.name != 'admin']:
             db.session.delete(role)
         db.session.commit()
+
+        from walkoff.coredb import devicedb
+        devicedb.device_db.tear_down()
 
     def get_default_message(self, commit=False, requires_reauth=False, requires_response=False):
         message = Message('subject here', json.dumps({'message': 'some message'}), 'workflow_uid1',

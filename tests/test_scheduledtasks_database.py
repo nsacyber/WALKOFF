@@ -5,23 +5,22 @@ import walkoff.server.flaskserver as server
 from walkoff.core.scheduler import InvalidTriggerArgs
 from walkoff.serverdb import db
 from walkoff.serverdb.scheduledtasks import ScheduledTask
-import walkoff.config.paths
-import tests.config
-from walkoff import initialize_databases
 from walkoff.coredb.devicedb import DeviceDatabase
+from tests.util import device_db_help
 
 
 class TestScheduledTask(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.config.paths.db_path = tests.config.test_db_path
-        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
-        initialize_databases()
+        device_db_help.setup_dbs()
         cls.context = server.app.test_request_context()
         cls.context.push()
         db.create_all()
         cls.db = DeviceDatabase()
+        
+    @classmethod
+    def tearDownClass(cls):
+        device_db_help.tear_down_device_db()
 
     def setUp(self):
         self.date_trigger = {'type': 'date', 'args': {'run_date': '2017-01-25 10:00:00'}}

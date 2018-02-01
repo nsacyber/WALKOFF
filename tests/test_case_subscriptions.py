@@ -3,18 +3,18 @@ import unittest
 
 import walkoff.case.database as db
 import walkoff.case.subscription as subs
-import walkoff.config.paths
-import tests.config
-from walkoff import initialize_databases
+from tests.util import device_db_help
 
 
 class TestCases(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.config.paths.db_path = tests.config.test_db_path
-        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
-        initialize_databases()
+        device_db_help.setup_dbs()
+
+    @classmethod
+    def tearDownClass(cls):
+        device_db_help.tear_down_device_db()
+        db.case_db.tear_down()
 
     def setUp(self):
         subs.clear_subscriptions()

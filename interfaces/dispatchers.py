@@ -340,7 +340,7 @@ class EventDispatcher(object):
     @staticmethod
     def __get_sender_ids(data, event_):
         if event_.event_type != EventType.controller:
-            sender_id = data['id']
+            sender_id = data['sender_id']
             sender_name = data['sender_name'] if 'sender_name' in data else None
         else:
             sender_id = EventType.controller.name

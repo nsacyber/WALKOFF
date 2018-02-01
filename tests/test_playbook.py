@@ -5,27 +5,24 @@ from walkoff.coredb.playbook import Playbook
 from walkoff.coredb.workflow import Workflow
 from tests.util.assertwrappers import orderless_list_compare
 import walkoff.config.paths
-import tests.config
-from walkoff import initialize_databases
-import walkoff.coredb.devicedb
+from tests.util import device_db_help
 
 
 class TestPlaybook(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.config.paths.db_path = tests.config.test_db_path
-        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
-        initialize_databases()
+        device_db_help.setup_dbs()
+        
+    @classmethod
+    def tearDownClass(cls):
+        from walkoff.coredb import devicedb
+        devicedb.device_db.tear_down()
 
     def setUp(self):
         self.added_workflows = ['wf_name', '0', '1', '2', 'test2', 'new_name']
 
     def tearDown(self):
-        walkoff.coredb.devicedb.device_db.tear_down()
-        for workflow in walkoff.coredb.devicedb.device_db.session.query(Workflow).all():
-            if workflow.name in self.added_workflows:
-                walkoff.coredb.devicedb.device_db.session.delete(workflow)
+        device_db_help.cleanup_device_db()
 
     def test_init(self):
         playbook = Playbook('test')

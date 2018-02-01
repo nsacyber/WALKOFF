@@ -5,19 +5,15 @@ from walkoff.serverdb import db
 from walkoff.serverdb.user import User
 from walkoff.serverdb.message import MessageHistory
 from datetime import datetime
-import walkoff.config.paths
-import tests.config
-from walkoff import initialize_databases
+from tests.util import device_db_help
 
 
 class TestMessageHistoryDatabase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        walkoff.config.paths.db_path = tests.config.test_db_path
-        walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-        walkoff.config.paths.device_db_path = tests.config.test_device_db_path
-        initialize_databases()
+        device_db_help.setup_dbs()
+
         cls.context = flaskserver.app.test_request_context()
         cls.context.push()
         db.create_all()
@@ -44,6 +40,9 @@ class TestMessageHistoryDatabase(TestCase):
             db.session.delete(user)
         for message in MessageHistory.query.all():
             db.session.delete(message)
+
+        from walkoff.coredb import devicedb
+        devicedb.device_db.tear_down()
 
     def assert_message_history_init_correct(self, message_history, action, user):
         self.assertEqual(message_history.action, action)

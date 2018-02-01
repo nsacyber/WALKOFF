@@ -9,9 +9,7 @@ import walkoff.controller
 from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
 from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
-import walkoff.coredb.devicedb
-from walkoff.coredb.workflow import Workflow
-from walkoff.coredb.playbook import Playbook
+from tests.util import device_db_help
 
 try:
     from importlib import reload
@@ -27,6 +25,7 @@ class TestWorkflowServer(ServerTestCase):
         case_database.initialize()
 
     def tearDown(self):
+        device_db_help.cleanup_device_db()
         walkoff.controller.workflows = {}
         walkoff.case.subscription.clear_subscriptions()
         for case in case_database.case_db.session.query(case_database.Case).all():
@@ -34,8 +33,7 @@ class TestWorkflowServer(ServerTestCase):
         case_database.case_db.session.commit()
 
     def test_execute_workflow(self):
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'helloWorldWorkflow', Playbook.name == 'test').first()
+        workflow = device_db_help.load_workflow('test', 'helloWorldWorkflow')
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
         start = datetime.utcnow()
@@ -54,8 +52,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(result, {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     def test_read_all_results(self):
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
-            Workflow.name == 'helloWorldWorkflow', Playbook.name == 'test').first()
+        workflow = device_db_help.load_workflow('test', 'helloWorldWorkflow')
         self.app.post('/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
                       headers=self.headers,content_type="application/json", data=json.dumps({}))
         self.app.post('/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
