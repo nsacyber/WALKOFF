@@ -42,11 +42,10 @@ Case:
 
 Subscription:
   type: object
-  required: [uid, events]
+  required: [id, events]
   properties:
-    uid:
-      type: string
-      description: A UUID used to identify a specific execution element
+    id:
+      $ref: '#/definitions/Uid'
     events:
       description: A list of events subscribed to
       type: array

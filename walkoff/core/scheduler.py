@@ -40,18 +40,18 @@ def construct_trigger(trigger_args):
 task_id_separator = '-'
 
 
-def construct_task_id(scheduled_task_id, workflow_uid):
+def construct_task_id(scheduled_task_id, workflow_id):
     """
     Constructs a task id
 
     Args:
         scheduled_task_id (int|str): Id of the scheduled task (presumably from the database)
-        workflow_uid (str): UUID of the workflow to execute
+        workflow_id (str): ID of the workflow to execute
 
     Returns:
         (str) A task id to use in the scheduler
     """
-    return '{0}{1}{2}'.format(scheduled_task_id, task_id_separator, workflow_uid)
+    return '{0}{1}{2}'.format(scheduled_task_id, task_id_separator, workflow_id)
 
 
 def split_task_id(task_id):
@@ -76,21 +76,21 @@ class Scheduler(object):
                                     | EVENT_SCHEDULER_PAUSED | EVENT_SCHEDULER_RESUMED
                                     | EVENT_JOB_ADDED | EVENT_JOB_REMOVED
                                     | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
-        self.uid = 'controller'
+        self.id = 'controller'
 
-    def schedule_workflows(self, task_id, executable, workflows, trigger):
+    def schedule_workflows(self, task_id, executable, workflow_ids, trigger):
         """
         Schedules a workflow for execution
 
         Args:
             task_id (int): Id of the scheduled task
-            executable (func): A callable to execute must take in two arguments -- a playbook name and a workflow name
-            workflows (tuple(str)): A tuple of playbook name, workflow name, and workflow uid
+            executable (func): A callable to execute must take in one argument -- a workflow id
+            workflow_ids (iterable(str)): An iterable of workflow ids
             trigger (Trigger): The trigger to use for this scheduled task
         """
-        for playbook_name, workflow_name, uid in workflows:
-            self.scheduler.add_job(executable, args=(playbook_name, workflow_name),
-                                   id=construct_task_id(task_id, uid),
+        for id_ in workflow_ids:
+            self.scheduler.add_job(executable, args=(id_, ),
+                                   id=construct_task_id(task_id, id_),
                                    trigger=trigger, replace_existing=True)
 
     def get_all_scheduled_workflows(self):

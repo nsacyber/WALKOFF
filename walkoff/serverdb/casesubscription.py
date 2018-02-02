@@ -35,7 +35,7 @@ class CaseSubscription(db.Model, TrackModificationsMixIn):
         except json.JSONDecodeError:
             self.subscriptions = '[]'
         finally:
-            subscriptions = {subscription['uid']: subscription['events'] for subscription in subscriptions}
+            subscriptions = {subscription['id']: subscription['events'] for subscription in subscriptions}
             walkoff.case.subscription.add_cases({name: subscriptions})
 
     def as_json(self):
@@ -59,7 +59,7 @@ class CaseSubscription(db.Model, TrackModificationsMixIn):
         case = CaseSubscription.query.filter_by(name=case_name).first()
         if case and case_name in walkoff.case.subscription.subscriptions:
             case_subs = walkoff.case.subscription.subscriptions[case_name]
-            case.subscriptions = [{'uid': uid, 'events': events} for uid, events in case_subs.items()]
+            case.subscriptions = [{'id': uid, 'events': events} for uid, events in case_subs.items()]
 
     @staticmethod
     def from_json(name, subscription_json):
@@ -80,6 +80,6 @@ class CaseSubscription(db.Model, TrackModificationsMixIn):
         """
         logging.getLogger(__name__).debug('Syncing cases')
         cases = CaseSubscription.query.all()
-        subscriptions = {case.name: {subscription['uid']: subscription['events']
+        subscriptions = {case.name: {subscription['id']: subscription['events']
                                      for subscription in case.subscriptions} for case in cases}
         walkoff.case.subscription.set_subscriptions(subscriptions)

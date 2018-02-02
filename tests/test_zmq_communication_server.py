@@ -44,8 +44,8 @@ class TestWorkflowServer(ServerTestCase):
         flask_server.running_context.controller.wait_and_reset(1)
         self.assertIn('id', response)
         actions = []
-        for uid in action_ids:
-            actions.extend(executed_actions(uid, start, datetime.utcnow()))
+        for id_ in action_ids:
+            actions.extend(executed_actions(id_, start, datetime.utcnow()))
         self.assertEqual(len(actions), 1)
         action = actions[0]
         result = action['data']

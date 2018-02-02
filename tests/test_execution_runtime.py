@@ -12,7 +12,6 @@ from tests import config
 from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
 from tests.util.mock_objects import *
 import walkoff.config.paths
-from walkoff.coredb import devicedb
 from tests.util import device_db_help
 
 
@@ -63,8 +62,8 @@ class TestExecutionRuntime(unittest.TestCase):
         self.controller.wait_and_reset(1)
 
         actions = []
-        for uid in action_ids:
-            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        for id_ in action_ids:
+            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
         self.assertEqual(len(actions), 2, 'Unexpected number of actions executed. '
                                           'Expected {0}, got {1}'.format(2, len(actions)))
 
@@ -72,15 +71,15 @@ class TestExecutionRuntime(unittest.TestCase):
         #     workflow1 = self.controller.get_workflow('tieredWorkflow', 'parentWorkflow')
         #     workflow2 = self.controller.get_workflow('tieredWorkflow', 'childWorkflow')
         #     action_names = ['start', '1']
-        #     action_ids = [action.uid for action in workflow1.actions.values() if action.name in action_names]
-        #     action_ids.extend([action.uid for action in workflow2.actions.values() if action.name in action_names])
-        #     setup_subscriptions_for_action([workflow1.uid, workflow2.uid], action_ids)
+        #     action_ids = [action.id for action in workflow1.actions.values() if action.name in action_names]
+        #     action_ids.extend([action.id for action in workflow2.actions.values() if action.name in action_names])
+        #     setup_subscriptions_for_action([workflow1.id, workflow2.id], action_ids)
         #     self.controller.execute_workflow('tieredWorkflow', 'parentWorkflow')
         #
         #     self.controller.shutdown_pool(1)
         #     actions = []
-        #     for uid in action_ids:
-        #         actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        #     for id_ in action_ids:
+        #         actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
         #     expected_results = [{'status': 'Success', 'result': 'REPEATING: Parent action One'},
         #                         {'status': 'Success', 'result': 'REPEATING: Child action One'},
         #                         {'status': 'Success', 'result': 'REPEATING: Parent action Two'}]
@@ -96,8 +95,8 @@ class TestExecutionRuntime(unittest.TestCase):
         #
         #     workflow = self.controller.get_workflow('loopWorkflow', 'loopWorkflow')
         #     action_names = ['start', '1']
-        #     action_ids = [action.uid for action in workflow.actions.values() if action.name in action_names]
-        #     setup_subscriptions_for_action(workflow.uid, action_ids)
+        #     action_ids = [action.id for action in workflow.actions.values() if action.name in action_names]
+        #     setup_subscriptions_for_action(workflow.id, action_ids)
         #
         #     waiter = Event()
         #
@@ -108,7 +107,7 @@ class TestExecutionRuntime(unittest.TestCase):
         #     self.controller.execute_workflow('loopWorkflow', 'loopWorkflow')
         #     self.controller.shutdown_pool(1)
         #     actions = []
-        #     for uid in action_ids:
-        #         actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        #     for id_ in action_ids:
+        #         actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
         #
         #     self.assertEqual(len(actions), 5)

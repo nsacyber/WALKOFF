@@ -61,7 +61,7 @@ class TestExecutionEvents(unittest.TestCase):
         workflow = device_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         action_ids = [action.id for action in workflow.actions]
         action_events = [WalkoffEvent.ActionExecutionSuccess.signal_name, WalkoffEvent.ActionStarted.signal_name]
-        subs = {'case1': {action_uid: action_events for action_uid in action_ids}}
+        subs = {'case1': {action_id: action_events for action_id in action_ids}}
         case_subscription.set_subscriptions(subs)
 
         self.c.execute_workflow(workflow.id)

@@ -52,8 +52,8 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.controller.wait_and_reset(1)
 
         actions = []
-        for uid in action_ids:
-            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        for id_ in action_ids:
+            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
 
         self.assertEqual(len(actions), 1)
         action = actions[0]
@@ -63,14 +63,14 @@ class TestSimpleWorkflow(unittest.TestCase):
     def test_multi_action_workflow(self):
         workflow = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         action_names = ['start', '1']
-        action_uids = [action.id for action in workflow.actions if action.name in action_names]
-        setup_subscriptions_for_action(workflow.id, action_uids)
+        action_ids = [action.id for action in workflow.actions if action.name in action_names]
+        setup_subscriptions_for_action(workflow.id, action_ids)
         self.controller.execute_workflow(workflow.id)
 
         self.controller.wait_and_reset(1)
         actions = []
-        for uid in action_uids:
-            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        for id_ in action_ids:
+            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
 
         self.assertEqual(len(actions), 2)
         expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
@@ -81,15 +81,15 @@ class TestSimpleWorkflow(unittest.TestCase):
     def test_error_workflow(self):
         workflow = device_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
         action_names = ['start', '1', 'error']
-        action_uids = [action.id for action in workflow.actions if action.name in action_names]
-        setup_subscriptions_for_action(workflow.id, action_uids)
+        action_ids = [action.id for action in workflow.actions if action.name in action_names]
+        setup_subscriptions_for_action(workflow.id, action_ids)
         self.controller.execute_workflow(workflow.id)
 
         self.controller.wait_and_reset(1)
 
         actions = []
-        for uid in action_uids:
-            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        for id_ in action_ids:
+            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
         self.assertEqual(len(actions), 2)
 
         expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
@@ -100,15 +100,15 @@ class TestSimpleWorkflow(unittest.TestCase):
     def test_workflow_with_dataflow(self):
         workflow = device_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
         action_names = ['start', '1', '2']
-        action_uids = [action.id for action in workflow.actions if action.name in action_names]
-        setup_subscriptions_for_action(workflow.id, action_uids)
+        action_ids = [action.id for action in workflow.actions if action.name in action_names]
+        setup_subscriptions_for_action(workflow.id, action_ids)
         self.controller.execute_workflow(workflow.id)
 
         self.controller.wait_and_reset(1)
 
         actions = []
-        for uid in action_uids:
-            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        for id_ in action_ids:
+            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
         self.assertEqual(len(actions), 3)
         expected_results = [{'result': 6, 'status': 'Success'},
                             {'result': 6, 'status': 'Success'},
@@ -119,13 +119,13 @@ class TestSimpleWorkflow(unittest.TestCase):
     def test_workflow_with_dataflow_action_not_executed(self):
         workflow = device_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
         action_names = ['start', '1']
-        action_uids = [action.id for action in workflow.actions if action.name in action_names]
-        setup_subscriptions_for_action(workflow.id, action_uids)
+        action_ids = [action.id for action in workflow.actions if action.name in action_names]
+        setup_subscriptions_for_action(workflow.id, action_ids)
         self.controller.execute_workflow(workflow.id)
 
         self.controller.wait_and_reset(1)
 
         actions = []
-        for uid in action_uids:
-            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        for id_ in action_ids:
+            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
         self.assertEqual(len(actions), 2)

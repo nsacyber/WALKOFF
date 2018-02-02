@@ -18,15 +18,15 @@ class TestCases(unittest.TestCase):
 
     def setUp(self):
         subs.clear_subscriptions()
-        self.cases1 = {'case1': {'uid1': ['e1', 'e2', 'e3'],
-                                 'uid2': ['e1']},
-                       'case2': {'uid1': ['e2', 'e3']}}
-        self.cases_overlap = {'case2': {'uid3': ['e', 'b', 'c'],
-                                        'uid4': ['d']},
-                              'case3': {'uid1': ['a', 'b']}}
-        self.cases2 = {'case3': {'uid3': ['e', 'b', 'c'],
-                                 'uid4': ['d']},
-                       'case4': {'uid1': ['a', 'b']}}
+        self.cases1 = {'case1': {'id1': ['e1', 'e2', 'e3'],
+                                 'id2': ['e1']},
+                       'case2': {'id1': ['e2', 'e3']}}
+        self.cases_overlap = {'case2': {'id3': ['e', 'b', 'c'],
+                                        'id4': ['d']},
+                              'case3': {'id1': ['a', 'b']}}
+        self.cases2 = {'case3': {'id3': ['e', 'b', 'c'],
+                                 'id4': ['d']},
+                       'case4': {'id1': ['a', 'b']}}
 
     def tearDown(self):
         subs.clear_subscriptions()
@@ -125,61 +125,61 @@ class TestCases(unittest.TestCase):
         self.assertDatabaseCasesAreCorrect(set())
 
     def test_get_cases_subscribed_no_cases(self):
-        self.assertSetEqual(set(subs.get_cases_subscribed('uid1', 'e')), set())
+        self.assertSetEqual(set(subs.get_cases_subscribed('id1', 'e')), set())
 
-    def test_get_cases_subscribed_no_uid_found(self):
+    def test_get_cases_subscribed_no_id_found(self):
         subs.set_subscriptions(self.cases1)
         self.assertSetEqual(set(subs.get_cases_subscribed('invalid', 'e')), set())
 
     def test_get_cases_subscribed_no_event_found(self):
         subs.set_subscriptions(self.cases1)
-        self.assertSetEqual(set(subs.get_cases_subscribed('uid1', 'invalid')), set())
+        self.assertSetEqual(set(subs.get_cases_subscribed('id1', 'invalid')), set())
 
     def test_get_cases_subscribed_one_case_one_case_found(self):
         subs.set_subscriptions(self.cases2)
-        self.assertSetEqual(set(subs.get_cases_subscribed('uid4', 'd')), {'case3'})
+        self.assertSetEqual(set(subs.get_cases_subscribed('id4', 'd')), {'case3'})
 
     def test_get_cases_subscribed_multiple_cases_one_event_found(self):
         subs.set_subscriptions(self.cases1)
-        self.assertSetEqual(set(subs.get_cases_subscribed('uid1', 'e2')), {'case1', 'case2'})
+        self.assertSetEqual(set(subs.get_cases_subscribed('id1', 'e2')), {'case1', 'case2'})
 
     def test_modify_subscriptions_no_cases(self):
-        subs.modify_subscription('case1', 'uid1', ['e1', 'e3'])
+        subs.modify_subscription('case1', 'id1', ['e1', 'e3'])
         self.assertInMemoryCasesAreCorrect({})
 
     def test_modify_subscriptions_case_not_found(self):
         cases = copy.deepcopy(self.cases1)
         subs.set_subscriptions(self.cases1)
-        subs.modify_subscription('invalid', 'uid1', ['e1', 'e3'])
+        subs.modify_subscription('invalid', 'id1', ['e1', 'e3'])
         self.assertInMemoryCasesAreCorrect(cases)
 
-    def test_modify_subscriptions_uid_not_found(self):
+    def test_modify_subscriptions_id_not_found(self):
         cases = copy.deepcopy(self.cases1)
         subs.set_subscriptions(self.cases1)
-        subs.modify_subscription('case1', 'new_uid', ['e1', 'e3'])
-        cases['case1']['new_uid'] = ['e1', 'e3']
+        subs.modify_subscription('case1', 'new_id', ['e1', 'e3'])
+        cases['case1']['new_id'] = ['e1', 'e3']
         self.assertInMemoryCasesAreCorrect(cases)
 
     def test_modify_subscriptions_new_subscriptions(self):
         cases = copy.deepcopy(self.cases1)
         subs.set_subscriptions(self.cases1)
-        subs.modify_subscription('case1', 'uid1', ['e1', 'e3'])
-        cases['case1']['uid1'] = ['e1', 'e3']
+        subs.modify_subscription('case1', 'id1', ['e1', 'e3'])
+        cases['case1']['id1'] = ['e1', 'e3']
         self.assertInMemoryCasesAreCorrect(cases)
 
     def test_remove_subscription_node_no_cases(self):
-        subs.remove_subscription_node('invalid', 'uid1')
+        subs.remove_subscription_node('invalid', 'id1')
         self.assertInMemoryCasesAreCorrect({})
 
     def test_remove_subscription_node_case_not_found(self):
         cases = copy.deepcopy(self.cases1)
         subs.set_subscriptions(self.cases1)
-        subs.remove_subscription_node('invalid', 'uid1')
+        subs.remove_subscription_node('invalid', 'id1')
         self.assertInMemoryCasesAreCorrect(cases)
 
     def test_remove_subscription_node(self):
         cases = copy.deepcopy(self.cases1)
         subs.set_subscriptions(self.cases1)
-        subs.remove_subscription_node('case1', 'uid1')
-        cases['case1'].pop('uid1')
+        subs.remove_subscription_node('case1', 'id1')
+        cases['case1'].pop('id1')
         self.assertInMemoryCasesAreCorrect(cases)

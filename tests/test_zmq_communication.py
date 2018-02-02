@@ -58,8 +58,8 @@ class TestZMQCommunication(unittest.TestCase):
         self.controller.wait_and_reset(1)
 
         actions = []
-        for uid in action_ids:
-            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        for id_ in action_ids:
+            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
 
         self.assertEqual(len(actions), 1)
         action = actions[0]
@@ -75,8 +75,8 @@ class TestZMQCommunication(unittest.TestCase):
 
         self.controller.wait_and_reset(1)
         actions = []
-        for uid in action_ids:
-            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        for id_ in action_ids:
+            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
 
         self.assertEqual(len(actions), 2)
         expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
@@ -94,8 +94,8 @@ class TestZMQCommunication(unittest.TestCase):
         self.controller.wait_and_reset(1)
 
         actions = []
-        for uid in action_ids:
-            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        for id_ in action_ids:
+            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
         self.assertEqual(len(actions), 2)
 
         expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
@@ -113,8 +113,8 @@ class TestZMQCommunication(unittest.TestCase):
         self.controller.wait_and_reset(1)
 
         actions = []
-        for uid in action_ids:
-            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        for id_ in action_ids:
+            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
         self.assertEqual(len(actions), 3)
         expected_results = [{'result': 6, 'status': 'Success'},
                             {'result': 6, 'status': 'Success'},
@@ -135,8 +135,8 @@ class TestZMQCommunication(unittest.TestCase):
         self.controller.wait_and_reset(capacity*2)
 
         actions = []
-        for uid in action_ids:
-            actions.extend(executed_actions(uid, self.start, datetime.utcnow()))
+        for id_ in action_ids:
+            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
 
         self.assertEqual(len(actions), capacity*2)
 

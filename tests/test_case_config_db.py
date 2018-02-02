@@ -24,7 +24,7 @@ class TestCaseConfigDatabase(ServerTestCase):
     #     case = CaseSubscription('name', subscriptions=[])
     #     self.__help_test_init(case, 'name', '[]')
     #
-    #     test_json = [{'uid': 'uid1', 'events': ['a', 'b']}, {'uid': 'uid2', 'events': ['c', 'd']}]
+    #     test_json = [{'id': 'id1', 'events': ['a', 'b']}, {'id': 'id2', 'events': ['c', 'd']}]
     #     case = CaseSubscription('name', test_json)
     #     self.__help_test_init(case, 'name', json.dumps(test_json))
     #
@@ -39,7 +39,7 @@ class TestCaseConfigDatabase(ServerTestCase):
     #     expected_json = {'id': None, 'name': 'name', 'note': '', 'subscriptions': []}
     #     self.assertDictEqual(case.as_json(), expected_json)
     #
-    #     test_json = [{'uid': 'uid1', 'events': ['a', 'b']}, {'uid': 'uid2', 'events': ['c', 'd']}]
+    #     test_json = [{'id': 'id1', 'events': ['a', 'b']}, {'id': 'id2', 'events': ['c', 'd']}]
     #     case = CaseSubscription('name', test_json)
     #     expected_json = {'name': 'name', 'subscriptions': test_json, "id": None, 'note': ''}
     #     self.assertDictEqual(case.as_json(), expected_json)
@@ -47,10 +47,10 @@ class TestCaseConfigDatabase(ServerTestCase):
     #     self.assertDictEqual(derived_json, expected_json)
 
     def test_sync_to_subscriptions(self):
-        case1 = [{'uid': 'uid1', 'events': ['e1', 'e2', 'e3']}, {'uid': 'uid2', 'events': ['e1']}]
-        case2 = [{'uid': 'uid1', 'events': ['e2', 'e3']}]
-        case3 = [{'uid': 'uid3', 'events': ['e', 'b', 'c']}, {'uid': 'uid4', 'events': ['d']}]
-        case4 = [{'uid': 'uid1', 'events': ['a', 'b']}]
+        case1 = [{'id': 'id1', 'events': ['e1', 'e2', 'e3']}, {'id': 'id2', 'events': ['e1']}]
+        case2 = [{'id': 'id1', 'events': ['e2', 'e3']}]
+        case3 = [{'id': 'id3', 'events': ['e', 'b', 'c']}, {'id': 'id4', 'events': ['d']}]
+        case4 = [{'id': 'id1', 'events': ['a', 'b']}]
         cases = {'case1': case1, 'case2': case2}
         set_subscriptions(cases)
         case_db_entry_1 = CaseSubscription('case3', subscriptions=case3)
@@ -63,5 +63,5 @@ class TestCaseConfigDatabase(ServerTestCase):
         self.assertIn('case4', case_subs.subscriptions)
         self.assertNotIn('case1', case_subs.subscriptions)
         self.assertNotIn('case2', case_subs.subscriptions)
-        self.assertDictEqual(case_subs.subscriptions['case3'], {sub['uid']: sub['events'] for sub in case3})
-        self.assertDictEqual(case_subs.subscriptions['case4'], {sub['uid']: sub['events'] for sub in case4})
+        self.assertDictEqual(case_subs.subscriptions['case3'], {sub['id']: sub['events'] for sub in case3})
+        self.assertDictEqual(case_subs.subscriptions['case4'], {sub['id']: sub['events'] for sub in case4})

@@ -77,8 +77,8 @@ def update_case():
                 db.session.commit()
                 current_app.logger.debug('Case name changed from {0} to {1}'.format(original_name, data['name']))
             if 'subscriptions' in data:
-                case_obj.subscriptions = json.dumps(data['subscriptions'])
-                subscriptions = {subscription['uid']: subscription['events'] for subscription in data['subscriptions']}
+                case_obj.subscriptions = data['subscriptions']
+                subscriptions = {subscription['id']: subscription['events'] for subscription in data['subscriptions']}
                 for uid, events in subscriptions.items():
                     case_subscription.modify_subscription(case_name, uid, events)
             db.session.commit()

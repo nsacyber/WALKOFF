@@ -22,7 +22,7 @@ class Controller(object):
         Args:
             executor (cls, optional): The executor to use in the controller. Defaults to MultiprocessedExecutor
         """
-        self.uid = 'controller'
+        self.id = 'controller'
         self.scheduler = Scheduler()
         self.executor = executor()
 
@@ -73,12 +73,7 @@ class Controller(object):
             workflow_ids (list[int]): IDs of the workflows to schedule
             trigger: The type of scheduler trigger to use
         """
-        playbook_workflows = self.playbook_store.get_workflows_by_uid(workflow_ids)
-        schedule_workflows = []
-        for playbook_name, workflows in playbook_workflows.items():
-            for workflow in workflows:
-                schedule_workflows.append((playbook_name, workflow.name, workflow.uid))
-        self.scheduler.schedule_workflows(task_id, self.execute_workflow, schedule_workflows, trigger)
+        self.scheduler.schedule_workflows(task_id, self.execute_workflow, workflow_ids, trigger)
 
     def execute_workflow(self, workflow_id, start=None, start_arguments=None):
         """Executes a workflow.

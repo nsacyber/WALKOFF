@@ -64,6 +64,7 @@ def create_scheduled_task():
         task = ScheduledTask.query.filter_by(name=data['name']).first()
         if task is None:
             try:
+                print(data)
                 task = ScheduledTask(**data)
             except InvalidTriggerArgs:
                 return {'error': 'invalid scheduler arguments'}, 400

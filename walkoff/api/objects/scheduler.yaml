@@ -13,10 +13,10 @@ AddScheduledTask:
   additionalProperties: false
   properties:
     workflows:
-      description: List if UIDs of workflows attached to this task
+      description: List if IDs of workflows attached to this task
       type: array
       items:
-        type: string
+        $ref: '#/definitions/Uid'
     name:
       type: string
       description: Name of this task
@@ -40,10 +40,10 @@ ScheduledTask:
       description: ID of the object
       readOnly: true
     workflows:
-      description: List if UIDs of workflows attached to this task
+      description: List if IDs of workflows attached to this task
       type: array
       items:
-        type: string
+        $ref: '#/definitions/Uid'
     name:
       type: string
       description: Name of this task

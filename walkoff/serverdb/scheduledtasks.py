@@ -4,6 +4,7 @@ import logging
 from walkoff.core.scheduler import construct_trigger
 from walkoff.extensions import db
 from walkoff.serverdb.mixins import TrackModificationsMixIn
+from walkoff.dbtypes import Guid
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 class ScheduledWorkflow(db.Model):
     __tablename__ = 'scheduled_workflow'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    uid = db.Column(db.String(50), nullable=False)
+    workflow_id = db.Column(Guid(), nullable=False)
     task_id = db.Column(db.Integer, db.ForeignKey('scheduled_task.id'))
 
 
@@ -33,7 +34,7 @@ class ScheduledTask(db.Model, TrackModificationsMixIn):
         self.description = description
         if workflows is not None:
             for workflow in set(workflows):
-                self.workflows.append(ScheduledWorkflow(uid=workflow))
+                self.workflows.append(ScheduledWorkflow(workflow_id=workflow))
         if task_trigger is not None:
             construct_trigger(task_trigger)  # Throws an error if the args are invalid
             self.trigger_type = task_trigger['type']
@@ -82,11 +83,11 @@ class ScheduledTask(db.Model, TrackModificationsMixIn):
     def _start_workflows(self, trigger=None):
         from walkoff.server.flaskserver import running_context
         trigger = trigger if trigger is not None else construct_trigger(self._reconstruct_scheduler_args())
-        running_context.controller.schedule_workflows(self.id, self._get_workflow_uids_as_list(), trigger)
+        running_context.controller.schedule_workflows(self.id, self._get_workflow_ids_as_list(), trigger)
 
     def _stop_workflows(self):
         from walkoff.server.flaskserver import running_context
-        running_context.controller.scheduler.unschedule_workflows(self.id, self._get_workflow_uids_as_list())
+        running_context.controller.scheduler.unschedule_workflows(self.id, self._get_workflow_ids_as_list())
 
     def _modify_workflows(self, json_in, trigger):
         from walkoff.server.flaskserver import running_context
@@ -95,7 +96,7 @@ class ScheduledTask(db.Model, TrackModificationsMixIn):
         for workflow in self.workflows:
             self.workflows.remove(workflow)
         for workflow in json_in['workflows']:
-            self.workflows.append(ScheduledWorkflow(uid=workflow))
+            self.workflows.append(ScheduledWorkflow(workflow_id=workflow))
         if self.trigger_type != 'unspecified' and self.status == 'running':
             trigger = trigger if trigger is not None else construct_trigger(self._reconstruct_scheduler_args())
             if new:
@@ -110,11 +111,11 @@ class ScheduledTask(db.Model, TrackModificationsMixIn):
     def _reconstruct_scheduler_args(self):
         return {'type': self.trigger_type, 'args': json.loads(self.trigger_args)}
 
-    def _get_workflow_uids_as_list(self):
-        return [workflow.uid for workflow in self.workflows]
+    def _get_workflow_ids_as_list(self):
+        return [workflow.workflow_id for workflow in self.workflows]
 
     def __get_different_workflows(self, json_in):
-        original_workflows = set(self._get_workflow_uids_as_list())
+        original_workflows = set(self._get_workflow_ids_as_list())
         incoming_workflows = set(json_in['workflows'])
         new = incoming_workflows - original_workflows
         removed = original_workflows - incoming_workflows
@@ -125,5 +126,5 @@ class ScheduledTask(db.Model, TrackModificationsMixIn):
                 'name': self.name,
                 'description': self.description,
                 'status': self.status,
-                'workflows': self._get_workflow_uids_as_list(),
+                'workflows': self._get_workflow_ids_as_list(),
                 'task_trigger': self._reconstruct_scheduler_args()}

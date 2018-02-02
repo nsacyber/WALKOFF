@@ -424,8 +424,8 @@ class TestWorkflowServer(ServerTestCase):
     #     playbook = self.standard_load()
     #
     #     workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
-    #     action_uids = [action.id for action in workflow.actions if action.name == 'start']
-    #     setup_subscriptions_for_action(workflow.id, action_uids)
+    #     action_ids = [action.id for action in workflow.actions if action.name == 'start']
+    #     setup_subscriptions_for_action(workflow.id, action_ids)
     #
     #     result = {'count': 0}
     #
@@ -450,8 +450,8 @@ class TestWorkflowServer(ServerTestCase):
 
         workflow = devicedb.device_db.session.query(Workflow).filter_by(name='pauseWorkflow').first()
 
-        action_uids = [action.id for action in workflow.actions if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_uids)
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {'paused': False, 'count': 0, 'data': []}
 
@@ -503,8 +503,8 @@ class TestWorkflowServer(ServerTestCase):
         playbook = device_db_help.standard_load()
         workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
 
-        action_uids = [action.id for action in workflow.actions if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_uids)
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {'count': 0}
 

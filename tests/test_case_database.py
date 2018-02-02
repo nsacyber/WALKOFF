@@ -27,12 +27,12 @@ class TestCaseDatabase(unittest.TestCase):
 
     @staticmethod
     def __construct_basic_db():
-        cases = {'case1': {'uid1': ['e1', 'e2', 'e3'],
-                           'uid2': ['e1']},
-                 'case2': {'uid1': ['e2', 'e3']},
-                 'case3': {'uid3': ['e', 'b', 'c'],
-                           'uid4': ['d']},
-                 'case4': {'uid1': ['a', 'b']}}
+        cases = {'case1': {'id1': ['e1', 'e2', 'e3'],
+                           'id2': ['e1']},
+                 'case2': {'id1': ['e2', 'e3']},
+                 'case3': {'id3': ['e', 'b', 'c'],
+                           'id4': ['d']},
+                 'case4': {'id1': ['a', 'b']}}
         set_subscriptions(cases)
         return cases
 

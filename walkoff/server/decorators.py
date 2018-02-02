@@ -28,18 +28,19 @@ def with_resource_factory(resource_name, getter_func, validator=None):
 
     def validate_resource_exists(operation, *ids):
         def wrapper(func):
-            if validator and validator(*ids):
-                obj = getter_func(*ids)
-                if obj is not None:
-                    return lambda: func(obj)
-                else:
-                    current_app.logger.error(
-                        'Could not {0} {1} {2}. {3}'.format(
-                            operation, resource_name, '-'.join([str(id_) for id_ in ids]), resource_dne_message)
-                    )
-                    return lambda: ({'error': resource_dne_message}, OBJECT_DNE_ERROR)
-            else:
+            if validator and not validator(*ids):
                 return lambda: ({'error': 'Invalid ID for {}'.format(resource_name)}, BAD_REQUEST)
+
+            obj = getter_func(*ids)
+            if obj is not None:
+                return lambda: func(obj)
+            else:
+                current_app.logger.error(
+                    'Could not {0} {1} {2}. {3}'.format(
+                        operation, resource_name, '-'.join([str(id_) for id_ in ids]), resource_dne_message)
+                )
+                return lambda: ({'error': resource_dne_message}, OBJECT_DNE_ERROR)
+
         return wrapper
 
 

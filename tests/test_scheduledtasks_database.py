@@ -5,33 +5,25 @@ import walkoff.server.flaskserver as server
 from walkoff.core.scheduler import InvalidTriggerArgs
 from walkoff.serverdb import db
 from walkoff.serverdb.scheduledtasks import ScheduledTask
-from walkoff.coredb.devicedb import DeviceDatabase
-from tests.util import device_db_help
 
 
 class TestScheduledTask(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
         cls.context = server.app.test_request_context()
         cls.context.push()
         db.create_all()
-        cls.db = DeviceDatabase()
-        
-    @classmethod
-    def tearDownClass(cls):
-        device_db_help.tear_down_device_db()
 
     def setUp(self):
         self.date_trigger = {'type': 'date', 'args': {'run_date': '2017-01-25 10:00:00'}}
 
     def tearDown(self):
-        self.db.tear_down()
-        tasks = ScheduledTask.query.all()
-        if tasks:
-            ScheduledTask.query.delete()
+        db.session.rollback()
+        for task in db.session.query(ScheduledTask).all():
+            db.session.delete(task)
         server.running_context.controller.scheduler.scheduler.remove_all_jobs()
         server.running_context.controller.scheduler.stop()
+        db.session.commit()
 
     def assertSchedulerWorkflowsRunningEqual(self, workflows=None):
         if workflows is None:
@@ -52,9 +44,9 @@ class TestScheduledTask(unittest.TestCase):
         self.assertEqual(task.status, status)
         self.assertEqual(task.trigger_type, trigger_type)
         if workflows is not None:
-            self.assertSetEqual({workflow.uid for workflow in task.workflows}, workflows)
+            self.assertSetEqual({workflow.workflow_id for workflow in task.workflows}, workflows)
         else:
-            self.assertSetEqual({workflow.uid for workflow in task.workflows}, set())
+            self.assertSetEqual({workflow.workflow_id for workflow in task.workflows}, set())
         if trigger_args is not None:
             self.assertDictEqual(json.loads(task.trigger_args), trigger_args)
         else:
@@ -74,8 +66,9 @@ class TestScheduledTask(unittest.TestCase):
         self.assertStructureIsCorrect(task, 'test')
 
     def test_init_with_workflows(self):
-        task = ScheduledTask(name='test', workflows=['uid1', 'uid2', 'uid3', 'uid4'])
-        self.assertStructureIsCorrect(task, 'test', workflows={'uid1', 'uid2', 'uid3', 'uid4'})
+        task = ScheduledTask(name='test', workflows=['id1', 'id2', 'id3', 'id4'])
+
+        self.assertStructureIsCorrect(task, 'test', workflows={'id1', 'id2', 'id3', 'id4'})
 
     def test_init_with_trigger(self):
         task = ScheduledTask(name='test', task_trigger=self.date_trigger)
@@ -90,26 +83,23 @@ class TestScheduledTask(unittest.TestCase):
     def test_init_stopped(self):
         task = ScheduledTask(name='test', status='stopped')
         self.assertStructureIsCorrect(task, 'test', status='stopped')
-
+    
     def test_init_with_status_with_trigger_with_workflows(self):
-        workflows = ['uid1', 'uid2', 'uid3', 'uid4']
+        workflows = ['id1', 'id2', 'id3', 'id4']
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, status='running', workflows=workflows)
         self.assertStructureIsCorrect(task, 'test', trigger_type='date',
                                       trigger_args={'run_date': '2017-01-25 10:00:00'},
                                       status='running', workflows=set(workflows), expected_running_workflows=workflows)
 
     def test_init_with_status_with_trigger_without_workflows(self):
-        workflows = ['uid1', 'uid2', 'uid3', 'uid4']
-        self.patch_controller_workflows(workflows)
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, status='running')
         self.assertStructureIsCorrect(task, 'test', trigger_type='date',
                                       trigger_args={'run_date': '2017-01-25 10:00:00'},
                                       status='running')
 
     def test_init_with_status_trigger_unspecified(self):
-        workflows = ['uid1', 'uid2', 'uid3', 'uid4']
-        self.patch_controller_workflows(workflows)
-        task = ScheduledTask(name='test', status='running', workflows=['uid1', 'uid2', 'uid3', 'uid4'])
+        workflows = ['id1', 'id2', 'id3', 'id4']
+        task = ScheduledTask(name='test', status='running', workflows=['id1', 'id2', 'id3', 'id4'])
         self.assertStructureIsCorrect(task, 'test', status='running', workflows=set(workflows))
 
     def test_update_name_desc_only(self):
@@ -123,50 +113,46 @@ class TestScheduledTask(unittest.TestCase):
         task = ScheduledTask(name='test', status='stopped')
         update = {'workflows': ['a', 'b', 'c']}
         task.update(update)
-        self.assertListEqual([workflow.uid for workflow in task.workflows], ['a', 'b', 'c'])
+        self.assertListEqual([workflow.workflow_id for workflow in task.workflows], ['a', 'b', 'c'])
         self.assertSchedulerWorkflowsRunningEqual(workflows=None)
 
     def test_update_workflows_none_existing_running(self):
         workflows = ['a', 'b', 'c', 'd']
-        self.patch_controller_workflows(workflows)
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, status='running')
         update = {'workflows': ['a', 'b', 'c']}
         task.update(update)
-        self.assertListEqual([workflow.uid for workflow in task.workflows], ['a', 'b', 'c'])
+        self.assertListEqual([workflow.workflow_id for workflow in task.workflows], ['a', 'b', 'c'])
         self.assertSchedulerWorkflowsRunningEqual(['a', 'b', 'c'])
 
     def test_update_workflows_with_existing_workflows_stopped(self):
         task = ScheduledTask(name='test', workflows=['b', 'c', 'd'])
         update = {'workflows': ['a', 'b', 'c']}
         task.update(update)
-        self.assertSetEqual({workflow.uid for workflow in task.workflows}, {'a', 'b', 'c'})
+        self.assertSetEqual({workflow.workflow_id for workflow in task.workflows}, {'a', 'b', 'c'})
         self.assertSchedulerWorkflowsRunningEqual(workflows=None)
 
     def test_update_workflows_with_existing_workflows_running_new_only(self):
         workflows = ['a', 'b', 'c', 'd']
-        self.patch_controller_workflows(workflows)
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, workflows=['b', 'c', 'd'], status='running')
         update = {'workflows': workflows}
         task.update(update)
-        self.assertSetEqual({workflow.uid for workflow in task.workflows}, {'a', 'b', 'c', 'd'})
+        self.assertSetEqual({workflow.workflow_id for workflow in task.workflows}, {'a', 'b', 'c', 'd'})
         self.assertSchedulerWorkflowsRunningEqual(workflows)
 
     def test_update_workflows_with_existing_workflows_running_remove_only(self):
         workflows = ['a', 'b', 'c', 'd']
-        self.patch_controller_workflows(workflows)
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, workflows=workflows, status='running')
         update = {'workflows': ['b', 'c']}
         task.update(update)
-        self.assertSetEqual({workflow.uid for workflow in task.workflows}, {'b', 'c'})
+        self.assertSetEqual({workflow.workflow_id for workflow in task.workflows}, {'b', 'c'})
         self.assertSchedulerWorkflowsRunningEqual(['b', 'c'])
 
     def test_update_workflows_with_existing_workflows_running_add_and_remove(self):
         workflows = ['a', 'b', 'c', 'd']
-        self.patch_controller_workflows(workflows)
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, workflows=['b', 'c', 'd'], status='running')
         update = {'workflows': ['a', 'b']}
         task.update(update)
-        self.assertSetEqual({workflow.uid for workflow in task.workflows}, {'a', 'b'})
+        self.assertSetEqual({workflow.workflow_id for workflow in task.workflows}, {'a', 'b'})
         self.assertSchedulerWorkflowsRunningEqual(['a', 'b'])
 
     def test_update_scheduler(self):
@@ -199,7 +185,6 @@ class TestScheduledTask(unittest.TestCase):
 
     def test_start_from_stopped_with_trigger(self):
         workflows = ['a', 'b', 'c', 'd']
-        self.patch_controller_workflows(workflows)
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, workflows=['b', 'c', 'd'])
         task.start()
         self.assertEqual(task.status, 'running')
@@ -212,8 +197,6 @@ class TestScheduledTask(unittest.TestCase):
         self.assertSchedulerWorkflowsRunningEqual(workflows=None)
 
     def test_stop_from_running_with_workflows(self):
-        workflows = ['a', 'b', 'c', 'd']
-        self.patch_controller_workflows(workflows)
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, workflows=['b', 'c', 'd'])
         task.stop()
         self.assertEqual(task.status, 'stopped')

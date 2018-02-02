@@ -20,4 +20,4 @@ class TestController(unittest.TestCase):
         walkoff.appgateway.clear_cache()
 
     def test_create_controller(self):
-        self.assertEqual(self.controller.uid, "controller")
+        self.assertEqual(self.controller.id, "controller")
