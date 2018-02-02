@@ -306,7 +306,7 @@ class EventDispatcher(object):
         names = convert_to_iterable(names)
         entry_ids = set(sender_uids) | set(names)
         if not entry_ids:
-            raise ValueError('Either sender_uid or name must specified')
+            entry_ids = ['all']
         for entry_id in entry_ids:
             self.__register_entry(entry_id, events, func, weak)
 
@@ -359,14 +359,18 @@ class EventDispatcher(object):
             set(func): The callbacks registered
         """
         all_callbacks = set()
-        for sender_id in (sender_uid, sender_name):
+        for sender_id in ('all', sender_uid, sender_name):
             if self.__is_event_registered_to_sender(sender_id, event):
                 all_callbacks |= set(self._router[sender_id][event])
 
         return all_callbacks
 
     def __is_event_registered_to_sender(self, sender_id, event):
-        return sender_id is not None and sender_id in self._router and event in self._router[sender_id]
+        return (sender_id is not None
+                and sender_id in self._router and event in self._router[sender_id])
+
+    def __is_all_registered_to_sender(self, event):
+        return 'all' in self._router and event in self._router['all']
 
     def is_registered(self, entry, event, func):
         """Is a function registered for a given entry ID and event?

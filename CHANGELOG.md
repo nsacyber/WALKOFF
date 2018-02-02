@@ -2,8 +2,17 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
+## [0.6.6]
+###### 2018-02-02
+
+### Changed
+* Omitting `sender_uids` or `names` on `dispatcher.on_xyz_event` decorators
+  in interfaces now registers the decorated function for all senders. This
+  is consistent with the previously inaccurate code examples in the tutorials.
+
+
 ## [0.6.5]
-###### 2018-02-01
+###### 2018-02-02
 
 ### Added
 * Webpack is now used to increase UI performance
