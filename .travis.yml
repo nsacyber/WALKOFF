@@ -21,7 +21,6 @@ matrix:
         only: 
           - master
           - development
-          - travis_karma
     - language: node_js
       node_js:
         - "node"
@@ -44,4 +43,3 @@ matrix:
         only: 
           - master
           - development
-          - travis_karma
