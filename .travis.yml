@@ -1,22 +1,77 @@
 matrix:
   include:
     - language: python
-      os:
-        - linux
-      python: ["2.7", "3.4", "3.5", "3.6"]
+      os: linux
+      python: "2.7"
       install:
         - pip install -r requirements.txt
         - pip install coverage
       before_script:
-        - python generate_certificates.py
+        - python scripts/generate_certificates.py
       script:
         - coverage run run_all_tests.py
         - coverage combine
         - coverage report
       branches:
-        only: 
+        only:
           - master
           - development
+          - travis_test
+
+    - language: python
+      os: linux
+      python: "3.4"
+      install:
+        - pip install -r requirements.txt
+        - pip install coverage
+      before_script:
+        - python scripts/generate_certificates.py
+      script:
+        - coverage run run_all_tests.py
+        - coverage combine
+        - coverage report
+      branches:
+        only:
+          - master
+          - development
+          - travis_test
+
+    - language: python
+      os: linux
+      python: "3.5"
+      install:
+        - pip install -r requirements.txt
+        - pip install coverage
+      before_script:
+        - python scripts/generate_certificates.py
+      script:
+        - coverage run run_all_tests.py
+        - coverage combine
+        - coverage report
+      branches:
+        only:
+          - master
+          - development
+          - travis_test
+
+    - language: python
+      os: linux
+      python: "3.6"
+      install:
+        - pip install -r requirements.txt
+        - pip install coverage
+      before_script:
+        - python scripts/generate_certificates.py
+      script:
+        - coverage run run_all_tests.py
+        - coverage combine
+        - coverage report
+      branches:
+        only:
+          - master
+          - development
+          - travis_test
+
     - language: node_js
       node_js:
         - "node"
@@ -36,6 +91,8 @@ matrix:
         - npm install
       script: npm run test -- --single-run
       branches:
-        only: 
+        only:
           - master
           - development
+          - travis_test
+
