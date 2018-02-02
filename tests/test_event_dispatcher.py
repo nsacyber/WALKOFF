@@ -14,10 +14,10 @@ class TestEventDispatcher(TestCase):
     def setUp(self):
         self.router = EventDispatcher()
 
-    def assert_router_structure(self, events, uids=None, names=None, num_funcs=None):
+    def assert_router_structure(self, events, ids=None, names=None, num_funcs=None):
         names = names if names is not None else {}
-        uids = uids if uids is not None else {}
-        entry_ids = set(uids) | set(names)
+        ids = ids if ids is not None else {}
+        entry_ids = set(ids) | set(names)
         num_funcs = num_funcs if num_funcs is not None else 1
         self.assertSetEqual(set(self.router._router.keys()), entry_ids)
         for entry_id in entry_ids:
@@ -28,22 +28,22 @@ class TestEventDispatcher(TestCase):
     def test_init(self):
         self.assertDictEqual(self.router._router, {})
 
-    def test_register_events_no_uids_or_names(self):
+    def test_register_events_no_ids_or_names(self):
         with self.assertRaises(ValueError):
             self.router.register_events(func, {WalkoffEvent.ActionStarted})
 
-    def test_register_events_single_event_enum_single_uid(self):
-        self.router.register_events(func, {WalkoffEvent.ActionStarted}, sender_uids='a')
-        self.assert_router_structure({WalkoffEvent.ActionStarted}, uids='a')
+    def test_register_events_single_event_enum_single_id(self):
+        self.router.register_events(func, {WalkoffEvent.ActionStarted}, sender_ids='a')
+        self.assert_router_structure({WalkoffEvent.ActionStarted}, ids='a')
 
-    def test_register_events_multiple_events_single_uid(self):
+    def test_register_events_multiple_events_single_id(self):
         self.router.register_events(func, [WalkoffEvent.ActionStarted, WalkoffEvent.ActionExecutionError],
-                                    sender_uids='a')
-        self.assert_router_structure({WalkoffEvent.ActionStarted, WalkoffEvent.ActionExecutionError}, uids='a')
+                                    sender_ids='a')
+        self.assert_router_structure({WalkoffEvent.ActionStarted, WalkoffEvent.ActionExecutionError}, ids='a')
 
-    def test_register_events_multiple_uids(self):
-        self.router.register_events(func, {WalkoffEvent.ActionStarted}, sender_uids=['a', 'b'])
-        self.assert_router_structure({WalkoffEvent.ActionStarted}, uids=['a', 'b'])
+    def test_register_events_multiple_ids(self):
+        self.router.register_events(func, {WalkoffEvent.ActionStarted}, sender_ids=['a', 'b'])
+        self.assert_router_structure({WalkoffEvent.ActionStarted}, ids=['a', 'b'])
 
     def test_register_events_single_name(self):
         self.router.register_events(func, {WalkoffEvent.ActionStarted}, names='a')
@@ -53,9 +53,9 @@ class TestEventDispatcher(TestCase):
         self.router.register_events(func, {WalkoffEvent.ActionStarted}, names=['a', 'b'])
         self.assert_router_structure({WalkoffEvent.ActionStarted}, names=['a', 'b'])
 
-    def test_register_events_names_and_uids(self):
-        self.router.register_events(func, {WalkoffEvent.ActionStarted}, sender_uids=['c', 'd'], names=['a', 'b'])
-        self.assert_router_structure({WalkoffEvent.ActionStarted}, names=['a', 'b'], uids=['c', 'd'])
+    def test_register_events_names_and_ids(self):
+        self.router.register_events(func, {WalkoffEvent.ActionStarted}, sender_ids=['c', 'd'], names=['a', 'b'])
+        self.assert_router_structure({WalkoffEvent.ActionStarted}, names=['a', 'b'], ids=['c', 'd'])
 
     def test_register_events_duplicate_names_different_events(self):
         self.router.register_events(func, {WalkoffEvent.ActionStarted}, names='a')
@@ -75,12 +75,12 @@ class TestEventDispatcher(TestCase):
     def test_get_callbacks_empty_router(self):
         self.assertListEqual(list(self.router._get_callbacks('a', None, WalkoffEvent.ActionArgumentsInvalid)), [])
 
-    def test_get_callbacks_uid_nor_name_found(self):
+    def test_get_callbacks_id_nor_name_found(self):
         self.router.register_events(func, {WalkoffEvent.ActionStarted}, names='a')
-        self.router.register_events(func, {WalkoffEvent.ActionStarted}, sender_uids='b')
+        self.router.register_events(func, {WalkoffEvent.ActionStarted}, sender_ids='b')
         self.assertListEqual(list(self.router._get_callbacks('c', None, WalkoffEvent.ActionArgumentsInvalid)), [])
 
-    def test_get_callbacks_sender_uid_found(self):
+    def test_get_callbacks_sender_id_found(self):
         self.router.register_events(func, {WalkoffEvent.ActionStarted}, names='a')
         self.router.register_events(func2, {WalkoffEvent.ActionStarted}, names='a')
         self.router.register_events(func, {WalkoffEvent.ActionStarted}, names='b')
@@ -109,7 +109,7 @@ class TestEventDispatcher(TestCase):
     def test_dispatch_nothing_in_router(self):
         self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_id': 42})
 
-    def test_dispatch_sender_uid_only_weak(self):
+    def test_dispatch_sender_id_only_weak(self):
         result = {'x': True, 'count': 0}
 
         def x(data):
@@ -124,7 +124,7 @@ class TestEventDispatcher(TestCase):
         self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_id': 'a'})
         self.assertDictEqual(result, {'x': {'sender_id': 'a'}, 'count': 1})
 
-    def test_dispatch_sender_uid_only_strong(self):
+    def test_dispatch_sender_id_only_strong(self):
         result = {'x': True, 'count': 0}
 
         def x(data):
@@ -151,7 +151,7 @@ class TestEventDispatcher(TestCase):
         self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_id': 'a', 'sender_name': 'b'})
         self.assertDictEqual(result, {'x': {'sender_id': 'a', 'sender_name': 'b'}, 'count': 1})
 
-    def test_dispatch_sender_name_and_uid(self):
+    def test_dispatch_sender_name_and_id(self):
         result = {'x': True, 'count': 0}
         result2 = {'x': False}
 
@@ -183,7 +183,7 @@ class TestEventDispatcher(TestCase):
     def test_is_registered_empty_router(self):
         self.assertFalse(self.router.is_registered('a', WalkoffEvent.ActionArgumentsInvalid, func))
 
-    def test_is_registered_uid_not_registered(self):
+    def test_is_registered_id_not_registered(self):
         self.router.register_events(func, {WalkoffEvent.SchedulerStart}, names='b')
         self.assertFalse(self.router.is_registered('a', WalkoffEvent.ActionArgumentsInvalid, func))
 

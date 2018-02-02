@@ -83,6 +83,7 @@ class TestInterfaceEventDispatcher(TestCase):
     def test_make_on_event_docstring_not_controller(self):
         doc = InterfaceEventDispatcher._make_on_walkoff_event_docstring(WalkoffEvent.ActionStarted)
         self.assertIn('sender_uids', doc)
+        self.assertIn('sender_ids', doc)
         self.assertIn('names', doc)
         self.assertIn('weak', doc)
         self.assertIn('def handler(data)', doc)
@@ -91,33 +92,34 @@ class TestInterfaceEventDispatcher(TestCase):
         doc = InterfaceEventDispatcher._make_on_walkoff_event_docstring(WalkoffEvent.SchedulerStart)
         self.assertIn('weak', doc)
         self.assertNotIn('sender_uids', doc)
+        self.assertNotIn('sender_ids', doc)
         self.assertNotIn('names', doc)
         self.assertIn('def handler()', doc)
 
     def test_on_walkoff_events_single_invalid_event(self):
         with self.assertRaises(UnknownEvent):
-            @dispatcher.on_walkoff_events('Invalid', sender_uids='a')
+            @dispatcher.on_walkoff_events('Invalid', sender_ids='a')
             def x(data): pass
 
     def test_on_walkoff_events_invalid_event_in_valid_events(self):
         with self.assertRaises(UnknownEvent):
-            @dispatcher.on_walkoff_events({'Invalid', WalkoffEvent.ActionStarted}, sender_uids='a')
+            @dispatcher.on_walkoff_events({'Invalid', WalkoffEvent.ActionStarted}, sender_ids='a')
             def x(data): pass
 
-    def test_on_walkoff_events_single_event_single_uid(self):
-        @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, sender_uids='a')
+    def test_on_walkoff_events_single_event_single_id(self):
+        @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, sender_ids='a')
         def x(data): pass
 
         self.assertTrue(dispatcher.event_dispatcher.is_registered('a', WalkoffEvent.ActionStarted, x))
 
-    def test_on_walkoff_events_single_event_single_uid_strong(self):
-        @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, sender_uids='a', weak=False)
+    def test_on_walkoff_events_single_event_single_id_strong(self):
+        @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, sender_ids='a', weak=False)
         def x(data): pass
 
         self.assertTrue(dispatcher.event_dispatcher.is_registered('a', WalkoffEvent.ActionStarted, x))
 
-    def test_on_walkoff_events_single_event_multiple_uids(self):
-        @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, sender_uids=('a', 'b'))
+    def test_on_walkoff_events_single_event_multiple_ids(self):
+        @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, sender_ids=('a', 'b'))
         def x(data): pass
 
         self.assertTrue(dispatcher.event_dispatcher.is_registered('a', WalkoffEvent.ActionStarted, x))
@@ -136,8 +138,8 @@ class TestInterfaceEventDispatcher(TestCase):
         self.assertTrue(dispatcher.event_dispatcher.is_registered('a', WalkoffEvent.ActionStarted, x))
         self.assertTrue(dispatcher.event_dispatcher.is_registered('b', WalkoffEvent.ActionStarted, x))
 
-    def test_on_walkoff_events_single_event_mixed_name_uids(self):
-        @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, sender_uids='c', names=('a', 'b'))
+    def test_on_walkoff_events_single_event_mixed_name_ids(self):
+        @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, sender_ids='c', names=('a', 'b'))
         def x(data): pass
 
         self.assertTrue(dispatcher.event_dispatcher.is_registered('a', WalkoffEvent.ActionStarted, x))
@@ -151,14 +153,14 @@ class TestInterfaceEventDispatcher(TestCase):
         self.assertTrue(dispatcher.event_dispatcher.is_registered('a', WalkoffEvent.ActionStarted, x))
         self.assertTrue(dispatcher.event_dispatcher.is_registered('a', WalkoffEvent.AppInstanceCreated, x))
 
-    def test_on_walkoff_events_controller_event_no_uids_or_names(self):
+    def test_on_walkoff_events_controller_event_no_ids_or_names(self):
         @dispatcher.on_walkoff_events({WalkoffEvent.SchedulerStart})
         def x(): pass
 
         self.assertTrue(
             dispatcher.event_dispatcher.is_registered(EventType.controller.name, WalkoffEvent.SchedulerStart, x))
 
-    def test_on_walkoff_events_multiple_controller_events_no_uids_or_names(self):
+    def test_on_walkoff_events_multiple_controller_events_no_ids_or_names(self):
         @dispatcher.on_walkoff_events({WalkoffEvent.SchedulerStart, WalkoffEvent.SchedulerShutdown})
         def x(): pass
 
@@ -167,8 +169,8 @@ class TestInterfaceEventDispatcher(TestCase):
         self.assertTrue(
             dispatcher.event_dispatcher.is_registered(EventType.controller.name, WalkoffEvent.SchedulerShutdown, x))
 
-    def test_on_walkoff_events_controller_event_with_uids(self):
-        @dispatcher.on_walkoff_events({WalkoffEvent.SchedulerStart}, sender_uids='a')
+    def test_on_walkoff_events_controller_event_with_ids(self):
+        @dispatcher.on_walkoff_events({WalkoffEvent.SchedulerStart}, sender_ids='a')
         def x(): pass
 
         self.assertTrue(
@@ -186,7 +188,7 @@ class TestInterfaceEventDispatcher(TestCase):
 
     def test_on_walkoff_events_invalid_function(self):
         with self.assertRaises(InvalidEventHandler):
-            @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, sender_uids='c')
+            @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, sender_ids='c')
             def x(): pass
 
     def test_on_walkoff_events_invalid_function_control_event(self):
@@ -272,11 +274,11 @@ class TestInterfaceEventDispatcher(TestCase):
 
         result = {'x': False}
 
-        @dispatcher.on_walkoff_events(WalkoffEvent.SchedulerStart, sender_uids='a')
+        @dispatcher.on_walkoff_events(WalkoffEvent.SchedulerStart, sender_ids='a')
         def x():
             result['x'] = True
 
-        self.uid = 'test'
+        self.id = 'test'
         WalkoffEvent.SchedulerStart.send(self)
         self.assertTrue(result['x'])
 
@@ -284,19 +286,38 @@ class TestInterfaceEventDispatcher(TestCase):
 
         result = {'x': False}
 
-        @dispatcher.on_walkoff_events(WalkoffEvent.SchedulerStart, sender_uids='a')
+        @dispatcher.on_walkoff_events(WalkoffEvent.SchedulerStart, sender_ids='a')
         def x():
             result['x'] = True
 
-        @dispatcher.on_walkoff_events(WalkoffEvent.SchedulerStart, sender_uids='a')
+        @dispatcher.on_walkoff_events(WalkoffEvent.SchedulerStart, sender_ids='a')
         def y():
             raise ValueError()
 
-        self.uid = 'test'
+        self.id = 'test'
         WalkoffEvent.SchedulerStart.send(self)
         self.assertTrue(result['x'])
 
     def test_example_on_walkoff_event_noncontroller_event(self):
+
+        result = {'x': False}
+
+        @dispatcher.on_walkoff_events(WalkoffEvent.ActionStarted, sender_ids='a')
+        def x(data):
+            result['x'] = True
+            result['data'] = data
+
+        self.id = 'test'
+        data = {'id': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+                'execution_uid': 'cc'}
+        WalkoffEvent.ActionStarted.send(data)
+        expected = data
+        expected['sender_id'] = expected.pop('id')
+        expected['sender_name'] = expected.pop('name')
+        self.assertTrue(result['x'])
+        self.assertDictEqual(result['data'], expected)
+
+    def test_example_on_walkoff_event_noncontroller_event_with_uids(self):
 
         result = {'x': False}
 
@@ -314,6 +335,7 @@ class TestInterfaceEventDispatcher(TestCase):
         expected['sender_name'] = expected.pop('name')
         self.assertTrue(result['x'])
         self.assertDictEqual(result['data'], expected)
+
 
     def test_example_on_app_action_event(self):
 
@@ -358,7 +380,7 @@ class TestInterfaceEventDispatcher(TestCase):
     def test_example_autogenerated_registration(self):
         result = {}
 
-        @dispatcher.on_action_started(sender_uids='a')
+        @dispatcher.on_action_started(sender_ids='a')
         def x(data):
             result['data'] = data
 

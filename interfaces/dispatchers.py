@@ -288,25 +288,25 @@ class EventDispatcher(object):
     def __init__(self):
         self._router = {}
 
-    def register_events(self, func, events, sender_uids=None, names=None, weak=True):
-        """Registers an event for a given sender UID or name
+    def register_events(self, func, events, sender_ids=None, names=None, weak=True):
+        """Registers an event for a given sender ID or name
 
         Args:
             func (func): Callback to register
             events (iterable(WalkoffEvent)): Events to register the callback to
-            sender_uids (str|iterable(str), optional): UIDs to register the callback to. Defaults to None
+            sender_ids (str|iterable(str), optional): IDs to register the callback to. Defaults to None
             names (str|iterable(str), optional): The names to register the callback to. Defaults to None
             weak (bool, optional): Should the callback be registered with a weak reference? Defaults to true
         """
-        if sender_uids is None:
-            sender_uids = []
-        sender_uids = convert_to_iterable(sender_uids)
+        if sender_ids is None:
+            sender_ids = []
+        sender_ids = convert_to_iterable(sender_ids)
         if names is None:
             names = []
         names = convert_to_iterable(names)
-        entry_ids = set(sender_uids) | set(names)
+        entry_ids = set(sender_ids) | set(names)
         if not entry_ids:
-            raise ValueError('Either sender_uid or name must specified')
+            raise ValueError('Either sender_id or name must specified')
         for entry_id in entry_ids:
             self.__register_entry(entry_id, events, func, weak)
 
@@ -328,8 +328,8 @@ class EventDispatcher(object):
             event_ (WalkoffEvent): The event to dispatch
             data (dict): The data to send to all the events
         """
-        sender_name, sender_uid = self.__get_sender_ids(data, event_)
-        callbacks = self._get_callbacks(sender_uid, sender_name, event_)
+        sender_name, sender_id = self.__get_sender_ids(data, event_)
+        callbacks = self._get_callbacks(sender_id, sender_name, event_)
         for func in callbacks:
             try:
                 args = (data,) if event_.event_type != EventType.controller else tuple()
@@ -347,11 +347,11 @@ class EventDispatcher(object):
             sender_name = None
         return sender_name, sender_id
 
-    def _get_callbacks(self, sender_uid, sender_name, event):
-        """Gets all the callbacks associated with a given sender UID, name, and event
+    def _get_callbacks(self, sender_id, sender_name, event):
+        """Gets all the callbacks associated with a given sender ID, name, and event
 
         Args:
-            sender_uid (str): The UID of the sender of the event
+            sender_id (str): The ID of the sender of the event
             sender_name (str): The name of the sender of the event
             event (WalkoffEvent): The event
 
@@ -359,7 +359,7 @@ class EventDispatcher(object):
             set(func): The callbacks registered
         """
         all_callbacks = set()
-        for sender_id in (sender_uid, sender_name):
+        for sender_id in (sender_id, sender_name):
             if self.__is_event_registered_to_sender(sender_id, event):
                 all_callbacks |= set(self._router[sender_id][event])
 

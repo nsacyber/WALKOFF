@@ -1,6 +1,15 @@
 # Changelog
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
+
+## [Unreleased]
+###### [unreleased]
+
+### Deprecated
+* The "sender_uids" argument in the interface dispatcher `on_xyz_event`
+  decorators is now a an alias for "sender_ids". This will be removed in
+  0.9.0
+
 ## [0.6.4]
 ###### 2018-01-18
 
