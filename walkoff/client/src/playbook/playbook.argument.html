@@ -1,0 +1,121 @@
+<div class="form-group argument {{id % 2 ? 'odd' : 'even'}}">
+	<!-- Label for argument with optional required icon -->
+	<label for="{{argument.name}}">
+		Argument {{id+1}}: {{argument.name}} ({{parameterSchema.type}})
+		<i *ngIf="parameterApi.description != null" class="fa fa-info-circle" [title]="parameterApi.description"></i>
+		<i *ngIf="parameterApi.required" class="fa fa-asterisk required" title="This field is required."></i>
+	</label>
+
+	<!-- Columns for allowing users to specify outputs of other action as arguments for this one -->
+	<div class="row">
+		<div class="col-xs-4">
+			<select name="playbookSelect" class="form-control" [(ngModel)]="argument.reference">
+				<option value="">-- Set Static Value --</option>
+				<option *ngFor="let i of getPreviousActions()" [value]="i.uid" [label]="i.name">{{i.name}}</option>
+			</select>
+		</div>
+		<div class="col-xs-8">
+			<input *ngIf="argument.reference" type="text" class="form-control" [(ngModel)]="argument.selection" name="selection" placeholder="(Optional) Selection for object-based outputs">
+			<ng-container *ngIf="!argument.reference">
+				<!-- Normal string text entries -->
+				<input *ngIf="parameterSchema.type === 'string' && !parameterSchema.enum" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value"
+				 type="text" [attr.minlength]="parameterSchema.minLength > 0 ? parameterSchema.minLength : null" [attr.maxlength]="parameterSchema.maxLength > 0 ? parameterSchema.maxLength : null"
+				 [attr.pattern]="parameterSchema.pattern ? parameterSchema.pattern : null" [attr.required]="parameterApi.required" [attr.placeholder]="parameterApi.placeholder">
+
+				<!-- Enum types, make a select box -->
+				<select *ngIf="parameterSchema.enum" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value" [attr.required]="parameterApi.required">
+					<option *ngIf="!parameterApi.required" value=""></option>
+					<option *ngFor="let i of parameterSchema.enum" [value]="i" [label]="i">{{i}}</option>
+				</select>
+
+				<!-- For numbers enter number info -->
+				<input *ngIf="parameterSchema.type === 'number' || parameterSchema.type === 'integer'" class="form-control" name="{{argument.name}}"
+				 [(ngModel)]="argument.value" type="number" [attr.min]="getMin(parameterSchema)" [attr.max]="getMax(parameterSchema)"
+				 [attr.step]="parameterSchema.multipleOf > 0 ? parameterSchema.multipleOf : null" [attr.required]="parameterApi.required"
+				 [attr.placeholder]="parameterApi.placeholder">
+
+				<!-- Checkbox for boolean values -->
+				<input *ngIf="parameterSchema.type === 'boolean'" type="checkbox" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value">
+
+				<!-- User select -->
+				<select2 *ngIf="isUserSelect(parameterSchema)" [data]="selectData" [value]="selectInitialValue" [options]="selectConfig"
+				 (valueChanged)="selectChange($event)"></select2>
+
+				<!-- Role select -->
+				<select2 *ngIf="isRoleSelect(parameterSchema)" [data]="selectData" [value]="selectInitialValue" [options]="selectConfig"
+				 (valueChanged)="selectChange($event)"></select2>
+			</ng-container>
+		</div>
+	</div>
+</div>
+<div *ngIf="!argument.reference && isNormalArray(parameterSchema)" class="indent">
+	<div class="row">
+		<div class="col-xs-6">
+			<select class="form-control" [(ngModel)]="selectedType" name="selectedType">
+					<option *ngFor="let i of availableTypes" [value]="i" [label]="i">{{i}}</option>
+				</select>
+		</div>
+		<div class="col-xs-6">
+			<div class="form-group">
+				<button class="btn btn-primary pull-right" (click)="addItem()" [disabled]="!selectedType">
+					<i class="fa fa-plus"></i>Add Item
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="form-group argument arrayItem {{itemId % 2 ? 'odd' : 'even'}}" *ngFor="let item of argument.value; let itemId = index; trackBy:trackArraysBy">
+		<div class="row propertyHeader">
+			<div class="col-xs-6">
+				<label>Item {{itemId+1}}:</label>
+			</div>
+			<div class="col-xs-6">
+				<div class="pull-right">
+					<button *ngIf="itemId > 0" class="btn btn-primary" (click)="moveUp(itemId)" title="Move Up"><i class="fa fa-arrow-up"></i></button>
+					<button *ngIf="itemId < argument.value.length - 1" class="btn btn-primary" (click)="moveDown(itemId)" title="Move Down"><i class="fa fa-arrow-down"></i></button>
+					<button class="btn btn-danger" (click)="removeItem(itemId)" title="Remove Item"><i class="fa fa-close"></i></button>
+				</div>
+			</div>
+		</div>
+
+		<input *ngIf="arrayTypes[itemId] === 'string'" type="text" class="form-control" [(ngModel)]="argument.value[itemId]">
+		<input *ngIf="arrayTypes[itemId] === 'number'" type="number" class="form-control" [(ngModel)]="argument.value[itemId]">
+		<input *ngIf="arrayTypes[itemId] === 'boolean'" type="checkbox" class="form-control" [(ngModel)]="argument.value[itemId]">
+	</div>
+</div>
+<div *ngIf="!argument.reference && parameterSchema.type === 'object'" class="indent">
+	<div class="row">
+		<div class="col-xs-6">
+			<input type="text" class="form-control" [(ngModel)]="propertyName" placeholder="Enter a parameter name">
+		</div>
+		<div class="col-xs-3">
+			<select class="form-control" [(ngModel)]="selectedType" name="selectedType">
+				<option *ngFor="let i of availableTypes" [value]="i" [label]="i">{{i}}</option>
+			</select>
+		</div>
+		<div class="col-xs-3">
+			<div class="form-group">
+				<button class="btn btn-primary pull-right" (click)="addProperty()" [disabled]="!propertyName.trim() || !selectedType">
+					<i class="fa fa-plus"></i>Add Property
+				</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="form-group argument {{itemId % 2 ? 'odd' : 'even'}}" *ngFor="let key of argument.value | keys; let itemId = index">
+		<div class="row propertyHeader">
+			<div class="col-xs-6">
+				<label>Property "{{key}}":</label>
+			</div>
+			<div class="col-xs-6">
+				<div class="pull-right">
+					<button class="btn btn-danger" (click)="removeProperty(key)" title="Remove Item"><i class="fa fa-close"></i></button>
+				</div>
+			</div>
+		</div>
+
+		<input *ngIf="objectTypes[key] === 'string'" type="text" class="form-control" [(ngModel)]="argument.value[key]">
+		<input *ngIf="objectTypes[key] === 'number'" type="number" class="form-control" [(ngModel)]="argument.value[key]">
+		<input *ngIf="objectTypes[key] === 'boolean'" type="checkbox" class="form-control" [(ngModel)]="argument.value[key]">
+	</div>
+</div>

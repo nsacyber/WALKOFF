@@ -1,6 +1,19 @@
 # Changelog
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
+
+## [0.6.5]
+###### 2018-02-01
+
+### Added
+* Webpack is now used to increase UI performance
+
+### Changed
+* Default return codes for the Walkoff app
+
+### Contributor
+* Some UI tests are now run on Travis-CI
+
 ## [0.6.4]
 ###### 2018-01-18
 
