@@ -16,7 +16,6 @@ matrix:
         only:
           - master
           - development
-          - travis_test
 
     - language: python
       os: linux
@@ -34,7 +33,6 @@ matrix:
         only:
           - master
           - development
-          - travis_test
 
     - language: python
       os: linux
@@ -52,7 +50,6 @@ matrix:
         only:
           - master
           - development
-          - travis_test
 
     - language: python
       os: linux
@@ -70,7 +67,6 @@ matrix:
         only:
           - master
           - development
-          - travis_test
 
     - language: node_js
       node_js:
@@ -94,5 +90,4 @@ matrix:
         only:
           - master
           - development
-          - travis_test
 
