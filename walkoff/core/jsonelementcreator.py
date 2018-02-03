@@ -37,7 +37,6 @@ class JsonElementCreator(object):
         try:
             elem = cls.construct_current_class(current_class, json_in, subfield_lookup)
             walkoff.coredb.devicedb.device_db.session.add(elem)
-            walkoff.coredb.devicedb.device_db.session.flush()
             return elem
         except (KeyError, TypeError, InvalidArgument, UnknownApp, UnknownFunction) as e:
             walkoff.coredb.devicedb.device_db.session.rollback()

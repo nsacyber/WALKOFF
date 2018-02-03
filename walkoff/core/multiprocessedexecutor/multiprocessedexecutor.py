@@ -177,7 +177,6 @@ class MultiprocessedExecutor(object):
             The execution UID of the Workflow.
         """
         execution_uid = str(uuid.uuid4())
-        workflow._execution_uid = execution_uid
 
         if start is not None:
             logger.info('Executing workflow {0} for action {1}'.format(workflow.name, start))

@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import Column, Integer, ForeignKey, String, orm
+from sqlalchemy import Column, ForeignKey, String, orm
 from sqlalchemy.orm import relationship, backref
 
 from walkoff.appgateway import get_condition
@@ -21,7 +21,7 @@ class Condition(ExecutionElement, Device_Base):
     _branch_id = Column(Guid(), ForeignKey('branch.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
-    arguments = relationship('Argument', backref=backref('_condition'), cascade='all, delete-orphan')
+    arguments = relationship('Argument', backref=backref('_condition'), cascade='all, delete, delete-orphan')
     transforms = relationship('Transform', backref=backref('_condition'), cascade='all, delete-orphan')
 
     def __init__(self, app_name, action_name, id=None, arguments=None, transforms=None):

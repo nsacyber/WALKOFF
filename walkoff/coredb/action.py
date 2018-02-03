@@ -30,7 +30,7 @@ class Action(ExecutionElement, Device_Base):
     action_name = Column(String(80), nullable=False)
     name = Column(String(80))
     device_id = Column(Integer)
-    arguments = relationship('Argument', backref=backref('_action'), cascade='all, delete-orphan')
+    arguments = relationship('Argument', backref=backref('_action'), cascade='all, delete, delete-orphan')
     triggers = relationship('Condition', backref=backref('_action'), cascade='all, delete-orphan')
     position = relationship('Position', uselist=False, backref=backref('_action'), cascade='all, delete-orphan')
     templated = Column(Boolean)

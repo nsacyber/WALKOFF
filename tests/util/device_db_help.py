@@ -1,10 +1,8 @@
 import json
 import os
-from sqlalchemy import and_
 
 from walkoff.coredb import devicedb
 from walkoff.coredb.playbook import Playbook
-from walkoff.coredb.workflow import Workflow
 from tests.config import test_workflows_path_with_generated, test_workflows_path
 from walkoff.core.jsonplaybookloader import JsonPlaybookLoader
 import walkoff.config.paths
@@ -30,14 +28,24 @@ def standard_load():
 
 
 def load_playbook(playbook_name):
-    JsonPlaybookLoader.load_playbook(os.path.join(test_workflows_path, playbook_name+'.playbook'))
-    return devicedb.device_db.session.query(Playbook).filter_by(name=playbook_name).first()
+    playbook = JsonPlaybookLoader.load_playbook(os.path.join(test_workflows_path, playbook_name+'.playbook'))
+    devicedb.device_db.session.add(playbook)
+    devicedb.device_db.session.commit()
+    return playbook
 
 
 def load_workflow(playbook_name, workflow_name):
-    JsonPlaybookLoader.load_playbook(os.path.join(test_workflows_path, playbook_name+'.playbook'))
-    return devicedb.device_db.session.query(Workflow).join(Playbook).filter(and_(
-        Workflow.name == workflow_name, Playbook.name == playbook_name)).first()
+    playbook = JsonPlaybookLoader.load_playbook(os.path.join(test_workflows_path, playbook_name+'.playbook'))
+    devicedb.device_db.session.add(playbook)
+    devicedb.device_db.session.commit()
+
+    workflow = None
+    for wf in playbook.workflows:
+        if wf.name == workflow_name:
+            workflow = wf
+            break
+
+    return workflow
 
 
 def setup_dbs():

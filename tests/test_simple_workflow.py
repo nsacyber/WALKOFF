@@ -102,6 +102,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         action_names = ['start', '1', '2']
         action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
+
         self.controller.execute_workflow(workflow.id)
 
         self.controller.wait_and_reset(1)
