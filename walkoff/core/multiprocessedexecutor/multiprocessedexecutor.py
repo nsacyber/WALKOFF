@@ -191,7 +191,7 @@ class MultiprocessedExecutor(object):
                 if action.id == workflow.start:
                     action.arguments = start_arguments
 
-        walkoff.coredb.devicedb.device_db.session.commit()
+        # walkoff.coredb.devicedb.device_db.session.commit()
 
         self.manager.add_workflow(workflow.id, execution_uid)
 
