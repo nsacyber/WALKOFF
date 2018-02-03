@@ -100,6 +100,7 @@ class MockLoadBalancer(object):
             if workflow_id == "Exit":
                 return
 
+            walkoff.coredb.devicedb.device_db.session.expire_all()
             workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
 
             self.workflow_comms[workflow_execution_uid] = workflow
