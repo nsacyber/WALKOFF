@@ -27,12 +27,11 @@ class TestTriggersServer(ServerTestCase):
         case_database.initialize()
 
     def tearDown(self):
-        walkoff.controller.workflows = {}
+        device_db_help.cleanup_device_db()
         walkoff.case.subscription.clear_subscriptions()
         for case in case_database.case_db.session.query(case_database.Case).all():
             case_database.case_db.session.delete(case)
         case_database.case_db.session.commit()
-        device_db_help.cleanup_device_db()
 
     def test_trigger_multiple_workflows(self):
         workflow = device_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')

@@ -201,6 +201,7 @@ class Worker:
             self.results_sock.close()
         if self.comm_sock:
             self.comm_sock.close()
+        walkoff.coredb.devicedb.device_db.tear_down()
         os._exit(0)
 
     def receive_requests(self):

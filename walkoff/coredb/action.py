@@ -244,6 +244,9 @@ class Action(ExecutionElement, Device_Base):
                 if check_arg:
                     self.arguments.remove(check_arg)
                 self.arguments.append(argument)
+            # TODO: Remove this once the way triggers are done is changed.
+            from walkoff.coredb import devicedb
+            devicedb.device_db.session.commit()
 
     def __get_argument_by_name(self, name):
         for argument in self.arguments:
