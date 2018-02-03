@@ -67,7 +67,7 @@ class TestZMQCommunication(unittest.TestCase):
         self.assertDictEqual(result, {'result': "REPEATING: Hello World", 'status': 'Success'})
 
     def test_multi_action_workflow(self):
-        workflow = device_db_help.load_workflow('mutliactionWorkflowTest', 'multiactionWorkflow')
+        workflow = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         action_names = ['start', '1']
         action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
@@ -169,7 +169,7 @@ class TestZMQCommunication(unittest.TestCase):
 
         WalkoffEvent.WorkflowExecutionStart.connect(action_1_about_to_begin_listener)
 
-        workflow = device_db_help.load_workflow('pauseWorkflowTest', 'pauseWorkflow')
+        workflow = device_db_help.load_workflow('testGeneratedWorkflows/pauseWorkflowTest', 'pauseWorkflow')
 
         uid = self.controller.execute_workflow(workflow.id)
         self.controller.wait_and_reset(1)
