@@ -5,7 +5,6 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
-from walkoff.dbtypes import Guid
 import walkoff.config.config
 from walkoff.helpers import format_db_path
 import walkoff.config.paths
@@ -53,7 +52,7 @@ class Event(Case_Base):
     id = Column(Integer, primary_key=True)
     timestamp = Column(DateTime, default=datetime.utcnow())
     type = Column(String)
-    originator = Column(Guid())
+    originator = Column(String)
     message = Column(String)
     note = Column(String)
     data = Column(String)
