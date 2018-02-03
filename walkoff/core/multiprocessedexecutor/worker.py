@@ -109,7 +109,7 @@ def add_arguments_to_action_proto(action_packet, sender):
                 if not isinstance(val, string_types):
                     try:
                         setattr(arg, field, json.dumps(val))
-                    except ValueError:
+                    except (ValueError, TypeError):
                         setattr(arg, field, str(val))
                 else:
                     setattr(arg, field, val)
