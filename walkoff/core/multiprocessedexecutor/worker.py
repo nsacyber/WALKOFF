@@ -221,8 +221,6 @@ class Worker:
             Workflow.id == workflow_id).first()
         workflow._execution_uid = workflow_execution_uid
 
-        print("Worker got workflow {}".format(workflow.get_execution_uid()))
-
         self.workflows[threading.current_thread().name] = workflow
 
         workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start)
@@ -273,7 +271,6 @@ class Worker:
                 sender (execution element): The execution element that sent the signal.
                 kwargs (dict): Any extra data to send.
         """
-        print("Worker sending: {}".format(kwargs['event']))
         packet_bytes = convert_to_protobuf(sender, self.workflows[threading.current_thread().name].get_execution_uid(),
                                            **kwargs)
 

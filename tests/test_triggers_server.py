@@ -11,8 +11,6 @@ from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
 import walkoff.coredb.devicedb
-from walkoff.coredb.playbook import Playbook
-from walkoff.coredb.workflow import Workflow
 from tests.util import device_db_help
 
 try:

@@ -26,12 +26,11 @@ __execution_tests = [test_argument, test_execution_runtime, test_execution_event
                      test_app_utilities, test_input_validation, test_decorators,
                      test_app_api_validation, test_condition_transform_validation, test_workflow_results,
                      test_roles_pages_database, test_users_roles_database, test_playbook,
-                     test_json_element_creator, test_json_element_reader, test_json_playbook_loader,
                      test_scheduler, test_walkoff_tag, test_app_cache, test_app_base]
 execution_suite = TestSuite()
 add_tests_to_suite(execution_suite, __execution_tests)
 
-__workflow_tests = [test_load_workflow, test_simple_workflow, test_workflow_manipulation]
+__workflow_tests = [test_simple_workflow, test_workflow_manipulation]
 workflow_suite = TestSuite()
 add_tests_to_suite(workflow_suite, __workflow_tests)
 
