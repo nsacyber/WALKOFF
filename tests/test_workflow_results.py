@@ -7,14 +7,16 @@ from tests.util import device_db_help
 
 class TestWorkflowResults(ServerTestCase):
     def setUp(self):
-        case_database.initialize()
+        self.workflow = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
     def tearDown(self):
-        case_database.case_db.tear_down()
+        for result in case_database.case_db.session.query(WorkflowResult).all():
+            case_database.case_db.session.delete(result)
+        case_database.case_db.session.commit()
+        device_db_help.cleanup_device_db()
 
     def test_workflow_result_format(self):
-        workflow = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-        uid = flaskserver.running_context.controller.execute_workflow(workflow.id)
+        uid = flaskserver.running_context.controller.execute_workflow(self.workflow.id)
 
         flaskserver.running_context.controller.wait_and_reset(1)
 
@@ -38,12 +40,11 @@ class TestWorkflowResults(ServerTestCase):
                               'result': {"status": "Success", "result": {"message": "HELLO WORLD"}}})
 
     def test_workflow_result_multiple_workflows(self):
-        workflow = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-
-        uid1 = flaskserver.running_context.controller.execute_workflow(workflow.id)
-        uid2 = flaskserver.running_context.controller.execute_workflow(workflow.id)
+        uid1 = flaskserver.running_context.controller.execute_workflow(self.workflow.id)
+        uid2 = flaskserver.running_context.controller.execute_workflow(self.workflow.id)
 
         flaskserver.running_context.controller.wait_and_reset(2)
 
         workflow_uids = case_database.case_db.session.query(WorkflowResult).with_entities(WorkflowResult.uid).all()
         self.assertSetEqual({uid1, uid2}, {uid[0] for uid in workflow_uids})
+

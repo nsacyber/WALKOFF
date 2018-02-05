@@ -88,7 +88,7 @@ class ServerTestCase(unittest.TestCase):
                 os.remove(tests.config.test_data_path)
             else:
                 shutil.rmtree(tests.config.test_data_path)
-        walkoff.appgateway.clear_cache()
+
         walkoff.server.flaskserver.running_context.controller.shutdown_pool()
 
         import walkoff.coredb.devicedb
@@ -97,6 +97,7 @@ class ServerTestCase(unittest.TestCase):
 
         import walkoff.case.database as case_database
         case_database.case_db.tear_down()
+        walkoff.appgateway.clear_cache()
 
     def setUp(self):
         import walkoff.server.flaskserver
