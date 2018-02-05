@@ -419,32 +419,30 @@ class TestWorkflowServer(ServerTestCase):
 
         self.assertEqual(len(playbook.workflows), len(copy_playbook.workflows))
 
-    # TODO: Come back to this. No reason why this should fail other tests.
-    # def test_execute_workflow(self):
-    #     playbook = self.standard_load()
-    #
-    #     workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
-    #     action_ids = [action.id for action in workflow.actions if action.name == 'start']
-    #     setup_subscriptions_for_action(workflow.id, action_ids)
-    #
-    #     result = {'count': 0}
-    #
-    #     @WalkoffEvent.ActionExecutionSuccess.connect
-    #     def y(sender, **kwargs):
-    #         result['count'] += 1
-    #         result['data'] = kwargs['data']
-    #
-    #     response = self.post_with_status_check(
-    #         '/api/playbooks/{0}/workflows/{1}/execute'.format(playbook.id, workflow.id),
-    #         headers=self.headers,
-    #         status_code=SUCCESS_ASYNC,
-    #         content_type="application/json", data=json.dumps({}))
-    #     flask_server.running_context.controller.wait_and_reset(1)
-    #     self.assertIn('id', response)
-    #     self.assertEqual(result['count'], 1)
-    #     self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
+    def test_execute_workflow(self):
+         playbook = device_db_help.standard_load()
 
-    # TODO: Come back to workflow pause/resume.
+         workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
+         action_ids = [action.id for action in workflow.actions if action.name == 'start']
+         setup_subscriptions_for_action(workflow.id, action_ids)
+
+         result = {'count': 0}
+
+         @WalkoffEvent.ActionExecutionSuccess.connect
+         def y(sender, **kwargs):
+             result['count'] += 1
+             result['data'] = kwargs['data']
+
+         response = self.post_with_status_check(
+             '/api/playbooks/{0}/workflows/{1}/execute'.format(playbook.id, workflow.id),
+             headers=self.headers,
+             status_code=SUCCESS_ASYNC,
+             content_type="application/json", data=json.dumps({}))
+         flask_server.running_context.controller.wait_and_reset(1)
+         self.assertIn('id', response)
+         self.assertEqual(result['count'], 1)
+         self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
+
     def test_execute_workflow_pause_resume(self):
         device_db_help.load_playbook('testGeneratedWorkflows/pauseWorkflowTest')
 
@@ -553,3 +551,4 @@ class TestWorkflowServer(ServerTestCase):
             for action_result in result['results']:
                 self.assertSetEqual(set(action_result.keys()),
                                     {'input', 'type', 'name', 'timestamp', 'result', 'app_name', 'action_name'})
+

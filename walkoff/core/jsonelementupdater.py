@@ -1,5 +1,5 @@
 import walkoff.coredb.devicedb
-
+from uuid import UUID
 
 class JsonElementUpdater(object):
     """Updates an ExecutionElement from JSON
@@ -39,14 +39,18 @@ class JsonElementUpdater(object):
     @staticmethod
     def update_relationship(json_value, value, cls):
         from walkoff.coredb.argument import Argument
-        json_ids = {element['id'] for element in json_value if 'id' in element}
-
+        if cls is not Argument:
+            json_ids = {UUID(element['id']) for element in json_value if 'id' in element}
+        else:
+            json_ids = {element['id'] for element in json_value if 'id' in element}
         old_elements = {element.id: element for element in value}
         elements_to_discard = [element for element_id, element in old_elements.items() if
                                element_id not in json_ids]
         for json_element in json_value:
             json_element_id = json_element.pop('id', None)
-            if json_element_id is not None and json_element_id > 0:
+            if json_element_id is not None:
+                if cls is not Argument:
+                    json_element_id = UUID(json_element_id)
                 old_elements[json_element_id].update(json_element)
             else:
                 if cls is Argument:
@@ -63,5 +67,4 @@ class JsonElementUpdater(object):
         return ((field, getattr(element, field)) for field in dir(element)
                 if not field.startswith('_')
                 and not callable(getattr(element, field))
-                and field != 'raw_representation'
-                and field != 'metadata')
+                and field not in ('raw_representation', 'metadata'))
