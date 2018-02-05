@@ -4,6 +4,7 @@ import unittest
 import walkoff.server.flaskserver as server
 from walkoff.core.scheduler import InvalidTriggerArgs
 from walkoff.serverdb import db
+from tests.util.device_db_help import setup_dbs
 from walkoff.serverdb.scheduledtasks import ScheduledTask
 
 
@@ -12,7 +13,7 @@ class TestScheduledTask(unittest.TestCase):
     def setUpClass(cls):
         cls.context = server.app.test_request_context()
         cls.context.push()
-        db.create_all()
+        setup_dbs()
 
     def setUp(self):
         self.date_trigger = {'type': 'date', 'args': {'run_date': '2017-01-25 10:00:00'}}

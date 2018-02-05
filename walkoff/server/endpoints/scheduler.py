@@ -7,9 +7,20 @@ from walkoff.security import permissions_accepted_for_resources, ResourcePermiss
 from walkoff.serverdb.scheduledtasks import ScheduledTask
 from walkoff.extensions import db
 from walkoff.server.decorators import with_resource_factory
+from uuid import UUID
 
 
 with_task = with_resource_factory('Scheduled task', lambda task_id: ScheduledTask.query.filter_by(id=task_id).first())
+
+
+def validate_uuids(uuids):
+    invalid_uuids = []
+    for uuid in uuids:
+        try:
+            UUID(uuid)
+        except ValueError:
+            invalid_uuids.append(uuid)
+    return invalid_uuids
 
 
 def get_scheduler_status():
@@ -61,10 +72,12 @@ def create_scheduled_task():
     @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['create', 'execute']))
     def __func():
         data = request.get_json()
+        invalid_uuids = validate_uuids(data['workflows'])
+        if invalid_uuids:
+            return {'error': 'Invalid UUIDs {}'.format(invalid_uuids)}, 400
         task = ScheduledTask.query.filter_by(name=data['name']).first()
         if task is None:
             try:
-                print(data)
                 task = ScheduledTask(**data)
             except InvalidTriggerArgs:
                 return {'error': 'invalid scheduler arguments'}, 400
@@ -94,6 +107,9 @@ def update_scheduled_task():
     @with_task('update', request.get_json()['id'])
     def __func(task):
         data = request.get_json()
+        invalid_uuids = validate_uuids(data.get('workflows', []))
+        if invalid_uuids:
+            return {'error': 'Invalid UUIDs {}'.format(invalid_uuids)}, 400
         if 'name' in data:
             same_name = ScheduledTask.query.filter_by(name=data['name']).first()
             if same_name is not None and same_name.id != data['id']:
