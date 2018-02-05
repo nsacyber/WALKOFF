@@ -20,7 +20,7 @@ class MockWorkflow(object):
         return {'name': self.name, 'id': self.id, 'other': self.other}
 
 
-def execute(playbook_name, workflow_name):
+def execute(workflow_id):
     pass
 
 
@@ -40,8 +40,7 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(self.scheduler.scheduler.state, state)
 
     def add_tasks(self, task_id, workflow_ids, trigger):
-        workflows = [(i, i + 1, id_) for i, id_ in enumerate(workflow_ids)]
-        self.scheduler.schedule_workflows(task_id, execute, workflows, trigger)
+        self.scheduler.schedule_workflows(task_id, execute, workflow_ids, trigger)
 
     def add_task_set_one(self):
         task_id = 'task'
@@ -60,6 +59,7 @@ class TestScheduler(unittest.TestCase):
         self.assertSchedulerHasJobs({construct_task_id(task_id, workflow_id) for workflow_id in workflow_ids})
         for job in self.scheduler.scheduler.get_jobs():
             self.assertEqual(job.trigger, self.trigger)
+
 
     def test_get_all_scheduled_workflows(self):
         task_id, workflow_ids = self.add_task_set_one()
@@ -179,3 +179,4 @@ class TestScheduler(unittest.TestCase):
         self.scheduler.pause()
         self.assertEqual(self.scheduler.resume(), STATE_RUNNING)
         self.assertSchedulerStateIs(STATE_RUNNING)
+    
