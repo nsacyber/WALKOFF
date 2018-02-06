@@ -33,19 +33,28 @@ class TestTriggersServer(ServerTestCase):
             case_database.case_db.session.delete(case)
         case_database.case_db.session.commit()
 
-    def test_trigger_execute(self):
+    def test_trigger_multiple_workflows(self):
         workflow = device_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
+
+        ids = []
 
         response = self.post_with_status_check(
             '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
-            headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json", data=json.dumps({}))
+            headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json",
+            data=json.dumps({}))
+        ids.append(response['id'])
 
-        ids = [response['id']]
+        response = self.post_with_status_check(
+            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
+            headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json",
+            data=json.dumps({}))
+        ids.append(response['id'])
 
         data = {"execution_uids": ids,
                 "data_in": {"data": "1"}}
 
-        result = {"result": False}
+        result = {"result": 0,
+                  "num_trigs": 0}
 
         def wait_thread():
             time.sleep(0.1)
@@ -53,7 +62,7 @@ class TestTriggersServer(ServerTestCase):
             timeout = 0
             threshold = 5
             while len(execd_ids) != len(ids) and timeout < threshold:
-                resp = self.post_with_status_check('/api/triggers/send_data', headers=self.headers,
+                resp = self.put_with_status_check('/api/triggers/send_data', headers=self.headers,
                                                    data=json.dumps(data),
                                                    status_code=SUCCESS, content_type='application/json')
                 execd_ids.update(set.intersection(set(ids), set(resp)))
@@ -63,14 +72,17 @@ class TestTriggersServer(ServerTestCase):
 
         @WalkoffEvent.TriggerActionAwaitingData.connect
         def send_data(sender, **kwargs):
-            threading.Thread(target=wait_thread).start()
+            if result["num_trigs"] == 1:
+                threading.Thread(target=wait_thread).start()
+            else:
+                result["num_trigs"] += 1
 
         @WalkoffEvent.TriggerActionTaken.connect
         def trigger_taken(sender, **kwargs):
-            result['result'] = True
+            result['result'] += 1
 
-        flask_server.running_context.controller.wait_and_reset(1)
-        self.assertTrue(result['result'])
+        flask_server.running_context.controller.wait_and_reset(2)
+        self.assertEqual(result['result'], 2)
 
     # def test_trigger_multiple_workflows(self):
     #     workflow = device_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')

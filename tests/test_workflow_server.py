@@ -30,7 +30,8 @@ class TestWorkflowServer(ServerTestCase):
         self.verb_lookup = {'get': self.get_with_status_check,
                             'put': self.put_with_status_check,
                             'post': self.post_with_status_check,
-                            'delete': self.delete_with_status_check}
+                            'delete': self.delete_with_status_check,
+                            'patch': self.patch_with_status_check}
 
         case_database.initialize()
 
@@ -236,7 +237,7 @@ class TestWorkflowServer(ServerTestCase):
         original_length = len(list(expected_playbooks))
         data = {"name": self.add_playbook_name}
         self.update_playbooks = True
-        response = self.put_with_status_check('/api/playbooks', headers=self.headers,
+        response = self.post_with_status_check('/api/playbooks', headers=self.headers,
                                               status_code=OBJECT_CREATED, data=json.dumps(data),
                                               content_type="application/json")
         response.pop('id')
@@ -247,10 +248,10 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_create_playbook_already_exists(self):
         data = {"name": self.add_playbook_name}
-        self.put_with_status_check('/api/playbooks',
+        self.post_with_status_check('/api/playbooks',
                                    data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
                                    content_type="application/json")
-        self.put_with_status_check('/api/playbooks',
+        self.post_with_status_check('/api/playbooks',
                                    error='Unique constraint failed.',
                                    data=json.dumps(data), headers=self.headers, status_code=OBJECT_EXISTS_ERROR,
                                    content_type="application/json")
@@ -262,7 +263,7 @@ class TestWorkflowServer(ServerTestCase):
         workflow_json = workflow.read()
         workflow_json['id'] = 'garbage'
         data = {'name': self.add_playbook_name, 'workflows': [workflow_json]}
-        self.put_with_status_check('/api/playbooks',
+        self.post_with_status_check('/api/playbooks',
                                    data=json.dumps(data), headers=self.headers, status_code=BAD_REQUEST,
                                    content_type="application/json")
 
@@ -270,7 +271,7 @@ class TestWorkflowServer(ServerTestCase):
         playbook = device_db_help.standard_load()
         initial_workflows_len = len(playbook.workflows)
 
-        response = self.put_with_status_check('/api/playbooks/{}/workflows'.format(playbook.id),
+        response = self.post_with_status_check('/api/playbooks/{}/workflows'.format(playbook.id),
                                               headers=self.headers, status_code=OBJECT_CREATED,
                                               data=json.dumps(self.empty_workflow_json),
                                               content_type="application/json")
@@ -284,12 +285,12 @@ class TestWorkflowServer(ServerTestCase):
         self.assertIsNotNone(workflow)
 
     def test_create_workflow_invalid_id(self):
-        self.check_invalid_id('put', '/api/playbooks/{}/workflows'.format(uuid4()), 'playbook',
+        self.check_invalid_id('post', '/api/playbooks/{}/workflows'.format(uuid4()), 'playbook',
                               data=json.dumps(self.empty_workflow_json),
                               content_type="application/json")
 
     def test_create_workflow_invalid_id_format(self):
-        self.check_invalid_uuid('put', '/api/playbooks/87fgb/workflows', 'playbook',
+        self.check_invalid_uuid('post', '/api/playbooks/87fgb/workflows', 'playbook',
                                 data=json.dumps(self.empty_workflow_json),
                                 content_type="application/json")
 
@@ -299,7 +300,7 @@ class TestWorkflowServer(ServerTestCase):
         playbook = device_db_help.standard_load()
 
         data = {'id': str(playbook.id), 'name': self.change_playbook_name}
-        response = self.post_with_status_check('/api/playbooks',
+        response = self.patch_with_status_check('/api/playbooks',
                                                data=json.dumps(data),
                                                headers=self.headers,
                                                content_type='application/json')
@@ -309,7 +310,7 @@ class TestWorkflowServer(ServerTestCase):
         device_db_help.standard_load()
         expected = {playbook.name for playbook in devicedb.device_db.session.query(Playbook).all()}
         data = {'id': str(uuid4()), 'name': self.change_playbook_name}
-        self.check_invalid_id('post', '/api/playbooks', 'playbook', content_type="application/json",
+        self.check_invalid_id('patch', '/api/playbooks', 'playbook', content_type="application/json",
                               data=json.dumps(data))
         self.assertSetEqual({playbook.name for playbook in devicedb.device_db.session.query(Playbook).all()}, expected)
 
@@ -317,7 +318,7 @@ class TestWorkflowServer(ServerTestCase):
         device_db_help.standard_load()
         expected = {playbook.name for playbook in devicedb.device_db.session.query(Playbook).all()}
         data = {'id': '475', 'name': self.change_playbook_name}
-        self.check_invalid_uuid('post', '/api/playbooks', 'playbook', content_type="application/json",
+        self.check_invalid_uuid('patch', '/api/playbooks', 'playbook', content_type="application/json",
                                 data=json.dumps(data))
         self.assertSetEqual({playbook.name for playbook in devicedb.device_db.session.query(Playbook).all()}, expected)
 
@@ -326,7 +327,7 @@ class TestWorkflowServer(ServerTestCase):
         workflow = playbook.workflows[0]
         expected_json = workflow.read()
         expected_json['name'] = self.change_workflow_name
-        response = self.post_with_status_check('/api/playbooks/{}/workflows'.format(playbook.id),
+        response = self.put_with_status_check('/api/playbooks/{}/workflows'.format(playbook.id),
                                                data=json.dumps(expected_json),
                                                headers=self.headers,
                                                content_type='application/json')
@@ -342,7 +343,7 @@ class TestWorkflowServer(ServerTestCase):
         playbook = device_db_help.standard_load()
         workflow = playbook.workflows[0].read()
         initial_workflows = devicedb.device_db.session.query(Workflow).all()
-        self.check_invalid_id('post', '/api/playbooks/{}/workflows'.format(uuid4()), 'workflow',
+        self.check_invalid_id('put', '/api/playbooks/{}/workflows'.format(uuid4()), 'workflow',
                               data=json.dumps(workflow), content_type="application/json")
         final_workflows = devicedb.device_db.session.query(Workflow).all()
         self.assertSetEqual(set(final_workflows), set(initial_workflows))
@@ -351,7 +352,7 @@ class TestWorkflowServer(ServerTestCase):
         playbook = device_db_help.standard_load()
         workflow = playbook.workflows[0].read()
         initial_workflows = devicedb.device_db.session.query(Workflow).all()
-        self.check_invalid_uuid('post', '/api/playbooks/874fe/workflows', 'workflow',
+        self.check_invalid_uuid('put', '/api/playbooks/874fe/workflows', 'workflow',
                                 data=json.dumps(workflow), content_type="application/json")
         final_workflows = devicedb.device_db.session.query(Workflow).all()
         self.assertSetEqual(set(final_workflows), set(initial_workflows))
@@ -360,9 +361,9 @@ class TestWorkflowServer(ServerTestCase):
         playbook = device_db_help.standard_load()
         for workflow in playbook.workflows:
             workflow_id = workflow.id
-        response = self.post_with_status_check('/api/playbooks/{0}/workflows/{1}/copy'.format(playbook.id, workflow_id),
+        response = self.post_with_status_check('/api/playbooks/{0}/workflows?source={1}'.format(playbook.id, workflow_id),
                                                headers=self.headers, status_code=OBJECT_CREATED,
-                                               data=json.dumps({'workflow_name': self.add_workflow_name}),
+                                               data=json.dumps({'name': self.add_workflow_name}),
                                                content_type="application/json")
         self.assertEqual(len(playbook.workflows), 2)
 
@@ -389,8 +390,8 @@ class TestWorkflowServer(ServerTestCase):
 
         transfer_playbook = devicedb.device_db.session.query(Playbook).filter_by(name='dataflowTest').first()
 
-        data = {"workflow_name": self.add_workflow_name, "playbook_id": str(transfer_playbook.id)}
-        self.post_with_status_check('/api/playbooks/{0}/workflows/{1}/copy'.format(playbook.id, workflow_id),
+        data = {"name": self.add_workflow_name, "playbook_id": str(transfer_playbook.id)}
+        self.post_with_status_check('/api/playbooks/{0}/workflows?source={1}'.format(playbook.id, workflow_id),
                                     data=json.dumps(data),
                                     headers=self.headers, status_code=OBJECT_CREATED, content_type="application/json")
 
@@ -409,8 +410,8 @@ class TestWorkflowServer(ServerTestCase):
     def test_copy_playbook(self):
         playbook = device_db_help.standard_load()
 
-        data = {"playbook_name": self.add_playbook_name}
-        self.post_with_status_check('/api/playbooks/{0}/copy'.format(playbook.id),
+        data = {"name": self.add_playbook_name}
+        self.post_with_status_check('/api/playbooks?source={}'.format(playbook.id),
                                     data=json.dumps(data),
                                     headers=self.headers, status_code=OBJECT_CREATED, content_type="application/json")
 

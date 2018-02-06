@@ -112,7 +112,7 @@
           description: A list of devices
           items:
             $ref: '#/definitions/Device'
-  put:
+  post:
     tags:
       - Devices
     summary: Add a device
@@ -139,7 +139,7 @@
         schema:
           $ref: '#/definitions/Error'
 
-  post:
+  put:
     tags:
       - Devices
     summary: Update a device

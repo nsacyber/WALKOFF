@@ -72,7 +72,7 @@ def get_playbooks(full=None):
     return __func()
 
 
-def create_playbook():
+def create_playbook(source=None):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create']))
     def __func():
@@ -94,6 +94,8 @@ def create_playbook():
 
         current_app.logger.info('Playbook {0} created'.format(playbook_name))
         return playbook.read(), OBJECT_CREATED
+    if source:
+        return copy_playbook(source)
 
     return __func()
 
@@ -154,8 +156,8 @@ def copy_playbook(playbook_id):
     def __func(playbook):
         data = request.get_json()
 
-        if 'playbook_name' in data and data['playbook_name']:
-            new_playbook_name = data['playbook_name']
+        if 'name' in data and data['name']:
+            new_playbook_name = data['name']
         else:
             new_playbook_name = playbook.name + "_Copy"
 
@@ -197,7 +199,7 @@ def get_workflows(playbook_id):
     return __func()
 
 
-def create_workflow(playbook_id):
+def create_workflow(playbook_id, source=None):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create']))
     @with_playbook('create workflow', playbook_id)
@@ -205,7 +207,8 @@ def create_workflow(playbook_id):
 
         data = request.get_json()
         workflow_name = data['name']
-
+        if 'start' not in data:
+            return {'error': '"start" is a required field'}, BAD_REQUEST
         try:
             workflow = Workflow.create(data)
             playbook.workflows.append(workflow)
@@ -223,6 +226,8 @@ def create_workflow(playbook_id):
         current_app.logger.info('Workflow {0}-{1} created'.format(playbook_id, workflow_name))
         return workflow.read(), OBJECT_CREATED
 
+    if source:
+        return copy_workflow(playbook_id, source)
     return __func()
 
 
@@ -299,8 +304,8 @@ def copy_workflow(playbook_id, workflow_id):
             new_playbook_id = data['playbook_id']
         else:
             new_playbook_id = playbook_id
-        if 'workflow_name' in data and data['workflow_name']:
-            new_workflow_name = data['workflow_name']
+        if 'name' in data and data['name']:
+            new_workflow_name = data['name']
         else:
             new_workflow_name = workflow.name + "_Copy"
 

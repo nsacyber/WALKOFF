@@ -60,7 +60,7 @@ class TestConfigurationServer(ServerTestCase):
                 "port": 1100,
                 "access_token_duration": 20,
                 "refresh_token_duration": 35}
-        self.post_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
+        self.put_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
                                     content_type='application/json')
 
         expected = {walkoff.config.paths.db_path: 'db_path_reset',
@@ -78,7 +78,7 @@ class TestConfigurationServer(ServerTestCase):
         refresh_token_duration = current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days
         data = {"access_token_duration": 60 * 25,
                 "refresh_token_duration": 1}
-        self.post_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
+        self.put_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
                                     content_type='application/json', status_code=BAD_REQUEST)
 
         self.assertEqual(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds, access_token_duration)

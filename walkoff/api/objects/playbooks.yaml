@@ -26,7 +26,7 @@ Playbook:
 
 CreateWorkflow:
   type: object
-  required: [name, start]
+  required: [name]
   description: A workflow object
   additionalProperties: false
   properties:
@@ -47,6 +47,9 @@ CreateWorkflow:
       type: array
       items:
         $ref: '#/definitions/Branch'
+    playbook_id:
+      description: Only used when copying a workflow to a different playbook
+      $ref: '#/definitions/Uid'
 
 Workflow:
   type: object

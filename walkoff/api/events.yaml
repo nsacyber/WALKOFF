@@ -23,7 +23,7 @@
         schema:
           $ref: '#/definitions/Error'
 /api/events:
-  post:
+  put:
     tags:
       - Events
     summary: Update an event note

@@ -19,7 +19,7 @@
           type: array
           items:
             $ref: '#/definitions/Playbook'
-  put:
+  post:
     tags:
       - Playbooks
     summary: Create a playbook
@@ -30,6 +30,12 @@
     produces:
       - application/json
     parameters:
+      - in: query
+        name: source
+        description: The ID of the playbook to clone
+        type: string
+        required: false
+        format: uuid
       - in: body
         name: body
         description: The playbook object to be created
@@ -45,7 +51,7 @@
         description: Object exists
         schema:
           $ref: '#/definitions/Error'
-  post:
+  patch:
     tags:
       - Playbooks
     summary: Update a playbook
@@ -125,50 +131,6 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/playbooks/{playbook_id}/copy:
-  post:
-    tags:
-      - Playbooks
-    summary: Copy a playbook
-    description: ''
-    operationId: walkoff.server.endpoints.playbooks.copy_playbook
-    parameters:
-      - name: playbook_id
-        in: path
-        description: 'The ID that needs to be fetched. '
-        required: true
-        type: string
-        format: uuid
-      - in: body
-        name: body
-        description: New playbook name (defaults to <Current_Name>_Copy)
-        required: false
-        schema:
-          type: object
-          properties:
-            playbook_name:
-              type: string
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    responses:
-      201:
-        description: Playbook created
-        schema:
-          $ref: '#/definitions/Playbook'
-      404:
-        description: Playbook does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-      400:
-        description: Playbook already exists.
-        schema:
-          $ref: '#/definitions/Error'
-      400:
-        description: Invalid input error.
-        schema:
-          $ref: '#/definitions/Error'
 
 /api/playbooks/{playbook_id}/workflows:
   parameters:
@@ -198,7 +160,7 @@
         description: Playbook does not exist.
         schema:
           $ref: '#/definitions/Error'
-  put:
+  post:
     tags:
       - Workflows
     summary: Create a workflow
@@ -209,6 +171,12 @@
     produces:
       - application/json
     parameters:
+      - in: query
+        name: source
+        description: The ID of the workflow to clone
+        type: string
+        format: uuid
+        required: false
       - in: body
         name: body
         description: The workflow object to be created
@@ -228,7 +196,7 @@
         description: Workflow already exists.
         schema:
           $ref: '#/definitions/Error'
-  post:
+  put:
     tags:
       - Workflows
     summary: Update a workflow
@@ -315,50 +283,6 @@
         description: Success
       404:
         description: Playbook or workflow does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-
-/api/playbooks/{playbook_id}/workflows/{workflow_id}/copy:
-  post:
-    tags:
-      - Workflows
-    summary: Copy a workflow
-    description: ''
-    operationId: walkoff.server.endpoints.playbooks.copy_workflow
-    parameters:
-      - name: playbook_id
-        in: path
-        description: 'The ID that needs to be fetched. '
-        required: true
-        type: string
-        format: uuid
-      - name: workflow_id
-        in: path
-        description: 'The ID that needs to be fetched. '
-        required: true
-        type: string
-        format: uuid
-      - in: body
-        name: body
-        description: The new playbook and/or workflow name
-        required: false
-        schema:
-          $ref: '#/definitions/CopyWorkflow'
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    responses:
-      201:
-        description: Workflow copied.
-        schema:
-          $ref: '#/definitions/Workflow'
-      404:
-        description: Playbook or workflow does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-      400:
-        description: Workflow already exists.
         schema:
           $ref: '#/definitions/Error'
 

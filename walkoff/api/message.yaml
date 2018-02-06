@@ -15,16 +15,7 @@
           description: A list of messages
           items:
             $ref: '#/definitions/MessageSummary'
-
-/api/messages/{action}:
-  parameters:
-    - name: action
-      in: path
-      description: The action to take on multiple messages
-      required: true
-      type: string
-      enum: [read, unread, delete]
-  post:
+  put:
     tags:
       - Messages
     summary: Acts on a user's messages
@@ -40,13 +31,17 @@
         required: true
         schema:
           type: object
-          required: [ids]
+          required: [ids, action]
           properties:
             ids:
               type: array
               items:
                 type: integer
                 minimum: 1
+            action:
+              description: The action to take on multiple messages
+              type: string
+              enum: [read, unread, delete]
     responses:
       200:
         description: Success

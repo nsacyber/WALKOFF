@@ -15,7 +15,7 @@
           type: array
           items:
             $ref: '#/definitions/Role'
-  put:
+  post:
     tags:
       - Roles
     summary: Create a role
@@ -39,7 +39,7 @@
           $ref: '#/definitions/Role'
       400:
         description: Object exists.
-  post:
+  put:
     tags:
       - Roles
     summary: Update a role

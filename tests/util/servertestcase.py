@@ -121,7 +121,11 @@ class ServerTestCase(unittest.TestCase):
                              data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
         key = json.loads(post.get_data(as_text=True))
         self.headers = {'Authorization': 'Bearer {}'.format(key['access_token'])}
-
+        self.http_verb_lookup = {'get': self.app.get,
+                                 'post': self.app.post,
+                                 'put': self.app.put,
+                                 'delete': self.app.delete,
+                                 'patch': self.app.patch}
         # walkoff.server.flaskserver.running_context.controller.workflows = {}
         # walkoff.server.flaskserver.running_context.controller.load_playbooks()
 
@@ -147,15 +151,9 @@ class ServerTestCase(unittest.TestCase):
         pass
 
     def __assert_url_access(self, url, method, status_code, error, **kwargs):
-        if method.lower() == 'get':
-            response = self.app.get(url, **kwargs)
-        elif method.lower() == 'post':
-            response = self.app.post(url, **kwargs)
-        elif method.lower() == 'put':
-            response = self.app.put(url, **kwargs)
-        elif method.lower() == 'delete':
-            response = self.app.delete(url, **kwargs)
-        else:
+        try:
+            response = self.http_verb_lookup[method.lower()](url, **kwargs)
+        except KeyError:
             raise ValueError('method must be either get, put, post, or delete')
         self.assertEqual(response.status_code, status_code)
         if status_code != NO_CONTENT:
@@ -173,6 +171,9 @@ class ServerTestCase(unittest.TestCase):
 
     def put_with_status_check(self, url, status_code=200, error=False, **kwargs):
         return self.__assert_url_access(url, 'put', status_code, error=error, **kwargs)
+
+    def patch_with_status_check(self, url, status_code=200, error=False, **kwargs):
+        return self.__assert_url_access(url, 'patch', status_code, error=error, **kwargs)
 
     def delete_with_status_check(self, url, status_code=200, error=False, **kwargs):
         return self.__assert_url_access(url, 'delete', status_code, error=error, **kwargs)

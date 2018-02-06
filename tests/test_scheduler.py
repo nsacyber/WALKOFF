@@ -60,7 +60,6 @@ class TestScheduler(unittest.TestCase):
         for job in self.scheduler.scheduler.get_jobs():
             self.assertEqual(job.trigger, self.trigger)
 
-
     def test_get_all_scheduled_workflows(self):
         task_id, workflow_ids = self.add_task_set_one()
         task_id2, workflow_ids2 = self.add_task_set_two()

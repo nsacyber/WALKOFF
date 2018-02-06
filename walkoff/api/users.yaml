@@ -15,7 +15,7 @@
           description: A list of users
           items:
             $ref: '#/definitions/DisplayUser'
-  put:
+  post:
     tags:
       - Users
     summary: Create a user
@@ -42,7 +42,7 @@
         description: Could not create user <username>. User already exists.
         schema:
           $ref: '#/definitions/Error'
-  post:
+  put:
     tags:
       - Users
     summary: Update a user

@@ -14,7 +14,7 @@
           type: array
           items:
             $ref: '#/definitions/Case'
-  put:
+  post:
     tags:
       - Cases
     summary: Create a case
@@ -44,7 +44,7 @@
         description: Case already exists.
         schema:
           $ref: '#/definitions/Error'
-  post:
+  put:
     tags:
       - Cases
     summary: Update a case

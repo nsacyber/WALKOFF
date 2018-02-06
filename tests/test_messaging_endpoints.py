@@ -67,6 +67,11 @@ class TestMessagingEndpoints(ServerTestCase):
         self.user2.messages = [self.message2, self.message3]
         self.user3.messages = [self.message3]
         db.session.commit()
+        self.http_verb_lookup = {'get': self.app.get,
+                                 'post': self.app.post,
+                                 'put': self.app.put,
+                                 'delete': self.app.delete,
+                                 'patch': self.app.patch}
 
     def tearDown(self):
         db.session.rollback()
@@ -99,12 +104,12 @@ class TestMessagingEndpoints(ServerTestCase):
 
     def act_on_messages(self, action, user, validate=True, status_code=SUCCESS, messages=None):
         messages = user.messages if messages is None else messages
-        data = {'ids': [message.id for message in messages]}
+        data = {'ids': [message.id for message in messages], 'action': action}
         if validate:
-            self.post_with_status_check('/api/messages/{}'.format(action), headers=user.header, status_code=status_code,
+            self.put_with_status_check('/api/messages', headers=user.header, status_code=status_code,
                                         data=json.dumps(data), content_type='application/json')
         else:
-            self.app.post('/api/messages/{}'.format(action), headers=user.header,
+            self.app.put('/api/messages', headers=user.header,
                           data=json.dumps(data), content_type='application/json')
 
     def get_all_messages_for_user(self, user, status_code=SUCCESS):

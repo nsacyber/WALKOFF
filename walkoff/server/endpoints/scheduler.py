@@ -34,12 +34,13 @@ def get_scheduler_status():
     return __func()
 
 
-def update_scheduler_status(status):
+def update_scheduler_status():
     from walkoff.server.context import running_context
 
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['update', 'execute']))
     def __func():
+        status = request.get_json()['status']
         updated_status = running_context.controller.scheduler.scheduler.state
         if status == "start":
             updated_status = running_context.controller.scheduler.start()
@@ -137,18 +138,19 @@ def delete_scheduled_task(scheduled_task_id):
     return __func()
 
 
-def control_scheduled_task(scheduled_task_id, action):
+def control_scheduled_task():
+    scheduled_task_id = request.get_json()['id']
+
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['execute']))
     @with_task('control', scheduled_task_id)
     def __func(task):
+        action = request.get_json()['action']
         if action == 'start':
             task.start()
-            db.session.commit()
-            return {}, SUCCESS
         elif action == 'stop':
             task.stop()
-            db.session.commit()
-            return {}, SUCCESS
+        db.session.commit()
+        return {}, SUCCESS
 
     return __func()

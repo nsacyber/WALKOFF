@@ -77,7 +77,7 @@ class TestDevicesServer(ServerTestCase):
         walkoff.coredb.devicedb.device_db.session.add(device1)
         walkoff.coredb.devicedb.device_db.session.commit()
         device_json = {'app_name': 'test', 'name': 'test', 'type': 'some_type', 'fields': []}
-        self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
+        self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
                                    status_code=OBJECT_EXISTS_ERROR, content_type='application/json')
 
     def test_create_device_app_not_in_apis(self):
@@ -86,7 +86,7 @@ class TestDevicesServer(ServerTestCase):
         walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
         device_json = {'app_name': 'Invalid', 'name': 'test', 'type': 'some_type', 'fields': []}
-        self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
+        self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
                                    status_code=INVALID_INPUT_ERROR, content_type='application/json')
 
     def test_create_device_device_type_does_not_exist(self):
@@ -95,7 +95,7 @@ class TestDevicesServer(ServerTestCase):
         walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
         device_json = {'app_name': 'TestApp', 'name': 'test', 'type': 'invalid', 'fields': []}
-        self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
+        self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
                                    status_code=INVALID_INPUT_ERROR, content_type='application/json')
 
     def test_create_device_invalid_fields(self):
@@ -105,7 +105,7 @@ class TestDevicesServer(ServerTestCase):
 
         device_json = {'app_name': 'TestApp', 'name': 'test', 'type': 'test_type',
                        'fields': [{'name': 'test_name', 'value': 'invalid'}, {'name': 'test2', 'value': 'something'}]}
-        self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
+        self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
                                    status_code=INVALID_INPUT_ERROR, content_type='application/json')
 
     def test_create_device_app_not_in_db(self):
@@ -115,7 +115,7 @@ class TestDevicesServer(ServerTestCase):
 
         device_json = {'app_name': 'TestApp', 'name': 'test', 'type': 'test_type',
                        'fields': [{'name': 'test_name', 'value': 123}, {'name': 'test2', 'value': 'something'}]}
-        self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
+        self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
                                    status_code=INVALID_INPUT_ERROR, content_type='application/json')
 
     def test_create_device(self):
@@ -128,7 +128,7 @@ class TestDevicesServer(ServerTestCase):
 
         device_json = {'app_name': 'TestApp', 'name': 'test', 'type': 'test_type',
                        'fields': [{'name': 'test_name', 'value': 123}, {'name': 'test2', 'value': 'something'}]}
-        response = self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
+        response = self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
                                               status_code=OBJECT_CREATED, content_type='application/json')
         device = walkoff.coredb.devicedb.device_db.session.query(Device).filter(Device.name == 'test').first()
         self.assertIsNotNone(device)
@@ -143,7 +143,7 @@ class TestDevicesServer(ServerTestCase):
         walkoff.coredb.devicedb.device_db.session.add(device1)
         walkoff.coredb.devicedb.device_db.session.commit()
         data = {'id': 404, 'name': 'renamed'}
-        self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
+        self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
                                     status_code=OBJECT_DNE_ERROR, content_type='application/json')
 
     def test_update_device_app_dne(self):
@@ -153,7 +153,7 @@ class TestDevicesServer(ServerTestCase):
         walkoff.coredb.devicedb.device_db.session.add(device1)
         walkoff.coredb.devicedb.device_db.session.commit()
         data = {'id': device1.id, 'name': 'renamed', 'app_name': 'Invalid'}
-        self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
+        self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
                                     status_code=INVALID_INPUT_ERROR, content_type='application/json')
 
     def test_update_device_type_dne(self):
@@ -168,7 +168,7 @@ class TestDevicesServer(ServerTestCase):
         walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
         data = {'id': device1.id, 'name': 'renamed', 'app_name': self.test_app_name, 'type': 'Invalid'}
-        self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
+        self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
                                     status_code=INVALID_INPUT_ERROR, content_type='application/json')
 
     def test_update_device_invalid_fields(self):
@@ -186,7 +186,7 @@ class TestDevicesServer(ServerTestCase):
 
         data = {'id': device1.id, 'name': 'renamed', 'app_name': self.test_app_name, 'type': 'test_type',
                 'fields': fields_json}
-        self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
+        self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
                                     status_code=INVALID_INPUT_ERROR, content_type='application/json')
 
     def test_update_device_fields(self):
@@ -204,7 +204,7 @@ class TestDevicesServer(ServerTestCase):
 
         data = {'id': device1.id, 'name': 'renamed', 'app_name': self.test_app_name, 'type': 'test_type',
                 'fields': fields_json}
-        self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
+        self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
                                     status_code=SUCCESS, content_type='application/json')
 
         self.assertEqual(device1.name, 'renamed')
@@ -217,7 +217,7 @@ class TestDevicesServer(ServerTestCase):
                   {"name": "Number field", "value": 5}, {"name": "Enum field", "value": "val 1"},
                   {"name": "Boolean field", "value": True}]
         data = {"name": "testDevice", "app_name": "HelloWorld", "type": "Test Device Type", "fields": fields}
-        self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
+        self.post_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
                                    status_code=OBJECT_CREATED, content_type="application/json")
 
         self.post_with_status_check('/api/devices/export', headers=self.headers, content_type="application/json",
@@ -248,7 +248,7 @@ class TestDevicesServer(ServerTestCase):
                   {"name": "Number field", "value": 5}, {"name": "Enum field", "value": "val 1"},
                   {"name": "Boolean field", "value": True}]
         data = {"name": "testDevice", 'app_name': "HelloWorld", "type": "Test Device Type", "fields": fields}
-        self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
+        self.post_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
                                    status_code=OBJECT_CREATED, content_type="application/json")
 
         filename = 'testappdevices.json'
@@ -283,7 +283,7 @@ class TestDevicesServer(ServerTestCase):
                   {"name": "Number field", "value": 5}, {"name": "Enum field", "value": "val 1"},
                   {"name": "Boolean field", "value": True}]
         data = {"name": "testDevice", 'app_name': "HelloWorld", "type": "Test Device Type", "fields": fields}
-        self.put_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
+        self.post_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
                                    status_code=OBJECT_CREATED, content_type="application/json")
 
         filename = 'testappdevices.json'
