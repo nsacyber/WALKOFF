@@ -17,7 +17,6 @@
   in interfaces now registers the decorated function for all senders. This
   is consistent with the previously inaccurate code examples in the tutorials.
 
-
 ## [0.6.5]
 ###### 2018-02-02
 
