@@ -21,7 +21,7 @@ export class SettingsService {
 	}
 
 	updateConfiguration(configuration: Configuration): Promise<Configuration> {
-		return this.authHttp.post('/api/configuration', configuration)
+		return this.authHttp.put('/api/configuration', configuration)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Configuration)
@@ -37,7 +37,7 @@ export class SettingsService {
 	}
 
 	addUser(user: User): Promise<User> {
-		return this.authHttp.put('/api/users', user)
+		return this.authHttp.post('/api/users', user)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as User)
@@ -45,7 +45,7 @@ export class SettingsService {
 	}
 
 	editUser(user: User): Promise<User> {
-		return this.authHttp.post('/api/users', user)
+		return this.authHttp.put('/api/users', user)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as User)
@@ -68,7 +68,7 @@ export class SettingsService {
 	}
 
 	addRole(role: Role): Promise<Role> {
-		return this.authHttp.put('/api/roles', role)
+		return this.authHttp.post('/api/roles', role)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Role)
@@ -76,7 +76,7 @@ export class SettingsService {
 	}
 
 	editRole(role: Role): Promise<Role> {
-		return this.authHttp.post('/api/roles', role)
+		return this.authHttp.put('/api/roles', role)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Role)

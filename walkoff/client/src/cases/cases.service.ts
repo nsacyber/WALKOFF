@@ -43,7 +43,7 @@ export class CasesService {
 	 * @param caseToAdd JSON of Case to add
 	 */
 	addCase(caseToAdd: Case): Promise<Case> {
-		return this.authHttp.put('/api/cases', caseToAdd)
+		return this.authHttp.post('/api/cases', caseToAdd)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Case)
@@ -55,7 +55,7 @@ export class CasesService {
 	 * @param caseToEdit JSON of Case to edit
 	 */
 	editCase(caseToEdit: Case): Promise<Case> {
-		return this.authHttp.post('/api/cases', caseToEdit)
+		return this.authHttp.put('/api/cases', caseToEdit)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Case)

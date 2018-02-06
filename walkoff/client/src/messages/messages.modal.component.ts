@@ -26,7 +26,7 @@ export class MessagesModalComponent {
 	}
 
 	performMessageAction(action: string) {
-		this.messagesService.performMessageAction(this.message.workflow_execution_uid, action)
+		this.messagesService.respondToMessage(this.message.workflow_execution_uid, action)
 			.then(() => {
 				this.message.awaiting_response = false;
 				this.message.responded_at = new Date();
