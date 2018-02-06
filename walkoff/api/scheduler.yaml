@@ -74,7 +74,7 @@
           type: array
           items:
             $ref: '#/definitions/ScheduledTask'
-      462:
+      400:
         description: Scheduled task already exists
         schema:
           $ref: '#/definitions/Error'
@@ -103,7 +103,7 @@
         description: Scheduled task does not exist
         schema:
           $ref: '#/definitions/Error'
-      462:
+      400:
         description: Scheduled task name already exists
         schema:
           $ref: '#/definitions/Error'

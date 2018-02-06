@@ -38,7 +38,7 @@
         schema:
           description: The newly created user.
           $ref: '#/definitions/DisplayUser'
-      462:
+      400:
         description: Could not create user <username>. User already exists.
         schema:
           $ref: '#/definitions/Error'

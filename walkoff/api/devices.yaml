@@ -134,7 +134,7 @@
         description: Success
         schema:
           $ref: '#/definitions/Device'
-      462:
+      400:
         description: Device already exists
         schema:
           $ref: '#/definitions/Error'

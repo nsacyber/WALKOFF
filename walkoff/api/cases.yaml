@@ -40,7 +40,7 @@
         description: Object created
         schema:
           $ref: '#/definitions/Case'
-      462:
+      400:
         description: Case already exists.
         schema:
           $ref: '#/definitions/Error'

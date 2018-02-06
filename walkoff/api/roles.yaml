@@ -37,7 +37,7 @@
         description: Object created.
         schema:
           $ref: '#/definitions/Role'
-      462:
+      400:
         description: Object exists.
   post:
     tags:
