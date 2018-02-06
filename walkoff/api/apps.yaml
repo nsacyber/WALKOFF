@@ -61,7 +61,7 @@
         description: Success
         schema:
           $ref: '#/definitions/AppApi'
-      461:
+      404:
         description: App does not exist
         schema:
           $ref: '#/definitions/Error'
@@ -92,7 +92,7 @@
         description: Success
         schema:
           type: object
-      461:
+      404:
         description: App does not exist
         schema:
           $ref: '#/definitions/Error'

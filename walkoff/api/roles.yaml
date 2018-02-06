@@ -61,7 +61,7 @@
         description: Success
         schema:
           $ref: '#/definitions/Role'
-      461:
+      404:
         description: Object does not exist.
 /api/roles/{role_id}:
   parameters:
@@ -83,7 +83,7 @@
         description: Success
         schema:
           $ref: '#/definitions/Role'
-      461:
+      404:
         description: Object does not exist.
   delete:
     tags:
@@ -96,7 +96,7 @@
     responses:
       204:
         description: Success
-      461:
+      404:
         description: Object does not exist.
 
 /api/availableresourceactions:

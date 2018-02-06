@@ -67,7 +67,7 @@
         description: Success
         schema:
           $ref: '#/definitions/Playbook'
-      461:
+      404:
         description: Playbook does not exist.
         schema:
           $ref: '#/definitions/Error'
@@ -97,7 +97,7 @@
         description: Success
         schema:
           $ref: '#/definitions/Playbook'
-      461:
+      404:
         description: Object does not exist.
         schema:
           $ref: '#/definitions/Error'
@@ -116,7 +116,7 @@
     responses:
       204:
         description: Success
-      461:
+      404:
         description: Playbook does not exist.
         schema:
           $ref: '#/definitions/Error'
@@ -157,7 +157,7 @@
         description: Playbook created
         schema:
           $ref: '#/definitions/Playbook'
-      461:
+      404:
         description: Playbook does not exist.
         schema:
           $ref: '#/definitions/Error'
@@ -194,7 +194,7 @@
           description: The JSON representation of all the workflows for the playbook
           items:
             $ref: '#/definitions/Workflow'
-      461:
+      404:
         description: Playbook does not exist.
         schema:
           $ref: '#/definitions/Error'
@@ -220,7 +220,7 @@
         description: Workflow created.
         schema:
           $ref: '#/definitions/Workflow'
-      461:
+      404:
         description: Playbook does not exist.
         schema:
           $ref: '#/definitions/Error'
@@ -254,7 +254,7 @@
           properties:
             workflow:
               $ref: '#/definitions/Workflow'
-      461:
+      404:
         description: Playbook or workflow does not exist.
         schema:
           $ref: '#/definitions/Error'
@@ -294,7 +294,7 @@
         description: Success
         schema:
           $ref: '#/definitions/Workflow'
-      461:
+      404:
         description: Playbook or workflow does not exist.
         schema:
           $ref: '#/definitions/Error'
@@ -313,7 +313,7 @@
     responses:
       204:
         description: Success
-      461:
+      404:
         description: Playbook or workflow does not exist.
         schema:
           $ref: '#/definitions/Error'
@@ -353,7 +353,7 @@
         description: Workflow copied.
         schema:
           $ref: '#/definitions/Workflow'
-      461:
+      404:
         description: Playbook or workflow does not exist.
         schema:
           $ref: '#/definitions/Error'
@@ -403,7 +403,7 @@
         description: Success asynchronous.
         schema:
           $ref: '#/definitions/Uid'
-      461:
+      404:
         description: Playbook or workflow does not exist.
         schema:
           $ref: '#/definitions/Error'
@@ -447,7 +447,7 @@
     responses:
       200:
         description: Success
-      461:
+      404:
         description: Playbook or workflow does not exist.
         schema:
           $ref: '#/definitions/Error'
@@ -487,7 +487,7 @@
     responses:
       200:
         description: Success
-      461:
+      404:
         description: Playbook or workflow does not exist.
         schema:
           $ref: '#/definitions/Error'

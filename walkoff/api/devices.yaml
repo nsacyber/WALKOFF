@@ -78,7 +78,7 @@
         description: Success
         schema:
           $ref: '#/definitions/Device'
-      461:
+      404:
         description: Device does not exist.
   delete:
     tags:
@@ -91,7 +91,7 @@
     responses:
       204:
         description: Success
-      461:
+      404:
         description: Device does not exist
         schema:
           $ref: '#/definitions/Error'
@@ -161,7 +161,7 @@
         description: Success
         schema:
           $ref: '#/definitions/Device'
-      461:
+      404:
         description: Device does not exist
         schema:
           $ref: '#/definitions/Error'

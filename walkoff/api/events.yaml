@@ -18,7 +18,7 @@
         description: Success
         schema:
           $ref: '#/definitions/Event'
-      461:
+      404:
         description: Object does not exist
         schema:
           $ref: '#/definitions/Error'
@@ -53,7 +53,7 @@
         description: Success
         schema:
           $ref: '#/definitions/Event'
-      461:
+      404:
         description: Object does not exist
         schema:
           $ref: '#/definitions/Error'

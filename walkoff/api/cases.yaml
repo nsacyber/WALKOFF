@@ -65,7 +65,7 @@
         description: Success
         schema:
           $ref: '#/definitions/Case'
-      461:
+      404:
         description: Case does not exist.
         schema:
           $ref: '#/definitions/Error'
@@ -89,7 +89,7 @@
         description: Success
         schema:
           $ref: '#/definitions/Case'
-      461:
+      404:
         description: Case does not exist.
         schema:
           $ref: '#/definitions/Error'
@@ -104,7 +104,7 @@
     responses:
       204:
         description: Success
-      461:
+      404:
         description: Case does not exist.
         schema:
           $ref: '#/definitions/Error'
@@ -131,7 +131,7 @@
           type: array
           items:
             $ref: '#/definitions/Event'
-      461:
+      404:
         description: Case does not exist.
         schema:
           $ref: '#/definitions/Error'

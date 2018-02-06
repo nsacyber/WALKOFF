@@ -99,7 +99,7 @@
         description: Success
         schema:
           $ref: '#/definitions/ScheduledTask'
-      461:
+      404:
         description: Scheduled task does not exist
         schema:
           $ref: '#/definitions/Error'
@@ -127,7 +127,7 @@
         description: Success
         schema:
           $ref: '#/definitions/ScheduledTask'
-      461:
+      404:
         description: Scheduled task does not exist
         schema:
           $ref: '#/definitions/Error'
@@ -141,7 +141,7 @@
     responses:
       204:
         description: Success
-      461:
+      404:
         description: Scheduled task does not exist
         schema:
           $ref: '#/definitions/Error'
@@ -169,7 +169,7 @@
     responses:
       200:
         description: Success
-      461:
+      404:
         description: Scheduled task does not exist
         schema:
           $ref: '#/definitions/Error'
