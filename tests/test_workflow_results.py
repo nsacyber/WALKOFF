@@ -6,6 +6,7 @@ from tests.util import device_db_help
 
 
 class TestWorkflowResults(ServerTestCase):
+
     def setUp(self):
         self.workflow = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
 
@@ -20,7 +21,7 @@ class TestWorkflowResults(ServerTestCase):
 
         flaskserver.running_context.controller.wait_and_reset(1)
 
-        workflow_results = case_database.case_db.session.query(WorkflowResult).all()
+        workflow_results = case_database.case_db.session.query(WorkflowResult).filter_by(uid=uid).all()
         self.assertEqual(len(workflow_results), 1)
         workflow_result = workflow_results[0]
         self.assertEqual(workflow_result.uid, uid)
