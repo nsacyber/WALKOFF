@@ -187,10 +187,10 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertEqual(create_sse_event(), '')
 
     def test_create_sse_event_id_only(self):
-        self.assertEqual(create_sse_event(event_id=1), 'id: 1\n\n')
+        self.assertEqual(create_sse_event(event_id=1), 'id: 1\ndata: ""\n\n')
 
     def test_create_sse_event_only(self):
-        self.assertEqual(create_sse_event(event='some_event'), 'event: some_event\n\n')
+        self.assertEqual(create_sse_event(event='some_event'), 'event: some_event\ndata: ""\n\n')
 
     def test_create_sse_data_only_non_json(self):
         self.assertEqual(create_sse_event(data=42), 'data: 42\n\n')
