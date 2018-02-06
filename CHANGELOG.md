@@ -2,6 +2,13 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
+## [0.6.7]
+###### 2018-02-06
+
+### Fixed
+* Fixed bug in `create_sse_event` where data field of the SSE would not be
+  populated if no data was not specified, causing the SSE event to be invalid
+
 ## [0.6.6]
 ###### 2018-02-02
 
