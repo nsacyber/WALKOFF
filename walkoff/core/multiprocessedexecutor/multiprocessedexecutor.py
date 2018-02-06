@@ -170,7 +170,7 @@ class MultiprocessedExecutor(object):
 
         Args:
             workflow (Workflow): The Workflow to be executed.
-            start (str, optional): The name of the first, or starting action. Defaults to None.
+            start (str, optional): The ID of the first, or starting action. Defaults to None.
             start_arguments (list[Argument]): The arguments to the starting action of the workflow. Defaults to None.
 
         Returns:
@@ -184,17 +184,7 @@ class MultiprocessedExecutor(object):
             logger.info('Executing workflow {0} with default starting action'.format(workflow.name, start))
         self.workflow_status[execution_uid] = WORKFLOW_RUNNING
 
-        if start:
-            workflow.start = start
-        if start_arguments:
-            for action in workflow.actions:
-                if action.id == workflow.start:
-                    action.arguments = start_arguments
-
-        if start or start_arguments:
-            walkoff.coredb.devicedb.device_db.session.commit()
-
-        self.manager.add_workflow(workflow.id, execution_uid)
+        self.manager.add_workflow(workflow.id, execution_uid, start, start_arguments)
 
         WalkoffEvent.SchedulerJobExecuted.send(self)
         return execution_uid

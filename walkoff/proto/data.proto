@@ -100,4 +100,6 @@ message UserMessage {
 message ExecuteWorkflowMessage {
     optional string workflow_id = 1;
     optional string workflow_execution_uid = 2;
+    optional string start = 3;
+    repeated ActionPacket.ActionArgument arguments = 4;
 }

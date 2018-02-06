@@ -47,7 +47,7 @@ def mock_wait_and_reset(self, num_workflows):
 
 def mock_shutdown_pool(self):
     if self.manager_thread and self.manager_thread.is_alive():
-        self.manager.pending_workflows.put(("Exit", "Exit"))
+        self.manager.pending_workflows.put(("Exit", "Exit", "Exit", "Exit"))
         self.manager_thread.join(timeout=1)
     self.threading_is_initialized = False
     WalkoffEvent.CommonWorkflowSignal.signal.receivers = {}
@@ -91,12 +91,12 @@ class MockLoadBalancer(object):
         sender = message.sender
         self.results_queue.send(sender, kwargs)
 
-    def add_workflow(self, workflow_id, workflow_execution_uid):
-        self.pending_workflows.put((workflow_id, workflow_execution_uid))
+    def add_workflow(self, workflow_id, workflow_execution_uid, start=None, start_arguments=None):
+        self.pending_workflows.put((workflow_id, workflow_execution_uid, start, start_arguments))
 
     def manage_workflows(self):
         while True:
-            workflow_id, workflow_execution_uid = self.pending_workflows.recv()
+            workflow_id, workflow_execution_uid, start, start_arguments = self.pending_workflows.recv()
             if workflow_id == "Exit":
                 return
 
@@ -107,7 +107,8 @@ class MockLoadBalancer(object):
 
             self.exec_uid = workflow_execution_uid
 
-            workflow.execute(execution_uid=workflow_execution_uid, start=workflow.start)
+            start = start if start else workflow.start
+            workflow.execute(execution_uid=workflow_execution_uid, start=start, start_arguments=start_arguments)
             self.exec_uid = ''
 
     def pause_workflow(self, workflow_execution_uid):

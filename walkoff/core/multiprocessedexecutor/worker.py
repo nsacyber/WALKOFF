@@ -212,10 +212,17 @@ class Worker:
 
             message = ExecuteWorkflowMessage()
             message.ParseFromString(message_bytes)
+            start = message.start if hasattr(message, 'start') else None
 
-            self.threadpool.submit(self.execute_workflow_worker, message.workflow_id, message.workflow_execution_uid)
+            start_arguments = []
+            if hasattr(message, 'arguments'):
+                for arg in message.arguments:
+                    start_arguments.append(Argument(**(MessageToDict(arg, preserving_proto_field_name=True))))
 
-    def execute_workflow_worker(self, workflow_id, workflow_execution_uid):
+            self.threadpool.submit(self.execute_workflow_worker, message.workflow_id, message.workflow_execution_uid,
+                                   start, start_arguments)
+
+    def execute_workflow_worker(self, workflow_id, workflow_execution_uid, start, start_arguments=None):
         """Execute a workflow.
         """
         workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter(
@@ -224,7 +231,8 @@ class Worker:
 
         self.workflows[threading.current_thread().name] = workflow
 
-        workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start)
+        start = start if start else workflow.start
+        workflow.execute(execution_uid=workflow.get_execution_uid(), start=start, start_arguments=start_arguments)
 
         self.workflows.pop(threading.current_thread().name)
         return

@@ -163,12 +163,14 @@ class Action(ExecutionElement, Device_Base):
         validate_app_action_parameters(self._arguments_api, new_arguments, self.app_name, self.action_name)
         self.arguments = new_arguments
 
-    def execute(self, instance, accumulator):
+    def execute(self, instance, accumulator, arguments=None):
         """Executes an Action by calling the associated app function.
 
         Args:
             instance (App): The instance of an App object to be used to execute the associated function.
             accumulator (dict): Dict containing the results of the previous actions
+            arguments (list[Argument]): Optional list of Arguments to be used if the Action is the starting step of
+                the Workflow. Defaults to None.
 
         Returns:
             The result of the executed function.
@@ -182,8 +184,10 @@ class Action(ExecutionElement, Device_Base):
             logger.debug('Trigger Action {} is awaiting data'.format(self.name))
             self._wait_for_trigger(accumulator)
 
+        arguments = arguments if arguments else self.arguments
+
         try:
-            args = validate_app_action_parameters(self._arguments_api, self.arguments, self.app_name, self.action_name,
+            args = validate_app_action_parameters(self._arguments_api, arguments, self.app_name, self.action_name,
                                                   accumulator=accumulator)
             if is_app_action_bound(self.app_name, self._run):
                 result = self._action_executable(instance, **args)

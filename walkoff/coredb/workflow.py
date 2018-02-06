@@ -2,7 +2,7 @@ import json
 import logging
 import threading
 
-from sqlalchemy import Column, Integer, String, ForeignKey, orm, UniqueConstraint
+from sqlalchemy import Column, String, ForeignKey, orm, UniqueConstraint
 from sqlalchemy.orm import relationship, backref
 
 from walkoff.appgateway.appinstance import AppInstance
@@ -109,7 +109,7 @@ class Workflow(ExecutionElement, Device_Base):
         executor = self.__execute(start, start_arguments)
         next(executor)
 
-    def __execute(self, start, start_arguments):
+    def __execute(self, start, start_arguments=None):
         instances = {}
         total_actions = []
         actions = self.__actions(start=start)
@@ -128,9 +128,9 @@ class Workflow(ExecutionElement, Device_Base):
 
             if first:
                 first = False
-                if start_arguments:
-                    self.__swap_action_arguments(action, start_arguments)
-            action.execute(instance=instances[device_id](), accumulator=self._accumulator)
+                action.execute(instance=instances[device_id](), accumulator=self._accumulator, arguments=start_arguments)
+            else:
+                action.execute(instance=instances[device_id](), accumulator=self._accumulator)
             self._accumulator[action.id] = action.get_output().result
             total_actions.append(action)
         self.__shutdown(instances)

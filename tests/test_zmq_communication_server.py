@@ -10,6 +10,7 @@ from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
 from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
 from tests.util import device_db_help
+from walkoff.events import WalkoffEvent
 
 try:
     from importlib import reload
@@ -70,3 +71,29 @@ class TestWorkflowServer(ServerTestCase):
             for action_result in result['results']:
                 self.assertSetEqual(set(action_result.keys()),
                                     {'arguments', 'type', 'name', 'timestamp', 'result', 'app_name', 'action_name'})
+
+    def test_execute_workflow_change_arguments(self):
+        workflow = device_db_help.load_workflow('testGeneratedWorkflows/test', 'helloWorldWorkflow')
+
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        setup_subscriptions_for_action(workflow.id, action_ids)
+
+        result = {'count': 0}
+
+        @WalkoffEvent.ActionExecutionSuccess.connect
+        def y(sender, **kwargs):
+            result['count'] += 1
+            result['data'] = kwargs['data']
+
+        data = {"arguments": [{"name": "call",
+                               "value": "CHANGE INPUT"}]}
+
+        self.post_with_status_check('/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
+                                    headers=self.headers,
+                                    status_code=SUCCESS_ASYNC,
+                                    content_type="application/json", data=json.dumps(data))
+
+        flask_server.running_context.controller.wait_and_reset(1)
+
+        self.assertEqual(result['count'], 1)
+        self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: CHANGE INPUT'})

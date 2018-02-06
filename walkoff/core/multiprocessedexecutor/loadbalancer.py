@@ -76,13 +76,18 @@ class LoadBalancer:
 
             # There is a worker available and a workflow in the queue, so pop it off and send it to the worker
             if any(val > 0 for val in self.workers.values()) and not self.pending_workflows.empty():
-                workflow_id, workflow_execution_uid = self.pending_workflows.get()
+                workflow_id, workflow_execution_uid, start, start_arguments = self.pending_workflows.get()
                 worker = self.__get_available_worker()
                 self.workflow_comms[workflow_execution_uid] = worker
 
                 message = ExecuteWorkflowMessage()
                 message.workflow_id = str(workflow_id)
                 message.workflow_execution_uid = workflow_execution_uid
+
+                if start:
+                    message.start = start
+                if start_arguments:
+                    self.__set_arguments_for_proto(message, start_arguments)
 
                 self.request_socket.send_multipart([worker, message.SerializeToString()])
 
@@ -103,14 +108,16 @@ class LoadBalancer:
             self.workers[available_worker] -= 1
         return available_worker
 
-    def add_workflow(self, workflow_id, workflow_execution_uid):
+    def add_workflow(self, workflow_id, workflow_execution_uid, start=None, start_arguments=None):
         """Adds a workflow ID to the queue to be executed.
 
         Args:
             workflow_id (int): The ID of the workflow to be executed.
             workflow_execution_uid (str): The execution UID of the workflow to be executed.
+            start (str, optional): The ID of the first, or starting action. Defaults to None.
+            start_arguments (list[Argument]): The arguments to the starting action of the workflow. Defaults to None.
         """
-        self.pending_workflows.put((workflow_id, workflow_execution_uid))
+        self.pending_workflows.put((workflow_id, workflow_execution_uid, start, start_arguments))
 
     def pause_workflow(self, workflow_execution_uid):
         """Pauses a workflow currently executing.
@@ -162,19 +169,7 @@ class LoadBalancer:
         message.data_in = json.dumps(data)
 
         if arguments:
-            for argument in arguments:
-                arg = message.arguments.add()
-                arg.name = argument.name
-                for field in ('value', 'reference', 'selection'):
-                    val = getattr(argument, field)
-                    if val is not None:
-                        if not isinstance(val, string_types):
-                            try:
-                                setattr(arg, field, json.dumps(val))
-                            except ValueError:
-                                setattr(arg, field, str(val))
-                        else:
-                            setattr(arg, field, val)
+            self.__set_arguments_for_proto(message, arguments)
 
         for uid in workflow_uids:
             if uid in self.workflow_comms:
@@ -196,6 +191,22 @@ class LoadBalancer:
             worker = self.workflow_comms[sender['workflow_execution_uid']]
             self.workers[worker] += 1
             self.workflow_comms.pop(sender['workflow_execution_uid'])
+
+    @staticmethod
+    def __set_arguments_for_proto(message, arguments):
+        for argument in arguments:
+            arg = message.arguments.add()
+            arg.name = argument.name
+            for field in ('value', 'reference', 'selection'):
+                val = getattr(argument, field)
+                if val is not None:
+                    if not isinstance(val, string_types):
+                        try:
+                            setattr(arg, field, json.dumps(val))
+                        except ValueError:
+                            setattr(arg, field, str(val))
+                    else:
+                        setattr(arg, field, val)
 
 
 class Receiver:
