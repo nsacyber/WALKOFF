@@ -162,7 +162,7 @@
     responses:
       200:
         description: Success
-      463:
+      400:
         description: Invalid JSON in file.
         schema:
           $ref: '#/definitions/Error'

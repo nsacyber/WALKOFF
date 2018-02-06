@@ -101,7 +101,7 @@
         description: Object does not exist.
         schema:
           $ref: '#/definitions/Error'
-      463:
+      400:
         description: Invalid input error.
         schema:
           $ref: '#/definitions/Error'
@@ -165,7 +165,7 @@
         description: Playbook already exists.
         schema:
           $ref: '#/definitions/Error'
-      463:
+      400:
         description: Invalid input error.
         schema:
           $ref: '#/definitions/Error'
@@ -262,7 +262,7 @@
         description: Workflow already exists.
         schema:
           $ref: '#/definitions/Error'
-      463:
+      400:
         description: Invalid input error.
         schema:
           $ref: '#/definitions/Error'
@@ -298,7 +298,7 @@
         description: Playbook or workflow does not exist.
         schema:
           $ref: '#/definitions/Error'
-      463:
+      400:
         description: Element not found, or malformed JSON.
         schema:
           $ref: '#/definitions/Error'
@@ -407,7 +407,7 @@
         description: Playbook or workflow does not exist.
         schema:
           $ref: '#/definitions/Error'
-      463:
+      400:
         description: Invalid input error.
         schema:
           $ref: '#/definitions/Error'
@@ -491,7 +491,7 @@
         description: Playbook or workflow does not exist.
         schema:
           $ref: '#/definitions/Error'
-      463:
+      400:
         description: Invalid UUID.
         schema:
           $ref: '#/definitions/Error'
