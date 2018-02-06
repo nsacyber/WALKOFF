@@ -13,6 +13,7 @@ from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import Multiproc
 from tests.util.mock_objects import *
 from tests.util.thread_control import *
 from walkoff.server.endpoints.appapi import *
+from walkoff.server.returncodes import NO_CONTENT
 
 if not getattr(__builtins__, 'WindowsError', None):
     class WindowsError(OSError): pass
@@ -157,7 +158,8 @@ class ServerTestCase(unittest.TestCase):
         else:
             raise ValueError('method must be either get, put, post, or delete')
         self.assertEqual(response.status_code, status_code)
-        response = json.loads(response.get_data(as_text=True))
+        if status_code != NO_CONTENT:
+            response = json.loads(response.get_data(as_text=True))
         if error:
             self.assertIn('error', response)
             self.assertEqual(response['error'], error)

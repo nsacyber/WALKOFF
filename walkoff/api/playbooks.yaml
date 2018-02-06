@@ -114,7 +114,7 @@
     produces:
       - application/json
     responses:
-      200:
+      204:
         description: Success
       461:
         description: Playbook does not exist.
@@ -311,7 +311,7 @@
     produces:
       - application/json
     responses:
-      200:
+      204:
         description: Success
       461:
         description: Playbook or workflow does not exist.

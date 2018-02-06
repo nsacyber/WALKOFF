@@ -100,7 +100,7 @@ def delete_case(case_id):
             db.session.delete(case_obj)
             db.session.commit()
             current_app.logger.debug('Case deleted {0}'.format(case_id))
-            return {}, SUCCESS
+            return {}, NO_CONTENT
         else:
             current_app.logger.error('Cannot delete case {0}. Case does not exist.'.format(case_id))
             return {"error": "Case does not exist."}, OBJECT_DNE_ERROR

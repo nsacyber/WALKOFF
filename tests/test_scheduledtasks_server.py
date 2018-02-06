@@ -179,7 +179,7 @@ class TestScheduledTasksServer(ServerTestCase):
                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
         self.delete_with_status_check('/api/scheduledtasks/{}'.format(task_id), headers=self.headers,
-                                      content_type='application/json', status_code=SUCCESS)
+                                      content_type='application/json', status_code=NO_CONTENT)
         self.assertSetEqual({task.name for task in ScheduledTask.query.all()}, set())
 
     def test_delete_scheduled_task_does_not_exist(self):

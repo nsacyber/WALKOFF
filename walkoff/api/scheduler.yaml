@@ -139,7 +139,7 @@
     produces:
       - application/json
     responses:
-      200:
+      204:
         description: Success
       461:
         description: Scheduled task does not exist

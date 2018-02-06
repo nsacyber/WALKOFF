@@ -52,7 +52,7 @@ def delete_device(device_id):
         walkoff.coredb.devicedb.device_db.session.delete(device)
         current_app.logger.info('Device removed {0}'.format(device_id))
         walkoff.coredb.devicedb.device_db.session.commit()
-        return {}, SUCCESS
+        return {}, NO_CONTENT
 
     return __func()
 

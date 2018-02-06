@@ -198,7 +198,7 @@ class TestRolesServer(servertestcase.ServerTestCase):
         response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
-        self.delete_with_status_check('/api/roles/{}'.format(role_id), headers=self.headers, status_code=SUCCESS)
+        self.delete_with_status_check('/api/roles/{}'.format(role_id), headers=self.headers, status_code=NO_CONTENT)
 
     def test_delete_role_does_not_exist(self):
         self.delete_with_status_check('/api/roles/404', headers=self.headers, status_code=OBJECT_DNE_ERROR)
@@ -211,6 +211,6 @@ class TestRolesServer(servertestcase.ServerTestCase):
         response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
-        self.delete_with_status_check('/api/roles/{}'.format(role_id), headers=self.headers, status_code=SUCCESS)
+        self.delete_with_status_check('/api/roles/{}'.format(role_id), headers=self.headers, status_code=NO_CONTENT)
         role = Role.query.filter_by(id=role_id).first()
         self.assertIsNone(role)

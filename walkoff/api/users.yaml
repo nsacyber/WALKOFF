@@ -109,7 +109,7 @@
     produces:
       - application/json
     responses:
-      200:
+      204:
         description: Success
       401:
         description: Could not delete user <username>. User is current user.

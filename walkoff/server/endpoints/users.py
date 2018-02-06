@@ -114,7 +114,7 @@ def delete_user(user_id):
             db.session.delete(user)
             db.session.commit()
             current_app.logger.info('User {0} deleted'.format(user.username))
-            return {}, SUCCESS
+            return {}, NO_CONTENT
         else:
             current_app.logger.error('Could not delete user {0}. User is current user.'.format(user.id))
             return {"error": 'User {0} is current user.'.format(user.username)}, FORBIDDEN_ERROR

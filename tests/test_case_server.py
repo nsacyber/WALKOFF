@@ -153,8 +153,7 @@ class TestCaseServer(ServerTestCase):
                                            content_type='application/json').get_data(as_text=True))
         case_id = response['id']
         response = self.delete_with_status_check('api/cases/{0}'.format(case_id), headers=self.headers,
-                                                 status_code=SUCCESS)
-        self.assertEqual(response, {})
+                                                 status_code=NO_CONTENT)
 
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = []
@@ -169,7 +168,7 @@ class TestCaseServer(ServerTestCase):
         case1_id = response['id']
         self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case2'}),
                      content_type='application/json')
-        self.delete_with_status_check('api/cases/{0}'.format(case1_id), headers=self.headers, status_code=SUCCESS)
+        self.delete_with_status_check('api/cases/{0}'.format(case1_id), headers=self.headers, status_code=NO_CONTENT)
 
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case2']

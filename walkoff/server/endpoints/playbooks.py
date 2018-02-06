@@ -141,7 +141,7 @@ def delete_playbook(playbook_id):
         walkoff.coredb.devicedb.device_db.session.delete(playbook)
         walkoff.coredb.devicedb.device_db.session.commit()
         current_app.logger.info('Deleted playbook {0} '.format(playbook_id))
-        return {}, SUCCESS
+        return {}, NO_CONTENT
 
     return __func()
 
@@ -283,7 +283,7 @@ def delete_workflow(playbook_id, workflow_id):
         walkoff.coredb.devicedb.device_db.session.commit()
 
         current_app.logger.info('Deleted workflow {0}'.format(workflow_id))
-        return {}, SUCCESS
+        return {}, NO_CONTENT
 
     return __func()
 

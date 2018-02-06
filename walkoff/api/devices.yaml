@@ -89,7 +89,7 @@
     produces:
       - application/json
     responses:
-      200:
+      204:
         description: Success
       461:
         description: Device does not exist

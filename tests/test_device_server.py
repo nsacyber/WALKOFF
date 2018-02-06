@@ -66,7 +66,7 @@ class TestDevicesServer(ServerTestCase):
         walkoff.coredb.devicedb.device_db.session.add(device1)
         walkoff.coredb.devicedb.device_db.session.commit()
         device1_id = device1.id
-        self.delete_with_status_check('/api/devices/{}'.format(device1_id), headers=self.headers, status_code=SUCCESS)
+        self.delete_with_status_check('/api/devices/{}'.format(device1_id), headers=self.headers, status_code=NO_CONTENT)
         self.assertIsNone(walkoff.coredb.devicedb.device_db.session.query(Device).filter(Device.id == device1_id).first())
 
     def test_delete_device_device_dne(self):

@@ -102,7 +102,7 @@
     produces:
       - application/json
     responses:
-      200:
+      204:
         description: Success
       461:
         description: Case does not exist.

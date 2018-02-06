@@ -199,7 +199,7 @@ class TestUserServer(ServerTestCase):
         user = User('username', 'asdfghjkl;')
         db.session.add(user)
         db.session.commit()
-        self.delete_with_status_check('/api/users/{}'.format(user.id), headers=self.headers, status_code=SUCCESS)
+        self.delete_with_status_check('/api/users/{}'.format(user.id), headers=self.headers, status_code=NO_CONTENT)
 
     def test_delete_user_invalid_id(self):
         self.delete_with_status_check('/api/users/404', headers=self.headers, status_code=OBJECT_DNE_ERROR)

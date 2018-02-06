@@ -141,7 +141,8 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_delete_playbook(self):
         playbook = device_db_help.standard_load()
-        self.delete_with_status_check('/api/playbooks/{}'.format(playbook.id), headers=self.headers)
+        self.delete_with_status_check('/api/playbooks/{}'.format(playbook.id), headers=self.headers,
+                                      status_code=NO_CONTENT)
 
         self.assertIsNone(
             devicedb.device_db.session.query(Playbook).filter_by(id=playbook.id).first())
@@ -172,7 +173,7 @@ class TestWorkflowServer(ServerTestCase):
         workflow_ids = [workflow.id for workflow in workflows]
         original_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
         self.delete_with_status_check('/api/playbooks/{0}/workflows/{1}'.format(target_playbook.id, workflow_ids[0]),
-                                      headers=self.headers)
+                                      headers=self.headers, status_code=NO_CONTENT)
         self.assertEqual(len(list(target_playbook.workflows)), len(workflow_ids) - 1)
         self.assertNotIn(workflow_ids[0], [workflow.id for workflow in target_playbook.workflows])
         self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks)
@@ -187,7 +188,7 @@ class TestWorkflowServer(ServerTestCase):
         devicedb.device_db.session.flush()
         original_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
         self.delete_with_status_check('/api/playbooks/{0}/workflows/{1}'.format(target_playbook.id, workflow.id),
-                                      headers=self.headers)
+                                      headers=self.headers, status_code=NO_CONTENT)
         self.assertIsNone(devicedb.device_db.session.query(Playbook).filter_by(name='play1').first())
         self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks - 1)
 
