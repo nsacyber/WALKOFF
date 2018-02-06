@@ -75,42 +75,27 @@ class Controller(object):
         """
         self.scheduler.schedule_workflows(task_id, self.execute_workflow, workflow_ids, trigger)
 
-    def execute_workflow(self, workflow_id, start=None, start_arguments=None):
+    def execute_workflow(self, workflow_id, start=None, start_arguments=None, resume=False):
         """Executes a workflow.
 
         Args:
             workflow_id (int): ID of the workflow to execute.
             start (int, optional): The ID of the first, or starting action. Defaults to None.
             start_arguments (list[Argument]): The input to the starting action of the workflow. Defaults to None.
+            resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
 
         Returns:
             The execution UID if successful, None otherwise.
         """
         workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
         if workflow:
-            return self.executor.execute_workflow(workflow, start, start_arguments)
+            return self.executor.execute_workflow(workflow, start, start_arguments, resume)
         else:
             logger.error('Attempted to execute playbook which does not exist')
             return None, 'Attempted to execute playbook which does not exist'
 
     def get_waiting_workflows(self):
         return self.executor.get_waiting_workflows()
-
-    def send_data_to_trigger(self, data_in, workflow_uids, arguments=None):
-        """Tries to match the data in against the conditionals of all the triggers registered in the database.
-
-        Args:
-            data_in (dict): Data to be used to match against the triggers for an Action awaiting data.
-            workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
-            arguments (list[Argument]): An optional list of arguments to update for an Action awaiting data for a
-                trigger. Defaults to None.
-
-        Returns:
-            Dictionary of {"status": <status string>}
-        """
-        arguments = arguments if arguments is not None else []
-        if workflow_uids is not None:
-            self.executor.send_data_to_trigger(data_in, workflow_uids, arguments)
 
     def get_workflow_status(self, execution_uid):
         """Gets the status of an executing workflow

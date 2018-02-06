@@ -267,3 +267,4 @@ class TestTriggersServer(ServerTestCase):
 
         flask_server.running_context.controller.wait_and_reset(1)
         self.assertTrue(result['result'])
+
