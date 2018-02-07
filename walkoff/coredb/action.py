@@ -1,18 +1,14 @@
-import json
 import logging
 import threading
 import uuid
 
-from sqlalchemy import Column, Integer, ForeignKey, String, Boolean, orm
+from sqlalchemy import Column, Integer, ForeignKey, String, orm
 from sqlalchemy.orm import relationship, backref
 
-import walkoff.config.config
 from walkoff.appgateway import get_app_action, is_app_action_bound
-from walkoff.core import contextdecorator
 from walkoff.coredb.argument import Argument
 from walkoff.core.actionresult import ActionResult
 from walkoff.coredb import Device_Base
-from walkoff.dbtypes import Json
 from walkoff.events import WalkoffEvent
 from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
@@ -22,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 
 class Action(ExecutionElement, Device_Base):
-    _templatable = True
 
     __tablename__ = 'action'
     _workflow_id = Column(Guid(), ForeignKey('workflow.id'))
@@ -33,11 +28,9 @@ class Action(ExecutionElement, Device_Base):
     arguments = relationship('Argument', backref=backref('_action'), cascade='all, delete, delete-orphan')
     triggers = relationship('Condition', backref=backref('_action'), cascade='all, delete-orphan')
     position = relationship('Position', uselist=False, backref=backref('_action'), cascade='all, delete-orphan')
-    templated = Column(Boolean)
-    raw_representation = Column(Json)
 
     def __init__(self, app_name, action_name, name, device_id=None, id=None, arguments=None, triggers=None,
-                 position=None, templated=False, raw_representation=None):
+                 position=None):
         """Initializes a new Action object. A Workflow has many actions that it executes.
 
         Args:
@@ -51,8 +44,6 @@ class Action(ExecutionElement, Device_Base):
             triggers (list[Condition], optional): A list of Condition objects for the Action. If a Action should wait
                 for data before continuing, then include these Trigger objects in the Action init. Defaults to None.
             position (Position, optional): Position object for the Action. Defaults to None.
-            templated (bool, optional): Whether or not the Action is templated. Used for Jinja templating.
-            raw_representation (dict, optional): JSON representation of this object. Used for Jinja templating.
         """
         ExecutionElement.__init__(self, id)
 
@@ -71,17 +62,13 @@ class Action(ExecutionElement, Device_Base):
             raise InvalidArgument(
                 "Cannot initialize Action {}. App action is bound but no device ID was provided.".format(self.name))
 
-        self.templated = templated
-        if not self.templated:
-            validate_app_action_parameters(self._arguments_api, arguments, self.app_name, self.action_name)
+        validate_app_action_parameters(self._arguments_api, arguments, self.app_name, self.action_name)
 
         self.arguments = []
         if arguments:
             self.arguments = arguments
 
         self.position = position
-
-        self.raw_representation = raw_representation if raw_representation is not None else {}
 
         self._incoming_data = None
         self._event = threading.Event()
@@ -124,35 +111,6 @@ class Action(ExecutionElement, Device_Base):
         """
         self._incoming_data = data
         self._event.set()
-
-    def _update_json(self, updated_json):
-        self.app_name = updated_json['app_name']
-        self.action_name = updated_json['action_name']
-        self.device_id = updated_json['device_id'] if 'device_id' in updated_json else None
-        arguments = []
-        if 'arguments' in updated_json:
-            for argument_json in updated_json['arguments']:
-                argument = Argument(**argument_json)
-                arguments.append(argument)
-        if arguments is not None:
-            if not self.templated:
-                validate_app_action_parameters(self._arguments_api, arguments, self.app_name, self.action_name)
-        else:
-            validate_app_action_parameters(self._arguments_api, [], self.app_name, self.action_name)
-        self.arguments = arguments
-
-    @contextdecorator.context
-    def render_action(self, **kwargs):
-        """Uses JINJA templating to render a Action object.
-
-        Args:
-            kwargs (dict[str]): Arguments to use in the JINJA templating.
-        """
-        if self.templated:
-            from jinja2 import Environment
-            env = Environment().from_string(json.dumps(self.raw_representation)).render(
-                walkoff.config.config.JINJA_GLOBALS, **kwargs)
-            self._update_json(updated_json=json.loads(env))
 
     def set_arguments(self, new_arguments):
         """Updates the arguments for an Action object.
