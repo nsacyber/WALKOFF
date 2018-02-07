@@ -1,6 +1,6 @@
 import json
 import logging
-import pickle
+from uuid import UUID
 import threading
 
 from sqlalchemy import Column, String, ForeignKey, orm, UniqueConstraint
@@ -113,10 +113,13 @@ class Workflow(ExecutionElement, Device_Base):
         logger.info('Executing workflow {0}'.format(self.name))
         WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowExecutionStart)
         start = start if start is not None else self.start
+        if not isinstance(start, UUID):
+            start = UUID(start)
         executor = self.__execute(start, start_arguments, resume)
         next(executor)
 
     def __execute(self, start, start_arguments=None, resume=False):
+        print("in execute")
         actions = self.__actions(start=start)
         first = True
         for action in (action_ for action_ in actions if action_ is not None):
@@ -133,11 +136,25 @@ class Workflow(ExecutionElement, Device_Base):
 
             if first:
                 first = False
-                action.execute(instance=self._instances[device_id](), accumulator=self._accumulator,
-                               arguments=start_arguments, resume=resume)
+                result = action.execute(instance=self._instances[device_id](), accumulator=self._accumulator,
+                                        arguments=start_arguments, resume=resume)
             else:
-                action.execute(instance=self._instances[device_id](), accumulator=self._accumulator, resume=resume)
-            self._accumulator[action.id] = action.get_output().result
+                result = action.execute(instance=self._instances[device_id](), accumulator=self._accumulator,
+                                        resume=resume)
+            print("here")
+            # TODO: Fix this. Just make an ActioResult.
+            if result == {"trigger": "trigger"}:
+                print("trigger")
+                print("Workflow returning")
+                return
+            print("after here")
+            try:
+                self._accumulator[action.id] = action.get_output().result
+            except Exception:
+                print("exception!!!")
+                import traceback
+                traceback.print_exc()
+            total_actions.append(action)
         print("Workflow shutting down")
         self.__shutdown(self._instances)
         yield
@@ -153,6 +170,8 @@ class Workflow(ExecutionElement, Device_Base):
     def __actions(self, start):
         current_uid = start
         current_action = self.__get_action_by_id(current_uid)
+        print(self.actions)
+        print(current_uid)
 
         while current_action and not self._exit:
             yield current_action

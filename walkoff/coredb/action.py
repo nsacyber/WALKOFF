@@ -130,7 +130,7 @@ class Action(ExecutionElement, Device_Base):
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionAwaitingData)
             logger.debug('Trigger Action {} is awaiting data'.format(self.name))
             self._output = None
-            return
+            return {"trigger": "trigger"}
 
         arguments = arguments if arguments else self.arguments
 
@@ -171,11 +171,9 @@ class Action(ExecutionElement, Device_Base):
     def execute_trigger(self, data_in, accumulator):
         if all(trigger.execute(data_in=data_in, accumulator=accumulator) for trigger in self.triggers):
             logger.debug('Trigger is valid for input {0}'.format(data_in))
-            WalkoffEvent.TriggerActionTaken.send(self)
             return True
         else:
             logger.debug('Trigger is not valid for input {0}'.format(data_in))
-            WalkoffEvent.TriggerActionNotTaken.send(self)
             return False
 
     def __get_argument_by_name(self, name):

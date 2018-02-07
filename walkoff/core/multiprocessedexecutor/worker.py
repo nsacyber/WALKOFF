@@ -232,10 +232,15 @@ class Worker:
         workflow._execution_uid = workflow_execution_uid
 
         if resume:
+            print("Resume")
+            print(workflow_execution_uid)
             saved_state = walkoff.coredb.devicedb.device_db.session.query(SavedWorkflow).filter_by(
-                id=workflow_execution_uid).first()
+                workflow_execution_id=workflow_execution_uid).first()
+            print("got saved state")
             workflow._accumulator = saved_state.accumulator
-            workflow._instances = saved_state.instances
+            workflow._instances = saved_state.app_instances
+            print(workflow._accumulator)
+            print(workflow._instances)
 
         self.workflows[threading.current_thread().name] = workflow
 
@@ -292,7 +297,9 @@ class Worker:
         """
         if kwargs['event'] == WalkoffEvent.TriggerActionAwaitingData:
             workflow = self.workflows[threading.currentThread().name]
-            saved_workflow = SavedWorkflow(id=workflow.get_execution_uid(),
+            print(workflow._accumulator)
+            print(workflow._instances)
+            saved_workflow = SavedWorkflow(workflow_execution_id=workflow.get_execution_uid(),
                                            workflow_id=workflow.id,
                                            action_id=workflow.get_executing_action_id(),
                                            accumulator=workflow.get_accumulator(),

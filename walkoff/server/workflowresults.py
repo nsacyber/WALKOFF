@@ -66,7 +66,7 @@ def __action_execution_awaiting_data_callback(sender, **kwargs):
 @WalkoffEvent.TriggerActionTaken.connect
 def __action_trigger_taken_callback(sender, **kwargs):
     workflow_result = case_database.case_db.session.query(WorkflowResult).filter(
-        WorkflowResult.uid == sender['workflow_execution_uid']).first()
+        WorkflowResult.uid == kwargs['data']['workflow_execution_id']).first()
     if workflow_result is not None:
         workflow_result.trigger_action_executing()
         case_database.case_db.session.commit()

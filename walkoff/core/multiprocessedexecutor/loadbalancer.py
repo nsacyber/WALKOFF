@@ -86,7 +86,7 @@ class LoadBalancer:
                 message.resume = resume
 
                 if start:
-                    message.start = start
+                    message.start = str(start)
                 if start_arguments:
                     self.__set_arguments_for_proto(message, start_arguments)
 

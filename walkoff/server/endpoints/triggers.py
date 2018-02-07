@@ -8,6 +8,7 @@ from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 import walkoff.messaging
 from walkoff.coredb import devicedb
+from walkoff.events import WalkoffEvent
 
 
 def send_data_to_trigger():
@@ -22,6 +23,8 @@ def send_data_to_trigger():
         arguments = data['arguments'] if 'arguments' in data else []
 
         workflows_awaiting_data = set(running_context.controller.get_waiting_workflows())
+        print(workflows_in)
+        print(workflows_awaiting_data)
         uids = set.intersection(workflows_in, workflows_awaiting_data)
 
         user_id = get_jwt_identity()
@@ -36,19 +39,25 @@ def send_data_to_trigger():
             arg_objects.append(Argument(**arg))
 
         for execution_uid in uids:
-            saved_state = devicedb.device_db.session.query(SavedWorkflow).filter_by(id=execution_uid).first()
+            saved_state = devicedb.device_db.session.query(SavedWorkflow).filter_by(workflow_execution_id=execution_uid).first()
             workflow = devicedb.device_db.session.query(Workflow).filter_by(id=saved_state.workflow_id).first()
+            workflow._execution_uid = execution_uid
 
             executed = False
+            exec_action = None
             for action in workflow.actions:
                 if action.id == saved_state.action_id:
+                    exec_action = action
                     executed = action.execute_trigger(data_in, saved_state.accumulator)
                     break
 
             if executed:
+                WalkoffEvent.TriggerActionTaken.send(exec_action, data={'workflow_execution_id': execution_uid})
                 completed_uids.append(execution_uid)
                 running_context.controller.execute_workflow(workflow.id, start=saved_state.action_id,
                                                             start_arguments=arg_objects, resume=True)
+            else:
+                WalkoffEvent.TriggerActionNotTaken.send(exec_action, data={'workflow_execution_id': execution_uid})
 
         return completed_uids, SUCCESS
 
