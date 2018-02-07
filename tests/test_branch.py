@@ -32,7 +32,7 @@ class TestBranch(unittest.TestCase):
         self.assertEqual(elem.status, status)
         self.assertEqual(elem.priority, priority)
         if conditions:
-            self.assertListEqual(elem.conditions, conditions)
+            self.assertSetEqual({condition.id for condition in elem.conditions}, set(conditions))
 
     def test_init(self):
         branch = Branch(source_id=1, destination_id=2)
@@ -46,12 +46,10 @@ class TestBranch(unittest.TestCase):
         branch = Branch(source_id=1, destination_id=2, conditions=[])
         self.__compare_init(branch, 1, 2)
 
-    # def test_init_with_conditions(self):
-    #     conditions = [Condition('HelloWorld', 'Top Condition'), Condition('HelloWorld', 'mod1_flag1')]
-    #     expected_condition_json = [{'action_name': 'Top Condition', 'args': [], 'filters': []},
-    #                                {'action_name': 'mod1_flag1', 'args': [], 'filters': []}]
-    #     branch = Branch("1", "2", conditions=conditions)
-    #     self.__compare_init(branch, "1", "2", expected_condition_json)
+    def test_init_with_conditions(self):
+         conditions = [Condition('HelloWorld', 'Top Condition'), Condition('HelloWorld', 'mod1_flag1')]
+         branch = Branch(1, 2, conditions=conditions)
+         self.__compare_init(branch, 1, 2, conditions=[condition.id for condition in conditions])
 
     def test_eq(self):
         conditions = [Condition('HelloWorld', 'mod1_flag1'), Condition('HelloWorld', 'Top Condition')]

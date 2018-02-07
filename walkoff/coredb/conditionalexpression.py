@@ -10,11 +10,14 @@ logger = logging.getLogger(__name__)
 
 
 class ConditionalExpression(ExecutionElement, Device_Base):
-    __tablename__ = 'condition'
+    __tablename__ = 'conditional_expression'
     _action_id = Column(Guid(), ForeignKey('action.id'))
     _branch_id = Column(Guid(), ForeignKey('branch.id'))
+    _parent_id = Column(Guid(), ForeignKey('conditional_expression.id'))
     operator = Column(Enum('truth', 'not', 'and', 'or', 'xor', name='operator_types'))
-    child_expressions = relationship('ConditionalExpression', backref=backref('parent'), cascade='all, delete-orphan')
+    child_expressions = relationship('ConditionalExpression',
+                                     backref=backref('parent', remote_side='ConditionalExpression.id'),
+                                     cascade='all, delete-orphan')
     conditions = relationship('Condition', backref=backref('_expression'), cascade='all, delete-orphan')
 
     def __init__(self, operator, id=None, child_expressions=None, conditions=None):
