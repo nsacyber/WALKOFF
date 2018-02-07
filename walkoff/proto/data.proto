@@ -102,5 +102,4 @@ message ExecuteWorkflowMessage {
     optional string workflow_execution_uid = 2;
     optional string start = 3;
     repeated ActionPacket.ActionArgument arguments = 4;
-    optional bool resume = 5;
 }
