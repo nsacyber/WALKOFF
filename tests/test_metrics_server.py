@@ -4,14 +4,17 @@ from datetime import timedelta
 import walkoff.server.metrics as metrics
 from walkoff.server import flaskserver as server
 from walkoff.server.endpoints.metrics import _convert_action_time_averages, _convert_workflow_time_averages
-from tests import config
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
+from tests.util import device_db_help
 
 
 class MetricsServerTest(ServerTestCase):
     def setUp(self):
         metrics.app_metrics = {}
+
+    def tearDown(self):
+        device_db_help.cleanup_device_db()
 
     def test_convert_action_time_average(self):
         '''
@@ -98,10 +101,10 @@ class MetricsServerTest(ServerTestCase):
             self.assertIn(workflow, converted['workflows'])
 
     def test_action_metrics(self):
-        server.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                 'multiactionError.playbook')
 
-        server.running_context.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
+        workflow = device_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
+
+        server.running_context.controller.execute_workflow(workflow.id)
         server.running_context.controller.wait_and_reset(1)
 
         response = self.app.get('/metrics/apps', headers=self.headers)
@@ -110,13 +113,12 @@ class MetricsServerTest(ServerTestCase):
         self.assertDictEqual(response, _convert_action_time_averages())
 
     def test_workflow_metrics(self):
-        server.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                 'multiactionError.playbook')
-        server.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                 'multiactionWorkflowTest.playbook')
-        server.running_context.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
-        server.running_context.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
-        server.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
+        error_id = device_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow').id
+        test_id = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow').id
+
+        server.running_context.controller.execute_workflow(error_id)
+        server.running_context.controller.execute_workflow(error_id)
+        server.running_context.controller.execute_workflow(test_id)
         server.running_context.controller.wait_and_reset(3)
 
         response = self.app.get('/metrics/workflows', headers=self.headers)

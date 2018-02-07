@@ -35,7 +35,7 @@ export class DevicesService {
 	}
 
 	addDevice(device: Device): Promise<Device> {
-		return this.authHttp.put('/api/devices', device)
+		return this.authHttp.post('/api/devices', device)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Device)
@@ -43,7 +43,7 @@ export class DevicesService {
 	}
 
 	editDevice(device: Device): Promise<Device> {
-		return this.authHttp.post('/api/devices', device)
+		return this.authHttp.put('/api/devices', device)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Device)

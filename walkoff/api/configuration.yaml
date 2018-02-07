@@ -15,7 +15,7 @@
         description: Unauthorized access
         schema:
           $ref: '#/definitions/Error'
-  post:
+  put:
     tags:
       - Configuration
     summary: Updates the configuration

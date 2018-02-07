@@ -1,16 +1,3 @@
-ActionArgument:
-  type: object
-  required: [name, type]
-  properties:
-    name:
-      type: string
-    type:
-      type: string
-    required:
-      description: is the argument required
-      type: boolean
-    default:
-      description: default value for the argument
 Error:
   type: object
   required: [error]
@@ -20,6 +7,7 @@ Error:
       type: string
       description: error message
       example: Something really bad happened
+
 AvailableSubscriptions:
   type: object
   required: [type, events]
@@ -36,3 +24,8 @@ AvailableSubscriptions:
       items:
         type: string
       example: [Event1, Event_2, 'Event 3']
+
+Uid:
+  type: string
+  description: A 32-bit hexadecimal string representing a globallu unique identifier
+  format: uuid

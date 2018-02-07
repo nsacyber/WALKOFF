@@ -1,11 +1,8 @@
 import json
 
-import walkoff.database
 import walkoff.server.flaskserver
-from walkoff.database.role import Role
-from walkoff.database.resource import Resource
-from walkoff.database import default_resources
-from walkoff.server.extensions import db
+from walkoff.serverdb import Role, Resource, default_resources
+from walkoff.extensions import db
 from walkoff.server.returncodes import *
 from tests.util import servertestcase
 
@@ -48,7 +45,7 @@ class TestRolesServer(servertestcase.ServerTestCase):
                      {'name': 'resource2', 'permissions': ['create']},
                      {'name': 'resource3', 'permissions': ['create']}]
         data = {"name": 'role1', "description": 'desc', "resources": resources}
-        response = self.put_with_status_check('/api/roles', headers=self.headers, status_code=OBJECT_CREATED,
+        response = self.post_with_status_check('/api/roles', headers=self.headers, status_code=OBJECT_CREATED,
                                               content_type='application/json', data=json.dumps(data))
         self.assertIn('id', response)
         data['id'] = response['id']
@@ -56,7 +53,7 @@ class TestRolesServer(servertestcase.ServerTestCase):
 
     def test_create_role_name_already_exists(self):
         data = {"name": 'role1'}
-        self.app.put('/api/roles', headers=self.headers, content_type='application/json', data=json.dumps(data))
+        self.app.post('/api/roles', headers=self.headers, content_type='application/json', data=json.dumps(data))
         self.put_with_status_check('/api/roles', headers=self.headers, status_code=OBJECT_EXISTS_ERROR,
                                    content_type='application/json', data=json.dumps(data))
 
@@ -64,7 +61,7 @@ class TestRolesServer(servertestcase.ServerTestCase):
         data = {"name": 'role1', "description": 'desc', "resources": [{'name': 'resource1', 'permissions': ['create']},
                                                                       {'name': 'resource2', 'permissions': ['create']},
                                                                       {'name': 'resource3', 'permissions': ['create']}]}
-        response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
+        response = json.loads(self.app.post('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data)).get_data(as_text=True))
         role_id = response['id']
         response = self.get_with_status_check('/api/roles/{}'.format(role_id), headers=self.headers)
@@ -79,11 +76,11 @@ class TestRolesServer(servertestcase.ServerTestCase):
                      "resources": [{'name': 'resource1', 'permissions': ['create']},
                                    {'name': 'resource2', 'permissions': ['create']},
                                    {'name': 'resource3', 'permissions': ['create']}]}
-        response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
+        response = json.loads(self.app.post('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
         data = {'id': role_id, 'name': 'renamed'}
-        response = self.post_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS,
+        response = self.put_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS,
                                                content_type='application/json', data=json.dumps(data))
         expected = dict(data_init)
         expected['name'] = 'renamed'
@@ -95,16 +92,16 @@ class TestRolesServer(servertestcase.ServerTestCase):
                      "resources": [{'name': 'resource1', 'permissions': ['create']},
                                    {'name': 'resource2', 'permissions': ['create']},
                                    {'name': 'resource3', 'permissions': ['create']}]}
-        response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
+        response = json.loads(self.app.post('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
         data2_init = {"name": 'role2', "description": 'desc',
                       "resources": [{'name': 'resource1', 'permissions': ['create']},
                                     {'name': 'resource2', 'permissions': ['create']},
                                     {'name': 'resource3', 'permissions': ['create']}]}
-        self.app.put('/api/roles', headers=self.headers, content_type='application/json', data=json.dumps(data2_init))
+        self.app.post('/api/roles', headers=self.headers, content_type='application/json', data=json.dumps(data2_init))
         data = {'id': role_id, 'name': 'role2'}
-        response = self.post_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS,
+        response = self.put_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS,
                                                content_type='application/json', data=json.dumps(data))
         expected = dict(data_init)
         expected['id'] = role_id
@@ -115,11 +112,11 @@ class TestRolesServer(servertestcase.ServerTestCase):
                      "resources": [{'name': 'resource1', 'permissions': ['create']},
                                    {'name': 'resource2', 'permissions': ['create']},
                                    {'name': 'resource3', 'permissions': ['create']}]}
-        response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
+        response = json.loads(self.app.post('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
         data = {'id': role_id, 'description': 'new_desc'}
-        response = self.post_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS,
+        response = self.put_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS,
                                                content_type='application/json', data=json.dumps(data))
         expected = dict(data_init)
         expected['description'] = 'new_desc'
@@ -131,19 +128,19 @@ class TestRolesServer(servertestcase.ServerTestCase):
                      "resources": [{'name': 'resource1', 'permissions': ['create']},
                                    {'name': 'resource2', 'permissions': ['create']},
                                    {'name': 'resource3', 'permissions': ['create']}]}
-        response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
+        response = json.loads(self.app.post('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
         data = {'id': role_id, 'description': 'new_desc',
                 'resources': [{'name': 'resource4', 'permissions': ['create']},
                               {'name': 'resource5', 'permissions': ['create']}]}
-        response = self.post_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS,
+        response = self.put_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS,
                                                content_type='application/json', data=json.dumps(data))
         expected = dict(data_init)
         expected['description'] = 'new_desc'
         expected['id'] = role_id
         expected['resources'] = [{'name': 'resource4', 'permissions': ['create']},
-                                   {'name': 'resource5', 'permissions': ['create']}]
+                                 {'name': 'resource5', 'permissions': ['create']}]
         self.assertRoleJsonIsEqual(response, expected)
 
     def test_update_role_with_resources_permissions(self):
@@ -151,26 +148,26 @@ class TestRolesServer(servertestcase.ServerTestCase):
                      "resources": [{'name': 'resource1', 'permissions': ['create']},
                                    {'name': 'resource2', 'permissions': ['create']},
                                    {'name': 'resource3', 'permissions': ['create']}]}
-        response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
+        response = json.loads(self.app.post('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
         data = {'id': role_id, 'description': 'new_desc',
                 'resources': [{'name': 'resource4', 'permissions': ['read']},
                               {'name': 'resource5', 'permissions': ['delete']}]}
-        response = self.post_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS,
+        response = self.put_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS,
                                                content_type='application/json', data=json.dumps(data))
         expected = dict(data_init)
         expected['description'] = 'new_desc'
         expected['id'] = role_id
         expected['resources'] = [{'name': 'resource4', 'permissions': ['read']},
-                                   {'name': 'resource5', 'permissions': ['delete']}]
+                                 {'name': 'resource5', 'permissions': ['delete']}]
         self.assertRoleJsonIsEqual(response, expected)
 
     def test_update_role_with_invalid_id(self):
         data = {'id': 404, 'description': 'new_desc', 'resources': [{'name': 'resource1', 'permissions': ['create']},
                                                                     {'name': 'resource2', 'permissions': ['create']},
                                                                     {'name': 'resource3', 'permissions': ['create']}]}
-        self.post_with_status_check('/api/roles', headers=self.headers, status_code=OBJECT_DNE_ERROR,
+        self.put_with_status_check('/api/roles', headers=self.headers, status_code=OBJECT_DNE_ERROR,
                                     content_type='application/json', data=json.dumps(data))
 
     def test_update_role_with_resources_updates_resource_roles(self):
@@ -178,19 +175,19 @@ class TestRolesServer(servertestcase.ServerTestCase):
                      {'name': 'resource2', 'permissions': ['create']},
                      {'name': 'resource3', 'permissions': ['create']}]
         data_init = {"name": 'role1', "description": 'desc', "resources": resources}
-        response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
+        response = json.loads(self.app.post('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
         data = {'id': role_id, 'description': 'new_desc',
                 'resources': [{'name': 'resource4', 'permissions': ['create']},
                               {'name': 'resource5', 'permissions': ['create']},
                               {'name': '/roles', 'permissions': ['create']}]}
-        self.app.post('/api/roles', headers=self.headers, content_type='application/json', data=json.dumps(data))
+        self.app.put('/api/roles', headers=self.headers, content_type='application/json', data=json.dumps(data))
         for resource in resources:
-            rsrc = walkoff.database.Resource.query.filter_by(name=resource['name']).first()
+            rsrc = Resource.query.filter_by(name=resource['name']).first()
             self.assertIsNone(rsrc)
         for resource in ['resource4', 'resource5']:
-            rsrc = walkoff.database.Resource.query.filter_by(name=resource).first()
+            rsrc = Resource.query.filter_by(name=resource).first()
             self.assertIsNotNone(rsrc)
 
     def test_delete_role(self):
@@ -198,10 +195,10 @@ class TestRolesServer(servertestcase.ServerTestCase):
                      "resources": [{'name': 'resource1', 'permissions': ['create']},
                                    {'name': 'resource2', 'permissions': ['create']},
                                    {'name': 'resource3', 'permissions': ['create']}]}
-        response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
+        response = json.loads(self.app.post('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
-        self.delete_with_status_check('/api/roles/{}'.format(role_id), headers=self.headers, status_code=SUCCESS)
+        self.delete_with_status_check('/api/roles/{}'.format(role_id), headers=self.headers, status_code=NO_CONTENT)
 
     def test_delete_role_does_not_exist(self):
         self.delete_with_status_check('/api/roles/404', headers=self.headers, status_code=OBJECT_DNE_ERROR)
@@ -211,9 +208,9 @@ class TestRolesServer(servertestcase.ServerTestCase):
                      {'name': 'resource2', 'permissions': ['create']},
                      {'name': 'resource3', 'permissions': ['create']}]
         data_init = {"name": 'role1', "description": 'desc', "resources": resources}
-        response = json.loads(self.app.put('/api/roles', headers=self.headers, content_type='application/json',
+        response = json.loads(self.app.post('/api/roles', headers=self.headers, content_type='application/json',
                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
-        self.delete_with_status_check('/api/roles/{}'.format(role_id), headers=self.headers, status_code=SUCCESS)
-        role = walkoff.database.Role.query.filter_by(id=role_id).first()
+        self.delete_with_status_check('/api/roles/{}'.format(role_id), headers=self.headers, status_code=NO_CONTENT)
+        role = Role.query.filter_by(id=role_id).first()
         self.assertIsNone(role)

@@ -2,8 +2,9 @@ from walkoff.security import ResourcePermissions, permissions_accepted_for_resou
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from walkoff.server.returncodes import *
 from flask import request
-from walkoff.database import User, Message
-from walkoff.server.extensions import db
+from walkoff.serverdb import User
+from walkoff.serverdb.message import Message
+from walkoff.extensions import db
 
 max_notifications = 20
 min_notifications = 5
@@ -42,7 +43,7 @@ def get_message(message_id):
     return __func()
 
 
-def act_on_messages(action):
+def act_on_messages():
     from walkoff.messaging import MessageAction
 
     @jwt_required
@@ -55,7 +56,7 @@ def act_on_messages(action):
     def delete_message_action():
         return act_on_message_helper(MessageAction.delete)
 
-    action = MessageAction.convert_string(action)
+    action = MessageAction.convert_string(request.get_json()['action'])
     if action is None or action == MessageAction.respond:
         possible_actions = [action.name for action in MessageAction if action != MessageAction.respond]
         return {'error': 'Unknown action: {0}. Possible actions are {1}'.format(

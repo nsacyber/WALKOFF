@@ -9,10 +9,10 @@ import walkoff.case.subscription as case_subscription
 import walkoff.config.paths
 from walkoff.case.subscription import delete_cases
 from walkoff.helpers import format_exception_message
-from walkoff.database import db
+from walkoff.serverdb import db
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
-from walkoff.database.casesubscription import CaseSubscription
+from walkoff.serverdb.casesubscription import CaseSubscription
 
 
 def read_all_cases():
@@ -77,8 +77,8 @@ def update_case():
                 db.session.commit()
                 current_app.logger.debug('Case name changed from {0} to {1}'.format(original_name, data['name']))
             if 'subscriptions' in data:
-                case_obj.subscriptions = json.dumps(data['subscriptions'])
-                subscriptions = {subscription['uid']: subscription['events'] for subscription in data['subscriptions']}
+                case_obj.subscriptions = data['subscriptions']
+                subscriptions = {subscription['id']: subscription['events'] for subscription in data['subscriptions']}
                 for uid, events in subscriptions.items():
                     case_subscription.modify_subscription(case_name, uid, events)
             db.session.commit()
@@ -100,7 +100,7 @@ def delete_case(case_id):
             db.session.delete(case_obj)
             db.session.commit()
             current_app.logger.debug('Case deleted {0}'.format(case_id))
-            return {}, SUCCESS
+            return {}, NO_CONTENT
         else:
             current_app.logger.error('Cannot delete case {0}. Case does not exist.'.format(case_id))
             return {"error": "Case does not exist."}, OBJECT_DNE_ERROR

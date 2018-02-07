@@ -44,30 +44,30 @@ class TestHelperFunctions(unittest.TestCase):
     #         instance = Instance.create('HelloWorld', 'default_device_name')
     #     self.assertIsNone(load_app_function(instance(), 'JunkFunctionName'))
 
-    def test_locate_workflows(self):
-        expected_workflows = ['basicWorkflowTest.playbook',
-                              'DailyQuote.playbook',
-                              'dataflowTest.playbook',
-                              'dataflowTestActionNotExecuted.playbook',
-                              'loopWorkflow.playbook',
-                              'multiactionWorkflowTest.playbook',
-                              'pauseWorkflowTest.playbook',
-                              'multiactionError.playbook',
-                              'simpleDataManipulationWorkflow.playbook',
-                              'templatedWorkflowTest.playbook',
-                              'testExecutionWorkflow.playbook',
-                              'testScheduler.playbook']
-        received_workflows = locate_playbooks_in_directory(test_workflows_path)
-        orderless_list_compare(self, received_workflows, expected_workflows)
-
-        self.assertListEqual(locate_playbooks_in_directory('.'), [])
-
-    def test_get_workflow_names_from_file(self):
-        workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'basicWorkflowTest.playbook'))
-        self.assertListEqual(workflows, ['helloWorldWorkflow'])
-
-        workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'junkfileName.playbook'))
-        self.assertListEqual(workflows, [])
+    # def test_locate_workflows(self):
+    #     expected_workflows = ['basicWorkflowTest.playbook',
+    #                           'DailyQuote.playbook',
+    #                           'dataflowTest.playbook',
+    #                           'dataflowTestActionNotExecuted.playbook',
+    #                           'loopWorkflow.playbook',
+    #                           'multiactionWorkflowTest.playbook',
+    #                           'pauseWorkflowTest.playbook',
+    #                           'multiactionError.playbook',
+    #                           'simpleDataManipulationWorkflow.playbook',
+    #                           'templatedWorkflowTest.playbook',
+    #                           'testExecutionWorkflow.playbook',
+    #                           'testScheduler.playbook']
+    #     received_workflows = locate_playbooks_in_directory(test_workflows_path)
+    #     orderless_list_compare(self, received_workflows, expected_workflows)
+    #
+    #     self.assertListEqual(locate_playbooks_in_directory('.'), [])
+    #
+    # def test_get_workflow_names_from_file(self):
+    #     workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'basicWorkflowTest.playbook'))
+    #     self.assertListEqual(workflows, ['helloWorldWorkflow'])
+    #
+    #     workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'junkfileName.playbook'))
+    #     self.assertListEqual(workflows, [])
 
     def test_list_apps(self):
         expected_apps = ['HelloWorld', 'DailyQuote', 'HelloWorldBounded']
@@ -187,10 +187,10 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertEqual(create_sse_event(), '')
 
     def test_create_sse_event_id_only(self):
-        self.assertEqual(create_sse_event(event_id=1), 'id: 1\n\n')
+        self.assertEqual(create_sse_event(event_id=1), 'id: 1\ndata: ""\n\n')
 
     def test_create_sse_event_only(self):
-        self.assertEqual(create_sse_event(event='some_event'), 'event: some_event\n\n')
+        self.assertEqual(create_sse_event(event='some_event'), 'event: some_event\ndata: ""\n\n')
 
     def test_create_sse_data_only_non_json(self):
         self.assertEqual(create_sse_event(data=42), 'data: 42\n\n')

@@ -7,7 +7,7 @@ sys.path.append(os.getcwd())
 
 
 from scripts.migrations.database.commonenv import run
-from walkoff.server.extensions import db
+from walkoff.extensions import db
 
 
 # add your model's MetaData object here

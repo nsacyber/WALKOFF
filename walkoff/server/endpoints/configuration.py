@@ -38,20 +38,9 @@ def read_config_values():
 
 
 def update_configuration(configuration):
-    from walkoff.server.context import running_context
-    from walkoff.server.flaskserver import write_playbook_to_file
-
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('configuration', ['update']))
     def __func():
-        if 'workflows_path' in configuration:
-            for playbook in running_context.controller.get_all_playbooks():
-                try:
-                    write_playbook_to_file(playbook)
-                except (IOError, OSError):
-                    current_app.logger.error('Could not commit old playbook {0} to file. '
-                                             'Losing uncommitted changes!'.format(playbook))
-            running_context.controller.load_playbooks()
         if not _reset_token_durations(access_token_duration=configuration.get('access_token_duration', None),
                                       refresh_token_duration=configuration.get('refresh_token_duration', None)):
             return {'error': 'Invalid token durations.'}, BAD_REQUEST

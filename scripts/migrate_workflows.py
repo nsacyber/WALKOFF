@@ -6,7 +6,7 @@ import semver
 import sys
 
 sys.path.append(os.path.abspath('.'))
-from walkoff.appgateway import cache_apps, is_app_action_bound
+from walkoff.appgateway import cache_apps
 from walkoff.config.config import load_app_apis
 import importlib
 import scripts.migrations.workflows.versions as versions

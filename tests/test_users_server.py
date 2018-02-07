@@ -1,9 +1,7 @@
 import json
 
-from walkoff.server.extensions import db
-from walkoff.database.user import User
-from walkoff.database.role import Role
-from walkoff.database import add_user
+from walkoff.extensions import db
+from walkoff.serverdb import User, Role, add_user
 from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
 
@@ -37,7 +35,7 @@ class TestUserServer(ServerTestCase):
 
     def test_create_user_name_password_only(self):
         data = {'username': 'test_user', 'password': 'NoH4x0rzPls!'}
-        response = self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
+        response = self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
                                               data=json.dumps(data), status_code=OBJECT_CREATED)
         self.assertUserCreatedResponse('test_user', response)
 
@@ -46,7 +44,7 @@ class TestUserServer(ServerTestCase):
         db.session.add(user)
         db.session.commit()
         data = {'username': 'username', 'password': 'NoH4x0rzPls!'}
-        self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
+        self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
                                    data=json.dumps(data), status_code=OBJECT_EXISTS_ERROR)
 
     # TODO: Fix.
@@ -55,7 +53,7 @@ class TestUserServer(ServerTestCase):
         db.session.add(role)
         db.session.commit()
         data = {'username': 'username', 'password': 'NoH4x0rzPls!', 'roles': [role.id]}
-        response = self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
+        response = self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
                                               data=json.dumps(data), status_code=OBJECT_CREATED)
         self.assertUserCreatedResponse('username', response)
 
@@ -75,7 +73,7 @@ class TestUserServer(ServerTestCase):
         db.session.add(user)
         db.session.commit()
         data = {'id': user.id, 'old_password': 'asdfghjkl;', 'password': 'changed!'}
-        response = self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
+        response = self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
                                                data=json.dumps(data), status_code=SUCCESS)
         self.assertDictEqual(response, user.as_json())
         self.assertTrue(user.verify_password('changed!'))
@@ -85,7 +83,7 @@ class TestUserServer(ServerTestCase):
         db.session.add(user)
         db.session.commit()
         data = {'id': user.id, 'old_password': 'incorrectpassword', 'password': 'changed!'}
-        self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
+        self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
                                     data=json.dumps(data), status_code=BAD_REQUEST)
         self.assertTrue(user.verify_password('asdfghjkl;'))
 
@@ -98,7 +96,7 @@ class TestUserServer(ServerTestCase):
         db.session.add(user)
         db.session.commit()
         data = {'id': user.id, 'roles': [role.id]}
-        response = self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
+        response = self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
                                                data=json.dumps(data), status_code=SUCCESS)
         self.assertDictEqual(response, user.as_json())
         self.assertSetEqual({role.name for role in user.roles}, {'role1'})
@@ -108,7 +106,7 @@ class TestUserServer(ServerTestCase):
         db.session.add(user)
         db.session.commit()
         data = {'id': user.id, 'username': 'new_name'}
-        response = self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
+        response = self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
                                                data=json.dumps(data), status_code=SUCCESS)
         self.assertEqual(user.username, 'new_name')
         self.assertDictEqual(response, user.as_json())
@@ -121,7 +119,7 @@ class TestUserServer(ServerTestCase):
         db.session.add(user2)
         db.session.commit()
         data = {'id': user.id, 'username': 'user2'}
-        self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
+        self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
                                     data=json.dumps(data), status_code=BAD_REQUEST)
         self.assertTrue(user.verify_password('whisperDieselEngine'))  # check password wasn't changed
 
@@ -130,7 +128,7 @@ class TestUserServer(ServerTestCase):
         db.session.add(user)
         db.session.commit()
         data = {'id': user.id, 'old_password': 'asdfghjkl;', 'password': 'changed!', 'username': 'new_name'}
-        response = self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
+        response = self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
                                                data=json.dumps(data), status_code=SUCCESS)
         self.assertTrue(user.verify_password('changed!'))
         self.assertEqual(user.username, 'new_name')
@@ -144,7 +142,7 @@ class TestUserServer(ServerTestCase):
         db.session.add(user2)
         db.session.commit()
         data = {'id': user.id, 'old_password': 'asdfghjkl;', 'password': 'changed!', 'username': 'user2'}
-        self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
+        self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
                                     data=json.dumps(data), status_code=BAD_REQUEST)
         self.assertTrue(user.verify_password('whisperDieselEngine'))
         self.assertEqual(user.username, 'username')
@@ -156,7 +154,7 @@ class TestUserServer(ServerTestCase):
         db.session.add(user)
         db.session.commit()
         data = {'id': user.id, 'old_password': 'invalid', 'password': 'changed!', 'username': 'new_name'}
-        self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
+        self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
                                     data=json.dumps(data), status_code=BAD_REQUEST)
         self.assertTrue(user.verify_password('whisperDieselEngine'))
         self.assertEqual(user.username, 'username')
@@ -169,14 +167,14 @@ class TestUserServer(ServerTestCase):
         access_token = key['access_token']
         headers = {'Authorization': 'Bearer {}'.format(access_token)}
         data = {'id': user.id, 'active': False}
-        self.post_with_status_check('/api/users', headers=headers, content_type='application/json',
+        self.put_with_status_check('/api/users', headers=headers, content_type='application/json',
                                     data=json.dumps(data), status_code=SUCCESS)
         self.assertTrue(user.active)
 
     def test_update_active_with_admin_user(self):
         user = self.setup_guest_user()
         data = {'id': user.id, 'active': False}
-        self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
+        self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
                                     data=json.dumps(data), status_code=SUCCESS)
         self.assertFalse(user.active)
 
@@ -189,19 +187,19 @@ class TestUserServer(ServerTestCase):
         headers = {'Authorization': 'Bearer {}'.format(access_token)}
         admin = User.query.filter_by(username='admin').first()
         data = {'id': admin.id, 'username': 'somethingelse'}
-        self.post_with_status_check('/api/users', headers=headers, content_type='application/json',
+        self.put_with_status_check('/api/users', headers=headers, content_type='application/json',
                                     data=json.dumps(data), status_code=FORBIDDEN_ERROR)
 
     def test_update_user_invalid_id(self):
         data = {'id': 404, 'username': 'new_name'}
-        self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
+        self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
                                     data=json.dumps(data), status_code=OBJECT_DNE_ERROR)
 
     def test_delete_user(self):
         user = User('username', 'asdfghjkl;')
         db.session.add(user)
         db.session.commit()
-        self.delete_with_status_check('/api/users/{}'.format(user.id), headers=self.headers, status_code=SUCCESS)
+        self.delete_with_status_check('/api/users/{}'.format(user.id), headers=self.headers, status_code=NO_CONTENT)
 
     def test_delete_user_invalid_id(self):
         self.delete_with_status_check('/api/users/404', headers=self.headers, status_code=OBJECT_DNE_ERROR)

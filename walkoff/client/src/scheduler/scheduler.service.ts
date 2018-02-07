@@ -6,6 +6,7 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 
 import { ScheduledTask } from '../models/scheduledTask';
+import { Playbook } from '../models/playbook/playbook';
 
 const schedulerStatusNumberMapping: any = {
 	0: 'stopped',
@@ -18,14 +19,6 @@ export class SchedulerService {
 	constructor (private authHttp: JwtHttp) {
 	}
 
-	//TODO: route should most likely be GET
-	executeWorkflow(playbook: string, workflow: string): Promise<void> {
-		return this.authHttp.post(`/playbooks/${playbook}/workflows/${workflow}/execute`, {})
-			.toPromise()
-			.then(() => null)
-			.catch(this.handleError);
-	}
-
 	getSchedulerStatus(): Promise<string> {
 		return this.authHttp.get('/api/scheduler')
 			.toPromise()
@@ -35,7 +28,7 @@ export class SchedulerService {
 	}
 
 	changeSchedulerStatus(status: string): Promise<string> {
-		return this.authHttp.get(`/api/scheduler/${status}`)
+		return this.authHttp.put('/api/scheduler', { status })
 			.toPromise()
 			.then(this.extractData)
 			.then(statusObj => schedulerStatusNumberMapping[statusObj.status])
@@ -51,7 +44,7 @@ export class SchedulerService {
 	}
 
 	addScheduledTask(scheduledTask: ScheduledTask): Promise<ScheduledTask> {
-		return this.authHttp.put('/api/scheduledtasks', scheduledTask)
+		return this.authHttp.post('/api/scheduledtasks', scheduledTask)
 			.toPromise()
 			.then(this.extractData)
 			.then(newScheduledTask => newScheduledTask as ScheduledTask)
@@ -59,7 +52,7 @@ export class SchedulerService {
 	}
 
 	editScheduledTask(scheduledTask: ScheduledTask): Promise<ScheduledTask> {
-		return this.authHttp.post('/api/scheduledtasks', scheduledTask)
+		return this.authHttp.put('/api/scheduledtasks', scheduledTask)
 			.toPromise()
 			.then(this.extractData)
 			.then(editedScheduledTask => editedScheduledTask as ScheduledTask)
@@ -74,16 +67,17 @@ export class SchedulerService {
 	}
 
 	changeScheduledTaskStatus(scheduledTaskId: number, actionName: string): Promise<void> {
-		return this.authHttp.put(`/api/scheduledtasks/${scheduledTaskId}/${actionName}`, {})
+		return this.authHttp.patch('/api/scheduledtasks', { id: scheduledTaskId, action: actionName })
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
 	}
 
-	getPlaybooks(): Promise<any> {
+	getPlaybooks(): Promise<Playbook[]> {
 		return this.authHttp.get('/api/playbooks')
 			.toPromise()
 			.then(this.extractData)
+			.then(playbooks => playbooks as Playbook[])
 			.catch(this.handleError);
 	}
 

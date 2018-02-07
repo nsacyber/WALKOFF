@@ -1,50 +1,30 @@
+CreatePlaybook:
+    type: object
+    required: [name]
+    additionalProperties: false
+    properties:
+      name:
+        type: string
+      workflows:
+        type: array
+        items:
+          $ref: '#/definitions/CreateWorkflow'
+
 Playbook:
     type: object
-    required: [name]
+    required: [id]
+    additionalProperties: false
     properties:
+      id:
+        $ref: '#/definitions/Uid'
       name:
         type: string
+      workflows:
+        type: array
+        items:
+          $ref: '#/definitions/Workflow'
 
-AllPlaybooksOverview:
-  type: array
-  items:
-    $ref: '#/definitions/PlaybookOverview'
-
-PlaybookOverview:
-  type: object
-  description: Stripped-down view of a playbook
-  required: [name, workflows]
-  properties:
-    name:
-      type: string
-      description: name of the playbook
-    workflows:
-      description: workflows inside of this playbook
-      type: array
-      items:
-        $ref: '#/definitions/WorkflowDescription'
-
-WorkflowDescription:
-  type: object
-  required: [name, uid]
-  properties:
-    name:
-      type: string
-      description: name of the workflow
-    uid:
-      type: string
-      description: UID of the workflow
-
-UpdatePlaybook:
-    type: object
-    required: [name]
-    properties:
-      name:
-        type: string
-      new_name:
-        type: string
-
-Workflow:
+CreateWorkflow:
   type: object
   required: [name]
   description: A workflow object
@@ -54,87 +34,70 @@ Workflow:
       description: The name of the workflow. Composed of both its enclosing playbook and its own name
       type: string
       example: HelloWorldWorkflow
+    start:
+      description: ID of the starting action
+      $ref: '#/definitions/Uid'
     actions:
       description: The actions defined in this workflow.
       type: array
       items:
-        $ref: "#/definitions/DisplayAction"
+        $ref: "#/definitions/Action"
     branches:
       description: The possible branches
       type: array
       items:
         $ref: '#/definitions/Branch'
-    start:
-      description: UID of the starting action
-      type: string
-      default: start
-      example: action1
-    accumulated_risk:
-      description: The risk which has been accumulated as this workflow has been executed
-      type: number
-      example: 0.43
-      readOnly: true
+    playbook_id:
+      description: Only used when copying a workflow to a different playbook
+      $ref: '#/definitions/Uid'
 
-AddWorkflow:
-    type: object
-    required: [name]
-    properties:
-      name:
-        type: string
-
-WorkflowUpdate:
-    type: object
-    required: [name]
-    properties:
-      name:
-        type: string
-      new_name:
-        type: string
-
-CopyWorkflow:
-    type: object
-    properties:
-      playbook:
-        type: string
-      workflow:
-        type: string
-
-WorkflowId:
+Workflow:
   type: object
-  required: [id]
+  required: [id, name, start]
+  description: A workflow object
+  additionalProperties: false
   properties:
     id:
+      $ref: '#/definitions/Uid'
+    name:
+      description: The name of the workflow. Composed of both its enclosing playbook and its own name
       type: string
-      description: 32-byte hexidecimal string representing the ID of the workflow
-      readOnly: true
+      example: HelloWorldWorkflow
+    start:
+      description: ID of the starting action
+      $ref: '#/definitions/Uid'
+    actions:
+      description: The actions defined in this workflow.
+      type: array
+      items:
+        $ref: "#/definitions/Action"
+    branches:
+      description: The possible branches
+      type: array
+      items:
+        $ref: '#/definitions/Branch'
 
 Action:
   type: object
-  required: [name, action_name, app_name]
-  description: Encapsulation of executing an action in an app
+  required: [id, app_name, action_name, name]
+  description: Encapsulation of executing an action in an app.
   additionalProperties: false
   properties:
-    uid:
-      description: UID of this action
-      type: string
-      x-nullable: true
-    name:
-      description: Name of the action
-      type: string
-      example: action1
-    action_name:
-      description: The action the action will take
-      type: string
-      example: pause
+    id:
+      $ref: '#/definitions/Uid'
+      description: The ID of the object. If updating a workflow and the Action object already exists, ID is required. Otherwise, this ID must be UUID4.
     app_name:
       description: The app to which the action belongs
       type: string
       example: CyberAnalytics
-    triggers:
-      description: String representation of a list of Trigger objects
-      type: array
-      items:
-        $ref: '#/definitions/Condition'
+    action_name:
+      description: The action the action will take
+      type: string
+      example: pause
+    name:
+      description: Name of the action
+      type: string
+      example: action1
     device_id:
       description: ID of the device to use
       type: integer
@@ -144,80 +107,31 @@ Action:
       type: array
       items:
         $ref: '#/definitions/Argument'
-    position:
-      description:  position of the action onthe workflow editor
-      type: object
-      required: [x, y]
-      properties:
-        x:
-          description: x position
-          type: number
-          example: 443.22
-        y:
-          description: y position
-          type: number
-          example: -12.036
-
-DisplayAction:
-  type: object
-  description: Encapsulation of executing an action in an app
-  properties:
-    name:
-      description: Name of the action
-      type: string
-      example: action1
-    action_name:
-      description: The action the action will take
-      type: string
-      example: pause
-    app_name:
-      description: The app to which the action belongs
-      type: string
-      example: CyberAnalytics
     triggers:
       description: String representation of a list of Trigger objects
       type: array
       items:
         $ref: '#/definitions/Condition'
-    device_id:
-      description: ID of the device to use
-      type: integer
-      example: 42
-    arguments:
-      description: The input arguments to the action
-      type: array
-      items:
-        $ref: '#/definitions/Argument'
     position:
-      description:  position of the action onthe workflow editor
+      description: Position object representing various fields of the position of the Action in the playbook editor.
       type: object
-      required: [x, y]
-      properties:
-        x:
-          description: x position
-          type: number
-          example: 443.22
-        y:
-          description: y position
-          type: number
-          example: -12.036
+      $ref: '#/definitions/Position'
 
 Branch:
   type: object
-  required: [source_uid, destination_uid]
+  required: [source_id, destination_id]
   description: Encapsualtion of a list of possible actions to take and conditionals required to be met before taking that action
   additionalProperties: false
   properties:
-    source_uid:
-      description: The source Action UID for this Branch
-      type: string
-    destination_uid:
-      description: The destination Action UID for this Branch, if the conditions evaluate to True
-      type: string
-    uid:
-      description: UID of this action
-      type: string
-      x-nullable: true
+    id:
+      $ref: '#/definitions/Uid'
+      description: The ID of the object. If updating a workflow and the Branch object already exists, ID is required. Otherwise, do not include it.
+    source_id:
+      description: The source Action ID for this Branch
+      $ref: '#/definitions/Uid'
+    destination_id:
+      description: The destination Action ID for this Branch, if the conditions evaluate to True
+      $ref: '#/definitions/Uid'
     priority:
       description: The priority for this Branch, which will be compared to other Branches with the same source_uid Action, ascending, i.e. 1 is the highest priority.
       type: integer
@@ -231,16 +145,42 @@ Branch:
       items:
         $ref: '#/definitions/Condition'
 
+Argument:
+  type: object
+  required: [name]
+  description: Object used for passing an argument into actions. Either reference or value must be selected.
+  minProperties: 2
+  additionalProperties: false
+  properties:
+    id:
+      type: integer
+      description: The ID of the object. If updating a workflow and the Argument object already exists, ID is required. Otherwise, do not include it.
+    name:
+      type: string
+      example: regex
+    value:
+      description: The value of the argument
+      example: WALK(.*)
+    reference:
+      description: The ID of the action whose output should be used
+      type: integer
+    selection:
+      description: >-
+        The path to a subsection of the output of the action to use. For example [1, "a"] would use the second element
+        of a list, and the "a" field of that object.
+      type: array
+      items:
+        type: [string, integer]
+
 Condition:
   type: object
-  required: [action_name, app_name]
+  required: [app_name, action_name]
   description: Takes data and checks it against a condition given by its action Optionally filters the data before checking.
   additionalProperties: false
   properties:
-    uid:
-      description: UID of this condition
-      type: string
-      x-nullable: true
+    id:
+      $ref: '#/definitions/Uid'
+      description: The ID of the object. If updating a workflow and the Condition object already exists, ID is required. Otherwise, do not include it.
     app_name:
       description: The app to which the conditon belongs
       type: string
@@ -262,14 +202,13 @@ Condition:
 
 Transform:
   type: object
-  required: [action_name, app_name]
+  required: [app_name, action_name]
   description: Filters or otherwise transforms the data given to it
   additionalProperties: false
   properties:
-    uid:
-      description: UID of this transform
-      type: string
-      x-nullable: true
+    id:
+      $ref: '#/definitions/Uid'
+      description: The ID of the object. If updating a workflow and the Transform object already exists, ID is required. Otherwise, do not include it.
     app_name:
       description: The app to which the transform belongs
       type: string
@@ -284,26 +223,37 @@ Transform:
       items:
         $ref: '#/definitions/Argument'
 
-Argument:
+Position:
   type: object
-  required: [name]
-  description: Object used for passing an argument into actions. Either reference or value must be selected.
-  minProperties: 2
+  required: [x, y]
+  description: Various specifications for how the Action is displayed in the playbook editor
+  additionalProperties: false
   properties:
+    id:
+      type: integer
+      description: The ID of the object. If updating a workflow and the Position object already exists, ID is required. Otherwise, do not include it.
+    x:
+      type: number
+      description: The X coordinate for the Action
+    y:
+      type: number
+      description: The Y coordinate for the Action
+
+CopyWorkflow:
+    type: object
+    properties:
+      playbook_id:
+        $ref: '#/definitions/Uid'
+      workflow_name:
+        type: string
+
+UpdatePlaybook:
+  type: object
+  required: [id]
+  additionalProperties: false
+  properties:
+    id:
+      $ref: '#/definitions/Uid'
     name:
       type: string
-      example: regex
-    value:
-      description: The value of the argument
-      example: WALK(.*)
-    reference:
-      description: The UID of the action whose output should be used
-      type: string
-    selection:
-      description: >-
-        The path to a subsection of the output of the action to use. For example [1, "a"] would use the second element
-        of a list, and the "a" field of that object.
-      type: array
-      items:
-        type: [string, integer]
-
+      description: The new name of the playbook

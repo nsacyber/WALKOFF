@@ -55,17 +55,15 @@ class TestConfigurationServer(ServerTestCase):
         self.assertDictEqual(response, expected)
 
     def test_set_configuration(self):
-        data = {"workflows_path": 'workflows_path_reset',
-                "db_path": 'db_path_reset',
+        data = {"db_path": 'db_path_reset',
                 "host": 'host_reset',
                 "port": 1100,
                 "access_token_duration": 20,
                 "refresh_token_duration": 35}
-        self.post_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
+        self.put_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
                                     content_type='application/json')
 
-        expected = {walkoff.config.paths.workflows_path: 'workflows_path_reset',
-                    walkoff.config.paths.db_path: 'db_path_reset',
+        expected = {walkoff.config.paths.db_path: 'db_path_reset',
                     walkoff.config.config.host: 'host_reset',
                     walkoff.config.config.port: 1100}
 
@@ -80,7 +78,7 @@ class TestConfigurationServer(ServerTestCase):
         refresh_token_duration = current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days
         data = {"access_token_duration": 60 * 25,
                 "refresh_token_duration": 1}
-        self.post_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
+        self.put_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
                                     content_type='application/json', status_code=BAD_REQUEST)
 
         self.assertEqual(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds, access_token_duration)

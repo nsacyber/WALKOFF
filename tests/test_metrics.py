@@ -1,8 +1,13 @@
+from sqlalchemy import and_
+
 import walkoff.server.metrics as metrics
 from walkoff.server import flaskserver as server
-from tests import config
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
+from walkoff.coredb.playbook import Playbook
+from walkoff.coredb.workflow import Workflow
+from walkoff.coredb import devicedb
+from tests.util import device_db_help
 
 
 class MetricsTest(ServerTestCase):
@@ -10,11 +15,15 @@ class MetricsTest(ServerTestCase):
         metrics.app_metrics = {}
         metrics.workflow_metrics = {}
 
-    def test_action_metrics(self):
-        server.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                 'multiactionError.playbook')
+    def tearDown(self):
+        device_db_help.cleanup_device_db()
 
-        server.running_context.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
+    def test_action_metrics(self):
+        playbook = device_db_help.load_playbook('multiactionError')
+        workflow_id = devicedb.device_db.session.query(Workflow).filter(and_(
+            Workflow.name == 'multiactionErrorWorkflow', Workflow._playbook_id == playbook.id)).first().id
+
+        server.running_context.controller.execute_workflow(workflow_id)
 
         server.running_context.controller.wait_and_reset(1)
         self.assertListEqual(list(metrics.app_metrics.keys()), ['HelloWorldBounded'])
@@ -42,16 +51,17 @@ class MetricsTest(ServerTestCase):
         self.assertEqual(metrics.app_metrics['HelloWorldBounded']['actions']['helloWorld']['success']['count'], 1)
 
     def test_workflow_metrics(self):
-        server.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                 'multiactionError.playbook')
-        server.running_context.controller.load_playbook(resource=config.test_workflows_path +
-                                                                 'multiactionWorkflowTest.playbook')
+        device_db_help.load_playbooks(['multiactionError', 'multiactionWorkflowTest'])
+        error_id = devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(and_(
+            Workflow.name == 'multiactionErrorWorkflow', Playbook.name == 'multiactionError')).first().id
+        test_id = devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(and_(
+            Workflow.name == 'multiactionWorkflow', Playbook.name == 'multiactionWorkflowTest')).first().id
 
         error_key = 'multiactionErrorWorkflow'
         multiaction_key = 'multiactionWorkflow'
-        server.running_context.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
-        server.running_context.controller.execute_workflow('multiactionError', 'multiactionErrorWorkflow')
-        server.running_context.controller.execute_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
+        server.running_context.controller.execute_workflow(error_id)
+        server.running_context.controller.execute_workflow(error_id)
+        server.running_context.controller.execute_workflow(test_id)
 
         server.running_context.controller.wait_and_reset(3)
 

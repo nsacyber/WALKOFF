@@ -1,6 +1,47 @@
 # Changelog
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
+
+
+## [Unreleased]
+###### [unreleased]
+
+### Changed
+* Removed workflow_version from playbook JSON
+
+### Deprecated
+* The "sender_uids" argument in the interface dispatcher `on_xyz_event`
+  decorators is now a an alias for "sender_ids". This will be removed in
+  0.9.0
+
+## [0.6.7]
+###### 2018-02-06
+
+### Fixed
+* Fixed bug in `create_sse_event` where data field of the SSE would not be
+  populated if no data was not specified, causing the SSE event to be invalid
+
+## [0.6.6]
+###### 2018-02-02
+
+### Changed
+* Omitting `sender_uids` or `names` on `dispatcher.on_xyz_event` decorators
+  in interfaces now registers the decorated function for all senders. This
+  is consistent with the previously inaccurate code examples in the tutorials.
+
+## [0.6.5]
+###### 2018-02-02
+
+### Added
+* Webpack is now used to increase UI performance
+
+### Changed
+* Default return codes for the Walkoff app
+
+### Contributor
+* Some UI tests are now run on Travis-CI
+
+
 ## [0.6.4]
 ###### 2018-01-18
 

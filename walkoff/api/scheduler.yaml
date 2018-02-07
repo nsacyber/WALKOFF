@@ -12,15 +12,7 @@
         description: Success
         schema:
           $ref: '#/definitions/Scheduler'
-
-/api/scheduler/{status}:
-  parameters:
-    - in: path
-      name: status
-      description: Requested status of the scheduler
-      type: string
-      required: true
-  get:
+  put:
     tags:
       - Scheduler
     summary: Update the status of the scheduler
@@ -28,11 +20,31 @@
     operationId: walkoff.server.endpoints.scheduler.update_scheduler_status
     produces:
       - application/json
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: The new Scheduled Task object
+        required: true
+        schema:
+          type: object
+          required: [status]
+          properties:
+            status:
+              description: Requested status of the scheduler
+              type: string
+              enum: [start, stop, pause, resume]
     responses:
       200:
         description: Success
         schema:
-          $ref: '#/definitions/Scheduler'
+          type: object
+          required: [status]
+          properties:
+            status:
+              type: string
+              description: The current status of the scheduler
 
 /api/scheduledtasks:
   get:
@@ -50,7 +62,7 @@
           type: array
           items:
             $ref: '#/definitions/ScheduledTask'
-  put:
+  post:
     tags:
       - Scheduler
     summary: Create a new Scheduled Task
@@ -74,11 +86,11 @@
           type: array
           items:
             $ref: '#/definitions/ScheduledTask'
-      462:
+      400:
         description: Scheduled task already exists
         schema:
           $ref: '#/definitions/Error'
-  post:
+  put:
     tags:
       - Scheduler
     summary: Update a new Scheduled Task
@@ -99,12 +111,43 @@
         description: Success
         schema:
           $ref: '#/definitions/ScheduledTask'
-      461:
+      404:
         description: Scheduled task does not exist
         schema:
           $ref: '#/definitions/Error'
-      462:
+      400:
         description: Scheduled task name already exists
+        schema:
+          $ref: '#/definitions/Error'
+  patch:
+    tags:
+      - Scheduler
+    summary: Enable the scheduled task
+    operationId: walkoff.server.endpoints.scheduler.control_scheduled_task
+    produces:
+      - application/json
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: The updated Scheduled Task object
+        required: true
+        schema:
+          type: object
+          required: [id, action]
+          properties:
+            id:
+              type: integer
+            action:
+              type: string
+              description: The requested status of the task
+              enum: [start, stop]
+    responses:
+      200:
+        description: Success
+      404:
+        description: Scheduled task does not exist
         schema:
           $ref: '#/definitions/Error'
 
@@ -127,7 +170,7 @@
         description: Success
         schema:
           $ref: '#/definitions/ScheduledTask'
-      461:
+      404:
         description: Scheduled task does not exist
         schema:
           $ref: '#/definitions/Error'
@@ -139,37 +182,9 @@
     produces:
       - application/json
     responses:
-      200:
+      204:
         description: Success
-      461:
-        description: Scheduled task does not exist
-        schema:
-          $ref: '#/definitions/Error'
-
-/api/scheduledtasks/{scheduled_task_id}/{action}:
-  put:
-    tags:
-      - Scheduler
-    summary: Enable the scheduled task
-    operationId: walkoff.server.endpoints.scheduler.control_scheduled_task
-    produces:
-      - application/json
-    parameters:
-      - name: scheduled_task_id
-        in: path
-        description: The ID of the scheduled task.
-        required: true
-        type: string
-      - name: action
-        in: path
-        description: The action to take on the task.
-        required: true
-        type: string
-        enum: [start, stop]
-    responses:
-      200:
-        description: Success
-      461:
+      404:
         description: Scheduled task does not exist
         schema:
           $ref: '#/definitions/Error'

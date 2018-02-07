@@ -7,6 +7,7 @@ from .dispatchers import AppEventDispatcher, EventDispatcher
 from .exceptions import UnknownEvent, InvalidEventHandler
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.helpers import get_function_arg_names
+import warnings
 
 _logger = logging.getLogger(__name__)
 
@@ -79,8 +80,8 @@ class InterfaceEventDispatcher(object):
                 additional_data = deepcopy(kwargs)
                 additional_data.pop('cls', None)
                 data.update(additional_data)
-                if 'uid' in data:
-                    data['sender_uid'] = data.pop('uid')
+                if 'id' in data:
+                    data['sender_id'] = data.pop('id')
                 if 'name' in data:
                     data['sender_name'] = data.pop('name')
             else:
@@ -101,10 +102,16 @@ class InterfaceEventDispatcher(object):
             func: The registration method for the event
         """
         @add_docstring(InterfaceEventDispatcher._make_on_walkoff_event_docstring(event))
-        def on_event(cls, sender_uids=None, names=None, weak=True):
+        def on_event(cls, sender_ids=None, sender_uids=None, names=None, weak=True):
+            if sender_uids:
+                warnings.warn('"sender_uids" is a deprecated alias for "sender_ids". '
+                              'This alias will be removed in version 0.9.0', PendingDeprecationWarning)
+                if not sender_ids:
+                    sender_ids = sender_uids
+
             def handler(func):
                 InterfaceEventDispatcher._validate_handler_function_args(func, False)
-                cls.event_dispatcher.register_events(func, {event}, sender_uids=sender_uids, names=names, weak=weak)
+                cls.event_dispatcher.register_events(func, {event}, sender_ids=sender_ids, names=names, weak=weak)
                 return func  # Needed so weak references aren't deleted
             return handler
 
@@ -150,15 +157,16 @@ class InterfaceEventDispatcher(object):
         return handler
 
     @classmethod
-    def on_walkoff_events(cls, events, sender_uids=None, names=None, weak=True):
+    def on_walkoff_events(cls, events, sender_ids=None, sender_uids=None, names=None, weak=True):
         """Decorator to register a function as a callback for given WalkoffEvent(s)
 
         Args:
             events (str|WalkoffEvent|iterable(str|WalkoffEvent)): The events which should be handled. an use either a
                 WalkoffEvent or its signal name. Defaults to all action-type events
-            sender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.
+            sender_uids (str|iterable(str), optional): Deprecated alias for "sender_ids". This will be removed in 0.8.0
+            sender_ids (str|iterable(str), optional): The IDs of the sender which will cause this callback to trigger.
             names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note
-                that unlike UIDS, these are not guaranteed to be unique.
+                that unlike IDS, these are not guaranteed to be unique.
             weak (bool, optional): Should the callback be registered as a weak function? Defaults to True. Warning!
                 Setting this to False could causes memory leaks.
 
@@ -170,16 +178,21 @@ class InterfaceEventDispatcher(object):
             ValueError: If a mix of controller and non-controller events are set for the handler
             InvalidEventHandler: If the wrapped function does not have the correct number of arguments
         """
+        if sender_uids:
+            warnings.warn('"sender_uids" is a deprecated alias for "sender_ids". This will be removed in 0.9.0',
+                          PendingDeprecationWarning)
+            if not sender_ids:
+                sender_ids = sender_uids
         events = validate_events(events)
         are_controller_events = InterfaceEventDispatcher._all_events_are_controller(events)
         if are_controller_events:
-            if sender_uids or names:
-                _logger.warning('Sender UIDs and names are invalid for controller events')
-            sender_uids = EventType.controller.name
+            if sender_ids or names:
+                _logger.warning('Sender IDs and names are invalid for controller events')
+            sender_ids = EventType.controller.name
 
         def handler(func):
             InterfaceEventDispatcher._validate_handler_function_args(func, are_controller_events)
-            cls.event_dispatcher.register_events(func, events, sender_uids=sender_uids, names=names, weak=weak)
+            cls.event_dispatcher.register_events(func, events, sender_ids=sender_ids, names=names, weak=weak)
             return func
         return handler
 
@@ -241,9 +254,10 @@ class InterfaceEventDispatcher(object):
         is_controller = event.event_type == EventType.controller
         if not is_controller:
             args_string = ('{}'
-                '\tsender_uids (str|iterable(str), optional): The UIDs of the sender which will cause this callback to trigger.\n'
+                '\tsender_uids (str|iterable(str), optional): Deprecated alias for "sender_ids" this will be removed in 0.9.0\n'
+                '\tsender_ids (str|iterable(str), optional): The IDs of the sender which will cause this callback to trigger.\n'
                 '\tnames (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike '
-                'UIDS, these are not guaranteed to be unique.\n'.format(args_string))
+                'IDS, these are not guaranteed to be unique.\n'.format(args_string))
         args_string = ('{}\tweak (boolean, optional): Should the callback persist even if function leaves scope? Warning! '
                        'Could cause memory leaks'.format(args_string))
         return '''

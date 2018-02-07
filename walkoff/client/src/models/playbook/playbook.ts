@@ -1,7 +1,7 @@
 import { Workflow } from './workflow';
+import { ExecutionElement } from './executionElement';
 
-export class Playbook {
-	uid: string;
+export class Playbook extends ExecutionElement {
 	name: string;
 	workflows: Workflow[] = [];
 }
