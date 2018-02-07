@@ -1,4 +1,4 @@
-/api/playbooks:
+/playbooks:
   get:
     tags:
       - Playbooks
@@ -82,7 +82,7 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/playbooks/{playbook_id}:
+/playbooks/{playbook_id}:
   parameters:
     - name: playbook_id
       in: path
@@ -132,7 +132,7 @@
           $ref: '#/definitions/Error'
 
 
-/api/playbooks/{playbook_id}/workflows:
+/playbooks/{playbook_id}/workflows:
   parameters:
     - name: playbook_id
       in: path
@@ -235,7 +235,7 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/playbooks/{playbook_id}/workflows/{workflow_id}:
+/playbooks/{playbook_id}/workflows/{workflow_id}:
   parameters:
   - name: playbook_id
     in: path
@@ -286,7 +286,7 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/playbooks/{playbook_id}/workflows/{workflow_id}/execute:
+/playbooks/{playbook_id}/workflows/{workflow_id}/execute:
   post:
     tags:
       - Workflows
@@ -336,7 +336,7 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/playbooks/{playbook_id}/workflows/{workflow_id}/pause:
+/playbooks/{playbook_id}/workflows/{workflow_id}/pause:
   post:
     tags:
       - Workflows
@@ -376,7 +376,7 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/playbooks/{playbook_id}/workflows/{workflow_id}/resume:
+/playbooks/{playbook_id}/workflows/{workflow_id}/resume:
   post:
     tags:
       - Workflows

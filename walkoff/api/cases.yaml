@@ -1,4 +1,4 @@
-/api/cases:
+/cases:
   get:
     tags:
       - Cases
@@ -94,7 +94,7 @@
         description: Case does not exist.
         schema:
           $ref: '#/definitions/Error'
-/api/cases/{case_id}:
+/cases/{case_id}:
   parameters:
     - name: case_id
       in: path
@@ -134,7 +134,7 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/cases/{case_id}/events:
+/cases/{case_id}/events:
   parameters:
     - name: case_id
       in: path
@@ -161,7 +161,7 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/cases/import:
+/cases/import:
   get:
     tags:
       - Cases
@@ -196,7 +196,7 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/cases/export:
+/cases/export:
   post:
     tags:
       - Cases

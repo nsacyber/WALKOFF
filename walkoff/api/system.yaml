@@ -1,4 +1,4 @@
-/api/system:
+/system:
   get:
     tags:
       - System

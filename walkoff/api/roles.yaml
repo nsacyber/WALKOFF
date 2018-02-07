@@ -1,4 +1,4 @@
-/api/roles:
+/roles:
   get:
     tags:
       - Roles
@@ -87,7 +87,7 @@
           $ref: '#/definitions/Role'
       404:
         description: Object does not exist.
-/api/roles/{role_id}:
+/roles/{role_id}:
   parameters:
     - name: role_id
       in: path
@@ -123,7 +123,7 @@
       404:
         description: Object does not exist.
 
-/api/availableresourceactions:
+/availableresourceactions:
     get:
       tags:
         - Roles

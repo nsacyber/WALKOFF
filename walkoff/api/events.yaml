@@ -1,4 +1,4 @@
-/api/events/{event_id}:
+/events/{event_id}:
   parameters:
     - name: event_id
       in: path
@@ -22,7 +22,7 @@
         description: Object does not exist
         schema:
           $ref: '#/definitions/Error'
-/api/events:
+/events:
   put:
     tags:
       - Events

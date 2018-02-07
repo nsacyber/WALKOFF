@@ -1,4 +1,4 @@
-/api/configuration:
+/configuration:
   get:
     tags:
       - Configuration

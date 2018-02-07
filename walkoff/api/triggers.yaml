@@ -1,4 +1,4 @@
-/api/triggers/send_data:
+/triggers/send_data:
   put:
     summary: Send data to one or more workflows with trigger actions awaiting data before continuing execution
     description: ''

@@ -50,9 +50,13 @@ tags:
   - name: System
     description: System Resources
 
+basePath: /api
+
 schemes:
   - http
   - https
+
+
 
 paths:
   $ref: ./apps.yaml
