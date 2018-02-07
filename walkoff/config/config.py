@@ -1,14 +1,11 @@
-import importlib
 import json
 import logging
 import sys
-from os import listdir
-from os.path import isfile, join, splitext
+from os.path import isfile, join
 
 import yaml
 
 import walkoff.config.paths
-from walkoff.config.paths import keywords_path
 
 __logger = logging.getLogger(__name__)
 
@@ -36,7 +33,7 @@ def write_values_to_file(keys=None):
     """
     if keys is None:
         keys = ['apps_path', 'workflows_path', 'templates_path', 'db_path', 'case_db_path', 'certificate_path',
-                'private_key_path', 'default_appdevice_export_path', 'default_case_export_path', 'keywords_path',
+                'private_key_path', 'default_appdevice_export_path', 'default_case_export_path',
                 'logging_config_path', 'notifications', 'reinitialize_case_db_on_startup', 'tls_version', 'https',
                 'host', 'port', 'walkoff_db_type', 'case_db_type', 'num_threads', 'debug', 'default_server']
     self = sys.modules[__name__]
@@ -69,10 +66,6 @@ case_db_type = 'sqlite'
 device_db_type = 'sqlite'
 secret_key = 'SHORTSTOPKEYTEST'
 
-# Loads the keywords into the environment filter for use
-JINJA_GLOBALS = {splitext(fn)[0]: getattr(importlib.import_module("walkoff.keywords." + splitext(fn)[0]), "main")
-                 for fn in listdir(keywords_path) if
-                 isfile(join(keywords_path, fn)) and not splitext(fn)[0] in ["__init__", "."]}
 
 # Function Dict Paths/Initialization
 

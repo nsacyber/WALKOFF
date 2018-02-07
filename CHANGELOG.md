@@ -2,6 +2,18 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
+
+## [Unreleased]
+###### [unreleased]
+
+### Changed
+* Removed workflow_version from playbook JSON
+
+### Deprecated
+* The "sender_uids" argument in the interface dispatcher `on_xyz_event`
+  decorators is now a an alias for "sender_ids". This will be removed in
+  0.9.0
+
 ## [0.6.7]
 ###### 2018-02-06
 
@@ -28,6 +40,7 @@
 
 ### Contributor
 * Some UI tests are now run on Travis-CI
+
 
 ## [0.6.4]
 ###### 2018-01-18

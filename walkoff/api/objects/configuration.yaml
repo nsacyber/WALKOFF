@@ -3,9 +3,6 @@ Configuration:
     description: The configuration
     additionalProperties : false
     properties:
-      workflows_path:
-        type: string
-        description: The path to the workflows
       db_path:
         type: string
         description: The path to the primary WALKOFF database

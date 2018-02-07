@@ -9,24 +9,36 @@ import walkoff.config.config
 from walkoff import controller
 from walkoff.events import WalkoffEvent, EventType
 from tests import config
+import walkoff.config.paths
+from tests.util import device_db_help
 
 
 class TestExecutionModes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        device_db_help.setup_dbs()
         walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
 
     def setUp(self):
         case_database.initialize()
 
+    def tearDown(self):
+        device_db_help.cleanup_device_db()
+
+        case_database.case_db.session.query(case_database.Event).delete()
+        case_database.case_db.session.query(case_database.Case).delete()
+        case_database.case_db.session.commit()
+        case_database.case_db.tear_down()
+
     @classmethod
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
+        device_db_help.tear_down_device_db()
 
     def test_start_stop_execution_loop(self):
+        device_db_help.load_playbook('testScheduler')
         c = controller.Controller()
-        c.load_playbook(resource=config.test_workflows_path + "testScheduler.playbook")
         subs = {'controller': [event.signal_name for event in WalkoffEvent if event.event_type == EventType.controller]}
         case_subscription.set_subscriptions({'case1': subs})
         c.scheduler.start()
@@ -40,8 +52,8 @@ class TestExecutionModes(unittest.TestCase):
                          'Expected {0}, got {1}'.format(2, len(start_stop_event_history)))
 
     def test_pause_resume_scheduler_execution(self):
+        device_db_help.load_playbook('testScheduler')
         c = controller.Controller()
-        c.load_playbook(resource=config.test_workflows_path + "testScheduler.playbook")
 
         subs = {'controller': [event.signal_name for event in WalkoffEvent if event.event_type == EventType.controller]}
         case_subscription.set_subscriptions({'pauseResume': subs})

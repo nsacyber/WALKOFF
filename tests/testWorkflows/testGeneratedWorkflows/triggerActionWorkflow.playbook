@@ -1,7 +1,5 @@
 {
     "name": "triggerActionWorkflow",
-    "uid": "1c8dc8d1e824425892c14226de6f565a",
-    "walkoff_version": "0.5.0",
     "workflows": [
         {
             "actions": [
@@ -15,8 +13,8 @@
                         }
                     ],
                     "device_id": 1,
+                    "id": "41e79ac2-cc68-4e10-aeb4-95276d516f2e",
                     "name": "start",
-                    "position": {},
                     "triggers": [
                         {
                             "action_name": "regMatch",
@@ -26,17 +24,14 @@
                                     "name": "regex",
                                     "value": "1"
                                 }
-                            ],
-                            "uid": "c2698e219c9a4525a343bd051b1f0e7d"
+                            ]
                         }
-                    ],
-                    "uid": "c5a7c29a0f844b69a59901bb542e9305"
+                    ]
                 }
             ],
             "branches": [],
             "name": "triggerActionWorkflow",
-            "start": "c5a7c29a0f844b69a59901bb542e9305",
-            "uid": "3c7f67c8ea6e481eb5d37b488a7b15b4"
+            "start": "41e79ac2-cc68-4e10-aeb4-95276d516f2e"
         }
     ]
 }

@@ -2,11 +2,11 @@ from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from walkoff.server.returncodes import *
-from walkoff.database import add_user
-from walkoff.server.extensions import db
-from walkoff.database.user import User
+from walkoff.serverdb import add_user
+from walkoff.extensions import db
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions, admin_required
 from walkoff.server.decorators import with_resource_factory
+from walkoff.serverdb.user import User
 
 
 with_user = with_resource_factory('user', lambda user_id: User.query.filter_by(id=user_id).first())
@@ -114,7 +114,7 @@ def delete_user(user_id):
             db.session.delete(user)
             db.session.commit()
             current_app.logger.info('User {0} deleted'.format(user.username))
-            return {}, SUCCESS
+            return {}, NO_CONTENT
         else:
             current_app.logger.error('Could not delete user {0}. User is current user.'.format(user.id))
             return {"error": 'User {0} is current user.'.format(user.username)}, FORBIDDEN_ERROR

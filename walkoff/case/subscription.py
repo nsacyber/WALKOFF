@@ -12,7 +12,7 @@ def set_subscriptions(new_subscriptions):
     
     Args:
         new_subscriptions (dict({str: {str: [list(str}): The new subscriptions.
-            Takes the form of "{case_name: {uid: [events]}"
+            Takes the form of "{case_name: {id: [events]}"
     """
     global subscriptions
     subscriptions = new_subscriptions
@@ -28,7 +28,7 @@ def add_cases(cases):
     
     Args:
         cases (dict({str: {str: [list(str}): The cases to add
-            Takes the form of "{case_name: {uid: [events]}"
+            Takes the form of "{case_name: {id: [events]}"
     """
     global subscriptions
     valid_cases = []
@@ -83,7 +83,7 @@ def get_cases_subscribed(originator, message_name):
     """ Gets all the cases which are subscribed to an event from an execution element
 
     Args:
-        originator (str): The uid of the element from which the event originated
+        originator (str): The id of the element from which the event originated
         message_name (str): The name of the message to check
     """
     global subscriptions
@@ -96,7 +96,7 @@ def modify_subscription(case, originator, events):
     
     Args:
         case (str): The name of the case to edit
-        originator (str): The uid of the element from which the event originated
+        originator (str): The id of the element from which the event originated
         events (list[str,int]): The new events to which it is subscribed to
         
     Returns:
@@ -113,7 +113,7 @@ def remove_subscription_node(case, originator):
     
     Args:
         case (str): The case to remove a subscription from
-        originator (str): The uid of the element from which the event originated
+        originator (str): The id of the element from which the event originated
     """
     global subscriptions
     if case in subscriptions:

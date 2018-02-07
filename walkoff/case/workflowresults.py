@@ -30,7 +30,7 @@ class WorkflowResult(Case_Base):
         self.status = 'completed'
 
     def as_json(self):
-        ret = {"uid": self.uid,
+        ret = {"id": self.uid,
                "name": self.name,
                "started_at": str(self.started_at),
                "status": self.status,

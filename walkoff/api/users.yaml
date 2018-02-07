@@ -15,7 +15,7 @@
           description: A list of users
           items:
             $ref: '#/definitions/DisplayUser'
-  put:
+  post:
     tags:
       - Users
     summary: Create a user
@@ -38,11 +38,11 @@
         schema:
           description: The newly created user.
           $ref: '#/definitions/DisplayUser'
-      462:
+      400:
         description: Could not create user <username>. User already exists.
         schema:
           $ref: '#/definitions/Error'
-  post:
+  put:
     tags:
       - Users
     summary: Update a user
@@ -69,7 +69,7 @@
         description: Invalid password
         schema:
           $ref: '#/definitions/Error'
-      461:
+      404:
         description: Could not edit user <username>. User does not exist.
         schema:
           $ref: '#/definitions/Error'
@@ -96,7 +96,7 @@
         schema:
           description: The user object matching the user id inputted
           $ref: '#/definitions/DisplayUser'
-      461:
+      404:
         description: Could not display user <username>. User does not exist.
         schema:
           $ref: '#/definitions/Error'
@@ -109,13 +109,13 @@
     produces:
       - application/json
     responses:
-      200:
+      204:
         description: Success
       401:
         description: Could not delete user <username>. User is current user.
         schema:
           $ref: '#/definitions/Error'
-      461:
+      404:
         description: Could not delete user <username>. User does not exist.
         schema:
           $ref: '#/definitions/Error'

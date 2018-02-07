@@ -14,22 +14,22 @@ class TestSchedulerUtils(unittest.TestCase):
         cls.date1 = convert_to_datetime(cls.datestr1, get_localzone(), 'run_date')
 
     def test_construct_task_id(self):
-        task_id_workflow_uid_pairs = {('task', 'work'): 'task-work',
+        task_id_workflow_id_pairs = {('task', 'work'): 'task-work',
                                       ('', 'work'): '-work',
                                       ('task', ''): 'task-'}
-        for input_, output in task_id_workflow_uid_pairs.items():
+        for input_, output in task_id_workflow_id_pairs.items():
             self.assertEqual(construct_task_id(*input_), output)
 
-    def test_split_task_uid(self):
-        task_id_workflow_uid_pairs = {'task-work': ['task', 'work'],
+    def test_split_task_id(self):
+        task_id_workflow_id_pairs = {'task-work': ['task', 'work'],
                                       '-work': ['', 'work'],
                                       'task-': ['task', '']}
-        for input_, output in task_id_workflow_uid_pairs.items():
+        for input_, output in task_id_workflow_id_pairs.items():
             self.assertListEqual(split_task_id(input_), output)
 
-    def test_split_task_uid_too_many_separators(self):
-        uid = task_id_separator.join(['a', 'b', 'c'])
-        task_id = construct_task_id('task', uid)
+    def test_split_task_id_too_many_separators(self):
+        id_ = task_id_separator.join(['a', 'b', 'c'])
+        task_id = construct_task_id('task', id_)
         self.assertListEqual(split_task_id(task_id), ['task', 'a'])
 
     def test_construct_date_scheduler(self):

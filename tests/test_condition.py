@@ -1,48 +1,39 @@
 import unittest
-import uuid
 
 import walkoff.appgateway
 import walkoff.config.config
-from walkoff.core.argument import Argument
-from walkoff.core.executionelements.condition import Condition
-from walkoff.core.executionelements.transform import Transform
+from walkoff.coredb.argument import Argument
+from walkoff.coredb.condition import Condition
+from walkoff.coredb.transform import Transform
 from walkoff.helpers import InvalidArgument
 from tests.config import test_apps_path
+import walkoff.config.paths
+from tests.util import device_db_help
 
 
 class TestCondition(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        device_db_help.setup_dbs()
         walkoff.appgateway.clear_cache()
         walkoff.appgateway.cache_apps(path=test_apps_path)
         walkoff.config.config.load_app_apis(test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
+        device_db_help.tear_down_device_db()
         walkoff.appgateway.clear_cache()
 
-    def __compare_init(self, condition, app_name, action_name, transforms, arguments=None, uid=None):
+    def __compare_init(self, condition, app_name, action_name, transforms, arguments=None):
         self.assertEqual(condition.app_name, app_name)
         self.assertEqual(condition.action_name, action_name)
         self.assertEqual(len(condition.transforms), len(transforms))
-        for actual_transform, expected_transform in zip(condition.transforms, transforms):
-            self.assertDictEqual(actual_transform.read(), expected_transform.read())
-        arguments = {arg.name: arg for arg in arguments}
-        if arguments:
-            self.assertDictEqual(condition.arguments, arguments)
-        if uid is None:
-            self.assertIsNotNone(condition.uid)
-        else:
-            self.assertEqual(condition.uid, uid)
+        self.assertListEqual(condition.transforms, transforms)
+        self.assertListEqual(condition.arguments, arguments)
 
     def test_init_no_arguments_action_only(self):
         condition = Condition('HelloWorld', 'Top Condition')
-        self.__compare_init(condition, 'HelloWorld', 'Top Condition', [], {})
-
-    def test_init_with_uid(self):
-        uid = uuid.uuid4().hex
-        condition = Condition('HelloWorld', 'Top Condition', uid=uid)
-        self.__compare_init(condition, 'HelloWorld', 'Top Condition', [], {}, uid=uid)
+        self.__compare_init(condition, 'HelloWorld', 'Top Condition', [], [])
 
     def test_init_with_arguments_with_conversion(self):
         condition = Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value='3')])
@@ -68,7 +59,7 @@ class TestCondition(unittest.TestCase):
         transforms = [Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='5.4')]),
                       Transform(app_name='HelloWorld', action_name='Top Transform')]
         condition = Condition('HelloWorld', action_name='Top Condition', transforms=transforms)
-        self.__compare_init(condition, 'HelloWorld', 'Top Condition', transforms, {})
+        self.__compare_init(condition, 'HelloWorld', 'Top Condition', transforms, [])
 
     def test_execute_action_only_no_arguments_valid_data_no_conversion(self):
         self.assertTrue(Condition('HelloWorld', 'Top Condition').execute(3.4, {}))

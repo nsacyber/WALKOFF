@@ -4,23 +4,34 @@ from datetime import timedelta
 
 from flask_jwt_extended import decode_token
 
-from walkoff.database import add_user, User
 from walkoff.server.returncodes import *
-from walkoff.database.tokens import *
+from walkoff.serverdb.tokens import BlacklistedToken
+from walkoff.serverdb.user import User
+from walkoff.serverdb import add_user
+from walkoff.extensions import db
+from tests.util import device_db_help
 
 
 class TestAuthorization(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        device_db_help.setup_dbs()
+
+    @classmethod
+    def tearDownClass(cls):
+        device_db_help.tear_down_device_db()
+
     def setUp(self):
         import walkoff.server.flaskserver
         self.app = walkoff.server.flaskserver.app.test_client(self)
         self.app.testing = True
         self.context = walkoff.server.flaskserver.app.test_request_context()
         self.context.push()
+        self.admin_id = db.session.query(User).filter_by(username='admin').first().id
 
     def tearDown(self):
         db.session.rollback()
         User.query.filter_by(username='test').delete()
-        from walkoff.database.tokens import BlacklistedToken
         for token in BlacklistedToken.query.all():
             db.session.delete(token)
         for user in (user for user in User.query.all() if user.username != 'admin'):
@@ -49,9 +60,9 @@ class TestAuthorization(unittest.TestCase):
         key = json.loads(response.get_data(as_text=True))
         token = decode_token(key['access_token'])
         self.assertEqual(token['type'], 'access')
-        self.assertEqual(token['identity'], 1)
+        self.assertEqual(token['identity'], self.admin_id)
         self.assertTrue(token['fresh'])
-        self.assertDictEqual(token['user_claims'], {'username': 'admin', 'roles': [1]})
+        self.assertDictEqual(token['user_claims'], {'username': 'admin', 'roles': [self.admin_id]})
 
     def test_login_authorization_has_valid_refresh_token(self):
         response = self.app.post('/api/auth', content_type="application/json",
@@ -59,13 +70,13 @@ class TestAuthorization(unittest.TestCase):
         key = json.loads(response.get_data(as_text=True))
         token = decode_token(key['refresh_token'])
         self.assertEqual(token['type'], 'refresh')
-        self.assertEqual(token['identity'], 1)
+        self.assertEqual(token['identity'], self.admin_id)
 
     def test_login_updates_user(self):
         user = add_user(username='testlogin', password='test')
         self.app.post('/api/auth', content_type="application/json",
                       data=json.dumps(dict(username='testlogin', password='test')))
-        self.assertEqual(user.login_count, 1)
+        self.assertEqual(user.login_count, self.admin_id)
         self.assertTrue(user.active)
 
     def test_login_authorization_invalid_username(self):
@@ -97,7 +108,7 @@ class TestAuthorization(unittest.TestCase):
         self.assertSetEqual(set(key.keys()), {'access_token'})
         token = decode_token(key['access_token'])
         self.assertEqual(token['type'], 'access')
-        self.assertEqual(token['identity'], 1)
+        self.assertEqual(token['identity'], self.admin_id)
         self.assertFalse(token['fresh'])
 
     def test_refresh_invalid_user_blacklists_token(self):
@@ -114,7 +125,6 @@ class TestAuthorization(unittest.TestCase):
         refresh = self.app.post('/api/auth/refresh', content_type="application/json", headers=headers)
         self.assertEqual(refresh.status_code, UNAUTHORIZED_ERROR)
         token = decode_token(token)
-        from walkoff.database.tokens import BlacklistedToken
 
         tokens = BlacklistedToken.query.filter_by(jti=token['jti']).all()
         self.assertEqual(len(tokens), 1)

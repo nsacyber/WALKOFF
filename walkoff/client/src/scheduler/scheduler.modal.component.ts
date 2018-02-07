@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { Select2OptionData } from 'ng2-select2';
@@ -20,7 +20,7 @@ import { GenericObject } from '../models/genericObject';
 	],
 	providers: [SchedulerService],
 })
-export class SchedulerModalComponent {
+export class SchedulerModalComponent implements OnInit {
 	@Input() workingScheduledTask: ScheduledTask = new ScheduledTask();
 	@Input() title: string;
 	@Input() submitText: string;
@@ -34,7 +34,9 @@ export class SchedulerModalComponent {
 	
 	constructor(
 		private schedulerService: SchedulerService, private activeModal: NgbActiveModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {}
+
+	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.workflowSelectConfig = {

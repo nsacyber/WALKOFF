@@ -7,51 +7,37 @@ from tests.util.servertestcase import ServerTestCase
 
 
 class TestSchedulerActions(ServerTestCase):
-    def test_scheduler_actions(self):
-        response = self.app.get('/api/scheduler/start', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertIn('status', response)
-        self.assertEqual(STATE_RUNNING, response['status'])
 
-        response = self.app.get('/api/scheduler/start', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
+    def take_action(self, action):
+        data = {'status': action}
+        return self.put_with_status_check('/api/scheduler', headers=self.headers, data=json.dumps(data),
+                                          status_code=SUCCESS, content_type='application/json')
+
+    def assert_status_equal(self, response, status):
         self.assertIn('status', response)
+        self.assertEqual(status, response['status'])
+
+    def test_scheduler_actions(self):
+        response = self.take_action('start')
+        self.assert_status_equal(response, STATE_RUNNING)
+
+        response = self.take_action('start')
         self.assertEqual("Scheduler already running.", response['status'])
 
-        response = self.app.get('/api/scheduler/pause', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertIn('status', response)
+        response = self.take_action('pause')
         self.assertEqual(STATE_PAUSED, response['status'])
 
-        response = self.app.get('/api/scheduler/pause', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertIn('status', response)
+        response = self.take_action('pause')
         self.assertEqual("Scheduler already paused.", response['status'])
 
-        response = self.app.get('/api/scheduler/resume', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertIn('status', response)
+        response = self.take_action('resume')
         self.assertEqual(STATE_RUNNING, response['status'])
 
-        response = self.app.get('/api/scheduler/resume', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertIn('status', response)
+        response = self.take_action('resume')
         self.assertEqual("Scheduler is not in PAUSED state and cannot be resumed.", response['status'])
 
-        response = self.app.get('/api/scheduler/stop', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertIn('status', response)
+        response = self.take_action('stop')
         self.assertEqual(STATE_STOPPED, response['status'])
 
-        response = self.app.get('/api/scheduler/stop', headers=self.headers)
-        self.assertEqual(response.status_code, SUCCESS)
-        response = json.loads(response.get_data(as_text=True))
-        self.assertIn('status', response)
+        response = self.take_action('stop')
         self.assertEqual("Scheduler already stopped.", response['status'])

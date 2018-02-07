@@ -10,20 +10,18 @@ import { CasesService } from './cases.service';
 
 import { CasesModalComponent } from './cases.modal.component';
 
-import { Case } from '../models/case';
-import { CaseEvent } from '../models/caseEvent';
-import { AvailableSubscription } from '../models/availableSubscription';
+import { Case } from '../models/case/case';
+import { CaseEvent } from '../models/case/caseEvent';
+import { CaseNode } from '../models/case/caseNode';
+import { AvailableSubscription } from '../models/case/availableSubscription';
 import { Playbook } from '../models/playbook/playbook';
-import { GenericObject } from '../models/genericObject';
 
-/**
- * Types as the backend calls them for adding a new CaseEvent.
- */
-const types = ['playbook', 'workflow', 'action', 'branch', 'condition', 'transform'];
-/**
- * Types that are used to recursively check for the next level. E.g. branches have conditions.
- */
-const childrenTypes = ['workflows', 'actions', 'branches', 'conditions', 'transforms'];
+interface ICaseHierarchy {
+	name: string;
+	plural: string;
+	prefix?: string;
+	children: ICaseHierarchy[];
+}
 
 @Component({
 	selector: 'cases-component',
@@ -44,13 +42,63 @@ export class CasesComponent implements OnInit {
 	displayCaseEvents: CaseEvent[] = [];
 	eventFilterQuery: FormControl = new FormControl();
 	caseFilterQuery: FormControl = new FormControl();
-	subscriptionTree: GenericObject = {};
+	subscriptionTree: any;
+	caseHierarchy: ICaseHierarchy = {
+		name: 'playbook',
+		plural: 'playbooks',
+		children: [
+			{
+				name: 'workflow',
+				plural: 'workflows',
+				children: [
+					{
+						name: 'action',
+						plural: 'actions',
+						children: [
+							{
+								name: 'trigger',
+								plural: 'triggers',
+								prefix: 'Trigger: ',
+								children: [
+									{
+										name: 'transform',
+										plural: 'transforms',
+										prefix: 'Transform: ',
+										children: [],
+									},
+								],
+							},
+							{
+								name: 'branch',
+								plural: 'branches',
+								prefix: 'Branch: ',
+								children: [
+									{
+										name: 'condition',
+										plural: 'conditions',
+										prefix: 'Condition: ',
+										children: [
+											{
+												name: 'transform',
+												plural: 'transforms',
+												prefix: 'Transform: ',
+												children: [],
+											},
+										],
+									},
+								],
+							},
+						],
+					},
+				],
+			},
+		],
+	};
 
 	constructor(
 		private casesService: CasesService, private modalService: NgbModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
-	}
-	
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {}
+
 	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
 
@@ -170,10 +218,11 @@ export class CasesComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error retrieving subscription tree: ${e.message}`));
 	}
 
-	convertPlaybooksToSubscriptionTree(playbooks: Playbook[]): GenericObject {
+	convertPlaybooksToSubscriptionTree(playbooks: Playbook[]): CaseNode {
 		const self = this;
 		//Top level controller data
-		const tree = { name: 'Controller', uid: 'controller', type: 'controller', children: [] as object[] };
+		const tree: CaseNode = { name: 'Controller', id: 'controller', type: 'controller', children: [] };
+
 		// Remap the branches to be under actions as they used to be
 		playbooks.forEach(p => {
 			p.workflows.forEach(w => {
@@ -182,26 +231,24 @@ export class CasesComponent implements OnInit {
 				});
 
 				w.branches.forEach(b => {
-					const matchingAction = w.actions.find(s => s.uid === b.destination_uid);
+					const matchingAction = w.actions.find(s => s.id === b.destination_id);
 					if (matchingAction) { (b as any).name = matchingAction.name; }
-					(w.actions.find(s => s.uid === b.source_uid) as any).branches.push(b);
+					(w.actions.find(s => s.id === b.source_id) as any).branches.push(b);
 				});
 			});
 		});
 
 		playbooks.forEach(function (p) {
-			tree.children.push(self.getNodeRecursive(p, 0));
+			tree.children.push(self.getNodeRecursive(p, self.caseHierarchy));
 		});
 		return tree;
 	}
 
-	getNodeRecursive(target: any, typeIndex: number, prefix?: string): any {
+	getNodeRecursive(target: any, hierarchy: ICaseHierarchy): CaseNode {
 		const self = this;
-		// types = ['playbook', 'workflow', 'action', 'branch', 'condition', 'transform'];
-		// childrenTypes = ['workflows', 'actions', 'branches', 'conditions', 'transforms'];
 
 		let nodeName = '';
-		if (prefix) { nodeName = prefix + ': '; }
+		if (hierarchy.prefix) { nodeName = hierarchy.prefix; }
 		//For higher level nodes, use the name
 		if (target.name) { 
 			nodeName += target.name;
@@ -209,38 +256,19 @@ export class CasesComponent implements OnInit {
 			nodeName += target.action_name;
 		} else { nodeName = '(name unknown)'; }
 
-		const node = { 
+		const node: CaseNode = { 
 			name: nodeName, 
-			uid: target.uid ? target.uid : '', 
-			type: types[typeIndex], 
-			children: [] as object[],
+			id: target.id ? target.id : '', 
+			type: hierarchy.name, 
+			children: [],
 		};
-
-		const childType = childrenTypes[typeIndex];
-		if (childType) {
-			let childPrefix: string;
-
-			switch (childType) {
-				case 'actions':
-					childPrefix = 'Action';
-					break;
-				case 'branches':
-					childPrefix = 'Branch';
-					break;
-				case 'conditions':
-					childPrefix = 'Condition';
-					break;
-				case 'transforms':
-					childPrefix = 'Transform';
-					break;
-				default:
-					break;
-			}
-
-			target[childType].forEach(function (sub: any) {
-				node.children.push(self.getNodeRecursive(sub, typeIndex + 1, childPrefix));
+		
+		// For each child hierarchy, (most cases only 1 child type), iterate through the child elements
+		hierarchy.children.forEach(childHierarchy => {
+			target[childHierarchy.plural].forEach((sub: any) => {
+				node.children.push(self.getNodeRecursive(sub, childHierarchy));
 			});
-		}
+		});
 
 		if (!node.children.length) { delete node.children; }
 

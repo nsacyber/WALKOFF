@@ -17,7 +17,7 @@ class TestLoadWorkflow(unittest.TestCase):
         self.c = controller.Controller()
         self.c.load_playbook(resource=config.test_workflows_path + 'basicWorkflowTest.playbook')
         self.testWorkflow = self.c.get_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-        self.workflow_uid = "c5a7c29a0f844b69a59901bb542e9305"
+        self.workflow_id = "c5a7c29a0f844b69a59901bb542e9305"
 
     @classmethod
     def tearDownClass(cls):
@@ -32,8 +32,8 @@ class TestLoadWorkflow(unittest.TestCase):
         self.assertEqual(len(self.testWorkflow.actions), 1)
 
         # Asserts workflow entry point
-        self.assertTrue(self.testWorkflow.actions[self.workflow_uid])
-        action = self.testWorkflow.actions[self.workflow_uid]
+        self.assertTrue(self.testWorkflow.actions[self.workflow_id])
+        action = self.testWorkflow.actions[self.workflow_id]
 
         # Verify attributes
         self.assertEqual(action.name, 'start')

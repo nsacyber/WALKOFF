@@ -1,13 +1,10 @@
-import { UUID } from 'angular2-uuid';
-
 import { Action } from './action';
 import { Branch } from './branch';
+import { ExecutionElement } from './executionElement';
 
-export class Workflow {
-	/**
-	 * UUID of the workflow.
-	 */
-	uid: string = UUID.UUID();
+export class Workflow extends ExecutionElement {
+	// _playbook_id: number;
+
 	/**
 	 * Name of the workflow. Updated by passing in new_name in POST.
 	 */
@@ -21,7 +18,7 @@ export class Workflow {
 	 */
 	branches: Branch[] = [];
 	/**
-	 * UUID of the action designated as the start action.
+	 * ID of the action designated as the start action.
 	 */
 	start: string;
 	/**

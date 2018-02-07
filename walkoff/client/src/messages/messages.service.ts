@@ -10,6 +10,9 @@ import { Argument } from '../models/playbook/argument';
 export class MessagesService {
 	constructor(private authHttp: JwtHttp) { }
 
+	/**
+	 * Grabs an array of message listings from the server.
+	 */
 	listMessages(): Promise<MessageListing[]> {
 		return this.authHttp.get('/api/messages')
 			.toPromise()
@@ -18,6 +21,10 @@ export class MessagesService {
 			.catch(this.handleError);
 	}
 
+	/**
+	 * Queries a given message by ID.
+	 * @param messageId ID of message to query
+	 */
 	getMessage(messageId: number): Promise<Message> {
 		return this.authHttp.get(`/api/messages/${messageId}`)
 			.toPromise()
@@ -26,34 +33,26 @@ export class MessagesService {
 			.catch(this.handleError);
 	}
 
-	deleteMessages(messageIds: number | number[]): Promise<void> {
+	/**
+	 * Performs a given action against a given message or messages by ID.
+	 * @param messageIds ID or IDs array to perform action against
+	 * @param action Action to perform on the message (e.g. read, unread, delete)
+	 */
+	performActionOnMessages(messageIds: number | number[], action: string): Promise<void> {
 		if (!Array.isArray(messageIds)) { messageIds = [messageIds]; }
 
-		return this.authHttp.post('/api/messages/delete', { ids: messageIds })
+		return this.authHttp.put('/api/messages', { ids: messageIds, action })
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
 	}
 
-	readMessages(messageIds: number | number[]): Promise<void> {
-		if (!Array.isArray(messageIds)) { messageIds = [messageIds]; }
-
-		return this.authHttp.post('/api/messages/read', { ids: messageIds })
-			.toPromise()
-			.then(() => null)
-			.catch(this.handleError);
-	}
-
-	unreadMessages(messageIds: number | number[]): Promise<void> {
-		if (!Array.isArray(messageIds)) { messageIds = [messageIds]; }
-
-		return this.authHttp.post('/api/messages/unread', { ids: messageIds })
-			.toPromise()
-			.then(() => null)
-			.catch(this.handleError);
-	}
-
-	performMessageAction(execution_uid: string, action: string): Promise<string[]> {
+	/**
+	 * Responds to a message by calling a trigger endpoint for a given workflow's execution ID.
+	 * @param execution_uid Execution ID of workflow to trigger
+	 * @param action Action to send to trigger endpoint
+	 */
+	respondToMessage(execution_uid: string, action: string): Promise<string[]> {
 		const arg = new Argument();
 		arg.name = 'action';
 		arg.value = action;
@@ -62,7 +61,7 @@ export class MessagesService {
 			data_in: action,
 			arguments: [arg],
 		};
-		return this.authHttp.post('/api/triggers/send_data', body)
+		return this.authHttp.put('/api/triggers/send_data', body)
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);

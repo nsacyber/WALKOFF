@@ -2,37 +2,6 @@
     "name": "testScheduler",
     "workflows": [
         {
-            "name": "helloWorldWorkflow",
-            "branches": [
-                {
-                    "conditions": [
-                        {
-                            "action_name": "regMatch",
-                            "app_name": "HelloWorldBounded",
-                            "arguments": [
-                                {
-                                    "name": "regex",
-                                    "value": "(.*)"
-                                }
-                            ],
-                            "transforms": [
-                                {
-                                    "action_name": "length",
-                                    "app_name": "HelloWorldBounded",
-                                    "arguments": [],
-                                    "uid": "a0bc146e58e04577acfae4ccaf0c56c1"
-                                }
-                            ],
-                            "uid": "9deaaef487ae4e83af5bffef012f8b65"
-                        }
-                    ],
-                    "destination_uid": "1",
-                    "source_uid": "7aeb492a73c345bbb4e8570bb682c87d",
-                    "status": "Success",
-                    "uid": "c510f1dbcadf42499d0fa95c9d126d93"
-                }
-            ],
-            "start": "7aeb492a73c345bbb4e8570bb682c87d",
             "actions": [
                 {
                     "action_name": "repeatBackToMe",
@@ -43,13 +12,14 @@
                             "value": "Hello World"
                         }
                     ],
-                    "name": "start",
-                    "position": {},
-                    "uid": "7aeb492a73c345bbb4e8570bb682c87d",
-                    "device_id": 1
+                    "device_id": 1,
+                    "id": "c4690e5e-ef27-4401-a500-b658baf1e068",
+                    "name": "start"
                 }
             ],
-            "uid": "127560fb39eb44ddbdea6af70fb86e26"
+            "branches": [],
+            "name": "helloWorldWorkflow",
+            "start": "c4690e5e-ef27-4401-a500-b658baf1e068"
         }
     ]
 }

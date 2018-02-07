@@ -31,11 +31,11 @@ describe('PlaybookArgumentComponent', () => {
 
 		comp.id = 0;
 		comp.loadedWorkflow = {
-			uid: '12345',
+			id: '12345',
 			name: 'TestWorkflow',
 			actions: [
 				{
-					uid: '55555',
+					id: '55555',
 					name: 'test action',
 					position: { x: 0, y: 0 },
 					app_name: 'TestApp',

@@ -1,4 +1,8 @@
 export class Argument {
+	id?: number;
+	// _action_id: number;
+	// _condition_id: number;
+	// _transform_id: number;
 	/**
 	 * Name of the argument in question
 	 */
@@ -9,7 +13,7 @@ export class Argument {
 	 */
 	value?: any;
 	/**
-	 * Reference to an Action UID to use the output of
+	 * Reference to an Action ID to use the output of
 	 */
 	reference?: string;
 	/**

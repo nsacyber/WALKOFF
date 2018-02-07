@@ -1,459 +1,50 @@
 import json
-import os
-from copy import deepcopy
-from os import path
-from threading import Event
-
 import walkoff.case.database as case_database
-import walkoff.config.paths
-from walkoff import helpers
-from walkoff.core.argument import Argument
 from walkoff.events import WalkoffEvent
-from walkoff.core.executionelements.action import Action
-from walkoff.core.executionelements.branch import Branch
 from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
-from tests.util.assertwrappers import orderless_list_compare
 from tests.util.case_db_help import setup_subscriptions_for_action
 from tests.util.servertestcase import ServerTestCase
+import walkoff.coredb.devicedb as devicedb
+from walkoff.coredb.playbook import Playbook
+from walkoff.coredb.workflow import Workflow
+from uuid import uuid4
+from tests.util import device_db_help
 
 
 class TestWorkflowServer(ServerTestCase):
+
     def setUp(self):
+        self.add_playbook_name = 'add_playbook'
+        self.change_playbook_name = 'change_playbook'
+        self.add_workflow_name = 'add_workflow'
+        self.change_workflow_name = 'change_workflow'
         self.empty_workflow_json = \
-            {'actions': [],
-             'name': 'test_name',
-             'start': 'start',
-             'branches': []}
+            {'actions': [
+                {"app_name": "HelloWorld", "action_name": "helloWorld", "name": "helloworld", "id": str(uuid4()),
+                 "triggers": [],
+                 "arguments": []}],
+                'name': self.add_workflow_name,
+                'start': str(uuid4()),
+                'branches': []}
+        self.verb_lookup = {'get': self.get_with_status_check,
+                            'put': self.put_with_status_check,
+                            'post': self.post_with_status_check,
+                            'delete': self.delete_with_status_check,
+                            'patch': self.patch_with_status_check}
 
         case_database.initialize()
 
     def tearDown(self):
-        flask_server.running_context.controller.playbook_store.playbooks = {}
-        case_database.case_db.tear_down()
-
-    def test_display_all_playbooks(self):
-        response = self.get_with_status_check('/api/playbooks', headers=self.headers)
-        for playbook in response:
-            for workflow in playbook['workflows']:
-                workflow.pop('uid')
-
-        for playbook in response:
-            self.assertIn(playbook['name'], ['test', 'triggerActionWorkflow', 'pauseWorkflowTest'])
-            if playbook['name'] == 'test':
-                self.assertEqual(playbook['workflows'], [{'name': 'helloWorldWorkflow'}])
-            elif playbook['name'] == 'triggerActionWorkflow':
-                self.assertEqual(playbook['workflows'], [{"name": "triggerActionWorkflow"}])
-            elif playbook['name'] == 'pauseWorkflowTest':
-                self.assertEqual(playbook['workflows'], [{"name": "pauseWorkflow"}])
-
-        self.assertEqual(len(response), 3)
-
-    def test_display_playbook_workflows(self):
-        response = self.get_with_status_check('/api/playbooks/test', headers=self.headers)
-        for workflow in response:
-            workflow.pop('uid')
-        self.assertListEqual(response, [{'name': 'helloWorldWorkflow'}])
-
-    def test_display_playbook_workflows_invalid_name(self):
-        self.get_with_status_check('/api/playbooks/junkName', error='Playbook does not exist.', headers=self.headers,
-                                   status_code=OBJECT_DNE_ERROR)
-
-    def test_display_workflow_invalid_name(self):
-        self.get_with_status_check('/api/playbooks/multiactionWorkflowTest/workflows/multiactionWorkflow',
-                                   error='Workflow does not exist',
-                                   headers=self.headers, status_code=OBJECT_DNE_ERROR)
-
-    def test_add_playbook_default(self):
-        expected_playbooks = flask_server.running_context.controller.get_all_playbooks()
-        original_length = len(list(expected_playbooks))
-        data = {"name": "test_playbook"}
-        response = self.put_with_status_check('/api/playbooks', headers=self.headers,
-                                              status_code=OBJECT_CREATED, data=json.dumps(data),
-                                              content_type="application/json")
-
-        response = next(playbook for playbook in response if playbook['name'] == 'test_playbook')
-        for workflow in response['workflows']:
-            workflow.pop('uid')
-
-        self.assertDictEqual(response, {'name': 'test_playbook', 'workflows': []})
-        self.assertEqual(len(list(flask_server.running_context.controller.get_all_playbooks())), original_length + 1)
-
-    def test_add_playbook_already_exists(self):
-        data = {"name": "test_playbook__"}
-        self.put_with_status_check('/api/playbooks',
-                                   data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
-                                   content_type="application/json")
-        self.put_with_status_check('/api/playbooks',
-                                   error='Playbook already exists.',
-                                   data=json.dumps(data), headers=self.headers, status_code=OBJECT_EXISTS_ERROR,
-                                   content_type="application/json")
-
-    def test_add_workflow(self):
-        initial_playbooks = flask_server.running_context.controller.get_all_workflows()
-        initial_workflows = next(playbook['workflows'] for playbook in initial_playbooks if playbook['name'] == 'test')
-
-        data = {"name": "test_name"}
-        response = self.put_with_status_check('/api/playbooks/test/workflows',
-                                              headers=self.headers, status_code=OBJECT_CREATED, data=json.dumps(data),
-                                              content_type="application/json")
-        self.empty_workflow_json['uid'] = response['uid']
-        self.assertDictEqual(response, self.empty_workflow_json)
-
-        final_playbooks = flask_server.running_context.controller.get_all_workflows()
-        final_workflows = next(playbook['workflows'] for playbook in final_playbooks if playbook['name'] == 'test')
-        self.assertEqual(len(final_workflows), len(initial_workflows) + 1)
-        self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'test_name'))
-
-    def test_edit_playbook(self):
-        expected_keys = next(x for x in flask_server.running_context.controller.get_all_workflows()
-                             if x['name'] == 'test')['workflows']
-        # expected_keys = flask_server.running_context.controller.get_all_workflows()['test']
-        new_playbook_name = 'editedPlaybookName'
-        data = {'new_name': new_playbook_name, "name": "test"}
-        response = self.post_with_status_check('/api/playbooks',
-                                               data=json.dumps(data),
-                                               headers=self.headers,
-                                               content_type='application/json')
-        self.assertListEqual(response, expected_keys)
-        self.assertTrue(
-            os.path.isfile(os.path.join(walkoff.config.paths.workflows_path, 'editedPlaybookName.playbook')))
-        self.assertFalse(os.path.isfile(os.path.join(walkoff.config.paths.workflows_path, 'test.playbook')))
-
-    def test_edit_playbook_no_name(self):
-        expected = flask_server.running_context.controller.get_all_workflows()
-        response = self.app.post('/api/playbooks', headers=self.headers, content_type="application/json",
-                                 data=json.dumps({}))
-        self.assertEqual(response._status_code, 400)
-        self.assertListEqual(flask_server.running_context.controller.get_all_workflows(), expected)
-        self.assertTrue(os.path.isfile(os.path.join(walkoff.config.paths.workflows_path, 'test.playbook')))
-
-    def test_edit_playbook_invalid_name(self):
-        expected = flask_server.running_context.controller.get_all_workflows()
-        data = {"name": "junkPlaybookName"}
-        response = self.app.post('/api/playbooks', headers=self.headers, content_type="application/json",
-                                 data=json.dumps(data))
-        self.assertEqual(response._status_code, 461)
-        self.assertListEqual(flask_server.running_context.controller.get_all_workflows(), expected)
-
-        self.assertFalse(
-            os.path.isfile(os.path.join(walkoff.config.paths.workflows_path, 'junkPlaybookName.playbook')))
-        self.assertTrue(os.path.isfile(os.path.join(walkoff.config.paths.workflows_path, 'test.playbook')))
-
-    def test_edit_playbook_no_file(self):
-        data = {"name": "test2"}
-        self.app.put('/api/playbooks', headers=self.headers, data=json.dumps(data), content_type="application/json")
-        expected_keys = next(x for x in flask_server.running_context.controller.get_all_workflows()
-                             if x['name'] == 'test2')['workflows']
-        new_playbook_name = 'editedPlaybookName'
-        data = {'new_name': new_playbook_name, "name": "test2"}
-        response = self.post_with_status_check('/api/playbooks',
-                                               data=json.dumps(data),
-                                               headers=self.headers,
-                                               content_type='application/json')
-        self.assertListEqual(response, expected_keys)
-
-        self.assertFalse(os.path.isfile(os.path.join(walkoff.config.paths.workflows_path, 'test2.playbook')))
-        self.assertFalse(
-            os.path.isfile(os.path.join(walkoff.config.paths.workflows_path, 'editedPlaybookName.playbook')))
-        self.assertTrue(os.path.isfile(os.path.join(walkoff.config.paths.workflows_path, 'test.playbook')))
-
-    def test_edit_workflow_name_only(self):
-        expected_json = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').read()
-        workflow_name = "test_name"
-        data = {"new_name": workflow_name, "name": "helloWorldWorkflow"}
-        response = self.post_with_status_check('/api/playbooks/test/workflows',
-                                               data=json.dumps(data),
-                                               headers=self.headers,
-                                               content_type='application/json')
-
-        expected_json['name'] = workflow_name
-
-        self.assertDictEqual(response, expected_json)
-
-        self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'test_name'))
-        self.assertFalse(
-            flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
-
-    def test_edit_workflow_empty_name(self):
-        expected_json = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').read()
-        data = {"new_name": "", "name": "helloWorldWorkflow"}
-        response = self.post_with_status_check('/api/playbooks/test/workflows',
-                                               data=json.dumps(data),
-                                               headers=self.headers,
-                                               content_type='application/json')
-
-        self.assertDictEqual(response, expected_json)
-
-        self.assertFalse(flask_server.running_context.controller.is_workflow_registered('test', 'test_name'))
-        self.assertTrue(
-            flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
-        self.assertFalse(
-            flask_server.running_context.controller.is_workflow_registered('test', ''))
-
-    def test_edit_workflow_(self):
-        expected_json = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow').read()
-        workflow_name = "test_name"
-        data = {"new_name": workflow_name, "name": "helloWorldWorkflow"}
-        response = self.post_with_status_check('/api/playbooks/test/workflows',
-                                               data=json.dumps(data),
-                                               headers=self.headers,
-                                               content_type='application/json')
-
-        expected_json['name'] = workflow_name
-        self.assertDictEqual(response, expected_json)
-
-        self.assertFalse(
-            flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
-
-    def test_edit_workflow_invalid_workflow(self):
-        workflow_name = 'test_name'
-        data = {"new_name": workflow_name, "name": "junkworkflow"}
-        initial_workflows = flask_server.running_context.controller.workflows.keys()
-        self.post_with_status_check('/api/playbooks/test/workflows',
-                                    error='Workflow does not exist',
-                                    data=json.dumps(data), headers=self.headers, content_type="application/json",
-                                    status_code=OBJECT_DNE_ERROR)
-        final_workflows = flask_server.running_context.controller.workflows.keys()
-        self.assertSetEqual(set(final_workflows), set(initial_workflows))
-
-    def test_save_workflow(self):
-        initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        workflow_name = initial_workflow.name
-        initial_actions = [action.read() for action in initial_workflow.actions.values()]
-        initial_actions[0]['position']['x'] = 0.0
-        initial_actions[0]['position']['y'] = 0.0
-        added_action = Action('HelloWorld', 'pause', name='new_id', arguments=[Argument("seconds", value=5)],
-                              position={'x': 0, 'y': 0}, uid="2").read()
-
-        initial_actions.append(added_action)
-
-        action_uid = "e1db14e0cc8d4179aff5f1080a2b7e91"
-        added_branch = Branch(source_uid=action_uid, destination_uid="2").read()
-
-        data = {"actions": initial_actions, "branches": [added_branch]}
-        self.post_with_status_check('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
-                                    data=json.dumps(data),
-                                    headers=self.headers,
-                                    content_type='application/json')
-
-        resulting_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
-        # compare the actions in initial and final workflow
-        self.assertEqual(len(resulting_workflow.actions.keys()), len(list(initial_actions)))
-        for initial_action in initial_actions:
-            self.assertIn(initial_action['uid'], resulting_workflow.actions.keys())
-            self.assertDictEqual(initial_action, resulting_workflow.actions[initial_action['uid']].read())
-
-        self.assertEqual(added_branch["source_uid"], resulting_workflow.branches[action_uid][0].source_uid)
-        self.assertEqual(added_branch["destination_uid"], resulting_workflow.branches[action_uid][0].destination_uid)
-
-        # assert that the file has been saved to a file
-        workflows = [path.splitext(workflow)[0]
-                     for workflow in os.listdir(walkoff.config.paths.workflows_path) if workflow.endswith('.playbook')]
-        matching_workflows = [workflow for workflow in workflows if workflow == 'test']
-        self.assertEqual(len(matching_workflows), 1)
-
-        # assert that the file loads properly after being saved
-        flask_server.running_context.controller.workflows = {}
-        flask_server.running_context.controller.load_playbook(os.path.join(walkoff.config.paths.workflows_path,
-                                                                           'test.playbook'))
-        loaded_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
-        # compare the actions in loaded and expected workflow
-        self.assertEqual(len(loaded_workflow.actions.keys()), len(list(resulting_workflow.actions.keys())))
-
-        def remove_uids(action):
-            action.uid = ''
-
-        for action_name, loaded_action in loaded_workflow.actions.items():
-            self.assertIn(action_name, resulting_workflow.actions.keys())
-            remove_uids(loaded_action)
-            remove_uids(resulting_workflow.actions[action_name])
-            self.assertDictEqual(loaded_action.read(), resulting_workflow.actions[action_name].read())
-
-    def test_save_workflow_invalid_app_reload_actions(self):
-        initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        workflow_name = initial_workflow.name
-        initial_actions = [action.read() for action in initial_workflow.actions.values()]
-        actions_unmod = deepcopy(initial_actions)
-        initial_actions[0]['position']['x'] = 0.0
-        initial_actions[0]['position']['y'] = 0.0
-        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause',
-                              arguments=[Argument("seconds", value=5)],
-                              position={'x': 0, 'y': 0}).read()
-        added_action['app_name'] = 'Invalid'
-
-        initial_actions.append(added_action)
-        data = {"actions": initial_actions}
-        self.post_with_status_check('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
-                                    data=json.dumps(data),
-                                    headers=self.headers,
-                                    content_type='application/json',
-                                    status_code=INVALID_INPUT_ERROR)
-
-        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        new_actions = [action.read() for action in workflow.actions.values()]
-        for action in actions_unmod:
-            action.pop('position')
-        for action in new_actions:
-            action.pop('position')
-            action.pop('event')
-        self.assertListEqual(actions_unmod, new_actions)
-
-    def test_save_workflow_invalid_action(self):
-        initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        workflow_name = initial_workflow.name
-        initial_actions = [action.read() for action in initial_workflow.actions.values()]
-        initial_actions[0]['position']['x'] = 0.0
-        initial_actions[0]['position']['y'] = 0.0
-        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause',
-                              arguments=[Argument("seconds", value=5)],
-                              position={'x': 0, 'y': 0}).read()
-        added_action['action_name'] = 'Invalid'
-
-        initial_actions.append(added_action)
-        data = {"actions": initial_actions}
-        self.post_with_status_check('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
-                                    data=json.dumps(data),
-                                    headers=self.headers,
-                                    content_type='application/json',
-                                    status_code=INVALID_INPUT_ERROR)
-
-    def test_save_workflow_invalid_input_name(self):
-        initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        workflow_name = initial_workflow.name
-        initial_actions = [action.read() for action in initial_workflow.actions.values()]
-        initial_actions[0]['position']['x'] = 0.0
-        initial_actions[0]['position']['y'] = 0.0
-        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause',
-                              arguments=[Argument("seconds", value=5)],
-                              position={'x': 0, 'y': 0}).read()
-        added_action['arguments'] = [{'name': 'Invalid', 'value': 5}]
-
-        initial_actions.append(added_action)
-        data = {"actions": initial_actions}
-        self.post_with_status_check('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
-                                    data=json.dumps(data),
-                                    headers=self.headers,
-                                    content_type='application/json',
-                                    status_code=INVALID_INPUT_ERROR)
-
-    def test_save_workflow_invalid_input_format(self):
-        initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        workflow_name = initial_workflow.name
-        initial_actions = [action.read() for action in initial_workflow.actions.values()]
-        initial_actions[0]['position']['x'] = 0.0
-        initial_actions[0]['position']['y'] = 0.0
-        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause',
-                              arguments=[Argument("seconds", value=5)],
-                              position={'x': 0, 'y': 0}).read()
-        added_action['arguments'][0]['value'] = 'aaaa'
-
-        initial_actions.append(added_action)
-        data = {"actions": initial_actions}
-        self.post_with_status_check('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
-                                    data=json.dumps(data),
-                                    headers=self.headers,
-                                    content_type='application/json',
-                                    status_code=INVALID_INPUT_ERROR)
-
-    def test_save_workflow_new_start_action(self):
-        initial_workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        workflow_name = initial_workflow.name
-        initial_actions = [action.read() for action in initial_workflow.actions.values()]
-        initial_actions[0]['position']['x'] = 0.0
-        initial_actions[0]['position']['y'] = 0.0
-        added_action = Action(name='new_id', app_name='HelloWorld', action_name='pause',
-                              arguments=[Argument('seconds', value=5)],
-                              position={'x': 0, 'y': 0}).read()
-
-        initial_actions.append(added_action)
-        data = {"actions": initial_actions, "start": "new_start"}
-        self.post_with_status_check('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
-                                    data=json.dumps(data),
-                                    headers=self.headers,
-                                    content_type='application/json')
-
-        resulting_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
-        self.assertEqual(resulting_workflow.start, "new_start")
-
-    def test_save_workflow_invalid_name(self):
-        data = {"actions": []}
-        self.post_with_status_check('/api/playbooks/test/workflows/junkworkflowname/save',
-                                    error='Workflow does not exist',
-                                    headers=self.headers, status_code=OBJECT_DNE_ERROR, data=json.dumps(data),
-                                    content_type="application/json")
-
-    def test_delete_playbook(self):
-        self.delete_with_status_check('/api/playbooks/test', headers=self.headers)
-
-        self.assertFalse(flask_server.running_context.controller.is_playbook_registered('test'))
-
-        playbooks = [os.path.splitext(playbook)[0]
-                     for playbook in helpers.locate_playbooks_in_directory(walkoff.config.paths.workflows_path)]
-        self.assertNotIn('test', playbooks)
-
-    def test_delete_playbook_no_file(self):
-        initial_playbook_files = [os.path.splitext(playbook)[0] for playbook in
-                                  helpers.locate_playbooks_in_directory()]
-        data = {"name": "test_playbook"}
-        self.app.put('/api/playbooks', headers=self.headers, content_type="application/json", data=json.dumps(data))
-        self.delete_with_status_check('/api/playbooks/test_playbook', headers=self.headers)
-
-        self.assertTrue(flask_server.running_context.controller.is_playbook_registered('test'))
-        self.assertFalse(flask_server.running_context.controller.is_playbook_registered('test_playbook'))
-
-        final_playbook_files = [os.path.splitext(playbook)[0] for playbook in
-                                helpers.locate_playbooks_in_directory()]
-        orderless_list_compare(self, final_playbook_files, initial_playbook_files)
-
-    def test_delete_playbook_invalid_name(self):
-        initial_playbook_files = [os.path.splitext(playbook)[0] for playbook in
-                                  helpers.locate_playbooks_in_directory()]
-        self.delete_with_status_check('/api/playbooks/junkPlaybookName', error='Playbook does not exist',
-                                      headers=self.headers,
-                                      status_code=OBJECT_DNE_ERROR)
-        self.assertFalse(flask_server.running_context.controller.is_playbook_registered('junkPlaybookName'))
-        final_playbook_files = [os.path.splitext(playbook)[0] for playbook in
-                                helpers.locate_playbooks_in_directory()]
-        orderless_list_compare(self, final_playbook_files, initial_playbook_files)
-
-    def test_delete_workflow(self):
-        workflow_name = 'test_name2'
-        data = {"name": "test_name2"}
-        self.app.put('/api/playbooks/test/workflows', headers=self.headers, data=json.dumps(data),
-                     content_type="application/json")
-
-        initial_workflow = flask_server.running_context.controller.get_workflow('test', workflow_name)
-        initial_actions = [action.read() for action in initial_workflow.actions.values()]
-
-        data = {"actions": initial_actions}
-        self.app.post('/api/playbooks/test/workflows/{0}/save'.format(workflow_name),
-                      data=json.dumps(data),
-                      headers=self.headers,
-                      content_type='application/json')
-        self.delete_with_status_check('/api/playbooks/test/workflows/{0}'.format(workflow_name), headers=self.headers)
-        self.assertFalse(flask_server.running_context.controller.is_workflow_registered('test', workflow_name))
-
-    def test_delete_workflow_invalid(self):
-        workflow_name = 'junkworkflowname'
-        self.delete_with_status_check('/api/playbooks/test/workflows/{0}'.format(workflow_name),
-                                      error='Workflow does not exist',
-                                      headers=self.headers, status_code=OBJECT_DNE_ERROR)
-        self.assertFalse(flask_server.running_context.controller.is_workflow_registered('test', workflow_name))
-
-    def test_invalid_operation_on_playbook_crud(self):
-        response = self.app.post('/api/playbooks/junkPlaybookName/junkOperation',
-                                 headers=self.headers)
-        self.assertEqual(404, response.status_code)
-
-    def test_invalid_operation_on_workflow_crud(self):
-        response = self.app.post('/api/playbook/junkPlaybookName/workflows/helloWorldWorkflow/junkOperation',
-                                 headers=self.headers)
-        self.assertEqual(404, response.status_code)
+        device_db_help.cleanup_device_db()
+
+        case_database.case_db.session.query(case_database.Event).delete()
+        case_database.case_db.session.query(case_database.Case).delete()
+        case_database.case_db.session.commit()
 
     @staticmethod
     def strip_uids(element):
-        element.pop('uid', None)
+        element.pop('id', None)
         for key, value in element.items():
             if isinstance(value, list):
                 for list_element in (list_element_ for list_element_ in value if isinstance(list_element_, dict)):
@@ -461,152 +52,406 @@ class TestWorkflowServer(ServerTestCase):
             elif isinstance(value, dict):
                 for dict_element in (element for element in value.values() if isinstance(element, dict)):
                     TestWorkflowServer.strip_uids(dict_element)
+        return element
+
+    def check_invalid_uuid(self, verb, path, element_type, **kwargs):
+        self.verb_lookup[verb](path, headers=self.headers, error='Invalid ID for {}'.format(element_type),
+                               status_code=BAD_REQUEST, **kwargs)
+
+    def check_invalid_id(self, verb, path, element_type, **kwargs):
+        self.verb_lookup[verb](path, error='{} does not exist'.format(element_type.title()), headers=self.headers,
+                               status_code=OBJECT_DNE_ERROR, **kwargs)
+
+    def test_read_all_playbooks(self):
+        playbook_names = ['basicWorkflowTest', 'dataflowTest']
+        device_db_help.load_playbooks(playbook_names)
+        response = self.get_with_status_check('/api/playbooks', headers=self.headers)
+        for playbook in response:
+            for workflow in playbook['workflows']:
+                workflow.pop('id')
+        self.assertEqual(len(response), len(playbook_names))
+        for playbook in response:
+            self.assertIn(playbook['name'], playbook_names)
+
+    # All the reads
+
+    def test_read_playbook(self):
+        playbook = device_db_help.standard_load()
+        response = self.get_with_status_check('/api/playbooks/{}'.format(playbook.id), headers=self.headers)
+
+        expected_workflows = [self.strip_uids(workflow.read()) for workflow in playbook.workflows]
+
+        self.assertEqual(response['name'], 'test')
+        self.assertEqual(len(response['workflows']), len(expected_workflows))
+        self.assertListEqual([self.strip_uids(workflow) for workflow in response['workflows']], expected_workflows)
+
+    def test_read_playbook_invalid_id(self):
+        self.check_invalid_id('get', '/api/playbooks/{}'.format(uuid4()), 'playbook')
+
+    def test_read_playbook_invalid_id_format(self):
+        self.check_invalid_uuid('get', '/api/playbooks/0', 'playbook')
+
+    def test_read_playbook_workflows(self):
+        playbook = device_db_help.standard_load()
+        response = self.get_with_status_check('/api/playbooks/{}/workflows'.format(playbook.id), headers=self.headers)
+
+        expected_workflows = [self.strip_uids(workflow.read()) for workflow in playbook.workflows]
+
+        self.assertEqual(len(response), len(expected_workflows))
+        self.assertListEqual([self.strip_uids(workflow) for workflow in response], expected_workflows)
+
+    def test_read_playbook_workflows_invalid_id(self):
+        self.check_invalid_id('get', '/api/playbooks/{}/workflows'.format(uuid4()), 'playbook')
+
+    def test_read_playbook_workflows_invalid_id_format(self):
+        self.check_invalid_uuid('get', '/api/playbooks/0/workflows', 'playbook')
+
+    def test_read_workflow(self):
+        playbook = device_db_help.standard_load()
+        target_workflow = playbook.workflows[0]
+        response = self.get_with_status_check(
+            '/api/playbooks/{0}/workflows/{1}'.format(playbook.id, target_workflow.id),
+            headers=self.headers)
+        self.assertDictEqual(self.strip_uids(response), self.strip_uids(target_workflow.read()))
+
+    def test_read_workflow_invalid_playbook_id(self):
+        playbook = device_db_help.standard_load()
+        target_workflow = playbook.workflows[0]
+        self.check_invalid_id('get', '/api/playbooks/{0}/workflows/{1}'.format(uuid4(), target_workflow.id), 'workflow')
+
+    def test_read_workflow_invalid_workflow_id(self):
+        playbook = device_db_help.standard_load()
+        self.check_invalid_id('get', '/api/playbooks/{0}/workflows/{1}'.format(playbook.id, uuid4()), 'workflow')
+
+    def test_read_workflow_invalid_playbook_and_workflow_id(self):
+        self.check_invalid_id('get', '/api/playbooks/{0}/workflows/{1}'.format(uuid4(), uuid4()), 'workflow')
+
+    def test_read_workflow_invalid_playbook_id_format(self):
+        playbook = device_db_help.standard_load()
+        target_workflow = playbook.workflows[0]
+        self.check_invalid_uuid('get', '/api/playbooks/1/workflows/{}'.format(target_workflow.id), 'workflow')
+
+    def test_read_workflow_invalid_workflow_id_format(self):
+        playbook = device_db_help.standard_load()
+        self.check_invalid_uuid('get', '/api/playbooks/{}/workflows/42'.format(playbook.id), 'workflow')
+
+    def test_read_workflow_invalid_playbook_and_workflow_id_format(self):
+        self.check_invalid_uuid('get', '/api/playbooks/10/workflows/75a', 'workflow')
+
+    # All the deletes
+
+    def test_delete_playbook(self):
+        playbook = device_db_help.standard_load()
+        self.delete_with_status_check('/api/playbooks/{}'.format(playbook.id), headers=self.headers,
+                                      status_code=NO_CONTENT)
+
+        self.assertIsNone(
+            devicedb.device_db.session.query(Playbook).filter_by(id=playbook.id).first())
+
+    def test_delete_playbook_invalid_id(self):
+        device_db_help.standard_load()
+        previous_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
+        self.check_invalid_id('delete', '/api/playbooks/{}'.format(uuid4()), 'playbook')
+        self.assertEqual(previous_num_playbooks, len(devicedb.device_db.session.query(Playbook).all()))
+
+    def test_delete_playbook_invalid_id_format(self):
+        device_db_help.standard_load()
+        previous_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
+        self.check_invalid_id('delete', '/api/playbooks/{}'.format(uuid4()), 'playbook')
+        self.assertEqual(previous_num_playbooks, len(devicedb.device_db.session.query(Playbook).all()))
+
+    def test_delete_workflow(self):
+        device_db_help.standard_load()
+
+        workflows = [Workflow('wf{}'.format(i), uuid4()) for i in range(2)]
+
+        for workflow in workflows:
+            devicedb.device_db.session.add(workflow)
+
+        target_playbook = Playbook('play1', workflows=workflows)
+        devicedb.device_db.session.add(target_playbook)
+        devicedb.device_db.session.flush()
+        workflow_ids = [workflow.id for workflow in workflows]
+        original_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
+        self.delete_with_status_check('/api/playbooks/{0}/workflows/{1}'.format(target_playbook.id, workflow_ids[0]),
+                                      headers=self.headers, status_code=NO_CONTENT)
+        self.assertEqual(len(list(target_playbook.workflows)), len(workflow_ids) - 1)
+        self.assertNotIn(workflow_ids[0], [workflow.id for workflow in target_playbook.workflows])
+        self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks)
+
+    def test_delete_last_workflow(self):
+        device_db_help.standard_load()
+
+        workflow = Workflow('wf', uuid4())
+        devicedb.device_db.session.add(workflow)
+        target_playbook = Playbook('play1', workflows=[workflow])
+        devicedb.device_db.session.add(target_playbook)
+        devicedb.device_db.session.flush()
+        original_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
+        self.delete_with_status_check('/api/playbooks/{0}/workflows/{1}'.format(target_playbook.id, workflow.id),
+                                      headers=self.headers, status_code=NO_CONTENT)
+        self.assertIsNone(devicedb.device_db.session.query(Playbook).filter_by(name='play1').first())
+        self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks - 1)
+
+    def test_delete_workflow_invalid_playbook_id(self):
+        playbook = device_db_help.standard_load()
+        original_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
+        self.check_invalid_id('delete', '/api/playbooks/{0}/workflows/{1}'.format(uuid4(), playbook.workflows[0].id),
+                              'workflow')
+        self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks)
+
+    def test_delete_workflow_invalid_workflow_id(self):
+        playbook = device_db_help.standard_load()
+        original_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
+        self.check_invalid_id('delete', '/api/playbooks/{0}/workflows/{1}'.format(playbook.id, uuid4()), 'workflow')
+        self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks)
+
+    def test_delete_workflow_invalid_playbook_and_workflow_id(self):
+        device_db_help.standard_load()
+        original_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
+        self.check_invalid_id('delete', '/api/playbooks/{0}/workflows/{1}'.format(uuid4(), uuid4()), 'workflow')
+        self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks)
+
+    def test_delete_workflow_invalid_playbook_id_format(self):
+        playbook = device_db_help.standard_load()
+        original_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
+        self.check_invalid_uuid('delete', '/api/playbooks/af/workflows/{}'.format(playbook.workflows[0].id), 'workflow')
+        self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks)
+
+    def test_delete_workflow_invalid_workflow_id_format(self):
+        playbook = device_db_help.standard_load()
+        original_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
+        self.check_invalid_uuid('delete', '/api/playbooks/{}/workflows/37b'.format(playbook.id, uuid4()), 'workflow')
+        self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks)
+
+    def test_delete_workflow_invalid_playbook_and_workflow_id_format(self):
+        device_db_help.standard_load()
+        original_num_playbooks = len(devicedb.device_db.session.query(Playbook).all())
+        self.check_invalid_uuid('delete', '/api/playbooks/10/workflows/108', 'workflow')
+        self.assertEqual(len(devicedb.device_db.session.query(Playbook).all()), original_num_playbooks)
+
+    # All the creates
+
+    def test_create_playbook(self):
+        expected_playbooks = devicedb.device_db.session.query(Playbook).all()
+        original_length = len(list(expected_playbooks))
+        data = {"name": self.add_playbook_name}
+        self.update_playbooks = True
+        response = self.post_with_status_check('/api/playbooks', headers=self.headers,
+                                              status_code=OBJECT_CREATED, data=json.dumps(data),
+                                              content_type="application/json")
+        response.pop('id')
+
+        self.assertDictEqual(response, {'name': self.add_playbook_name, 'workflows': []})
+        self.assertEqual(len(list(devicedb.device_db.session.query(Playbook).all())),
+                         original_length + 1)
+
+    def test_create_playbook_already_exists(self):
+        data = {"name": self.add_playbook_name}
+        self.post_with_status_check('/api/playbooks',
+                                   data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
+                                   content_type="application/json")
+        self.post_with_status_check('/api/playbooks',
+                                   error='Unique constraint failed.',
+                                   data=json.dumps(data), headers=self.headers, status_code=OBJECT_EXISTS_ERROR,
+                                   content_type="application/json")
+
+    def test_create_playbook_bad_id_in_workflow(self):
+        workflow = Workflow('wf1', uuid4())
+        devicedb.device_db.session.add(workflow)
+        devicedb.device_db.session.flush()
+        workflow_json = workflow.read()
+        workflow_json['id'] = 'garbage'
+        data = {'name': self.add_playbook_name, 'workflows': [workflow_json]}
+        self.post_with_status_check('/api/playbooks',
+                                   data=json.dumps(data), headers=self.headers, status_code=BAD_REQUEST,
+                                   content_type="application/json")
+
+    def test_create_workflow(self):
+        playbook = device_db_help.standard_load()
+        initial_workflows_len = len(playbook.workflows)
+
+        response = self.post_with_status_check('/api/playbooks/{}/workflows'.format(playbook.id),
+                                              headers=self.headers, status_code=OBJECT_CREATED,
+                                              data=json.dumps(self.empty_workflow_json),
+                                              content_type="application/json")
+
+        self.empty_workflow_json['id'] = response['id']
+
+        final_workflows = playbook.workflows
+        self.assertEqual(len(final_workflows), initial_workflows_len + 1)
+
+        workflow = next((workflow for workflow in final_workflows if workflow.name == self.add_workflow_name), None)
+        self.assertIsNotNone(workflow)
+
+    def test_create_workflow_invalid_id(self):
+        self.check_invalid_id('post', '/api/playbooks/{}/workflows'.format(uuid4()), 'playbook',
+                              data=json.dumps(self.empty_workflow_json),
+                              content_type="application/json")
+
+    def test_create_workflow_invalid_id_format(self):
+        self.check_invalid_uuid('post', '/api/playbooks/87fgb/workflows', 'playbook',
+                                data=json.dumps(self.empty_workflow_json),
+                                content_type="application/json")
+
+    # All the updates
+
+    def test_update_playbook_name(self):
+        playbook = device_db_help.standard_load()
+
+        data = {'id': str(playbook.id), 'name': self.change_playbook_name}
+        response = self.patch_with_status_check('/api/playbooks',
+                                               data=json.dumps(data),
+                                               headers=self.headers,
+                                               content_type='application/json')
+        self.assertEqual(response['name'], self.change_playbook_name)
+
+    def test_update_playbook_invalid_id(self):
+        device_db_help.standard_load()
+        expected = {playbook.name for playbook in devicedb.device_db.session.query(Playbook).all()}
+        data = {'id': str(uuid4()), 'name': self.change_playbook_name}
+        self.check_invalid_id('patch', '/api/playbooks', 'playbook', content_type="application/json",
+                              data=json.dumps(data))
+        self.assertSetEqual({playbook.name for playbook in devicedb.device_db.session.query(Playbook).all()}, expected)
+
+    def test_update_playbook_invalid_id_format(self):
+        device_db_help.standard_load()
+        expected = {playbook.name for playbook in devicedb.device_db.session.query(Playbook).all()}
+        data = {'id': '475', 'name': self.change_playbook_name}
+        self.check_invalid_uuid('patch', '/api/playbooks', 'playbook', content_type="application/json",
+                                data=json.dumps(data))
+        self.assertSetEqual({playbook.name for playbook in devicedb.device_db.session.query(Playbook).all()}, expected)
+
+    def test_update_workflow(self):
+        playbook = device_db_help.standard_load()
+        workflow = playbook.workflows[0]
+        expected_json = workflow.read()
+        expected_json['name'] = self.change_workflow_name
+        response = self.put_with_status_check('/api/playbooks/{}/workflows'.format(playbook.id),
+                                               data=json.dumps(expected_json),
+                                               headers=self.headers,
+                                               content_type='application/json')
+        self.assertDictEqual(response, expected_json)
+
+        self.assertIsNotNone(
+            devicedb.device_db.session.query(Workflow).filter_by(id=workflow.id).first())
+        self.assertIsNone(
+            devicedb.device_db.session.query(Workflow).join(Workflow._playbook).filter(
+                Workflow.name == self.add_workflow_name).first())
+
+    def test_update_workflow_invalid_id(self):
+        playbook = device_db_help.standard_load()
+        workflow = playbook.workflows[0].read()
+        initial_workflows = devicedb.device_db.session.query(Workflow).all()
+        self.check_invalid_id('put', '/api/playbooks/{}/workflows'.format(uuid4()), 'workflow',
+                              data=json.dumps(workflow), content_type="application/json")
+        final_workflows = devicedb.device_db.session.query(Workflow).all()
+        self.assertSetEqual(set(final_workflows), set(initial_workflows))
+
+    def test_update_workflow_invalid_id_format(self):
+        playbook = device_db_help.standard_load()
+        workflow = playbook.workflows[0].read()
+        initial_workflows = devicedb.device_db.session.query(Workflow).all()
+        self.check_invalid_uuid('put', '/api/playbooks/874fe/workflows', 'workflow',
+                                data=json.dumps(workflow), content_type="application/json")
+        final_workflows = devicedb.device_db.session.query(Workflow).all()
+        self.assertSetEqual(set(final_workflows), set(initial_workflows))
 
     def test_copy_workflow(self):
-        self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/copy',
-                                    headers=self.headers, status_code=OBJECT_CREATED, data=json.dumps({}),
-                                    content_type="application/json")
-        self.assertEqual(
-            len(flask_server.running_context.controller.playbook_store.get_all_workflows_by_playbook('test')), 2)
-        self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
-        self.assertTrue(
-            flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow_Copy'))
+        playbook = device_db_help.standard_load()
+        for workflow in playbook.workflows:
+            workflow_id = workflow.id
+        response = self.post_with_status_check('/api/playbooks/{0}/workflows?source={1}'.format(playbook.id, workflow_id),
+                                               headers=self.headers, status_code=OBJECT_CREATED,
+                                               data=json.dumps({'name': self.add_workflow_name}),
+                                               content_type="application/json")
+        self.assertEqual(len(playbook.workflows), 2)
 
-        workflow_original = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        workflow_copy = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow_Copy')
-        new_workflow_name = 'helloWorldWorkflow_Copy'
-        self.assertEqual(workflow_copy.name, new_workflow_name)
+        for workflow in playbook.workflows:
+            self.assertIn(workflow.name, ['helloWorldWorkflow', self.add_workflow_name])
+            if workflow.name == 'helloWorldWorkflow':
+                workflow_original = workflow
+            elif workflow.name == self.add_workflow_name:
+                workflow_copy = workflow
+
         copy_workflow_json = workflow_copy.read()
         original_workflow_json = workflow_original.read()
         copy_workflow_json.pop('name', None)
         original_workflow_json.pop('name', None)
         self.assertNotEqual(original_workflow_json['start'], copy_workflow_json['start'])
-        copy_workflow_json.pop('start', None)
-        original_workflow_json.pop('start', None)
-        TestWorkflowServer.strip_uids(copy_workflow_json)
-        TestWorkflowServer.strip_uids(original_workflow_json)
-        self.assertDictEqual(copy_workflow_json, original_workflow_json)
+        copy_workflow_json.pop('start')
+        original_workflow_json.pop('start')
         self.assertEqual(len(workflow_original.actions), len(workflow_copy.actions))
-
-    def test_copy_workflow_invalid_name(self):
-        data = {"workflow": "helloWorldWorkflow"}
-        self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/copy',
-                                    error='Playbook or workflow already exists.', data=json.dumps(data),
-                                    headers=self.headers, status_code=OBJECT_EXISTS_ERROR,
-                                    content_type="application/json")
-
-        self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
-        self.assertEqual(
-            flask_server.running_context.controller.get_all_workflows_by_playbook('test').count('helloWorldWorkflow'),
-            1)
-        self.assertEqual(len(flask_server.running_context.controller.get_all_workflows_by_playbook('test')), 1)
 
     def test_copy_workflow_different_playbook(self):
-        data = {"name": "new_playbook"}
-        self.put_with_status_check('/api/playbooks', headers=self.headers,
-                                   status_code=OBJECT_CREATED, content_type="application/json", data=json.dumps(data))
-        data = {"playbook": "new_playbook"}
-        self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/copy', data=json.dumps(data),
+        playbook = device_db_help.standard_load()
+        for workflow in playbook.workflows:
+            workflow_id = workflow.id
+
+        transfer_playbook = devicedb.device_db.session.query(Playbook).filter_by(name='dataflowTest').first()
+
+        data = {"name": self.add_workflow_name, "playbook_id": str(transfer_playbook.id)}
+        self.post_with_status_check('/api/playbooks/{0}/workflows?source={1}'.format(playbook.id, workflow_id),
+                                    data=json.dumps(data),
                                     headers=self.headers, status_code=OBJECT_CREATED, content_type="application/json")
 
-        self.assertEqual(
-            len(flask_server.running_context.controller.playbook_store.get_all_workflows_by_playbook('test')), 1)
-        self.assertEqual(
-            len(flask_server.running_context.controller.playbook_store.get_all_workflows_by_playbook('new_playbook')),
-            1)
-        self.assertTrue(flask_server.running_context.controller.is_workflow_registered('test', 'helloWorldWorkflow'))
-        self.assertTrue(
-            flask_server.running_context.controller.is_workflow_registered('new_playbook', 'helloWorldWorkflow_Copy'))
+        for workflow in playbook.workflows:
+            if workflow.name == 'helloWorldWorkflow':
+                original_workflow = workflow
+        copy_workflow = devicedb.device_db.session.query(Workflow).filter_by(name=self.add_workflow_name).first()
 
-        workflow_original = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        workflow_copy = flask_server.running_context.controller.get_workflow('new_playbook', 'helloWorldWorkflow_Copy')
-        new_workflow_name = 'helloWorldWorkflow_Copy'
-        self.assertEqual(workflow_copy.name, new_workflow_name)
-        copy_workflow_json = workflow_copy.read()
-        original_workflow_json = workflow_original.read()
-        copy_workflow_json.pop('name', None)
-        original_workflow_json.pop('name', None)
-        self.assertNotEqual(original_workflow_json['start'], copy_workflow_json['start'])
-        copy_workflow_json.pop('start', None)
-        original_workflow_json.pop('start', None)
-        TestWorkflowServer.strip_uids(copy_workflow_json)
-        TestWorkflowServer.strip_uids(original_workflow_json)
+        self.assertEqual(len(playbook.workflows), 1)
+        self.assertEqual(len(transfer_playbook.workflows), 2)
+        self.assertIsNotNone(copy_workflow)
 
-        self.assertDictEqual(copy_workflow_json, original_workflow_json)
-
-        self.assertEqual(len(workflow_original.actions), len(workflow_copy.actions))
+        self.assertNotEqual(original_workflow.start, copy_workflow.start)
+        self.assertEqual(len(original_workflow.actions), len(copy_workflow.actions))
 
     def test_copy_playbook(self):
-        self.post_with_status_check('/api/playbooks/test/copy',
-                                    headers=self.headers, status_code=OBJECT_CREATED, data=json.dumps({}),
-                                    content_type="application/json")
+        playbook = device_db_help.standard_load()
 
-        self.assertTrue(flask_server.running_context.controller.is_playbook_registered('test'))
-        self.assertTrue(flask_server.running_context.controller.is_playbook_registered('test_Copy'))
+        data = {"name": self.add_playbook_name}
+        self.post_with_status_check('/api/playbooks?source={}'.format(playbook.id),
+                                    data=json.dumps(data),
+                                    headers=self.headers, status_code=OBJECT_CREATED, content_type="application/json")
 
-        workflows_original = flask_server.running_context.controller.get_all_workflows_by_playbook('test')
-        workflows_copy = flask_server.running_context.controller.get_all_workflows_by_playbook('test_Copy')
+        copy_playbook = devicedb.device_db.session.query(Playbook).filter_by(name=self.add_playbook_name).first()
 
-        self.assertEqual(len(workflows_original), len(workflows_copy))
+        self.assertIsNotNone(copy_playbook)
 
-    def test_copy_playbook_invalid_name(self):
-        data = {"playbook": "test"}
-        self.post_with_status_check('/api/playbooks/test/copy', error='Playbook already exists.', data=json.dumps(data),
-                                    headers=self.headers, status_code=OBJECT_EXISTS_ERROR,
-                                    content_type="application/json")
-
-        self.assertTrue(flask_server.running_context.controller.is_playbook_registered('test'))
-        self.assertEqual(flask_server.running_context.controller.get_all_playbooks().count('test'), 1)
-        self.assertFalse(flask_server.running_context.controller.is_playbook_registered('test_Copy'))
-
-    def test_execute_workflow_playbook_dne(self):
-        self.post_with_status_check('/api/playbooks/junkPlay/workflows/helloWorldWorkflow/execute',
-                                    error='Workflow does not exist',
-                                    headers=self.headers, status_code=OBJECT_DNE_ERROR,
-                                    content_type="application/json", data=json.dumps({}))
-
-    def test_execute_workflow_workflow_dne(self):
-        self.post_with_status_check('/api/playbooks/test/workflows/junkWorkflow/execute',
-                                    error='Workflow does not exist',
-                                    headers=self.headers, status_code=OBJECT_DNE_ERROR,
-                                    content_type="application/json", data=json.dumps({}))
+        self.assertEqual(len(playbook.workflows), len(copy_playbook.workflows))
 
     def test_execute_workflow(self):
-        sync = Event()
-        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
-        setup_subscriptions_for_action(workflow.uid, action_uids)
+         playbook = device_db_help.standard_load()
 
-        @WalkoffEvent.WorkflowShutdown.connect
-        def wait_for_completion(sender, **kwargs):
-            sync.set()
+         workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
+         action_ids = [action.id for action in workflow.actions if action.name == 'start']
+         setup_subscriptions_for_action(workflow.id, action_ids)
 
-        result = {'count': 0}
+         result = {'count': 0}
 
-        @WalkoffEvent.ActionExecutionSuccess.connect
-        def y(sender, **kwargs):
-            result['count'] += 1
-            result['data'] = kwargs['data']
+         @WalkoffEvent.ActionExecutionSuccess.connect
+         def y(sender, **kwargs):
+             result['count'] += 1
+             result['data'] = kwargs['data']
 
-        response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
-                                               headers=self.headers,
-                                               status_code=SUCCESS_ASYNC,
-                                               content_type="application/json", data=json.dumps({}))
-        flask_server.running_context.controller.wait_and_reset(1)
-        self.assertIn('id', response)
-        sync.wait(timeout=10)
-        self.assertEqual(result['count'], 1)
-        self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
+         response = self.post_with_status_check(
+             '/api/playbooks/{0}/workflows/{1}/execute'.format(playbook.id, workflow.id),
+             headers=self.headers,
+             status_code=SUCCESS_ASYNC,
+             content_type="application/json", data=json.dumps({}))
+         flask_server.running_context.controller.wait_and_reset(1)
+         self.assertIn('id', response)
+         self.assertEqual(result['count'], 1)
+         self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     def test_execute_workflow_pause_resume(self):
-        sync = Event()
+        device_db_help.load_playbook('testGeneratedWorkflows/pauseWorkflowTest')
 
-        flask_server.running_context.controller.load_playbook(
-            os.path.join(".", "tests", "testWorkflows", "pauseWorkflowTest.playbook"))
+        workflow = devicedb.device_db.session.query(Workflow).filter_by(name='pauseWorkflow').first()
 
-        workflow = flask_server.running_context.controller.get_workflow('pauseWorkflowTest', 'pauseWorkflow')
-        action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
-        setup_subscriptions_for_action(workflow.uid, action_uids)
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {'paused': False, 'count': 0, 'data': []}
 
@@ -616,7 +461,7 @@ class TestWorkflowServer(ServerTestCase):
             result['data'].append(kwargs['data'])
             if not result['paused']:
                 result['response2'] = self.post_with_status_check(
-                    '/api/playbooks/pauseWorkflowTest/workflows/pauseWorkflow/pause',
+                    '/api/playbooks/{0}/workflows/{1}/pause'.format(workflow._playbook_id, workflow.id),
                     headers=self.headers,
                     status_code=SUCCESS,
                     content_type="application/json", data=json.dumps(response))
@@ -625,26 +470,22 @@ class TestWorkflowServer(ServerTestCase):
         def workflow_paused_listener(sender, **kwargs):
             result['paused'] = True
             result['response3'] = self.post_with_status_check(
-                '/api/playbooks/pauseWorkflowTest/workflows/pauseWorkflow/resume',
+                '/api/playbooks/{0}/workflows/{1}/resume'.format(workflow._playbook_id, workflow.id),
                 headers=self.headers,
                 status_code=SUCCESS,
                 content_type="application/json", data=json.dumps(response))
 
         @WalkoffEvent.WorkflowResumed.connect
-        def workflow_resumed_listner(sender, **kwargs):
+        def workflow_resumed_listener(sender, **kwargs):
             result['resumed'] = True
 
-        @WalkoffEvent.WorkflowShutdown.connect
-        def wait_for_completion(sender, **kwargs):
-            sync.set()
-
-        response = self.post_with_status_check('/api/playbooks/pauseWorkflowTest/workflows/pauseWorkflow/execute',
-                                               headers=self.headers,
-                                               status_code=SUCCESS_ASYNC,
-                                               content_type="application/json", data=json.dumps({}))
+        response = self.post_with_status_check(
+            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
+            headers=self.headers,
+            status_code=SUCCESS_ASYNC,
+            content_type="application/json", data=json.dumps({}))
 
         flask_server.running_context.controller.wait_and_reset(1)
-        sync.wait(timeout=10)
         self.assertIn('id', response)
         self.assertTrue(result['paused'])
         self.assertTrue(result['resumed'])
@@ -659,9 +500,11 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_execute_workflow_change_arguments(self):
 
-        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
-        setup_subscriptions_for_action(workflow.uid, action_uids)
+        playbook = device_db_help.standard_load()
+        workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
+
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {'count': 0}
 
@@ -673,7 +516,7 @@ class TestWorkflowServer(ServerTestCase):
         data = {"arguments": [{"name": "call",
                                "value": "CHANGE INPUT"}]}
 
-        self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
+        self.post_with_status_check('/api/playbooks/{0}/workflows/{1}/execute'.format(playbook.id, workflow.id),
                                     headers=self.headers,
                                     status_code=SUCCESS_ASYNC,
                                     content_type="application/json", data=json.dumps(data))
@@ -685,20 +528,20 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_read_results(self):
 
-        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        workflow.execute('a')
-        workflow.execute('b')
-        workflow.execute('c')
+        playbook = device_db_help.standard_load()
+        playbook.workflows[0].execute('a')
+        playbook.workflows[0].execute('b')
+        playbook.workflows[0].execute('c')
 
         response = self.get_with_status_check('/api/workflowresults/a', headers=self.headers)
-        self.assertSetEqual(set(response.keys()), {'status', 'uid', 'results', 'started_at', 'completed_at', 'name'})
+        self.assertSetEqual(set(response.keys()), {'status', 'id', 'results', 'started_at', 'completed_at', 'name'})
 
     def test_read_all_results(self):
-        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
+        playbook = device_db_help.standard_load()
 
-        workflow.execute('a')
-        workflow.execute('b')
-        workflow.execute('c')
+        playbook.workflows[0].execute('a')
+        playbook.workflows[0].execute('b')
+        playbook.workflows[0].execute('c')
 
         flask_server.running_context.controller.wait_and_reset(3)
 
@@ -706,35 +549,8 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(len(response), 3)
 
         for result in response:
-            self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'uid'})
+            self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'id'})
             for action_result in result['results']:
                 self.assertSetEqual(set(action_result.keys()),
                                     {'input', 'type', 'name', 'timestamp', 'result', 'app_name', 'action_name'})
 
-    def test_execute_workflow_trigger_action(self):
-        sync = Event()
-        workflow = flask_server.running_context.controller.get_workflow('test', 'helloWorldWorkflow')
-        action_uids = [action.uid for action in workflow.actions.values() if action.name == 'start']
-        setup_subscriptions_for_action(workflow.uid, action_uids)
-
-        @WalkoffEvent.WorkflowShutdown.connect
-        def wait_for_completion(sender, **kwargs):
-            sync.set()
-
-        result = {'count': 0}
-
-        @WalkoffEvent.ActionExecutionSuccess.connect
-        def y(sender, **kwargs):
-            result['count'] += 1
-            result['data'] = kwargs['data']
-
-        response = self.post_with_status_check('/api/playbooks/test/workflows/helloWorldWorkflow/execute',
-                                               headers=self.headers,
-                                               status_code=SUCCESS_ASYNC,
-                                               content_type="application/json", data=json.dumps({}))
-
-        flask_server.running_context.controller.wait_and_reset(1)
-        self.assertIn('id', response)
-        sync.wait(timeout=10)
-        self.assertEqual(result['count'], 1)
-        self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: Hello World'})

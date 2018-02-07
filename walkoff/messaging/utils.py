@@ -2,8 +2,9 @@ import json
 import logging
 
 from walkoff.events import WalkoffEvent
-from walkoff.database import Message, Role, User
-from walkoff.server.extensions import db
+from walkoff.serverdb.message import Message
+from walkoff.serverdb import Role, User
+from walkoff.extensions import db
 import walkoff.messaging
 
 logger = logging.getLogger(__name__)

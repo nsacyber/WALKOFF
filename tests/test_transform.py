@@ -1,10 +1,9 @@
 import unittest
-import uuid
 
 import walkoff.appgateway
 import walkoff.config.config
-from walkoff.core.argument import Argument
-from walkoff.core.executionelements.transform import Transform
+from walkoff.coredb.argument import Argument
+from walkoff.coredb.transform import Transform
 from walkoff.helpers import UnknownTransform, InvalidArgument
 from tests.config import test_apps_path
 
@@ -20,17 +19,12 @@ class TestTransform(unittest.TestCase):
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
 
-    def __compare_init(self, elem, app_name, action_name, arguments=None, uid=None):
+    def __compare_init(self, elem, app_name, action_name, arguments=None):
         arguments = arguments if arguments is not None else {}
         self.assertEqual(elem.app_name, app_name)
         self.assertEqual(elem.action_name, action_name)
-        arguments = {arg.name: arg for arg in arguments}
         if arguments:
-            self.assertDictEqual(elem.arguments, arguments)
-        if uid is None:
-            self.assertIsNotNone(elem.uid)
-        else:
-            self.assertEqual(elem.uid, uid)
+            self.assertListEqual(elem.arguments, arguments)
 
     def test_init_action_only(self):
         filter_elem = Transform('HelloWorld', 'Top Transform')
@@ -39,11 +33,6 @@ class TestTransform(unittest.TestCase):
     def test_init_invalid_action(self):
         with self.assertRaises(UnknownTransform):
             Transform('HelloWorld', 'Invalid')
-
-    def test_init_with_uid(self):
-        uid = uuid.uuid4().hex
-        filter_elem = Transform('HelloWorld', 'Top Transform', uid=uid)
-        self.__compare_init(filter_elem, 'HelloWorld', 'Top Transform', uid=uid)
 
     def test_init_with_args(self):
         filter_elem = Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='5.4')])

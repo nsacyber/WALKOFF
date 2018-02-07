@@ -87,7 +87,7 @@ export class MessagesComponent {
 
 		if (!confirm(`Are you sure you want to delete ${idsToDelete.length} messages?`)) { return; }
 
-		this.messagesService.deleteMessages(idsToDelete)
+		this.messagesService.performActionOnMessages(idsToDelete, 'delete')
 			.then(() => {
 				this.messages = this.messages.filter(message => idsToDelete.indexOf(message.id) === -1);
 
@@ -103,7 +103,7 @@ export class MessagesComponent {
 	markSelectedAsRead(): void {
 		const idsToRead = this._getSelectedIds();
 
-		this.messagesService.readMessages(idsToRead)
+		this.messagesService.performActionOnMessages(idsToRead, 'read')
 			.then(() => {
 				this.messages.forEach(message => {
 					if (idsToRead.indexOf(message.id) !== -1) {
@@ -118,7 +118,7 @@ export class MessagesComponent {
 	markSelectedAsUnread(): void {
 		const idsToUnread = this._getSelectedIds();
 
-		this.messagesService.unreadMessages(idsToUnread)
+		this.messagesService.performActionOnMessages(idsToUnread, 'unread')
 			.then(() => {
 				this.messages.forEach(message => {
 					if (idsToUnread.indexOf(message.id) !== -1) {

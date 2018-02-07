@@ -13,7 +13,6 @@ default_appdevice_export_path = join(data_path, 'appdevice.json')
 default_case_export_path = join(data_path, 'cases.json')
 device_db_path = join(data_path, 'devices.db')
 interfaces_path = join('.', 'interfaces')
-keywords_path = join('.', 'walkoff', 'keywords')
 logging_config_path = join(data_path, 'log', 'logging.json')
 
 walkoff_schema_path = join(data_path, 'walkoff_schema.json')

@@ -27,7 +27,7 @@
         description: Success
         schema:
           $ref: '#/definitions/WorkflowResult'
-      461:
+      404:
         description: Object does not exist
         schema:
           $ref: '#/definitions/Error'
