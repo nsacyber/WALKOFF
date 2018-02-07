@@ -215,18 +215,19 @@ class TestCaseServer(ServerTestCase):
         cases_config = CaseSubscription.query.all()
         self.assertListEqual(cases_config, [])
 
-    def test_edit_case(self):
+    def put_patch_test(self, verb):
+        send_func = self.put_with_status_check if verb == 'put' else self.patch_with_status_check
         response = json.loads(self.app.post('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
-                                           content_type='application/json').get_data(as_text=True))
+                                            content_type='application/json').get_data(as_text=True))
         case1_id = response['id']
         self.app.post('api/cases', headers=self.headers, data=json.dumps({'name': 'case2'}),
-                     content_type='application/json')
+                      content_type='application/json')
         data = {"name": "renamed",
                 "note": "note1",
                 "id": case1_id,
                 "subscriptions": [{"id": 'id1', "events": ['a', 'b', 'c']}]}
-        response = self.put_with_status_check('api/cases', data=json.dumps(data), headers=self.headers,
-                                               content_type='application/json', status_code=SUCCESS)
+        response = send_func('api/cases', data=json.dumps(data), headers=self.headers,
+                                              content_type='application/json', status_code=SUCCESS)
 
         self.assertDictEqual(response, {'note': 'note1', 'subscriptions': [{"id": 'id1', "events": ['a', 'b', 'c']}],
                                         'id': 1, 'name': 'renamed'})
@@ -236,6 +237,12 @@ class TestCaseServer(ServerTestCase):
         self.assertIsNotNone(case1_new_json)
         self.assertDictEqual(case1_new_json, {'id': 1, 'name': 'renamed'})
         self.assertDictEqual(case_subs.subscriptions, {'renamed': {'id1': ['a', 'b', 'c']}, 'case2': {}})
+
+    def test_edit_case_put(self):
+        self.put_patch_test('put')
+
+    def test_edit_case_patch(self):
+        self.put_patch_test('patch')
 
     def test_edit_case_no_name(self):
         response = json.loads(self.app.post('api/cases', headers=self.headers, data=json.dumps({'name': 'case2'}),

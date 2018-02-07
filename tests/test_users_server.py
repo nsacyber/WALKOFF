@@ -47,7 +47,6 @@ class TestUserServer(ServerTestCase):
         self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
                                    data=json.dumps(data), status_code=OBJECT_EXISTS_ERROR)
 
-    # TODO: Fix.
     def test_create_user_with_roles(self):
         role = Role('role1')
         db.session.add(role)
@@ -87,8 +86,8 @@ class TestUserServer(ServerTestCase):
                                     data=json.dumps(data), status_code=BAD_REQUEST)
         self.assertTrue(user.verify_password('asdfghjkl;'))
 
-    # TODO: Fix.
-    def test_update_user_with_roles(self):
+    def put_patch_update_user_with_roles(self, verb):
+        send_func = self.put_with_status_check if verb == 'put' else self.patch_with_status_check
         role = Role('role1')
         db.session.add(role)
         db.session.commit()
@@ -96,10 +95,16 @@ class TestUserServer(ServerTestCase):
         db.session.add(user)
         db.session.commit()
         data = {'id': user.id, 'roles': [role.id]}
-        response = self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                               data=json.dumps(data), status_code=SUCCESS)
+        response = send_func('/api/users', headers=self.headers, content_type='application/json',
+                                              data=json.dumps(data), status_code=SUCCESS)
         self.assertDictEqual(response, user.as_json())
         self.assertSetEqual({role.name for role in user.roles}, {'role1'})
+
+    def test_update_user_with_roles_put(self):
+        self.put_patch_update_user_with_roles('put')
+
+    def test_update_user_with_roles_patch(self):
+        self.put_patch_update_user_with_roles('patch')
 
     def test_update_username(self):
         user = User('username', 'whisperDieselEngine')

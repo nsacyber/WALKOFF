@@ -189,7 +189,8 @@ class TestDevicesServer(ServerTestCase):
         self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
                                     status_code=INVALID_INPUT_ERROR, content_type='application/json')
 
-    def test_update_device_fields(self):
+    def put_patch_update(self, verb):
+        send_func = self.put_with_status_check if verb == 'put' else self.patch_with_status_check
         device1 = Device('test', [], [], 'type')
         device2 = Device('test2', [], [], 'type')
         app = App(name=self.test_app_name, devices=[device1, device2])
@@ -204,11 +205,17 @@ class TestDevicesServer(ServerTestCase):
 
         data = {'id': device1.id, 'name': 'renamed', 'app_name': self.test_app_name, 'type': 'test_type',
                 'fields': fields_json}
-        self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
-                                    status_code=SUCCESS, content_type='application/json')
+        send_func('/api/devices', headers=self.headers, data=json.dumps(data),
+                                   status_code=SUCCESS, content_type='application/json')
 
         self.assertEqual(device1.name, 'renamed')
         self.assertEqual(device1.get_plaintext_fields(), {field['name']: field['value'] for field in fields_json})
+
+    def test_update_device_fields_put(self):
+        self.put_patch_update('put')
+
+    def test_update_device_fields_patch(self):
+        self.put_patch_update('patch')
 
     def test_export_apps_devices_no_filename(self):
         walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)

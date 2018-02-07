@@ -69,6 +69,31 @@
         description: Case does not exist.
         schema:
           $ref: '#/definitions/Error'
+  patch:
+    tags:
+      - Cases
+    summary: Update a case
+    description: ''
+    operationId: walkoff.server.endpoints.cases.patch_case
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/Case'
+    responses:
+      200:
+        description: Success
+        schema:
+          $ref: '#/definitions/Case'
+      404:
+        description: Case does not exist.
+        schema:
+          $ref: '#/definitions/Error'
 /api/cases/{case_id}:
   parameters:
     - name: case_id

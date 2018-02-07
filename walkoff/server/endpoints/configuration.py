@@ -62,6 +62,10 @@ def update_configuration(configuration):
     return __func()
 
 
+def patch_configuration(configuration):
+    return update_configuration(configuration)
+
+
 def _reset_token_durations(access_token_duration=None, refresh_token_duration=None):
     access_token_duration = (timedelta(minutes=access_token_duration) if access_token_duration is not None
                              else current_app.config['JWT_ACCESS_TOKEN_EXPIRES'])

@@ -90,6 +90,10 @@ def update_case():
     return __func()
 
 
+def patch_case():
+    return update_case()
+
+
 def delete_case(case_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('cases', ['delete']))
