@@ -111,7 +111,6 @@ class Workflow(ExecutionElement, Device_Base):
 
     def __execute(self, start, start_arguments=None):
         instances = {}
-        total_actions = []
         actions = self.__actions(start=start)
         first = True
         for action in (action_ for action_ in actions if action_ is not None):
@@ -124,7 +123,6 @@ class Workflow(ExecutionElement, Device_Base):
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowResumed)
 
             device_id = self.__setup_app_instance(instances, action)
-            action.render_action(actions=total_actions)
 
             if first:
                 first = False
@@ -132,7 +130,6 @@ class Workflow(ExecutionElement, Device_Base):
             else:
                 action.execute(instance=instances[device_id](), accumulator=self._accumulator)
             self._accumulator[action.id] = action.get_output().result
-            total_actions.append(action)
         self.__shutdown(instances)
         yield
 

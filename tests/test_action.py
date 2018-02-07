@@ -28,7 +28,7 @@ class TestAction(unittest.TestCase):
         device_db_help.tear_down_device_db()
 
     def __compare_init(self, elem, app_name, action_name, name, device_id=None, arguments=None, triggers=None,
-                       position=None, templated=False, raw_representation=None):
+                       position=None):
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.action_name, action_name)
         self.assertEqual(elem.app_name, app_name)
@@ -41,12 +41,6 @@ class TestAction(unittest.TestCase):
         if position:
             self.assertEqual(elem.position.x, position.x)
             self.assertEqual(elem.position.y, position.y)
-        if templated:
-            self.assertTrue(elem.templated)
-            self.assertDictEqual(elem.raw_representation, raw_representation)
-        else:
-            self.assertFalse(elem.templated)
-            self.assertDictEqual(elem.raw_representation, {})
         self.assertIsNone(elem._output)
         self.assertEqual(elem._execution_uid, 'default')
 
@@ -61,11 +55,6 @@ class TestAction(unittest.TestCase):
     def test_init_with_position(self):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld', position=Position(13, 42))
         self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', position=Position(13, 42))
-
-    def test_init_templated(self):
-        action = Action('HelloWorld', 'helloWorld', 'helloWorld', templated=True, raw_representation={'a': 42})
-        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', templated=True,
-                            raw_representation={'a': 42})
 
     def test_get_execution_uid(self):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld')

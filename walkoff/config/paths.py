@@ -4,7 +4,6 @@ data_path = join('.', 'data')
 
 api_path = join('.', 'walkoff', 'api')
 apps_path = join('.', 'apps')
-# apps_path = join('.', 'tests', 'testapps')
 case_db_path = join(data_path, 'events.db')
 
 client_path = join('.', 'walkoff', 'client')
@@ -13,9 +12,7 @@ db_path = join(data_path, 'walkoff.db')
 default_appdevice_export_path = join(data_path, 'appdevice.json')
 default_case_export_path = join(data_path, 'cases.json')
 device_db_path = join(data_path, 'devices.db')
-# device_db_path = join('.', 'tests', 'tmp', 'devices_test.db')
 interfaces_path = join('.', 'interfaces')
-keywords_path = join('.', 'walkoff', 'keywords')
 logging_config_path = join(data_path, 'log', 'logging.json')
 
 walkoff_schema_path = join(data_path, 'walkoff_schema.json')

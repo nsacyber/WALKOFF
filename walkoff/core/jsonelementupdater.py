@@ -67,4 +67,4 @@ class JsonElementUpdater(object):
         return ((field, getattr(element, field)) for field in dir(element)
                 if not field.startswith('_')
                 and not callable(getattr(element, field))
-                and field not in ('raw_representation', 'metadata'))
+                and field != 'metadata')
