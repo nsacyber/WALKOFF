@@ -17,7 +17,6 @@ from walkoff.events import EventType, WalkoffEvent
 from walkoff.coredb.workflow import Workflow
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
 import walkoff.coredb.devicedb
-from walkoff.coredb.saved_workflow import SavedWorkflow
 
 try:
     from Queue import Queue
@@ -220,29 +219,20 @@ class Worker:
                 for arg in message.arguments:
                     start_arguments.append(Argument(**(MessageToDict(arg, preserving_proto_field_name=True))))
 
-            print("Got workflow, shipping it off")
             self.threadpool.submit(self.execute_workflow_worker, message.workflow_id, message.workflow_execution_uid,
-                                   start, start_arguments, message.resume)
+                                   start, start_arguments)
 
-    def execute_workflow_worker(self, workflow_id, workflow_execution_uid, start, start_arguments=None, resume=False):
+    def execute_workflow_worker(self, workflow_id, workflow_execution_uid, start, start_arguments=None):
         """Execute a workflow.
         """
-        print("Worker received workflow from master")
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter(
+            Workflow.id == workflow_id).first()
         workflow._execution_uid = workflow_execution_uid
-
-        if resume:
-            saved_state = walkoff.coredb.devicedb.device_db.session.query(SavedWorkflow).filter_by(
-                id=workflow_execution_uid).first()
-            workflow._accumulator = saved_state.accumulator
-            workflow._instances = saved_state.instances
 
         self.workflows[threading.current_thread().name] = workflow
 
         start = start if start else workflow.start
-        print("Worker starting to execute workflow")
-        workflow.execute(execution_uid=workflow_execution_uid, start=start, start_arguments=start_arguments,
-                         resume=resume)
+        workflow.execute(execution_uid=workflow.get_execution_uid(), start=start, start_arguments=start_arguments)
 
         self.workflows.pop(threading.current_thread().name)
         return
@@ -290,20 +280,9 @@ class Worker:
                 sender (execution element): The execution element that sent the signal.
                 kwargs (dict): Any extra data to send.
         """
-        if kwargs['event'] == WalkoffEvent.TriggerActionAwaitingData:
-            workflow = self.workflows[threading.currentThread().name]
-            saved_workflow = SavedWorkflow(id=workflow.get_execution_uid(),
-                                           workflow_id=workflow.id,
-                                           action_id=workflow.get_executing_action_id(),
-                                           accumulator=workflow.get_accumulator(),
-                                           app_instances=workflow.get_instances())
-            walkoff.coredb.devicedb.device_db.session.add(saved_workflow)
-            walkoff.coredb.devicedb.device_db.session.commit()
-            workflow._exit = True
-            print("Worker got trigger action awaiting data and saving state")
-
         packet_bytes = convert_to_protobuf(sender, self.workflows[threading.current_thread().name].get_execution_uid(),
                                            **kwargs)
+
         self.results_sock.send(packet_bytes)
 
     def __get_workflow_by_execution_uid(self, workflow_execution_uid):
