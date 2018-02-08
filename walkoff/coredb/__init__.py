@@ -11,3 +11,9 @@ class WorkflowStatusEnum(enum.Enum):
     awaiting_data = 4
     completed = 5
     aborted = 6
+
+
+class ActionStatusEnum(enum.Enum):
+    executing = 1
+    success = 2
+    failure = 3

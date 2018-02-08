@@ -73,7 +73,7 @@ class Action(ExecutionElement, Device_Base):
         self._incoming_data = None
         self._event = threading.Event()
         self._output = None
-        self._execution_uid = 'default'
+        self._execution_id = 'default'
         self._action_executable = get_app_action(self.app_name, self._run)
 
     @orm.reconstructor
@@ -81,7 +81,7 @@ class Action(ExecutionElement, Device_Base):
         self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
         self._output = None
         self._action_executable = get_app_action(self.app_name, self._run)
-        self._execution_uid = 'default'
+        self._execution_id = 'default'
 
     def get_output(self):
         """Gets the output of an Action (the result)
@@ -91,13 +91,13 @@ class Action(ExecutionElement, Device_Base):
         """
         return self._output
 
-    def get_execution_uid(self):
-        """Gets the execution UID of the Action
+    def get_execution_id(self):
+        """Gets the execution ID of the Action
 
         Returns:
-            The execution UID
+            The execution ID
         """
-        return self._execution_uid
+        return self._execution_id
 
     def set_arguments(self, new_arguments):
         """Updates the arguments for an Action object.
@@ -121,7 +121,7 @@ class Action(ExecutionElement, Device_Base):
         Returns:
             The result of the executed function.
         """
-        self._execution_uid = str(uuid.uuid4())
+        self._execution_id = str(uuid.uuid4())
 
         WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionStarted)
 
@@ -130,7 +130,7 @@ class Action(ExecutionElement, Device_Base):
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionAwaitingData)
             logger.debug('Trigger Action {} is awaiting data'.format(self.name))
             self._output = None
-            return {"trigger": "trigger"}
+            return ActionResult("trigger", "trigger")
 
         arguments = arguments if arguments else self.arguments
 

@@ -50,14 +50,14 @@ class TestWorkflowManipulation(unittest.TestCase):
         device_db_help.tear_down_device_db()
 
     def test_pause_and_resume_workflow(self):
-        uid = None
+        execution_id = None
         result = dict()
         result['paused'] = False
         result['resumed'] = False
 
         def workflow_paused_listener(sender, **kwargs):
             result['paused'] = True
-            self.controller.resume_workflow(uid)
+            self.controller.resume_workflow(execution_id)
 
         WalkoffEvent.WorkflowPaused.connect(workflow_paused_listener)
 
@@ -67,7 +67,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         WalkoffEvent.WorkflowResumed.connect(workflow_resumed_listener)
 
         def pause_resume_thread():
-            self.controller.pause_workflow(uid)
+            self.controller.pause_workflow(execution_id)
             return
 
         def action_1_about_to_begin_listener(sender, **kwargs):
@@ -77,7 +77,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         workflow = device_db_help.load_workflow('testGeneratedWorkflows/pauseWorkflowTest', 'pauseWorkflow')
 
-        uid = self.controller.execute_workflow(workflow.id)
+        execution_id = self.controller.execute_workflow(workflow.id)
         self.controller.wait_and_reset(1)
         self.assertTrue(result['paused'])
         self.assertTrue(result['resumed'])

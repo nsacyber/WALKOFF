@@ -6,7 +6,7 @@ from sqlalchemy import exists, and_
 from sqlalchemy.exc import IntegrityError
 import walkoff.case.database as case_database
 import walkoff.config.paths
-from walkoff.case.workflowresults import WorkflowResult
+from walkoff.coredb.workflowresults import WorkflowStatus
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory
@@ -358,9 +358,9 @@ def execute_workflow(playbook_id, workflow_id):
                     current_app.logger.error('Could not execute workflow. Invalid Argument construction')
                     return {"error": "Could not execute workflow. Invalid argument construction"}, INVALID_INPUT_ERROR
 
-        uid = running_context.controller.execute_workflow(workflow_id, start=start, start_arguments=arguments)
+        execution_id = running_context.controller.execute_workflow(workflow_id, start=start, start_arguments=arguments)
         current_app.logger.info('Executed workflow {0}-{1}'.format(playbook_id, workflow_id))
-        return {'id': uid}, SUCCESS_ASYNC
+        return {'id': execution_id}, SUCCESS_ASYNC
 
     return __func()
 
@@ -373,12 +373,12 @@ def pause_workflow(playbook_id, workflow_id):
     @validate_workflow_is_registered('pause', playbook_id, workflow_id)
     def __func():
         data = request.get_json()
-        execution_uid = data['id']
-        status = running_context.controller.executor.get_workflow_status(execution_uid)
+        execution_id = data['id']
+        status = running_context.controller.executor.get_workflow_status(execution_id)
         if status == 1:  # WORKFLOW_RUNNING
-            if running_context.controller.pause_workflow(execution_uid):
+            if running_context.controller.pause_workflow(execution_id):
                 current_app.logger.info(
-                    'Paused workflow {0}-{1}:{2}'.format(playbook_id, workflow_id, execution_uid))
+                    'Paused workflow {0}-{1}:{2}'.format(playbook_id, workflow_id, execution_id))
                 return {"info": "Workflow paused"}, SUCCESS
             else:
                 return {"error": "Invalid UUID."}, INVALID_INPUT_ERROR
@@ -400,12 +400,12 @@ def resume_workflow(playbook_id, workflow_id):
     @validate_workflow_is_registered('resume', playbook_id, workflow_id)
     def __func():
         data = request.get_json()
-        execution_uid = data['id']
-        status = running_context.controller.executor.get_workflow_status(execution_uid)
+        execution_id = data['id']
+        status = running_context.controller.executor.get_workflow_status(execution_id)
         if status == 2:  # WORKFLOW_PAUSED
-            if running_context.controller.resume_workflow(execution_uid):
+            if running_context.controller.resume_workflow(execution_id):
                 current_app.logger.info(
-                    'Resumed workflow {0}-{1}:{2}'.format(playbook_id, workflow_id, execution_uid))
+                    'Resumed workflow {0}-{1}:{2}'.format(playbook_id, workflow_id, execution_id))
                 return {"info": "Workflow resumed"}, SUCCESS
             else:
                 return {"error": "Invalid UUID."}, INVALID_INPUT_ERROR
@@ -425,8 +425,8 @@ def read_results():
     def __func():
         ret = []
         completed_workflows = [workflow.as_json() for workflow in
-                               case_database.case_db.session.query(WorkflowResult).filter(
-                                   WorkflowResult.status == 'completed').all()]
+                               case_database.case_db.session.query(WorkflowStatus).filter(
+                                   WorkflowStatus.status == 'completed').all()]
         for result in completed_workflows:
             if result['status'] == 'completed':
                 ret.append({'name': result['name'],
@@ -442,16 +442,16 @@ def read_all_results():
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     def __func():
         return [workflow.as_json() for workflow in
-                case_database.case_db.session.query(WorkflowResult).all()], SUCCESS
+                case_database.case_db.session.query(WorkflowStatus).all()], SUCCESS
 
     return __func()
 
 
-def read_result(uid):
+def read_result(execution_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     def __func():
-        workflow_result = case_database.case_db.session.query(WorkflowResult).filter(WorkflowResult.uid == uid).first()
+        workflow_result = case_database.case_db.session.query(WorkflowStatus).filter(WorkflowStatus.execution_id == execution_id).first()
         if workflow_result is not None:
             return workflow_result.as_json(), SUCCESS
         else:

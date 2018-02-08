@@ -79,7 +79,7 @@ class TestMessageDatabase(TestCase):
         message = Message('subject here', 'body goes here', 'workflow_uid1', [self.user, self.user2])
         self.assertEqual(message.subject, 'subject here')
         self.assertEqual(message.body, 'body goes here')
-        self.assertEqual(message.workflow_execution_uid, 'workflow_uid1')
+        self.assertEqual(message.workflow_execution_id, 'workflow_uid1')
         self.assertListEqual(list(message.users), [self.user, self.user2])
         self.assertFalse(message.requires_reauth)
         self.assertFalse(message.requires_response)
@@ -240,7 +240,7 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(message_json['subject'], 'subject here')
         self.assertFalse(message_json['awaiting_response'])
         self.assertEqual(message_json['created_at'], str(message.created_at))
-        for field in ('read_by', 'responded_at', 'responded_by', 'body', 'workflow_execution_uid',
+        for field in ('read_by', 'responded_at', 'responded_by', 'body', 'workflow_execution_id',
                       'requires_reauthorization', 'requires_response', 'is_read', 'last_read_at'):
             self.assertNotIn(field, message_json)
 
@@ -354,9 +354,9 @@ class TestMessageDatabase(TestCase):
                         'roles': [],
                         'subject': 'Re: This thing',
                         'requires_reauth': False}
-        workflow_execution_uid = 'workflow_uid1'
+        workflow_execution_id = 'workflow_uid1'
         body = [{'text': 'Here is something to look at'}, {'url': 'look.here.com'}]
-        save_message(body, message_data, workflow_execution_uid, False)
+        save_message(body, message_data, workflow_execution_id, False)
         messages = Message.query.all()
         self.assertEqual(len(messages), 1)
         message = messages[0]
@@ -378,9 +378,9 @@ class TestMessageDatabase(TestCase):
                         'roles': [role.id],
                         'subject': 'Re: This thing',
                         'requires_reauth': False}
-        workflow_execution_uid = 'workflow_uid1'
+        workflow_execution_id = 'workflow_uid1'
         body = [{'text': 'Here is something to look at'}, {'url': 'look.here.com'}]
-        save_message(body, message_data, workflow_execution_uid, False)
+        save_message(body, message_data, workflow_execution_id, False)
         messages = Message.query.all()
         self.assertEqual(len(messages), 1)
         message = messages[0]
@@ -393,9 +393,9 @@ class TestMessageDatabase(TestCase):
                         'roles': [],
                         'subject': 'Re: This a thing',
                         'requires_reauth': False}
-        workflow_execution_uid = 'workflow_uid4'
+        workflow_execution_id = 'workflow_uid4'
         body = {'body': [{'text': 'Here is something to look at'}, {'url': 'look.here.com'}]}
-        save_message(body, message_data, workflow_execution_uid, False)
+        save_message(body, message_data, workflow_execution_id, False)
         messages = Message.query.all()
         self.assertEqual(len(messages), 0)
 
@@ -408,7 +408,7 @@ class TestMessageDatabase(TestCase):
                         'roles': [self.role.id],
                         'subject': 'Warning about thing',
                         'requires_reauth': False}
-        sender = {'workflow_execution_uid': 'workflow_uid10'}
+        sender = {'workflow_execution_id': 'workflow_uid10'}
 
         WalkoffEvent.SendMessage.send(sender, data=message_data)
         messages = Message.query.all()
@@ -426,7 +426,7 @@ class TestMessageDatabase(TestCase):
                         'roles': [self.role.id],
                         'subject': 'Re: Best chicken recipe',
                         'requires_reauth': False}
-        sender = {'workflow_execution_uid': 'workflow_uid14'}
+        sender = {'workflow_execution_id': 'workflow_uid14'}
 
         WalkoffEvent.SendMessage.send(sender, data=message_data)
         messages = Message.query.all()
@@ -446,7 +446,7 @@ class TestMessageDatabase(TestCase):
                         'roles': [self.role.id],
                         'subject': 'Re: Best chicken recipe',
                         'requires_reauth': False}
-        sender = {'workflow_execution_uid': 'workflow_uid14'}
+        sender = {'workflow_execution_id': 'workflow_uid14'}
         res = {'called': False}
 
         @walkoff.messaging.MessageActionEvent.created.connect
@@ -501,7 +501,7 @@ class TestMessageDatabase(TestCase):
         walkoff.messaging.workflow_authorization_cache.add_authorized_users('uid1', users=[1, 2])
         walkoff.messaging.workflow_authorization_cache.add_user_in_progress('uid1', self.user.id)
         WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender('uid1'))
-        message = Message.query.filter(Message.workflow_execution_uid == 'uid1').first()
+        message = Message.query.filter(Message.workflow_execution_id == 'uid1').first()
         self.assertEqual(len(list(message.history)), 1)
         self.assertEqual(message.history[0].action, MessageAction.respond)
         self.assertFalse(walkoff.messaging.workflow_authorization_cache.workflow_requires_authorization('uid1'))

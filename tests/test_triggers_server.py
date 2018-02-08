@@ -47,7 +47,7 @@ class TestTriggersServer(ServerTestCase):
 
         ids = [response['id']]
 
-        data = {"execution_uids": ids,
+        data = {"execution_ids": ids,
                 "data_in": {"data": "1"}}
 
         result = {"result": False}
@@ -102,7 +102,7 @@ class TestTriggersServer(ServerTestCase):
     #         data=json.dumps({}))
     #     ids.append(response['id'])
     #
-    #     data = {"execution_uids": ids,
+    #     data = {"execution_ids": ids,
     #             "data_in": {"data": "1"}}
     #
     #     result = {"result": 0,
@@ -145,7 +145,7 @@ class TestTriggersServer(ServerTestCase):
     #
     #     ids = [response['id']]
     #
-    #     data = {"execution_uids": ids,
+    #     data = {"execution_ids": ids,
     #             "data_in": {"data": "aaa"}}
     #
     #     result = {"result": 0}
@@ -163,7 +163,7 @@ class TestTriggersServer(ServerTestCase):
     #             time.sleep(0.1)
     #             timeout += 0.1
     #
-    #         data_correct = {"execution_uids": [response['id']], "data_in": {"data": "1"}}
+    #         data_correct = {"execution_ids": [response['id']], "data_in": {"data": "1"}}
     #         execd_ids = set([])
     #         timeout = 0
     #         while len(execd_ids) != len(ids) and timeout < threshold:
@@ -195,7 +195,7 @@ class TestTriggersServer(ServerTestCase):
     #
     #     ids = [response['id']]
     #
-    #     data = {"execution_uids": ids,
+    #     data = {"execution_ids": ids,
     #             "data_in": {"data": "1"},
     #             "arguments": [{"name": "call",
     #                            "value": "CHANGE INPUT"}]}
@@ -237,7 +237,7 @@ class TestTriggersServer(ServerTestCase):
     #
     #     ids = [response['id']]
     #
-    #     data = {"execution_uids": ids,
+    #     data = {"execution_ids": ids,
     #             "data_in": {"data": "1"},
     #             "arguments": [{"name": "invalid",
     #                            "value": "CHANGE INPUT"}]}
@@ -268,4 +268,3 @@ class TestTriggersServer(ServerTestCase):
     #
     #     flask_server.running_context.controller.wait_and_reset(1)
     #     self.assertTrue(result['result'])
->>>>>>> Initial commit for triggers refactor

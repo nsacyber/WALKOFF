@@ -76,13 +76,13 @@ class LoadBalancer:
 
             # There is a worker available and a workflow in the queue, so pop it off and send it to the worker
             if any(val > 0 for val in self.workers.values()) and not self.pending_workflows.empty():
-                workflow_id, workflow_execution_uid, start, start_arguments, resume = self.pending_workflows.get()
+                workflow_id, workflow_execution_id, start, start_arguments, resume = self.pending_workflows.get()
                 worker = self.__get_available_worker()
-                self.workflow_comms[workflow_execution_uid] = worker
+                self.workflow_comms[workflow_execution_id] = worker
 
                 message = ExecuteWorkflowMessage()
                 message.workflow_id = str(workflow_id)
-                message.workflow_execution_uid = workflow_execution_uid
+                message.workflow_execution_id = workflow_execution_id
                 message.resume = resume
 
                 if start:
@@ -109,58 +109,58 @@ class LoadBalancer:
             self.workers[available_worker] -= 1
         return available_worker
 
-    def add_workflow(self, workflow_id, workflow_execution_uid, start=None, start_arguments=None, resume=False):
+    def add_workflow(self, workflow_id, workflow_execution_id, start=None, start_arguments=None, resume=False):
         """Adds a workflow ID to the queue to be executed.
 
         Args:
             workflow_id (int): The ID of the workflow to be executed.
-            workflow_execution_uid (str): The execution UID of the workflow to be executed.
+            workflow_execution_id (str): The execution ID of the workflow to be executed.
             start (str, optional): The ID of the first, or starting action. Defaults to None.
             start_arguments (list[Argument]): The arguments to the starting action of the workflow. Defaults to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
         """
-        self.pending_workflows.put((workflow_id, workflow_execution_uid, start, start_arguments, resume))
+        self.pending_workflows.put((workflow_id, workflow_execution_id, start, start_arguments, resume))
 
-    def pause_workflow(self, workflow_execution_uid):
+    def pause_workflow(self, workflow_execution_id):
         """Pauses a workflow currently executing.
 
         Args:
-            workflow_execution_uid (str): The execution UID of the workflow.
+            workflow_execution_id (str): The execution ID of the workflow.
         """
-        logger.info('Pausing workflow {0}'.format(workflow_execution_uid))
-        if workflow_execution_uid in self.workflow_comms:
+        logger.info('Pausing workflow {0}'.format(workflow_execution_id))
+        if workflow_execution_id in self.workflow_comms:
             message = CommunicationPacket()
             message.type = CommunicationPacket.PAUSE
-            message.workflow_execution_uid = workflow_execution_uid
+            message.workflow_execution_id = workflow_execution_id
             message_bytes = message.SerializeToString()
-            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], message_bytes])
+            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_id], message_bytes])
             return True
         else:
             return False
 
-    def resume_workflow(self, workflow_execution_uid):
+    def resume_workflow(self, workflow_execution_id):
         """Resumes a workflow that has previously been paused.
 
         Args:
-            workflow_execution_uid (str): The execution UID of the workflow.
+            workflow_execution_id (str): The execution ID of the workflow.
         """
-        logger.info('Resuming workflow {0}'.format(workflow_execution_uid))
-        if workflow_execution_uid in self.workflow_comms:
+        logger.info('Resuming workflow {0}'.format(workflow_execution_id))
+        if workflow_execution_id in self.workflow_comms:
             message = CommunicationPacket()
             message.type = CommunicationPacket.RESUME
-            message.workflow_execution_uid = workflow_execution_uid
+            message.workflow_execution_id = workflow_execution_id
             message_bytes = message.SerializeToString()
-            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_uid], message_bytes])
+            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_id], message_bytes])
             return True
         else:
             return False
 
-    def send_data_to_trigger(self, data_in, workflow_uids, arguments=None):
-        """Sends the data_in to the workflows specified in workflow_uids.
+    def send_data_to_trigger(self, data_in, workflow_execution_ids, arguments=None):
+        """Sends the data_in to the workflows specified in workflow_ids.
 
         Args:
             data_in (dict): Data to be used to match against the triggers for an Action awaiting data.
-            workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
+            workflow_execution_ids (list[str]): A list of workflow execution IDs to send this data to.
             arguments (list[Argument]): An optional list of Arguments to update for an
                 Action awaiting data for a trigger. Defaults to None.
         """
@@ -173,11 +173,11 @@ class LoadBalancer:
         if arguments:
             self.__set_arguments_for_proto(message, arguments)
 
-        for uid in workflow_uids:
-            if uid in self.workflow_comms:
-                message.workflow_execution_uid = uid
+        for execution_id in workflow_execution_ids:
+            if execution_id in self.workflow_comms:
+                message.workflow_execution_id = execution_id
                 message_bytes = message.SerializeToString()
-                self.comm_socket.send_multipart([self.workflow_comms[uid], message_bytes])
+                self.comm_socket.send_multipart([self.workflow_comms[execution_id], message_bytes])
 
     def send_exit_to_worker_comms(self):
         """Sends the exit message over the communication sockets, otherwise worker receiver threads will hang
@@ -189,10 +189,10 @@ class LoadBalancer:
             self.comm_socket.send_multipart([worker, message_bytes])
 
     def on_workflow_shutdown(self, sender, **kwargs):
-        if sender['workflow_execution_uid'] in self.workflow_comms:
-            worker = self.workflow_comms[sender['workflow_execution_uid']]
+        if sender['workflow_execution_id'] in self.workflow_comms:
+            worker = self.workflow_comms[sender['workflow_execution_id']]
             self.workers[worker] += 1
-            self.workflow_comms.pop(sender['workflow_execution_uid'])
+            self.workflow_comms.pop(sender['workflow_execution_id'])
 
     @staticmethod
     def __set_arguments_for_proto(message, arguments):

@@ -44,26 +44,26 @@ class Controller(object):
         """
         self.executor.shutdown_pool()
 
-    def pause_workflow(self, execution_uid):
+    def pause_workflow(self, execution_id):
         """Pauses a workflow.
 
         Args:
-            execution_uid (str): The execution UID of the workflow to pause
+            execution_id (str): The execution ID of the workflow to pause
         """
 
-        return self.executor.pause_workflow(execution_uid)
+        return self.executor.pause_workflow(execution_id)
 
-    def resume_workflow(self, workflow_execution_uid):
+    def resume_workflow(self, workflow_execution_id):
         """Resumes a workflow that has been paused.
 
         Args:
-            workflow_execution_uid (str): The randomly-generated hexadecimal key that was returned from
+            workflow_execution_id (str): The randomly-generated hexadecimal key that was returned from
                 pause_workflow(). This is needed to resume a workflow for security purposes.
 
         Returns:
             (bool) True if successful, False otherwise.
         """
-        return self.executor.resume_workflow(workflow_execution_uid)
+        return self.executor.resume_workflow(workflow_execution_id)
 
     def schedule_workflows(self, task_id, workflow_ids, trigger):
         """Schedules workflows to be run by the scheduler
@@ -85,7 +85,7 @@ class Controller(object):
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
 
         Returns:
-            The execution UID if successful, None otherwise.
+            The execution ID if successful, None otherwise.
         """
         workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
         if workflow:
@@ -97,16 +97,16 @@ class Controller(object):
     def get_waiting_workflows(self):
         return self.executor.get_waiting_workflows()
 
-    def get_workflow_status(self, execution_uid):
+    def get_workflow_status(self, execution_id):
         """Gets the status of an executing workflow
 
         Args:
-            execution_uid (str): Execution UID of the executing workflow
+            execution_id (str): Execution ID of the executing workflow
 
         Returns:
             (int) Status code of the executing workflow
         """
-        return self.executor.get_workflow_status(execution_uid)
+        return self.executor.get_workflow_status(execution_id)
 
 
 controller = Controller()

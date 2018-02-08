@@ -1,5 +1,5 @@
 from unittest import TestCase
-from walkoff.server.endpoints.triggers import get_authorized_uids, add_user_in_progress
+from walkoff.server.endpoints.triggers import get_authorized_execution_ids, add_user_in_progress
 import walkoff.messaging
 
 
@@ -17,26 +17,26 @@ class TestTriggerHelpers(TestCase):
             walkoff.messaging.workflow_authorization_cache.remove_authorizations(uid)
 
     def test_get_authorized_uids_no_uids_supplied(self):
-        self.assertTupleEqual(get_authorized_uids(set(), 42, [3, 4]), (set(), set()))
+        self.assertTupleEqual(get_authorized_execution_ids(set(), 42, [3, 4]), (set(), set()))
 
     def test_get_authorized_uids_no_authorizations_required(self):
-        self.assertTupleEqual(get_authorized_uids(self.uids, 42, [3, 4]), (self.uids, set()))
+        self.assertTupleEqual(get_authorized_execution_ids(self.uids, 42, [3, 4]), (self.uids, set()))
 
     def test_get_authorized_uids_all_require_authorizations(self):
         for uid in self.uids:
             walkoff.messaging.workflow_authorization_cache.add_authorized_users(uid, [42], [3, 5])
-        self.assertTupleEqual(get_authorized_uids(self.uids, 42, [3, 4]), (set(), self.uids))
+        self.assertTupleEqual(get_authorized_execution_ids(self.uids, 42, [3, 4]), (set(), self.uids))
 
     def test_get_authorized_users_some_not_authorized(self):
         walkoff.messaging.workflow_authorization_cache.add_authorized_users('uid1', [42], [3, 5])
         walkoff.messaging.workflow_authorization_cache.add_authorized_users('uid2', [42], [])
         walkoff.messaging.workflow_authorization_cache.add_authorized_users('uid3', [84], [])
-        self.assertTupleEqual(get_authorized_uids(self.uids, 42, [3, 4]), (set(), {self.uid1, self.uid2}))
+        self.assertTupleEqual(get_authorized_execution_ids(self.uids, 42, [3, 4]), (set(), {self.uid1, self.uid2}))
 
     def test_get_authorized_users_mixed(self):
         walkoff.messaging.workflow_authorization_cache.add_authorized_users('uid1', [42], [3, 5])
         walkoff.messaging.workflow_authorization_cache.add_authorized_users('uid3', [84], [])
-        self.assertTupleEqual(get_authorized_uids(self.uids, 42, [3, 4]), ({self.uid2}, {self.uid1}))
+        self.assertTupleEqual(get_authorized_execution_ids(self.uids, 42, [3, 4]), ({self.uid2}, {self.uid1}))
 
     def test_add_user_in_progress_no_users(self):
         for uid in self.uids:

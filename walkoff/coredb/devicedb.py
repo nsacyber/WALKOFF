@@ -501,7 +501,7 @@ class DeviceDatabase(object):
         from walkoff.coredb.transform import Transform
         from walkoff.coredb.workflow import Workflow
         from walkoff.coredb.saved_workflow import SavedWorkflow
-        from walkoff.coredb.workflow_status import WorkflowStatus
+        from walkoff.coredb.workflowresults import WorkflowStatus, ActionStatus
 
         self.engine = create_engine(format_db_path(
             walkoff.config.config.device_db_type, walkoff.config.paths.device_db_path), poolclass=NullPool)
