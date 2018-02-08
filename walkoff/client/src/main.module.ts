@@ -23,6 +23,7 @@ import { CasesComponent } from './cases/cases.component';
 import { SettingsComponent } from './settings/settings.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { InterfacesComponent } from './interfaces/interfaces.component';
+import { ExecutionComponent } from './execution/execution.component';
 
 import { SchedulerModalComponent } from './scheduler/scheduler.modal.component';
 import { DevicesModalComponent } from './devices/devices.modal.component';
@@ -64,6 +65,7 @@ import { KeysPipe } from './pipes/keys.pipe';
 		CasesComponent,
 		SettingsComponent,
 		InterfacesComponent,
+		ExecutionComponent,
 		//Modals
 		SchedulerModalComponent,
 		DevicesModalComponent,

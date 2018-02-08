@@ -23,9 +23,9 @@ import { Branch } from '../models/playbook/branch';
 import { GraphPosition } from '../models/playbook/graphPosition';
 import { Device } from '../models/device';
 import { Argument } from '../models/playbook/argument';
-import { WorkflowResult } from '../models/playbook/workflowResult';
 import { User } from '../models/user';
 import { Role } from '../models/role';
+import { ActionStatus } from '../models/execution/actionStatus';
 
 @Component({
 	selector: 'playbook-component',
@@ -62,7 +62,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 		actionName: string;
 	};
 	cyJsonData: string;
-	workflowResults: WorkflowResult[] = [];
+	actionStatuses: ActionStatus[] = [];
 	executionResultsComponentWidth: number;
 	waitingOnData: boolean = false;
 
@@ -128,26 +128,44 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
 				const self = this;
-				const eventSource = new (window as any).EventSource('api/workflowresults/stream?access_token=' + authToken);
+				const eventSource = new (window as any).EventSource('api/workflowqueue/streams/actions?access_token=' + authToken);
 
-				function eventHandler(message: any) {
-					const workflowResult: WorkflowResult = JSON.parse(message.data);
+				eventSource.onmessage((message: any) => {
+					const actionStatus: ActionStatus = JSON.parse(message.data);
 					if (self.cy) {
-						const matchingNode = self.cy.elements(`node[_id="${workflowResult.action_id}"]`);
+						const matchingNode = self.cy.elements(`node[_id="${actionStatus.action_id}"]`);
 
-						if (message.type === 'action_success') {
-							matchingNode.addClass('good-highlighted');
-						} else { matchingNode.addClass('bad-highlighted'); }
+						switch (actionStatus.status) {
+							case 'success':
+								matchingNode.addClass('success-highlight');
+								matchingNode.removeClass('failure-highlight');
+								matchingNode.removeClass('executing-highlight');
+								break;
+							case 'failure':
+								matchingNode.removeClass('success-highlight');
+								matchingNode.addClass('failure-highlight');
+								matchingNode.removeClass('executing-highlight');
+								break;
+							case 'executing':
+								matchingNode.removeClass('success-highlight');
+								matchingNode.removeClass('failure-highlight');
+								matchingNode.addClass('executing-highlight');
+								break;
+							default:
+								break;
+						}
 					}
 
-					self.workflowResults.push(workflowResult);
+					const matchingActionStatus = self.actionStatuses.find(as => as.execution_id === actionStatus.execution_id);
+					if (matchingActionStatus) {
+						Object.assign(matchingActionStatus, actionStatus);
+					} else {
+						self.actionStatuses.push(actionStatus);
+					}
 					// Induce change detection by slicing array
-					self.workflowResults = self.workflowResults.slice();
-				}
-
-				eventSource.addEventListener('action_success', eventHandler);
-				eventSource.addEventListener('action_error', eventHandler);
-				eventSource.addEventListener('error', (err: Error) => {
+					self.actionStatuses = self.actionStatuses.slice();
+				});
+				eventSource.onerror((err: Error) => {
 					// this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
 					console.error(err);
 				});
@@ -160,7 +178,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	executeWorkflow(): void {
 		if (!this.loadedWorkflow) { return; }
 		this.clearExecutionHighlighting();
-		this.playbookService.executeWorkflow(this.loadedPlaybook.id, this.loadedWorkflow.id)
+		this.playbookService.addWorkflowToQueue(this.loadedWorkflow.id)
 			.then(() => this.toastyService
 				.success(`Starting execution of ${this.loadedPlaybook.name} - ${this.loadedWorkflow.name}.`))
 			.catch(e => this.toastyService

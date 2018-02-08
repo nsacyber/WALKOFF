@@ -207,9 +207,14 @@
                         [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]"
                         [limit]="10">
                         <!-- Column Templates -->
-                        <ngx-datatable-column name="Action ID" [flexGrow]="1">
+                        <ngx-datatable-column name="Action UID" [flexGrow]="1">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 {{row.action_id}}
+                            </ng-template>
+                        </ngx-datatable-column>
+                        <ngx-datatable-column name="App Name" [flexGrow]="1">
+                            <ng-template let-row="row" ngx-datatable-cell-template>
+                                {{row.app_name}}
                             </ng-template>
                         </ngx-datatable-column>
                         <ngx-datatable-column name="Action Name" [flexGrow]="1">
@@ -217,9 +222,14 @@
                                 {{row.action_name}}
                             </ng-template>
                         </ngx-datatable-column>
-                        <ngx-datatable-column name="Timestamp" [flexGrow]="1">
+                        <ngx-datatable-column name="Started At" [flexGrow]="1">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                {{row.timestamp}}
+                                {{row.started_at}}
+                            </ng-template>
+                        </ngx-datatable-column>
+                        <ngx-datatable-column name="Completed At" [flexGrow]="1">
+                            <ng-template let-row="row" ngx-datatable-cell-template>
+                                {{row.completed_at}}
                             </ng-template>
                         </ngx-datatable-column>
                         <ngx-datatable-column name="Status" [flexGrow]="1">

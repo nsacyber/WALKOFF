@@ -5,32 +5,39 @@ import 'rxjs/add/operator/toPromise';
 
 import { WorkflowStatus } from '../models/execution/workflowStatus';
 import { Playbook } from '../models/playbook/playbook';
-import { ActionResult } from '../models/execution/actionResult';
 
 @Injectable()
 export class ExecutionService {
 	constructor (private authHttp: JwtHttp) {}
 
-	performWorkflowStatusAction(playbookId: string, workflowId: string, action: string): Promise<WorkflowStatus> {
-		return this.authHttp.post(`api/playbooks/${playbookId}/workflows/${workflowId}/${action}`, {})
+	addWorkflowToQueue(workflowId: string): Promise<WorkflowStatus> {
+		return this.authHttp.post('api/workflowqueue', { workflow_id: workflowId })
+			.toPromise()
+			.then(this.extractData)
+			.then(workflowStatuses => workflowStatuses as WorkflowStatus)
+			.catch(this.handleError);
+	}
+
+	performWorkflowStatusAction(workflowId: string, action: string): Promise<WorkflowStatus> {
+		return this.authHttp.patch('api/workflowqueue', { workflow_execution_id: workflowId, status: action })
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
 	}
 
-	getWorkflowStatuses(): Promise<WorkflowStatus[]> {
-		return this.authHttp.get('api/workflowstatus')
+	getWorkflowStatusList(): Promise<WorkflowStatus[]> {
+		return this.authHttp.get('api/workflowqueue')
 			.toPromise()
 			.then(this.extractData)
 			.then(workflowStatuses => workflowStatuses as WorkflowStatus[])
 			.catch(this.handleError);
 	}
 
-	getActionResultsForWorkflow(workflowId: string): Promise<ActionResult[]> {
-		return this.authHttp.get(`api/workflowstatus/${workflowId}`)
+	getWorkflowStatus(workflowExecutionId: string): Promise<WorkflowStatus> {
+		return this.authHttp.get(`api/workflowqueue/${workflowExecutionId}`)
 			.toPromise()
 			.then(this.extractData)
-			.then(actionResults => actionResults as WorkflowStatus[])
+			.then(workflowStatus => workflowStatus as WorkflowStatus)
 			.catch(this.handleError);
 	}
 

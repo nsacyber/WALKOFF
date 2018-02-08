@@ -150,14 +150,14 @@ export class CasesComponent implements OnInit {
 			.getCases()
 			.then((cases) => {
 				this.displayCases = this.cases = cases;
-				this.availableCases = [{ id: '', text: '' }].concat(cases.map((c) => ({ id: c.id.toString(), text: c.name })));
+				this.availableCases = [{ id: '', text: '' }].concat(cases.map(c => ({ id: c.id.toString(), text: c.name })));
 			})
 			.catch(e => this.toastyService.error(`Error retrieving cases: ${e.message}`));
 	}
 
-	getCaseEvents(caseName: string): void {
+	getCaseEvents(caseId: string | number): void {
 		this.casesService
-			.getEventsForCase(caseName)
+			.getEventsForCase(+caseId)
 			.then((caseEvents) => {
 				this.displayCaseEvents = this.caseEvents = caseEvents;
 				this.filterEvents();

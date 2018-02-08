@@ -1,7 +1,6 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import * as _ from 'lodash';
-import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { Select2OptionData } from 'ng2-select2';
 import 'rxjs/add/operator/debounceTime';
@@ -11,8 +10,8 @@ import { AuthService } from '../auth/auth.service';
 
 import { WorkflowStatus } from '../models/execution/workflowStatus';
 import { Workflow } from '../models/playbook/workflow';
-import { Playbook } from '../models/playbook/playbook';
-import { ActionResult } from '../models/execution/actionResult';
+import { ActionStatus } from '../models/execution/actionStatus';
+import { Argument } from '../models/playbook/argument';
 
 @Component({
 	selector: 'scheduler-component',
@@ -28,16 +27,16 @@ export class ExecutionComponent {
 	schedulerStatus: string;
 	workflowStatuses: WorkflowStatus[] = [];
 	displayWorkflowStatuses: WorkflowStatus[] = [];
-	playbooks: Playbook[] = [];
 	workflows: Workflow[] = [];
 	availableWorkflows: Select2OptionData[] = [];
 	workflowSelectConfig: Select2Options;
 	selectedWorkflow: Workflow;
+	loadedWorkflowStatus: WorkflowStatus;
 
 	filterQuery: FormControl = new FormControl();
 
 	constructor(
-		private executionService: ExecutionService, private authService: AuthService, private modalService: NgbModal,
+		private executionService: ExecutionService, private authService: AuthService,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
 	}
 
@@ -68,7 +67,7 @@ export class ExecutionComponent {
 
 	getWorkflowStatuses(): void {
 		this.executionService
-			.getWorkflowStatuses()
+			.getWorkflowStatusList()
 			.then(workflowStatuses => this.displayWorkflowStatuses = this.workflowStatuses = workflowStatuses)
 			.catch(e => this.toastyService.error(`Error retrieving workflow statuses: ${e.message}`));
 	}
@@ -77,12 +76,13 @@ export class ExecutionComponent {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
 				const self = this;
-				const eventSource = new (window as any).EventSource('api/workflowstatus/status-stream?access_token=' + authToken);
+				const eventSource = new (window as any)
+					.EventSource(`api/workflowqueue/streams/workflow_status?access_token=${authToken}`);
 
-				function eventHandler(message: any) {
+				eventSource.onmessage((message: any) => {
 					const workflowStatus: WorkflowStatus = JSON.parse(message.data);
 
-					const matchingWorkflowStatus = self.workflowStatuses.find(ws => ws.uid === workflowStatus.uid);
+					const matchingWorkflowStatus = self.workflowStatuses.find(ws => ws.execution_id === workflowStatus.execution_id);
 					if (matchingWorkflowStatus) {
 						Object.assign(matchingWorkflowStatus, workflowStatus);
 					} else {
@@ -92,11 +92,8 @@ export class ExecutionComponent {
 					}
 
 					self.filterWorkflowStatuses();
-				}
-
-				eventSource.addEventListener('workflow_status', eventHandler);
-				eventSource.addEventListener('error', (err: Error) => {
-					// this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
+				});
+				eventSource.onerror((err: Error) => {
 					console.error(err);
 				});
 			});
@@ -106,34 +103,46 @@ export class ExecutionComponent {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
 				const self = this;
-				const eventSource = new (window as any).EventSource('api/workflowstatus/action-stream?access_token=' + authToken);
+				const eventSource = new (window as any).EventSource(`api/workflowqueue/streams/actions?access_token=${authToken}`);
 
-				function eventHandler(message: any) {
-					const actionResult: ActionResult = JSON.parse(message.data);
+				eventSource.onmessage((message: any) => {
+					const actionStatus: ActionStatus = JSON.parse(message.data);
 
-					const matchingWorkflowStatus = self.workflowStatuses.find(ws => ws.uid === actionResult.workflow_id);
-					if (!matchingWorkflowStatus) { return; }
-					matchingWorkflowStatus.current_action_name = `${actionResult.app_name} - ${actionResult.action_name}`;
+					// if we have a matching workflow status, update the current app/action info.
+					const matchingWorkflowStatus = self.workflowStatuses
+						.find(ws => ws.execution_id === actionStatus.workflow_execution_id);
+					if (matchingWorkflowStatus) {
+						matchingWorkflowStatus.current_action_execution_id = actionStatus.execution_id;
+						matchingWorkflowStatus.current_action_id = actionStatus.action_id;
+						matchingWorkflowStatus.current_app_name = actionStatus.app_name;
+						matchingWorkflowStatus.current_action_name = actionStatus.action_name;
+					}
 
-					// TODO: also add this to the modal if possible
+					// also add this to the modal if possible
+					if (self.loadedWorkflowStatus && self.loadedWorkflowStatus.execution_id === actionStatus.workflow_execution_id) {
+						const matchingActionStatus = self.loadedWorkflowStatus.action_statuses
+							.find(r => r.execution_id === actionStatus.execution_id);
+
+						if (matchingActionStatus) {
+							Object.assign(matchingActionStatus, actionStatus);
+						} else {
+							self.loadedWorkflowStatus.action_statuses.push(actionStatus);
+							// Induce change detection by slicing array
+							self.loadedWorkflowStatus.action_statuses = self.loadedWorkflowStatus.action_statuses.slice();
+						}
+					}
 
 					self.filterWorkflowStatuses();
-				}
-
-				eventSource.addEventListener('action_success', eventHandler);
-				eventSource.addEventListener('action_error', eventHandler);
-				eventSource.addEventListener('error', (err: Error) => {
-					// this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
+				});
+				eventSource.onerror((err: Error) => {
 					console.error(err);
 				});
 			});
 	}
 
 	performWorkflowStatusAction(workflowStatus: WorkflowStatus, actionName: string): void {
-		const playbook = this._getPlaybookFromWorkflowId(workflowStatus.uid);
-
 		this.executionService
-			.performWorkflowStatusAction(playbook.uid, workflowStatus.uid, actionName)
+			.performWorkflowStatusAction(workflowStatus.execution_id, actionName)
 			.then(updatedWorkflowStatus => {
 				Object.assign(workflowStatus, updatedWorkflowStatus);
 				
@@ -148,16 +157,15 @@ export class ExecutionComponent {
 		this.executionService
 			.getPlaybooks()
 			.then(playbooks => {
-				this.playbooks = playbooks;
 				this.workflows = playbooks
 					.map(pb => pb.workflows)
 					.reduce((a, b) => a.concat(b), []);
 
-				playbooks.forEach(function (pb: any) {
-					pb.workflows.forEach(function (w: any) {
+				playbooks.forEach(playbook => {
+					playbook.workflows.forEach(workflow => {
 						self.availableWorkflows.push({
-							id: w.uid,
-							text: `${pb.name} - ${w.name}`,
+							id: workflow.id,
+							text: `${playbook.name} - ${workflow.name}`,
 						});
 					});
 				});
@@ -165,11 +173,9 @@ export class ExecutionComponent {
 	}
 
 	excuteSelectedWorkflow(): void {
-		const playbook = this._getPlaybookFromWorkflowId(this.selectedWorkflow.uid);
-
-		this.executionService.performWorkflowStatusAction(playbook.uid, this.selectedWorkflow.uid, 'execute')
+		this.executionService.addWorkflowToQueue(this.selectedWorkflow.id)
 			.then(() => {
-				this.toastyService.success(`Successfully started execution of "${playbook.name} - ${this.selectedWorkflow.name}"`);
+				this.toastyService.success(`Successfully started execution of "${this.selectedWorkflow.name}"`);
 			})
 			.catch(e => this.toastyService.error(`Error executing workflow: ${e.message}`));
 	}
@@ -178,16 +184,50 @@ export class ExecutionComponent {
 		if (!event.value || event.value === '') {
 			this.selectedWorkflow = null;
 		} else {
-			this.selectedWorkflow = this.workflows.find(w => w.uid === event.value);
+			this.selectedWorkflow = this.workflows.find(w => w.id === event.value);
 		}
 	}
 
-	_getPlaybookFromWorkflowId(workflowId: string): Playbook {
-		let playbook: Playbook;
-		this.playbooks.forEach(pb => {
-			if (playbook) { return; }
-			if (pb.workflows.find(w => w.uid === workflowId)) { playbook = pb; }
+	openactionStatusModal(workflowStatus: WorkflowStatus): void {
+		let actionResultsPromise: Promise<void>;
+		if (this.loadedWorkflowStatus && this.loadedWorkflowStatus.execution_id === workflowStatus.execution_id) {
+			actionResultsPromise = Promise.resolve();
+		} else {
+			actionResultsPromise = this.executionService.getWorkflowStatus(workflowStatus.execution_id)
+				.then(fullWorkflowStatus => {
+					this.loadedWorkflowStatus = fullWorkflowStatus;
+				})
+				.catch(e => this.toastyService
+					.error(`Error loading action results for "${workflowStatus.name}": ${e.message}`));
+		}
+
+		actionResultsPromise.then(() => {
+			($('#actionResultsModal') as any).modal('show');
 		});
-		return playbook;
+	}
+
+	getFriendlyJSON(input: any): string {
+		let out = JSON.stringify(input, null, 1);
+		out = out.replace(/[\{\[\}\]"]/g, '').trim();
+		if (!out) { return 'N/A'; }
+		return out;
+	}
+
+	getFriendlyArguments(args: Argument[]): string {
+		if (!args || !args.length) { return 'N/A'; }
+
+		const obj: { [key: string]: string } = {};
+		args.forEach(element => {
+			if (element.value) { obj[element.name] = element.value; }
+			if (element.reference) { obj[element.name] = element.reference.toString(); }
+			if (element.selection) {
+				const selectionString = (element.selection as any[]).join('.');
+				obj[element.name] = `${obj[element.name]} (${selectionString})`;
+			}
+		});
+
+		let out = JSON.stringify(obj, null, 1);
+		out = out.replace(/[\{\}"]/g, '');
+		return out;
 	}
 }

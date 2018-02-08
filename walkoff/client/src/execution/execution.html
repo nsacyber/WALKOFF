@@ -4,8 +4,7 @@
 	<div class="row">
 		<div class="col-xs-6">
 			<select2 [data]="availableWorkflows" [value]="" [options]="workflowSelectConfig" (valueChanged)="workflowSelectChange($event)"></select2>
-			<button [disabled]="!selectedWorkflow" (click)="excuteSelectedWorkflow()" title="Execute Workflow"
-			 class="btn btn-secondary">
+			<button [disabled]="!selectedWorkflow" (click)="excuteSelectedWorkflow()" title="Execute Workflow" class="btn btn-secondary">
 				<i class="fa fa-play"></i>
 				Execute Workflow
 			</button>
@@ -23,9 +22,9 @@
 	<ngx-datatable #workflowStatusTable class='material expandable workflowStatusTable' [columnMode]="'flex'" [rows]='displayWorkflowStatuses'
 	 [sorts]="[{prop: 'started_at', dir: 'desc'}]" [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [limit]="25">
 		<!-- Column Templates -->
-		<ngx-datatable-column name="Name" [flexGrow]="2">
+		<ngx-datatable-column name="Name" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				{{row.name}}
+				<a href="#" (click)="openactionStatusModal(row)">{{row.name}}</a>
 			</ng-template>
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Started At" [flexGrow]="2">
@@ -43,17 +42,27 @@
 				{{row.status}}
 			</ng-template>
 		</ngx-datatable-column>
+		<ngx-datatable-column name="Current App" [flexGrow]="1">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				{{row.current_app_name}}
+			</ng-template>
+		</ngx-datatable-column>
+		<ngx-datatable-column name="Current Action" [flexGrow]="1">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				{{row.current_action_name}}
+			</ng-template>
+		</ngx-datatable-column>
 		<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				<button *ngIf="row.status === 'paused'" (click)="performWorkflowStatusAction(row, 'start')" title="Start Scheduled Task"
+				<button *ngIf="row.status === 'paused'" (click)="performWorkflowStatusAction(row, 'running')" title="Start Scheduled Task"
 				 class="btn btn-primary">
 					<i class="fa fa-play"></i>
 				</button>
-				<button *ngIf="row.status === 'running' || row.status === 'awaiting_data'" (click)="performWorkflowStatusAction(row, 'pause')"
-				 title="Pause Scheduled Task" class="btn btn-warning">
+				<button *ngIf="row.status === 'running'" (click)="performWorkflowStatusAction(row, 'paused')" title="Pause Scheduled Task"
+				 class="btn btn-warning">
 					<i class="fa fa-pause"></i>
 				</button>
-				<button *ngIf="!(row.status === 'completed' || row.status === 'aborted')" (click)="performWorkflowStatusAction(row, 'abort')"
+				<button *ngIf="!(row.status === 'completed' || row.status === 'aborted')" (click)="performWorkflowStatusAction(row, 'aborted')"
 				 title="Abort Scheduled Task" class="btn btn-danger">
 					<i class="fa fa-stop"></i>
 				</button>
@@ -61,22 +70,28 @@
 		</ngx-datatable-column>
 	</ngx-datatable>
 
-	<div class="modal fade" id="actionResultsModal" role="dialog" aria-labelledby="actionResultsModalTitle" aria-hidden="true">
+	<div class="modal fade actionStatusModal" role="dialog" aria-labelledby="actionStatusModalTitle" aria-hidden="true">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="actionnResultsModalTitle">Action Results</h5>
+					<h5 class="modal-title" id="actionStatusModalTitle">Action Statuses for {{loadedWorkflowStatus.name}}</h5>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 					</button>
 				</div>
 				<div class="modal-body" #actionResultsContainer>
-					<ngx-datatable #actionResultsTable class='material expandable' [columnMode]="'flex'" [rows]="actionResults" [sortType]="'multi'"
-					 [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]" [limit]="10">
+					<ngx-datatable #actionResultsTable class='material expandable' [columnMode]="'flex'" [rows]="loadedWorkflowStatus.results"
+					 [sortType]="'multi'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]"
+					 [limit]="10">
 						<!-- Column Templates -->
 						<ngx-datatable-column name="Action UID" [flexGrow]="1">
 							<ng-template let-row="row" ngx-datatable-cell-template>
-								{{row.action_uid}}
+								{{row.action_id}}
+							</ng-template>
+						</ngx-datatable-column>
+						<ngx-datatable-column name="App Name" [flexGrow]="1">
+							<ng-template let-row="row" ngx-datatable-cell-template>
+								{{row.app_name}}
 							</ng-template>
 						</ngx-datatable-column>
 						<ngx-datatable-column name="Action Name" [flexGrow]="1">
@@ -84,9 +99,14 @@
 								{{row.action_name}}
 							</ng-template>
 						</ngx-datatable-column>
-						<ngx-datatable-column name="Timestamp" [flexGrow]="1">
+						<ngx-datatable-column name="Started At" [flexGrow]="1">
 							<ng-template let-row="row" ngx-datatable-cell-template>
-								{{row.timestamp}}
+								{{row.started_at}}
+							</ng-template>
+						</ngx-datatable-column>
+						<ngx-datatable-column name="Completed At" [flexGrow]="1">
+							<ng-template let-row="row" ngx-datatable-cell-template>
+								{{row.completed_at}}
 							</ng-template>
 						</ngx-datatable-column>
 						<ngx-datatable-column name="Status" [flexGrow]="1">

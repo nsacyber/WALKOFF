@@ -1,19 +1,23 @@
-import { ActionResult } from './actionResult';
+import { ActionStatus } from './actionStatus';
 
 export class WorkflowStatus {
-	uid: string;
+	execution_id: string;
+	workflow_id: string;
 	name: string;
-	started_at: Date;
+	started_at?: Date;
 	/**
 	 * Date when workflow ended.
 	 * TODO: figure out if we want to use this for various stopping points: awaiting data, paused, completed, aborted
 	 */
-	finished_at: Date;
+	completed_at?: Date;
 	/**
 	 * Status of the workflow.
-	 * Possible values: running, awaiting_data, paused, completed, aborted
+	 * Possible values: queued, running, awaiting_data, paused, completed, aborted
 	 */
-	current_action_name: string;
 	status: string; 
-	results: ActionResult[] = [];
+	current_action_execution_id?: string;
+	current_action_id?: string;
+	current_action_name?: string;
+	current_app_name?: string;
+	action_statuses?: ActionStatus[] = [];
 }
