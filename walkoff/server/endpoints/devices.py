@@ -69,16 +69,15 @@ def delete_device(device_id):
 
 
 def add_configuration_keys_to_device_json(device_fields, device_fields_api):
-    device_fields_api = {field['name']: field for field in device_fields_api}
+    device_fields_api = {field.name: field for field in device_fields_api}
     for field in device_fields:
         add_configuration_keys_to_field(device_fields_api, field)
 
 
 def add_configuration_keys_to_field(device_fields_api, field):
     if field['name'] in device_fields_api:
-        field['type'] = device_fields_api[field['name']]['type']
-        if 'encrypted' in device_fields_api[field['name']]:
-            field['encrypted'] = device_fields_api[field['name']]['encrypted']
+        field['type'] = device_fields_api[field['name']].type
+        field['encrypted'] = device_fields_api[field['name']].encrypted
 
 
 def create_device():
@@ -105,7 +104,7 @@ def create_device():
         device_type = add_device_json['type']
         try:
             device_api = get_app_device_api(app, device_type)
-            device_fields_api = device_api['fields']
+            device_fields_api = device_api.fields
             validate_device_fields(device_fields_api, fields, device_type, app)
         except (UnknownApp, UnknownDevice, InvalidArgument) as e:
             return __crud_device_error_handler('create', e, app, device_type)
@@ -160,7 +159,7 @@ def _update_device(device, update_device_json, validate_required=True):
     device_type = update_device_json['type'] if 'type' in update_device_json else device.type
     try:
         device_api = get_app_device_api(app, device_type)
-        device_fields_api = device_api['fields']
+        device_fields_api = device_api.fields
         if fields is not None:
             validate_device_fields(device_fields_api, fields, device_type, app, validate_required=validate_required)
     except (UnknownApp, UnknownDevice, InvalidArgument) as e:

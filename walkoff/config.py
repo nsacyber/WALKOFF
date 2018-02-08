@@ -7,6 +7,7 @@ from os.path import isfile, join, abspath
 
 import yaml
 
+from walkoff.definitions import AppApi
 from walkoff.helpers import format_db_path
 
 logger = logging.getLogger(__name__)
@@ -36,9 +37,10 @@ def load_app_apis(apps_path=None):
             try:
                 url = join(apps_path, app, 'api.yaml')
                 with open(url) as function_file:
-                    api = yaml.load(function_file.read())
+                    api_raw = yaml.load(function_file.read())
                     from walkoff.appgateway.validator import validate_app_spec
-                    validate_app_spec(api, app, Config.WALKOFF_SCHEMA_PATH)
+                    validate_app_spec(api_raw, app, Config.WALKOFF_SCHEMA_PATH)
+                    api = AppApi(api_raw)
                     app_apis[app] = api
             except Exception as e:
                 logger.error(

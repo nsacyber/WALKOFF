@@ -1,6 +1,8 @@
 import logging
+from uuid import UUID
 
 import connexion
+from connexion.apps.flask_app import FlaskJSONEncoder
 from flask import Blueprint
 from jinja2 import FileSystemLoader
 
@@ -13,6 +15,13 @@ from walkoff.server.blueprints import custominterface, workflowresults, notifica
 import walkoff.server.workflowresults
 
 logger = logging.getLogger(__name__)
+
+
+class CustomJSONEncoder(FlaskJSONEncoder):
+    def default(self, data):
+        if isinstance(data, UUID):
+            return str(data)
+        return data.__dict__
 
 
 def register_blueprints(flaskapp):
@@ -65,6 +74,7 @@ def __register_all_app_blueprints(flaskapp):
 def create_app(app_config):
     connexion_app = connexion.App(__name__, specification_dir='../api/')
     _app = connexion_app.app
+    _app.json_encoder = CustomJSONEncoder
     _app.jinja_loader = FileSystemLoader(['walkoff/templates'])
     _app.config.from_object(app_config)
 

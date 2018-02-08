@@ -18,9 +18,9 @@ def get_app_action_api(app, action):
         raise UnknownApp(app)
     else:
         try:
-            action_api = app_api['actions'][action]
-            run = action_api['run']
-            return run, action_api.get('parameters', [])
+            action_api = app_api.actions[action]
+            run = action_api.run
+            return run, action_api.parameters
         except KeyError:
             raise UnknownAppAction(app, action)
 
@@ -42,11 +42,8 @@ def get_app_action_default_return(app, action):
         raise UnknownApp(app)
     else:
         try:
-            action_api = app_api['actions'][action]
-            if 'default_return' in action_api:
-                return action_api['default_return']
-            else:
-                return 'Success'
+            action_api = app_api.actions[action]
+            return action_api.default_return
         except KeyError:
             raise UnknownAppAction(app, action)
 
@@ -69,11 +66,8 @@ def get_app_action_return_is_failure(app, action, status):
         raise UnknownApp(app)
     else:
         try:
-            action_api = app_api['actions'][action]
-            if 'failure' in action_api['returns'][status]:
-                return True if action_api['returns'][status]['failure'] is True else False
-            else:
-                return False
+            action_api = app_api.actions[action]
+            return action_api.returns[status].failure
         except KeyError:
             raise UnknownAppAction(app, action)
 
@@ -85,7 +79,7 @@ def get_app_device_api(app, device_type):
         raise UnknownApp(app)
     else:
         try:
-            return app_api['devices'][device_type]
+            return app_api.devices[device_type]
         except KeyError:
             raise UnknownDevice(app, device_type)
 
@@ -93,7 +87,7 @@ def get_app_device_api(app, device_type):
 def split_api_params(api, data_param_name):
     args = []
     for api_param in api:
-        if api_param['name'] != data_param_name:
+        if api_param.name != data_param_name:
             args.append(api_param)
     return args
 
@@ -105,9 +99,9 @@ def get_condition_api(app, condition):
         raise UnknownApp(app)
     else:
         try:
-            condition_api = app_api['conditions'][condition]
-            run = condition_api['run']
-            return condition_api['data_in'], run, condition_api.get('parameters', [])
+            condition_api = app_api.conditions[condition]
+            run = condition_api.run
+            return condition_api.data_in, run, condition_api.parameters
         except KeyError:
             raise UnknownCondition(app, condition)
 
@@ -119,9 +113,9 @@ def get_transform_api(app, transform):
         raise UnknownApp(app)
     else:
         try:
-            transform_api = app_api['transforms'][transform]
-            run = transform_api['run']
-            return transform_api['data_in'], run, transform_api.get('parameters', [])
+            transform_api = app_api.transforms[transform]
+            run = transform_api.run
+            return transform_api.data_in, run, transform_api.parameters
         except KeyError:
             raise UnknownTransform(app, transform)
 

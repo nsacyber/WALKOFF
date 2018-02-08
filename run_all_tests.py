@@ -24,7 +24,7 @@ def run_tests():
     ret = True
     print('Testing Integration:')
     ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.integration_suite).wasSuccessful()
-    print('Testing Workflows:')
+    print('\nTesting Workflows:')
     ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.workflow_suite).wasSuccessful()
     print('\nTesting Execution:')
     ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.execution_suite).wasSuccessful()

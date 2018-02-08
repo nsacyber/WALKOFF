@@ -250,20 +250,22 @@ class AppEventDispatcher(object):
             UnknownApp: If the app specified is not found in all known app APIs or the app has no actions
             UnknownAppAction: If the action is not found in the give app's actions
         """
-        try:
-            available_actions = set(walkoff.config.app_apis[app]['actions'].keys())
-            if actions == 'all':
-                return available_actions
-            actions = set(convert_to_iterable(actions))
-            if actions - available_actions:
-                message = 'Unknown actions for app {0}: {1}'.format(app, list(set(actions) - set(available_actions)))
-                _logger.error(message)
-                raise UnknownAppAction(app, actions)
-            return actions
-        except KeyError:
-            message = 'Unknown app {} or app has no actions'.format(app)
+        app_apis = walkoff.config.app_apis
+        if app not in app_apis:
+            message = 'Unknown app {}'.format(app)
             _logger.exception(message)
             raise UnknownApp(app)
+
+        api = app_apis[app]
+        available_actions = set(api.actions.keys())
+        if actions == 'all':
+            return available_actions
+        actions = set(convert_to_iterable(actions))
+        if actions - available_actions:
+            message = 'Unknown actions for app {0}: {1}'.format(app, list(set(actions) - set(available_actions)))
+            _logger.error(message)
+            raise UnknownAppAction(app, actions)
+        return actions
 
     def is_registered(self, app, action, event, device, func):
         """Is a given callback registered

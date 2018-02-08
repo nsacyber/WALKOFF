@@ -2,6 +2,7 @@ from unittest import TestCase
 
 import walkoff.config
 from interfaces import AppEventDispatcher
+from walkoff.definitions import AppApi
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.appgateway.apiutil import UnknownApp, UnknownAppAction
 
@@ -12,10 +13,12 @@ def func(): pass
 class TestAppEventDispatcher(TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.config.app_apis = {'App1': {'actions': {'action1': None,
-                                                        'action2': None,
-                                                        'action3': None}},
-                                   'App2': {}}
+        walkoff.config.app_apis = {
+            'App1': AppApi({'actions': {
+                'action1': None, 'action2': None, 'action3': None
+            }}),
+            'App2': AppApi({})
+        }
         cls.possible_events = {event for event in WalkoffEvent if event.event_type == EventType.action}
 
     @classmethod
@@ -41,7 +44,7 @@ class TestAppEventDispatcher(TestCase):
             AppEventDispatcher.validate_app_actions('Invalid', 'action1')
 
     def test_validate_app_actions_app_with_no_actions(self):
-        with self.assertRaises(UnknownApp):
+        with self.assertRaises(UnknownAppAction):
             AppEventDispatcher.validate_app_actions('App2', 'action1')
 
     def test_validate_app_actions_all_actions(self):

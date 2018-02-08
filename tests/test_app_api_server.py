@@ -2,6 +2,7 @@ import json
 
 import walkoff.appgateway
 import walkoff.config
+from walkoff.definitions import DeviceApi, ParameterApi, ReturnApi
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
 from walkoff.server.endpoints.appapi import *
@@ -19,22 +20,22 @@ class TestAppApiServerFuncs(ServerTestCase):
         orderless_list_compare(self, response, expected_apps)
 
     def test_extract_schema(self):
-        test_json = {'name': 'a', 'example': 42, 'description': 'something', 'type': 'number', 'minimum': 1}
-        expected = {'name': 'a', 'example': 42, 'description': 'something', 'schema': {'type': 'number', 'minimum': 1}}
+        test_json = ParameterApi({'name': 'a', 'example': 42, 'description': 'something', 'type': 'number', 'minimum': 1})
+        expected = {'name': 'a', 'example': 42, 'description': 'something', 'required': False, 'schema': {'type': 'number', 'minimum': 1}}
         self.assertDictEqual(extract_schema(test_json), expected)
 
     def test_extract_schema_unformatted_fields_specified(self):
-        test_json = {'name': 'a', 'example': 42, 'description': 'something', 'type': 'number', 'minimum': 1}
+        test_json = ParameterApi({'name': 'a', 'example': 42, 'description': 'something', 'type': 'number', 'minimum': 1})
         expected = {'name': 'a', 'example': 42,
-                    'schema': {'description': 'something', 'type': 'number', 'minimum': 1}}
+                    'schema': {'description': 'something', 'type': 'number', 'required': False, 'minimum': 1}}
         self.assertDictEqual(extract_schema(test_json, unformatted_fields=('name', 'example')), expected)
 
     def test_extract_schema_with_object(self):
-        test_json = {'name': 'a', 'description': 'something', 'type': 'object',
+        test_json = ParameterApi({'name': 'a', 'description': 'something', 'type': 'object',
                      'schema': {'required': ['a', 'b'],
                                 'properties': {'a': {'type': 'string'},
-                                               'b': {'type': 'number'}}}}
-        expected = {'name': 'a', 'description': 'something',
+                                               'b': {'type': 'number'}}}})
+        expected = {'name': 'a', 'description': 'something', 'required': False,
                     'schema': {'type': 'object',
                                'required': ['a', 'b'],
                                'properties': {'a': {'type': 'string'},
@@ -42,40 +43,42 @@ class TestAppApiServerFuncs(ServerTestCase):
         self.assertDictEqual(extract_schema(test_json), expected)
 
     def test_format_returns(self):
-        returns = {'Success': {'description': 'something 1'}, 'Return2': {'schema': {'type': 'number', 'minimum': 10}}}
-        expected = [{'status': 'Success', 'description': 'something 1'},
-                    {'status': 'Return2', 'schema': {'type': 'number', 'minimum': 10}},
-                    {'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'},
-                    {'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'}]
+        returns = {'Success': ReturnApi({'description': 'something 1'}),
+                   'Return2': ReturnApi({'schema': {'type': 'number', 'minimum': 10}})}
+        expected = [ReturnApi({'status': 'Success', 'description': 'something 1'}),
+                    ReturnApi({'status': 'Return2', 'schema': {'type': 'number', 'minimum': 10}}),
+                    ReturnApi({'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'}),
+                    ReturnApi({'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'})]
         formatted = format_returns(returns)
         self.assertEqual(len(formatted), len(expected))
         for return_ in formatted:
             self.assertIn(return_, expected)
 
     def test_format_returns_with_event(self):
-        returns = {'Success': {'description': 'something 1'},
-                   'Return2': {'schema': {'type': 'number', 'minimum': 10}}}
-        expected = [{'status': 'Success', 'description': 'something 1'},
-                    {'status': 'Return2', 'schema': {'type': 'number', 'minimum': 10}},
-                    {'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'},
-                    {'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'},
-                    {'status': 'EventTimedOut', 'failure': True,
-                     'description': 'Action timed out out waiting for event'}]
+        returns = {'Success': ReturnApi({'description': 'something 1'}),
+                   'Return2': ReturnApi({'schema': {'type': 'number', 'minimum': 10}})}
+        expected = [ReturnApi({'status': 'Success', 'description': 'something 1'}),
+                    ReturnApi({'status': 'Return2', 'schema': {'type': 'number', 'minimum': 10}}),
+                    ReturnApi({'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'}),
+                    ReturnApi({'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'}),
+                    ReturnApi({'status': 'EventTimedOut', 'failure': True, 'description': 'Action timed out out waiting for event'})]
         formatted = format_returns(returns, with_event=True)
         self.assertEqual(len(formatted), len(expected))
         for return_ in formatted:
             self.assertIn(return_, expected)
 
     def test_format_app_action_api(self):
-        action_api = walkoff.config.app_apis['HelloWorldBounded']['actions']['pause']
+        action_api = walkoff.config.app_apis['HelloWorldBounded'].actions['pause']
         expected = {
-            'returns': [{'status': 'Success', 'description': 'successfully paused', 'schema': {'type': 'number'}},
-                        {'status': 'UnhandledException', 'failure': True,
-                         'description': 'Exception occurred in action'},
-                        {'status': 'InvalidInput', 'failure': True,
-                         'description': 'Input into the action was invalid'}],
+            'returns': [ReturnApi({'status': 'Success', 'description': 'successfully paused', 'schema': {'type': 'number'}}),
+                        ReturnApi({'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'}),
+                        ReturnApi({'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'})],
             'run': 'main.Main.pause',
             'description': 'Pauses execution',
+            'default_return': 'Success',
+            'deprecated': False,
+            'tags': [],
+            'external_docs': [],
             'parameters': [
                 {'schema': {'type': 'number'}, 'name': 'seconds', 'description': 'Seconds to pause', 'required': True}]}
         formatted = format_app_action_api(action_api, "HelloWorldBounded", "actions")
@@ -90,20 +93,20 @@ class TestAppApiServerFuncs(ServerTestCase):
             self.assertIn(parameter, expected['parameters'])
 
     def test_format_device_api(self):
-        device_api = {'description': 'Something',
+        device_api = DeviceApi({'description': 'Something',
                       'fields': [
                           {'name': 'username', 'placeholder': 'user', 'type': 'string', 'required': True,
                            'description': 'something'},
                           {'name': 'password', 'placeholder': 'pass', 'type': 'string', 'required': True, 'encrypted':
-                              True, 'minimumLength': 6}]}
+                              True, 'minLength': 6}]})
         formatted = format_device_api_full(device_api, 'TestDev')
         expected = {'description': 'Something',
                     'name': 'TestDev',
                     'fields': [
-                        {'name': 'username', 'placeholder': 'user', 'required': True, 'schema': {'type': 'string'},
+                        {'name': 'username', 'placeholder': 'user', 'encrypted': False, 'required': True, 'schema': {'type': 'string'},
                          'description': 'something'},
                         {'name': 'password', 'placeholder': 'pass', 'encrypted': True, 'required': True,
-                         'schema': {'type': 'string', 'minimumLength': 6}}]}
+                         'schema': {'type': 'string', 'minLength': 6}}]}
         self.assertSetEqual(set(formatted.keys()), set(expected.keys()))
         self.assertEqual(formatted['name'], expected['name'])
         self.assertEqual(formatted['description'], expected['description'])

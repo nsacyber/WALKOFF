@@ -11,6 +11,7 @@ from six import string_types
 from swagger_spec_validator import ref_validators
 from swagger_spec_validator.validator20 import deref
 
+from walkoff.definitions import ApiData, DeviceApi
 from walkoff.helpers import get_function_arg_names, format_exception_message
 from walkoff.appgateway.apiutil import InvalidArgument, InvalidApi
 
@@ -45,6 +46,8 @@ def convert_primitive_array(values, parameter_type):
 
 
 def convert_array(schema, param_in, message_prefix):
+    if isinstance(schema, ApiData):
+        schema = schema.__dict__
     if 'items' not in schema:
         return param_in
     item_type = schema['items']['type']
@@ -92,6 +95,8 @@ def __convert_json(schema, param_in, message_prefix):
 
 
 def convert_json(spec, param_in, message_prefix):
+    if isinstance(spec, ApiData):
+        spec = spec.__dict__
     if 'type' in spec:
         parameter_type = spec['type']
         if parameter_type in TYPE_MAP:
@@ -139,7 +144,7 @@ def validate_app_spec(spec, app_name, walkoff_schema_path, spec_url='', http_han
     definitions = dereference(dereferenced_spec.get('definitions', {}))
     devices = dereference(dereferenced_spec.get('devices', {}))
     validate_definitions(definitions, dereference)
-    validate_devices_api(devices, app_name)
+    validate_devices_api({key: DeviceApi(value) for key, value in devices.items()}, app_name)
 
 
 def validate_data_in_param(params, data_in_param_name, message_prefix):
@@ -290,9 +295,9 @@ def validate_definitions(definitions, dereferencer):
 
 
 def handle_user_roles_validation(param):
-    param['type'] = 'integer'
-    if 'minimum' not in param:
-        param['minimum'] = 1
+    param.type = 'integer'
+    if not hasattr(param, 'minimum'):
+        param.minimum = 1
 
 
 def validate_primitive_parameter(value, param, parameter_type, message_prefix, hide_input=False):
@@ -305,14 +310,12 @@ def validate_primitive_parameter(value, param, parameter_type, message_prefix, h
         raise InvalidArgument(message)
     else:
         param = deepcopy(param)
-        if param['type'] in ('user', 'role'):
+        if param.type in ('user', 'role'):
             handle_user_roles_validation(param)
 
-        if 'required' in param:
-            param.pop('required')
         try:
             Draft4Validator(
-                param, format_checker=draft4_format_checker).validate(converted_value)
+                param.__dict__, format_checker=draft4_format_checker).validate(converted_value)
         except ValidationError as exception:
             if not hide_input:
                 message = '{0} has invalid input. ' \
@@ -330,21 +333,21 @@ def validate_primitive_parameter(value, param, parameter_type, message_prefix, h
 
 def validate_parameter(value, param, message_prefix):
     param = deepcopy(param)
-    primitive_type = 'primitive' if 'type' in param else 'object'
+    primitive_type = 'primitive' if hasattr(param, 'type') else 'object'
     converted_value = None
     if value is not None:
         if primitive_type == 'primitive':
-            primitive_type = param['type']
+            primitive_type = param.type
             if primitive_type in TYPE_MAP:
                 converted_value = validate_primitive_parameter(value, param, primitive_type, message_prefix)
             elif primitive_type == 'array':
                 try:
                     converted_value = convert_array(param, value, message_prefix)
-                    if 'items' in param and param['items']['type'] in ('user', 'role'):
-                        handle_user_roles_validation(param['items'])
+                    if hasattr(param, 'items') and param.items['type'] in ('user', 'role'):
+                        handle_user_roles_validation(param.items)
 
                     Draft4Validator(
-                        param, format_checker=draft4_format_checker).validate(converted_value)
+                        param.__dict__, format_checker=draft4_format_checker).validate(converted_value)
                 except ValidationError as exception:
                     message = '{0} has invalid input. Input {1} does not conform to ' \
                               'validators: {2}'.format(message_prefix, value, format_exception_message(exception))
@@ -356,14 +359,14 @@ def validate_parameter(value, param, message_prefix):
             try:
                 converted_value = convert_json(param, value, message_prefix)
                 Draft4Validator(
-                    param['schema'], format_checker=draft4_format_checker).validate(converted_value)
+                    param.schema.__dict__, format_checker=draft4_format_checker).validate(converted_value)
             except ValidationError as exception:
                 message = '{0} has invalid input. Input {1} does not conform to ' \
                           'validators: {2}'.format(message_prefix, value, format_exception_message(exception))
                 logger.error(message)
                 raise InvalidArgument(message)
-    elif param.get('required'):
-        message = "In {0}: Missing {1} parameter '{2}'".format(message_prefix, primitive_type, param['name'])
+    elif param.required:
+        message = "In {0}: Missing {1} parameter '{2}'".format(message_prefix, primitive_type, param.name)
         logger.error(message)
         raise InvalidArgument(message)
 
@@ -373,7 +376,7 @@ def validate_parameter(value, param, message_prefix):
 def validate_parameters(api, arguments, message_prefix, accumulator=None):
     api_dict = {}
     for param in api:
-        api_dict[param['name']] = param
+        api_dict[param.name] = param
     converted = {}
     seen_params = set()
     arg_names = [argument.name for argument in arguments] if arguments else []
@@ -386,19 +389,19 @@ def validate_parameters(api, arguments, message_prefix, accumulator=None):
                 arg_val = argument.get_value(accumulator)
                 if accumulator or not argument.is_ref:
                     converted[param_name] = validate_parameter(arg_val, param_api, message_prefix)
-            elif 'default' in param_api:
+            elif hasattr(param_api, 'default'):
                 try:
-                    default_param = validate_parameter(param_api['default'], param_api, message_prefix)
+                    default_param = validate_parameter(param_api.default, param_api, message_prefix)
                 except InvalidArgument as e:
-                    default_param = param_api['default']
+                    default_param = param_api.default
                     logger.warning(
                         'For {0}: Default input {1} (value {2}) does not conform to schema. (Error: {3})'
-                        'Using anyways'.format(message_prefix, param_name, param_api['default'],
+                        'Using anyways'.format(message_prefix, param_name, param_api.default,
                                                format_exception_message(e)))
 
                 converted[param_name] = default_param
                 arguments_set.add(param_name)
-            elif 'required' in param_api:
+            elif param_api.required:
                 message = 'For {0}: Parameter {1} is not specified and has no default'.format(message_prefix,
                                                                                               param_name)
                 logger.error(message)
@@ -440,18 +443,15 @@ def validate_transform_parameters(api, arguments, transform, accumulator=None):
 
 
 def validate_device_field(field_api, value, message_prefix):
-    field_type = field_api['type']
+    field_type = field_api.type
     field_api = deepcopy(field_api)
 
     # Necessary for optional fields
-    if 'required' not in field_api and (value == '' or value is None):
+    if not field_api.required and (value == '' or value is None):
         return
 
-    if 'required' in field_api:
-        field_api.pop('required')
-    if 'encrypted' in field_api:
+    if field_api.encrypted:
         hide = True
-        field_api.pop('encrypted')
     else:
         hide = False
     validate_primitive_parameter(value, field_api, field_type, message_prefix, hide_input=hide)
@@ -459,16 +459,16 @@ def validate_device_field(field_api, value, message_prefix):
 
 def validate_devices_api(devices_api, app_name):
     for device_type, device_type_api in devices_api.items():
-        for field_api in device_type_api['fields']:
-            if 'default' in field_api:
+        for field_api in device_type_api.fields:
+            if hasattr(field_api, 'default'):
                 message_prefix = 'App {0} device type {1}'.format(app_name, device_type)
-                default_value = field_api['default']
+                default_value = field_api.default
                 try:
                     validate_device_field(field_api, default_value, message_prefix)
                 except InvalidArgument as e:
                     logger.error(
                         'For {0}: Default input {1} does not conform to schema. (Error: {2})'
-                        'Using anyways'.format(message_prefix, field_api['name'], format_exception_message(e)))
+                        'Using anyways'.format(message_prefix, field_api.name, format_exception_message(e)))
                     raise
 
 
@@ -476,10 +476,10 @@ def validate_device_fields(device_fields_api, device_fields, device_type, app, v
     message_prefix = 'Device type {0} for app {1}'.format(device_type, app)
 
     for field_api in device_fields_api:
-        if field_api['name'] not in device_fields and 'default' in field_api:
-            device_fields[field_api['name']] = field_api['default']
+        if field_api.name not in device_fields and hasattr(field_api, 'default'):
+            device_fields[field_api.name] = field_api.default
 
-    required_in_api = {field['name'] for field in device_fields_api if 'required' in field and field['required']}
+    required_in_api = {field.name for field in device_fields_api if field.required}
     field_names = set(device_fields)
     if validate_required and (required_in_api - field_names):
         message = '{0} requires {1} field but only got {2}'.format(message_prefix,
@@ -487,13 +487,13 @@ def validate_device_fields(device_fields_api, device_fields, device_type, app, v
         logger.error(message)
         raise InvalidArgument(message)
 
-    device_fields_api_dict = {field['name']: field for field in device_fields_api}
+    device_fields_api_dict = {field.name: field for field in device_fields_api}
 
     for field, value in device_fields.items():
         if field in device_fields_api_dict:
             validate_device_field(device_fields_api_dict[field], value, message_prefix)
         else:
-            message = '{0} was passed field {1} which is not defined in its API'.format(message_prefix, field['name'])
+            message = '{0} was passed field {1} which is not defined in its API'.format(message_prefix, field.name)
             logger.warning(message)
             raise InvalidArgument(message)
 

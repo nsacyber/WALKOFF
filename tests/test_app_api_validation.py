@@ -9,6 +9,7 @@ from tests.util import initialize_test_config
 from walkoff.appgateway import get_app_action
 from walkoff.appgateway.apiutil import UnknownApp
 from walkoff.appgateway.validator import *
+from walkoff.definitions import DeviceApi
 
 
 class TestAppApiValidation(unittest.TestCase):
@@ -316,4 +317,4 @@ class TestAppApiValidation(unittest.TestCase):
                             'fields': [{'name': 'param1', 'type': 'integer', 'default': 'invalid'}]}}
         self.basicapi['devices'] = devices
         with self.assertRaises(InvalidArgument):
-            validate_devices_api(devices, '')
+            validate_devices_api({key: DeviceApi(value) for key, value in devices.items()}, '')

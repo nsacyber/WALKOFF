@@ -3,6 +3,7 @@ from unittest import TestCase
 
 import walkoff.config
 import walkoff.executiondb.schemas
+from walkoff.definitions import AppApi
 from interfaces import InterfaceEventDispatcher, dispatcher
 from interfaces.exceptions import UnknownEvent
 from tests.util import execution_db_help, initialize_test_config
@@ -36,10 +37,12 @@ class TestInterfaceEventDispatcher(TestCase):
     def setUpClass(cls):
         initialize_test_config()
         execution_db_help.setup_dbs()
-        walkoff.config.app_apis = {'App1': {'actions': {'action1': None,
-                                                        'action2': None,
-                                                        'action3': None}},
-                                   'App2': {}}
+        walkoff.config.app_apis = {
+            'App1': AppApi({'actions': {
+                'action1': None, 'action2': None, 'action3': None
+             }}),
+             'App2': AppApi({})
+        }
         cls.action_events = {event for event in WalkoffEvent if
                              event.event_type == EventType.action and event != WalkoffEvent.SendMessage}
 
