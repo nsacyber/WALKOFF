@@ -7,15 +7,24 @@ CompleteWorkflowResults:
 
 WorkflowResult:
   type: object
-  required: [name, started_at, status, results, uid]
+  required: [execution_id, workflow_id, name, status, started_at, _action_statuses]
   properties:
+    execution_id:
+      $ref: '#/definitions/Uid'
+    workflow_id:
+      $ref: '#/definitions/Uid'
     name:
-      description: The name of the workflow. Contains both playbook and workflow information
+      description: The name of the workflow.
       type: string
-      example: PlaybookName-WorkflowName
+      example: WorkflowName
+      readOnly: true
+    status:
+      description: The status of the workflow
+      type: string
+      enum: ['pending', 'running', 'awaiting_data', 'paused', 'completed', 'aborted']
       readOnly: true
     started_at:
-      description: The timestamp of when the workflow completed
+      description: The timestamp of when the workflow started
       type: string
       example: '2017-05-24 00:42:22.934058'
       readOnly: true
@@ -24,56 +33,52 @@ WorkflowResult:
       type: string
       example: '2017-05-24 00:43:26.930892'
       readOnly: true
-    status:
-      description: The status of the workflow
-      type: string
-      enum: [completed, running, 'awaiting_data', 'paused']
-      readOnly: true
-    results:
-      description: The results of the workflow actions
+    _action_statuses:
+      description: The statuses of the workflow actions
       type: array
       items:
         $ref: '#/definitions/DetailedActionResult'
-    uid:
-      description: The UID of the workflow
-      type: string
 
 DetailedActionResult:
   type: object
-  required: [name, result, input, type, timestamp]
-  description: A result of an action execution
+  required: [execution_id, action_id, name, app_name, action_name, status, started_at]
+  description: The status of an action execution
   properties:
+    execution_id:
+      $ref: '#/definitions/Uid'
+    action_id:
+      $ref: '#/definitions/Uid'
     name:
       description: The name of the action
       type: string
       example: 'This One action'
-      readOnly: true
-    action_name:
-      description: The name of the action take by the action
-      type: string
-      example: get that thing
       readOnly: true
     app_name:
       description: The name of the app associated with the action
       type: string
       example: ThingGetter
       readOnly: true
+    action_name:
+      description: The name of the action take by the action
+      type: string
+      example: get that thing
+      readOnly: true
     result:
       description: The result of the action
       type: object
       readOnly: true
-    type:
-      description: Success or failure of the action
+    status:
+      description: The status of the workflow
       type: string
-      example: SUCCESS
-      enum: [SUCCESS, ERROR]
+      enum: ['executing', 'awaiting_data', 'paused', 'success', 'failure']
       readOnly: true
-    timestamp:
+    started_at:
+      description: The timestamp of when the action started
+      type: string
+      example: '2017-05-24 00:42:22.934058'
+      readOnly: true
+    completed_at:
       description: The timestamp of when the action completed
       type: string
       example: '2017-05-24 00:43:26.930892'
-      readOnly: true
-    input:
-      description: The input to the action. Of form {input_name -> value}
-      type: object
       readOnly: true

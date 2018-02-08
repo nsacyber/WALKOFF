@@ -66,10 +66,10 @@ class ActionStatus(Device_Base):
     action_name = Column(String, nullable=False)
     result = Column(String)
     arguments = Column(String)
-    status = Column(ActionStatusEnum, nullable=False)
+    status = Column(Enum(ActionStatusEnum), nullable=False)
     started_at = Column(DateTime, default=func.current_timestamp())
     completed_at = Column(DateTime)
-    _workflow_status_id = Column(Integer, ForeignKey('_workflow_status.id'))
+    _workflow_status_id = Column(Integer, ForeignKey('workflow_status.execution_id'))
 
     def __init__(self, execution_id, action_id, name, app_name, action_name, arguments):
         self.execution_id = execution_id
@@ -80,11 +80,24 @@ class ActionStatus(Device_Base):
         self.arguments = arguments
         self.status = ActionStatusEnum.executing
 
-    def completed_success(self):
-        self.status = ActionStatusEnum.success
+    def running(self):
+        self.status = ActionStatusEnum.executing
 
-    def completed_failure(self):
+    def paused(self):
+        self.status = ActionStatusEnum.paused
+
+    def awaiting_data(self):
+        self.status = ActionStatusEnum.awaiting_data
+
+    def completed_success(self, data):
+        self.status = ActionStatusEnum.success
+        self.result = json.dumps(data['result'])
+        self.completed_at = datetime.utcnow()
+
+    def completed_failure(self, data):
         self.status = ActionStatusEnum.failure
+        self.result = json.dumps(data['result'])
+        self.completed_at = datetime.utcnow()
 
     def as_json(self):
         ret = {"execution_id": self.execution_id,

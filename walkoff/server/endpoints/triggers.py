@@ -59,6 +59,8 @@ def send_data_to_trigger():
             else:
                 WalkoffEvent.TriggerActionNotTaken.send(exec_action, data={'workflow_execution_id': execution_id})
 
+        print("Completed: {}".format(completed_execution_ids))
+
         return completed_execution_ids, SUCCESS
 
     return __func()

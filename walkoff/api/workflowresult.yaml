@@ -10,14 +10,14 @@
         schema:
           $ref: '#/definitions/CompleteWorkflowResults'
 
-/api/workflowresults/{uid}:
+/api/workflowresults/{execution_id}:
   get:
     tags: [Workflow]
     summary: Gets the results from an executed workflow
     operationId: walkoff.server.endpoints.playbooks.read_result
     produces: [application/json]
     parameters:
-      - name: uid
+      - name: execution_id
         in: path
         description: The name that needs to be fetched.
         required: true

@@ -133,7 +133,7 @@ Branch:
       description: The destination Action ID for this Branch, if the conditions evaluate to True
       $ref: '#/definitions/Uid'
     priority:
-      description: The priority for this Branch, which will be compared to other Branches with the same source_uid Action, ascending, i.e. 1 is the highest priority.
+      description: The priority for this Branch, which will be compared to other Branches with the same source_id Action, ascending, i.e. 1 is the highest priority.
       type: integer
     status:
       description: The status return code to use

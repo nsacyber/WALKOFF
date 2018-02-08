@@ -102,6 +102,7 @@ class WalkoffEvent(Enum):
     WorkflowExecutionStart = WorkflowSignal('Workflow Execution Start', 'Workflow execution started')
     AppInstanceCreated = WorkflowSignal('App Instance Created', 'New app instance created')
     WorkflowShutdown = WorkflowSignal('Workflow Shutdown', 'Workflow shutdown')
+    WorkflowAborted = WorkflowSignal('Workflow Aborted', 'Workflow aborted')
     WorkflowArgumentsValidated = WorkflowSignal('Workflow Arguments Validated', 'Workflow arguments validated')
     WorkflowArgumentsInvalid = WorkflowSignal('Workflow Arguments Invalid', 'Workflow arguments invalid')
     WorkflowPaused = WorkflowSignal('Workflow Paused', 'Workflow paused')

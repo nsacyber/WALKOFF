@@ -56,48 +56,6 @@ class MultiprocessedExecutor(object):
         self.workflow_status = {}
         self.workflows_executed = 0
 
-        @WalkoffEvent.WorkflowExecutionPending.connect
-        def handle_workflow_pending(sender, **kwargs):
-            self.__workflow_pending(sender, **kwargs)
-
-        self.handle_workflow_pending = handle_workflow_pending
-
-        @WalkoffEvent.WorkflowExecutionStart.connect
-        def handle_workflow_start(sender, **kwargs):
-            self.__workflow_running(sender, **kwargs)
-
-        self.handle_workflow_start = handle_workflow_start
-
-        @WalkoffEvent.TriggerActionTaken.connect
-        def handle_workflow_trigger_resume(sender, **kwargs):
-            self.__workflow_running(sender, **kwargs)
-
-        self.handle_workflow_trigger_resume = handle_workflow_trigger_resume
-
-        @WalkoffEvent.WorkflowResumed.connect
-        def handle_workflow_resume(sender, **kwargs):
-            self.__workflow_running(sender, **kwargs)
-
-        self.handle_workflow_resume = handle_workflow_resume
-
-        @WalkoffEvent.WorkflowPaused.connect
-        def handle_workflow_pause(sender, **kwargs):
-            self.__workflow_paused(sender, **kwargs)
-
-        self.handle_workflow_pause = handle_workflow_pause
-
-        @WalkoffEvent.TriggerActionAwaitingData.connect
-        def handle_workflow_trigger_awaiting_data(sender, **kwargs):
-            self.__workflow_awaiting_data(sender, **kwargs)
-
-        self.handle_workflow_trigger_awaiting_data = handle_workflow_trigger_awaiting_data
-
-        @WalkoffEvent.WorkflowShutdown.connect
-        def handle_workflow_shutdown(sender, **kwargs):
-            self.__workflow_completed(sender, **kwargs)
-
-        self.handle_workflow_shutdown = handle_workflow_shutdown
-
         self.ctx = None
         self.auth = None
 
@@ -105,73 +63,6 @@ class MultiprocessedExecutor(object):
         self.manager_thread = None
         self.receiver = None
         self.receiver_thread = None
-
-    @staticmethod
-    def __workflow_pending(sender, **kwargs):  # Workflow pending callback
-        print("Workflow {} pending".format(sender.get_execution_id()))
-        wf_status = walkoff.coredb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
-            workflow_execution_id=sender.get_execution_id()).first()
-        if wf_status:
-            print("Not new")
-            wf_status.status = WorkflowStatusEnum.pending
-        else:
-            print("New")
-            wf_status = WorkflowStatus(workflow_execution_id=sender.get_execution_id(), workflow_id=sender.id,
-                                       status=WorkflowStatusEnum.pending)
-            walkoff.coredb.devicedb.device_db.session.add(wf_status)
-        walkoff.coredb.devicedb.device_db.session.commit()
-
-    @staticmethod
-    def __workflow_running(sender, **kwargs):  # Workflow start, trigger action continue, workflow resume
-        if isinstance(sender, Action):
-            wf_status = walkoff.coredb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
-                workflow_execution_id=kwargs['data']['workflow_execution_id']).first()
-        else:
-            wf_status = walkoff.coredb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
-                workflow_execution_id=sender['workflow_execution_id'])
-        wf_status.status = WorkflowStatusEnum.running
-        walkoff.coredb.devicedb.device_db.session.commit()
-
-    @staticmethod
-    def __workflow_paused(sender, **kwargs):  # workflow pause
-        wf_status = walkoff.coredb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
-            workflow_execution_id=sender['workflow_execution_id']).first()
-        wf_status.status = WorkflowStatusEnum.paused
-        walkoff.coredb.devicedb.device_db.session.commit()
-
-    @staticmethod
-    def __workflow_awaiting_data(sender, **kwargs):  # trigger action wait
-        print("Got trigger action awaiting data")
-        wf_status = walkoff.coredb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
-            workflow_execution_id=sender['workflow_execution_id']).first()
-        wf_status.status = WorkflowStatusEnum.awaiting_data
-        walkoff.coredb.devicedb.device_db.session.commit()
-
-    @staticmethod
-    def __workflow_completed(sender, **kwargs):  # workflow shutdown
-        wf_status = walkoff.coredb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
-            workflow_execution_id=sender['workflow_execution_id']).first()
-        wf_status.status = WorkflowStatusEnum.completed
-
-        saved_state = walkoff.coredb.devicedb.device_db.session.query(SavedWorkflow).filter_by(
-            workflow_execution_id=sender['workflow_execution_id']).first()
-        if saved_state:
-            walkoff.coredb.devicedb.device_db.session.delete(saved_state)
-
-        walkoff.coredb.devicedb.device_db.session.commit()
-
-    @staticmethod
-    def __workflow_aborted(sender, **kwargs):  # workflow aborted
-        wf_status = walkoff.coredb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
-            workflow_execution_id=sender['workflow_execution_id']).first()
-        wf_status.status = WorkflowStatusEnum.aborted
-
-        saved_state = walkoff.coredb.devicedb.device_db.session.query(SavedWorkflow).filter_by(
-            workflow_execution_id=sender['workflow_execution_id']).first()
-        if saved_state:
-            walkoff.coredb.devicedb.device_db.session.delete(saved_state)
-
-        walkoff.coredb.devicedb.device_db.session.commit()
 
     def initialize_threading(self, pids):
         """Initialize the multiprocessing communication threads, allowing for parallel execution of workflows.
@@ -324,7 +215,7 @@ class MultiprocessedExecutor(object):
         """
         wf_statuses = walkoff.coredb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
             status=WorkflowStatusEnum.awaiting_data).all()
-        return [str(wf_status.workflow_execution_id) for wf_status in wf_statuses]
+        return [str(wf_status.execution_id) for wf_status in wf_statuses]
 
     def get_workflow_status(self, execution_id):
         """Gets the current status of a workflow by its execution ID

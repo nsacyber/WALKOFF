@@ -142,19 +142,12 @@ class Workflow(ExecutionElement, Device_Base):
                 result = action.execute(instance=self._instances[device_id](), accumulator=self._accumulator,
                                         resume=resume)
             print("here")
-            # TODO: Fix this. Just make an ActionResult.
-            if result == {"trigger": "trigger"}:
+            if result.status == "trigger":
                 print("trigger")
                 print("Workflow returning")
                 return
             print("after here")
-            try:
-                self._accumulator[action.id] = action.get_output().result
-            except Exception:
-                print("exception!!!")
-                import traceback
-                traceback.print_exc()
-            total_actions.append(action)
+            self._accumulator[action.id] = action.get_output().result
         print("Workflow shutting down")
         self.__shutdown(self._instances)
         yield

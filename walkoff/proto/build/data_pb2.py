@@ -18,7 +18,7 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='data.proto',
   package='core',
-  serialized_pb=_b('\n\ndata.proto\x12\x04\x63ore\"\x83\x03\n\x07Message\x12 \n\x04type\x18\x01 \x01(\x0e\x32\x12.core.Message.Type\x12\x12\n\nevent_name\x18\x02 \x01(\t\x12/\n\x0fworkflow_packet\x18\x03 \x01(\x0b\x32\x14.core.WorkflowPacketH\x00\x12+\n\raction_packet\x18\x04 \x01(\x0b\x32\x12.core.ActionPacketH\x00\x12-\n\x0egeneral_packet\x18\x05 \x01(\x0b\x32\x13.core.GeneralPacketH\x00\x12+\n\x0emessage_packet\x18\x06 \x01(\x0b\x32\x11.core.UserMessageH\x00\"~\n\x04Type\x12\x12\n\x0eWORKFLOWPACKET\x10\x01\x12\x16\n\x12WORKFLOWPACKETDATA\x10\x02\x12\x10\n\x0c\x41\x43TIONPACKET\x10\x03\x12\x14\n\x10\x41\x43TIONPACKETDATA\x10\x04\x12\x11\n\rGENERALPACKET\x10\x05\x12\x0f\n\x0bUSERMESSAGE\x10\x06\x42\x08\n\x06packet\"\xaa\x01\n\x0eWorkflowPacket\x12\x33\n\x06sender\x18\x01 \x01(\x0b\x32#.core.WorkflowPacket.WorkflowSender\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x02 \x01(\t\x1aJ\n\x0eWorkflowSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x1e\n\x16workflow_execution_uid\x18\x03 \x01(\t\"\xff\x02\n\x0c\x41\x63tionPacket\x12/\n\x06sender\x18\x01 \x01(\x0b\x32\x1f.core.ActionPacket.ActionSender\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x02 \x01(\t\x1aS\n\x0e\x41\x63tionArgument\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\x12\x11\n\treference\x18\x03 \x01(\t\x12\x11\n\tselection\x18\x04 \x01(\t\x1a\xcf\x01\n\x0c\x41\x63tionSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x15\n\rexecution_uid\x18\x03 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x04 \x01(\t\x12\x13\n\x0b\x61\x63tion_name\x18\x05 \x01(\t\x12\x34\n\targuments\x18\x06 \x03(\x0b\x32!.core.ActionPacket.ActionArgument\x12\x1e\n\x16workflow_execution_uid\x18\x07 \x01(\t\x12\x11\n\tdevice_id\x18\x08 \x01(\x05\"\x91\x01\n\rGeneralPacket\x12\x31\n\x06sender\x18\x01 \x01(\x0b\x32!.core.GeneralPacket.GeneralSender\x1aM\n\rGeneralSender\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x02 \x01(\t\x12\x1e\n\x16workflow_execution_uid\x18\x03 \x01(\t\"\xe0\x01\n\x13\x43ommunicationPacket\x12,\n\x04type\x18\x01 \x01(\x0e\x32\x1e.core.CommunicationPacket.Type\x12\x1e\n\x16workflow_execution_uid\x18\x02 \x01(\t\x12\x0f\n\x07\x64\x61ta_in\x18\x03 \x01(\t\x12\x34\n\targuments\x18\x04 \x03(\x0b\x32!.core.ActionPacket.ActionArgument\"4\n\x04Type\x12\t\n\x05PAUSE\x10\x01\x12\n\n\x06RESUME\x10\x02\x12\x0b\n\x07TRIGGER\x10\x03\x12\x08\n\x04\x45XIT\x10\x04\"\x94\x01\n\x0bUserMessage\x12/\n\x06sender\x18\x01 \x01(\x0b\x32\x1f.core.ActionPacket.ActionSender\x12\x0f\n\x07subject\x18\x02 \x01(\t\x12\x0c\n\x04\x62ody\x18\x03 \x01(\t\x12\x17\n\x0frequires_reauth\x18\x04 \x01(\x08\x12\r\n\x05users\x18\x05 \x03(\x05\x12\r\n\x05roles\x18\x06 \x03(\x05\"\xa2\x01\n\x16\x45xecuteWorkflowMessage\x12\x13\n\x0bworkflow_id\x18\x01 \x01(\t\x12\x1e\n\x16workflow_execution_uid\x18\x02 \x01(\t\x12\r\n\x05start\x18\x03 \x01(\t\x12\x34\n\targuments\x18\x04 \x03(\x0b\x32!.core.ActionPacket.ActionArgument\x12\x0e\n\x06resume\x18\x05 \x01(\x08')
+  serialized_pb=_b('\n\ndata.proto\x12\x04\x63ore\"\x83\x03\n\x07Message\x12 \n\x04type\x18\x01 \x01(\x0e\x32\x12.core.Message.Type\x12\x12\n\nevent_name\x18\x02 \x01(\t\x12/\n\x0fworkflow_packet\x18\x03 \x01(\x0b\x32\x14.core.WorkflowPacketH\x00\x12+\n\raction_packet\x18\x04 \x01(\x0b\x32\x12.core.ActionPacketH\x00\x12-\n\x0egeneral_packet\x18\x05 \x01(\x0b\x32\x13.core.GeneralPacketH\x00\x12+\n\x0emessage_packet\x18\x06 \x01(\x0b\x32\x11.core.UserMessageH\x00\"~\n\x04Type\x12\x12\n\x0eWORKFLOWPACKET\x10\x01\x12\x16\n\x12WORKFLOWPACKETDATA\x10\x02\x12\x10\n\x0c\x41\x43TIONPACKET\x10\x03\x12\x14\n\x10\x41\x43TIONPACKETDATA\x10\x04\x12\x11\n\rGENERALPACKET\x10\x05\x12\x0f\n\x0bUSERMESSAGE\x10\x06\x42\x08\n\x06packet\"\xa9\x01\n\x0eWorkflowPacket\x12\x33\n\x06sender\x18\x01 \x01(\x0b\x32#.core.WorkflowPacket.WorkflowSender\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x02 \x01(\t\x1aI\n\x0eWorkflowSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x1d\n\x15workflow_execution_id\x18\x03 \x01(\t\"\xfd\x02\n\x0c\x41\x63tionPacket\x12/\n\x06sender\x18\x01 \x01(\x0b\x32\x1f.core.ActionPacket.ActionSender\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x02 \x01(\t\x1aS\n\x0e\x41\x63tionArgument\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\x12\x11\n\treference\x18\x03 \x01(\t\x12\x11\n\tselection\x18\x04 \x01(\t\x1a\xcd\x01\n\x0c\x41\x63tionSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x14\n\x0c\x65xecution_id\x18\x03 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x04 \x01(\t\x12\x13\n\x0b\x61\x63tion_name\x18\x05 \x01(\t\x12\x34\n\targuments\x18\x06 \x03(\x0b\x32!.core.ActionPacket.ActionArgument\x12\x1d\n\x15workflow_execution_id\x18\x07 \x01(\t\x12\x11\n\tdevice_id\x18\x08 \x01(\x05\"\x90\x01\n\rGeneralPacket\x12\x31\n\x06sender\x18\x01 \x01(\x0b\x32!.core.GeneralPacket.GeneralSender\x1aL\n\rGeneralSender\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x02 \x01(\t\x12\x1d\n\x15workflow_execution_id\x18\x03 \x01(\t\"\xdf\x01\n\x13\x43ommunicationPacket\x12,\n\x04type\x18\x01 \x01(\x0e\x32\x1e.core.CommunicationPacket.Type\x12\x1d\n\x15workflow_execution_id\x18\x02 \x01(\t\x12\x0f\n\x07\x64\x61ta_in\x18\x03 \x01(\t\x12\x34\n\targuments\x18\x04 \x03(\x0b\x32!.core.ActionPacket.ActionArgument\"4\n\x04Type\x12\t\n\x05PAUSE\x10\x01\x12\n\n\x06RESUME\x10\x02\x12\x0b\n\x07TRIGGER\x10\x03\x12\x08\n\x04\x45XIT\x10\x04\"\x94\x01\n\x0bUserMessage\x12/\n\x06sender\x18\x01 \x01(\x0b\x32\x1f.core.ActionPacket.ActionSender\x12\x0f\n\x07subject\x18\x02 \x01(\t\x12\x0c\n\x04\x62ody\x18\x03 \x01(\t\x12\x17\n\x0frequires_reauth\x18\x04 \x01(\x08\x12\r\n\x05users\x18\x05 \x03(\x05\x12\r\n\x05roles\x18\x06 \x03(\x05\"\xa1\x01\n\x16\x45xecuteWorkflowMessage\x12\x13\n\x0bworkflow_id\x18\x01 \x01(\t\x12\x1d\n\x15workflow_execution_id\x18\x02 \x01(\t\x12\r\n\x05start\x18\x03 \x01(\t\x12\x34\n\targuments\x18\x04 \x03(\x0b\x32!.core.ActionPacket.ActionArgument\x12\x0e\n\x06resume\x18\x05 \x01(\x08')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -87,8 +87,8 @@ _COMMUNICATIONPACKET_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=1290,
-  serialized_end=1342,
+  serialized_start=1285,
+  serialized_end=1337,
 )
 _sym_db.RegisterEnumDescriptor(_COMMUNICATIONPACKET_TYPE)
 
@@ -184,7 +184,7 @@ _WORKFLOWPACKET_WORKFLOWSENDER = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='workflow_execution_uid', full_name='core.WorkflowPacket.WorkflowSender.workflow_execution_uid', index=2,
+      name='workflow_execution_id', full_name='core.WorkflowPacket.WorkflowSender.workflow_execution_id', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -202,7 +202,7 @@ _WORKFLOWPACKET_WORKFLOWSENDER = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=507,
-  serialized_end=581,
+  serialized_end=580,
 )
 
 _WORKFLOWPACKET = _descriptor.Descriptor(
@@ -238,7 +238,7 @@ _WORKFLOWPACKET = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=411,
-  serialized_end=581,
+  serialized_end=580,
 )
 
 
@@ -288,8 +288,8 @@ _ACTIONPACKET_ACTIONARGUMENT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=674,
-  serialized_end=757,
+  serialized_start=673,
+  serialized_end=756,
 )
 
 _ACTIONPACKET_ACTIONSENDER = _descriptor.Descriptor(
@@ -314,7 +314,7 @@ _ACTIONPACKET_ACTIONSENDER = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='execution_uid', full_name='core.ActionPacket.ActionSender.execution_uid', index=2,
+      name='execution_id', full_name='core.ActionPacket.ActionSender.execution_id', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -342,7 +342,7 @@ _ACTIONPACKET_ACTIONSENDER = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='workflow_execution_uid', full_name='core.ActionPacket.ActionSender.workflow_execution_uid', index=6,
+      name='workflow_execution_id', full_name='core.ActionPacket.ActionSender.workflow_execution_id', index=6,
       number=7, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -366,8 +366,8 @@ _ACTIONPACKET_ACTIONSENDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=760,
-  serialized_end=967,
+  serialized_start=759,
+  serialized_end=964,
 )
 
 _ACTIONPACKET = _descriptor.Descriptor(
@@ -402,8 +402,8 @@ _ACTIONPACKET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=584,
-  serialized_end=967,
+  serialized_start=583,
+  serialized_end=964,
 )
 
 
@@ -429,7 +429,7 @@ _GENERALPACKET_GENERALSENDER = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='workflow_execution_uid', full_name='core.GeneralPacket.GeneralSender.workflow_execution_uid', index=2,
+      name='workflow_execution_id', full_name='core.GeneralPacket.GeneralSender.workflow_execution_id', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -446,8 +446,8 @@ _GENERALPACKET_GENERALSENDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1038,
-  serialized_end=1115,
+  serialized_start=1035,
+  serialized_end=1111,
 )
 
 _GENERALPACKET = _descriptor.Descriptor(
@@ -475,8 +475,8 @@ _GENERALPACKET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=970,
-  serialized_end=1115,
+  serialized_start=967,
+  serialized_end=1111,
 )
 
 
@@ -495,7 +495,7 @@ _COMMUNICATIONPACKET = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='workflow_execution_uid', full_name='core.CommunicationPacket.workflow_execution_uid', index=1,
+      name='workflow_execution_id', full_name='core.CommunicationPacket.workflow_execution_id', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -527,8 +527,8 @@ _COMMUNICATIONPACKET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1118,
-  serialized_end=1342,
+  serialized_start=1114,
+  serialized_end=1337,
 )
 
 
@@ -592,8 +592,8 @@ _USERMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1345,
-  serialized_end=1493,
+  serialized_start=1340,
+  serialized_end=1488,
 )
 
 
@@ -612,7 +612,7 @@ _EXECUTEWORKFLOWMESSAGE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='workflow_execution_uid', full_name='core.ExecuteWorkflowMessage.workflow_execution_uid', index=1,
+      name='workflow_execution_id', full_name='core.ExecuteWorkflowMessage.workflow_execution_id', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -650,8 +650,8 @@ _EXECUTEWORKFLOWMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1496,
-  serialized_end=1658,
+  serialized_start=1491,
+  serialized_end=1652,
 )
 
 _MESSAGE.fields_by_name['type'].enum_type = _MESSAGE_TYPE
