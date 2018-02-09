@@ -122,7 +122,7 @@
                 </div>
             </div>
 
-            <ngx-datatable #userTable class='material expandable' [columnMode]="'flex'" [rows]='displayUsers'
+            <ngx-datatable #userTable class='material expandable' [columnMode]="'flex'" [rows]="displayUsers"
              [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sortType]="'multi'" [sorts]="[{prop: 'username', dir: 'asc'}]" [limit]="10">
                 <!-- Column Templates -->
                 <ngx-datatable-column name="Username" [flexGrow]="3">

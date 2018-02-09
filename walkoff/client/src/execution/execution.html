@@ -19,7 +19,7 @@
 		</div>
 	</div>
 
-	<ngx-datatable #workflowStatusTable class='material expandable workflowStatusTable' [columnMode]="'flex'" [rows]='displayWorkflowStatuses'
+	<ngx-datatable #workflowStatusTable class='material expandable workflowStatusTable' [columnMode]="'flex'" [rows]="displayWorkflowStatuses"
 	 [sorts]="[{prop: 'started_at', dir: 'desc'}]" [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [limit]="25">
 		<!-- Column Templates -->
 		<ngx-datatable-column name="Name" [flexGrow]="1">
@@ -79,8 +79,8 @@
 						<span aria-hidden="true">&times;</span>
 					</button>
 				</div>
-				<div class="modal-body" #actionResultsContainer>
-					<ngx-datatable #actionResultsTable class='material expandable' [columnMode]="'flex'" [rows]="loadedWorkflowStatus.results"
+				<div class="modal-body" #actionStatusContainer>
+					<ngx-datatable *ngIf="loadedWorkflowStatus" #actionStatusTable class='material expandable' [columnMode]="'flex'" [rows]="loadedWorkflowStatus.results"
 					 [sortType]="'multi'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]"
 					 [limit]="10">
 						<!-- Column Templates -->

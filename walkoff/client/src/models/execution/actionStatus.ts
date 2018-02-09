@@ -12,8 +12,8 @@ export class ActionStatus {
 	 * Type of action result. executing, success, failure
 	 */
 	status: string;
-	started_at: Date;
-	completed_at?: Date;
+	started_at: string;
+	completed_at?: string;
 	arguments: Argument[] = [];
 	result?: any;
 }

@@ -18,7 +18,7 @@
         </div>
     </div>
 
-    <ngx-datatable #deviceTable class='material expandable' [columnMode]="'flex'" [rows]='displayDevices' [sortType]="'multi'"
+    <ngx-datatable #deviceTable class='material expandable' [columnMode]="'flex'" [rows]="displayDevices" [sortType]="'multi'"
      [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'name', dir: 'asc'}]" [limit]="25">
         <!-- Column Templates -->
         <ngx-datatable-column name="Name" [flexGrow]="2">

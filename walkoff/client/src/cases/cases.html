@@ -77,7 +77,7 @@
 				</div>
 			</div>
 
-			<ngx-datatable #casesTable class='material expandable casesTable' [columnMode]="'flex'" [rows]='displayCases'
+			<ngx-datatable #casesTable class='material expandable casesTable' [columnMode]="'flex'" [rows]="displayCases"
 			 [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'name', dir: 'asc'}]" [limit]="25">
 				<!-- Column Templates -->
 				<ngx-datatable-column name="Name" [flexGrow]="1">

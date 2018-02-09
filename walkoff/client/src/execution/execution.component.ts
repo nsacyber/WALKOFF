@@ -1,8 +1,9 @@
-import { Component, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit, AfterViewChecked, ElementRef, ViewChild,
+	ChangeDetectorRef } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import * as _ from 'lodash';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { Select2OptionData } from 'ng2-select2';
+import { DatatableComponent } from '@swimlane/ngx-datatable';
 import 'rxjs/add/operator/debounceTime';
 
 import { ExecutionService } from './execution.service';
@@ -14,15 +15,18 @@ import { ActionStatus } from '../models/execution/actionStatus';
 import { Argument } from '../models/playbook/argument';
 
 @Component({
-	selector: 'scheduler-component',
-	templateUrl: './scheduler.html',
+	selector: 'execution-component',
+	templateUrl: './execution.html',
 	styleUrls: [
-		'./scheduler.css',
+		'./execution.css',
 	],
 	encapsulation: ViewEncapsulation.None,
 	providers: [ExecutionService, AuthService],
 })
-export class ExecutionComponent {
+export class ExecutionComponent implements OnInit, AfterViewChecked {
+	@ViewChild('actionStatusContainer') actionStatusContainer: ElementRef;
+	@ViewChild('actionStatusTable') actionStatusTable: DatatableComponent;
+
 	currentController: string;
 	schedulerStatus: string;
 	workflowStatuses: WorkflowStatus[] = [];
@@ -32,11 +36,12 @@ export class ExecutionComponent {
 	workflowSelectConfig: Select2Options;
 	selectedWorkflow: Workflow;
 	loadedWorkflowStatus: WorkflowStatus;
+	actionStatusComponentWidth: number;
 
 	filterQuery: FormControl = new FormControl();
 
 	constructor(
-		private executionService: ExecutionService, private authService: AuthService,
+		private executionService: ExecutionService, private authService: AuthService, private cdr: ChangeDetectorRef,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
 	}
 
@@ -55,6 +60,19 @@ export class ExecutionComponent {
 			.valueChanges
 			.debounceTime(500)
 			.subscribe(event => this.filterWorkflowStatuses());
+	}
+
+	/**
+	 * This angular function is used primarily to recalculate column widths for execution results table.
+	 */
+	ngAfterViewChecked(): void {
+		// Check if the table size has changed, and recalculate.
+		if (this.actionStatusTable && this.actionStatusTable.recalculate && 
+			(this.actionStatusContainer.nativeElement.clientWidth !== this.actionStatusComponentWidth)) {
+			this.actionStatusComponentWidth = this.actionStatusContainer.nativeElement.clientWidth;
+			this.actionStatusTable.recalculate();
+			this.cdr.detectChanges();
+		}
 	}
 
 	filterWorkflowStatuses(): void {

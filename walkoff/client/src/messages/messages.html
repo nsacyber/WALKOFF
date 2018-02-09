@@ -24,7 +24,7 @@
 	</div>
 
 	<template ngbModalContainer></template>
-	<ngx-datatable #messagesTable class='material expandable' [columnMode]="'flex'" [rows]='displayMessages' [sortType]="'multi'"
+	<ngx-datatable #messagesTable class='material expandable' [columnMode]="'flex'" [rows]="displayMessages" [sortType]="'multi'"
 	 [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'created_at', dir: 'desc'}]" [limit]="25">
 		<!-- Column Templates -->
 		<ngx-datatable-column name="" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="0">
