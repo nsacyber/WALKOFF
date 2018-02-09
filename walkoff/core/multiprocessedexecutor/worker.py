@@ -295,7 +295,7 @@ class Worker:
                 sender (execution element): The execution element that sent the signal.
                 kwargs (dict): Any extra data to send.
         """
-        if kwargs['event'] == WalkoffEvent.TriggerActionAwaitingData:
+        if kwargs['event'] in [WalkoffEvent.TriggerActionAwaitingData, WalkoffEvent.WorkflowPaused]:
             workflow = self.workflows[threading.currentThread().name]
             print(workflow._accumulator)
             print(workflow._instances)
@@ -306,7 +306,7 @@ class Worker:
                                            app_instances=workflow.get_instances())
             walkoff.coredb.devicedb.device_db.session.add(saved_workflow)
             walkoff.coredb.devicedb.device_db.session.commit()
-            print("Worker got trigger action awaiting data and saving state")
+            print("Worker saving state")
 
         packet_bytes = convert_to_protobuf(sender, self.workflows[threading.current_thread().name].get_execution_id(),
                                            **kwargs)

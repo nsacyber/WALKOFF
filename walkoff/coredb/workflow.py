@@ -125,10 +125,10 @@ class Workflow(ExecutionElement, Device_Base):
             self._executing_action = action
             logger.debug('Executing action {0} of workflow {1}'.format(action, self.name))
             if self._is_paused:
+                print("WORKFLOW PAUSED")
+                self._is_paused = False
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowPaused)
-                self._resume.wait()
-                self._resume.clear()
-                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowResumed)
+                return
 
             device_id = self.__setup_app_instance(self._instances, action)
 
@@ -139,10 +139,7 @@ class Workflow(ExecutionElement, Device_Base):
             else:
                 result = action.execute(instance=self._instances[device_id](), accumulator=self._accumulator,
                                         resume=resume)
-            print("here")
             if result and result.status == "trigger":
-                print("trigger")
-                print("Workflow returning")
                 return
             print("after here")
             self._accumulator[action.id] = action.get_output().result

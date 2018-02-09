@@ -12,6 +12,9 @@ from tests import config
 from tests.util.case_db_help import *
 from tests.util.thread_control import modified_setup_worker_env
 from tests.util import device_db_help
+from walkoff.coredb.workflowresults import WorkflowStatus, ActionStatus
+from walkoff.coredb import devicedb
+from walkoff.server import workflowresults  # Need this import
 
 
 class TestZMQCommunication(unittest.TestCase):
@@ -148,30 +151,46 @@ class TestZMQCommunication(unittest.TestCase):
         result['paused'] = False
         result['resumed'] = False
 
-        def workflow_paused_listener(sender, **kwargs):
-            result['paused'] = True
-            self.controller.resume_workflow(execution_id)
-
-        WalkoffEvent.WorkflowPaused.connect(workflow_paused_listener)
-
-        def workflow_resumed_listener(sender, **kwargs):
-            result['resumed'] = True
-
-        WalkoffEvent.WorkflowResumed.connect(workflow_resumed_listener)
+        @WalkoffEvent.WorkflowExecutionStart.connect
+        def action_1_about_to_begin_listener(sender, **kwargs):
+            if not result['resumed']:
+                threading.Thread(target=pause_resume_thread).start()
+                time.sleep(0)
 
         def pause_resume_thread():
             self.controller.pause_workflow(execution_id)
             return
 
-        def action_1_about_to_begin_listener(sender, **kwargs):
-            threading.Thread(target=pause_resume_thread).start()
-            time.sleep(0)
+        @WalkoffEvent.WorkflowPaused.connect
+        def workflow_paused_listener(sender, **kwargs):
+            print("Test resuming")
 
-        WalkoffEvent.WorkflowExecutionStart.connect(action_1_about_to_begin_listener)
+            workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
+                execution_id=sender['workflow_execution_id']).first()
+            workflow_status.paused()
+            action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
+                _workflow_status_id=sender['workflow_execution_id']).first()
+            action_status.paused()
+            devicedb.device_db.session.commit()
+
+            result['paused'] = True
+            self.controller.resume_workflow(execution_id)
+
+        @WalkoffEvent.WorkflowResumed.connect
+        def workflow_resumed_listener(sender, **kwargs):
+            result['resumed'] = True
 
         workflow = device_db_help.load_workflow('testGeneratedWorkflows/pauseWorkflowTest', 'pauseWorkflow')
+        action_ids = [action.id for action in workflow.actions]
+        setup_subscriptions_for_action(workflow.id, action_ids)
 
         execution_id = self.controller.execute_workflow(workflow.id)
         self.controller.wait_and_reset(1)
         self.assertTrue(result['paused'])
         self.assertTrue(result['resumed'])
+
+        actions = []
+        for id_ in action_ids:
+            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
+
+        self.assertEqual(len(actions), 3)

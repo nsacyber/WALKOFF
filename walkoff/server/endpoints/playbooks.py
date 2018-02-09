@@ -11,10 +11,13 @@ from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory
 import walkoff.coredb.devicedb
+from walkoff.coredb import WorkflowStatusEnum
+from walkoff.coredb.saved_workflow import SavedWorkflow
 from walkoff.coredb.playbook import Playbook
 from walkoff.coredb.workflow import Workflow
 from walkoff.coredb.argument import Argument
 from walkoff.helpers import InvalidExecutionElement, InvalidArgument, regenerate_workflow_ids
+from walkoff.events import WalkoffEvent
 
 
 def does_workflow_exist(playbook_id, workflow_id):
@@ -94,6 +97,7 @@ def create_playbook(source=None):
 
         current_app.logger.info('Playbook {0} created'.format(playbook_name))
         return playbook.read(), OBJECT_CREATED
+
     if source:
         return copy_playbook(source)
 
@@ -149,7 +153,6 @@ def delete_playbook(playbook_id):
 
 
 def copy_playbook(playbook_id):
-
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create', 'read']))
     @with_playbook('copy', playbook_id)
@@ -375,19 +378,17 @@ def pause_workflow(playbook_id, workflow_id):
         data = request.get_json()
         execution_id = data['id']
         status = running_context.controller.executor.get_workflow_status(execution_id)
-        if status == 1:  # WORKFLOW_RUNNING
-            if running_context.controller.pause_workflow(execution_id):
-                current_app.logger.info(
-                    'Paused workflow {0}-{1}:{2}'.format(playbook_id, workflow_id, execution_id))
-                return {"info": "Workflow paused"}, SUCCESS
-            else:
-                return {"error": "Invalid UUID."}, INVALID_INPUT_ERROR
-        elif status == 2:
+        if status == WorkflowStatusEnum.running:  # WORKFLOW_RUNNING
+            running_context.controller.pause_workflow(execution_id)
+            current_app.logger.info(
+                'Paused workflow {0}-{1}:{2}'.format(playbook_id, workflow_id, execution_id))
+            return {"info": "Workflow paused"}, SUCCESS
+        elif status == WorkflowStatusEnum.paused:
             return {"info": "Workflow already paused"}, SUCCESS
         elif status == 0:
             return {"error": 'Invalid UUID'}, INVALID_INPUT_ERROR
         else:
-            return {"error": 'Workflow stopped or awaiting data'}, SUCCESS_WITH_WARNING
+            return {"error": 'Workflow not in running state'}, SUCCESS_WITH_WARNING
 
     return __func()
 
@@ -402,19 +403,17 @@ def resume_workflow(playbook_id, workflow_id):
         data = request.get_json()
         execution_id = data['id']
         status = running_context.controller.executor.get_workflow_status(execution_id)
-        if status == 2:  # WORKFLOW_PAUSED
-            if running_context.controller.resume_workflow(execution_id):
-                current_app.logger.info(
-                    'Resumed workflow {0}-{1}:{2}'.format(playbook_id, workflow_id, execution_id))
-                return {"info": "Workflow resumed"}, SUCCESS
-            else:
-                return {"error": "Invalid UUID."}, INVALID_INPUT_ERROR
-        elif status == 1:
+        if status == WorkflowStatusEnum.paused:  # WORKFLOW_PAUSED
+            running_context.controller.resume_workflow(execution_id)
+            current_app.logger.info(
+                'Resumed workflow {0}-{1}:{2}'.format(playbook_id, workflow_id, execution_id))
+            return {"info": "Workflow resumed"}, SUCCESS
+        elif status == WorkflowStatusEnum.running:
             return {"info": "Workflow already running"}, SUCCESS
         elif status == 0:
             return {"error": 'Invalid UUID'}, INVALID_INPUT_ERROR
         else:
-            return {"error": 'Workflow stopped or awaiting data'}
+            return {"error": 'Workflow not in paused state'}
 
     return __func()
 
@@ -451,7 +450,8 @@ def read_result(execution_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     def __func():
-        workflow_result = case_database.case_db.session.query(WorkflowStatus).filter(WorkflowStatus.execution_id == execution_id).first()
+        workflow_result = case_database.case_db.session.query(WorkflowStatus).filter(
+            WorkflowStatus.execution_id == execution_id).first()
         if workflow_result is not None:
             return workflow_result.as_json(), SUCCESS
         else:

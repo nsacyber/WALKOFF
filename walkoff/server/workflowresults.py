@@ -31,13 +31,14 @@ def __workflow_started_callback(sender, **kwargs):
 
 @WalkoffEvent.WorkflowPaused.connect
 def __workflow_paused_callback(sender, **kwargs):
+    print("Workflowresults workflow paused")
     workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
         execution_id=sender['workflow_execution_id']).first()
     workflow_status.paused()
 
     action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
         _workflow_status_id=sender['workflow_execution_id']).first()
-    action_status.awaiting_data()
+    action_status.paused()
 
     devicedb.device_db.session.commit()
 

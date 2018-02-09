@@ -2,7 +2,6 @@ import logging
 
 from sqlalchemy import Column, PickleType
 
-from walkoff.dbtypes import Json
 from walkoff.coredb import Device_Base
 from walkoff.dbtypes import Guid
 logger = logging.getLogger(__name__)
@@ -13,7 +12,7 @@ class SavedWorkflow(Device_Base):
     workflow_execution_id = Column(Guid(), primary_key=True)
     workflow_id = Column(Guid(), nullable=False)
     action_id = Column(Guid(), nullable=False)
-    accumulator = Column(Json(), nullable=False)
+    accumulator = Column(PickleType(), nullable=False)
     app_instances = Column(PickleType(), nullable=False)
 
     def __init__(self, workflow_execution_id, workflow_id, action_id, accumulator, app_instances):

@@ -53,17 +53,13 @@ class Controller(object):
 
         return self.executor.pause_workflow(execution_id)
 
-    def resume_workflow(self, workflow_execution_id):
-        """Resumes a workflow that has been paused.
+    def resume_workflow(self, execution_id):
+        """Resumes a workflow.
 
         Args:
-            workflow_execution_id (str): The randomly-generated hexadecimal key that was returned from
-                pause_workflow(). This is needed to resume a workflow for security purposes.
-
-        Returns:
-            (bool) True if successful, False otherwise.
+            execution_id (str): The execution ID of the workflow to pause
         """
-        return self.executor.resume_workflow(workflow_execution_id)
+        return self.executor.resume_workflow(execution_id)
 
     def schedule_workflows(self, task_id, workflow_ids, trigger):
         """Schedules workflows to be run by the scheduler

@@ -15,10 +15,9 @@ from walkoff.events import WalkoffEvent
 from walkoff.core.multiprocessedexecutor.loadbalancer import LoadBalancer, Receiver
 from walkoff.core.multiprocessedexecutor.worker import Worker
 from walkoff.core.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
-from walkoff.coredb.action import Action
-from walkoff.coredb.saved_workflow import SavedWorkflow
 from walkoff.coredb.workflow import Workflow
 from walkoff.coredb.workflowresults import WorkflowStatus
+from walkoff.coredb.saved_workflow import SavedWorkflow
 from walkoff.coredb import WorkflowStatusEnum
 import walkoff.coredb.devicedb
 
@@ -53,7 +52,6 @@ class MultiprocessedExecutor(object):
         self.threading_is_initialized = False
         self.id = "executor"
         self.pids = None
-        self.workflow_status = {}
         self.workflows_executed = 0
 
         self.ctx = None
@@ -164,8 +162,8 @@ class MultiprocessedExecutor(object):
             logger.info('Executing workflow {0} for action {1}'.format(workflow.name, start))
         else:
             logger.info('Executing workflow {0} with default starting action'.format(workflow.name, start))
-        self.workflow_status[execution_id] = WORKFLOW_RUNNING
 
+        print("Pending")
         WalkoffEvent.WorkflowExecutionPending.send(workflow)
         self.manager.add_workflow(workflow.id, execution_id, start, start_arguments, resume)
 
@@ -178,32 +176,40 @@ class MultiprocessedExecutor(object):
         Args:
             execution_id (str): The execution id of the workflow.
         """
-        if (execution_id in self.workflow_status
-                and self.workflow_status[execution_id] == WORKFLOW_RUNNING):
+        workflow_status = walkoff.coredb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
+            execution_id=execution_id).first()
+        print("Workflow status: {}".format(workflow_status.__dict__))
+        if workflow_status and workflow_status.status == WorkflowStatusEnum.running:
+            print("Sending pause message")
             self.manager.pause_workflow(execution_id)
-            self.workflow_status[execution_id] = WORKFLOW_PAUSED
             return True
         else:
-            logger.warning('Cannot pause workflow {0}. Invalid key'.format(execution_id))
+            logger.warning('Cannot pause workflow {0}. Invalid key, or workflow not running.'.format(execution_id))
             return False
 
     def resume_workflow(self, execution_id):
-        """Resumes a workflow that has been paused.
+        """Resumes a workflow that is currently paused.
 
         Args:
-            execution_id (str): The randomly-generated hexadecimal key that was returned from
-                pause_workflow(). This is needed to resume a workflow for security purposes.
-
-        Returns:
-            True if successful, false otherwise.
+            execution_id (str): The execution id of the workflow.
         """
-        if (execution_id in self.workflow_status
-                and self.workflow_status[execution_id] == WORKFLOW_PAUSED):
-            self.manager.resume_workflow(execution_id)
-            self.workflow_status[execution_id] = WORKFLOW_RUNNING
+        print("In resume func")
+        workflow_status = walkoff.coredb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
+            execution_id=execution_id).first()
+
+        print(workflow_status.__dict__)
+
+        if workflow_status and workflow_status.status == WorkflowStatusEnum.paused:
+            print("Doing resume")
+            saved_state = walkoff.coredb.devicedb.device_db.session.query(SavedWorkflow).filter_by(
+                workflow_execution_id=execution_id).first()
+            workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_status.workflow_id).first()
+            workflow._execution_id = execution_id
+            WalkoffEvent.WorkflowResumed.send(workflow)
+            self.execute_workflow(workflow, start=saved_state.action_id, resume=True)
             return True
         else:
-            logger.warning('Cannot resume workflow {0}. Invalid key'.format(execution_id))
+            logger.warning('Cannot resume workflow {0}. Invalid key, or workflow not paused.'.format(execution_id))
             return False
 
     @staticmethod
@@ -226,10 +232,12 @@ class MultiprocessedExecutor(object):
         Returns:
             The status of the workflow
         """
-        try:
-            return self.workflow_status[execution_id]
-        except KeyError:
-            logger.error("Key {} does not exist in {}.").format(execution_id, self.workflow_status.items())
+        workflow_status = walkoff.coredb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
+            execution_id=execution_id).first()
+        if workflow_status:
+            return workflow_status.status
+        else:
+            logger.error("Key {} does not exist in database.").format(execution_id)
             return 0
 
     def send_data_to_trigger(self, data_in, workflow_execution_ids, arguments=None):

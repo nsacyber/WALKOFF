@@ -153,23 +153,6 @@ class LoadBalancer:
         else:
             return False
 
-    def resume_workflow(self, workflow_execution_id):
-        """Resumes a workflow that has previously been paused.
-
-        Args:
-            workflow_execution_id (str): The execution ID of the workflow.
-        """
-        logger.info('Resuming workflow {0}'.format(workflow_execution_id))
-        if workflow_execution_id in self.workflow_comms:
-            message = CommunicationPacket()
-            message.type = CommunicationPacket.RESUME
-            message.workflow_execution_id = workflow_execution_id
-            message_bytes = message.SerializeToString()
-            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_id], message_bytes])
-            return True
-        else:
-            return False
-
     def send_data_to_trigger(self, data_in, workflow_execution_ids, arguments=None):
         """Sends the data_in to the workflows specified in workflow_ids.
 
