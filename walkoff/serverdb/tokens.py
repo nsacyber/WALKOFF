@@ -24,7 +24,7 @@ class BlacklistedToken(db.Model):
             'id': self.id,
             'jti': self.jti,
             'user': self.user_identity,
-            'expires': self.expires
+            'expires': str(self.expires)
         }
 
 

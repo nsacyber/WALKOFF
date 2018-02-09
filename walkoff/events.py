@@ -18,8 +18,9 @@ class EventType(Enum):
     workflow = 3
     action = 4
     branch = 5
-    condition = 6
-    transform = 7
+    conditonalexpression = 6
+    condition = 7
+    transform = 8
     other = 256
 
 
@@ -77,6 +78,11 @@ class BranchSignal(WalkoffSignal):
         super(BranchSignal, self).__init__(name, EventType.branch, message=message)
 
 
+class ConditionalExpressionSignal(WalkoffSignal):
+    def __init__(self, name, message):
+        super(ConditionalExpressionSignal, self).__init__(name, EventType.conditonalexpression, message=message)
+
+
 class ConditionSignal(WalkoffSignal):
     def __init__(self, name, message):
         super(ConditionSignal, self).__init__(name, EventType.condition, message=message)
@@ -117,6 +123,11 @@ class WalkoffEvent(Enum):
 
     BranchTaken = BranchSignal('Branch Taken', 'Branch taken')
     BranchNotTaken = BranchSignal('Branch Not Taken', 'Branch not taken')
+
+    ConditionalExpressionTrue = ConditionalExpressionSignal('Conditional Expression True',
+                                                            'Conditional expression evaluated true')
+    ConditionalExpressionFalse = ConditionalExpressionSignal('Conditional Expression False',
+                                                             'Conditional expression evaluated false')
 
     ConditionSuccess = ConditionSignal('Condition Success', 'Condition executed without error')
     ConditionError = ConditionSignal('Condition Error', 'Condition executed with error')

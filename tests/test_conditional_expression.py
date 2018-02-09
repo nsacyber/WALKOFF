@@ -11,6 +11,8 @@ from tests.util import device_db_help
 import walkoff.coredb.devicedb as devicedb
 from uuid import UUID, uuid4
 from walkoff.helpers import InvalidExecutionElement
+from walkoff.events import WalkoffEvent
+
 
 class TestCondition(unittest.TestCase):
     @classmethod
@@ -102,15 +104,17 @@ class TestCondition(unittest.TestCase):
         self.assertFalse(expression.execute('3.4', {}))
 
     def test_execute_and_conditions_only(self):
-        expression = ConditionalExpression('and', conditions=[self.get_regex_condition(), self.get_regex_condition('aa')])
+        expression = ConditionalExpression(
+            'and', conditions=[self.get_regex_condition(), self.get_regex_condition('aa')])
         self.assertTrue(expression.execute('aaa', {}))
         self.assertFalse(expression.execute('bbb', {}))
 
     def test_execute_and_expressions_only(self):
         expression = ConditionalExpression(
             'and',
-            child_expressions=[ConditionalExpression('truth', conditions=[self.get_regex_condition()]),
-                               ConditionalExpression('not', conditions=[self.get_regex_condition('ab')])])
+            child_expressions=[
+                ConditionalExpression('truth', conditions=[self.get_regex_condition()]),
+                ConditionalExpression('not', conditions=[self.get_regex_condition('ab')])])
         self.assertTrue(expression.execute('aaa', {}))
         self.assertFalse(expression.execute('ab', {}))
 
@@ -118,8 +122,9 @@ class TestCondition(unittest.TestCase):
         expression = ConditionalExpression(
             'and',
             conditions=[self.get_regex_condition('aa')],
-            child_expressions=[ConditionalExpression('truth', conditions=[self.get_regex_condition()]),
-                               ConditionalExpression('not', conditions=[self.get_regex_condition('ab')])])
+            child_expressions=[
+                ConditionalExpression('truth', conditions=[self.get_regex_condition()]),
+                ConditionalExpression('not', conditions=[self.get_regex_condition('ab')])])
         self.assertTrue(expression.execute('aaa', {}))
         self.assertFalse(expression.execute('aab', {}))
 
@@ -133,8 +138,9 @@ class TestCondition(unittest.TestCase):
     def test_execute_or_expressions_only(self):
         expression = ConditionalExpression(
             'or',
-            child_expressions=[ConditionalExpression('truth', conditions=[self.get_regex_condition('aa')]),
-                               ConditionalExpression('truth', conditions=[self.get_regex_condition('bb')])])
+            child_expressions=[
+                ConditionalExpression('truth', conditions=[self.get_regex_condition('aa')]),
+                ConditionalExpression('truth', conditions=[self.get_regex_condition('bb')])])
         for true_pattern in ('aa', 'bb', 'aabb'):
             self.assertTrue(expression.execute(true_pattern, {}))
         self.assertFalse(expression.execute('ccc', {}))
@@ -143,8 +149,9 @@ class TestCondition(unittest.TestCase):
         expression = ConditionalExpression(
             'or',
             conditions=[self.get_regex_condition('aa')],
-            child_expressions=[ConditionalExpression('truth', conditions=[self.get_regex_condition('bb')]),
-                               ConditionalExpression('truth', conditions=[self.get_regex_condition('cc')])])
+            child_expressions=[
+                ConditionalExpression('truth', conditions=[self.get_regex_condition('bb')]),
+                ConditionalExpression('truth', conditions=[self.get_regex_condition('cc')])])
         for true_pattern in ('aa', 'bb', 'cc', 'aabb', 'bbcc', 'aacc'):
             self.assertTrue(expression.execute(true_pattern, {}))
         self.assertFalse(expression.execute('d', {}))
@@ -160,8 +167,9 @@ class TestCondition(unittest.TestCase):
     def test_execute_xor_expressions_only(self):
         expression = ConditionalExpression(
             'xor',
-            child_expressions=[ConditionalExpression('truth', conditions=[self.get_regex_condition('aa')]),
-                               ConditionalExpression('truth', conditions=[self.get_regex_condition('bb')])])
+            child_expressions=[
+                ConditionalExpression('truth', conditions=[self.get_regex_condition('aa')]),
+                ConditionalExpression('truth', conditions=[self.get_regex_condition('bb')])])
         for true_pattern in ('aa', 'bb'):
             self.assertTrue(expression.execute(true_pattern, {}))
         for false_pattern in ('aabb', 'cc'):
@@ -171,9 +179,40 @@ class TestCondition(unittest.TestCase):
         expression = ConditionalExpression(
             'xor',
             conditions=[self.get_regex_condition('aa')],
-            child_expressions=[ConditionalExpression('truth', conditions=[self.get_regex_condition('bb')]),
-                               ConditionalExpression('truth', conditions=[self.get_regex_condition('cc')])])
+            child_expressions=[
+                ConditionalExpression('truth', conditions=[self.get_regex_condition('bb')]),
+                ConditionalExpression('truth', conditions=[self.get_regex_condition('cc')])])
         for true_pattern in ('aa', 'bb', 'cc'):
             self.assertTrue(expression.execute(true_pattern, {}))
         for false_pattern in ('aabb', 'bbcc', 'aacc', 'd'):
             self.assertFalse(expression.execute(false_pattern, {}))
+
+    def test_execute_true_sends_event(self):
+        expression = ConditionalExpression('truth', conditions=[self.get_always_true_condition()])
+        result = {'triggered': False}
+
+        @WalkoffEvent.CommonWorkflowSignal.connect
+        def callback_is_sent(sender, **kwargs):
+            if isinstance(sender, ConditionalExpression):
+                self.assertIn('event', kwargs)
+                self.assertEqual(kwargs['event'], WalkoffEvent.ConditionalExpressionTrue)
+                result['triggered'] = True
+
+        expression.execute('3.4', {})
+
+        self.assertTrue(result['triggered'])
+
+    def test_execute_false_sends_event(self):
+        expression = ConditionalExpression('not', conditions=[self.get_always_true_condition()])
+        result = {'triggered': False}
+
+        @WalkoffEvent.CommonWorkflowSignal.connect
+        def callback_is_sent(sender, **kwargs):
+            if isinstance(sender, ConditionalExpression):
+                self.assertIn('event', kwargs)
+                self.assertEqual(kwargs['event'], WalkoffEvent.ConditionalExpressionFalse)
+                result['triggered'] = True
+
+        expression.execute('3.4', {})
+
+        self.assertTrue(result['triggered'])

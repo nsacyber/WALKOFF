@@ -7,6 +7,7 @@ from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.dbtypes import Guid
 from uuid import uuid4
 from walkoff.helpers import InvalidExecutionElement
+from walkoff.events import WalkoffEvent
 logger = logging.getLogger(__name__)
 
 
@@ -56,7 +57,12 @@ class ConditionalExpression(ExecutionElement, Device_Base):
                                   'not': self._not}
 
     def execute(self, data_in, accumulator):
-        return self.__operator_lookup[self.operator](data_in, accumulator)
+        result = self.__operator_lookup[self.operator](data_in, accumulator)
+        if result:
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionTrue)
+        else:
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionFalse)
+        return result
 
     def _and(self, data_in, accumulator):
         return (all(condition.execute(data_in, accumulator) for condition in self.conditions)
