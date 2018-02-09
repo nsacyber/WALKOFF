@@ -38,9 +38,21 @@ class LoadBalancer:
 
         @WalkoffEvent.WorkflowShutdown.connect
         def handle_workflow_shutdown(sender, **kwargs):
-            self.on_workflow_shutdown(sender, **kwargs)
+            self.on_worker_available(sender, **kwargs)
 
         self.handle_workflow_shutdown = handle_workflow_shutdown
+
+        @WalkoffEvent.TriggerActionAwaitingData.connect
+        def handle_workflow_awaiting_data(sender, **kwargs):
+            self.on_worker_available(sender, **kwargs)
+
+        self.handle_workflow_awaiting_data = handle_workflow_awaiting_data
+
+        @WalkoffEvent.WorkflowPaused.connect
+        def handle_workflow_paused(sender, **kwargs):
+            self.on_worker_available(sender, **kwargs)
+
+        self.handle_workflow_paused = handle_workflow_paused
 
         self.ctx = ctx
         server_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "server.key_secret")
@@ -76,7 +88,9 @@ class LoadBalancer:
 
             # There is a worker available and a workflow in the queue, so pop it off and send it to the worker
             if any(val > 0 for val in self.workers.values()) and not self.pending_workflows.empty():
+                print("Worker available, about to grab workflow")
                 workflow_id, workflow_execution_id, start, start_arguments, resume = self.pending_workflows.get()
+                print("LB sending workflow to worker")
                 worker = self.__get_available_worker()
                 self.workflow_comms[workflow_execution_id] = worker
 
@@ -119,6 +133,7 @@ class LoadBalancer:
             start_arguments (list[Argument]): The arguments to the starting action of the workflow. Defaults to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
         """
+        print("Workflow placed on queue")
         self.pending_workflows.put((workflow_id, workflow_execution_id, start, start_arguments, resume))
 
     def pause_workflow(self, workflow_execution_id):
@@ -182,17 +197,21 @@ class LoadBalancer:
     def send_exit_to_worker_comms(self):
         """Sends the exit message over the communication sockets, otherwise worker receiver threads will hang
         """
+        print("Exit called")
         message = CommunicationPacket()
         message.type = CommunicationPacket.EXIT
         message_bytes = message.SerializeToString()
         for worker in self.workers:
             self.comm_socket.send_multipart([worker, message_bytes])
 
-    def on_workflow_shutdown(self, sender, **kwargs):
+    def on_worker_available(self, sender, **kwargs):
         if sender['workflow_execution_id'] in self.workflow_comms:
+            print("Incrementing ")
+            print(self.workers)
             worker = self.workflow_comms[sender['workflow_execution_id']]
             self.workers[worker] += 1
             self.workflow_comms.pop(sender['workflow_execution_id'])
+            print(self.workers)
 
     @staticmethod
     def __set_arguments_for_proto(message, arguments):

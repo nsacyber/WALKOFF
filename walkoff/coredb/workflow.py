@@ -55,7 +55,6 @@ class Workflow(ExecutionElement, Device_Base):
         self._accumulator = {}
         self._execution_id = 'default'
         self._instances = {}
-        self._exit = False
 
     @orm.reconstructor
     def init_on_load(self):
@@ -64,7 +63,6 @@ class Workflow(ExecutionElement, Device_Base):
         self._accumulator = {}
         self._instances = {}
         self._execution_id = 'default'
-        self._exit = False
 
     def remove_action(self, id_):
         """Removes a Action object from the Workflow's list of Actions given the Action ID.
@@ -142,7 +140,7 @@ class Workflow(ExecutionElement, Device_Base):
                 result = action.execute(instance=self._instances[device_id](), accumulator=self._accumulator,
                                         resume=resume)
             print("here")
-            if result.status == "trigger":
+            if result and result.status == "trigger":
                 print("trigger")
                 print("Workflow returning")
                 return
@@ -165,8 +163,10 @@ class Workflow(ExecutionElement, Device_Base):
         current_action = self.__get_action_by_id(current_id)
         print(self.actions)
         print(current_id)
+        print(current_action)
 
-        while current_action and not self._exit:
+        while current_action:
+            print("yielding action")
             yield current_action
             current_id = self.get_branch(current_action, self._accumulator)
             current_action = self.__get_action_by_id(current_id) if current_id is not None else None

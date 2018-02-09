@@ -306,7 +306,6 @@ class Worker:
                                            app_instances=workflow.get_instances())
             walkoff.coredb.devicedb.device_db.session.add(saved_workflow)
             walkoff.coredb.devicedb.device_db.session.commit()
-            workflow._exit = True
             print("Worker got trigger action awaiting data and saving state")
 
         packet_bytes = convert_to_protobuf(sender, self.workflows[threading.current_thread().name].get_execution_id(),

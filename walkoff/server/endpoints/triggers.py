@@ -54,6 +54,7 @@ def send_data_to_trigger():
             if executed:
                 WalkoffEvent.TriggerActionTaken.send(exec_action, data={'workflow_execution_id': execution_id})
                 completed_execution_ids.append(execution_id)
+                print("Trigger success, sending off workflow")
                 running_context.controller.execute_workflow(workflow.id, start=saved_state.action_id,
                                                             start_arguments=arg_objects, resume=True)
             else:
