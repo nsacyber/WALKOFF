@@ -212,6 +212,37 @@ class MultiprocessedExecutor(object):
             logger.warning('Cannot resume workflow {0}. Invalid key, or workflow not paused.'.format(execution_id))
             return False
 
+    def resume_trigger_step(self, execution_id, data_in, arguments=None):
+        """Resumes a workflow awaiting trigger data, if the conditions are met.
+
+        Args:
+            execution_id (str): The execution ID of the workflow
+            data_in (dict): The data to send to the trigger
+            arguments (list[Argument], optional): Optional list of new Arguments for the trigger action.
+                Defaults to None.
+        """
+        saved_state = walkoff.coredb. devicedb.device_db.session.query(SavedWorkflow).filter_by(
+            workflow_execution_id=execution_id).first()
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=saved_state.workflow_id).first()
+        workflow._execution_id = execution_id
+
+        executed = False
+        exec_action = None
+        for action in workflow.actions:
+            if action.id == saved_state.action_id:
+                exec_action = action
+                executed = action.execute_trigger(data_in, saved_state.accumulator)
+                break
+
+        if executed:
+            WalkoffEvent.TriggerActionTaken.send(exec_action, data={'workflow_execution_id': execution_id})
+            print("Trigger success, sending off workflow")
+            self.execute_workflow(workflow, start=saved_state.action_id, start_arguments=arguments, resume=True)
+            return True
+        else:
+            WalkoffEvent.TriggerActionNotTaken.send(exec_action, data={'workflow_execution_id': execution_id})
+            return False
+
     @staticmethod
     def get_waiting_workflows():
         """Gets a list of the execution IDs of workflows currently awaiting data to be sent to a trigger.

@@ -61,6 +61,17 @@ class Controller(object):
         """
         return self.executor.resume_workflow(execution_id)
 
+    def resume_trigger_step(self, execution_id, data_in, arguments=None):
+        """Resumes a workflow awaiting trigger data, if the conditions are met.
+
+        Args:
+            execution_id (str): The execution ID of the workflow
+            data_in (dict): The data to send to the trigger
+            arguments (list[Argument], optional): Optional list of new Arguments for the trigger action.
+                Defaults to None.
+        """
+        return self.executor.resume_trigger_step(execution_id, data_in, arguments)
+
     def schedule_workflows(self, task_id, workflow_ids, trigger):
         """Schedules workflows to be run by the scheduler
 

@@ -39,26 +39,8 @@ def send_data_to_trigger():
             arg_objects.append(Argument(**arg))
 
         for execution_id in execution_ids:
-            saved_state = devicedb.device_db.session.query(SavedWorkflow).filter_by(workflow_execution_id=execution_id).first()
-            workflow = devicedb.device_db.session.query(Workflow).filter_by(id=saved_state.workflow_id).first()
-            workflow._execution_id = execution_id
-
-            executed = False
-            exec_action = None
-            for action in workflow.actions:
-                if action.id == saved_state.action_id:
-                    exec_action = action
-                    executed = action.execute_trigger(data_in, saved_state.accumulator)
-                    break
-
-            if executed:
-                WalkoffEvent.TriggerActionTaken.send(exec_action, data={'workflow_execution_id': execution_id})
+            if running_context.controller.resume_trigger_step(execution_id, data_in, arg_objects):
                 completed_execution_ids.append(execution_id)
-                print("Trigger success, sending off workflow")
-                running_context.controller.execute_workflow(workflow.id, start=saved_state.action_id,
-                                                            start_arguments=arg_objects, resume=True)
-            else:
-                WalkoffEvent.TriggerActionNotTaken.send(exec_action, data={'workflow_execution_id': execution_id})
 
         print("Completed: {}".format(completed_execution_ids))
 
