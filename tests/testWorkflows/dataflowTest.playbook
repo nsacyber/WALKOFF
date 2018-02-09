@@ -69,13 +69,11 @@
             ],
             "branches": [
                 {
-                    "conditions": [],
                     "destination_id": "6bd6ad07-bc96-418a-8841-76552cbc5caf",
                     "source_id": "b714d23b-6cd0-4de2-9361-67cae24c8e6b",
                     "status": "Success"
                 },
                 {
-                    "conditions": [],
                     "destination_id": "b714d23b-6cd0-4de2-9361-67cae24c8e6b",
                     "source_id": "837e5874-5251-4a33-a927-239c55699423",
                     "status": "Success"

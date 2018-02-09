@@ -27,25 +27,28 @@
             ],
             "branches": [
                 {
-                    "conditions": [
-                        {
-                            "action_name": "regMatch",
-                            "app_name": "HelloWorldBounded",
-                            "arguments": [
-                                {
-                                    "name": "regex",
-                                    "value": "(.*)"
-                                }
-                            ],
-                            "transforms": [
-                                {
-                                    "action_name": "length",
-                                    "app_name": "HelloWorldBounded",
-                                    "arguments": []
-                                }
-                            ]
-                        }
-                    ],
+                    "condition": {
+                        "conditions": [
+                            {
+                                "action_name": "regMatch",
+                                "app_name": "HelloWorldBounded",
+                                "arguments": [
+                                    {
+                                        "name": "regex",
+                                        "value": "(.*)"
+                                    }
+                                ],
+                                "transforms": [
+                                    {
+                                        "action_name": "length",
+                                        "app_name": "HelloWorldBounded",
+                                        "arguments": []
+                                    }
+                                ]
+                            }
+                        ],
+                        "operation": "and"
+                    },
                     "destination_id": "0d108ac1-579c-4da7-89e8-b0c08a2232c0",
                     "source_id": "9252885c-8a3b-405c-8b66-a60b5d74733d",
                     "status": "Success"
