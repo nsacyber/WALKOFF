@@ -491,11 +491,14 @@ class DeviceDatabase(object):
     __instance = None
 
     def __init__(self):
+        print('here')
         # All of these imports are necessary
         from walkoff.coredb.argument import Argument
+        from walkoff.coredb.conditionalexpression import ConditionalExpression
         from walkoff.coredb.action import Action
         from walkoff.coredb.branch import Branch
         from walkoff.coredb.condition import Condition
+
         from walkoff.coredb.playbook import Playbook
         from walkoff.coredb.position import Position
         from walkoff.coredb.transform import Transform

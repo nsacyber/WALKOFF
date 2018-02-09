@@ -20,13 +20,13 @@ class ConditionalExpression(ExecutionElement, Device_Base):
     operator = Column(Enum('truth', 'not', 'and', 'or', 'xor', name='operator_types'), nullable=False)
     child_expressions = relationship('ConditionalExpression',
                                      cascade='all, delete-orphan',
-                                     backref=backref('parent', remote_side=id))
+                                     backref=backref('_parent', remote_side=id))
     conditions = relationship(
         'Condition',
         backref=backref('_expression'),
         cascade='all, delete-orphan')
 
-    def __init__(self, operator, id=None, child_expressions=None, conditions=None, parent=None):
+    def __init__(self, operator, id=None, child_expressions=None, conditions=None):
         ExecutionElement.__init__(self, id)
         if operator in ('truth', 'not') and len(child_expressions or []) + len(conditions or []) != 1:
             raise InvalidExecutionElement(
@@ -42,11 +42,10 @@ class ConditionalExpression(ExecutionElement, Device_Base):
                                   'xor': self._xor,
                                   'truth': self._truth,
                                   'not': self._not}
-        self.parent = parent
 
     def _construct_children(self, child_expressions):
         for child in child_expressions:
-            child.parent = self
+            child._parent = self
 
     @orm.reconstructor
     def init_on_load(self):

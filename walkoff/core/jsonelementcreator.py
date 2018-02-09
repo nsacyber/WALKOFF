@@ -71,13 +71,15 @@ class JsonElementCreator(object):
             from walkoff.coredb.workflow import Workflow
             from walkoff.coredb.action import Action
             from walkoff.coredb.branch import Branch
+            from walkoff.coredb.conditionalexpression import ConditionalExpression
             from walkoff.coredb.condition import Condition
             from walkoff.coredb.transform import Transform
             cls.playbook_class_ordering = OrderedDict([
                 (Playbook, {'workflows': Workflow}),
                 (Workflow, OrderedDict([('actions', Action), ('branches', Branch)])),
-                (Action, {'triggers': Condition}),
-                (Branch, {'conditions': Condition}),
+                (Action, {'trigger': ConditionalExpression}),
+                (Branch, {'condition': ConditionalExpression}),
+                (ConditionalExpression, {'conditions': Condition, 'child_expressions': ConditionalExpression}),
                 (Condition, {'transforms': Transform}),
                 (Transform, None)
             ])

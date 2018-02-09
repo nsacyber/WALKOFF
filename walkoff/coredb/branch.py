@@ -18,10 +18,11 @@ class Branch(ExecutionElement, Device_Base):
     source_id = Column(Guid(), nullable=False)
     destination_id = Column(Guid(), nullable=False)
     status = Column(String(80))
-    conditions = relationship('Condition', backref=backref('_branch'), cascade='all, delete-orphan')
+    condition = relationship('ConditionalExpression', backref=backref('_branch'), cascade='all, delete-orphan',
+                             uselist=False)
     priority = Column(Integer)
 
-    def __init__(self, source_id, destination_id, id=None, status='Success', conditions=None, priority=999):
+    def __init__(self, source_id, destination_id, id=None, status='Success', condition=None, priority=999):
         """Initializes a new Branch object.
         
         Args:
@@ -30,7 +31,7 @@ class Branch(ExecutionElement, Device_Base):
                 Branch are met.
             status (str, optional): Optional field to keep track of the status of the Branch. Defaults to
                 "Success".
-            conditions (list[Condition], optional): A list of Condition objects for the Branch object.
+            condition (ConditionalExpression, optional): The condition which must be fulfilled for this branch.
                 Defaults to None.
             priority (int, optional): Optional priority parameter to specify which Branch in the Workflow's
                 list of Branches should be executed if multiple have conditions resulting to True.
@@ -41,14 +42,14 @@ class Branch(ExecutionElement, Device_Base):
         self.destination_id = destination_id
         self.status = status
         self.priority = priority
-
-        self.conditions = []
-        if conditions:
-            self.conditions = conditions
+        self.condition = condition
 
     def __eq__(self, other):
-        return self.source_id == other.source_id and self.destination_id == other.destination_id and \
-               self.status == other.status and set(self.conditions) == set(other.conditions)
+        return (self.source_id == other.source_id
+                and self.destination_id == other.destination_id
+                and self.status == other.status
+                and self.priority == other.priority
+                and set(self.condition) == set(other.conditions))
 
     def __lt__(self, other):
         return self.priority < other.priority
@@ -64,8 +65,9 @@ class Branch(ExecutionElement, Device_Base):
             Destination UID for the next Action that should be taken, None if the data_in was not valid
                 for this Branch.
         """
+
         if data_in is not None and data_in.status == self.status:
-            if all(condition.execute(data_in=data_in.result, accumulator=accumulator) for condition in self.conditions):
+            if self.condition is None or self.condition.execute(data_in=data_in.result, accumulator=accumulator):
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.BranchTaken)
                 logger.debug('Branch is valid for input {0}'.format(data_in))
                 return self.destination_id

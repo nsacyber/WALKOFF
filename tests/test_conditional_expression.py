@@ -8,8 +8,6 @@ from walkoff.coredb.condition import Condition
 from tests.config import test_apps_path
 import walkoff.config.paths
 from tests.util import device_db_help
-import walkoff.coredb.devicedb as devicedb
-from uuid import UUID, uuid4
 from walkoff.helpers import InvalidExecutionElement
 from walkoff.events import WalkoffEvent
 
@@ -216,3 +214,12 @@ class TestCondition(unittest.TestCase):
         expression.execute('3.4', {})
 
         self.assertTrue(result['triggered'])
+
+    def test_read_doesnt_infinitely_recurse(self):
+        expression = ConditionalExpression(
+            'xor',
+            conditions=[self.get_regex_condition('aa')],
+            child_expressions=[
+                ConditionalExpression('truth', conditions=[self.get_regex_condition('bb')]),
+                ConditionalExpression('truth', conditions=[self.get_regex_condition('cc')])])
+        expression.read()

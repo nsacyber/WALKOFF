@@ -17,8 +17,6 @@ logger = logging.getLogger(__name__)
 
 class Condition(ExecutionElement, Device_Base):
     __tablename__ = 'condition'
-    _action_id = Column(Guid(), ForeignKey('action.id'))
-    _branch_id = Column(Guid(), ForeignKey('branch.id'))
     _conditional_expression_id = Column(Guid(), ForeignKey('conditional_expression.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
