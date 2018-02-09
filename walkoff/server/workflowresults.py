@@ -88,15 +88,17 @@ def __workflow_aborted(sender, **kwargs):
 
 @WalkoffEvent.ActionStarted.connect
 def __action_start_callback(sender, **kwargs):
+    print("Got action started callback")
     action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
         execution_id=sender['execution_id']).first()
     if action_status:
         action_status.status = ActionStatusEnum.executing
     else:
+        workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(execution_id=sender['workflow_execution_id']).first()
         arguments = sender['arguments'] if 'arguments' in sender else []
         action_status = ActionStatus(sender['execution_id'], sender['id'], sender['name'], sender['app_name'],
                                      sender['action_name'], json.dumps(arguments))
-        action_status._workflow_status_id = sender['workflow_execution_id']
+        workflow_status._action_statuses.append(action_status)
         devicedb.device_db.session.add(action_status)
 
     devicedb.device_db.session.commit()

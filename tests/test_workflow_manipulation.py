@@ -2,8 +2,6 @@ import socket
 import unittest
 
 import walkoff.appgateway
-import walkoff.case.database as case_database
-import walkoff.case.subscription as case_subscription
 import walkoff.config.config
 import walkoff.controller
 import walkoff.core.multiprocessedexecutor
@@ -12,7 +10,10 @@ from tests import config
 from tests.util.mock_objects import *
 import walkoff.config.paths
 from tests.util import device_db_help
-
+from walkoff.coredb import devicedb
+from walkoff.coredb.workflowresults import WorkflowStatus, ActionStatus
+from tests.util.case_db_help import *
+from walkoff.server import workflowresults  # Need this import
 
 try:
     from importlib import reload
@@ -55,46 +56,62 @@ class TestWorkflowManipulation(unittest.TestCase):
         result['paused'] = False
         result['resumed'] = False
 
-        def workflow_paused_listener(sender, **kwargs):
-            result['paused'] = True
-            self.controller.resume_workflow(execution_id)
-
-        WalkoffEvent.WorkflowPaused.connect(workflow_paused_listener)
-
-        def workflow_resumed_listener(sender, **kwargs):
-            result['resumed'] = True
-
-        WalkoffEvent.WorkflowResumed.connect(workflow_resumed_listener)
+        @WalkoffEvent.WorkflowExecutionStart.connect
+        def action_1_about_to_begin_listener(sender, **kwargs):
+            if not result['resumed']:
+                threading.Thread(target=pause_resume_thread).start()
 
         def pause_resume_thread():
             self.controller.pause_workflow(execution_id)
             return
 
-        def action_1_about_to_begin_listener(sender, **kwargs):
-            threading.Thread(target=pause_resume_thread).start()
+        @WalkoffEvent.WorkflowPaused.connect
+        def workflow_paused_listener(sender, **kwargs):
+            print("Test resuming")
 
-        WalkoffEvent.WorkflowExecutionStart.connect(action_1_about_to_begin_listener)
+            workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
+                execution_id=sender['workflow_execution_id']).first()
+            workflow_status.paused()
+            action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
+                _workflow_status_id=sender['workflow_execution_id']).first()
+            action_status.paused()
+            devicedb.device_db.session.commit()
+
+            result['paused'] = True
+            self.controller.resume_workflow(execution_id)
+
+        @WalkoffEvent.WorkflowResumed.connect
+        def workflow_resumed_listener(sender, **kwargs):
+            result['resumed'] = True
 
         workflow = device_db_help.load_workflow('testGeneratedWorkflows/pauseWorkflowTest', 'pauseWorkflow')
+        action_ids = [action.id for action in workflow.actions]
+        setup_subscriptions_for_action(workflow.id, action_ids)
 
         execution_id = self.controller.execute_workflow(workflow.id)
         self.controller.wait_and_reset(1)
         self.assertTrue(result['paused'])
         self.assertTrue(result['resumed'])
 
-    def test_change_action_input(self):
-        arguments = [Argument(name='call', value='CHANGE INPUT')]
+        actions = []
+        for id_ in action_ids:
+            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
 
-        result = {'value': None}
+        self.assertEqual(len(actions), 3)
 
-        def action_finished_listener(sender, **kwargs):
-            result['value'] = kwargs['data']
-
-        WalkoffEvent.ActionExecutionSuccess.connect(action_finished_listener)
-
-        workflow = device_db_help.load_workflow('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
-
-        self.controller.execute_workflow(workflow.id, start_arguments=arguments)
-        self.controller.wait_and_reset(1)
-        self.assertDictEqual(result['value'],
-                             {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'})
+    # def test_change_action_input(self):
+    #     arguments = [Argument(name='call', value='CHANGE INPUT')]
+    #
+    #     result = {'value': None}
+    #
+    #     def action_finished_listener(sender, **kwargs):
+    #         result['value'] = kwargs['data']
+    #
+    #     WalkoffEvent.ActionExecutionSuccess.connect(action_finished_listener)
+    #
+    #     workflow = device_db_help.load_workflow('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
+    #
+    #     self.controller.execute_workflow(workflow.id, start_arguments=arguments)
+    #     self.controller.wait_and_reset(1)
+    #     self.assertDictEqual(result['value'],
+    #                          {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'})

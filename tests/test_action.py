@@ -347,37 +347,14 @@ class TestAction(unittest.TestCase):
     def test_execute_with_triggers(self):
         triggers = [Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])]
         action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld', triggers=triggers)
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        action.send_data_to_trigger({"data_in": {"data": 'aaa'}})
+        AppInstance.create(app_name='HelloWorld', device_name='device1')
+        ret = action.execute_trigger({"data_in": {"data": 'aaa'}}, {})
 
-        result = {'triggered': False}
-
-        def callback_is_sent(sender, **kwargs):
-            if kwargs['event'] == WalkoffEvent.TriggerActionTaken:
-                result['triggered'] = True
-
-        WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
-        action.execute(instance.instance, {})
-        self.assertTrue(result['triggered'])
+        self.assertTrue(ret)
 
     def test_execute_multiple_triggers(self):
         triggers = [Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])]
         action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld', triggers=triggers)
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        action.send_data_to_trigger({"data_in": {"data": 'a'}})
-
-        trigger_taken = {'triggered': 0}
-        trigger_not_taken = {'triggered': 0}
-
-        def callback_is_sent(sender, **kwargs):
-            if kwargs['event'] == WalkoffEvent.TriggerActionTaken:
-                trigger_taken['triggered'] += 1
-            elif kwargs['event'] == WalkoffEvent.TriggerActionNotTaken:
-                action.send_data_to_trigger({"data_in": {"data": 'aaa'}})
-                trigger_not_taken['triggered'] += 1
-
-        WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
-
-        action.execute(instance.instance, {})
-        self.assertEqual(trigger_taken['triggered'], 1)
-        self.assertEqual(trigger_not_taken['triggered'], 1)
+        AppInstance.create(app_name='HelloWorld', device_name='device1')
+        self.assertFalse(action.execute_trigger({"data_in": {"data": 'a'}}, {}))
+        self.assertTrue(action.execute_trigger({"data_in": {"data": 'aaa'}}, {}))

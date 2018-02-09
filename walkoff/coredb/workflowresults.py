@@ -69,7 +69,7 @@ class ActionStatus(Device_Base):
     status = Column(Enum(ActionStatusEnum), nullable=False)
     started_at = Column(DateTime, default=func.current_timestamp())
     completed_at = Column(DateTime)
-    _workflow_status_id = Column(Integer, ForeignKey('workflow_status.execution_id'))
+    _workflow_status_id = Column(Guid(), ForeignKey('workflow_status.execution_id'))
 
     def __init__(self, execution_id, action_id, name, app_name, action_name, arguments):
         self.execution_id = execution_id
