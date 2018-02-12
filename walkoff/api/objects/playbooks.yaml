@@ -162,8 +162,8 @@ Argument:
       description: The value of the argument
       example: WALK(.*)
     reference:
+      $ref: '#/definitions/Uid'
       description: The ID of the action whose output should be used
-      type: integer
     selection:
       description: >-
         The path to a subsection of the output of the action to use. For example [1, "a"] would use the second element
