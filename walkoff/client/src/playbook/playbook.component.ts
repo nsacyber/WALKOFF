@@ -26,6 +26,7 @@ import { Argument } from '../models/playbook/argument';
 import { WorkflowResult } from '../models/playbook/workflowResult';
 import { User } from '../models/user';
 import { Role } from '../models/role';
+import { ConditionalExpression } from '../models/playbook/conditionalExpression';
 
 @Component({
 	selector: 'playbook-component',
@@ -342,7 +343,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 						destination_id: destinationId,
 						status: defaultStatus,
 						priority: 1,
-						conditions: [],
 					});
 				}
 
@@ -484,22 +484,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 			// Properly sanitize arguments through the tree
 			this._sanitizeArgumentsForSave(action.arguments);
 
-			action.triggers.forEach(trigger => {
-				this._sanitizeArgumentsForSave(trigger.arguments);
-
-				trigger.transforms.forEach(transform => {
-					this._sanitizeArgumentsForSave(transform.arguments);
-				});
-			});
+			this._sanitizeExpressionAndChildren(action.trigger);
 		});
 		workflowToSave.branches.forEach(branch => {
-			branch.conditions.forEach(condition => {
-				this._sanitizeArgumentsForSave(condition.arguments);
-
-				condition.transforms.forEach(transform => {
-					this._sanitizeArgumentsForSave(transform.arguments);
-				});
-			});
+			this._sanitizeExpressionAndChildren(branch.condition);
 		});
 
 		let savePromise: Promise<Workflow>;
@@ -553,6 +541,22 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	getPlaybooksWithWorkflows(): void {
 		this.playbookService.getPlaybooks()
 			.then(playbooks => this.playbooks = playbooks);
+	}
+
+	_sanitizeExpressionAndChildren(expression: ConditionalExpression): void {
+		if (!expression || !expression.child_expressions || !expression.child_expressions.length) { return; }
+
+		expression.child_expressions.forEach(childExpr => {
+			childExpr.conditions.forEach(condition => {
+				this._sanitizeArgumentsForSave(condition.arguments);
+
+				condition.transforms.forEach(transform => {
+					this._sanitizeArgumentsForSave(transform.arguments);
+				});
+			});
+
+			this._sanitizeExpressionAndChildren(childExpr);
+		});
 	}
 
 	/**
@@ -651,9 +655,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 
 		self.selectedAction = action;
 		self.selectedActionApi = actionApi;
-
-		// Add data to the selectedAction if it does not exist
-		if (!self.selectedAction.triggers) { self.selectedAction.triggers = []; }
 
 		// TODO: maybe scope out relevant devices by action, but for now we're just only scoping out by app
 		self.relevantDevices = self.devices.filter(d => d.app_name === self.selectedAction.app_name);

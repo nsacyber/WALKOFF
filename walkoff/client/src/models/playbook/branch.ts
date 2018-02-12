@@ -1,4 +1,4 @@
-import { Condition } from './condition';
+import { ConditionalExpression } from './conditionalExpression';
 import { ExecutionElement } from './executionElement';
 
 export class Branch extends ExecutionElement {
@@ -6,5 +6,5 @@ export class Branch extends ExecutionElement {
 	destination_id: string;
 	status: string;
 	priority: number;
-	conditions: Condition[] = [];
+	condition?: ConditionalExpression;
 }

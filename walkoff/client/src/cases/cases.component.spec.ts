@@ -121,7 +121,6 @@ describe('CasesComponent', () => {
 									value: 'value',
 								},
 							],
-							triggers: [],
 						},
 					],
 					branches: [],

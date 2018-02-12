@@ -1,0 +1,117 @@
+{
+    "name": "acceptDeclineTest",
+    "uid": "1357c4af-35fd-4cad-8c09-1bf3e2a52af8",
+    "walkoff_version": "0.5.0",
+    "workflows": [
+        {
+            "actions": [
+                {
+                    "action_name": "request user approval",
+                    "app_name": "Utilities",
+                    "arguments": [
+                        {
+                            "name": "users",
+                            "value": [
+                                1
+                            ]
+                        },
+                        {
+                            "name": "roles",
+                            "value": []
+                        }
+                    ],
+                    "name": "request user approval",
+                    "position": {
+                        "x": 510,
+                        "y": 350
+                    },
+                    "triggers": [],
+                    "uid": "5989d6f9-79a9-e593-ccea-b4c46f9c2c24"
+                },
+                {
+                    "action_name": "accept/decline",
+                    "app_name": "Utilities",
+                    "arguments": [
+                        {
+                            "name": "action",
+                            "value": "accept"
+                        }
+                    ],
+                    "name": "accept/decline",
+                    "position": {
+                        "x": 430,
+                        "y": 450
+                    },
+                    "triggers": [
+                        {
+                            "action_name": "always true",
+                            "app_name": "Utilities",
+                            "arguments": [],
+                            "transforms": [],
+                            "uid": "676d7c89-5ddc-4f1b-b3f4-51bf6301e818"
+                        }
+                    ],
+                    "uid": "30eb1d76-98f5-85b1-0df4-86219e2947ca"
+                },
+                {
+                    "action_name": "repeat back to me",
+                    "app_name": "HelloWorld",
+                    "arguments": [
+                        {
+                            "name": "call",
+                            "value": "asdas"
+                        }
+                    ],
+                    "name": "repeat back to me",
+                    "position": {
+                        "x": 290,
+                        "y": 490
+                    },
+                    "triggers": [],
+                    "uid": "028dfd53-6c2e-4d02-9e93-214a9d678463"
+                },
+                {
+                    "action_name": "hello world",
+                    "app_name": "HelloWorld",
+                    "arguments": [],
+                    "name": "hello world",
+                    "position": {
+                        "x": 450,
+                        "y": 570
+                    },
+                    "triggers": [],
+                    "uid": "6ec14849-0c25-889c-c201-70cd6137afa5"
+                }
+            ],
+            "branches": [
+                {
+                    "conditions": [],
+                    "destination_uid": "30eb1d76-98f5-85b1-0df4-86219e2947ca",
+                    "priority": 1,
+                    "source_uid": "5989d6f9-79a9-e593-ccea-b4c46f9c2c24",
+                    "status": "Success",
+                    "uid": "7be5677c-b0db-4d37-9d94-a78ee32db070"
+                },
+                {
+                    "conditions": [],
+                    "destination_uid": "6ec14849-0c25-889c-c201-70cd6137afa5",
+                    "priority": 1,
+                    "source_uid": "30eb1d76-98f5-85b1-0df4-86219e2947ca",
+                    "status": "Accepted",
+                    "uid": "7ecc802b-1139-4f14-84b2-b4e0ec6315f6"
+                },
+                {
+                    "conditions": [],
+                    "destination_uid": "028dfd53-6c2e-4d02-9e93-214a9d678463",
+                    "priority": 1,
+                    "source_uid": "30eb1d76-98f5-85b1-0df4-86219e2947ca",
+                    "status": "Declined",
+                    "uid": "38521ed4-122e-47a8-9d79-1b14ea173b10"
+                }
+            ],
+            "name": "test",
+            "start": "5989d6f9-79a9-e593-ccea-b4c46f9c2c24",
+            "uid": "667bbc8c-d13e-4843-a12d-a254ce329fed"
+        }
+    ]
+}
