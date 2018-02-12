@@ -208,6 +208,26 @@ class MultiprocessedExecutor(object):
             logger.warning('Cannot resume workflow {0}. Invalid key, or workflow not paused.'.format(execution_id))
             return False
 
+    def abort_workflow(self, execution_id):
+        """Abort a workflow.
+
+        Args:
+            execution_id (str): The execution id of the workflow.
+        """
+        workflow_status = walkoff.coredb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
+            execution_id=execution_id).first()
+
+        if workflow_status:
+            if workflow_status.status in [WorkflowStatusEnum.pending, WorkflowStatusEnum.paused,
+                                          WorkflowStatusEnum.awaiting_data]:
+                WalkoffEvent.WorkflowAborted.send({'workflow_execution_id': execution_id})
+            elif workflow_status.status == WorkflowStatusEnum.running:
+                self.manager.abort_workflow(execution_id)
+            return True
+        else:
+            logger.warning('Cannot resume workflow {0}. Invalid key, or workflow already shutdown.'.format(execution_id))
+            return False
+
     def resume_trigger_step(self, execution_id, data_in, arguments=None):
         """Resumes a workflow awaiting trigger data, if the conditions are met.
 

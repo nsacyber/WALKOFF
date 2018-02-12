@@ -76,15 +76,12 @@ message CommunicationPacket {
 
     enum Type {
         PAUSE = 1;
-        RESUME = 2;
-        TRIGGER = 3;
-        EXIT = 4;
+        EXIT = 2;
+        ABORT = 3;
     }
 
     optional Type type = 1;
     optional string workflow_execution_id = 2;
-    optional string data_in = 3;
-    repeated ActionPacket.ActionArgument arguments = 4;
 
 }
 

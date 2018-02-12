@@ -51,6 +51,7 @@ class Workflow(ExecutionElement, Device_Base):
         self.start = start
 
         self._is_paused = False
+        self._abort = False
         self._resume = threading.Event()
         self._accumulator = {}
         self._execution_id = 'default'
@@ -59,6 +60,7 @@ class Workflow(ExecutionElement, Device_Base):
     @orm.reconstructor
     def init_on_load(self):
         self._is_paused = False
+        self._abort = False
         self._resume = threading.Event()
         self._accumulator = {}
         self._instances = {}
@@ -85,6 +87,12 @@ class Workflow(ExecutionElement, Device_Base):
         """
         self._is_paused = True
         logger.info('Pausing workflow {0}'.format(self.name))
+
+    def abort(self):
+        """Aborts the execution of the Workflow. The Workflow will abort execution before starting the next Action.
+        """
+        self._abort = True
+        logger.info('Aborting workflow {0}'.format(self.name))
 
     def resume(self):
         """Resumes a Workflow that has previously been paused.
@@ -121,9 +129,14 @@ class Workflow(ExecutionElement, Device_Base):
         for action in (action_ for action_ in actions if action_ is not None):
             self._executing_action = action
             logger.debug('Executing action {0} of workflow {1}'.format(action, self.name))
+
             if self._is_paused:
                 self._is_paused = False
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowPaused)
+                yield
+            if self._abort:
+                self._abort = False
+                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowAborted)
                 yield
 
             device_id = self.__setup_app_instance(self._instances, action)

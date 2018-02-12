@@ -266,16 +266,8 @@ class Worker:
             if workflow:
                 if message.type == CommunicationPacket.PAUSE:
                     workflow.pause()
-                elif message.type == CommunicationPacket.RESUME:
-                    workflow.resume()
-                elif message.type == CommunicationPacket.TRIGGER:
-                    trigger_data = json.loads(message.data_in)
-                    if len(message.arguments) > 0:
-                        arguments = []
-                        for arg in message.arguments:
-                            arguments.append(Argument(**(MessageToDict(arg, preserving_proto_field_name=True))))
-                        trigger_data["arguments"] = arguments
-                    workflow.send_data_to_action(trigger_data)
+                elif message.type == CommunicationPacket.ABORT:
+                    workflow.abort()
 
         return
 

@@ -13,6 +13,8 @@ import walkoff.config.config
 import walkoff.config.paths
 from walkoff.events import WalkoffEvent
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
+from walkoff.coredb import devicedb
+from walkoff.coredb.workflowresults import WorkflowStatus, WorkflowStatusEnum
 
 try:
     from Queue import Queue
@@ -89,6 +91,12 @@ class LoadBalancer:
             # There is a worker available and a workflow in the queue, so pop it off and send it to the worker
             if any(val > 0 for val in self.workers.values()) and not self.pending_workflows.empty():
                 workflow_id, workflow_execution_id, start, start_arguments, resume = self.pending_workflows.get()
+
+                workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
+                    execution_id=workflow_execution_id).first()
+                if workflow_status.status == WorkflowStatusEnum.aborted:
+                    continue
+
                 worker = self.__get_available_worker()
                 self.workflow_comms[workflow_execution_id] = worker
 
@@ -150,29 +158,22 @@ class LoadBalancer:
         else:
             return False
 
-    def send_data_to_trigger(self, data_in, workflow_execution_ids, arguments=None):
-        """Sends the data_in to the workflows specified in workflow_ids.
+    def abort_workflow(self, workflow_execution_id):
+        """Aborts a workflow currently executing.
 
         Args:
-            data_in (dict): Data to be used to match against the triggers for an Action awaiting data.
-            workflow_execution_ids (list[str]): A list of workflow execution IDs to send this data to.
-            arguments (list[Argument]): An optional list of Arguments to update for an
-                Action awaiting data for a trigger. Defaults to None.
+            workflow_execution_id (str): The execution ID of the workflow.
         """
-        data = dict()
-        data['data_in'] = data_in
-        message = CommunicationPacket()
-        message.type = CommunicationPacket.TRIGGER
-        message.data_in = json.dumps(data)
-
-        if arguments:
-            self.__set_arguments_for_proto(message, arguments)
-
-        for execution_id in workflow_execution_ids:
-            if execution_id in self.workflow_comms:
-                message.workflow_execution_id = execution_id
-                message_bytes = message.SerializeToString()
-                self.comm_socket.send_multipart([self.workflow_comms[execution_id], message_bytes])
+        logger.info('Aborting workflow {0}'.format(workflow_execution_id))
+        if workflow_execution_id in self.workflow_comms:
+            message = CommunicationPacket()
+            message.type = CommunicationPacket.ABORT
+            message.workflow_execution_id = workflow_execution_id
+            message_bytes = message.SerializeToString()
+            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_id], message_bytes])
+            return True
+        else:
+            return False
 
     def send_exit_to_worker_comms(self):
         """Sends the exit message over the communication sockets, otherwise worker receiver threads will hang

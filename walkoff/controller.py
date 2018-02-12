@@ -72,6 +72,14 @@ class Controller(object):
         """
         return self.executor.resume_trigger_step(execution_id, data_in, arguments)
 
+    def abort_workflow(self, execution_id):
+        """Aborts a workflow.
+
+        Args:
+            execution_id (str): The execution ID of the workflow to abort.
+        """
+        return self.executor.abort_workflow(execution_id)
+
     def schedule_workflows(self, task_id, workflow_ids, trigger):
         """Schedules workflows to be run by the scheduler
 
