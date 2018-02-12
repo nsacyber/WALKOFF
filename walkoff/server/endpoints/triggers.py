@@ -2,13 +2,9 @@ from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt_claims
 
 from walkoff.coredb.argument import Argument
-from walkoff.coredb.workflow import Workflow
-from walkoff.coredb.saved_workflow import SavedWorkflow
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 import walkoff.messaging
-from walkoff.coredb import devicedb
-from walkoff.events import WalkoffEvent
 
 
 def send_data_to_trigger():
@@ -23,8 +19,6 @@ def send_data_to_trigger():
         arguments = data['arguments'] if 'arguments' in data else []
 
         workflows_awaiting_data = set(running_context.controller.get_waiting_workflows())
-        print(workflows_in)
-        print(workflows_awaiting_data)
         execution_ids = set.intersection(workflows_in, workflows_awaiting_data)
 
         user_id = get_jwt_identity()
@@ -41,8 +35,6 @@ def send_data_to_trigger():
         for execution_id in execution_ids:
             if running_context.controller.resume_trigger_step(execution_id, data_in, arg_objects):
                 completed_execution_ids.append(execution_id)
-
-        print("Completed: {}".format(completed_execution_ids))
 
         return completed_execution_ids, SUCCESS
 

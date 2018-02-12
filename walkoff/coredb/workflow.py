@@ -106,7 +106,6 @@ class Workflow(ExecutionElement, Device_Base):
             start_arguments (list[Argument]): Argument parameters into the first Action. Defaults to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
         """
-        print("Workflow execute top")
         self._execution_id = execution_id
         logger.info('Executing workflow {0}'.format(self.name))
         WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowExecutionStart)
@@ -117,18 +116,15 @@ class Workflow(ExecutionElement, Device_Base):
         next(executor)
 
     def __execute(self, start, start_arguments=None, resume=False):
-        print("in execute")
         actions = self.__actions(start=start)
         first = True
         for action in (action_ for action_ in actions if action_ is not None):
-            print("Workflow starting to execute")
             self._executing_action = action
             logger.debug('Executing action {0} of workflow {1}'.format(action, self.name))
             if self._is_paused:
-                print("WORKFLOW PAUSED")
                 self._is_paused = False
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowPaused)
-                return
+                yield
 
             device_id = self.__setup_app_instance(self._instances, action)
 
@@ -140,10 +136,8 @@ class Workflow(ExecutionElement, Device_Base):
                 result = action.execute(instance=self._instances[device_id](), accumulator=self._accumulator,
                                         resume=resume)
             if result and result.status == "trigger":
-                return
-            print("after here")
+                yield
             self._accumulator[action.id] = action.get_output().result
-        print("Workflow shutting down")
         self.__shutdown(self._instances)
         yield
 
@@ -158,12 +152,8 @@ class Workflow(ExecutionElement, Device_Base):
     def __actions(self, start):
         current_id = start
         current_action = self.__get_action_by_id(current_id)
-        print(self.actions)
-        print(current_id)
-        print(current_action)
 
         while current_action:
-            print("yielding action")
             yield current_action
             current_id = self.get_branch(current_action, self._accumulator)
             current_action = self.__get_action_by_id(current_id) if current_id is not None else None

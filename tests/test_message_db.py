@@ -226,7 +226,7 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(message_json['id'], message.id)
         self.assertEqual(message_json['subject'], 'subject here')
         self.assertDictEqual(message_json['body'], {'message': 'some message'})
-        self.assertEqual(message_json['workflow_execution_uid'], 'workflow_uid1')
+        self.assertEqual(message_json['workflow_execution_id'], 'workflow_uid1')
         self.assertFalse(message_json['requires_reauthorization'])
         self.assertFalse(message_json['requires_response'])
         self.assertFalse(message_json['awaiting_response'])
@@ -465,7 +465,7 @@ class TestMessageDatabase(TestCase):
 
     @staticmethod
     def construct_mock_trigger_sender(workflow_execution_uid):
-        return {'workflow_execution_uid': workflow_execution_uid,
+        return {'workflow_execution_id': workflow_execution_uid,
                 'id': 'mock',
                 'app_name': 'mock',
                 'action_name': 'mock'}
@@ -475,10 +475,10 @@ class TestMessageDatabase(TestCase):
         walkoff.messaging.workflow_authorization_cache.add_user_in_progress('uid1', 1)
         walkoff.messaging.workflow_authorization_cache.add_user_in_progress('uid1', 2)
 
-        WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid2'))
+        WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid2'), data={'workflow_execution_id': 'uid2'})
         self.assertEqual(walkoff.messaging.workflow_authorization_cache.peek_user_in_progress('uid1'), 2)
         self.assertIsNone(walkoff.messaging.workflow_authorization_cache.peek_user_in_progress('uid2'))
-        WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid1'))
+        WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid1'), data={'workflow_execution_id': 'uid1'})
         self.assertEqual(walkoff.messaging.workflow_authorization_cache.peek_user_in_progress('uid1'), 1)
 
     def test_log_action_taken_on_message(self):
@@ -500,7 +500,7 @@ class TestMessageDatabase(TestCase):
         db.session.commit()
         walkoff.messaging.workflow_authorization_cache.add_authorized_users('uid1', users=[1, 2])
         walkoff.messaging.workflow_authorization_cache.add_user_in_progress('uid1', self.user.id)
-        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender('uid1'))
+        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender('uid1'), data={'workflow_execution_id': 'uid1'})
         message = Message.query.filter(Message.workflow_execution_id == 'uid1').first()
         self.assertEqual(len(list(message.history)), 1)
         self.assertEqual(message.history[0].action, MessageAction.respond)
@@ -521,7 +521,7 @@ class TestMessageDatabase(TestCase):
             self.assertEqual(message_in.id, message.id)
             self.assertEqual(data['data']['user'], self.user)
 
-        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender('uid1'))
+        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender('uid1'), data={'workflow_execution_id': 'uid1'})
         self.assertTrue(res['called'])
 
     def test_message_action_get_all_names(self):

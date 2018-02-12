@@ -5,7 +5,6 @@ import gevent
 from google.protobuf.json_format import MessageToDict
 from zmq.utils.strtypes import cast_unicode
 
-from walkoff.coredb.argument import Argument
 from walkoff.events import WalkoffEvent
 from walkoff.core.multiprocessedexecutor import loadbalancer
 from walkoff.core.multiprocessedexecutor.worker import convert_to_protobuf
@@ -74,8 +73,6 @@ class MockLoadBalancer(object):
 
         if kwargs['event'] in [WalkoffEvent.TriggerActionAwaitingData, WalkoffEvent.WorkflowPaused]:
             workflow = self.workflow_comms[sender._execution_id]
-            print(workflow._accumulator)
-            print(workflow._instances)
             saved_workflow = SavedWorkflow(workflow_execution_id=workflow.get_execution_id(),
                                            workflow_id=workflow.id,
                                            action_id=workflow.get_executing_action_id(),
@@ -83,7 +80,6 @@ class MockLoadBalancer(object):
                                            app_instances=workflow.get_instances())
             walkoff.coredb.devicedb.device_db.session.add(saved_workflow)
             walkoff.coredb.devicedb.device_db.session.commit()
-            print("Mock worker saving state")
 
         if self.exec_id or not hasattr(sender, "_execution_id"):
             packet_bytes = convert_to_protobuf(sender, self.exec_id, **kwargs)
@@ -129,18 +125,6 @@ class MockLoadBalancer(object):
     def pause_workflow(self, workflow_execution_id):
         if workflow_execution_id in self.workflow_comms:
             self.workflow_comms[workflow_execution_id].pause()
-
-    def send_data_to_trigger(self, data_in, workflow_execution_ids, arguments=None):
-        data = dict()
-        data['data_in'] = data_in
-        arg_objects = []
-        if arguments:
-            for arg in arguments:
-                arg_objects.append(Argument(**arg))
-        data["arguments"] = arg_objects
-        for id_ in workflow_execution_ids:
-            if id_ in self.workflow_comms:
-                self.workflow_comms[id_].send_data_to_action(data)
 
 
 class MockReceiveQueue(loadbalancer.Receiver):

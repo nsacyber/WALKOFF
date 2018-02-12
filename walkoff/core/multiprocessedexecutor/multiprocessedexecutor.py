@@ -163,7 +163,6 @@ class MultiprocessedExecutor(object):
         else:
             logger.info('Executing workflow {0} with default starting action'.format(workflow.name, start))
 
-        print("Pending")
         WalkoffEvent.WorkflowExecutionPending.send(workflow)
         self.manager.add_workflow(workflow.id, execution_id, start, start_arguments, resume)
 
@@ -178,9 +177,7 @@ class MultiprocessedExecutor(object):
         """
         workflow_status = walkoff.coredb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
-        print("Workflow status: {}".format(workflow_status.__dict__))
         if workflow_status and workflow_status.status == WorkflowStatusEnum.running:
-            print("Sending pause message")
             self.manager.pause_workflow(execution_id)
             return True
         else:
@@ -193,20 +190,19 @@ class MultiprocessedExecutor(object):
         Args:
             execution_id (str): The execution id of the workflow.
         """
-        print("In resume func")
         workflow_status = walkoff.coredb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
 
-        print(workflow_status.__dict__)
-
         if workflow_status and workflow_status.status == WorkflowStatusEnum.paused:
-            print("Doing resume")
             saved_state = walkoff.coredb.devicedb.device_db.session.query(SavedWorkflow).filter_by(
                 workflow_execution_id=execution_id).first()
-            workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_status.workflow_id).first()
+            workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(
+                id=workflow_status.workflow_id).first()
             workflow._execution_id = execution_id
             WalkoffEvent.WorkflowResumed.send(workflow)
-            self.execute_workflow(workflow, start=saved_state.action_id, resume=True)
+
+            start = saved_state.action_id if saved_state else workflow.start
+            self.execute_workflow(workflow, start=start, resume=True)
             return True
         else:
             logger.warning('Cannot resume workflow {0}. Invalid key, or workflow not paused.'.format(execution_id))
@@ -221,9 +217,10 @@ class MultiprocessedExecutor(object):
             arguments (list[Argument], optional): Optional list of new Arguments for the trigger action.
                 Defaults to None.
         """
-        saved_state = walkoff.coredb. devicedb.device_db.session.query(SavedWorkflow).filter_by(
+        saved_state = walkoff.coredb.devicedb.device_db.session.query(SavedWorkflow).filter_by(
             workflow_execution_id=execution_id).first()
-        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=saved_state.workflow_id).first()
+        workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(
+            id=saved_state.workflow_id).first()
         workflow._execution_id = execution_id
 
         executed = False
@@ -236,7 +233,6 @@ class MultiprocessedExecutor(object):
 
         if executed:
             WalkoffEvent.TriggerActionTaken.send(exec_action, data={'workflow_execution_id': execution_id})
-            print("Trigger success, sending off workflow")
             self.execute_workflow(workflow, start=saved_state.action_id, start_arguments=arguments, resume=True)
             return True
         else:
@@ -270,15 +266,3 @@ class MultiprocessedExecutor(object):
         else:
             logger.error("Key {} does not exist in database.").format(execution_id)
             return 0
-
-    def send_data_to_trigger(self, data_in, workflow_execution_ids, arguments=None):
-        """Sends the data_in to the workflows specified in workflow_execution_ids.
-
-        Args:
-            data_in (dict): Data to be used to match against the triggers for an Action awaiting data.
-            workflow_execution_ids (list[str]): A list of workflow execution IDs to send this data to.
-            arguments (list[Argument]): An optional list of Arguments to update for an
-                Action awaiting data for a trigger. Defaults to None.
-        """
-        arguments = arguments if arguments is not None else []
-        self.manager.send_data_to_trigger(data_in, workflow_execution_ids, arguments)

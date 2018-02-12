@@ -163,8 +163,6 @@ class TestZMQCommunication(unittest.TestCase):
 
         @WalkoffEvent.WorkflowPaused.connect
         def workflow_paused_listener(sender, **kwargs):
-            print("Test resuming")
-
             workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
                 execution_id=sender['workflow_execution_id']).first()
             workflow_status.paused()

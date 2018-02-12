@@ -121,13 +121,11 @@ class Action(ExecutionElement, Device_Base):
         Returns:
             The result of the executed function.
         """
-        print("Action executing")
         self._execution_id = str(uuid.uuid4())
 
         WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionStarted)
 
         if self.triggers and not resume:
-            print("Action has triggers, sending signal and returning")
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionAwaitingData)
             logger.debug('Trigger Action {} is awaiting data'.format(self.name))
             self._output = None
@@ -152,7 +150,6 @@ class Action(ExecutionElement, Device_Base):
         except Exception as e:
             self.__handle_execution_error(e)
         else:
-            print("ACTION SUCCESS")
             self._output = result
             logger.debug(
                 'Action {0}-{1} (id {2}) executed successfully'.format(self.app_name, self.action_name, self.id))

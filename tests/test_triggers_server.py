@@ -153,7 +153,6 @@ class TestTriggersServer(ServerTestCase):
             execd_ids = set([])
             timeout = 0
             threshold = 5
-            print("Sending first set")
             resp = self.put_with_status_check('/api/triggers/send_data', headers=self.headers,
                                                data=json.dumps(data),
                                                status_code=SUCCESS, content_type='application/json')
@@ -162,7 +161,6 @@ class TestTriggersServer(ServerTestCase):
             data_correct = {"execution_ids": [response['id']], "data_in": {"data": "1"}}
             execd_ids = set([])
             timeout = 0
-            print("Sending second set")
             while len(execd_ids) != len(ids) and timeout < threshold:
                 resp = self.put_with_status_check('/api/triggers/send_data', headers=self.headers,
                                                    data=json.dumps(data_correct),
@@ -226,7 +224,6 @@ class TestTriggersServer(ServerTestCase):
         self.assertDictEqual(result['value'], {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'})
 
     def test_trigger_execute_with_change_input_invalid_input(self):
-        print("Invalid")
         workflow = device_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
 
         response = self.post_with_status_check(

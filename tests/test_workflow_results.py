@@ -33,7 +33,6 @@ class TestWorkflowResults(ServerTestCase):
             result.pop('completed_at')
             result.pop('execution_id')
             result.pop('action_id')
-            print(result)
             return result
 
         self.assertDictEqual(strip_timestamp(workflow_result._action_statuses[0].as_json()),

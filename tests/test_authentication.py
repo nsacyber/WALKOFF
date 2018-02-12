@@ -27,6 +27,24 @@ class TestAuthorization(unittest.TestCase):
         self.app.testing = True
         self.context = walkoff.server.flaskserver.app.test_request_context()
         self.context.push()
+
+        from walkoff.serverdb import initialize_default_resources_admin, initialize_default_resources_guest, Role
+        db.create_all()
+
+        # Setup admin and guest roles
+        initialize_default_resources_admin()
+        initialize_default_resources_guest()
+
+        # Setup admin user
+        admin_role = Role.query.filter_by(id=1).first()
+        admin_user = User.query.filter_by(username="admin").first()
+        if not admin_user:
+            add_user(username='admin', password='admin', roles=[1])
+        elif admin_role not in admin_user.roles:
+            admin_user.roles.append(admin_role)
+
+        db.session.commit()
+
         self.admin_id = db.session.query(User).filter_by(username='admin').first().id
 
     def tearDown(self):

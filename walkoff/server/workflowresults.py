@@ -8,14 +8,11 @@ from walkoff.coredb.saved_workflow import SavedWorkflow
 
 @WalkoffEvent.WorkflowExecutionPending.connect
 def __workflow_pending(sender, **kwargs):
-    print("Workflow {} pending".format(sender.get_execution_id()))
     workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
         execution_id=sender.get_execution_id()).first()
     if workflow_status:
-        print("Not new")
         workflow_status.status = WorkflowStatusEnum.pending
     else:
-        print("New")
         workflow_status = WorkflowStatus(sender.get_execution_id(), sender.id, sender.name)
         devicedb.device_db.session.add(workflow_status)
     devicedb.device_db.session.commit()
@@ -31,21 +28,20 @@ def __workflow_started_callback(sender, **kwargs):
 
 @WalkoffEvent.WorkflowPaused.connect
 def __workflow_paused_callback(sender, **kwargs):
-    print("Workflowresults workflow paused")
     workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
         execution_id=sender['workflow_execution_id']).first()
     workflow_status.paused()
 
     action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
         _workflow_status_id=sender['workflow_execution_id']).first()
-    action_status.paused()
+    if action_status:
+        action_status.paused()
 
     devicedb.device_db.session.commit()
 
 
 @WalkoffEvent.TriggerActionAwaitingData.connect
 def __workflow_awaiting_data_callback(sender, **kwargs):
-    print("Got trigger action awaiting data")
     workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
         execution_id=sender['workflow_execution_id']).first()
     workflow_status.awaiting_data()
@@ -88,7 +84,6 @@ def __workflow_aborted(sender, **kwargs):
 
 @WalkoffEvent.ActionStarted.connect
 def __action_start_callback(sender, **kwargs):
-    print("Got action started callback")
     action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
         execution_id=sender['execution_id']).first()
     if action_status:
