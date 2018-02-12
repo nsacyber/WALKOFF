@@ -1,9 +1,8 @@
 import logging
 
 from sqlalchemy import Column, Integer, ForeignKey, String, orm
-from sqlalchemy_utils import UUIDType
+from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
 
-from walkoff.dbtypes import Json
 from walkoff.coredb import Device_Base
 from walkoff.helpers import InvalidArgument
 from walkoff.core.representable import Representable
@@ -18,9 +17,9 @@ class Argument(Representable, Device_Base):
     _condition_id = Column(UUIDType(), ForeignKey('condition.id'))
     _transform_id = Column(UUIDType(), ForeignKey('transform.id'))
     name = Column(String(255), nullable=False)
-    value = Column(Json(255))
+    value = Column(JSONType)
     reference = Column(UUIDType())
-    selection = Column(Json(255))
+    selection = Column(ScalarListType())
 
     def __init__(self, name, value=None, reference=None, selection=None):
         """Initializes an Argument object.
