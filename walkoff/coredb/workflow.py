@@ -180,7 +180,8 @@ class Workflow(ExecutionElement, Device_Base):
             The ID of the next Action to be executed if successful, else None.
         """
         if self.branches:
-            branches = sorted(self.__get_branches_by_action_uid(current_action.id))
+            branches = sorted(
+                self.__get_branches_by_action_uid(current_action.id), key=lambda branch_: branch_.priority)
             for branch in branches:
                 # TODO: This here is the only hold up from getting rid of action._output.
                 # Keep whole result in accumulator

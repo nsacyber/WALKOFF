@@ -1,5 +1,4 @@
 import logging
-from functools import total_ordering
 
 from sqlalchemy import Column, Integer, ForeignKey, String
 from sqlalchemy.orm import relationship, backref
@@ -12,7 +11,6 @@ from walkoff.coredb.executionelement import ExecutionElement
 logger = logging.getLogger(__name__)
 
 
-@total_ordering
 class Branch(ExecutionElement, Device_Base):
     __tablename__ = 'branch'
     _workflow_id = Column(UUIDType(), ForeignKey('workflow.id'))
@@ -47,13 +45,6 @@ class Branch(ExecutionElement, Device_Base):
         if conditions:
             self.conditions = conditions
 
-    def __eq__(self, other):
-        return self.source_id == other.source_id and self.destination_id == other.destination_id and \
-               self.status == other.status and set(self.conditions) == set(other.conditions)
-
-    def __lt__(self, other):
-        return self.priority < other.priority
-
     def execute(self, data_in, accumulator):
         """Executes the Branch object, determining if this Branch should be taken.
 
@@ -77,5 +68,3 @@ class Branch(ExecutionElement, Device_Base):
         else:
             return None
 
-    def __hash__(self):
-        return hash(str(self.id))
