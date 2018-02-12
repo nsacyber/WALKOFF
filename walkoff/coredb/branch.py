@@ -3,20 +3,21 @@ from functools import total_ordering
 
 from sqlalchemy import Column, Integer, ForeignKey, String
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy_utils import UUIDType
 
 from walkoff.coredb import Device_Base
 from walkoff.events import WalkoffEvent
 from walkoff.coredb.executionelement import ExecutionElement
-from walkoff.dbtypes import Guid
+
 logger = logging.getLogger(__name__)
 
 
 @total_ordering
 class Branch(ExecutionElement, Device_Base):
     __tablename__ = 'branch'
-    _workflow_id = Column(Guid(), ForeignKey('workflow.id'))
-    source_id = Column(Guid(), nullable=False)
-    destination_id = Column(Guid(), nullable=False)
+    _workflow_id = Column(UUIDType(), ForeignKey('workflow.id'))
+    source_id = Column(UUIDType(), nullable=False)
+    destination_id = Column(UUIDType(), nullable=False)
     status = Column(String(80))
     conditions = relationship('Condition', backref=backref('_branch'), cascade='all, delete-orphan')
     priority = Column(Integer)

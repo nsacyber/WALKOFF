@@ -1,11 +1,11 @@
+from sqlalchemy_utils import UUIDType
+
 from walkoff.core.representable import Representable
-from walkoff.dbtypes import Guid
 from sqlalchemy import Column
 from uuid import uuid4
 
-
 class ExecutionElement(Representable):
-    id = Column(Guid(), primary_key=True, default=uuid4, nullable=False, unique=True)
+    id = Column(UUIDType(), primary_key=True, nullable=False, default=uuid4)
 
     def __init__(self, id):
         if id:

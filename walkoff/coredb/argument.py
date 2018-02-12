@@ -1,24 +1,25 @@
 import logging
 
 from sqlalchemy import Column, Integer, ForeignKey, String, orm
+from sqlalchemy_utils import UUIDType
 
 from walkoff.dbtypes import Json
 from walkoff.coredb import Device_Base
 from walkoff.helpers import InvalidArgument
 from walkoff.core.representable import Representable
-from walkoff.dbtypes import Guid
+
 logger = logging.getLogger(__name__)
 
 
 class Argument(Representable, Device_Base):
     __tablename__ = 'argument'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    _action_id = Column(Guid(), ForeignKey('action.id'))
-    _condition_id = Column(Guid(), ForeignKey('condition.id'))
-    _transform_id = Column(Guid(), ForeignKey('transform.id'))
+    _action_id = Column(UUIDType(), ForeignKey('action.id'))
+    _condition_id = Column(UUIDType(), ForeignKey('condition.id'))
+    _transform_id = Column(UUIDType(), ForeignKey('transform.id'))
     name = Column(String(255), nullable=False)
     value = Column(Json(255))
-    reference = Column(Guid())
+    reference = Column(UUIDType())
     selection = Column(Json(255))
 
     def __init__(self, name, value=None, reference=None, selection=None):
