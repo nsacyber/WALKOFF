@@ -111,3 +111,6 @@ class Argument(Representable, Device_Base):
     def __eq__(self, other):
         return self.name == other.name and self.value == other.value and self.reference == other.reference and \
                self.selection == other.selection and self._is_reference == other.is_ref()
+
+    def __hash__(self):
+        return hash(self.id)

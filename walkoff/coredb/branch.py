@@ -75,3 +75,6 @@ class Branch(ExecutionElement, Device_Base):
                 return None
         else:
             return None
+
+    def __hash__(self):
+        return hash(str(self.id))
