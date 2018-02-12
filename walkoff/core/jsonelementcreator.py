@@ -50,11 +50,15 @@ class JsonElementCreator(object):
     def construct_current_class(cls, current_class, json_in, subfield_lookup):
         from walkoff.coredb.argument import Argument
         from walkoff.coredb.position import Position
+        from walkoff.coredb.conditionalexpression import ConditionalExpression
         if subfield_lookup is not None:
             for subfield_name, next_class in subfield_lookup.items():
                 if subfield_name in json_in:
                     subfield_json = json_in[subfield_name]
-                    json_in[subfield_name] = [next_class.create(element_json) for element_json in subfield_json]
+                    if next_class is not ConditionalExpression:
+                        json_in[subfield_name] = [next_class.create(element_json) for element_json in subfield_json]
+                    else:
+                        json_in[subfield_name] = next_class.create(subfield_json)
         if 'arguments' in json_in:
             for arg_json in json_in['arguments']:
                 arg_json.pop('id', None)

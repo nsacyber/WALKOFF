@@ -491,7 +491,6 @@ class DeviceDatabase(object):
     __instance = None
 
     def __init__(self):
-        print('here')
         # All of these imports are necessary
         from walkoff.coredb.argument import Argument
         from walkoff.coredb.conditionalexpression import ConditionalExpression

@@ -107,14 +107,11 @@ Action:
       type: array
       items:
         $ref: '#/definitions/Argument'
-    triggers:
-      description: String representation of a list of Trigger objects
-      type: array
-      items:
-        $ref: '#/definitions/Condition'
+    trigger:
+      description: The trigger condition
+      $ref: '#/definitions/ConditionalExpression'
     position:
       description: Position object representing various fields of the position of the Action in the playbook editor.
-      type: object
       $ref: '#/definitions/Position'
 
 Branch:
@@ -139,11 +136,35 @@ Branch:
       description: The status return code to use
       type: string
       example: Success
+    condition:
+      description: List of condition to evaluate
+      $ref: '#/definitions/ConditionalExpression'
+
+
+ConditionalExpression:
+  type: object
+  required: [operator]
+  description: Object which encapsulates Boolean logic
+  properties:
+    operator:
+      type: string
+      description: The operation to use which on the conditions
+      enum: [truth, not, and, or, xor]
     conditions:
-      description: List of conditions to evaluate
+      description: >
+        Base conditions to evaluate. If the operator is "truth" or "not" there can only be one element in EITHER
+        "conditions" or "child_expressions"
       type: array
       items:
         $ref: '#/definitions/Condition'
+    child_expressions:
+      description: >
+        Sub-expressions to evaluate. If the operator is "truth" or "not" there can only be one element in EITHER
+        "conditions" or "child_expressions"
+      type: array
+      items:
+        $ref: '#/definitions/ConditionalExpression'
+
 
 Argument:
   type: object

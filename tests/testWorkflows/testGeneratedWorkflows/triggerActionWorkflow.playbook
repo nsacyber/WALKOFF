@@ -14,22 +14,7 @@
                     ],
                     "device_id": 1,
                     "id": "41e79ac2-cc68-4e10-aeb4-95276d516f2e",
-                    "name": "start",
-                    "trigger": {
-                        "conditions": [
-                            {
-                                "action_name": "regMatch",
-                                "app_name": "HelloWorldBounded",
-                                "arguments": [
-                                    {
-                                        "name": "regex",
-                                        "value": "1"
-                                    }
-                                ]
-                            }
-                        ],
-                        "operation": "and"
-                    }
+                    "name": "start"
                 }
             ],
             "branches": [],

@@ -41,7 +41,7 @@ class TestAuthorization(unittest.TestCase):
     def test_as_json(self):
         token = BlacklistedToken(jti='some_jti', user_identity='user', expires=timedelta(minutes=5))
         self.assertDictEqual(token.as_json(),
-                             {'id': None, 'jti': 'some_jti', 'user': 'user', 'expires': timedelta(minutes=5)})
+                             {'id': None, 'jti': 'some_jti', 'user': 'user', 'expires': str(timedelta(minutes=5))})
 
     def test_login_authorization_has_correct_return_code(self):
         response = self.app.post('/api/auth', content_type="application/json",

@@ -35,49 +35,11 @@
             ],
             "branches": [
                 {
-                    "condition": {
-                        "conditions": [
-                            {
-                                "action_name": "regMatch",
-                                "app_name": "HelloWorldBounded",
-                                "arguments": [
-                                    {
-                                        "name": "regex",
-                                        "value": "(.*)"
-                                    }
-                                ],
-                                "transforms": []
-                            }
-                        ],
-                        "operation": "and"
-                    },
                     "destination_id": "99dbbc9c-cf08-43ee-aa73-260b55e0d0b4",
                     "source_id": "872a73b3-e737-4231-9ee2-0cc03da8fd24",
                     "status": "UnhandledException"
                 },
                 {
-                    "condition": {
-                        "conditions": [
-                            {
-                                "action_name": "regMatch",
-                                "app_name": "HelloWorldBounded",
-                                "arguments": [
-                                    {
-                                        "name": "regex",
-                                        "value": "(.*)"
-                                    }
-                                ],
-                                "transforms": [
-                                    {
-                                        "action_name": "length",
-                                        "app_name": "HelloWorldBounded",
-                                        "arguments": []
-                                    }
-                                ]
-                            }
-                        ],
-                        "operation": "and"
-                    },
                     "destination_id": "872a73b3-e737-4231-9ee2-0cc03da8fd24",
                     "source_id": "55fd66b0-e109-43a6-bf70-0ae5702b375e",
                     "status": "Success"
