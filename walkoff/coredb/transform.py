@@ -3,6 +3,7 @@ from copy import deepcopy
 
 from sqlalchemy import Column, ForeignKey, String, orm
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway import get_transform
 from walkoff.coredb.argument import Argument
@@ -11,13 +12,13 @@ from walkoff.events import WalkoffEvent
 from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import get_transform_api, InvalidArgument, split_api_params
 from walkoff.appgateway.validator import validate_transform_parameters
-from walkoff.dbtypes import Guid
+
 logger = logging.getLogger(__name__)
 
 
 class Transform(ExecutionElement, Device_Base):
     __tablename__ = 'transform'
-    _condition_id = Column(Guid(), ForeignKey('condition.id'))
+    _condition_id = Column(UUIDType(), ForeignKey('condition.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     arguments = relationship('Argument', backref=backref('_transform'), cascade='all, delete, delete-orphan')

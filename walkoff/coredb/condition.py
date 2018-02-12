@@ -2,6 +2,7 @@ import logging
 
 from sqlalchemy import Column, ForeignKey, String, orm
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway import get_condition
 from walkoff.coredb.argument import Argument
@@ -11,13 +12,13 @@ from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import get_condition_api, InvalidArgument, format_exception_message, split_api_params
 from walkoff.appgateway.validator import validate_condition_parameters
 import walkoff.coredb.devicedb
-from walkoff.dbtypes import Guid
+
 logger = logging.getLogger(__name__)
 
 
 class Condition(ExecutionElement, Device_Base):
     __tablename__ = 'condition'
-    _conditional_expression_id = Column(Guid(), ForeignKey('conditional_expression.id'))
+    _conditional_expression_id = Column(UUIDType(), ForeignKey('conditional_expression.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     arguments = relationship('Argument', backref=backref('_condition'), cascade='all, delete, delete-orphan')

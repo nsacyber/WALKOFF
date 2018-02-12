@@ -1,4 +1,4 @@
-/api/devices/import:
+/devices/import:
   get:
     tags:
       - Devices
@@ -31,7 +31,7 @@
         description: Validation exception
         schema:
           $ref: '#/definitions/Error'
-/api/devices/export:
+/devices/export:
   post:
     tags:
       - Devices
@@ -58,7 +58,7 @@
         description: Error writing to file
         schema:
           $ref: '#/definitions/Error'
-/api/devices/{device_id}:
+/devices/{device_id}:
   parameters:
     - in: path
       name: device_id
@@ -95,7 +95,7 @@
         description: Device does not exist
         schema:
           $ref: '#/definitions/Error'
-/api/devices:
+/devices:
   get:
     tags:
       - Devices
@@ -145,6 +145,32 @@
     summary: Update a device
     description: ''
     operationId: walkoff.server.endpoints.devices.update_device
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: The new device object to be created
+        required: true
+        schema:
+          $ref: '#/definitions/Device'
+    responses:
+      200:
+        description: Success
+        schema:
+          $ref: '#/definitions/Device'
+      404:
+        description: Device does not exist
+        schema:
+          $ref: '#/definitions/Error'
+  patch:
+    tags:
+      - Devices
+    summary: Update a device
+    description: ''
+    operationId: walkoff.server.endpoints.devices.patch_device
     consumes:
       - application/json
     produces:

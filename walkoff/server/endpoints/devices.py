@@ -140,6 +140,10 @@ def update_device():
     return __func()
 
 
+def patch_device():
+    return update_device()
+
+
 __device_error_messages = {UnknownApp: ('App does not exist', 'Unknown app'),
                            UnknownDevice: ('Type does not exist', 'Unknown device type'),
                            InvalidArgument: ('Invalid input', 'Invalid device fields')}

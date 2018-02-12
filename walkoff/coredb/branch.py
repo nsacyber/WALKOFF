@@ -1,22 +1,21 @@
 import logging
-from functools import total_ordering
 
 from sqlalchemy import Column, Integer, ForeignKey, String
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy_utils import UUIDType
 
 from walkoff.coredb import Device_Base
 from walkoff.events import WalkoffEvent
 from walkoff.coredb.executionelement import ExecutionElement
-from walkoff.dbtypes import Guid
+
 logger = logging.getLogger(__name__)
 
 
-@total_ordering
 class Branch(ExecutionElement, Device_Base):
     __tablename__ = 'branch'
-    _workflow_id = Column(Guid(), ForeignKey('workflow.id'))
-    source_id = Column(Guid(), nullable=False)
-    destination_id = Column(Guid(), nullable=False)
+    _workflow_id = Column(UUIDType(), ForeignKey('workflow.id'))
+    source_id = Column(UUIDType(), nullable=False)
+    destination_id = Column(UUIDType(), nullable=False)
     status = Column(String(80))
     condition = relationship('ConditionalExpression', backref=backref('_branch'), cascade='all, delete-orphan',
                              uselist=False)
@@ -43,16 +42,6 @@ class Branch(ExecutionElement, Device_Base):
         self.status = status
         self.priority = priority
         self.condition = condition
-
-    def __eq__(self, other):
-        return (self.source_id == other.source_id
-                and self.destination_id == other.destination_id
-                and self.status == other.status
-                and self.priority == other.priority
-                and set(self.condition) == set(other.conditions))
-
-    def __lt__(self, other):
-        return self.priority < other.priority
 
     def execute(self, data_in, accumulator):
         """Executes the Branch object, determining if this Branch should be taken.

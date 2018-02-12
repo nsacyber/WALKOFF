@@ -1,4 +1,4 @@
-/api/scheduler:
+/scheduler:
   get:
     tags:
       - Scheduler
@@ -46,7 +46,7 @@
               type: string
               description: The current status of the scheduler
 
-/api/scheduledtasks:
+/scheduledtasks:
   get:
     tags:
       - Scheduler
@@ -151,7 +151,7 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/scheduledtasks/{scheduled_task_id}:
+/scheduledtasks/{scheduled_task_id}:
   parameters:
     - name: scheduled_task_id
       in: path

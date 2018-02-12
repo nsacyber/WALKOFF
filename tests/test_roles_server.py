@@ -123,25 +123,31 @@ class TestRolesServer(servertestcase.ServerTestCase):
         expected['id'] = role_id
         self.assertRoleJsonIsEqual(response, expected)
 
-    def test_update_role_with_resources(self):
+    def put_patch_update_role_with_resources(self, verb):
+        send_func = self.put_with_status_check if verb == 'put' else self.patch_with_status_check
         data_init = {"name": 'role1', "description": 'desc',
                      "resources": [{'name': 'resource1', 'permissions': ['create']},
                                    {'name': 'resource2', 'permissions': ['create']},
                                    {'name': 'resource3', 'permissions': ['create']}]}
         response = json.loads(self.app.post('/api/roles', headers=self.headers, content_type='application/json',
-                                           data=json.dumps(data_init)).get_data(as_text=True))
+                                            data=json.dumps(data_init)).get_data(as_text=True))
         role_id = response['id']
         data = {'id': role_id, 'description': 'new_desc',
                 'resources': [{'name': 'resource4', 'permissions': ['create']},
                               {'name': 'resource5', 'permissions': ['create']}]}
-        response = self.put_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS,
-                                               content_type='application/json', data=json.dumps(data))
+        response = send_func('/api/roles', headers=self.headers, status_code=SUCCESS,
+                                              content_type='application/json', data=json.dumps(data))
         expected = dict(data_init)
         expected['description'] = 'new_desc'
         expected['id'] = role_id
         expected['resources'] = [{'name': 'resource4', 'permissions': ['create']},
                                  {'name': 'resource5', 'permissions': ['create']}]
-        self.assertRoleJsonIsEqual(response, expected)
+
+    def test_update_role_with_resources_put(self):
+        self.put_patch_update_role_with_resources('put')
+
+    def test_update_role_with_resources_patch(self):
+        self.put_patch_update_role_with_resources('patch')
 
     def test_update_role_with_resources_permissions(self):
         data_init = {"name": 'role1', "description": 'desc',

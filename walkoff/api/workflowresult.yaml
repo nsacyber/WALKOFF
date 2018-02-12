@@ -1,4 +1,4 @@
-/api/workflowresults:
+/workflowresults:
   get:
     tags: [Workflow]
     summary: Gets all the results from all the executed workflows
@@ -10,7 +10,7 @@
         schema:
           $ref: '#/definitions/CompleteWorkflowResults'
 
-/api/workflowresults/{uid}:
+/workflowresults/{uid}:
   get:
     tags: [Workflow]
     summary: Gets the results from an executed workflow
