@@ -144,14 +144,13 @@ class TestZMQCommunication(unittest.TestCase):
         self.assertEqual(len(actions), capacity*2)
 
     '''Communication Socket Testing'''
-
     def test_pause_and_resume_workflow(self):
         execution_id = None
         result = dict()
         result['paused'] = False
         result['resumed'] = False
 
-        @WalkoffEvent.WorkflowExecutionStart.connect
+        @WalkoffEvent.ActionExecutionSuccess.connect
         def action_1_about_to_begin_listener(sender, **kwargs):
             if not result['resumed']:
                 threading.Thread(target=pause_resume_thread).start()

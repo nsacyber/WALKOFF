@@ -493,7 +493,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(result['count'], 3)
         self.assertDictEqual(result['response2'], {'info': 'Workflow paused'})
         self.assertDictEqual(result['response3'], {'info': 'Workflow resumed'})
-        expected_data = [{'status': 'Success', 'result': {'message': 'HELLO WORLD'}},
+        expected_data = [{'status': 'Success', 'result': None},
                          {'status': 'Success', 'result': None}, {'status': 'Success', 'result': None}]
         self.assertEqual(len(result['data']), len(expected_data))
         for exp, act in zip(expected_data, result['data']):

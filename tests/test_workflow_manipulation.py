@@ -52,56 +52,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         walkoff.controller.controller.shutdown_pool()
         device_db_help.tear_down_device_db()
 
-    # TODO: Delete this test -- pause/resume is already being tested.
-    # def test_pause_and_resume_workflow(self):
-    #     execution_id = None
-    #     result = dict()
-    #     result['paused'] = False
-    #     result['resumed'] = False
-    #
-    #     @WalkoffEvent.WorkflowExecutionStart.connect
-    #     def action_1_about_to_begin_listener(sender, **kwargs):
-    #         if not result['resumed']:
-    #             threading.Thread(target=pause_resume_thread).start()
-    #
-    #     def pause_resume_thread():
-    #         self.controller.pause_workflow(execution_id)
-    #         return
-    #
-    #     @WalkoffEvent.WorkflowPaused.connect
-    #     def workflow_paused_listener(sender, **kwargs):
-    #         workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
-    #             execution_id=sender['workflow_execution_id']).first()
-    #         workflow_status.paused()
-    #         action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
-    #             _workflow_status_id=sender['workflow_execution_id']).first()
-    #
-    #         if action_status:
-    #             action_status.paused()
-    #         devicedb.device_db.session.commit()
-    #
-    #         result['paused'] = True
-    #         self.controller.resume_workflow(execution_id)
-    #
-    #     @WalkoffEvent.WorkflowResumed.connect
-    #     def workflow_resumed_listener(sender, **kwargs):
-    #         result['resumed'] = True
-    #
-    #     workflow = device_db_help.load_workflow('testGeneratedWorkflows/pauseWorkflowTest', 'pauseWorkflow')
-    #     action_ids = [action.id for action in workflow.actions]
-    #     setup_subscriptions_for_action(workflow.id, action_ids)
-    #
-    #     execution_id = self.controller.execute_workflow(workflow.id)
-    #     self.controller.wait_and_reset(1)
-    #     self.assertTrue(result['paused'])
-    #     self.assertTrue(result['resumed'])
-    #
-    #     actions = []
-    #     for id_ in action_ids:
-    #         actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
-    #
-    #     self.assertEqual(len(actions), 3)
-
     def test_change_action_input(self):
         arguments = [Argument(name='call', value='CHANGE INPUT')]
 

@@ -4,12 +4,17 @@
         {
             "actions": [
                 {
-                    "action_name": "helloWorld",
+                    "action_name": "pause",
                     "app_name": "HelloWorldBounded",
-                    "arguments": [],
+                    "arguments": [
+                        {
+                            "name": "seconds",
+                            "value": 1.0
+                        }
+                    ],
                     "device_id": 1,
                     "id": "34364801-f9a9-4bd9-8ce6-26d361174481",
-                    "name": "start",
+                    "name": "1",
                     "triggers": []
                 },
                 {
