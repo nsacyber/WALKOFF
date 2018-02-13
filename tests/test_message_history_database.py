@@ -82,5 +82,7 @@ class TestMessageHistoryDatabase(TestCase):
         self.assertEqual(message_json['user_id'], self.user1.id)
         self.assertEqual(message_json['username'], self.user1.username)
         message_history = MessageHistory(self.user1, MessageAction.unread)
+        db.session.add(message_history)
+        db.session.commit()
         message_json = message_history.as_json()
         self.assertEqual(message_json['action'], 'unread')

@@ -1,6 +1,5 @@
 import json
-
-from sqlalchemy import func
+from datetime import datetime
 
 from walkoff.extensions import db
 from walkoff.messaging import MessageAction
@@ -21,7 +20,7 @@ class Message(db.Model):
     workflow_execution_uid = db.Column(db.String(25))
     requires_reauth = db.Column(db.Boolean, default=False)
     requires_response = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=func.current_timestamp())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     history = db.relationship('MessageHistory', backref='message', lazy=True)
 
     def __init__(self, subject, body, workflow_execution_uid, users, requires_reauth=False, requires_response=False):
@@ -76,19 +75,21 @@ class Message(db.Model):
         responded, responded_at, responded_by = self.is_responded()
         ret = {'id': self.id,
                'subject': self.subject,
-               'created_at': str(self.created_at),
+               'created_at': self.created_at.isoformat(),
                'awaiting_response': self.requires_response and not responded}
 
         if user:
             ret['is_read'] = self.user_has_read(user)
-            ret['last_read_at'] = str(self.user_last_read_at(user))
+            last_read_at = self.user_last_read_at(user)
+            if last_read_at:
+                ret['last_read_at'] = last_read_at.isoformat()
         if not summary:
             ret.update({'body': json.loads(self.body),
                         'workflow_execution_uid': self.workflow_execution_uid,
                         'requires_reauthorization': self.requires_reauth,
                         'requires_response': self.requires_response})
             if responded:
-                ret['responded_at'] = str(responded_at)
+                ret['responded_at'] = responded_at.isoformat()
                 ret['responded_by'] = responded_by
             if with_read_by:
                 ret['read_by'] = list(self.get_read_by())
@@ -99,7 +100,7 @@ class MessageHistory(db.Model):
     __tablename__ = 'message_history'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     action = db.Column(db.Enum(MessageAction))
-    timestamp = db.Column(db.DateTime, default=func.current_timestamp())
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer)
     username = db.Column(db.String)
     message_id = db.Column(db.Integer, db.ForeignKey('message.id'))
@@ -114,4 +115,4 @@ class MessageHistory(db.Model):
                 'user_id': self.user_id,
                 'username': self.username,
                 'id': self.id,
-                'timestamp': str(self.timestamp)}
+                'timestamp': self.timestamp.isoformat()}

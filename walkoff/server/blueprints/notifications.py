@@ -45,7 +45,7 @@ def send_sse(user_id, event, data):
 def message_created_callback(message, **data):
     result = {'id': message.id,
               'subject': message.subject,
-              'created_at': str(message.created_at),
+              'created_at': message.created_at.isoformat(),
               'is_read': False,
               'awaiting_response': message.requires_response}
     send_sse({user.id for user in message.users}, NotificationSseEvent.created, result)
@@ -56,7 +56,7 @@ def message_responded_callback(message, **data):
     user = data['data']['user']
     result = {'id': message.id,
               'username': user.username,
-              'timestamp': str(datetime.utcnow())}
+              'timestamp': datetime.utcnow().isoformat()}
     send_sse({user.id for user in message.users}, NotificationSseEvent.responded, result)
 
 
@@ -65,7 +65,7 @@ def message_read_callback(message, **data):
     user = data['data']['user']
     result = {'id': message.id,
               'username': user.username,
-              'timestamp': str(datetime.utcnow())}
+              'timestamp': datetime.utcnow().isoformat()}
     send_sse({user.id for user in message.users}, NotificationSseEvent.read, result)
 
 

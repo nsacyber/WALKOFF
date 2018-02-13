@@ -68,6 +68,7 @@ Event:
     timestamp:
       description: String representation of the time at which the event happened
       type: string
+      format: date-time
       readOnly: true
       example: '2017-05-12 15:54:18.121421'
     type:

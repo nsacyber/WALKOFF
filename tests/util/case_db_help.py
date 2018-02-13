@@ -21,6 +21,6 @@ def executed_actions(workflow_id, start_time, end_time):
                   filter(case_database.Event.originator == str(workflow_id)).all()]
     out = []
     for event in events:
-        if start_time <= datetime.strptime(event['timestamp'], '%Y-%m-%d %H:%M:%S.%f') <= end_time:
+        if start_time <= datetime.strptime(event['timestamp'], '%Y-%m-%dT%H:%M:%S.%f') <= end_time:
             out.append(event)
     return out

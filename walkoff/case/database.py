@@ -50,7 +50,7 @@ class Event(Case_Base):
     """
     __tablename__ = 'event'
     id = Column(Integer, primary_key=True)
-    timestamp = Column(DateTime, default=datetime.utcnow())
+    timestamp = Column(DateTime, default=datetime.utcnow)
     type = Column(String)
     originator = Column(String)
     message = Column(String)
@@ -69,7 +69,7 @@ class Event(Case_Base):
             The JSON representation of an Event object.
         """
         output = {'id': self.id,
-                  'timestamp': str(self.timestamp),
+                  'timestamp': self.timestamp.isoformat(),
                   'type': self.type,
                   'originator': str(self.originator),
                   'message': self.message if self.message is not None else '',

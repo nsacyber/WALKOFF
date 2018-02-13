@@ -30,7 +30,7 @@ def __action_ended_callback(sender, **kwargs):
     action_arguments = [convert_action_argument(argument) for argument in sender.get('arguments', [])]
     result = {'action_name': sender['name'],
               'action_id': sender['id'],
-              'timestamp': str(datetime.utcnow()),
+              'timestamp': datetime.utcnow().isoformat(),
               'arguments': action_arguments,
               'result': kwargs['data']['result'],
               'status': kwargs['data']['status']}
@@ -46,7 +46,7 @@ def __action_error_callback(sender, **kwargs):
     action_arguments = [convert_action_argument(argument) for argument in sender.get('arguments', [])]
     result = {'action_name': sender['name'],
               'action_id': sender['id'],
-              'timestamp': str(datetime.utcnow()),
+              'timestamp': datetime.utcnow().isoformat(),
               'arguments': action_arguments,
               'result': kwargs['data']['result'],
               'status': kwargs['data']['status']}
