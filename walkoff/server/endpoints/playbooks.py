@@ -27,9 +27,8 @@ def playbook_getter(playbook_id):
     return playbook
 
 
-def workflow_getter(playbook_id, workflow_id):
-    return walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(
-        id=workflow_id, _playbook_id=playbook_id).first()
+def workflow_getter(workflow_id):
+    return walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
 
 
 def is_valid_uid(*ids):
@@ -189,7 +188,17 @@ def copy_playbook(playbook_id):
     return __func()
 
 
-def get_workflows(playbook_id):
+def get_workflows(playbook=None):
+    @jwt_required
+    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
+    def __get():
+        return [workflow.read() for workflow in walkoff.coredb.devicedb.device_db.session.query(Workflow).all()], SUCCESS
+    if playbook:
+        return get_workflows_for_playbook(playbook)
+    return __get()
+
+
+def get_workflows_for_playbook(playbook_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     @with_playbook('read workflows', playbook_id)
@@ -199,13 +208,14 @@ def get_workflows(playbook_id):
     return __func()
 
 
-def create_workflow(playbook_id, source=None):
+def create_workflow(source=None):
+    data = request.get_json()
+    playbook_id = data.pop('playbook_id')
+
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create']))
     @with_playbook('create workflow', playbook_id)
     def __func(playbook):
-
-        data = request.get_json()
         workflow_name = data['name']
         if 'start' not in data:
             return {'error': '"start" is a required field'}, BAD_REQUEST
@@ -231,23 +241,23 @@ def create_workflow(playbook_id, source=None):
     return __func()
 
 
-def read_workflow(playbook_id, workflow_id):
+def read_workflow(workflow_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
-    @with_workflow('read', playbook_id, workflow_id)
+    @with_workflow('read', workflow_id)
     def __func(workflow):
         return workflow.read(), SUCCESS
 
     return __func()
 
 
-def update_workflow(playbook_id):
+def update_workflow():
     data = request.get_json()
     workflow_id = data['id']
 
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['update']))
-    @with_workflow('update', playbook_id, workflow_id)
+    @with_workflow('update', workflow_id)
     def __func(workflow):
 
         # TODO: Come back to this...
@@ -271,10 +281,10 @@ def update_workflow(playbook_id):
     return __func()
 
 
-def delete_workflow(playbook_id, workflow_id):
+def delete_workflow(workflow_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['delete']))
-    @with_workflow('delete', playbook_id, workflow_id)
+    @with_workflow('delete', workflow_id)
     def __func(workflow):
         playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=workflow._playbook_id).first()
         playbook_workflows = len(playbook.workflows) - 1
@@ -282,7 +292,7 @@ def delete_workflow(playbook_id, workflow_id):
         walkoff.coredb.devicedb.device_db.session.delete(workflow)
 
         if playbook_workflows == 0:
-            current_app.logger.debug('Removing playbook {0} since it is empty.'.format(playbook_id))
+            current_app.logger.debug('Removing playbook {0} since it is empty.'.format(workflow._playbook_id))
             walkoff.coredb.devicedb.device_db.session.delete(playbook)
 
         walkoff.coredb.devicedb.device_db.session.commit()
@@ -296,14 +306,10 @@ def delete_workflow(playbook_id, workflow_id):
 def copy_workflow(playbook_id, workflow_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create', 'read']))
-    @with_workflow('copy', playbook_id, workflow_id)
+    @with_workflow('copy', workflow_id)
     def __func(workflow):
         data = request.get_json()
 
-        if 'playbook_id' in data and data['playbook_id']:
-            new_playbook_id = data['playbook_id']
-        else:
-            new_playbook_id = playbook_id
         if 'name' in data and data['name']:
             new_workflow_name = data['name']
         else:
@@ -315,11 +321,11 @@ def copy_workflow(playbook_id, workflow_id):
 
         regenerate_workflow_ids(workflow_json)
 
-        if walkoff.coredb.devicedb.device_db.session.query(exists().where(Playbook.id == new_playbook_id)).scalar():
-            playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=new_playbook_id).first()
+        if walkoff.coredb.devicedb.device_db.session.query(exists().where(Playbook.id == playbook_id)).scalar():
+            playbook = walkoff.coredb.devicedb.device_db.session.query(Playbook).filter_by(id=playbook_id).first()
         else:
             walkoff.coredb.devicedb.device_db.session.rollback()
-            current_app.logger.error('Could not copy workflow {}. Playbook does not exist'.format(new_playbook_id))
+            current_app.logger.error('Could not copy workflow {}. Playbook does not exist'.format(playbook_id))
             return {"error": "Playbook does not exist."}, OBJECT_DNE_ERROR
 
         try:
