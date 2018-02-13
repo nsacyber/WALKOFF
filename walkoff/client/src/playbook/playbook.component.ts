@@ -544,19 +544,31 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	}
 
 	_sanitizeExpressionAndChildren(expression: ConditionalExpression): void {
-		if (!expression || !expression.child_expressions || !expression.child_expressions.length) { return; }
+		if (!expression) { return; }
 
-		expression.child_expressions.forEach(childExpr => {
-			childExpr.conditions.forEach(condition => {
+		if (expression.conditions && expression.conditions.length) {
+			expression.conditions.forEach(condition => {
 				this._sanitizeArgumentsForSave(condition.arguments);
 
 				condition.transforms.forEach(transform => {
 					this._sanitizeArgumentsForSave(transform.arguments);
 				});
 			});
+		}
 
-			this._sanitizeExpressionAndChildren(childExpr);
-		});
+		if (expression.child_expressions && expression.child_expressions.length) {
+			expression.child_expressions.forEach(childExpr => {
+				childExpr.conditions.forEach(condition => {
+					this._sanitizeArgumentsForSave(condition.arguments);
+
+					condition.transforms.forEach(transform => {
+						this._sanitizeArgumentsForSave(transform.arguments);
+					});
+				});
+
+				this._sanitizeExpressionAndChildren(childExpr);
+			});
+		}
 	}
 
 	/**
