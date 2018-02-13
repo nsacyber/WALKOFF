@@ -215,6 +215,10 @@ Condition:
       type: array
       items:
         $ref: '#/definitions/Argument'
+    is_inverted:
+      description: Should the result of this condition be inverted? For example if the condition would return True, then invert it to return False.
+      type: boolean
+      default: false
     transforms:
       description: transforms for the data before passing it into the condition
       type: array
