@@ -128,6 +128,8 @@ class WalkoffEvent(Enum):
                                                             'Conditional expression evaluated true')
     ConditionalExpressionFalse = ConditionalExpressionSignal('Conditional Expression False',
                                                              'Conditional expression evaluated false')
+    ConditionalExpressionError = ConditionalExpressionSignal('Conditional Expression Error',
+                                                             'Error occurred while evaluating conditional expression')
 
     ConditionSuccess = ConditionSignal('Condition Success', 'Condition executed without error')
     ConditionError = ConditionSignal('Condition Error', 'Condition executed with error')

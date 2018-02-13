@@ -83,14 +83,14 @@ class Condition(ExecutionElement, Device_Base):
             logger.error('Condition {0} has invalid input {1} which was converted to {2}. Error: {3}. '
                          'Returning False'.format(self.action_name, data_in, data, format_exception_message(e)))
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionError)
-            return False
+            raise
         except Exception as e:
             logger.error('Error encountered executing '
                          'condition {0} with arguments {1} and value {2}: '
                          'Error {3}. Returning False'.format(self.action_name, self.arguments, data,
                                                              format_exception_message(e)))
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionError)
-            return False
+            raise
 
     def __update_arguments_with_data(self, data):
         arg = None

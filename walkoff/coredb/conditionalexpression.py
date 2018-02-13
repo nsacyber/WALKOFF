@@ -1,22 +1,22 @@
 import logging
 from sqlalchemy import Column, ForeignKey, Enum, orm
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy_utils import UUIDType
 
 from walkoff.coredb import Device_Base
 from walkoff.coredb.executionelement import ExecutionElement
-from walkoff.dbtypes import Guid
 from uuid import uuid4
-from walkoff.helpers import InvalidExecutionElement
+from walkoff.helpers import InvalidExecutionElement, InvalidArgument
 from walkoff.events import WalkoffEvent
 logger = logging.getLogger(__name__)
 
 
 class ConditionalExpression(ExecutionElement, Device_Base):
     __tablename__ = 'conditional_expression'
-    id = Column(Guid(), primary_key=True, default=uuid4)
-    _action_id = Column(Guid(), ForeignKey('action.id'))
-    _branch_id = Column(Guid(), ForeignKey('branch.id'))
-    _parent_id = Column(Guid(), ForeignKey(id))
+    id = Column(UUIDType(), primary_key=True, default=uuid4)
+    _action_id = Column(UUIDType(), ForeignKey('action.id'))
+    _branch_id = Column(UUIDType(), ForeignKey('branch.id'))
+    _parent_id = Column(UUIDType(), ForeignKey(id))
     operator = Column(Enum('truth', 'not', 'and', 'or', 'xor', name='operator_types'), nullable=False)
     child_expressions = relationship('ConditionalExpression',
                                      cascade='all, delete-orphan',
@@ -56,12 +56,16 @@ class ConditionalExpression(ExecutionElement, Device_Base):
                                   'not': self._not}
 
     def execute(self, data_in, accumulator):
-        result = self.__operator_lookup[self.operator](data_in, accumulator)
-        if result:
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionTrue)
-        else:
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionFalse)
-        return result
+        try:
+            result = self.__operator_lookup[self.operator](data_in, accumulator)
+            if result:
+                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionTrue)
+            else:
+                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionFalse)
+            return result
+        except (InvalidArgument, Exception):
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionError)
+            return False
 
     def _and(self, data_in, accumulator):
         return (all(condition.execute(data_in, accumulator) for condition in self.conditions)
