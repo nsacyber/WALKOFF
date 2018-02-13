@@ -39,9 +39,10 @@ class TestWorkflowServer(ServerTestCase):
         setup_subscriptions_for_action(workflow.id, action_ids)
         start = datetime.utcnow()
 
-        response = self.post_with_status_check(
-            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
-            headers=self.headers, data=json.dumps({}), status_code=SUCCESS_ASYNC, content_type="application/json")
+        data = {"workflow_id": str(workflow.id)}
+
+        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, data=json.dumps(data),
+                                               status_code=SUCCESS_ASYNC, content_type="application/json")
         flask_server.running_context.controller.wait_and_reset(1)
         self.assertIn('id', response)
         actions = []
@@ -65,12 +66,11 @@ class TestWorkflowServer(ServerTestCase):
             result['count'] += 1
             result['data'] = kwargs['data']
 
-        data = {"arguments": [{"name": "call",
+        data = {"workflow_id": str(workflow.id),
+                "arguments": [{"name": "call",
                                "value": "CHANGE INPUT"}]}
 
-        self.post_with_status_check('/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
-                                    headers=self.headers,
-                                    status_code=SUCCESS_ASYNC,
+        self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
                                     content_type="application/json", data=json.dumps(data))
 
         flask_server.running_context.controller.wait_and_reset(1)

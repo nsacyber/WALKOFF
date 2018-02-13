@@ -18,11 +18,13 @@ WorkflowStatus:
     started_at:
       description: The timestamp of the start of workflow execution
       type: string
+      format: date-time
       example: '2017-05-24 00:42:22.934058'
       readOnly: true
     completed_at:
       description: The timestamp of the end of workflow execution
       type: string
+      format: date-time
       example: '2017-05-24 00:42:22.934058'
       readOnly: true
     current_action_execution_id:
@@ -59,11 +61,13 @@ FullWorkflowStatus:
     started_at:
       description: The timestamp of when the workflow started
       type: string
+      format: date-time
       example: '2017-05-24 00:42:22.934058'
       readOnly: true
     completed_at:
       description: The timestamp of when the workflow completed
       type: string
+      format: date-time
       example: '2017-05-24 00:43:26.930892'
       readOnly: true
     action_statuses:
@@ -108,11 +112,13 @@ ActionStatus:
     started_at:
       description: The timestamp of when the action started
       type: string
+      format: date-time
       example: '2017-05-24 00:42:22.934058'
       readOnly: true
     completed_at:
       description: The timestamp of when the action completed
       type: string
+      format: date-time
       example: '2017-05-24 00:43:26.930892'
       readOnly: true
 

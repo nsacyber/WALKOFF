@@ -39,9 +39,10 @@ class TestTriggersServer(ServerTestCase):
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
-        response = self.post_with_status_check(
-            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
-            headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json", data=json.dumps({}))
+        data = {"workflow_id": str(workflow.id)}
+
+        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
+                                               content_type="application/json", data=json.dumps(data))
 
         ids = [response['id']]
 
@@ -57,8 +58,8 @@ class TestTriggersServer(ServerTestCase):
             threshold = 5
             while len(execd_ids) != len(ids) and timeout < threshold:
                 resp = self.put_with_status_check('/api/triggers/send_data', headers=self.headers,
-                                                   data=json.dumps(data),
-                                                   status_code=SUCCESS, content_type='application/json')
+                                                  data=json.dumps(data),
+                                                  status_code=SUCCESS, content_type='application/json')
                 execd_ids.update(set.intersection(set(ids), set(resp)))
                 time.sleep(0.1)
                 timeout += 0.1
@@ -88,16 +89,14 @@ class TestTriggersServer(ServerTestCase):
 
         ids = []
 
-        response = self.post_with_status_check(
-            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
-            headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json",
-            data=json.dumps({}))
+        data = {"workflow_id": str(workflow.id)}
+
+        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
+                                               content_type="application/json", data=json.dumps(data))
         ids.append(response['id'])
 
-        response = self.post_with_status_check(
-            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
-            headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json",
-            data=json.dumps({}))
+        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
+                                               content_type="application/json", data=json.dumps(data))
         ids.append(response['id'])
 
         data = {"execution_ids": ids,
@@ -113,8 +112,8 @@ class TestTriggersServer(ServerTestCase):
             threshold = 5
             while len(execd_ids) != len(ids) and timeout < threshold:
                 resp = self.put_with_status_check('/api/triggers/send_data', headers=self.headers,
-                                                   data=json.dumps(data),
-                                                   status_code=SUCCESS, content_type='application/json')
+                                                  data=json.dumps(data),
+                                                  status_code=SUCCESS, content_type='application/json')
                 execd_ids.update(set.intersection(set(ids), set(resp)))
                 time.sleep(0.1)
                 timeout += 0.1
@@ -137,9 +136,10 @@ class TestTriggersServer(ServerTestCase):
     def test_trigger_execute_multiple_data(self):
         workflow = device_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
 
-        response = self.post_with_status_check(
-            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
-            headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json", data=json.dumps({}))
+        data = {"workflow_id": str(workflow.id)}
+
+        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
+                                               content_type="application/json", data=json.dumps(data))
 
         ids = [response['id']]
 
@@ -154,8 +154,8 @@ class TestTriggersServer(ServerTestCase):
             timeout = 0
             threshold = 5
             resp = self.put_with_status_check('/api/triggers/send_data', headers=self.headers,
-                                               data=json.dumps(data),
-                                               status_code=SUCCESS, content_type='application/json')
+                                              data=json.dumps(data),
+                                              status_code=SUCCESS, content_type='application/json')
             execd_ids.update(set.intersection(set(ids), set(resp)))
 
             data_correct = {"execution_ids": [response['id']], "data_in": {"data": "1"}}
@@ -163,8 +163,8 @@ class TestTriggersServer(ServerTestCase):
             timeout = 0
             while len(execd_ids) != len(ids) and timeout < threshold:
                 resp = self.put_with_status_check('/api/triggers/send_data', headers=self.headers,
-                                                   data=json.dumps(data_correct),
-                                                   status_code=SUCCESS, content_type='application/json')
+                                                  data=json.dumps(data_correct),
+                                                  status_code=SUCCESS, content_type='application/json')
                 execd_ids.update(set.intersection(set(ids), set(resp)))
                 time.sleep(0.1)
                 timeout += 0.1
@@ -184,9 +184,10 @@ class TestTriggersServer(ServerTestCase):
     def test_trigger_execute_change_input(self):
         workflow = device_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
 
-        response = self.post_with_status_check(
-            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
-            headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json", data=json.dumps({}))
+        data = {"workflow_id": str(workflow.id)}
+
+        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
+                                               content_type="application/json", data=json.dumps(data))
 
         ids = [response['id']]
 
@@ -208,8 +209,8 @@ class TestTriggersServer(ServerTestCase):
             threshold = 5
             while len(execd_ids) != len(ids) and timeout < threshold:
                 resp = self.put_with_status_check('/api/triggers/send_data', headers=self.headers,
-                                                   data=json.dumps(data),
-                                                   status_code=SUCCESS, content_type='application/json')
+                                                  data=json.dumps(data),
+                                                  status_code=SUCCESS, content_type='application/json')
                 execd_ids.update(set.intersection(set(ids), set(resp)))
                 time.sleep(0.1)
                 timeout += 0.1
@@ -226,9 +227,10 @@ class TestTriggersServer(ServerTestCase):
     def test_trigger_execute_with_change_input_invalid_input(self):
         workflow = device_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
 
-        response = self.post_with_status_check(
-            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
-            headers=self.headers, status_code=SUCCESS_ASYNC, content_type="application/json", data=json.dumps({}))
+        data = {"workflow_id": str(workflow.id)}
+
+        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
+                                               content_type="application/json", data=json.dumps(data))
 
         ids = [response['id']]
 
