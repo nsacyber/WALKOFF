@@ -143,24 +143,24 @@ Branch:
 
 ConditionalExpression:
   type: object
-  required: [operator]
   description: Object which encapsulates Boolean logic
   properties:
     operator:
       type: string
       description: The operation to use which on the conditions
-      enum: [truth, not, and, or, xor]
+      enum: [and, or, xor]
+      default: and
+    is_inverted:
+      description: Should the result of this condition be inverted? For example if the condition would return True, then invert it to return False.
+      type: boolean
+      default: false
     conditions:
-      description: >
-        Base conditions to evaluate. If the operator is "truth" or "not" there can only be one element in EITHER
-        "conditions" or "child_expressions"
+      description: Base conditions to evaluate.
       type: array
       items:
         $ref: '#/definitions/Condition'
     child_expressions:
-      description: >
-        Sub-expressions to evaluate. If the operator is "truth" or "not" there can only be one element in EITHER
-        "conditions" or "child_expressions"
+      description: Sub-expressions to evaluate.
       type: array
       items:
         $ref: '#/definitions/ConditionalExpression'

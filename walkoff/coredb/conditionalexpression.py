@@ -1,5 +1,5 @@
 import logging
-from sqlalchemy import Column, ForeignKey, Enum, orm
+from sqlalchemy import Column, ForeignKey, Enum, orm, Boolean
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 
@@ -17,7 +17,8 @@ class ConditionalExpression(ExecutionElement, Device_Base):
     _action_id = Column(UUIDType(), ForeignKey('action.id'))
     _branch_id = Column(UUIDType(), ForeignKey('branch.id'))
     _parent_id = Column(UUIDType(), ForeignKey(id))
-    operator = Column(Enum('truth', 'not', 'and', 'or', 'xor', name='operator_types'), nullable=False)
+    operator = Column(Enum('and', 'or', 'xor', name='operator_types'), nullable=False)
+    is_inverted = Column(Boolean, default=False)
     child_expressions = relationship('ConditionalExpression',
                                      cascade='all, delete-orphan',
                                      backref=backref('_parent', remote_side=id))
@@ -26,22 +27,21 @@ class ConditionalExpression(ExecutionElement, Device_Base):
         backref=backref('_expression'),
         cascade='all, delete-orphan')
 
-    def __init__(self, operator, id=None, child_expressions=None, conditions=None):
+    def __init__(self, operator='and', id=None, is_inverted=False, child_expressions=None, conditions=None):
         ExecutionElement.__init__(self, id)
         if operator in ('truth', 'not') and len(child_expressions or []) + len(conditions or []) != 1:
             raise InvalidExecutionElement(
                 self.id, 'None',
                 'Conditional Expressions using "truth" or "not" must have 1 condition or child_expression')
         self.operator = operator
+        self.is_inverted = is_inverted
         if child_expressions:
             self._construct_children(child_expressions)
         self.child_expressions = child_expressions if child_expressions is not None else []
         self.conditions = conditions if conditions is not None else []
         self.__operator_lookup = {'and': self._and,
                                   'or': self._or,
-                                  'xor': self._xor,
-                                  'truth': self._truth,
-                                  'not': self._not}
+                                  'xor': self._xor}
 
     def _construct_children(self, child_expressions):
         for child in child_expressions:
@@ -51,19 +51,19 @@ class ConditionalExpression(ExecutionElement, Device_Base):
     def init_on_load(self):
         self.__operator_lookup = {'and': self._and,
                                   'or': self._or,
-                                  'xor': self._xor,
-                                  'truth': self._truth,
-                                  'not': self._not}
+                                  'xor': self._xor}
 
     def execute(self, data_in, accumulator):
         try:
             result = self.__operator_lookup[self.operator](data_in, accumulator)
+            if self.is_inverted:
+                result = not result
             if result:
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionTrue)
             else:
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionFalse)
             return result
-        except (InvalidArgument, Exception):
+        except (InvalidArgument, Exception) as e:
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionError)
             return False
 
@@ -72,10 +72,14 @@ class ConditionalExpression(ExecutionElement, Device_Base):
                 and all(expression.execute(data_in, accumulator) for expression in self.child_expressions))
 
     def _or(self, data_in, accumulator):
+        if not self.conditions and not self.child_expressions:
+            return True
         return (any(condition.execute(data_in, accumulator) for condition in self.conditions)
                 or any(expression.execute(data_in, accumulator) for expression in self.child_expressions))
 
     def _xor(self, data_in, accumulator):
+        if not self.conditions and not self.child_expressions:
+            return True
         is_one_found = False
         for condition in self.conditions:
             if condition.execute(data_in, accumulator):
@@ -88,12 +92,3 @@ class ConditionalExpression(ExecutionElement, Device_Base):
                     return False
                 is_one_found = True
         return is_one_found
-
-    def __get_single_target(self):
-        return self.conditions[0] if self.conditions else self.child_expressions[0]
-
-    def _truth(self, data_in, accumulator):
-        return self.__get_single_target().execute(data_in, accumulator)
-
-    def _not(self, data_in, accumulator):
-        return not self.__get_single_target().execute(data_in, accumulator)

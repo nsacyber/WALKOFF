@@ -8,7 +8,6 @@ from walkoff.coredb.condition import Condition
 from tests.config import test_apps_path
 import walkoff.config.paths
 from tests.util import device_db_help
-from walkoff.helpers import InvalidExecutionElement
 from walkoff.events import WalkoffEvent
 
 
@@ -25,8 +24,9 @@ class TestCondition(unittest.TestCase):
         device_db_help.tear_down_device_db()
         walkoff.appgateway.clear_cache()        
 
-    def assert_construction(self, expression, operator, child_expressions=None, conditions=None):
+    def assert_construction(self, expression, operator='and', is_inverted=False, child_expressions=None, conditions=None):
         self.assertEqual(expression.operator, operator)
+        self.assertEqual(expression.is_inverted, is_inverted)
         if child_expressions is None:
             child_expressions = []
         self.assertEqual(len(expression.child_expressions), len(child_expressions))
@@ -43,120 +43,91 @@ class TestCondition(unittest.TestCase):
         return Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value=pattern)])
 
     def test_init(self):
-        expression = ConditionalExpression('and')
-        self.assert_construction(expression, 'and')
+        expression = ConditionalExpression()
+        self.assert_construction(expression)
+
+    def test_init_with_operator(self):
+        expression = ConditionalExpression(operator='or')
+        self.assert_construction(expression, operator='or')
+
+    def test_init_inverted(self):
+        expression = ConditionalExpression(is_inverted=True)
+        self.assert_construction(expression, is_inverted=True)
 
     def test_init_with_conditions(self):
         conditions = [self.get_always_true_condition(), Condition('HelloWorld', 'mod1_flag1')]
-        expression = ConditionalExpression('or', conditions=conditions)
-        self.assert_construction(expression, 'or', conditions=conditions)
+        expression = ConditionalExpression(operator='or', conditions=conditions)
+        self.assert_construction(expression, operator='or', conditions=conditions)
 
     def test_init_with_child_expressions(self):
-        children = [ConditionalExpression('and') for _ in range(3)]
-        expression = ConditionalExpression('and', child_expressions=children)
-        self.assert_construction(expression, 'and', child_expressions=children)
+        children = [ConditionalExpression() for _ in range(3)]
+        expression = ConditionalExpression(child_expressions=children)
+        self.assert_construction(expression, child_expressions=children)
 
-    def assert_too_many_conditions_raises_exception(self, operator):
-        conditions = [self.get_always_true_condition(), Condition('HelloWorld', 'mod1_flag1')]
-        with self.assertRaises(InvalidExecutionElement):
-            ConditionalExpression(operator, conditions=conditions)
-        children = [ConditionalExpression('and') for _ in range(3)]
-        with self.assertRaises(InvalidExecutionElement):
-            ConditionalExpression(operator, child_expressions=children)
-        with self.assertRaises(InvalidExecutionElement):
-            ConditionalExpression(operator, child_expressions=children, conditions=conditions)
+    def test_execute_no_conditions(self):
+        for operator in ('and', 'or', 'xor'):
+            expression = ConditionalExpression(operator=operator)
+            self.assertTrue(expression.execute('', {}))
 
-    def assert_no_conditions_raises_exception(self, operator):
-        with self.assertRaises(InvalidExecutionElement):
-            ConditionalExpression(operator)
-
-    def test_init_truth_operator_too_many_conditions(self):
-        self.assert_too_many_conditions_raises_exception('truth')
-
-    def test_init_truth_operator_too_no_conditions(self):
-        self.assert_no_conditions_raises_exception('truth')
-
-    def test_init_not_operator_too_many_conditions(self):
-        self.assert_too_many_conditions_raises_exception('not')
-
-    def test_init_not_operator_too_no_conditions(self):
-        self.assert_no_conditions_raises_exception('not')
-
-    def test_execute_truth_with_condition(self):
-        condition = Condition('HelloWorld', 'Top Condition')
-        expression = ConditionalExpression('truth', conditions=[condition])
-        self.assertTrue(expression.execute('3.4', {}))
-
-    def test_execute_truth_with_expression(self):
-        condition = ConditionalExpression('truth', conditions=[self.get_always_true_condition()])
-        expression = ConditionalExpression('truth', child_expressions=[condition])
-        self.assertTrue(expression.execute('3.4', {}))
-
-    def test_execute_not_with_condition(self):
-        expression = ConditionalExpression('not', conditions=[self.get_always_true_condition()])
-        self.assertFalse(expression.execute('3.4', {}))
-
-    def test_execute_not_with_expression(self):
-        condition = ConditionalExpression('truth', conditions=[self.get_always_true_condition()])
-        expression = ConditionalExpression('not', child_expressions=[condition])
-        self.assertFalse(expression.execute('3.4', {}))
+    def test_execute_inverted(self):
+        expression = ConditionalExpression(is_inverted=True)
+        self.assertFalse(expression.execute('', {}))
 
     def test_execute_and_conditions_only(self):
-        expression = ConditionalExpression(
-            'and', conditions=[self.get_regex_condition(), self.get_regex_condition('aa')])
+        expression = ConditionalExpression(conditions=[self.get_regex_condition(), self.get_regex_condition('aa')])
         self.assertTrue(expression.execute('aaa', {}))
         self.assertFalse(expression.execute('bbb', {}))
 
     def test_execute_and_expressions_only(self):
         expression = ConditionalExpression(
-            'and',
             child_expressions=[
-                ConditionalExpression('truth', conditions=[self.get_regex_condition()]),
-                ConditionalExpression('not', conditions=[self.get_regex_condition('ab')])])
-        self.assertTrue(expression.execute('aaa', {}))
-        self.assertFalse(expression.execute('ab', {}))
+                ConditionalExpression(conditions=[self.get_regex_condition('aa')]),
+                ConditionalExpression(conditions=[self.get_regex_condition('bb')])])
+        self.assertTrue(expression.execute('aabb', {}))
+        for false_pattern in ('aa', 'bb', 'cc'):
+            self.assertFalse(expression.execute(false_pattern, {}))
 
     def test_execute_and_with_conditions_and_expressions(self):
         expression = ConditionalExpression(
-            'and',
             conditions=[self.get_regex_condition('aa')],
             child_expressions=[
-                ConditionalExpression('truth', conditions=[self.get_regex_condition()]),
-                ConditionalExpression('not', conditions=[self.get_regex_condition('ab')])])
-        self.assertTrue(expression.execute('aaa', {}))
-        self.assertFalse(expression.execute('aab', {}))
+                ConditionalExpression(conditions=[self.get_regex_condition('bb')]),
+                ConditionalExpression(conditions=[self.get_regex_condition('cc')])])
+        self.assertTrue(expression.execute('aabbcc', {}))
+        for false_pattern in ('aa', 'bb', 'cc', 'dd'):
+            self.assertFalse(expression.execute(false_pattern, {}))
 
     def test_execute_or_conditions_only(self):
         expression = ConditionalExpression(
-            'or', conditions=[self.get_regex_condition('bb'), self.get_regex_condition('aa')])
+            operator='or', conditions=[self.get_regex_condition('bb'), self.get_regex_condition('aa')])
         for true_pattern in ('aa', 'bb', 'aabb'):
             self.assertTrue(expression.execute(true_pattern, {}))
         self.assertFalse(expression.execute('ccc', {}))
 
     def test_execute_or_expressions_only(self):
         expression = ConditionalExpression(
-            'or',
+            operator='or',
             child_expressions=[
-                ConditionalExpression('truth', conditions=[self.get_regex_condition('aa')]),
-                ConditionalExpression('truth', conditions=[self.get_regex_condition('bb')])])
+                ConditionalExpression(conditions=[self.get_regex_condition('aa')]),
+                ConditionalExpression(conditions=[self.get_regex_condition('bb')])])
         for true_pattern in ('aa', 'bb', 'aabb'):
             self.assertTrue(expression.execute(true_pattern, {}))
         self.assertFalse(expression.execute('ccc', {}))
 
     def test_execute_or_with_conditions_and_expressions(self):
         expression = ConditionalExpression(
-            'or',
+            operator='or',
             conditions=[self.get_regex_condition('aa')],
             child_expressions=[
-                ConditionalExpression('truth', conditions=[self.get_regex_condition('bb')]),
-                ConditionalExpression('truth', conditions=[self.get_regex_condition('cc')])])
+                ConditionalExpression(conditions=[self.get_regex_condition('bb')]),
+                ConditionalExpression(conditions=[self.get_regex_condition('cc')])])
         for true_pattern in ('aa', 'bb', 'cc', 'aabb', 'bbcc', 'aacc'):
             self.assertTrue(expression.execute(true_pattern, {}))
         self.assertFalse(expression.execute('d', {}))
 
     def test_execute_xor_conditions_only(self):
         expression = ConditionalExpression(
-            'xor', conditions=[self.get_regex_condition('bb'), self.get_regex_condition('aa')])
+            operator='xor', conditions=[self.get_regex_condition('bb'), self.get_regex_condition('aa')])
         for true_pattern in ('aa', 'bb'):
             self.assertTrue(expression.execute(true_pattern, {}))
         for false_pattern in ('aabb', 'cc'):
@@ -164,10 +135,10 @@ class TestCondition(unittest.TestCase):
 
     def test_execute_xor_expressions_only(self):
         expression = ConditionalExpression(
-            'xor',
+            operator='xor',
             child_expressions=[
-                ConditionalExpression('truth', conditions=[self.get_regex_condition('aa')]),
-                ConditionalExpression('truth', conditions=[self.get_regex_condition('bb')])])
+                ConditionalExpression(conditions=[self.get_regex_condition('aa')]),
+                ConditionalExpression(conditions=[self.get_regex_condition('bb')])])
         for true_pattern in ('aa', 'bb'):
             self.assertTrue(expression.execute(true_pattern, {}))
         for false_pattern in ('aabb', 'cc'):
@@ -175,18 +146,18 @@ class TestCondition(unittest.TestCase):
 
     def test_execute_xor_with_conditions_and_expressions(self):
         expression = ConditionalExpression(
-            'xor',
+            operator='xor',
             conditions=[self.get_regex_condition('aa')],
             child_expressions=[
-                ConditionalExpression('truth', conditions=[self.get_regex_condition('bb')]),
-                ConditionalExpression('truth', conditions=[self.get_regex_condition('cc')])])
+                ConditionalExpression(conditions=[self.get_regex_condition('bb')]),
+                ConditionalExpression(conditions=[self.get_regex_condition('cc')])])
         for true_pattern in ('aa', 'bb', 'cc'):
             self.assertTrue(expression.execute(true_pattern, {}))
         for false_pattern in ('aabb', 'bbcc', 'aacc', 'd'):
             self.assertFalse(expression.execute(false_pattern, {}))
 
     def test_execute_true_sends_event(self):
-        expression = ConditionalExpression('truth', conditions=[self.get_always_true_condition()])
+        expression = ConditionalExpression(conditions=[self.get_always_true_condition()])
         result = {'triggered': False}
 
         @WalkoffEvent.CommonWorkflowSignal.connect
@@ -201,7 +172,7 @@ class TestCondition(unittest.TestCase):
         self.assertTrue(result['triggered'])
 
     def test_execute_false_sends_event(self):
-        expression = ConditionalExpression('not', conditions=[self.get_always_true_condition()])
+        expression = ConditionalExpression(conditions=[self.get_always_true_condition()], is_inverted=True)
         result = {'triggered': False}
 
         @WalkoffEvent.CommonWorkflowSignal.connect
@@ -215,11 +186,25 @@ class TestCondition(unittest.TestCase):
 
         self.assertTrue(result['triggered'])
 
-    def test_read_doesnt_infinitely_recurse(self):
+    def test_execute_error_sends_event(self):
+        expression = ConditionalExpression(conditions=[Condition('HelloWorld', 'mod1_flag1')])
+        result = {'triggered': False}
+
+        @WalkoffEvent.CommonWorkflowSignal.connect
+        def callback_is_sent(sender, **kwargs):
+            if isinstance(sender, ConditionalExpression):
+                self.assertIn('event', kwargs)
+                self.assertEqual(kwargs['event'], WalkoffEvent.ConditionalExpressionError)
+                result['triggered'] = True
+
+        self.assertFalse(expression.execute('any', {}))
+        self.assertTrue(result['triggered'])
+
+    def test_read_does_not_infinitely_recurse(self):
         expression = ConditionalExpression(
-            'xor',
+            operator='xor',
             conditions=[self.get_regex_condition('aa')],
             child_expressions=[
-                ConditionalExpression('truth', conditions=[self.get_regex_condition('bb')]),
-                ConditionalExpression('truth', conditions=[self.get_regex_condition('cc')])])
+                ConditionalExpression(conditions=[self.get_regex_condition('bb')]),
+                ConditionalExpression(conditions=[self.get_regex_condition('cc')])])
         expression.read()
