@@ -30,7 +30,7 @@ class TestCondition(unittest.TestCase):
         self.assertEqual(len(condition.transforms), len(transforms))
         self.assertListEqual(condition.transforms, transforms)
         self.assertListEqual(condition.arguments, arguments)
-        self.assertEqual(condition.is_inverse, is_inverted)
+        self.assertEqual(condition.is_inverted, is_inverted)
 
     def test_init_no_arguments_action_only(self):
         condition = Condition('HelloWorld', 'Top Condition')
