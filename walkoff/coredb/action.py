@@ -4,6 +4,7 @@ import uuid
 
 from sqlalchemy import Column, Integer, ForeignKey, String, orm
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway import get_app_action, is_app_action_bound
 from walkoff.coredb.argument import Argument
@@ -13,14 +14,13 @@ from walkoff.events import WalkoffEvent
 from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
 from walkoff.appgateway.validator import validate_app_action_parameters
-from walkoff.dbtypes import Guid
 logger = logging.getLogger(__name__)
 
 
 class Action(ExecutionElement, Device_Base):
 
     __tablename__ = 'action'
-    _workflow_id = Column(Guid(), ForeignKey('workflow.id'))
+    _workflow_id = Column(UUIDType(), ForeignKey('workflow.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     name = Column(String(80))
@@ -79,6 +79,8 @@ class Action(ExecutionElement, Device_Base):
     @orm.reconstructor
     def init_on_load(self):
         self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
+        self._incoming_data = None
+        self._event = threading.Event()
         self._output = None
         self._action_executable = get_app_action(self.app_name, self._run)
         self._execution_id = 'default'

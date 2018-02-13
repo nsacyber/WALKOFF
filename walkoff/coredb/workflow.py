@@ -5,6 +5,7 @@ import threading
 
 from sqlalchemy import Column, String, ForeignKey, orm, UniqueConstraint
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway.appinstance import AppInstance
 from walkoff.coredb import Device_Base
@@ -12,7 +13,6 @@ from walkoff.events import WalkoffEvent
 from walkoff.coredb.action import Action
 from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import InvalidArgument, format_exception_message
-from walkoff.dbtypes import Guid
 from uuid import uuid4
 
 logger = logging.getLogger(__name__)
@@ -20,11 +20,11 @@ logger = logging.getLogger(__name__)
 
 class Workflow(ExecutionElement, Device_Base):
     __tablename__ = 'workflow'
-    _playbook_id = Column(Guid(), ForeignKey('playbook.id'))
+    _playbook_id = Column(UUIDType(), ForeignKey('playbook.id'))
     name = Column(String(80), nullable=False)
     actions = relationship('Action', backref=backref('_workflow'), cascade='all, delete-orphan')
     branches = relationship('Branch', backref=backref('_workflow'), cascade='all, delete-orphan')
-    start = Column(Guid(), nullable=False)
+    start = Column(UUIDType(), nullable=False)
     __table_args__ = (UniqueConstraint('_playbook_id', 'name', name='_playbook_workflow'),)
 
     def __init__(self, name, start, id=None, actions=None, branches=None):
@@ -112,7 +112,6 @@ class Workflow(ExecutionElement, Device_Base):
             execution_id (str): The UUID4 hex string uniquely identifying this workflow instance
             start (int, optional): The ID of the first Action. Defaults to None.
             start_arguments (list[Argument]): Argument parameters into the first Action. Defaults to None.
-            resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
         """
         self._execution_id = execution_id
         logger.info('Executing workflow {0}'.format(self.name))
@@ -191,7 +190,8 @@ class Workflow(ExecutionElement, Device_Base):
             The ID of the next Action to be executed if successful, else None.
         """
         if self.branches:
-            branches = sorted(self.__get_branches_by_action_id(current_action.id))
+            branches = sorted(
+                self.__get_branches_by_action_id(current_action.id), key=lambda branch_: branch_.priority)
             for branch in branches:
                 # TODO: This here is the only hold up from getting rid of action._output.
                 # Keep whole result in accumulator

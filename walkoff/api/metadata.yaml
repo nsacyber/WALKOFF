@@ -1,4 +1,4 @@
-/api/availablesubscriptions:
+/availablesubscriptions:
   get:
     tags:
       - System
@@ -16,7 +16,7 @@
           items:
             $ref: '#/definitions/AvailableSubscriptions'
 
-/api/interfaces:
+/interfaces:
   get:
     tags:
       - System
@@ -35,7 +35,7 @@
             type: string
 
 
-/api/client/{filename}:
+/client/{filename}:
   get:
     tags:
       - Client

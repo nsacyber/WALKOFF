@@ -1,5 +1,7 @@
 from unittest import TestCase
 from walkoff.appgateway.appcache import AppCacheEntry, FunctionEntry
+from walkoff.appgateway.walkofftag import WalkoffTag
+from walkoff.appgateway.decorators import *
 from walkoff.appgateway.decorators import *
 
 

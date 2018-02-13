@@ -5,15 +5,15 @@ from sqlalchemy import Column, String, DateTime, ForeignKey, Enum, func
 from sqlalchemy.orm import relationship, backref
 
 from walkoff.coredb import Device_Base, WorkflowStatusEnum, ActionStatusEnum
-from walkoff.dbtypes import Guid
+from sqlalchemy_utils import UUIDType
 
 
 class WorkflowStatus(Device_Base):
     """Case ORM for a Workflow event in the database
     """
     __tablename__ = 'workflow_status'
-    execution_id = Column(Guid(), primary_key=True)
-    workflow_id = Column(Guid(), nullable=False)
+    execution_id = Column(UUIDType(), primary_key=True)
+    workflow_id = Column(UUIDType(), nullable=False)
     name = Column(String, nullable=False)
     status = Column(Enum(WorkflowStatusEnum), nullable=False)
     started_at = Column(DateTime)
@@ -70,8 +70,8 @@ class ActionStatus(Device_Base):
     """ORM for an Action event in the database
     """
     __tablename__ = 'action_status'
-    execution_id = Column(Guid(), primary_key=True)
-    action_id = Column(Guid(), nullable=False)
+    execution_id = Column(UUIDType(), primary_key=True)
+    action_id = Column(UUIDType(), nullable=False)
     name = Column(String, nullable=False)
     app_name = Column(String, nullable=False)
     action_name = Column(String, nullable=False)
@@ -80,7 +80,7 @@ class ActionStatus(Device_Base):
     status = Column(Enum(ActionStatusEnum), nullable=False)
     started_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime)
-    _workflow_status_id = Column(Guid(), ForeignKey('workflow_status.execution_id'))
+    _workflow_status_id = Column(UUIDType(), ForeignKey('workflow_status.execution_id'))
 
     def __init__(self, execution_id, action_id, name, app_name, action_name, arguments=None):
         self.execution_id = execution_id

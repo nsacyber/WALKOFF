@@ -3,15 +3,15 @@ import logging
 from sqlalchemy import Column, PickleType
 
 from walkoff.coredb import Device_Base
-from walkoff.dbtypes import Guid
+from sqlalchemy_utils import UUIDType
 logger = logging.getLogger(__name__)
 
 
 class SavedWorkflow(Device_Base):
     __tablename__ = 'saved_workflow'
-    workflow_execution_id = Column(Guid(), primary_key=True)
-    workflow_id = Column(Guid(), nullable=False)
-    action_id = Column(Guid(), nullable=False)
+    workflow_execution_id = Column(UUIDType(), primary_key=True)
+    workflow_id = Column(UUIDType(), nullable=False)
+    action_id = Column(UUIDType(), nullable=False)
     accumulator = Column(PickleType(), nullable=False)
     app_instances = Column(PickleType(), nullable=False)
 

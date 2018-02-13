@@ -2,6 +2,7 @@ Flask >= 0.10.0
 Flask_SQLAlchemy == 2.1
 flask_jwt_extended >= 3.4.0
 sqlalchemy >= 1.1.0
+sqlalchemy-utils >= 0.32.0
 APscheduler >= 3.0.0
 gevent >= 1.2
 connexion >= 1.1

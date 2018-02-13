@@ -306,7 +306,7 @@ class EventDispatcher(object):
         names = convert_to_iterable(names)
         entry_ids = set(sender_ids) | set(names)
         if not entry_ids:
-            raise ValueError('Either sender_id or name must specified')
+            entry_ids = ['all']
         for entry_id in entry_ids:
             self.__register_entry(entry_id, events, func, weak)
 
@@ -330,6 +330,7 @@ class EventDispatcher(object):
         """
         sender_name, sender_id = self.__get_sender_ids(data, event_)
         callbacks = self._get_callbacks(sender_id, sender_name, event_)
+
         for func in callbacks:
             try:
                 args = (data,) if event_.event_type != EventType.controller else tuple()
@@ -359,14 +360,15 @@ class EventDispatcher(object):
             set(func): The callbacks registered
         """
         all_callbacks = set()
-        for sender_id in (sender_id, sender_name):
-            if self.__is_event_registered_to_sender(sender_id, event):
-                all_callbacks |= set(self._router[sender_id][event])
+        for sender_id_ in ('all', sender_id, sender_name):
+            if self.__is_event_registered_to_sender(sender_id_, event):
+                all_callbacks |= set(self._router[sender_id_][event])
 
         return all_callbacks
 
     def __is_event_registered_to_sender(self, sender_id, event):
-        return sender_id is not None and sender_id in self._router and event in self._router[sender_id]
+        return (sender_id is not None
+                and sender_id in self._router and event in self._router[sender_id])
 
     def is_registered(self, entry, event, func):
         """Is a function registered for a given entry ID and event?
@@ -377,6 +379,6 @@ class EventDispatcher(object):
             func (func): The callback
 
         Returns:
-            bool: Is the function registred?
+            bool: Is the function registered?
         """
         return entry in self._router and event in self._router[entry] and self._router[entry][event].is_registered(func)

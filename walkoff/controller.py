@@ -89,21 +89,20 @@ class Controller(object):
         """
         self.scheduler.schedule_workflows(task_id, self.execute_workflow, workflow_ids, trigger)
 
-    def execute_workflow(self, workflow_id, start=None, start_arguments=None, resume=False):
+    def execute_workflow(self, workflow_id, start=None, start_arguments=None):
         """Executes a workflow.
 
         Args:
             workflow_id (int): ID of the workflow to execute.
             start (int, optional): The ID of the first, or starting action. Defaults to None.
             start_arguments (list[Argument]): The input to the starting action of the workflow. Defaults to None.
-            resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
 
         Returns:
             The execution ID if successful, None otherwise.
         """
         workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
         if workflow:
-            return self.executor.execute_workflow(workflow, start, start_arguments, resume)
+            return self.executor.execute_workflow(workflow, start, start_arguments)
         else:
             logger.error('Attempted to execute playbook which does not exist')
             return None, 'Attempted to execute playbook which does not exist'

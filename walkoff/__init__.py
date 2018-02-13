@@ -1,4 +1,4 @@
-__version__ = '0.6.3'
+__version__ = '0.6.7'
 
 
 def initialize_databases():
@@ -7,3 +7,4 @@ def initialize_databases():
 
     walkoff.coredb.devicedb.device_db = walkoff.coredb.devicedb.DeviceDatabase()
     walkoff.case.database.case_db = walkoff.case.database.CaseDatabase()
+

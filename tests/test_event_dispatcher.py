@@ -29,8 +29,8 @@ class TestEventDispatcher(TestCase):
         self.assertDictEqual(self.router._router, {})
 
     def test_register_events_no_ids_or_names(self):
-        with self.assertRaises(ValueError):
-            self.router.register_events(func, {WalkoffEvent.ActionStarted})
+        self.router.register_events(func, {WalkoffEvent.ActionStarted})
+        self.assert_router_structure({WalkoffEvent.ActionStarted}, ids={'all'})
 
     def test_register_events_single_event_enum_single_id(self):
         self.router.register_events(func, {WalkoffEvent.ActionStarted}, sender_ids='a')
@@ -164,6 +164,24 @@ class TestEventDispatcher(TestCase):
 
         self.router.register_events(x, {WalkoffEvent.ActionStarted}, names='b')
         self.router.register_events(y, {WalkoffEvent.ActionStarted}, names='a')
+
+        self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_id': 'a', 'sender_name': 'b'})
+        self.assertDictEqual(result, {'x': {'sender_id': 'a', 'sender_name': 'b'}, 'count': 1})
+        self.assertTrue(result2['x'])
+
+    def test_dispatch_registed_no_sender_name_or_uid(self):
+        result = {'x': True, 'count': 0}
+        result2 = {'x': False}
+
+        def x(data):
+            result['x'] = data
+            result['count'] += 1
+
+        def y(data):
+            result2['x'] = True
+
+        self.router.register_events(x, {WalkoffEvent.ActionStarted})
+        self.router.register_events(y, {WalkoffEvent.ActionStarted})
 
         self.router.dispatch(WalkoffEvent.ActionStarted, {'sender_id': 'a', 'sender_name': 'b'})
         self.assertDictEqual(result, {'x': {'sender_id': 'a', 'sender_name': 'b'}, 'count': 1})

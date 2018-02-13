@@ -1,4 +1,4 @@
-/api/messages:
+/messages:
   get:
     tags:
       - Messages
@@ -53,7 +53,7 @@
         schema:
           $ref: "#/definitions/Error"
 
-/api/messages/{message_id}:
+/messages/{message_id}:
   parameters:
     - name: message_id
       in: path
@@ -82,7 +82,7 @@
         schema:
           $ref: "#/definitions/Error"
 
-/api/notifications:
+/notifications:
   get:
     tags:
       - Messages

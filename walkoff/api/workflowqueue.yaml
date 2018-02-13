@@ -1,4 +1,4 @@
-/api/workflowqueue:
+/workflowqueue:
   get:
     tags:
       - WorkflowQueue
@@ -70,7 +70,7 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/workflowqueue/{execution_id}:
+/workflowqueue/{execution_id}:
   parameters:
     - name: execution_id
       in: path

@@ -291,6 +291,7 @@ class Worker:
 
         packet_bytes = convert_to_protobuf(sender, self.workflows[threading.current_thread().name].get_execution_id(),
                                            **kwargs)
+
         self.results_sock.send(packet_bytes)
 
     def __get_workflow_by_execution_id(self, workflow_execution_id):

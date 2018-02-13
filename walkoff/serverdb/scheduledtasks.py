@@ -1,10 +1,9 @@
 import json
 import logging
-
+from sqlalchemy_utils import UUIDType
 from walkoff.core.scheduler import construct_trigger
 from walkoff.extensions import db
 from walkoff.serverdb.mixins import TrackModificationsMixIn
-from walkoff.dbtypes import Guid
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +11,7 @@ logger = logging.getLogger(__name__)
 class ScheduledWorkflow(db.Model):
     __tablename__ = 'scheduled_workflow'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    workflow_id = db.Column(Guid(), nullable=False)
+    workflow_id = db.Column(UUIDType(), nullable=False)
     task_id = db.Column(db.Integer, db.ForeignKey('scheduled_task.id'))
 
 

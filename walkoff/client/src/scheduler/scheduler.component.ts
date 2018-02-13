@@ -96,7 +96,6 @@ export class SchedulerComponent implements OnInit {
 		modalRef.componentInstance.title = `Edit Task ${task.name}`;
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.availableWorkflows = this.availableWorkflows;
-
 		modalRef.componentInstance.workingScheduledTask = _.cloneDeep(task);
 		delete modalRef.componentInstance.workingScheduledTask.$$index;
 

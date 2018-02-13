@@ -472,11 +472,12 @@ def create_sse_event(event_id=None, event=None, data=None):
         response += 'id: {}\n'.format(event_id)
     if event is not None:
         response += 'event: {}\n'.format(event)
-    if data is not None:
-        try:
-            response += 'data: {}\n'.format(json.dumps(data))
-        except ValueError:
-            response += 'data: {}\n'.format(data)
+    if data is None:
+        data = ''
+    try:
+        response += 'data: {}\n'.format(json.dumps(data))
+    except ValueError:
+        response += 'data: {}\n'.format(data)
     return response + '\n'
 
 

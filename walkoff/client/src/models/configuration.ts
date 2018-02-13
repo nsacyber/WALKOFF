@@ -2,9 +2,6 @@ export class Configuration {
 	static getDefaultConfiguration(): Configuration {
 		return {
 			workflows_path: './data/workflows',
-			// templates_path: './data/templates',
-			// profile_visualizations_path: 'tests/profileVisualizations',
-			// keywords_path: 'core/keywords',
 			db_path: './data/walkoff.db',
 			walkoff_db_type: 'sqlite',
 			case_db_path: './data/events.db',
@@ -30,9 +27,6 @@ export class Configuration {
 	}
 
 	workflows_path: string;
-	// templates_path: string;
-	// profile_visualizations_path: string;
-	// keywords_path: string;
 	db_path: string;
 	walkoff_db_type: string;
 	case_db_path: string;

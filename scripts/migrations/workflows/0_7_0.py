@@ -15,7 +15,7 @@ from walkoff.coredb.position import Position
 
 # import walkoff.__version__ as walkoff_version
 
-down_version = "0.6.4"
+down_version = "0.6.7"
 up_version = "0.7.0"
 
 downgrade_supported = False
@@ -110,8 +110,6 @@ def convert_action(action):
                         id=action.get('uid', None),
                         name=name, device_id=device_id,
                         position=position,
-                        templated=templated,
-                        raw_representation=action_copy,
                         arguments=arguments,
                         triggers=triggers)
 
