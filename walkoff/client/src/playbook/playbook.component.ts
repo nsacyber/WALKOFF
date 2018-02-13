@@ -1354,4 +1354,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 		out = out.replace(/[\{\}"]/g, '');
 		return out;
 	}
+
+	removeWhitespace(input: string): string {
+		return input.replace(/\s/g, '');
+	}
 }
