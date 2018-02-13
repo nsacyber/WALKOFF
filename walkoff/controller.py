@@ -50,7 +50,6 @@ class Controller(object):
         Args:
             execution_id (str): The execution ID of the workflow to pause
         """
-
         return self.executor.pause_workflow(execution_id)
 
     def resume_workflow(self, execution_id):

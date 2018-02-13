@@ -10,9 +10,7 @@ from tests import config
 from tests.util.mock_objects import *
 import walkoff.config.paths
 from tests.util import device_db_help
-from walkoff.coredb import devicedb
 from walkoff.coredb.argument import Argument
-from walkoff.coredb.workflowresults import WorkflowStatus, ActionStatus
 from tests.util.case_db_help import *
 from walkoff.server import workflowresults  # Need this import
 

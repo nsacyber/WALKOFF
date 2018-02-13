@@ -126,6 +126,10 @@ class MockLoadBalancer(object):
         if workflow_execution_id in self.workflow_comms:
             self.workflow_comms[workflow_execution_id].pause()
 
+    def abort_workflow(self, workflow_execution_id):
+        self.workflow_comms[workflow_execution_id].abort()
+        return True
+
 
 class MockReceiveQueue(loadbalancer.Receiver):
     def __init__(self):
@@ -142,7 +146,7 @@ class MockReceiveQueue(loadbalancer.Receiver):
                 event.send(sender, data=kwargs['data'])
             else:
                 event.send(sender)
-            if event == WalkoffEvent.WorkflowShutdown:
+            if event in [WalkoffEvent.WorkflowShutdown, WalkoffEvent.WorkflowAborted]:
                 workflows_executed += 1
 
 

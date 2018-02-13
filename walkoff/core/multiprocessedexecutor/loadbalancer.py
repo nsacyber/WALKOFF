@@ -267,7 +267,7 @@ class Receiver:
                     event.send(sender, data=data)
                 else:
                     event.send(sender)
-                if event == WalkoffEvent.WorkflowShutdown:
+                if event in [WalkoffEvent.WorkflowShutdown, WalkoffEvent.WorkflowAborted]:
                     self.workflows_executed += 1
             else:
                 logger.error('Unknown callback {} sent'.format(callback_name))

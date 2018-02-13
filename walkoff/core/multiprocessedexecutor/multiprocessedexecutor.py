@@ -175,6 +175,7 @@ class MultiprocessedExecutor(object):
         Args:
             execution_id (str): The execution id of the workflow.
         """
+        print("mp pause")
         workflow_status = walkoff.coredb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
         if workflow_status and workflow_status.status == WorkflowStatusEnum.running:

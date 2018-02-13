@@ -3,6 +3,7 @@ import os
 
 from walkoff.coredb import devicedb
 from walkoff.coredb.playbook import Playbook
+from walkoff.coredb.workflowresults import WorkflowStatus
 from tests.config import test_workflows_path_with_generated, test_workflows_path
 from walkoff.core.jsonplaybookloader import JsonPlaybookLoader
 import walkoff.config.paths
@@ -58,6 +59,9 @@ def setup_dbs():
 def cleanup_device_db():
     devicedb.device_db.session.rollback()
     for instance in devicedb.device_db.session.query(Playbook).all():
+        devicedb.device_db.session.delete(instance)
+
+    for instance in devicedb.device_db.session.query(WorkflowStatus).all():
         devicedb.device_db.session.delete(instance)
     devicedb.device_db.session.commit()
 
