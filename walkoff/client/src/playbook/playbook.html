@@ -72,7 +72,8 @@
             </button>
         </div>
         <label *ngIf="loadedWorkflow" id="currentWorkflowText">{{loadedPlaybook.name}} -</label>
-        <input *ngIf="loadedWorkflow" type="text" class="form-control workflowNameInput" [(ngModel)]="loadedWorkflow.name" name="name" required>
+        <input *ngIf="loadedWorkflow" type="text" class="form-control workflowNameInput" [(ngModel)]="loadedWorkflow.name" name="name"
+            required>
     </div>
     <!-- Graph editor -->
     <div class="row graphEditorRow">
@@ -161,9 +162,23 @@
                 </div>
                 <!-- Triggers -->
                 <div>
-                    <h4>Trigger Conditions</h4>
-                    <playbook-conditions-component [conditions]="selectedAction.triggers" [appApis]="appApis" [loadedWorkflow]="loadedWorkflow"
-                        [selectedAppName]="selectedAction.app_name"></playbook-conditions-component>
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <h4>Trigger Condition</h4>
+                        </div>
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <button class="btn btn-primary pull-right" (click)="specifyTrigger(selectedAction)">
+                                    <i class="fa fa-plus"></i>Specify Trigger Condition
+                                </button>
+                                <button class="btn btn-danger pull-right" (click)="removeTrigger(selectedAction)">
+                                    <i class="fa fa-close"></i>Remove Trigger Condition
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <playbook-conditional-expression-component *ngIf="selectedAction.trigger" [conditionalExpression]="selectedAction.trigger"
+                        [appApis]="appApis" [selectedAppName]="selectedAction.app_name" [loadedWorkflow]="loadedWorkflow"></playbook-conditional-expression-component>
                 </div>
             </div>
             <!-- Editor for Branches (edges) -->
@@ -185,9 +200,23 @@
                         required>
                 </div>
                 <div>
-                    <h4>Conditions</h4>
-                    <playbook-conditions-component [conditions]="selectedBranchParams.branch.conditions" [appApis]="appApis" [loadedWorkflow]="loadedWorkflow"
-                        [selectedAppName]="selectedBranchParams.appName"></playbook-conditions-component>
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <h4>Condition</h4>
+                        </div>
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <button class="btn btn-primary pull-right" (click)="specifyCondition(selectedBranchParams.branch)">
+                                    <i class="fa fa-plus"></i>Specify Condition
+                                </button>
+                                <button class="btn btn-danger pull-right" (click)="removeCondition(selectedBranchParams.branch)">
+                                    <i class="fa fa-close"></i>Remove Condition
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <playbook-conditional-expression-component *ngIf="selectedBranchParams.branch.condition" [conditionalExpression]="selectedBranchParams.branch.condition"
+                        [appApis]="appApis" [selectedAppName]="selectedBranchParams.appName" [loadedWorkflow]="loadedWorkflow"></playbook-conditional-expression-component>
                 </div>
             </div>
         </div>

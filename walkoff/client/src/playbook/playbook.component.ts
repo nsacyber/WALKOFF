@@ -606,6 +606,24 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 		});
 	}
 
+	specifyTrigger(action: Action): void {
+		if (action.trigger) { return; }
+		action.trigger = new ConditionalExpression();
+	}
+
+	removeTrigger(action: Action): void {
+		delete action.trigger;
+	}
+
+	specifyCondition(branch: Branch): void {
+		if (branch.condition) { return; }
+		branch.condition = new ConditionalExpression();
+	}
+
+	removeCondition(branch: Branch): void {
+		delete branch.condition;
+	}
+
 	///------------------------------------------------------------------------------------------------------
 	/// Cytoscape functions
 	///------------------------------------------------------------------------------------------------------

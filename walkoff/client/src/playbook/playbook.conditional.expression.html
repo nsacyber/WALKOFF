@@ -1,0 +1,56 @@
+<div class="indent">
+	<!-- Basic Info -->
+	<div class="row">
+		<div class="col-xs-4">
+			<label *ngIf="id == null">Base Conditional Expression</label>
+			<label *ngIf="id">Conditional Expression {{id+1}}</label>
+		</div>
+		<div class="col-xs-4">
+			<label>Operator</label>
+			<select class="form-control" [(ngModel)]="conditionalExpression.operator" [disabled]="isOnlyOneChild()">
+				<option *ngFor="let i of availableOperators" [value]="i" [label]="i">{{i}}</option>
+			</select>
+		</div>
+		<div class="col-xs-4">
+			<label>Inverted</label>
+			<input type="checkbox" class="form-control" [(ngModel)]="conditionalExpression.is_inverse">
+		</div>
+	</div>
+	<!-- Conditions Component -->
+	<div>
+		<h4>Conditions</h4>
+		<playbook-conditions-component [conditions]="conditionalExpressions.conditions" [appApis]="appApis" [loadedWorkflow]="loadedWorkflow"
+		 [selectedAppName]="selectedAppName"></playbook-conditions-component>
+	</div>
+	<!-- Add Child Expressions Header -->
+	<div class="row">
+		<div class="col-xs-6">
+			<h4>Child Expressions</h4>
+		</div>
+		<div class="col-xs-6">
+			<div class="form-group">
+				<button class="btn btn-primary pull-right" (click)="add()">
+					<i class="fa fa-plus"></i>Add Child Expression
+				</button>
+			</div>
+		</div>
+	</div>
+	<!-- Child expressions control and component -->
+	<div *ngFor="let childExpression of conditionalExpression.child_expressions; let id = index">
+		<div class="col-xs-4">
+			<div class="pull-right">
+				<button *ngIf="id > 0" class="btn btn-primary" (click)="moveUp(id)" title="Move Up">
+					<i class="fa fa-arrow-up"></i>
+				</button>
+				<button *ngIf="id < conditionalExpressions.length - 1" class="btn btn-primary" (click)="moveDown(id)" title="Move Down">
+					<i class="fa fa-arrow-down"></i>
+				</button>
+				<button class="btn btn-danger" (click)="remove(id)" title="Remove Conditional Expression">
+					<i class="fa fa-close"></i>
+				</button>
+			</div>
+		</div>
+		<playbook-conditional-expression-component [conditionalExpression]="childExpression" [appApis]="appApis" [selectedAppName]="selectedAppName"
+		 [loadedWorkflow]="loadedWorkflow" [id]="id"></playbook-conditional-expression-component>
+	</div>
+</div>

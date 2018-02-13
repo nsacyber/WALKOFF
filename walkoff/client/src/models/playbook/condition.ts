@@ -7,6 +7,7 @@ export class Condition extends ExecutionElement {
 	// _branch_id?: number;
 	app_name: string;
 	action_name: string;
+	is_inverse: boolean;
 	arguments: Argument[] = [];
 	transforms: Transform[] = [];
 }
