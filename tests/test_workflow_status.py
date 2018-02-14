@@ -22,7 +22,7 @@ def mock_resume_workflow(self, execution_id):
     WalkoffEvent.WorkflowResumed.send({"workflow_execution_id": execution_id, "id": "123"})
 
 
-class TestWorkflowServer(ServerTestCase):
+class TestWorkflowStatus(ServerTestCase):
 
     def setUp(self):
         MultiprocessedExecutor.pause_workflow = mock_pause_workflow
@@ -140,7 +140,7 @@ class TestWorkflowServer(ServerTestCase):
         playbook = device_db_help.standard_load()
 
         workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {'count': 0}
@@ -170,7 +170,7 @@ class TestWorkflowServer(ServerTestCase):
         playbook = device_db_help.standard_load()
         workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
 
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {'count': 0}
@@ -234,7 +234,7 @@ class TestWorkflowServer(ServerTestCase):
 
         workflow = devicedb.device_db.session.query(Workflow).filter_by(name='pauseWorkflow').first()
 
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {"aborted": False}

@@ -245,7 +245,7 @@ class MultiprocessedExecutor(object):
 
         executed = False
         exec_action = None
-        for action in workflow.actions:
+        for action in workflow.actions.values():
             if action.id == saved_state.action_id:
                 exec_action = action
                 executed = action.execute_trigger(data_in, saved_state.accumulator)

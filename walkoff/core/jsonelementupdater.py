@@ -43,7 +43,10 @@ class JsonElementUpdater(object):
             json_ids = {UUID(element['id']) for element in json_value if 'id' in element}
         else:
             json_ids = {element['id'] for element in json_value if 'id' in element}
-        old_elements = {element.id: element for element in value}
+        if isinstance(value, dict):
+            old_elements = value
+        else:
+            old_elements = {element.id: element for element in value}
         elements_to_discard = [element for element_id, element in old_elements.items() if
                                element_id not in json_ids]
         for json_element in json_value:

@@ -17,7 +17,7 @@ except ImportError:
     from imp import reload
 
 
-class TestWorkflowServer(ServerTestCase):
+class TestZmqCommunicationServer(ServerTestCase):
     patch = False
 
     def setUp(self):
@@ -33,7 +33,7 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_execute_workflow(self):
         workflow = device_db_help.load_workflow('testGeneratedWorkflows/test', 'helloWorldWorkflow')
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
         start = datetime.utcnow()
 
@@ -54,7 +54,7 @@ class TestWorkflowServer(ServerTestCase):
     def test_execute_workflow_change_arguments(self):
         workflow = device_db_help.load_workflow('testGeneratedWorkflows/test', 'helloWorldWorkflow')
 
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {'count': 0}
