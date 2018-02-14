@@ -64,17 +64,17 @@ def __update_action_tracker(form, execution_id, app, action):
 
 @WalkoffEvent.WorkflowExecutionStart.connect
 def __workflow_started_callback(sender, **kwargs):
-    __workflow_tmp[sender['workflow_execution_id']] = datetime.utcnow()
+    __workflow_tmp[sender['execution_id']] = datetime.utcnow()
 
 
 @WalkoffEvent.WorkflowShutdown.connect
 def __workflow_ended_callback(sender, **kwargs):
-    if sender['workflow_execution_id'] in __workflow_tmp:
-        execution_time = datetime.utcnow() - __workflow_tmp[sender['workflow_execution_id']]
+    if sender['execution_id'] in __workflow_tmp:
+        execution_time = datetime.utcnow() - __workflow_tmp[sender['execution_id']]
         if sender['name'] not in workflow_metrics:
             workflow_metrics[sender['name']] = {'count': 1, 'avg_time': execution_time}
         else:
             workflow_metrics[sender['name']]['count'] += 1
             workflow_metrics[sender['name']]['avg_time'] = (workflow_metrics[sender['name']][
                                                                 'avg_time'] + execution_time) / 2
-        __workflow_tmp.pop(sender['workflow_execution_id'])
+        __workflow_tmp.pop(sender['execution_id'])

@@ -56,7 +56,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         result = {'value': None}
 
         def action_finished_listener(sender, **kwargs):
-            result['value'] = kwargs['data']
+            result['value'] = kwargs['data']['data']
 
         WalkoffEvent.ActionExecutionSuccess.connect(action_finished_listener)
 

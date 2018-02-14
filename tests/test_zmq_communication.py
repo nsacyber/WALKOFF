@@ -51,7 +51,8 @@ class TestZMQCommunication(unittest.TestCase):
         walkoff.controller.controller.shutdown_pool()
         device_db_help.tear_down_device_db()
 
-    '''Request and Result Socket Testing (Basic Workflow Execution)'''
+    # Request and Result Socket Testing (Basic Workflow Execution)
+    '''
     def test_simple_workflow_execution(self):
         workflow = device_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
@@ -68,6 +69,7 @@ class TestZMQCommunication(unittest.TestCase):
         action = actions[0]
         result = action['data']
         self.assertDictEqual(result, {'result': "REPEATING: Hello World", 'status': 'Success'})
+
 
     def test_multi_action_workflow(self):
         workflow = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
@@ -142,8 +144,9 @@ class TestZMQCommunication(unittest.TestCase):
             actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
 
         self.assertEqual(len(actions), capacity*2)
-
-    '''Communication Socket Testing'''
+    
+    # Communication Socket Testing
+    '''
     def test_pause_and_resume_workflow(self):
         execution_id = None
         result = dict()
@@ -162,6 +165,8 @@ class TestZMQCommunication(unittest.TestCase):
 
         @WalkoffEvent.WorkflowPaused.connect
         def workflow_paused_listener(sender, **kwargs):
+            print(sender)
+            print(kwargs)
             workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
                 execution_id=sender['workflow_execution_id']).first()
             workflow_status.paused()
@@ -191,3 +196,4 @@ class TestZMQCommunication(unittest.TestCase):
             actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
 
         self.assertEqual(len(actions), 3)
+

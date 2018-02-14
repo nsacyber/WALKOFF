@@ -148,7 +148,6 @@ class TestWorkflowServer(ServerTestCase):
         @WalkoffEvent.ActionExecutionSuccess.connect
         def y(sender, **kwargs):
             result['count'] += 1
-            result['data'] = kwargs['data']
 
         response = self.post_with_status_check(
             '/api/workflowqueue',
@@ -158,7 +157,6 @@ class TestWorkflowServer(ServerTestCase):
         flask_server.running_context.controller.wait_and_reset(1)
         self.assertIn('id', response)
         self.assertEqual(result['count'], 1)
-        self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
         workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
             execution_id=response['id']).first()
@@ -178,7 +176,6 @@ class TestWorkflowServer(ServerTestCase):
         @WalkoffEvent.ActionExecutionSuccess.connect
         def y(sender, **kwargs):
             result['count'] += 1
-            result['data'] = kwargs['data']
 
         data = {"workflow_id": str(workflow.id),
                 "arguments": [{"name": "call",
@@ -190,7 +187,6 @@ class TestWorkflowServer(ServerTestCase):
         flask_server.running_context.controller.wait_and_reset(1)
 
         self.assertEqual(result['count'], 1)
-        self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: CHANGE INPUT'})
 
     def test_execute_workflow_pause_resume(self):
 
@@ -200,6 +196,8 @@ class TestWorkflowServer(ServerTestCase):
 
         @WalkoffEvent.WorkflowPaused.connect
         def workflow_paused_listener(sender, **kwargs):
+            print(sender)
+            print(kwargs)
             data = {'execution_id': str(wf_exec_id),
                     'status': 'resume'}
 
@@ -223,6 +221,7 @@ class TestWorkflowServer(ServerTestCase):
 
         data = {'execution_id': str(wf_exec_id),
                 'status': 'pause'}
+
         self.patch_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS,
                                      content_type="application/json", data=json.dumps(data))
 

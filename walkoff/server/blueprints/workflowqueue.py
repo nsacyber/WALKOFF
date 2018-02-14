@@ -8,7 +8,7 @@ from walkoff.events import WalkoffEvent
 from walkoff.helpers import convert_action_argument, create_sse_event
 from walkoff.security import jwt_required_in_query
 
-workflowresults_page = Blueprint('workflowresults_page', __name__)
+workflowqueue_page = Blueprint('workflowqueue_page', __name__)
 
 __workflow_action_event_json = AsyncResult()
 __action_signal = Event()
@@ -24,13 +24,14 @@ def __workflow_actions_event_stream():
         __action_event_id_counter += 1
         __action_signal.wait()
 
-
+'''
 @WalkoffEvent.ActionExecutionSuccess.connect
 def __action_ended_callback(sender, **kwargs):
+    print(sender)
     action_arguments = [convert_action_argument(argument) for argument in sender.get('arguments', [])]
     result = {'action_name': sender['name'],
               'action_id': sender['id'],
-              'timestamp': str(datetime.utcnow()),
+              'timestamp': datetime.utcnow().isoformat(),
               'arguments': action_arguments,
               'result': kwargs['data']['result'],
               'status': kwargs['data']['status']}
@@ -43,10 +44,11 @@ def __action_ended_callback(sender, **kwargs):
 
 @WalkoffEvent.ActionExecutionError.connect
 def __action_error_callback(sender, **kwargs):
+    print(sender)
     action_arguments = [convert_action_argument(argument) for argument in sender.get('arguments', [])]
     result = {'action_name': sender['name'],
               'action_id': sender['id'],
-              'timestamp': str(datetime.utcnow()),
+              'timestamp': datetime.utcnow().isoformat(),
               'arguments': action_arguments,
               'result': kwargs['data']['result'],
               'status': kwargs['data']['status']}
@@ -55,9 +57,15 @@ def __action_error_callback(sender, **kwargs):
     __action_signal.set()
     __action_signal.clear()
     sleep(0)
+'''
 
-
-@workflowresults_page.route('/stream', methods=['GET'])
+@workflowqueue_page.route('/actions', methods=['GET'])
 @jwt_required_in_query('access_token')
 def stream_workflow_action_events():
+    return Response(__workflow_actions_event_stream(), mimetype='text/event-stream')
+
+
+@workflowqueue_page.route('/actions', methods=['GET'])
+@jwt_required_in_query('access_token')
+def stream_workflow_status():
     return Response(__workflow_actions_event_stream(), mimetype='text/event-stream')

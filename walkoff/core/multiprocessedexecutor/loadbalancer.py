@@ -11,7 +11,7 @@ from six import string_types
 
 import walkoff.config.config
 import walkoff.config.paths
-from walkoff.events import WalkoffEvent
+from walkoff.events import WalkoffEvent, EventType
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
 from walkoff.coredb import devicedb
 from walkoff.coredb.workflowresults import WorkflowStatus, WorkflowStatusEnum
@@ -185,10 +185,10 @@ class LoadBalancer:
             self.comm_socket.send_multipart([worker, message_bytes])
 
     def on_worker_available(self, sender, **kwargs):
-        if sender['workflow_execution_id'] in self.workflow_comms:
-            worker = self.workflow_comms[sender['workflow_execution_id']]
+        if sender['execution_id'] in self.workflow_comms:
+            worker = self.workflow_comms[sender['execution_id']]
             self.workers[worker] += 1
-            self.workflow_comms.pop(sender['workflow_execution_id'])
+            self.workflow_comms.pop(sender['execution_id'])
 
     @staticmethod
     def __set_arguments_for_proto(message, arguments):
@@ -241,39 +241,43 @@ class Receiver:
                 gevent.sleep(0.1)
                 continue
 
-            message_outer = Message()
-
-            message_outer.ParseFromString(message_bytes)
-            callback_name = message_outer.event_name
-
-            if message_outer.type == Message.WORKFLOWPACKET:
-                message = message_outer.workflow_packet
-            elif message_outer.type == Message.ACTIONPACKET:
-                message = message_outer.action_packet
-            elif message_outer.type == Message.USERMESSAGE:
-                message = message_outer.message_packet
-            else:
-                message = message_outer.general_packet
-
-            sender = MessageToDict(message.sender, preserving_proto_field_name=True)
-
-            event = WalkoffEvent.get_event_from_name(callback_name)
-            if event is not None:
-                if event.requires_data():
-                    if event != WalkoffEvent.SendMessage:
-                        data = json.loads(message.additional_data)
-                    else:
-                        data = format_message_event_data(message)
-                    event.send(sender, data=data)
-                else:
-                    event.send(sender)
-                if event in [WalkoffEvent.WorkflowShutdown, WalkoffEvent.WorkflowAborted]:
-                    self.workflows_executed += 1
-            else:
-                logger.error('Unknown callback {} sent'.format(callback_name))
+            self.send_callback(message_bytes)
 
         self.results_sock.close()
         return
+
+    def send_callback(self, message_bytes):
+        message_outer = Message()
+        message_outer.ParseFromString(message_bytes)
+        callback_name = message_outer.event_name
+        if message_outer.type == Message.WORKFLOWPACKET:
+            message = message_outer.workflow_packet
+        elif message_outer.type == Message.ACTIONPACKET:
+            message = message_outer.action_packet
+        elif message_outer.type == Message.USERMESSAGE:
+            message = message_outer.message_packet
+        else:
+            message = message_outer.general_packet
+        sender = MessageToDict(message.sender, preserving_proto_field_name=True)
+        event = WalkoffEvent.get_event_from_name(callback_name)
+        if event is not None:
+            if event.event_type != EventType.workflow:
+                data = {'workflow': MessageToDict(message.workflow, preserving_proto_field_name=True)}
+            else:
+                data = {}
+            if event.requires_data():
+                if event != WalkoffEvent.SendMessage:
+                    data['data'] = json.loads(message.additional_data)
+                else:
+                    data['data'] = format_message_event_data(message)
+            event.send(sender, data=data)
+            if event in [WalkoffEvent.WorkflowShutdown, WalkoffEvent.WorkflowAborted]:
+                self._increment_execution_count()
+        else:
+            logger.error('Unknown callback {} sent'.format(callback_name))
+
+    def _increment_execution_count(self):
+        self.workflows_executed += 1
 
 
 def format_message_event_data(message):

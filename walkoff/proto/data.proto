@@ -23,27 +23,28 @@ message Message {
     }
 }
 
+message WorkflowSender {
+    optional string name = 1;
+    optional string id = 2;
+    optional string execution_id = 3;
+}
+
+
 message WorkflowPacket {
-
-    message WorkflowSender {
-        optional string name = 1;
-        optional string id = 2;
-        optional string workflow_execution_id = 3;
-    }
-
     optional WorkflowSender sender = 1;
     optional string additional_data = 2;
 
 }
 
-message ActionPacket {
 
-    message ActionArgument {
+message Argument {
         optional string name = 1;
         optional string value = 2;
         optional string reference = 3;
         optional string selection = 4;
-    }
+}
+
+message ActionPacket {
 
     message ActionSender {
         optional string name = 1;
@@ -51,13 +52,13 @@ message ActionPacket {
         optional string execution_id = 3;
         optional string app_name = 4;
         optional string action_name = 5;
-        repeated ActionArgument arguments = 6;
-        optional string workflow_execution_id = 7;
-        optional int32 device_id = 8;
+        repeated Argument arguments = 6;
+        optional int32 device_id = 9;
     }
 
     optional ActionSender sender = 1;
-    optional string additional_data = 2;
+    optional WorkflowSender workflow = 2;
+    optional string additional_data = 3;
 
 }
 
@@ -66,10 +67,10 @@ message GeneralPacket {
     message GeneralSender {
         optional string id = 1;
         optional string app_name = 2;
-        optional string workflow_execution_id = 3;
     }
 
     optional GeneralSender sender = 1;
+    optional WorkflowSender workflow = 2;
 }
 
 message CommunicationPacket {
@@ -87,16 +88,18 @@ message CommunicationPacket {
 
 message UserMessage {
     optional ActionPacket.ActionSender sender = 1;
-    optional string subject = 2;
-    optional string body = 3;
-    optional bool requires_reauth = 4;
-    repeated int32 users = 5;
-    repeated int32 roles = 6;
+    optional WorkflowSender workflow = 2;
+    optional string subject = 3;
+    optional string body = 4;
+    optional bool requires_reauth = 5;
+    repeated int32 users = 6;
+    repeated int32 roles = 7;
 }
 
 message ExecuteWorkflowMessage {
     optional string workflow_id = 1;
     optional string workflow_execution_id = 2;
     optional string start = 3;
-    repeated ActionPacket.ActionArgument arguments = 4;
+    repeated Argument arguments = 4;
+    optional bool resume = 5;
 }
