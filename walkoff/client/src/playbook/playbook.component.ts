@@ -128,7 +128,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
 				const self = this;
-				const eventSource = new (window as any).EventSource('api/workflowqueue/streams/actions?access_token=' + authToken);
+				const eventSource = new (window as any).EventSource('api/streams/workflowqueue/actions?access_token=' + authToken);
 
 				eventSource.onmessage((message: any) => {
 					const actionStatus: ActionStatus = JSON.parse(message.data);

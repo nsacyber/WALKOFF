@@ -13,6 +13,7 @@ import { WorkflowStatus } from '../models/execution/workflowStatus';
 import { Workflow } from '../models/playbook/workflow';
 import { ActionStatus } from '../models/execution/actionStatus';
 import { Argument } from '../models/playbook/argument';
+import { GenericObject } from '../models/genericObject';
 
 @Component({
 	selector: 'execution-component',
@@ -37,6 +38,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 	selectedWorkflow: Workflow;
 	loadedWorkflowStatus: WorkflowStatus;
 	actionStatusComponentWidth: number;
+	workflowStatusActions: GenericObject;
 
 	filterQuery: FormControl = new FormControl();
 
@@ -53,8 +55,15 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 			placeholder: 'Select a Workflow',
 		};
 
+		this.workflowStatusActions = {
+			resume: 'resume',
+			pause: 'pause',
+			abort: 'abort',
+		};
+
 		this.getWorkflowStatuses();
 		this.getWorkflowStatusSSE();
+		this.getActionResultSSE();
 
 		this.filterQuery
 			.valueChanges
@@ -95,7 +104,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 			.then(authToken => {
 				const self = this;
 				const eventSource = new (window as any)
-					.EventSource(`api/workflowqueue/streams/workflow_status?access_token=${authToken}`);
+					.EventSource(`api/streams/workflowqueue/workflow_status?access_token=${authToken}`);
 
 				eventSource.onmessage((message: any) => {
 					const workflowStatus: WorkflowStatus = JSON.parse(message.data);
@@ -121,7 +130,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
 				const self = this;
-				const eventSource = new (window as any).EventSource(`api/workflowqueue/streams/actions?access_token=${authToken}`);
+				const eventSource = new (window as any).EventSource(`api/streams/workflowqueue/actions?access_token=${authToken}`);
 
 				eventSource.onmessage((message: any) => {
 					const actionStatus: ActionStatus = JSON.parse(message.data);

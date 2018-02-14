@@ -54,15 +54,15 @@
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				<button *ngIf="row.status === 'paused'" (click)="performWorkflowStatusAction(row, 'running')" title="Start Scheduled Task"
+				<button *ngIf="row.status === 'paused'" (click)="performWorkflowStatusAction(row, workflowStatusActions.resume)" title="Start Scheduled Task"
 				 class="btn btn-primary">
 					<i class="fa fa-play"></i>
 				</button>
-				<button *ngIf="row.status === 'running'" (click)="performWorkflowStatusAction(row, 'paused')" title="Pause Scheduled Task"
+				<button *ngIf="row.status === 'running'" (click)="performWorkflowStatusAction(row, workflowStatusActions.pause)" title="Pause Scheduled Task"
 				 class="btn btn-warning">
 					<i class="fa fa-pause"></i>
 				</button>
-				<button *ngIf="!(row.status === 'completed' || row.status === 'aborted')" (click)="performWorkflowStatusAction(row, 'aborted')"
+				<button *ngIf="!(row.status === 'completed' || row.status === 'aborted')" (click)="performWorkflowStatusAction(row, workflowStatusActions.abort)"
 				 title="Abort Scheduled Task" class="btn btn-danger">
 					<i class="fa fa-stop"></i>
 				</button>

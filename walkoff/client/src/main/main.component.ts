@@ -67,7 +67,8 @@ export class MainComponent implements OnInit {
 	getNotificationsSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				const eventSource = new (window as any).EventSource('/api/notifications/stream?access_token=' + authToken);
+				const eventSource = new (window as any)
+					.EventSource('/api/streams/messages/notifications?access_token=' + authToken);
 
 				eventSource.addEventListener('created', (message: any) => {
 					const newMessage: MessageListing = JSON.parse(message.data);

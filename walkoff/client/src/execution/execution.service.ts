@@ -19,7 +19,7 @@ export class ExecutionService {
 	}
 
 	performWorkflowStatusAction(workflowId: string, action: string): Promise<WorkflowStatus> {
-		return this.authHttp.patch('api/workflowqueue', { workflow_execution_id: workflowId, status: action })
+		return this.authHttp.patch('api/workflowqueue', { execution_id: workflowId, status: action })
 			.toPromise()
 			.then(() => null)
 			.catch(this.handleError);
