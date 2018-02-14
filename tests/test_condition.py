@@ -24,21 +24,21 @@ class TestCondition(unittest.TestCase):
         device_db_help.tear_down_device_db()
         walkoff.appgateway.clear_cache()
 
-    def __compare_init(self, condition, app_name, action_name, transforms, arguments=None, is_inverted=False):
+    def __compare_init(self, condition, app_name, action_name, transforms, arguments=None, is_negated=False):
         self.assertEqual(condition.app_name, app_name)
         self.assertEqual(condition.action_name, action_name)
         self.assertEqual(len(condition.transforms), len(transforms))
         self.assertListEqual(condition.transforms, transforms)
         self.assertListEqual(condition.arguments, arguments)
-        self.assertEqual(condition.is_inverted, is_inverted)
+        self.assertEqual(condition.is_negated, is_negated)
 
     def test_init_no_arguments_action_only(self):
         condition = Condition('HelloWorld', 'Top Condition')
         self.__compare_init(condition, 'HelloWorld', 'Top Condition', [], [])
 
     def test_init_no_arguments_inverted(self):
-        condition = Condition('HelloWorld', 'Top Condition', is_inverted=True)
-        self.__compare_init(condition, 'HelloWorld', 'Top Condition', [], [], is_inverted=True)
+        condition = Condition('HelloWorld', 'Top Condition', is_negated=True)
+        self.__compare_init(condition, 'HelloWorld', 'Top Condition', [], [], is_negated=True)
 
     def test_init_with_arguments_with_conversion(self):
         condition = Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value='3')])
@@ -73,7 +73,7 @@ class TestCondition(unittest.TestCase):
         self.assertTrue(Condition('HelloWorld', 'Top Condition').execute('3.4', {}))
 
     def test_execute_action_only_no_arguments_valid_data_with_conversion_inverted(self):
-        self.assertFalse(Condition('HelloWorld', 'Top Condition', is_inverted=True).execute('3.4', {}))
+        self.assertFalse(Condition('HelloWorld', 'Top Condition', is_negated=True).execute('3.4', {}))
 
     def test_execute_action_only_no_arguments_invalid_data(self):
         with self.assertRaises(InvalidArgument):

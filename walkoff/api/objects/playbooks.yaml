@@ -150,8 +150,8 @@ ConditionalExpression:
       description: The operation to use which on the conditions
       enum: [and, or, xor]
       default: and
-    is_inverted:
-      description: Should the result of this condition be inverted? For example if the condition would return True, then invert it to return False.
+    is_negated:
+      description: Should the result of this condition be negated? For example if the condition would return True, then invert it to return False.
       type: boolean
       default: false
     conditions:
@@ -215,8 +215,8 @@ Condition:
       type: array
       items:
         $ref: '#/definitions/Argument'
-    is_inverted:
-      description: Should the result of this condition be inverted? For example if the condition would return True, then invert it to return False.
+    is_negated:
+      description: Should the result of this condition be negated? For example if the condition would return True, then invert it to return False.
       type: boolean
       default: false
     transforms:

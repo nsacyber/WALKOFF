@@ -21,17 +21,17 @@ class Condition(ExecutionElement, Device_Base):
     _conditional_expression_id = Column(UUIDType(), ForeignKey('conditional_expression.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
-    is_inverted = Column(Boolean, default=False)
+    is_negated = Column(Boolean, default=False)
     arguments = relationship('Argument', backref=backref('_condition'), cascade='all, delete, delete-orphan')
     transforms = relationship('Transform', backref=backref('_condition'), cascade='all, delete-orphan')
 
-    def __init__(self, app_name, action_name, id=None, is_inverted=False, arguments=None, transforms=None):
+    def __init__(self, app_name, action_name, id=None, is_negated=False, arguments=None, transforms=None):
         """Initializes a new Condition object.
         
         Args:
             app_name (str): The name of the app which contains this condition
             action_name (str): The action name for the Condition. Defaults to an empty string.
-            is_inverted (bool, optional): Should the result of the condition be inverted? Defaults to False.
+            is_negated (bool, optional): Should the result of the condition be inverted? Defaults to False.
             arguments (list[Argument], optional): Dictionary of Argument keys to Argument values.
                 This dictionary will be converted to a dictionary of str:Argument. Defaults to None.
             transforms(list[Transform], optional): A list of Transform objects for the Condition object.
@@ -40,7 +40,7 @@ class Condition(ExecutionElement, Device_Base):
         ExecutionElement.__init__(self, id)
         self.app_name = app_name
         self.action_name = action_name
-        self.is_inverted = is_inverted
+        self.is_negated = is_negated
         self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
         tmp_api = split_api_params(self._api, self._data_param_name)
         validate_condition_parameters(tmp_api, arguments, self.action_name)
@@ -80,7 +80,7 @@ class Condition(ExecutionElement, Device_Base):
             logger.debug('Arguments passed to condition {} are valid'.format(self.id))
             ret = self._condition_executable(**args)
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionSuccess)
-            if self.is_inverted:
+            if self.is_negated:
                 return not ret
             else:
                 return ret

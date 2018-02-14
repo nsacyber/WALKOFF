@@ -24,9 +24,9 @@ class TestCondition(unittest.TestCase):
         device_db_help.tear_down_device_db()
         walkoff.appgateway.clear_cache()        
 
-    def assert_construction(self, expression, operator='and', is_inverted=False, child_expressions=None, conditions=None):
+    def assert_construction(self, expression, operator='and', is_negated=False, child_expressions=None, conditions=None):
         self.assertEqual(expression.operator, operator)
-        self.assertEqual(expression.is_inverted, is_inverted)
+        self.assertEqual(expression.is_negated, is_negated)
         if child_expressions is None:
             child_expressions = []
         self.assertEqual(len(expression.child_expressions), len(child_expressions))
@@ -51,8 +51,8 @@ class TestCondition(unittest.TestCase):
         self.assert_construction(expression, operator='or')
 
     def test_init_inverted(self):
-        expression = ConditionalExpression(is_inverted=True)
-        self.assert_construction(expression, is_inverted=True)
+        expression = ConditionalExpression(is_negated=True)
+        self.assert_construction(expression, is_negated=True)
 
     def test_init_with_conditions(self):
         conditions = [self.get_always_true_condition(), Condition('HelloWorld', 'mod1_flag1')]
@@ -70,7 +70,7 @@ class TestCondition(unittest.TestCase):
             self.assertTrue(expression.execute('', {}))
 
     def test_execute_inverted(self):
-        expression = ConditionalExpression(is_inverted=True)
+        expression = ConditionalExpression(is_negated=True)
         self.assertFalse(expression.execute('', {}))
 
     def test_execute_and_conditions_only(self):
@@ -172,7 +172,7 @@ class TestCondition(unittest.TestCase):
         self.assertTrue(result['triggered'])
 
     def test_execute_false_sends_event(self):
-        expression = ConditionalExpression(conditions=[self.get_always_true_condition()], is_inverted=True)
+        expression = ConditionalExpression(conditions=[self.get_always_true_condition()], is_negated=True)
         result = {'triggered': False}
 
         @WalkoffEvent.CommonWorkflowSignal.connect
