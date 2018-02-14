@@ -168,10 +168,10 @@
                         </div>
                         <div class="col-xs-6">
                             <div class="form-group">
-                                <button class="btn btn-primary pull-right" (click)="specifyTrigger(selectedAction)">
+                                <button *ngIf="!selectedAction.trigger" class="btn btn-primary pull-right" (click)="specifyTrigger(selectedAction)">
                                     <i class="fa fa-plus"></i>Specify Trigger Condition
                                 </button>
-                                <button class="btn btn-danger pull-right" (click)="removeTrigger(selectedAction)">
+                                <button *ngIf="selectedAction.trigger" class="btn btn-danger pull-right" (click)="removeTrigger(selectedAction)">
                                     <i class="fa fa-close"></i>Remove Trigger Condition
                                 </button>
                             </div>
@@ -206,10 +206,10 @@
                         </div>
                         <div class="col-xs-6">
                             <div class="form-group">
-                                <button class="btn btn-primary pull-right" (click)="specifyCondition(selectedBranchParams.branch)">
+                                <button *ngIf="!selectedBranchParams.branch.condition" class="btn btn-primary pull-right" (click)="specifyCondition(selectedBranchParams.branch)">
                                     <i class="fa fa-plus"></i>Specify Condition
                                 </button>
-                                <button class="btn btn-danger pull-right" (click)="removeCondition(selectedBranchParams.branch)">
+                                <button *ngIf="selectedBranchParams.branch.condition" class="btn btn-danger pull-right" (click)="removeCondition(selectedBranchParams.branch)">
                                     <i class="fa fa-close"></i>Remove Condition
                                 </button>
                             </div>

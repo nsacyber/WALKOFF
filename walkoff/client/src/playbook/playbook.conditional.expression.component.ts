@@ -19,7 +19,6 @@ export class PlaybookConditionalExpressionComponent implements OnInit {
 	@Input() loadedWorkflow: Workflow;
 
 	availableOperators: string[];
-	selectedOperator: string;
 
 	// tslint:disable-next-line:no-empty
 	constructor() { }
@@ -33,11 +32,7 @@ export class PlaybookConditionalExpressionComponent implements OnInit {
 	}
 
 	addChildExpression(): void {
-		if (!this.selectedOperator) { return; }
-
-		const newConditionalExpression = new ConditionalExpression();
-
-		this.conditionalExpression.child_expressions.push(newConditionalExpression);
+		this.conditionalExpression.child_expressions.push(new ConditionalExpression());
 	}
 
 	moveUp(index: number): void {
