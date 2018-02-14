@@ -3,9 +3,11 @@ class Context(object):
         """Initializes a new Context object. This acts as an interface for objects to access other event specific
             variables that might be needed.
         """
-        import walkoff.controller
+        import walkoff.multiprocessedexecutor.multiprocessedexecutor
+        import walkoff.core.scheduler
 
-        self.controller = walkoff.controller.controller
+        self.executor = walkoff.multiprocessedexecutor.multiprocessedexecutor.multiprocessedexecutor
+        self.scheduler = walkoff.core.scheduler.scheduler
 
 
 running_context = Context()

@@ -11,7 +11,7 @@ from walkoff.coredb.workflow import Workflow
 from uuid import uuid4
 from tests.util import device_db_help
 import walkoff.coredb.devicedb as db
-from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
+from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 
 
 def mock_pause_workflow(self, execution_id):
@@ -155,7 +155,7 @@ class TestWorkflowServer(ServerTestCase):
             headers=self.headers,
             status_code=SUCCESS_ASYNC,
             content_type="application/json", data=json.dumps({'workflow_id': str(workflow.id)}))
-        flask_server.running_context.controller.wait_and_reset(1)
+        flask_server.running_context.executor.wait_and_reset(1)
         self.assertIn('id', response)
         self.assertEqual(result['count'], 1)
         self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
@@ -187,7 +187,7 @@ class TestWorkflowServer(ServerTestCase):
         self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
                                     content_type="application/json", data=json.dumps(data))
 
-        flask_server.running_context.controller.wait_and_reset(1)
+        flask_server.running_context.executor.wait_and_reset(1)
 
         self.assertEqual(result['count'], 1)
         self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: CHANGE INPUT'})
@@ -255,7 +255,7 @@ class TestWorkflowServer(ServerTestCase):
                                                content_type="application/json",
                                                data=json.dumps({'workflow_id': str(workflow.id)}))
 
-        flask_server.running_context.controller.wait_and_reset(1)
+        flask_server.running_context.executor.wait_and_reset(1)
         self.assertIn('id', response)
         self.assertTrue(result['aborted'])
 

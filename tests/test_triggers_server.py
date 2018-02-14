@@ -4,7 +4,6 @@ import time
 
 import walkoff.case.subscription
 import walkoff.config.paths
-import walkoff.controller
 from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
@@ -22,7 +21,6 @@ class TestTriggersServer(ServerTestCase):
     patch = False
 
     def setUp(self):
-        self.controller = walkoff.controller.controller
         self.start = datetime.utcnow()
         walkoff.case.subscription.subscriptions = {}
         case_database.initialize()
@@ -73,7 +71,7 @@ class TestTriggersServer(ServerTestCase):
         def trigger_taken(sender, **kwargs):
             result['result'] = True
 
-        flask_server.running_context.controller.wait_and_reset(1)
+        flask_server.running_context.executor.wait_and_reset(1)
         self.assertTrue(result['result'])
 
         actions = []
@@ -130,7 +128,7 @@ class TestTriggersServer(ServerTestCase):
         def trigger_taken(sender, **kwargs):
             result['result'] += 1
 
-        flask_server.running_context.controller.wait_and_reset(2)
+        flask_server.running_context.executor.wait_and_reset(2)
         self.assertEqual(result['result'], 2)
 
     def test_trigger_execute_multiple_data(self):
@@ -178,7 +176,7 @@ class TestTriggersServer(ServerTestCase):
         def trigger_taken(sender, **kwargs):
             result['result'] += 1
 
-        flask_server.running_context.controller.wait_and_reset(1)
+        flask_server.running_context.executor.wait_and_reset(1)
         self.assertEqual(result['result'], 1)
 
     def test_trigger_execute_change_input(self):
@@ -220,7 +218,7 @@ class TestTriggersServer(ServerTestCase):
         def send_data(sender, **kwargs):
             threading.Thread(target=wait_thread).start()
 
-        flask_server.running_context.controller.wait_and_reset(1)
+        flask_server.running_context.executor.wait_and_reset(1)
 
         self.assertDictEqual(result['value'], {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'})
 
@@ -255,5 +253,5 @@ class TestTriggersServer(ServerTestCase):
         def send_data(sender, **kwargs):
             threading.Thread(target=wait_thread).start()
 
-        flask_server.running_context.controller.wait_and_reset(1)
+        flask_server.running_context.executor.wait_and_reset(1)
         self.assertTrue(result['result'])

@@ -36,7 +36,7 @@ def setup_logger():
 
 
 def run(host, port):
-    from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
+    from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
     setup_logger()
     print_banner()
     pids = spawn_worker_processes()
@@ -46,7 +46,7 @@ def run(host, port):
     compose_api()
     
     from walkoff.server import flaskserver
-    flaskserver.running_context.controller.initialize_threading(pids=pids)
+    flaskserver.running_context.executor.initialize_threading(pids=pids)
     # The order of these imports matter for initialization (should probably be fixed)
 
     import walkoff.case.database as case_database
@@ -120,6 +120,6 @@ if __name__ == "__main__":
     finally:
         from walkoff.server import flaskserver
 
-        flaskserver.running_context.controller.shutdown_pool()
+        flaskserver.running_context.executor.shutdown_pool()
         logger.info('Shutting down server')
         os._exit(exit_code)

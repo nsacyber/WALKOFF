@@ -6,7 +6,7 @@ import walkoff.case.database as case_database
 import walkoff.case.subscription as case_subscription
 import walkoff.config.config
 import walkoff.config.config
-from walkoff import controller
+from walkoff.core.scheduler import scheduler
 from walkoff.events import WalkoffEvent, EventType
 from tests import config
 import walkoff.config.paths
@@ -38,12 +38,11 @@ class TestExecutionModes(unittest.TestCase):
 
     def test_start_stop_execution_loop(self):
         device_db_help.load_playbook('testScheduler')
-        c = controller.Controller()
         subs = {'controller': [event.signal_name for event in WalkoffEvent if event.event_type == EventType.controller]}
         case_subscription.set_subscriptions({'case1': subs})
-        c.scheduler.start()
+        scheduler.start()
         time.sleep(0.1)
-        c.scheduler.stop(wait=False)
+        scheduler.stop(wait=False)
 
         start_stop_event_history = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'case1').first().events.all()
@@ -53,17 +52,16 @@ class TestExecutionModes(unittest.TestCase):
 
     def test_pause_resume_scheduler_execution(self):
         device_db_help.load_playbook('testScheduler')
-        c = controller.Controller()
 
         subs = {'controller': [event.signal_name for event in WalkoffEvent if event.event_type == EventType.controller]}
         case_subscription.set_subscriptions({'pauseResume': subs})
 
-        c.scheduler.start()
-        c.scheduler.pause()
+        scheduler.start()
+        scheduler.pause()
         time.sleep(0.1)
-        c.scheduler.resume()
+        scheduler.resume()
         time.sleep(0.1)
-        c.scheduler.stop(wait=False)
+        scheduler.stop(wait=False)
 
         pause_resume_event_history = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'pauseResume').first().events.all()

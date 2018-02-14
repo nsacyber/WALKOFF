@@ -23,9 +23,9 @@ class MetricsTest(ServerTestCase):
         workflow_id = devicedb.device_db.session.query(Workflow).filter(and_(
             Workflow.name == 'multiactionErrorWorkflow', Workflow._playbook_id == playbook.id)).first().id
 
-        server.running_context.controller.execute_workflow(workflow_id)
+        server.running_context.executor.execute_workflow(workflow_id)
 
-        server.running_context.controller.wait_and_reset(1)
+        server.running_context.executor.wait_and_reset(1)
         self.assertListEqual(list(metrics.app_metrics.keys()), ['HelloWorldBounded'])
         orderless_list_compare(self, list(metrics.app_metrics['HelloWorldBounded'].keys()), ['count', 'actions'])
         self.assertEqual(metrics.app_metrics['HelloWorldBounded']['count'], 3)
@@ -59,11 +59,11 @@ class MetricsTest(ServerTestCase):
 
         error_key = 'multiactionErrorWorkflow'
         multiaction_key = 'multiactionWorkflow'
-        server.running_context.controller.execute_workflow(error_id)
-        server.running_context.controller.execute_workflow(error_id)
-        server.running_context.controller.execute_workflow(test_id)
+        server.running_context.executor.execute_workflow(error_id)
+        server.running_context.executor.execute_workflow(error_id)
+        server.running_context.executor.execute_workflow(test_id)
 
-        server.running_context.controller.wait_and_reset(3)
+        server.running_context.executor.wait_and_reset(3)
 
         keys = [error_key, multiaction_key]
         orderless_list_compare(self,

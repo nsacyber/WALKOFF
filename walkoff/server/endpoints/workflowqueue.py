@@ -83,7 +83,7 @@ def execute_workflow():
                     current_app.logger.error('Could not execute workflow. Invalid Argument construction')
                     return {"error": "Could not execute workflow. Invalid argument construction"}, INVALID_INPUT_ERROR
 
-        execution_id = running_context.controller.execute_workflow(workflow_id, start=start, start_arguments=arguments)
+        execution_id = running_context.executor.execute_workflow(workflow_id, start=start, start_arguments=arguments)
         current_app.logger.info('Executed workflow {0}'.format(workflow_id))
         return {'id': execution_id}, SUCCESS_ASYNC
 
@@ -103,11 +103,11 @@ def control_workflow():
         status = data['status']
 
         if status == 'pause':
-            running_context.controller.pause_workflow(execution_id)
+            running_context.executor.pause_workflow(execution_id)
         elif status == 'resume':
-            running_context.controller.resume_workflow(execution_id)
+            running_context.executor.resume_workflow(execution_id)
         elif status == 'abort':
-            running_context.controller.abort_workflow(execution_id)
+            running_context.executor.abort_workflow(execution_id)
 
         return {}, SUCCESS
 

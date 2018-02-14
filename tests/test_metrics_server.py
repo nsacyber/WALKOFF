@@ -104,8 +104,8 @@ class MetricsServerTest(ServerTestCase):
 
         workflow = device_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
 
-        server.running_context.controller.execute_workflow(workflow.id)
-        server.running_context.controller.wait_and_reset(1)
+        server.running_context.executor.execute_workflow(workflow.id)
+        server.running_context.executor.wait_and_reset(1)
 
         response = self.app.get('/api/metrics/apps', headers=self.headers)
         self.assertEqual(response.status_code, 200)
@@ -116,10 +116,10 @@ class MetricsServerTest(ServerTestCase):
         error_id = device_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow').id
         test_id = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow').id
 
-        server.running_context.controller.execute_workflow(error_id)
-        server.running_context.controller.execute_workflow(error_id)
-        server.running_context.controller.execute_workflow(test_id)
-        server.running_context.controller.wait_and_reset(3)
+        server.running_context.executor.execute_workflow(error_id)
+        server.running_context.executor.execute_workflow(error_id)
+        server.running_context.executor.execute_workflow(test_id)
+        server.running_context.executor.wait_and_reset(3)
 
         response = self.app.get('/api/metrics/workflows', headers=self.headers)
         self.assertEqual(response.status_code, 200)

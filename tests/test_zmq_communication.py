@@ -7,14 +7,13 @@ import shutil
 import walkoff.appgateway
 import walkoff.config.config
 import walkoff.config.paths
-import walkoff.controller
 from tests import config
 from tests.util.case_db_help import *
 from tests.util.thread_control import modified_setup_worker_env
 from tests.util import device_db_help
 from walkoff.coredb.workflowresults import WorkflowStatus, ActionStatus
 from walkoff.coredb import devicedb
-from walkoff.server import workflowresults  # Need this import
+from walkoff.multiprocessedexecutor.multiprocessedexecutor import multiprocessedexecutor
 
 
 class TestZMQCommunication(unittest.TestCase):
@@ -22,16 +21,15 @@ class TestZMQCommunication(unittest.TestCase):
     def setUpClass(cls):
         device_db_help.setup_dbs()
 
-        from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
+        from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
         walkoff.config.config.num_processes = 2
         pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)
-        walkoff.controller.controller.initialize_threading(pids)
+        multiprocessedexecutor.initialize_threading(pids)
         walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
         walkoff.config.config.num_processes = 2
 
     def setUp(self):
-        self.controller = walkoff.controller.controller
         self.start = datetime.utcnow()
         case_database.initialize()
 
@@ -48,7 +46,7 @@ class TestZMQCommunication(unittest.TestCase):
             else:
                 shutil.rmtree(config.test_data_path)
         walkoff.appgateway.clear_cache()
-        walkoff.controller.controller.shutdown_pool()
+        multiprocessedexecutor.shutdown_pool()
         device_db_help.tear_down_device_db()
 
     '''Request and Result Socket Testing (Basic Workflow Execution)'''
@@ -56,9 +54,9 @@ class TestZMQCommunication(unittest.TestCase):
         workflow = device_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
-        self.controller.execute_workflow(workflow.id)
+        multiprocessedexecutor.execute_workflow(workflow.id)
 
-        self.controller.wait_and_reset(1)
+        multiprocessedexecutor.wait_and_reset(1)
 
         actions = []
         for id_ in action_ids:
@@ -74,9 +72,9 @@ class TestZMQCommunication(unittest.TestCase):
         action_names = ['start', '1']
         action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
-        self.controller.execute_workflow(workflow.id)
+        multiprocessedexecutor.execute_workflow(workflow.id)
 
-        self.controller.wait_and_reset(1)
+        multiprocessedexecutor.wait_and_reset(1)
         actions = []
         for id_ in action_ids:
             actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
@@ -92,9 +90,9 @@ class TestZMQCommunication(unittest.TestCase):
         action_names = ['start', '1', 'error']
         action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
-        self.controller.execute_workflow(workflow.id)
+        multiprocessedexecutor.execute_workflow(workflow.id)
 
-        self.controller.wait_and_reset(1)
+        multiprocessedexecutor.wait_and_reset(1)
 
         actions = []
         for id_ in action_ids:
@@ -111,9 +109,9 @@ class TestZMQCommunication(unittest.TestCase):
         action_names = ['start', '1', '2']
         action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
-        self.controller.execute_workflow(workflow.id)
+        multiprocessedexecutor.execute_workflow(workflow.id)
 
-        self.controller.wait_and_reset(1)
+        multiprocessedexecutor.wait_and_reset(1)
 
         actions = []
         for id_ in action_ids:
@@ -133,9 +131,9 @@ class TestZMQCommunication(unittest.TestCase):
         capacity = walkoff.config.config.num_processes * walkoff.config.config.num_threads_per_process
 
         for i in range(capacity*2):
-            self.controller.execute_workflow(workflow.id)
+            multiprocessedexecutor.execute_workflow(workflow.id)
 
-        self.controller.wait_and_reset(capacity*2)
+        multiprocessedexecutor.wait_and_reset(capacity*2)
 
         actions = []
         for id_ in action_ids:
@@ -157,7 +155,7 @@ class TestZMQCommunication(unittest.TestCase):
                 time.sleep(0)
 
         def pause_resume_thread():
-            self.controller.pause_workflow(execution_id)
+            multiprocessedexecutor.pause_workflow(execution_id)
             return
 
         @WalkoffEvent.WorkflowPaused.connect
@@ -171,7 +169,7 @@ class TestZMQCommunication(unittest.TestCase):
             devicedb.device_db.session.commit()
 
             result['paused'] = True
-            self.controller.resume_workflow(execution_id)
+            multiprocessedexecutor.resume_workflow(execution_id)
 
         @WalkoffEvent.WorkflowResumed.connect
         def workflow_resumed_listener(sender, **kwargs):
@@ -181,8 +179,8 @@ class TestZMQCommunication(unittest.TestCase):
         action_ids = [action.id for action in workflow.actions]
         setup_subscriptions_for_action(workflow.id, action_ids)
 
-        execution_id = self.controller.execute_workflow(workflow.id)
-        self.controller.wait_and_reset(1)
+        execution_id = multiprocessedexecutor.execute_workflow(workflow.id)
+        multiprocessedexecutor.wait_and_reset(1)
         self.assertTrue(result['paused'])
         self.assertTrue(result['resumed'])
 

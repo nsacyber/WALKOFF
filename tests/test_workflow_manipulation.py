@@ -3,16 +3,13 @@ import unittest
 
 import walkoff.appgateway
 import walkoff.config.config
-import walkoff.controller
-import walkoff.core.multiprocessedexecutor
-from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
+from walkoff.multiprocessedexecutor import multiprocessedexecutor
 from tests import config
 from tests.util.mock_objects import *
 import walkoff.config.paths
 from tests.util import device_db_help
 from walkoff.coredb.argument import Argument
 from tests.util.case_db_help import *
-from walkoff.server import workflowresults  # Need this import
 
 try:
     from importlib import reload
@@ -28,13 +25,12 @@ class TestWorkflowManipulation(unittest.TestCase):
         walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
         walkoff.config.config.num_processes = 2
-        MultiprocessedExecutor.initialize_threading = mock_initialize_threading
-        MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
-        MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
-        walkoff.controller.controller.initialize_threading()
+        multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
+        multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
+        multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
+        multiprocessedexecutor.multiprocessedexecutor.initialize_threading()
 
     def setUp(self):
-        self.controller = walkoff.controller.controller
         self.start = datetime.utcnow()
         case_database.initialize()
 
@@ -47,7 +43,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
-        walkoff.controller.controller.shutdown_pool()
+        multiprocessedexecutor.multiprocessedexecutor.shutdown_pool()
         device_db_help.tear_down_device_db()
 
     def test_change_action_input(self):
@@ -62,7 +58,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         workflow = device_db_help.load_workflow('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
 
-        self.controller.execute_workflow(workflow.id, start_arguments=arguments)
-        self.controller.wait_and_reset(1)
+        multiprocessedexecutor.multiprocessedexecutor.execute_workflow(workflow.id, start_arguments=arguments)
+        multiprocessedexecutor.multiprocessedexecutor.wait_and_reset(1)
         self.assertDictEqual(result['value'],
                              {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'})

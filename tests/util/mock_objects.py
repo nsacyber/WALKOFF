@@ -6,8 +6,8 @@ from google.protobuf.json_format import MessageToDict
 from zmq.utils.strtypes import cast_unicode
 
 from walkoff.events import WalkoffEvent
-from walkoff.core.multiprocessedexecutor import loadbalancer
-from walkoff.core.multiprocessedexecutor.worker import convert_to_protobuf
+from walkoff.multiprocessedexecutor import loadbalancer
+from walkoff.multiprocessedexecutor.worker import convert_to_protobuf
 from walkoff.proto.build import data_pb2
 import walkoff.coredb.devicedb
 from walkoff.coredb.workflow import Workflow
@@ -21,7 +21,7 @@ except ImportError:
 workflows_executed = 0
 
 
-def mock_initialize_threading(self, pids):
+def mock_initialize_threading(self, pids=None):
     global workflows_executed
     workflows_executed = 0
 

@@ -94,8 +94,6 @@ def create_app():
 
     import walkoff.server.workflowresults  # Don't delete this import
 
-    # import walkoff.controller
-    # walkoff.controller.controller.load_playbooks()
     return _app
 
 

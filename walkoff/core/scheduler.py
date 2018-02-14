@@ -265,3 +265,6 @@ class Scheduler(object):
                 logger.error('Unknown event sent triggered in scheduler {}'.format(event))
 
         return event_selector
+
+
+scheduler = Scheduler()

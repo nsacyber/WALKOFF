@@ -5,7 +5,6 @@ from tests.util.servertestcase import ServerTestCase
 import walkoff.case.database as case_database
 import walkoff.case.subscription
 import walkoff.config.paths
-import walkoff.controller
 from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
 from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
@@ -27,7 +26,6 @@ class TestWorkflowServer(ServerTestCase):
 
     def tearDown(self):
         device_db_help.cleanup_device_db()
-        walkoff.controller.workflows = {}
         walkoff.case.subscription.clear_subscriptions()
         for case in case_database.case_db.session.query(case_database.Case).all():
             case_database.case_db.session.delete(case)
@@ -43,7 +41,7 @@ class TestWorkflowServer(ServerTestCase):
 
         response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, data=json.dumps(data),
                                                status_code=SUCCESS_ASYNC, content_type="application/json")
-        flask_server.running_context.controller.wait_and_reset(1)
+        flask_server.running_context.executor.wait_and_reset(1)
         self.assertIn('id', response)
         actions = []
         for id_ in action_ids:
@@ -73,7 +71,7 @@ class TestWorkflowServer(ServerTestCase):
         self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
                                     content_type="application/json", data=json.dumps(data))
 
-        flask_server.running_context.controller.wait_and_reset(1)
+        flask_server.running_context.executor.wait_and_reset(1)
 
         self.assertEqual(result['count'], 1)
         self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: CHANGE INPUT'})
