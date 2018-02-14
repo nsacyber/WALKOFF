@@ -3,7 +3,7 @@ import { Condition } from './condition';
 
 export class ConditionalExpression extends ExecutionElement {
 	operator: string;
-	is_inverse: boolean;
+	is_negated: boolean;
 	conditions: Condition[] = [];
 	child_expressions: ConditionalExpression[] = [];
 }
