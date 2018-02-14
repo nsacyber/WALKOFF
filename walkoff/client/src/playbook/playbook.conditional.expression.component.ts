@@ -12,7 +12,6 @@ import { Workflow } from '../models/playbook/workflow';
 	providers: [],
 })
 export class PlaybookConditionalExpressionComponent implements OnInit {
-	@Input() id?: number;
 	@Input() selectedAppName: string;
 	@Input() conditionalExpression: ConditionalExpression;
 	@Input() appApis: AppApi[];
@@ -24,10 +23,10 @@ export class PlaybookConditionalExpressionComponent implements OnInit {
 	constructor() { }
 
 	ngOnInit() {
-		this.availableOperators = [ 'AND', 'OR', 'XOR' ];
+		this.availableOperators = [ 'and', 'or', 'xor' ];
 
 		if (this.conditionalExpression && !this.conditionalExpression.operator) {
-			this.conditionalExpression.operator = 'AND';
+			this.conditionalExpression.operator = 'and';
 		}
 	}
 
