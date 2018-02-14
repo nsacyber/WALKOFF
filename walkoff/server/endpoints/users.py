@@ -76,6 +76,10 @@ def update_user():
     return __func()
 
 
+def patch_user():
+    return update_user()
+
+
 @admin_required
 def role_update_user_fields(data, user, update=False):
     if 'roles' in data:

@@ -1,4 +1,4 @@
-/api/apps:
+/apps:
   get:
     tags:
       - System
@@ -17,7 +17,7 @@
             type: string
             example: [PhillipsHue, OpenDaylight, PaloAlto]
 
-/api/apps/apis:
+/apps/apis:
   get:
     tags:
       - Apps
@@ -41,7 +41,7 @@
           items:
             type: object
 
-/api/apps/apis/{app_name}:
+/apps/apis/{app_name}:
   get:
     tags:
       - Apps
@@ -66,7 +66,7 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/apps/apis/{app_name}/{field_name}:
+/apps/apis/{app_name}/{field_name}:
   get:
     tags:
       - Apps

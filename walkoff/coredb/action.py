@@ -4,6 +4,7 @@ import uuid
 
 from sqlalchemy import Column, Integer, ForeignKey, String, orm
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway import get_app_action, is_app_action_bound
 from walkoff.coredb.argument import Argument
@@ -13,14 +14,13 @@ from walkoff.events import WalkoffEvent
 from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
 from walkoff.appgateway.validator import validate_app_action_parameters
-from walkoff.dbtypes import Guid
 logger = logging.getLogger(__name__)
 
 
 class Action(ExecutionElement, Device_Base):
 
     __tablename__ = 'action'
-    _workflow_id = Column(Guid(), ForeignKey('workflow.id'))
+    _workflow_id = Column(UUIDType(), ForeignKey('workflow.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     name = Column(String(80))
@@ -73,7 +73,7 @@ class Action(ExecutionElement, Device_Base):
         self._incoming_data = None
         self._event = threading.Event()
         self._output = None
-        self._execution_uid = 'default'
+        self._execution_id = 'default'
         self._action_executable = get_app_action(self.app_name, self._run)
 
     @orm.reconstructor
@@ -83,7 +83,7 @@ class Action(ExecutionElement, Device_Base):
         self._event = threading.Event()
         self._output = None
         self._action_executable = get_app_action(self.app_name, self._run)
-        self._execution_uid = 'default'
+        self._execution_id = 'default'
 
     def get_output(self):
         """Gets the output of an Action (the result)
@@ -93,24 +93,13 @@ class Action(ExecutionElement, Device_Base):
         """
         return self._output
 
-    def get_execution_uid(self):
-        """Gets the execution UID of the Action
+    def get_execution_id(self):
+        """Gets the execution ID of the Action
 
         Returns:
-            The execution UID
+            The execution ID
         """
-        return self._execution_uid
-
-    def send_data_to_trigger(self, data):
-        """Sends data to the Action if it has triggers associated with it, and is currently awaiting data
-
-        Args:
-            data (dict): The data to send to the triggers. This dict has two keys: 'data_in' which is the data
-                to be sent to the triggers, and 'arguments', which is an optional parameter to change the arguments
-                to the current Action
-        """
-        self._incoming_data = data
-        self._event.set()
+        return self._execution_id
 
     def set_arguments(self, new_arguments):
         """Updates the arguments for an Action object.
@@ -121,7 +110,7 @@ class Action(ExecutionElement, Device_Base):
         validate_app_action_parameters(self._arguments_api, new_arguments, self.app_name, self.action_name)
         self.arguments = new_arguments
 
-    def execute(self, instance, accumulator, arguments=None):
+    def execute(self, instance, accumulator, arguments=None, resume=False):
         """Executes an Action by calling the associated app function.
 
         Args:
@@ -129,18 +118,20 @@ class Action(ExecutionElement, Device_Base):
             accumulator (dict): Dict containing the results of the previous actions
             arguments (list[Argument]): Optional list of Arguments to be used if the Action is the starting step of
                 the Workflow. Defaults to None.
+            resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
 
         Returns:
             The result of the executed function.
         """
-        self._execution_uid = str(uuid.uuid4())
+        self._execution_id = str(uuid.uuid4())
 
         WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionStarted)
 
-        if self.triggers:
+        if self.triggers and not resume:
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionAwaitingData)
             logger.debug('Trigger Action {} is awaiting data'.format(self.name))
-            self._wait_for_trigger(accumulator)
+            self._output = None
+            return ActionResult("trigger", "trigger")
 
         arguments = arguments if arguments else self.arguments
 
@@ -178,37 +169,13 @@ class Action(ExecutionElement, Device_Base):
         self._output = ActionResult('error: {0}'.format(formatted_error), return_type)
         WalkoffEvent.CommonWorkflowSignal.send(self, event=event, data=self._output.as_json())
 
-    def _wait_for_trigger(self, accumulator):
-        while True:
-            self._event.wait()
-            if self._incoming_data is None:
-                continue
-            data = self._incoming_data
-            data_in = data['data_in']
-            self._incoming_data = None
-            self._event.clear()
-
-            if all(trigger.execute(data_in=data_in, accumulator=accumulator) for trigger in self.triggers):
-                self.__accept_trigger(accumulator, data, data_in)
-                break
-            else:
-                logger.debug('Trigger is not valid for input {0}'.format(data_in))
-                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionNotTaken)
-
-    def __accept_trigger(self, accumulator, data, data_in):
-        WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionTaken)
-        logger.debug('Trigger is valid for input {0}'.format(data_in))
-        accumulator[self.name] = data_in
-        arguments = data['arguments'] if 'arguments' in data else []
-        if arguments:
-            for argument in arguments:
-                check_arg = self.__get_argument_by_name(argument.name)
-                if check_arg:
-                    self.arguments.remove(check_arg)
-                self.arguments.append(argument)
-            # TODO: Remove this once the way triggers are done is changed.
-            from walkoff.coredb import devicedb
-            devicedb.device_db.session.commit()
+    def execute_trigger(self, data_in, accumulator):
+        if all(trigger.execute(data_in=data_in, accumulator=accumulator) for trigger in self.triggers):
+            logger.debug('Trigger is valid for input {0}'.format(data_in))
+            return True
+        else:
+            logger.debug('Trigger is not valid for input {0}'.format(data_in))
+            return False
 
     def __get_argument_by_name(self, name):
         for argument in self.arguments:

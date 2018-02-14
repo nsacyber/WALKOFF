@@ -43,15 +43,15 @@ class TestWorkflowServer(ServerTestCase):
         case_database.case_db.session.commit()
 
     @staticmethod
-    def strip_uids(element):
+    def strip_ids(element):
         element.pop('id', None)
         for key, value in element.items():
             if isinstance(value, list):
                 for list_element in (list_element_ for list_element_ in value if isinstance(list_element_, dict)):
-                    TestWorkflowServer.strip_uids(list_element)
+                    TestWorkflowServer.strip_ids(list_element)
             elif isinstance(value, dict):
                 for dict_element in (element for element in value.values() if isinstance(element, dict)):
-                    TestWorkflowServer.strip_uids(dict_element)
+                    TestWorkflowServer.strip_ids(dict_element)
         return element
 
     def check_invalid_uuid(self, verb, path, element_type, **kwargs):
@@ -79,11 +79,11 @@ class TestWorkflowServer(ServerTestCase):
         playbook = device_db_help.standard_load()
         response = self.get_with_status_check('/api/playbooks/{}'.format(playbook.id), headers=self.headers)
 
-        expected_workflows = [self.strip_uids(workflow.read()) for workflow in playbook.workflows]
+        expected_workflows = [self.strip_ids(workflow.read()) for workflow in playbook.workflows]
 
         self.assertEqual(response['name'], 'test')
         self.assertEqual(len(response['workflows']), len(expected_workflows))
-        self.assertListEqual([self.strip_uids(workflow) for workflow in response['workflows']], expected_workflows)
+        self.assertListEqual([self.strip_ids(workflow) for workflow in response['workflows']], expected_workflows)
 
     def test_read_playbook_invalid_id(self):
         self.check_invalid_id('get', '/api/playbooks/{}'.format(uuid4()), 'playbook')
@@ -95,10 +95,10 @@ class TestWorkflowServer(ServerTestCase):
         playbook = device_db_help.standard_load()
         response = self.get_with_status_check('/api/playbooks/{}/workflows'.format(playbook.id), headers=self.headers)
 
-        expected_workflows = [self.strip_uids(workflow.read()) for workflow in playbook.workflows]
+        expected_workflows = [self.strip_ids(workflow.read()) for workflow in playbook.workflows]
 
         self.assertEqual(len(response), len(expected_workflows))
-        self.assertListEqual([self.strip_uids(workflow) for workflow in response], expected_workflows)
+        self.assertListEqual([self.strip_ids(workflow) for workflow in response], expected_workflows)
 
     def test_read_playbook_workflows_invalid_id(self):
         self.check_invalid_id('get', '/api/playbooks/{}/workflows'.format(uuid4()), 'playbook')
@@ -112,7 +112,7 @@ class TestWorkflowServer(ServerTestCase):
         response = self.get_with_status_check(
             '/api/playbooks/{0}/workflows/{1}'.format(playbook.id, target_workflow.id),
             headers=self.headers)
-        self.assertDictEqual(self.strip_uids(response), self.strip_uids(target_workflow.read()))
+        self.assertDictEqual(self.strip_ids(response), self.strip_ids(target_workflow.read()))
 
     def test_read_workflow_invalid_playbook_id(self):
         playbook = device_db_help.standard_load()
@@ -238,8 +238,8 @@ class TestWorkflowServer(ServerTestCase):
         data = {"name": self.add_playbook_name}
         self.update_playbooks = True
         response = self.post_with_status_check('/api/playbooks', headers=self.headers,
-                                              status_code=OBJECT_CREATED, data=json.dumps(data),
-                                              content_type="application/json")
+                                               status_code=OBJECT_CREATED, data=json.dumps(data),
+                                               content_type="application/json")
         response.pop('id')
 
         self.assertDictEqual(response, {'name': self.add_playbook_name, 'workflows': []})
@@ -249,12 +249,12 @@ class TestWorkflowServer(ServerTestCase):
     def test_create_playbook_already_exists(self):
         data = {"name": self.add_playbook_name}
         self.post_with_status_check('/api/playbooks',
-                                   data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
-                                   content_type="application/json")
+                                    data=json.dumps(data), headers=self.headers, status_code=OBJECT_CREATED,
+                                    content_type="application/json")
         self.post_with_status_check('/api/playbooks',
-                                   error='Unique constraint failed.',
-                                   data=json.dumps(data), headers=self.headers, status_code=OBJECT_EXISTS_ERROR,
-                                   content_type="application/json")
+                                    error='Unique constraint failed.',
+                                    data=json.dumps(data), headers=self.headers, status_code=OBJECT_EXISTS_ERROR,
+                                    content_type="application/json")
 
     def test_create_playbook_bad_id_in_workflow(self):
         workflow = Workflow('wf1', uuid4())
@@ -264,17 +264,17 @@ class TestWorkflowServer(ServerTestCase):
         workflow_json['id'] = 'garbage'
         data = {'name': self.add_playbook_name, 'workflows': [workflow_json]}
         self.post_with_status_check('/api/playbooks',
-                                   data=json.dumps(data), headers=self.headers, status_code=BAD_REQUEST,
-                                   content_type="application/json")
+                                    data=json.dumps(data), headers=self.headers, status_code=BAD_REQUEST,
+                                    content_type="application/json")
 
     def test_create_workflow(self):
         playbook = device_db_help.standard_load()
         initial_workflows_len = len(playbook.workflows)
 
         response = self.post_with_status_check('/api/playbooks/{}/workflows'.format(playbook.id),
-                                              headers=self.headers, status_code=OBJECT_CREATED,
-                                              data=json.dumps(self.empty_workflow_json),
-                                              content_type="application/json")
+                                               headers=self.headers, status_code=OBJECT_CREATED,
+                                               data=json.dumps(self.empty_workflow_json),
+                                               content_type="application/json")
 
         self.empty_workflow_json['id'] = response['id']
 
@@ -301,9 +301,9 @@ class TestWorkflowServer(ServerTestCase):
 
         data = {'id': str(playbook.id), 'name': self.change_playbook_name}
         response = self.patch_with_status_check('/api/playbooks',
-                                               data=json.dumps(data),
-                                               headers=self.headers,
-                                               content_type='application/json')
+                                                data=json.dumps(data),
+                                                headers=self.headers,
+                                                content_type='application/json')
         self.assertEqual(response['name'], self.change_playbook_name)
 
     def test_update_playbook_invalid_id(self):
@@ -328,9 +328,9 @@ class TestWorkflowServer(ServerTestCase):
         expected_json = workflow.read()
         expected_json['name'] = self.change_workflow_name
         response = self.put_with_status_check('/api/playbooks/{}/workflows'.format(playbook.id),
-                                               data=json.dumps(expected_json),
-                                               headers=self.headers,
-                                               content_type='application/json')
+                                              data=json.dumps(expected_json),
+                                              headers=self.headers,
+                                              content_type='application/json')
         self.assertDictEqual(response, expected_json)
 
         self.assertIsNotNone(
@@ -361,10 +361,11 @@ class TestWorkflowServer(ServerTestCase):
         playbook = device_db_help.standard_load()
         for workflow in playbook.workflows:
             workflow_id = workflow.id
-        response = self.post_with_status_check('/api/playbooks/{0}/workflows?source={1}'.format(playbook.id, workflow_id),
-                                               headers=self.headers, status_code=OBJECT_CREATED,
-                                               data=json.dumps({'name': self.add_workflow_name}),
-                                               content_type="application/json")
+        response = self.post_with_status_check(
+            '/api/playbooks/{0}/workflows?source={1}'.format(playbook.id, workflow_id),
+            headers=self.headers, status_code=OBJECT_CREATED,
+            data=json.dumps({'name': self.add_workflow_name}),
+            content_type="application/json")
         self.assertEqual(len(playbook.workflows), 2)
 
         for workflow in playbook.workflows:
@@ -420,137 +421,3 @@ class TestWorkflowServer(ServerTestCase):
         self.assertIsNotNone(copy_playbook)
 
         self.assertEqual(len(playbook.workflows), len(copy_playbook.workflows))
-
-    def test_execute_workflow(self):
-         playbook = device_db_help.standard_load()
-
-         workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
-         action_ids = [action.id for action in workflow.actions if action.name == 'start']
-         setup_subscriptions_for_action(workflow.id, action_ids)
-
-         result = {'count': 0}
-
-         @WalkoffEvent.ActionExecutionSuccess.connect
-         def y(sender, **kwargs):
-             result['count'] += 1
-             result['data'] = kwargs['data']
-
-         response = self.post_with_status_check(
-             '/api/playbooks/{0}/workflows/{1}/execute'.format(playbook.id, workflow.id),
-             headers=self.headers,
-             status_code=SUCCESS_ASYNC,
-             content_type="application/json", data=json.dumps({}))
-         flask_server.running_context.controller.wait_and_reset(1)
-         self.assertIn('id', response)
-         self.assertEqual(result['count'], 1)
-         self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
-
-    def test_execute_workflow_pause_resume(self):
-        device_db_help.load_playbook('testGeneratedWorkflows/pauseWorkflowTest')
-
-        workflow = devicedb.device_db.session.query(Workflow).filter_by(name='pauseWorkflow').first()
-
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_ids)
-
-        result = {'paused': False, 'count': 0, 'data': []}
-
-        @WalkoffEvent.ActionExecutionSuccess.connect
-        def y(sender, **kwargs):
-            result['count'] += 1
-            result['data'].append(kwargs['data'])
-            if not result['paused']:
-                result['response2'] = self.post_with_status_check(
-                    '/api/playbooks/{0}/workflows/{1}/pause'.format(workflow._playbook_id, workflow.id),
-                    headers=self.headers,
-                    status_code=SUCCESS,
-                    content_type="application/json", data=json.dumps(response))
-
-        @WalkoffEvent.WorkflowPaused.connect
-        def workflow_paused_listener(sender, **kwargs):
-            result['paused'] = True
-            result['response3'] = self.post_with_status_check(
-                '/api/playbooks/{0}/workflows/{1}/resume'.format(workflow._playbook_id, workflow.id),
-                headers=self.headers,
-                status_code=SUCCESS,
-                content_type="application/json", data=json.dumps(response))
-
-        @WalkoffEvent.WorkflowResumed.connect
-        def workflow_resumed_listener(sender, **kwargs):
-            result['resumed'] = True
-
-        response = self.post_with_status_check(
-            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
-            headers=self.headers,
-            status_code=SUCCESS_ASYNC,
-            content_type="application/json", data=json.dumps({}))
-
-        flask_server.running_context.controller.wait_and_reset(1)
-        self.assertIn('id', response)
-        self.assertTrue(result['paused'])
-        self.assertTrue(result['resumed'])
-        self.assertEqual(result['count'], 3)
-        self.assertDictEqual(result['response2'], {'info': 'Workflow paused'})
-        self.assertDictEqual(result['response3'], {'info': 'Workflow resumed'})
-        expected_data = [{'status': 'Success', 'result': {'message': 'HELLO WORLD'}},
-                         {'status': 'Success', 'result': None}, {'status': 'Success', 'result': None}]
-        self.assertEqual(len(result['data']), len(expected_data))
-        for exp, act in zip(expected_data, result['data']):
-            self.assertDictEqual(exp, act)
-
-    def test_execute_workflow_change_arguments(self):
-
-        playbook = device_db_help.standard_load()
-        workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
-
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_ids)
-
-        result = {'count': 0}
-
-        @WalkoffEvent.ActionExecutionSuccess.connect
-        def y(sender, **kwargs):
-            result['count'] += 1
-            result['data'] = kwargs['data']
-
-        data = {"arguments": [{"name": "call",
-                               "value": "CHANGE INPUT"}]}
-
-        self.post_with_status_check('/api/playbooks/{0}/workflows/{1}/execute'.format(playbook.id, workflow.id),
-                                    headers=self.headers,
-                                    status_code=SUCCESS_ASYNC,
-                                    content_type="application/json", data=json.dumps(data))
-
-        flask_server.running_context.controller.wait_and_reset(1)
-
-        self.assertEqual(result['count'], 1)
-        self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: CHANGE INPUT'})
-
-    def test_read_results(self):
-
-        playbook = device_db_help.standard_load()
-        playbook.workflows[0].execute('a')
-        playbook.workflows[0].execute('b')
-        playbook.workflows[0].execute('c')
-
-        response = self.get_with_status_check('/api/workflowresults/a', headers=self.headers)
-        self.assertSetEqual(set(response.keys()), {'status', 'id', 'results', 'started_at', 'completed_at', 'name'})
-
-    def test_read_all_results(self):
-        playbook = device_db_help.standard_load()
-
-        playbook.workflows[0].execute('a')
-        playbook.workflows[0].execute('b')
-        playbook.workflows[0].execute('c')
-
-        flask_server.running_context.controller.wait_and_reset(3)
-
-        response = self.get_with_status_check('/api/workflowresults', headers=self.headers)
-        self.assertEqual(len(response), 3)
-
-        for result in response:
-            self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'id'})
-            for action_result in result['results']:
-                self.assertSetEqual(set(action_result.keys()),
-                                    {'input', 'type', 'name', 'timestamp', 'result', 'app_name', 'action_name'})
-

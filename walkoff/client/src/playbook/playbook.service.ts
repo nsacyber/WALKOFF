@@ -54,7 +54,7 @@ export class PlaybookService {
 	 * @param newName Name of the new copy to be saved
 	 */
 	duplicatePlaybook(playbookId: string, newName: string): Promise<Playbook> {
-		return this.authHttp.post(`/api/playbooks?source=${playbookId}`, { playbook_name: newName })
+		return this.authHttp.post(`/api/playbooks?source=${playbookId}`, { name: newName })
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Playbook)
@@ -83,7 +83,7 @@ export class PlaybookService {
 		sourcePlaybookId: string, sourceWorkflowId: string, destinationPlaybookId: string, newName: string,
 	): Promise<Workflow> {
 		return this.authHttp.post(`/api/playbooks/${sourcePlaybookId}/workflows?source=${sourceWorkflowId}`,
-				{ playbook_id: destinationPlaybookId, workflow_name: newName })
+				{ playbook_id: destinationPlaybookId, name: newName })
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Workflow)

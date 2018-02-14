@@ -5,11 +5,25 @@ from walkoff.events import WalkoffEvent, EventType
 from interfaces import InterfaceEventDispatcher, dispatcher
 from interfaces.exceptions import UnknownEvent, InvalidEventHandler
 from walkoff.helpers import UnknownAppAction, UnknownApp
+from tests.util import device_db_help
+import uuid
+from walkoff.core.representable import Representable
+
+
+class MockWorkflow(Representable):
+    def __init__(self):
+        self.id = uuid.uuid4()
+        self.name = "name"
+        self._execution_id = uuid.uuid4()
+
+    def get_execution_id(self):
+        return self._execution_id
 
 
 class TestInterfaceEventDispatcher(TestCase):
     @classmethod
     def setUpClass(cls):
+        device_db_help.setup_dbs()
         walkoff.config.config.app_apis = {'App1': {'actions': {'action1': None,
                                                             'action2': None,
                                                             'action3': None}},
@@ -19,10 +33,14 @@ class TestInterfaceEventDispatcher(TestCase):
     def setUp(self):
         dispatcher._clear()
 
+    def tearDown(self):
+        device_db_help.cleanup_device_db()
+
     @classmethod
     def tearDownClass(cls):
         dispatcher._clear()
         walkoff.config.config.app_apis = {}
+        device_db_help.tear_down_device_db()
 
     def test_singleton(self):
         self.assertEqual(id(dispatcher), id(InterfaceEventDispatcher()))
@@ -301,15 +319,18 @@ class TestInterfaceEventDispatcher(TestCase):
     def test_example_on_walkoff_event_noncontroller_event(self):
 
         result = {'x': False}
+        self.id = uuid.uuid4()
 
-        @dispatcher.on_walkoff_events(WalkoffEvent.ActionStarted, sender_ids='a')
+        @dispatcher.on_walkoff_events(WalkoffEvent.ActionStarted, sender_ids=self.id)
         def x(data):
             result['x'] = True
             result['data'] = data
 
-        self.id = 'test'
-        data = {'id': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
-                'execution_uid': 'cc'}
+        workflow = MockWorkflow()
+        WalkoffEvent.WorkflowExecutionPending.send(workflow)
+
+        data = {'id': self.id, 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+                'execution_id': uuid.uuid4(), 'workflow_execution_id': workflow.get_execution_id()}
         WalkoffEvent.ActionStarted.send(data)
         expected = data
         expected['sender_id'] = expected.pop('id')
@@ -320,22 +341,24 @@ class TestInterfaceEventDispatcher(TestCase):
     def test_example_on_walkoff_event_noncontroller_event_with_uids(self):
 
         result = {'x': False}
+        self.id = uuid.uuid4()
 
-        @dispatcher.on_walkoff_events(WalkoffEvent.ActionStarted, sender_uids='a')
+        @dispatcher.on_walkoff_events(WalkoffEvent.ActionStarted, sender_uids=self.id)
         def x(data):
             result['x'] = True
             result['data'] = data
 
-        self.id = 'test'
-        data = {'id': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
-                'execution_uid': 'cc'}
+        workflow = MockWorkflow()
+        WalkoffEvent.WorkflowExecutionPending.send(workflow)
+
+        data = {'id': self.id, 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+                'execution_id': uuid.uuid4(), 'workflow_execution_id': workflow.get_execution_id()}
         WalkoffEvent.ActionStarted.send(data)
         expected = data
         expected['sender_id'] = expected.pop('id')
         expected['sender_name'] = expected.pop('name')
         self.assertTrue(result['x'])
         self.assertDictEqual(result['data'], expected)
-
 
     def test_example_on_app_action_event(self):
 
@@ -345,9 +368,12 @@ class TestInterfaceEventDispatcher(TestCase):
         def x(data):
             result['data'] = data
 
+        workflow = MockWorkflow()
+        WalkoffEvent.WorkflowExecutionPending.send(workflow)
+
         self.id = 'test'
-        data = {'id': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
-                'execution_uid': 'cc'}
+        data = {'id': uuid.uuid4(), 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+                'execution_id': uuid.uuid4(), 'workflow_execution_id': workflow.get_execution_id()}
         WalkoffEvent.ActionStarted.send(data)
         expected = data
         expected['sender_id'] = expected.pop('id')
@@ -367,9 +393,12 @@ class TestInterfaceEventDispatcher(TestCase):
             result['y'] = True
             raise ValueError()
 
+        workflow = MockWorkflow()
+        WalkoffEvent.WorkflowExecutionPending.send(workflow)
+
         self.id = 'test'
-        data = {'id': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
-                'execution_uid': 'cc'}
+        data = {'id': uuid.uuid4(), 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+                'execution_id': uuid.uuid4(), 'workflow_execution_id': workflow.get_execution_id()}
         WalkoffEvent.ActionStarted.send(data)
         expected = data
         expected['sender_id'] = expected.pop('id')
@@ -379,14 +408,17 @@ class TestInterfaceEventDispatcher(TestCase):
 
     def test_example_autogenerated_registration(self):
         result = {}
+        self.id = uuid.uuid4()
 
-        @dispatcher.on_action_started(sender_ids='a')
+        @dispatcher.on_action_started(sender_ids=self.id)
         def x(data):
             result['data'] = data
 
-        self.id = 'test'
-        data = {'id': 'a', 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
-                'execution_uid': 'cc'}
+        workflow = MockWorkflow()
+        WalkoffEvent.WorkflowExecutionPending.send(workflow)
+
+        data = {'id': self.id, 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+                'execution_id': uuid.uuid4(), 'workflow_execution_id': workflow.get_execution_id()}
         WalkoffEvent.ActionStarted.send(data)
         expected = data
         expected['sender_id'] = expected.pop('id')

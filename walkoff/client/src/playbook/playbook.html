@@ -80,11 +80,11 @@
         <div class="col-md-2 graphEditorColumn">
             <div class="panel-group" id="accordion" [hidden]="!loadedWorkflow">
                 <div *ngFor="let app of getAppsWithActions()" class="panel panel-default">
-                    <div class="panel-heading playbook-heading collapsed" data-toggle="collapse" [attr.data-target]="'#actionsCollapse' + app.name"
+                    <div class="panel-heading playbook-heading collapsed" data-toggle="collapse" [attr.data-target]="'#actionsCollapse' + removeWhitespace(app.name)"
                         [title]="app.info ? app.info.description : ''">
                         <h4 class="panel-title">{{app.name}}</h4>
                     </div>
-                    <div id="actionsCollapse{{app.name}}" class="panel-collapse collapse">
+                    <div id="actionsCollapse{{removeWhitespace(app.name)}}" class="panel-collapse collapse">
                         <div class="panel-body">
                             <div *ngFor="let actionApi of app.action_apis" class="panel panel-default actionPanel" dnd-draggable [dragEnabled]="true"
                                 [dragData]="{ appName: app.name, actionApi: actionApi }" (dblclick)="handleDoubleClickEvent(app.name, actionApi.name)"
@@ -299,7 +299,7 @@
                 <div class="modal-body">
                     <div class="panel-group" id="workflowAccordion">
                         <div *ngFor="let playbook of playbooks" class="panel panel-default">
-                            <div class="panel-heading playbook-heading" data-toggle="collapse" [attr.data-target]="'#loadWorkflowCollapse' + playbook.name">
+                            <div class="panel-heading playbook-heading" data-toggle="collapse" [attr.data-target]="'#loadWorkflowCollapse' + removeWhitespace(playbook.name)">
                                 <h4 class="panel-title">
                                     {{playbook.name}}
                                     <div class="pull-right">
@@ -315,7 +315,7 @@
                                     </div>
                                 </h4>
                             </div>
-                            <div id="loadWorkflowCollapse{{playbook.name}}" class="panel-collapse collapse">
+                            <div id="loadWorkflowCollapse{{removeWhitespace(playbook.name)}}" class="panel-collapse collapse">
                                 <div class="panel-body">
                                     <div *ngFor="let workflow of playbook.workflows" class="panel panel-default workflowPanel">
                                         <div class="panel-body">

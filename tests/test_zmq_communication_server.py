@@ -39,9 +39,10 @@ class TestWorkflowServer(ServerTestCase):
         setup_subscriptions_for_action(workflow.id, action_ids)
         start = datetime.utcnow()
 
-        response = self.post_with_status_check(
-            '/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
-            headers=self.headers, data=json.dumps({}), status_code=SUCCESS_ASYNC, content_type="application/json")
+        data = {"workflow_id": str(workflow.id)}
+
+        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, data=json.dumps(data),
+                                               status_code=SUCCESS_ASYNC, content_type="application/json")
         flask_server.running_context.controller.wait_and_reset(1)
         self.assertIn('id', response)
         actions = []
@@ -51,26 +52,6 @@ class TestWorkflowServer(ServerTestCase):
         action = actions[0]
         result = action['data']
         self.assertEqual(result, {'status': 'Success', 'result': 'REPEATING: Hello World'})
-
-    def test_read_all_results(self):
-        workflow = device_db_help.load_workflow('testGeneratedWorkflows/test', 'helloWorldWorkflow')
-        self.app.post('/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
-                      headers=self.headers,content_type="application/json", data=json.dumps({}))
-        self.app.post('/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
-                      headers=self.headers, content_type="application/json", data=json.dumps({}))
-        self.app.post('/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
-                      headers=self.headers, content_type="application/json", data=json.dumps({}))
-
-        flask_server.running_context.controller.wait_and_reset(3)
-
-        response = self.get_with_status_check('/api/workflowresults', headers=self.headers)
-        self.assertEqual(len(response), 3)
-
-        for result in response:
-            self.assertSetEqual(set(result.keys()), {'status', 'completed_at', 'started_at', 'name', 'results', 'id'})
-            for action_result in result['results']:
-                self.assertSetEqual(set(action_result.keys()),
-                                    {'arguments', 'type', 'name', 'timestamp', 'result', 'app_name', 'action_name'})
 
     def test_execute_workflow_change_arguments(self):
         workflow = device_db_help.load_workflow('testGeneratedWorkflows/test', 'helloWorldWorkflow')
@@ -85,12 +66,11 @@ class TestWorkflowServer(ServerTestCase):
             result['count'] += 1
             result['data'] = kwargs['data']
 
-        data = {"arguments": [{"name": "call",
+        data = {"workflow_id": str(workflow.id),
+                "arguments": [{"name": "call",
                                "value": "CHANGE INPUT"}]}
 
-        self.post_with_status_check('/api/playbooks/{0}/workflows/{1}/execute'.format(workflow._playbook_id, workflow.id),
-                                    headers=self.headers,
-                                    status_code=SUCCESS_ASYNC,
+        self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
                                     content_type="application/json", data=json.dumps(data))
 
         flask_server.running_context.controller.wait_and_reset(1)

@@ -9,6 +9,7 @@ from walkoff.messaging import MessageActionEvent, MessageAction
 from datetime import timedelta
 from walkoff.server.endpoints.messages import max_notifications, min_notifications
 from tests.util import device_db_help
+from sqlalchemy.exc import IntegrityError
 
 
 class UserWrapper(object):
@@ -38,7 +39,10 @@ class TestMessagingEndpoints(ServerTestCase):
         cls.role_r.set_resources([{'name': 'messages', 'permissions': ['read', 'update']}])
         db.session.add(cls.role_rd)
         db.session.add(cls.role_r)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
         cls.user1 = UserWrapper('username', 'password', roles=[cls.role_rd.id])
         cls.user2 = UserWrapper('username2', 'password2', roles=[cls.role_r.id])
         cls.user3 = UserWrapper('username3', 'password3')
@@ -46,7 +50,10 @@ class TestMessagingEndpoints(ServerTestCase):
         db.session.add(cls.user1.user)
         db.session.add(cls.user2.user)
         db.session.add(cls.user3.user)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
 
     @staticmethod
     def make_message(users, requires_reauth=False, requires_action=False):
@@ -66,7 +73,10 @@ class TestMessagingEndpoints(ServerTestCase):
         self.user1.messages = [self.message1, self.message2]
         self.user2.messages = [self.message2, self.message3]
         self.user3.messages = [self.message3]
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
         self.http_verb_lookup = {'get': self.app.get,
                                  'post': self.app.post,
                                  'put': self.app.put,

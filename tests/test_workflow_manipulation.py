@@ -2,8 +2,6 @@ import socket
 import unittest
 
 import walkoff.appgateway
-import walkoff.case.database as case_database
-import walkoff.case.subscription as case_subscription
 import walkoff.config.config
 import walkoff.controller
 import walkoff.core.multiprocessedexecutor
@@ -12,7 +10,9 @@ from tests import config
 from tests.util.mock_objects import *
 import walkoff.config.paths
 from tests.util import device_db_help
-
+from walkoff.coredb.argument import Argument
+from tests.util.case_db_help import *
+from walkoff.server import workflowresults  # Need this import
 
 try:
     from importlib import reload
@@ -35,6 +35,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
     def setUp(self):
         self.controller = walkoff.controller.controller
+        self.start = datetime.utcnow()
         case_database.initialize()
 
     def tearDown(self):
@@ -48,39 +49,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         walkoff.appgateway.clear_cache()
         walkoff.controller.controller.shutdown_pool()
         device_db_help.tear_down_device_db()
-
-    def test_pause_and_resume_workflow(self):
-        uid = None
-        result = dict()
-        result['paused'] = False
-        result['resumed'] = False
-
-        def workflow_paused_listener(sender, **kwargs):
-            result['paused'] = True
-            self.controller.resume_workflow(uid)
-
-        WalkoffEvent.WorkflowPaused.connect(workflow_paused_listener)
-
-        def workflow_resumed_listener(sender, **kwargs):
-            result['resumed'] = True
-
-        WalkoffEvent.WorkflowResumed.connect(workflow_resumed_listener)
-
-        def pause_resume_thread():
-            self.controller.pause_workflow(uid)
-            return
-
-        def action_1_about_to_begin_listener(sender, **kwargs):
-            threading.Thread(target=pause_resume_thread).start()
-
-        WalkoffEvent.WorkflowExecutionStart.connect(action_1_about_to_begin_listener)
-
-        workflow = device_db_help.load_workflow('testGeneratedWorkflows/pauseWorkflowTest', 'pauseWorkflow')
-
-        uid = self.controller.execute_workflow(workflow.id)
-        self.controller.wait_and_reset(1)
-        self.assertTrue(result['paused'])
-        self.assertTrue(result['resumed'])
 
     def test_change_action_input(self):
         arguments = [Argument(name='call', value='CHANGE INPUT')]

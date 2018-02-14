@@ -28,7 +28,7 @@ message WorkflowPacket {
     message WorkflowSender {
         optional string name = 1;
         optional string id = 2;
-        optional string workflow_execution_uid = 3;
+        optional string workflow_execution_id = 3;
     }
 
     optional WorkflowSender sender = 1;
@@ -48,11 +48,11 @@ message ActionPacket {
     message ActionSender {
         optional string name = 1;
         optional string id = 2;
-        optional string execution_uid = 3;
+        optional string execution_id = 3;
         optional string app_name = 4;
         optional string action_name = 5;
         repeated ActionArgument arguments = 6;
-        optional string workflow_execution_uid = 7;
+        optional string workflow_execution_id = 7;
         optional int32 device_id = 8;
     }
 
@@ -66,7 +66,7 @@ message GeneralPacket {
     message GeneralSender {
         optional string id = 1;
         optional string app_name = 2;
-        optional string workflow_execution_uid = 3;
+        optional string workflow_execution_id = 3;
     }
 
     optional GeneralSender sender = 1;
@@ -76,15 +76,12 @@ message CommunicationPacket {
 
     enum Type {
         PAUSE = 1;
-        RESUME = 2;
-        TRIGGER = 3;
-        EXIT = 4;
+        EXIT = 2;
+        ABORT = 3;
     }
 
     optional Type type = 1;
-    optional string workflow_execution_uid = 2;
-    optional string data_in = 3;
-    repeated ActionPacket.ActionArgument arguments = 4;
+    optional string workflow_execution_id = 2;
 
 }
 
@@ -99,7 +96,7 @@ message UserMessage {
 
 message ExecuteWorkflowMessage {
     optional string workflow_id = 1;
-    optional string workflow_execution_uid = 2;
+    optional string workflow_execution_id = 2;
     optional string start = 3;
     repeated ActionPacket.ActionArgument arguments = 4;
 }

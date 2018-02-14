@@ -85,37 +85,37 @@ class WorkflowAuthorizationCache(object):
     def __init__(self):
         self._cache = {}
 
-    def add_authorized_users(self, workflow_execution_uid, users=None, roles=None):
-        if workflow_execution_uid not in self._cache:
-            self._cache[workflow_execution_uid] = WorkflowAuthorization(users, roles)
+    def add_authorized_users(self, workflow_execution_id, users=None, roles=None):
+        if workflow_execution_id not in self._cache:
+            self._cache[workflow_execution_id] = WorkflowAuthorization(users, roles)
         else:
-            self._cache[workflow_execution_uid].add_authorizations(users, roles)
+            self._cache[workflow_execution_id].add_authorizations(users, roles)
 
-    def is_authorized(self, workflow_execution_uid, user, role):
-        if workflow_execution_uid in self._cache:
-            return self._cache[workflow_execution_uid].is_authorized(user, role)
+    def is_authorized(self, workflow_execution_id, user, role):
+        if workflow_execution_id in self._cache:
+            return self._cache[workflow_execution_id].is_authorized(user, role)
         return False
 
-    def remove_authorizations(self, workflow_execution_uid):
-        self._cache.pop(workflow_execution_uid, None)
+    def remove_authorizations(self, workflow_execution_id):
+        self._cache.pop(workflow_execution_id, None)
 
-    def workflow_requires_authorization(self, workflow_execution_uid):
-        return workflow_execution_uid in self._cache
+    def workflow_requires_authorization(self, workflow_execution_id):
+        return workflow_execution_id in self._cache
 
-    def add_user_in_progress(self, workflow_execution_uid, user_id):
-        if workflow_execution_uid in self._cache:
-            self._cache[workflow_execution_uid].append_user(user_id)
+    def add_user_in_progress(self, workflow_execution_id, user_id):
+        if workflow_execution_id in self._cache:
+            self._cache[workflow_execution_id].append_user(user_id)
 
-    def pop_last_user_in_progress(self, workflow_execution_uid):
-        if workflow_execution_uid in self._cache:
+    def pop_last_user_in_progress(self, workflow_execution_id):
+        if workflow_execution_id in self._cache:
             try:
-                return self._cache[workflow_execution_uid].pop_user()
+                return self._cache[workflow_execution_id].pop_user()
             except IndexError:
                 return None
 
-    def peek_user_in_progress(self, workflow_execution_uid):
-        if workflow_execution_uid in self._cache:
-            return self._cache[workflow_execution_uid].peek_user()
+    def peek_user_in_progress(self, workflow_execution_id):
+        if workflow_execution_id in self._cache:
+            return self._cache[workflow_execution_id].peek_user()
         else:
             return None
 

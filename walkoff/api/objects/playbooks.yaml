@@ -133,7 +133,7 @@ Branch:
       description: The destination Action ID for this Branch, if the conditions evaluate to True
       $ref: '#/definitions/Uid'
     priority:
-      description: The priority for this Branch, which will be compared to other Branches with the same source_uid Action, ascending, i.e. 1 is the highest priority.
+      description: The priority for this Branch, which will be compared to other Branches with the same source_id Action, ascending, i.e. 1 is the highest priority.
       type: integer
     status:
       description: The status return code to use
@@ -162,8 +162,8 @@ Argument:
       description: The value of the argument
       example: WALK(.*)
     reference:
+      $ref: '#/definitions/Uid'
       description: The ID of the action whose output should be used
-      type: integer
     selection:
       description: >-
         The path to a subsection of the output of the action to use. For example [1, "a"] would use the second element

@@ -1,90 +1,116 @@
 import json
 
-import walkoff.case.database as case_database
-from walkoff.case.workflowresults import WorkflowResult, ActionResult
+from walkoff.coredb.workflowresults import WorkflowStatus, ActionStatus
 from walkoff.events import WalkoffEvent
+from walkoff.coredb import devicedb, WorkflowStatusEnum, ActionStatusEnum
+from walkoff.coredb.saved_workflow import SavedWorkflow
 
 
-@WalkoffEvent.WorkflowShutdown.connect
-def __workflow_ended_callback(sender, **kwargs):
-    workflow_result = case_database.case_db.session.query(WorkflowResult).filter(
-        WorkflowResult.uid == sender['workflow_execution_uid']).first()
-    if workflow_result is not None:
-        workflow_result.complete()
-        case_database.case_db.session.commit()
+@WalkoffEvent.WorkflowExecutionPending.connect
+def __workflow_pending(sender, **kwargs):
+    workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
+        execution_id=sender.get_execution_id()).first()
+    if workflow_status:
+        workflow_status.status = WorkflowStatusEnum.pending
+    else:
+        workflow_status = WorkflowStatus(sender.get_execution_id(), sender.id, sender.name)
+        devicedb.device_db.session.add(workflow_status)
+    devicedb.device_db.session.commit()
 
 
 @WalkoffEvent.WorkflowExecutionStart.connect
 def __workflow_started_callback(sender, **kwargs):
-    workflow_result = WorkflowResult(sender['workflow_execution_uid'], sender['name'])
-    case_database.case_db.session.add(workflow_result)
-    case_database.case_db.session.commit()
-
-
-def __append_action_result(workflow_result, data, action_type):
-    action_result = ActionResult(data['name'], json.dumps(data['result']), json.dumps(data['arguments']), action_type,
-                                 data['app_name'], data['action_name'])
-    workflow_result.results.append(action_result)
-    case_database.case_db.session.commit()
-
-
-@WalkoffEvent.ActionExecutionSuccess.connect
-def __action_execution_success_callback(sender, **kwargs):
-    workflow_result = case_database.case_db.session.query(WorkflowResult).filter(
-        WorkflowResult.uid == sender['workflow_execution_uid']).first()
-    if workflow_result is not None:
-        data = {'name': sender['name'],
-                'app_name': sender['app_name'],
-                'action_name': sender['action_name'],
-                'arguments': sender['arguments'] if 'arguments' in sender else [],
-                'result': kwargs['data']}
-        __append_action_result(workflow_result, data, 'success')
-
-
-@WalkoffEvent.ActionExecutionError.connect
-def __action_execution_error_callback(sender, **kwargs):
-    workflow_result = case_database.case_db.session.query(WorkflowResult).filter(
-        WorkflowResult.uid == sender['workflow_execution_uid']).first()
-    if workflow_result is not None:
-        data = {'name': sender['name'],
-                'app_name': sender['app_name'],
-                'action_name': sender['action_name'],
-                'arguments': sender['arguments'] if 'arguments' in sender else [],
-                'result': kwargs['data']}
-        __append_action_result(workflow_result, data, 'error')
-
-
-@WalkoffEvent.TriggerActionAwaitingData.connect
-def __action_execution_awaiting_data_callback(sender, **kwargs):
-    workflow_result = case_database.case_db.session.query(WorkflowResult).filter(
-        WorkflowResult.uid == sender['workflow_execution_uid']).first()
-    if workflow_result is not None:
-        workflow_result.trigger_action_awaiting_data()
-        case_database.case_db.session.commit()
-
-
-@WalkoffEvent.TriggerActionTaken.connect
-def __action_trigger_taken_callback(sender, **kwargs):
-    workflow_result = case_database.case_db.session.query(WorkflowResult).filter(
-        WorkflowResult.uid == sender['workflow_execution_uid']).first()
-    if workflow_result is not None:
-        workflow_result.trigger_action_executing()
-        case_database.case_db.session.commit()
+    workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
+        execution_id=sender['workflow_execution_id']).first()
+    workflow_status.running()
+    devicedb.device_db.session.commit()
 
 
 @WalkoffEvent.WorkflowPaused.connect
 def __workflow_paused_callback(sender, **kwargs):
-    workflow_result = case_database.case_db.session.query(WorkflowResult).filter(
-        WorkflowResult.uid == sender['workflow_execution_uid']).first()
-    if workflow_result is not None:
-        workflow_result.paused()
-        case_database.case_db.session.commit()
+    workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
+        execution_id=sender['workflow_execution_id']).first()
+    workflow_status.paused()
+
+    action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
+        _workflow_status_id=sender['workflow_execution_id']).first()
+    if action_status:
+        action_status.paused()
+
+    devicedb.device_db.session.commit()
 
 
-@WalkoffEvent.WorkflowResumed.connect
-def __workflow_resumed_callback(sender, **kwargs):
-    workflow_result = case_database.case_db.session.query(WorkflowResult).filter(
-        WorkflowResult.uid == sender['workflow_execution_uid']).first()
-    if workflow_result is not None:
-        workflow_result.resumed()
-        case_database.case_db.session.commit()
+@WalkoffEvent.TriggerActionAwaitingData.connect
+def __workflow_awaiting_data_callback(sender, **kwargs):
+    workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
+        execution_id=sender['workflow_execution_id']).first()
+    workflow_status.awaiting_data()
+
+    action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
+        _workflow_status_id=sender['workflow_execution_id']).first()
+    action_status.awaiting_data()
+
+    devicedb.device_db.session.commit()
+
+
+@WalkoffEvent.WorkflowShutdown.connect
+def __workflow_ended_callback(sender, **kwargs):
+    workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
+        execution_id=sender['workflow_execution_id']).first()
+    workflow_status.completed()
+    devicedb.device_db.session.commit()
+
+    saved_state = devicedb.device_db.session.query(SavedWorkflow).filter_by(
+        workflow_execution_id=sender['workflow_execution_id']).first()
+    if saved_state:
+        devicedb.device_db.session.delete(saved_state)
+
+    devicedb.device_db.session.commit()
+
+
+@WalkoffEvent.WorkflowAborted.connect
+def __workflow_aborted(sender, **kwargs):
+    workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
+        execution_id=sender['workflow_execution_id']).first()
+    workflow_status.aborted()
+
+    saved_state = devicedb.device_db.session.query(SavedWorkflow).filter_by(
+        workflow_execution_id=sender['workflow_execution_id']).first()
+    if saved_state:
+        devicedb.device_db.session.delete(saved_state)
+
+    devicedb.device_db.session.commit()
+
+
+@WalkoffEvent.ActionStarted.connect
+def __action_start_callback(sender, **kwargs):
+    action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
+        execution_id=sender['execution_id']).first()
+    if action_status:
+        action_status.status = ActionStatusEnum.executing
+    else:
+        workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(execution_id=sender['workflow_execution_id']).first()
+        arguments = sender['arguments'] if 'arguments' in sender else []
+        action_status = ActionStatus(sender['execution_id'], sender['id'], sender['name'], sender['app_name'],
+                                     sender['action_name'], json.dumps(arguments))
+        workflow_status._action_statuses.append(action_status)
+        devicedb.device_db.session.add(action_status)
+
+    devicedb.device_db.session.commit()
+
+
+@WalkoffEvent.ActionExecutionSuccess.connect
+def __action_execution_success_callback(sender, **kwargs):
+    action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
+        execution_id=sender['execution_id']).first()
+    action_status.completed_success(kwargs['data'])
+    devicedb.device_db.session.commit()
+
+
+@WalkoffEvent.ActionExecutionError.connect
+def __action_execution_error_callback(sender, **kwargs):
+    action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
+        execution_id=sender['execution_id']).first()
+    action_status.completed_failure(kwargs['data'])
+    devicedb.device_db.session.commit()
+

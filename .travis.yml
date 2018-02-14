@@ -9,7 +9,7 @@ matrix:
       before_script:
         - python scripts/generate_certificates.py
       script:
-        - coverage run run_all_tests.py
+        - coverage run --concurrency=multiprocessing run_all_tests.py
         - coverage combine
         - coverage report
       branches:
@@ -26,7 +26,7 @@ matrix:
       before_script:
         - python scripts/generate_certificates.py
       script:
-        - coverage run run_all_tests.py
+        - coverage run --concurrency=multiprocessing run_all_tests.py
         - coverage combine
         - coverage report
       branches:
@@ -43,7 +43,7 @@ matrix:
       before_script:
         - python scripts/generate_certificates.py
       script:
-        - coverage run run_all_tests.py
+        - coverage run --concurrency=multiprocessing run_all_tests.py
         - coverage combine
         - coverage report
       branches:
@@ -60,7 +60,7 @@ matrix:
       before_script:
         - python scripts/generate_certificates.py
       script:
-        - coverage run run_all_tests.py
+        - coverage run --concurrency=multiprocessing run_all_tests.py
         - coverage combine
         - coverage report
       branches:

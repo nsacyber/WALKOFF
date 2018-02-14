@@ -1,4 +1,4 @@
-/api/playbooks:
+/playbooks:
   get:
     tags:
       - Playbooks
@@ -82,7 +82,7 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/playbooks/{playbook_id}:
+/playbooks/{playbook_id}:
   parameters:
     - name: playbook_id
       in: path
@@ -132,7 +132,7 @@
           $ref: '#/definitions/Error'
 
 
-/api/playbooks/{playbook_id}/workflows:
+/playbooks/{playbook_id}/workflows:
   parameters:
     - name: playbook_id
       in: path
@@ -235,7 +235,7 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/playbooks/{playbook_id}/workflows/{workflow_id}:
+/playbooks/{playbook_id}/workflows/{workflow_id}:
   parameters:
   - name: playbook_id
     in: path
@@ -283,139 +283,5 @@
         description: Success
       404:
         description: Playbook or workflow does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-
-/api/playbooks/{playbook_id}/workflows/{workflow_id}/execute:
-  post:
-    tags:
-      - Workflows
-    summary: Execute a workflow
-    description: ''
-    operationId: walkoff.server.endpoints.playbooks.execute_workflow
-    parameters:
-      - name: playbook_id
-        in: path
-        description: 'The ID that needs to be fetched. '
-        required: true
-        type: string
-        format: uuid
-      - name: workflow_id
-        in: path
-        description: 'The ID that needs to be fetched. '
-        required: true
-        type: string
-        format: uuid
-      - name: body
-        in: body
-        schema:
-          type: object
-          properties:
-            start:
-              description: The ID of the starting action
-              type: integer
-            arguments:
-              type: array
-              items:
-                $ref: '#/definitions/Argument'
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    responses:
-      202:
-        description: Success asynchronous.
-        schema:
-          $ref: '#/definitions/Uid'
-      404:
-        description: Playbook or workflow does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-      400:
-        description: Invalid input error.
-        schema:
-          $ref: '#/definitions/Error'
-
-/api/playbooks/{playbook_id}/workflows/{workflow_id}/pause:
-  post:
-    tags:
-      - Workflows
-    summary: Pause a workflow
-    description: ''
-    operationId: walkoff.server.endpoints.playbooks.pause_workflow
-    parameters:
-      - name: playbook_id
-        in: path
-        description: 'The ID that needs to be fetched. '
-        required: true
-        type: string
-        format: uuid
-      - name: workflow_id
-        in: path
-        description: 'The ID that needs to be fetched. '
-        required: true
-        type: string
-        format: uuid
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            id:
-              $ref: '#/definitions/Uid'
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-      404:
-        description: Playbook or workflow does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-
-/api/playbooks/{playbook_id}/workflows/{workflow_id}/resume:
-  post:
-    tags:
-      - Workflows
-    summary: Resume a workflow
-    description: ''
-    operationId: walkoff.server.endpoints.playbooks.resume_workflow
-    parameters:
-      - name: playbook_id
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
-        format: uuid
-      - name: workflow_id
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
-        format: uuid
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            id:
-              $ref: '#/definitions/Uid'
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-      404:
-        description: Playbook or workflow does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-      400:
-        description: Invalid UUID.
         schema:
           $ref: '#/definitions/Error'

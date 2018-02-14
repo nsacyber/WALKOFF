@@ -1,9 +1,11 @@
 import logging
 import json
+
+from sqlalchemy_utils import JSONType
+
 import walkoff.case.subscription
 from walkoff.extensions import db
 from walkoff.serverdb.mixins import TrackModificationsMixIn
-from walkoff.dbtypes import Json
 
 
 class CaseSubscription(db.Model, TrackModificationsMixIn):
@@ -14,7 +16,7 @@ class CaseSubscription(db.Model, TrackModificationsMixIn):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
-    subscriptions = db.Column(Json())
+    subscriptions = db.Column(JSONType)
     note = db.Column(db.String)
 
     def __init__(self, name, subscriptions=None, note=''):

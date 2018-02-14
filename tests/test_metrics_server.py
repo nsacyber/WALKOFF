@@ -107,7 +107,7 @@ class MetricsServerTest(ServerTestCase):
         server.running_context.controller.execute_workflow(workflow.id)
         server.running_context.controller.wait_and_reset(1)
 
-        response = self.app.get('/metrics/apps', headers=self.headers)
+        response = self.app.get('/api/metrics/apps', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, _convert_action_time_averages())
@@ -121,7 +121,7 @@ class MetricsServerTest(ServerTestCase):
         server.running_context.controller.execute_workflow(test_id)
         server.running_context.controller.wait_and_reset(3)
 
-        response = self.app.get('/metrics/workflows', headers=self.headers)
+        response = self.app.get('/api/metrics/workflows', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, _convert_workflow_time_averages())

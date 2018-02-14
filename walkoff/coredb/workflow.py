@@ -1,9 +1,11 @@
 import json
 import logging
+from uuid import UUID
 import threading
 
 from sqlalchemy import Column, String, ForeignKey, orm, UniqueConstraint
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway.appinstance import AppInstance
 from walkoff.coredb import Device_Base
@@ -11,7 +13,6 @@ from walkoff.events import WalkoffEvent
 from walkoff.coredb.action import Action
 from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import InvalidArgument, format_exception_message
-from walkoff.dbtypes import Guid
 from uuid import uuid4
 
 logger = logging.getLogger(__name__)
@@ -19,11 +20,11 @@ logger = logging.getLogger(__name__)
 
 class Workflow(ExecutionElement, Device_Base):
     __tablename__ = 'workflow'
-    _playbook_id = Column(Guid(), ForeignKey('playbook.id'))
+    _playbook_id = Column(UUIDType(), ForeignKey('playbook.id'))
     name = Column(String(80), nullable=False)
     actions = relationship('Action', backref=backref('_workflow'), cascade='all, delete-orphan')
     branches = relationship('Branch', backref=backref('_workflow'), cascade='all, delete-orphan')
-    start = Column(Guid(), nullable=False)
+    start = Column(UUIDType(), nullable=False)
     __table_args__ = (UniqueConstraint('_playbook_id', 'name', name='_playbook_workflow'),)
 
     def __init__(self, name, start, id=None, actions=None, branches=None):
@@ -50,31 +51,35 @@ class Workflow(ExecutionElement, Device_Base):
         self.start = start
 
         self._is_paused = False
+        self._abort = False
         self._resume = threading.Event()
         self._accumulator = {}
-        self._execution_uid = 'default'
+        self._execution_id = 'default'
+        self._instances = {}
 
     @orm.reconstructor
     def init_on_load(self):
         self._is_paused = False
+        self._abort = False
         self._resume = threading.Event()
         self._accumulator = {}
-        self._execution_uid = 'default'
+        self._instances = {}
+        self._execution_id = 'default'
 
-    def remove_action(self, uid):
-        """Removes a Action object from the Workflow's list of Actions given the Action UID.
+    def remove_action(self, id_):
+        """Removes a Action object from the Workflow's list of Actions given the Action ID.
 
         Args:
-            uid (str): The ID of the Action object to be removed.
+            id_ (str): The ID of the Action object to be removed.
 
         Returns:
             True on success, False otherwise.
         """
-        self.actions[:] = [action for action in self.actions if action.id != uid]
+        self.actions[:] = [action for action in self.actions if action.id != id_]
         self.branches[:] = [branch for branch in self.branches if
-                            (branch.source_id != uid and branch.destination_id != uid)]
+                            (branch.source_id != id_ and branch.destination_id != id_)]
 
-        logger.debug('Removed action {0} from workflow {1}'.format(uid, self.name))
+        logger.debug('Removed action {0} from workflow {1}'.format(id_, self.name))
         return True
 
     def pause(self):
@@ -82,6 +87,12 @@ class Workflow(ExecutionElement, Device_Base):
         """
         self._is_paused = True
         logger.info('Pausing workflow {0}'.format(self.name))
+
+    def abort(self):
+        """Aborts the execution of the Workflow. The Workflow will abort execution before starting the next Action.
+        """
+        self._abort = True
+        logger.info('Aborting workflow {0}'.format(self.name))
 
     def resume(self):
         """Resumes a Workflow that has previously been paused.
@@ -94,43 +105,52 @@ class Workflow(ExecutionElement, Device_Base):
             logger.warning('Cannot resume workflow {0}. Reason: {1}'.format(self.name, format_exception_message(e)))
             pass
 
-    def execute(self, execution_uid, start=None, start_arguments=None):
+    def execute(self, execution_id, start=None, start_arguments=None, resume=False):
         """Executes a Workflow by executing all Actions in the Workflow list of Action objects.
 
         Args:
-            execution_uid (str): The UUID4 hex string uniquely identifying this workflow instance
+            execution_id (str): The UUID4 hex string uniquely identifying this workflow instance
             start (int, optional): The ID of the first Action. Defaults to None.
             start_arguments (list[Argument]): Argument parameters into the first Action. Defaults to None.
         """
-        self._execution_uid = execution_uid
+        self._execution_id = execution_id
         logger.info('Executing workflow {0}'.format(self.name))
         WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowExecutionStart)
         start = start if start is not None else self.start
-        executor = self.__execute(start, start_arguments)
+        if not isinstance(start, UUID):
+            start = UUID(start)
+        executor = self.__execute(start, start_arguments, resume)
         next(executor)
 
-    def __execute(self, start, start_arguments=None):
-        instances = {}
+    def __execute(self, start, start_arguments=None, resume=False):
         actions = self.__actions(start=start)
         first = True
         for action in (action_ for action_ in actions if action_ is not None):
             self._executing_action = action
             logger.debug('Executing action {0} of workflow {1}'.format(action, self.name))
-            if self._is_paused:
-                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowPaused)
-                self._resume.wait()
-                self._resume.clear()
-                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowResumed)
 
-            device_id = self.__setup_app_instance(instances, action)
+            if self._is_paused:
+                self._is_paused = False
+                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowPaused)
+                yield
+            if self._abort:
+                self._abort = False
+                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowAborted)
+                yield
+
+            device_id = self.__setup_app_instance(self._instances, action)
 
             if first:
                 first = False
-                action.execute(instance=instances[device_id](), accumulator=self._accumulator, arguments=start_arguments)
+                result = action.execute(instance=self._instances[device_id](), accumulator=self._accumulator,
+                                        arguments=start_arguments, resume=resume)
             else:
-                action.execute(instance=instances[device_id](), accumulator=self._accumulator)
+                result = action.execute(instance=self._instances[device_id](), accumulator=self._accumulator,
+                                        resume=resume)
+            if result and result.status == "trigger":
+                yield
             self._accumulator[action.id] = action.get_output().result
-        self.__shutdown(instances)
+        self.__shutdown(self._instances)
         yield
 
     def __setup_app_instance(self, instances, action):
@@ -141,24 +161,14 @@ class Workflow(ExecutionElement, Device_Base):
             logger.debug('Created new app instance: App {0}, device {1}'.format(action.app_name, action.device_id))
         return device_id
 
-    def send_data_to_action(self, data):
-        """Sends data to an Action if it has triggers associated with it, and is currently awaiting data
-
-        Args:
-            data (dict): The data to send to the triggers. This dict has two keys: 'data_in' which is the data
-                to be sent to the triggers, and 'arguments', which is an optional parameter to change the arguments to
-                the current Action
-        """
-        self._executing_action.send_data_to_trigger(data)
-
     def __actions(self, start):
-        current_uid = start
-        current_action = self.__get_action_by_id(current_uid)
+        current_id = start
+        current_action = self.__get_action_by_id(current_id)
 
         while current_action:
             yield current_action
-            current_uid = self.get_branch(current_action, self._accumulator)
-            current_action = self.__get_action_by_id(current_uid) if current_uid is not None else None
+            current_id = self.get_branch(current_action, self._accumulator)
+            current_action = self.__get_action_by_id(current_id) if current_id is not None else None
             yield  # needed so that when for-loop calls next() it doesn't advance too far
         yield  # needed so you can avoid catching StopIteration exception
 
@@ -180,21 +190,22 @@ class Workflow(ExecutionElement, Device_Base):
             The ID of the next Action to be executed if successful, else None.
         """
         if self.branches:
-            branches = sorted(self.__get_branches_by_action_uid(current_action.id))
+            branches = sorted(
+                self.__get_branches_by_action_id(current_action.id), key=lambda branch_: branch_.priority)
             for branch in branches:
                 # TODO: This here is the only hold up from getting rid of action._output.
                 # Keep whole result in accumulator
-                destination_uid = branch.execute(current_action.get_output(), accumulator)
-                return destination_uid
+                destination_id = branch.execute(current_action.get_output(), accumulator)
+                return destination_id
             return None
         else:
             return None
 
-    def __get_branches_by_action_uid(self, uid):
+    def __get_branches_by_action_id(self, id_):
         branches = []
         if self.branches:
             for branch in self.branches:
-                if branch.source_id == uid:
+                if branch.source_id == id_:
                     branches.append(branch)
         return branches
 
@@ -233,21 +244,30 @@ class Workflow(ExecutionElement, Device_Base):
         WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowShutdown, data=data_json)
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self._accumulator))
 
-    def set_execution_uid(self, execution_uid):
-        """Sets the execution UID for the Workflow
+    def set_execution_id(self, execution_id):
+        """Sets the execution UD for the Workflow
 
         Args:
-            execution_uid (str): The execution UID
+            execution_id (str): The execution ID
         """
-        self._execution_uid = execution_uid
+        self._execution_id = execution_id
 
-    def get_execution_uid(self):
-        """Gets the execution UID for the Workflow
+    def get_execution_id(self):
+        """Gets the execution ID for the Workflow
 
         Returns:
-            The execution UID of the Workflow
+            The execution ID of the Workflow
         """
-        return self._execution_uid
+        return self._execution_id
+
+    def get_executing_action_id(self):
+        return self._executing_action.id
+
+    def get_accumulator(self):
+        return self._accumulator
+
+    def get_instances(self):
+        return self._instances
 
     def regenerate_ids(self, with_children=True, action_mapping=None):
         """

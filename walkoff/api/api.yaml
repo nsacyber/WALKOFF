@@ -35,6 +35,8 @@ tags:
     description: Playbook Operations
   - name: Workflows
     description: Workflow Operations
+  - name: WorkflowQueue
+    description: Workflow Control Operations
   - name: Events
     description: Event Operations
   - name: Scheduler
@@ -50,9 +52,13 @@ tags:
   - name: System
     description: System Resources
 
+basePath: /api
+
 schemes:
   - http
   - https
+
+
 
 paths:
   $ref: ./apps.yaml
@@ -70,7 +76,7 @@ paths:
   $ref: ./system.yaml
   $ref: ./triggers.yaml
   $ref: ./users.yaml
-  $ref: ./workflowresult.yaml
+  $ref: ./workflowqueue.yaml
 
 securityDefinitions:
   AuthenticationToken:
@@ -102,5 +108,5 @@ definitions:
     $ref: ./objects/scheduler.yaml
     $ref: ./objects/system.yaml
     $ref: ./objects/users.yaml
-    $ref: ./objects/workflowresult.yaml
+    $ref: ./objects/workflowqueue.yaml
 

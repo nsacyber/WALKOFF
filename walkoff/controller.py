@@ -44,26 +44,40 @@ class Controller(object):
         """
         self.executor.shutdown_pool()
 
-    def pause_workflow(self, execution_uid):
+    def pause_workflow(self, execution_id):
         """Pauses a workflow.
 
         Args:
-            execution_uid (str): The execution UID of the workflow to pause
+            execution_id (str): The execution ID of the workflow to pause
         """
+        return self.executor.pause_workflow(execution_id)
 
-        return self.executor.pause_workflow(execution_uid)
-
-    def resume_workflow(self, workflow_execution_uid):
-        """Resumes a workflow that has been paused.
+    def resume_workflow(self, execution_id):
+        """Resumes a workflow.
 
         Args:
-            workflow_execution_uid (str): The randomly-generated hexadecimal key that was returned from
-                pause_workflow(). This is needed to resume a workflow for security purposes.
-
-        Returns:
-            (bool) True if successful, False otherwise.
+            execution_id (str): The execution ID of the workflow to pause
         """
-        return self.executor.resume_workflow(workflow_execution_uid)
+        return self.executor.resume_workflow(execution_id)
+
+    def resume_trigger_step(self, execution_id, data_in, arguments=None):
+        """Resumes a workflow awaiting trigger data, if the conditions are met.
+
+        Args:
+            execution_id (str): The execution ID of the workflow
+            data_in (dict): The data to send to the trigger
+            arguments (list[Argument], optional): Optional list of new Arguments for the trigger action.
+                Defaults to None.
+        """
+        return self.executor.resume_trigger_step(execution_id, data_in, arguments)
+
+    def abort_workflow(self, execution_id):
+        """Aborts a workflow.
+
+        Args:
+            execution_id (str): The execution ID of the workflow to abort.
+        """
+        return self.executor.abort_workflow(execution_id)
 
     def schedule_workflows(self, task_id, workflow_ids, trigger):
         """Schedules workflows to be run by the scheduler
@@ -84,7 +98,7 @@ class Controller(object):
             start_arguments (list[Argument]): The input to the starting action of the workflow. Defaults to None.
 
         Returns:
-            The execution UID if successful, None otherwise.
+            The execution ID if successful, None otherwise.
         """
         workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
         if workflow:
@@ -96,32 +110,16 @@ class Controller(object):
     def get_waiting_workflows(self):
         return self.executor.get_waiting_workflows()
 
-    def send_data_to_trigger(self, data_in, workflow_uids, arguments=None):
-        """Tries to match the data in against the conditionals of all the triggers registered in the database.
-
-        Args:
-            data_in (dict): Data to be used to match against the triggers for an Action awaiting data.
-            workflow_uids (list[str]): A list of workflow execution UIDs to send this data to.
-            arguments (list[Argument]): An optional list of arguments to update for an Action awaiting data for a
-                trigger. Defaults to None.
-
-        Returns:
-            Dictionary of {"status": <status string>}
-        """
-        arguments = arguments if arguments is not None else []
-        if workflow_uids is not None:
-            self.executor.send_data_to_trigger(data_in, workflow_uids, arguments)
-
-    def get_workflow_status(self, execution_uid):
+    def get_workflow_status(self, execution_id):
         """Gets the status of an executing workflow
 
         Args:
-            execution_uid (str): Execution UID of the executing workflow
+            execution_id (str): Execution ID of the executing workflow
 
         Returns:
             (int) Status code of the executing workflow
         """
-        return self.executor.get_workflow_status(execution_uid)
+        return self.executor.get_workflow_status(execution_id)
 
 
 controller = Controller()

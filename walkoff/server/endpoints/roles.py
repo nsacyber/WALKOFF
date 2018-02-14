@@ -78,6 +78,10 @@ def update_role():
     return __func()
 
 
+def patch_role():
+    return update_role()
+
+
 def delete_role(role_id):
     @jwt_required
     @admin_required

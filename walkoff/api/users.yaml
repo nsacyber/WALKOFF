@@ -1,4 +1,4 @@
-/api/users:
+/users:
   get:
     tags:
       - Users
@@ -73,9 +73,40 @@
         description: Could not edit user <username>. User does not exist.
         schema:
           $ref: '#/definitions/Error'
+  patch:
+    tags:
+      - Users
+    summary: Update a user
+    description: ''
+    operationId: walkoff.server.endpoints.users.patch_user
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: Updated fields for the user object
+        required: true
+        schema:
+          $ref: '#/definitions/EditUser'
+    responses:
+      200:
+        description: Success
+        schema:
+          description: The updated user.
+          $ref: '#/definitions/DisplayUser'
+      400:
+        description: Invalid password
+        schema:
+          $ref: '#/definitions/Error'
+      404:
+        description: Could not edit user <username>. User does not exist.
+        schema:
+          $ref: '#/definitions/Error'
 
 
-/api/users/{user_id}:
+/users/{user_id}:
   parameters:
     - name: user_id
       in: path
