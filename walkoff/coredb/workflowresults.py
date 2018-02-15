@@ -48,8 +48,7 @@ class WorkflowStatus(Device_Base):
         ret = {"execution_id": self.execution_id,
                "workflow_id": self.workflow_id,
                "name": self.name,
-               "status": self.status.name,
-               "started_at": str(self.started_at)}
+               "status": self.status.name}
         if self.started_at:
             ret["started_at"] = self.started_at.isoformat()
         if self.status in [WorkflowStatusEnum.completed, WorkflowStatusEnum.aborted]:
@@ -64,6 +63,7 @@ class WorkflowStatus(Device_Base):
             ret['current_app_name'] = current_action.app_name
 
         return ret
+
 
 
 class ActionStatus(Device_Base):
