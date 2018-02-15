@@ -8,7 +8,7 @@ from tests.util.servertestcase import ServerTestCase
 import walkoff.coredb.devicedb as devicedb
 from walkoff.coredb.playbook import Playbook
 from walkoff.coredb.workflow import Workflow
-from uuid import uuid4
+from uuid import uuid4, UUID
 from tests.util import device_db_help
 
 
@@ -421,3 +421,8 @@ class TestWorkflowServer(ServerTestCase):
         self.assertIsNotNone(copy_playbook)
 
         self.assertEqual(len(playbook.workflows), len(copy_playbook.workflows))
+
+    def test_get_uuid(self):
+        response = self.get_with_status_check('/api/uuid', status_code=OBJECT_CREATED)
+        self.assertIn('uuid', response)
+        UUID(response['uuid'])

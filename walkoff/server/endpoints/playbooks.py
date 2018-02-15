@@ -11,7 +11,7 @@ import walkoff.coredb.devicedb
 from walkoff.coredb.playbook import Playbook
 from walkoff.coredb.workflow import Workflow
 from walkoff.helpers import InvalidExecutionElement, regenerate_workflow_ids
-
+from uuid import uuid4
 
 def does_workflow_exist(playbook_id, workflow_id):
     return walkoff.coredb.devicedb.device_db.session.query(
@@ -332,3 +332,7 @@ def copy_workflow(playbook_id, workflow_id):
         return new_workflow.read(), OBJECT_CREATED
 
     return __func()
+
+
+def get_uuid():
+    return {'uuid': str(uuid4())}, OBJECT_CREATED

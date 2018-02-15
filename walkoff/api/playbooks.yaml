@@ -285,3 +285,22 @@
         description: Playbook or workflow does not exist.
         schema:
           $ref: '#/definitions/Error'
+
+/uuid:
+  get:
+    tags:
+      - Workflows
+    summary: Get a new UUID
+    description: ''
+    operationId: walkoff.server.endpoints.playbooks.get_uuid
+    produces:
+      - application/json
+    responses:
+      201:
+        description: Success
+        schema:
+          type: object
+          required: [uuid]
+          properties:
+            uuid:
+              $ref: '#/definitions/Uid'
