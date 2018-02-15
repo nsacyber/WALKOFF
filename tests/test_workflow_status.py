@@ -12,14 +12,25 @@ from uuid import uuid4
 from tests.util import device_db_help
 import walkoff.coredb.devicedb as db
 from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
+from walkoff.core.representable import Representable
+
+
+class MockWorkflow(Representable):
+    def __init__(self, execution_id):
+        self.execution_id = execution_id
+        self.id = '123'
+        self.name = 'workflow'
+
+    def get_execution_id(self):
+        return self.execution_id
 
 
 def mock_pause_workflow(self, execution_id):
-    WalkoffEvent.WorkflowPaused.send({"workflow_execution_id": execution_id, "id": "123"})
+    WalkoffEvent.WorkflowPaused.send({'execution_id': execution_id, 'id': '123', 'name': 'workflow'})
 
 
 def mock_resume_workflow(self, execution_id):
-    WalkoffEvent.WorkflowResumed.send({"workflow_execution_id": execution_id, "id": "123"})
+    WalkoffEvent.WorkflowResumed.send(MockWorkflow(execution_id))
 
 
 class TestWorkflowServer(ServerTestCase):
@@ -86,11 +97,12 @@ class TestWorkflowServer(ServerTestCase):
                     'workflow_id': str(wf_id),
                     'name': 'test',
                     'status': 'running',
-                    'current_action_execution_id': str(action_exec_id),
-                    'current_action_id': str(action_id),
-                    'current_action_name': 'name',
-                    'current_app_name': 'test_app'}
-
+                    'current_action': {
+                        'execution_id': str(action_exec_id),
+                        'id': str(action_id),
+                        'name': 'name',
+                        'action_name': 'test_action',
+                        'app_name': 'test_app'}}
         self.assertDictEqual(response, expected)
 
     def test_read_workflow_status(self):
@@ -196,8 +208,6 @@ class TestWorkflowServer(ServerTestCase):
 
         @WalkoffEvent.WorkflowPaused.connect
         def workflow_paused_listener(sender, **kwargs):
-            print(sender)
-            print(kwargs)
             data = {'execution_id': str(wf_exec_id),
                     'status': 'resume'}
 

@@ -200,7 +200,7 @@ class TestTriggersServer(ServerTestCase):
 
         @WalkoffEvent.ActionExecutionSuccess.connect
         def action_finished_listener(sender, **kwargs):
-            result['value'] = kwargs['data']
+            result['value'] = kwargs['data']['data']
 
         def wait_thread():
             time.sleep(0.1)

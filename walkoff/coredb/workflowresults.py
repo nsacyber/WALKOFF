@@ -58,7 +58,7 @@ class WorkflowStatus(Device_Base):
         elif self._action_statuses:
             current_action = self._action_statuses[-1]
             current_action_json = current_action.as_json(summary=True)
-            current_action_json['id'] = current_action.pop('action_id')
+            current_action_json['id'] = current_action_json.pop('action_id')
             ret['current_action'] = current_action_json
 
         return ret

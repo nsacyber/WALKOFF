@@ -94,15 +94,25 @@ def format_workflow_result(sender, status):
             'status': status.name}
 
 
+def format_workflow_result_from_workflow(sender, status):
+    result = {'execution_id': sender.get_execution_id(),
+              'workflow_id': sender.id,
+              'name': sender.name,
+              'status': status.name}
+    return result
+
+
 def format_workflow_result_with_current_step(workflow_execution_id, status):
     workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
         execution_id=workflow_execution_id).first()
-    status_json = workflow_status.as_json()
-    status_json['status'] = status.name  # in case this callback is called before it is properly set in the database
-    for timestamp in ('started_at', 'completed_at'):
-        status_json.pop(timestamp, None)
-    status_json['timestamp'] = datetime.utcnow().isoformat()
-    return status_json
+    if workflow_status is not None:
+        status_json = workflow_status.as_json()
+        status_json['status'] = status.name  # in case this callback is called before it is properly set in the database
+        for timestamp in ('started_at', 'completed_at'):
+            status_json.pop(timestamp, None)
+        status_json['timestamp'] = datetime.utcnow().isoformat()
+        return status_json
+    return {'execution_id': workflow_execution_id, 'status': status.name}
 
 
 def send_workflow_result_to_sse(result, event):
@@ -115,10 +125,7 @@ def send_workflow_result_to_sse(result, event):
 
 @WalkoffEvent.WorkflowExecutionPending.connect
 def __workflow_pending_callback(sender, **kwargs):
-    result = {'execution_id': sender.get_execution_id(),
-              'workflow_id': sender.id,
-              'name': sender.name,
-              'status': WorkflowStatusEnum.pending.name}
+    result = format_workflow_result_from_workflow(sender, WorkflowStatusEnum.pending)
     send_workflow_result_to_sse(result, 'queued')
 
 
@@ -136,7 +143,7 @@ def __workflow_paused_callback(sender, **kwargs):
 
 @WalkoffEvent.WorkflowResumed.connect
 def __workflow_resumed_callback(sender, **kwargs):
-    result = format_workflow_result(sender, WorkflowStatusEnum.running)
+    result = format_workflow_result_with_current_step(sender.get_execution_id(), WorkflowStatusEnum.running)
     send_workflow_result_to_sse(result, 'resumed')
 
 
@@ -149,7 +156,7 @@ def __trigger_awaiting_data_callback(sender, **kwargs):
 
 @WalkoffEvent.TriggerActionTaken.connect
 def __trigger_awaiting_data_callback(sender, **kwargs):
-    workflow_execution_id = kwargs['data']['workflow']['execution_id']
+    workflow_execution_id = kwargs['data']['workflow_execution_id']
     result = format_workflow_result_with_current_step(workflow_execution_id, WorkflowStatusEnum.pending)
     send_workflow_result_to_sse(result, 'triggered')
 

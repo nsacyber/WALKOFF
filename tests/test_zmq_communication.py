@@ -52,7 +52,7 @@ class TestZMQCommunication(unittest.TestCase):
         device_db_help.tear_down_device_db()
 
     # Request and Result Socket Testing (Basic Workflow Execution)
-    '''
+
     def test_simple_workflow_execution(self):
         workflow = device_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
@@ -146,7 +146,7 @@ class TestZMQCommunication(unittest.TestCase):
         self.assertEqual(len(actions), capacity*2)
     
     # Communication Socket Testing
-    '''
+
     def test_pause_and_resume_workflow(self):
         execution_id = None
         result = dict()
@@ -165,13 +165,11 @@ class TestZMQCommunication(unittest.TestCase):
 
         @WalkoffEvent.WorkflowPaused.connect
         def workflow_paused_listener(sender, **kwargs):
-            print(sender)
-            print(kwargs)
             workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
-                execution_id=sender['workflow_execution_id']).first()
+                execution_id=sender['execution_id']).first()
             workflow_status.paused()
             action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
-                _workflow_status_id=sender['workflow_execution_id']).first()
+                _workflow_status_id=sender['execution_id']).first()
             action_status.paused()
             devicedb.device_db.session.commit()
 

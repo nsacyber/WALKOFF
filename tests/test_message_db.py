@@ -11,7 +11,7 @@ from walkoff.events import WalkoffEvent
 import json
 import walkoff.config.paths
 from tests.util import device_db_help
-
+from uuid import uuid4
 
 class TestMessageDatabase(TestCase):
 
@@ -475,10 +475,10 @@ class TestMessageDatabase(TestCase):
         walkoff.messaging.workflow_authorization_cache.add_user_in_progress('uid1', 1)
         walkoff.messaging.workflow_authorization_cache.add_user_in_progress('uid1', 2)
 
-        WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid2'), data={'workflow': {'execution_id': 'uid2'}})
+        WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid2'), data={'workflow_execution_id': 'uid2'})
         self.assertEqual(walkoff.messaging.workflow_authorization_cache.peek_user_in_progress('uid1'), 2)
         self.assertIsNone(walkoff.messaging.workflow_authorization_cache.peek_user_in_progress('uid2'))
-        WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid1'), data={'workflow': {'execution_id': 'uid1'}})
+        WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid1'), data={'workflow_execution_id': 'uid1'})
         self.assertEqual(walkoff.messaging.workflow_authorization_cache.peek_user_in_progress('uid1'), 1)
 
     def test_log_action_taken_on_message(self):
@@ -495,23 +495,25 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(len(list(message.history)), 0)
 
     def test_trigger_action_taken_workflow(self):
-        message = Message('subject', 'body', 'uid1', users=[self.user, self.user2], requires_response=True)
+        uid = str(uuid4())
+        message = Message('subject', 'body', uid, users=[self.user, self.user2], requires_response=True)
         db.session.add(message)
         db.session.commit()
-        walkoff.messaging.workflow_authorization_cache.add_authorized_users('uid1', users=[1, 2])
-        walkoff.messaging.workflow_authorization_cache.add_user_in_progress('uid1', self.user.id)
-        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender('uid1'), data={'workflow': {'execution_id': 'uid1'}})
-        message = Message.query.filter(Message.workflow_execution_id == 'uid1').first()
+        walkoff.messaging.workflow_authorization_cache.add_authorized_users(uid, users=[1, 2])
+        walkoff.messaging.workflow_authorization_cache.add_user_in_progress(uid, self.user.id)
+        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender(uid), data={'workflow_execution_id': uid})
+        message = Message.query.filter(Message.workflow_execution_id == uid).first()
         self.assertEqual(len(list(message.history)), 1)
         self.assertEqual(message.history[0].action, MessageAction.respond)
-        self.assertFalse(walkoff.messaging.workflow_authorization_cache.workflow_requires_authorization('uid1'))
+        self.assertFalse(walkoff.messaging.workflow_authorization_cache.workflow_requires_authorization(uid))
 
     def test_trigger_action_taken_workflow_sends_responded_message(self):
-        message = Message('subject', 'body', 'uid1', users=[self.user, self.user2], requires_response=True)
+        uid = str(uuid4())
+        message = Message('subject', 'body', uid, users=[self.user, self.user2], requires_response=True)
         db.session.add(message)
         db.session.commit()
-        walkoff.messaging.workflow_authorization_cache.add_authorized_users('uid1', users=[1, 2])
-        walkoff.messaging.workflow_authorization_cache.add_user_in_progress('uid1', self.user.id)
+        walkoff.messaging.workflow_authorization_cache.add_authorized_users(uid, users=[1, 2])
+        walkoff.messaging.workflow_authorization_cache.add_user_in_progress(uid, self.user.id)
 
         res = {'called': False}
 
@@ -521,7 +523,7 @@ class TestMessageDatabase(TestCase):
             self.assertEqual(message_in.id, message.id)
             self.assertEqual(data['data']['user'], self.user)
 
-        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender('uid1'), data={'workflow': {'execution_id': 'uid1'}})
+        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender(uid), data={'workflow_execution_id': uid})
         self.assertTrue(res['called'])
 
     def test_message_action_get_all_names(self):

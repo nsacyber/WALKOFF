@@ -61,14 +61,14 @@ def get_all_matching_users_for_message(user_ids, role_ids):
 
 @WalkoffEvent.TriggerActionNotTaken.connect
 def pop_user_attempt_from_cache(sender, **data):
-    workflow_execution_id = data['data']['workflow']['execution_id']
+    workflow_execution_id = data['data']['workflow_execution_id']
     if walkoff.messaging.workflow_authorization_cache.workflow_requires_authorization(workflow_execution_id):
         walkoff.messaging.workflow_authorization_cache.pop_last_user_in_progress(workflow_execution_id)
 
 
 @WalkoffEvent.TriggerActionTaken.connect
 def remove_from_cache_and_log(sender, **data):
-    workflow_execution_id = data['data']['workflow']['execution_id']
+    workflow_execution_id = data['data']['workflow_execution_id']
     if walkoff.messaging.workflow_authorization_cache.workflow_requires_authorization(workflow_execution_id):
         from walkoff.server import app
         with app.app_context():
