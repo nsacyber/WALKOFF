@@ -172,6 +172,7 @@ class CaseDatabase(object):
             event (cls): A core.case.database.Event object to add to the cases
             cases (list[str]): The names of the cases to add the event to
         """
+        event.originator = str(event.originator)
         existing_cases = case_db.session.query(Case).all()
         existing_case_names = [case.name for case in existing_cases]
         for case in cases:
