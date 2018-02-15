@@ -67,7 +67,8 @@ class TestAppCache(TestCase):
         self.assert_cache_has_main(Main, app='HelloWorldBounded')
         self.assert_cached_app_has_actions(app='HelloWorldBounded', actions={
             'main.Main.helloWorld', 'main.Main.repeatBackToMe', 'main.Main.returnPlusOne', 'main.Main.pause',
-            'main.Main.addThree', 'main.Main.buggy_action', 'main.Main.json_sample','main.global1'})
+            'main.Main.addThree', 'main.Main.buggy_action', 'main.Main.json_sample', 'main.global1',
+            'main.Main.wait_for_pause_and_resume'})
 
     def test_cache_module_nothing_found(self):
         module = import_module('tests.testapps.HelloWorldBounded.display')
@@ -90,7 +91,8 @@ class TestAppCache(TestCase):
             'conditions.top_level_flag', 'conditions.flag1', 'conditions.flag2', 'conditions.flag3',
             'conditions.sub1_top_flag', 'conditions.regMatch', 'conditions.count', 'transforms.top_level_filter',
             'transforms.filter2', 'transforms.sub1_top_filter', 'transforms.filter3', 'transforms.filter1',
-            'transforms.complex_filter', 'transforms.length', 'transforms.json_select'}
+            'transforms.complex_filter', 'transforms.length', 'transforms.json_select',
+            'main.Main.wait_for_pause_and_resume'}
         self.assert_cached_app_has_actions(app='HelloWorldBounded', actions=expected)
 
     def test_import_and_cache_submodules_from_module(self):
@@ -104,7 +106,8 @@ class TestAppCache(TestCase):
             'conditions.top_level_flag', 'conditions.flag1', 'conditions.flag2', 'conditions.flag3',
             'conditions.sub1_top_flag', 'conditions.regMatch', 'conditions.count', 'transforms.top_level_filter',
             'transforms.filter2', 'transforms.sub1_top_filter', 'transforms.filter3', 'transforms.filter1',
-            'transforms.complex_filter', 'transforms.length', 'transforms.json_select'}
+            'transforms.complex_filter', 'transforms.length', 'transforms.json_select',
+            'main.Main.wait_for_pause_and_resume'}
         self.assert_cached_app_has_actions(app='HelloWorldBounded', actions=expected)
 
     def test_path_to_module_no_slashes(self):
@@ -130,7 +133,8 @@ class TestAppCache(TestCase):
             'conditions.top_level_flag', 'conditions.flag1', 'conditions.flag2', 'conditions.flag3',
             'conditions.sub1_top_flag', 'conditions.regMatch', 'conditions.count', 'transforms.top_level_filter',
             'transforms.filter2', 'transforms.sub1_top_filter', 'transforms.filter3', 'transforms.filter1',
-            'transforms.complex_filter', 'transforms.length', 'transforms.json_select'}
+            'transforms.complex_filter', 'transforms.length', 'transforms.json_select',
+            'main.Main.wait_for_pause_and_resume'}
         self.assert_cached_app_has_actions(app='HelloWorldBounded', actions=hello_world_expected)
         self.assert_cache_has_main(DailyMain, app='DailyQuote')
         daily_quote_expected = {
@@ -346,4 +350,3 @@ class TestAppCache(TestCase):
         self.cache._cache_app(B, 'B', 'tests.test_app_cache')
         self.cache._cache['A'].cache_functions([(xx, self.action_tag)], 'tests.test_app_cache')
         self.assertFalse(self.cache.is_app_action_bound('A', 'xx'))
-
