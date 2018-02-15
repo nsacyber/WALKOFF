@@ -267,6 +267,7 @@ class MultiprocessedExecutor(object):
         Returns:
             A list of execution IDs of workflows currently awaiting data to be sent to a trigger.
         """
+        walkoff.coredb.devicedb.device_db.session.expire_all()
         wf_statuses = walkoff.coredb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
             status=WorkflowStatusEnum.awaiting_data).all()
         return [str(wf_status.execution_id) for wf_status in wf_statuses]

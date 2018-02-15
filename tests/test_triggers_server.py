@@ -10,6 +10,7 @@ from tests.util.servertestcase import ServerTestCase
 import walkoff.coredb.devicedb
 from tests.util import device_db_help
 from tests.util.case_db_help import *
+from tests.util.assertwrappers import orderless_list_compare
 
 try:
     from importlib import reload
@@ -22,6 +23,8 @@ class TestTriggersServer(ServerTestCase):
 
     def setUp(self):
         self.start = datetime.utcnow()
+        self.action_events = ['Action Execution Success', 'Trigger Action Awaiting Data', 'Trigger Action Taken',
+                              'Trigger Action Not Taken']
         walkoff.case.subscription.subscriptions = {}
         case_database.initialize()
 
@@ -35,25 +38,14 @@ class TestTriggersServer(ServerTestCase):
     def test_trigger_execute(self):
         workflow = device_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
         action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_ids)
-
-        data = {"workflow_id": str(workflow.id)}
-
-        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
-                                               content_type="application/json", data=json.dumps(data))
-
-        ids = [response['id']]
-
-        data = {"execution_ids": ids,
-                "data_in": {"data": "1"}}
-
-        result = {"result": False}
+        setup_subscriptions_for_action(workflow.id, action_ids, action_events=self.action_events)
 
         def wait_thread():
             time.sleep(0.1)
             execd_ids = set([])
             timeout = 0
             threshold = 5
+            data = {"execution_ids": ids, "data_in": {"data": "1"}}
             while len(execd_ids) != len(ids) and timeout < threshold:
                 resp = self.put_with_status_check('/api/triggers/send_data', headers=self.headers,
                                                   data=json.dumps(data),
@@ -67,48 +59,38 @@ class TestTriggersServer(ServerTestCase):
         def send_data(sender, **kwargs):
             threading.Thread(target=wait_thread).start()
 
-        @WalkoffEvent.TriggerActionTaken.connect
-        def trigger_taken(sender, **kwargs):
-            result['result'] = True
+        execute_data = {"workflow_id": str(workflow.id)}
+        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
+                                               content_type="application/json", data=json.dumps(execute_data))
+        ids = [response['id']]
 
         flask_server.running_context.executor.wait_and_reset(1)
-        self.assertTrue(result['result'])
 
         actions = []
         for id_ in action_ids:
             actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
-        self.assertEqual(len(actions), 1)
-        action = actions[0]
-        result = action['data']
-        self.assertDictEqual(result, {'result': "REPEATING: Hello World", 'status': 'Success'})
+        self.assertEqual(len(actions), 3)
+
+        events = [event['message'] for event in actions]
+        expected_events = ['Trigger action awaiting data', 'Trigger action taken', 'Action executed successfully']
+        self.assertListEqual(expected_events, events)
 
     def test_trigger_execute_multiple_workflows(self):
         workflow = device_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
+        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
+        setup_subscriptions_for_action(workflow.id, action_ids, action_events=self.action_events)
 
         ids = []
-
-        data = {"workflow_id": str(workflow.id)}
-
-        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
-                                               content_type="application/json", data=json.dumps(data))
-        ids.append(response['id'])
-
-        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
-                                               content_type="application/json", data=json.dumps(data))
-        ids.append(response['id'])
-
-        data = {"execution_ids": ids,
-                "data_in": {"data": "1"}}
-
-        result = {"result": 0,
-                  "num_trigs": 0}
+        result = {"num_trigs": 0}
 
         def wait_thread():
             time.sleep(0.1)
             execd_ids = set([])
             timeout = 0
             threshold = 5
-            while len(execd_ids) != len(ids) and timeout < threshold:
+            while len(ids) == 2 and len(execd_ids) != len(ids) and timeout < threshold:
+                data = {"execution_ids": ids, "data_in": {"data": "1"}}
+
                 resp = self.put_with_status_check('/api/triggers/send_data', headers=self.headers,
                                                   data=json.dumps(data),
                                                   status_code=SUCCESS, content_type='application/json')
@@ -124,32 +106,36 @@ class TestTriggersServer(ServerTestCase):
             else:
                 result["num_trigs"] += 1
 
-        @WalkoffEvent.TriggerActionTaken.connect
-        def trigger_taken(sender, **kwargs):
-            result['result'] += 1
+        execute_data = {"workflow_id": str(workflow.id)}
+        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
+                                               content_type="application/json", data=json.dumps(execute_data))
+        ids.append(response['id'])
+        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
+                                               content_type="application/json", data=json.dumps(execute_data))
+        ids.append(response['id'])
 
         flask_server.running_context.executor.wait_and_reset(2)
-        self.assertEqual(result['result'], 2)
 
+        actions = []
+        for id_ in action_ids:
+            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
+        self.assertEqual(len(actions), 6)
+
+        events = [event['message'] for event in actions]
+        expected_events = ['Trigger action awaiting data', 'Trigger action taken', 'Action executed successfully',
+                           'Trigger action awaiting data', 'Trigger action taken', 'Action executed successfully']
+        orderless_list_compare(self, expected_events, events)
+
+    # TODO: Is this test really necessary?
     def test_trigger_execute_multiple_data(self):
         workflow = device_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
-
-        data = {"workflow_id": str(workflow.id)}
-
-        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
-                                               content_type="application/json", data=json.dumps(data))
-
-        ids = [response['id']]
-
-        data = {"execution_ids": ids,
-                "data_in": {"data": "aaa"}}
-
-        result = {"result": 0}
+        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
+        setup_subscriptions_for_action(workflow.id, action_ids, action_events=self.action_events)
 
         def wait_thread():
+            data = {"execution_ids": ids, "data_in": {"data": "aaa"}}
             time.sleep(0.1)
             execd_ids = set([])
-            timeout = 0
             threshold = 5
             resp = self.put_with_status_check('/api/triggers/send_data', headers=self.headers,
                                               data=json.dumps(data),
@@ -172,35 +158,32 @@ class TestTriggersServer(ServerTestCase):
         def send_data(sender, **kwargs):
             threading.Thread(target=wait_thread).start()
 
-        @WalkoffEvent.TriggerActionTaken.connect
-        def trigger_taken(sender, **kwargs):
-            result['result'] += 1
+        execute_data = {"workflow_id": str(workflow.id)}
+
+        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
+                                               content_type="application/json", data=json.dumps(execute_data))
+        ids = [response['id']]
 
         flask_server.running_context.executor.wait_and_reset(1)
-        self.assertEqual(result['result'], 1)
+
+        actions = []
+        for id_ in action_ids:
+            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
+        self.assertEqual(len(actions), 4)
+
+        events = [event['message'] for event in actions]
+        expected_events = ['Trigger action awaiting data', 'Trigger action not taken', 'Trigger action taken',
+                           'Action executed successfully']
+        self.assertListEqual(expected_events, events)
 
     def test_trigger_execute_change_input(self):
         workflow = device_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
-
-        data = {"workflow_id": str(workflow.id)}
-
-        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
-                                               content_type="application/json", data=json.dumps(data))
-
-        ids = [response['id']]
-
-        data = {"execution_ids": ids,
-                "data_in": {"data": "1"},
-                "arguments": [{"name": "call",
-                               "value": "CHANGE INPUT"}]}
-
-        result = {"value": None}
-
-        @WalkoffEvent.ActionExecutionSuccess.connect
-        def action_finished_listener(sender, **kwargs):
-            result['value'] = kwargs['data']
+        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
+        setup_subscriptions_for_action(workflow.id, action_ids, action_events=self.action_events)
 
         def wait_thread():
+            data = {"execution_ids": ids, "data_in": {"data": "1"},
+                    "arguments": [{"name": "call", "value": "CHANGE INPUT"}]}
             time.sleep(0.1)
             execd_ids = set([])
             timeout = 0
@@ -218,40 +201,22 @@ class TestTriggersServer(ServerTestCase):
         def send_data(sender, **kwargs):
             threading.Thread(target=wait_thread).start()
 
-        flask_server.running_context.executor.wait_and_reset(1)
-
-        self.assertDictEqual(result['value'], {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'})
-
-    def test_trigger_execute_with_change_input_invalid_input(self):
-        workflow = device_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
-
-        data = {"workflow_id": str(workflow.id)}
-
+        execute_data = {"workflow_id": str(workflow.id)}
         response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
-                                               content_type="application/json", data=json.dumps(data))
-
+                                               content_type="application/json", data=json.dumps(execute_data))
         ids = [response['id']]
 
-        data = {"execution_ids": ids,
-                "data_in": {"data": "1"},
-                "arguments": [{"name": "invalid",
-                               "value": "CHANGE INPUT"}]}
-
-        result = {"result": False}
-
-        @WalkoffEvent.ActionArgumentsInvalid.connect
-        def action_input_invalids(sender, **kwargs):
-            result['result'] = True
-
-        def wait_thread():
-            self.put_with_status_check('/api/triggers/send_data', headers=self.headers,
-                                       data=json.dumps(data),
-                                       status_code=SUCCESS, content_type='application/json')
-            return
-
-        @WalkoffEvent.TriggerActionAwaitingData.connect
-        def send_data(sender, **kwargs):
-            threading.Thread(target=wait_thread).start()
-
         flask_server.running_context.executor.wait_and_reset(1)
-        self.assertTrue(result['result'])
+
+        actions = []
+        for id_ in action_ids:
+            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
+        self.assertEqual(len(actions), 3)
+
+        events = [event['message'] for event in actions]
+        expected_events = ['Trigger action awaiting data', 'Trigger action taken', 'Action executed successfully']
+        self.assertListEqual(expected_events, events)
+
+        for event in actions:
+            if event['message'] == 'Action executed successfully':
+                self.assertDictEqual(event['data'], {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'})
