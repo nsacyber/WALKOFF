@@ -14,6 +14,7 @@ import { Workflow } from '../models/playbook/workflow';
 import { ActionStatus } from '../models/execution/actionStatus';
 import { Argument } from '../models/playbook/argument';
 import { GenericObject } from '../models/genericObject';
+import { CurrentAction } from '../models/execution/currentAction';
 
 @Component({
 	selector: 'execution-component',
@@ -61,6 +62,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 			abort: 'abort',
 		};
 
+		this.getWorkflowNames();
 		this.getWorkflowStatuses();
 		this.getWorkflowStatusSSE();
 		this.getActionResultSSE();
@@ -88,7 +90,11 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 		const searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
 
 		this.displayWorkflowStatuses = this.workflowStatuses.filter((s) => {
-			return (s.name.toLocaleLowerCase().includes(searchFilter));
+			return s.name.toLocaleLowerCase().includes(searchFilter) ||
+				(s.current_action &&
+					(s.current_action.name.toLocaleLowerCase().includes(searchFilter) ||
+					s.current_action.action_name.toLocaleLowerCase().includes(searchFilter) ||
+					s.current_action.app_name.toLocaleLowerCase().includes(searchFilter)));
 		});
 	}
 
@@ -106,7 +112,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 				const eventSource = new (window as any)
 					.EventSource(`api/streams/workflowqueue/workflow_status?access_token=${authToken}`);
 
-				eventSource.onmessage((message: any) => {
+				function eventHandler(message: any) {
 					const workflowStatus: WorkflowStatus = JSON.parse(message.data);
 
 					const matchingWorkflowStatus = self.workflowStatuses.find(ws => ws.execution_id === workflowStatus.execution_id);
@@ -119,10 +125,18 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 					}
 
 					self.filterWorkflowStatuses();
-				});
-				eventSource.onerror((err: Error) => {
+				}
+				eventSource.addEventListener('queued', eventHandler);
+				eventSource.addEventListener('started', eventHandler);
+				eventSource.addEventListener('paused', eventHandler);
+				eventSource.addEventListener('resumed', eventHandler);
+				eventSource.addEventListener('awaiting_data', eventHandler);
+				eventSource.addEventListener('triggered', eventHandler);
+				eventSource.addEventListener('aborted', eventHandler);
+
+				eventSource.onerror = (err: Error) => {
 					console.error(err);
-				});
+				};
 			});
 	}
 
@@ -132,17 +146,20 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 				const self = this;
 				const eventSource = new (window as any).EventSource(`api/streams/workflowqueue/actions?access_token=${authToken}`);
 
-				eventSource.onmessage((message: any) => {
+				function eventHandler(message: any) {
 					const actionStatus: ActionStatus = JSON.parse(message.data);
 
 					// if we have a matching workflow status, update the current app/action info.
 					const matchingWorkflowStatus = self.workflowStatuses
 						.find(ws => ws.execution_id === actionStatus.workflow_execution_id);
 					if (matchingWorkflowStatus) {
-						matchingWorkflowStatus.current_action_execution_id = actionStatus.execution_id;
-						matchingWorkflowStatus.current_action_id = actionStatus.action_id;
-						matchingWorkflowStatus.current_app_name = actionStatus.app_name;
-						matchingWorkflowStatus.current_action_name = actionStatus.action_name;
+						matchingWorkflowStatus.current_action = {
+							execution_id: actionStatus.execution_id,
+							id: actionStatus.action_id,
+							name: actionStatus.name,
+							app_name: actionStatus.app_name,
+							action_name: actionStatus.action_name,
+						};
 					}
 
 					// also add this to the modal if possible
@@ -160,10 +177,15 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 					}
 
 					self.filterWorkflowStatuses();
-				});
-				eventSource.onerror((err: Error) => {
+				}
+
+				eventSource.addEventListener('started', eventHandler);
+				eventSource.addEventListener('success', eventHandler);
+				eventSource.addEventListener('failure', eventHandler);
+
+				eventSource.onerror = (err: Error) => {
 					console.error(err);
-				});
+				};
 			});
 	}
 
@@ -215,7 +237,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 		}
 	}
 
-	openactionStatusModal(workflowStatus: WorkflowStatus): void {
+	openActionStatusModal(workflowStatus: WorkflowStatus): void {
 		let actionResultsPromise: Promise<void>;
 		if (this.loadedWorkflowStatus && this.loadedWorkflowStatus.execution_id === workflowStatus.execution_id) {
 			actionResultsPromise = Promise.resolve();
@@ -256,5 +278,17 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 		let out = JSON.stringify(obj, null, 1);
 		out = out.replace(/[\{\}"]/g, '');
 		return out;
+	}
+
+	getAppName(currentAction: CurrentAction): string {
+		if (!currentAction) { return'N/A'; }
+		return currentAction.app_name;
+	}
+
+	getActionName(currentAction: CurrentAction): string {
+		if (!currentAction) { return'N/A'; }
+		let output = currentAction.name;
+		if (output !== currentAction.action_name) { output = `${output} (${currentAction.action_name})`; }
+		return output;
 	}
 }

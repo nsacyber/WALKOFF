@@ -130,8 +130,9 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 				const self = this;
 				const eventSource = new (window as any).EventSource('api/streams/workflowqueue/actions?access_token=' + authToken);
 
-				eventSource.onmessage((message: any) => {
+				function eventHandler(message: any) {
 					const actionStatus: ActionStatus = JSON.parse(message.data);
+
 					if (self.cy) {
 						const matchingNode = self.cy.elements(`node[_id="${actionStatus.action_id}"]`);
 
@@ -164,11 +165,16 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 					}
 					// Induce change detection by slicing array
 					self.actionStatuses = self.actionStatuses.slice();
-				});
-				eventSource.onerror((err: Error) => {
+				}
+
+				eventSource.addEventListener('started', eventHandler);
+				eventSource.addEventListener('success', eventHandler);
+				eventSource.addEventListener('failure', eventHandler);
+
+				eventSource.onerror = (err: Error) => {
 					// this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
 					console.error(err);
-				});
+				};
 			});
 	}
 
@@ -270,7 +276,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 					},
 				},
 				{
-					selector: '.good-highlighted',
+					selector: '.success-highlight',
 					css: {
 						'background-color': '#399645',
 						'transition-property': 'background-color',
@@ -278,9 +284,17 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 					},
 				},
 				{
-					selector: '.bad-highlighted',
+					selector: '.failure-highlight',
 					css: {
 						'background-color': '#8e3530',
+						'transition-property': 'background-color',
+						'transition-duration': '0.5s',
+					},
+				},
+				{
+					selector: '.executing-highlight',
+					css: {
+						'background-color': '#ffef47',
 						'transition-property': 'background-color',
 						'transition-duration': '0.5s',
 					},
@@ -927,7 +941,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	 * Clears the red/green highlighting in the cytoscape graph.
 	 */
 	clearExecutionHighlighting(): void {
-		this.cy.elements().removeClass('good-highlighted bad-highlighted');
+		this.cy.elements().removeClass('success-highlight failure-highlight executing-highlight');
 	}
 
 	/**

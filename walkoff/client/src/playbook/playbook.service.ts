@@ -147,7 +147,7 @@ export class PlaybookService {
 	 * @param workflowId ID of the workflow to execute
 	 */
 	addWorkflowToQueue(workflowId: string): Promise<WorkflowStatus> {
-		return this.authHttp.post('api/workflowqueue', { id: workflowId })
+		return this.authHttp.post('api/workflowqueue', { workflow_id: workflowId })
 			.toPromise()
 			.then(this.extractData)
 			.then(workflowStatus => workflowStatus as WorkflowStatus)

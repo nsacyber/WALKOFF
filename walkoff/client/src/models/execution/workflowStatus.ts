@@ -1,4 +1,5 @@
 import { ActionStatus } from './actionStatus';
+import { CurrentAction } from './currentAction';
 
 export class WorkflowStatus {
 	execution_id: string;
@@ -15,9 +16,6 @@ export class WorkflowStatus {
 	 * Possible values: queued, running, awaiting_data, paused, completed, aborted
 	 */
 	status: string; 
-	current_action_execution_id?: string;
-	current_action_id?: string;
-	current_action_name?: string;
-	current_app_name?: string;
+	current_action: CurrentAction;
 	action_statuses?: ActionStatus[] = [];
 }

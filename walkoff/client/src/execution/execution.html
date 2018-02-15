@@ -2,8 +2,10 @@
 	<h1>Execution Control</h1>
 
 	<div class="row">
-		<div class="col-xs-6">
+		<div class="col-xs-4">
 			<select2 [data]="availableWorkflows" [value]="" [options]="workflowSelectConfig" (valueChanged)="workflowSelectChange($event)"></select2>
+		</div>
+		<div class="col-xs-2">
 			<button [disabled]="!selectedWorkflow" (click)="excuteSelectedWorkflow()" title="Execute Workflow" class="btn btn-secondary">
 				<i class="fa fa-play"></i>
 				Execute Workflow
@@ -24,7 +26,7 @@
 		<!-- Column Templates -->
 		<ngx-datatable-column name="Name" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				<a href="#" (click)="openactionStatusModal(row)">{{row.name}}</a>
+				<a href="#" (click)="openActionStatusModal(row)">{{row.name}}</a>
 			</ng-template>
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Started At" [flexGrow]="2">
@@ -44,12 +46,12 @@
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Current App" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				{{row.current_app_name}}
+				{{getAppName(row.current_action)}}
 			</ng-template>
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Current Action" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				{{row.current_action_name}}
+				{{getActionName(row.current_action)}}
 			</ng-template>
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
@@ -72,7 +74,7 @@
 
 	<div class="modal fade actionStatusModal" role="dialog" aria-labelledby="actionStatusModalTitle" aria-hidden="true">
 		<div class="modal-dialog" role="document">
-			<div class="modal-content">
+			<div *ngIf="loadedWorkflowStatus" class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title" id="actionStatusModalTitle">Action Statuses for {{loadedWorkflowStatus.name}}</h5>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -80,7 +82,7 @@
 					</button>
 				</div>
 				<div class="modal-body" #actionStatusContainer>
-					<ngx-datatable *ngIf="loadedWorkflowStatus" #actionStatusTable class='material expandable' [columnMode]="'flex'" [rows]="loadedWorkflowStatus.results"
+					<ngx-datatable #actionStatusTable class='material expandable' [columnMode]="'flex'" [rows]="loadedWorkflowStatus.results"
 					 [sortType]="'multi'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]"
 					 [limit]="10">
 						<!-- Column Templates -->
