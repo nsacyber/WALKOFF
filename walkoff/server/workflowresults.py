@@ -111,8 +111,16 @@ def __action_execution_success_callback(sender, **kwargs):
 
 @WalkoffEvent.ActionExecutionError.connect
 def __action_execution_error_callback(sender, **kwargs):
+    handle_action_error(sender, kwargs)
+
+
+@WalkoffEvent.ActionArgumentsInvalid.connect
+def __action_args_invalid_callback(sender, **kwargs):
+    handle_action_error(sender, kwargs)
+
+
+def handle_action_error(sender, kwargs):
     action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
         execution_id=sender['execution_id']).first()
     action_status.completed_failure(kwargs['data']['data'])
     devicedb.device_db.session.commit()
-

@@ -83,6 +83,15 @@ def __action_ended_callback(sender, **kwargs):
 
 @WalkoffEvent.ActionExecutionError.connect
 def __action_error_callback(sender, **kwargs):
+    __handle_action_error(sender, kwargs)
+
+
+@WalkoffEvent.ActionArgumentsInvalid.connect
+def __action_args_invalid_callback(sender, **kwargs):
+    __handle_action_error(sender, kwargs)
+
+
+def __handle_action_error(sender, kwargs):
     result = format_action_data_with_results(sender, kwargs, 'completed_at', ActionStatusEnum.failure)
     send_action_result_to_sse(result, 'failure')
 
