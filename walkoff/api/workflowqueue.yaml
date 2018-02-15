@@ -34,7 +34,7 @@
       202:
         description: Success asynchronous.
         schema:
-          $ref: '#/definitions/Uid'
+          $ref: '#/definitions/Uuid'
       404:
         description: Workflow does not exist.
         schema:

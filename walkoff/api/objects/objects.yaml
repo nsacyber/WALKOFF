@@ -25,7 +25,7 @@ AvailableSubscriptions:
         type: string
       example: [Event1, Event_2, 'Event 3']
 
-Uid:
+Uuid:
   type: string
   description: A 32-bit hexadecimal string representing a globally unique identifier
   format: uuid

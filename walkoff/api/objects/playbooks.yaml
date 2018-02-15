@@ -16,7 +16,7 @@ Playbook:
     additionalProperties: false
     properties:
       id:
-        $ref: '#/definitions/Uid'
+        $ref: '#/definitions/Uuid'
       name:
         type: string
       workflows:
@@ -36,7 +36,7 @@ CreateWorkflow:
       example: HelloWorldWorkflow
     start:
       description: ID of the starting action
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
     actions:
       description: The actions defined in this workflow.
       type: array
@@ -49,7 +49,7 @@ CreateWorkflow:
         $ref: '#/definitions/Branch'
     playbook_id:
       description: Only used when copying a workflow to a different playbook
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
 
 Workflow:
   type: object
@@ -58,14 +58,14 @@ Workflow:
   additionalProperties: false
   properties:
     id:
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
     name:
       description: The name of the workflow. Composed of both its enclosing playbook and its own name
       type: string
       example: HelloWorldWorkflow
     start:
       description: ID of the starting action
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
     actions:
       description: The actions defined in this workflow.
       type: array
@@ -84,7 +84,7 @@ Action:
   additionalProperties: false
   properties:
     id:
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
       description: The ID of the object. If updating a workflow and the Action object already exists, ID is required. Otherwise, this ID must be UUID4.
     app_name:
       description: The app to which the action belongs
@@ -124,14 +124,14 @@ Branch:
   additionalProperties: false
   properties:
     id:
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
       description: The ID of the object. If updating a workflow and the Branch object already exists, ID is required. Otherwise, do not include it.
     source_id:
       description: The source Action ID for this Branch
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
     destination_id:
       description: The destination Action ID for this Branch, if the conditions evaluate to True
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
     priority:
       description: The priority for this Branch, which will be compared to other Branches with the same source_id Action, ascending, i.e. 1 is the highest priority.
       type: integer
@@ -162,7 +162,7 @@ Argument:
       description: The value of the argument
       example: WALK(.*)
     reference:
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
       description: The ID of the action whose output should be used
     selection:
       description: >-
@@ -179,7 +179,7 @@ Condition:
   additionalProperties: false
   properties:
     id:
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
       description: The ID of the object. If updating a workflow and the Condition object already exists, ID is required. Otherwise, do not include it.
     app_name:
       description: The app to which the conditon belongs
@@ -207,7 +207,7 @@ Transform:
   additionalProperties: false
   properties:
     id:
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
       description: The ID of the object. If updating a workflow and the Transform object already exists, ID is required. Otherwise, do not include it.
     app_name:
       description: The app to which the transform belongs
@@ -243,7 +243,7 @@ CopyWorkflow:
     type: object
     properties:
       playbook_id:
-        $ref: '#/definitions/Uid'
+        $ref: '#/definitions/Uuid'
       workflow_name:
         type: string
 
@@ -253,7 +253,7 @@ UpdatePlaybook:
   additionalProperties: false
   properties:
     id:
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
     name:
       type: string
       description: The new name of the playbook

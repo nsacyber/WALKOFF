@@ -303,4 +303,4 @@
           required: [uuid]
           properties:
             uuid:
-              $ref: '#/definitions/Uid'
+              $ref: '#/definitions/Uuid'
