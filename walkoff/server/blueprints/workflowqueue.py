@@ -60,6 +60,7 @@ def format_action_data_with_results(sender, kwargs, timestamp_type, status):
     result['result'] = kwargs['data']['data']['result']
     return result
 
+
 def send_action_result_to_sse(result, event):
     __action_event_json.set((event, result))
     sleep(0)
@@ -84,12 +85,6 @@ def __action_ended_callback(sender, **kwargs):
 def __action_error_callback(sender, **kwargs):
     result = format_action_data_with_results(sender, kwargs, 'completed_at', ActionStatusEnum.failure)
     send_action_result_to_sse(result, 'failure')
-
-
-'''
-{ execution_id,  workflow_id, name, status,  current_action_name, current_app_name, current_action_execution_id, current_action_id, timestamp}
-Events: queued, started, paused, resumed, awaiting_data, triggered, aborted
-'''
 
 
 def format_workflow_result(sender, status):
