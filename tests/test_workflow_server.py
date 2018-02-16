@@ -1,15 +1,14 @@
 import json
 import walkoff.case.database as case_database
-from walkoff.events import WalkoffEvent
-from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
-from tests.util.case_db_help import setup_subscriptions_for_action
 from tests.util.servertestcase import ServerTestCase
 import walkoff.coredb.devicedb as devicedb
 from walkoff.coredb.playbook import Playbook
 from walkoff.coredb.workflow import Workflow
 from uuid import uuid4, UUID
 from tests.util import device_db_help
+import os
+from tests.config import test_workflows_path
 
 
 class TestWorkflowServer(ServerTestCase):
@@ -426,3 +425,19 @@ class TestWorkflowServer(ServerTestCase):
         response = self.get_with_status_check('/api/uuid', status_code=OBJECT_CREATED)
         self.assertIn('uuid', response)
         UUID(response['uuid'])
+
+    def test_import_workflow(self):
+        path = os.path.join(test_workflows_path, 'basicWorkflowTest.playbook')
+        files = {'file': (path, open(path, 'r'), 'application/json')}
+
+        response = self.post_with_status_check('/api/playbooks', headers=self.headers, status_code=OBJECT_CREATED,
+                                               data=files, content_type='multipart/form-data')
+        playbook = devicedb.device_db.session.query(Playbook).filter_by(id=response['id']).first()
+        self.assertIsNotNone(playbook)
+        self.assertDictEqual(playbook.read(), response)
+
+    def test_export_workflow(self):
+        playbook = device_db_help.standard_load()
+
+        response = self.get_with_status_check('/api/playbooks/{}/export'.format(playbook.id), headers=self.headers)
+        self.assertDictEqual(playbook.read(), response)

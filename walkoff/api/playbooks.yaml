@@ -27,6 +27,7 @@
     operationId: walkoff.server.endpoints.playbooks.create_playbook
     consumes:
       - application/json
+      - multipart/form-data
     produces:
       - application/json
     parameters:
@@ -39,9 +40,14 @@
       - in: body
         name: body
         description: The playbook object to be created
-        required: true
+        required: false
         schema:
           $ref: '#/definitions/CreatePlaybook'
+      - in: formData
+        name: formData
+        description: The playbook file to be imported
+        required: false
+        type: file
     responses:
       201:
         description: Object created
@@ -109,6 +115,10 @@
           $ref: '#/definitions/Error'
       400:
         description: Invalid input error.
+        schema:
+          $ref: '#/definitions/Error'
+      515:
+        description: I/O error.
         schema:
           $ref: '#/definitions/Error'
   delete:
@@ -304,3 +314,33 @@
           properties:
             uuid:
               $ref: '#/definitions/Uuid'
+
+/playbooks/{playbook_id}/export:
+  parameters:
+    - name: playbook_id
+      in: path
+      description: The ID that needs to be fetched.
+      required: true
+      type: string
+      format: uuid
+  get:
+    tags:
+      - Playbooks
+    summary: Export a playbook
+    description: ''
+    operationId: walkoff.server.endpoints.playbooks.export_playbook
+    responses:
+      200:
+        description: Success
+      404:
+        description: Object does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+      400:
+        description: Invalid input error.
+        schema:
+          $ref: '#/definitions/Error'
+      515:
+        description: I/O error.
+        schema:
+          $ref: '#/definitions/Error'

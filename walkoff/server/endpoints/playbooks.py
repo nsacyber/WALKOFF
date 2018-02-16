@@ -1,8 +1,9 @@
 from uuid import UUID
-from flask import request, current_app
+import json
+from flask import request, current_app, send_file
 from flask_jwt_extended import jwt_required
 from sqlalchemy import exists, and_
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, StatementError
 import walkoff.config.paths
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
@@ -12,6 +13,8 @@ from walkoff.coredb.playbook import Playbook
 from walkoff.coredb.workflow import Workflow
 from walkoff.helpers import InvalidExecutionElement, regenerate_workflow_ids
 from uuid import uuid4
+import StringIO
+
 
 def does_workflow_exist(playbook_id, workflow_id):
     return walkoff.coredb.devicedb.device_db.session.query(
@@ -40,6 +43,13 @@ def is_valid_uid(*ids):
 with_playbook = with_resource_factory('playbook', playbook_getter, validator=is_valid_uid)
 with_workflow = with_resource_factory('workflow', workflow_getter, validator=is_valid_uid)
 validate_workflow_is_registered = validate_resource_exists_factory('workflow', does_workflow_exist)
+
+ALLOWED_EXTENSIONS = {'json', 'playbook'}
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 def get_playbooks(full=None):
@@ -72,8 +82,13 @@ def create_playbook(source=None):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create']))
     def __func():
-        data = request.get_json()
-        playbook_name = data['name']
+        if request.files and 'file' in request.files:
+            f = request.files['file']
+            data = json.loads(f.read())
+            playbook_name = data['name'] if 'name' in data else ''
+        else:
+            data = request.get_json()
+            playbook_name = data['name']
 
         try:
             playbook = Playbook.create(data)
@@ -83,7 +98,7 @@ def create_playbook(source=None):
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not create Playbook {}. Unique constraint failed'.format(playbook_name))
             return {"error": "Unique constraint failed."}, OBJECT_EXISTS_ERROR
-        except ValueError as e:
+        except StatementError:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not create Playbook {}. Invalid input'.format(playbook_name))
             return {"error": 'Invalid object'}, BAD_REQUEST
@@ -336,3 +351,19 @@ def copy_workflow(playbook_id, workflow_id):
 
 def get_uuid():
     return {'uuid': str(uuid4())}, OBJECT_CREATED
+
+
+def export_playbook(playbook_id):
+    @jwt_required
+    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
+    @with_playbook('read', playbook_id)
+    def __func(playbook):
+        playbook_json = playbook.read()
+
+        f = StringIO.StringIO()
+        f.write(json.dumps(playbook_json, sort_keys=True, indent=4, separators=(',', ': ')))
+        f.seek(0)
+
+        return send_file(f, attachment_filename=playbook.name+'.playbook', as_attachment=True), SUCCESS
+
+    return __func()
