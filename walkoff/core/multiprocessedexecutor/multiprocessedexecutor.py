@@ -220,7 +220,10 @@ class MultiprocessedExecutor(object):
         if workflow_status:
             if workflow_status.status in [WorkflowStatusEnum.pending, WorkflowStatusEnum.paused,
                                           WorkflowStatusEnum.awaiting_data]:
-                WalkoffEvent.WorkflowAborted.send({'workflow_execution_id': execution_id})
+                workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(
+                    id=workflow_status.workflow_id).first()
+                if workflow is not None:
+                    WalkoffEvent.WorkflowAborted.send({'execution_id': execution_id, 'id': workflow_status.workflow_id, 'name': workflow.name})
             elif workflow_status.status == WorkflowStatusEnum.running:
                 self.manager.abort_workflow(execution_id)
             return True
