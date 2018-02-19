@@ -13,7 +13,10 @@ from walkoff.coredb.playbook import Playbook
 from walkoff.coredb.workflow import Workflow
 from walkoff.helpers import InvalidExecutionElement, regenerate_workflow_ids
 from uuid import uuid4
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 
 def does_workflow_exist(playbook_id, workflow_id):
@@ -84,7 +87,7 @@ def create_playbook(source=None):
     def __func():
         if request.files and 'file' in request.files:
             f = request.files['file']
-            data = json.loads(f.read())
+            data = json.loads(f.read().decode('utf-8'))
             playbook_name = data['name'] if 'name' in data else ''
         else:
             data = request.get_json()
@@ -360,7 +363,7 @@ def export_playbook(playbook_id):
     def __func(playbook):
         playbook_json = playbook.read()
 
-        f = StringIO.StringIO()
+        f = StringIO()
         f.write(json.dumps(playbook_json, sort_keys=True, indent=4, separators=(',', ': ')))
         f.seek(0)
 
