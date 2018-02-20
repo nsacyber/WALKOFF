@@ -42,8 +42,9 @@ class TestProblem(TestCase):
         problem = Problem(self.status, self.title, self.detail, instance=self.instance, type_=self.type_, ext=self.ext)
         self.expected.update(self.ext)
         self.expected.update({'type': self.type_, 'instance': self.instance})
-        # For some reason Werkzueg puts the response in a list
-        self.assertListEqual(problem.response, [json.dumps(self.expected)])
+        # For some reason Werkzueg puts the response in a list and as a bytes string in Python 3
+        response = json.loads(problem.response[0].decode('utf-8'))
+        self.assertDictEqual(response, self.expected)
         self.assertEqual(problem.status_code, self.status)
         self.assertEqual(len(problem.headers), 2)  # Content-Type and Content-Length
         self.assertEqual(problem.content_type, Problem.default_mimetype)
@@ -51,5 +52,6 @@ class TestProblem(TestCase):
 
     def test_init_with_headers(self):
         problem = Problem(self.status, self.title, self.detail, headers={'x-error': 'something'})
-        self.assertListEqual(problem.response, [json.dumps(self.expected)])
+        response = json.loads(problem.response[0].decode('utf-8'))
+        self.assertDictEqual(response, self.expected)
         self.assertIn('x-error', problem.headers)
