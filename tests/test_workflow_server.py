@@ -439,5 +439,5 @@ class TestWorkflowServer(ServerTestCase):
     def test_export_workflow(self):
         playbook = device_db_help.standard_load()
 
-        response = self.get_with_status_check('/api/playbooks/{}/export'.format(playbook.id), headers=self.headers)
+        response = self.get_with_status_check('/api/playbooks/{}?mode=export'.format(playbook.id), headers=self.headers)
         self.assertDictEqual(playbook.read(), response)

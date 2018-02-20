@@ -96,10 +96,15 @@
       required: true
       type: string
       format: uuid
+    - in: query
+      name: mode
+      description: Specify mode as export to download the playbook file
+      type: string
+      required: false
   get:
     tags:
       - Playbooks
-    summary: Read a playbook
+    summary: Read or download a playbook
     description: ''
     operationId: walkoff.server.endpoints.playbooks.read_playbook
     produces:
@@ -314,33 +319,3 @@
           properties:
             uuid:
               $ref: '#/definitions/Uuid'
-
-/playbooks/{playbook_id}/export:
-  parameters:
-    - name: playbook_id
-      in: path
-      description: The ID that needs to be fetched.
-      required: true
-      type: string
-      format: uuid
-  get:
-    tags:
-      - Playbooks
-    summary: Export a playbook
-    description: ''
-    operationId: walkoff.server.endpoints.playbooks.export_playbook
-    responses:
-      200:
-        description: Success
-      404:
-        description: Object does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-      400:
-        description: Invalid input error.
-        schema:
-          $ref: '#/definitions/Error'
-      515:
-        description: I/O error.
-        schema:
-          $ref: '#/definitions/Error'

@@ -115,12 +115,18 @@ def create_playbook(source=None):
     return __func()
 
 
-def read_playbook(playbook_id):
+def read_playbook(playbook_id, mode=None):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     @with_playbook('read', playbook_id)
     def __func(playbook):
-        return playbook.read(), SUCCESS
+        if mode == "export":
+            f = StringIO()
+            f.write(json.dumps(playbook.read(), sort_keys=True, indent=4, separators=(',', ': ')))
+            f.seek(0)
+            return send_file(f, attachment_filename=playbook.name + '.playbook', as_attachment=True), SUCCESS
+        else:
+            return playbook.read(), SUCCESS
 
     return __func()
 
@@ -354,19 +360,3 @@ def copy_workflow(playbook_id, workflow_id):
 
 def get_uuid():
     return {'uuid': str(uuid4())}, OBJECT_CREATED
-
-
-def export_playbook(playbook_id):
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
-    @with_playbook('read', playbook_id)
-    def __func(playbook):
-        playbook_json = playbook.read()
-
-        f = StringIO()
-        f.write(json.dumps(playbook_json, sort_keys=True, indent=4, separators=(',', ': ')))
-        f.seek(0)
-
-        return send_file(f, attachment_filename=playbook.name+'.playbook', as_attachment=True), SUCCESS
-
-    return __func()
