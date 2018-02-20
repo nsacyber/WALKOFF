@@ -68,7 +68,7 @@ class TestTriggersServer(ServerTestCase):
 
         actions = []
         for id_ in action_ids:
-            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
+            actions.extend(executed_actions(str(id_), self.start, datetime.utcnow()))
         self.assertEqual(len(actions), 3)
 
         events = [event['message'] for event in actions]

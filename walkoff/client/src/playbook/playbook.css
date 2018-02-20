@@ -132,8 +132,12 @@
 }
 
 .playbookMain .parametersEditor .indent {
-	padding-left: 15px;
 	border-left: 3px solid #DDD;
+	border-top: 1px solid #DDD;
+	border-bottom: 1px solid #DDD;
+	padding: 5px 0 5px 15px;
+	margin-top: 5px;
+	margin-bottom: 5px;
 }
 
 .playbookMain .parametersEditor .addBar {

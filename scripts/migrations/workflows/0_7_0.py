@@ -111,7 +111,7 @@ def convert_action(action):
                         name=name, device_id=device_id,
                         position=position,
                         arguments=arguments,
-                        triggers=triggers)
+                        trigger=triggers)
 
     walkoff.coredb.devicedb.device_db.session.add(action_obj)
     walkoff.coredb.devicedb.device_db.session.commit()
@@ -186,10 +186,10 @@ def convert_branch(branch, actions):
             destination_id = action['id']
 
     if 'priority' in branch:
-        branch_obj = Branch(source_id=source_id, destination_id=destination_id, status=status, conditions=conditions,
+        branch_obj = Branch(source_id=source_id, destination_id=destination_id, status=status, condition=conditions,
                             priority=branch['priority'])
     else:
-        branch_obj = Branch(source_id=source_id, destination_id=destination_id, status=status, conditions=conditions)
+        branch_obj = Branch(source_id=source_id, destination_id=destination_id, status=status, condition=conditions)
 
     walkoff.coredb.devicedb.device_db.session.add(branch_obj)
     walkoff.coredb.devicedb.device_db.session.commit()

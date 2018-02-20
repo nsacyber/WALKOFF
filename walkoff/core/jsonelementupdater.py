@@ -1,6 +1,7 @@
 import walkoff.coredb.devicedb
 from uuid import UUID
 
+
 class JsonElementUpdater(object):
     """Updates an ExecutionElement from JSON
     """

@@ -125,6 +125,8 @@ def create_playbook(source=None):
         except StatementError:
             return unique_constraint_problem('playbook', 'create', playbook_name)
         except ValueError as e:
+            import traceback
+            traceback.print_exc()
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not create Playbook {}. Invalid input'.format(playbook_name))
             return improper_json_problem('playbook', 'create', playbook_name)

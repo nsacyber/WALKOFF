@@ -51,7 +51,7 @@ def convert_to_protobuf(sender, workflow_execution_id='', **kwargs):
             convert_send_message_to_protobuf(packet, sender, workflow_execution_id, **kwargs)
         else:
             convert_action_to_proto(packet, sender, workflow_execution_id, data)
-    elif event.event_type in (EventType.branch, EventType.condition, EventType.transform):
+    elif event.event_type in (EventType.branch, EventType.condition, EventType.transform, EventType.conditonalexpression):
         convert_branch_transform_condition_to_proto(packet, sender, workflow_execution_id)
     packet_bytes = packet.SerializeToString()
     return packet_bytes

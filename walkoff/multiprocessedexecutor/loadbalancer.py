@@ -256,7 +256,6 @@ class Receiver:
                 message = message_outer.general_packet
 
             sender = MessageToDict(message.sender, preserving_proto_field_name=True)
-
             event = WalkoffEvent.get_event_from_name(callback_name)
             if event is not None:
                 if event.requires_data():

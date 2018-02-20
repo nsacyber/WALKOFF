@@ -41,7 +41,6 @@ describe('PlaybookArgumentComponent', () => {
 					app_name: 'TestApp',
 					action_name: 'TestActon',
 					arguments: [ comp.argument ],
-					triggers: [],
 				},
 			],
 			branches: [],

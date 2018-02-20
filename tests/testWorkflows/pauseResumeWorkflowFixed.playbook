@@ -9,22 +9,25 @@
                     "arguments": [],
                     "device_id": 1,
                     "id": "d12e7aad-9ce0-44ca-a18b-ca84f3578c19",
-                    "name": "1",
-                    "triggers": []
+                    "name": "1"
                 }
             ],
             "branches": [
                 {
-                    "conditions": [{
-                            "action_name": "regMatch",
-                            "app_name": "HelloWorldBounded",
-                            "arguments": [
-                                {
-                                    "name": "regex",
-                                    "value": "failure"
-                                }
-                            ]
-                        }],
+                    "condition": {
+                        "conditions": [
+                            {
+                                "action_name": "regMatch",
+                                "app_name": "HelloWorldBounded",
+                                "arguments": [
+                                    {
+                                        "name": "regex",
+                                        "value": "failure"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
                     "destination_id": "d12e7aad-9ce0-44ca-a18b-ca84f3578c19",
                     "priority": 1,
                     "source_id": "d12e7aad-9ce0-44ca-a18b-ca84f3578c19",

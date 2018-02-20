@@ -9,6 +9,7 @@ from walkoff.core.actionresult import ActionResult
 from walkoff.events import WalkoffEvent
 from walkoff.coredb.action import Action
 from walkoff.coredb.condition import Condition
+from walkoff.coredb.conditionalexpression import ConditionalExpression
 from walkoff.coredb.position import Position
 from walkoff.helpers import UnknownApp, UnknownAppAction, InvalidArgument
 import tests.config
@@ -27,7 +28,7 @@ class TestAction(unittest.TestCase):
         walkoff.appgateway.clear_cache()
         device_db_help.tear_down_device_db()
 
-    def __compare_init(self, elem, app_name, action_name, name, device_id=None, arguments=None, triggers=None,
+    def __compare_init(self, elem, app_name, action_name, name, device_id=None, arguments=None, trigger=None,
                        position=None):
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.action_name, action_name)
@@ -35,9 +36,8 @@ class TestAction(unittest.TestCase):
         self.assertEqual(elem.device_id, device_id)
         if arguments:
             self.assertListEqual(elem.arguments, arguments)
-        if triggers:
-            self.assertEqual(len(elem.triggers), len(triggers))
-            self.assertSetEqual({trigger.action_name for trigger in elem.triggers}, set(triggers))
+        if trigger:
+            self.assertEqual(elem.trigger.operator, trigger.operator)
         if position:
             self.assertEqual(elem.position.x, position.x)
             self.assertEqual(elem.position.y, position.y)
@@ -99,10 +99,12 @@ class TestAction(unittest.TestCase):
             Action('HelloWorld', 'returnPlusOne', 'helloWorld', arguments=[Argument('number', value='invalid')])
 
     def test_init_with_triggers(self):
-        triggers = [Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='(.*)')]),
-                    Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='a')])]
-        action = Action('HelloWorld', 'helloWorld', 'helloWorld', triggers=triggers)
-        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', triggers=['regMatch', 'regMatch'])
+        trigger = ConditionalExpression(
+            'and',
+            conditions=[Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='(.*)')]),
+                        Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='a')])])
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld', trigger=trigger)
+        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', trigger=trigger)
 
     def test_execute_no_args(self):
         action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld')
@@ -345,16 +347,19 @@ class TestAction(unittest.TestCase):
                 [Argument('num1', value='-5.62'), Argument('num2', value='5'), Argument('num3', value='invalid')])
 
     def test_execute_with_triggers(self):
-        triggers = [Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])]
-        action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld', triggers=triggers)
-        AppInstance.create(app_name='HelloWorld', device_name='device1')
+        trigger = ConditionalExpression(
+            'and',
+            conditions=[Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])])
+        action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld', trigger=trigger)
         ret = action.execute_trigger({"data_in": {"data": 'aaa'}}, {})
 
         self.assertTrue(ret)
 
     def test_execute_multiple_triggers(self):
-        triggers = [Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])]
-        action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld', triggers=triggers)
+        trigger = ConditionalExpression(
+            'and',
+            conditions=[Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])])
+        action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld', trigger=trigger)
         AppInstance.create(app_name='HelloWorld', device_name='device1')
         self.assertFalse(action.execute_trigger({"data_in": {"data": 'a'}}, {}))
         self.assertTrue(action.execute_trigger({"data_in": {"data": 'aaa'}}, {}))

@@ -26,6 +26,7 @@ import { Argument } from '../models/playbook/argument';
 import { WorkflowResult } from '../models/playbook/workflowResult';
 import { User } from '../models/user';
 import { Role } from '../models/role';
+import { ConditionalExpression } from '../models/playbook/conditionalExpression';
 
 @Component({
 	selector: 'playbook-component',
@@ -342,7 +343,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 						destination_id: destinationId,
 						status: defaultStatus,
 						priority: 1,
-						conditions: [],
 					});
 				}
 
@@ -484,22 +484,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 			// Properly sanitize arguments through the tree
 			this._sanitizeArgumentsForSave(action.arguments);
 
-			action.triggers.forEach(trigger => {
-				this._sanitizeArgumentsForSave(trigger.arguments);
-
-				trigger.transforms.forEach(transform => {
-					this._sanitizeArgumentsForSave(transform.arguments);
-				});
-			});
+			this._sanitizeExpressionAndChildren(action.trigger);
 		});
 		workflowToSave.branches.forEach(branch => {
-			branch.conditions.forEach(condition => {
-				this._sanitizeArgumentsForSave(condition.arguments);
-
-				condition.transforms.forEach(transform => {
-					this._sanitizeArgumentsForSave(transform.arguments);
-				});
-			});
+			this._sanitizeExpressionAndChildren(branch.condition);
 		});
 
 		let savePromise: Promise<Workflow>;
@@ -555,6 +543,34 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 			.then(playbooks => this.playbooks = playbooks);
 	}
 
+	_sanitizeExpressionAndChildren(expression: ConditionalExpression): void {
+		if (!expression) { return; }
+
+		if (expression.conditions && expression.conditions.length) {
+			expression.conditions.forEach(condition => {
+				this._sanitizeArgumentsForSave(condition.arguments);
+
+				condition.transforms.forEach(transform => {
+					this._sanitizeArgumentsForSave(transform.arguments);
+				});
+			});
+		}
+
+		if (expression.child_expressions && expression.child_expressions.length) {
+			expression.child_expressions.forEach(childExpr => {
+				childExpr.conditions.forEach(condition => {
+					this._sanitizeArgumentsForSave(condition.arguments);
+
+					condition.transforms.forEach(transform => {
+						this._sanitizeArgumentsForSave(transform.arguments);
+					});
+				});
+
+				this._sanitizeExpressionAndChildren(childExpr);
+			});
+		}
+	}
+
 	/**
 	 * Sanitizes an argument so we don't have bad data on save, such as a value when reference is specified.
 	 * @param argument The argument to sanitize
@@ -600,6 +616,24 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 				}
 			}
 		});
+	}
+
+	specifyTrigger(action: Action): void {
+		if (action.trigger) { return; }
+		action.trigger = new ConditionalExpression();
+	}
+
+	removeTrigger(action: Action): void {
+		delete action.trigger;
+	}
+
+	specifyCondition(branch: Branch): void {
+		if (branch.condition) { return; }
+		branch.condition = new ConditionalExpression();
+	}
+
+	removeCondition(branch: Branch): void {
+		delete branch.condition;
 	}
 
 	///------------------------------------------------------------------------------------------------------
@@ -651,9 +685,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 
 		self.selectedAction = action;
 		self.selectedActionApi = actionApi;
-
-		// Add data to the selectedAction if it does not exist
-		if (!self.selectedAction.triggers) { self.selectedAction.triggers = []; }
 
 		// TODO: maybe scope out relevant devices by action, but for now we're just only scoping out by app
 		self.relevantDevices = self.devices.filter(d => d.app_name === self.selectedAction.app_name);

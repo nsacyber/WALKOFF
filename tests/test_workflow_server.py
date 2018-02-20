@@ -21,7 +21,6 @@ class TestWorkflowServer(ServerTestCase):
         self.empty_workflow_json = \
             {'actions': [
                 {"app_name": "HelloWorld", "action_name": "helloWorld", "name": "helloworld", "id": str(uuid4()),
-                 "triggers": [],
                  "arguments": []}],
                 'name': self.add_workflow_name,
                 'start': str(uuid4()),
