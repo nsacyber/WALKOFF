@@ -1,6 +1,7 @@
 import walkoff.coredb.devicedb
 from uuid import UUID
 
+
 class JsonElementUpdater(object):
     """Updates an ExecutionElement from JSON
     """
@@ -11,6 +12,7 @@ class JsonElementUpdater(object):
 
         Args:
             element (ExecutionElement): The ExecutionElement
+            json_in (dict): The JSON in to update
         """
         from walkoff.coredb.position import Position
         fields_to_update = list(JsonElementUpdater.updatable_fields(element))
@@ -43,12 +45,15 @@ class JsonElementUpdater(object):
             json_ids = {UUID(element['id']) for element in json_value if 'id' in element}
         else:
             json_ids = {element['id'] for element in json_value if 'id' in element}
-        old_elements = {element.id: element for element in value}
+        if isinstance(value, dict):
+            old_elements = value
+        else:
+            old_elements = {element.id: element for element in value}
         elements_to_discard = [element for element_id, element in old_elements.items() if
                                element_id not in json_ids]
         for json_element in json_value:
             json_element_id = json_element.pop('id', None)
-            if json_element_id is not None:
+            if json_element_id is not None and json_element_id in old_elements:
                 if cls is not Argument:
                     json_element_id = UUID(json_element_id)
                 old_elements[json_element_id].update(json_element)
