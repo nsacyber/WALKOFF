@@ -131,7 +131,7 @@ export class MainComponent implements OnInit {
 			.catch(e => console.error(e));
 	}
 
-	openMessage(event: any, messageListing: MessageListing): void {
+	openMessage(event: Event, messageListing: MessageListing): void {
 		event.preventDefault();
 
 		this.mainService.getMessage(messageListing.id)

@@ -26,7 +26,7 @@
 		<!-- Column Templates -->
 		<ngx-datatable-column name="Name" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				<a href="#" (click)="openActionStatusModal(row)">{{row.name}}</a>
+				<a href="#" (click)="openActionStatusModal($event, row)">{{row.name}}</a>
 			</ng-template>
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Started At" [flexGrow]="2">
@@ -36,7 +36,7 @@
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Finished At" [flexGrow]="2">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				{{row.finished_at}}
+				{{row.completed_at}}
 			</ng-template>
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Status" [flexGrow]="1">
@@ -82,7 +82,7 @@
 					</button>
 				</div>
 				<div class="modal-body" #actionStatusContainer>
-					<ngx-datatable #actionStatusTable class='material expandable' [columnMode]="'flex'" [rows]="loadedWorkflowStatus.results"
+					<ngx-datatable #actionStatusTable class='material expandable' [columnMode]="'flex'" [rows]="loadedWorkflowStatus.action_statuses"
 					 [sortType]="'multi'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]"
 					 [limit]="10">
 						<!-- Column Templates -->

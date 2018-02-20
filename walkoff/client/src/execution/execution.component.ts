@@ -86,11 +86,16 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 		}
 	}
 
+	/**
+	 * Filters out the workflow statuses based on the value in the search/filter box.
+	 * Checks against various parameters on the workflow statuses to set our display workflow statuses.
+	 */
 	filterWorkflowStatuses(): void {
 		const searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
 
 		this.displayWorkflowStatuses = this.workflowStatuses.filter((s) => {
 			return s.name.toLocaleLowerCase().includes(searchFilter) ||
+				s.status.toLocaleLowerCase().includes(searchFilter) ||
 				(s.current_action &&
 					(s.current_action.name.toLocaleLowerCase().includes(searchFilter) ||
 					s.current_action.action_name.toLocaleLowerCase().includes(searchFilter) ||
@@ -98,6 +103,9 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 		});
 	}
 
+	/**
+	 * Gets a list of workflow statuses from the server for initial population.
+	 */
 	getWorkflowStatuses(): void {
 		this.executionService
 			.getWorkflowStatusList()
@@ -105,6 +113,10 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 			.catch(e => this.toastyService.error(`Error retrieving workflow statuses: ${e.message}`));
 	}
 
+	/**
+	 * Initiates an EventSource for workflow statuses from the server.
+	 * Updates existing workflow statuses for status updates or adds new ones to the list for display.
+	 */
 	getWorkflowStatusSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
@@ -140,6 +152,11 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 			});
 	}
 
+	/**
+	 * Initiates an EventSource for action statuses from the server.
+	 * Updates the parent workflow status' current_action if applicable.
+	 * Will add/update action statuses for display if the parent workflow execution is 'loaded' in the modal.
+	 */
 	getActionResultSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
@@ -189,6 +206,11 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 			});
 	}
 
+	/**
+	 * Calls the workflow status endpoint to command a non-finished workflow to perform some action.
+	 * @param workflowStatus WorkflowStatus to perform the action
+	 * @param actionName Name of action to take (e.g. pause, resume, abort)
+	 */
 	performWorkflowStatusAction(workflowStatus: WorkflowStatus, actionName: string): void {
 		this.executionService
 			.performWorkflowStatusAction(workflowStatus.execution_id, actionName)
@@ -200,12 +222,16 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 			.catch(e => this.toastyService.error(`Error performing ${actionName} on workflow: ${e.message}`));
 	}
 
+	/**
+	 * Gets a list of playbooks and workflows from the server and compiles them into a list for selection.
+	 */
 	getWorkflowNames(): void {
 		const self = this;
 
 		this.executionService
 			.getPlaybooks()
 			.then(playbooks => {
+				// Map all of the playbook's workflows and collapse them into a single top-level array.
 				this.workflows = playbooks
 					.map(pb => pb.workflows)
 					.reduce((a, b) => a.concat(b), []);
@@ -221,6 +247,9 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 			});
 	}
 
+	/**
+	 * Executes a given workflow. Uses the selected workflow (specified via the select2 box).
+	 */
 	excuteSelectedWorkflow(): void {
 		this.executionService.addWorkflowToQueue(this.selectedWorkflow.id)
 			.then(() => {
@@ -229,6 +258,11 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 			.catch(e => this.toastyService.error(`Error executing workflow: ${e.message}`));
 	}
 
+	/**
+	 * Specifies the selected workflow from the select2. Used because in at least the version of select2 component we have,
+	 * There is no two-way data binding available.
+	 * @param event Event fired from the workflow select2 change.
+	 */
 	workflowSelectChange(event: any): void {
 		if (!event.value || event.value === '') {
 			this.selectedWorkflow = null;
@@ -237,7 +271,14 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 		}
 	}
 
-	openActionStatusModal(workflowStatus: WorkflowStatus): void {
+	/**
+	 * Opens a modal that contains the action results for a given workflow status.
+	 * @param event JS Event from the hyperlink click
+	 * @param workflowStatus Workflow Status to get action results for
+	 */
+	openActionStatusModal(event: Event, workflowStatus: WorkflowStatus): void {
+		event.preventDefault();
+
 		let actionResultsPromise: Promise<void>;
 		if (this.loadedWorkflowStatus && this.loadedWorkflowStatus.execution_id === workflowStatus.execution_id) {
 			actionResultsPromise = Promise.resolve();
@@ -251,17 +292,26 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 		}
 
 		actionResultsPromise.then(() => {
-			($('#actionResultsModal') as any).modal('show');
+			($('.actionStatusModal') as any).modal('show');
 		});
 	}
 
+	/**
+	 * Converts an input object/value to a friendly string for display in the workflow status table.
+	 * @param input Input object / value to convert
+	 */
 	getFriendlyJSON(input: any): string {
+		if (!input) { return 'N/A'; }
 		let out = JSON.stringify(input, null, 1);
 		out = out.replace(/[\{\[\}\]"]/g, '').trim();
 		if (!out) { return 'N/A'; }
 		return out;
 	}
 
+	/**
+	 * Converts an input argument array to a friendly string for display in the workflow status table.
+	 * @param args Array of arguments to convert
+	 */
 	getFriendlyArguments(args: Argument[]): string {
 		if (!args || !args.length) { return 'N/A'; }
 
@@ -269,7 +319,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 		args.forEach(element => {
 			if (element.value) { obj[element.name] = element.value; }
 			if (element.reference) { obj[element.name] = element.reference.toString(); }
-			if (element.selection) {
+			if (element.selection && element.selection.length) {
 				const selectionString = (element.selection as any[]).join('.');
 				obj[element.name] = `${obj[element.name]} (${selectionString})`;
 			}
@@ -280,11 +330,19 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 		return out;
 	}
 
+	/**
+	 * Gets the app name from a current action object or returns N/A if undefined.
+	 * @param currentAction CurrentAction to use as input
+	 */
 	getAppName(currentAction: CurrentAction): string {
 		if (!currentAction) { return'N/A'; }
 		return currentAction.app_name;
 	}
 
+	/**
+	 * Gets the action name from a current action object or returns N/A if undefined.
+	 * @param currentAction CurrentAction to use as input
+	 */
 	getActionName(currentAction: CurrentAction): string {
 		if (!currentAction) { return'N/A'; }
 		let output = currentAction.name;

@@ -16,6 +16,6 @@ export class WorkflowStatus {
 	 * Possible values: queued, running, awaiting_data, paused, completed, aborted
 	 */
 	status: string; 
-	current_action: CurrentAction;
+	current_action?: CurrentAction;
 	action_statuses?: ActionStatus[] = [];
 }
