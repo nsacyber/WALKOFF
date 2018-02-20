@@ -1363,6 +1363,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	}
 
 	getFriendlyJSON(input: any): string {
+		if (!input) { return 'N/A'; }
 		let out = JSON.stringify(input, null, 1);
 		out = out.replace(/[\{\[\}\]"]/g, '').trim();
 		if (!out) { return 'N/A'; }
@@ -1376,7 +1377,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 		args.forEach(element => {
 			if (element.value) { obj[element.name] = element.value; }
 			if (element.reference) { obj[element.name] = element.reference.toString(); }
-			if (element.selection) {
+			if (element.selection && element.selection.length) {
 				const selectionString = (element.selection as any[]).join('.');
 				obj[element.name] = `${obj[element.name]} (${selectionString})`;
 			}
