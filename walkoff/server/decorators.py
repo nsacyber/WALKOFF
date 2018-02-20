@@ -1,10 +1,31 @@
 from flask import current_app
 from walkoff.server.returncodes import OBJECT_DNE_ERROR, BAD_REQUEST
+from walkoff.server.problem import Problem
+
+
+def get_id_str(ids):
+    return '-'.join([str(id_) for id_ in ids])
+
+
+def resource_not_found_problem(resource, operation, id_):
+    return Problem.from_crud_resource(
+        OBJECT_DNE_ERROR,
+        resource,
+        operation,
+        '{} {} does not exist.'.format(resource.title(), id_))
+
+
+def log_operation_error(resource, operation, id_):
+    current_app.logger.error('Could not {} {} {}. {} does not exist'.format(operation, resource, id_, resource))
+
+
+def dne_error(resource, operation, ids):
+    id_str = get_id_str(ids)
+    log_operation_error(resource, operation, id_str)
+    return lambda: (resource_not_found_problem(resource, operation, id_str))
 
 
 def validate_resource_exists_factory(resource_name, existence_func):
-
-    resource_dne_message = '{} does not exist'.format(resource_name.title())
 
     def validate_resource_exists(operation, *ids):
 
@@ -12,36 +33,29 @@ def validate_resource_exists_factory(resource_name, existence_func):
             if existence_func(*ids):
                 return func
             else:
-                current_app.logger.error(
-                    'Could not {0} {1} {2}. {3}'.format(
-                        operation, resource_name, '-'.join([str(id_) for id_ in ids]), resource_dne_message)
-                )
-                return lambda: ({'error': resource_dne_message}, OBJECT_DNE_ERROR)
+                return dne_error(resource_name, operation, ids)
         return wrapper
 
     return validate_resource_exists
 
 
-def with_resource_factory(resource_name, getter_func, validator=None):
+def invalid_id_problem(resource, operation):
+    return Problem.from_crud_resource(BAD_REQUEST, resource, operation, 'Invalid ID format.')
 
-    resource_dne_message = '{} does not exist'.format(resource_name.title())
+
+def with_resource_factory(resource_name, getter_func, validator=None):
 
     def validate_resource_exists(operation, *ids):
         def wrapper(func):
             if validator and not validator(*ids):
-                return lambda: ({'error': 'Invalid ID for {}'.format(resource_name)}, BAD_REQUEST)
+                return lambda: invalid_id_problem(resource_name, operation)
 
             obj = getter_func(*ids)
             if obj is not None:
                 return lambda: func(obj)
             else:
-                current_app.logger.error(
-                    'Could not {0} {1} {2}. {3}'.format(
-                        operation, resource_name, '-'.join([str(id_) for id_ in ids]), resource_dne_message)
-                )
-                return lambda: ({'error': resource_dne_message}, OBJECT_DNE_ERROR)
+                return dne_error(resource_name, operation, ids)
 
         return wrapper
-
 
     return validate_resource_exists

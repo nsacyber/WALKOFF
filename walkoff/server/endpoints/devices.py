@@ -11,6 +11,7 @@ from walkoff.appgateway.validator import validate_device_fields
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import with_resource_factory
+from walkoff.server.problem import Problem
 
 with_device = with_resource_factory(
     'device',
@@ -79,7 +80,11 @@ def create_device():
                 Device.name == add_device_json['name']).first() is not None:
             current_app.logger.error('Could not create device {0}. '
                                      'Device already exists.'.format(add_device_json['name']))
-            return {"error": "Device already exists."}, OBJECT_EXISTS_ERROR
+            return Problem.from_crud_resource(
+                OBJECT_EXISTS_ERROR,
+                'device',
+                'create',
+                'Device with name {} already exists.'.format(add_device_json['name']))
 
         fields = {field['name']: field['value'] for field in add_device_json['fields']}
         app = add_device_json['app_name']
@@ -97,13 +102,16 @@ def create_device():
             if app is None:
                 current_app.logger.error('SEVERE: App defined in api does not have corresponding entry in database. '
                                          'Cannot add device')
-                return {'error': 'Unknown app'}, INVALID_INPUT_ERROR
+                return Problem.from_crud_resource(
+                    INVALID_INPUT_ERROR,
+                    'device',
+                    'create',
+                    'App {} does not exist.'.format(add_device_json['app_name']))
             device = Device.from_json(add_device_json)
             app.add_device(device)
             walkoff.coredb.devicedb.device_db.session.add(device)
             walkoff.coredb.devicedb.device_db.session.commit()
             device_json = get_device_json_with_app_name(device)
-            # remove_configuration_keys_from_device_json(device_json)
             return device_json, OBJECT_CREATED
 
     return __func()
@@ -144,16 +152,16 @@ def patch_device():
     return update_device()
 
 
-__device_error_messages = {UnknownApp: ('App does not exist', 'Unknown app'),
-                           UnknownDevice: ('Type does not exist', 'Unknown device type'),
-                           InvalidArgument: ('Invalid input', 'Invalid device fields')}
+__device_error_messages = {UnknownApp: ('App does not exist', 'Unknown app.'),
+                           UnknownDevice: ('Type does not exist', 'Unknown device type.'),
+                           InvalidArgument: ('Invalid input', 'Invalid device fields.')}
 
 
 def __crud_device_error_handler(operation, exception, app, device_type):
     ret = __device_error_messages[exception.__class__]
-    current_app.logger.error(
-        'Could not {0} device for app {1}, type {2}. {3}'.format(operation, app, device_type, ret[0]))
-    return {'error': ret[1]}, INVALID_INPUT_ERROR
+    message = 'Could not {0} device for app {1}, type {2}. {3}.'.format(operation, app, device_type, ret[0])
+    current_app.logger.error(message)
+    return Problem(INVALID_INPUT_ERROR, ret[1], message)
 
 
 def import_devices():

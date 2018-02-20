@@ -11,6 +11,7 @@ import walkoff.coredb.devicedb
 from walkoff.coredb.workflow import Workflow
 from walkoff.coredb.argument import Argument
 from walkoff.helpers import InvalidArgument
+from walkoff.server.problem import Problem
 
 
 def does_workflow_exist(workflow_id):
@@ -79,9 +80,12 @@ def execute_workflow():
             for arg in args:
                 try:
                     arguments.append(Argument(**arg))
-                except InvalidArgument:
+                except InvalidArgument as e:
                     current_app.logger.error('Could not execute workflow. Invalid Argument construction')
-                    return {"error": "Could not execute workflow. Invalid argument construction"}, INVALID_INPUT_ERROR
+                    return Problem(
+                        INVALID_INPUT_ERROR,
+                        'Cannot execute workflow.',
+                        'Argument with name {} is invalid. Reason: {}'.format(arg.name, e.message))
 
         execution_id = running_context.executor.execute_workflow(workflow_id, start=start, start_arguments=arguments)
         current_app.logger.info('Executed workflow {0}'.format(workflow_id))

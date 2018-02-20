@@ -7,6 +7,8 @@ import walkoff.config.config
 import walkoff.config.paths
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
+from walkoff.server.problem import Problem
+from walkoff.helpers import format_exception_message
 
 
 def __get_current_configuration():
@@ -43,7 +45,11 @@ def update_configuration(configuration):
     def __func():
         if not _reset_token_durations(access_token_duration=configuration.get('access_token_duration', None),
                                       refresh_token_duration=configuration.get('refresh_token_duration', None)):
-            return {'error': 'Invalid token durations.'}, BAD_REQUEST
+            return Problem.from_crud_resource(
+                BAD_REQUEST,
+                'configuration',
+                'update',
+                'Access token duration must be less than refresh token duration.')
 
         for config, config_value in configuration.items():
             if hasattr(walkoff.config.paths, config):
@@ -55,9 +61,12 @@ def update_configuration(configuration):
         try:
             walkoff.config.config.write_values_to_file()
             return __get_current_configuration(), SUCCESS
-        except (IOError, OSError):
+        except (IOError, OSError) as e:
             current_app.logger.error('Could not write changes to configuration to file')
-            return {"error": 'Could not write to file.'}, IO_ERROR
+            return Problem(
+                IO_ERROR,
+                'Could not write changes to file.',
+                'Could not write configuration changes to file. Problem: {}'.format(format_exception_message(e)))
 
     return __func()
 

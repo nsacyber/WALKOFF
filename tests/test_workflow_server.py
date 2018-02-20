@@ -54,12 +54,10 @@ class TestWorkflowServer(ServerTestCase):
         return element
 
     def check_invalid_uuid(self, verb, path, element_type, **kwargs):
-        self.verb_lookup[verb](path, headers=self.headers, error='Invalid ID for {}'.format(element_type),
-                               status_code=BAD_REQUEST, **kwargs)
+        self.verb_lookup[verb](path, headers=self.headers, status_code=BAD_REQUEST, **kwargs)
 
     def check_invalid_id(self, verb, path, element_type, **kwargs):
-        self.verb_lookup[verb](path, error='{} does not exist'.format(element_type.title()), headers=self.headers,
-                               status_code=OBJECT_DNE_ERROR, **kwargs)
+        self.verb_lookup[verb](path, headers=self.headers,status_code=OBJECT_DNE_ERROR, **kwargs)
 
     def test_read_all_playbooks(self):
         playbook_names = ['basicWorkflowTest', 'dataflowTest']

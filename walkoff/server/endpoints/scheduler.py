@@ -7,6 +7,7 @@ from walkoff.security import permissions_accepted_for_resources, ResourcePermiss
 from walkoff.serverdb.scheduledtasks import ScheduledTask
 from walkoff.extensions import db
 from walkoff.server.decorators import with_resource_factory
+from walkoff.server.problem import Problem
 from uuid import UUID
 
 
@@ -68,6 +69,24 @@ def read_all_scheduled_tasks():
     return __func()
 
 
+def invalid_uuid_problem(invalid_uuids):
+    return Problem(
+        BAD_REQUEST,
+        'Invalid scheduled task.',
+        'Specified UUIDs {} are not valid.'.format(invalid_uuids))
+
+
+def scheduled_task_name_already_exists_problem(name, operation):
+    return Problem.from_crud_resource(
+        OBJECT_EXISTS_ERROR,
+        'scheduled task',
+        operation,
+        'Could not {} scheduled task. Scheduled task with name {} already exists.'.format(operation, name))
+
+
+invalid_scheduler_args_problem = Problem(BAD_REQUEST, 'Invalid scheduled task.', 'Invalid scheduler arguments.')
+
+
 def create_scheduled_task():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['create', 'execute']))
@@ -75,19 +94,19 @@ def create_scheduled_task():
         data = request.get_json()
         invalid_uuids = validate_uuids(data['workflows'])
         if invalid_uuids:
-            return {'error': 'Invalid UUIDs {}'.format(invalid_uuids)}, 400
+            return invalid_uuid_problem(invalid_uuids)
         task = ScheduledTask.query.filter_by(name=data['name']).first()
         if task is None:
             try:
                 task = ScheduledTask(**data)
             except InvalidTriggerArgs:
-                return {'error': 'invalid scheduler arguments'}, 400
+                return invalid_scheduler_args_problem
             else:
                 db.session.add(task)
                 db.session.commit()
                 return task.as_json(), OBJECT_CREATED
         else:
-            return {'error': 'Could not create object. Object with given name already exists'}, OBJECT_EXISTS_ERROR
+            return scheduled_task_name_already_exists_problem(data['name'], 'create')
 
     return __func()
 
@@ -110,15 +129,15 @@ def update_scheduled_task():
         data = request.get_json()
         invalid_uuids = validate_uuids(data.get('workflows', []))
         if invalid_uuids:
-            return {'error': 'Invalid UUIDs {}'.format(invalid_uuids)}, 400
+            return invalid_uuid_problem(invalid_uuids)
         if 'name' in data:
             same_name = ScheduledTask.query.filter_by(name=data['name']).first()
             if same_name is not None and same_name.id != data['id']:
-                return {'error': 'Task with that name already exists.'}, OBJECT_EXISTS_ERROR
+                return scheduled_task_name_already_exists_problem(same_name, 'update')
         try:
             task.update(data)
         except InvalidTriggerArgs:
-            return {'error': 'invalid scheduler arguments'}, 400
+            return invalid_scheduler_args_problem
         else:
             db.session.commit()
             return task.as_json(), SUCCESS

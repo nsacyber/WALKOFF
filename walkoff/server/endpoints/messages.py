@@ -5,6 +5,7 @@ from flask import request
 from walkoff.serverdb import User
 from walkoff.serverdb.message import Message
 from walkoff.extensions import db
+from walkoff.server.problem import Problem
 
 max_notifications = 20
 min_notifications = 5
@@ -32,9 +33,13 @@ def get_message(message_id):
         user = User.query.filter(User.id == user_id).first()
         message = Message.query.filter(Message.id == message_id).first()
         if message is None:
-            return {'error': 'Message not found'}, OBJECT_DNE_ERROR
+            return Problem(OBJECT_DNE_ERROR, 'Cannot read message.', 'Message {} does not exist.'.format(message_id))
         if user not in message.users:
-            return {'error': 'User cannot access message'}, FORBIDDEN_ERROR
+            return Problem(
+                FORBIDDEN_ERROR,
+                'message',
+                'read',
+                'User is not allowed to access message {}'.format(message_id))
         message.record_user_action(user, MessageAction.read)
         db.session.commit()
         MessageActionEvent.read.send(message, data={'user': user})
@@ -59,8 +64,10 @@ def act_on_messages():
     action = MessageAction.convert_string(request.get_json()['action'])
     if action is None or action == MessageAction.respond:
         possible_actions = [action.name for action in MessageAction if action != MessageAction.respond]
-        return {'error': 'Unknown action: {0}. Possible actions are {1}'.format(
-            action, possible_actions)}, OBJECT_DNE_ERROR
+        return Problem(
+            OBJECT_DNE_ERROR,
+            'Unknown action on messages.',
+            'Unknown action: {0}. Possible actions are {1}.'.format(action, possible_actions))
 
     if action == MessageAction.delete:
         return delete_message_action()
@@ -74,7 +81,10 @@ def act_on_message_helper(action):
     user_id = get_jwt_identity()
     user = User.query.filter(User.id == user_id).first()
     if user is None:
-        return {'error': 'Unknown user'}, OBJECT_DNE_ERROR
+        return Problem(
+            OBJECT_DNE_ERROR,
+            'Cannot act on messages.',
+            'User {} does not exist, so messages cannot be accessed.'.format(user_id))
     send_read_callback = action == MessageAction.read
     for message in (message for message in user.messages if message.id in request.get_json()['ids']):
         message.record_user_action(user, action)

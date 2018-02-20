@@ -216,7 +216,7 @@ class TestAuthorization(unittest.TestCase):
                                  data=json.dumps(dict(refresh_token=refresh_token)))
         refresh_token = decode_token(refresh_token)
         refresh_token_jti = refresh_token['jti']
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, NO_CONTENT)
         tokens = BlacklistedToken.query.filter_by(jti=refresh_token_jti).all()
         self.assertEqual(len(tokens), 1)
 

@@ -17,6 +17,7 @@ try:
     from StringIO import StringIO
 except ImportError:
     from io import StringIO
+from walkoff.server.problem import Problem
 
 
 def does_workflow_exist(playbook_id, workflow_id):
@@ -53,6 +54,26 @@ ALLOWED_EXTENSIONS = {'json', 'playbook'}
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def unique_constraint_problem(type_, operation, id_):
+    return Problem.from_crud_resource(
+        OBJECT_EXISTS_ERROR,
+        type_,
+        operation,
+        'Could not {} {} {}, possibly because of invalid or non-unique IDs.'.format(operation, type_, id_))
+
+
+def improper_json_problem(type_, operation, id_, reason=None):
+    return Problem.from_crud_resource(
+        BAD_REQUEST,
+        type_,
+        operation,
+        'Could not {} {} {}. Improper JSON. Reason: {}'.format(
+            operation,
+            type_,
+            id_,
+            'Reason: {}.'.format(reason) if reason else ''))
 
 
 def get_playbooks(full=None):
@@ -100,11 +121,13 @@ def create_playbook(source=None):
         except IntegrityError:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not create Playbook {}. Unique constraint failed'.format(playbook_name))
-            return {"error": "Unique constraint failed."}, OBJECT_EXISTS_ERROR
+            return unique_constraint_problem('playbook', 'create', playbook_name)
         except StatementError:
+            return unique_constraint_problem('playbook', 'create', playbook_name)
+        except ValueError as e:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not create Playbook {}. Invalid input'.format(playbook_name))
-            return {"error": 'Invalid object'}, BAD_REQUEST
+            return improper_json_problem('playbook', 'create', playbook_name)
 
         current_app.logger.info('Playbook {0} created'.format(playbook_name))
         return playbook.read(), OBJECT_CREATED
@@ -147,7 +170,7 @@ def update_playbook():
         except IntegrityError:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not update Playbook {}. Unique constraint failed'.format(playbook_id))
-            return {"error": "Unique constraint failed."}, OBJECT_EXISTS_ERROR
+            return unique_constraint_problem('playbook', 'update', playbook_id)
 
         current_app.logger.info('Playbook {} updated'.format(playbook_id))
 
@@ -196,11 +219,11 @@ def copy_playbook(playbook_id):
         except IntegrityError:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not copy Playbook {}. Unique constraint failed'.format(playbook_id))
-            return {"error": "Unique constraint failed."}, OBJECT_EXISTS_ERROR
+            return unique_constraint_problem('playbook', 'copy', playbook_id)
         except ValueError as e:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not copy Playbook {}. Invalid input'.format(playbook_id))
-            return {"error": e.message}, INVALID_INPUT_ERROR
+            return improper_json_problem('playbook', 'copy', playbook_id)
 
         current_app.logger.info('Copied playbook {0} to {1}'.format(playbook_id, new_playbook_name))
 
@@ -228,7 +251,7 @@ def create_workflow(playbook_id, source=None):
         data = request.get_json()
         workflow_name = data['name']
         if 'start' not in data:
-            return {'error': '"start" is a required field'}, BAD_REQUEST
+            return Problem(BAD_REQUEST, 'Could not create workflow.', '"start" is required field.')
         try:
             workflow = Workflow.create(data)
             playbook.workflows.append(workflow)
@@ -237,11 +260,11 @@ def create_workflow(playbook_id, source=None):
         except ValueError as e:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not add workflow {0}-{1}'.format(playbook_id, workflow_name))
-            return {'error': e.message}, INVALID_INPUT_ERROR
+            return improper_json_problem('workflow', 'create', '{}-{}'.format(playbook_id, workflow_name))
         except IntegrityError:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not create workflow {}. Unique constraint failed'.format(workflow_name))
-            return {"error": "Unique constraint failed."}, OBJECT_EXISTS_ERROR
+            return unique_constraint_problem('workflow', 'create', workflow_name)
 
         current_app.logger.info('Workflow {0}-{1} created'.format(playbook_id, workflow_name))
         return workflow.read(), OBJECT_CREATED
@@ -276,14 +299,18 @@ def update_workflow(playbook_id):
         except InvalidExecutionElement as e:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error(e.message)
-            return {"error": e.message}, INVALID_INPUT_ERROR
+            return Problem.from_crud_resource(
+                INVALID_INPUT_ERROR,
+                'workflow',
+                'update',
+                'Could not update workflow {}. Invalid input.'.format(workflow_id))
 
         try:
             walkoff.coredb.devicedb.device_db.session.commit()
         except IntegrityError:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not update workflow {}. Unique constraint failed'.format(workflow_id))
-            return {"error": "Unique constraint failed."}, OBJECT_EXISTS_ERROR
+            return unique_constraint_problem('workflow', 'update', workflow_id)
 
         current_app.logger.info('Updated workflow {0}'.format(workflow_id))
         return workflow.read(), SUCCESS
@@ -340,8 +367,11 @@ def copy_workflow(playbook_id, workflow_id):
         else:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not copy workflow {}. Playbook does not exist'.format(new_playbook_id))
-            return {"error": "Playbook does not exist."}, OBJECT_DNE_ERROR
-
+            return Problem.from_crud_resource(
+                OBJECT_DNE_ERROR,
+                'workflow',
+                'copy',
+                'Could not copy workflow {}. Playbook with id {} does not exist.'.format(workflow_id, playbook_id))
         try:
             new_workflow = Workflow.create(workflow_json)
             walkoff.coredb.devicedb.device_db.session.add(new_workflow)
@@ -350,7 +380,7 @@ def copy_workflow(playbook_id, workflow_id):
         except IntegrityError:
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not copy workflow {}. Unique constraint failed'.format(new_workflow_name))
-            return {"error": "Unique constraint failed."}, OBJECT_EXISTS_ERROR
+            return unique_constraint_problem('workflow', 'copy', new_workflow_name)
 
         current_app.logger.info('Workflow {0} copied to {1}'.format(workflow_id, new_workflow.id))
         return new_workflow.read(), OBJECT_CREATED
