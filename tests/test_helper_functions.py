@@ -6,8 +6,9 @@ from os.path import join
 import walkoff.appgateway
 import walkoff.config.paths
 from walkoff.helpers import *
-from tests.config import test_workflows_path, test_apps_path
+from tests.config import test_apps_path
 from tests.util.assertwrappers import orderless_list_compare
+from walkoff.server.flaskserver import handle_database_errors, handle_generic_server_error
 
 
 class TestHelperFunctions(unittest.TestCase):
@@ -203,3 +204,30 @@ class TestHelperFunctions(unittest.TestCase):
         data = {'a': [1, 2, 3, 4], 'b': {'c': 'something', 'd': ['1', '2', '3']}}
         self.assertEqual(create_sse_event(event_id=1, event='something', data=data),
                          'id: 1\nevent: something\ndata: {}\n\n'.format(json.dumps(data)))
+
+    def test_database_connection_error_handler(self):
+        from sqlalchemy.exc import SQLAlchemyError
+        class DbException(SQLAlchemyError): pass
+
+        response = handle_database_errors(DbException())
+        self.assertEqual(response.status_code, 500)
+        body = json.loads(response.response[0].decode('utf-8'))
+        expected = {
+            'type': 'about:blank',
+            'status': 500,
+            'title': 'A database error occurred.',
+            'detail': 'DbException'}
+        self.assertDictEqual(body, expected)
+
+    def test_server_error_handler(self):
+        class SomeException(Exception): pass
+
+        response = handle_generic_server_error(SomeException())
+        self.assertEqual(response.status_code, 500)
+        body = json.loads(response.response[0].decode('utf-8'))
+        expected = {
+            'type': 'about:blank',
+            'status': 500,
+            'title': 'An error occurred in the server.',
+            'detail': 'SomeException'}
+        self.assertDictEqual(body, expected)
