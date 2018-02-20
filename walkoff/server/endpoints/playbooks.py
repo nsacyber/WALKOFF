@@ -88,6 +88,8 @@ def create_playbook(source=None):
             current_app.logger.error('Could not create Playbook {}. Unique constraint failed'.format(playbook_name))
             return {"error": "Unique constraint failed."}, OBJECT_EXISTS_ERROR
         except ValueError as e:
+            import traceback
+            traceback.print_exc()
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not create Playbook {}. Invalid input'.format(playbook_name))
             return {"error": 'Invalid object'}, BAD_REQUEST

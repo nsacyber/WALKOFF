@@ -3,7 +3,6 @@ from collections import OrderedDict
 from six import iteritems
 import walkoff.coredb.devicedb
 from walkoff.helpers import UnknownFunction, UnknownApp, InvalidArgument
-from copy import deepcopy
 
 
 class JsonElementCreator(object):
@@ -40,6 +39,8 @@ class JsonElementCreator(object):
             walkoff.coredb.devicedb.device_db.session.add(elem)
             return elem
         except (KeyError, TypeError, InvalidArgument, UnknownApp, UnknownFunction) as e:
+            import traceback
+            traceback.print_exc()
             walkoff.coredb.devicedb.device_db.session.rollback()
             from walkoff.helpers import format_exception_message
             raise ValueError(
@@ -55,10 +56,11 @@ class JsonElementCreator(object):
             for subfield_name, next_class in subfield_lookup.items():
                 if subfield_name in json_in:
                     subfield_json = json_in[subfield_name]
-                    if next_class is not ConditionalExpression:
-                        json_in[subfield_name] = [next_class.create(element_json) for element_json in subfield_json]
-                    else:
+                    if next_class is ConditionalExpression and current_class is not ConditionalExpression:
                         json_in[subfield_name] = next_class.create(subfield_json)
+                    else:
+                        json_in[subfield_name] = [next_class.create(element_json) for element_json in subfield_json]
+
         if 'arguments' in json_in:
             for arg_json in json_in['arguments']:
                 arg_json.pop('id', None)

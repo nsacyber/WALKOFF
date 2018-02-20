@@ -6,7 +6,7 @@ from sqlalchemy_utils import UUIDType
 from walkoff.coredb import Device_Base
 from walkoff.coredb.executionelement import ExecutionElement
 from uuid import uuid4
-from walkoff.helpers import InvalidExecutionElement, InvalidArgument
+from walkoff.helpers import InvalidArgument
 from walkoff.events import WalkoffEvent
 logger = logging.getLogger(__name__)
 
@@ -29,10 +29,6 @@ class ConditionalExpression(ExecutionElement, Device_Base):
 
     def __init__(self, operator='and', id=None, is_negated=False, child_expressions=None, conditions=None):
         ExecutionElement.__init__(self, id)
-        if operator in ('truth', 'not') and len(child_expressions or []) + len(conditions or []) != 1:
-            raise InvalidExecutionElement(
-                self.id, 'None',
-                'Conditional Expressions using "truth" or "not" must have 1 condition or child_expression')
         self.operator = operator
         self.is_negated = is_negated
         if child_expressions:
