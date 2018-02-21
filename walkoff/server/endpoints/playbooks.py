@@ -257,6 +257,8 @@ def update_workflow(playbook_id):
         try:
             walkoff.coredb.devicedb.device_db.session.commit()
         except IntegrityError:
+            import traceback
+            traceback.print_exc()
             walkoff.coredb.devicedb.device_db.session.rollback()
             current_app.logger.error('Could not update workflow {}. Unique constraint failed'.format(workflow_id))
             return {"error": "Unique constraint failed."}, OBJECT_EXISTS_ERROR

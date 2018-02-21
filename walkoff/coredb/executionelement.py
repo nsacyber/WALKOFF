@@ -4,6 +4,7 @@ from walkoff.core.representable import Representable
 from sqlalchemy import Column
 from uuid import uuid4
 
+
 class ExecutionElement(Representable):
     id = Column(UUIDType(), primary_key=True, nullable=False, default=uuid4)
 

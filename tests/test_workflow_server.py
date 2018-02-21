@@ -1,9 +1,6 @@
 import json
 import walkoff.case.database as case_database
-from walkoff.events import WalkoffEvent
-from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
-from tests.util.case_db_help import setup_subscriptions_for_action
 from tests.util.servertestcase import ServerTestCase
 import walkoff.coredb.devicedb as devicedb
 from walkoff.coredb.playbook import Playbook
