@@ -111,8 +111,8 @@ def format_workflow_result(sender, status):
 
 
 def format_workflow_result_from_workflow(sender, status):
-    result = {'execution_id': sender.get_execution_id(),
-              'workflow_id': sender.id,
+    result = {'execution_id': str(sender.get_execution_id()),
+              'workflow_id': str(sender.id),
               'name': sender.name,
               'status': status.name}
     return result
@@ -201,4 +201,4 @@ def stream_workflow_action_events():
 @workflowqueue_page.route('/workflow_status', methods=['GET'])
 @jwt_required_in_query('access_token')
 def stream_workflow_status():
-    return Response(__action_event_stream(), mimetype='text/event-stream')
+    return Response(__workflow_event_stream(), mimetype='text/event-stream')
