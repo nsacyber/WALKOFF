@@ -1,5 +1,6 @@
 import walkoff.coredb.devicedb
 from uuid import UUID
+from six import string_types
 
 
 class JsonElementUpdater(object):
@@ -53,7 +54,7 @@ class JsonElementUpdater(object):
                                element_id not in json_ids]
         for json_element in json_field_value:
             json_element_id = json_element.get('id', None)
-            json_element_id = UUID(json_element_id) if isinstance(json_element_id, (str, unicode)) else json_element_id
+            json_element_id = UUID(json_element_id) if isinstance(json_element_id, string_types) else json_element_id
             if json_element_id is not None and json_element_id in old_elements:
                 # if cls is not Argument:
                 #     json_element_id = UUID(json_element_id)
