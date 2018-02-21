@@ -1,6 +1,7 @@
 from flask import current_app
 from walkoff.server.returncodes import OBJECT_DNE_ERROR, BAD_REQUEST
 from walkoff.server.problem import Problem
+from uuid import UUID
 
 
 def get_id_str(ids):
@@ -59,3 +60,12 @@ def with_resource_factory(resource_name, getter_func, validator=None):
         return wrapper
 
     return validate_resource_exists
+
+
+def is_valid_uid(*ids):
+    try:
+        for id_ in ids:
+            UUID(id_)
+        return True
+    except ValueError as e:
+        return False

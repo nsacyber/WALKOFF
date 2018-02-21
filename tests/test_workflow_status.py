@@ -36,6 +36,11 @@ class TestWorkflowStatus(ServerTestCase):
         case_database.case_db.session.query(case_database.Case).delete()
         case_database.case_db.session.commit()
 
+    def act_on_workflow(self, execution_id, action):
+        data = {'execution_id': execution_id, 'status': action}
+        self.patch_with_status_check('/api/workflowqueue', headers=self.headers, status_code=NO_CONTENT,
+                                     content_type="application/json", data=json.dumps(data))
+
     def test_read_all_workflow_status_no_action(self):
         exec_id = uuid4()
         wf_id = uuid4()
@@ -81,15 +86,16 @@ class TestWorkflowStatus(ServerTestCase):
 
         self.assertIn('started_at', response)
         response.pop('started_at')
-
         expected = {'execution_id': str(wf_exec_id),
                     'workflow_id': str(wf_id),
                     'name': 'test',
                     'status': 'running',
-                    'current_action_execution_id': str(action_exec_id),
-                    'current_action_id': str(action_id),
-                    'current_action_name': 'name',
-                    'current_app_name': 'test_app'}
+                    'current_action': {
+                        'execution_id': str(action_exec_id),
+                        'action_id': str(action_id),
+                        'action_name': 'test_action',
+                        'app_name': 'test_app',
+                        'name': 'name'}}
 
         self.assertDictEqual(response, expected)
 
@@ -200,17 +206,13 @@ class TestWorkflowStatus(ServerTestCase):
 
         @WalkoffEvent.WorkflowPaused.connect
         def workflow_paused_listener(sender, **kwargs):
-            data = {'execution_id': str(wf_exec_id),
-                    'status': 'resume'}
-
             result['paused'] = True
 
             wf_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
                 execution_id=str(wf_exec_id)).first()
             self.assertIsNotNone(wf_status)
 
-            self.patch_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS,
-                                         content_type="application/json", data=json.dumps(data))
+            self.act_on_workflow(str(wf_exec_id), 'resume')
 
         @WalkoffEvent.WorkflowResumed.connect
         def workflow_resumed_listener(sender, **kwargs):
@@ -221,10 +223,7 @@ class TestWorkflowStatus(ServerTestCase):
         db.device_db.session.add(workflow_status)
         db.device_db.session.commit()
 
-        data = {'execution_id': str(wf_exec_id),
-                'status': 'pause'}
-        self.patch_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS,
-                                     content_type="application/json", data=json.dumps(data))
+        self.act_on_workflow(str(wf_exec_id), 'pause')
 
         self.assertTrue(result['paused'])
         self.assertTrue(result['resumed'])
@@ -241,11 +240,7 @@ class TestWorkflowStatus(ServerTestCase):
 
         @WalkoffEvent.ActionExecutionSuccess.connect
         def y(sender, **kwargs):
-
-            data = {'execution_id': response['id'],
-                    'status': 'abort'}
-            self.patch_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS,
-                                         content_type="application/json", data=json.dumps(data))
+            self.act_on_workflow(response['id'], 'abort')
 
         @WalkoffEvent.WorkflowAborted.connect
         def workflow_aborted_listener(sender, **kwargs):
