@@ -1,20 +1,21 @@
 import json
-import os
 
-from flask import request, current_app
+from flask import request, current_app, send_file
 from flask_jwt_extended import jwt_required
 
 import walkoff.case.database as case_database
 import walkoff.case.subscription as case_subscription
-import walkoff.config.paths
 from walkoff.case.subscription import delete_cases
-from walkoff.helpers import format_exception_message
 from walkoff.serverdb import db
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.serverdb.casesubscription import CaseSubscription
 from walkoff.server.problem import Problem
 from walkoff.server.decorators import with_resource_factory
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 
 def case_getter(case_id):
@@ -41,7 +42,11 @@ def create_case():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('cases', ['create']))
     def __func():
-        data = request.get_json()
+        if request.files and 'file' in request.files:
+            f = request.files['file']
+            data = json.loads(f.read().decode('utf-8'))
+        else:
+            data = request.get_json()
         case_name = data['name']
         case_obj = CaseSubscription.query.filter_by(name=case_name).first()
         if case_obj is None:
@@ -61,11 +66,17 @@ def create_case():
     return __func()
 
 
-def read_case(case_id):
+def read_case(case_id, mode=None):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('cases', ['read']))
     @with_case('read', case_id)
     def __func(case_obj):
+        if mode == "export":
+            f = StringIO()
+            f.write(json.dumps(case_obj.as_json(), sort_keys=True, indent=4, separators=(',', ': ')))
+            f.seek(0)
+            return send_file(f, attachment_filename=case_obj.name + '.json', as_attachment=True), SUCCESS
+        else:
             return case_obj.as_json(), SUCCESS
 
     return __func()
@@ -128,59 +139,6 @@ def delete_case(case_id):
                 'case',
                 'delete',
                 'Case {} does not exist.'.format(case_id))
-
-    return __func()
-
-
-def import_cases():
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('cases', ['create']))
-    def __func():
-        data = request.get_json()
-        filename = (data['filename'] if (data is not None and 'filename' in data and data['filename'])
-                    else walkoff.config.paths.default_case_export_path)
-        if os.path.isfile(filename):
-            try:
-                with open(filename, 'r') as cases_file:
-                    cases_file = cases_file.read()
-                    cases_file = cases_file.replace('\n', '')
-                    cases = json.loads(cases_file)
-                case_subscription.add_cases(cases)
-                for case in cases:
-                    db.session.add(CaseSubscription(name=case))
-                    CaseSubscription.update(case)
-                db.session.commit()
-                return {"cases": case_subscription.subscriptions}, SUCCESS
-            except (OSError, IOError) as e:
-                current_app.logger.error('Error importing cases from file '
-                                         '{0}: {1}'.format(filename, format_exception_message(e)))
-                return {"error": "Error reading file."}, IO_ERROR
-            except ValueError as e:
-                current_app.logger.error('Error importing cases from file {0}: '
-                                         'Invalid JSON {1}'.format(filename, format_exception_message(e)))
-                return {"error": "Invalid JSON file."}, INVALID_INPUT_ERROR
-        else:
-            current_app.logger.debug('Cases successfully imported from {0}'.format(filename))
-            return {"error": "File does not exist."}, IO_ERROR
-
-    return __func()
-
-
-def export_cases():
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('cases', ['read']))
-    def __func():
-        data = request.get_json()
-        filename = (data['filename'] if (data is not None and 'filename' in data and data['filename'])
-                    else walkoff.config.paths.default_case_export_path)
-        try:
-            with open(filename, 'w') as cases_file:
-                cases_file.write(json.dumps(case_subscription.subscriptions))
-            current_app.logger.debug('Cases successfully exported to {0}'.format(filename))
-            return SUCCESS
-        except (OSError, IOError) as e:
-            current_app.logger.error('Error exporting cases to {0}: {1}'.format(filename, format_exception_message(e)))
-            return {"error": "Could not write to file."}, IO_ERROR
 
     return __func()
 
