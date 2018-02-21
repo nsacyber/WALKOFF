@@ -18,6 +18,7 @@ AddUser:
       active:
         description: activate/deactive a user. Active can only be changed by an admin.
         type: boolean
+
 EditUser:
     type: object
     required: [id]
@@ -47,6 +48,7 @@ EditUser:
         type: array
         items:
           type: integer
+
 DisplayUser:
     type: object
     properties:

@@ -7,6 +7,13 @@
     operationId: walkoff.server.endpoints.workflowqueue.get_all_workflow_status
     produces:
       - application/json
+    parameters:
+      - name: limit
+        in: query
+        type: integer
+        minimum: 1
+        default: 50
+        required: false
     responses:
       200:
         description: Success
