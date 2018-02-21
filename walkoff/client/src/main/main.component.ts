@@ -40,6 +40,11 @@ export class MainComponent implements OnInit {
 		private modalService: NgbModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig,
 	) {}
 
+	/**
+	 * On init, set the current user from our JWT.
+	 * Get a list of interface names that are installed. Get initial notifications for display.
+	 * Set up an SSE for handling new notifications.
+	 */
 	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
 
@@ -49,12 +54,18 @@ export class MainComponent implements OnInit {
 		this.getNotificationsSSE();
 	}
 
+	/**
+	 * Grabs a list of interface names to display under the Interfaces dropdown.
+	 */
 	getInterfaceNames(): void {
 		this.mainService.getInterfaceNames()
 			.then(interfaceNames => this.interfaceNames = interfaceNames)
 			.catch(e => this.toastyService.error(`Error retrieving interfaces: ${e.message}`));
 	}
 
+	/**
+	 * Grabs a list of message listings for unread notifications (or some amount of read notifications).
+	 */
 	getInitialNotifications(): void {
 		this.mainService.getInitialNotifications()
 			.then(messageListings => {
@@ -64,6 +75,10 @@ export class MainComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error retrieving notifications: ${e.message}`));
 	}
 
+	/**
+	 * Sets up an SSE for notifications. On new messages, add a notification to the notifications dropdown.
+	 * For existing messages, if they were responded to, remove the ! icon.
+	 */
 	getNotificationsSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
@@ -125,12 +140,21 @@ export class MainComponent implements OnInit {
 			});
 	}
 
+	/**
+	 * Calls the auth service logout method and redirects to login
+	 * TODO: should likely roll login into the main component so we don't need to do the location.href.
+	 */
 	logout(): void {
 		this.authService.logout()
 			.then(() => location.href = '/login')
 			.catch(e => console.error(e));
 	}
 
+	/**
+	 * Gets the full message detail from the server and displays the message in a new modal.
+	 * @param event JS event fired from clicking the message link
+	 * @param messageListing Message Listing object to query.
+	 */
 	openMessage(event: Event, messageListing: MessageListing): void {
 		event.preventDefault();
 
@@ -149,16 +173,27 @@ export class MainComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error opening message: ${e.message}`));
 	}
 
+	/**
+	 * Recalculates the relative times displayed for notifications (e.g. "a minute ago").
+	 * Called when a new message is received and every time the notifications dropdown is opened/closed.
+	 */
 	recalculateRelativeTimes(): void {
 		this.messageListings.forEach(ml => {
 			this.notificationRelativeTimes[ml.id] = this.utils.getRelativeLocalTime(ml.created_at);
 		});
 	}
 
+	/**
+	 * Recalculates the number of new notifications to display.
+	 */
 	private _recalculateNewMessagesCount(): void {
 		this.newMessagesCount = this.messageListings.filter(m => !m.is_read).length;
 	}
 
+	/**
+	 * Doesn't do anything if the message modal is closed normally. Shows an error if the modal is dismissed erroneously.
+	 * @param modalRef Modal reference that is being closed
+	 */
 	private _handleModalClose(modalRef: NgbModalRef): void {
 		modalRef.result
 			.then((result) => null,

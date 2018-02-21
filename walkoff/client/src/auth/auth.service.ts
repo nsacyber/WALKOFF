@@ -29,15 +29,13 @@ export class AuthService {
 	}
 
 	/**
-	 * Logs the user out on the server and redirects to the login page.
-	 * TODO: should likely roll login into the main component so we don't need to do the location.href.
+	 * Logs the user out on the server and clears the tokens in session storage.
 	 */
 	logout(): Promise<void> {
 		return this.authHttp.post('/api/auth/logout', { refresh_token: sessionStorage.getItem(REFRESH_TOKEN_NAME) })
 			.toPromise()
 			.then(() => {
 				this.clearTokens();
-				location.href = '/login';
 			})
 			.catch(this.handleError);
 	}

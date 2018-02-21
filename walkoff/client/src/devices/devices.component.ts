@@ -10,6 +10,7 @@ import { DevicesService } from './devices.service';
 
 import { Device } from '../models/device';
 import { AppApi } from '../models/api/appApi';
+import { GenericObject } from '../models/genericObject';
 
 @Component({
 	selector: 'devices-component',
@@ -35,6 +36,10 @@ export class DevicesComponent implements OnInit {
 		private devicesService: DevicesService, private modalService: NgbModal, 
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {}
 
+	/**
+	 * On component init, initialize the app select2 config, grab devices and device apis from the server.
+	 * Set up the search filter to filter devices after 500 ms of inactivity.
+	 */
 	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
 
@@ -55,11 +60,19 @@ export class DevicesComponent implements OnInit {
 			.subscribe(event => this.filterDevices());
 	}
 
-	appSelectChange($event: any): void {
-		this.selectedApps = $event.value;
+	/**
+	 * Fired when apps are selected in the select2 box. Calls filter devices which filters based on the selected apps.
+	 * @param event	JS event from select2 for app selection.
+	 */
+	appSelectChange(event: any): void {
+		this.selectedApps = event.value;
 		this.filterDevices();
 	}
 
+	/**
+	 * Filters devices based on the selected apps select2, and the value of the search filter input box.
+	 * If no apps are selected, assume all apps should be returned.
+	 */
 	filterDevices(): void {
 		const searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
 
@@ -70,6 +83,9 @@ export class DevicesComponent implements OnInit {
 		});
 	}
 
+	/**
+	 * Gets an array of devices from the server/DB and sets them for display in our data table.
+	 */
 	getDevices(): void {
 		this.devicesService
 			.getDevices()
@@ -77,6 +93,9 @@ export class DevicesComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error retrieving devices: ${e.message}`));
 	}
 
+	/**
+	 * Spawns a modal for adding a new device. Passes in the app names and apis for usage in the modal.
+	 */
 	addDevice(): void {
 		const modalRef = this.modalService.open(DevicesModalComponent);
 		modalRef.componentInstance.title = 'Add New Device';
@@ -87,6 +106,9 @@ export class DevicesComponent implements OnInit {
 		this._handleModalClose(modalRef);
 	}
 
+	/**
+	 * Spawns a modal for editing an existing device. Passes in the app names and apis for usage in the modal.
+	 */
 	editDevice(device: Device): void {
 		const modalRef = this.modalService.open(DevicesModalComponent);
 		modalRef.componentInstance.title = `Edit Device ${device.name}`;
@@ -98,6 +120,11 @@ export class DevicesComponent implements OnInit {
 		this._handleModalClose(modalRef);
 	}
 
+	/**
+	 * After user confirmation, will delete a given device from the database.
+	 * Removes it from our list of devices to display.
+	 * @param deviceToDelete Device to delete
+	 */
 	deleteDevice(deviceToDelete: Device): void {
 		if (!confirm(`Are you sure you want to delete the device "${deviceToDelete.name}"?`)) { return; }
 
@@ -113,6 +140,11 @@ export class DevicesComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error deleting device: ${e.message}`));
 	}
 
+	/**
+	 * Gets an array of AppApi objects which only contain their DeviceApis.
+	 * AppApis are passed into the add/edit modal to handle custom device fields.
+	 * Also builds the available apps data for the app select2.
+	 */
 	getDeviceApis(): void {
 		this.devicesService
 			.getDeviceApis()
@@ -124,8 +156,13 @@ export class DevicesComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error retrieving device types: ${e.message}`));
 	}
 
+	/**
+	 * Gets a string representation of the custom fields specified on a device.
+	 * Removes quotations for easier reading.
+	 * @param device Device to build a custom fields string for
+	 */
 	getCustomFields(device: Device): string {
-		const obj: { [key: string]: string } = {};
+		const obj: GenericObject = {};
 		device.fields.forEach(element => {
 			if (element.value) { obj[element.name] = element.value; }
 		});
@@ -134,6 +171,10 @@ export class DevicesComponent implements OnInit {
 		return out;
 	}
 
+	/**
+	 * On closing an add/edit modal (on clicking save), we will add or update existing devices for display.
+	 * @param modalRef ModalRef that is being closed
+	 */
 	private _handleModalClose(modalRef: NgbModalRef): void {
 		modalRef.result
 			.then((result) => {

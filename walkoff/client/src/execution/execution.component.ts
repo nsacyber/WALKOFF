@@ -48,6 +48,11 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
 	}
 
+	/**
+	 * On component init, set up our workflow select2 config.
+	 * Also get workflows to select, workflow statuses to display in the datatable.
+	 * Set up SSEs for workflow status and action status to add/update data in our datatables.
+	 */
 	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
 
@@ -214,11 +219,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 	performWorkflowStatusAction(workflowStatus: WorkflowStatus, actionName: string): void {
 		this.executionService
 			.performWorkflowStatusAction(workflowStatus.execution_id, actionName)
-			.then(updatedWorkflowStatus => {
-				Object.assign(workflowStatus, updatedWorkflowStatus);
-				
-				this.filterWorkflowStatuses();
-			})
+			.then(() => this.toastyService.success(`Successfully told ${workflowStatus.name} to  ${actionName}`))
 			.catch(e => this.toastyService.error(`Error performing ${actionName} on workflow: ${e.message}`));
 	}
 

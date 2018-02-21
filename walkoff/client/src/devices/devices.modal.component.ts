@@ -1,4 +1,4 @@
-import { Component, Input, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, ChangeDetectorRef, ViewChild, ElementRef, OnInit, AfterViewInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 
@@ -8,6 +8,7 @@ import { WorkingDevice } from '../models/workingDevice';
 import { AppApi } from '../models/api/appApi';
 import { DeviceApi } from '../models/api/deviceApi';
 import { ParameterSchema } from '../models/api/parameterSchema';
+import { GenericObject } from '../models/genericObject';
 
 @Component({
 	selector: 'device-modal',
@@ -17,7 +18,7 @@ import { ParameterSchema } from '../models/api/parameterSchema';
 	],
 	providers: [DevicesService],
 })
-export class DevicesModalComponent {
+export class DevicesModalComponent implements OnInit, AfterViewInit {
 	@Input() workingDevice: WorkingDevice = new WorkingDevice();
 	@Input() title: string;
 	@Input() submitText: string;
@@ -38,7 +39,9 @@ export class DevicesModalComponent {
 	constructor (
 		private devicesService: DevicesService, private activeModal: NgbActiveModal, 
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig, private cdr: ChangeDetectorRef,
-	) {
+	) {}
+
+	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
 	}
 
@@ -58,12 +61,24 @@ export class DevicesModalComponent {
 		this.cdr.detectChanges();
 	}
 
+	/**
+	 * On selecting an app in the app select, get the DeviceTypes for the app from our App Apis.
+	 * Also clear device type data if needed.
+	 * @param event JS event fired from app select
+	 * @param appName App name from the selection
+	 */
 	handleAppSelection(event: any, appName: string): void {
 		this.workingDevice.app_name = appName;
 		this.deviceTypesForApp = this.appApis.find(a => a.name === appName).device_apis;
 		if (this.selectedDeviceType) { this._clearDeviceTypeData(); }
 	}
 
+	/**
+	 * On selecting a device type in the device type select, grab the DeviceApi from our AppApis.
+	 * Get the default or existing values for our device based on the Device Api.
+	 * @param event JS event fired from device type select
+	 * @param deviceType Device type from the selection
+	 */
 	handleDeviceTypeSelection(event: any, deviceType: string): void {
 		// If we just cleared our device type selection,
 		// clear our device type data from the working device and any temp storage
@@ -85,10 +100,22 @@ export class DevicesModalComponent {
 		this.validationErrors = {};
 	}
 
+	/**
+	 * On checking/unchecking an encrypted field clear box, we are marking if it is to be cleared on save.
+	 * This is needed because we need a distinction between passing empty string and null.
+	 * @param fieldName Name of field to toggle
+	 * @param isChecked Determine if we're clearing this field on save.
+	 */
 	handleEncryptedFieldClear(fieldName: string, isChecked: boolean): void {
 		this.encryptedFieldsToBeCleared[fieldName] = isChecked;
 	}
 
+	/**
+	 * Submits the add/edit device modal.
+	 * If we're editing a device, we also want to handle removing
+	 * encrypted fields by setting them as '' rather than just passing null.
+	 * Calls POST/PUT based upon add/edit and returns the added/updated device from the server.
+	 */
 	submit(): void {
 		if (!this.validate()) { return; }
 
@@ -127,6 +154,9 @@ export class DevicesModalComponent {
 		}
 	}
 
+	/**
+	 * Checks if basic info on the top level device params is valid (specified).
+	 */
 	isBasicInfoValid(): boolean {
 		if (this.workingDevice.name && this.workingDevice.name.trim() && 
 			this.workingDevice.app_name && this.workingDevice.type) { return true; }
@@ -134,6 +164,9 @@ export class DevicesModalComponent {
 		return false;
 	}
 
+	/**
+	 * Performs validation on each Device field based on the matching ParameterSchema for the DeviceApi.
+	 */
 	validate(): boolean {
 		const self = this;
 		this.validationErrors = {};
@@ -223,18 +256,31 @@ export class DevicesModalComponent {
 		return true;
 	}
 
+	/**
+	 * Returns the minimum value based on a ParameterSchema's minimum and exclusiveMinimum fields.
+	 * @param schema ParameterSchema to check against
+	 */
 	getMin(schema: ParameterSchema) {
 		if (schema.minimum === undefined) { return null; }
 		if (schema.exclusiveMinimum) { return schema.minimum + 1; }
 		return schema.minimum;
 	}
 
+	/**
+	 * Returns the maximum value based on a ParameterSchema's maximum and exclusiveMaximum fields.
+	 * @param schema ParameterSchema to check against
+	 */
 	getMax(schema: ParameterSchema) {
 		if (schema.maximum === undefined) { return null; }
 		if (schema.exclusiveMaximum) { return schema.maximum - 1; }
 		return schema.maximum;
 	}
 
+	/**
+	 * Sets a component variable to track confirm fields for encrypted values.
+	 * This is so we can allow the form to have encrypted values entered twice such that a user doesn't fat finger it.
+	 * @param deviceType DeviceApi to check for encrypted fields.
+	 */
 	private _getEncryptedConfirmFields(deviceType: DeviceApi): void {
 		this.encryptedConfirmFields = {};
 		deviceType.fields.forEach(field => {
@@ -242,16 +288,27 @@ export class DevicesModalComponent {
 		});
 	}
 
-	private _getDefaultValues(deviceApi: DeviceApi): { [key: string]: any } {
-		const out: { [key: string]: any } = {};
+	/**
+	 * Returns a field with the default value specified if possible.
+	 * @param deviceApi Device Api to check against
+	 */
+	private _getDefaultValues(deviceApi: DeviceApi): GenericObject {
+		const out: GenericObject = {};
 
 		deviceApi.fields.forEach(field => {
-			if (field.schema.default) { out[field.name] = field.schema.default; } else { out[field.name] = null; }
+			if (field.schema.default) {
+				out[field.name] = field.schema.default;
+			} else {
+				out[field.name] = null;
+			}
 		});
 
 		return out;
 	}
 
+	/**
+	 * Clears all of our device type data. Used if we switch device types or selected app.
+	 */
 	private _clearDeviceTypeData(): void {
 		this.selectedDeviceType = null;
 		this.workingDevice.type = null;
@@ -260,6 +317,11 @@ export class DevicesModalComponent {
 		this.encryptedConfirmFields = {};
 	}
 
+	/**
+	 * For a given field key in our validationErrors object, add message to the end of the existing message.
+	 * @param field Field name to concat validation messages for
+	 * @param message Message to concat
+	 */
 	private _concatValidationMessage(field: string, message: string) {
 		if (this.validationErrors[field]) { 
 			this.validationErrors[field] += '\n' + message;

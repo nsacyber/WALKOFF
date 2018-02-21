@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, ElementRef, ViewChild, ViewEncapsulation, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 
@@ -11,7 +11,7 @@ import { AuthService } from '../auth/auth.service';
 	encapsulation: ViewEncapsulation.None,
 	providers: [AuthService],
 })
-export class InterfacesComponent {
+export class InterfacesComponent implements OnInit {
 	@ViewChild('interfacesMain') main: ElementRef;
 	interfaceName: string;
 	paramsSub: any;
@@ -20,11 +20,14 @@ export class InterfacesComponent {
 	constructor(
 		private route: ActivatedRoute, private authService: AuthService,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
-	) {
-		this.toastyConfig.theme = 'bootstrap';
-	}
+	) {}
 
+	/**
+	 * On init, get our interface name from the route params and grab the interface.
+	 */
 	ngOnInit() {
+		this.toastyConfig.theme = 'bootstrap';
+
 		this.paramsSub = this.route.params.subscribe(params => {
 			this.interfaceName = params.interfaceName;
 			this.getInterface();
@@ -66,9 +69,3 @@ export class InterfacesComponent {
 	}
 }
 
-// function makeComponent(_selector: string, _templateUrl: string) {
-// 	// tslint:disable-next-line:max-classes-per-file
-// 	@Component({ selector: _selector, templateUrl: _templateUrl })
-// 	class FakeComponent {}
-// 	return FakeComponent;
-// }

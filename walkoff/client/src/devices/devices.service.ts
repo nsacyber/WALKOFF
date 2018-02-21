@@ -10,22 +10,9 @@ export class DevicesService {
 	constructor (private authHttp: JwtHttp) {
 	}
 
-	getDevicesForApp(appName: string): Promise<Device[]> {
-		return this.authHttp.get(`/api/apps/${appName}`)
-			.toPromise()
-			.then(this.extractData)
-			.then(data => data as Device[])
-			.catch(this.handleError);
-	}
-
-	getAppDevice(appName: string, deviceName: string): Promise<Device> {
-		return this.authHttp.get(`/api/apps/${appName}/devices/${deviceName}`)
-			.toPromise()
-			.then(this.extractData)
-			.then(data => data as Device)
-			.catch(this.handleError);
-	}
-
+	/**
+	 * Asynchronously returns an array of all existing devices from the server.
+	 */
 	getDevices(): Promise<Device[]> {
 		return this.authHttp.get('/api/devices')
 			.toPromise()
@@ -34,6 +21,10 @@ export class DevicesService {
 			.catch(this.handleError);
 	}
 
+	/**
+	 * Asynchronously sends a device to be added to the DB and returns the added device.
+	 * @param device Device to add
+	 */
 	addDevice(device: Device): Promise<Device> {
 		return this.authHttp.post('/api/devices', device)
 			.toPromise()
@@ -42,6 +33,10 @@ export class DevicesService {
 			.catch(this.handleError);
 	}
 
+	/**
+	 * Asynchronously sends a device to be updated within the DB and returns the edited device.
+	 * @param device Device to edit
+	 */
 	editDevice(device: Device): Promise<Device> {
 		return this.authHttp.put('/api/devices', device)
 			.toPromise()
@@ -50,6 +45,10 @@ export class DevicesService {
 			.catch(this.handleError);
 	}
 
+	/**
+	 * Asyncronously deletes a device from the DB and simply returns success.
+	 * @param deviceId Device ID to delete
+	 */
 	deleteDevice(deviceId: number): Promise<void> {
 		return this.authHttp.delete(`/api/devices/${deviceId}`)
 			.toPromise()
@@ -57,6 +56,10 @@ export class DevicesService {
 			.catch(this.handleError);
 	}
 
+	/**
+	 * Asynchronously returns a list of AppApi objects for all our loaded Apps.
+	 * AppApi objects are scoped to only contain device apis.
+	 */
 	getDeviceApis(): Promise<AppApi[]> {
 		return this.authHttp.get('api/apps/apis?field_name=device_apis')
 			.toPromise()

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -20,7 +20,7 @@ import { MessageListing } from '../models/message/messageListing';
 	],
 	providers: [MessagesService],
 })
-export class MessagesComponent {
+export class MessagesComponent implements OnInit {
 	utils: UtilitiesService = new UtilitiesService();
 	//Device Data Table params
 	messages: MessageListing[] = [];
@@ -34,7 +34,12 @@ export class MessagesComponent {
 	constructor(
 		private messagesService: MessagesService, private modalService: NgbModal,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
-	) {
+	) {}
+
+	/**
+	 * On component init, get a list of messages to display in our datatable and bind our search filter input.
+	 */
+	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.listMessages();
