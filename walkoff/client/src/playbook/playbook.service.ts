@@ -14,7 +14,9 @@ import { WorkflowStatus } from '../models/execution/workflowStatus';
 export class PlaybookService {
 	constructor(private authHttp: JwtHttp) { }
 
-	// TODO: should maybe just return all playbooks and not just names?
+	/**
+	 * Returns all playbooks and their child workflows in minimal form (id, name).
+	 */
 	getPlaybooks(): Promise<Playbook[]> {
 		return this.authHttp.get('/api/playbooks')
 			.toPromise()

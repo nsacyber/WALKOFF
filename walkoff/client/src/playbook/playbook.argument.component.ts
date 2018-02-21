@@ -67,6 +67,9 @@ export class PlaybookArgumentComponent {
 		this.initRoleSelect();
 	}
 
+	/**
+	 * Initializes the user select2 box for arguments that have { type: 'user' } ParameterSchemas.
+	 */
 	initUserSelect(): void {
 		if (!this.isUserSelect(this.parameterSchema)) { return; }
 
@@ -89,6 +92,9 @@ export class PlaybookArgumentComponent {
 		this.selectInitialValue = JSON.parse(JSON.stringify(this.argument.value));
 	}
 
+	/**
+	 * Initializes the role select2 box for arguments that have { type: 'role' } ParameterSchemas.
+	 */
 	initRoleSelect(): void {
 		if (!this.isRoleSelect(this.parameterSchema)) { return; }
 
@@ -125,6 +131,9 @@ export class PlaybookArgumentComponent {
 		}
 	}
 
+	/**
+	 * Adds an item to an array if the argument parameter is array.
+	 */
 	addItem(): void {
 		switch (this.selectedType) {
 			case 'string':
@@ -142,6 +151,10 @@ export class PlaybookArgumentComponent {
 		this.arrayTypes.push(this.selectedType);
 	}
 
+	/**
+	 * Moves a selected index in an array "up" (by swapping it with the ID before).
+	 * @param index Index to move
+	 */
 	moveUp(index: number): void {
 		const idAbove = index - 1;
 		const toBeSwapped = (this.argument.value as any[])[idAbove];
@@ -154,6 +167,10 @@ export class PlaybookArgumentComponent {
 		this.arrayTypes[index] = arrayTypeToBeSwapped;
 	}
 
+	/**
+	 * Moves a selected index in an array "down" (by swapping it with the ID after).
+	 * @param index Index to move
+	 */
 	moveDown(index: number): void {
 		const idBelow = index + 1;
 		const toBeSwapped = (this.argument.value as any[])[idBelow];
@@ -166,11 +183,18 @@ export class PlaybookArgumentComponent {
 		this.arrayTypes[index] = arrayTypeToBeSwapped;
 	}
 
+	/**
+	 * Removes a value at a given index of the argument value (if the value is an array).
+	 * @param index Index to remove
+	 */
 	removeItem(index: number): void {
 		(this.argument.value as any[]).splice(index, 1);
 		this.arrayTypes.splice(index, 1);
 	}
 
+	/**
+	 * Adds a new property to an our argument's value object of a given name and type.
+	 */
 	addProperty(): void {
 		if ((this.argument.value as object).hasOwnProperty(this.propertyName)) { return; }
 		this.propertyName = this.propertyName.trim();
@@ -191,11 +215,21 @@ export class PlaybookArgumentComponent {
 		this.propertyName = '';
 	}
 
+	/**
+	 * Removes a property from our argument's value object by key.
+	 * @param key Key to remove
+	 */
 	removeProperty(key: string): void {
 		delete (this.argument.value as any)[key];
 		delete this.objectTypes[key];
 	}
 
+	/**
+	 * Track by function for arrays.
+	 * Needed to track by index for primitives (since normally it tracks by reference for objects/arrays).
+	 * @param index Index to track by
+	 * @param item Item in array by index
+	 */
 	trackArraysBy(index: any, item: any) {
 		return index;
 	}

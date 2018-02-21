@@ -1362,6 +1362,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 		return this.appApis.filter(a => a.action_apis && a.action_apis.length);
 	}
 
+	/**
+	 * Converts an input object/value to a friendly string for display in the workflow status table.
+	 * @param input Input object / value to convert
+	 */
 	getFriendlyJSON(input: any): string {
 		if (!input) { return 'N/A'; }
 		let out = JSON.stringify(input, null, 1);
@@ -1370,6 +1374,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 		return out;
 	}
 
+	/**
+	 * Converts an input argument array to a friendly string for display in the workflow status table.
+	 * @param args Array of arguments to convert
+	 */
 	getFriendlyArguments(args: Argument[]): string {
 		if (!args || !args.length) { return 'N/A'; }
 
@@ -1388,6 +1396,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 		return out;
 	}
 
+	/**
+	 * Removes the white space in a given string.
+	 * @param input Input string to remove the whitespace of
+	 */
 	removeWhitespace(input: string): string {
 		return input.replace(/\s/g, '');
 	}

@@ -40,26 +40,20 @@ export class PlaybookTransformsComponent {
 		this.resetTransformSelection(this.selectedAppName);
 	}
 
+	/**
+	 * Sets/resets the transform selection to the initial transform in the list on load/after adding a transform.
+	 * @param appName App name to reset the transforms for
+	 */
 	resetTransformSelection(appName: string): void {
 		const app = this.appApis.find(a => a.name === appName);
 
 		if (app.transform_apis && app.transform_apis.length) { this.selectedTransformApi = app.transform_apis[0].name; }
 	}
 
+	/**
+	 * Adds a new transform of a given selected app/action to our transforms array.
+	 */
 	addTransform(): void {
-		// const api = this.appApis
-		// 	.find(a => a.name === this.selectedAppName).transform_apis
-		// 	.find(c => c.name === this.selectedTransformApi);
-		
-		// const args: Argument[] = [];
-		// api.parameters.filter(p => p.name !== api.data_in).forEach((parameterApi) => {
-		// 	args.push({
-		// 		name: parameterApi.name,
-		// 		value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
-		// 		reference: '',
-		// 		selection: '',
-		// 	});
-		// });
 		if (!this.selectedAppName || !this.selectedTransformApi) { return; }
 
 		const newTransform = new Transform();
@@ -70,6 +64,10 @@ export class PlaybookTransformsComponent {
 		this.transforms.push(newTransform);
 	}
 
+	/**
+	 * Moves a selected index in our transforms array "up" (by swapping it with the ID before).
+	 * @param index Index to move
+	 */
 	moveUp(index: number): void {
 		const idAbove = index - 1;
 		const toBeSwapped = this.transforms[idAbove];
@@ -78,6 +76,10 @@ export class PlaybookTransformsComponent {
 		this.transforms[index] = toBeSwapped;
 	}
 
+	/**
+	 * Moves a selected index in our transforms array "down" (by swapping it with the ID after).
+	 * @param index Index to move
+	 */
 	moveDown(index: number): void {
 		const idBelow = index + 1;
 		const toBeSwapped = this.transforms[idBelow];
@@ -86,10 +88,19 @@ export class PlaybookTransformsComponent {
 		this.transforms[index] = toBeSwapped;
 	}
 
+	/**
+	 * Removes a transform from our transforms array by a given index.
+	 * @param index Index to remove
+	 */
 	removeTransform(index: number): void {
 		this.transforms.splice(index, 1);
 	}
 
+	/**
+	 * Returns a TransformApi by app name and condition name.
+	 * @param appName App name to find
+	 * @param transformName Transform name to find
+	 */
 	getTransformApi(appName: string, transformName: string): TransformApi {
 		const transformApi = this.appApis.find(a => a.name === appName).transform_apis.find(t => t.name === transformName);
 		// Filter out the data_in parameter
@@ -97,6 +108,12 @@ export class PlaybookTransformsComponent {
 		return transformApi;
 	}
 
+	/**
+	 * For a given condition and parameter api, return the argument that already exists (by parameter name),
+	 * or create, add, and return an argument with the default values specified in the parameter API.
+	 * @param condition Condition to query/mutate
+	 * @param parameterApi ParameterApi to use as the basis
+	 */
 	getOrInitializeArgument(transform: Transform, parameterApi: ParameterApi): Argument {
 		// Find an existing argument
 		let argument = transform.arguments.find(a => a.name === parameterApi.name);
@@ -120,6 +137,9 @@ export class PlaybookTransformsComponent {
 		};
 	}
 
+	/**
+	 * Returns a list of transform names for the selected app name. Used to populate a select.
+	 */
 	getTransformNamesForApp(): string[] {
 		return this.appApis.find(a => a.name === this.selectedAppName).transform_apis.map(c => c.name);
 	}

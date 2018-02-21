@@ -40,27 +40,20 @@ export class PlaybookConditionsComponent {
 		this.resetConditionSelection(this.selectedAppName);
 	}
 
+	/**
+	 * Sets/resets the condition selection to the initial condition in the list on load/after adding a condition.
+	 * @param appName App name to reset the conditions for
+	 */
 	resetConditionSelection(appName: string) {
 		const app = this.appApis.find(a => a.name === appName);
 
 		if (app.condition_apis && app.condition_apis.length) { this.selectedConditionApi = app.condition_apis[0].name; }
 	}
 
+	/**
+	 * Adds a new condition of a given selected app/action to our conditions array.
+	 */
 	addCondition(): void {
-		// const api = this.appApis
-		// 	.find(a => a.name === this.selectedAppName).condition_apis
-		// 	.find(c => c.name === this.selectedConditionApi);
-
-		// const args: Argument[] = [];
-		// // Omit the parameter that matches the data_in
-		// api.parameters.filter(p => p.name !== api.data_in).forEach((parameterApi) => {
-		// 	args.push({
-		// 		name: parameterApi.name,
-		// 		value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
-		// 		reference: '',
-		// 		selection: '',
-		// 	});
-		// });
 		if (!this.selectedAppName || !this.selectedConditionApi) { return; }
 
 		const newCondition = new Condition();
@@ -71,6 +64,10 @@ export class PlaybookConditionsComponent {
 		this.conditions.push(newCondition);
 	}
 
+	/**
+	 * Moves a selected index in our conditions array "up" (by swapping it with the ID before).
+	 * @param index Index to move
+	 */
 	moveUp(index: number): void {
 		const idAbove = index - 1;
 		const toBeSwapped = this.conditions[idAbove];
@@ -79,6 +76,10 @@ export class PlaybookConditionsComponent {
 		this.conditions[index] = toBeSwapped;
 	}
 
+	/**
+	 * Moves a selected index in our conditions array "down" (by swapping it with the ID after).
+	 * @param index Index to move
+	 */
 	moveDown(index: number): void {
 		const idBelow = index + 1;
 		const toBeSwapped = this.conditions[idBelow];
@@ -87,10 +88,19 @@ export class PlaybookConditionsComponent {
 		this.conditions[index] = toBeSwapped;
 	}
 
+	/**
+	 * Removes a condition from our conditions array by a given index.
+	 * @param index Index to remove
+	 */
 	removeCondition(index: number): void {
 		this.conditions.splice(index, 1);
 	}
 
+	/**
+	 * Returns a ConditionApi by app name and condition name.
+	 * @param appName App name to find
+	 * @param conditionName Condition name to find
+	 */
 	getConditionApi(appName: string, conditionName: string): ConditionApi {
 		const conditionApi = this.appApis.find(a => a.name === appName).condition_apis.find(c => c.name === conditionName);
 		// Filter out the data_in parameter
@@ -98,6 +108,12 @@ export class PlaybookConditionsComponent {
 		return conditionApi;
 	}
 
+	/**
+	 * For a given condition and parameter api, return the argument that already exists (by parameter name),
+	 * or create, add, and return an argument with the default values specified in the parameter API.
+	 * @param condition Condition to query/mutate
+	 * @param parameterApi ParameterApi to use as the basis
+	 */
 	getOrInitializeArgument(condition: Condition, parameterApi: ParameterApi): Argument {
 		// Find an existing argument
 		let argument = condition.arguments.find(a => a.name === parameterApi.name);
@@ -121,6 +137,9 @@ export class PlaybookConditionsComponent {
 		};
 	}
 
+	/**
+	 * Returns a list of condition names for the selected app name. Used to populate a select.
+	 */
 	getConditionNamesForApp(): string[] {
 		return this.appApis.find(a => a.name === this.selectedAppName).condition_apis.map(c => c.name);
 	}

@@ -40,6 +40,11 @@ export class CasesModalComponent {
 		private casesService: CasesService, private activeModal: NgbActiveModal,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {}
 
+	/**
+	 * On component init, we want to build our D3 subscriptin tree from the subscriptionTree CaseNode hierarchy supplied.
+	 * Most of this logic is taken from https://bl.ocks.org/mbostock/4339083 and has been edited to fit our use case.
+	 * Some other updates were applied to better separate data and improve readability via arrow function notation etc.
+	 */
 	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
 		this.existingSubscriptionIds = this.workingCase.subscriptions.map(s => s.id);
@@ -76,6 +81,13 @@ export class CasesModalComponent {
 		this.update(this.root);
 	}
 
+	/**
+	 * Updates a node and its children based on whether they should be expanded or not, etc.
+	 * Called initially and whenever nodes are double clicked to expand/collapse.
+	 * Most of this logic is taken from https://bl.ocks.org/mbostock/4339083 and has been edited to fit our use case.
+	 * Some other updates were applied to better separate data and improve readability via arrow function notation etc.
+	 * @param source Source node to update
+	 */
 	update(source: any): void {
 		const self = this;
 		const duration = 400;
@@ -266,6 +278,13 @@ export class CasesModalComponent {
 		self.update(d);
 	}
 
+	/**
+	 * If we check or uncheck an event, we need to update the backing model.
+	 * If we are checking an event on an execution element we're not including, include it.
+	 * Re-filter the selected events for our subscription afterward. Remove the subscription if no events remain.
+	 * @param event JS Event fired on checking or unchecking an event after having selected a node
+	 * @param isChecked Value of the check box
+	 */
 	handleEventSelectionChange(event: any, isChecked: boolean): void {
 		if (!this.selectedNode.name) {
 			console.error('Attempted to select events without a node selected.');
@@ -310,10 +329,17 @@ export class CasesModalComponent {
 		}
 	}
 
+	/**
+	 * Gets a unique ID for a selected node based upon the UUID of the execution element.
+	 */
 	getId(): string {
 		return `id-${this.selectedNode.id}`;
 	}
 
+	/**
+	 * Submits the add/edit case modal.
+	 * Calls POST/PUT based upon add/edit and returns the added/updated case from the server.
+	 */
 	submit(): void {
 		const validationMessage = this.validate();
 		if (validationMessage) {
