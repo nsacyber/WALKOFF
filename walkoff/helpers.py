@@ -519,3 +519,4 @@ def __regenerate_ids_of_list(value, action_mapping):
     for list_element in (list_element_ for list_element_ in value
                          if isinstance(list_element_, dict)):
         regenerate_ids(list_element, action_mapping=action_mapping)
+

@@ -11,7 +11,7 @@ from walkoff.coredb.workflow import Workflow
 from uuid import uuid4
 from tests.util import device_db_help
 import walkoff.coredb.devicedb as db
-from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
+from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from walkoff.core.representable import Representable
 
 
@@ -33,7 +33,7 @@ def mock_resume_workflow(self, execution_id):
     WalkoffEvent.WorkflowResumed.send(MockWorkflow(execution_id))
 
 
-class TestWorkflowServer(ServerTestCase):
+class TestWorkflowStatus(ServerTestCase):
 
     def setUp(self):
         MultiprocessedExecutor.pause_workflow = mock_pause_workflow
@@ -46,6 +46,11 @@ class TestWorkflowServer(ServerTestCase):
         case_database.case_db.session.query(case_database.Event).delete()
         case_database.case_db.session.query(case_database.Case).delete()
         case_database.case_db.session.commit()
+
+    def act_on_workflow(self, execution_id, action):
+        data = {'execution_id': execution_id, 'status': action}
+        self.patch_with_status_check('/api/workflowqueue', headers=self.headers, status_code=NO_CONTENT,
+                                     content_type="application/json", data=json.dumps(data))
 
     def test_read_all_workflow_status_no_action(self):
         exec_id = uuid4()
@@ -92,17 +97,16 @@ class TestWorkflowServer(ServerTestCase):
 
         self.assertIn('started_at', response)
         response.pop('started_at')
-
         expected = {'execution_id': str(wf_exec_id),
                     'workflow_id': str(wf_id),
                     'name': 'test',
                     'status': 'running',
                     'current_action': {
                         'execution_id': str(action_exec_id),
-                        'id': str(action_id),
-                        'name': 'name',
+                        'action_id': str(action_id),
                         'action_name': 'test_action',
-                        'app_name': 'test_app'}}
+                        'app_name': 'test_app',
+                        'name': 'name'}}
         self.assertDictEqual(response, expected)
 
     def test_read_workflow_status(self):
@@ -152,7 +156,7 @@ class TestWorkflowServer(ServerTestCase):
         playbook = device_db_help.standard_load()
 
         workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {'count': 0}
@@ -166,7 +170,7 @@ class TestWorkflowServer(ServerTestCase):
             headers=self.headers,
             status_code=SUCCESS_ASYNC,
             content_type="application/json", data=json.dumps({'workflow_id': str(workflow.id)}))
-        flask_server.running_context.controller.wait_and_reset(1)
+        flask_server.running_context.executor.wait_and_reset(1)
         self.assertIn('id', response)
         self.assertEqual(result['count'], 1)
 
@@ -180,7 +184,7 @@ class TestWorkflowServer(ServerTestCase):
         playbook = device_db_help.standard_load()
         workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
 
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {'count': 0}
@@ -196,7 +200,7 @@ class TestWorkflowServer(ServerTestCase):
         self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
                                     content_type="application/json", data=json.dumps(data))
 
-        flask_server.running_context.controller.wait_and_reset(1)
+        flask_server.running_context.executor.wait_and_reset(1)
 
         self.assertEqual(result['count'], 1)
 
@@ -208,17 +212,13 @@ class TestWorkflowServer(ServerTestCase):
 
         @WalkoffEvent.WorkflowPaused.connect
         def workflow_paused_listener(sender, **kwargs):
-            data = {'execution_id': str(wf_exec_id),
-                    'status': 'resume'}
-
             result['paused'] = True
 
             wf_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
                 execution_id=str(wf_exec_id)).first()
             self.assertIsNotNone(wf_status)
 
-            self.patch_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS,
-                                         content_type="application/json", data=json.dumps(data))
+            self.act_on_workflow(str(wf_exec_id), 'resume')
 
         @WalkoffEvent.WorkflowResumed.connect
         def workflow_resumed_listener(sender, **kwargs):
@@ -229,11 +229,7 @@ class TestWorkflowServer(ServerTestCase):
         db.device_db.session.add(workflow_status)
         db.device_db.session.commit()
 
-        data = {'execution_id': str(wf_exec_id),
-                'status': 'pause'}
-
-        self.patch_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS,
-                                     content_type="application/json", data=json.dumps(data))
+        self.act_on_workflow(str(wf_exec_id), 'pause')
 
         self.assertTrue(result['paused'])
         self.assertTrue(result['resumed'])
@@ -243,18 +239,14 @@ class TestWorkflowServer(ServerTestCase):
 
         workflow = devicedb.device_db.session.query(Workflow).filter_by(name='pauseWorkflow').first()
 
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {"aborted": False}
 
         @WalkoffEvent.ActionExecutionSuccess.connect
         def y(sender, **kwargs):
-
-            data = {'execution_id': response['id'],
-                    'status': 'abort'}
-            self.patch_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS,
-                                         content_type="application/json", data=json.dumps(data))
+            self.act_on_workflow(response['id'], 'abort')
 
         @WalkoffEvent.WorkflowAborted.connect
         def workflow_aborted_listener(sender, **kwargs):
@@ -264,7 +256,7 @@ class TestWorkflowServer(ServerTestCase):
                                                content_type="application/json",
                                                data=json.dumps({'workflow_id': str(workflow.id)}))
 
-        flask_server.running_context.controller.wait_and_reset(1)
+        flask_server.running_context.executor.wait_and_reset(1)
         self.assertIn('id', response)
         self.assertTrue(result['aborted'])
 

@@ -8,6 +8,7 @@ from walkoff.coredb.saved_workflow import SavedWorkflow
 
 @WalkoffEvent.WorkflowExecutionPending.connect
 def __workflow_pending(sender, **kwargs):
+    devicedb.device_db.session.expire_all()
     workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
         execution_id=sender.get_execution_id()).first()
     if workflow_status:
@@ -20,6 +21,7 @@ def __workflow_pending(sender, **kwargs):
 
 @WalkoffEvent.WorkflowExecutionStart.connect
 def __workflow_started_callback(sender, **kwargs):
+    devicedb.device_db.session.expire_all()
     workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
         execution_id=sender['execution_id']).first()
     workflow_status.running()
@@ -28,6 +30,7 @@ def __workflow_started_callback(sender, **kwargs):
 
 @WalkoffEvent.WorkflowPaused.connect
 def __workflow_paused_callback(sender, **kwargs):
+    devicedb.device_db.session.expire_all()
     workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
         execution_id=sender['execution_id']).first()
     workflow_status.paused()
@@ -43,6 +46,7 @@ def __workflow_paused_callback(sender, **kwargs):
 @WalkoffEvent.TriggerActionAwaitingData.connect
 def __workflow_awaiting_data_callback(sender, **kwargs):
     workflow_execution_id = kwargs['data']['workflow']['execution_id']
+    devicedb.device_db.session.expire_all()
     workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
         execution_id=workflow_execution_id).first()
     workflow_status.awaiting_data()
@@ -56,6 +60,7 @@ def __workflow_awaiting_data_callback(sender, **kwargs):
 
 @WalkoffEvent.WorkflowShutdown.connect
 def __workflow_ended_callback(sender, **kwargs):
+    devicedb.device_db.session.expire_all()
     workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
         execution_id=sender['execution_id']).first()
     workflow_status.completed()
@@ -71,6 +76,7 @@ def __workflow_ended_callback(sender, **kwargs):
 
 @WalkoffEvent.WorkflowAborted.connect
 def __workflow_aborted(sender, **kwargs):
+    devicedb.device_db.session.expire_all()
     workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
         execution_id=sender['execution_id']).first()
     workflow_status.aborted()
@@ -86,6 +92,7 @@ def __workflow_aborted(sender, **kwargs):
 @WalkoffEvent.ActionStarted.connect
 def __action_start_callback(sender, **kwargs):
     workflow_execution_id = kwargs['data']['workflow']['execution_id']
+    devicedb.device_db.session.expire_all()
     action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
         execution_id=sender['execution_id']).first()
     if action_status:
@@ -103,6 +110,7 @@ def __action_start_callback(sender, **kwargs):
 
 @WalkoffEvent.ActionExecutionSuccess.connect
 def __action_execution_success_callback(sender, **kwargs):
+    devicedb.device_db.session.expire_all()
     action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
         execution_id=sender['execution_id']).first()
     action_status.completed_success(kwargs['data']['data'])
@@ -120,6 +128,7 @@ def __action_args_invalid_callback(sender, **kwargs):
 
 
 def handle_action_error(sender, kwargs):
+    devicedb.device_db.session.expire_all()
     action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
         execution_id=sender['execution_id']).first()
     action_status.completed_failure(kwargs['data']['data'])

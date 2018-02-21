@@ -2,9 +2,8 @@ import unittest
 
 import walkoff.appgateway
 import walkoff.config.config
-import walkoff.controller
 from walkoff.case import subscription, database
-from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
+from walkoff.multiprocessedexecutor import multiprocessedexecutor
 from tests import config
 from tests.util.case_db_help import *
 from tests.util.mock_objects import *
@@ -21,13 +20,13 @@ class TestSimpleWorkflow(unittest.TestCase):
         cache_apps(path=config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
         walkoff.config.config.num_processes = 2
-        MultiprocessedExecutor.initialize_threading = mock_initialize_threading
-        MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
-        MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
-        walkoff.controller.controller.initialize_threading()
+        multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
+        multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
+        multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
+        multiprocessedexecutor.multiprocessedexecutor.initialize_threading()
 
     def setUp(self):
-        self.controller = walkoff.controller.controller
+        self.executor = multiprocessedexecutor.multiprocessedexecutor
         self.start = datetime.utcnow()
 
         database.initialize()
@@ -40,16 +39,16 @@ class TestSimpleWorkflow(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
-        walkoff.controller.controller.shutdown_pool()
+        multiprocessedexecutor.multiprocessedexecutor.shutdown_pool()
         device_db_help.tear_down_device_db()
 
     def test_simple_workflow_execution(self):
         workflow = device_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
-        self.controller.execute_workflow(workflow.id)
+        self.executor.execute_workflow(workflow.id)
 
-        self.controller.wait_and_reset(1)
+        self.executor.wait_and_reset(1)
 
         actions = []
         for id_ in action_ids:
@@ -62,11 +61,11 @@ class TestSimpleWorkflow(unittest.TestCase):
     def test_multi_action_workflow(self):
         workflow = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         action_names = ['start', '1']
-        action_ids = [action.id for action in workflow.actions if action.name in action_names]
+        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
-        self.controller.execute_workflow(workflow.id)
+        self.executor.execute_workflow(workflow.id)
 
-        self.controller.wait_and_reset(1)
+        self.executor.wait_and_reset(1)
         actions = []
         for id_ in action_ids:
             actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
@@ -80,11 +79,11 @@ class TestSimpleWorkflow(unittest.TestCase):
     def test_error_workflow(self):
         workflow = device_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
         action_names = ['start', '1', 'error']
-        action_ids = [action.id for action in workflow.actions if action.name in action_names]
+        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
-        self.controller.execute_workflow(workflow.id)
+        self.executor.execute_workflow(workflow.id)
 
-        self.controller.wait_and_reset(1)
+        self.executor.wait_and_reset(1)
 
         actions = []
         for id_ in action_ids:
@@ -100,12 +99,12 @@ class TestSimpleWorkflow(unittest.TestCase):
     def test_workflow_with_dataflow(self):
         workflow = device_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
         action_names = ['start', '1', '2']
-        action_ids = [action.id for action in workflow.actions if action.name in action_names]
+        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
 
-        self.controller.execute_workflow(workflow.id)
+        self.executor.execute_workflow(workflow.id)
 
-        self.controller.wait_and_reset(1)
+        self.executor.wait_and_reset(1)
 
         actions = []
         for id_ in action_ids:
@@ -120,11 +119,11 @@ class TestSimpleWorkflow(unittest.TestCase):
     def test_workflow_with_dataflow_action_not_executed(self):
         workflow = device_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
         action_names = ['start', '1']
-        action_ids = [action.id for action in workflow.actions if action.name in action_names]
+        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
-        self.controller.execute_workflow(workflow.id)
+        self.executor.execute_workflow(workflow.id)
 
-        self.controller.wait_and_reset(1)
+        self.executor.wait_and_reset(1)
 
         actions = []
         for id_ in action_ids:

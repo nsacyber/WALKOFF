@@ -17,10 +17,11 @@ import { AvailableSubscription } from '../models/case/availableSubscription';
 import { Playbook } from '../models/playbook/playbook';
 
 interface ICaseHierarchy {
-	name: string;
-	plural: string;
+	subscriptionType: string;
+	arrayPropertyName: string;
 	prefix?: string;
 	children: ICaseHierarchy[];
+	recursivePropertyName?: string;
 }
 
 @Component({
@@ -44,45 +45,61 @@ export class CasesComponent implements OnInit {
 	caseFilterQuery: FormControl = new FormControl();
 	subscriptionTree: any;
 	caseHierarchy: ICaseHierarchy = {
-		name: 'playbook',
-		plural: 'playbooks',
+		subscriptionType: 'playbook',
+		arrayPropertyName: 'playbooks',
 		children: [
 			{
-				name: 'workflow',
-				plural: 'workflows',
+				subscriptionType: 'workflow',
+				arrayPropertyName: 'workflows',
 				children: [
 					{
-						name: 'action',
-						plural: 'actions',
+						subscriptionType: 'action',
+						arrayPropertyName: 'actions',
 						children: [
 							{
-								name: 'trigger',
-								plural: 'triggers',
+								subscriptionType: 'conditional_expression',
+								arrayPropertyName: 'trigger',
 								prefix: 'Trigger: ',
+								recursivePropertyName: 'child_expressions',
 								children: [
 									{
-										name: 'transform',
-										plural: 'transforms',
-										prefix: 'Transform: ',
-										children: [],
+										subscriptionType: 'condition',
+										arrayPropertyName: 'conditions',
+										prefix: 'Condition: ',
+										children: [
+											{
+												subscriptionType: 'transform',
+												arrayPropertyName: 'transforms',
+												prefix: 'Transform: ',
+												children: [],
+											},
+										],
 									},
 								],
 							},
 							{
-								name: 'branch',
-								plural: 'branches',
+								subscriptionType: 'branch',
+								arrayPropertyName: 'branches',
 								prefix: 'Branch: ',
 								children: [
 									{
-										name: 'condition',
-										plural: 'conditions',
+										subscriptionType: 'conditional_expression',
+										arrayPropertyName: 'condition',
 										prefix: 'Condition: ',
+										recursivePropertyName: 'child_expressions',
 										children: [
 											{
-												name: 'transform',
-												plural: 'transforms',
-												prefix: 'Transform: ',
-												children: [],
+												subscriptionType: 'condition',
+												arrayPropertyName: 'conditions',
+												prefix: 'Condition: ',
+												children: [
+													{
+														subscriptionType: 'transform',
+														arrayPropertyName: 'transforms',
+														prefix: 'Transform: ',
+														children: [],
+													},
+												],
 											},
 										],
 									},
@@ -223,17 +240,22 @@ export class CasesComponent implements OnInit {
 		//Top level controller data
 		const tree: CaseNode = { name: 'Controller', id: 'controller', type: 'controller', children: [] };
 
-		// Remap the branches to be under actions as they used to be
-		playbooks.forEach(p => {
-			p.workflows.forEach(w => {
-				w.actions.forEach(a => {
-					(a as any).branches = [];
+		playbooks.forEach(playbook => {
+			playbook.workflows.forEach(workflow => {
+				// Remap the branches to be under actions as they used to be
+				// Additionally, put the initial ConditionalExpressions in an array so we can iterate over them
+				workflow.actions.forEach(action => {
+					(action as any).branches = [];
+					
+					if (action.trigger) { (action as any).trigger = [action.trigger]; }
 				});
 
-				w.branches.forEach(b => {
-					const matchingAction = w.actions.find(s => s.id === b.destination_id);
-					if (matchingAction) { (b as any).name = matchingAction.name; }
-					(w.actions.find(s => s.id === b.source_id) as any).branches.push(b);
+				workflow.branches.forEach(branch => {
+					const matchingAction = workflow.actions.find(s => s.id === branch.destination_id);
+					if (matchingAction) { (branch as any).name = matchingAction.name; }
+					(workflow.actions.find(s => s.id === branch.source_id) as any).branches.push(branch);
+
+					if (branch.condition) { (branch as any).condition = [branch.condition]; }
 				});
 			});
 		});
@@ -254,18 +276,28 @@ export class CasesComponent implements OnInit {
 			nodeName += target.name;
 		} else if (target.action_name) {
 			nodeName += target.action_name;
+		} else if (target.operator) {
+			nodeName += target.operator;
 		} else { nodeName = '(name unknown)'; }
 
 		const node: CaseNode = { 
 			name: nodeName, 
 			id: target.id ? target.id : '', 
-			type: hierarchy.name, 
+			type: hierarchy.subscriptionType, 
 			children: [],
 		};
+
+		// If we're specifying a recursive association (e.g. ConditionalExpressions),
+		// iterate through children with the same hierarchical structure
+		if (hierarchy.recursivePropertyName) {
+			(target[hierarchy.recursivePropertyName] as any[]).forEach(sub => {
+				node.children.push(self.getNodeRecursive(sub, hierarchy));
+			});
+		}
 		
 		// For each child hierarchy, (most cases only 1 child type), iterate through the child elements
 		hierarchy.children.forEach(childHierarchy => {
-			target[childHierarchy.plural].forEach((sub: any) => {
+			(target[childHierarchy.arrayPropertyName] as any[]).forEach(sub => {
 				node.children.push(self.getNodeRecursive(sub, childHierarchy));
 			});
 		});

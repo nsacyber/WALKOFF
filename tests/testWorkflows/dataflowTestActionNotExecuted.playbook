@@ -69,7 +69,6 @@
             ],
             "branches": [
                 {
-                    "conditions": [],
                     "destination_id": "d3dccc61-bb03-43b2-b8be-c1a284f07cdf",
                     "source_id": "96ae7509-1d86-45c8-a938-19ca2a293dc0",
                     "status": "Success"

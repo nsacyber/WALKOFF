@@ -5,6 +5,7 @@ import threading
 
 from sqlalchemy import Column, String, ForeignKey, orm, UniqueConstraint
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway.appinstance import AppInstance
@@ -13,7 +14,6 @@ from walkoff.events import WalkoffEvent
 from walkoff.coredb.action import Action
 from walkoff.coredb.executionelement import ExecutionElement
 from walkoff.helpers import InvalidArgument, format_exception_message
-from uuid import uuid4
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,8 @@ class Workflow(ExecutionElement, Device_Base):
     __tablename__ = 'workflow'
     _playbook_id = Column(UUIDType(), ForeignKey('playbook.id'))
     name = Column(String(80), nullable=False)
-    actions = relationship('Action', backref=backref('_workflow'), cascade='all, delete-orphan')
+    actions = relationship('Action', backref=backref('_workflow'), cascade='all, delete-orphan',
+                           collection_class=attribute_mapped_collection('id'))
     branches = relationship('Branch', backref=backref('_workflow'), cascade='all, delete-orphan')
     start = Column(UUIDType(), nullable=False)
     __table_args__ = (UniqueConstraint('_playbook_id', 'name', name='_playbook_workflow'),)
@@ -39,15 +40,8 @@ class Workflow(ExecutionElement, Device_Base):
         """
         ExecutionElement.__init__(self, id)
         self.name = name
-
-        self.actions = []
-        if actions:
-            self.actions = actions
-
-        self.branches = []
-        if branches:
-            self.branches = branches
-
+        self.actions = {action.id: action for action in actions} if actions else {}
+        self.branches = branches if branches else []
         self.start = start
 
         self._is_paused = False
@@ -66,20 +60,20 @@ class Workflow(ExecutionElement, Device_Base):
         self._instances = {}
         self._execution_id = 'default'
 
-    def remove_action(self, id_):
+    def remove_action(self, action_id):
         """Removes a Action object from the Workflow's list of Actions given the Action ID.
 
         Args:
-            id_ (str): The ID of the Action object to be removed.
+            action_id (str): The ID of the Action object to be removed.
 
         Returns:
             True on success, False otherwise.
         """
-        self.actions[:] = [action for action in self.actions if action.id != id_]
+        del self.actions[action_id]
         self.branches[:] = [branch for branch in self.branches if
-                            (branch.source_id != id_ and branch.destination_id != id_)]
+                            (branch.source_id != action_id and branch.destination_id != action_id)]
 
-        logger.debug('Removed action {0} from workflow {1}'.format(id_, self.name))
+        logger.debug('Removed action {0} from workflow {1}'.format(action_id, self.name))
         return True
 
     def pause(self):
@@ -163,20 +157,14 @@ class Workflow(ExecutionElement, Device_Base):
 
     def __actions(self, start):
         current_id = start
-        current_action = self.__get_action_by_id(current_id)
+        current_action = self.actions[current_id]
 
         while current_action:
             yield current_action
             current_id = self.get_branch(current_action, self._accumulator)
-            current_action = self.__get_action_by_id(current_id) if current_id is not None else None
+            current_action = self.actions[current_id] if current_id is not None else None
             yield  # needed so that when for-loop calls next() it doesn't advance too far
         yield  # needed so you can avoid catching StopIteration exception
-
-    def __get_action_by_id(self, action_id):
-        for action in self.actions:
-            if action.id == action_id:
-                return action
-        return None
 
     def get_branch(self, current_action, accumulator):
         """Executes the Branch objects associated with this Workflow to determine which Action should be
@@ -268,27 +256,3 @@ class Workflow(ExecutionElement, Device_Base):
 
     def get_instances(self):
         return self._instances
-
-    def regenerate_ids(self, with_children=True, action_mapping=None):
-        """
-        Regenerates the IDs of the workflow and its children
-        Args:
-            with_children (bool optional): Regenerate the childrens' IDs of this object? Defaults to True
-            action_mapping (dict, optional): The dictionary of prev action IDs to new action IDs. Defaults to None.
-        """
-        self.id = str(uuid4())
-        action_mapping = {}
-
-        for action in self.actions:
-            prev_id = action.id
-            action_mapping[prev_id] = action.id
-
-        for action in self.actions:
-            action.regenerate_ids(action_mapping)
-
-        for branch in self.branches:
-            branch.source_id = action_mapping[branch.source_id]
-            branch.destination_id = action_mapping[branch.destination_id]
-            branch.regenerate_ids(action_mapping)
-
-        self.start = action_mapping[self.start]

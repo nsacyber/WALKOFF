@@ -26,10 +26,11 @@ class Action(ExecutionElement, Device_Base):
     name = Column(String(80))
     device_id = Column(Integer)
     arguments = relationship('Argument', backref=backref('_action'), cascade='all, delete, delete-orphan')
-    triggers = relationship('Condition', backref=backref('_action'), cascade='all, delete-orphan')
+    trigger = relationship('ConditionalExpression', backref=backref('_action'), cascade='all, delete-orphan',
+                           uselist=False)
     position = relationship('Position', uselist=False, backref=backref('_action'), cascade='all, delete-orphan')
 
-    def __init__(self, app_name, action_name, name, device_id=None, id=None, arguments=None, triggers=None,
+    def __init__(self, app_name, action_name, name, device_id=None, id=None, arguments=None, trigger=None,
                  position=None):
         """Initializes a new Action object. A Workflow has many actions that it executes.
 
@@ -41,16 +42,13 @@ class Action(ExecutionElement, Device_Base):
                 to None.
             arguments (list[Argument], optional): A list of Argument objects that are parameters to the action.
                 Defaults to None.
-            triggers (list[Condition], optional): A list of Condition objects for the Action. If a Action should wait
-                for data before continuing, then include these Trigger objects in the Action init. Defaults to None.
+            trigger (ConditionalExpression, optional): A ConditionExpression which causes an Action to wait until the
+                data is sent fulfilling the condition. Defaults to None.
             position (Position, optional): Position object for the Action. Defaults to None.
         """
         ExecutionElement.__init__(self, id)
 
-        self.triggers = []
-        if triggers:
-            for trigger in triggers:
-                self.triggers.append(trigger)
+        self.trigger = trigger
 
         self.name = name
         self.device_id = device_id
@@ -126,8 +124,7 @@ class Action(ExecutionElement, Device_Base):
         self._execution_id = str(uuid.uuid4())
 
         WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionStarted)
-
-        if self.triggers and not resume:
+        if self.trigger and not resume:
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionAwaitingData)
             logger.debug('Trigger Action {} is awaiting data'.format(self.name))
             self._output = None
@@ -170,7 +167,7 @@ class Action(ExecutionElement, Device_Base):
         WalkoffEvent.CommonWorkflowSignal.send(self, event=event, data=self._output.as_json())
 
     def execute_trigger(self, data_in, accumulator):
-        if all(trigger.execute(data_in=data_in, accumulator=accumulator) for trigger in self.triggers):
+        if self.trigger.execute(data_in=data_in, accumulator=accumulator):
             logger.debug('Trigger is valid for input {0}'.format(data_in))
             return True
         else:

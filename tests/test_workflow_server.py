@@ -5,8 +5,10 @@ from tests.util.servertestcase import ServerTestCase
 import walkoff.coredb.devicedb as devicedb
 from walkoff.coredb.playbook import Playbook
 from walkoff.coredb.workflow import Workflow
-from uuid import uuid4
+from uuid import uuid4, UUID
 from tests.util import device_db_help
+import os
+from tests.config import test_workflows_path
 
 
 class TestWorkflowServer(ServerTestCase):
@@ -19,7 +21,6 @@ class TestWorkflowServer(ServerTestCase):
         self.empty_workflow_json = \
             {'actions': [
                 {"app_name": "HelloWorld", "action_name": "helloWorld", "name": "helloworld", "id": str(uuid4()),
-                 "triggers": [],
                  "arguments": []}],
                 'name': self.add_workflow_name,
                 'start': str(uuid4()),
@@ -52,12 +53,10 @@ class TestWorkflowServer(ServerTestCase):
         return element
 
     def check_invalid_uuid(self, verb, path, element_type, **kwargs):
-        self.verb_lookup[verb](path, headers=self.headers, error='Invalid ID for {}'.format(element_type),
-                               status_code=BAD_REQUEST, **kwargs)
+        self.verb_lookup[verb](path, headers=self.headers, status_code=BAD_REQUEST, **kwargs)
 
     def check_invalid_id(self, verb, path, element_type, **kwargs):
-        self.verb_lookup[verb](path, error='{} does not exist'.format(element_type.title()), headers=self.headers,
-                               status_code=OBJECT_DNE_ERROR, **kwargs)
+        self.verb_lookup[verb](path, headers=self.headers,status_code=OBJECT_DNE_ERROR, **kwargs)
 
     def test_read_all_playbooks(self):
         playbook_names = ['basicWorkflowTest', 'dataflowTest']
@@ -418,3 +417,24 @@ class TestWorkflowServer(ServerTestCase):
         self.assertIsNotNone(copy_playbook)
 
         self.assertEqual(len(playbook.workflows), len(copy_playbook.workflows))
+
+    def test_get_uuid(self):
+        response = self.get_with_status_check('/api/uuid', status_code=OBJECT_CREATED)
+        self.assertIn('uuid', response)
+        UUID(response['uuid'])
+
+    def test_import_workflow(self):
+        path = os.path.join(test_workflows_path, 'basicWorkflowTest.playbook')
+        files = {'file': (path, open(path, 'r'), 'application/json')}
+
+        response = self.post_with_status_check('/api/playbooks', headers=self.headers, status_code=OBJECT_CREATED,
+                                               data=files, content_type='multipart/form-data')
+        playbook = devicedb.device_db.session.query(Playbook).filter_by(id=response['id']).first()
+        self.assertIsNotNone(playbook)
+        self.assertDictEqual(playbook.read(), response)
+
+    def test_export_workflow(self):
+        playbook = device_db_help.standard_load()
+
+        response = self.get_with_status_check('/api/playbooks/{}?mode=export'.format(playbook.id), headers=self.headers)
+        self.assertDictEqual(playbook.read(), response)

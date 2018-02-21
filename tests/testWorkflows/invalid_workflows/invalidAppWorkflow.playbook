@@ -27,25 +27,6 @@
             ],
             "branches": [
                 {
-                    "conditions": [
-                        {
-                            "action_name": "regMatch",
-                            "app_name": "HelloWorldBounded",
-                            "arguments": [
-                                {
-                                    "name": "regex",
-                                    "value": "(.*)"
-                                }
-                            ],
-                            "transforms": [
-                                {
-                                    "action_name": "length",
-                                    "app_name": "HelloWorldBounded",
-                                    "arguments": []
-                                }
-                            ]
-                        }
-                    ],
                     "destination_id": "aee0c4f0-6284-4e4a-a951-b0782876e852",
                     "source_id": "7b8598de-5bc9-46f2-bb4f-e7d915052063",
                     "status": "Success"

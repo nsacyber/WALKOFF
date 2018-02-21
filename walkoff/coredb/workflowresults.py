@@ -57,9 +57,7 @@ class WorkflowStatus(Device_Base):
             ret["action_statuses"] = [action_status.as_json() for action_status in self._action_statuses]
         elif self._action_statuses:
             current_action = self._action_statuses[-1]
-            current_action_json = current_action.as_json(summary=True)
-            current_action_json['id'] = current_action_json.pop('action_id')
-            ret['current_action'] = current_action_json
+            ret['current_action'] = current_action.as_json(summary=True)
 
         return ret
 
@@ -114,12 +112,13 @@ class ActionStatus(Device_Base):
                "action_id": self.action_id,
                "name": self.name,
                "app_name": self.app_name,
-               "action_name": self.action_name,}
+               "action_name": self.action_name}
         if summary:
             return ret
-        ret.update({"arguments": json.loads(self.arguments) if self.arguments else [],
-                    "status": self.status.name,
-                    "started_at": self.started_at.isoformat()})
+        ret.update(
+            {"arguments": json.loads(self.arguments) if self.arguments else [],
+             "status": self.status.name,
+             "started_at": self.started_at.isoformat()})
         if self.status in [ActionStatusEnum.success, ActionStatusEnum.failure]:
             ret["result"] = json.loads(self.result)
             ret["completed_at"] = self.completed_at.isoformat()

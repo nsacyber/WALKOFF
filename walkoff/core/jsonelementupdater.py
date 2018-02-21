@@ -3,6 +3,7 @@ from uuid import UUID
 from six import string_types
 
 
+
 class JsonElementUpdater(object):
     """Updates an ExecutionElement from JSON
     """

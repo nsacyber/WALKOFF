@@ -35,5 +35,5 @@ if __name__ == '__main__':
         print('\nInterrupted! Ending full test')
         successful = False
     finally:
-        walkoff.server.context.running_context.controller.shutdown_pool()
+        walkoff.server.context.running_context.executor.shutdown_pool()
         sys.exit(not successful)

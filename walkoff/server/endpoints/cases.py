@@ -13,6 +13,19 @@ from walkoff.serverdb import db
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.serverdb.casesubscription import CaseSubscription
+from walkoff.server.problem import Problem
+from walkoff.server.decorators import with_resource_factory
+
+
+def case_getter(case_id):
+    return case_database.case_db.session.query(case_database.Case) \
+        .filter(case_database.Case.id == case_id).first()
+
+
+with_case = with_resource_factory('case', case_getter)
+with_subscription = with_resource_factory(
+    'subscription',
+    lambda case_id: CaseSubscription.query.filter_by(id=case_id).first())
 
 
 def read_all_cases():
@@ -39,7 +52,11 @@ def create_case():
             return case.as_json(), OBJECT_CREATED
         else:
             current_app.logger.warning('Cannot create case {0}. Case already exists.'.format(case_name))
-            return {"error": "Case already exists."}, OBJECT_EXISTS_ERROR
+            return Problem.from_crud_resource(
+                OBJECT_EXISTS_ERROR,
+                'case',
+                'create',
+                'Case with name {} already exists.'.format(case_name))
 
     return __func()
 
@@ -47,14 +64,9 @@ def create_case():
 def read_case(case_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('cases', ['read']))
-    def __func():
-        case_obj = case_database.case_db.session.query(case_database.Case) \
-            .filter(case_database.Case.id == case_id).first()
-        if case_obj:
+    @with_case('read', case_id)
+    def __func(case_obj):
             return case_obj.as_json(), SUCCESS
-        else:
-            current_app.logger.error('Cannot read case {0}. Case does not exist.'.format(case_id))
-            return {'error': 'Case does not exist.'}, OBJECT_DNE_ERROR
 
     return __func()
 
@@ -85,7 +97,11 @@ def update_case():
             return case_obj.as_json(), SUCCESS
         else:
             current_app.logger.error('Cannot update case {0}. Case does not exist.'.format(data['id']))
-            return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
+            return Problem.from_crud_resource(
+                OBJECT_DNE_ERROR,
+                'case.',
+                'update',
+                'Case {} does not exist.'.format(data['id']))
 
     return __func()
 
@@ -107,7 +123,11 @@ def delete_case(case_id):
             return {}, NO_CONTENT
         else:
             current_app.logger.error('Cannot delete case {0}. Case does not exist.'.format(case_id))
-            return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
+            return Problem.from_crud_resource(
+                OBJECT_DNE_ERROR,
+                'case',
+                'delete',
+                'Case {} does not exist.'.format(case_id))
 
     return __func()
 
@@ -173,7 +193,10 @@ def read_all_events(case_id):
             result = case_database.case_db.case_events_as_json(case_id)
         except Exception:
             current_app.logger.error('Cannot get events for case {0}. Case does not exist.'.format(case_id))
-            return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
+            return Problem(
+                OBJECT_DNE_ERROR,
+                'Could not read events for case.',
+                'Case {} does not exist.'.format(case_id))
 
         return result, SUCCESS
 

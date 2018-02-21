@@ -8,7 +8,7 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
         schema:
           $ref: '#/definitions/AppMetrics'
@@ -22,7 +22,7 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
         schema:
           $ref: '#/definitions/WorkflowMetrics'

@@ -1,6 +1,6 @@
 import { Argument } from './argument';
 import { GraphPosition } from './graphPosition';
-import { Condition } from './condition';
+import { ConditionalExpression } from './conditionalExpression';
 import { ExecutionElement } from './executionElement';
 
 export class Action extends ExecutionElement {
@@ -13,5 +13,5 @@ export class Action extends ExecutionElement {
 	risk?: number;
 	arguments: Argument[] = [];
 	// output: string;
-	triggers: Condition[] = [];
+	trigger?: ConditionalExpression;
 }

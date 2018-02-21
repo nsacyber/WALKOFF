@@ -68,5 +68,9 @@
               type: string
               description: the refresh token to be revoked
     responses:
-      200:
+      204:
         description: Success
+      400:
+        description: Invalid refresh token
+        schema:
+          $ref: '#/definitions/Error'
