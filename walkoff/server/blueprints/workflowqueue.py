@@ -27,9 +27,7 @@ __workflow_event_id_counter = 0
 def __action_event_stream():
     global __action_event_id_counter
     while True:
-        print('waiting for action data')
         event_type, data = __action_event_json.get()
-        print('got action data')
         yield create_sse_event(event_id=__action_event_id_counter, event=event_type, data=data)
         __action_event_id_counter += 1
         __action_signal.wait()
@@ -38,9 +36,7 @@ def __action_event_stream():
 def __workflow_event_stream():
     global __workflow_event_id_counter
     while True:
-        print('waiting for workflow data')
         event_type, data = __workflow_event_json.get()
-        print('got workflow data')
         yield create_sse_event(event_id=__workflow_event_id_counter, event=event_type, data=data)
         __workflow_event_id_counter += 1
         __workflow_signal.wait()
@@ -75,14 +71,12 @@ def send_action_result_to_sse(result, event):
 
 @WalkoffEvent.ActionStarted.connect
 def __action_started_callback(sender, **kwargs):
-    print('call action started')
     result = format_action_data(sender, kwargs, 'started_at', ActionStatusEnum.executing)
     send_action_result_to_sse(result, 'started')
 
 
 @WalkoffEvent.ActionExecutionSuccess.connect
 def __action_ended_callback(sender, **kwargs):
-    print('call action success')
     result = format_action_data_with_results(sender, kwargs, 'completed_at', ActionStatusEnum.success)
     send_action_result_to_sse(result, 'success')
 
@@ -98,7 +92,6 @@ def __action_args_invalid_callback(sender, **kwargs):
 
 
 def __handle_action_error(sender, kwargs):
-    print('call action error')
     result = format_action_data_with_results(sender, kwargs, 'completed_at', ActionStatusEnum.failure)
     send_action_result_to_sse(result, 'failure')
 
@@ -141,14 +134,12 @@ def send_workflow_result_to_sse(result, event):
 
 @WalkoffEvent.WorkflowExecutionPending.connect
 def __workflow_pending_callback(sender, **kwargs):
-    print('call wf pending')
     result = format_workflow_result_from_workflow(sender, WorkflowStatusEnum.pending)
     send_workflow_result_to_sse(result, 'queued')
 
 
 @WalkoffEvent.WorkflowExecutionStart.connect
 def __workflow_started_callback(sender, **kwargs):
-    print('call wf exec start')
     result = format_workflow_result(sender, WorkflowStatusEnum.running)
     send_workflow_result_to_sse(result, 'started')
 
@@ -187,7 +178,6 @@ def __workflow_aborted_callback(sender, **kwargs):
 
 @WalkoffEvent.WorkflowShutdown.connect
 def __workflow_shutdown_callback(sender, **kwargs):
-    print('call wf shutdown')
     result = format_workflow_result(sender, WorkflowStatusEnum.completed)
     send_workflow_result_to_sse(result, 'completed')
 
