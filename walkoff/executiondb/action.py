@@ -20,10 +20,10 @@ logger = logging.getLogger(__name__)
 class Action(ExecutionElement, Device_Base):
 
     __tablename__ = 'action'
-    _workflow_id = Column(UUIDType(), ForeignKey('workflow.id'))
+    _workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
-    name = Column(String(80))
+    name = Column(String(80), nullable=False)
     device_id = Column(Integer)
     arguments = relationship('Argument', backref=backref('_action'), cascade='all, delete, delete-orphan')
     trigger = relationship('ConditionalExpression', backref=backref('_action'), cascade='all, delete-orphan',

@@ -13,12 +13,12 @@ logger = logging.getLogger(__name__)
 class Argument(Representable, Device_Base):
     __tablename__ = 'argument'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    _action_id = Column(UUIDType(), ForeignKey('action.id'))
-    _condition_id = Column(UUIDType(), ForeignKey('condition.id'))
-    _transform_id = Column(UUIDType(), ForeignKey('transform.id'))
+    _action_id = Column(UUIDType(binary=False), ForeignKey('action.id'))
+    _condition_id = Column(UUIDType(binary=False), ForeignKey('condition.id'))
+    _transform_id = Column(UUIDType(binary=False), ForeignKey('transform.id'))
     name = Column(String(255), nullable=False)
     value = Column(JSONType)
-    reference = Column(UUIDType())
+    reference = Column(UUIDType(binary=False))
     selection = Column(ScalarListType())
 
     def __init__(self, name, value=None, reference=None, selection=None):

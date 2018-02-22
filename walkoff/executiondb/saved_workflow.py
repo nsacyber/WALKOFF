@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 class SavedWorkflow(Device_Base):
     __tablename__ = 'saved_workflow'
-    workflow_execution_id = Column(UUIDType(), primary_key=True)
-    workflow_id = Column(UUIDType(), nullable=False)
-    action_id = Column(UUIDType(), nullable=False)
+    workflow_execution_id = Column(UUIDType(binary=False), primary_key=True)
+    workflow_id = Column(UUIDType(binary=False), nullable=False)
+    action_id = Column(UUIDType(binary=False), nullable=False)
     accumulator = Column(PickleType(), nullable=False)
     app_instances = Column(PickleType(), nullable=False)
 

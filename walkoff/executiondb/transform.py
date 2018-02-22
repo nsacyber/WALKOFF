@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class Transform(ExecutionElement, Device_Base):
     __tablename__ = 'transform'
-    _condition_id = Column(UUIDType(), ForeignKey('condition.id'))
+    _condition_id = Column(UUIDType(binary=False), ForeignKey('condition.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     arguments = relationship('Argument', backref=backref('_transform'), cascade='all, delete, delete-orphan')

@@ -6,7 +6,7 @@ from uuid import uuid4
 
 
 class ExecutionElement(Representable):
-    id = Column(UUIDType(), primary_key=True, nullable=False, default=uuid4)
+    id = Column(UUIDType(binary=False), primary_key=True, nullable=False, default=uuid4)
 
     def __init__(self, id):
         if id:

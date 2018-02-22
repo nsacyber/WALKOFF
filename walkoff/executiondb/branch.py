@@ -13,9 +13,9 @@ logger = logging.getLogger(__name__)
 
 class Branch(ExecutionElement, Device_Base):
     __tablename__ = 'branch'
-    _workflow_id = Column(UUIDType(), ForeignKey('workflow.id'))
-    source_id = Column(UUIDType(), nullable=False)
-    destination_id = Column(UUIDType(), nullable=False)
+    _workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id'))
+    source_id = Column(UUIDType(binary=False), nullable=False)
+    destination_id = Column(UUIDType(binary=False), nullable=False)
     status = Column(String(80))
     condition = relationship('ConditionalExpression', backref=backref('_branch'), cascade='all, delete-orphan',
                              uselist=False)

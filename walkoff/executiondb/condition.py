@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class Condition(ExecutionElement, Device_Base):
     __tablename__ = 'condition'
-    _conditional_expression_id = Column(UUIDType(), ForeignKey('conditional_expression.id'))
+    _conditional_expression_id = Column(UUIDType(binary=False), ForeignKey('conditional_expression.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     is_negated = Column(Boolean, default=False)

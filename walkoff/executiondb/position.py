@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class Position(Representable, Device_Base):
     __tablename__ = 'position'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    _action_id = Column(UUIDType(), ForeignKey('action.id'))
+    _action_id = Column(UUIDType(binary=False), ForeignKey('action.id'))
     x = Column(Float, nullable=False)
     y = Column(Float, nullable=False)
 
