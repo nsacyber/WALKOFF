@@ -10,21 +10,21 @@ from walkoff.helpers import InvalidArgument
 from walkoff.events import WalkoffEvent
 logger = logging.getLogger(__name__)
 
+valid_operators = ('and', 'or', 'xor')
 
 class ConditionalExpression(ExecutionElement, Device_Base):
     __tablename__ = 'conditional_expression'
     id = Column(UUIDType(), primary_key=True, default=uuid4)
-    _action_id = Column(UUIDType(), ForeignKey('action.id'))
-    _branch_id = Column(UUIDType(), ForeignKey('branch.id'))
-    _parent_id = Column(UUIDType(), ForeignKey(id))
-    operator = Column(Enum('and', 'or', 'xor', name='operator_types'), nullable=False)
+    action_id = Column(UUIDType(), ForeignKey('action.id'))
+    branch_id = Column(UUIDType(), ForeignKey('branch.id'))
+    parent_id = Column(UUIDType(), ForeignKey(id))
+    operator = Column(Enum(*valid_operators, name='operator_types'), nullable=False)
     is_negated = Column(Boolean, default=False)
     child_expressions = relationship('ConditionalExpression',
                                      cascade='all, delete-orphan',
-                                     backref=backref('_parent', remote_side=id))
+                                     backref=backref('parent', remote_side=id))
     conditions = relationship(
         'Condition',
-        backref=backref('_expression'),
         cascade='all, delete-orphan')
 
     def __init__(self, operator='and', id=None, is_negated=False, child_expressions=None, conditions=None):
@@ -41,7 +41,7 @@ class ConditionalExpression(ExecutionElement, Device_Base):
 
     def _construct_children(self, child_expressions):
         for child in child_expressions:
-            child._parent = self
+            child.parent = self
 
     @orm.reconstructor
     def init_on_load(self):

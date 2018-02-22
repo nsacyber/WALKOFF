@@ -150,8 +150,9 @@ class ServerTestCase(unittest.TestCase):
         try:
             response = self.http_verb_lookup[method.lower()](url, **kwargs)
         except KeyError:
+            import traceback
+            traceback.print_exc()
             raise ValueError('method must be either get, put, post, patch, or delete')
-        self.assertEqual(response.status_code, status_code)
         if status_code != NO_CONTENT:
             response = json.loads(response.get_data(as_text=True))
         if error:

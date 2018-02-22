@@ -20,13 +20,12 @@ logger = logging.getLogger(__name__)
 
 class Workflow(ExecutionElement, Device_Base):
     __tablename__ = 'workflow'
-    _playbook_id = Column(UUIDType(), ForeignKey('playbook.id'))
+    playbook_id = Column(UUIDType(), ForeignKey('playbook.id'))
     name = Column(String(80), nullable=False)
-    actions = relationship('Action', backref=backref('_workflow'), cascade='all, delete-orphan',
-                           collection_class=attribute_mapped_collection('id'))
-    branches = relationship('Branch', backref=backref('_workflow'), cascade='all, delete-orphan')
+    actions = relationship('Action', cascade='all, delete-orphan')
+    branches = relationship('Branch', cascade='all, delete-orphan')
     start = Column(UUIDType(), nullable=False)
-    __table_args__ = (UniqueConstraint('_playbook_id', 'name', name='_playbook_workflow'),)
+    __table_args__ = (UniqueConstraint('playbook_id', 'name', name='_playbook_workflow'),)
 
     def __init__(self, name, start, id=None, actions=None, branches=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Actions
@@ -40,7 +39,7 @@ class Workflow(ExecutionElement, Device_Base):
         """
         ExecutionElement.__init__(self, id)
         self.name = name
-        self.actions = {action.id: action for action in actions} if actions else {}
+        self.actions = actions if actions else []
         self.branches = branches if branches else []
         self.start = start
 
@@ -60,6 +59,9 @@ class Workflow(ExecutionElement, Device_Base):
         self._instances = {}
         self._execution_id = 'default'
 
+    def get_action_by_id(self, action_id):
+        return next((action for action in self.actions if action.id == action_id), None)
+
     def remove_action(self, action_id):
         """Removes a Action object from the Workflow's list of Actions given the Action ID.
 
@@ -69,7 +71,8 @@ class Workflow(ExecutionElement, Device_Base):
         Returns:
             True on success, False otherwise.
         """
-        del self.actions[action_id]
+        action_to_remove = self.get_action_by_id(action_id)
+        self.actions.remove(action_to_remove)
         self.branches[:] = [branch for branch in self.branches if
                             (branch.source_id != action_id and branch.destination_id != action_id)]
 
@@ -157,12 +160,12 @@ class Workflow(ExecutionElement, Device_Base):
 
     def __actions(self, start):
         current_id = start
-        current_action = self.actions[current_id]
+        current_action = self.get_action_by_id(current_id)
 
         while current_action:
             yield current_action
             current_id = self.get_branch(current_action, self._accumulator)
-            current_action = self.actions[current_id] if current_id is not None else None
+            current_action = self.get_action_by_id(current_id) if current_id is not None else None
             yield  # needed so that when for-loop calls next() it doesn't advance too far
         yield  # needed so you can avoid catching StopIteration exception
 

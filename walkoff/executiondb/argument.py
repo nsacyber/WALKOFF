@@ -5,17 +5,16 @@ from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
 
 from walkoff.executiondb import Device_Base
 from walkoff.helpers import InvalidArgument
-from walkoff.executiondb.representable import Representable
 
 logger = logging.getLogger(__name__)
 
 
-class Argument(Representable, Device_Base):
+class Argument(Device_Base):
     __tablename__ = 'argument'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    _action_id = Column(UUIDType(), ForeignKey('action.id'))
-    _condition_id = Column(UUIDType(), ForeignKey('condition.id'))
-    _transform_id = Column(UUIDType(), ForeignKey('transform.id'))
+    action_id = Column(UUIDType(), ForeignKey('action.id'))
+    condition_id = Column(UUIDType(), ForeignKey('condition.id'))
+    transform_id = Column(UUIDType(), ForeignKey('transform.id'))
     name = Column(String(255), nullable=False)
     value = Column(JSONType)
     reference = Column(UUIDType())
@@ -32,7 +31,6 @@ class Argument(Representable, Device_Base):
             selection (list, optional): A list of fields from which to dereference the Action result. Defaults
                 to None.
         """
-        Representable.__init__(self)
         if value is None and not reference:
             message = 'Input {} must have either value or reference. Input has neither'.format(name)
             logger.error(message)

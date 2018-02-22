@@ -7,12 +7,12 @@ from interfaces.exceptions import UnknownEvent, InvalidEventHandler
 from walkoff.helpers import UnknownAppAction, UnknownApp
 from tests.util import device_db_help
 import uuid
-from walkoff.executiondb.representable import Representable
+from walkoff.executiondb.executionelement import ExecutionElement
 
 
-class MockWorkflow(Representable):
+class MockWorkflow(ExecutionElement):
     def __init__(self):
-        self.id = uuid.uuid4()
+        super(MockWorkflow, self).__init__(uuid.uuid4())
         self.name = "name"
         self._execution_id = uuid.uuid4()
 

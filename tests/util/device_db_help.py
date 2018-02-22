@@ -3,6 +3,7 @@ import os
 
 from walkoff.executiondb import devicedb
 from walkoff.executiondb.playbook import Playbook
+from walkoff.executiondb.schemas import PlaybookSchema
 from walkoff.executiondb.workflowresults import WorkflowStatus
 from tests.config import test_workflows_path_with_generated, test_workflows_path
 from tests.util.jsonplaybookloader import JsonPlaybookLoader
@@ -18,8 +19,11 @@ def load_playbooks(playbooks):
                       if filename.endswith('.playbook') and filename.split('.')[0] in playbooks])
     for path in paths:
         with open(path, 'r') as playbook_file:
-            playbook = Playbook.create(json.load(playbook_file))
-            devicedb.device_db.session.add(playbook)
+            playbook = PlaybookSchema().load(json.load(playbook_file))
+            if playbook.errors:
+                print(playbook.errors)
+                raise Exception('There be errors in yer playbooks')
+            devicedb.device_db.session.add(playbook.data)
     devicedb.device_db.session.commit()
 
 

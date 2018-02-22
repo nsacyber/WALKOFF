@@ -245,13 +245,14 @@ class MultiprocessedExecutor(object):
 
         executed = False
         exec_action = None
-        for action in workflow.actions.values():
+        for action in workflow.actions:
             if action.id == saved_state.action_id:
                 exec_action = action
                 executed = action.execute_trigger(data_in, saved_state.accumulator)
                 break
 
         if executed:
+            print(exec_action)
             WalkoffEvent.TriggerActionTaken.send(exec_action, data={'workflow_execution_id': execution_id})
             self.execute_workflow(workflow.id, execution_id_in=execution_id, start=saved_state.action_id,
                                   start_arguments=arguments, resume=True)

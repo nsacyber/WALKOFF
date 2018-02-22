@@ -3,7 +3,7 @@ import threading
 import uuid
 
 from sqlalchemy import Column, Integer, ForeignKey, String, orm
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway import get_app_action, is_app_action_bound
@@ -20,15 +20,14 @@ logger = logging.getLogger(__name__)
 class Action(ExecutionElement, Device_Base):
 
     __tablename__ = 'action'
-    _workflow_id = Column(UUIDType(), ForeignKey('workflow.id'))
+    workflow_id = Column(UUIDType(), ForeignKey('workflow.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     name = Column(String(80))
     device_id = Column(Integer)
-    arguments = relationship('Argument', backref=backref('_action'), cascade='all, delete, delete-orphan')
-    trigger = relationship('ConditionalExpression', backref=backref('_action'), cascade='all, delete-orphan',
-                           uselist=False)
-    position = relationship('Position', uselist=False, backref=backref('_action'), cascade='all, delete-orphan')
+    arguments = relationship('Argument', cascade='all, delete, delete-orphan')
+    trigger = relationship('ConditionalExpression', cascade='all, delete-orphan', uselist=False)
+    position = relationship('Position', uselist=False, cascade='all, delete-orphan')
 
     def __init__(self, app_name, action_name, name, device_id=None, id=None, arguments=None, trigger=None,
                  position=None):
