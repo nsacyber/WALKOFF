@@ -24,11 +24,11 @@ export class LoginComponent implements OnInit {
 
 	login(): void {
 		this.loginService.login(this.username, this.password)
-		.then(function (success) {
+		.then(success => {
 			//route to main module
 			// console.log('successfully authenticated user: ' + this.username);
 		})
-		.catch(function (error) {
+		.catch(error => {
 			// console.log(error.message);
 		});
 	}

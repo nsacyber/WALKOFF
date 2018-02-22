@@ -98,7 +98,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 
 	/**
 	 * On component initialization, we grab arrays of devices, app apis, and playbooks/workflows (id, name pairs).
-	 * We also initialize an EventSoruce for Workflow Results for the execution results table.
+	 * We also initialize an EventSoruce for Action Statuses for the execution results table.
 	 * Also initialize cytoscape event bindings.
 	 */
 	ngOnInit(): void {
@@ -106,7 +106,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 
 		this.playbookService.getDevices().then(devices => this.devices = devices);
 		this.playbookService.getApis().then(appApis => this.appApis = appApis.sort((a, b) => a.name > b.name ? 1 : -1));
-		this.getWorkflowResultsSSE();
+		this.getActionStatusSSE();
 		this.getPlaybooksWithWorkflows();
 		this._addCytoscapeEventBindings();
 	}
@@ -128,61 +128,65 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	/// Playbook CRUD etc functions
 	///------------------------------------------------------------------------------------------------------
 	/**
-	 * Sets up the EventStream for receiving stream actions from the server.
+	 * Sets up the EventStream for receiving stream actions from the server. Binds various events to the event handler.
 	 * Will currently return ALL stream actions and not just the ones manually executed.
 	 */
-	getWorkflowResultsSSE(): void {
+	getActionStatusSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				const self = this;
 				const eventSource = new (window as any).EventSource('api/streams/workflowqueue/actions?access_token=' + authToken);
 
-				function eventHandler(message: any) {
-					const actionStatus: ActionStatus = JSON.parse(message.data);
-
-					if (self.cy) {
-						const matchingNode = self.cy.elements(`node[_id="${actionStatus.action_id}"]`);
-
-						switch (actionStatus.status) {
-							case 'success':
-								matchingNode.addClass('success-highlight');
-								matchingNode.removeClass('failure-highlight');
-								matchingNode.removeClass('executing-highlight');
-								break;
-							case 'failure':
-								matchingNode.removeClass('success-highlight');
-								matchingNode.addClass('failure-highlight');
-								matchingNode.removeClass('executing-highlight');
-								break;
-							case 'executing':
-								matchingNode.removeClass('success-highlight');
-								matchingNode.removeClass('failure-highlight');
-								matchingNode.addClass('executing-highlight');
-								break;
-							default:
-								break;
-						}
-					}
-
-					const matchingActionStatus = self.actionStatuses.find(as => as.execution_id === actionStatus.execution_id);
-					if (matchingActionStatus) {
-						Object.assign(matchingActionStatus, actionStatus);
-					} else {
-						self.actionStatuses.push(actionStatus);
-					}
-					// Induce change detection by slicing array
-					self.actionStatuses = self.actionStatuses.slice();
-				}
-
-				eventSource.addEventListener('started', eventHandler);
-				eventSource.addEventListener('success', eventHandler);
-				eventSource.addEventListener('failure', eventHandler);
+				eventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
+				eventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
+				eventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
 
 				eventSource.onerror = (err: Error) => {
 					// this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
 					console.error(err);
 				};
 			});
+	}
+
+	/**
+	 * For an incoming action, will try to find the matching action in the graph (if applicable).
+	 * Will style nodes based on the action status (executing/success/failure).
+	 * Will update the information in the action statuses table as well, adding new rows or updating existing ones.
+	 */
+	actionStatusEventHandler(message: any): void {
+		const actionStatus: ActionStatus = JSON.parse(message.data);
+
+		if (this.cy) {
+			const matchingNode = this.cy.elements(`node[_id="${actionStatus.action_id}"]`);
+
+			switch (actionStatus.status) {
+				case 'success':
+					matchingNode.addClass('success-highlight');
+					matchingNode.removeClass('failure-highlight');
+					matchingNode.removeClass('executing-highlight');
+					break;
+				case 'failure':
+					matchingNode.removeClass('success-highlight');
+					matchingNode.addClass('failure-highlight');
+					matchingNode.removeClass('executing-highlight');
+					break;
+				case 'executing':
+					matchingNode.removeClass('success-highlight');
+					matchingNode.removeClass('failure-highlight');
+					matchingNode.addClass('executing-highlight');
+					break;
+				default:
+					break;
+			}
+		}
+
+		const matchingActionStatus = this.actionStatuses.find(as => as.execution_id === actionStatus.execution_id);
+		if (matchingActionStatus) {
+			Object.assign(matchingActionStatus, actionStatus);
+		} else {
+			this.actionStatuses.push(actionStatus);
+		}
+		// Induce change detection by slicing array
+		this.actionStatuses = this.actionStatuses.slice();
 	}
 
 	/**
@@ -221,7 +225,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	}
 
 	setupGraph(): void {
-		const self = this;
 		// Convert our selection arrays to a string
 		if (!this.loadedWorkflow.actions) { this.loadedWorkflow.actions = []; }
 		this.loadedWorkflow.actions.forEach(action => {
@@ -338,8 +341,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 		this.cy.edgehandles({
 			preview: false,
 			toggleOffOnLeave: true,
-			complete(sourceNode: any, targetNodes: any[], addedEntities: any[]) {
-				if (!self.loadedWorkflow.branches) { self.loadedWorkflow.branches = []; }
+			complete: (sourceNode: any, targetNodes: any[], addedEntities: any[]) => {
+				if (!this.loadedWorkflow.branches) { this.loadedWorkflow.branches = []; }
 
 				// The edge handles extension is not integrated into the undo/redo extension.
 				// So in order that adding edges is contained in the undo stack,
@@ -358,13 +361,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 					});
 
 					//If we attempt to draw an edge that already exists, please remove it and take no further action
-					if (self.loadedWorkflow.branches.find(b => b.source_id === sourceId && b.destination_id === destinationId)) {
-						self.cy.remove(addedEntities);
+					if (this.loadedWorkflow.branches.find(b => b.source_id === sourceId && b.destination_id === destinationId)) {
+						this.cy.remove(addedEntities);
 						return;
 					}
 
-					const sourceAction = self.loadedWorkflow.actions.find(a => a.id === sourceId);
-					const sourceActionApi = self._getAction(sourceAction.app_name, sourceAction.action_name);
+					const sourceAction = this.loadedWorkflow.actions.find(a => a.id === sourceId);
+					const sourceActionApi = this._getAction(sourceAction.app_name, sourceAction.action_name);
 
 					// Get our default status either from the default return if specified, or the first return status
 					let defaultStatus = '';
@@ -375,7 +378,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 					}
 
 					// Add our branch to the actual loadedWorkflow model
-					self.loadedWorkflow.branches.push({
+					this.loadedWorkflow.branches.push({
 						id: tempId,
 						source_id: sourceId,
 						destination_id: destinationId,
@@ -384,13 +387,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 					});
 				}
 
-				self.cy.remove(addedEntities);
+				this.cy.remove(addedEntities);
 
 				// Get rid of our temp flag
 				addedEntities.forEach(ae => ae.data('temp', false));
 
 				// Re-add with the undo-redo extension.
-				self.ur.do('add', addedEntities); // Added back in using undo/redo extension
+				this.ur.do('add', addedEntities); // Added back in using undo/redo extension
 			},
 		});
 
@@ -446,7 +449,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 				label: action.name,
 				isStartNode: action.id === this.loadedWorkflow.start,
 			};
-			self._setNodeDisplayProperties(node, action);
+			this._setNodeDisplayProperties(node, action);
 			return node;
 		});
 
@@ -456,15 +459,17 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 
 		this.setStartNode(this.loadedWorkflow.start);
 
+		// Note: these bindings need to use arrow notation
+		// to actually be able to use 'this' to refer to the PlaybookComponent.
 		// Configure handler when user clicks on node or edge
-		this.cy.on('select', 'node', (e: any) => this.onNodeSelect(e, this));
-		this.cy.on('select', 'edge', (e: any) => this.onEdgeSelect(e, this));
-		this.cy.on('unselect', (e: any) => this.onUnselect(e, this));
+		this.cy.on('select', 'node', (e: any) => this.onNodeSelect(e));
+		this.cy.on('select', 'edge', (e: any) => this.onEdgeSelect(e));
+		this.cy.on('unselect', (e: any) => this.onUnselect(e));
 
 		// Configure handlers when nodes/edges are added or removed
-		this.cy.on('add', 'node', (e: any) => this.onNodeAdded(e, this));
-		this.cy.on('remove', 'node', (e: any) => this.onNodeRemoved(e, this));
-		this.cy.on('remove', 'edge', (e: any) => this.onEdgeRemove(e, this));
+		this.cy.on('add', 'node', (e: any) => this.onNodeAdded(e));
+		this.cy.on('remove', 'node', (e: any) => this.onNodeRemoved(e));
+		this.cy.on('remove', 'edge', (e: any) => this.onEdgeRemove(e));
 
 		// this.cyJsonData = JSON.stringify(this.loadedWorkflow, null, 2);
 	}
@@ -483,14 +488,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	 * Triggers the save action based on the editor option selected.
 	 */
 	save(): void {
-		// if ($('.nav-tabs .active').text() === 'Graphical Editor') {
-		// 	// If the graphical editor tab is active
-		// 	this.saveWorkflow(this.cy.elements().jsons());
-		// }
-		// else {
-		// 	// If the JSON tab is active
-		// 	this.saveWorkflowJson(this.cyJsonData);
-		// }
 		this.saveWorkflow(this.cy.elements().jsons());
 	}
 
@@ -547,7 +544,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 					return newPlaybook.workflows[0];
 				});
 		}
-		
+
 		savePromise
 			.then(savedWorkflow => {
 				// If this workflow doesn't exist, add it to our loaded playbook (and master list for loading)
@@ -562,16 +559,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 			.catch(e => this.toastyService
 				.error(`Error saving workflow ${this.loadedPlaybook.name} - ${workflowToSave.name}: ${e.message}`));
 	}
-
-	// /**
-	//  * Saves a workflow from a JSON string instead of using the graphical editor.
-	//  * @param workflowJSONString The JSON string submitted by the user to be parsed as a workflow object.
-	//  */
-	// saveWorkflowJson(workflowJSONString: string): void {
-	// 	// let workflow = JSON.parse(this.cyJsonData);
-	// 	// // Save updated cytoscape data in JSON format
-	// 	// this.saveWorkflow(workflow);
-	// }
 
 	/**
 	 * Gets a list of all the loaded playbooks along with their workflows.
@@ -681,17 +668,16 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	/**
 	 * This function displays a form next to the graph for editing a node when clicked upon
 	 * @param e JS Event fired
-	 * @param self Reference to this PlaybookComponent
 	 */
-	onNodeSelect(e: any, self: PlaybookComponent): void {
-		self.selectedBranchParams = null;
+	onNodeSelect(e: any): void {
+		this.selectedBranchParams = null;
 
 		const data = e.target.data();
 
 		// Unselect anything else we might have selected (via ctrl+click basically)
-		self.cy.elements(`[_id!="${data._id}"]`).unselect();
+		this.cy.elements(`[_id!="${data._id}"]`).unselect();
 
-		const action = self.loadedWorkflow.actions.find(a => a.id === data._id);
+		const action = this.loadedWorkflow.actions.find(a => a.id === data._id);
 		if (!action) { return; }
 		const actionApi = this._getAction(action.app_name, action.action_name);
 
@@ -721,31 +707,30 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 				});
 		}
 
-		self.selectedAction = action;
-		self.selectedActionApi = actionApi;
+		this.selectedAction = action;
+		this.selectedActionApi = actionApi;
 
 		// TODO: maybe scope out relevant devices by action, but for now we're just only scoping out by app
-		self.relevantDevices = self.devices.filter(d => d.app_name === self.selectedAction.app_name);
+		this.relevantDevices = this.devices.filter(d => d.app_name === this.selectedAction.app_name);
 	}
 
 	/**
 	 * This function displays a form next to the graph for editing an edge when clicked upon.
 	 * @param e JS Event fired
-	 * @param self Reference to this PlaybookComponent
 	 */
-	onEdgeSelect(e: any, self: PlaybookComponent): void {
-		self.selectedAction = null;
-		self.selectedBranchParams = null;
+	onEdgeSelect(e: any): void {
+		this.selectedAction = null;
+		this.selectedBranchParams = null;
 
 		const id: string = e.target.data('_id');
 
 		// Unselect anything else we might have selected (via ctrl+click basically)
-		self.cy.elements(`[_id!="${id}"]`).unselect();
+		this.cy.elements(`[_id!="${id}"]`).unselect();
 
-		const branch = self.loadedWorkflow.branches.find(b => b.id === id);
-		const sourceAction = self.loadedWorkflow.actions.find(a => a.id === branch.source_id);
+		const branch = this.loadedWorkflow.branches.find(b => b.id === id);
+		const sourceAction = this.loadedWorkflow.actions.find(a => a.id === branch.source_id);
 
-		self.selectedBranchParams = {
+		this.selectedBranchParams = {
 			branch,
 			returnTypes: this._getAction(sourceAction.app_name, sourceAction.action_name).returns,
 			appName: sourceAction.app_name,
@@ -756,26 +741,24 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	/**
 	 * This function unselects any selected nodes/edges and updates the label if necessary.
 	 * @param e JS Event fired
-	 * @param self Reference to this PlaybookComponent
 	 */
-	onUnselect(event: any, self: PlaybookComponent): void {
+	onUnselect(event: any): void {
 		// Update our labels if possible
-		if (self.selectedAction) {
-			this.cy.elements(`node[_id="${self.selectedAction.id}"]`).data('label', self.selectedAction.name);
+		if (this.selectedAction) {
+			this.cy.elements(`node[_id="${this.selectedAction.id}"]`).data('label', this.selectedAction.name);
 		}
 
-		if (!self.cy.$(':selected').length) {
-			self.selectedAction = null;
-			self.selectedBranchParams = null;
+		if (!this.cy.$(':selected').length) {
+			this.selectedAction = null;
+			this.selectedBranchParams = null;
 		}
 	}
 
 	/**
 	 * This function checks when an edge is removed and removes branches as appropriate.
 	 * @param e JS Event fired
-	 * @param self Reference to this PlaybookComponent
 	 */
-	onEdgeRemove(event: any, self: PlaybookComponent): void {
+	onEdgeRemove(event: any): void {
 		const edgeData = event.target.data();
 		// Do nothing if this is a temporary edge
 		// (edgehandles do not have paramters, and we mark temp edges on edgehandle completion)
@@ -792,28 +775,26 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	/**
 	 * This function checks when a node is added and sets start node if no other nodes exist.
 	 * @param e JS Event fired
-	 * @param self Reference to this PlaybookComponent
 	 */
-	onNodeAdded(event: any, self: PlaybookComponent): void {
+	onNodeAdded(event: any): void {
 		const node = event.target;
 
 		// If the number of nodes in the graph is one, set the start node to it.
-		if (node.isNode() && self.cy.nodes().size() === 1) { self.setStartNode(node.data('_id')); }
+		if (node.isNode() && this.cy.nodes().size() === 1) { this.setStartNode(node.data('_id')); }
 	}
 
 	/**
 	 * This function fires when a node is removed. If the node was the start node, it sets it to a new root node.
 	 * It also removes the corresponding action from the workflow.
 	 * @param e JS Event fired
-	 * @param self Reference to this PlaybookComponent
 	 */
-	onNodeRemoved(event: any, self: PlaybookComponent): void {
+	onNodeRemoved(event: any): void {
 		const node = event.target;
 		const data = node.data();
 
 		// If the start node was deleted, set it to one of the roots of the graph
-		if (data && node.isNode() && self.loadedWorkflow.start === data._id) { self.setStartNode(null); }
-		if (self.selectedAction && self.selectedAction.id === data._id) { self.selectedAction = null; }
+		if (data && node.isNode() && this.loadedWorkflow.start === data._id) { this.setStartNode(null); }
+		if (this.selectedAction && this.selectedAction.id === data._id) { this.selectedAction = null; }
 
 		// Delete the action from the workflow and delete any branches that reference this action
 		this.loadedWorkflow.actions = this.loadedWorkflow.actions.filter(a => a.id !== data._id);
@@ -1018,18 +999,16 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	 * Adds keyboard event bindings for cut/copy/paste/etc.
 	 */
 	_addCytoscapeEventBindings(): void {
-		const self = this;
-
 		// Handle keyboard presses on graph
-		document.addEventListener('keydown', function (e: any) {
+		document.addEventListener('keydown', (e: any) => {
 			// If we aren't "focused" on a body or button tag, don't do anything
 			// to prevent events from being fired while in the parameters editor
 			const tagName = document.activeElement.tagName;
 			if (!(tagName === 'BODY' || tagName === 'BUTTON')) { return; }
-			if (self.cy === null) { return; }
+			if (this.cy === null) { return; }
 
 			if (e.which === 46) { // Delete
-				self.removeSelectedNodes();
+				this.removeSelectedNodes();
 			} else if (e.ctrlKey) {
 				//TODO: re-enable undo/redo once we restructure how branches / edges are stored
 				// if (e.which === 90) // 'Ctrl+Z', Undo
@@ -1038,14 +1017,14 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 				//     ur.redo();
 				if (e.which === 67) {
 					// Ctrl + C, Copy
-					self.copy();
+					this.copy();
 				} else if (e.which === 86) {
 					// Ctrl + V, Paste
-					self.paste();
+					this.paste();
 				}
 				// else if (e.which === 88) {
 				// 	// Ctrl + X, Cut
-				// 	self.cut();
+				// 	this.cut();
 				// }
 				// else if (e.which == 65) { // 'Ctrl+A', Select All
 				//     cy.elements().select();

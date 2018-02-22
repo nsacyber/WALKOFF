@@ -117,8 +117,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 	}
 
 	/**
-	 * Initiates an EventSource for workflow statuses from the server.
-	 * Updates existing workflow statuses for status updates or adds new ones to the list for display.
+	 * Initiates an EventSource for workflow statuses from the server. Binds various events to the event handler.
 	 */
 	getWorkflowStatusSSE(): void {
 		this.authService.getAccessTokenRefreshed()
@@ -133,6 +132,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 				eventSource.addEventListener('awaiting_data', (e: any) => this.workflowStatusEventHandler(e));
 				eventSource.addEventListener('triggered', (e: any) => this.workflowStatusEventHandler(e));
 				eventSource.addEventListener('aborted', (e: any) => this.workflowStatusEventHandler(e));
+				eventSource.addEventListener('completed', (e: any) => this.workflowStatusEventHandler(e));
 
 				eventSource.onerror = (err: Error) => {
 					console.error(err);
@@ -140,6 +140,11 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 			});
 	}
 
+	/**
+	 * Handles an EventSource message for Workflow Status. 
+	 * Updates existing workflow statuses for status updates or adds new ones to the list for display.
+	 * @param message EventSource message for workflow status
+	 */
 	workflowStatusEventHandler(message: any): void {
 		const workflowStatus: WorkflowStatus = JSON.parse(message.data);
 
@@ -156,9 +161,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 	}
 
 	/**
-	 * Initiates an EventSource for action statuses from the server.
-	 * Updates the parent workflow status' current_action if applicable.
-	 * Will add/update action statuses for display if the parent workflow execution is 'loaded' in the modal.
+	 * Initiates an EventSource for action statuses from the server. Binds various events to the event handler.
 	 */
 	getActionStatusSSE(): void {
 		this.authService.getAccessTokenRefreshed()
@@ -175,6 +178,12 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 			});
 	}
 
+	/**
+	 * Handles an EventSource message for Action Status. 
+	 * Updates the parent workflow status' current_action if applicable.
+	 * Will add/update action statuses for display if the parent workflow execution is 'loaded' in the modal.
+	 * @param message EventSource message for action status
+	 */
 	actionStatusEventHandler(message: any): void {
 		const actionStatus: ActionStatus = JSON.parse(message.data);
 

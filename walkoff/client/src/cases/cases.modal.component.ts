@@ -76,7 +76,7 @@ export class CasesModalComponent implements OnInit {
 
 		// Check for collapse after the second level
 		if (this.root.children && this.root.children.length) {
-			this.root.children.forEach((d: any) => this.checkInclusionAndCheckChildrenForExpansion(d, this));
+			this.root.children.forEach((d: any) => this.checkInclusionAndCheckChildrenForExpansion(d));
 		}
 
 		this.update(this.root);
@@ -90,10 +90,9 @@ export class CasesModalComponent implements OnInit {
 	 * @param source Source node to update
 	 */
 	update(source: any): void {
-		const self = this;
 		const duration = 400;
 		// Assigns the x and y position for the nodes
-		const treeData = self.treemap(self.root);
+		const treeData = this.treemap(this.root);
 
 		// Compute the new tree layout.
 		const nodes = treeData.descendants();
@@ -104,7 +103,7 @@ export class CasesModalComponent implements OnInit {
 
 		// ****************** Nodes section ***************************
 		// Update the nodes...
-		const node = self.svg.selectAll('g.node')
+		const node = this.svg.selectAll('g.node')
 			.data(nodes, (d: any) => d.id || (d.id = ++this.i));
 
 		// Enter any new modes at the parent's previous position.
@@ -112,9 +111,9 @@ export class CasesModalComponent implements OnInit {
 			.classed('node', true)
 			.classed('included', (d: any) => d.data._included)
 			.attr('transform', d => `translate(${source.y0},${source.x0})`)
-			.attr('id', (d: any) => this.getId())
-			.on('click', d => this.click(d, this))
-			.on('dblclick', d => this.dblclick(d, this));
+			.attr('id', (d: any) => `id-${d.data.id}`)
+			.on('click', d => this.click(d))
+			.on('dblclick', d => this.dblclick(d));
 
 		// Add Circle for the nodes
 		nodeEnter.append('circle')
@@ -159,7 +158,7 @@ export class CasesModalComponent implements OnInit {
 		// ****************** links section ***************************
 
 		// Update the links...
-		const link = self.svg.selectAll('path.link')
+		const link = this.svg.selectAll('path.link')
 			.data(links, (d: any) => d.id);
 
 		// Enter any new links at the parent's previous position.
@@ -167,7 +166,7 @@ export class CasesModalComponent implements OnInit {
 			.classed('link', true)
 			.attr('d', d => {
 				const o = { x: source.x0, y: source.y0 };
-				return self.diagonal(o, o);
+				return this.diagonal(o, o);
 			});
 
 		// UPDATE
@@ -176,14 +175,14 @@ export class CasesModalComponent implements OnInit {
 		// Transition back to the parent element position
 		linkUpdate.transition()
 			.duration(duration)
-			.attr('d', d => self.diagonal(d, d.parent));
+			.attr('d', d => this.diagonal(d, d.parent));
 
 		// Remove any exiting links
 		link.exit().transition()
 			.duration(duration)
 			.attr('d', d => {
 				const o = { x: source.x, y: source.y };
-				return self.diagonal(o, o);
+				return this.diagonal(o, o);
 			})
 			.remove();
 
@@ -197,15 +196,14 @@ export class CasesModalComponent implements OnInit {
 	/**
 	 * This function recursively checks if each node should be included or expanded.
 	 * @param d Node data
-	 * @param self This component reference
 	 */
-	checkInclusionAndCheckChildrenForExpansion(d: any, self: CasesModalComponent): boolean {
-		if (self.existingSubscriptionIds.indexOf(d.data.id) >= 0) { d.data._included = true; }
+	checkInclusionAndCheckChildrenForExpansion(d: any): boolean {
+		if (this.existingSubscriptionIds.indexOf(d.data.id) >= 0) { d.data._included = true; }
 		let expanded = false;
 
 		if (d.children) {
-			d.children.forEach(function (child: any) {
-				expanded = self.checkInclusionAndCheckChildrenForExpansion(child, self) || expanded;
+			d.children.forEach((child: any) => {
+				expanded = this.checkInclusionAndCheckChildrenForExpansion(child) || expanded;
 			});
 		}
 
@@ -232,23 +230,22 @@ export class CasesModalComponent implements OnInit {
 	/**
 	 * Selects our node on click.
 	 * @param d Node data
-	 * @param self This component reference
 	 */
-	click(d: any, self: CasesModalComponent): void {
+	click(d: any): void {
 		if (!d.data.type) { return; }
 
-		self.selectedNode = { name: d.data.name, id: d.data.id, type: d.data.type };
+		this.selectedNode = { name: d.data.name, id: d.data.id, type: d.data.type };
 
-		const availableEvents = self.availableSubscriptions.find(a => a.type === d.data.type).events;
+		const availableEvents = this.availableSubscriptions.find(a => a.type === d.data.type).events;
 
-		const subscription = self.workingCase.subscriptions.find(s => s.id === d.data.id);
+		const subscription = this.workingCase.subscriptions.find(s => s.id === d.data.id);
 
 		const subscriptionEvents = subscription ? subscription.events : [];
 
-		self.workingEvents = [];
+		this.workingEvents = [];
 
-		availableEvents.forEach(function (event) {
-			self.workingEvents.push({
+		availableEvents.forEach(event => {
+			this.workingEvents.push({
 				name: event,
 				isChecked: subscriptionEvents.indexOf(event) > -1,
 			});
@@ -259,16 +256,15 @@ export class CasesModalComponent implements OnInit {
 			.classed('highlighted', false);
 
 		//Highlight this node now.
-		d3.select(`g.node#${this.getId()}`)
+		d3.select(`g.node#id-${this.selectedNode.id}`)
 			.classed('highlighted', true);
 	}
 
 	/**
 	 * Toggle children on double click.
 	 * @param d Node data
-	 * @param self This component reference
 	 */
-	dblclick(d: any, self: CasesModalComponent): void {
+	dblclick(d: any): void {
 		if (d.children) {
 			d._children = d.children;
 			d.children = null;
@@ -276,7 +272,7 @@ export class CasesModalComponent implements OnInit {
 			d.children = d._children;
 			d._children = null;
 		}
-		self.update(d);
+		this.update(d);
 	}
 
 	/**
@@ -304,9 +300,9 @@ export class CasesModalComponent implements OnInit {
 			this.workingCase.subscriptions.push(matchingSubscription);
 
 			//style the node in d3 as well
-			d3.select('svg#caseSubscriptionsTree').select(`g.node#${this.getId()}`)
+			d3.select('svg#caseSubscriptionsTree').select(`g.node#id-${this.selectedNode.id}`)
 				.classed('included', true)
-				.datum(function (d: any) {
+				.datum((d: any) => {
 					d.data._included = true;
 					return d;
 				});
@@ -321,20 +317,13 @@ export class CasesModalComponent implements OnInit {
 			this.workingCase.subscriptions.splice(indexToDelete, 1);
 
 			//style the node in d3 as well
-			d3.select('svg#caseSubscriptionsTree').select(`g.node#${this.getId()}`)
+			d3.select('svg#caseSubscriptionsTree').select(`g.node#id-${this.selectedNode.id}`)
 				.classed('included', false)
 				.datum((d: any) => {
 					d.data._included = false;
 					return d;
 				});
 		}
-	}
-
-	/**
-	 * Gets a unique ID for a selected node based upon the UUID of the execution element.
-	 */
-	getId(): string {
-		return `id-${this.selectedNode.id}`;
 	}
 
 	/**

@@ -39,28 +39,21 @@ export class InterfacesComponent implements OnInit {
 	 * Loads the interface into an iframe currently.
 	 */
 	getInterface() {
-		const self = this;
-
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
 				const xhr = new XMLHttpRequest();
 				xhr.open('GET', `custominterfaces/${this.interfaceName}/`, true);
-				xhr.onreadystatechange = function() {
-					if (this.readyState !== 4) {
-						return;
-					}
-					if (this.status !== 200) {
-						return;
-					}
+				xhr.onreadystatechange = () => {
+					if (xhr.readyState !== 4 || xhr.status !== 200) { return; }
 
 					//Remove our existing iframe if applicable
-					self.main.nativeElement.removeChild(self.main.nativeElement.lastChild);
+					this.main.nativeElement.removeChild(this.main.nativeElement.lastChild);
 
-					self.activeIFrame = document.createElement('iframe');
-					(self.activeIFrame as any).srcdoc = this.responseText;
-					self.activeIFrame.src = 'data:text/html;charset=utf-8,' + this.responseText;
+					this.activeIFrame = document.createElement('iframe');
+					(this.activeIFrame as any).srcdoc = xhr.responseText;
+					this.activeIFrame.src = 'data:text/html;charset=utf-8,' + xhr.responseText;
 
-					self.main.nativeElement.appendChild(self.activeIFrame);
+					this.main.nativeElement.appendChild(this.activeIFrame);
 				};
 				xhr.setRequestHeader('Authorization', 'Bearer ' + authToken);
 				xhr.send();

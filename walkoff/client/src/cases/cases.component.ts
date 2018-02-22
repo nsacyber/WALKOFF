@@ -340,16 +340,20 @@ export class CasesComponent implements OnInit {
 		// If we're specifying a recursive association (e.g. ConditionalExpressions),
 		// iterate through children with the same hierarchical structure
 		if (hierarchy.recursivePropertyName) {
-			(target[hierarchy.recursivePropertyName] as any[]).forEach(sub => {
-				node.children.push(this.getNodeRecursive(sub, hierarchy));
-			});
+			if (Array.isArray(target[hierarchy.recursivePropertyName])) {
+				(target[hierarchy.recursivePropertyName] as any[]).forEach(sub => {
+					node.children.push(this.getNodeRecursive(sub, hierarchy));
+				});
+			}
 		}
 		
 		// For each child hierarchy, (most cases only 1 child type), iterate through the child elements
 		hierarchy.children.forEach(childHierarchy => {
-			(target[childHierarchy.arrayPropertyName] as any[]).forEach(sub => {
-				node.children.push(this.getNodeRecursive(sub, childHierarchy));
-			});
+			if (Array.isArray(target[childHierarchy.arrayPropertyName])) {
+				(target[childHierarchy.arrayPropertyName] as any[]).forEach(sub => {
+					node.children.push(this.getNodeRecursive(sub, childHierarchy));
+				});
+			}
 		});
 
 		if (!node.children.length) { delete node.children; }
