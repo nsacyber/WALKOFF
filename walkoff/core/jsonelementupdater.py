@@ -3,13 +3,13 @@ from uuid import UUID
 from six import string_types
 
 
-
 class JsonElementUpdater(object):
     """Updates an ExecutionElement from JSON
     """
 
     @staticmethod
     def update(element, json_in):
+        from walkoff.coredb.conditionalexpression import ConditionalExpression
         """Updates an ExecutionElement from JSON
 
         Args:
@@ -25,7 +25,11 @@ class JsonElementUpdater(object):
 
                     cls = getattr(element.__class__, field_name).property.mapper.class_
                     JsonElementUpdater.update_relationship(json_field_value, field_value, cls)
-
+                elif field_name in ('trigger', 'condition'):
+                    if field_value is None:
+                        setattr(element, field_name, ConditionalExpression.create(json_field_value))
+                    else:
+                        field_value.update(json_field_value)
                 elif field_name == 'position':
                     if 'id' not in json_field_value:
                         field_value.position = Position(**json_in)
@@ -57,8 +61,6 @@ class JsonElementUpdater(object):
             json_element_id = json_element.get('id', None)
             json_element_id = UUID(json_element_id) if isinstance(json_element_id, string_types) else json_element_id
             if json_element_id is not None and json_element_id in old_elements:
-                # if cls is not Argument:
-                #     json_element_id = UUID(json_element_id)
                 old_elements[json_element_id].update(json_element)
             else:
                 if cls is Argument:
