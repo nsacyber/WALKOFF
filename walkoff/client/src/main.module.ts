@@ -21,7 +21,6 @@ import { DevicesComponent } from './devices/devices.component';
 import { MessagesComponent } from './messages/messages.component';
 import { CasesComponent } from './cases/cases.component';
 import { SettingsComponent } from './settings/settings.component';
-import { DashboardComponent } from './dashboard/dashboard.component';
 import { InterfacesComponent } from './interfaces/interfaces.component';
 import { ExecutionComponent } from './execution/execution.component';
 
@@ -59,7 +58,6 @@ import { KeysPipe } from './pipes/keys.pipe';
 		MainComponent,
 		//Router module components
 		PlaybookComponent,
-		DashboardComponent,
 		SchedulerComponent,
 		DevicesComponent,
 		MessagesComponent,
