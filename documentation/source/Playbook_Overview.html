@@ -6,13 +6,12 @@
                     <pre class="code w3-small"><code>
 {
     "name": "MyPlaybookName",
-    "uid": "1357c4af-35fd-4cad-8c09-1bf3e2a52af8",
-    "walkoff_version": "0.5.0",
+    "id": "1357c4af-35fd-4cad-8c09-1bf3e2a52af8",
     "workflows": [
         {
             "name": "helloWorldWorkflow",
             "start": "aae6192c-35b1-95e9-a2d7-3c127667ee19",
-            "uid": "4faf9d28-3631-44bd-838e-81501978714f",
+            "id": "4faf9d28-3631-44bd-838e-81501978714f",
             "actions": [
                 {
                     "name": "action 1",
@@ -30,7 +29,7 @@
                         "y": 210
                     },
                     "triggers": [],
-                    "uid": "0585feec-cc74-c2d6-16bd-6bdda55bfa38"
+                    "id": "0585feec-cc74-c2d6-16bd-6bdda55bfa38"
                 },
                 {
                     "action_name": "action 2",
@@ -62,35 +61,41 @@
                         "x": 610,
                         "y": 130
                     },
-                    "triggers": [
-                        {
-                            "action_name": "number compare",
-                            "app_name": "Utilities",
-                            "arguments": [
-                                {
-                                    "name": "operator",
-                                    "value": "le"
-                                },
-                                {
-                                    "name": "threshold",
-                                    "value": 5
-                                }
-                            ],
-                            "transforms": [],
-                            "uid": "61678960-6688-4735-88b1-29756bd1a8a9"
-                        }
-                    ],
-                    "uid": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd"
+                    "trigger": {
+                        "child_expressions": [],
+                        "conditions": [
+                            {
+                                "action_name": "number compare",
+                                "app_name": "Utilities",
+                                "arguments": [
+                                    {
+                                        "name": "operator",
+                                        "value": "le"
+                                    },
+                                    {
+                                        "name": "threshold",
+                                        "value": 5
+                                    }
+                                ],
+                                "is_negated": false,
+                                "transforms": [],
+                                "id": "61678960-6688-4735-88b1-29756bd1a8a9"
+                            }
+                        ],
+                        "id": "f6e38b2f-a288-4d7c-8e47-69dc9a93e8b9",
+                        "is_negated": false,
+                        "operator": "and"
+                    },
+                    "id": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd"
                 }
             ],
             "branches": [
                 {
-                    "conditions": [],
-                    "source_uid": "0585feec-cc74-c2d6-16bd-6bdda55bfa38",
-                    "destination_uid": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd",
+                    "source_id": "0585feec-cc74-c2d6-16bd-6bdda55bfa38",
+                    "destination_id": "18da6947-e9cb-7b9e-a501-ad93ebdf1fdd",
                     "priority": 1,
                     "status": "Success",
-                    "uid": "2771fe58-9b7f-4fbe-bdd8-79a59002977e"
+                    "id": "2771fe58-9b7f-4fbe-bdd8-79a59002977e"
                 }
             ]
         }
@@ -130,16 +135,6 @@ start
                         <tr>
                             <td class="w3-col l6">
                                 <pre class="tag">
-walkoff_version
-                                </pre>
-                            </td>
-                            <td class="w3-col l6">
-                                <p> The version of Walkoff which generated the playbook </p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="w3-col l6">
-                                <pre class="tag">
 actions
                                 </pre>
                             </td>
@@ -151,7 +146,7 @@ actions
                         <tr>
                             <td class="w3-col l6">
                                 <pre class="tag">
-uid
+id
                                 </pre>
                             </td>
                             <td class="w3-col l6">
@@ -205,11 +200,22 @@ device_id
                         <tr>
                             <td class="w3-col l6">
                                 <pre class="tag">
-triggers
+trigger
                                 </pre>
                             </td>
                             <td class="w3-col l6">
-                                <p> Conditional statements to be executed against data sent to a URL before a step takes
+                                <p> Conditional Expression to be evaluated against data sent to a URL before a step takes
+                                    an action </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+condition
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Conditional Expression to be evaluated against data sent to a URL before a step takes
                                     an action </p>
                             </td>
                         </tr>
@@ -240,7 +246,7 @@ reference
                                 </pre>
                             </td>
                             <td class="w3-col l6">
-                                <p> UUID of a previously-executed step to use as an argument</p>
+                                <p> UUID of a previously-executed action to use as an argument</p>
                             </td>
                         </tr>
                         <tr>
@@ -271,11 +277,19 @@ conditions
                                 </pre>
                             </td>
                             <td class="w3-col l6">
-                                <p> Conditional statement object to validate output of a series of transforms or the
-                                    last executed action</p>
+                                <p> Container for Condition objects</p>
                             </td>
                         </tr>
-
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+child_expressions
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Container for Condition Expression objects</p>
+                            </td>
+                        </tr>
                         <tr>
                             <td class="w3-col l6">
                                 <pre class="tag">
@@ -286,7 +300,17 @@ transforms
                                 <p> Container for transform objects</p>
                             </td>
                         </tr>
-
+                        <tr>
+                            <td class="w3-col l6">
+                                <pre class="tag">
+is_negated
+                                </pre>
+                            </td>
+                            <td class="w3-col l6">
+                                <p> Should the result from the Condition or Conditional Expression be negated? Meaning
+                                    True becomes False and vice versa</p>
+                            </td>
+                        </tr>
                         <tr>
                             <td class="w3-col l6">
                                 <pre class="tag">
@@ -311,7 +335,7 @@ priority
                         <tr>
                             <td class="w3-col l6">
                                 <pre class="tag">
-source_uid
+source_id
                                 </pre>
                             </td>
                             <td class="w3-col l6">
@@ -321,7 +345,7 @@ source_uid
                         <tr>
                             <td class="w3-col l6">
                                 <pre class="tag">
-destination_uid
+destination_id
                                 </pre>
                             </td>
                             <td class="w3-col l6">

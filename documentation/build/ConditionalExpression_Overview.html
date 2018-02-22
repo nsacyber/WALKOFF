@@ -110,99 +110,21 @@ img.media-object.image{
 <div class="w3-row-padding w3-padding-64 w3-container">
     <div class="w3-content">
         <div class="w3-twothird">
-            <h1>Case Overview</h1>
-            <p>WALKOFF contains a flexible, customizable logging system. It's better than your average,
-                fatal/error/warning/info/trace logging system -- it's a database-driven event subscription system which
-                allows you to visualize the workflow execution at any level of detail you deem useful. You start by
-                creating and naming one or more "cases" which are collections of execution events you wish to log
-                together, we call these the case's event subscriptions. As a workflow or collection of workflows is
-                executed, the events to which the case is subscribed to are logged. Each level of execution contains
-                multiple events which can be subscribed to. Currently the available event subscriptions are as
-                follows:</p>
-
-            <h6>Controller</h6>
-            <ul style="list-style-type:circle">
-                <li>Scheduler Started</li>
-                <li>Scheduler Paused</li>
-                <li>Scheduler Resumed</li>
-                <li>Scheduler Shutdown</li>
-                <li>Job Added</li>
-                <li>Job Removed</li>
-                <li>Job Executed</li>
-                <li>Job Error</li>
-            </ul>
-
-            <h6>Workflow</h6>
-            <ul style="list-style-type:circle">
-                <li>Workflow Execution Start</li>
-                <li>App Instance Created</li>
-                <li>Workflow Shutdown</li>
-                <li>Workflow Arguments Validated</li>
-                <li>Workflow Arguments Invalid</li>
-                <li>Workflow Paused <i>(UI integration coming soon)</i></li>
-                <li>Workflow Resumed <i>(UI integration coming soon)</i></li>
-            </ul>
-
-            <h6>Step</h6>
-            <ul style="list-style-type:circle">
-                <li>Action Execution Success</li>,
-                <li>Action Execution Error</li>
-                <li>Action Started</li>
-                <li>Arguments Invalid</li>
-                <li>Trigger Action Awaiting Data</li>
-                <li>Trigger Action Taken</li>
-                <li>Trigger Action Not Taken</li>
-            </ul>
-
-            <h6>Branch</h6>
-            <ul style="list-style-type:circle">
-                <li>Branch Taken</li>
-                <li>Branch Not Taken</li>
-            </ul>
-
-            <h6>Conditional Expression</h6>
-            <ul style="list-style-type:circle">
-                <li>Conditional Expression True</li>
-                <li>Conditional Expression False</li>
-                <li>Conditional Expression Error</li>
-            </ul>
-
-            <h6>Condition</h6>
-            <ul style="list-style-type:circle">
-                <li>Condition Success</li>
-                <li>Condition Error</li>
-            </ul>
-
-            <h6>Transform</h6>
-            <ul style="list-style-type:circle">
-                <li>Transform Success</li>
-                <li>Transform Error</li>
-            </ul>
-
-
-            <p>Each case can be subscribed to multiple workflows.
-                Each execution element can have multiple execution elements it manages, and for each execution
-                element instance, a case which can have an
-                individualized set of events it is subscribed to. So if you want one step in one workflow to be log
-                the events Action Execution Success
-                and Conditionals Executed, but a different step in that same workflow to only log its Arguments
-                Validated event, you can specify these.</p>
-
-            <p>Each event is logged with the following fields</p>
-            <dl>
-                <dt>Unique ID</dt>
-                <dt>Timestamp</dt>
-                <dt>Type</dt>
-                <dd> System, Workflow, Action, Branch, Conditional Expression, Condition, Transform</dd>
-                <dt>Originator</dt>
-                <dd> A UUID of the execution elements which caused this event</dd>
-                <dt>Message</dt>
-                <dd> The specific event that happened</dd>
-                <dt>Note</dt>
-                <dd> Field which can be modified to add annotations</dd>
-            </dl>
-
-
+            <h1>Conditional Expressions</h1>
+            <p>
+                Conditional Expressions are compound statements which encapsulate Boolean (true/false) logic. They are
+                used to control the flow execution between actions and as a trigger on an action. An example
+                would be the statement "If A, B, and not C happen, or if D, E, or F happen, then ...". Conditional
+                Expressions have four components - a list of <a href="Condition_Overview.html">Conditions</a> which can
+                be empty, a list of child Conditional Expressions which can also be empty, an operator which determines
+                how to combine the conditions and child expressions, and a Boolean value indicating if the the result
+                should be negated (if the Conditional Expression would return true, then return false, and vice versa).
+                In our example above, That statement would be a conditional expression with two child expressions
+                (themselves Conditional Expressions) joined by the "or" operator. The first child expression would the
+                "and" operator and three conditions -- A, B, and C. The C condition would have its "is_negated" field
+                set to "true." The second child expression would have the "or" operator and three conditions -- D, E,
+                and F.
+            </p>
         </div>
 
         <div class="w3-third w3-center">

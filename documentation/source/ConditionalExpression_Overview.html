@@ -1,0 +1,25 @@
+<div class="w3-row-padding w3-padding-64 w3-container">
+    <div class="w3-content">
+        <div class="w3-twothird">
+            <h1>Conditional Expressions</h1>
+            <p>
+                Conditional Expressions are compound statements which encapsulate Boolean (true/false) logic. They are
+                used to control the flow execution between actions and as a trigger on an action. An example
+                would be the statement "If A, B, and not C happen, or if D, E, or F happen, then ...". Conditional
+                Expressions have four components - a list of <a href="Condition_Overview.html">Conditions</a> which can
+                be empty, a list of child Conditional Expressions which can also be empty, an operator which determines
+                how to combine the conditions and child expressions, and a Boolean value indicating if the the result
+                should be negated (if the Conditional Expression would return true, then return false, and vice versa).
+                In our example above, That statement would be a conditional expression with two child expressions
+                (themselves Conditional Expressions) joined by the "or" operator. The first child expression would the
+                "and" operator and three conditions -- A, B, and C. The C condition would have its "is_negated" field
+                set to "true." The second child expression would have the "or" operator and three conditions -- D, E,
+                and F.
+            </p>
+        </div>
+
+        <div class="w3-third w3-center">
+            <i class="fa fa-graduation-cap w3-padding-64 w3-text-blue-grey"></i>
+        </div>
+    </div>
+</div>
