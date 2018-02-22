@@ -4,19 +4,18 @@ from sqlalchemy import Column, ForeignKey, String, orm, Boolean
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 
+from walkoff import executiondb
 from walkoff.appgateway import get_condition
 from walkoff.executiondb.argument import Argument
-from walkoff.executiondb import Device_Base
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.helpers import get_condition_api, InvalidArgument, format_exception_message, split_api_params
 from walkoff.appgateway.validator import validate_condition_parameters
-import walkoff.executiondb.devicedb
 
 logger = logging.getLogger(__name__)
 
 
-class Condition(ExecutionElement, Device_Base):
+class Condition(ExecutionElement, executiondb.Device_Base):
     __tablename__ = 'condition'
     _conditional_expression_id = Column(UUIDType(binary=False), ForeignKey('conditional_expression.id'))
     app_name = Column(String(80), nullable=False)
@@ -106,4 +105,4 @@ class Condition(ExecutionElement, Device_Base):
         if arg:
             self.arguments.remove(arg)
         self.arguments.append(Argument(self._data_param_name, value=data))
-        walkoff.executiondb.devicedb.device_db.session.commit()
+        executiondb.execution_db.session.commit()

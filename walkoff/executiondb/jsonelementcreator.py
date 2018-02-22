@@ -1,7 +1,8 @@
 from collections import OrderedDict
 
 from six import iteritems
-import walkoff.executiondb.devicedb
+
+from walkoff import executiondb
 from walkoff.helpers import UnknownFunction, UnknownApp, InvalidArgument
 
 
@@ -36,12 +37,12 @@ class JsonElementCreator(object):
                 raise ValueError('Unknown class {}'.format(element_class.__class__.__name__))
         try:
             elem = cls.construct_current_class(current_class, json_in, subfield_lookup)
-            walkoff.executiondb.devicedb.device_db.session.add(elem)
+            executiondb.execution_db.session.add(elem)
             return elem
         except (KeyError, TypeError, InvalidArgument, UnknownApp, UnknownFunction) as e:
             import traceback
             traceback.print_exc()
-            walkoff.executiondb.devicedb.device_db.session.rollback()
+            executiondb.execution_db.session.rollback()
             from walkoff.helpers import format_exception_message
             raise ValueError(
                 'Improperly formatted JSON for ExecutionElement {0} {1}'.format(current_class.__name__,

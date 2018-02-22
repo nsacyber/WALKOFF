@@ -2,12 +2,11 @@ from uuid import UUID
 from flask import request, current_app
 from flask_jwt_extended import jwt_required
 from sqlalchemy import exists
-import walkoff.config.paths
+from walkoff import executiondb
 from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory
-import walkoff.executiondb.devicedb
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.argument import Argument
 from walkoff.helpers import InvalidArgument
@@ -15,16 +14,15 @@ from walkoff.server.problem import Problem
 
 
 def does_workflow_exist(workflow_id):
-    return walkoff.executiondb.devicedb.device_db.session.query(
-        exists().where(Workflow.id == workflow_id)).scalar()
+    return executiondb.execution_db.session.query(exists().where(Workflow.id == workflow_id)).scalar()
 
 
 def does_execution_id_exist(execution_id):
-    return walkoff.executiondb.devicedb.device_db.session.query(exists().where(WorkflowStatus.execution_id == execution_id)).scalar()
+    return executiondb.execution_db.session.query(exists().where(WorkflowStatus.execution_id == execution_id)).scalar()
 
 
 def workflow_status_getter(execution_id):
-    return walkoff.executiondb.devicedb.device_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
+    return executiondb.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
 
 
 def is_valid_uid(*ids):
@@ -45,7 +43,7 @@ def get_all_workflow_status():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     def __func():
-        workflow_statuses = walkoff.executiondb.devicedb.device_db.session.query(WorkflowStatus).all()
+        workflow_statuses = executiondb.execution_db.session.query(WorkflowStatus).all()
         ret = [workflow_status.as_json() for workflow_status in workflow_statuses]
         return ret, SUCCESS
 

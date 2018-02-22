@@ -8,7 +8,7 @@ import json
 from walkoff.messaging import MessageActionEvent, MessageAction
 from datetime import timedelta
 from walkoff.server.endpoints.messages import max_notifications, min_notifications
-from tests.util import device_db_help
+from tests.util import execution_db_help
 from sqlalchemy.exc import IntegrityError
 
 
@@ -25,7 +25,7 @@ class TestMessagingEndpoints(ServerTestCase):
 
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
 
         cls.context = flaskserver.app.test_request_context()
         cls.context.push()
@@ -100,8 +100,7 @@ class TestMessagingEndpoints(ServerTestCase):
             db.session.delete(role)
         db.session.commit()
 
-        from walkoff.executiondb import devicedb
-        devicedb.device_db.tear_down()
+        execution_db_help.tear_down_device_db()
 
     def login_user(self, user):
         post = self.app.post('/api/auth', content_type="application/json",

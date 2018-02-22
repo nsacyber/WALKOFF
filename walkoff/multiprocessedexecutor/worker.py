@@ -12,11 +12,11 @@ from google.protobuf.json_format import MessageToDict
 
 import walkoff.config.config
 import walkoff.config.paths
+from walkoff import executiondb
 from walkoff.executiondb.argument import Argument
 from walkoff.events import EventType, WalkoffEvent
 from walkoff.executiondb.workflow import Workflow
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
-import walkoff.executiondb.devicedb
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 
 try:
@@ -202,7 +202,7 @@ class Worker:
             self.results_sock.close()
         if self.comm_sock:
             self.comm_sock.close()
-        walkoff.executiondb.devicedb.device_db.tear_down()
+        executiondb.execution_db.tear_down()
         os._exit(0)
 
     def receive_requests(self):
@@ -226,11 +226,11 @@ class Worker:
     def execute_workflow_worker(self, workflow_id, workflow_execution_id, start, start_arguments=None, resume=False):
         """Execute a workflow.
         """
-        workflow = walkoff.executiondb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
+        workflow = executiondb.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
         workflow._execution_id = workflow_execution_id
 
         if resume:
-            saved_state = walkoff.executiondb.devicedb.device_db.session.query(SavedWorkflow).filter_by(
+            saved_state = executiondb.execution_db.session.query(SavedWorkflow).filter_by(
                 workflow_execution_id=workflow_execution_id).first()
             workflow._accumulator = saved_state.accumulator
             workflow._instances = saved_state.app_instances
@@ -286,8 +286,8 @@ class Worker:
                                            action_id=workflow.get_executing_action_id(),
                                            accumulator=workflow.get_accumulator(),
                                            app_instances=workflow.get_instances())
-            walkoff.executiondb.devicedb.device_db.session.add(saved_workflow)
-            walkoff.executiondb.devicedb.device_db.session.commit()
+            executiondb.execution_db.session.add(saved_workflow)
+            executiondb.execution_db.session.commit()
 
         packet_bytes = convert_to_protobuf(sender, self.workflows[threading.current_thread().name].get_execution_id(),
                                            **kwargs)

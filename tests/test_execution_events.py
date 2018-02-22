@@ -8,13 +8,13 @@ from walkoff.multiprocessedexecutor import multiprocessedexecutor
 from tests import config
 from tests.util.mock_objects import *
 import walkoff.config.paths
-from tests.util import device_db_help
+from tests.util import execution_db_help
 
 
 class TestExecutionEvents(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
         walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
         multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
@@ -27,7 +27,7 @@ class TestExecutionEvents(unittest.TestCase):
         case_database.initialize()
 
     def tearDown(self):
-        device_db_help.cleanup_device_db()
+        execution_db_help.cleanup_device_db()
 
         case_database.case_db.session.query(case_database.Event).delete()
         case_database.case_db.session.query(case_database.Case).delete()
@@ -38,10 +38,10 @@ class TestExecutionEvents(unittest.TestCase):
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
         multiprocessedexecutor.multiprocessedexecutor.shutdown_pool()
-        device_db_help.tear_down_device_db()
+        execution_db_help.tear_down_device_db()
 
     def test_workflow_execution_events(self):
-        workflow = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
+        workflow = execution_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         subs = {'case1': {str(workflow.id): [WalkoffEvent.AppInstanceCreated.signal_name,
                                              WalkoffEvent.WorkflowShutdown.signal_name]}}
         case_subscription.set_subscriptions(subs)
@@ -56,7 +56,7 @@ class TestExecutionEvents(unittest.TestCase):
                          'Expected {0}, got {1}'.format(2, len(execution_events)))
 
     def test_action_execution_events(self):
-        workflow = device_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         action_ids = [str(action_id) for action_id in workflow.actions]
         action_events = [WalkoffEvent.ActionExecutionSuccess.signal_name, WalkoffEvent.ActionStarted.signal_name]
         subs = {'case1': {action_id: action_events for action_id in action_ids}}

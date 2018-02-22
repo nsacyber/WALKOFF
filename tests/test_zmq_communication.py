@@ -7,20 +7,20 @@ import shutil
 import walkoff.appgateway
 import walkoff.config.config
 import walkoff.config.paths
+from walkoff import executiondb
 from tests import config
 from tests.util.case_db_help import *
 from tests.util.thread_control import modified_setup_worker_env
-from tests.util import device_db_help
+from tests.util import execution_db_help
 from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus, WorkflowStatusEnum
-from walkoff.executiondb import devicedb
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import multiprocessedexecutor
-from walkoff.server import workflowresults # Need this import
+from walkoff.server import workflowresults  # Need this import
 
 
 class TestZMQCommunication(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
 
         from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
         walkoff.config.config.num_processes = 2
@@ -35,7 +35,7 @@ class TestZMQCommunication(unittest.TestCase):
         case_database.initialize()
 
     def tearDown(self):
-        device_db_help.cleanup_device_db()
+        execution_db_help.cleanup_device_db()
         case_database.case_db.tear_down()
         case_subscription.clear_subscriptions()
 
@@ -48,12 +48,12 @@ class TestZMQCommunication(unittest.TestCase):
                 shutil.rmtree(config.test_data_path)
         walkoff.appgateway.clear_cache()
         multiprocessedexecutor.shutdown_pool()
-        device_db_help.tear_down_device_db()
+        execution_db_help.tear_down_device_db()
 
     '''Request and Result Socket Testing (Basic Workflow Execution)'''
 
     def test_simple_workflow_execution(self):
-        workflow = device_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
         multiprocessedexecutor.execute_workflow(workflow.id)
@@ -70,7 +70,7 @@ class TestZMQCommunication(unittest.TestCase):
         self.assertDictEqual(result, {'result': "REPEATING: Hello World", 'status': 'Success'})
 
     def test_multi_action_workflow(self):
-        workflow = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
+        workflow = execution_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         action_names = ['start', '1']
         action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
@@ -88,7 +88,7 @@ class TestZMQCommunication(unittest.TestCase):
             self.assertIn(result, expected_results)
 
     def test_error_workflow(self):
-        workflow = device_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
+        workflow = execution_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
         action_names = ['start', '1', 'error']
         action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
@@ -107,7 +107,7 @@ class TestZMQCommunication(unittest.TestCase):
             self.assertIn(result, expected_results)
 
     def test_workflow_with_dataflow(self):
-        workflow = device_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
+        workflow = execution_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
         action_names = ['start', '1', '2']
         action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
@@ -126,7 +126,7 @@ class TestZMQCommunication(unittest.TestCase):
             self.assertIn(result, expected_results)
 
     def test_execute_multiple_workflows(self):
-        workflow = device_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
@@ -158,14 +158,14 @@ class TestZMQCommunication(unittest.TestCase):
         @WalkoffEvent.WorkflowPaused.connect
         def workflow_paused_listener(sender, **kwargs):
             result['paused'] = True
-            wf_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
+            wf_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
                 execution_id=sender['workflow_execution_id']).first()
             wf_status.paused()
-            action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
+            action_status = executiondb.execution_db.session.query(ActionStatus).filter_by(
                 _workflow_status_id=sender['workflow_execution_id']).first()
             if action_status:
                 action_status.paused()
-            devicedb.device_db.session.commit()
+            executiondb.execution_db.session.commit()
 
             multiprocessedexecutor.resume_workflow(execution_id)
 
@@ -173,7 +173,7 @@ class TestZMQCommunication(unittest.TestCase):
         def workflow_resumed_listener(sender, **kwargs):
             result['resumed'] = True
 
-        workflow = device_db_help.load_workflow('pauseResumeWorkflowFixed', 'pauseResumeWorkflow')
+        workflow = execution_db_help.load_workflow('pauseResumeWorkflowFixed', 'pauseResumeWorkflow')
         action_ids = [action_id for action_id in workflow.actions]
         workflow_events = ['Workflow Paused', 'Workflow Resumed']
         setup_subscriptions_for_action(workflow.id, action_ids, workflow_events=workflow_events)
@@ -181,8 +181,8 @@ class TestZMQCommunication(unittest.TestCase):
         execution_id = multiprocessedexecutor.execute_workflow(workflow.id)
 
         while True:
-            devicedb.device_db.session.expire_all()
-            workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
+            executiondb.execution_db.session.expire_all()
+            workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
             if workflow_status and workflow_status.status == WorkflowStatusEnum.running:
                 threading.Thread(target=pause_resume_thread).start()
                 time.sleep(0)

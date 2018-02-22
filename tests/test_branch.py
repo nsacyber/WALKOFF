@@ -12,20 +12,20 @@ from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.workflow import Workflow
 from tests.config import test_apps_path
-from tests.util import device_db_help
+from tests.util import execution_db_help
 
 
 class TestBranch(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
         walkoff.appgateway.cache_apps(test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
-        device_db_help.tear_down_device_db()
+        execution_db_help.tear_down_device_db()
 
     def __compare_init(self, elem, source_id, destination_id, condition=None, status='Success', priority=999):
         self.assertEqual(elem.source_id, source_id)

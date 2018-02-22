@@ -3,9 +3,8 @@ import json
 from flask import current_app, request, send_file
 from flask_jwt_extended import jwt_required
 
-import walkoff.config.paths
-from walkoff.executiondb.devicedb import Device, App
-import walkoff.executiondb.devicedb
+from walkoff import executiondb
+from walkoff.executiondb.device import Device, App
 from walkoff.helpers import get_app_device_api, InvalidArgument, UnknownDevice, UnknownApp, format_exception_message
 from walkoff.appgateway.validator import validate_device_fields
 from walkoff.server.returncodes import *
@@ -20,12 +19,12 @@ except ImportError:
 
 with_device = with_resource_factory(
     'device',
-    lambda device_id: walkoff.executiondb.devicedb.device_db.session.query(Device).filter(Device.id == device_id).first())
+    lambda device_id: executiondb.execution_db.session.query(Device).filter(Device.id == device_id).first())
 
 
 def get_device_json_with_app_name(device):
     device_json = device.as_json()
-    app = walkoff.executiondb.devicedb.device_db.session.query(App).filter(App.id == device.app_id).first()
+    app = executiondb.execution_db.session.query(App).filter(App.id == device.app_id).first()
     device_json['app_name'] = app.name if app is not None else ''
     return device_json
 
@@ -35,7 +34,7 @@ def read_all_devices():
     @permissions_accepted_for_resources(ResourcePermissions('devices', ['read']))
     def __func():
         return [get_device_json_with_app_name(device) for device in
-                walkoff.executiondb.devicedb.device_db.session.query(Device).all()], SUCCESS
+                executiondb.execution_db.session.query(Device).all()], SUCCESS
 
     return __func()
 
@@ -61,9 +60,9 @@ def delete_device(device_id):
     @permissions_accepted_for_resources(ResourcePermissions('devices', ['delete']))
     @with_device('delete', device_id)
     def __func(device):
-        walkoff.executiondb.devicedb.device_db.session.delete(device)
+        executiondb.execution_db.session.delete(device)
         current_app.logger.info('Device removed {0}'.format(device_id))
-        walkoff.executiondb.devicedb.device_db.session.commit()
+        executiondb.execution_db.session.commit()
         return {}, NO_CONTENT
 
     return __func()
@@ -91,7 +90,7 @@ def create_device():
             add_device_json = json.loads(f.read().decode('utf-8'))
         else:
             add_device_json = request.get_json()
-        if walkoff.executiondb.devicedb.device_db.session.query(Device).filter(
+        if executiondb.execution_db.session.query(Device).filter(
                 Device.name == add_device_json['name']).first() is not None:
             current_app.logger.error('Could not create device {0}. '
                                      'Device already exists.'.format(add_device_json['name']))
@@ -113,7 +112,7 @@ def create_device():
         else:
             fields = add_device_json['fields']
             add_configuration_keys_to_device_json(fields, device_fields_api)
-            app = walkoff.executiondb.devicedb.device_db.session.query(App).filter(App.name == app).first()
+            app = executiondb.execution_db.session.query(App).filter(App.name == app).first()
             if app is None:
                 current_app.logger.error('SEVERE: App defined in api does not have corresponding entry in database. '
                                          'Cannot add device')
@@ -124,8 +123,8 @@ def create_device():
                     'App {} does not exist.'.format(add_device_json['app_name']))
             device = Device.from_json(add_device_json)
             app.add_device(device)
-            walkoff.executiondb.devicedb.device_db.session.add(device)
-            walkoff.executiondb.devicedb.device_db.session.commit()
+            executiondb.execution_db.session.add(device)
+            executiondb.execution_db.session.commit()
             device_json = get_device_json_with_app_name(device)
             return device_json, OBJECT_CREATED
 
@@ -155,7 +154,7 @@ def update_device():
                 fields = update_device_json['fields'] if 'fields' in update_device_json else None
                 add_configuration_keys_to_device_json(fields, device_fields_api)
             device.update_from_json(update_device_json)
-            walkoff.executiondb.devicedb.device_db.session.commit()
+            executiondb.execution_db.session.commit()
             device_json = get_device_json_with_app_name(device)
             # remove_configuration_keys_from_device_json(device_json)
             return device_json, SUCCESS

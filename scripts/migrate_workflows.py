@@ -12,8 +12,8 @@ import importlib
 import scripts.migrations.workflows.versions as versions
 from walkoff.config import paths
 from walkoff import initialize_databases
-from walkoff.coredb import devicedb
-from walkoff.coredb.playbook import Playbook
+from walkoff import executiondb
+from walkoff.executiondb.playbook import Playbook
 
 UPGRADE = "upgrade"
 DOWNGRADE = "downgrade"
@@ -109,7 +109,7 @@ def convert_playbook(path, mode, tgt_version):
 
                 cur_version = next_version
 
-            playbook_obj = devicedb.device_db.session.query(Playbook).filter_by(name=playbook['name']).first()
+            playbook_obj = executiondb.execution_db.session.query(Playbook).filter_by(name=playbook['name']).first()
 
             f.seek(0)
             json.dump(playbook_obj.read(), f, sort_keys=True, indent=4, separators=(',', ': '))

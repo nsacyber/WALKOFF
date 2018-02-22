@@ -1,4 +1,4 @@
-import walkoff.executiondb.devicedb
+from walkoff import executiondb
 from uuid import UUID
 
 
@@ -64,7 +64,7 @@ class JsonElementUpdater(object):
                 value.append(new_element)
 
         for element in elements_to_discard:
-            walkoff.executiondb.devicedb.device_db.session.delete(element)
+            executiondb.execution_db.session.delete(element)
 
     @staticmethod
     def updatable_fields(element):

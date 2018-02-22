@@ -6,7 +6,7 @@ from walkoff.server import flaskserver as server
 from walkoff.server.endpoints.metrics import _convert_action_time_averages, _convert_workflow_time_averages
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
-from tests.util import device_db_help
+from tests.util import execution_db_help
 
 
 class MetricsServerTest(ServerTestCase):
@@ -14,7 +14,7 @@ class MetricsServerTest(ServerTestCase):
         metrics.app_metrics = {}
 
     def tearDown(self):
-        device_db_help.cleanup_device_db()
+        execution_db_help.cleanup_device_db()
 
     def test_convert_action_time_average(self):
         '''
@@ -102,7 +102,7 @@ class MetricsServerTest(ServerTestCase):
 
     def test_action_metrics(self):
 
-        workflow = device_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
+        workflow = execution_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
 
         server.running_context.executor.execute_workflow(workflow.id)
         server.running_context.executor.wait_and_reset(1)
@@ -113,8 +113,8 @@ class MetricsServerTest(ServerTestCase):
         self.assertDictEqual(response, _convert_action_time_averages())
 
     def test_workflow_metrics(self):
-        error_id = device_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow').id
-        test_id = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow').id
+        error_id = execution_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow').id
+        test_id = execution_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow').id
 
         server.running_context.executor.execute_workflow(error_id)
         server.running_context.executor.execute_workflow(error_id)

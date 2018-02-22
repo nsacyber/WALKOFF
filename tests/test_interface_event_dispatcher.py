@@ -5,7 +5,7 @@ from walkoff.events import WalkoffEvent, EventType
 from interfaces import InterfaceEventDispatcher, dispatcher
 from interfaces.exceptions import UnknownEvent, InvalidEventHandler
 from walkoff.helpers import UnknownAppAction, UnknownApp
-from tests.util import device_db_help
+from tests.util import execution_db_help
 import uuid
 from walkoff.executiondb.representable import Representable
 
@@ -23,7 +23,7 @@ class MockWorkflow(Representable):
 class TestInterfaceEventDispatcher(TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
         walkoff.config.config.app_apis = {'App1': {'actions': {'action1': None,
                                                             'action2': None,
                                                             'action3': None}},
@@ -34,13 +34,13 @@ class TestInterfaceEventDispatcher(TestCase):
         dispatcher._clear()
 
     def tearDown(self):
-        device_db_help.cleanup_device_db()
+        execution_db_help.cleanup_device_db()
 
     @classmethod
     def tearDownClass(cls):
         dispatcher._clear()
         walkoff.config.config.app_apis = {}
-        device_db_help.tear_down_device_db()
+        execution_db_help.tear_down_device_db()
 
     def test_singleton(self):
         self.assertEqual(id(dispatcher), id(InterfaceEventDispatcher()))

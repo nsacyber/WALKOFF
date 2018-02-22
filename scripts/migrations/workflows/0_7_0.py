@@ -2,8 +2,9 @@ import os
 import sys
 import uuid
 
+from walkoff import executiondb
+
 sys.path.append(os.path.abspath('.'))
-import walkoff.executiondb.devicedb
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.action import Action
 from walkoff.executiondb.branch import Branch
@@ -37,8 +38,8 @@ def upgrade_playbook(playbook):
 
     playbook_obj = Playbook(name=playbook['name'], workflows=workflows, id=playbook.get('uid', None))
 
-    walkoff.executiondb.devicedb.device_db.session.add(playbook_obj)
-    walkoff.executiondb.devicedb.device_db.session.commit()
+    executiondb.execution_db.session.add(playbook_obj)
+    executiondb.execution_db.session.commit()
 
 
 def upgrade_workflow(workflow):

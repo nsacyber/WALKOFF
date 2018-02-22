@@ -4,7 +4,7 @@ import unittest
 import walkoff.server.flaskserver as server
 from walkoff.scheduler import InvalidTriggerArgs
 from walkoff.serverdb import db
-from tests.util.device_db_help import setup_dbs
+from tests.util.execution_db_help import setup_dbs
 from walkoff.serverdb.scheduledtasks import ScheduledTask
 
 

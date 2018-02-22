@@ -1,7 +1,7 @@
 import json
 import os
 
-from walkoff.executiondb import devicedb
+from walkoff import executiondb
 from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.workflowresults import WorkflowStatus
 from tests.config import test_workflows_path_with_generated, test_workflows_path
@@ -19,26 +19,26 @@ def load_playbooks(playbooks):
     for path in paths:
         with open(path, 'r') as playbook_file:
             playbook = Playbook.create(json.load(playbook_file))
-            devicedb.device_db.session.add(playbook)
-    devicedb.device_db.session.commit()
+            executiondb.execution_db.session.add(playbook)
+    executiondb.execution_db.session.commit()
 
 
 def standard_load():
     load_playbooks(['test', 'dataflowTest'])
-    return devicedb.device_db.session.query(Playbook).filter_by(name='test').first()
+    return executiondb.execution_db.session.query(Playbook).filter_by(name='test').first()
 
 
 def load_playbook(playbook_name):
     playbook = JsonPlaybookLoader.load_playbook(os.path.join(test_workflows_path, playbook_name+'.playbook'))
-    devicedb.device_db.session.add(playbook)
-    devicedb.device_db.session.commit()
+    executiondb.execution_db.session.add(playbook)
+    executiondb.execution_db.session.commit()
     return playbook
 
 
 def load_workflow(playbook_name, workflow_name):
     playbook = JsonPlaybookLoader.load_playbook(os.path.join(test_workflows_path, playbook_name+'.playbook'))
-    devicedb.device_db.session.add(playbook)
-    devicedb.device_db.session.commit()
+    executiondb.execution_db.session.add(playbook)
+    executiondb.execution_db.session.commit()
 
     workflow = None
     for wf in playbook.workflows:
@@ -52,19 +52,19 @@ def load_workflow(playbook_name, workflow_name):
 def setup_dbs():
     walkoff.config.paths.db_path = tests.config.test_db_path
     walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-    walkoff.config.paths.device_db_path = tests.config.test_device_db_path
+    walkoff.config.paths.execution_db_path = tests.config.test_execution_db_path
     initialize_databases()
 
 
 def cleanup_device_db():
-    devicedb.device_db.session.rollback()
-    for instance in devicedb.device_db.session.query(Playbook).all():
-        devicedb.device_db.session.delete(instance)
+    executiondb.execution_db.session.rollback()
+    for instance in executiondb.execution_db.session.query(Playbook).all():
+        executiondb.execution_db.session.delete(instance)
 
-    for instance in devicedb.device_db.session.query(WorkflowStatus).all():
-        devicedb.device_db.session.delete(instance)
-    devicedb.device_db.session.commit()
+    for instance in executiondb.execution_db.session.query(WorkflowStatus).all():
+        executiondb.execution_db.session.delete(instance)
+    executiondb.execution_db.session.commit()
 
 
 def tear_down_device_db():
-    devicedb.device_db.tear_down()
+    executiondb.execution_db.tear_down()

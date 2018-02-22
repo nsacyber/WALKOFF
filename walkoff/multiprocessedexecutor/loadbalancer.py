@@ -11,9 +11,9 @@ from six import string_types
 
 import walkoff.config.config
 import walkoff.config.paths
+from walkoff import executiondb
 from walkoff.events import WalkoffEvent
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
-from walkoff.executiondb import devicedb
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
 
 try:
@@ -92,7 +92,7 @@ class LoadBalancer:
             if any(val > 0 for val in self.workers.values()) and not self.pending_workflows.empty():
                 workflow_id, workflow_execution_id, start, start_arguments, resume = self.pending_workflows.get()
 
-                workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
+                workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
                     execution_id=workflow_execution_id).first()
                 if workflow_status.status == WorkflowStatusEnum.aborted:
                     continue

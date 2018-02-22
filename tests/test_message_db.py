@@ -1,4 +1,5 @@
 from unittest import TestCase
+
 from walkoff.server import flaskserver
 from walkoff.serverdb.message import Message, MessageHistory
 from walkoff.messaging import MessageAction
@@ -10,14 +11,14 @@ from datetime import datetime
 from walkoff.events import WalkoffEvent
 import json
 import walkoff.config.paths
-from tests.util import device_db_help
+from tests.util import execution_db_help
 
 
 class TestMessageDatabase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
         cls.context = flaskserver.app.test_request_context()
         cls.context.push()
         db.create_all()
@@ -64,8 +65,7 @@ class TestMessageDatabase(TestCase):
             db.session.delete(role)
         db.session.commit()
 
-        from walkoff.executiondb import devicedb
-        devicedb.device_db.tear_down()
+        execution_db_help.tear_down_device_db()
 
     def get_default_message(self, commit=False, requires_reauth=False, requires_response=False):
         message = Message('subject here', json.dumps({'message': 'some message'}), 'workflow_uid1',

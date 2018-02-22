@@ -10,13 +10,13 @@ from walkoff.scheduler import scheduler
 from walkoff.events import WalkoffEvent, EventType
 from tests import config
 import walkoff.config.paths
-from tests.util import device_db_help
+from tests.util import execution_db_help
 
 
 class TestExecutionModes(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
         walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
 
@@ -24,7 +24,7 @@ class TestExecutionModes(unittest.TestCase):
         case_database.initialize()
 
     def tearDown(self):
-        device_db_help.cleanup_device_db()
+        execution_db_help.cleanup_device_db()
 
         case_database.case_db.session.query(case_database.Event).delete()
         case_database.case_db.session.query(case_database.Case).delete()
@@ -34,10 +34,10 @@ class TestExecutionModes(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
-        device_db_help.tear_down_device_db()
+        execution_db_help.tear_down_device_db()
 
     def test_start_stop_execution_loop(self):
-        device_db_help.load_playbook('testScheduler')
+        execution_db_help.load_playbook('testScheduler')
         subs = {'controller': [event.signal_name for event in WalkoffEvent if event.event_type == EventType.controller]}
         case_subscription.set_subscriptions({'case1': subs})
         scheduler.start()
@@ -51,7 +51,7 @@ class TestExecutionModes(unittest.TestCase):
                          'Expected {0}, got {1}'.format(2, len(start_stop_event_history)))
 
     def test_pause_resume_scheduler_execution(self):
-        device_db_help.load_playbook('testScheduler')
+        execution_db_help.load_playbook('testScheduler')
 
         subs = {'controller': [event.signal_name for event in WalkoffEvent if event.event_type == EventType.controller]}
         case_subscription.set_subscriptions({'pauseResume': subs})

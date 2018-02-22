@@ -8,13 +8,13 @@ from tests import config
 from tests.util.case_db_help import *
 from tests.util.mock_objects import *
 import walkoff.config.paths
-from tests.util import device_db_help
+from tests.util import execution_db_help
 
 
 class TestSimpleWorkflow(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
 
         from walkoff.appgateway import cache_apps
         cache_apps(path=config.test_apps_path)
@@ -32,7 +32,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         database.initialize()
 
     def tearDown(self):
-        device_db_help.cleanup_device_db()
+        execution_db_help.cleanup_device_db()
         database.case_db.tear_down()
         subscription.clear_subscriptions()
 
@@ -40,10 +40,10 @@ class TestSimpleWorkflow(unittest.TestCase):
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
         multiprocessedexecutor.multiprocessedexecutor.shutdown_pool()
-        device_db_help.tear_down_device_db()
+        execution_db_help.tear_down_device_db()
 
     def test_simple_workflow_execution(self):
-        workflow = device_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
         self.executor.execute_workflow(workflow.id)
@@ -60,7 +60,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.assertDictEqual(result, {'result': "REPEATING: Hello World", 'status': 'Success'})
 
     def test_multi_action_workflow(self):
-        workflow = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
+        workflow = execution_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         action_names = ['start', '1']
         action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
@@ -78,7 +78,7 @@ class TestSimpleWorkflow(unittest.TestCase):
             self.assertIn(result, expected_results)
 
     def test_error_workflow(self):
-        workflow = device_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
+        workflow = execution_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
         action_names = ['start', '1', 'error']
         action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
@@ -97,7 +97,7 @@ class TestSimpleWorkflow(unittest.TestCase):
             self.assertIn(result, expected_results)
 
     def test_workflow_with_dataflow(self):
-        workflow = device_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
+        workflow = execution_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
         action_names = ['start', '1', '2']
         action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
@@ -117,7 +117,7 @@ class TestSimpleWorkflow(unittest.TestCase):
             self.assertIn(result, expected_results)
 
     def test_workflow_with_dataflow_action_not_executed(self):
-        workflow = device_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
+        workflow = execution_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
         action_names = ['start', '1']
         action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)

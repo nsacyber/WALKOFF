@@ -5,12 +5,11 @@ from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
 from tests.util.case_db_help import setup_subscriptions_for_action
 from tests.util.servertestcase import ServerTestCase
-import walkoff.executiondb.devicedb as devicedb
 from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
 from walkoff.executiondb.workflow import Workflow
 from uuid import uuid4
-from tests.util import device_db_help
-import walkoff.executiondb.devicedb as db
+from tests.util import execution_db_help
+from walkoff import executiondb
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 
 
@@ -30,7 +29,7 @@ class TestWorkflowStatus(ServerTestCase):
         case_database.initialize()
 
     def tearDown(self):
-        device_db_help.cleanup_device_db()
+        execution_db_help.cleanup_device_db()
 
         case_database.case_db.session.query(case_database.Event).delete()
         case_database.case_db.session.query(case_database.Case).delete()
@@ -42,8 +41,8 @@ class TestWorkflowStatus(ServerTestCase):
         workflow_status = WorkflowStatus(exec_id, wf_id, 'test')
         workflow_status.running()
 
-        db.device_db.session.add(workflow_status)
-        db.device_db.session.commit()
+        executiondb.execution_db.session.add(workflow_status)
+        executiondb.execution_db.session.commit()
 
         response = self.get_with_status_check('/api/workflowqueue', headers=self.headers)
 
@@ -71,8 +70,8 @@ class TestWorkflowStatus(ServerTestCase):
         action_status = ActionStatus(action_exec_id, action_id, 'name', 'test_app', 'test_action')
         workflow_status._action_statuses.append(action_status)
 
-        db.device_db.session.add(workflow_status)
-        db.device_db.session.commit()
+        executiondb.execution_db.session.add(workflow_status)
+        executiondb.execution_db.session.commit()
 
         response = self.get_with_status_check('/api/workflowqueue', headers=self.headers)
 
@@ -104,8 +103,8 @@ class TestWorkflowStatus(ServerTestCase):
         action_status = ActionStatus(action_exec_id, action_id, 'name', 'test_app', 'test_action')
         workflow_status._action_statuses.append(action_status)
 
-        db.device_db.session.add(workflow_status)
-        db.device_db.session.commit()
+        executiondb.execution_db.session.add(workflow_status)
+        executiondb.execution_db.session.commit()
 
         response = self.get_with_status_check('/api/workflowqueue/{}'.format(str(wf_exec_id)), headers=self.headers)
 
@@ -137,9 +136,9 @@ class TestWorkflowStatus(ServerTestCase):
                                    status_code=OBJECT_DNE_ERROR)
 
     def test_execute_workflow(self):
-        playbook = device_db_help.standard_load()
+        playbook = execution_db_help.standard_load()
 
-        workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
+        workflow = executiondb.execution_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
         action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
@@ -160,15 +159,15 @@ class TestWorkflowStatus(ServerTestCase):
         self.assertEqual(result['count'], 1)
         self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
-        workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
+        workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=response['id']).first()
         self.assertIsNotNone(workflow_status)
         self.assertEqual(workflow_status.status.name, 'completed')
 
     def test_execute_workflow_change_arguments(self):
 
-        playbook = device_db_help.standard_load()
-        workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
+        playbook = execution_db_help.standard_load()
+        workflow = executiondb.execution_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
 
         action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
@@ -205,7 +204,7 @@ class TestWorkflowStatus(ServerTestCase):
 
             result['paused'] = True
 
-            wf_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
+            wf_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
                 execution_id=str(wf_exec_id)).first()
             self.assertIsNotNone(wf_status)
 
@@ -218,8 +217,8 @@ class TestWorkflowStatus(ServerTestCase):
 
         workflow_status = WorkflowStatus(wf_exec_id, wf_id, 'test')
         workflow_status.running()
-        db.device_db.session.add(workflow_status)
-        db.device_db.session.commit()
+        executiondb.execution_db.session.add(workflow_status)
+        executiondb.execution_db.session.commit()
 
         data = {'execution_id': str(wf_exec_id),
                 'status': 'pause'}
@@ -230,9 +229,9 @@ class TestWorkflowStatus(ServerTestCase):
         self.assertTrue(result['resumed'])
 
     def test_abort_workflow(self):
-        device_db_help.load_playbook('testGeneratedWorkflows/pauseWorkflowTest')
+        execution_db_help.load_playbook('testGeneratedWorkflows/pauseWorkflowTest')
 
-        workflow = devicedb.device_db.session.query(Workflow).filter_by(name='pauseWorkflow').first()
+        workflow = executiondb.execution_db.session.query(Workflow).filter_by(name='pauseWorkflow').first()
 
         action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
@@ -259,7 +258,7 @@ class TestWorkflowStatus(ServerTestCase):
         self.assertIn('id', response)
         self.assertTrue(result['aborted'])
 
-        workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
+        workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=response['id']).first()
         self.assertIsNotNone(workflow_status)
         self.assertEqual(workflow_status.status.name, 'aborted')
