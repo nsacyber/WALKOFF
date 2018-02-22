@@ -44,6 +44,9 @@ class WorkflowStatus(Device_Base):
         self.completed_at = datetime.utcnow()
         self.status = WorkflowStatusEnum.aborted
 
+    def add_action_status(self, action_status):
+        self._action_statuses.append(action_status)
+
     def as_json(self, full_actions=False):
         ret = {"execution_id": self.execution_id,
                "workflow_id": self.workflow_id,
