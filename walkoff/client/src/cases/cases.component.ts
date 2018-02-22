@@ -114,7 +114,8 @@ export class CasesComponent implements OnInit {
 
 	constructor(
 		private casesService: CasesService, private modalService: NgbModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {}
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+	) {}
 
 	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
@@ -282,7 +283,6 @@ export class CasesComponent implements OnInit {
 	 * @param playbooks Array of playbooks to convert
 	 */
 	convertPlaybooksToSubscriptionTree(playbooks: Playbook[]): CaseNode {
-		const self = this;
 		//Top level controller data
 		const tree: CaseNode = { name: 'Controller', id: 'controller', type: 'controller', children: [] };
 
@@ -306,8 +306,8 @@ export class CasesComponent implements OnInit {
 			});
 		});
 
-		playbooks.forEach(function (p) {
-			tree.children.push(self.getNodeRecursive(p, self.caseHierarchy));
+		playbooks.forEach(p => {
+			tree.children.push(this.getNodeRecursive(p, this.caseHierarchy));
 		});
 		return tree;
 	}
@@ -319,8 +319,6 @@ export class CasesComponent implements OnInit {
 	 * @param hierarchy Hierarchy information to handle the conversion
 	 */
 	getNodeRecursive(target: any, hierarchy: ICaseHierarchy): CaseNode {
-		const self = this;
-
 		let nodeName = '';
 		if (hierarchy.prefix) { nodeName = hierarchy.prefix; }
 		//For higher level nodes, use the name
@@ -343,14 +341,14 @@ export class CasesComponent implements OnInit {
 		// iterate through children with the same hierarchical structure
 		if (hierarchy.recursivePropertyName) {
 			(target[hierarchy.recursivePropertyName] as any[]).forEach(sub => {
-				node.children.push(self.getNodeRecursive(sub, hierarchy));
+				node.children.push(this.getNodeRecursive(sub, hierarchy));
 			});
 		}
 		
 		// For each child hierarchy, (most cases only 1 child type), iterate through the child elements
 		hierarchy.children.forEach(childHierarchy => {
 			(target[childHierarchy.arrayPropertyName] as any[]).forEach(sub => {
-				node.children.push(self.getNodeRecursive(sub, childHierarchy));
+				node.children.push(this.getNodeRecursive(sub, childHierarchy));
 			});
 		});
 

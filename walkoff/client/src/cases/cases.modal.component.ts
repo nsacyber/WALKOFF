@@ -1,4 +1,4 @@
-import { Component, Input, ViewEncapsulation } from '@angular/core';
+import { Component, Input, ViewEncapsulation, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import * as d3 from 'd3';
@@ -21,7 +21,7 @@ import { Subscription } from '../models/case/subscription';
 	],
 	providers: [CasesService],
 })
-export class CasesModalComponent {
+export class CasesModalComponent implements OnInit {
 	@Input() workingCase: Case;
 	@Input() title: string;
 	@Input() submitText: string;
@@ -38,7 +38,8 @@ export class CasesModalComponent {
 
 	constructor(
 		private casesService: CasesService, private activeModal: NgbActiveModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {}
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+	) {}
 
 	/**
 	 * On component init, we want to build our D3 subscriptin tree from the subscriptionTree CaseNode hierarchy supplied.
@@ -104,16 +105,16 @@ export class CasesModalComponent {
 		// ****************** Nodes section ***************************
 		// Update the nodes...
 		const node = self.svg.selectAll('g.node')
-			.data(nodes, function (d: any) { return d.id || (d.id = ++self.i); });
+			.data(nodes, (d: any) => d.id || (d.id = ++this.i));
 
 		// Enter any new modes at the parent's previous position.
 		const nodeEnter = node.enter().append('g')
 			.classed('node', true)
 			.classed('included', (d: any) => d.data._included)
 			.attr('transform', d => `translate(${source.y0},${source.x0})`)
-			.attr('id', (d: any) => self.getId())
-			.on('click', d => self.click(d, self))
-			.on('dblclick', d => self.dblclick(d, self));
+			.attr('id', (d: any) => this.getId())
+			.on('click', d => this.click(d, this))
+			.on('dblclick', d => this.dblclick(d, this));
 
 		// Add Circle for the nodes
 		nodeEnter.append('circle')

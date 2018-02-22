@@ -123,14 +123,13 @@ export class DevicesModalComponent implements OnInit, AfterViewInit {
 
 		//If device has an ID, device already exists, call update
 		if (this.workingDevice.id) {
-			const self = this;
 			toSubmit.fields.forEach((field, index, array) => {
-				const ftype = self.selectedDeviceType.fields.find(ft => ft.name === field.name);
+				const ftype = this.selectedDeviceType.fields.find(ft => ft.name === field.name);
 	
 				if (!ftype.encrypted) { return; }
 	
 				//If we are to be clearing our value, please set it to empty string and return
-				if (self.encryptedFieldsToBeCleared[field.name]) { 
+				if (this.encryptedFieldsToBeCleared[field.name]) { 
 					field.value = '';
 				} else if ((typeof(field.value) === 'string' && !field.value.trim()) ||
 					(typeof(field.value) === 'number' && !field.value)) { array.splice(index, 1); }
@@ -168,17 +167,16 @@ export class DevicesModalComponent implements OnInit, AfterViewInit {
 	 * Performs validation on each Device field based on the matching ParameterSchema for the DeviceApi.
 	 */
 	validate(): boolean {
-		const self = this;
 		this.validationErrors = {};
 		const inputs = this.workingDevice.fields;
 
 		//Trim whitespace out of our inputs first
-		Object.keys(inputs).forEach(function (key) {
+		Object.keys(inputs).forEach(key => {
 			if (typeof(inputs[key]) === 'string') {
 				inputs[key] = (inputs[key] as string).trim();
 				//Also trim encrypted confirm fields if necessary
-				if (self.encryptedConfirmFields[key]) { 
-					self.encryptedConfirmFields[key] = self.encryptedConfirmFields[key].trim();
+				if (this.encryptedConfirmFields[key]) { 
+					this.encryptedConfirmFields[key] = this.encryptedConfirmFields[key].trim();
 				}
 			}
 		});

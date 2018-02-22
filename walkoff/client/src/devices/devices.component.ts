@@ -34,7 +34,8 @@ export class DevicesComponent implements OnInit {
 
 	constructor(
 		private devicesService: DevicesService, private modalService: NgbModal, 
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {}
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+	) {}
 
 	/**
 	 * On component init, initialize the app select2 config, grab devices and device apis from the server.

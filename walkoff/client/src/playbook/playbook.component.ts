@@ -93,8 +93,14 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	constructor(
 		private playbookService: PlaybookService, private authService: AuthService,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
-		private cdr: ChangeDetectorRef) {}
+		private cdr: ChangeDetectorRef,
+	) {}
 
+	/**
+	 * On component initialization, we grab arrays of devices, app apis, and playbooks/workflows (id, name pairs).
+	 * We also initialize an EventSoruce for Workflow Results for the execution results table.
+	 * Also initialize cytoscape event bindings.
+	 */
 	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
 

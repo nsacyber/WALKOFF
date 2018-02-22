@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, Input } from '@angular/core';
+import { Component, ViewEncapsulation, Input, OnInit } from '@angular/core';
 import { Select2OptionData } from 'ng2-select2/ng2-select2';
 
 import { Workflow } from '../models/playbook/workflow';
@@ -19,7 +19,7 @@ const AVAILABLE_TYPES = ['string', 'number', 'boolean'];
 	encapsulation: ViewEncapsulation.None,
 	providers: [],
 })
-export class PlaybookArgumentComponent {
+export class PlaybookArgumentComponent implements OnInit {
 	@Input() id: number;
 	@Input() argument: Argument;
 	@Input() parameterApi: ParameterApi;
@@ -41,6 +41,13 @@ export class PlaybookArgumentComponent {
 	// tslint:disable-next-line:no-empty
 	constructor() { }
 
+	/**
+	 * On init, we want to ensure our data is correctly formatted.
+	 * If reference is null, set it to empty string for editing.
+	 * If our value is of type array or object and is null, initalize them as such.
+	 * Additionally, if we're array or object types, track the types of the values that currently exist.
+	 * Initialize user and role selects if necessary (if schema type user or role is used).
+	 */
 	ngOnInit(): void {
 		this.parameterSchema = this.parameterApi.schema;
 		if (this.argument.reference == null) { this.argument.reference = ''; }

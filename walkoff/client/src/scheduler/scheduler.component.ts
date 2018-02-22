@@ -22,7 +22,6 @@ import { ScheduledTask } from '../models/scheduledTask';
 	providers: [SchedulerService],
 })
 export class SchedulerComponent implements OnInit {
-	currentController: string;
 	schedulerStatus: string;
 	scheduledTasks: ScheduledTask[] = [];
 	displayScheduledTasks: ScheduledTask[] = [];
@@ -32,14 +31,20 @@ export class SchedulerComponent implements OnInit {
 
 	constructor(
 		private schedulerService: SchedulerService, private modalService: NgbModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {}
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+	) {}
 
+	/**
+	 * On component initialization, get the scheduler status for display/actioning.
+	 * Get workflow names to add to a scheduled task.
+	 * Get scheduled tasks to display in the data table.
+	 * Initialize the search filter input to filter scheduled tasks.
+	 */
 	ngOnInit(): void {
-		this.currentController = 'Default Controller';
 		this.toastyConfig.theme = 'bootstrap';
 
 		this.getSchedulerStatus();
-		this.getWorkflowNames();
+		this.getWorkflows();
 		this.getScheduledTasks();
 
 		this.filterQuery
@@ -48,6 +53,9 @@ export class SchedulerComponent implements OnInit {
 			.subscribe(event => this.filterScheduledTasks());
 	}
 
+	/**
+	 * Based on the search filter input, filter out the scheduled tasks based on matching some parameters (name, desc.).
+	 */
 	filterScheduledTasks(): void {
 		const searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
 
@@ -57,6 +65,9 @@ export class SchedulerComponent implements OnInit {
 		});
 	}
 
+	/**
+	 * Gets the scheduler status from the server (e.g. 'paused').
+	 */
 	getSchedulerStatus(): void {
 		this.schedulerService
 			.getSchedulerStatus()
@@ -64,6 +75,10 @@ export class SchedulerComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error retrieving scheduler status: ${e.message}`));
 	}
 
+	/**
+	 * Changes the status of the scheduler and updates the local scheduler status to reflect that.
+	 * @param status Status to change to
+	 */
 	changeSchedulerStatus(status: string): void {
 		if (status === 'start' && this.schedulerStatus === 'paused') { status = 'resume'; }
 
@@ -75,6 +90,9 @@ export class SchedulerComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error changing scheduler status: ${e.message}`));
 	}
 
+	/**
+	 * Gets a list of scheduled tasks from the server for display in our data table.
+	 */
 	getScheduledTasks(): void {
 		this.schedulerService
 			.getScheduledTasks()
@@ -82,6 +100,9 @@ export class SchedulerComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error retrieving scheduled tasks: ${e.message}`));
 	}
 
+	/**
+	 * Spawns a modal for adding a new scheduled task. Passes in our workflow names for usage in the modal.
+	 */
 	addScheduledTask(): void {
 		const modalRef = this.modalService.open(SchedulerModalComponent, { size: 'lg' });
 		modalRef.componentInstance.title = 'Schedule a New Task';
@@ -91,6 +112,9 @@ export class SchedulerComponent implements OnInit {
 		this._handleModalClose(modalRef);
 	}
 
+	/**
+	 * Spawns a modal for editing an existing scheduled task. Passes in our workflow names for usage in the modal.
+	 */
 	editScheduledTask(task: ScheduledTask): void {
 		const modalRef = this.modalService.open(SchedulerModalComponent, { size: 'lg' });
 		modalRef.componentInstance.title = `Edit Task ${task.name}`;
@@ -103,6 +127,11 @@ export class SchedulerComponent implements OnInit {
 
 	}
 
+	/**
+	 * After user confirmation, will delete a given scheduled task from the database.
+	 * Removes it from our list of scheduled tasks to display.
+	 * @param taskToDelete Scheduled Task to delete
+	 */
 	deleteScheduledTask(taskToDelete: ScheduledTask): void {
 		if (!confirm(`Are you sure you want to delete the scheduled task "${taskToDelete.name}"?`)) { return; }
 
@@ -118,6 +147,12 @@ export class SchedulerComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error deleting task: ${e.message}`));
 	}
 
+	/**
+	 * Tells the server to change the status of a scheduled task (e.g. 'pause').
+	 * Updates the local scheduled task on success to reflect this change.
+	 * @param task Scheduled Task to change the status of
+	 * @param actionName Action to take on the task
+	 */
 	changeScheduledTaskStatus(task: ScheduledTask, actionName: string): void {
 		let newStatus: string;
 
@@ -146,15 +181,17 @@ export class SchedulerComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error changing scheduler status: ${e.message}`));
 	}
 
-	getWorkflowNames(): void {
-		const self = this;
-
+	/**
+	 * Grabs an array of playbooks/workflows from the server (id, name pairs).
+	 * From this array, creates an array of Select2Option data with the id and playbook/workflow name.
+	 */
+	getWorkflows(): void {
 		this.schedulerService
 			.getPlaybooks()
 			.then(playbooks => {
 				playbooks.forEach(playbook => {
 					playbook.workflows.forEach(workflow => {
-						self.availableWorkflows.push({
+						this.availableWorkflows.push({
 							id: workflow.id,
 							text: `${playbook.name} - ${workflow.name}`,
 						});
@@ -163,6 +200,10 @@ export class SchedulerComponent implements OnInit {
 			});
 	}
 
+	/**
+	 * Converts the task_trigger of a scheduled task into a readable string for display in the datatable.
+	 * @param scheduledTask Scheduled task to convert the task_trigger of
+	 */
 	getRule(scheduledTask: ScheduledTask): string {
 		//stringify only the truthy args (aka those specified) [seems that the server only returns args that are specified]
 		// let out = _.pick(scheduledTask.task_trigger.args, function(value: any) {
@@ -176,6 +217,10 @@ export class SchedulerComponent implements OnInit {
 		return rule;
 	}
 
+	/**
+	 * Converts the workflow ids array of a scheduled task into a readable string for display in the datatable.
+	 * @param scheduledTask Scheduled task to convert the workflows of
+	 */
 	getFriendlyWorkflows(scheduledTask: ScheduledTask): string {
 		if (!this.availableWorkflows || !scheduledTask.workflows || !scheduledTask.workflows.length) { return ''; }
 
@@ -184,6 +229,10 @@ export class SchedulerComponent implements OnInit {
 		}).map(workflow => workflow.text).join(', ');
 	}
 
+	/**
+	 * On closing an add/edit modal (on clicking save), we will add or update existing scheduled tasks for display.
+	 * @param modalRef Modal reference that is being closed
+	 */
 	private _handleModalClose(modalRef: NgbModalRef): void {
 		modalRef.result
 			.then((result) => {

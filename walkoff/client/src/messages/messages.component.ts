@@ -50,6 +50,10 @@ export class MessagesComponent implements OnInit {
 			.subscribe(event => this.filterMessages());
 	}
 
+	/**
+	 * Filters the messages displayed based upon what is entered in the search filter input.
+	 * Filters based on the subject line and also recalculates the relative time of when the message was created.
+	 */
 	filterMessages(): void {
 		const searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
 
@@ -61,6 +65,9 @@ export class MessagesComponent implements OnInit {
 		});
 	}
 
+	/**
+	 * Grabs an array of message listings from the server to display and performs the initial filter.
+	 */
 	listMessages(): void {
 		this.messagesService.listMessages()
 			.then(messages => {
@@ -70,6 +77,12 @@ export class MessagesComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error retrieving messages: ${e.message}`));
 	}
 
+	/**
+	 * Grabs a full message object from the server based upon a Message Listing and opens a message modal.
+	 * 
+	 * @param event JS Event fired from clicking the link
+	 * @param messageListing Message Listing to open/query
+	 */
 	openMessage(event: any, messageListing: MessageListing): void {
 		event.preventDefault();
 
@@ -87,6 +100,10 @@ export class MessagesComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error opening message: ${e.message}`));
 	}
 
+	/**
+	 * After confirmation, will instruct the server to delete the message IDs that are selected.
+	 * Will then remove these from our display and perform the filter action once more.
+	 */
 	deleteSelected(): void {
 		const idsToDelete = this._getSelectedIds();
 
@@ -105,6 +122,10 @@ export class MessagesComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error deleting messages: ${e.message}`));
 	}
 
+	/**
+	 * Instructs the server to mark the message IDs that are selected as read.
+	 * Will then mark them as read within the data table.
+	 */
 	markSelectedAsRead(): void {
 		const idsToRead = this._getSelectedIds();
 
@@ -120,6 +141,10 @@ export class MessagesComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error marking messages as read: ${e.message}`));
 	}
 
+	/**
+	 * Instructs the server to mark the message IDs that are selected as unread.
+	 * Will then mark them as unread within the data table.
+	 */
 	markSelectedAsUnread(): void {
 		const idsToUnread = this._getSelectedIds();
 
@@ -135,10 +160,17 @@ export class MessagesComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error marking messages as unread: ${e.message}`));
 	}
 
+	/**
+	 * Gets a friendly relvative time (e.g. '5 minutes ago') based upon an inputted datetime value.
+	 * @param createdAt Date to convert
+	 */
 	getFriendlyTime(createdAt: Date): string {
 		return moment(createdAt).fromNow();
 	}
 
+	/**
+	 * Gets an array of all IDs that are selected (checkboxes checked in the data table).
+	 */
 	private _getSelectedIds(): number[] {
 		const ids: number[] = [];
 
@@ -149,6 +181,10 @@ export class MessagesComponent implements OnInit {
 		return ids;
 	}
 
+	/**
+	 * On normal message modal close, do nothing. Only show an error if something goes awry.
+	 * @param modalRef Modal reference that is being closed
+	 */
 	private _handleModalClose(modalRef: NgbModalRef): void {
 		modalRef.result
 			.then((result) => null,

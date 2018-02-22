@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, Input } from '@angular/core';
+import { Component, ViewEncapsulation, Input, OnInit } from '@angular/core';
 
 import { AppApi } from '../models/api/appApi';
 import { ConditionApi } from '../models/api/conditionApi';
@@ -14,7 +14,7 @@ import { Condition } from '../models/playbook/condition';
 	encapsulation: ViewEncapsulation.None,
 	providers: [],
 })
-export class PlaybookConditionsComponent {
+export class PlaybookConditionsComponent implements OnInit {
 	@Input() selectedAppName: string;
 	@Input() conditions: Condition[];
 	@Input() appApis: AppApi[];

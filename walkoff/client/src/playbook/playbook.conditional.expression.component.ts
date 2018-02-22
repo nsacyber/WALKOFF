@@ -30,10 +30,17 @@ export class PlaybookConditionalExpressionComponent implements OnInit {
 		}
 	}
 
+	/**
+	 * Adds a new blank conditional expression to our child expressions array.
+	 */
 	addChildExpression(): void {
 		this.conditionalExpression.child_expressions.push(new ConditionalExpression());
 	}
 
+	/**
+	 * Moves a selected index in our child expressions array "up" (by swapping it with the ID before).
+	 * @param index Index to move
+	 */
 	moveUp(index: number): void {
 		const idAbove = index - 1;
 		const toBeSwapped = this.conditionalExpression.child_expressions[idAbove];
@@ -42,6 +49,10 @@ export class PlaybookConditionalExpressionComponent implements OnInit {
 		this.conditionalExpression.child_expressions[index] = toBeSwapped;
 	}
 
+	/**
+	 * Moves a selected index in our child expressions array "down" (by swapping it with the ID after).
+	 * @param index Index to move
+	 */
 	moveDown(index: number): void {
 		const idBelow = index + 1;
 		const toBeSwapped = this.conditionalExpression.child_expressions[idBelow];
@@ -50,11 +61,16 @@ export class PlaybookConditionalExpressionComponent implements OnInit {
 		this.conditionalExpression.child_expressions[index] = toBeSwapped;
 	}
 
+	/**
+	 * Removes a child expression from our child expressions array by a given index.
+	 * @param index Index to remove
+	 */
 	removeChildExpression(index: number): void {
 		this.conditionalExpression.child_expressions.splice(index, 1);
 	}
 
-	isOnlyOneChild(): boolean {
-		return this.conditionalExpression.conditions.length + this.conditionalExpression.child_expressions.length <= 1;
-	}
+	// This method was used to disable the operator dropdown, but I feel it might confuse users if it's disabled.
+	// isOnlyOneChild(): boolean {
+	// 	return this.conditionalExpression.conditions.length + this.conditionalExpression.child_expressions.length <= 1;
+	// }
 }

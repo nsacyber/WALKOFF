@@ -29,7 +29,6 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 	@ViewChild('actionStatusContainer') actionStatusContainer: ElementRef;
 	@ViewChild('actionStatusTable') actionStatusTable: DatatableComponent;
 
-	currentController: string;
 	schedulerStatus: string;
 	workflowStatuses: WorkflowStatus[] = [];
 	displayWorkflowStatuses: WorkflowStatus[] = [];
@@ -45,8 +44,8 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 
 	constructor(
 		private executionService: ExecutionService, private authService: AuthService, private cdr: ChangeDetectorRef,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
-	}
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+	) {}
 
 	/**
 	 * On component init, set up our workflow select2 config.
@@ -60,17 +59,16 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 			width: '100%',
 			placeholder: 'Select a Workflow',
 		};
-
 		this.workflowStatusActions = {
 			resume: 'resume',
 			pause: 'pause',
 			abort: 'abort',
 		};
 
-		this.getWorkflowNames();
+		this.getWorkflows();
 		this.getWorkflowStatuses();
 		this.getWorkflowStatusSSE();
-		this.getActionResultSSE();
+		this.getActionStatusSSE();
 
 		this.filterQuery
 			.valueChanges
@@ -125,31 +123,16 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 	getWorkflowStatusSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				const self = this;
 				const eventSource = new (window as any)
 					.EventSource(`api/streams/workflowqueue/workflow_status?access_token=${authToken}`);
 
-				function eventHandler(message: any) {
-					const workflowStatus: WorkflowStatus = JSON.parse(message.data);
-
-					const matchingWorkflowStatus = self.workflowStatuses.find(ws => ws.execution_id === workflowStatus.execution_id);
-					if (matchingWorkflowStatus) {
-						Object.assign(matchingWorkflowStatus, workflowStatus);
-					} else {
-						self.workflowStatuses.push(workflowStatus);
-						// Induce change detection by slicing array
-						self.workflowStatuses = self.workflowStatuses.slice();
-					}
-
-					self.filterWorkflowStatuses();
-				}
-				eventSource.addEventListener('queued', eventHandler);
-				eventSource.addEventListener('started', eventHandler);
-				eventSource.addEventListener('paused', eventHandler);
-				eventSource.addEventListener('resumed', eventHandler);
-				eventSource.addEventListener('awaiting_data', eventHandler);
-				eventSource.addEventListener('triggered', eventHandler);
-				eventSource.addEventListener('aborted', eventHandler);
+				eventSource.addEventListener('queued', (e: any) => this.workflowStatusEventHandler(e));
+				eventSource.addEventListener('started', (e: any) => this.workflowStatusEventHandler(e));
+				eventSource.addEventListener('paused', (e: any) => this.workflowStatusEventHandler(e));
+				eventSource.addEventListener('resumed', (e: any) => this.workflowStatusEventHandler(e));
+				eventSource.addEventListener('awaiting_data', (e: any) => this.workflowStatusEventHandler(e));
+				eventSource.addEventListener('triggered', (e: any) => this.workflowStatusEventHandler(e));
+				eventSource.addEventListener('aborted', (e: any) => this.workflowStatusEventHandler(e));
 
 				eventSource.onerror = (err: Error) => {
 					console.error(err);
@@ -157,58 +140,72 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 			});
 	}
 
+	workflowStatusEventHandler(message: any): void {
+		const workflowStatus: WorkflowStatus = JSON.parse(message.data);
+
+		const matchingWorkflowStatus = this.workflowStatuses.find(ws => ws.execution_id === workflowStatus.execution_id);
+		if (matchingWorkflowStatus) {
+			Object.assign(matchingWorkflowStatus, workflowStatus);
+		} else {
+			this.workflowStatuses.push(workflowStatus);
+			// Induce change detection by slicing array
+			this.workflowStatuses = this.workflowStatuses.slice();
+		}
+
+		this.filterWorkflowStatuses();
+	}
+
 	/**
 	 * Initiates an EventSource for action statuses from the server.
 	 * Updates the parent workflow status' current_action if applicable.
 	 * Will add/update action statuses for display if the parent workflow execution is 'loaded' in the modal.
 	 */
-	getActionResultSSE(): void {
+	getActionStatusSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				const self = this;
 				const eventSource = new (window as any).EventSource(`api/streams/workflowqueue/actions?access_token=${authToken}`);
 
-				function eventHandler(message: any) {
-					const actionStatus: ActionStatus = JSON.parse(message.data);
-
-					// if we have a matching workflow status, update the current app/action info.
-					const matchingWorkflowStatus = self.workflowStatuses
-						.find(ws => ws.execution_id === actionStatus.workflow_execution_id);
-					if (matchingWorkflowStatus) {
-						matchingWorkflowStatus.current_action = {
-							execution_id: actionStatus.execution_id,
-							id: actionStatus.action_id,
-							name: actionStatus.name,
-							app_name: actionStatus.app_name,
-							action_name: actionStatus.action_name,
-						};
-					}
-
-					// also add this to the modal if possible
-					if (self.loadedWorkflowStatus && self.loadedWorkflowStatus.execution_id === actionStatus.workflow_execution_id) {
-						const matchingActionStatus = self.loadedWorkflowStatus.action_statuses
-							.find(r => r.execution_id === actionStatus.execution_id);
-
-						if (matchingActionStatus) {
-							Object.assign(matchingActionStatus, actionStatus);
-						} else {
-							self.loadedWorkflowStatus.action_statuses.push(actionStatus);
-							// Induce change detection by slicing array
-							self.loadedWorkflowStatus.action_statuses = self.loadedWorkflowStatus.action_statuses.slice();
-						}
-					}
-
-					self.filterWorkflowStatuses();
-				}
-
-				eventSource.addEventListener('started', eventHandler);
-				eventSource.addEventListener('success', eventHandler);
-				eventSource.addEventListener('failure', eventHandler);
+				eventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
+				eventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
+				eventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
 
 				eventSource.onerror = (err: Error) => {
 					console.error(err);
 				};
 			});
+	}
+
+	actionStatusEventHandler(message: any): void {
+		const actionStatus: ActionStatus = JSON.parse(message.data);
+
+		// if we have a matching workflow status, update the current app/action info.
+		const matchingWorkflowStatus = this.workflowStatuses
+			.find(ws => ws.execution_id === actionStatus.workflow_execution_id);
+		if (matchingWorkflowStatus) {
+			matchingWorkflowStatus.current_action = {
+				execution_id: actionStatus.execution_id,
+				id: actionStatus.action_id,
+				name: actionStatus.name,
+				app_name: actionStatus.app_name,
+				action_name: actionStatus.action_name,
+			};
+		}
+
+		// also add this to the modal if possible
+		if (this.loadedWorkflowStatus && this.loadedWorkflowStatus.execution_id === actionStatus.workflow_execution_id) {
+			const matchingActionStatus = this.loadedWorkflowStatus.action_statuses
+				.find(r => r.execution_id === actionStatus.execution_id);
+
+			if (matchingActionStatus) {
+				Object.assign(matchingActionStatus, actionStatus);
+			} else {
+				this.loadedWorkflowStatus.action_statuses.push(actionStatus);
+				// Induce change detection by slicing array
+				this.loadedWorkflowStatus.action_statuses = this.loadedWorkflowStatus.action_statuses.slice();
+			}
+		}
+
+		this.filterWorkflowStatuses();
 	}
 
 	/**
@@ -226,9 +223,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 	/**
 	 * Gets a list of playbooks and workflows from the server and compiles them into a list for selection.
 	 */
-	getWorkflowNames(): void {
-		const self = this;
-
+	getWorkflows(): void {
 		this.executionService
 			.getPlaybooks()
 			.then(playbooks => {
@@ -237,14 +232,18 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 					.map(pb => pb.workflows)
 					.reduce((a, b) => a.concat(b), []);
 
+				const workflowSelectData: Select2OptionData[] = [{ id: '', text: '' }];
+
 				playbooks.forEach(playbook => {
 					playbook.workflows.forEach(workflow => {
-						self.availableWorkflows.push({
+						workflowSelectData.push({
 							id: workflow.id,
 							text: `${playbook.name} - ${workflow.name}`,
 						});
 					});
 				});
+
+				this.availableWorkflows = workflowSelectData;
 			});
 	}
 

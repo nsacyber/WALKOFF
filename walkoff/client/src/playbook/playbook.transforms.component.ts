@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, Input } from '@angular/core';
+import { Component, ViewEncapsulation, Input, OnInit } from '@angular/core';
 
 import { Workflow } from '../models/playbook/workflow';
 import { AppApi } from '../models/api/appApi';
@@ -14,7 +14,7 @@ import { Transform } from '../models/playbook/transform';
 	encapsulation: ViewEncapsulation.None,
 	providers: [],
 })
-export class PlaybookTransformsComponent {
+export class PlaybookTransformsComponent implements OnInit {
 	@Input() selectedAppName: string;
 	@Input() transforms: Transform[];
 	@Input() appApis: AppApi[];

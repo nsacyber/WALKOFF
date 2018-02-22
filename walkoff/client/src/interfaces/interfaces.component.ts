@@ -68,4 +68,3 @@ export class InterfacesComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error retrieving interface: ${e.message}`));
 	}
 }
-
