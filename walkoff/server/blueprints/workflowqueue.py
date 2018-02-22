@@ -97,8 +97,8 @@ def __handle_action_error(sender, kwargs):
 
 
 def format_workflow_result(sender, status):
-    return {'execution_id': sender['execution_id'],
-            'workflow_id': sender['id'],
+    return {'execution_id': str(sender['execution_id']),
+            'workflow_id': str(sender['id']),
             'name': sender['name'],
             'status': status.name}
 
@@ -121,7 +121,7 @@ def format_workflow_result_with_current_step(workflow_execution_id, status):
             status_json.pop(timestamp, None)
         status_json['timestamp'] = datetime.utcnow().isoformat()
         return status_json
-    return {'execution_id': workflow_execution_id, 'status': status.name}
+    return {'execution_id': str(workflow_execution_id), 'status': status.name}
 
 
 def send_workflow_result_to_sse(result, event):
@@ -172,7 +172,7 @@ def __trigger_awaiting_data_callback(sender, **kwargs):
 
 @WalkoffEvent.WorkflowAborted.connect
 def __workflow_aborted_callback(sender, **kwargs):
-    result = format_workflow_result(sender, WorkflowStatusEnum.running)
+    result = format_workflow_result(sender, WorkflowStatusEnum.aborted)
     send_workflow_result_to_sse(result, 'aborted')
 
 

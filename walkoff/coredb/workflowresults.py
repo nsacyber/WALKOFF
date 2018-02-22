@@ -45,8 +45,8 @@ class WorkflowStatus(Device_Base):
         self.status = WorkflowStatusEnum.aborted
 
     def as_json(self, full_actions=False):
-        ret = {"execution_id": self.execution_id,
-               "workflow_id": self.workflow_id,
+        ret = {"execution_id": str(self.execution_id),
+               "workflow_id": str(self.workflow_id),
                "name": self.name,
                "status": self.status.name}
         if self.started_at:
@@ -108,8 +108,8 @@ class ActionStatus(Device_Base):
         self.completed_at = datetime.utcnow()
 
     def as_json(self, summary=False):
-        ret = {"execution_id": self.execution_id,
-               "action_id": self.action_id,
+        ret = {"execution_id": str(self.execution_id),
+               "action_id": str(self.action_id),
                "name": self.name,
                "app_name": self.app_name,
                "action_name": self.action_name}
