@@ -1,8 +1,8 @@
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship, backref
 
-from walkoff.coredb import Device_Base
-from walkoff.coredb.executionelement import ExecutionElement
+from walkoff.executiondb import Device_Base
+from walkoff.executiondb.executionelement import ExecutionElement
 
 
 class Playbook(ExecutionElement, Device_Base):

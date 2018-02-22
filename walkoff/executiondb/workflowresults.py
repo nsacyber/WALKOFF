@@ -4,7 +4,7 @@ from datetime import datetime
 from sqlalchemy import Column, String, DateTime, ForeignKey, Enum, func
 from sqlalchemy.orm import relationship, backref
 
-from walkoff.coredb import Device_Base, WorkflowStatusEnum, ActionStatusEnum
+from walkoff.executiondb import Device_Base, WorkflowStatusEnum, ActionStatusEnum
 from sqlalchemy_utils import UUIDType
 
 

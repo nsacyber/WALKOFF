@@ -7,11 +7,11 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway import get_app_action, is_app_action_bound
-from walkoff.coredb.argument import Argument
-from walkoff.core.actionresult import ActionResult
-from walkoff.coredb import Device_Base
+from walkoff.executiondb.argument import Argument
+from walkoff.appgateway.actionresult import ActionResult
+from walkoff.executiondb import Device_Base
 from walkoff.events import WalkoffEvent
-from walkoff.coredb.executionelement import ExecutionElement
+from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
 from walkoff.appgateway.validator import validate_app_action_parameters
 logger = logging.getLogger(__name__)

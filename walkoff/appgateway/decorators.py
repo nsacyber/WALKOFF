@@ -1,6 +1,6 @@
 from functools import wraps
 
-from walkoff.core.actionresult import ActionResult
+from walkoff.appgateway.actionresult import ActionResult
 from walkoff.helpers import get_function_arg_names
 from .walkofftag import WalkoffTag
 

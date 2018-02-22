@@ -2,9 +2,9 @@ import unittest
 
 import walkoff.appgateway
 import walkoff.config.config
-from walkoff.coredb.conditionalexpression import ConditionalExpression
-from walkoff.coredb.argument import Argument
-from walkoff.coredb.condition import Condition
+from walkoff.executiondb.conditionalexpression import ConditionalExpression
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.condition import Condition
 from tests.config import test_apps_path
 import walkoff.config.paths
 from tests.util import device_db_help

@@ -3,15 +3,15 @@ import sys
 from copy import deepcopy
 
 sys.path.append(os.path.abspath('.'))
-import walkoff.coredb.devicedb
-from walkoff.coredb.argument import Argument
-from walkoff.coredb.action import Action
-from walkoff.coredb.branch import Branch
-from walkoff.coredb.condition import Condition
-from walkoff.coredb.playbook import Playbook
-from walkoff.coredb.transform import Transform
-from walkoff.coredb.workflow import Workflow
-from walkoff.coredb.position import Position
+import walkoff.executiondb.devicedb
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.action import Action
+from walkoff.executiondb.branch import Branch
+from walkoff.executiondb.condition import Condition
+from walkoff.executiondb.playbook import Playbook
+from walkoff.executiondb.transform import Transform
+from walkoff.executiondb.workflow import Workflow
+from walkoff.executiondb.position import Position
 
 # import walkoff.__version__ as walkoff_version
 
@@ -38,8 +38,8 @@ def upgrade_playbook(playbook):
 
     playbook_obj = Playbook(name=playbook['name'], workflows=workflows, id=playbook.get('uid', None))
 
-    walkoff.coredb.devicedb.device_db.session.add(playbook_obj)
-    walkoff.coredb.devicedb.device_db.session.commit()
+    walkoff.executiondb.devicedb.device_db.session.add(playbook_obj)
+    walkoff.executiondb.devicedb.device_db.session.commit()
 
 
 def upgrade_workflow(workflow):
@@ -70,10 +70,10 @@ def upgrade_workflow(workflow):
 
     workflow_obj = Workflow(name=name, actions=actions, branches=branches, start=start, id=workflow.get('uid', None))
 
-    walkoff.coredb.devicedb.device_db.session.add(workflow_obj)
-    walkoff.coredb.devicedb.device_db.session.commit()
+    walkoff.executiondb.devicedb.device_db.session.add(workflow_obj)
+    walkoff.executiondb.devicedb.device_db.session.commit()
 
-    walkoff.coredb.devicedb.device_db.session.commit()
+    walkoff.executiondb.devicedb.device_db.session.commit()
 
     return workflow_obj
 
@@ -113,8 +113,8 @@ def convert_action(action):
                         arguments=arguments,
                         trigger=triggers)
 
-    walkoff.coredb.devicedb.device_db.session.add(action_obj)
-    walkoff.coredb.devicedb.device_db.session.commit()
+    walkoff.executiondb.devicedb.device_db.session.add(action_obj)
+    walkoff.executiondb.devicedb.device_db.session.commit()
 
     return action_obj
 
@@ -125,8 +125,8 @@ def convert_arg(arg):
     selection = arg['selection'] if 'selection' in arg else None
 
     arg_obj = Argument(name=arg['name'], value=value, reference=reference, selection=selection)
-    walkoff.coredb.devicedb.device_db.session.add(arg_obj)
-    walkoff.coredb.devicedb.device_db.session.commit()
+    walkoff.executiondb.devicedb.device_db.session.add(arg_obj)
+    walkoff.executiondb.devicedb.device_db.session.commit()
 
     return arg_obj
 
@@ -148,8 +148,8 @@ def convert_condition(condition):
                               arguments=arguments,
                               transforms=transforms)
 
-    walkoff.coredb.devicedb.device_db.session.add(condition_obj)
-    walkoff.coredb.devicedb.device_db.session.commit()
+    walkoff.executiondb.devicedb.device_db.session.add(condition_obj)
+    walkoff.executiondb.devicedb.device_db.session.commit()
     return condition_obj
 
 
@@ -164,8 +164,8 @@ def convert_transform(transform):
                               id=transform.get('uid', None),
                               arguments=arguments)
 
-    walkoff.coredb.devicedb.device_db.session.add(transform_obj)
-    walkoff.coredb.devicedb.device_db.session.commit()
+    walkoff.executiondb.devicedb.device_db.session.add(transform_obj)
+    walkoff.executiondb.devicedb.device_db.session.commit()
     return transform_obj
 
 
@@ -191,6 +191,6 @@ def convert_branch(branch, actions):
     else:
         branch_obj = Branch(source_id=source_id, destination_id=destination_id, status=status, condition=conditions)
 
-    walkoff.coredb.devicedb.device_db.session.add(branch_obj)
-    walkoff.coredb.devicedb.device_db.session.commit()
+    walkoff.executiondb.devicedb.device_db.session.add(branch_obj)
+    walkoff.executiondb.devicedb.device_db.session.commit()
     return branch_obj

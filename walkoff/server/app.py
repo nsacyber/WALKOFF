@@ -4,7 +4,7 @@ import os
 import connexion
 from jinja2 import FileSystemLoader
 
-from walkoff.coredb.devicedb import App
+from walkoff.executiondb.devicedb import App
 from walkoff import helpers
 from walkoff.config import paths
 from walkoff.helpers import format_db_path
@@ -103,7 +103,7 @@ app = create_app()
 
 @app.before_first_request
 def create_user():
-    from walkoff.coredb.devicedb import device_db
+    from walkoff.executiondb.devicedb import device_db
     from walkoff.serverdb import add_user, User, Role, initialize_default_resources_admin, \
         initialize_default_resources_guest
     db.create_all()

@@ -11,8 +11,8 @@ from tests import config
 from tests.util.case_db_help import *
 from tests.util.thread_control import modified_setup_worker_env
 from tests.util import device_db_help
-from walkoff.coredb.workflowresults import WorkflowStatus, ActionStatus, WorkflowStatusEnum
-from walkoff.coredb import devicedb
+from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus, WorkflowStatusEnum
+from walkoff.executiondb import devicedb
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import multiprocessedexecutor
 from walkoff.server import workflowresults # Need this import
 

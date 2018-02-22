@@ -4,10 +4,10 @@ class Context(object):
             variables that might be needed.
         """
         import walkoff.multiprocessedexecutor.multiprocessedexecutor
-        import walkoff.core.scheduler
+        import walkoff.scheduler
 
         self.executor = walkoff.multiprocessedexecutor.multiprocessedexecutor.multiprocessedexecutor
-        self.scheduler = walkoff.core.scheduler.scheduler
+        self.scheduler = walkoff.scheduler.scheduler
 
 
 running_context = Context()

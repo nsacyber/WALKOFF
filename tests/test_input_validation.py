@@ -1,6 +1,6 @@
 import unittest
 
-from walkoff.coredb.argument import Argument
+from walkoff.executiondb.argument import Argument
 from walkoff.config.config import initialize
 from walkoff.helpers import InvalidArgument
 from walkoff.appgateway.validator import validate_parameter, validate_parameters, convert_json

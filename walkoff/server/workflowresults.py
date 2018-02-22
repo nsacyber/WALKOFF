@@ -1,9 +1,9 @@
 import json
 
-from walkoff.coredb.workflowresults import WorkflowStatus, ActionStatus
+from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
 from walkoff.events import WalkoffEvent
-from walkoff.coredb import devicedb, WorkflowStatusEnum, ActionStatusEnum
-from walkoff.coredb.saved_workflow import SavedWorkflow
+from walkoff.executiondb import devicedb, WorkflowStatusEnum, ActionStatusEnum
+from walkoff.executiondb.saved_workflow import SavedWorkflow
 
 
 @WalkoffEvent.WorkflowExecutionPending.connect

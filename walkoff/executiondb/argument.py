@@ -3,9 +3,9 @@ import logging
 from sqlalchemy import Column, Integer, ForeignKey, String, orm
 from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
 
-from walkoff.coredb import Device_Base
+from walkoff.executiondb import Device_Base
 from walkoff.helpers import InvalidArgument
-from walkoff.core.representable import Representable
+from walkoff.executiondb.representable import Representable
 
 logger = logging.getLogger(__name__)
 

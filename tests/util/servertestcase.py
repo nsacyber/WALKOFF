@@ -90,9 +90,9 @@ class ServerTestCase(unittest.TestCase):
 
         walkoff.server.flaskserver.running_context.executor.shutdown_pool()
 
-        import walkoff.coredb.devicedb
+        import walkoff.executiondb.devicedb
         device_db_help.cleanup_device_db()
-        walkoff.coredb.devicedb.device_db.tear_down()
+        walkoff.executiondb.devicedb.device_db.tear_down()
 
         import walkoff.case.database as case_database
         case_database.case_db.tear_down()
@@ -126,8 +126,8 @@ class ServerTestCase(unittest.TestCase):
                                  'patch': self.app.patch}
 
     def tearDown(self):
-        import walkoff.coredb.devicedb
-        walkoff.coredb.devicedb.device_db.session.rollback()
+        import walkoff.executiondb.devicedb
+        walkoff.executiondb.devicedb.device_db.session.rollback()
 
         shutil.rmtree(walkoff.config.paths.workflows_path)
         shutil.copytree(tests.config.test_workflows_backup_path, walkoff.config.paths.workflows_path)

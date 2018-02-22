@@ -5,13 +5,13 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway import get_condition
-from walkoff.coredb.argument import Argument
-from walkoff.coredb import Device_Base
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb import Device_Base
 from walkoff.events import WalkoffEvent
-from walkoff.coredb.executionelement import ExecutionElement
+from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.helpers import get_condition_api, InvalidArgument, format_exception_message, split_api_params
 from walkoff.appgateway.validator import validate_condition_parameters
-import walkoff.coredb.devicedb
+import walkoff.executiondb.devicedb
 
 logger = logging.getLogger(__name__)
 
@@ -106,4 +106,4 @@ class Condition(ExecutionElement, Device_Base):
         if arg:
             self.arguments.remove(arg)
         self.arguments.append(Argument(self._data_param_name, value=data))
-        walkoff.coredb.devicedb.device_db.session.commit()
+        walkoff.executiondb.devicedb.device_db.session.commit()

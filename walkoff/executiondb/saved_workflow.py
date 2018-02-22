@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy import Column, PickleType
 
-from walkoff.coredb import Device_Base
+from walkoff.executiondb import Device_Base
 from sqlalchemy_utils import UUIDType
 logger = logging.getLogger(__name__)
 

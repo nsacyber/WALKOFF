@@ -6,7 +6,7 @@ import walkoff.case.database as case_database
 import walkoff.case.subscription as case_subscription
 import walkoff.config.config
 import walkoff.config.config
-from walkoff.core.scheduler import scheduler
+from walkoff.scheduler import scheduler
 from walkoff.events import WalkoffEvent, EventType
 from tests import config
 import walkoff.config.paths

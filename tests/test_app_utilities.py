@@ -1,8 +1,8 @@
 import unittest
 
-from walkoff.coredb.devicedb import get_device, get_all_devices_for_app, \
+from walkoff.executiondb.devicedb import get_device, get_all_devices_for_app, \
     get_all_devices_of_type_from_app, App, Device
-from walkoff.coredb import devicedb
+from walkoff.executiondb import devicedb
 from tests.util import device_db_help
 
 

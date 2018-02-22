@@ -3,14 +3,14 @@ import unittest
 import walkoff.appgateway
 import walkoff.config.config
 import walkoff.config.paths
-from walkoff.coredb.argument import Argument
-from walkoff.core.actionresult import ActionResult
+from walkoff.executiondb.argument import Argument
+from walkoff.appgateway.actionresult import ActionResult
 from walkoff.events import WalkoffEvent
-from walkoff.coredb.action import Action
-from walkoff.coredb.branch import Branch
-from walkoff.coredb.condition import Condition
-from walkoff.coredb.conditionalexpression import ConditionalExpression
-from walkoff.coredb.workflow import Workflow
+from walkoff.executiondb.action import Action
+from walkoff.executiondb.branch import Branch
+from walkoff.executiondb.condition import Condition
+from walkoff.executiondb.conditionalexpression import ConditionalExpression
+from walkoff.executiondb.workflow import Workflow
 from tests.config import test_apps_path
 from tests.util import device_db_help
 

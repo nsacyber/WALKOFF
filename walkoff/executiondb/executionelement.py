@@ -1,6 +1,6 @@
 from sqlalchemy_utils import UUIDType
 
-from walkoff.core.representable import Representable
+from walkoff.executiondb.representable import Representable
 from sqlalchemy import Column
 from uuid import uuid4
 

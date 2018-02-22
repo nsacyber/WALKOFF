@@ -41,7 +41,7 @@ class TestMessageHistoryDatabase(TestCase):
         for message in MessageHistory.query.all():
             db.session.delete(message)
 
-        from walkoff.coredb import devicedb
+        from walkoff.executiondb import devicedb
         devicedb.device_db.tear_down()
 
     def assert_message_history_init_correct(self, message_history, action, user):

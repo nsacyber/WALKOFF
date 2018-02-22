@@ -8,7 +8,7 @@ from .exceptions import UnknownEvent, InvalidEventHandler
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.helpers import get_function_arg_names
 import warnings
-from walkoff.core.representable import Representable
+from walkoff.executiondb.representable import Representable
 
 _logger = logging.getLogger(__name__)
 

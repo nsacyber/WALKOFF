@@ -13,8 +13,8 @@ import walkoff.config.config
 import walkoff.config.paths
 from walkoff.events import WalkoffEvent
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
-from walkoff.coredb import devicedb
-from walkoff.coredb.workflowresults import WorkflowStatus, WorkflowStatusEnum
+from walkoff.executiondb import devicedb
+from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
 
 try:
     from Queue import Queue

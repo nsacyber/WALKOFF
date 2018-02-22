@@ -1,8 +1,8 @@
 import unittest
 
 import walkoff
-from walkoff.coredb.playbook import Playbook
-from walkoff.coredb.workflow import Workflow
+from walkoff.executiondb.playbook import Playbook
+from walkoff.executiondb.workflow import Workflow
 from tests.util.assertwrappers import orderless_list_compare
 import walkoff.config.paths
 from tests.util import device_db_help
@@ -15,7 +15,7 @@ class TestPlaybook(unittest.TestCase):
         
     @classmethod
     def tearDownClass(cls):
-        from walkoff.coredb import devicedb
+        from walkoff.executiondb import devicedb
         devicedb.device_db.tear_down()
 
     def setUp(self):

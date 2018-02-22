@@ -64,7 +64,7 @@ class TestMessageDatabase(TestCase):
             db.session.delete(role)
         db.session.commit()
 
-        from walkoff.coredb import devicedb
+        from walkoff.executiondb import devicedb
         devicedb.device_db.tear_down()
 
     def get_default_message(self, commit=False, requires_reauth=False, requires_response=False):

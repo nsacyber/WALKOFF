@@ -18,7 +18,7 @@ class TestRoles(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        from walkoff.coredb import devicedb
+        from walkoff.executiondb import devicedb
         devicedb.device_db.tear_down()
 
     def tearDown(self):

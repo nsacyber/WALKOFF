@@ -1,6 +1,6 @@
-from walkoff.core.jsonelementcreator import JsonElementCreator
-from walkoff.core.jsonelementreader import JsonElementReader
-from walkoff.core.jsonelementupdater import JsonElementUpdater
+from walkoff.executiondb.jsonelementcreator import JsonElementCreator
+from walkoff.executiondb.jsonelementreader import JsonElementReader
+from walkoff.executiondb.jsonelementupdater import JsonElementUpdater
 
 
 class Representable(object):

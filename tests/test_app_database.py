@@ -1,6 +1,6 @@
 import unittest
 
-from walkoff.coredb.devicedb import App, Device
+from walkoff.executiondb.devicedb import App, Device
 from tests.util import device_db_help
 
 
@@ -15,7 +15,7 @@ class TestAppDatabase(unittest.TestCase):
         device_db_help.tear_down_device_db()
 
     def setUp(self):
-        from walkoff.coredb.devicedb import device_db
+        from walkoff.executiondb.devicedb import device_db
         self.device1 = Device('test1', [], [], 'type1')
         self.device2 = Device('test2', [], [], 'type1')
         self.device3 = Device('test3', [], [], 'type2')

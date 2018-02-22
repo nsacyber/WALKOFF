@@ -7,7 +7,7 @@ from interfaces.exceptions import UnknownEvent, InvalidEventHandler
 from walkoff.helpers import UnknownAppAction, UnknownApp
 from tests.util import device_db_help
 import uuid
-from walkoff.core.representable import Representable
+from walkoff.executiondb.representable import Representable
 
 
 class MockWorkflow(Representable):

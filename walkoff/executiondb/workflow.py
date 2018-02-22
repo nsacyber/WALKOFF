@@ -9,10 +9,10 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway.appinstance import AppInstance
-from walkoff.coredb import Device_Base
+from walkoff.executiondb import Device_Base
 from walkoff.events import WalkoffEvent
-from walkoff.coredb.action import Action
-from walkoff.coredb.executionelement import ExecutionElement
+from walkoff.executiondb.action import Action
+from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.helpers import InvalidArgument, format_exception_message
 
 logger = logging.getLogger(__name__)

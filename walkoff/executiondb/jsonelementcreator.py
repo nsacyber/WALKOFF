@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from six import iteritems
-import walkoff.coredb.devicedb
+import walkoff.executiondb.devicedb
 from walkoff.helpers import UnknownFunction, UnknownApp, InvalidArgument
 
 
@@ -23,7 +23,7 @@ class JsonElementCreator(object):
         Returns:
             (ExecutionElement) The constructed ExecutionElement
         """
-        from walkoff.coredb.playbook import Playbook
+        from walkoff.executiondb.playbook import Playbook
         cls._setup_ordering()
         if element_class is None:
             element_class = Playbook
@@ -36,12 +36,12 @@ class JsonElementCreator(object):
                 raise ValueError('Unknown class {}'.format(element_class.__class__.__name__))
         try:
             elem = cls.construct_current_class(current_class, json_in, subfield_lookup)
-            walkoff.coredb.devicedb.device_db.session.add(elem)
+            walkoff.executiondb.devicedb.device_db.session.add(elem)
             return elem
         except (KeyError, TypeError, InvalidArgument, UnknownApp, UnknownFunction) as e:
             import traceback
             traceback.print_exc()
-            walkoff.coredb.devicedb.device_db.session.rollback()
+            walkoff.executiondb.devicedb.device_db.session.rollback()
             from walkoff.helpers import format_exception_message
             raise ValueError(
                 'Improperly formatted JSON for ExecutionElement {0} {1}'.format(current_class.__name__,
@@ -49,9 +49,9 @@ class JsonElementCreator(object):
 
     @classmethod
     def construct_current_class(cls, current_class, json_in, subfield_lookup):
-        from walkoff.coredb.argument import Argument
-        from walkoff.coredb.position import Position
-        from walkoff.coredb.conditionalexpression import ConditionalExpression
+        from walkoff.executiondb.argument import Argument
+        from walkoff.executiondb.position import Position
+        from walkoff.executiondb.conditionalexpression import ConditionalExpression
         if subfield_lookup is not None:
             for subfield_name, next_class in subfield_lookup.items():
                 if subfield_name in json_in:
@@ -73,13 +73,13 @@ class JsonElementCreator(object):
     @classmethod
     def _setup_ordering(cls):
         if cls.playbook_class_ordering is None:
-            from walkoff.coredb.playbook import Playbook
-            from walkoff.coredb.workflow import Workflow
-            from walkoff.coredb.action import Action
-            from walkoff.coredb.branch import Branch
-            from walkoff.coredb.conditionalexpression import ConditionalExpression
-            from walkoff.coredb.condition import Condition
-            from walkoff.coredb.transform import Transform
+            from walkoff.executiondb.playbook import Playbook
+            from walkoff.executiondb.workflow import Workflow
+            from walkoff.executiondb.action import Action
+            from walkoff.executiondb.branch import Branch
+            from walkoff.executiondb.conditionalexpression import ConditionalExpression
+            from walkoff.executiondb.condition import Condition
+            from walkoff.executiondb.transform import Transform
             cls.playbook_class_ordering = OrderedDict([
                 (Playbook, {'workflows': Workflow}),
                 (Workflow, OrderedDict([('actions', Action), ('branches', Branch)])),

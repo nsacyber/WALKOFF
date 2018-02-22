@@ -18,7 +18,7 @@ class JsonElementReader(object):
         Returns:
             (dict) The JSON representation of the ExecutionElement
         """
-        from walkoff.core.representable import Representable
+        from walkoff.executiondb.representable import Representable
         accumulator = {}
         for field, value in ((field, getattr(element, field)) for field in dir(element)
                              if not field.startswith('_')
@@ -50,7 +50,7 @@ class JsonElementReader(object):
 
     @staticmethod
     def _read_dict(field_name, dict_, accumulator):
-        from walkoff.core.representable import Representable
+        from walkoff.executiondb.representable import Representable
         if dict_ and all(
                 (isinstance(dict_value, Representable)) for dict_value in
                 dict_.values()):

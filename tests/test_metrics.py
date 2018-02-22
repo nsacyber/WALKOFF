@@ -4,9 +4,9 @@ import walkoff.server.metrics as metrics
 from walkoff.server import flaskserver as server
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
-from walkoff.coredb.playbook import Playbook
-from walkoff.coredb.workflow import Workflow
-from walkoff.coredb import devicedb
+from walkoff.executiondb.playbook import Playbook
+from walkoff.executiondb.workflow import Workflow
+from walkoff.executiondb import devicedb
 from tests.util import device_db_help
 
 

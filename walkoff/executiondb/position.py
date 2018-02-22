@@ -3,8 +3,8 @@ import logging
 from sqlalchemy import Column, Float, ForeignKey, Integer
 from sqlalchemy_utils import UUIDType
 
-from walkoff.core.representable import Representable
-from walkoff.coredb import Device_Base
+from walkoff.executiondb.representable import Representable
+from walkoff.executiondb import Device_Base
 
 logger = logging.getLogger(__name__)
 

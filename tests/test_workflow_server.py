@@ -2,9 +2,9 @@ import json
 import walkoff.case.database as case_database
 from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
-import walkoff.coredb.devicedb as devicedb
-from walkoff.coredb.playbook import Playbook
-from walkoff.coredb.workflow import Workflow
+import walkoff.executiondb.devicedb as devicedb
+from walkoff.executiondb.playbook import Playbook
+from walkoff.executiondb.workflow import Workflow
 from uuid import uuid4, UUID
 from tests.util import device_db_help
 import os

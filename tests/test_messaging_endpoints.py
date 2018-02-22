@@ -100,7 +100,7 @@ class TestMessagingEndpoints(ServerTestCase):
             db.session.delete(role)
         db.session.commit()
 
-        from walkoff.coredb import devicedb
+        from walkoff.executiondb import devicedb
         devicedb.device_db.tear_down()
 
     def login_user(self, user):

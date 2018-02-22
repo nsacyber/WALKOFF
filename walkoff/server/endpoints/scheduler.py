@@ -1,7 +1,7 @@
 from flask import current_app, request
 from flask_jwt_extended import jwt_required
 
-from walkoff.core.scheduler import InvalidTriggerArgs
+from walkoff.scheduler import InvalidTriggerArgs
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.serverdb.scheduledtasks import ScheduledTask

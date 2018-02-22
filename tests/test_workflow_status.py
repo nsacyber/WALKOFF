@@ -5,12 +5,12 @@ from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
 from tests.util.case_db_help import setup_subscriptions_for_action
 from tests.util.servertestcase import ServerTestCase
-import walkoff.coredb.devicedb as devicedb
-from walkoff.coredb.workflowresults import WorkflowStatus, ActionStatus
-from walkoff.coredb.workflow import Workflow
+import walkoff.executiondb.devicedb as devicedb
+from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
+from walkoff.executiondb.workflow import Workflow
 from uuid import uuid4
 from tests.util import device_db_help
-import walkoff.coredb.devicedb as db
+import walkoff.executiondb.devicedb as db
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 
 

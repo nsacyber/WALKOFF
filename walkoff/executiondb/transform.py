@@ -6,10 +6,10 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway import get_transform
-from walkoff.coredb.argument import Argument
-from walkoff.coredb import Device_Base
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb import Device_Base
 from walkoff.events import WalkoffEvent
-from walkoff.coredb.executionelement import ExecutionElement
+from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.helpers import get_transform_api, InvalidArgument, split_api_params
 from walkoff.appgateway.validator import validate_transform_parameters
 

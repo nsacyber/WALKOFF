@@ -46,8 +46,8 @@ class Main(App):
     def wait_for_pause_and_resume(self):
         import walkoff.case.database as case_database
         from walkoff.case.database import Event
-        from walkoff.coredb import devicedb
-        from walkoff.coredb.workflowresults import WorkflowStatus
+        from walkoff.executiondb import devicedb
+        from walkoff.executiondb.workflowresults import WorkflowStatus
 
         workflow_status = devicedb.device_db.session.query(WorkflowStatus).first()
 

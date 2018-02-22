@@ -1,6 +1,6 @@
 import logging
 
-from walkoff.coredb.devicedb import get_app as get_db_app
+from walkoff.executiondb.devicedb import get_app as get_db_app
 from apps.messaging import *
 from walkoff.appgateway.decorators import *
 

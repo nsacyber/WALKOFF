@@ -9,9 +9,9 @@ from walkoff.events import WalkoffEvent
 from walkoff.multiprocessedexecutor import loadbalancer
 from walkoff.multiprocessedexecutor.worker import convert_to_protobuf
 from walkoff.proto.build import data_pb2
-import walkoff.coredb.devicedb
-from walkoff.coredb.workflow import Workflow
-from walkoff.coredb.saved_workflow import SavedWorkflow
+import walkoff.executiondb.devicedb
+from walkoff.executiondb.workflow import Workflow
+from walkoff.executiondb.saved_workflow import SavedWorkflow
 
 try:
     from Queue import Queue
@@ -78,8 +78,8 @@ class MockLoadBalancer(object):
                                            action_id=workflow.get_executing_action_id(),
                                            accumulator=workflow.get_accumulator(),
                                            app_instances=workflow.get_instances())
-            walkoff.coredb.devicedb.device_db.session.add(saved_workflow)
-            walkoff.coredb.devicedb.device_db.session.commit()
+            walkoff.executiondb.devicedb.device_db.session.add(saved_workflow)
+            walkoff.executiondb.devicedb.device_db.session.commit()
 
         if self.exec_id or not hasattr(sender, "_execution_id"):
             packet_bytes = convert_to_protobuf(sender, self.exec_id, **kwargs)
@@ -111,8 +111,8 @@ class MockLoadBalancer(object):
             if workflow_id == "Exit":
                 return
 
-            walkoff.coredb.devicedb.device_db.session.expire_all()
-            workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
+            walkoff.executiondb.devicedb.device_db.session.expire_all()
+            workflow = walkoff.executiondb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
 
             self.workflow_comms[workflow_execution_id] = workflow
 

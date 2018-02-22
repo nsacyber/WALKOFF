@@ -8,7 +8,7 @@ from tests import config
 from tests.util.mock_objects import *
 import walkoff.config.paths
 from tests.util import device_db_help
-from walkoff.coredb.argument import Argument
+from walkoff.executiondb.argument import Argument
 from tests.util.case_db_help import *
 
 try:

@@ -1,11 +1,11 @@
 import json
 import os
 
-from walkoff.coredb import devicedb
-from walkoff.coredb.playbook import Playbook
-from walkoff.coredb.workflowresults import WorkflowStatus
+from walkoff.executiondb import devicedb
+from walkoff.executiondb.playbook import Playbook
+from walkoff.executiondb.workflowresults import WorkflowStatus
 from tests.config import test_workflows_path_with_generated, test_workflows_path
-from walkoff.core.jsonplaybookloader import JsonPlaybookLoader
+from tests.util.jsonplaybookloader import JsonPlaybookLoader
 import walkoff.config.paths
 import tests.config
 from walkoff import initialize_databases

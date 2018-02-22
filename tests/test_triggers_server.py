@@ -7,7 +7,7 @@ import walkoff.config.paths
 from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
-import walkoff.coredb.devicedb
+import walkoff.executiondb.devicedb
 from tests.util import device_db_help
 from tests.util.case_db_help import *
 from tests.util.assertwrappers import orderless_list_compare

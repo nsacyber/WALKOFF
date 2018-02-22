@@ -3,8 +3,8 @@ import logging
 import os.path
 
 import walkoff.config.paths
-from walkoff.coredb.playbook import Playbook
-from walkoff.coredb.workflow import Workflow
+from walkoff.executiondb.playbook import Playbook
+from walkoff.executiondb.workflow import Workflow
 from walkoff.helpers import (locate_playbooks_in_directory, InvalidArgument, UnknownApp, UnknownAppAction,
                              UnknownTransform, UnknownCondition, format_exception_message)
 

@@ -10,7 +10,7 @@ from sqlalchemy.pool import NullPool
 
 import walkoff.config.paths
 from walkoff.config.config import secret_key as key
-from walkoff.coredb import Device_Base
+from walkoff.executiondb import Device_Base
 from walkoff.helpers import format_db_path
 from walkoff.appgateway.validator import convert_primitive_type
 logger = logging.getLogger(__name__)
@@ -492,18 +492,18 @@ class DeviceDatabase(object):
 
     def __init__(self):
         # All of these imports are necessary
-        from walkoff.coredb.argument import Argument
-        from walkoff.coredb.conditionalexpression import ConditionalExpression
-        from walkoff.coredb.action import Action
-        from walkoff.coredb.branch import Branch
-        from walkoff.coredb.condition import Condition
+        from walkoff.executiondb.argument import Argument
+        from walkoff.executiondb.conditionalexpression import ConditionalExpression
+        from walkoff.executiondb.action import Action
+        from walkoff.executiondb.branch import Branch
+        from walkoff.executiondb.condition import Condition
 
-        from walkoff.coredb.playbook import Playbook
-        from walkoff.coredb.position import Position
-        from walkoff.coredb.transform import Transform
-        from walkoff.coredb.workflow import Workflow
-        from walkoff.coredb.saved_workflow import SavedWorkflow
-        from walkoff.coredb.workflowresults import WorkflowStatus, ActionStatus
+        from walkoff.executiondb.playbook import Playbook
+        from walkoff.executiondb.position import Position
+        from walkoff.executiondb.transform import Transform
+        from walkoff.executiondb.workflow import Workflow
+        from walkoff.executiondb.saved_workflow import SavedWorkflow
+        from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
 
         self.engine = create_engine(format_db_path(
             walkoff.config.config.device_db_type, walkoff.config.paths.device_db_path), poolclass=NullPool)

@@ -2,7 +2,7 @@ import json
 import unittest
 
 import walkoff.server.flaskserver as server
-from walkoff.core.scheduler import InvalidTriggerArgs
+from walkoff.scheduler import InvalidTriggerArgs
 from walkoff.serverdb import db
 from tests.util.device_db_help import setup_dbs
 from walkoff.serverdb.scheduledtasks import ScheduledTask

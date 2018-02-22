@@ -4,13 +4,13 @@ import walkoff.appgateway
 import walkoff.config.config
 import walkoff.config.paths
 from walkoff.appgateway.appinstance import AppInstance
-from walkoff.coredb.argument import Argument
-from walkoff.core.actionresult import ActionResult
+from walkoff.executiondb.argument import Argument
+from walkoff.appgateway.actionresult import ActionResult
 from walkoff.events import WalkoffEvent
-from walkoff.coredb.action import Action
-from walkoff.coredb.condition import Condition
-from walkoff.coredb.conditionalexpression import ConditionalExpression
-from walkoff.coredb.position import Position
+from walkoff.executiondb.action import Action
+from walkoff.executiondb.condition import Condition
+from walkoff.executiondb.conditionalexpression import ConditionalExpression
+from walkoff.executiondb.position import Position
 from walkoff.helpers import UnknownApp, UnknownAppAction, InvalidArgument
 import tests.config
 from tests.util import device_db_help
