@@ -102,7 +102,7 @@ class TestBranch(unittest.TestCase):
         self.assertIsNone(workflow.get_branch(action, {}))
 
     def test_get_branch(self):
-        action = Action('HelloWorld', 'helloWorld', 'helloWorld', id=10)
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld', id_=10)
 
         condition = ConditionalExpression(
             'and',
@@ -125,7 +125,7 @@ class TestBranch(unittest.TestCase):
         self.assertTrue(result['triggered'])
 
     def test_branch_with_priority(self):
-        action = Action('HelloWorld', 'helloWorld', 'helloWorld', id=10)
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld', id_=10)
 
         condition = ConditionalExpression(
             'and',

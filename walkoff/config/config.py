@@ -51,19 +51,27 @@ def write_values_to_file(keys=None):
 
 reinitialize_case_db_on_startup = True
 
+# IP and port for the webserver
 host = "127.0.0.1"
 port = 5000
 
+# IP addresses and ports for IPC (inter-process communication). Do not change these unless necessary. There must
+# not be conflicts.
 zmq_requests_address = 'tcp://127.0.0.1:5555'
 zmq_results_address = 'tcp://127.0.0.1:5556'
 zmq_communication_address = 'tcp://127.0.0.1:5557'
 
+# Specify the number of worker processes, and the number of threads for each worker process. Multiplying these numbers
+# together specifies the max number of workflows that may be executing at the same time.
 num_processes = 4
 num_threads_per_process = 3
 
+# Database types
 walkoff_db_type = 'sqlite'
 case_db_type = 'sqlite'
 device_db_type = 'sqlite'
+
+# Secret key
 secret_key = 'SHORTSTOPKEYTEST'
 
 
@@ -73,6 +81,12 @@ app_apis = {}
 
 
 def load_app_apis(apps_path=None):
+    """Loads App APIs
+    
+    Args:
+        apps_path (str, optional): Optional path to specifiy for the apps. Defaults to None, but will be set to the
+            apps_path variable in walkoff.config.paths
+    """
     from walkoff.helpers import list_apps, format_exception_message
     global app_apis
     if apps_path is None:
@@ -98,6 +112,8 @@ def load_app_apis(apps_path=None):
 
 
 def initialize():
+    """Loads the config file, loads the app cache, and loads the app APIs into memory
+    """
     load_config()
     from walkoff.appgateway import cache_apps
     cache_apps(walkoff.config.paths.apps_path)
