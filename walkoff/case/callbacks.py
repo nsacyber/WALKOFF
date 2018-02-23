@@ -12,6 +12,13 @@ from walkoff.case.database import Event
 
 def add_entry_to_case(sender, data, event_type, entry_message, message_name):
     """Adds an entry to all appropriate case logs
+
+    Args:
+        sender (Object|dict): Object that initiated the event
+        data (dict|str): The data for the event
+        event_type (str): The type of event
+        entry_message (str): The message for the event entry
+        message_name (str): The name of the message
     """
     if isinstance(sender, dict):
         originator = sender['id']

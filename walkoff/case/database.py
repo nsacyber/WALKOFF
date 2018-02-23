@@ -87,8 +87,7 @@ class Event(Case_Base):
 
 
 class CaseDatabase(object):
-    """
-    Wrapper for the SQLAlchemy Case database object
+    """Wrapper for the SQLAlchemy Case database object
     """
 
     __instance = None
