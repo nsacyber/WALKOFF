@@ -27,6 +27,7 @@ import { User } from '../models/user';
 import { Role } from '../models/role';
 import { ActionStatus } from '../models/execution/actionStatus';
 import { ConditionalExpression } from '../models/playbook/conditionalExpression';
+import { ActionStatusEvent } from '../models/execution/actionStatusEvent';
 
 @Component({
 	selector: 'playbook-component',
@@ -153,37 +154,52 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	 * Will update the information in the action statuses table as well, adding new rows or updating existing ones.
 	 */
 	actionStatusEventHandler(message: any): void {
-		const actionStatus: ActionStatus = JSON.parse(message.data);
+		const actionStatusEvent: ActionStatusEvent = JSON.parse(message.data);
 
+		// If we have a graph loaded, find the matching node for this event and style it appropriately if possible.
 		if (this.cy) {
-			const matchingNode = this.cy.elements(`node[_id="${actionStatus.action_id}"]`);
+			const matchingNode = this.cy.elements(`node[_id="${actionStatusEvent.action_id}"]`);
 
-			switch (actionStatus.status) {
-				case 'success':
-					matchingNode.addClass('success-highlight');
-					matchingNode.removeClass('failure-highlight');
-					matchingNode.removeClass('executing-highlight');
-					break;
-				case 'failure':
-					matchingNode.removeClass('success-highlight');
-					matchingNode.addClass('failure-highlight');
-					matchingNode.removeClass('executing-highlight');
-					break;
-				case 'executing':
-					matchingNode.removeClass('success-highlight');
-					matchingNode.removeClass('failure-highlight');
-					matchingNode.addClass('executing-highlight');
-					break;
-				default:
-					break;
+			if (matchingNode) {
+				switch (actionStatusEvent.status) {
+					case 'success':
+						matchingNode.addClass('success-highlight');
+						matchingNode.removeClass('failure-highlight');
+						matchingNode.removeClass('executing-highlight');
+						break;
+					case 'failure':
+						matchingNode.removeClass('success-highlight');
+						matchingNode.addClass('failure-highlight');
+						matchingNode.removeClass('executing-highlight');
+						break;
+					case 'executing':
+						matchingNode.removeClass('success-highlight');
+						matchingNode.removeClass('failure-highlight');
+						matchingNode.addClass('executing-highlight');
+						break;
+					default:
+						break;
+				}
 			}
 		}
 
-		const matchingActionStatus = this.actionStatuses.find(as => as.execution_id === actionStatus.execution_id);
+		// Additionally, add or update the actionstatus in our datatable.
+		const matchingActionStatus = this.actionStatuses.find(as => as.execution_id === actionStatusEvent.execution_id);
 		if (matchingActionStatus) {
-			Object.assign(matchingActionStatus, actionStatus);
+			switch (message.type) {
+				case 'started':
+					matchingActionStatus.started_at = actionStatusEvent.timestamp;
+					break;
+				case 'success':
+				case 'failure':
+					matchingActionStatus.completed_at = actionStatusEvent.timestamp;
+					break;
+				default:
+					this.toastyService.warning(`Unknown Action Status SSE Type: ${message.type}.`);
+					break;
+			}
 		} else {
-			this.actionStatuses.push(actionStatus);
+			this.actionStatuses.push(actionStatusEvent.toNewActionStatus());
 		}
 		// Induce change detection by slicing array
 		this.actionStatuses = this.actionStatuses.slice();

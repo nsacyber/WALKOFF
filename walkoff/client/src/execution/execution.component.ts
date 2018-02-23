@@ -10,8 +10,9 @@ import { ExecutionService } from './execution.service';
 import { AuthService } from '../auth/auth.service';
 
 import { WorkflowStatus } from '../models/execution/workflowStatus';
+import { WorkflowStatusEvent } from '../models/execution/workflowStatusEvent';
 import { Workflow } from '../models/playbook/workflow';
-import { ActionStatus } from '../models/execution/actionStatus';
+import { ActionStatusEvent } from '../models/execution/actionStatusEvent';
 import { Argument } from '../models/playbook/argument';
 import { GenericObject } from '../models/genericObject';
 import { CurrentAction } from '../models/execution/currentAction';
@@ -146,13 +147,38 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 	 * @param message EventSource message for workflow status
 	 */
 	workflowStatusEventHandler(message: any): void {
-		const workflowStatus: WorkflowStatus = JSON.parse(message.data);
+		const workflowStatusEvent: WorkflowStatusEvent = JSON.parse(message.data);
 
-		const matchingWorkflowStatus = this.workflowStatuses.find(ws => ws.execution_id === workflowStatus.execution_id);
+		const matchingWorkflowStatus = this.workflowStatuses.find(ws => ws.execution_id === workflowStatusEvent.execution_id);
+
 		if (matchingWorkflowStatus) {
-			Object.assign(matchingWorkflowStatus, workflowStatus);
+			matchingWorkflowStatus.status = workflowStatusEvent.status;
+
+			switch (message.type) {
+				case 'queued':
+					// shouldn't happen
+					break;
+				case 'started':
+					matchingWorkflowStatus.started_at = workflowStatusEvent.timestamp;
+					matchingWorkflowStatus.current_action = workflowStatusEvent.current_action;
+					break;
+				case 'paused':
+				case 'resumed':
+				case 'awaiting_data':
+				case 'triggered':
+					matchingWorkflowStatus.current_action = workflowStatusEvent.current_action;
+					break;
+				case 'aborted':
+				case 'completed':
+					matchingWorkflowStatus.completed_at = workflowStatusEvent.timestamp;
+					delete matchingWorkflowStatus.current_action;
+					break;
+				default:
+					this.toastyService.warning(`Unknown Workflow Status SSE Type: ${message.type}.`);
+					break;
+			}
 		} else {
-			this.workflowStatuses.push(workflowStatus);
+			this.workflowStatuses.push(workflowStatusEvent.toNewWorkflowStatus());
 			// Induce change detection by slicing array
 			this.workflowStatuses = this.workflowStatuses.slice();
 		}
@@ -185,30 +211,42 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 	 * @param message EventSource message for action status
 	 */
 	actionStatusEventHandler(message: any): void {
-		const actionStatus: ActionStatus = JSON.parse(message.data);
+		const actionStatusEvent: ActionStatusEvent = JSON.parse(message.data);
 
 		// if we have a matching workflow status, update the current app/action info.
 		const matchingWorkflowStatus = this.workflowStatuses
-			.find(ws => ws.execution_id === actionStatus.workflow_execution_id);
+			.find(ws => ws.execution_id === actionStatusEvent.workflow_execution_id);
+
 		if (matchingWorkflowStatus) {
 			matchingWorkflowStatus.current_action = {
-				execution_id: actionStatus.execution_id,
-				id: actionStatus.action_id,
-				name: actionStatus.name,
-				app_name: actionStatus.app_name,
-				action_name: actionStatus.action_name,
+				execution_id: actionStatusEvent.execution_id,
+				id: actionStatusEvent.action_id,
+				name: actionStatusEvent.name,
+				app_name: actionStatusEvent.app_name,
+				action_name: actionStatusEvent.action_name,
 			};
 		}
 
-		// also add this to the modal if possible
-		if (this.loadedWorkflowStatus && this.loadedWorkflowStatus.execution_id === actionStatus.workflow_execution_id) {
+		// also add this to the modal if possible, or update the existing data.
+		if (this.loadedWorkflowStatus && this.loadedWorkflowStatus.execution_id === actionStatusEvent.workflow_execution_id) {
 			const matchingActionStatus = this.loadedWorkflowStatus.action_statuses
-				.find(r => r.execution_id === actionStatus.execution_id);
+				.find(r => r.execution_id === actionStatusEvent.execution_id);
 
 			if (matchingActionStatus) {
-				Object.assign(matchingActionStatus, actionStatus);
+				switch (message.type) {
+					case 'started':
+						matchingActionStatus.started_at = actionStatusEvent.timestamp;
+						break;
+					case 'success':
+					case 'failure':
+						matchingActionStatus.completed_at = actionStatusEvent.timestamp;
+						break;
+					default:
+						this.toastyService.warning(`Unknown Action Status SSE Type: ${message.type}.`);
+						break;
+				}
 			} else {
-				this.loadedWorkflowStatus.action_statuses.push(actionStatus);
+				this.loadedWorkflowStatus.action_statuses.push(actionStatusEvent.toNewActionStatus());
 				// Induce change detection by slicing array
 				this.loadedWorkflowStatus.action_statuses = this.loadedWorkflowStatus.action_statuses.slice();
 			}
