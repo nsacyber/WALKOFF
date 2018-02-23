@@ -105,7 +105,7 @@ def convert_action(action, action_map):
         y = action['position']['y']
     position = Position(x, y) if x and y else None
 
-    action_obj = Action(id_=action_id, app_name=action['app_name'], action_name=action['action_name'], name=name,
+    action_obj = Action(id=action_id, app_name=action['app_name'], action_name=action['action_name'], name=name,
                         device_id=device_id, position=position, arguments=arguments, trigger=trigger)
 
     return action_obj

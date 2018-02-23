@@ -30,7 +30,7 @@ class Action(ExecutionElement, Device_Base):
                            uselist=False)
     position = relationship('Position', uselist=False, backref=backref('_action'), cascade='all, delete-orphan')
 
-    def __init__(self, app_name, action_name, name, device_id=None, id_=None, arguments=None, trigger=None,
+    def __init__(self, app_name, action_name, name, device_id=None, id=None, arguments=None, trigger=None,
                  position=None):
         """Initializes a new Action object. A Workflow has one or more actions that it executes.
 
@@ -40,14 +40,14 @@ class Action(ExecutionElement, Device_Base):
             name (str): The name of the Action object.
             device_id (int, optional): The id of the device associated with the app associated with the Action. Defaults
                 to None.
-            id_ (str|UUID, optional): Optional UUID to pass into the Action. Must be UUID object or valid UUID string.
+            id (str|UUID, optional): Optional UUID to pass into the Action. Must be UUID object or valid UUID string.
             arguments (list[Argument], optional): A list of Argument objects that are parameters to the action.
                 Defaults to None.
             trigger (ConditionalExpression, optional): A ConditionalExpression which causes an Action to wait until the
                 data is sent fulfilling the condition. Defaults to None.
             position (Position, optional): Position object for the Action. Defaults to None.
         """
-        ExecutionElement.__init__(self, id_)
+        ExecutionElement.__init__(self, id)
 
         self.trigger = trigger
 
