@@ -199,7 +199,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 					break;
 			}
 		} else {
-			this.actionStatuses.push(actionStatusEvent.toNewActionStatus());
+			this.actionStatuses.push(ActionStatusEvent.toNewActionStatus(actionStatusEvent));
 		}
 		// Induce change detection by slicing array
 		this.actionStatuses = this.actionStatuses.slice();

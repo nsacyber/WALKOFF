@@ -2,6 +2,22 @@ import { Argument } from '../playbook/argument';
 import { ActionStatus } from './actionStatus';
 
 export class ActionStatusEvent {
+	static toNewActionStatus(actionStatusEvent: ActionStatusEvent): ActionStatus {
+		return {
+			workflow_execution_id: actionStatusEvent.workflow_execution_id,
+			workflow_id: actionStatusEvent.workflow_id,
+			execution_id: actionStatusEvent.execution_id,
+			action_id: actionStatusEvent.action_id,
+			name: actionStatusEvent.name,
+			app_name: actionStatusEvent.app_name,
+			action_name: actionStatusEvent.action_name,
+			status: actionStatusEvent.status,
+			started_at: actionStatusEvent.timestamp,
+			arguments: actionStatusEvent.arguments,
+			result: actionStatusEvent.result,
+		};
+	}
+
 	workflow_execution_id: string;
 	workflow_id: string;
 	execution_id: string;
@@ -16,20 +32,4 @@ export class ActionStatusEvent {
 	timestamp: string;
 	arguments: Argument[] = [];
 	result?: any;
-
-	toNewActionStatus(): ActionStatus {
-		return {
-			workflow_execution_id: this.workflow_execution_id,
-			workflow_id: this.workflow_id,
-			execution_id: this.execution_id,
-			action_id: this.action_id,
-			name: this.name,
-			app_name: this.app_name,
-			action_name: this.action_name,
-			status: this.status,
-			started_at: this.timestamp,
-			arguments: this.arguments,
-			result: this.result,
-		};
-	}
 }

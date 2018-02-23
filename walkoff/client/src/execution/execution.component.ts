@@ -4,6 +4,7 @@ import { FormControl } from '@angular/forms';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { Select2OptionData } from 'ng2-select2';
 import { DatatableComponent } from '@swimlane/ngx-datatable';
+import { Observable } from 'rxjs';
 import 'rxjs/add/operator/debounceTime';
 
 import { ExecutionService } from './execution.service';
@@ -16,6 +17,7 @@ import { ActionStatusEvent } from '../models/execution/actionStatusEvent';
 import { Argument } from '../models/playbook/argument';
 import { GenericObject } from '../models/genericObject';
 import { CurrentAction } from '../models/execution/currentAction';
+import { UtilitiesService } from '../utilities.service';
 
 @Component({
 	selector: 'execution-component',
@@ -30,6 +32,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 	@ViewChild('actionStatusContainer') actionStatusContainer: ElementRef;
 	@ViewChild('actionStatusTable') actionStatusTable: DatatableComponent;
 
+	utils = new UtilitiesService();
 	schedulerStatus: string;
 	workflowStatuses: WorkflowStatus[] = [];
 	displayWorkflowStatuses: WorkflowStatus[] = [];
@@ -40,6 +43,10 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 	loadedWorkflowStatus: WorkflowStatus;
 	actionStatusComponentWidth: number;
 	workflowStatusActions: GenericObject;
+	workflowStatusStartedRelativeTimes: { [key: string]: string } = {};
+	workflowStatusCompletedRelativeTimes: { [key: string]: string } = {};
+	actionStatusStartedRelativeTimes: { [key: string]: string } = {};
+	actionStatusCompletedRelativeTimes: { [key: string]: string } = {};
 
 	filterQuery: FormControl = new FormControl();
 
@@ -75,6 +82,10 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 			.valueChanges
 			.debounceTime(500)
 			.subscribe(event => this.filterWorkflowStatuses());
+
+		Observable.interval(30000).subscribe(() => {
+			this.recalculateRelativeTimes();
+		});
 	}
 
 	/**
@@ -113,7 +124,10 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 	getWorkflowStatuses(): void {
 		this.executionService
 			.getWorkflowStatusList()
-			.then(workflowStatuses => this.displayWorkflowStatuses = this.workflowStatuses = workflowStatuses)
+			.then(workflowStatuses => {
+				this.displayWorkflowStatuses = this.workflowStatuses = workflowStatuses;
+				this.recalculateRelativeTimes();
+			})
 			.catch(e => this.toastyService.error(`Error retrieving workflow statuses: ${e.message}`));
 	}
 
@@ -160,6 +174,8 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 					break;
 				case 'started':
 					matchingWorkflowStatus.started_at = workflowStatusEvent.timestamp;
+					this.workflowStatusStartedRelativeTimes[matchingWorkflowStatus.execution_id] =
+						this.utils.getRelativeLocalTime(workflowStatusEvent.timestamp);
 					matchingWorkflowStatus.current_action = workflowStatusEvent.current_action;
 					break;
 				case 'paused':
@@ -171,6 +187,8 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 				case 'aborted':
 				case 'completed':
 					matchingWorkflowStatus.completed_at = workflowStatusEvent.timestamp;
+					this.workflowStatusCompletedRelativeTimes[matchingWorkflowStatus.execution_id] =
+						this.utils.getRelativeLocalTime(workflowStatusEvent.timestamp);
 					delete matchingWorkflowStatus.current_action;
 					break;
 				default:
@@ -178,7 +196,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 					break;
 			}
 		} else {
-			this.workflowStatuses.push(workflowStatusEvent.toNewWorkflowStatus());
+			this.workflowStatuses.push(WorkflowStatusEvent.toNewWorkflowStatus(workflowStatusEvent));
 			// Induce change detection by slicing array
 			this.workflowStatuses = this.workflowStatuses.slice();
 		}
@@ -236,17 +254,21 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 				switch (message.type) {
 					case 'started':
 						matchingActionStatus.started_at = actionStatusEvent.timestamp;
+						this.actionStatusStartedRelativeTimes[matchingActionStatus.execution_id] =
+							this.utils.getRelativeLocalTime(actionStatusEvent.timestamp);
 						break;
 					case 'success':
 					case 'failure':
 						matchingActionStatus.completed_at = actionStatusEvent.timestamp;
+						this.actionStatusCompletedRelativeTimes[matchingActionStatus.execution_id] =
+							this.utils.getRelativeLocalTime(actionStatusEvent.timestamp);
 						break;
 					default:
 						this.toastyService.warning(`Unknown Action Status SSE Type: ${message.type}.`);
 						break;
 				}
 			} else {
-				this.loadedWorkflowStatus.action_statuses.push(actionStatusEvent.toNewActionStatus());
+				this.loadedWorkflowStatus.action_statuses.push(ActionStatusEvent.toNewActionStatus(actionStatusEvent));
 				// Induce change detection by slicing array
 				this.loadedWorkflowStatus.action_statuses = this.loadedWorkflowStatus.action_statuses.slice();
 			}
@@ -333,6 +355,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 			actionResultsPromise = this.executionService.getWorkflowStatus(workflowStatus.execution_id)
 				.then(fullWorkflowStatus => {
 					this.loadedWorkflowStatus = fullWorkflowStatus;
+					this.recalculateRelativeTimes();
 				})
 				.catch(e => this.toastyService
 					.error(`Error loading action results for "${workflowStatus.name}": ${e.message}`));
@@ -421,5 +444,37 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 		
 		if (propA.action_name.toLowerCase() < propB.action_name.toLowerCase()) { return -1; }
 		if (propA.action_name.toLowerCase() > propB.action_name.toLowerCase()) { return 1; }
+	}
+
+	/**
+	 * Recalculates the relative times shown for start/end date timestamps (e.g. '5 hours ago').
+	 */
+	recalculateRelativeTimes(): void {
+		if (!this.workflowStatuses || !this.workflowStatuses.length) { return; }
+
+		this.workflowStatuses.forEach(workflowStatus => {
+			if (workflowStatus.started_at) {
+				this.workflowStatusStartedRelativeTimes[workflowStatus.execution_id] = 
+					this.utils.getRelativeLocalTime(workflowStatus.started_at);
+			}
+			if (workflowStatus.completed_at) {
+				this.workflowStatusCompletedRelativeTimes[workflowStatus.execution_id] = 
+					this.utils.getRelativeLocalTime(workflowStatus.completed_at);
+			}
+		});
+
+		if (!this.loadedWorkflowStatus || !this.loadedWorkflowStatus.action_statuses || 
+			!this.loadedWorkflowStatus.action_statuses.length ) { return; }
+
+		this.loadedWorkflowStatus.action_statuses.forEach(actionStatus => {
+			if (actionStatus.started_at) {
+				this.actionStatusStartedRelativeTimes[actionStatus.execution_id] = 
+					this.utils.getRelativeLocalTime(actionStatus.started_at);
+			}
+			if (actionStatus.completed_at) {
+				this.actionStatusCompletedRelativeTimes[actionStatus.execution_id] = 
+					this.utils.getRelativeLocalTime(actionStatus.completed_at);
+			}
+		});
 	}
 }
