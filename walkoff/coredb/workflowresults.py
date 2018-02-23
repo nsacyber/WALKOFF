@@ -55,12 +55,11 @@ class WorkflowStatus(Device_Base):
             ret["completed_at"] = self.completed_at.isoformat()
         if full_actions:
             ret["action_statuses"] = [action_status.as_json() for action_status in self._action_statuses]
-        elif self._action_statuses:
+        elif self._action_statuses and self.status != WorkflowStatusEnum.completed:
             current_action = self._action_statuses[-1]
             ret['current_action'] = current_action.as_json(summary=True)
 
         return ret
-
 
 
 class ActionStatus(Device_Base):

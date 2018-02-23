@@ -26,6 +26,7 @@ __workflow_event_id_counter = 0
 
 def __action_event_stream():
     global __action_event_id_counter
+    __action_signal.wait()
     while True:
         event_type, data = __action_event_json.get()
         yield create_sse_event(event_id=__action_event_id_counter, event=event_type, data=data)
@@ -35,6 +36,7 @@ def __action_event_stream():
 
 def __workflow_event_stream():
     global __workflow_event_id_counter
+    __workflow_signal.wait()
     while True:
         event_type, data = __workflow_event_json.get()
         yield create_sse_event(event_id=__workflow_event_id_counter, event=event_type, data=data)
@@ -100,14 +102,16 @@ def format_workflow_result(sender, status):
     return {'execution_id': str(sender['execution_id']),
             'workflow_id': str(sender['id']),
             'name': sender['name'],
-            'status': status.name}
+            'status': status.name,
+            'timestamp': datetime.utcnow().isoformat()}
 
 
 def format_workflow_result_from_workflow(sender, status):
     result = {'execution_id': str(sender.get_execution_id()),
               'workflow_id': str(sender.id),
               'name': sender.name,
-              'status': status.name}
+              'status': status.name,
+              'timestamp': datetime.utcnow().isoformat()}
     return result
 
 
@@ -116,10 +120,11 @@ def format_workflow_result_with_current_step(workflow_execution_id, status):
         execution_id=workflow_execution_id).first()
     if workflow_status is not None:
         status_json = workflow_status.as_json()
-        status_json['status'] = status.name  # in case this callback is called before it is properly set in the database
-        for timestamp in ('started_at', 'completed_at'):
-            status_json.pop(timestamp, None)
+        for field in (field for field in status_json.keys()
+                      if field not in ('execution_id', 'workflow_id', 'name', 'status', 'current_action')):
+            status_json.pop(field)
         status_json['timestamp'] = datetime.utcnow().isoformat()
+        status_json['status'] = status.name  # in case this callback is called before it is properly set in the database
         return status_json
     return {'execution_id': str(workflow_execution_id), 'status': status.name}
 
