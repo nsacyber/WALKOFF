@@ -92,6 +92,7 @@ class LoadBalancer:
             if any(val > 0 for val in self.workers.values()) and not self.pending_workflows.empty():
                 workflow_id, workflow_execution_id, start, start_arguments, resume = self.pending_workflows.get()
 
+                devicedb.device_db.session.expire_all()
                 workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
                     execution_id=workflow_execution_id).first()
                 if workflow_status.status == WorkflowStatusEnum.aborted:

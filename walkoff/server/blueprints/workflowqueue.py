@@ -106,15 +106,6 @@ def format_workflow_result(sender, status):
             'timestamp': datetime.utcnow().isoformat()}
 
 
-def format_workflow_result_from_workflow(sender, status):
-    result = {'execution_id': str(sender.get_execution_id()),
-              'workflow_id': str(sender.id),
-              'name': sender.name,
-              'status': status.name,
-              'timestamp': datetime.utcnow().isoformat()}
-    return result
-
-
 def format_workflow_result_with_current_step(workflow_execution_id, status):
     workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
         execution_id=workflow_execution_id).first()
@@ -139,7 +130,7 @@ def send_workflow_result_to_sse(result, event):
 
 @WalkoffEvent.WorkflowExecutionPending.connect
 def __workflow_pending_callback(sender, **kwargs):
-    result = format_workflow_result_from_workflow(sender, WorkflowStatusEnum.pending)
+    result = format_workflow_result(sender, WorkflowStatusEnum.pending)
     send_workflow_result_to_sse(result, 'queued')
 
 
