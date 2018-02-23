@@ -22,34 +22,22 @@
 	</div>
 
 	<ngx-datatable #workflowStatusTable class='material expandable workflowStatusTable' [columnMode]="'flex'" [rows]="displayWorkflowStatuses"
-	 [sorts]="[{prop: 'started_at', dir: 'desc'}]" [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [limit]="25">
+	 [sorts]="[{prop: 'started_at', dir: 'desc'}]" [sortType]="'multi'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [limit]="25">
 		<!-- Column Templates -->
-		<ngx-datatable-column name="Name" [flexGrow]="1">
+		<ngx-datatable-column name="Name" prop="name" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
 				<a href="#" (click)="openActionStatusModal($event, row)">{{row.name}}</a>
 			</ng-template>
 		</ngx-datatable-column>
-		<ngx-datatable-column name="Started At" [flexGrow]="2">
-			<ng-template let-row="row" ngx-datatable-cell-template>
-				{{row.started_at}}
-			</ng-template>
-		</ngx-datatable-column>
-		<ngx-datatable-column name="Finished At" [flexGrow]="2">
-			<ng-template let-row="row" ngx-datatable-cell-template>
-				{{row.completed_at}}
-			</ng-template>
-		</ngx-datatable-column>
-		<ngx-datatable-column name="Status" [flexGrow]="1">
-			<ng-template let-row="row" ngx-datatable-cell-template>
-				{{row.status}}
-			</ng-template>
-		</ngx-datatable-column>
-		<ngx-datatable-column name="Current App" [flexGrow]="1">
+		<ngx-datatable-column name="Started At" prop="started_at" [flexGrow]="2"></ngx-datatable-column>
+		<ngx-datatable-column name="Completed At" prop="completed_at" [flexGrow]="2"></ngx-datatable-column>
+		<ngx-datatable-column name="Status" prop="status" [flexGrow]="1"></ngx-datatable-column>
+		<ngx-datatable-column name="Current App" prop="current_action" [comparator]="appNameComparator" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
 				{{getAppName(row.current_action)}}
 			</ng-template>
 		</ngx-datatable-column>
-		<ngx-datatable-column name="Current Action" [flexGrow]="1">
+		<ngx-datatable-column name="Current Action" prop="current_action" [comparator]="actionNameComparator" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
 				{{getActionName(row.current_action)}}
 			</ng-template>
@@ -86,36 +74,12 @@
 					 [sortType]="'multi'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]"
 					 [limit]="10">
 						<!-- Column Templates -->
-						<ngx-datatable-column name="Action UID" [flexGrow]="1">
-							<ng-template let-row="row" ngx-datatable-cell-template>
-								{{row.action_id}}
-							</ng-template>
-						</ngx-datatable-column>
-						<ngx-datatable-column name="App Name" [flexGrow]="1">
-							<ng-template let-row="row" ngx-datatable-cell-template>
-								{{row.app_name}}
-							</ng-template>
-						</ngx-datatable-column>
-						<ngx-datatable-column name="Action Name" [flexGrow]="1">
-							<ng-template let-row="row" ngx-datatable-cell-template>
-								{{row.action_name}}
-							</ng-template>
-						</ngx-datatable-column>
-						<ngx-datatable-column name="Started At" [flexGrow]="1">
-							<ng-template let-row="row" ngx-datatable-cell-template>
-								{{row.started_at}}
-							</ng-template>
-						</ngx-datatable-column>
-						<ngx-datatable-column name="Completed At" [flexGrow]="1">
-							<ng-template let-row="row" ngx-datatable-cell-template>
-								{{row.completed_at}}
-							</ng-template>
-						</ngx-datatable-column>
-						<ngx-datatable-column name="Status" [flexGrow]="1">
-							<ng-template let-row="row" ngx-datatable-cell-template>
-								{{row.status}}
-							</ng-template>
-						</ngx-datatable-column>
+						<ngx-datatable-column name="Action ID" prop="action_id" [flexGrow]="1"></ngx-datatable-column>
+						<ngx-datatable-column name="App Name" prop="app_name" [flexGrow]="1"></ngx-datatable-column>
+						<ngx-datatable-column name="Action Name" prop="action_name" [flexGrow]="1"></ngx-datatable-column>
+						<ngx-datatable-column name="Started At" prop="started_at" [flexGrow]="1"></ngx-datatable-column>
+						<ngx-datatable-column name="Completed At" prop="completed_at" [flexGrow]="1"></ngx-datatable-column>
+						<ngx-datatable-column name="Status" prop="status" [flexGrow]="1"></ngx-datatable-column>
 						<ngx-datatable-column name="Arguments" [sortable]="false" [flexGrow]="2">
 							<ng-template let-row="row" ngx-datatable-cell-template>
 								{{getFriendlyArguments(row.arguments)}}

@@ -169,7 +169,7 @@ def __trigger_awaiting_data_callback(sender, **kwargs):
 
 
 @WalkoffEvent.TriggerActionTaken.connect
-def __trigger_awaiting_data_callback(sender, **kwargs):
+def __trigger_action_taken_callback(sender, **kwargs):
     workflow_execution_id = kwargs['data']['workflow_execution_id']
     result = format_workflow_result_with_current_step(workflow_execution_id, WorkflowStatusEnum.pending)
     send_workflow_result_to_sse(result, 'triggered')

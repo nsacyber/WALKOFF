@@ -358,4 +358,30 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 		if (output !== currentAction.action_name) { output = `${output} (${currentAction.action_name})`; }
 		return output;
 	}
+
+	/**
+	 * Simple comparator function for the datatable sort on the app name column.
+	 * @param propA Left side CurrentAction
+	 * @param propB Right side CurrentAction
+	 */
+	appNameComparator(propA: CurrentAction, propB: CurrentAction) {
+		if (!propA) { return 1; }
+		if (!propB) { return -1; }
+		
+		if (propA.app_name.toLowerCase() < propB.app_name.toLowerCase()) { return -1; }
+		if (propA.app_name.toLowerCase() > propB.app_name.toLowerCase()) { return 1; }
+	}
+
+	/**
+	 * Simple comparator function for the datatable sort on the action name column.
+	 * @param propA Left side CurrentAction
+	 * @param propB Right side CurrentAction
+	 */
+	actionNameComparator(propA: CurrentAction, propB: CurrentAction) {
+		if (!propA) { return 1; }
+		if (!propB) { return -1; }
+		
+		if (propA.action_name.toLowerCase() < propB.action_name.toLowerCase()) { return -1; }
+		if (propA.action_name.toLowerCase() > propB.action_name.toLowerCase()) { return 1; }
+	}
 }

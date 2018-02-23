@@ -17,14 +17,10 @@
 </div>
 
 <ngx-datatable #roleTable class='material expandable' [columnMode]="'flex'" [rows]="displayRoles" [headerHeight]="50" [footerHeight]="50"
- [rowHeight]="undefined" [sortType]="'multi'" [sorts]="[{prop: 'name', dir: 'asc'}]" [limit]="10">
+ [rowHeight]="undefined" [sorts]="[{prop: 'name', dir: 'asc'}]" [limit]="10">
 	<!-- Column Templates -->
-	<ngx-datatable-column name="Role Name" [flexGrow]="1">
-		<ng-template let-row="row" ngx-datatable-cell-template>
-			{{row.name}}
-		</ng-template>
-	</ngx-datatable-column>
-	<ngx-datatable-column name="Permissions" [flexGrow]="5">
+	<ngx-datatable-column name="Role Name" prop="name" [flexGrow]="1"></ngx-datatable-column>
+	<ngx-datatable-column name="Permissions" [sortable]="false" [flexGrow]="5">
 		<ng-template let-row="row" ngx-datatable-cell-template>
 			<div *ngFor="let resource of row.resources">
 				{{resource.name}}: {{resource.permissions.join(', ')}}

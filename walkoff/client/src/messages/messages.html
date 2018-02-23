@@ -32,7 +32,7 @@
 				<input type="checkbox" [(ngModel)]="selectMapping[row.id]">
 			</ng-template>
 		</ngx-datatable-column>
-		<ngx-datatable-column name="Subject" [flexGrow]="2">
+		<ngx-datatable-column name="Subject" prop="subject" [flexGrow]="2">
 			<ng-template let-row="row" ngx-datatable-cell-template>
 				<div>
 					<i *ngIf="row.awaiting_response" class="fa fa-exclamation required" title="This message is awaiting response."></i>
@@ -42,22 +42,12 @@
 				</div>
 			</ng-template>
 		</ngx-datatable-column>
-		<ngx-datatable-column name="Sent" [flexGrow]="1">
+		<ngx-datatable-column name="Sent" prop="created_at" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
 				<span [title]="utils.getLocalTime(row.created_at)">
 					{{messageRelativeTimes[row.id]}}
 				</span>
 			</ng-template>
 		</ngx-datatable-column>
-		<!-- <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
-			<ng-template let-row="row" ngx-datatable-cell-template>
-				<button (click)="editDevice(row)" class="btn btn-primary" title="Edit Device">
-					<i class="fa fa-edit"></i>
-				</button>
-				<button (click)="deleteDevice(row)" class="btn btn-danger" title="Delete Device">
-					<i class="fa fa-times"></i>
-				</button>
-			</ng-template>
-		</ngx-datatable-column> -->
 	</ngx-datatable>
 </div>
