@@ -28,6 +28,8 @@ class Branch(ExecutionElement, Device_Base):
             source_id (int): The ID of the source action that will be sending inputs to this Branch.
             destination_id (int): The ID of the destination action that will be returned if the conditions for this
                 Branch are met.
+            id (str|UUID, optional): Optional UUID to pass into the Action. Must be UUID object or valid UUID string.
+                Defaults to None.
             status (str, optional): Optional field to keep track of the status of the Branch. Defaults to
                 "Success".
             condition (ConditionalExpression, optional): The condition which must be fulfilled for this branch.

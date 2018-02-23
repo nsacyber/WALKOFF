@@ -20,8 +20,8 @@ class Position(Representable, Device_Base):
         """Initializes a new Position object. An Action has a Position object.
 
         Args:
-            x (int): The X coordinate of the Action.
-            y (int): The Y coordinate of the Action.
+            x (float): The X coordinate of the Action.
+            y (float): The Y coordinate of the Action.
         """
         self.x = x
         self.y = y

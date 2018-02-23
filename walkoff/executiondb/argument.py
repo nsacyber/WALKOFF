@@ -26,11 +26,11 @@ class Argument(Representable, Device_Base):
 
         Args:
             name (str): The name of the Argument.
-            value (optional): The value of the Argument. Defaults to None. Value or reference must be included.
+            value (any, optional): The value of the Argument. Defaults to None. Value or reference must be included.
             reference (int, optional): The ID of the Action from which to grab the result. Defaults to None.
                 If value is not provided, then reference must be included.
             selection (list, optional): A list of fields from which to dereference the Action result. Defaults
-                to None.
+                to None. Must be used in conjunction with reference.
         """
         Representable.__init__(self)
         if value is None and not reference:
@@ -49,6 +49,7 @@ class Argument(Representable, Device_Base):
 
     @orm.reconstructor
     def init_on_load(self):
+        """Loads all necessary fields upon Argument being loaded from database"""
         self._is_reference = True if self.value is None else False
 
     def is_ref(self):

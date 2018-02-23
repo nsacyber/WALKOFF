@@ -206,6 +206,7 @@ class Worker:
         os._exit(0)
 
     def receive_requests(self):
+        """Receives requests to execute workflows, and sends them off to worker threads"""
         self.request_sock.send(b"Ready")
 
         while True:

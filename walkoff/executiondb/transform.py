@@ -29,6 +29,8 @@ class Transform(ExecutionElement, Device_Base):
         Args:
             app_name (str): The app name associated with this transform
             action_name (str): The action name for the transform.
+            id (str|UUID, optional): Optional UUID to pass into the Transform. Must be UUID object or valid UUID string.
+                Defaults to None.
             arguments (list[Argument], optional): Dictionary of Argument keys to Argument values.
                 This dictionary will be converted to a dictionary of str:Argument. Defaults to None.
         """
@@ -47,6 +49,7 @@ class Transform(ExecutionElement, Device_Base):
 
     @orm.reconstructor
     def init_on_load(self):
+        """Loads all necessary fields upon Condition being loaded from database"""
         self._data_param_name, self._run, self._api = get_transform_api(self.app_name, self.action_name)
         self._transform_executable = get_transform(self.app_name, self._run)
 

@@ -16,7 +16,8 @@ class SavedWorkflow(Device_Base):
     app_instances = Column(PickleType(), nullable=False)
 
     def __init__(self, workflow_execution_id, workflow_id, action_id, accumulator, app_instances):
-        """Initializes an Argument object.
+        """Initializes a SavedWorkflow object. This is used when a workflow pauses execution, and must be reloaded
+            at a later point.
 
         Args:
             workflow_execution_id (str): The workflow execution UID that this saved state refers to.

@@ -30,6 +30,8 @@ class Condition(ExecutionElement, executiondb.Device_Base):
         Args:
             app_name (str): The name of the app which contains this condition
             action_name (str): The action name for the Condition. Defaults to an empty string.
+            id (str|UUID, optional): Optional UUID to pass into the Condition. Must be UUID object or valid UUID string.
+                Defaults to None.
             is_negated (bool, optional): Should the result of the condition be inverted? Defaults to False.
             arguments (list[Argument], optional): Dictionary of Argument keys to Argument values.
                 This dictionary will be converted to a dictionary of str:Argument. Defaults to None.
@@ -56,6 +58,7 @@ class Condition(ExecutionElement, executiondb.Device_Base):
 
     @orm.reconstructor
     def init_on_load(self):
+        """Loads all necessary fields upon Condition being loaded from database"""
         self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
         self._condition_executable = get_condition(self.app_name, self._run)
 

@@ -24,6 +24,17 @@ class ConditionalExpression(ExecutionElement, Device_Base):
     conditions = relationship('Condition', backref=backref('_expression'), cascade='all, delete-orphan')
 
     def __init__(self, operator='and', id=None, is_negated=False, child_expressions=None, conditions=None):
+        """Initializes a new ConditionalExpression object
+
+        Args:
+            operator (and|or|xor, optional): The operator to be used between the conditions. Defaults to 'and'.
+            id (str|UUID, optional): Optional UUID to pass into the Action. Must be UUID object or valid UUID string.
+                Defaults to None.
+            is_negated(bool, optional): Whether or not the expression should be negated. Defaults to False.
+            child_expressions (list[ConditionalExpression], optional): Child ConditionalExpression objects for this
+                object. Defaults to None.
+            conditions (list[Condition], optional): Condition objects for this object. Defaults to None.
+        """
         ExecutionElement.__init__(self, id)
         self.operator = operator
         self.is_negated = is_negated
@@ -41,11 +52,21 @@ class ConditionalExpression(ExecutionElement, Device_Base):
 
     @orm.reconstructor
     def init_on_load(self):
+        """Loads all necessary fields upon ConditionalExpression being loaded from database"""
         self.__operator_lookup = {'and': self._and,
                                   'or': self._or,
                                   'xor': self._xor}
 
     def execute(self, data_in, accumulator):
+        """Executes the ConditionalExpression object, determining if the statement evaluates to True or False.
+
+        Args:
+            data_in (): The input to the Transform objects associated with this ConditionalExpression.
+            accumulator (dict): The accumulated data from previous Actions.
+
+        Returns:
+            True if the Condition evaluated to True, False otherwise
+        """
         try:
             result = self.__operator_lookup[self.operator](data_in, accumulator)
             if self.is_negated:

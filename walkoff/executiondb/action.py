@@ -41,6 +41,7 @@ class Action(ExecutionElement, Device_Base):
             device_id (int, optional): The id of the device associated with the app associated with the Action. Defaults
                 to None.
             id (str|UUID, optional): Optional UUID to pass into the Action. Must be UUID object or valid UUID string.
+                Defaults to None.
             arguments (list[Argument], optional): A list of Argument objects that are parameters to the action.
                 Defaults to None.
             trigger (ConditionalExpression, optional): A ConditionalExpression which causes an Action to wait until the
@@ -69,17 +70,14 @@ class Action(ExecutionElement, Device_Base):
 
         self.position = position
 
-        self._incoming_data = None
-        self._event = threading.Event()
         self._output = None
         self._execution_id = 'default'
         self._action_executable = get_app_action(self.app_name, self._run)
 
     @orm.reconstructor
     def init_on_load(self):
+        """Loads all necessary fields upon Action being loaded from database"""
         self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
-        self._incoming_data = None
-        self._event = threading.Event()
         self._output = None
         self._action_executable = get_app_action(self.app_name, self._run)
         self._execution_id = 'default'
@@ -168,6 +166,15 @@ class Action(ExecutionElement, Device_Base):
         WalkoffEvent.CommonWorkflowSignal.send(self, event=event, data=self._output.as_json())
 
     def execute_trigger(self, data_in, accumulator):
+        """Executes the trigger for an Action, which will continue execution if the trigger returns True
+
+        Args:
+            data_in (dict): The data to send to the trigger to test against
+            accumulator (dict): Dict containing the results of the previous actions
+
+        Returns:
+            True if the trigger returned True, False otherwise
+        """
         if self.trigger.execute(data_in=data_in, accumulator=accumulator):
             logger.debug('Trigger is valid for input {0}'.format(data_in))
             return True

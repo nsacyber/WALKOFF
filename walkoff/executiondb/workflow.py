@@ -35,6 +35,8 @@ class Workflow(ExecutionElement, Device_Base):
         Args:
             name (str): The name of the Workflow object.
             start (int): ID of the starting Action.
+            id (str|UUID, optional): Optional UUID to pass into the Action. Must be UUID object or valid UUID string.
+                Defaults to None.
             actions (list[Action]): Optional Action objects. Defaults to None.
             branches (list[Branch], optional): A list of Branch objects for the Workflow object. Defaults to None.
         """
@@ -53,6 +55,7 @@ class Workflow(ExecutionElement, Device_Base):
 
     @orm.reconstructor
     def init_on_load(self):
+        """Loads all necessary fields upon Workflow being loaded from database"""
         self._is_paused = False
         self._abort = False
         self._resume = threading.Event()
@@ -106,6 +109,7 @@ class Workflow(ExecutionElement, Device_Base):
             execution_id (str): The UUID4 hex string uniquely identifying this workflow instance
             start (int, optional): The ID of the first Action. Defaults to None.
             start_arguments (list[Argument]): Argument parameters into the first Action. Defaults to None.
+            resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
         """
         self._execution_id = execution_id
         logger.info('Executing workflow {0}'.format(self.name))
@@ -249,10 +253,27 @@ class Workflow(ExecutionElement, Device_Base):
         return self._execution_id
 
     def get_executing_action_id(self):
+        """Gets the ID of the currently executing Action
+
+        Returns:
+            The ID of the currently executing Action
+
+        """
         return self._executing_action.id
 
     def get_accumulator(self):
+        """Gets the accumulator
+
+        Returns:
+            The accumulator
+        """
         return self._accumulator
 
     def get_instances(self):
+        """Gets all instances
+
+        Returns:
+            All instances
+
+        """
         return self._instances
