@@ -111,7 +111,7 @@ def format_workflow_result_with_current_step(workflow_execution_id, status):
         execution_id=workflow_execution_id).first()
     if workflow_status is not None:
         status_json = workflow_status.as_json()
-        for field in (field for field in status_json.keys()
+        for field in (field for field in list(status_json.keys())
                       if field not in ('execution_id', 'workflow_id', 'name', 'status', 'current_action')):
             status_json.pop(field)
         status_json['timestamp'] = datetime.utcnow().isoformat()

@@ -1,5 +1,4 @@
 import logging
-import threading
 import uuid
 
 from sqlalchemy import Column, Integer, ForeignKey, String, orm
@@ -69,7 +68,6 @@ class Action(ExecutionElement, Device_Base):
         self.position = position
 
         self._incoming_data = None
-        self._event = threading.Event()
         self._output = None
         self._execution_id = 'default'
         self._action_executable = get_app_action(self.app_name, self._run)
@@ -78,7 +76,6 @@ class Action(ExecutionElement, Device_Base):
     def init_on_load(self):
         self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
         self._incoming_data = None
-        self._event = threading.Event()
         self._output = None
         self._action_executable = get_app_action(self.app_name, self._run)
         self._execution_id = 'default'

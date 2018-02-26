@@ -18,6 +18,7 @@ from walkoff.coredb.workflow import Workflow
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
 import walkoff.coredb.devicedb
 from walkoff.coredb.saved_workflow import SavedWorkflow
+from walkoff.coredb.appinstancerepo import AppInstanceRepo
 
 try:
     from Queue import Queue
@@ -43,7 +44,7 @@ def convert_to_protobuf(sender, workflow, **kwargs):
     packet = Message()
     packet.event_name = event.name
     if event.event_type == EventType.workflow:
-        convert_workflow_to_proto(packet, sender, data)
+        convert_workflow_to_proto(packet, workflow, data)
     elif event.event_type == EventType.action:
         if event == WalkoffEvent.SendMessage:
             convert_send_message_to_protobuf(packet, sender, workflow, **kwargs)
@@ -235,7 +236,7 @@ class Worker:
             saved_state = walkoff.coredb.devicedb.device_db.session.query(SavedWorkflow).filter_by(
                 workflow_execution_id=workflow_execution_id).first()
             workflow._accumulator = saved_state.accumulator
-            workflow._instances = saved_state.app_instances
+            workflow._instance_repo = AppInstanceRepo(saved_state.app_instances)
 
         self.workflows[threading.current_thread().name] = workflow
 
