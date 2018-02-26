@@ -44,21 +44,21 @@ def __workflow_event_stream():
         __workflow_signal.wait()
 
 
-def format_action_data(sender, kwargs, timestamp_type, status):
+def format_action_data(sender, kwargs, status):
     action_arguments = [convert_action_argument(argument) for argument in sender.get('arguments', [])]
     return {'action_name': sender['action_name'],
             'app_name': sender['app_name'],
             'action_id': sender['id'],
             'name': sender['name'],
             'execution_id': sender['execution_id'],
-            timestamp_type: datetime.utcnow().isoformat(),
+            'timestamp': datetime.utcnow().isoformat(),
             'status': status.name,
             'arguments': action_arguments,
             'workflow_execution_id': kwargs['data']['workflow']['execution_id']}
 
 
-def format_action_data_with_results(sender, kwargs, timestamp_type, status):
-    result = format_action_data(sender, kwargs, timestamp_type, status)
+def format_action_data_with_results(sender, kwargs, status):
+    result = format_action_data(sender, kwargs, status)
     result['result'] = kwargs['data']['data']['result']
     return result
 
@@ -73,13 +73,13 @@ def send_action_result_to_sse(result, event):
 
 @WalkoffEvent.ActionStarted.connect
 def __action_started_callback(sender, **kwargs):
-    result = format_action_data(sender, kwargs, 'started_at', ActionStatusEnum.executing)
+    result = format_action_data(sender, kwargs, ActionStatusEnum.executing)
     send_action_result_to_sse(result, 'started')
 
 
 @WalkoffEvent.ActionExecutionSuccess.connect
 def __action_ended_callback(sender, **kwargs):
-    result = format_action_data_with_results(sender, kwargs, 'completed_at', ActionStatusEnum.success)
+    result = format_action_data_with_results(sender, kwargs, ActionStatusEnum.success)
     send_action_result_to_sse(result, 'success')
 
 
@@ -94,7 +94,7 @@ def __action_args_invalid_callback(sender, **kwargs):
 
 
 def __handle_action_error(sender, kwargs):
-    result = format_action_data_with_results(sender, kwargs, 'completed_at', ActionStatusEnum.failure)
+    result = format_action_data_with_results(sender, kwargs, ActionStatusEnum.failure)
     send_action_result_to_sse(result, 'failure')
 
 
