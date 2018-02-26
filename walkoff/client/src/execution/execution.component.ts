@@ -9,6 +9,7 @@ import 'rxjs/add/operator/debounceTime';
 
 import { ExecutionService } from './execution.service';
 import { AuthService } from '../auth/auth.service';
+import { UtilitiesService } from '../utilities.service';
 
 import { WorkflowStatus } from '../models/execution/workflowStatus';
 import { WorkflowStatusEvent } from '../models/execution/workflowStatusEvent';
@@ -17,7 +18,7 @@ import { ActionStatusEvent } from '../models/execution/actionStatusEvent';
 import { Argument } from '../models/playbook/argument';
 import { GenericObject } from '../models/genericObject';
 import { CurrentAction } from '../models/execution/currentAction';
-import { UtilitiesService } from '../utilities.service';
+import { ActionStatus } from '../models/execution/actionStatus';
 
 @Component({
 	selector: 'execution-component',
@@ -32,7 +33,6 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 	@ViewChild('actionStatusContainer') actionStatusContainer: ElementRef;
 	@ViewChild('actionStatusTable') actionStatusTable: DatatableComponent;
 
-	utils = new UtilitiesService();
 	schedulerStatus: string;
 	workflowStatuses: WorkflowStatus[] = [];
 	displayWorkflowStatuses: WorkflowStatus[] = [];
@@ -52,7 +52,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 
 	constructor(
 		private executionService: ExecutionService, private authService: AuthService, private cdr: ChangeDetectorRef,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig, private utils: UtilitiesService,
 	) {}
 
 	/**
@@ -125,6 +125,9 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 		this.executionService
 			.getWorkflowStatusList()
 			.then(workflowStatuses => {
+				workflowStatuses.forEach(workflowStatus => {
+					this.calculateLocalizedTimes(workflowStatus);
+				});
 				this.displayWorkflowStatuses = this.workflowStatuses = workflowStatuses;
 				this.recalculateRelativeTimes();
 			})
@@ -195,8 +198,12 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 					this.toastyService.warning(`Unknown Workflow Status SSE Type: ${message.type}.`);
 					break;
 			}
+
+			this.calculateLocalizedTimes(matchingWorkflowStatus);
 		} else {
-			this.workflowStatuses.push(WorkflowStatusEvent.toNewWorkflowStatus(workflowStatusEvent));
+			const newWorkflowStatus = WorkflowStatusEvent.toNewWorkflowStatus(workflowStatusEvent);
+			this.calculateLocalizedTimes(newWorkflowStatus);
+			this.workflowStatuses.push(newWorkflowStatus);
 			// Induce change detection by slicing array
 			this.workflowStatuses = this.workflowStatuses.slice();
 		}
@@ -260,6 +267,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 					case 'success':
 					case 'failure':
 						matchingActionStatus.completed_at = actionStatusEvent.timestamp;
+						matchingActionStatus.result = actionStatusEvent.result;
 						this.actionStatusCompletedRelativeTimes[matchingActionStatus.execution_id] =
 							this.utils.getRelativeLocalTime(actionStatusEvent.timestamp);
 						break;
@@ -267,8 +275,12 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 						this.toastyService.warning(`Unknown Action Status SSE Type: ${message.type}.`);
 						break;
 				}
+
+				this.calculateLocalizedTimes(matchingActionStatus);
 			} else {
-				this.loadedWorkflowStatus.action_statuses.push(ActionStatusEvent.toNewActionStatus(actionStatusEvent));
+				const newActionStatus = ActionStatusEvent.toNewActionStatus(actionStatusEvent);
+				this.calculateLocalizedTimes(newActionStatus);
+				this.loadedWorkflowStatus.action_statuses.push(newActionStatus);
 				// Induce change detection by slicing array
 				this.loadedWorkflowStatus.action_statuses = this.loadedWorkflowStatus.action_statuses.slice();
 			}
@@ -354,8 +366,13 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 		} else {
 			actionResultsPromise = this.executionService.getWorkflowStatus(workflowStatus.execution_id)
 				.then(fullWorkflowStatus => {
+					this.calculateLocalizedTimes(fullWorkflowStatus);
+					fullWorkflowStatus.action_statuses.forEach(actionStatus => {
+						this.calculateLocalizedTimes(actionStatus);
+					});
 					this.loadedWorkflowStatus = fullWorkflowStatus;
 					this.recalculateRelativeTimes();
+					
 				})
 				.catch(e => this.toastyService
 					.error(`Error loading action results for "${workflowStatus.name}": ${e.message}`));
@@ -476,5 +493,18 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 					this.utils.getRelativeLocalTime(actionStatus.completed_at);
 			}
 		});
+	}
+
+	/**
+	 * Adds/updates localized time strings to a status object.
+	 * @param status Workflow or Action Status to mutate
+	 */
+	calculateLocalizedTimes(status: WorkflowStatus | ActionStatus): void {
+		if (status.started_at) { 
+			status.localized_started_at = this.utils.getLocalTime(status.started_at);
+		}
+		if (status.completed_at) { 
+			status.localized_completed_at = this.utils.getLocalTime(status.completed_at);
+		}
 	}
 }

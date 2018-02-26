@@ -31,14 +31,14 @@
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Started At" prop="started_at" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				<span [title]="utils.getLocalTime(row.started_at)">
+				<span [title]="row.localized_started_at">
 					{{workflowStatusStartedRelativeTimes[row.execution_id]}}
 				</span>
 			</ng-template>
 		</ngx-datatable-column>
 		<ngx-datatable-column name="Completed At" prop="completed_at" [flexGrow]="1">
 			<ng-template let-row="row" ngx-datatable-cell-template>
-				<span [title]="utils.getLocalTime(row.completed_at)">
+				<span [title]="row.localized_completed_at">
 					{{workflowStatusCompletedRelativeTimes[row.execution_id]}}
 				</span>
 			</ng-template>
@@ -91,14 +91,14 @@
 						<ngx-datatable-column name="Action Name" prop="action_name" [flexGrow]="1"></ngx-datatable-column>
 						<ngx-datatable-column name="Started At" prop="started_at" [flexGrow]="1">
 							<ng-template let-row="row" ngx-datatable-cell-template>
-								<span [title]="utils.getLocalTime(row.started_at)">
+								<span [title]="row.localized_started_at">
 									{{actionStatusStartedRelativeTimes[row.execution_id]}}
 								</span>
 							</ng-template>
 						</ngx-datatable-column>
 						<ngx-datatable-column name="Completed At" prop="completed_at" [flexGrow]="1">
 							<ng-template let-row="row" ngx-datatable-cell-template>
-								<span [title]="utils.getLocalTime(row.completed_at)">
+								<span [title]="row.localized_completed_at">
 									{{actionStatusCompletedRelativeTimes[row.execution_id]}}
 								</span>
 							</ng-template>

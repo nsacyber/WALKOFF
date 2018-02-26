@@ -18,4 +18,7 @@ export class WorkflowStatus {
 	status: string; 
 	current_action?: CurrentAction;
 	action_statuses?: ActionStatus[] = [];
+
+	localized_started_at?: string;
+	localized_completed_at?: string;
 }

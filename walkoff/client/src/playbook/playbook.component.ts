@@ -5,9 +5,11 @@ import { Component, ViewEncapsulation, ViewChild, ElementRef, ChangeDetectorRef,
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { DatatableComponent } from '@swimlane/ngx-datatable';
 import { UUID } from 'angular2-uuid';
+import { Observable } from 'rxjs';
 
 import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
+import { UtilitiesService } from '../utilities.service';
 
 import { AppApi } from '../models/api/appApi';
 import { ActionApi } from '../models/api/actionApi';
@@ -67,6 +69,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	actionStatuses: ActionStatus[] = [];
 	executionResultsComponentWidth: number;
 	waitingOnData: boolean = false;
+	actionStatusStartedRelativeTimes: { [key: string]: string } = {};
+	actionStatusCompletedRelativeTimes: { [key: string]: string } = {};
 
 	// Simple bootstrap modal params
 	modalParams: {
@@ -94,7 +98,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	constructor(
 		private playbookService: PlaybookService, private authService: AuthService,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
-		private cdr: ChangeDetectorRef,
+		private cdr: ChangeDetectorRef, private utils: UtilitiesService,
 	) {}
 
 	/**
@@ -110,6 +114,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 		this.getActionStatusSSE();
 		this.getPlaybooksWithWorkflows();
 		this._addCytoscapeEventBindings();
+
+		Observable.interval(30000).subscribe(() => {
+			this.recalculateRelativeTimes();
+		});
 	}
 
 	/**
@@ -189,17 +197,26 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 			switch (message.type) {
 				case 'started':
 					matchingActionStatus.started_at = actionStatusEvent.timestamp;
+					this.actionStatusStartedRelativeTimes[matchingActionStatus.execution_id] =
+						this.utils.getRelativeLocalTime(actionStatusEvent.timestamp);
 					break;
 				case 'success':
 				case 'failure':
 					matchingActionStatus.completed_at = actionStatusEvent.timestamp;
+					matchingActionStatus.result = actionStatusEvent.result;
+					this.actionStatusCompletedRelativeTimes[matchingActionStatus.execution_id] =
+						this.utils.getRelativeLocalTime(actionStatusEvent.timestamp);
 					break;
 				default:
 					this.toastyService.warning(`Unknown Action Status SSE Type: ${message.type}.`);
 					break;
 			}
+
+			this.calculateLocalizedTimes(matchingActionStatus);
 		} else {
-			this.actionStatuses.push(ActionStatusEvent.toNewActionStatus(actionStatusEvent));
+			const newActionStatus = ActionStatusEvent.toNewActionStatus(actionStatusEvent);
+			this.calculateLocalizedTimes(newActionStatus);
+			this.actionStatuses.push(newActionStatus);
 		}
 		// Induce change detection by slicing array
 		this.actionStatuses = this.actionStatuses.slice();
@@ -1403,5 +1420,36 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	 */
 	removeWhitespace(input: string): string {
 		return input.replace(/\s/g, '');
+	}
+
+	/**
+	 * Recalculates the relative times shown for start/end date timestamps (e.g. '5 hours ago').
+	 */
+	recalculateRelativeTimes(): void {
+		if (!this.actionStatuses || !this.actionStatuses.length ) { return; }
+
+		this.actionStatuses.forEach(actionStatus => {
+			if (actionStatus.started_at) {
+				this.actionStatusStartedRelativeTimes[actionStatus.execution_id] = 
+					this.utils.getRelativeLocalTime(actionStatus.started_at);
+			}
+			if (actionStatus.completed_at) {
+				this.actionStatusCompletedRelativeTimes[actionStatus.execution_id] = 
+					this.utils.getRelativeLocalTime(actionStatus.completed_at);
+			}
+		});
+	}
+
+	/**
+	 * Adds/updates localized time strings to a status object.
+	 * @param status Action Status to mutate
+	 */
+	calculateLocalizedTimes(status: ActionStatus): void {
+		if (status.started_at) { 
+			status.localized_started_at = this.utils.getLocalTime(status.started_at);
+		}
+		if (status.completed_at) { 
+			status.localized_completed_at = this.utils.getLocalTime(status.completed_at);
+		}
 	}
 }

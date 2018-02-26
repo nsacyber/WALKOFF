@@ -16,4 +16,7 @@ export class ActionStatus {
 	completed_at?: string;
 	arguments: Argument[] = [];
 	result?: any;
+
+	localized_started_at?: string;
+	localized_completed_at?: string;
 }
