@@ -10,7 +10,7 @@ export class MainService {
 	constructor (private authHttp: JwtHttp) { }
 
 	/**
-	 * Returns a list of imported interface names from the server.
+	 * Asyncryonously returns a list of imported interface names from the server.
 	 */
 	getInterfaceNames(): Promise<string[]> {
 		return this.authHttp.get('/api/interfaces')
@@ -20,7 +20,7 @@ export class MainService {
 	}
 
 	/**
-	 * Returns a listing of initial notifications for the initial WALKOFF page load.
+	 * Asyncronously returns a listing of initial notifications for the initial WALKOFF page load.
 	 * Should return only a subset of notifications if many unread notifications exist.
 	 * Will fill up to 5 read notifications if unread notifications do not exist.
 	 */
@@ -33,7 +33,7 @@ export class MainService {
 	}
 
 	/**
-	 * Retrieves a message by ID, marks it as read, and returns the message data.
+	 * Asyncronouly retrieves a message by ID, marks it as read, and returns the message data.
 	 * @param messageId DB ID of message to retrieve
 	 */
 	getMessage(messageId: number): Promise<Message> {

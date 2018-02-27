@@ -8,6 +8,7 @@ from .exceptions import UnknownEvent, InvalidEventHandler
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.helpers import get_function_arg_names
 import warnings
+from walkoff.executiondb.representable import Representable
 
 _logger = logging.getLogger(__name__)
 
@@ -76,14 +77,22 @@ class InterfaceEventDispatcher(object):
         """
         def dispatch_method(sender, **kwargs):
             if event.event_type != EventType.controller:
-                data = deepcopy(sender)
+                if not isinstance(sender, dict) and isinstance(sender, Representable):
+                    data = sender.read()
+                else:
+                    data = deepcopy(sender)
                 additional_data = deepcopy(kwargs)
                 additional_data.pop('cls', None)
+                if 'data' in additional_data and 'workflow' in additional_data['data']:
+                    additional_data['workflow'] = additional_data['data'].pop('workflow')
+                    if not additional_data['data']:
+                        additional_data.pop('data')
                 data.update(additional_data)
                 if 'id' in data:
                     data['sender_id'] = data.pop('id')
                 if 'name' in data:
                     data['sender_name'] = data.pop('name')
+
             else:
                 data = None
             cls.event_dispatcher.dispatch(event, data)

@@ -4,32 +4,30 @@ import walkoff.appgateway
 import walkoff.case.database as case_database
 import walkoff.case.subscription as case_subscription
 import walkoff.config.config
-import walkoff.controller
-import walkoff.core.multiprocessedexecutor
-from walkoff.core.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
+from walkoff.multiprocessedexecutor import multiprocessedexecutor
 from tests import config
 from tests.util.mock_objects import *
 import walkoff.config.paths
-from tests.util import device_db_help
+from tests.util import execution_db_help
 
 
 class TestExecutionEvents(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
         walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
-        MultiprocessedExecutor.initialize_threading = mock_initialize_threading
-        MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
-        MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
-        walkoff.controller.controller.initialize_threading()
+        multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
+        multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
+        multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
+        multiprocessedexecutor.multiprocessedexecutor.initialize_threading()
 
     def setUp(self):
-        self.c = walkoff.controller.controller
+        self.executor = multiprocessedexecutor.multiprocessedexecutor
         case_database.initialize()
 
     def tearDown(self):
-        device_db_help.cleanup_device_db()
+        execution_db_help.cleanup_device_db()
 
         case_database.case_db.session.query(case_database.Event).delete()
         case_database.case_db.session.query(case_database.Case).delete()
@@ -39,17 +37,17 @@ class TestExecutionEvents(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
-        walkoff.controller.controller.shutdown_pool()
-        device_db_help.tear_down_device_db()
+        multiprocessedexecutor.multiprocessedexecutor.shutdown_pool()
+        execution_db_help.tear_down_device_db()
 
     def test_workflow_execution_events(self):
-        workflow = device_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
+        workflow = execution_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         subs = {'case1': {str(workflow.id): [WalkoffEvent.AppInstanceCreated.signal_name,
-                                        WalkoffEvent.WorkflowShutdown.signal_name]}}
+                                             WalkoffEvent.WorkflowShutdown.signal_name]}}
         case_subscription.set_subscriptions(subs)
-        self.c.execute_workflow(workflow.id)
+        self.executor.execute_workflow(workflow.id)
 
-        self.c.wait_and_reset(1)
+        self.executor.wait_and_reset(1)
         execution_events = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'case1').first().events.all()
 
@@ -58,15 +56,15 @@ class TestExecutionEvents(unittest.TestCase):
                          'Expected {0}, got {1}'.format(2, len(execution_events)))
 
     def test_action_execution_events(self):
-        workflow = device_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-        action_ids = [str(action.id) for action in workflow.actions]
+        workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        action_ids = [str(action_id) for action_id in workflow.actions]
         action_events = [WalkoffEvent.ActionExecutionSuccess.signal_name, WalkoffEvent.ActionStarted.signal_name]
         subs = {'case1': {action_id: action_events for action_id in action_ids}}
         case_subscription.set_subscriptions(subs)
 
-        self.c.execute_workflow(workflow.id)
+        self.executor.execute_workflow(workflow.id)
 
-        self.c.wait_and_reset(1)
+        self.executor.wait_and_reset(1)
 
         execution_events = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'case1').first().events.all()

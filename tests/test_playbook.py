@@ -1,28 +1,25 @@
 import unittest
 
-import walkoff
-from walkoff.coredb.playbook import Playbook
-from walkoff.coredb.workflow import Workflow
+from walkoff.executiondb.playbook import Playbook
+from walkoff.executiondb.workflow import Workflow
 from tests.util.assertwrappers import orderless_list_compare
-import walkoff.config.paths
-from tests.util import device_db_help
+from tests.util import execution_db_help
 
 
 class TestPlaybook(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
         
     @classmethod
     def tearDownClass(cls):
-        from walkoff.coredb import devicedb
-        devicedb.device_db.tear_down()
+        execution_db_help.tear_down_device_db()
 
     def setUp(self):
         self.added_workflows = ['wf_name', '0', '1', '2', 'test2', 'new_name']
 
     def tearDown(self):
-        device_db_help.cleanup_device_db()
+        execution_db_help.cleanup_device_db()
 
     def test_init(self):
         playbook = Playbook('test')

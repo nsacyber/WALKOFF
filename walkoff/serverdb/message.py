@@ -18,16 +18,16 @@ class Message(db.Model):
     body = db.Column(db.String(), nullable=False)
     users = db.relationship('User', secondary=user_messages_association,
                             backref=db.backref('messages', lazy='dynamic'))
-    workflow_execution_uid = db.Column(db.String(25))
+    workflow_execution_id = db.Column(db.String(25))
     requires_reauth = db.Column(db.Boolean, default=False)
     requires_response = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=func.current_timestamp())
     history = db.relationship('MessageHistory', backref='message', lazy=True)
 
-    def __init__(self, subject, body, workflow_execution_uid, users, requires_reauth=False, requires_response=False):
+    def __init__(self, subject, body, workflow_execution_id, users, requires_reauth=False, requires_response=False):
         self.subject = subject
         self.body = body
-        self.workflow_execution_uid = workflow_execution_uid
+        self.workflow_execution_id = workflow_execution_id
         self.users = users
         self.requires_reauth = requires_reauth
         self.requires_response = requires_response
@@ -84,7 +84,7 @@ class Message(db.Model):
             ret['last_read_at'] = str(self.user_last_read_at(user))
         if not summary:
             ret.update({'body': json.loads(self.body),
-                        'workflow_execution_uid': self.workflow_execution_uid,
+                        'workflow_execution_id': self.workflow_execution_id,
                         'requires_reauthorization': self.requires_reauth,
                         'requires_response': self.requires_response})
             if responded:

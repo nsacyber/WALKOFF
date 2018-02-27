@@ -2,8 +2,8 @@ import unittest
 
 import walkoff.appgateway
 import walkoff.config.config
-from walkoff.coredb.argument import Argument
-from walkoff.coredb.transform import Transform
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.transform import Transform
 from walkoff.helpers import UnknownTransform, InvalidArgument
 from tests.config import test_apps_path
 

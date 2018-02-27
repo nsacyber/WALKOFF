@@ -88,6 +88,17 @@ actions:
         description: successfully paused
         schema:
           type: number
+  wait_for_pause_and_resume:
+    run: main.Main.wait_for_pause_and_resume
+    returns:
+      Success:
+        description: successfully paused and resumed
+        schema:
+          type: string
+      Failure:
+        description: pause and resume were not found
+        schema:
+          type: string
   Buggy:
     run: main.Main.buggy_action
     description: raises an exception

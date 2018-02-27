@@ -34,7 +34,8 @@ export class SchedulerModalComponent implements OnInit {
 	
 	constructor(
 		private schedulerService: SchedulerService, private activeModal: NgbActiveModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {}
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+	) {}
 
 	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
@@ -54,7 +55,6 @@ export class SchedulerModalComponent implements OnInit {
 			this.toastyService.error(validationMessage);
 			return;
 		}
-
 		this.convertStringsToInt(this.workingScheduledTask.task_trigger.args);
 
 		//If device has an ID, device already exists, call update
@@ -160,9 +160,9 @@ export class SchedulerModalComponent implements OnInit {
 	convertStringsToInt(args: any): void {
 		if (typeof(args) !== 'object') { return; }
 		for (const [key, value] of Object.entries(args)) {
-			const newVal = +value;
-			if (typeof(value) !== 'string') { return; }
-			args[key] = newVal;
+			if (key === 'start_date' || key === 'end_date') { return; }
+			if (isNaN(value)) { return; }
+			args[key] = +value;
 		}
 	}
 }

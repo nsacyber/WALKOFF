@@ -2,38 +2,43 @@ import unittest
 
 import walkoff.appgateway
 import walkoff.config.config
-from walkoff.coredb.argument import Argument
-from walkoff.coredb.condition import Condition
-from walkoff.coredb.transform import Transform
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.condition import Condition
+from walkoff.executiondb.transform import Transform
 from walkoff.helpers import InvalidArgument
 from tests.config import test_apps_path
 import walkoff.config.paths
-from tests.util import device_db_help
+from tests.util import execution_db_help
 
 
 class TestCondition(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
         walkoff.appgateway.clear_cache()
         walkoff.appgateway.cache_apps(path=test_apps_path)
         walkoff.config.config.load_app_apis(test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
-        device_db_help.tear_down_device_db()
+        execution_db_help.tear_down_device_db()
         walkoff.appgateway.clear_cache()
 
-    def __compare_init(self, condition, app_name, action_name, transforms, arguments=None):
+    def __compare_init(self, condition, app_name, action_name, transforms, arguments=None, is_negated=False):
         self.assertEqual(condition.app_name, app_name)
         self.assertEqual(condition.action_name, action_name)
         self.assertEqual(len(condition.transforms), len(transforms))
         self.assertListEqual(condition.transforms, transforms)
         self.assertListEqual(condition.arguments, arguments)
+        self.assertEqual(condition.is_negated, is_negated)
 
     def test_init_no_arguments_action_only(self):
         condition = Condition('HelloWorld', 'Top Condition')
         self.__compare_init(condition, 'HelloWorld', 'Top Condition', [], [])
+
+    def test_init_no_arguments_inverted(self):
+        condition = Condition('HelloWorld', 'Top Condition', is_negated=True)
+        self.__compare_init(condition, 'HelloWorld', 'Top Condition', [], [], is_negated=True)
 
     def test_init_with_arguments_with_conversion(self):
         condition = Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value='3')])
@@ -67,8 +72,12 @@ class TestCondition(unittest.TestCase):
     def test_execute_action_only_no_arguments_valid_data_with_conversion(self):
         self.assertTrue(Condition('HelloWorld', 'Top Condition').execute('3.4', {}))
 
+    def test_execute_action_only_no_arguments_valid_data_with_conversion_inverted(self):
+        self.assertFalse(Condition('HelloWorld', 'Top Condition', is_negated=True).execute('3.4', {}))
+
     def test_execute_action_only_no_arguments_invalid_data(self):
-        self.assertFalse(Condition('HelloWorld', 'Top Condition').execute('invalid', {}))
+        with self.assertRaises(InvalidArgument):
+            Condition('HelloWorld', 'Top Condition').execute('invalid', {})
 
     def test_execute_action_with_valid_arguments_valid_data(self):
         self.assertTrue(
@@ -80,9 +89,10 @@ class TestCondition(unittest.TestCase):
                                                                                                     {}))
 
     def test_execute_action_with_valid_arguments_invalid_data(self):
-        self.assertFalse(
-            Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value=3)]).execute('invalid',
-                                                                                                             {}))
+        with self.assertRaises(InvalidArgument):
+            Condition('HelloWorld',
+                      action_name='mod1_flag2',
+                      arguments=[Argument('arg1', value=3)]).execute('invalid', {})
 
     def test_execute_action_with_valid_arguments_and_transforms_valid_data(self):
         transforms = [Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='5')]),
@@ -96,8 +106,9 @@ class TestCondition(unittest.TestCase):
                       Transform('HelloWorld', action_name='Top Transform')]
         # should go <input = invalid> -> <mod1_filter2 with error = invalid> -> <Top Transform with error = invalid>
         # -> <mod1_flag2 4+invalid throws error> -> False
-        self.assertFalse(Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value=4)],
-                                   transforms=transforms).execute('invalid', {}))
+        with self.assertRaises(InvalidArgument):
+            Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value=4)],
+                      transforms=transforms).execute('invalid', {})
 
     def test_execute_action_with_valid_arguments_and_transforms_invalid_data_and_routing(self):
         transforms = [
@@ -106,5 +117,6 @@ class TestCondition(unittest.TestCase):
         # should go <input = invalid> -> <mod1_filter2 with error = invalid> -> <Top Transform with error = invalid>
         # -> <mod1_flag2 4+invalid throws error> -> False
         accumulator = {'action1': '5', 'action2': 4}
-        self.assertFalse(Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value=4)],
-                                   transforms=transforms).execute('invalid', accumulator))
+        with self.assertRaises(InvalidArgument):
+            Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value=4)],
+                      transforms=transforms).execute('invalid', accumulator)

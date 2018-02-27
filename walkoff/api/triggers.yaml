@@ -15,10 +15,10 @@
         required: true
         schema:
           type: object
-          required: [execution_uids, data_in]
+          required: [execution_ids, data_in]
           properties:
-            execution_uids:
-              description: Execution UIDs of currently paused workflows
+            execution_ids:
+              description: Execution IDs of currently paused workflows
               type: array
               items:
                 type: string
@@ -36,4 +36,4 @@
           type: array
           items:
             type: string
-            description: The execution UIDs of workflows that were sent data.
+            description: The execution IDs of workflows that were sent data.

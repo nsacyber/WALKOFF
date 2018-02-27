@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from walkoff.coredb.argument import Argument
+from walkoff.executiondb.argument import Argument
 from walkoff.helpers import InvalidArgument
 
 

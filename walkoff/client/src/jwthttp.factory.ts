@@ -2,6 +2,14 @@ import { Http, RequestOptions, Response } from '@angular/http';
 import { AuthConfig, tokenNotExpired } from 'angular2-jwt';
 import { JwtConfigService, JwtHttp, RefreshConfig } from 'angular2-jwt-refresh';
 
+/**
+ * Configures JWT authenticated HTTP requests used in various service calls as 'authHttp'.
+ * Will utilise the /api/auth/refresh endpoint to refresh our access token
+ * if we determine that the token is set to expire.
+ * If our refresh token is no longer valid, we will redirect the user to login.
+ * @param http Basic HTTP request provided by Angular
+ * @param options Basic HTTP request options provided by Angular
+ */
 export function GetJwtHttp(http: Http, options: RequestOptions) {
 	const jwtOptions: RefreshConfig = {
 		endPoint: '/api/auth/refresh',

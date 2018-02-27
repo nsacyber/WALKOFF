@@ -1,7 +1,7 @@
 import json
 import logging
 from sqlalchemy_utils import UUIDType
-from walkoff.core.scheduler import construct_trigger
+from walkoff.scheduler import construct_trigger
 from walkoff.extensions import db
 from walkoff.serverdb.mixins import TrackModificationsMixIn
 
@@ -82,11 +82,12 @@ class ScheduledTask(db.Model, TrackModificationsMixIn):
     def _start_workflows(self, trigger=None):
         from walkoff.server.flaskserver import running_context
         trigger = trigger if trigger is not None else construct_trigger(self._reconstruct_scheduler_args())
-        running_context.controller.schedule_workflows(self.id, self._get_workflow_ids_as_list(), trigger)
+        running_context.scheduler.schedule_workflows(self.id, running_context.executor.execute_workflow,
+                                                     self._get_workflow_ids_as_list(), trigger)
 
     def _stop_workflows(self):
         from walkoff.server.flaskserver import running_context
-        running_context.controller.scheduler.unschedule_workflows(self.id, self._get_workflow_ids_as_list())
+        running_context.scheduler.unschedule_workflows(self.id, self._get_workflow_ids_as_list())
 
     def _modify_workflows(self, json_in, trigger):
         from walkoff.server.flaskserver import running_context
@@ -99,13 +100,14 @@ class ScheduledTask(db.Model, TrackModificationsMixIn):
         if self.trigger_type != 'unspecified' and self.status == 'running':
             trigger = trigger if trigger is not None else construct_trigger(self._reconstruct_scheduler_args())
             if new:
-                running_context.controller.schedule_workflows(self.id, new, trigger)
+                running_context.scheduler.schedule_workflows(self.id, running_context.executor.execute_workflow, new,
+                                                             trigger)
             if removed:
-                running_context.controller.scheduler.unschedule_workflows(self.id, removed)
+                running_context.scheduler.unschedule_workflows(self.id, removed)
 
     def _update_scheduler(self, trigger):
         from walkoff.server.flaskserver import running_context
-        running_context.controller.scheduler.update_workflows(self.id, trigger)
+        running_context.scheduler.update_workflows(self.id, trigger)
 
     def _reconstruct_scheduler_args(self):
         return {'type': self.trigger_type, 'args': json.loads(self.trigger_args)}

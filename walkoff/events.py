@@ -18,8 +18,9 @@ class EventType(Enum):
     workflow = 3
     action = 4
     branch = 5
-    condition = 6
-    transform = 7
+    conditonalexpression = 6
+    condition = 7
+    transform = 8
     other = 256
 
 
@@ -77,6 +78,11 @@ class BranchSignal(WalkoffSignal):
         super(BranchSignal, self).__init__(name, EventType.branch, message=message)
 
 
+class ConditionalExpressionSignal(WalkoffSignal):
+    def __init__(self, name, message):
+        super(ConditionalExpressionSignal, self).__init__(name, EventType.conditonalexpression, message=message)
+
+
 class ConditionSignal(WalkoffSignal):
     def __init__(self, name, message):
         super(ConditionSignal, self).__init__(name, EventType.condition, message=message)
@@ -98,9 +104,11 @@ class WalkoffEvent(Enum):
     SchedulerJobExecuted = ControllerSignal('Job Executed', 'Job executed successfully', EVENT_JOB_EXECUTED)
     SchedulerJobError = ControllerSignal('Job Error', 'Job executed with error', EVENT_JOB_ERROR)
 
+    WorkflowExecutionPending = WorkflowSignal('Workflow Execution Pending', 'Workflow execution pending')
     WorkflowExecutionStart = WorkflowSignal('Workflow Execution Start', 'Workflow execution started')
     AppInstanceCreated = WorkflowSignal('App Instance Created', 'New app instance created')
     WorkflowShutdown = WorkflowSignal('Workflow Shutdown', 'Workflow shutdown')
+    WorkflowAborted = WorkflowSignal('Workflow Aborted', 'Workflow aborted')
     WorkflowArgumentsValidated = WorkflowSignal('Workflow Arguments Validated', 'Workflow arguments validated')
     WorkflowArgumentsInvalid = WorkflowSignal('Workflow Arguments Invalid', 'Workflow arguments invalid')
     WorkflowPaused = WorkflowSignal('Workflow Paused', 'Workflow paused')
@@ -117,6 +125,13 @@ class WalkoffEvent(Enum):
 
     BranchTaken = BranchSignal('Branch Taken', 'Branch taken')
     BranchNotTaken = BranchSignal('Branch Not Taken', 'Branch not taken')
+
+    ConditionalExpressionTrue = ConditionalExpressionSignal('Conditional Expression True',
+                                                            'Conditional expression evaluated true')
+    ConditionalExpressionFalse = ConditionalExpressionSignal('Conditional Expression False',
+                                                             'Conditional expression evaluated false')
+    ConditionalExpressionError = ConditionalExpressionSignal('Conditional Expression Error',
+                                                             'Error occurred while evaluating conditional expression')
 
     ConditionSuccess = ConditionSignal('Condition Success', 'Condition executed without error')
     ConditionError = ConditionSignal('Condition Error', 'Condition executed with error')
@@ -149,6 +164,7 @@ class WalkoffEvent(Enum):
     def requires_data(self):
         return (self in (WalkoffEvent.WorkflowShutdown,
                          WalkoffEvent.ActionExecutionError,
+                         WalkoffEvent.ActionArgumentsInvalid,
                          WalkoffEvent.ActionExecutionSuccess,
                          WalkoffEvent.SendMessage))
 

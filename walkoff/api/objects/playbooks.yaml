@@ -16,7 +16,7 @@ Playbook:
     additionalProperties: false
     properties:
       id:
-        $ref: '#/definitions/Uid'
+        $ref: '#/definitions/Uuid'
       name:
         type: string
       workflows:
@@ -36,7 +36,7 @@ CreateWorkflow:
       example: HelloWorldWorkflow
     start:
       description: ID of the starting action
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
     actions:
       description: The actions defined in this workflow.
       type: array
@@ -49,7 +49,7 @@ CreateWorkflow:
         $ref: '#/definitions/Branch'
     playbook_id:
       description: Only used when copying a workflow to a different playbook
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
 
 Workflow:
   type: object
@@ -58,14 +58,14 @@ Workflow:
   additionalProperties: false
   properties:
     id:
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
     name:
       description: The name of the workflow. Composed of both its enclosing playbook and its own name
       type: string
       example: HelloWorldWorkflow
     start:
       description: ID of the starting action
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
     actions:
       description: The actions defined in this workflow.
       type: array
@@ -84,7 +84,7 @@ Action:
   additionalProperties: false
   properties:
     id:
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
       description: The ID of the object. If updating a workflow and the Action object already exists, ID is required. Otherwise, this ID must be UUID4.
     app_name:
       description: The app to which the action belongs
@@ -107,14 +107,11 @@ Action:
       type: array
       items:
         $ref: '#/definitions/Argument'
-    triggers:
-      description: String representation of a list of Trigger objects
-      type: array
-      items:
-        $ref: '#/definitions/Condition'
+    trigger:
+      description: The trigger condition
+      $ref: '#/definitions/ConditionalExpression'
     position:
       description: Position object representing various fields of the position of the Action in the playbook editor.
-      type: object
       $ref: '#/definitions/Position'
 
 Branch:
@@ -124,26 +121,50 @@ Branch:
   additionalProperties: false
   properties:
     id:
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
       description: The ID of the object. If updating a workflow and the Branch object already exists, ID is required. Otherwise, do not include it.
     source_id:
       description: The source Action ID for this Branch
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
     destination_id:
       description: The destination Action ID for this Branch, if the conditions evaluate to True
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
     priority:
-      description: The priority for this Branch, which will be compared to other Branches with the same source_uid Action, ascending, i.e. 1 is the highest priority.
+      description: The priority for this Branch, which will be compared to other Branches with the same source_id Action, ascending, i.e. 1 is the highest priority.
       type: integer
     status:
       description: The status return code to use
       type: string
       example: Success
+    condition:
+      description: List of condition to evaluate
+      $ref: '#/definitions/ConditionalExpression'
+
+
+ConditionalExpression:
+  type: object
+  description: Object which encapsulates Boolean logic
+  properties:
+    operator:
+      type: string
+      description: The operation to use which on the conditions
+      enum: [and, or, xor]
+      default: and
+    is_negated:
+      description: Should the result of this condition be negated? For example if the condition would return True, then invert it to return False.
+      type: boolean
+      default: false
     conditions:
-      description: List of conditions to evaluate
+      description: Base conditions to evaluate.
       type: array
       items:
         $ref: '#/definitions/Condition'
+    child_expressions:
+      description: Sub-expressions to evaluate.
+      type: array
+      items:
+        $ref: '#/definitions/ConditionalExpression'
+
 
 Argument:
   type: object
@@ -162,8 +183,8 @@ Argument:
       description: The value of the argument
       example: WALK(.*)
     reference:
+      $ref: '#/definitions/Uuid'
       description: The ID of the action whose output should be used
-      type: integer
     selection:
       description: >-
         The path to a subsection of the output of the action to use. For example [1, "a"] would use the second element
@@ -179,7 +200,7 @@ Condition:
   additionalProperties: false
   properties:
     id:
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
       description: The ID of the object. If updating a workflow and the Condition object already exists, ID is required. Otherwise, do not include it.
     app_name:
       description: The app to which the conditon belongs
@@ -194,6 +215,10 @@ Condition:
       type: array
       items:
         $ref: '#/definitions/Argument'
+    is_negated:
+      description: Should the result of this condition be negated? For example if the condition would return True, then invert it to return False.
+      type: boolean
+      default: false
     transforms:
       description: transforms for the data before passing it into the condition
       type: array
@@ -207,7 +232,7 @@ Transform:
   additionalProperties: false
   properties:
     id:
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
       description: The ID of the object. If updating a workflow and the Transform object already exists, ID is required. Otherwise, do not include it.
     app_name:
       description: The app to which the transform belongs
@@ -243,7 +268,7 @@ CopyWorkflow:
     type: object
     properties:
       playbook_id:
-        $ref: '#/definitions/Uid'
+        $ref: '#/definitions/Uuid'
       workflow_name:
         type: string
 
@@ -253,7 +278,7 @@ UpdatePlaybook:
   additionalProperties: false
   properties:
     id:
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
     name:
       type: string
       description: The new name of the playbook
