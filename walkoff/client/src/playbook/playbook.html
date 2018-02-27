@@ -72,7 +72,8 @@
             </button>
         </div>
         <label *ngIf="loadedWorkflow" id="currentWorkflowText">{{loadedPlaybook.name}} -</label>
-        <input *ngIf="loadedWorkflow" type="text" class="form-control workflowNameInput" [(ngModel)]="loadedWorkflow.name" name="name" required>
+        <input *ngIf="loadedWorkflow" type="text" class="form-control workflowNameInput" [(ngModel)]="loadedWorkflow.name" name="name"
+            required>
     </div>
     <!-- Graph editor -->
     <div class="row graphEditorRow">
@@ -80,11 +81,11 @@
         <div class="col-md-2 graphEditorColumn">
             <div class="panel-group" id="accordion" [hidden]="!loadedWorkflow">
                 <div *ngFor="let app of getAppsWithActions()" class="panel panel-default">
-                    <div class="panel-heading playbook-heading collapsed" data-toggle="collapse" [attr.data-target]="'#actionsCollapse' + app.name"
+                    <div class="panel-heading playbook-heading collapsed" data-toggle="collapse" [attr.data-target]="'#actionsCollapse' + removeWhitespace(app.name)"
                         [title]="app.info ? app.info.description : ''">
                         <h4 class="panel-title">{{app.name}}</h4>
                     </div>
-                    <div id="actionsCollapse{{app.name}}" class="panel-collapse collapse">
+                    <div id="actionsCollapse{{removeWhitespace(app.name)}}" class="panel-collapse collapse">
                         <div class="panel-body">
                             <div *ngFor="let actionApi of app.action_apis" class="panel panel-default actionPanel" dnd-draggable [dragEnabled]="true"
                                 [dragData]="{ appName: app.name, actionApi: actionApi }" (dblclick)="handleDoubleClickEvent(app.name, actionApi.name)"
@@ -161,9 +162,23 @@
                 </div>
                 <!-- Triggers -->
                 <div>
-                    <h4>Trigger Conditions</h4>
-                    <playbook-conditions-component [conditions]="selectedAction.triggers" [appApis]="appApis" [loadedWorkflow]="loadedWorkflow"
-                        [selectedAppName]="selectedAction.app_name"></playbook-conditions-component>
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <h4>Trigger Condition</h4>
+                        </div>
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <button *ngIf="!selectedAction.trigger" class="btn btn-primary pull-right" (click)="specifyTrigger(selectedAction)">
+                                    <i class="fa fa-plus"></i>Specify Trigger Condition
+                                </button>
+                                <button *ngIf="selectedAction.trigger" class="btn btn-danger pull-right" (click)="removeTrigger(selectedAction)">
+                                    <i class="fa fa-close"></i>Remove Trigger Condition
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <playbook-conditional-expression-component *ngIf="selectedAction.trigger" [conditionalExpression]="selectedAction.trigger"
+                        [appApis]="appApis" [selectedAppName]="selectedAction.app_name" [loadedWorkflow]="loadedWorkflow"></playbook-conditional-expression-component>
                 </div>
             </div>
             <!-- Editor for Branches (edges) -->
@@ -185,9 +200,23 @@
                         required>
                 </div>
                 <div>
-                    <h4>Conditions</h4>
-                    <playbook-conditions-component [conditions]="selectedBranchParams.branch.conditions" [appApis]="appApis" [loadedWorkflow]="loadedWorkflow"
-                        [selectedAppName]="selectedBranchParams.appName"></playbook-conditions-component>
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <h4>Condition</h4>
+                        </div>
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <button *ngIf="!selectedBranchParams.branch.condition" class="btn btn-primary pull-right" (click)="specifyCondition(selectedBranchParams.branch)">
+                                    <i class="fa fa-plus"></i>Specify Condition
+                                </button>
+                                <button *ngIf="selectedBranchParams.branch.condition" class="btn btn-danger pull-right" (click)="removeCondition(selectedBranchParams.branch)">
+                                    <i class="fa fa-close"></i>Remove Condition
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <playbook-conditional-expression-component *ngIf="selectedBranchParams.branch.condition" [conditionalExpression]="selectedBranchParams.branch.condition"
+                        [appApis]="appApis" [selectedAppName]="selectedBranchParams.appName" [loadedWorkflow]="loadedWorkflow"></playbook-conditional-expression-component>
                 </div>
             </div>
         </div>
@@ -203,30 +232,28 @@
                     </button>
                 </div>
                 <div class="modal-body" #workflowResultsContainer>
-                    <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]="workflowResults" [sortType]="'multi'"
-                        [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]"
+                    <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]="actionStatuses" [sortType]="'multi'"
+                        [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'started_at', dir: 'desc'}]"
                         [limit]="10">
                         <!-- Column Templates -->
-                        <ngx-datatable-column name="Action ID" [flexGrow]="1">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                {{row.action_id}}
-                            </ng-template>
-                        </ngx-datatable-column>
-                        <ngx-datatable-column name="Action Name" [flexGrow]="1">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                {{row.action_name}}
-                            </ng-template>
-                        </ngx-datatable-column>
-                        <ngx-datatable-column name="Timestamp" [flexGrow]="1">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                {{row.timestamp}}
-                            </ng-template>
-                        </ngx-datatable-column>
-                        <ngx-datatable-column name="Status" [flexGrow]="1">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                {{row.status}}
-                            </ng-template>
-                        </ngx-datatable-column>
+                        <ngx-datatable-column name="Action ID" prop="action_id" [flexGrow]="1"></ngx-datatable-column>
+                        <ngx-datatable-column name="App Name" prop="app_name" [flexGrow]="1"></ngx-datatable-column>
+                        <ngx-datatable-column name="Action Name" prop="action_name" [flexGrow]="1"></ngx-datatable-column>
+						<ngx-datatable-column name="Started At" prop="started_at" [flexGrow]="1">
+							<ng-template let-row="row" ngx-datatable-cell-template>
+								<span [title]="row.localized_started_at">
+									{{actionStatusStartedRelativeTimes[row.execution_id]}}
+								</span>
+							</ng-template>
+						</ngx-datatable-column>
+						<ngx-datatable-column name="Completed At" prop="completed_at" [flexGrow]="1">
+							<ng-template let-row="row" ngx-datatable-cell-template>
+								<span [title]="row.localized_completed_at">
+									{{actionStatusCompletedRelativeTimes[row.execution_id]}}
+								</span>
+							</ng-template>
+						</ngx-datatable-column>
+                        <ngx-datatable-column name="Status" prop="status" [flexGrow]="1"></ngx-datatable-column>
                         <ngx-datatable-column name="Arguments" [sortable]="false" [flexGrow]="2">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 {{getFriendlyArguments(row.arguments)}}
@@ -289,7 +316,7 @@
                 <div class="modal-body">
                     <div class="panel-group" id="workflowAccordion">
                         <div *ngFor="let playbook of playbooks" class="panel panel-default">
-                            <div class="panel-heading playbook-heading" data-toggle="collapse" [attr.data-target]="'#loadWorkflowCollapse' + playbook.name">
+                            <div class="panel-heading playbook-heading" data-toggle="collapse" [attr.data-target]="'#loadWorkflowCollapse' + removeWhitespace(playbook.name)">
                                 <h4 class="panel-title">
                                     {{playbook.name}}
                                     <div class="pull-right">
@@ -305,7 +332,7 @@
                                     </div>
                                 </h4>
                             </div>
-                            <div id="loadWorkflowCollapse{{playbook.name}}" class="panel-collapse collapse">
+                            <div id="loadWorkflowCollapse{{removeWhitespace(playbook.name)}}" class="panel-collapse collapse">
                                 <div class="panel-body">
                                     <div *ngFor="let workflow of playbook.workflows" class="panel panel-default workflowPanel">
                                         <div class="panel-body">

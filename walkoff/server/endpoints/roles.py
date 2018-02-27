@@ -7,6 +7,7 @@ from walkoff.extensions import db
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions, admin_required
 from walkoff.server.decorators import with_resource_factory
+from walkoff.server.problem import Problem
 
 
 with_role = with_resource_factory('role', lambda role_id: Role.query.filter_by(id=role_id).first())
@@ -40,7 +41,11 @@ def create_role():
             return new_role.as_json(), OBJECT_CREATED
         else:
             current_app.logger.warning('Cannot add role {0}. Role already exists'.format(json_data['name']))
-            return {"error": "Role already exists."}, OBJECT_EXISTS_ERROR
+            return Problem.from_crud_resource(
+                OBJECT_EXISTS_ERROR,
+                'role',
+                'create',
+                'Role with name {} already exists'.format(json_data['name']))
 
     return __func()
 

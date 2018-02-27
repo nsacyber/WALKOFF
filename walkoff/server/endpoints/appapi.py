@@ -7,6 +7,7 @@ from walkoff.appgateway import is_app_action_bound
 from walkoff import helpers
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
+from walkoff.server.problem import Problem
 
 
 def read_all_apps():
@@ -38,10 +39,12 @@ def format_returns(api, with_event=False):
     for return_name, return_schema in api.items():
         return_schema.update({'status': return_name})
         ret_returns.append(return_schema)
-    ret_returns.extend([{'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'},
-                        {'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'}])
+    ret_returns.extend(
+        [{'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'},
+         {'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'}])
     if with_event:
-        ret_returns.append({'status': 'EventTimedOut', 'failure': True, 'description': 'Action timed out out waiting for event'})
+        ret_returns.append(
+            {'status': 'EventTimedOut', 'failure': True, 'description': 'Action timed out out waiting for event'})
     return ret_returns
 
 
@@ -115,6 +118,10 @@ def read_all_app_apis(field_name=None):
     return __func()
 
 
+def app_api_dne_problem(app_name):
+    return Problem(OBJECT_DNE_ERROR, 'Could not read app api.', 'App {} does not exist.'.format(app_name))
+
+
 def read_app_api(app_name):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
@@ -123,7 +130,7 @@ def read_app_api(app_name):
         if api is not None:
             return format_full_app_api(api, app_name), SUCCESS
         else:
-            return {'error': 'app not found'}, OBJECT_DNE_ERROR
+            return app_api_dne_problem(app_name)
 
     return __func()
 
@@ -136,6 +143,6 @@ def read_app_api_field(app_name, field_name):
         if api is not None:
             return format_full_app_api(api, app_name)[field_name], SUCCESS
         else:
-            return {'error': 'app not found'}, OBJECT_DNE_ERROR
+            return app_api_dne_problem(app_name)
 
     return __func()

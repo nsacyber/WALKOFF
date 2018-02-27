@@ -27,6 +27,7 @@
     operationId: walkoff.server.endpoints.playbooks.create_playbook
     consumes:
       - application/json
+      - multipart/form-data
     produces:
       - application/json
     parameters:
@@ -39,9 +40,14 @@
       - in: body
         name: body
         description: The playbook object to be created
-        required: true
+        required: false
         schema:
           $ref: '#/definitions/CreatePlaybook'
+      - in: formData
+        name: formData
+        description: The playbook file to be imported
+        required: false
+        type: file
     responses:
       201:
         description: Object created
@@ -90,10 +96,15 @@
       required: true
       type: string
       format: uuid
+    - in: query
+      name: mode
+      description: Specify mode as export to download the playbook file
+      type: string
+      required: false
   get:
     tags:
       - Playbooks
-    summary: Read a playbook
+    summary: Read or download a playbook
     description: ''
     operationId: walkoff.server.endpoints.playbooks.read_playbook
     produces:
@@ -109,6 +120,10 @@
           $ref: '#/definitions/Error'
       400:
         description: Invalid input error.
+        schema:
+          $ref: '#/definitions/Error'
+      515:
+        description: I/O error.
         schema:
           $ref: '#/definitions/Error'
   delete:
@@ -286,136 +301,21 @@
         schema:
           $ref: '#/definitions/Error'
 
-/playbooks/{playbook_id}/workflows/{workflow_id}/execute:
-  post:
+/uuid:
+  get:
     tags:
       - Workflows
-    summary: Execute a workflow
+    summary: Get a new UUID
     description: ''
-    operationId: walkoff.server.endpoints.playbooks.execute_workflow
-    parameters:
-      - name: playbook_id
-        in: path
-        description: 'The ID that needs to be fetched. '
-        required: true
-        type: string
-        format: uuid
-      - name: workflow_id
-        in: path
-        description: 'The ID that needs to be fetched. '
-        required: true
-        type: string
-        format: uuid
-      - name: body
-        in: body
-        schema:
-          type: object
-          properties:
-            start:
-              description: The ID of the starting action
-              type: integer
-            arguments:
-              type: array
-              items:
-                $ref: '#/definitions/Argument'
-    consumes:
-      - application/json
+    operationId: walkoff.server.endpoints.playbooks.get_uuid
     produces:
       - application/json
     responses:
-      202:
-        description: Success asynchronous.
-        schema:
-          $ref: '#/definitions/Uid'
-      404:
-        description: Playbook or workflow does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-      400:
-        description: Invalid input error.
-        schema:
-          $ref: '#/definitions/Error'
-
-/playbooks/{playbook_id}/workflows/{workflow_id}/pause:
-  post:
-    tags:
-      - Workflows
-    summary: Pause a workflow
-    description: ''
-    operationId: walkoff.server.endpoints.playbooks.pause_workflow
-    parameters:
-      - name: playbook_id
-        in: path
-        description: 'The ID that needs to be fetched. '
-        required: true
-        type: string
-        format: uuid
-      - name: workflow_id
-        in: path
-        description: 'The ID that needs to be fetched. '
-        required: true
-        type: string
-        format: uuid
-      - name: body
-        in: body
-        required: true
-        schema:
-          type: object
-          properties:
-            id:
-              $ref: '#/definitions/Uid'
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    responses:
-      200:
+      201:
         description: Success
-      404:
-        description: Playbook or workflow does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-
-/playbooks/{playbook_id}/workflows/{workflow_id}/resume:
-  post:
-    tags:
-      - Workflows
-    summary: Resume a workflow
-    description: ''
-    operationId: walkoff.server.endpoints.playbooks.resume_workflow
-    parameters:
-      - name: playbook_id
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
-        format: uuid
-      - name: workflow_id
-        in: path
-        description: 'The name that needs to be fetched. '
-        required: true
-        type: string
-        format: uuid
-      - name: body
-        in: body
-        required: true
         schema:
           type: object
+          required: [uuid]
           properties:
-            id:
-              $ref: '#/definitions/Uid'
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-      404:
-        description: Playbook or workflow does not exist.
-        schema:
-          $ref: '#/definitions/Error'
-      400:
-        description: Invalid UUID.
-        schema:
-          $ref: '#/definitions/Error'
+            uuid:
+              $ref: '#/definitions/Uuid'

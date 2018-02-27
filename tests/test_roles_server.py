@@ -19,7 +19,7 @@ class TestRolesServer(servertestcase.ServerTestCase):
 
     @classmethod
     def tearDownClass(cls):
-        walkoff.server.flaskserver.running_context.controller.shutdown_pool()
+        walkoff.server.flaskserver.running_context.executor.shutdown_pool()
 
     def test_read_all_roles_no_added_roles(self):
         response = self.get_with_status_check('/api/roles', headers=self.headers, status_code=SUCCESS)

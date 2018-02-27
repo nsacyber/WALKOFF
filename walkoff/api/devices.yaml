@@ -1,63 +1,3 @@
-/devices/import:
-  get:
-    tags:
-      - Devices
-    summary: Import devices
-    description: ''
-    operationId: walkoff.server.endpoints.devices.import_devices
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        description: The name of the JSON file to import. Defaults to ./data/appdevice.json
-        required: false
-        schema:
-          type: object
-          properties:
-            filename:
-              type: string
-              example: import_list.json
-    responses:
-      200:
-        description: Success
-      515:
-        description: Error reading file
-        schema:
-          $ref: '#/definitions/Error'
-      405:
-        description: Validation exception
-        schema:
-          $ref: '#/definitions/Error'
-/devices/export:
-  post:
-    tags:
-      - Devices
-    summary: Export devices
-    description: ''
-    operationId: walkoff.server.endpoints.devices.export_devices
-    produces:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        description: The name of the JSON file to export to. Defaults to ./data/appdevice.json
-        required: false
-        schema:
-          type: object
-          properties:
-            filename:
-              type: string
-              example: export_list.json
-    responses:
-      200:
-        description: Success
-      515:
-        description: Error writing to file
-        schema:
-          $ref: '#/definitions/Error'
 /devices/{device_id}:
   parameters:
     - in: path
@@ -65,10 +5,15 @@
       description: ID of the device
       type: integer
       required: true
+    - in: query
+      name: mode
+      description: Specify mode as export to download the device file
+      type: string
+      required: false
   get:
     tags:
       - Devices
-    summary: Get a device
+    summary: Read or download a device
     description: ''
     operationId: walkoff.server.endpoints.devices.read_device
     produces:
@@ -120,18 +65,24 @@
     operationId: walkoff.server.endpoints.devices.create_device
     consumes:
       - application/json
+      - multipart/form-data
     produces:
       - application/json
     parameters:
       - in: body
         name: body
         description: The new device object to be created
-        required: true
+        required: false
         schema:
           $ref: '#/definitions/AddDevice'
+      - in: formData
+        name: formData
+        description: The device file to be imported
+        required: false
+        type: file
     responses:
       201:
-        description: Success
+        description: Object created
         schema:
           $ref: '#/definitions/Device'
       400:

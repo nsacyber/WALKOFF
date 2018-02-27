@@ -3,17 +3,77 @@
      Contributor to describe changes -->
 
 
-## [Unreleased]
+## [0.7.0]
 ###### [unreleased]
+<!-- Commended out bullets are in development -->
+### Added
+<!--* An execution control page is now available on the user interface. This page
+  allows you to start, pause, resume, and abort workflows as well as displays
+  the status of all running and pending workflows.
+  * With this feature is a new resource named `workflowqueue` which is
+    available through the `/api/workflowqueue` endpoints-->
+* You now have the ability to use a full set of Boolean logic on conditions.
+  This means that on branches and triggers you can specify a list of conditions
+  which must all be true (AND operator), or a list of conditions of which any
+  must be true (OR operator), or a list of conditions of which exactly one must
+  be true (XOR operator). You can also negate conditions or have child
+  conditions. This new conditional structure is called a ConditionalExpression
+  and wraps the old Condition objects.
+* Playbooks can be exported to and imported from a JSON text file using the new
+  `GET /api/playbooks?mode=export` and the `POST /api/playbooks` using a
+  `multipart/form-data` body respectively.
+<!--* A new event was created on the notification SSE stream to alert the UI
+  when the current user has deleted a message. -->
 
 ### Changed
-* Removed workflow_version from playbook JSON
+* Significant changes to the REST API
+  * We have changed the HTTP verbs used for the REST API to reflect their more
+    widely-accepted RESTful usage. Specifically, the POST and PUT verbs have
+    been swapped for most of the endpoints.
+  <!--* Workflows are now accessed through the new `/api/workflows` endpoints
+    rather than the `/api/playbooks` endpoints-->
+  * The `/api/playbooks` and the `/api/workflows` endpoints now use the UUID
+    instead of the name.
+  * The `/api/playbook/{id}/copy` and the
+    `/api/playbooks/{id}/workflows/{id}/copy` endpoints are now accessed
+    through `POST /api/playbooks?source={id_to_copy}` and the
+    `POST /api/workflows?source={id_to_copy}` endpoints respectively.
+  <!--* Server-Sent Event streams are now located in the `/api/streams` endpoints-->
+  * Errors are now returned using the RFC 7807 Problem Details standard
+  * `/api/devices/import` and `/api/devices/export` endpoints have been
+    removed. Use the new `POST /api/devices` with `multipart/form-data` and
+    `GET /api/devices?mode=export` endpoints respectively.
+  <!--* The field `roles` in the `/api/users` endpoints which describes the list
+    of roles associated with the user has been renamed `role_ids`-->
+* Playbooks, workflows, and their associated execution elements are now stored
+  in the database which formerly only held the devices. The both greatly
+  increased scalability as well as simplified the interactions between the
+  server and the worker processes as well as increased scalability.
+* Paused workflows and workflows awaiting trigger data are now pickled
+  (serialized to binary) and stored in a database table. Before, a conditional
+  wait was used to pause the execution of a workflow. By storing the state to
+  the database, all threads on all worker processes are free to execute
+  workflows.
+<!--* Information about the workflow which sent events are now available in both
+  the Google Protocol Buffer messages as well as the arguments to callbacks
+  using the interface event dispatcher.-->
+<!--* All times are stored in UTC time and represented in ISO 8601 format-->
 
 ### Deprecated
 * The "sender_uids" argument in the interface dispatcher `on_xyz_event`
-  decorators is now a an alias for "sender_ids". This will be removed in
-  0.9.0
+  decorators is now an alias for "sender_ids". **This will be removed in
+  version 0.9.0**
 
+### Removed
+* The `/api/playbooks/{name}/workflows/{name}/save` endpoint has been removed.
+<!--* The `/api/playbooks/{name}/workflows/{name}/{execute/pause/resume}` endpoints
+  have been removed. Use the `/api/workflowqueue` resource instead-->
+* Removed `workflow_version` from the playbooks. This may be added later to
+  provide backwards-compatible import functionality to the workflows.
+<!--
+### Contributor
+* The minimum accepted unit test coverage for the Python backend is now 84%
+-->
 ## [0.6.7]
 ###### 2018-02-06
 

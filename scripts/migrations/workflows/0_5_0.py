@@ -6,7 +6,8 @@ import sys
 
 sys.path.append(os.path.abspath('.'))
 from walkoff.appgateway import is_app_action_bound
-from walkoff.coredb.devicedb import device_db, App
+from walkoff.executiondb.device import App
+from walkoff import executiondb
 from walkoff.helpers import get_app_action_api
 import walkoff.__version__ as walkoff_version
 
@@ -95,7 +96,7 @@ def convert_action_device(action):
 
 
 def convert_device_to_device_id(app_name, device_name, action_name):
-    app = device_db.session.query(App).filter(App.name == app_name).first()
+    app = executiondb.execution_db.session.query(App).filter(App.name == app_name).first()
     generic_error_ending = ('Devices are new held in field named "device_id" and are referenced by id rather than name.'
                             ' This will need to be changed manually.')
     if app is not None:

@@ -20,11 +20,22 @@ class AppCacheEntry(object):
     __slots__ = ['app_name', 'main', 'functions']
 
     def __init__(self, app_name):
+        """Creates a new AppCacheEntry object
+
+        Args:
+            app_name (str): The name of the app
+        """
         self.app_name = app_name
         self.main = None
         self.functions = {}
 
     def cache_app_class(self, app_class, app_path):
+        """Caches the app class
+
+        Args:
+            app_class (instance): Instance of the main method
+            app_path (str): Path to the app module
+        """
         if self.main is not None:
             _logger.warning(
                 'App {0} already has class defined as {1}. Overwriting it with {2}'.format(
@@ -50,7 +61,6 @@ class AppCacheEntry(object):
 
         Args:
             functions (list(tuple(func, set(WalkoffTag)))): The functions to cache
-            app_name (str): The name of the app associated with the function
             app_path (str): Path to the app module
         """
         for function_, tags in functions:
@@ -66,18 +76,51 @@ class AppCacheEntry(object):
             self.functions[qualified_action_name] = FunctionEntry(run=function_, is_bound=False, tags=tags)
 
     def clear_bound_functions(self):
+        """Clears any bounded functions from the object
+        """
         self.functions = {action_name: action for action_name, action in self.functions.items() if not action.is_bound}
 
     def is_bound(self, func_name):
+        """Checks if a function is bound
+
+        Args:
+            func_name (str): The name of the function
+
+        Returns:
+            True if the function is bound, False otherwise
+
+        Raises:
+            UnknownAppAction if the function name is not an existing function in the app
+        """
         try:
             return self.functions[func_name].is_bound
         except KeyError:
             raise UnknownAppAction(self.app_name, func_name)
 
     def get_tagged_functions(self, tag):
+        """Gets all tagged functions
+
+        Args:
+            tag (str): The tag to search by
+
+        Returns:
+            A list of function names with the provided tag
+        """
         return [function_name for function_name, entry in self.functions.items() if tag in entry.tags]
 
     def get_run(self, func_name, function_type):
+        """Gets the function executable
+
+        Args:
+            func_name (str): The name of the function
+            function_type (str): The type of the function
+
+        Returns:
+            The function executable
+
+        Raises:
+            Exception if the function type is not in the function entry tags
+        """
         func_entry = self.functions[func_name]
         if function_type in func_entry.tags:
             return func_entry.run
@@ -96,6 +139,7 @@ class AppCache(object):
                         WalkoffTag.transform: UnknownTransform}
 
     def __init__(self):
+        """Initializes a new AppCache object"""
         self._cache = {}
 
     def cache_apps(self, path):

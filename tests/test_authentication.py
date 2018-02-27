@@ -9,17 +9,17 @@ from walkoff.serverdb.tokens import BlacklistedToken
 from walkoff.serverdb.user import User
 from walkoff.serverdb import add_user
 from walkoff.extensions import db
-from tests.util import device_db_help
+from tests.util import execution_db_help
 
 
 class TestAuthorization(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
 
     @classmethod
     def tearDownClass(cls):
-        device_db_help.tear_down_device_db()
+        execution_db_help.tear_down_device_db()
 
     def setUp(self):
         import walkoff.server.flaskserver
@@ -27,6 +27,24 @@ class TestAuthorization(unittest.TestCase):
         self.app.testing = True
         self.context = walkoff.server.flaskserver.app.test_request_context()
         self.context.push()
+
+        from walkoff.serverdb import initialize_default_resources_admin, initialize_default_resources_guest, Role
+        db.create_all()
+
+        # Setup admin and guest roles
+        initialize_default_resources_admin()
+        initialize_default_resources_guest()
+
+        # Setup admin user
+        admin_role = Role.query.filter_by(id=1).first()
+        admin_user = User.query.filter_by(username="admin").first()
+        if not admin_user:
+            add_user(username='admin', password='admin', roles=[1])
+        elif admin_role not in admin_user.roles:
+            admin_user.roles.append(admin_role)
+
+        db.session.commit()
+
         self.admin_id = db.session.query(User).filter_by(username='admin').first().id
 
     def tearDown(self):
@@ -41,7 +59,7 @@ class TestAuthorization(unittest.TestCase):
     def test_as_json(self):
         token = BlacklistedToken(jti='some_jti', user_identity='user', expires=timedelta(minutes=5))
         self.assertDictEqual(token.as_json(),
-                             {'id': None, 'jti': 'some_jti', 'user': 'user', 'expires': timedelta(minutes=5)})
+                             {'id': None, 'jti': 'some_jti', 'user': 'user', 'expires': str(timedelta(minutes=5))})
 
     def test_login_authorization_has_correct_return_code(self):
         response = self.app.post('/api/auth', content_type="application/json",
@@ -198,7 +216,7 @@ class TestAuthorization(unittest.TestCase):
                                  data=json.dumps(dict(refresh_token=refresh_token)))
         refresh_token = decode_token(refresh_token)
         refresh_token_jti = refresh_token['jti']
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, NO_CONTENT)
         tokens = BlacklistedToken.query.filter_by(jti=refresh_token_jti).all()
         self.assertEqual(len(tokens), 1)
 

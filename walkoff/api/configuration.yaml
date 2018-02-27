@@ -24,6 +24,7 @@
       - application/json
     produces:
       - application/json
+
     parameters:
       - name: configuration
         in: body

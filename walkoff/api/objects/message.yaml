@@ -1,68 +1,43 @@
 Message:
   type: object
-  required: [id, body, subject, created_at, is_read, workflow_execution_uid, requires_reauthorization, requires_response,
-    awaiting_response]
   description: A message sent to a user
-  properties:
-    id:
-      description: Id of this message
-      type: integer
-      minimum: 1
-      readOnly: true
-      example: 42
-    subject:
-      description: Subject of this message
-      type: string
-      example: Remove user?
-      readOnly: true
-    body:
-      type: array
-      items:
-        $ref: "#/definitions/MessageComponent"
-      description: The body of the message. Each component is rendered in order
-      readOnly: true
-    workflow_execution_uid:
-      type: string
-      example: abd-12345-aaa
-      description: The UUID of the executing workflow
-      readOnly: true
-    requires_reauthorization:
-      type: boolean
-      default: false
-      description: Does the user need to reauthenticate to respond to this message?
-      readOnly: true
-    requires_response:
-      type: boolean
-      description: Does this message require a response
-      readOnly: true
-    is_read:
-      description: Has this message been read yet?
-      type: boolean
-      default: false
-    created_at:
-      description: UTC timestamp of message creation
-      type: string
-      format: date-time
-      readOnly: true
-    last_read_at:
-      description: UTC timestamp of when message was last read
-      type: string
-      format: date-time
-    awaiting_response:
-      description: Is this message awaiting a response
-      type: boolean
-    responded_at:
-      type: string
-      description: UTC timestamp of when the message was responded
-      format: date-time
-    responded_by:
-      type: string
-      description: username of user who responded to the action
-    read_by:
-      type: array
-      items:
-        type: string
-      description: usernames of users who have read the message
+  allOf:
+    - $ref: '#/definitions/MessageSummary'
+    - type: object
+      required: [body, workflow_execution_id, requires_reauthorization, requires_response]
+      properties:
+        body:
+          type: array
+          items:
+            $ref: "#/definitions/MessageComponent"
+          description: The body of the message. Each component is rendered in order
+          readOnly: true
+        workflow_execution_id:
+          type: string
+          example: abd-12345-aaa
+          description: The UUID of the executing workflow
+          readOnly: true
+        requires_reauthorization:
+          type: boolean
+          default: false
+          description: Does the user need to reauthenticate to respond to this message?
+          readOnly: true
+        requires_response:
+          type: boolean
+          description: Does this message require a response
+          readOnly: true
+        responded_at:
+          type: string
+          description: UTC timestamp of when the message was responded
+          format: date-time
+        responded_by:
+          type: string
+          description: username of user who responded to the action
+        read_by:
+          type: array
+          items:
+            type: string
+          description: usernames of users who have read the message
 
 MessageSummary:
   type: object
@@ -87,12 +62,12 @@ MessageSummary:
     created_at:
       description: UTC timestamp of message creation
       type: string
-      format: date-time
       readOnly: true
+      format: date-time
     last_read_at:
       description: UTC timestamp of when message was last read
-      format: date-time
       type: string
+      format: date-time
     awaiting_response:
       description: Is this message awaiting a response
       type: boolean

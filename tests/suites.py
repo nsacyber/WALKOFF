@@ -16,15 +16,15 @@ __server_tests = [test_workflow_server, test_app_api_server, test_case_server, t
                   test_users_server, test_message_history_database, test_message_db,
                   test_message, test_messaging_endpoints, test_workflow_authorization,
                   test_workflow_authorized_user_set, test_workflow_authorization_cache, test_trigger_helpers,
-                  test_system_server]
+                  test_system_server, test_workflow_status, test_problem]
 server_suite = TestSuite()
 add_tests_to_suite(server_suite, __server_tests)
 
 __execution_tests = [test_argument, test_execution_events, test_execution_modes,
                      test_action, test_helper_functions, test_transform, test_condition, test_branch,
-                     test_app_instance, test_controller, test_metrics,
+                     test_app_instance, test_metrics,
                      test_app_utilities, test_input_validation, test_decorators,
-                     test_app_api_validation, test_condition_transform_validation, test_workflow_results,
+                     test_app_api_validation, test_condition_transform_validation,
                      test_roles_pages_database, test_users_roles_database, test_playbook,
                      test_scheduler, test_walkoff_tag, test_app_cache, test_app_base]
 execution_suite = TestSuite()

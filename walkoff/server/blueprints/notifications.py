@@ -69,7 +69,7 @@ def message_read_callback(message, **data):
     send_sse({user.id for user in message.users}, NotificationSseEvent.read, result)
 
 
-@notifications_page.route('/stream', methods=['GET'])
+@notifications_page.route('/notifications', methods=['GET'])
 @jwt_required_in_query('access_token')
 def stream_workflow_success_events():
     user_id = get_jwt_identity()

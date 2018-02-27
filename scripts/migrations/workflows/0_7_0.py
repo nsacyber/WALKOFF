@@ -1,19 +1,19 @@
 import os
 import sys
-from copy import deepcopy
+import uuid
+
+from walkoff import executiondb
 
 sys.path.append(os.path.abspath('.'))
-import walkoff.coredb.devicedb
-from walkoff.coredb.argument import Argument
-from walkoff.coredb.action import Action
-from walkoff.coredb.branch import Branch
-from walkoff.coredb.condition import Condition
-from walkoff.coredb.playbook import Playbook
-from walkoff.coredb.transform import Transform
-from walkoff.coredb.workflow import Workflow
-from walkoff.coredb.position import Position
-
-# import walkoff.__version__ as walkoff_version
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.action import Action
+from walkoff.executiondb.branch import Branch
+from walkoff.executiondb.condition import Condition
+from walkoff.executiondb.playbook import Playbook
+from walkoff.executiondb.transform import Transform
+from walkoff.executiondb.workflow import Workflow
+from walkoff.executiondb.position import Position
+from walkoff.executiondb.conditionalexpression import ConditionalExpression
 
 down_version = "0.6.7"
 up_version = "0.7.0"
@@ -38,19 +38,22 @@ def upgrade_playbook(playbook):
 
     playbook_obj = Playbook(name=playbook['name'], workflows=workflows, id=playbook.get('uid', None))
 
-    walkoff.coredb.devicedb.device_db.session.add(playbook_obj)
-    walkoff.coredb.devicedb.device_db.session.commit()
+    executiondb.execution_db.session.add(playbook_obj)
+    executiondb.execution_db.session.commit()
 
 
 def upgrade_workflow(workflow):
     actions = []
+    action_map = {}
     for action in workflow['actions']:
-        actions.append(convert_action(action))
+        actions.append(convert_action(action, action_map))
 
     branches = []
     if 'branches' in workflow:
         for branch in workflow['branches']:
-            branches.append(convert_branch(branch, workflow['actions']))
+            branch_obj = convert_branch(branch, action_map)
+            if branch_obj:
+                branches.append(branch_obj)
 
     name = workflow['name'] if 'name' in workflow else None
 
@@ -59,10 +62,8 @@ def upgrade_workflow(workflow):
         print('WARNING: "start" is now a required field for workflows. Setting start for workflow {0} to {1}'.format(
             name, start))
     else:
-        start = workflow['start']
-        for action in actions:
-            if action.id == start:
-                break
+        if workflow['start'] in action_map:
+            start = action_map[workflow['start']]
         else:
             start = actions[0].id
             print('WARNING: "start" field does not refer to a valid action for workflow {0}. '
@@ -70,30 +71,31 @@ def upgrade_workflow(workflow):
 
     workflow_obj = Workflow(name=name, actions=actions, branches=branches, start=start, id=workflow.get('uid', None))
 
-    walkoff.coredb.devicedb.device_db.session.add(workflow_obj)
-    walkoff.coredb.devicedb.device_db.session.commit()
-
-    walkoff.coredb.devicedb.device_db.session.commit()
-
     return workflow_obj
 
 
-def convert_action(action):
-    action_copy = deepcopy(action)
-    action_copy.pop("id", None)
-    action_copy.pop("position", None)
+def convert_action(action, action_map):
+    uid = action.pop('uid')
+    try:
+        action_id = uuid.UUID(uid)
+        action_map[uid] = action_id
+    except Exception:
+        print("Action UID is not valid UUID, creating new UID")
+        action_id = uuid.uuid4()
+        action_map[uid] = action_id
 
     arguments = []
     if 'arguments' in action:
         for argument in action['arguments']:
             arguments.append(convert_arg(argument))
 
-    triggers = []
-    if 'triggers' in action:
-        for trigger in action['triggers']:
-            triggers.append(convert_condition(trigger))
+    trigger = None
+    if 'triggers' in action and len(action['triggers']) > 0:
+        trigger = ConditionalExpression()
+        for trig in action['triggers']:
+            trigger.conditions.append(convert_condition(trig))
 
-    name = action['name'] if 'name' in action else None
+    name = action['name'] if 'name' in action else action['action_name']
     device_id = action['device_id'] if 'device_id' in action else None
 
     x = None
@@ -103,18 +105,8 @@ def convert_action(action):
         y = action['position']['y']
     position = Position(x, y) if x and y else None
 
-    templated = action['templated'] if 'templated' in action else False
-
-    action_obj = Action(app_name=action['app_name'],
-                        action_name=action['action_name'],
-                        id=action.get('uid', None),
-                        name=name, device_id=device_id,
-                        position=position,
-                        arguments=arguments,
-                        triggers=triggers)
-
-    walkoff.coredb.devicedb.device_db.session.add(action_obj)
-    walkoff.coredb.devicedb.device_db.session.commit()
+    action_obj = Action(id=action_id, app_name=action['app_name'], action_name=action['action_name'], name=name,
+                        device_id=device_id, position=position, arguments=arguments, trigger=trigger)
 
     return action_obj
 
@@ -125,8 +117,6 @@ def convert_arg(arg):
     selection = arg['selection'] if 'selection' in arg else None
 
     arg_obj = Argument(name=arg['name'], value=value, reference=reference, selection=selection)
-    walkoff.coredb.devicedb.device_db.session.add(arg_obj)
-    walkoff.coredb.devicedb.device_db.session.commit()
 
     return arg_obj
 
@@ -142,14 +132,9 @@ def convert_condition(condition):
         for transform in condition['transforms']:
             transforms.append(convert_transform(transform))
 
-    condition_obj = Condition(app_name=condition['app_name'],
-                              action_name=condition['action_name'],
-                              id=condition.get('uid', None),
-                              arguments=arguments,
-                              transforms=transforms)
+    condition_obj = Condition(app_name=condition['app_name'], action_name=condition['action_name'],
+                              id=condition.get('uid', None), arguments=arguments, transforms=transforms)
 
-    walkoff.coredb.devicedb.device_db.session.add(condition_obj)
-    walkoff.coredb.devicedb.device_db.session.commit()
     return condition_obj
 
 
@@ -159,38 +144,35 @@ def convert_transform(transform):
         for argument in transform['arguments']:
             arguments.append(convert_arg(argument))
 
-    transform_obj = Transform(app_name=transform['app_name'],
-                              action_name=transform['action_name'],
-                              id=transform.get('uid', None),
-                              arguments=arguments)
+    transform_obj = Transform(app_name=transform['app_name'], action_name=transform['action_name'],
+                              id=transform.get('uid', None), arguments=arguments)
 
-    walkoff.coredb.devicedb.device_db.session.add(transform_obj)
-    walkoff.coredb.devicedb.device_db.session.commit()
     return transform_obj
 
 
-def convert_branch(branch, actions):
-    conditions = []
-    if 'conditions' in branch:
-        for condition in branch['conditions']:
-            conditions.append(convert_condition(condition))
+def convert_branch(branch, action_map):
+    condition = None
+    if 'conditions' in branch and len(branch['conditions']) > 0:
+        condition = ConditionalExpression()
+        for cond in branch['conditions']:
+            condition.conditions.append(convert_condition(cond))
 
-    source_id = None
-    destination_id = None
     status = branch['status'] if 'status' in branch else None
+    priority = branch['priority'] if 'priority' in branch else 999
 
-    for action in actions:
-        if action['prev_id'] == branch['source_id']:
-            source_id = action['id']
-        if action['prev_id'] == branch['destination_id']:
-            destination_id = action['id']
-
-    if 'priority' in branch:
-        branch_obj = Branch(source_id=source_id, destination_id=destination_id, status=status, conditions=conditions,
-                            priority=branch['priority'])
+    if branch['source_uid'] in action_map:
+        source_id = action_map[branch['source_uid']]
     else:
-        branch_obj = Branch(source_id=source_id, destination_id=destination_id, status=status, conditions=conditions)
+        print("Source ID not found in actions, skipping branch")
+        return None
 
-    walkoff.coredb.devicedb.device_db.session.add(branch_obj)
-    walkoff.coredb.devicedb.device_db.session.commit()
+    if branch['destination_uid'] in action_map:
+        destination_id = action_map[branch['destination_uid']]
+    else:
+        print("Destination ID not found in actions, skipping branch")
+        return None
+
+    branch_obj = Branch(source_id=source_id, destination_id=destination_id, status=status, condition=condition,
+                        priority=priority)
+
     return branch_obj

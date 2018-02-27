@@ -3,17 +3,17 @@ import unittest
 
 import walkoff.case.database as db
 import walkoff.case.subscription as subs
-from tests.util import device_db_help
+from tests.util import execution_db_help
 
 
 class TestCases(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
 
     @classmethod
     def tearDownClass(cls):
-        device_db_help.tear_down_device_db()
+        execution_db_help.tear_down_device_db()
         db.case_db.tear_down()
 
     def setUp(self):

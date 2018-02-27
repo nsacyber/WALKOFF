@@ -2,9 +2,9 @@ import json
 import unittest
 
 import walkoff.server.flaskserver as server
-from walkoff.core.scheduler import InvalidTriggerArgs
+from walkoff.scheduler import InvalidTriggerArgs
 from walkoff.serverdb import db
-from tests.util.device_db_help import setup_dbs
+from tests.util.execution_db_help import setup_dbs
 from walkoff.serverdb.scheduledtasks import ScheduledTask
 
 
@@ -22,15 +22,15 @@ class TestScheduledTask(unittest.TestCase):
         db.session.rollback()
         for task in db.session.query(ScheduledTask).all():
             db.session.delete(task)
-        server.running_context.controller.scheduler.scheduler.remove_all_jobs()
-        server.running_context.controller.scheduler.stop()
+        server.running_context.scheduler.scheduler.remove_all_jobs()
+        server.running_context.scheduler.stop()
         db.session.commit()
 
     def assertSchedulerWorkflowsRunningEqual(self, workflows=None):
         if workflows is None:
-            self.assertDictEqual(server.running_context.controller.scheduler.get_all_scheduled_workflows(), {})
+            self.assertDictEqual(server.running_context.scheduler.get_all_scheduled_workflows(), {})
         else:
-            scheduled_workflows = server.running_context.controller.scheduler.get_all_scheduled_workflows()
+            scheduled_workflows = server.running_context.scheduler.get_all_scheduled_workflows()
             self.assertSetEqual(set(scheduled_workflows['None']), set(workflows))
 
     def assertJsonIsCorrect(self, task, expected):

@@ -1,6 +1,6 @@
 import unittest
 
-from walkoff.coredb.devicedb import Device, UnknownDeviceField, DeviceField, EncryptedDeviceField
+from walkoff.executiondb.device import Device, UnknownDeviceField, DeviceField, EncryptedDeviceField
 
 
 class TestDeviceDatabase(unittest.TestCase):

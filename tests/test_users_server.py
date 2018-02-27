@@ -83,7 +83,7 @@ class TestUserServer(ServerTestCase):
         db.session.commit()
         data = {'id': user.id, 'old_password': 'incorrectpassword', 'password': 'changed!'}
         self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                    data=json.dumps(data), status_code=BAD_REQUEST)
+                                    data=json.dumps(data), status_code=UNAUTHORIZED_ERROR)
         self.assertTrue(user.verify_password('asdfghjkl;'))
 
     def put_patch_update_user_with_roles(self, verb):
@@ -160,7 +160,7 @@ class TestUserServer(ServerTestCase):
         db.session.commit()
         data = {'id': user.id, 'old_password': 'invalid', 'password': 'changed!', 'username': 'new_name'}
         self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                    data=json.dumps(data), status_code=BAD_REQUEST)
+                                    data=json.dumps(data), status_code=UNAUTHORIZED_ERROR)
         self.assertTrue(user.verify_password('whisperDieselEngine'))
         self.assertEqual(user.username, 'username')
 

@@ -4,30 +4,31 @@ import walkoff.appgateway
 import walkoff.config.config
 import walkoff.config.paths
 from walkoff.appgateway.appinstance import AppInstance
-from walkoff.coredb.argument import Argument
-from walkoff.core.actionresult import ActionResult
+from walkoff.executiondb.argument import Argument
+from walkoff.appgateway.actionresult import ActionResult
 from walkoff.events import WalkoffEvent
-from walkoff.coredb.action import Action
-from walkoff.coredb.condition import Condition
-from walkoff.coredb.position import Position
+from walkoff.executiondb.action import Action
+from walkoff.executiondb.condition import Condition
+from walkoff.executiondb.conditionalexpression import ConditionalExpression
+from walkoff.executiondb.position import Position
 from walkoff.helpers import UnknownApp, UnknownAppAction, InvalidArgument
 import tests.config
-from tests.util import device_db_help
+from tests.util import execution_db_help
 
 
 class TestAction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
         walkoff.appgateway.cache_apps(tests.config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
-        device_db_help.tear_down_device_db()
+        execution_db_help.tear_down_device_db()
 
-    def __compare_init(self, elem, app_name, action_name, name, device_id=None, arguments=None, triggers=None,
+    def __compare_init(self, elem, app_name, action_name, name, device_id=None, arguments=None, trigger=None,
                        position=None):
         self.assertEqual(elem.name, name)
         self.assertEqual(elem.action_name, action_name)
@@ -35,14 +36,13 @@ class TestAction(unittest.TestCase):
         self.assertEqual(elem.device_id, device_id)
         if arguments:
             self.assertListEqual(elem.arguments, arguments)
-        if triggers:
-            self.assertEqual(len(elem.triggers), len(triggers))
-            self.assertSetEqual({trigger.action_name for trigger in elem.triggers}, set(triggers))
+        if trigger:
+            self.assertEqual(elem.trigger.operator, trigger.operator)
         if position:
             self.assertEqual(elem.position.x, position.x)
             self.assertEqual(elem.position.y, position.y)
         self.assertIsNone(elem._output)
-        self.assertEqual(elem._execution_uid, 'default')
+        self.assertEqual(elem._execution_id, 'default')
 
     def test_init_default(self):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld')
@@ -56,9 +56,9 @@ class TestAction(unittest.TestCase):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld', position=Position(13, 42))
         self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', position=Position(13, 42))
 
-    def test_get_execution_uid(self):
+    def test_get_execution_id(self):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld')
-        self.assertEqual(action.get_execution_uid(), action._execution_uid)
+        self.assertEqual(action.get_execution_id(), action._execution_id)
 
     def test_init_app_action_only(self):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld')
@@ -99,10 +99,12 @@ class TestAction(unittest.TestCase):
             Action('HelloWorld', 'returnPlusOne', 'helloWorld', arguments=[Argument('number', value='invalid')])
 
     def test_init_with_triggers(self):
-        triggers = [Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='(.*)')]),
-                    Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='a')])]
-        action = Action('HelloWorld', 'helloWorld', 'helloWorld', triggers=triggers)
-        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', triggers=['regMatch', 'regMatch'])
+        trigger = ConditionalExpression(
+            'and',
+            conditions=[Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='(.*)')]),
+                        Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='a')])])
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld', trigger=trigger)
+        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', trigger=trigger)
 
     def test_execute_no_args(self):
         action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld')
@@ -161,12 +163,12 @@ class TestAction(unittest.TestCase):
         self.assertTrue(result['started_triggered'])
         self.assertTrue(result['result_triggered'])
 
-    def test_execute_generates_uid(self):
+    def test_execute_generates_id(self):
         action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld')
-        original_execution_uid = action.get_execution_uid()
+        original_execution_id = action.get_execution_id()
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
         action.execute(instance.instance, {})
-        self.assertNotEqual(action.get_execution_uid(), original_execution_uid)
+        self.assertNotEqual(action.get_execution_id(), original_execution_id)
 
     def test_execute_with_args(self):
         action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
@@ -345,39 +347,19 @@ class TestAction(unittest.TestCase):
                 [Argument('num1', value='-5.62'), Argument('num2', value='5'), Argument('num3', value='invalid')])
 
     def test_execute_with_triggers(self):
-        triggers = [Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])]
-        action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld', triggers=triggers)
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        action.send_data_to_trigger({"data_in": {"data": 'aaa'}})
+        trigger = ConditionalExpression(
+            'and',
+            conditions=[Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])])
+        action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld', trigger=trigger)
+        ret = action.execute_trigger({"data_in": {"data": 'aaa'}}, {})
 
-        result = {'triggered': False}
-
-        def callback_is_sent(sender, **kwargs):
-            if kwargs['event'] == WalkoffEvent.TriggerActionTaken:
-                result['triggered'] = True
-
-        WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
-        action.execute(instance.instance, {})
-        self.assertTrue(result['triggered'])
+        self.assertTrue(ret)
 
     def test_execute_multiple_triggers(self):
-        triggers = [Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])]
-        action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld', triggers=triggers)
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        action.send_data_to_trigger({"data_in": {"data": 'a'}})
-
-        trigger_taken = {'triggered': 0}
-        trigger_not_taken = {'triggered': 0}
-
-        def callback_is_sent(sender, **kwargs):
-            if kwargs['event'] == WalkoffEvent.TriggerActionTaken:
-                trigger_taken['triggered'] += 1
-            elif kwargs['event'] == WalkoffEvent.TriggerActionNotTaken:
-                action.send_data_to_trigger({"data_in": {"data": 'aaa'}})
-                trigger_not_taken['triggered'] += 1
-
-        WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
-
-        action.execute(instance.instance, {})
-        self.assertEqual(trigger_taken['triggered'], 1)
-        self.assertEqual(trigger_not_taken['triggered'], 1)
+        trigger = ConditionalExpression(
+            'and',
+            conditions=[Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])])
+        action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld', trigger=trigger)
+        AppInstance.create(app_name='HelloWorld', device_name='device1')
+        self.assertFalse(action.execute_trigger({"data_in": {"data": 'a'}}, {}))
+        self.assertTrue(action.execute_trigger({"data_in": {"data": 'aaa'}}, {}))

@@ -45,7 +45,7 @@ Subscription:
   required: [id, events]
   properties:
     id:
-      $ref: '#/definitions/Uid'
+      $ref: '#/definitions/Uuid'
     events:
       description: A list of events subscribed to
       type: array

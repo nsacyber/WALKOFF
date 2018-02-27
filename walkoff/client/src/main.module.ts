@@ -21,8 +21,8 @@ import { DevicesComponent } from './devices/devices.component';
 import { MessagesComponent } from './messages/messages.component';
 import { CasesComponent } from './cases/cases.component';
 import { SettingsComponent } from './settings/settings.component';
-import { DashboardComponent } from './dashboard/dashboard.component';
 import { InterfacesComponent } from './interfaces/interfaces.component';
+import { ExecutionComponent } from './execution/execution.component';
 
 import { SchedulerModalComponent } from './scheduler/scheduler.modal.component';
 import { DevicesModalComponent } from './devices/devices.modal.component';
@@ -33,6 +33,7 @@ import { SettingsRoleModalComponent } from './settings/settings.roles.modal.comp
 import { PlaybookArgumentComponent } from './playbook/playbook.argument.component';
 import { PlaybookConditionsComponent } from './playbook/playbook.conditions.component';
 import { PlaybookTransformsComponent } from './playbook/playbook.transforms.component';
+import { PlaybookConditionalExpressionComponent } from './playbook/playbook.conditional.expression.component';
 import { SettingsRolesComponent } from './settings/settings.roles.component';
 import { MessagesModalComponent } from './messages/messages.modal.component';
 
@@ -57,13 +58,13 @@ import { KeysPipe } from './pipes/keys.pipe';
 		MainComponent,
 		//Router module components
 		PlaybookComponent,
-		DashboardComponent,
 		SchedulerComponent,
 		DevicesComponent,
 		MessagesComponent,
 		CasesComponent,
 		SettingsComponent,
 		InterfacesComponent,
+		ExecutionComponent,
 		//Modals
 		SchedulerModalComponent,
 		DevicesModalComponent,
@@ -75,6 +76,7 @@ import { KeysPipe } from './pipes/keys.pipe';
 		PlaybookArgumentComponent,
 		PlaybookConditionsComponent,
 		PlaybookTransformsComponent,
+		PlaybookConditionalExpressionComponent,
 		SettingsRolesComponent,
 		// Pipes
 		KeysPipe,

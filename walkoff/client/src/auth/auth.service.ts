@@ -28,34 +28,50 @@ export class AuthService {
 			.catch(this.handleError);
 	}
 
+	/**
+	 * Logs the user out on the server and clears the tokens in session storage.
+	 */
 	logout(): Promise<void> {
 		return this.authHttp.post('/api/auth/logout', { refresh_token: sessionStorage.getItem(REFRESH_TOKEN_NAME) })
 			.toPromise()
 			.then(() => {
 				this.clearTokens();
-				location.href = '/login';
 			})
 			.catch(this.handleError);
 	}
 
+	/**
+	 * Clears our JWTs from session storage. Used when logging out.
+	 */
 	clearTokens(): void {
 		sessionStorage.removeItem(ACCESS_TOKEN_NAME);
 		sessionStorage.removeItem(REFRESH_TOKEN_NAME);
 	}
 
-	//TODO: figure out how roles are going to be stored 
+	//TODO: figure out how roles are going to be stored
+	//stub method until we figure out how we're going to handle client side authorization stuff.
 	canAccess(resourceName: string, actionName: string): boolean {
 		return false;
 	}
 
+	/**
+	 * Grabs the refresh JWT string from session storage.
+	 */
 	getRefreshToken(): string {
 		return sessionStorage.getItem(REFRESH_TOKEN_NAME);
 	}
 
+	/**
+	 * Grabs the access JWT string from session storage.
+	 */
 	getAccessToken(): string {
 		return sessionStorage.getItem(ACCESS_TOKEN_NAME);
 	}
 
+	/**
+	 * Asynchronously checks if the access token needs to be refreshed, and refreshes it if necessary.
+	 * Will return a promise of the existing access token or the newly refreshed access token.
+	 */
 	getAccessTokenRefreshed(): Promise<string> {
 		const token = this.getAccessToken();
 		if (!this.jwtHelper.isTokenExpired(token)) { return Promise.resolve(token); }
@@ -73,14 +89,25 @@ export class AuthService {
 			.catch(this.handleError);
 	}
 
+	/**
+	 * Returns an AccessToken object, decoded from the refresh token in session storage.
+	 */
 	getAndDecodeRefreshToken(): AccessToken {
 		return this.jwtHelper.decodeToken(this.getRefreshToken());
 	}
 
+	/**
+	 * Returns an AccessToken object, decoded from the access token in session storage.
+	 */
 	getAndDecodeAccessToken(): AccessToken {
 		return this.jwtHelper.decodeToken(this.getAccessToken());
 	}
 
+	/**
+	 * Checks if the access token is 'fresh'.
+	 * Freshness is determined if this is the access token from our actual authentication,
+	 * or if it is a token that was supplied using the /api/auth/refresh endpoint.
+	 */
 	isAccessTokenFresh(): boolean {
 		return !!this.getAndDecodeAccessToken().fresh;
 	}
