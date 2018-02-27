@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { JwtHelper } from 'angular2-jwt';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
@@ -25,7 +25,7 @@ const MAX_TOTAL_MESSAGES = 20;
 	],
 	providers: [MainService, AuthService, UtilitiesService],
 })
-export class MainComponent implements OnInit {
+export class MainComponent implements OnInit, OnDestroy {
 	utils = new UtilitiesService();
 	currentUser: string;
 	interfaceNames: string[] = [];
@@ -34,6 +34,7 @@ export class MainComponent implements OnInit {
 	messageModalRef: NgbModalRef;
 	newMessagesCount: number = 0;
 	notificationRelativeTimes: GenericObject = {};
+	eventSource: any;
 
 	constructor(
 		private mainService: MainService, private authService: AuthService,
@@ -52,6 +53,13 @@ export class MainComponent implements OnInit {
 		this.getInterfaceNames();
 		this.getInitialNotifications();
 		this.getNotificationsSSE();
+	}
+
+	/**
+	 * Closes our SSEs on component destroy.
+	 */
+	ngOnDestroy(): void {
+		if (this.eventSource && this.eventSource.close) { this.eventSource.close(); }
 	}
 
 	/**
@@ -82,10 +90,10 @@ export class MainComponent implements OnInit {
 	getNotificationsSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				const eventSource = new (window as any)
+				this.eventSource = new (window as any)
 					.EventSource('/api/streams/messages/notifications?access_token=' + authToken);
 
-				eventSource.addEventListener('created', (message: any) => {
+				this.eventSource.addEventListener('created', (message: any) => {
 					const newMessage: MessageListing = JSON.parse(message.data);
 
 					const existingMessage = this.messageListings.find(m => m.id === newMessage.id);
@@ -116,7 +124,7 @@ export class MainComponent implements OnInit {
 				// 		(this.messageModalRef.componentInstance.message as Message).read_by.push(update.username);
 				// 	}
 				// });
-				eventSource.addEventListener('responded', (message: any) => {
+				this.eventSource.addEventListener('responded', (message: any) => {
 					const update: MessageUpdate = JSON.parse(message.data);
 
 					const existingMessage = this.messageListings.find(m => m.id === update.id);
@@ -134,7 +142,7 @@ export class MainComponent implements OnInit {
 					// 	(this.messageModalRef.componentInstance.message as Message).awaiting_response = false;
 					// }
 				});
-				eventSource.addEventListener('error', (err: Error) => {
+				this.eventSource.addEventListener('error', (err: Error) => {
 					console.error(err);
 				});
 			});

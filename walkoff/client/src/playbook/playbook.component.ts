@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation, ViewChild, ElementRef, ChangeDetectorRef, OnInit,
-	AfterViewChecked } from '@angular/core';
+	AfterViewChecked, OnDestroy } from '@angular/core';
 // import * as _ from 'lodash';
 // import { Observable } from 'rxjs';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
@@ -40,7 +40,7 @@ import { ActionStatusEvent } from '../models/execution/actionStatusEvent';
 	encapsulation: ViewEncapsulation.None,
 	providers: [PlaybookService, AuthService],
 })
-export class PlaybookComponent implements OnInit, AfterViewChecked {
+export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('cyRef') cyRef: ElementRef;
 	@ViewChild('workflowResultsContainer') workflowResultsContainer: ElementRef;
 	@ViewChild('workflowResultsTable') workflowResultsTable: DatatableComponent;
@@ -71,6 +71,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	waitingOnData: boolean = false;
 	actionStatusStartedRelativeTimes: { [key: string]: string } = {};
 	actionStatusCompletedRelativeTimes: { [key: string]: string } = {};
+	eventSource: any;
 
 	// Simple bootstrap modal params
 	modalParams: {
@@ -133,6 +134,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 		}
 	}
 
+	/**
+	 * Closes our SSEs on component destroy.
+	 */
+	ngOnDestroy(): void {
+		if (this.eventSource && this.eventSource.close) { this.eventSource.close(); }
+	}
+
 	///------------------------------------------------------------------------------------------------------
 	/// Playbook CRUD etc functions
 	///------------------------------------------------------------------------------------------------------
@@ -143,14 +151,14 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	getActionStatusSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				const eventSource = new (window as any).EventSource('api/streams/workflowqueue/actions?access_token=' + authToken);
+				this.eventSource = new (window as any).EventSource('api/streams/workflowqueue/actions?access_token=' + authToken);
 
-				eventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
-				eventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
-				eventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
-				eventSource.addEventListener('awaiting_data', (e: any) => this.actionStatusEventHandler(e));
+				this.eventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
+				this.eventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
+				this.eventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
+				this.eventSource.addEventListener('awaiting_data', (e: any) => this.actionStatusEventHandler(e));
 
-				eventSource.onerror = (err: Error) => {
+				this.eventSource.onerror = (err: Error) => {
 					// this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
 					console.error(err);
 				};

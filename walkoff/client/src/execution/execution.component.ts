@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation, OnInit, AfterViewChecked, ElementRef, ViewChild,
-	ChangeDetectorRef } from '@angular/core';
+	ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { Select2OptionData } from 'ng2-select2';
@@ -29,7 +29,7 @@ import { ActionStatus } from '../models/execution/actionStatus';
 	encapsulation: ViewEncapsulation.None,
 	providers: [ExecutionService, AuthService],
 })
-export class ExecutionComponent implements OnInit, AfterViewChecked {
+export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('actionStatusContainer') actionStatusContainer: ElementRef;
 	@ViewChild('actionStatusTable') actionStatusTable: DatatableComponent;
 
@@ -49,6 +49,9 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 	actionStatusCompletedRelativeTimes: { [key: string]: string } = {};
 
 	filterQuery: FormControl = new FormControl();
+
+	workflowStatusEventSource: any;
+	actionStatusEventSource: any;
 
 	constructor(
 		private executionService: ExecutionService, private authService: AuthService, private cdr: ChangeDetectorRef,
@@ -102,6 +105,18 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 	}
 
 	/**
+	 * Closes our SSEs on component destroy.
+	 */
+	ngOnDestroy(): void {
+		if (this.workflowStatusEventSource && this.workflowStatusEventSource.close) {
+			this.workflowStatusEventSource.close();
+		}
+		if (this.actionStatusEventSource && this.actionStatusEventSource.close) {
+			this.actionStatusEventSource.close();
+		}
+	}
+
+	/**
 	 * Filters out the workflow statuses based on the value in the search/filter box.
 	 * Checks against various parameters on the workflow statuses to set our display workflow statuses.
 	 */
@@ -140,19 +155,19 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 	getWorkflowStatusSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				const eventSource = new (window as any)
+				this.workflowStatusEventSource = new (window as any)
 					.EventSource(`api/streams/workflowqueue/workflow_status?access_token=${authToken}`);
 
-				eventSource.addEventListener('queued', (e: any) => this.workflowStatusEventHandler(e));
-				eventSource.addEventListener('started', (e: any) => this.workflowStatusEventHandler(e));
-				eventSource.addEventListener('paused', (e: any) => this.workflowStatusEventHandler(e));
-				eventSource.addEventListener('resumed', (e: any) => this.workflowStatusEventHandler(e));
-				eventSource.addEventListener('awaiting_data', (e: any) => this.workflowStatusEventHandler(e));
-				eventSource.addEventListener('triggered', (e: any) => this.workflowStatusEventHandler(e));
-				eventSource.addEventListener('aborted', (e: any) => this.workflowStatusEventHandler(e));
-				eventSource.addEventListener('completed', (e: any) => this.workflowStatusEventHandler(e));
+				this.workflowStatusEventSource.addEventListener('queued', (e: any) => this.workflowStatusEventHandler(e));
+				this.workflowStatusEventSource.addEventListener('started', (e: any) => this.workflowStatusEventHandler(e));
+				this.workflowStatusEventSource.addEventListener('paused', (e: any) => this.workflowStatusEventHandler(e));
+				this.workflowStatusEventSource.addEventListener('resumed', (e: any) => this.workflowStatusEventHandler(e));
+				this.workflowStatusEventSource.addEventListener('awaiting_data', (e: any) => this.workflowStatusEventHandler(e));
+				this.workflowStatusEventSource.addEventListener('triggered', (e: any) => this.workflowStatusEventHandler(e));
+				this.workflowStatusEventSource.addEventListener('aborted', (e: any) => this.workflowStatusEventHandler(e));
+				this.workflowStatusEventSource.addEventListener('completed', (e: any) => this.workflowStatusEventHandler(e));
 
-				eventSource.onerror = (err: Error) => {
+				this.workflowStatusEventSource.onerror = (err: Error) => {
 					console.error(err);
 				};
 			});
@@ -219,14 +234,15 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 	getActionStatusSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				const eventSource = new (window as any).EventSource(`api/streams/workflowqueue/actions?access_token=${authToken}`);
+				this.actionStatusEventSource = new (window as any)
+					.EventSource(`api/streams/workflowqueue/actions?access_token=${authToken}`);
 
-				eventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
-				eventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
-				eventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
-				eventSource.addEventListener('awaiting_data', (e: any) => this.actionStatusEventHandler(e));
+				this.actionStatusEventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
+				this.actionStatusEventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
+				this.actionStatusEventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
+				this.actionStatusEventSource.addEventListener('awaiting_data', (e: any) => this.actionStatusEventHandler(e));
 
-				eventSource.onerror = (err: Error) => {
+				this.actionStatusEventSource.onerror = (err: Error) => {
 					console.error(err);
 				};
 			});
