@@ -204,12 +204,16 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 				case 'triggered':
 					matchingWorkflowStatus.current_action = workflowStatusEvent.current_action;
 					break;
-				case 'aborted':
 				case 'completed':
 					matchingWorkflowStatus.completed_at = workflowStatusEvent.timestamp;
 					this.workflowStatusCompletedRelativeTimes[matchingWorkflowStatus.execution_id] =
 						this.utils.getRelativeLocalTime(workflowStatusEvent.timestamp);
 					delete matchingWorkflowStatus.current_action;
+					break;
+				case 'aborted':
+					matchingWorkflowStatus.completed_at = workflowStatusEvent.timestamp;
+					this.workflowStatusCompletedRelativeTimes[matchingWorkflowStatus.execution_id] =
+						this.utils.getRelativeLocalTime(workflowStatusEvent.timestamp);
 					break;
 				default:
 					this.toastyService.warning(`Unknown Workflow Status SSE Type: ${message.type}.`);
