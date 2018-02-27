@@ -1,6 +1,7 @@
 import logging
 import threading
 import uuid
+import traceback
 
 from sqlalchemy import Column, Integer, ForeignKey, String, orm
 from sqlalchemy.orm import relationship, backref
@@ -161,6 +162,7 @@ class Action(ExecutionElement, Device_Base):
         else:
             event = WalkoffEvent.ActionExecutionError
             return_type = 'UnhandledException'
+        logger.warning('Exception in {0}: \n{1}'.format(self.name, traceback.format_exc()))
         logger.error('Error calling action {0}. Error: {1}'.format(self.name, formatted_error))
         self._output = ActionResult('error: {0}'.format(formatted_error), return_type)
         WalkoffEvent.CommonWorkflowSignal.send(self, event=event, data=self._output.as_json())
