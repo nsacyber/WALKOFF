@@ -77,7 +77,7 @@ export class DevicesComponent implements OnInit {
 	filterDevices(): void {
 		const searchFilter = this.filterQuery.value ? this.filterQuery.value.toLocaleLowerCase() : '';
 
-		this.displayDevices = this.devices.filter((device) => {
+		this.displayDevices = this.devices.filter(device => {
 			return (device.name.toLocaleLowerCase().includes(searchFilter) ||
 				device.app_name.toLocaleLowerCase().includes(searchFilter)) &&
 				(this.selectedApps.length ? this.selectedApps.indexOf(device.app_name) > -1 : true);

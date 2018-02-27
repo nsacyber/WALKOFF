@@ -173,12 +173,14 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 
 			switch (message.type) {
 				case 'queued':
-					// shouldn't happen
+					delete matchingWorkflowStatus.current_action;
 					break;
 				case 'started':
-					matchingWorkflowStatus.started_at = workflowStatusEvent.timestamp;
-					this.workflowStatusStartedRelativeTimes[matchingWorkflowStatus.execution_id] =
-						this.utils.getRelativeLocalTime(workflowStatusEvent.timestamp);
+					if (!matchingWorkflowStatus.started_at) {
+						matchingWorkflowStatus.started_at = workflowStatusEvent.timestamp;
+						this.workflowStatusStartedRelativeTimes[matchingWorkflowStatus.execution_id] =
+							this.utils.getRelativeLocalTime(workflowStatusEvent.timestamp);
+					}
 					matchingWorkflowStatus.current_action = workflowStatusEvent.current_action;
 					break;
 				case 'paused':
@@ -222,6 +224,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 				eventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
 				eventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
 				eventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
+				eventSource.addEventListener('awaiting_data', (e: any) => this.actionStatusEventHandler(e));
 
 				eventSource.onerror = (err: Error) => {
 					console.error(err);
@@ -258,6 +261,8 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 				.find(r => r.execution_id === actionStatusEvent.execution_id);
 
 			if (matchingActionStatus) {
+				matchingActionStatus.status = actionStatusEvent.status;
+
 				switch (message.type) {
 					case 'started':
 						matchingActionStatus.started_at = actionStatusEvent.timestamp;
@@ -270,6 +275,9 @@ export class ExecutionComponent implements OnInit, AfterViewChecked {
 						matchingActionStatus.result = actionStatusEvent.result;
 						this.actionStatusCompletedRelativeTimes[matchingActionStatus.execution_id] =
 							this.utils.getRelativeLocalTime(actionStatusEvent.timestamp);
+						break;
+					case 'awaiting_data':
+						// don't think anything needs to happen here
 						break;
 					default:
 						this.toastyService.warning(`Unknown Action Status SSE Type: ${message.type}.`);

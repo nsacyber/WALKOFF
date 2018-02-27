@@ -148,6 +148,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 				eventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
 				eventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
 				eventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
+				eventSource.addEventListener('awaiting_data', (e: any) => this.actionStatusEventHandler(e));
 
 				eventSource.onerror = (err: Error) => {
 					// this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
@@ -174,17 +175,25 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 						matchingNode.addClass('success-highlight');
 						matchingNode.removeClass('failure-highlight');
 						matchingNode.removeClass('executing-highlight');
+						matchingNode.removeClass('awaiting-data-highlight');
 						break;
 					case 'failure':
 						matchingNode.removeClass('success-highlight');
 						matchingNode.addClass('failure-highlight');
 						matchingNode.removeClass('executing-highlight');
+						matchingNode.removeClass('awaiting-data-highlight');
 						break;
 					case 'executing':
 						matchingNode.removeClass('success-highlight');
 						matchingNode.removeClass('failure-highlight');
 						matchingNode.addClass('executing-highlight');
+						matchingNode.removeClass('awaiting-data-highlight');
 						break;
+					case 'awaiting_data':
+						matchingNode.removeClass('success-highlight');
+						matchingNode.removeClass('failure-highlight');
+						matchingNode.removeClass('executing-highlight');
+						matchingNode.addClass('awaiting-data-highlight');
 					default:
 						break;
 				}
@@ -194,24 +203,27 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 		// Additionally, add or update the actionstatus in our datatable.
 		const matchingActionStatus = this.actionStatuses.find(as => as.execution_id === actionStatusEvent.execution_id);
 		if (matchingActionStatus) {
+			matchingActionStatus.status = actionStatusEvent.status;
+
 			switch (message.type) {
 				case 'started':
+					// shouldn't happen
 					matchingActionStatus.started_at = actionStatusEvent.timestamp;
-					this.actionStatusStartedRelativeTimes[matchingActionStatus.execution_id] =
-						this.utils.getRelativeLocalTime(actionStatusEvent.timestamp);
 					break;
 				case 'success':
 				case 'failure':
 					matchingActionStatus.completed_at = actionStatusEvent.timestamp;
 					matchingActionStatus.result = actionStatusEvent.result;
-					this.actionStatusCompletedRelativeTimes[matchingActionStatus.execution_id] =
-						this.utils.getRelativeLocalTime(actionStatusEvent.timestamp);
+					break;
+				case 'awaiting_data':
+					// don't think anything needs to happen here
 					break;
 				default:
 					this.toastyService.warning(`Unknown Action Status SSE Type: ${message.type}.`);
 					break;
 			}
 
+			this.recalculateRelativeTimes(matchingActionStatus);
 			this.calculateLocalizedTimes(matchingActionStatus);
 		} else {
 			const newActionStatus = ActionStatusEvent.toNewActionStatus(actionStatusEvent);
@@ -338,6 +350,14 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 					selector: '.executing-highlight',
 					css: {
 						'background-color': '#ffef47',
+						'transition-property': 'background-color',
+						'transition-duration': '0.5s',
+					},
+				},
+				{
+					selector: '.awaiting-data-highlight',
+					css: {
+						'background-color': '#f4ad42',
 						'transition-property': 'background-color',
 						'transition-duration': '0.5s',
 					},
@@ -1425,10 +1445,16 @@ export class PlaybookComponent implements OnInit, AfterViewChecked {
 	/**
 	 * Recalculates the relative times shown for start/end date timestamps (e.g. '5 hours ago').
 	 */
-	recalculateRelativeTimes(): void {
-		if (!this.actionStatuses || !this.actionStatuses.length ) { return; }
+	recalculateRelativeTimes(specificStatus?: ActionStatus): void {
+		let targetStatuses: ActionStatus[];
+		if (specificStatus) {
+			targetStatuses = [specificStatus];
+		} else {
+			targetStatuses = this.actionStatuses;
+		}
+		if (!targetStatuses || !targetStatuses.length ) { return; }
 
-		this.actionStatuses.forEach(actionStatus => {
+		targetStatuses.forEach(actionStatus => {
 			if (actionStatus.started_at) {
 				this.actionStatusStartedRelativeTimes[actionStatus.execution_id] = 
 					this.utils.getRelativeLocalTime(actionStatus.started_at);

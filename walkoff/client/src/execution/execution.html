@@ -83,7 +83,7 @@
 				</div>
 				<div class="modal-body" #actionStatusContainer>
 					<ngx-datatable #actionStatusTable class='material expandable' [columnMode]="'flex'" [rows]="loadedWorkflowStatus.action_statuses"
-					 [sortType]="'multi'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]"
+					 [sortType]="'multi'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'started_at', dir: 'desc'}]"
 					 [limit]="10">
 						<!-- Column Templates -->
 						<ngx-datatable-column name="Action ID" prop="action_id" [flexGrow]="1"></ngx-datatable-column>
