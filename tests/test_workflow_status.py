@@ -287,15 +287,6 @@ class TestWorkflowStatus(ServerTestCase):
         self.assertEqual(workflow_status.status, WorkflowStatusEnum.aborted)
         self.assertEqual(actions[-1].status, ActionStatusEnum.executing)
 
-    def test_abort_statuses_with_actions_last_paused(self):
-        workflow_status = self.make_generic_workflow_status()
-        actions = self.make_generic_action_statuses(3)
-        actions[-1].status = ActionStatusEnum.paused
-        workflow_status._action_statuses = actions
-        workflow_status.aborted()
-        self.assertEqual(workflow_status.status, WorkflowStatusEnum.aborted)
-        self.assertEqual(actions[-1].status, ActionStatusEnum.aborted)
-
     def test_abort_statuses_with_actions_last_awaiting_data(self):
         workflow_status = self.make_generic_workflow_status()
         actions = self.make_generic_action_statuses(3)

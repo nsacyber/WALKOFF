@@ -34,12 +34,6 @@ def __workflow_paused_callback(sender, **kwargs):
     workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
         execution_id=sender['execution_id']).first()
     workflow_status.paused()
-
-    action_status = devicedb.device_db.session.query(ActionStatus).filter_by(
-        _workflow_status_id=sender['execution_id']).first()
-    if action_status:
-        action_status.paused()
-
     devicedb.device_db.session.commit()
 
 
@@ -50,8 +44,6 @@ def __workflow_awaiting_data_callback(sender, **kwargs):
     workflow_status = devicedb.device_db.session.query(WorkflowStatus).filter_by(
         execution_id=workflow_execution_id).first()
     workflow_status.awaiting_data()
-    workflow_status._action_statuses[-1].awaiting_data()
-
     devicedb.device_db.session.commit()
 
 
