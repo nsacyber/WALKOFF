@@ -157,13 +157,16 @@ def __trigger_awaiting_data_callback(sender, **kwargs):
     workflow_execution_id = kwargs['data']['workflow']['execution_id']
     result = format_workflow_result_with_current_step(workflow_execution_id, WorkflowStatusEnum.awaiting_data)
     send_workflow_result_to_sse(result, 'awaiting_data')
+    # Send to Action SSE stream as well
+    action_result = format_action_data(sender, kwargs, ActionStatusEnum.awaiting_data)
+    send_action_result_to_sse(action_result, 'awaiting_data')
 
 
 @WalkoffEvent.TriggerActionTaken.connect
 def __trigger_action_taken_callback(sender, **kwargs):
     workflow_execution_id = kwargs['data']['workflow_execution_id']
-    result = format_workflow_result_with_current_step(workflow_execution_id, WorkflowStatusEnum.pending)
-    send_workflow_result_to_sse(result, 'triggered')
+    workflow_result = format_workflow_result_with_current_step(workflow_execution_id, WorkflowStatusEnum.pending)
+    send_workflow_result_to_sse(workflow_result, 'triggered')
 
 
 @WalkoffEvent.WorkflowAborted.connect
