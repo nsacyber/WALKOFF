@@ -19,3 +19,4 @@ class ActionStatusEnum(enum.Enum):
     awaiting_data = 3
     success = 4
     failure = 5
+    aborted = 6

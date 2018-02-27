@@ -8,6 +8,7 @@ from tests.util.servertestcase import ServerTestCase
 import walkoff.coredb.devicedb as devicedb
 from walkoff.coredb.workflowresults import WorkflowStatus, ActionStatus
 from walkoff.coredb.workflow import Workflow
+from walkoff.coredb import WorkflowStatusEnum, ActionStatusEnum
 from uuid import uuid4
 from tests.util import device_db_help
 import walkoff.coredb.devicedb as db
@@ -51,6 +52,14 @@ class TestWorkflowStatus(ServerTestCase):
         data = {'execution_id': execution_id, 'status': action}
         self.patch_with_status_check('/api/workflowqueue', headers=self.headers, status_code=NO_CONTENT,
                                      content_type="application/json", data=json.dumps(data))
+
+    @staticmethod
+    def make_generic_workflow_status():
+        return WorkflowStatus(uuid4(), uuid4(), 'wf1')
+
+    @staticmethod
+    def make_generic_action_statuses(number):
+        return [ActionStatus(uuid4(), uuid4(), 'app', 'action', 'name') for _ in range(number)]
 
     def test_read_all_workflow_status_no_action(self):
         exec_id = uuid4()
@@ -264,3 +273,34 @@ class TestWorkflowStatus(ServerTestCase):
             execution_id=response['id']).first()
         self.assertIsNotNone(workflow_status)
         self.assertEqual(workflow_status.status.name, 'aborted')
+
+    def test_abort_statuses_no_actions(self):
+        workflow_status = self.make_generic_workflow_status()
+        workflow_status.aborted()
+        self.assertEqual(workflow_status.status, WorkflowStatusEnum.aborted)
+
+    def test_abort_statuses_with_actions_not_paused_or_awaiting_data(self):
+        workflow_status = self.make_generic_workflow_status()
+        actions = self.make_generic_action_statuses(3)
+        workflow_status._action_statuses = actions
+        workflow_status.aborted()
+        self.assertEqual(workflow_status.status, WorkflowStatusEnum.aborted)
+        self.assertEqual(actions[-1].status, ActionStatusEnum.executing)
+
+    def test_abort_statuses_with_actions_last_paused(self):
+        workflow_status = self.make_generic_workflow_status()
+        actions = self.make_generic_action_statuses(3)
+        actions[-1].status = ActionStatusEnum.paused
+        workflow_status._action_statuses = actions
+        workflow_status.aborted()
+        self.assertEqual(workflow_status.status, WorkflowStatusEnum.aborted)
+        self.assertEqual(actions[-1].status, ActionStatusEnum.aborted)
+
+    def test_abort_statuses_with_actions_last_awaiting_data(self):
+        workflow_status = self.make_generic_workflow_status()
+        actions = self.make_generic_action_statuses(3)
+        actions[-1].status = ActionStatusEnum.awaiting_data
+        workflow_status._action_statuses = actions
+        workflow_status.aborted()
+        self.assertEqual(workflow_status.status, WorkflowStatusEnum.aborted)
+        self.assertEqual(actions[-1].status, ActionStatusEnum.aborted)

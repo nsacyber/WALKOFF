@@ -43,6 +43,8 @@ class WorkflowStatus(Device_Base):
     def aborted(self):
         self.completed_at = datetime.utcnow()
         self.status = WorkflowStatusEnum.aborted
+        if self._action_statuses:
+            self._action_statuses[-1].aborted()
 
     def as_json(self, full_actions=False):
         ret = {"execution_id": str(self.execution_id),
@@ -86,6 +88,10 @@ class ActionStatus(Device_Base):
         self.action_name = action_name
         self.arguments = arguments
         self.status = ActionStatusEnum.executing
+
+    def aborted(self):
+        if self.status in (ActionStatusEnum.paused, ActionStatusEnum.awaiting_data):
+            self.status = ActionStatusEnum.aborted
 
     def running(self):
         self.status = ActionStatusEnum.executing
