@@ -18,6 +18,7 @@ from walkoff.events import EventType, WalkoffEvent
 from walkoff.executiondb.workflow import Workflow
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
 from walkoff.executiondb.saved_workflow import SavedWorkflow
+from walkoff.executiondb.appinstancerepo import AppInstanceRepo
 
 try:
     from Queue import Queue
@@ -27,14 +28,12 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-def convert_to_protobuf(sender, workflow_execution_id='', **kwargs):
+def convert_to_protobuf(sender, workflow, **kwargs):
     """Converts an execution element and its data to a protobuf message.
 
     Args:
         sender (execution element): The execution element object that is sending the data.
-        workflow_execution_id (str, optional): The execution ID of the Workflow under which this execution
-            element falls. It is not required and defaults to an empty string, but it is highly recommended
-            so that the LoadBalancer can keep track of the Workflow's execution.
+        workflow (Workflow): The workflow which is sending the event
         kwargs (dict, optional): A dict of extra fields, such as data, callback_name, etc.
 
     Returns:
@@ -45,34 +44,32 @@ def convert_to_protobuf(sender, workflow_execution_id='', **kwargs):
     packet = Message()
     packet.event_name = event.name
     if event.event_type == EventType.workflow:
-        convert_workflow_to_proto(packet, sender, workflow_execution_id, data)
+        convert_workflow_to_proto(packet, workflow, data)
     elif event.event_type == EventType.action:
         if event == WalkoffEvent.SendMessage:
-            convert_send_message_to_protobuf(packet, sender, workflow_execution_id, **kwargs)
+            convert_send_message_to_protobuf(packet, sender, workflow, **kwargs)
         else:
-            convert_action_to_proto(packet, sender, workflow_execution_id, data)
+            convert_action_to_proto(packet, sender, workflow, data)
     elif event.event_type in (EventType.branch, EventType.condition, EventType.transform, EventType.conditonalexpression):
-        convert_branch_transform_condition_to_proto(packet, sender, workflow_execution_id)
+        convert_branch_transform_condition_to_proto(packet, sender, workflow)
     packet_bytes = packet.SerializeToString()
     return packet_bytes
 
 
-def convert_workflow_to_proto(packet, sender, workflow_execution_id, data=None):
+def convert_workflow_to_proto(packet, sender, data=None):
     packet.type = Message.WORKFLOWPACKET
     workflow_packet = packet.workflow_packet
     if 'data' is not None:
         workflow_packet.additional_data = json.dumps(data)
-    workflow_packet.sender.name = sender.name
-    workflow_packet.sender.id = str(sender.id)
-    workflow_packet.sender.workflow_execution_id = workflow_execution_id
+    add_workflow_to_proto(workflow_packet.sender, sender)
 
 
-def convert_send_message_to_protobuf(packet, message, workflow_execution_id, **kwargs):
+def convert_send_message_to_protobuf(packet, message, workflow, **kwargs):
     packet.type = Message.USERMESSAGE
     message_packet = packet.message_packet
     message_packet.subject = message.pop('subject', '')
     message_packet.body = json.dumps(message['body'])
-    message_packet.sender.workflow_execution_id = workflow_execution_id
+    add_workflow_to_proto(message_packet.workflow, workflow)
     if 'users' in kwargs:
         message_packet.users.extend(kwargs['users'])
     if 'roles' in kwargs:
@@ -81,19 +78,19 @@ def convert_send_message_to_protobuf(packet, message, workflow_execution_id, **k
         message_packet.requires_reauth = kwargs['requires_reauth']
 
 
-def convert_action_to_proto(packet, sender, workflow_execution_id, data=None):
+def convert_action_to_proto(packet, sender, workflow, data=None):
     packet.type = Message.ACTIONPACKET
     action_packet = packet.action_packet
     if 'data' is not None:
         action_packet.additional_data = json.dumps(data)
-    add_sender_to_action_packet_proto(action_packet, sender, workflow_execution_id)
+    add_sender_to_action_packet_proto(action_packet, sender)
     add_arguments_to_action_proto(action_packet, sender)
+    add_workflow_to_proto(action_packet.workflow, workflow)
 
 
-def add_sender_to_action_packet_proto(action_packet, sender, workflow_execution_id):
+def add_sender_to_action_packet_proto(action_packet, sender):
     action_packet.sender.name = sender.name
     action_packet.sender.id = str(sender.id)
-    action_packet.sender.workflow_execution_id = workflow_execution_id
     action_packet.sender.execution_id = sender.get_execution_id()
     action_packet.sender.app_name = sender.app_name
     action_packet.sender.action_name = sender.action_name
@@ -116,11 +113,17 @@ def add_arguments_to_action_proto(action_packet, sender):
                     setattr(arg, field, val)
 
 
-def convert_branch_transform_condition_to_proto(packet, sender, workflow_execution_id):
+def add_workflow_to_proto(packet, workflow):
+    packet.name = workflow.name
+    packet.id = str(workflow.id)
+    packet.execution_id = str(workflow.get_execution_id())
+
+
+def convert_branch_transform_condition_to_proto(packet, sender, workflow):
     packet.type = Message.GENERALPACKET
     general_packet = packet.general_packet
     general_packet.sender.id = str(sender.id)
-    general_packet.sender.workflow_execution_id = workflow_execution_id
+    add_workflow_to_proto(general_packet.workflow, workflow)
     if hasattr(sender, 'app_name'):
         general_packet.sender.app_name = sender.app_name
 
@@ -234,7 +237,7 @@ class Worker:
             saved_state = executiondb.execution_db.session.query(SavedWorkflow).filter_by(
                 workflow_execution_id=workflow_execution_id).first()
             workflow._accumulator = saved_state.accumulator
-            workflow._instances = saved_state.app_instances
+            workflow._instance_repo = AppInstanceRepo(saved_state.app_instances)
 
         self.workflows[threading.current_thread().name] = workflow
 
@@ -280,8 +283,8 @@ class Worker:
                 sender (execution element): The execution element that sent the signal.
                 kwargs (dict): Any extra data to send.
         """
+        workflow = self._get_current_workflow()
         if kwargs['event'] in [WalkoffEvent.TriggerActionAwaitingData, WalkoffEvent.WorkflowPaused]:
-            workflow = self.workflows[threading.currentThread().name]
             saved_workflow = SavedWorkflow(workflow_execution_id=workflow.get_execution_id(),
                                            workflow_id=workflow.id,
                                            action_id=workflow.get_executing_action_id(),
@@ -290,10 +293,12 @@ class Worker:
             executiondb.execution_db.session.add(saved_workflow)
             executiondb.execution_db.session.commit()
 
-        packet_bytes = convert_to_protobuf(sender, self.workflows[threading.current_thread().name].get_execution_id(),
-                                           **kwargs)
+        packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
 
         self.results_sock.send(packet_bytes)
+
+    def _get_current_workflow(self):
+        return self.workflows[threading.currentThread().name]
 
     def __get_workflow_by_execution_id(self, workflow_execution_id):
         for workflow in self.workflows.values():

@@ -1,18 +1,17 @@
 import json
 import logging
 from uuid import UUID
-import threading
 
 from sqlalchemy import Column, String, ForeignKey, orm, UniqueConstraint
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy_utils import UUIDType
 
-from walkoff.appgateway.appinstance import AppInstance
 from walkoff.executiondb import Device_Base
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.action import Action
 from walkoff.executiondb.executionelement import ExecutionElement
+from walkoff.executiondb.appinstancerepo import AppInstanceRepo
 from walkoff.helpers import InvalidArgument, format_exception_message
 
 logger = logging.getLogger(__name__)
@@ -48,19 +47,17 @@ class Workflow(ExecutionElement, Device_Base):
 
         self._is_paused = False
         self._abort = False
-        self._resume = threading.Event()
         self._accumulator = {}
         self._execution_id = 'default'
-        self._instances = {}
+        self._instance_repo = None
 
     @orm.reconstructor
     def init_on_load(self):
         """Loads all necessary fields upon Workflow being loaded from database"""
         self._is_paused = False
         self._abort = False
-        self._resume = threading.Event()
         self._accumulator = {}
-        self._instances = {}
+        self._instance_repo = AppInstanceRepo()
         self._execution_id = 'default'
 
     def remove_action(self, action_id):
@@ -90,17 +87,6 @@ class Workflow(ExecutionElement, Device_Base):
         """
         self._abort = True
         logger.info('Aborting workflow {0}'.format(self.name))
-
-    def resume(self):
-        """Resumes a Workflow that has previously been paused.
-        """
-        try:
-            logger.info('Attempting to resume workflow {0}'.format(self.name))
-            self._is_paused = False
-            self._resume.set()
-        except (StopIteration, AttributeError) as e:
-            logger.warning('Cannot resume workflow {0}. Reason: {1}'.format(self.name, format_exception_message(e)))
-            pass
 
     def execute(self, execution_id, start=None, start_arguments=None, resume=False):
         """Executes a Workflow by executing all Actions in the Workflow list of Action objects.
@@ -136,28 +122,20 @@ class Workflow(ExecutionElement, Device_Base):
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowAborted)
                 yield
 
-            device_id = self.__setup_app_instance(self._instances, action)
+            device_id = self._instance_repo.setup_app_instance(action)
 
             if first:
                 first = False
-                result = action.execute(instance=self._instances[device_id](), accumulator=self._accumulator,
-                                        arguments=start_arguments, resume=resume)
+                result = action.execute(instance=self._instance_repo.get_app_instance(device_id)(),
+                                        accumulator=self._accumulator, arguments=start_arguments, resume=resume)
             else:
-                result = action.execute(instance=self._instances[device_id](), accumulator=self._accumulator,
-                                        resume=resume)
+                result = action.execute(instance=self._instance_repo.get_app_instance(device_id)(),
+                                        accumulator=self._accumulator, resume=resume)
             if result and result.status == "trigger":
                 yield
             self._accumulator[action.id] = action.get_output().result
-        self.__shutdown(self._instances)
+        self.__shutdown()
         yield
-
-    def __setup_app_instance(self, instances, action):
-        device_id = (action.app_name, action.device_id)
-        if device_id not in instances:
-            instances[device_id] = AppInstance.create(action.app_name, action.device_id)
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.AppInstanceCreated)
-            logger.debug('Created new app instance: App {0}, device {1}'.format(action.app_name, action.device_id))
-        return device_id
 
     def __actions(self, start):
         current_id = start
@@ -211,16 +189,9 @@ class Workflow(ExecutionElement, Device_Base):
                          'Invalid arguments. Error: {1}'.format(self.name, format_exception_message(e)))
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowArgumentsInvalid)
 
-    def __shutdown(self, instances):
-        # Upon finishing shuts down instances
-        for instance_name, instance in instances.items():
-            try:
-                if instance() is not None:
-                    logger.debug('Shutting down app instance: Device: {0}'.format(instance_name))
-                    instance.shutdown()
-            except Exception as e:
-                logger.error('Error caught while shutting down app instance. '
-                             'Device: {0}. Error {1}'.format(instance_name, format_exception_message(e)))
+    def __shutdown(self):
+        # Upon finishing shut down instances
+        self._instance_repo.shutdown_instances()
         result_str = {}
         for action, action_result in self._accumulator.items():
             try:
@@ -257,7 +228,6 @@ class Workflow(ExecutionElement, Device_Base):
 
         Returns:
             The ID of the currently executing Action
-
         """
         return self._executing_action.id
 
@@ -274,6 +244,5 @@ class Workflow(ExecutionElement, Device_Base):
 
         Returns:
             All instances
-
         """
-        return self._instances
+        return self._instance_repo.get_all_app_instances()

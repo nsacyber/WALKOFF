@@ -53,7 +53,6 @@ class TestSimpleWorkflow(unittest.TestCase):
         actions = []
         for id_ in action_ids:
             actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
-
         self.assertEqual(len(actions), 1)
         action = actions[0]
         result = action['data']
@@ -89,6 +88,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         actions = []
         for id_ in action_ids:
             actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
+        #print(actions)
         self.assertEqual(len(actions), 2)
 
         expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},

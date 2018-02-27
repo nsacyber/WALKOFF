@@ -155,14 +155,14 @@ class MultiprocessedExecutor(object):
             return None, 'Attempted to execute workflow which does not exist'
 
         execution_id = execution_id_in if execution_id_in else str(uuid.uuid4())
-        workflow._execution_id = execution_id
 
         if start is not None:
             logger.info('Executing workflow {0} for action {1}'.format(workflow.name, start))
         else:
             logger.info('Executing workflow {0} with default starting action'.format(workflow.name, start))
 
-        WalkoffEvent.WorkflowExecutionPending.send(workflow)
+        workflow_data = {'execution_id': execution_id, 'id': workflow.id, 'name': workflow.name}
+        WalkoffEvent.WorkflowExecutionPending.send(workflow_data)
         self.manager.add_workflow(workflow.id, execution_id, start, start_arguments, resume)
 
         WalkoffEvent.SchedulerJobExecuted.send(self)
@@ -219,7 +219,10 @@ class MultiprocessedExecutor(object):
         if workflow_status:
             if workflow_status.status in [WorkflowStatusEnum.pending, WorkflowStatusEnum.paused,
                                           WorkflowStatusEnum.awaiting_data]:
-                WalkoffEvent.WorkflowAborted.send({'workflow_execution_id': execution_id})
+                workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(
+                    id=workflow_status.workflow_id).first()
+                if workflow is not None:
+                    WalkoffEvent.WorkflowAborted.send({'execution_id': execution_id, 'id': workflow_status.workflow_id, 'name': workflow.name})
             elif workflow_status.status == WorkflowStatusEnum.running:
                 self.manager.abort_workflow(execution_id)
             return True

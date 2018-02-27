@@ -19,6 +19,9 @@ backups/
 coverage.*
 data/*.db
 tests/tmp/*.db
+data/*.db-journal
+tests/tmp/devices_test.db
+tests/tmp/events_test.db
 data/log/*.log
 data/walkoff.config
 docs/_*/

@@ -159,12 +159,10 @@ class TestZMQCommunication(unittest.TestCase):
         def workflow_paused_listener(sender, **kwargs):
             result['paused'] = True
             wf_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
-                execution_id=sender['workflow_execution_id']).first()
+                execution_id=sender['execution_id']).first()
             wf_status.paused()
             action_status = executiondb.execution_db.session.query(ActionStatus).filter_by(
-                _workflow_status_id=sender['workflow_execution_id']).first()
-            if action_status:
-                action_status.paused()
+                _workflow_status_id=sender['execution_id']).first()
             executiondb.execution_db.session.commit()
 
             multiprocessedexecutor.resume_workflow(execution_id)

@@ -34,7 +34,8 @@ export class SchedulerModalComponent implements OnInit {
 	
 	constructor(
 		private schedulerService: SchedulerService, private activeModal: NgbActiveModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {}
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+	) {}
 
 	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';

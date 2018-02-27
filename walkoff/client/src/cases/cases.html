@@ -27,37 +27,16 @@
 			<ngx-datatable #eventsTable class='material expandable eventsTable' [columnMode]="'flex'" [rows]="displayCaseEvents" [sortType]="'multi'"
 			 [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]" [limit]="25">
 				<!-- Column Templates -->
-				<ngx-datatable-column name="ID" [flexGrow]="1">
-					<ng-template let-row="row" ngx-datatable-cell-template>
-						{{row.id}}
-					</ng-template>
-				</ngx-datatable-column>
-				<ngx-datatable-column name="Timestamp" [flexGrow]="2">
-					<ng-template let-row="row" ngx-datatable-cell-template>
-						{{row.timestamp}}
-					</ng-template>
-				</ngx-datatable-column>
-				<ngx-datatable-column name="Type" [flexGrow]="2">
-					<ng-template let-row="row" ngx-datatable-cell-template>
-						{{row.type}}
-					</ng-template>
-				</ngx-datatable-column>
-				<ngx-datatable-column name="Originator" [flexGrow]="2">
-					<ng-template let-row="row" ngx-datatable-cell-template>
-						<!--{{getFriendlyArray(row.ancestry)}}-->
-						{{row.originator}}
-					</ng-template>
-				</ngx-datatable-column>
+				<ngx-datatable-column name="ID" prop="id" [flexGrow]="1"></ngx-datatable-column>
+				<ngx-datatable-column name="Timestamp" prop="timestamp" [flexGrow]="2"></ngx-datatable-column>
+				<ngx-datatable-column name="Type" prop="type" [flexGrow]="2"></ngx-datatable-column>
+				<ngx-datatable-column name="Originator" prop="originator" [flexGrow]="2"></ngx-datatable-column>
 				<ngx-datatable-column name="Data" [sortable]="false" [flexGrow]="4">
 					<ng-template let-row="row" ngx-datatable-cell-template>
 						{{getFriendlyObject(row.data)}}
 					</ng-template>
 				</ngx-datatable-column>
-				<ngx-datatable-column name="Message" [flexGrow]="3">
-					<ng-template let-row="row" ngx-datatable-cell-template>
-						{{row.message}}
-					</ng-template>
-				</ngx-datatable-column>
+				<ngx-datatable-column name="Message" prop="message" [flexGrow]="3"></ngx-datatable-column>
 			</ngx-datatable>
 		</div>
 		<div id="cases" class="tab-pane fade">
@@ -77,19 +56,11 @@
 				</div>
 			</div>
 
-			<ngx-datatable #casesTable class='material expandable casesTable' [columnMode]="'flex'" [rows]='displayCases'
+			<ngx-datatable #casesTable class='material expandable casesTable' [columnMode]="'flex'" [rows]="displayCases"
 			 [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'name', dir: 'asc'}]" [limit]="25">
 				<!-- Column Templates -->
-				<ngx-datatable-column name="Name" [flexGrow]="1">
-					<ng-template let-row="row" ngx-datatable-cell-template>
-						{{row.name}}
-					</ng-template>
-				</ngx-datatable-column>
-				<ngx-datatable-column name="Note" [flexGrow]="2">
-					<ng-template let-row="row" ngx-datatable-cell-template>
-						{{row.note}}
-					</ng-template>
-				</ngx-datatable-column>
+				<ngx-datatable-column name="Name" prop="name" [flexGrow]="1"></ngx-datatable-column>
+				<ngx-datatable-column name="Note" prop="note" [flexGrow]="2"></ngx-datatable-column>
 				<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
 					<ng-template let-row="row" ngx-datatable-cell-template>
 						<button (click)="editCase(row)" class="btn btn-primary" title="Edit Case"><i class="fa fa-edit"></i></button>

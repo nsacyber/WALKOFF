@@ -28,10 +28,10 @@ export class CasesService {
 
 	/**
 	 * Gets an array of CaseEvents for a given case.
-	 * @param name Name of case to query against.
+	 * @param caseId ID of case to query against.
 	 */
-	getEventsForCase(name: string): Promise<CaseEvent[]> {
-		return this.authHttp.get(`/api/cases/${name}/events`)
+	getEventsForCase(caseId: number): Promise<CaseEvent[]> {
+		return this.authHttp.get(`/api/cases/${caseId}/events`)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as CaseEvent[])

@@ -6,19 +6,31 @@ from walkoff.server.returncodes import *
 from tests.util.case_db_help import setup_subscriptions_for_action
 from tests.util.servertestcase import ServerTestCase
 from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
+from walkoff.executiondb import WorkflowStatusEnum, ActionStatusEnum
 from walkoff.executiondb.workflow import Workflow
 from uuid import uuid4
 from tests.util import execution_db_help
 from walkoff import executiondb
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
+from walkoff.executiondb.representable import Representable
+
+
+class MockWorkflow(Representable):
+    def __init__(self, execution_id):
+        self.execution_id = execution_id
+        self.id = '123'
+        self.name = 'workflow'
+
+    def get_execution_id(self):
+        return self.execution_id
 
 
 def mock_pause_workflow(self, execution_id):
-    WalkoffEvent.WorkflowPaused.send({"workflow_execution_id": execution_id, "id": "123"})
+    WalkoffEvent.WorkflowPaused.send({'execution_id': execution_id, 'id': '123', 'name': 'workflow'})
 
 
 def mock_resume_workflow(self, execution_id):
-    WalkoffEvent.WorkflowResumed.send({"workflow_execution_id": execution_id, "id": "123"})
+    WalkoffEvent.WorkflowResumed.send(MockWorkflow(execution_id))
 
 
 class TestWorkflowStatus(ServerTestCase):
@@ -34,6 +46,19 @@ class TestWorkflowStatus(ServerTestCase):
         case_database.case_db.session.query(case_database.Event).delete()
         case_database.case_db.session.query(case_database.Case).delete()
         case_database.case_db.session.commit()
+
+    def act_on_workflow(self, execution_id, action):
+        data = {'execution_id': execution_id, 'status': action}
+        self.patch_with_status_check('/api/workflowqueue', headers=self.headers, status_code=NO_CONTENT,
+                                     content_type="application/json", data=json.dumps(data))
+
+    @staticmethod
+    def make_generic_workflow_status():
+        return WorkflowStatus(uuid4(), uuid4(), 'wf1')
+
+    @staticmethod
+    def make_generic_action_statuses(number):
+        return [ActionStatus(uuid4(), uuid4(), 'app', 'action', 'name') for _ in range(number)]
 
     def test_read_all_workflow_status_no_action(self):
         exec_id = uuid4()
@@ -80,16 +105,16 @@ class TestWorkflowStatus(ServerTestCase):
 
         self.assertIn('started_at', response)
         response.pop('started_at')
-
         expected = {'execution_id': str(wf_exec_id),
                     'workflow_id': str(wf_id),
                     'name': 'test',
                     'status': 'running',
-                    'current_action_execution_id': str(action_exec_id),
-                    'current_action_id': str(action_id),
-                    'current_action_name': 'name',
-                    'current_app_name': 'test_app'}
-
+                    'current_action': {
+                        'execution_id': str(action_exec_id),
+                        'action_id': str(action_id),
+                        'action_name': 'test_action',
+                        'app_name': 'test_app',
+                        'name': 'name'}}
         self.assertDictEqual(response, expected)
 
     def test_read_workflow_status(self):
@@ -147,7 +172,6 @@ class TestWorkflowStatus(ServerTestCase):
         @WalkoffEvent.ActionExecutionSuccess.connect
         def y(sender, **kwargs):
             result['count'] += 1
-            result['data'] = kwargs['data']
 
         response = self.post_with_status_check(
             '/api/workflowqueue',
@@ -157,7 +181,6 @@ class TestWorkflowStatus(ServerTestCase):
         flask_server.running_context.executor.wait_and_reset(1)
         self.assertIn('id', response)
         self.assertEqual(result['count'], 1)
-        self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
         workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=response['id']).first()
@@ -177,7 +200,6 @@ class TestWorkflowStatus(ServerTestCase):
         @WalkoffEvent.ActionExecutionSuccess.connect
         def y(sender, **kwargs):
             result['count'] += 1
-            result['data'] = kwargs['data']
 
         data = {"workflow_id": str(workflow.id),
                 "arguments": [{"name": "call",
@@ -189,7 +211,6 @@ class TestWorkflowStatus(ServerTestCase):
         flask_server.running_context.executor.wait_and_reset(1)
 
         self.assertEqual(result['count'], 1)
-        self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: CHANGE INPUT'})
 
     def test_execute_workflow_pause_resume(self):
 
@@ -199,17 +220,13 @@ class TestWorkflowStatus(ServerTestCase):
 
         @WalkoffEvent.WorkflowPaused.connect
         def workflow_paused_listener(sender, **kwargs):
-            data = {'execution_id': str(wf_exec_id),
-                    'status': 'resume'}
-
             result['paused'] = True
 
             wf_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
                 execution_id=str(wf_exec_id)).first()
             self.assertIsNotNone(wf_status)
 
-            self.patch_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS,
-                                         content_type="application/json", data=json.dumps(data))
+            self.act_on_workflow(str(wf_exec_id), 'resume')
 
         @WalkoffEvent.WorkflowResumed.connect
         def workflow_resumed_listener(sender, **kwargs):
@@ -220,10 +237,7 @@ class TestWorkflowStatus(ServerTestCase):
         executiondb.execution_db.session.add(workflow_status)
         executiondb.execution_db.session.commit()
 
-        data = {'execution_id': str(wf_exec_id),
-                'status': 'pause'}
-        self.patch_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS,
-                                     content_type="application/json", data=json.dumps(data))
+        self.act_on_workflow(str(wf_exec_id), 'pause')
 
         self.assertTrue(result['paused'])
         self.assertTrue(result['resumed'])
@@ -240,11 +254,7 @@ class TestWorkflowStatus(ServerTestCase):
 
         @WalkoffEvent.ActionExecutionSuccess.connect
         def y(sender, **kwargs):
-
-            data = {'execution_id': response['id'],
-                    'status': 'abort'}
-            self.patch_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS,
-                                         content_type="application/json", data=json.dumps(data))
+            self.act_on_workflow(response['id'], 'abort')
 
         @WalkoffEvent.WorkflowAborted.connect
         def workflow_aborted_listener(sender, **kwargs):
@@ -262,3 +272,25 @@ class TestWorkflowStatus(ServerTestCase):
             execution_id=response['id']).first()
         self.assertIsNotNone(workflow_status)
         self.assertEqual(workflow_status.status.name, 'aborted')
+
+    def test_abort_statuses_no_actions(self):
+        workflow_status = self.make_generic_workflow_status()
+        workflow_status.aborted()
+        self.assertEqual(workflow_status.status, WorkflowStatusEnum.aborted)
+
+    def test_abort_statuses_with_actions_not_paused_or_awaiting_data(self):
+        workflow_status = self.make_generic_workflow_status()
+        actions = self.make_generic_action_statuses(3)
+        workflow_status._action_statuses = actions
+        workflow_status.aborted()
+        self.assertEqual(workflow_status.status, WorkflowStatusEnum.aborted)
+        self.assertEqual(actions[-1].status, ActionStatusEnum.executing)
+
+    def test_abort_statuses_with_actions_last_awaiting_data(self):
+        workflow_status = self.make_generic_workflow_status()
+        actions = self.make_generic_action_statuses(3)
+        actions[-1].status = ActionStatusEnum.awaiting_data
+        workflow_status._action_statuses = actions
+        workflow_status.aborted()
+        self.assertEqual(workflow_status.status, WorkflowStatusEnum.aborted)
+        self.assertEqual(actions[-1].status, ActionStatusEnum.aborted)

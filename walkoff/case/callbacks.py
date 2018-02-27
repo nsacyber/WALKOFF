@@ -28,10 +28,11 @@ def add_entry_to_case(sender, data, event_type, entry_message, message_name):
     if cases_to_add:
         if not isinstance(data, string_types):
             try:
+                if 'data' in data:
+                    data = data['data']
                 data = json.dumps(data)
             except TypeError:
                 data = str(data)
-
         event = Event(type=event_type,
                       timestamp=datetime.datetime.utcnow(),
                       originator=originator,

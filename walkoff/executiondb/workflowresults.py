@@ -35,6 +35,8 @@ class WorkflowStatus(Device_Base):
 
     def awaiting_data(self):
         self.status = WorkflowStatusEnum.awaiting_data
+        if self._action_statuses:
+            self._action_statuses[-1].awaiting_data()
 
     def completed(self):
         self.completed_at = datetime.utcnow()
@@ -43,28 +45,26 @@ class WorkflowStatus(Device_Base):
     def aborted(self):
         self.completed_at = datetime.utcnow()
         self.status = WorkflowStatusEnum.aborted
+        if self._action_statuses:
+            self._action_statuses[-1].aborted()
 
     def add_action_status(self, action_status):
         self._action_statuses.append(action_status)
 
     def as_json(self, full_actions=False):
-        ret = {"execution_id": self.execution_id,
-               "workflow_id": self.workflow_id,
+        ret = {"execution_id": str(self.execution_id),
+               "workflow_id": str(self.workflow_id),
                "name": self.name,
-               "status": self.status.name,
-               "started_at": str(self.started_at)}
+               "status": self.status.name}
         if self.started_at:
             ret["started_at"] = self.started_at.isoformat()
         if self.status in [WorkflowStatusEnum.completed, WorkflowStatusEnum.aborted]:
             ret["completed_at"] = self.completed_at.isoformat()
         if full_actions:
             ret["action_statuses"] = [action_status.as_json() for action_status in self._action_statuses]
-        elif self._action_statuses:
+        elif self._action_statuses and self.status != WorkflowStatusEnum.completed:
             current_action = self._action_statuses[-1]
-            ret['current_action_execution_id'] = current_action.execution_id
-            ret['current_action_id'] = current_action.action_id
-            ret['current_action_name'] = current_action.name
-            ret['current_app_name'] = current_action.app_name
+            ret['current_action'] = current_action.as_json(summary=True)
 
         return ret
 
@@ -94,11 +94,12 @@ class ActionStatus(Device_Base):
         self.arguments = arguments
         self.status = ActionStatusEnum.executing
 
+    def aborted(self):
+        if self.status == ActionStatusEnum.awaiting_data:
+            self.status = ActionStatusEnum.aborted
+
     def running(self):
         self.status = ActionStatusEnum.executing
-
-    def paused(self):
-        self.status = ActionStatusEnum.paused
 
     def awaiting_data(self):
         self.status = ActionStatusEnum.awaiting_data
@@ -113,16 +114,18 @@ class ActionStatus(Device_Base):
         self.result = json.dumps(data['result'])
         self.completed_at = datetime.utcnow()
 
-    def as_json(self):
-        ret = {"execution_id": self.execution_id,
-               "action_id": self.action_id,
+    def as_json(self, summary=False):
+        ret = {"execution_id": str(self.execution_id),
+               "action_id": str(self.action_id),
                "name": self.name,
                "app_name": self.app_name,
-               "action_name": self.action_name,
-               "arguments": json.loads(self.arguments) if self.arguments else [],
-               "status": self.status.name,
-               "started_at": self.started_at.isoformat()
-               }
+               "action_name": self.action_name}
+        if summary:
+            return ret
+        ret.update(
+            {"arguments": json.loads(self.arguments) if self.arguments else [],
+             "status": self.status.name,
+             "started_at": self.started_at.isoformat()})
         if self.status in [ActionStatusEnum.success, ActionStatusEnum.failure]:
             ret["result"] = json.loads(self.result)
             ret["completed_at"] = self.completed_at.isoformat()

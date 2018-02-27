@@ -8,12 +8,15 @@ import { AppApi } from '../models/api/appApi';
 import { Device } from '../models/device';
 import { User } from '../models/user';
 import { Role } from '../models/role';
+import { WorkflowStatus } from '../models/execution/workflowStatus';
 
 @Injectable()
 export class PlaybookService {
 	constructor(private authHttp: JwtHttp) { }
 
-	// TODO: should maybe just return all playbooks and not just names?
+	/**
+	 * Returns all playbooks and their child workflows in minimal form (id, name).
+	 */
 	getPlaybooks(): Promise<Playbook[]> {
 		return this.authHttp.get('/api/playbooks')
 			.toPromise()
@@ -141,15 +144,15 @@ export class PlaybookService {
 	}
 
 	/**
-	 * Notifies the server to execute a given workflow under a given playbook.
+	 * Notifies the server to execute a given workflow.
 	 * Note that execution results are not returned here, but on a separate stream-actions EventSource.
-	 * @param playbookId ID of the playbook the workflow exists under
 	 * @param workflowId ID of the workflow to execute
 	 */
-	executeWorkflow(playbookId: string, workflowId: string): Promise<void> {
-		return this.authHttp.post(`/api/playbooks/${playbookId}/workflows/${workflowId}/execute`, {})
+	addWorkflowToQueue(workflowId: string): Promise<WorkflowStatus> {
+		return this.authHttp.post('api/workflowqueue', { workflow_id: workflowId })
 			.toPromise()
 			.then(this.extractData)
+			.then(workflowStatus => workflowStatus as WorkflowStatus)
 			.catch(this.handleError);
 	}
 	

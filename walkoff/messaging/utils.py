@@ -19,9 +19,9 @@ def save_message_callback(sender, **message_data):
     requires_action = strip_requires_response_from_message_body(body)
     if requires_action:
         walkoff.messaging.workflow_authorization_cache.add_authorized_users(
-            sender['workflow_execution_id'], users=message_data['users'], roles=message_data['roles'])
+            message_data['workflow']['execution_id'], users=message_data['users'], roles=message_data['roles'])
     with app.app_context():
-        save_message(body, message_data, sender['workflow_execution_id'], requires_action)
+        save_message(body, message_data, message_data['workflow']['execution_id'], requires_action)
 
 
 def strip_requires_response_from_message_body(body):

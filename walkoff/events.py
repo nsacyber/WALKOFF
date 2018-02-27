@@ -164,6 +164,7 @@ class WalkoffEvent(Enum):
     def requires_data(self):
         return (self in (WalkoffEvent.WorkflowShutdown,
                          WalkoffEvent.ActionExecutionError,
+                         WalkoffEvent.ActionArgumentsInvalid,
                          WalkoffEvent.ActionExecutionSuccess,
                          WalkoffEvent.SendMessage))
 

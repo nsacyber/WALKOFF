@@ -1,16 +1,14 @@
-from uuid import UUID
 import json
 from flask import request, current_app, send_file
 from flask_jwt_extended import jwt_required
 from sqlalchemy import exists, and_
 from sqlalchemy.exc import IntegrityError, StatementError
-import walkoff.config.paths
 from walkoff import executiondb
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
-from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory
 from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.workflow import Workflow
+from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid
 from walkoff.helpers import InvalidExecutionElement, regenerate_workflow_ids
 from uuid import uuid4
 try:
@@ -33,15 +31,6 @@ def playbook_getter(playbook_id):
 def workflow_getter(playbook_id, workflow_id):
     return executiondb.execution_db.session.query(Workflow).filter_by(
         id=workflow_id, _playbook_id=playbook_id).first()
-
-
-def is_valid_uid(*ids):
-    try:
-        for id_ in ids:
-            UUID(id_)
-        return True
-    except ValueError as e:
-        return False
 
 
 with_playbook = with_resource_factory('playbook', playbook_getter, validator=is_valid_uid)

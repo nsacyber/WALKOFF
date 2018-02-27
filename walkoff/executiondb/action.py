@@ -1,5 +1,4 @@
 import logging
-import threading
 import uuid
 import traceback
 

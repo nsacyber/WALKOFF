@@ -12,15 +12,15 @@ export class Workflow extends ExecutionElement {
 	/**
 	 * Array of actions specified in the workflow.
 	 */
-	actions: Action[] = [];
+	actions?: Action[] = [];
 	/**
 	 * Array of branches between actions.
 	 */
-	branches: Branch[] = [];
+	branches?: Branch[] = [];
 	/**
 	 * ID of the action designated as the start action.
 	 */
-	start: string;
+	start?: string;
 	/**
 	 * A factor of how often the workflow fails.
 	 */

@@ -16,12 +16,12 @@ logger = logging.getLogger(__name__)
 
 def register_blueprints(flaskapp):
     from walkoff.server.blueprints import custominterface
-    from walkoff.server.blueprints import workflowresult
+    from walkoff.server.blueprints import workflowqueue
     from walkoff.server.blueprints import notifications
 
     flaskapp.register_blueprint(custominterface.custom_interface_page, url_prefix='/custominterfaces/<interface>')
-    flaskapp.register_blueprint(workflowresult.workflowresults_page, url_prefix='/api/workflowresults')
-    flaskapp.register_blueprint(notifications.notifications_page, url_prefix='/api/notifications')
+    flaskapp.register_blueprint(workflowqueue.workflowqueue_page, url_prefix='/api/streams/workflowqueue')
+    flaskapp.register_blueprint(notifications.notifications_page, url_prefix='/api/streams/messages')
     __register_all_app_blueprints(flaskapp)
 
 

@@ -30,6 +30,7 @@ export class UtilitiesService {
 		}
 		return trimmed;
 	}
+
 	/**
 	 * Gets a locale string for a given UTC datetime object or string.
 	 * @param time Inputted date object or string representation of a UTC time

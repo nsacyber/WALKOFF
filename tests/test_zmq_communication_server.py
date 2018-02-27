@@ -62,7 +62,7 @@ class TestZmqCommunicationServer(ServerTestCase):
         @WalkoffEvent.ActionExecutionSuccess.connect
         def y(sender, **kwargs):
             result['count'] += 1
-            result['data'] = kwargs['data']
+            result['data'] = kwargs['data']['data']
 
         data = {"workflow_id": str(workflow.id),
                 "arguments": [{"name": "call",
