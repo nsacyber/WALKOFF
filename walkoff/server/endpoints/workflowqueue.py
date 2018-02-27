@@ -30,25 +30,30 @@ validate_workflow_is_registered = validate_resource_exists_factory('workflow', d
 validate_execution_id_is_registered = validate_resource_exists_factory('workflow', does_execution_id_exist)
 
 status_order = OrderedDict(
-    [((WorkflowStatusEnum.running, ), WorkflowStatus.started_at),
-     ((WorkflowStatusEnum.awaiting_data, WorkflowStatusEnum.paused), WorkflowStatus.started_at),
+    [((WorkflowStatusEnum.running, WorkflowStatusEnum.awaiting_data, WorkflowStatusEnum.paused),
+      WorkflowStatus.started_at),
      ((WorkflowStatusEnum.aborted, WorkflowStatusEnum.completed), WorkflowStatus.completed_at)])
+
+executing_statuses = (WorkflowStatusEnum.running, WorkflowStatusEnum.awaiting_data, WorkflowStatusEnum.paused)
+completed_statuses = (WorkflowStatusEnum.aborted, WorkflowStatusEnum.completed)
 
 
 def get_all_workflow_status(limit=50):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     def __func():
-        ret = []
-        for statuses, ordering in status_order.items():
-            ret.extend(
-                devicedb.device_db.session.query(WorkflowStatus).
-                filter(WorkflowStatus.status.in_(statuses)).
-                order_by(ordering).
-                limit(limit-len(ret)).
-                all())
-            if len(ret) >= limit:
-                break
+
+        ret = devicedb.device_db.session.query(WorkflowStatus). \
+            filter(WorkflowStatus.status.in_(executing_statuses)). \
+            order_by(WorkflowStatus.started_at). \
+            all()
+
+        if len(ret) < limit:
+            ret.extend(devicedb.device_db.session.query(WorkflowStatus).
+                       filter(WorkflowStatus.status.in_(completed_statuses)).
+                       order_by(WorkflowStatus.started_at).
+                       limit(limit - len(ret)).
+                       all())
 
         ret = [workflow_status.as_json() for workflow_status in ret]
         return ret, SUCCESS
