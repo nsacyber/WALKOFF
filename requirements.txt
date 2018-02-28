@@ -18,4 +18,3 @@ semver
 jsonschema
 psutil > 5.0.0
 six >= 1.10.0
-sqlalchemy_utils
