@@ -1,9 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
-import * as moment from 'moment';
 
 import { MessagesService } from './messages.service';
+import { UtilitiesService } from '../utilities.service';
 
 import { Message } from '../models/message/message';
 
@@ -20,7 +20,7 @@ export class MessagesModalComponent implements OnInit {
 
 	constructor(
 		private messagesService: MessagesService, private activeModal: NgbActiveModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig, private utils: UtilitiesService,
 	) {}
 
 	ngOnInit(): void {
@@ -36,7 +36,7 @@ export class MessagesModalComponent implements OnInit {
 		this.messagesService.respondToMessage(this.message.workflow_execution_uid, action)
 			.then(() => {
 				this.message.awaiting_response = false;
-				this.message.responded_at = new Date();
+				this.message.responded_at = this.utils.getCurrentIsoString();
 			})
 			.catch(e => this.toastyService.error(`Error performing ${action} on message: ${e.message}`));
 	}
@@ -46,13 +46,5 @@ export class MessagesModalComponent implements OnInit {
 	 */
 	dismiss(): void {
 		this.activeModal.dismiss();
-	}
-
-	/**
-	 * Converts a date time to a relative value (e.g. '5 minutes ago').
-	 * @param time Time to convert
-	 */
-	getRelativeTime(time: Date): string {
-		return moment(time).fromNow();
 	}
 }

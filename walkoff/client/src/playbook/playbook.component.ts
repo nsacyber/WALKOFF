@@ -261,6 +261,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * @param workflow Workflow to load
 	 */
 	loadWorkflow(playbook: Playbook, workflow: Workflow): void {
+		this.closeWorkflow();
+
 		if (playbook.id && workflow.id) {
 			this.playbookService.loadWorkflow(playbook.id, workflow.id)
 				.then(loadedWorkflow => {
@@ -898,6 +900,11 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.insertNode(appName, actionName, centerGraphPosition, false);
 	}
 
+	/**
+	 * Simple average function to get the avg. of 2 numbers.
+	 * @param a 1st number
+	 * @param b 2nd number
+	 */
 	avg(a: number, b: number): number {
 		return (a + b) / 2;
 	}

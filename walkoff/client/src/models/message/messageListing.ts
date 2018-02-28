@@ -1,8 +1,8 @@
 export class MessageListing {
 	id: number;
 	subject: string;
-	created_at: Date;
+	created_at: string;
 	awaiting_response: boolean;
 	is_read: boolean;
-	last_read_at: Date;
+	last_read_at: string;
 }

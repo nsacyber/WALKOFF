@@ -7,11 +7,11 @@ export class Message {
 	requires_reauthorization: boolean;
 	subject: string;
 	body: MessageBody[] = [];
-	created_at: Date;
-	last_read_at?: Date;
+	created_at: string;
+	last_read_at?: string;
 	is_read: boolean;
 	awaiting_response: boolean;
 	responded_by?: string;
-	responded_at?: Date;
+	responded_at?: string;
 	read_by?: string[];
 }

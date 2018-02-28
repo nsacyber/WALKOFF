@@ -14,7 +14,7 @@
 		<div *ngIf="message.responded_by">
 			<i>
 				Responded by: {{message.responded_by}}
-				<span [title]="message.responded_at">({{getRelativeTime(message.responded_at)}})</span>
+				<span [title]="utils.getLocalTime(message.responded_at)">({{utils.getRelativeLocalTime(message.responded_at)}})</span>
 			</i>
 		</div>
 		<div *ngFor="let body of message.body">

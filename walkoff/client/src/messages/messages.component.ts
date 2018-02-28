@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import * as moment from 'moment';
 
 import { MessagesService } from './messages.service';
 import { UtilitiesService } from '../utilities.service';
@@ -21,7 +20,6 @@ import { MessageListing } from '../models/message/messageListing';
 	providers: [MessagesService],
 })
 export class MessagesComponent implements OnInit {
-	utils: UtilitiesService = new UtilitiesService();
 	//Device Data Table params
 	messages: MessageListing[] = [];
 	displayMessages: MessageListing[] = [];
@@ -34,6 +32,7 @@ export class MessagesComponent implements OnInit {
 	constructor(
 		private messagesService: MessagesService, private modalService: NgbModal,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		public utils: UtilitiesService,
 	) {}
 
 	/**
@@ -89,7 +88,7 @@ export class MessagesComponent implements OnInit {
 		this.messagesService.getMessage(messageListing.id)
 			.then(message => {
 				messageListing.is_read = true;
-				messageListing.last_read_at = new Date();
+				messageListing.last_read_at = this.utils.getCurrentIsoString();
 
 				const modalRef = this.modalService.open(MessagesModalComponent);
 		
@@ -134,7 +133,7 @@ export class MessagesComponent implements OnInit {
 				this.messages.forEach(message => {
 					if (idsToRead.indexOf(message.id) !== -1) {
 						message.is_read = true;
-						message.last_read_at = new Date();
+						message.last_read_at = this.utils.getCurrentIsoString();
 					}
 				});
 			})
@@ -158,14 +157,6 @@ export class MessagesComponent implements OnInit {
 				});
 			})
 			.catch(e => this.toastyService.error(`Error marking messages as unread: ${e.message}`));
-	}
-
-	/**
-	 * Gets a friendly relvative time (e.g. '5 minutes ago') based upon an inputted datetime value.
-	 * @param createdAt Date to convert
-	 */
-	getFriendlyTime(createdAt: Date): string {
-		return moment(createdAt).fromNow();
 	}
 
 	/**

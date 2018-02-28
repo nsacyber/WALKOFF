@@ -10,7 +10,7 @@ import { SchedulerModalComponent } from './scheduler.modal.component';
 
 import { SchedulerService } from './scheduler.service';
 
-import { ScheduledTask } from '../models/scheduledTask';
+import { ScheduledTask } from '../models/scheduler/scheduledTask';
 
 @Component({
 	selector: 'scheduler-component',

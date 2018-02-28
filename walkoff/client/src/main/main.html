@@ -74,7 +74,7 @@
                       <td>
                           <a class="dropdown-item" href="#" (click)="openMessage($event, messageListing)">{{utils.getTruncatedString(messageListing.subject, 25, '(no subject)')}}</a>    
                       </td>
-                      <td [title]="messageListing.created_at">{{notificationRelativeTimes[messageListing.id]}}</td>
+                      <td [title]="utils.getLocalTime(messageListing.created_at)">{{notificationRelativeTimes[messageListing.id]}}</td>
                     </tr>
                   </table>
                 </div>
