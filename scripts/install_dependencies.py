@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath('.'))
 
 import pip
 
-from walkoff.helpers import list_apps
+from walkoff.helpers import list_apps, list_interfaces
 
 
 def cmd_line():
