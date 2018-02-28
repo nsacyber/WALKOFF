@@ -14,14 +14,16 @@ logger = logging.getLogger(__name__)
 def save_message_callback(sender, **message_data):
     from walkoff.server import app
 
-    message_data = message_data['data']
+    workflow_data = message_data['data']['workflow']
+    message_data = message_data['data']['message']
     body = message_data['body']
+
     requires_action = strip_requires_response_from_message_body(body)
     if requires_action:
         walkoff.messaging.workflow_authorization_cache.add_authorized_users(
-            message_data['workflow']['execution_id'], users=message_data['users'], roles=message_data['roles'])
+            workflow_data['execution_id'], users=message_data['users'], roles=message_data['roles'])
     with app.app_context():
-        save_message(body, message_data, message_data['workflow']['execution_id'], requires_action)
+        save_message(body, message_data,workflow_data['execution_id'], requires_action)
 
 
 def strip_requires_response_from_message_body(body):
