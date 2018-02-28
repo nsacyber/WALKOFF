@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 valid_operators = ('and', 'or', 'xor')
 
+
 class ConditionalExpression(ExecutionElement, Device_Base):
     __tablename__ = 'conditional_expression'
     id = Column(UUIDType(), primary_key=True, default=uuid4)
@@ -39,15 +40,18 @@ class ConditionalExpression(ExecutionElement, Device_Base):
                                   'or': self._or,
                                   'xor': self._xor}
 
-    def _construct_children(self, child_expressions):
-        for child in child_expressions:
-            child.parent = self
-
     @orm.reconstructor
     def init_on_load(self):
         self.__operator_lookup = {'and': self._and,
                                   'or': self._or,
                                   'xor': self._xor}
+
+    def validate(self):
+        pass
+
+    def _construct_children(self, child_expressions):
+        for child in child_expressions:
+            child.parent = self
 
     def execute(self, data_in, accumulator):
         try:

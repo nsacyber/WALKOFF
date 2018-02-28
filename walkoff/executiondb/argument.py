@@ -31,14 +31,6 @@ class Argument(Device_Base):
             selection (list, optional): A list of fields from which to dereference the Action result. Defaults
                 to None.
         """
-        if value is None and not reference:
-            message = 'Input {} must have either value or reference. Input has neither'.format(name)
-            logger.error(message)
-            raise InvalidArgument(message)
-        elif value is not None and reference:
-            message = 'Input {} must have either value or reference. Input has both. Using "value"'.format(name)
-            logger.warning(message)
-
         self.name = name
         self.value = value
         self.reference = reference if reference else None
@@ -48,6 +40,15 @@ class Argument(Device_Base):
     @orm.reconstructor
     def init_on_load(self):
         self._is_reference = True if self.value is None else False
+
+    def validate(self):
+        if self.value is None and not self.reference:
+            message = 'Input {} must have either value or reference. Input has neither'.format(self.name)
+            logger.error(message)
+            raise InvalidArgument(message)
+        elif self.value is not None and self.reference:
+            message = 'Input {} must have either value or reference. Input has both. Using "value"'.format(self.name)
+            logger.warning(message)
 
     def is_ref(self):
         """Returns whether the reference field is being used, or the value field.

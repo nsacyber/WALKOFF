@@ -22,6 +22,10 @@ class Playbook(ExecutionElement, Device_Base):
         if workflows:
             self.workflows = workflows
 
+    def validate(self):
+        for workflow in self.workflows:
+            workflow.validate()
+
     def add_workflow(self, workflow):
         """Add a Workflow to the Playbook.
 

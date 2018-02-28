@@ -42,6 +42,10 @@ class Branch(ExecutionElement, Device_Base):
         self.priority = priority
         self.condition = condition
 
+    def validate(self):
+        if self.condition:
+            self.condition.validate()
+
     def execute(self, data_in, accumulator):
         """Executes the Branch object, determining if this Branch should be taken.
 

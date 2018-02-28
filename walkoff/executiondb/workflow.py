@@ -4,8 +4,7 @@ from uuid import UUID
 import threading
 
 from sqlalchemy import Column, String, ForeignKey, orm, UniqueConstraint
-from sqlalchemy.orm import relationship, backref
-from sqlalchemy.orm.collections import attribute_mapped_collection
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway.appinstance import AppInstance
@@ -13,7 +12,7 @@ from walkoff.executiondb import Device_Base
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.action import Action
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import InvalidArgument, format_exception_message
+from walkoff.helpers import InvalidArgument, format_exception_message, InvalidExecutionElement
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +57,21 @@ class Workflow(ExecutionElement, Device_Base):
         self._accumulator = {}
         self._instances = {}
         self._execution_id = 'default'
+
+    def validate(self):
+        found = False
+        action_ids = []
+        for action in self.actions:
+            action.validate()
+            action_ids.append(action.id)
+
+        if not found:
+            raise InvalidExecutionElement
+
+        for branch in self.branches:
+            branch.validate()
+            if (branch.source_id not in action_ids) or (branch.destination_id not in action_ids):
+                raise InvalidExecutionElement
 
     def get_action_by_id(self, action_id):
         return next((action for action in self.actions if action.id == action_id), None)
