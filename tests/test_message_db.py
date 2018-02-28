@@ -404,11 +404,11 @@ class TestMessageDatabase(TestCase):
         body = [{'message': 'look here', 'requires_auth': False},
                 {'message': 'also here', 'requires_auth': False},
                 {'message': 'here thing'}]
-        message_data = {'body': body,
-                        'users': [self.user.id],
-                        'roles': [self.role.id],
-                        'subject': 'Warning about thing',
-                        'requires_reauth': False,
+        message_data = {'message': {'body': body,
+                                'users': [self.user.id],
+                                'roles': [self.role.id],
+                                'subject': 'Warning about thing',
+                                'requires_reauth': False},
                         'workflow': {'execution_id': 'workflow_uid10'}}
         sender = {}
         WalkoffEvent.SendMessage.send(sender, data=message_data)
@@ -422,11 +422,11 @@ class TestMessageDatabase(TestCase):
         body = [{'message': 'look here', 'requires_response': False},
                 {'message': 'also here', 'requires_response': True},
                 {'message': 'here thing'}]
-        message_data = {'body': body,
-                        'users': [self.user.id],
-                        'roles': [self.role.id],
-                        'subject': 'Re: Best chicken recipe',
-                        'requires_reauth': False,
+        message_data = {'message': {'body': body,
+                                'users': [self.user.id],
+                                'roles': [self.role.id],
+                                'subject': 'Re: Best chicken recipe',
+                                'requires_reauth': False},
                         'workflow': {'execution_id': 'workflow_uid14'}}
         sender = {}
         WalkoffEvent.SendMessage.send(sender, data=message_data)
@@ -442,11 +442,11 @@ class TestMessageDatabase(TestCase):
         body = [{'message': 'look here', 'requires_response': False},
                 {'message': 'also here', 'requires_response': True},
                 {'message': 'here thing'}]
-        message_data = {'body': body,
-                        'users': [self.user.id],
-                        'roles': [self.role.id],
-                        'subject': 'Re: Best chicken recipe',
-                        'requires_reauth': False,
+        message_data = {'message': {'body': body,
+                                'users': [self.user.id],
+                                'roles': [self.role.id],
+                                'subject': 'Re: Best chicken recipe',
+                                'requires_reauth': False},
                         'workflow': {'execution_id': 'workflow_uid14'}}
         sender = {}
         res = {'called': False}

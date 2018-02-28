@@ -18,13 +18,6 @@ if not getattr(__builtins__, 'WindowsError', None):
     class WindowsError(OSError): pass
 
 
-def modified_setup_worker_env():
-    import tests.config
-    import walkoff.config.config
-    walkoff.appgateway.cache_apps(tests.config.test_apps_path)
-    walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
-
-
 class ServerTestCase(unittest.TestCase):
     test_workflows_path = tests.config.test_workflows_path_with_generated
     patch = True

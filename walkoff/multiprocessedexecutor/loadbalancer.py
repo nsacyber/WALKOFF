@@ -270,7 +270,7 @@ class Receiver:
                 if event != WalkoffEvent.SendMessage:
                     data['data'] = json.loads(message.additional_data)
                 else:
-                    data['data'] = format_message_event_data(message)
+                    data['message'] = format_message_event_data(message)
             event.send(sender, data=data)
             if event in [WalkoffEvent.WorkflowShutdown, WalkoffEvent.WorkflowAborted]:
                 self._increment_execution_count()

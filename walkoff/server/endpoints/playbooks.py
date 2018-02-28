@@ -86,7 +86,7 @@ def get_playbooks(full=None):
 
                 ret_playbooks.append(entry)
 
-        return sorted(ret_playbooks, key=(lambda pb: playbook.name.lower())), SUCCESS
+        return sorted(ret_playbooks, key=(lambda pb: pb['name'].lower())), SUCCESS
 
     return __func()
 

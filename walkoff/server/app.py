@@ -93,7 +93,7 @@ def create_app():
     register_blueprints(_app)
 
     import walkoff.server.workflowresults  # Don't delete this import
-
+    import walkoff.messaging.utils  # Don't delete this import
     return _app
 
 
