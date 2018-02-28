@@ -8,7 +8,7 @@ from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 import walkoff.config.config
 from walkoff.helpers import format_db_path
 import walkoff.config.paths
-
+from walkoff.helpers import utc_as_rfc_datetime
 logger = logging.getLogger(__name__)
 
 Case_Base = declarative_base()
@@ -69,7 +69,7 @@ class Event(Case_Base):
             The JSON representation of an Event object.
         """
         output = {'id': self.id,
-                  'timestamp': self.timestamp.isoformat(),
+                  'timestamp': utc_as_rfc_datetime(self.timestamp),
                   'type': self.type,
                   'originator': str(self.originator),
                   'message': self.message if self.message is not None else '',

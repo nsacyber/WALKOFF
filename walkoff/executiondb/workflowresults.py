@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship, backref
 
 from walkoff.executiondb import Device_Base, WorkflowStatusEnum, ActionStatusEnum
 from sqlalchemy_utils import UUIDType
-
+from walkoff.helpers import utc_as_rfc_datetime
 
 class WorkflowStatus(Device_Base):
     """Case ORM for a Workflow event in the database
@@ -57,9 +57,9 @@ class WorkflowStatus(Device_Base):
                "name": self.name,
                "status": self.status.name}
         if self.started_at:
-            ret["started_at"] = self.started_at.isoformat()
+            ret["started_at"] = utc_as_rfc_datetime(self.started_at)
         if self.status in [WorkflowStatusEnum.completed, WorkflowStatusEnum.aborted]:
-            ret["completed_at"] = self.completed_at.isoformat()
+            ret["completed_at"] = utc_as_rfc_datetime(self.completed_at)
         if full_actions:
             ret["action_statuses"] = [action_status.as_json() for action_status in self._action_statuses]
         elif self._action_statuses and self.status != WorkflowStatusEnum.completed:
@@ -125,8 +125,8 @@ class ActionStatus(Device_Base):
         ret.update(
             {"arguments": json.loads(self.arguments) if self.arguments else [],
              "status": self.status.name,
-             "started_at": self.started_at.isoformat()})
+             "started_at": utc_as_rfc_datetime(self.started_at)})
         if self.status in [ActionStatusEnum.success, ActionStatusEnum.failure]:
             ret["result"] = json.loads(self.result)
-            ret["completed_at"] = self.completed_at.isoformat()
+            ret["completed_at"] = utc_as_rfc_datetime(self.completed_at)
         return ret
