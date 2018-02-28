@@ -4,6 +4,10 @@ import { ExecutionElement } from './executionElement';
 
 export class Workflow extends ExecutionElement {
 	// _playbook_id: number;
+	/**
+	 * Playbook ID this workflow resides under. Only used on create/duplicate.
+	 */
+	playbook_id?: string;
 
 	/**
 	 * Name of the workflow. Updated by passing in new_name in POST.
