@@ -77,8 +77,8 @@ class Condition(ExecutionElement, executiondb.Device_Base):
         for transform in self.transforms:
             data = transform.execute(data, accumulator)
         try:
-            self.__update_arguments_with_data(data)
-            args = validate_condition_parameters(self._api, self.arguments, self.action_name, accumulator=accumulator)
+            arguments = self.__update_arguments_with_data(data)
+            args = validate_condition_parameters(self._api, arguments, self.action_name, accumulator=accumulator)
             logger.debug('Arguments passed to condition {} are valid'.format(self.id))
             ret = self._condition_executable(**args)
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionSuccess)
@@ -94,18 +94,19 @@ class Condition(ExecutionElement, executiondb.Device_Base):
         except Exception as e:
             logger.error('Error encountered executing '
                          'condition {0} with arguments {1} and value {2}: '
-                         'Error {3}. Returning False'.format(self.action_name, self.arguments, data,
+                         'Error {3}. Returning False'.format(self.action_name, arguments, data,
                                                              format_exception_message(e)))
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionError)
             raise
 
     def __update_arguments_with_data(self, data):
         arg = None
+        arguments = []
         for argument in self.arguments:
             if argument.name == self._data_param_name:
                 arg = argument
-                break
+            else:
+                arguments.append(argument)
         if arg:
-            self.arguments.remove(arg)
-        self.arguments.append(Argument(self._data_param_name, value=data))
-        executiondb.execution_db.session.commit()
+            arguments.append(Argument(self._data_param_name, value=data))
+        return arguments

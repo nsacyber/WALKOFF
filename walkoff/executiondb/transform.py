@@ -65,8 +65,8 @@ class Transform(ExecutionElement, Device_Base):
         """
         original_data_in = deepcopy(data_in)
         try:
-            self.__update_arguments_with_data(data_in)
-            args = validate_transform_parameters(self._api, self.arguments, self.action_name, accumulator=accumulator)
+            arguments = self.__update_arguments_with_data(data_in)
+            args = validate_transform_parameters(self._api, arguments, self.action_name, accumulator=accumulator)
             result = self._transform_executable(**args)
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformSuccess)
             return result
@@ -82,10 +82,12 @@ class Transform(ExecutionElement, Device_Base):
 
     def __update_arguments_with_data(self, data):
         arg = None
+        arguments = []
         for argument in self.arguments:
             if argument.name == self._data_param_name:
                 arg = argument
-                break
+            else:
+                arguments.append(argument)
         if arg:
-            self.arguments.remove(arg)
-        self.arguments.append(Argument(self._data_param_name, value=data))
+            arguments.append(Argument(self._data_param_name, value=data))
+        return arguments

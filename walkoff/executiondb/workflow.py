@@ -179,16 +179,6 @@ class Workflow(ExecutionElement, Device_Base):
                     branches.append(branch)
         return branches
 
-    def __swap_action_arguments(self, action, start_arguments):
-        logger.debug('Swapping arguments to first action of workflow {0}'.format(self.name))
-        try:
-            action.set_arguments(start_arguments)
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowArgumentsValidated)
-        except InvalidArgument as e:
-            logger.error('Cannot change arguments to workflow {0}. '
-                         'Invalid arguments. Error: {1}'.format(self.name, format_exception_message(e)))
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowArgumentsInvalid)
-
     def __shutdown(self):
         # Upon finishing shut down instances
         self._instance_repo.shutdown_instances()

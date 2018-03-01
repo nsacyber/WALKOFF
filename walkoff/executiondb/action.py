@@ -182,9 +182,3 @@ class Action(ExecutionElement, Device_Base):
         else:
             logger.debug('Trigger is not valid for input {0}'.format(data_in))
             return False
-
-    def __get_argument_by_name(self, name):
-        for argument in self.arguments:
-            if argument.name == name:
-                return argument
-        return None
