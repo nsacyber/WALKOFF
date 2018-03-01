@@ -774,6 +774,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				this.playbooks.push(data);
 				this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
 				this.toastyService.success(`Successfuly imported playbook "${this.playbookToImport.name}".`);
+				this.playbookToImport = null;
 			},
 			e => this.toastyService.error(`Error importing playbook "${this.playbookToImport.name}": ${e.message}`),
 		);

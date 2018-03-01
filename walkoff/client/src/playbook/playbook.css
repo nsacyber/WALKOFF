@@ -169,10 +169,22 @@
 	min-height: 30px;
 }
 
+#workflowsModal .importContainer {
+	margin-bottom: 5px;
+}
+
+#workflowsModal .importContainer h4 {
+	display: inline-block;
+}
+
+#workflowsModal .importPlaybookInput {
+	display: inline-block;
+}
+
 #workflowsModal .modal-title,
 #executionResultsModal .modal-title,
 #playbookAndWorkflowActionModal .modal-title {
-	display: inline;
+	display: inline-block;
 }
 
 #executionResultsModal > .modal-dialog {

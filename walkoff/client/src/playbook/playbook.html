@@ -308,18 +308,20 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h4 class="modal-title" id="workflowModalTitle">Select a Workflow</h4>
+                    <h4 class="modal-title" id="workflowModalTitle">Playbooks and Workflows</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div>
-                        <button [disabled]="!playbookToImport" (click)="importPlaybook()" class="btn btn-primary" title="Import Playbook">
-                            <i class="fa fa-upload"></i>
-                        </button>
-                        <input type="file" name="file" id="file" class="importPlaybookInput" (change)="onImportSelectChange($event)"/>
-                        <label for="file">Choose a Playbook</label>
+                    <div class="importContainer">
+                        <h4>Import Playbook</h4>
+                        <div class="pull-right">
+                            <input type="file" name="file" id="file" class="importPlaybookInput" (change)="onImportSelectChange($event)"/>
+                            <button [disabled]="!playbookToImport" (click)="importPlaybook()" class="btn btn-primary" title="Import Playbook">
+                                <i class="fa fa-upload"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="panel-group" id="workflowAccordion">
                         <div *ngFor="let playbook of playbooks" class="panel panel-default">
