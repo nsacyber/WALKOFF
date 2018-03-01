@@ -64,6 +64,7 @@ class Condition(ExecutionElement, Device_Base):
 
     def validate(self):
         self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
+        self._condition_executable = get_condition(self.app_name, self._run)
         tmp_api = split_api_params(self._api, self._data_param_name)
         validate_condition_parameters(tmp_api, self.arguments, self.action_name)
 

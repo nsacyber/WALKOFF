@@ -139,7 +139,7 @@ class TestWorkflowStatus(ServerTestCase):
     def test_execute_workflow(self):
         playbook = device_db_help.standard_load()
 
-        workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
+        workflow = devicedb.device_db.session.query(Workflow).filter_by(playbook_id=playbook.id).first()
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
@@ -168,7 +168,7 @@ class TestWorkflowStatus(ServerTestCase):
     def test_execute_workflow_change_arguments(self):
 
         playbook = device_db_help.standard_load()
-        workflow = devicedb.device_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
+        workflow = devicedb.device_db.session.query(Workflow).filter_by(playbook_id=playbook.id).first()
 
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)

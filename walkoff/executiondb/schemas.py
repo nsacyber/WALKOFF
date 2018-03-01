@@ -11,28 +11,7 @@ import walkoff.executiondb.devicedb as devicedb
 from marshmallow_sqlalchemy import ModelSchema, ModelSchemaOpts, field_for
 from marshmallow import validates_schema, ValidationError, fields, post_dump, pre_dump, pre_load, post_load
 from marshmallow.validate import OneOf
-from six import with_metaclass
-from marshmallow_sqlalchemy.schema import ModelSchemaMeta
 import walkoff.executiondb.devicedb
-
-'''
-class ExecutionBaseSchemaMeta(ModelSchema):
-    def __new__(mcs, name, bases, attrs):
-        required_fields = attrs.get('__required_fields__', [])
-        nested_fields = attrs.get('__nested_fields__', {})
-        relationships = attrs.get('__relationships__', {})
-        #print(required_fields)
-        model = getattr(attrs.get('Meta', None), 'model', None)
-        #print(model)
-        if required_fields and model is not None:
-            for required_field in required_fields:
-                attrs[required_field] = field_for(model, required_field, required=True)
-        for nested_field, nested_schema in nested_fields.items():
-            attrs[nested_field] = fields.Nested(nested_schema, many=True, default=None)
-        for relationship_field, relationship_schema in relationships.items():
-            attrs[relationship_field] = fields.Nested(relationship_schema(), default=None)
-        return super(ExecutionBaseSchemaMeta, mcs).__new__(mcs, name, bases, attrs)
-'''
 
 
 class ExecutionBaseSchema(ModelSchema):

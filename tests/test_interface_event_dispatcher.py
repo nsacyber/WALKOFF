@@ -8,6 +8,7 @@ from walkoff.helpers import UnknownAppAction, UnknownApp
 from tests.util import device_db_help
 import uuid
 from walkoff.executiondb.executionelement import ExecutionElement
+import walkoff.executiondb.schemas
 
 
 class MockWorkflow(ExecutionElement):
@@ -19,6 +20,15 @@ class MockWorkflow(ExecutionElement):
     def get_execution_id(self):
         return self._execution_id
 
+class MockWorkflowSchema(object):
+    @staticmethod
+    def dump(workflow):
+        class Dummy:
+            def __init__(self, data):
+                self.data = data
+
+        return Dummy({'id': str(workflow.id), 'name': workflow.name, 'execution_id': str(workflow._execution_id)})
+
 
 class TestInterfaceEventDispatcher(TestCase):
     @classmethod
@@ -29,6 +39,7 @@ class TestInterfaceEventDispatcher(TestCase):
                                                             'action3': None}},
                                        'App2': {}}
         cls.action_events = {event for event in WalkoffEvent if event.event_type == EventType.action and event != WalkoffEvent.SendMessage}
+        walkoff.executiondb.schemas._schema_lookup[MockWorkflow] = MockWorkflowSchema
 
     def setUp(self):
         dispatcher._clear()
@@ -41,6 +52,7 @@ class TestInterfaceEventDispatcher(TestCase):
         dispatcher._clear()
         walkoff.config.config.app_apis = {}
         device_db_help.tear_down_device_db()
+        walkoff.executiondb.schemas._schema_lookup.pop(MockWorkflow, None)
 
     def test_singleton(self):
         self.assertEqual(id(dispatcher), id(InterfaceEventDispatcher()))

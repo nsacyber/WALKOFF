@@ -23,7 +23,7 @@ class Workflow(ExecutionElement, Device_Base):
     name = Column(String(80), nullable=False)
     actions = relationship('Action', cascade='all, delete-orphan')
     branches = relationship('Branch', cascade='all, delete-orphan')
-    start = Column(UUIDType(), nullable=False)
+    start = Column(UUIDType())
     __table_args__ = (UniqueConstraint('playbook_id', 'name', name='_playbook_workflow'),)
 
     def __init__(self, name, start, id=None, actions=None, branches=None):
@@ -63,7 +63,7 @@ class Workflow(ExecutionElement, Device_Base):
     def validate(self):
         action_ids = [action.id for action in self.actions]
 
-        if self.start not in action_ids:
+        if self.start not in action_ids and self.actions:
             logger.warning(
                 'Workflow {0} start ID {1} not found in actions. Setting to first action.'.format(self.id, self.start))
             self.start = self.actions[0].id

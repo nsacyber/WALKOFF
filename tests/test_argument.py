@@ -40,11 +40,11 @@ class TestArgument(TestCase):
 
     def test_init_with_reference_empty(self):
         arg = Argument('test_name', value=5, reference='')
-        self.assert_init_equals(arg, 'test_name', value=5)
+        self.assert_init_equals(arg, 'test_name', value=5, reference='')
 
     def test_init_with_selection_empty(self):
         arg = Argument('test_name', value=5, selection=[])
-        self.assert_init_equals(arg, 'test_name', value=5)
+        self.assert_init_equals(arg, 'test_name', value=5, selection=[])
 
     def test_init_with_selection(self):
         arg = Argument('test_name', reference='some_id', selection=[1, 'a', 2])
