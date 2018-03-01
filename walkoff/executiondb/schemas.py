@@ -34,7 +34,6 @@ class ArgumentSchema(ExecutionBaseSchema):
     name = field_for(Argument, 'name', required=True)
     value = fields.Raw()
 
-    # TODO: Validate selection is UUID or int
     class Meta:
         model = Argument
 
@@ -102,8 +101,6 @@ class ActionSchema(ActionableSchema):
     class Meta:
         model = Action
 
-    @validates_schema()
-
 class WorkflowSchema(ExecutionBaseSchema):
     name = field_for(Workflow, 'name', required=True)
     start = field_for(Workflow, 'start', required=True)
@@ -122,6 +119,7 @@ class PlaybookSchema(ExecutionBaseSchema):
     class Meta:
         model = Playbook
 
+# This could be done better with a metaclass which registers subclasses
 _schema_lookup = {
     Playbook: PlaybookSchema,
     Workflow: WorkflowSchema,

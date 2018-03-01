@@ -36,14 +36,21 @@ class Transform(ExecutionElement, Device_Base):
         self.app_name = app_name
         self.action_name = action_name
 
-        self._data_param_name, self._run, self._api = get_transform_api(self.app_name, self.action_name)
-        self._transform_executable = get_transform(self.app_name, self._run)
-        tmp_api = split_api_params(self._api, self._data_param_name)
-        validate_transform_parameters(tmp_api, arguments, self.action_name)
+        self._data_param_name = None
+        self._run = None
+        self._api = None
 
         self.arguments = []
         if arguments:
             self.arguments = arguments
+
+        self.validate()
+        self._transform_executable = get_transform(self.app_name, self._run)
+        
+    def validate(self):
+        self._data_param_name, self._run, self._api = get_transform_api(self.app_name, self.action_name)
+        tmp_api = split_api_params(self._api, self._data_param_name)
+        validate_transform_parameters(tmp_api, self.arguments, self.action_name)
 
     @orm.reconstructor
     def init_on_load(self):
