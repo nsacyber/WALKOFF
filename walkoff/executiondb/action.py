@@ -65,6 +65,8 @@ class Action(ExecutionElement, Device_Base):
         self._execution_id = 'default'
         self._action_executable = None
 
+        self.validate()
+
     @orm.reconstructor
     def init_on_load(self):
         self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
@@ -79,12 +81,6 @@ class Action(ExecutionElement, Device_Base):
                 "Cannot initialize Action {}. App action is bound but no device ID was provided.".format(self.name))
 
         validate_app_action_parameters(self._arguments_api, self.arguments, self.app_name, self.action_name)
-
-        for argument in self.arguments:
-            argument.validate()
-
-        if self.trigger:
-            self.trigger.validate()
 
     def get_output(self):
         """Gets the output of an Action (the result)

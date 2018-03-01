@@ -55,21 +55,17 @@ class Condition(ExecutionElement, Device_Base):
         self._api = None
         self._condition_executable = None
 
+        self.validate()
+
     @orm.reconstructor
     def init_on_load(self):
         self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
         self._condition_executable = get_condition(self.app_name, self._run)
 
     def validate(self):
-        for argument in self.arguments:
-            argument.validate()
-
         self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
         tmp_api = split_api_params(self._api, self._data_param_name)
         validate_condition_parameters(tmp_api, self.arguments, self.action_name)
-
-        for transform in self.transforms:
-            transform.validate()
 
     def execute(self, data_in, accumulator):
         """Executes the Condition object, determining if the Condition evaluates to True or False.

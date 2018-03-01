@@ -40,6 +40,8 @@ class ConditionalExpression(ExecutionElement, Device_Base):
                                   'or': self._or,
                                   'xor': self._xor}
 
+        self.validate()
+
     @orm.reconstructor
     def init_on_load(self):
         self.__operator_lookup = {'and': self._and,

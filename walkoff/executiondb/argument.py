@@ -33,9 +33,11 @@ class Argument(Device_Base):
         """
         self.name = name
         self.value = value
-        self.reference = reference if reference else None
-        self.selection = selection if selection else None
+        self.reference = reference
+        self.selection = selection
         self._is_reference = True if value is None else False
+
+        self.validate()
 
     @orm.reconstructor
     def init_on_load(self):

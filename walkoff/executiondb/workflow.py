@@ -49,6 +49,8 @@ class Workflow(ExecutionElement, Device_Base):
         self._execution_id = 'default'
         self._instances = {}
 
+        self.validate()
+
     @orm.reconstructor
     def init_on_load(self):
         self._is_paused = False
@@ -59,19 +61,22 @@ class Workflow(ExecutionElement, Device_Base):
         self._execution_id = 'default'
 
     def validate(self):
-        found = False
-        action_ids = []
-        for action in self.actions:
-            action.validate()
-            action_ids.append(action.id)
+        action_ids = [action.id for action in self.actions]
 
-        if not found:
-            raise InvalidExecutionElement
+        if self.start not in action_ids:
+            logger.warning(
+                'Workflow {0} start ID {1} not found in actions. Setting to first action.'.format(self.id, self.start))
+            self.start = self.actions[0].id
 
         for branch in self.branches:
-            branch.validate()
-            if (branch.source_id not in action_ids) or (branch.destination_id not in action_ids):
-                raise InvalidExecutionElement
+            if branch.source_id not in action_ids:
+                raise InvalidExecutionElement(branch.id, None,
+                                              'Branch source ID {} not found in workflow actions'.format(
+                                                  branch.source_id))
+            if branch.destination_id not in action_ids:
+                raise InvalidExecutionElement(branch.id, None,
+                                              'Branch destination ID {} not found in workflow actions'.format(
+                                                  branch.destination_id))
 
     def get_action_by_id(self, action_id):
         return next((action for action in self.actions if action.id == action_id), None)
