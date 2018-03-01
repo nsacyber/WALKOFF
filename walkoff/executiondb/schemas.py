@@ -145,7 +145,7 @@ class PlaybookSchema(ExecutionBaseSchema):
 _schema_lookup = {
     Playbook: PlaybookSchema,
     Workflow: WorkflowSchema,
-    Action: ActionableSchema,
+    Action: ActionSchema,
     Branch: BranchSchema,
     ConditionalExpression: ConditionalExpressionSchema,
     Condition: ConditionSchema,

@@ -80,8 +80,6 @@ class InterfaceEventDispatcher(object):
             if event.event_type != EventType.controller:
                 if not isinstance(sender, dict) and isinstance(sender, ExecutionElement):
                     data = dump_element(sender)
-                    print(data)
-                    print('\n')
                 else:
                     data = deepcopy(sender)
                 additional_data = deepcopy(kwargs)

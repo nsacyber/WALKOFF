@@ -252,7 +252,6 @@ class MultiprocessedExecutor(object):
                 break
 
         if executed:
-            print(exec_action)
             WalkoffEvent.TriggerActionTaken.send(exec_action, data={'workflow_execution_id': execution_id})
             self.execute_workflow(workflow.id, execution_id_in=execution_id, start=saved_state.action_id,
                                   start_arguments=arguments, resume=True)
