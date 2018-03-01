@@ -17,7 +17,7 @@ import { MessageListing } from '../models/message/messageListing';
 	styleUrls: [
 		'./messages.css',
 	],
-	providers: [MessagesService],
+	providers: [MessagesService, UtilitiesService],
 })
 export class MessagesComponent implements OnInit {
 	//Device Data Table params

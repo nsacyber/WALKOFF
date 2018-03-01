@@ -2,7 +2,7 @@ import { MessageBody } from './messageBody';
 
 export class Message {
 	id: number;
-	workflow_execution_uid: string;
+	workflow_execution_id: string;
 	workflow_name: string;
 	requires_reauthorization: boolean;
 	subject: string;

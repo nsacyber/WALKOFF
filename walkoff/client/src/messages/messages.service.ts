@@ -49,15 +49,15 @@ export class MessagesService {
 
 	/**
 	 * Responds to a message by calling a trigger endpoint for a given workflow's execution ID.
-	 * @param execution_uid Execution ID of workflow to trigger
+	 * @param workflow_execution_id Execution ID of workflow to trigger
 	 * @param action Action to send to trigger endpoint
 	 */
-	respondToMessage(execution_uid: string, action: string): Promise<string[]> {
+	respondToMessage(workflow_execution_id: string, action: string): Promise<string[]> {
 		const arg = new Argument();
 		arg.name = 'action';
 		arg.value = action;
 		const body: object = {
-			execution_uids: [execution_uid],
+			execution_ids: [workflow_execution_id],
 			data_in: action,
 			arguments: [arg],
 		};

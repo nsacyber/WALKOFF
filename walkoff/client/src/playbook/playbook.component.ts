@@ -38,7 +38,7 @@ import { ActionStatusEvent } from '../models/execution/actionStatusEvent';
 		'./playbook.css',
 	],
 	encapsulation: ViewEncapsulation.None,
-	providers: [PlaybookService, AuthService],
+	providers: [PlaybookService, AuthService, UtilitiesService],
 })
 export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('cyRef') cyRef: ElementRef;
