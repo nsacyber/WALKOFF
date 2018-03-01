@@ -102,6 +102,7 @@ class ActionSchema(ActionableSchema):
     class Meta:
         model = Action
 
+    @validates_schema()
 
 class WorkflowSchema(ExecutionBaseSchema):
     name = field_for(Workflow, 'name', required=True)
