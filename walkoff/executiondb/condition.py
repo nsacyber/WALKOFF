@@ -75,10 +75,7 @@ class Condition(ExecutionElement, executiondb.Device_Base):
         for transform in self.transforms:
             data = transform.execute(data, accumulator)
         try:
-            print(self._data_param_name)
-            print([argument.read() for argument in self.arguments])
             arguments = self.__update_arguments_with_data(data)
-            print([argument.read() for argument in arguments])
             args = validate_condition_parameters(self._api, arguments, self.action_name, accumulator=accumulator)
             logger.debug('Arguments passed to condition {} are valid'.format(self.id))
             ret = self._condition_executable(**args)

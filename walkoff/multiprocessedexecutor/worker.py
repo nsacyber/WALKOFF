@@ -232,6 +232,7 @@ class Worker:
     def execute_workflow_worker(self, workflow_id, workflow_execution_id, start, start_arguments=None, resume=False):
         """Execute a workflow.
         """
+        walkoff.executiondb.execution_db.session.expire_all()
         workflow = walkoff.executiondb.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
         workflow._execution_id = workflow_execution_id
 

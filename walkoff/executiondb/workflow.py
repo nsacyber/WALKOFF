@@ -41,6 +41,7 @@ class Workflow(ExecutionElement, Device_Base):
         self.name = name
         self.actions = {action.id: action for action in actions} if actions else {}
         self.branches = branches if branches else []
+
         self.start = start
 
         self._is_paused = False
