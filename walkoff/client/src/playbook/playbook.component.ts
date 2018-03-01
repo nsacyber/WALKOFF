@@ -262,7 +262,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 */
 	loadWorkflow(playbook: Playbook, workflow: Workflow): void {
 		if (playbook.id && workflow.id) {
-			this.playbookService.loadWorkflow(playbook.id, workflow.id)
+			this.playbookService.loadWorkflow(workflow.id)
 				.then(loadedWorkflow => {
 					this.loadedPlaybook = playbook;
 					this.loadedWorkflow = loadedWorkflow;
@@ -589,7 +589,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		let savePromise: Promise<Workflow>;
 		if (this.loadedPlaybook.id) {
 			if (this.loadedWorkflow.id) {
-				savePromise = this.playbookService.saveWorkflow(this.loadedPlaybook.id, workflowToSave);
+				savePromise = this.playbookService.saveWorkflow(workflowToSave);
 			} else {
 				savePromise = this.playbookService.newWorkflow(this.loadedPlaybook.id, workflowToSave);
 			}
@@ -1249,7 +1249,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 				newPlaybookPromise
 					.then(() => this.playbookService
-						.duplicateWorkflow(sourcePlaybookId, sourceWorkflowId, destinationPb.id, this.modalParams.newWorkflow))
+						.duplicateWorkflow(sourceWorkflowId, destinationPb.id, this.modalParams.newWorkflow))
 					.then(duplicatedWorkflow => {
 						destinationPb.workflows.push(duplicatedWorkflow);
 						destinationPb.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
@@ -1275,7 +1275,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		if (!confirm(`Are you sure you want to delete workflow "${playbook.name} - ${workflow.name}"?`)) { return; }
 
 		this.playbookService
-			.deleteWorkflow(playbook.id, workflow.id)
+			.deleteWorkflow(workflow.id)
 			.then(() => {
 				const pb = this.playbooks.find(p => p.id === playbook.id);
 				pb.workflows = pb.workflows.filter(w => w.id !== workflow.id);
