@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Response } from '@angular/http';
+import { Response, RequestOptions, ResponseContentType, Headers } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
 
 import { Workflow } from '../models/playbook/workflow';
@@ -9,6 +9,7 @@ import { Device } from '../models/device';
 import { User } from '../models/user';
 import { Role } from '../models/role';
 import { WorkflowStatus } from '../models/execution/workflowStatus';
+import { Observable } from 'rxjs/Observable';
 
 @Injectable()
 export class PlaybookService {
@@ -75,6 +76,43 @@ export class PlaybookService {
 	}
 
 	/**
+	 * Exports a playbook as an Observable (component handles the actual 'save').
+	 * @param playbookId: ID of playbook to export
+	 */
+	exportPlaybook(playbookId: string): Observable<Blob> {
+		// const headers = new Headers();
+		// headers.append('method', 'GET');
+		// const requestOptions = new RequestOptions({
+		// 	headers,
+		// 	responseType: ResponseContentType.Blob, 
+		// });
+
+		// return this.authHttp.get('/api/playbooks', requestOptions => {
+		// 	return new Blob( [res.blob()], { type: 'application/octet-stream'} );
+		// });
+		const options = new RequestOptions({ responseType: ResponseContentType.Blob });
+		return this.authHttp.get(`/api/playbooks/${playbookId}?mode=export`, options)
+			.map(res => res.blob())
+			.catch(this.handleError);
+	}
+
+	/**
+	 * Imports a playbook from a supplied file.
+	 * @param fileToImport File to be imported
+	 */
+	importPlaybook(fileToImport: File): Observable<Playbook> {
+		const formData: FormData = new FormData();
+		formData.append('file', fileToImport, fileToImport.name);
+		const headers = new Headers();
+		// headers.append('Content-Type', 'multipart/form-data');
+		headers.append('Accept', 'application/json');
+		const options = new RequestOptions({ headers });
+		return this.authHttp.post('/api/playbooks', formData, options)
+			.map(res => res.json() as Playbook)
+			.catch(error => Observable.throw(error));
+	}
+
+	/**
 	 * Duplicates a workflow under a given playbook, it's actions, branches, etc. under a new name.
 	 * @param sourceWorkflowId Current workflow ID to be duplicated
 	 * @param destinationPlaybookId ID of playbook the workflow will be duplicated to
@@ -84,7 +122,7 @@ export class PlaybookService {
 		sourceWorkflowId: string, destinationPlaybookId: string, newName: string,
 	): Promise<Workflow> {
 		return this.authHttp.post(`/api/workflows?source=${sourceWorkflowId}`,
-				{ playbook_id: destinationPlaybookId, name: newName })
+			{ playbook_id: destinationPlaybookId, name: newName })
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Workflow)
@@ -153,7 +191,7 @@ export class PlaybookService {
 			.then(workflowStatus => workflowStatus as WorkflowStatus)
 			.catch(this.handleError);
 	}
-	
+
 	/**
 	 * Returns an array of all devices within the DB.
 	 */

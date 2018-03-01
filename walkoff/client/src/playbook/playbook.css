@@ -169,6 +169,12 @@
 	min-height: 30px;
 }
 
+#workflowsModal .modal-title,
+#executionResultsModal .modal-title,
+#playbookAndWorkflowActionModal .modal-title {
+	display: inline;
+}
+
 #executionResultsModal > .modal-dialog {
 	width: 95%;
 }

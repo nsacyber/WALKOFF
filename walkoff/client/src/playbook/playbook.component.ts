@@ -1,11 +1,11 @@
 import { Component, ViewEncapsulation, ViewChild, ElementRef, ChangeDetectorRef, OnInit,
 	AfterViewChecked, OnDestroy } from '@angular/core';
-// import * as _ from 'lodash';
-// import { Observable } from 'rxjs';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { DatatableComponent } from '@swimlane/ngx-datatable';
 import { UUID } from 'angular2-uuid';
 import { Observable } from 'rxjs';
+import 'rxjs/Rx';
+import { saveAs } from 'file-saver';
 
 import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
@@ -72,6 +72,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	actionStatusStartedRelativeTimes: { [key: string]: string } = {};
 	actionStatusCompletedRelativeTimes: { [key: string]: string } = {};
 	eventSource: any;
+	playbookToImport: File;
 
 	// Simple bootstrap modal params
 	modalParams: {
@@ -704,22 +705,78 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		});
 	}
 
+	/**
+	 * Specifies a new conditional expression for a given action.
+	 * @param action Action to specify the trigger for
+	 */
 	specifyTrigger(action: Action): void {
 		if (action.trigger) { return; }
 		action.trigger = new ConditionalExpression();
 	}
 
+	/**
+	 * Deletes the conditional expression for a given action.
+	 * @param action Action to remove the trigger for
+	 */
 	removeTrigger(action: Action): void {
 		delete action.trigger;
 	}
 
+	/**
+	 * Specifies a new conditional expression for a given action.
+	 * @param branch Branch to specify the trigger for
+	 */
 	specifyCondition(branch: Branch): void {
 		if (branch.condition) { return; }
 		branch.condition = new ConditionalExpression();
 	}
 
+	/**
+	 * Specifies a new conditional expression for a given branch.
+	 * @param branch Branch to specify the trigger for
+	 */
 	removeCondition(branch: Branch): void {
 		delete branch.condition;
+	}
+
+	/**
+	 * Downloads a playbook as a JSON representation.
+	 * @param event JS Event fired from button
+	 * @param playbook Playbook to export (id, name pair)
+	 */
+	exportPlaybook(event: Event, playbook: Playbook): void {
+		event.stopPropagation();
+
+		this.playbookService.exportPlaybook(playbook.id).subscribe(
+			blob => {
+				saveAs(blob, `${playbook.name}.playbook`);
+			},
+			e => this.toastyService.error(`Error exporting playbook "${playbook.name}": ${e.message}`),
+		);
+	}
+
+	/**
+	 * Sets our playbook to import based on a file input change.
+	 * @param event JS Event for the playbook file input
+	 */
+	onImportSelectChange(event: Event) {
+		this.playbookToImport = (event.srcElement as any).files[0];
+	}
+
+	/**
+	 * Imports the playbook that is currently slated for import.
+	 */
+	importPlaybook(): void {
+		if (!this.playbookToImport) { return; }
+
+		this.playbookService.importPlaybook(this.playbookToImport).subscribe(
+			data => {
+				this.playbooks.push(data);
+				this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
+				this.toastyService.success(`Successfuly imported playbook "${this.playbookToImport.name}".`);
+			},
+			e => this.toastyService.error(`Error importing playbook "${this.playbookToImport.name}": ${e.message}`),
+		);
 	}
 
 	///------------------------------------------------------------------------------------------------------
@@ -1100,9 +1157,12 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	///------------------------------------------------------------------------------------------------------
 	/**
 	 * Opens a modal to rename a given playbook and performs the rename action on submit.
+	 * @param event JS Event from the button click
 	 * @param playbook Name of the playbook to rename
 	 */
-	renamePlaybookModal(playbook: Playbook): void {
+	renamePlaybookModal(event: Event, playbook: Playbook): void {
+		event.stopPropagation();
+
 		this._closeWorkflowsModal();
 
 		this.modalParams = {
@@ -1126,9 +1186,12 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 	/**
 	 * Opens a modal to copy a given playbook and performs the copy action on submit.
+	 * @param event JS Event from the button click
 	 * @param playbook Name of the playbook to copy
 	 */
-	duplicatePlaybookModal(playbook: Playbook): void {
+	duplicatePlaybookModal(event: Event, playbook: Playbook): void {
+		event.stopPropagation();
+
 		this._closeWorkflowsModal();
 
 		this.modalParams = {
@@ -1155,8 +1218,11 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	/**
 	 * Opens a modal to delete a given playbook and performs the delete action on submit.
 	 * @param playbook Playbook to delete
+	 * @param event JS Event from the button click
 	 */
-	deletePlaybook(playbook: Playbook): void {
+	deletePlaybook(event: Event, playbook: Playbook): void {
+		event.stopPropagation();
+
 		if (!confirm(`Are you sure you want to delete playbook "${playbook.name}"?`)) { return; }
 
 		this.playbookService
