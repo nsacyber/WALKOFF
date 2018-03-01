@@ -26,7 +26,7 @@ class Condition(ExecutionElement, executiondb.Device_Base):
 
     def __init__(self, app_name, action_name, id=None, is_negated=False, arguments=None, transforms=None):
         """Initializes a new Condition object.
-        
+
         Args:
             app_name (str): The name of the app which contains this condition
             action_name (str): The action name for the Condition. Defaults to an empty string.
@@ -64,11 +64,9 @@ class Condition(ExecutionElement, executiondb.Device_Base):
 
     def execute(self, data_in, accumulator):
         """Executes the Condition object, determining if the Condition evaluates to True or False.
-
         Args:
             data_in (): The input to the Transform objects associated with this Condition.
             accumulator (dict): The accumulated data from previous Actions.
-
         Returns:
             True if the Condition evaluated to True, False otherwise
         """
@@ -77,7 +75,10 @@ class Condition(ExecutionElement, executiondb.Device_Base):
         for transform in self.transforms:
             data = transform.execute(data, accumulator)
         try:
+            print(self._data_param_name)
+            print([argument.read() for argument in self.arguments])
             arguments = self.__update_arguments_with_data(data)
+            print([argument.read() for argument in arguments])
             args = validate_condition_parameters(self._api, arguments, self.action_name, accumulator=accumulator)
             logger.debug('Arguments passed to condition {} are valid'.format(self.id))
             ret = self._condition_executable(**args)
@@ -100,13 +101,9 @@ class Condition(ExecutionElement, executiondb.Device_Base):
             raise
 
     def __update_arguments_with_data(self, data):
-        arg = None
         arguments = []
         for argument in self.arguments:
-            if argument.name == self._data_param_name:
-                arg = argument
-            else:
+            if argument.name != self._data_param_name:
                 arguments.append(argument)
-        if arg:
-            arguments.append(Argument(self._data_param_name, value=data))
+        arguments.append(Argument(self._data_param_name, value=data))
         return arguments

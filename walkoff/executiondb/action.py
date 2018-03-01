@@ -33,7 +33,6 @@ class Action(ExecutionElement, Device_Base):
     def __init__(self, app_name, action_name, name, device_id=None, id=None, arguments=None, trigger=None,
                  position=None):
         """Initializes a new Action object. A Workflow has one or more actions that it executes.
-
         Args:
             app_name (str): The name of the app associated with the Action
             action_name (str): The name of the action associated with a Action
@@ -84,7 +83,6 @@ class Action(ExecutionElement, Device_Base):
 
     def get_output(self):
         """Gets the output of an Action (the result)
-
         Returns:
             The result of the Action
         """
@@ -92,7 +90,6 @@ class Action(ExecutionElement, Device_Base):
 
     def get_execution_id(self):
         """Gets the execution ID of the Action
-
         Returns:
             The execution ID
         """
@@ -100,7 +97,6 @@ class Action(ExecutionElement, Device_Base):
 
     def set_arguments(self, new_arguments):
         """Updates the arguments for an Action object.
-
         Args:
             new_arguments ([Argument]): The new Arguments for the Action object.
         """
@@ -109,14 +105,12 @@ class Action(ExecutionElement, Device_Base):
 
     def execute(self, instance, accumulator, arguments=None, resume=False):
         """Executes an Action by calling the associated app function.
-
         Args:
             instance (App): The instance of an App object to be used to execute the associated function.
             accumulator (dict): Dict containing the results of the previous actions
             arguments (list[Argument]): Optional list of Arguments to be used if the Action is the starting step of
                 the Workflow. Defaults to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
-
         Returns:
             The result of the executed function.
         """
@@ -168,11 +162,9 @@ class Action(ExecutionElement, Device_Base):
 
     def execute_trigger(self, data_in, accumulator):
         """Executes the trigger for an Action, which will continue execution if the trigger returns True
-
         Args:
             data_in (dict): The data to send to the trigger to test against
             accumulator (dict): Dict containing the results of the previous actions
-
         Returns:
             True if the trigger returned True, False otherwise
         """

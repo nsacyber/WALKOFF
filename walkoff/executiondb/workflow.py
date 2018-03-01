@@ -12,7 +12,6 @@ from walkoff.events import WalkoffEvent
 from walkoff.executiondb.action import Action
 from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.executiondb.appinstancerepo import AppInstanceRepo
-from walkoff.helpers import InvalidArgument, format_exception_message
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +29,6 @@ class Workflow(ExecutionElement, Device_Base):
     def __init__(self, name, start, id=None, actions=None, branches=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Actions
             within it that get executed.
-
         Args:
             name (str): The name of the Workflow object.
             start (int): ID of the starting Action.
@@ -62,10 +60,8 @@ class Workflow(ExecutionElement, Device_Base):
 
     def remove_action(self, action_id):
         """Removes a Action object from the Workflow's list of Actions given the Action ID.
-
         Args:
             action_id (str): The ID of the Action object to be removed.
-
         Returns:
             True on success, False otherwise.
         """
@@ -90,7 +86,6 @@ class Workflow(ExecutionElement, Device_Base):
 
     def execute(self, execution_id, start=None, start_arguments=None, resume=False):
         """Executes a Workflow by executing all Actions in the Workflow list of Action objects.
-
         Args:
             execution_id (str): The UUID4 hex string uniquely identifying this workflow instance
             start (int, optional): The ID of the first Action. Defaults to None.
@@ -151,11 +146,9 @@ class Workflow(ExecutionElement, Device_Base):
     def get_branch(self, current_action, accumulator):
         """Executes the Branch objects associated with this Workflow to determine which Action should be
             executed next.
-
         Args:
             current_action(Action): The current action that has just finished executing.
             accumulator (dict): The accumulated results of previous Actions.
-
         Returns:
             The ID of the next Action to be executed if successful, else None.
         """
@@ -199,7 +192,6 @@ class Workflow(ExecutionElement, Device_Base):
 
     def set_execution_id(self, execution_id):
         """Sets the execution UD for the Workflow
-
         Args:
             execution_id (str): The execution ID
         """
@@ -207,7 +199,6 @@ class Workflow(ExecutionElement, Device_Base):
 
     def get_execution_id(self):
         """Gets the execution ID for the Workflow
-
         Returns:
             The execution ID of the Workflow
         """
@@ -215,7 +206,6 @@ class Workflow(ExecutionElement, Device_Base):
 
     def get_executing_action_id(self):
         """Gets the ID of the currently executing Action
-
         Returns:
             The ID of the currently executing Action
         """
@@ -223,7 +213,6 @@ class Workflow(ExecutionElement, Device_Base):
 
     def get_accumulator(self):
         """Gets the accumulator
-
         Returns:
             The accumulator
         """
@@ -231,7 +220,6 @@ class Workflow(ExecutionElement, Device_Base):
 
     def get_instances(self):
         """Gets all instances
-
         Returns:
             All instances
         """

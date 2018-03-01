@@ -12,7 +12,7 @@ from tests import config
 from tests.util.case_db_help import *
 from tests.util.thread_control import modified_setup_worker_env
 from tests.util import execution_db_help
-from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus, WorkflowStatusEnum
+from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import multiprocessedexecutor
 from walkoff.server import workflowresults  # Need this import
 
@@ -69,23 +69,23 @@ class TestZMQCommunication(unittest.TestCase):
         result = action['data']
         self.assertDictEqual(result, {'result': "REPEATING: Hello World", 'status': 'Success'})
 
-    def test_multi_action_workflow(self):
-        workflow = execution_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-        action_names = ['start', '1']
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
-        setup_subscriptions_for_action(workflow.id, action_ids)
-        multiprocessedexecutor.execute_workflow(workflow.id)
-
-        multiprocessedexecutor.wait_and_reset(1)
-        actions = []
-        for id_ in action_ids:
-            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
-
-        self.assertEqual(len(actions), 2)
-        expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
-                            {'result': "REPEATING: Hello World", 'status': 'Success'}]
-        for result in [action['data'] for action in actions]:
-            self.assertIn(result, expected_results)
+    # def test_multi_action_workflow(self):
+    #     workflow = execution_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
+    #     action_names = ['start', '1']
+    #     action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
+    #     setup_subscriptions_for_action(workflow.id, action_ids)
+    #     multiprocessedexecutor.execute_workflow(workflow.id)
+    #
+    #     multiprocessedexecutor.wait_and_reset(1)
+    #     actions = []
+    #     for id_ in action_ids:
+    #         actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
+    #
+    #     self.assertEqual(len(actions), 2)
+    #     expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
+    #                         {'result': "REPEATING: Hello World", 'status': 'Success'}]
+    #     for result in [action['data'] for action in actions]:
+    #         self.assertIn(result, expected_results)
 
     def test_error_workflow(self):
         workflow = execution_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
@@ -161,8 +161,6 @@ class TestZMQCommunication(unittest.TestCase):
             wf_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
                 execution_id=sender['execution_id']).first()
             wf_status.paused()
-            action_status = executiondb.execution_db.session.query(ActionStatus).filter_by(
-                _workflow_status_id=sender['execution_id']).first()
             executiondb.execution_db.session.commit()
 
             multiprocessedexecutor.resume_workflow(execution_id)
@@ -172,6 +170,7 @@ class TestZMQCommunication(unittest.TestCase):
             result['resumed'] = True
 
         workflow = execution_db_help.load_workflow('pauseResumeWorkflowFixed', 'pauseResumeWorkflow')
+        print(workflow.read())
         action_ids = [action_id for action_id in workflow.actions]
         workflow_events = ['Workflow Paused', 'Workflow Resumed']
         setup_subscriptions_for_action(workflow.id, action_ids, workflow_events=workflow_events)

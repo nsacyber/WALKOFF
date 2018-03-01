@@ -3,6 +3,13 @@ import os
 
 from walkoff import executiondb
 from walkoff.executiondb.playbook import Playbook
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.workflow import Workflow
+from walkoff.executiondb.action import Action
+from walkoff.executiondb.condition import Condition
+from walkoff.executiondb.transform import Transform
+from walkoff.executiondb.branch import Branch
+from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.workflowresults import WorkflowStatus
 from tests.config import test_workflows_path_with_generated, test_workflows_path
 from tests.util.jsonplaybookloader import JsonPlaybookLoader
@@ -58,8 +65,10 @@ def setup_dbs():
 
 def cleanup_device_db():
     executiondb.execution_db.session.rollback()
-    for instance in executiondb.execution_db.session.query(Playbook).all():
-        executiondb.execution_db.session.delete(instance)
+    classes = [Playbook, Workflow, Action, Branch, Argument, ConditionalExpression, Condition, Transform]
+    for ee in classes:
+        for instance in executiondb.execution_db.session.query(ee).all():
+            executiondb.execution_db.session.delete(instance)
 
     for instance in executiondb.execution_db.session.query(WorkflowStatus).all():
         executiondb.execution_db.session.delete(instance)

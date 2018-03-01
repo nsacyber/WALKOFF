@@ -25,7 +25,7 @@ class Transform(ExecutionElement, Device_Base):
 
     def __init__(self, app_name, action_name, id=None, arguments=None):
         """Initializes a new Transform object. A Transform is used to transform input into a workflow.
-        
+
         Args:
             app_name (str): The app name associated with this transform
             action_name (str): The action name for the transform.
@@ -55,11 +55,9 @@ class Transform(ExecutionElement, Device_Base):
 
     def execute(self, data_in, accumulator):
         """Executes the transform.
-
         Args:
             data_in: The input to the condition, the last executed action of the workflow or the input to a trigger.
             accumulator (dict): A record of executed actions and their results. Of form {action_name: result}.
-
         Returns:
             (obj): The transformed data
         """
@@ -81,13 +79,9 @@ class Transform(ExecutionElement, Device_Base):
         return original_data_in
 
     def __update_arguments_with_data(self, data):
-        arg = None
         arguments = []
         for argument in self.arguments:
-            if argument.name == self._data_param_name:
-                arg = argument
-            else:
+            if argument.name != self._data_param_name:
                 arguments.append(argument)
-        if arg:
-            arguments.append(Argument(self._data_param_name, value=data))
+        arguments.append(Argument(self._data_param_name, value=data))
         return arguments
