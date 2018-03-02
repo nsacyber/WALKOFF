@@ -9,9 +9,10 @@ from .transform import Transform
 from .argument import Argument
 import walkoff.executiondb.devicedb as devicedb
 from marshmallow_sqlalchemy import ModelSchema, ModelSchemaOpts, field_for
-from marshmallow import validates_schema, ValidationError, fields, post_dump, pre_dump, pre_load, post_load
+from marshmallow import validates_schema, ValidationError, fields, post_dump, pre_dump, pre_load, post_load, UnmarshalResult
 from marshmallow.validate import OneOf
 import walkoff.executiondb.devicedb
+from walkoff.helpers import InvalidExecutionElement
 
 
 class ExecutionBaseSchema(ModelSchema):
@@ -30,6 +31,29 @@ class ExecutionBaseSchema(ModelSchema):
         return super(ExecutionBaseSchema, self).load(data, session=session, instance=instance, *args, **kwargs)
 
 
+class ExecutionElementBaseSchema(ExecutionBaseSchema):
+
+    def load(self, data, session=None, instance=None, *args, **kwargs):
+        # Can't use post_load because we can't override marshmallow_sqlalchemy's post_load hook
+        try:
+            objs = super(ExecutionElementBaseSchema, self).load(data, session=session, instance=instance, *args, **kwargs)
+        except InvalidExecutionElement as e:
+            objs = UnmarshalResult({}, e.errors)
+        if not objs.errors:
+            errors = {}
+            all_objs = objs.data
+            if not isinstance(objs.data, list):
+                all_objs = [all_objs]
+            for obj in all_objs:
+                try:
+                    obj.validate()
+                except InvalidExecutionElement as e:
+                    errors[e.name] = e.errors
+            if errors:
+                objs.errors.update(errors)
+        return objs
+
+
 class ArgumentSchema(ExecutionBaseSchema):
     name = field_for(Argument, 'name', required=True)
     value = fields.Raw()
@@ -42,10 +66,10 @@ class ArgumentSchema(ExecutionBaseSchema):
         has_value = 'value' in data
         has_reference = 'reference' in data
         if (not has_value and not has_reference) or (has_value and has_reference):
-            raise ValidationError('Arguments must have either a value or a reference.')
+            raise ValidationError('Arguments must have either a value or a reference.', 'value')
 
 
-class ActionableSchema(ExecutionBaseSchema):
+class ActionableSchema(ExecutionElementBaseSchema):
     app_name = fields.Str(required=True)
     action_name = fields.Str(required=True)
     arguments = fields.Nested(ArgumentSchema, many=True)
@@ -64,7 +88,7 @@ class ConditionSchema(ActionableSchema):
         model = Condition
 
 
-class ConditionalExpressionSchema(ExecutionBaseSchema):
+class ConditionalExpressionSchema(ExecutionElementBaseSchema):
     conditions = fields.Nested(ConditionSchema, many=True)
     child_expressions = fields.Nested('self', many=True)
     operator = field_for(ConditionalExpression, 'operator', default='and', validates=OneOf(*valid_operators), missing='and')
@@ -75,7 +99,7 @@ class ConditionalExpressionSchema(ExecutionBaseSchema):
         excludes = ('parent', )
 
 
-class BranchSchema(ExecutionBaseSchema):
+class BranchSchema(ExecutionElementBaseSchema):
     source_id = field_for(Branch, 'source_id', required=True)
     destination_id = field_for(Branch, 'destination_id', required=True)
     condition = fields.Nested(ConditionalExpressionSchema())
@@ -101,9 +125,9 @@ class ActionSchema(ActionableSchema):
     class Meta:
         model = Action
 
-class WorkflowSchema(ExecutionBaseSchema):
+
+class WorkflowSchema(ExecutionElementBaseSchema):
     name = field_for(Workflow, 'name', required=True)
-    start = field_for(Workflow, 'start', required=True)
     actions = fields.Nested(ActionSchema, many=True)
     branches = fields.Nested(BranchSchema, many=True)
 
@@ -112,12 +136,13 @@ class WorkflowSchema(ExecutionBaseSchema):
         exclude = ('playbook', )
 
 
-class PlaybookSchema(ExecutionBaseSchema):
+class PlaybookSchema(ExecutionElementBaseSchema):
     name = field_for(Playbook, 'name', required=True)
     workflows = fields.Nested(WorkflowSchema, many=True)
 
     class Meta:
         model = Playbook
+
 
 # This could be done better with a metaclass which registers subclasses
 _schema_lookup = {

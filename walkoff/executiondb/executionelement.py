@@ -34,3 +34,6 @@ class ExecutionElement(object):
     def __is_list_of_dicts_with_uids(value):
         return (isinstance(value, list)
                 and all(isinstance(list_value, dict) and 'id' in list_value for list_value in value))
+
+    def validate(self):
+        pass

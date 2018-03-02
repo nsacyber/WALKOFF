@@ -9,7 +9,8 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb import Device_Base
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import get_condition_api, InvalidArgument, format_exception_message, split_api_params
+from walkoff.helpers import (get_condition_api, InvalidArgument, format_exception_message, split_api_params,
+                             UnknownCondition, UnknownApp, InvalidExecutionElement)
 from walkoff.appgateway.validator import validate_condition_parameters
 import walkoff.executiondb.devicedb
 
@@ -63,10 +64,24 @@ class Condition(ExecutionElement, Device_Base):
         self._condition_executable = get_condition(self.app_name, self._run)
 
     def validate(self):
-        self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
-        self._condition_executable = get_condition(self.app_name, self._run)
-        tmp_api = split_api_params(self._api, self._data_param_name)
-        validate_condition_parameters(tmp_api, self.arguments, self.action_name)
+        errors = {}
+        try:
+            self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
+            self._condition_executable = get_condition(self.app_name, self._run)
+            tmp_api = split_api_params(self._api, self._data_param_name)
+            validate_condition_parameters(tmp_api, self.arguments, self.action_name)
+        except UnknownApp:
+            errors['executable'] = 'Unknown app {}'.format(self.app_name)
+        except UnknownCondition:
+            errors['executable'] = 'Unknown condition {}'.format(self.action_name)
+        except InvalidArgument as e:
+            errors['arguments'] = e.errors
+        if errors:
+            raise InvalidExecutionElement(
+                self.id,
+                self.action_name,
+                'Invalid condition {}'.format(self.id or self.action_name),
+                errors=[errors])
 
     def execute(self, data_in, accumulator):
         """Executes the Condition object, determining if the Condition evaluates to True or False.

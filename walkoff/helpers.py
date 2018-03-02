@@ -415,8 +415,9 @@ class UnknownDevice(Exception):
 
 
 class InvalidArgument(Exception):
-    def __init__(self, message):
+    def __init__(self, message, errors=None):
         self.message = message
+        self.errors = errors or {}
         super(InvalidArgument, self).__init__(self.message)
 
 
@@ -431,9 +432,10 @@ class UnknownTransform(UnknownFunction):
 
 
 class InvalidExecutionElement(Exception):
-    def __init__(self, id_, name, message):
+    def __init__(self, id_, name, message, errors=None):
         self.id = id_
         self.name = name
+        self.errors = errors or {}
         super(InvalidExecutionElement, self).__init__(message)
 
 

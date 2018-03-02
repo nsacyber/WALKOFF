@@ -62,21 +62,22 @@ class Workflow(ExecutionElement, Device_Base):
 
     def validate(self):
         action_ids = [action.id for action in self.actions]
+        errors = {}
+        if not self.start and self.actions:
+            errors['start'] = 'Workflows with actions require a start parameter'
+        elif self.actions and self.start not in action_ids:
+            errors['start'] = 'Workflow start ID {} not found in actions'.format(self.start)
 
-        if self.start not in action_ids and self.actions:
-            logger.warning(
-                'Workflow {0} start ID {1} not found in actions. Setting to first action.'.format(self.id, self.start))
-            self.start = self.actions[0].id
-
+        branch_errors = []
         for branch in self.branches:
             if branch.source_id not in action_ids:
-                raise InvalidExecutionElement(branch.id, None,
-                                              'Branch source ID {} not found in workflow actions'.format(
-                                                  branch.source_id))
+                branch_errors.append('Branch source ID {} not found in workflow actions'.format(branch.source_id))
             if branch.destination_id not in action_ids:
-                raise InvalidExecutionElement(branch.id, None,
-                                              'Branch destination ID {} not found in workflow actions'.format(
-                                                  branch.destination_id))
+                branch_errors.append('Branch destination ID {} not found in workflow actions'.format(branch.destination_id))
+        if branch_errors:
+            errors['branches'] = branch_errors
+        if errors:
+            raise InvalidExecutionElement(self.id, self.name, 'Invalid workflow', errors=errors)
 
     def get_action_by_id(self, action_id):
         return next((action for action in self.actions if action.id == action_id), None)

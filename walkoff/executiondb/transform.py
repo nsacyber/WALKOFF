@@ -10,7 +10,7 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb import Device_Base
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import get_transform_api, InvalidArgument, split_api_params
+from walkoff.helpers import get_transform_api, InvalidArgument, split_api_params, UnknownTransform, UnknownApp, InvalidExecutionElement
 from walkoff.appgateway.validator import validate_transform_parameters
 
 logger = logging.getLogger(__name__)
@@ -48,9 +48,23 @@ class Transform(ExecutionElement, Device_Base):
         self._transform_executable = get_transform(self.app_name, self._run)
         
     def validate(self):
-        self._data_param_name, self._run, self._api = get_transform_api(self.app_name, self.action_name)
-        tmp_api = split_api_params(self._api, self._data_param_name)
-        validate_transform_parameters(tmp_api, self.arguments, self.action_name)
+        errors = {}
+        try:
+            self._data_param_name, self._run, self._api = get_transform_api(self.app_name, self.action_name)
+            tmp_api = split_api_params(self._api, self._data_param_name)
+            validate_transform_parameters(tmp_api, self.arguments, self.action_name)
+        except UnknownApp:
+            errors['executable'] = 'Unknown app {}'.format(self.app_name)
+        except UnknownTransform:
+            errors['executable'] = 'Unknown transform {}'.format(self.action_name)
+        except InvalidArgument as e:
+            errors['arguments'] = e.errors
+        if errors:
+            raise InvalidExecutionElement(
+                self.id,
+                self.action_name,
+                'Invalid transform {}'.format(self.id or self.action_name),
+                errors=[errors])
 
     @orm.reconstructor
     def init_on_load(self):

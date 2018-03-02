@@ -11,7 +11,7 @@ from walkoff.appgateway.actionresult import ActionResult
 from walkoff.executiondb import Device_Base
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
+from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message, UnknownApp, UnknownAppAction, InvalidExecutionElement
 from walkoff.appgateway.validator import validate_app_action_parameters
 logger = logging.getLogger(__name__)
 
@@ -75,12 +75,25 @@ class Action(ExecutionElement, Device_Base):
         self._execution_id = 'default'
 
     def validate(self):
-        self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
-        if is_app_action_bound(self.app_name, self._run) and not self.device_id:
-            raise InvalidArgument(
-                "Cannot initialize Action {}. App action is bound but no device ID was provided.".format(self.name))
-
-        validate_app_action_parameters(self._arguments_api, self.arguments, self.app_name, self.action_name)
+        errors = {}
+        try:
+            self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
+            if is_app_action_bound(self.app_name, self._run) and not self.device_id:
+                message = 'App action is bound but no device ID was provided.'.format(self.name)
+                errors['executable'] = message
+            validate_app_action_parameters(self._arguments_api, self.arguments, self.app_name, self.action_name)
+        except UnknownApp:
+            errors['executable'] = 'Unknown app {}'.format(self.app_name)
+        except UnknownAppAction:
+            errors['executable'] = 'Unknown app action {}'.format(self.action_name)
+        except InvalidArgument as e:
+            errors['arguments'] = e.errors
+        if errors:
+            raise InvalidExecutionElement(
+                self.id,
+                self.action_name,
+                'Invalid action {}'.format(self.id or self.action_name),
+                errors=[errors])
 
     def get_output(self):
         """Gets the output of an Action (the result)
