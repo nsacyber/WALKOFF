@@ -110,7 +110,7 @@ class TestBranch(unittest.TestCase):
             conditions=[Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])])
         branch = Branch(source_id=action.id, destination_id=2, condition=condition)
         action._output = ActionResult(result='aaa', status='Success')
-        workflow = Workflow("helloWorld", 1, actions=[action, action2], branches=[branch])
+        workflow = Workflow("helloWorld", action.id, actions=[action, action2], branches=[branch])
 
         result = {'triggered': False}
 

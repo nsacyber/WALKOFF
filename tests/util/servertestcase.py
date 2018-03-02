@@ -144,7 +144,9 @@ class ServerTestCase(unittest.TestCase):
         except KeyError:
             import traceback
             traceback.print_exc()
+            traceback.print_stack()
             raise ValueError('method must be either get, put, post, patch, or delete')
+        self.assertEqual(response.status_code, status_code)
         if status_code != NO_CONTENT:
             response = json.loads(response.get_data(as_text=True))
         if error:

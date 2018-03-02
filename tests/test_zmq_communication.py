@@ -40,6 +40,7 @@ class TestZMQCommunication(unittest.TestCase):
         case_database.case_db.tear_down()
         case_subscription.clear_subscriptions()
 
+
     @classmethod
     def tearDownClass(cls):
         if config.test_data_path in os.listdir(config.test_path):
@@ -171,7 +172,7 @@ class TestZMQCommunication(unittest.TestCase):
             result['resumed'] = True
 
         workflow = execution_db_help.load_workflow('pauseResumeWorkflowFixed', 'pauseResumeWorkflow')
-        action_ids = [action_id for action_id in workflow.actions]
+        action_ids = [action.id for action in workflow.actions]
         workflow_events = ['Workflow Paused', 'Workflow Resumed']
         setup_subscriptions_for_action(workflow.id, action_ids, workflow_events=workflow_events)
 

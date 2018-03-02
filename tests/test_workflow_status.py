@@ -13,6 +13,7 @@ from tests.util import execution_db_help
 from walkoff import executiondb
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from walkoff.executiondb.executionelement import ExecutionElement
+import walkoff.executiondb.schemas
 
 
 class MockWorkflow(ExecutionElement):
@@ -26,6 +27,15 @@ class MockWorkflow(ExecutionElement):
 
     def as_json(self):
         return {'id': self.id, 'name': self.name, 'execution_id': self.execution_id}
+
+class MockWorkflowSchema(object):
+    @staticmethod
+    def dump(workflow):
+        class Dummy:
+            def __init__(self, data):
+                self.data = data
+
+        return Dummy({'id': str(workflow.id), 'name': workflow.name, 'execution_id': str(workflow.execution_id)})
 
 
 def mock_pause_workflow(self, execution_id):
@@ -42,6 +52,7 @@ class TestWorkflowStatus(ServerTestCase):
         MultiprocessedExecutor.pause_workflow = mock_pause_workflow
         MultiprocessedExecutor.resume_workflow = mock_resume_workflow
         case_database.initialize()
+        walkoff.executiondb.schemas._schema_lookup[MockWorkflow] = MockWorkflowSchema
 
     def tearDown(self):
         execution_db_help.cleanup_device_db()
@@ -49,6 +60,7 @@ class TestWorkflowStatus(ServerTestCase):
         case_database.case_db.session.query(case_database.Event).delete()
         case_database.case_db.session.query(case_database.Case).delete()
         case_database.case_db.session.commit()
+        walkoff.executiondb.schemas._schema_lookup.pop(MockWorkflow, None)
 
     def act_on_workflow(self, execution_id, action):
         data = {'execution_id': execution_id, 'status': action}

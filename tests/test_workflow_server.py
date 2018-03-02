@@ -19,12 +19,13 @@ class TestWorkflowServer(ServerTestCase):
         self.change_playbook_name = 'change_playbook'
         self.add_workflow_name = 'add_workflow'
         self.change_workflow_name = 'change_workflow'
+        action_id = str(uuid4())
         self.empty_workflow_json = \
             {'actions': [
-                {"app_name": "HelloWorld", "action_name": "helloWorld", "name": "helloworld", "id": str(uuid4()),
+                {"app_name": "HelloWorld", "action_name": "helloWorld", "name": "helloworld", "id": action_id,
                  "arguments": []}],
                 'name': self.add_workflow_name,
-                'start': str(uuid4()),
+                'start': action_id,
                 'branches': []}
         self.verb_lookup = {'get': self.get_with_status_check,
                             'put': self.put_with_status_check,
@@ -252,7 +253,6 @@ class TestWorkflowServer(ServerTestCase):
                                               headers=self.headers, status_code=OBJECT_CREATED,
                                               data=json.dumps(self.empty_workflow_json),
                                               content_type="application/json")
-
         self.empty_workflow_json['id'] = response['id']
 
         final_workflows = playbook.workflows
