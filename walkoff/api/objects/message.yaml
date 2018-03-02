@@ -29,6 +29,7 @@ Message:
         responded_at:
           type: string
           description: UTC timestamp of when the message was responded
+          format: date-time
         responded_by:
           type: string
           description: username of user who responded to the action
@@ -62,9 +63,11 @@ MessageSummary:
       description: UTC timestamp of message creation
       type: string
       readOnly: true
+      format: date-time
     last_read_at:
       description: UTC timestamp of when message was last read
       type: string
+      format: date-time
     awaiting_response:
       description: Is this message awaiting a response
       type: boolean

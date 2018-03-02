@@ -8,7 +8,7 @@ from uuid import uuid4
 
 import walkoff.config.config
 import walkoff.config.paths
-
+from datetime import datetime
 try:
     from importlib import reload as reload_module
 except ImportError:
@@ -520,3 +520,10 @@ def __regenerate_ids_of_list(value, action_mapping):
                          if isinstance(list_element_, dict)):
         regenerate_ids(list_element, action_mapping=action_mapping)
 
+
+def utc_as_rfc_datetime(timestamp):
+    return timestamp.isoformat('T') + 'Z'
+
+
+def timestamp_to_datetime(time):
+    return datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%fZ')

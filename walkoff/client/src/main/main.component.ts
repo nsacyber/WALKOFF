@@ -26,7 +26,6 @@ const MAX_TOTAL_MESSAGES = 20;
 	providers: [MainService, AuthService, UtilitiesService],
 })
 export class MainComponent implements OnInit, OnDestroy {
-	utils = new UtilitiesService();
 	currentUser: string;
 	interfaceNames: string[] = [];
 	jwtHelper: JwtHelper = new JwtHelper();
@@ -38,7 +37,8 @@ export class MainComponent implements OnInit, OnDestroy {
 
 	constructor(
 		private mainService: MainService, private authService: AuthService,
-		private modalService: NgbModal, private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private modalService: NgbModal, private toastyService: ToastyService,
+		private toastyConfig: ToastyConfig, public utils: UtilitiesService,
 	) {}
 
 	/**
@@ -169,7 +169,7 @@ export class MainComponent implements OnInit, OnDestroy {
 		this.mainService.getMessage(messageListing.id)
 			.then(message => {
 				messageListing.is_read = true;
-				messageListing.last_read_at = new Date();
+				messageListing.last_read_at = this.utils.getCurrentIsoString();
 				this._recalculateNewMessagesCount();
 
 				this.messageModalRef = this.modalService.open(MessagesModalComponent);

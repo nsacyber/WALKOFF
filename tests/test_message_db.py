@@ -13,6 +13,7 @@ import json
 import walkoff.config.paths
 from tests.util import execution_db_help
 from uuid import uuid4
+from walkoff.helpers import utc_as_rfc_datetime
 
 class TestMessageDatabase(TestCase):
 
@@ -239,24 +240,24 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(message_json['id'], message.id)
         self.assertEqual(message_json['subject'], 'subject here')
         self.assertFalse(message_json['awaiting_response'])
-        self.assertEqual(message_json['created_at'], str(message.created_at))
-        for field in ('read_by', 'responded_at', 'responded_by', 'body', 'workflow_execution_id',
+        self.assertEqual(message_json['created_at'], utc_as_rfc_datetime(message.created_at))
+        for field in ('read_by', 'responded_at', 'responded_by', 'body', 'workflow_execution_uid',
                       'requires_reauthorization', 'requires_response', 'is_read', 'last_read_at'):
             self.assertNotIn(field, message_json)
 
     def test_as_json_requires_reauth(self):
-        message = self.get_default_message(requires_reauth=True)
+        message = self.get_default_message(requires_reauth=True, commit=True)
         message_json = message.as_json(with_read_by=False)
         self.assertTrue(message_json['requires_reauthorization'])
 
     def test_as_json_requires_action(self):
-        message = self.get_default_message(requires_response=True)
+        message = self.get_default_message(requires_response=True, commit=True)
         message_json = message.as_json(with_read_by=False)
         self.assertTrue(message_json['requires_response'])
         self.assertTrue(message_json['awaiting_response'])
 
     def test_as_json_with_read_by(self):
-        message = self.get_default_message()
+        message = self.get_default_message(commit=True)
         message.record_user_action(self.user, MessageAction.read)
         message_json = message.as_json(with_read_by=True)
         self.assertListEqual(message_json['read_by'], [self.user.username])
@@ -265,7 +266,7 @@ class TestMessageDatabase(TestCase):
         self.assertSetEqual(set(message_json['read_by']), {self.user.username, self.user2.username})
 
     def test_as_json_with_read_by_user_has_unread(self):
-        message = self.get_default_message()
+        message = self.get_default_message(commit=True)
         message.record_user_action(self.user, MessageAction.read)
         message_json = message.as_json(with_read_by=True)
         self.assertListEqual(message_json['read_by'], [self.user.username])
@@ -281,7 +282,7 @@ class TestMessageDatabase(TestCase):
         message_json = message.as_json()
         message_history = message.history[0]
         self.assertFalse(message_json['awaiting_response'])
-        self.assertEqual(message_json['responded_at'], str(message_history.timestamp))
+        self.assertEqual(message_json['responded_at'], utc_as_rfc_datetime(message_history.timestamp))
         self.assertEqual(message_json['responded_by'], message_history.username)
 
     def test_as_json_for_user(self):
@@ -297,10 +298,10 @@ class TestMessageDatabase(TestCase):
         user2_history = message.history[1]
         message_json = message.as_json(user=self.user)
         self.assertTrue(message_json['is_read'])
-        self.assertEqual(message_json['last_read_at'], str(user1_history.timestamp))
+        self.assertEqual(message_json['last_read_at'], utc_as_rfc_datetime(user1_history.timestamp))
         message_json = message.as_json(user=self.user2)
         self.assertTrue(message_json['is_read'])
-        self.assertEqual(message_json['last_read_at'], str(user2_history.timestamp))
+        self.assertEqual(message_json['last_read_at'], utc_as_rfc_datetime(user2_history.timestamp))
 
     def test_as_json_for_user_summary(self):
         message = self.get_default_message(commit=True)
@@ -311,7 +312,7 @@ class TestMessageDatabase(TestCase):
         user1_history = message.history[0]
         message_json = message.as_json(user=self.user, summary=True)
         self.assertTrue(message_json['is_read'])
-        self.assertEqual(message_json['last_read_at'], str(user1_history.timestamp))
+        self.assertEqual(message_json['last_read_at'], utc_as_rfc_datetime(user1_history.timestamp))
 
     def test_strip_requires_auth_from_message_body(self):
         body = [{'message': 'look here', 'requires_response': True},

@@ -1,9 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
-import * as moment from 'moment';
 
 import { MessagesService } from './messages.service';
+import { UtilitiesService } from '../utilities.service';
 
 import { Message } from '../models/message/message';
 
@@ -13,14 +13,14 @@ import { Message } from '../models/message/message';
 	styleUrls: [
 		'./messages.css',
 	],
-	providers: [MessagesService],
+	providers: [MessagesService, UtilitiesService],
 })
 export class MessagesModalComponent implements OnInit {
 	@Input() message: Message;
 
 	constructor(
 		private messagesService: MessagesService, private activeModal: NgbActiveModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig, public utils: UtilitiesService,
 	) {}
 
 	ngOnInit(): void {
@@ -33,10 +33,11 @@ export class MessagesModalComponent implements OnInit {
 	 * @param action Action to perform against the message
 	 */
 	performMessageAction(action: string) {
-		this.messagesService.respondToMessage(this.message.workflow_execution_uid, action)
+		this.messagesService.respondToMessage(this.message.workflow_execution_id, action)
 			.then(() => {
 				this.message.awaiting_response = false;
-				this.message.responded_at = new Date();
+				this.message.responded_at = this.utils.getCurrentIsoString();
+				this.toastyService.success(`Successfully performed "${action}" on message.`);
 			})
 			.catch(e => this.toastyService.error(`Error performing ${action} on message: ${e.message}`));
 	}
@@ -46,13 +47,5 @@ export class MessagesModalComponent implements OnInit {
 	 */
 	dismiss(): void {
 		this.activeModal.dismiss();
-	}
-
-	/**
-	 * Converts a date time to a relative value (e.g. '5 minutes ago').
-	 * @param time Time to convert
-	 */
-	getRelativeTime(time: Date): string {
-		return moment(time).fromNow();
 	}
 }

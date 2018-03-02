@@ -6,10 +6,10 @@ import * as moment from 'moment';
 
 import { SchedulerService } from './scheduler.service';
 
-import { ScheduledTask } from '../models/scheduledTask';
-import { ScheduledTaskCron } from '../models/scheduledTaskCron';
-import { ScheduledTaskInterval } from '../models/scheduledTaskInterval';
-import { ScheduledTaskDate } from '../models/scheduledTaskDate';
+import { ScheduledTask } from '../models/scheduler/scheduledTask';
+import { ScheduledTaskCron } from '../models/scheduler/scheduledTaskCron';
+import { ScheduledTaskInterval } from '../models/scheduler/scheduledTaskInterval';
+import { ScheduledTaskDate } from '../models/scheduler/scheduledTaskDate';
 import { GenericObject } from '../models/genericObject';
 
 @Component({
@@ -37,6 +37,9 @@ export class SchedulerModalComponent implements OnInit {
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
 	) {}
 
+	/**
+	 * Initializes the workflow select config for selecting workflows to schedule.
+	 */
 	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
 
@@ -49,13 +52,19 @@ export class SchedulerModalComponent implements OnInit {
 		};
 	}
 
+	/**
+	 * Adds a new / updates an existing scheduled task. Will also convert fields under task trigger to int if applicable.
+	 */
 	submit(): void {
 		const validationMessage = this.validate();
 		if (validationMessage) {
 			this.toastyService.error(validationMessage);
 			return;
 		}
-		this.convertStringsToInt(this.workingScheduledTask.task_trigger.args);
+
+		if (this.workingScheduledTask.task_trigger.type === 'cron') {
+			this.convertStringsToInt(this.workingScheduledTask.task_trigger.args);
+		}
 
 		//If device has an ID, device already exists, call update
 		if (this.workingScheduledTask.id) {
@@ -77,6 +86,11 @@ export class SchedulerModalComponent implements OnInit {
 		}
 	}
 
+	/**
+	 * Validates a scheduled task. Checks basic info (name, workflows specified).
+	 * Ensures args is specifies as well as a start date. Ensures that end date is not before start date.
+	 * If it's an interval or cron, checks if any other param exists in args.
+	 */
 	validate(): string {
 		if (!this.workingScheduledTask.name) { return 'A name is required.'; }
 		if (!this.workingScheduledTask.workflows || !this.workingScheduledTask.workflows.length) {
@@ -112,6 +126,10 @@ export class SchedulerModalComponent implements OnInit {
 		return '';
 	}
 
+	/**
+	 * Checks if this args object has any value other than start/end date.
+	 * @param args Args object to check against
+	 */
 	_doesArgsHaveAnything(args: GenericObject) {
 		let ret = false;
 		Object.keys(args).forEach(key => {
@@ -132,8 +150,13 @@ export class SchedulerModalComponent implements OnInit {
 		return ret;
 	}
 
-	changeType(e: string): void {
-		switch (e) {
+	/**
+	 * Switches between the types of scheduled task on the working scheduled task
+	 * (all stored locally so we don't lose information if we switch type).
+	 * @param type Event value from the type select.
+	 */
+	changeType(type: string): void {
+		switch (type) {
 			case 'cron':
 				this.workingScheduledTask.task_trigger.args = this.cron;
 				break;
@@ -149,14 +172,25 @@ export class SchedulerModalComponent implements OnInit {
 		}
 	}
 
-	workflowsSelectChanged(e: any): void {
-		this.workingScheduledTask.workflows = e.value;
+	/**
+	 * Updates the working scheduled task's workflows from the event value.
+	 * @param event JS Event from workflows select2
+	 */
+	workflowsSelectChanged(event: any): void {
+		this.workingScheduledTask.workflows = event.value;
 	}
 
+	/**
+	 * Returns today's date to be used in initializing the minimum date in our date selector.
+	 */
 	getToday(): string {
 		return moment().format('YYYY-MM-DD');
 	}
 
+	/**
+	 * For each value in the args object that can convert to number, convert it to number.
+	 * @param args Args object to check
+	 */
 	convertStringsToInt(args: any): void {
 		if (typeof(args) !== 'object') { return; }
 		for (const [key, value] of Object.entries(args)) {

@@ -5,7 +5,7 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from walkoff.extensions import db
 from walkoff.serverdb.mixins import TrackModificationsMixIn
 from walkoff.serverdb.role import Role
-
+from walkoff.helpers import utc_as_rfc_datetime
 logger = logging.getLogger(__name__)
 
 
@@ -131,8 +131,8 @@ class User(db.Model, TrackModificationsMixIn):
                "active": self.active}
         if with_user_history:
             out.update({
-                "last_login_at": self.last_login_at,
-                "current_login_at": self.current_login_at,
+                "last_login_at": utc_as_rfc_datetime(self.last_login_at),
+                "current_login_at": utc_as_rfc_datetime(self.current_login_at),
                 "last_login_ip": self.last_login_ip,
                 "current_login_ip": self.current_login_ip,
                 "login_count": self.login_count})

@@ -5,7 +5,7 @@ import { JwtHttp } from 'angular2-jwt-refresh';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
 
-import { ScheduledTask } from '../models/scheduledTask';
+import { ScheduledTask } from '../models/scheduler/scheduledTask';
 import { Playbook } from '../models/playbook/playbook';
 
 const schedulerStatusNumberMapping: any = {

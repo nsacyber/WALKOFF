@@ -27,7 +27,7 @@ import { ActionStatus } from '../models/execution/actionStatus';
 		'./execution.css',
 	],
 	encapsulation: ViewEncapsulation.None,
-	providers: [ExecutionService, AuthService],
+	providers: [ExecutionService, AuthService, UtilitiesService],
 })
 export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('actionStatusContainer') actionStatusContainer: ElementRef;
