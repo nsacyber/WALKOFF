@@ -91,7 +91,7 @@ def patch_user():
 @admin_required
 def role_update_user_fields(data, user, update=False):
     if 'roles' in data:
-        user.set_roles(data['roles'])
+        user.set_roles([role['id'] for role in data['roles']])
     if 'active' in data:
         user.active = data['active']
     if update:

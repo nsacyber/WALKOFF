@@ -51,7 +51,7 @@ class TestUserServer(ServerTestCase):
         role = Role('role1')
         db.session.add(role)
         db.session.commit()
-        data = {'username': 'username', 'password': 'NoH4x0rzPls!', 'roles': [role.id]}
+        data = {'username': 'username', 'password': 'NoH4x0rzPls!', 'roles': [{'id': role.id}]}
         response = self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
                                               data=json.dumps(data), status_code=OBJECT_CREATED)
         self.assertUserCreatedResponse('username', response)
@@ -94,7 +94,7 @@ class TestUserServer(ServerTestCase):
         user = User('username', 'supersecretshhhhh')
         db.session.add(user)
         db.session.commit()
-        data = {'id': user.id, 'roles': [role.id]}
+        data = {'id': user.id, 'roles': [{'id': role.id}]}
         response = send_func('/api/users', headers=self.headers, content_type='application/json',
                                               data=json.dumps(data), status_code=SUCCESS)
         self.assertDictEqual(response, user.as_json())
