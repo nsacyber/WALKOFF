@@ -7,11 +7,11 @@
 ###### [unreleased]
 <!-- Commended out bullets are in development -->
 ### Added
-<!--* An execution control page is now available on the user interface. This page
+* An execution control page is now available on the user interface. This page
   allows you to start, pause, resume, and abort workflows as well as displays
   the status of all running and pending workflows.
   * With this feature is a new resource named `workflowqueue` which is
-    available through the `/api/workflowqueue` endpoints-->
+    available through the `/api/workflowqueue` endpoints.
 * You now have the ability to use a full set of Boolean logic on conditions.
   This means that on branches and triggers you can specify a list of conditions
   which must all be true (AND operator), or a list of conditions of which any
@@ -30,15 +30,15 @@
   * We have changed the HTTP verbs used for the REST API to reflect their more
     widely-accepted RESTful usage. Specifically, the POST and PUT verbs have
     been swapped for most of the endpoints.
-  <!--* Workflows are now accessed through the new `/api/workflows` endpoints
-    rather than the `/api/playbooks` endpoints-->
+  * Workflows are now accessed through the new `/api/workflows` endpoints
+    rather than the `/api/playbooks` endpoints
   * The `/api/playbooks` and the `/api/workflows` endpoints now use the UUID
     instead of the name.
   * The `/api/playbook/{id}/copy` and the
     `/api/playbooks/{id}/workflows/{id}/copy` endpoints are now accessed
     through `POST /api/playbooks?source={id_to_copy}` and the
     `POST /api/workflows?source={id_to_copy}` endpoints respectively.
-  <!--* Server-Sent Event streams are now located in the `/api/streams` endpoints-->
+  * Server-Sent Event streams are now located in the `/api/streams` endpoints
   * Errors are now returned using the RFC 7807 Problem Details standard
   * `/api/devices/import` and `/api/devices/export` endpoints have been
     removed. Use the new `POST /api/devices` with `multipart/form-data` and
@@ -54,10 +54,10 @@
   wait was used to pause the execution of a workflow. By storing the state to
   the database, all threads on all worker processes are free to execute
   workflows.
-<!--* Information about the workflow which sent events are now available in both
+* Information about the workflow which sent events are now available in both
   the Google Protocol Buffer messages as well as the arguments to callbacks
-  using the interface event dispatcher.-->
-<!--* All times are stored in UTC time and represented in ISO 8601 format-->
+  using the interface event dispatcher.
+* All times are stored in UTC time and represented in RFC 3339 format
 
 ### Deprecated
 * The "sender_uids" argument in the interface dispatcher `on_xyz_event`
@@ -66,14 +66,16 @@
 
 ### Removed
 * The `/api/playbooks/{name}/workflows/{name}/save` endpoint has been removed.
-<!--* The `/api/playbooks/{name}/workflows/{name}/{execute/pause/resume}` endpoints
-  have been removed. Use the `/api/workflowqueue` resource instead-->
+* The `/api/playbooks/{name}/workflows/{name}/{execute/pause/resume}` endpoints
+  have been removed. Use the `/api/workflowqueue` resource instead
 * Removed `workflow_version` from the playbooks. This may be added later to
   provide backwards-compatible import functionality to the workflows.
+
 <!--
 ### Contributor
 * The minimum accepted unit test coverage for the Python backend is now 84%
 -->
+
 ## [0.6.7]
 ###### 2018-02-06
 
