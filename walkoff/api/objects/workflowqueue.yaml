@@ -52,13 +52,13 @@ WorkflowTimestamp:
       description: The timestamp of the start of workflow execution
       type: string
       format: date-time
-      example: '2017-05-24T00:42:22.934058'
+      example: '2017-05-24T00:42:22.934058Z'
       readOnly: true
     completed_at:
       description: The timestamp of the end of workflow execution
       type: string
       format: date-time
-      example: '2017-05-24T00:42:22.934058'
+      example: '2017-05-24T00:42:22.934058Z'
 
 ActionStatus:
   type: object
@@ -110,13 +110,13 @@ ActionStatusDetails:
       description: The timestamp of when the action started
       type: string
       format: date-time
-      example: '2017-05-24T00:42:22.934058'
+      example: '2017-05-24T00:42:22.934058Z'
       readOnly: true
     completed_at:
       description: The timestamp of when the action completed
       type: string
       format: date-time
-      example: '2017-05-24T00:43:26.930892'
+      example: '2017-05-24T00:43:26.930892Z'
       readOnly: true
 
 ExecuteWorkflow:
@@ -127,8 +127,7 @@ ExecuteWorkflow:
       $ref: '#/definitions/Uuid'
     start:
       description: The ID of the starting action
-      type: string
-      format: uuid
+      $ref: '#/definitions/Uuid'
     arguments:
       type: array
       items:

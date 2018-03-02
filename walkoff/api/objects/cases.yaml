@@ -70,7 +70,7 @@ Event:
       type: string
       format: date-time
       readOnly: true
-      example: '2017-05-12 15:54:18.121421'
+      example: '2017-05-12T15:54:18.121421Z'
     type:
       description: The type of event
       type: string
