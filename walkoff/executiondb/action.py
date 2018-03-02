@@ -1,5 +1,6 @@
 import logging
 import uuid
+import traceback
 
 from sqlalchemy import Column, Integer, ForeignKey, String, orm
 from sqlalchemy.orm import relationship
@@ -19,10 +20,10 @@ logger = logging.getLogger(__name__)
 class Action(ExecutionElement, Device_Base):
 
     __tablename__ = 'action'
-    workflow_id = Column(UUIDType(), ForeignKey('workflow.id'))
+    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
-    name = Column(String(80))
+    name = Column(String(80), nullable=False)
     device_id = Column(Integer)
     arguments = relationship('Argument', cascade='all, delete, delete-orphan')
     trigger = relationship('ConditionalExpression', cascade='all, delete-orphan', uselist=False)
@@ -30,17 +31,18 @@ class Action(ExecutionElement, Device_Base):
 
     def __init__(self, app_name, action_name, name, device_id=None, id=None, arguments=None, trigger=None,
                  position=None):
-        """Initializes a new Action object. A Workflow has many actions that it executes.
-
+        """Initializes a new Action object. A Workflow has one or more actions that it executes.
         Args:
             app_name (str): The name of the app associated with the Action
             action_name (str): The name of the action associated with a Action
             name (str): The name of the Action object.
             device_id (int, optional): The id of the device associated with the app associated with the Action. Defaults
                 to None.
+            id (str|UUID, optional): Optional UUID to pass into the Action. Must be UUID object or valid UUID string.
+                Defaults to None.
             arguments (list[Argument], optional): A list of Argument objects that are parameters to the action.
                 Defaults to None.
-            trigger (ConditionalExpression, optional): A ConditionExpression which causes an Action to wait until the
+            trigger (ConditionalExpression, optional): A ConditionalExpression which causes an Action to wait until the
                 data is sent fulfilling the condition. Defaults to None.
             position (Position, optional): Position object for the Action. Defaults to None.
         """
@@ -69,6 +71,7 @@ class Action(ExecutionElement, Device_Base):
 
     @orm.reconstructor
     def init_on_load(self):
+        """Loads all necessary fields upon Action being loaded from database"""
         self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
         self._output = None
         self._action_executable = get_app_action(self.app_name, self._run)
@@ -97,7 +100,6 @@ class Action(ExecutionElement, Device_Base):
 
     def get_output(self):
         """Gets the output of an Action (the result)
-
         Returns:
             The result of the Action
         """
@@ -105,7 +107,6 @@ class Action(ExecutionElement, Device_Base):
 
     def get_execution_id(self):
         """Gets the execution ID of the Action
-
         Returns:
             The execution ID
         """
@@ -113,7 +114,6 @@ class Action(ExecutionElement, Device_Base):
 
     def set_arguments(self, new_arguments):
         """Updates the arguments for an Action object.
-
         Args:
             new_arguments ([Argument]): The new Arguments for the Action object.
         """
@@ -122,14 +122,12 @@ class Action(ExecutionElement, Device_Base):
 
     def execute(self, instance, accumulator, arguments=None, resume=False):
         """Executes an Action by calling the associated app function.
-
         Args:
             instance (App): The instance of an App object to be used to execute the associated function.
             accumulator (dict): Dict containing the results of the previous actions
             arguments (list[Argument]): Optional list of Arguments to be used if the Action is the starting step of
                 the Workflow. Defaults to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
-
         Returns:
             The result of the executed function.
         """
@@ -174,20 +172,22 @@ class Action(ExecutionElement, Device_Base):
         else:
             event = WalkoffEvent.ActionExecutionError
             return_type = 'UnhandledException'
+        logger.warning('Exception in {0}: \n{1}'.format(self.name, traceback.format_exc()))
         logger.error('Error calling action {0}. Error: {1}'.format(self.name, formatted_error))
         self._output = ActionResult('error: {0}'.format(formatted_error), return_type)
         WalkoffEvent.CommonWorkflowSignal.send(self, event=event, data=self._output.as_json())
 
     def execute_trigger(self, data_in, accumulator):
+        """Executes the trigger for an Action, which will continue execution if the trigger returns True
+        Args:
+            data_in (dict): The data to send to the trigger to test against
+            accumulator (dict): Dict containing the results of the previous actions
+        Returns:
+            True if the trigger returned True, False otherwise
+        """
         if self.trigger.execute(data_in=data_in, accumulator=accumulator):
             logger.debug('Trigger is valid for input {0}'.format(data_in))
             return True
         else:
             logger.debug('Trigger is not valid for input {0}'.format(data_in))
             return False
-
-    def __get_argument_by_name(self, name):
-        for argument in self.arguments:
-            if argument.name == name:
-                return argument
-        return None

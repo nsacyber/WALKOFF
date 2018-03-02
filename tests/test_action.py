@@ -13,20 +13,20 @@ from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.position import Position
 from walkoff.helpers import InvalidExecutionElement, InvalidArgument
 import tests.config
-from tests.util import device_db_help
+from tests.util import execution_db_help
 
 
 class TestAction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
         walkoff.appgateway.cache_apps(tests.config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
-        device_db_help.tear_down_device_db()
+        execution_db_help.tear_down_device_db()
 
     def __compare_init(self, elem, app_name, action_name, name, device_id=None, arguments=None, trigger=None,
                        position=None):

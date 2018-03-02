@@ -11,6 +11,7 @@ import zmq.green as zmq
 
 import walkoff.config.config
 import walkoff.config.paths
+from walkoff import executiondb
 from walkoff.events import WalkoffEvent
 from walkoff.multiprocessedexecutor.loadbalancer import LoadBalancer, Receiver
 from walkoff.multiprocessedexecutor.worker import Worker
@@ -19,7 +20,6 @@ from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb import WorkflowStatusEnum
-import walkoff.executiondb.devicedb
 
 logger = logging.getLogger(__name__)
 
@@ -149,20 +149,20 @@ class MultiprocessedExecutor(object):
         Returns:
             The execution ID of the Workflow.
         """
-        workflow = walkoff.executiondb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
+        workflow = executiondb.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
         if not workflow:
             logger.error('Attempted to execute workflow which does not exist')
             return None, 'Attempted to execute workflow which does not exist'
 
         execution_id = execution_id_in if execution_id_in else str(uuid.uuid4())
-        workflow._execution_id = execution_id
 
         if start is not None:
             logger.info('Executing workflow {0} for action {1}'.format(workflow.name, start))
         else:
             logger.info('Executing workflow {0} with default starting action'.format(workflow.name, start))
 
-        WalkoffEvent.WorkflowExecutionPending.send(workflow)
+        workflow_data = {'execution_id': execution_id, 'id': workflow.id, 'name': workflow.name}
+        WalkoffEvent.WorkflowExecutionPending.send(workflow_data)
         self.manager.add_workflow(workflow.id, execution_id, start, start_arguments, resume)
 
         WalkoffEvent.SchedulerJobExecuted.send(self)
@@ -174,7 +174,7 @@ class MultiprocessedExecutor(object):
         Args:
             execution_id (str): The execution id of the workflow.
         """
-        workflow_status = walkoff.executiondb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
+        workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
         if workflow_status and workflow_status.status == WorkflowStatusEnum.running:
             self.manager.pause_workflow(execution_id)
@@ -189,13 +189,13 @@ class MultiprocessedExecutor(object):
         Args:
             execution_id (str): The execution id of the workflow.
         """
-        workflow_status = walkoff.executiondb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
+        workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
 
         if workflow_status and workflow_status.status == WorkflowStatusEnum.paused:
-            saved_state = walkoff.executiondb.devicedb.device_db.session.query(SavedWorkflow).filter_by(
+            saved_state = executiondb.execution_db.session.query(SavedWorkflow).filter_by(
                 workflow_execution_id=execution_id).first()
-            workflow = walkoff.executiondb.devicedb.device_db.session.query(Workflow).filter_by(
+            workflow = executiondb.execution_db.session.query(Workflow).filter_by(
                 id=workflow_status.workflow_id).first()
             workflow._execution_id = execution_id
             WalkoffEvent.WorkflowResumed.send(workflow)
@@ -213,13 +213,16 @@ class MultiprocessedExecutor(object):
         Args:
             execution_id (str): The execution id of the workflow.
         """
-        workflow_status = walkoff.executiondb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
+        workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
 
         if workflow_status:
             if workflow_status.status in [WorkflowStatusEnum.pending, WorkflowStatusEnum.paused,
                                           WorkflowStatusEnum.awaiting_data]:
-                WalkoffEvent.WorkflowAborted.send({'workflow_execution_id': execution_id})
+                workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(
+                    id=workflow_status.workflow_id).first()
+                if workflow is not None:
+                    WalkoffEvent.WorkflowAborted.send({'execution_id': execution_id, 'id': workflow_status.workflow_id, 'name': workflow.name})
             elif workflow_status.status == WorkflowStatusEnum.running:
                 self.manager.abort_workflow(execution_id)
             return True
@@ -237,9 +240,9 @@ class MultiprocessedExecutor(object):
             arguments (list[Argument], optional): Optional list of new Arguments for the trigger action.
                 Defaults to None.
         """
-        saved_state = walkoff.executiondb.devicedb.device_db.session.query(SavedWorkflow).filter_by(
+        saved_state = executiondb.execution_db.session.query(SavedWorkflow).filter_by(
             workflow_execution_id=execution_id).first()
-        workflow = walkoff.executiondb.devicedb.device_db.session.query(Workflow).filter_by(
+        workflow = executiondb.execution_db.session.query(Workflow).filter_by(
             id=saved_state.workflow_id).first()
         workflow._execution_id = execution_id
 
@@ -267,8 +270,8 @@ class MultiprocessedExecutor(object):
         Returns:
             A list of execution IDs of workflows currently awaiting data to be sent to a trigger.
         """
-        walkoff.executiondb.devicedb.device_db.session.expire_all()
-        wf_statuses = walkoff.executiondb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
+        executiondb.execution_db.session.expire_all()
+        wf_statuses = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
             status=WorkflowStatusEnum.awaiting_data).all()
         return [str(wf_status.execution_id) for wf_status in wf_statuses]
 
@@ -281,7 +284,7 @@ class MultiprocessedExecutor(object):
         Returns:
             The status of the workflow
         """
-        workflow_status = walkoff.executiondb.devicedb.device_db.session.query(WorkflowStatus).filter_by(
+        workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
         if workflow_status:
             return workflow_status.status

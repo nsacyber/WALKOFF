@@ -178,12 +178,11 @@ sys.path.append(os.path.abspath('..'))
 import walkoff.config.paths
 import walkoff
 walkoff.config.paths.keywords_path = '../walkoff/keywords'
-walkoff.config.paths.device_db_path = '../data/device.db'
+walkoff.config.paths.execution_db_path = '../data/device.db'
 walkoff.config.paths.case_db_path = '../data/events.db'
 walkoff.config.paths.walkoff_schema_path = '../data/walkoff_schema.json'
 walkoff.config.paths.apps_path = '../apps'
 walkoff.config.paths.workflows_path = '../workflows'
-from walkoff import keywords
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

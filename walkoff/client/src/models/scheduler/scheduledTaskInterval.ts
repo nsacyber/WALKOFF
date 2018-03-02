@@ -1,4 +1,5 @@
 import { IScheduledTaskArgs } from './ischeduledTaskArgs';
+import { Moment } from 'moment';
 
 export class ScheduledTaskInterval implements IScheduledTaskArgs {
 	//One of these is required
@@ -8,8 +9,8 @@ export class ScheduledTaskInterval implements IScheduledTaskArgs {
 	minutes: number;
 	seconds: number;
 	//Start date is required, end date optional
-	start_date: Date;
-	end_date: Date;
+	start_date: string | Moment;
+	end_date: string | Moment;
 	//Timezone will most likely never be used
 	timezone: string;
 }

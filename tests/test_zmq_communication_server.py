@@ -8,7 +8,7 @@ import walkoff.config.paths
 from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
 from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
-from tests.util import device_db_help
+from tests.util import execution_db_help
 from walkoff.events import WalkoffEvent
 
 try:
@@ -25,14 +25,14 @@ class TestZmqCommunicationServer(ServerTestCase):
         case_database.initialize()
 
     def tearDown(self):
-        device_db_help.cleanup_device_db()
+        execution_db_help.cleanup_device_db()
         walkoff.case.subscription.clear_subscriptions()
         for case in case_database.case_db.session.query(case_database.Case).all():
             case_database.case_db.session.delete(case)
         case_database.case_db.session.commit()
 
     def test_execute_workflow(self):
-        workflow = device_db_help.load_workflow('testGeneratedWorkflows/test', 'helloWorldWorkflow')
+        workflow = execution_db_help.load_workflow('testGeneratedWorkflows/test', 'helloWorldWorkflow')
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
         start = datetime.utcnow()
@@ -52,7 +52,7 @@ class TestZmqCommunicationServer(ServerTestCase):
         self.assertEqual(result, {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     def test_execute_workflow_change_arguments(self):
-        workflow = device_db_help.load_workflow('testGeneratedWorkflows/test', 'helloWorldWorkflow')
+        workflow = execution_db_help.load_workflow('testGeneratedWorkflows/test', 'helloWorldWorkflow')
 
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
@@ -62,7 +62,7 @@ class TestZmqCommunicationServer(ServerTestCase):
         @WalkoffEvent.ActionExecutionSuccess.connect
         def y(sender, **kwargs):
             result['count'] += 1
-            result['data'] = kwargs['data']
+            result['data'] = kwargs['data']['data']
 
         data = {"workflow_id": str(workflow.id),
                 "arguments": [{"name": "call",

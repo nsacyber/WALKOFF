@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import current_app
 
 from walkoff.extensions import db
-
+from walkoff.helpers import utc_as_rfc_datetime
 number_of_operations = 0
 prune_frequency = 1000
 

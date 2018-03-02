@@ -10,9 +10,15 @@ from walkoff.appgateway import cache_apps
 from walkoff.config.config import load_app_apis
 import importlib
 import scripts.migrations.workflows.versions as versions
+from walkoff.config import paths
+from walkoff import initialize_databases
+from walkoff import executiondb
+from walkoff.executiondb.playbook import Playbook
 
 UPGRADE = "upgrade"
 DOWNGRADE = "downgrade"
+PREV_VERSION = "0.5.0"
+LATEST_VERSION = "0.7.0"
 
 
 def validate_path(mode, cur, tgt):
@@ -52,9 +58,11 @@ def get_next_version(mode, cur):
 
 
 def convert_playbooks(mode, tgt_version):
+    initialize_databases()
     cache_apps(join('.', 'apps'))
     load_app_apis()
-    for subd, d, files in os.walk(join('workflows')):
+
+    for subd, d, files in os.walk(paths.workflows_path):
         for f in files:
             if f.endswith('.playbook'):
                 path = os.path.join(subd, f)
@@ -69,9 +77,10 @@ def convert_playbook(path, mode, tgt_version):
         if 'walkoff_version' not in playbook:
             if mode == DOWNGRADE:
                 print("Cannot downgrade, no version specified in playbook.")
-            elif mode == UPGRADE:
-                print("No version specified in playbook, assuming 0.4.2")
-                cur_version = "0.4.2"
+                return
+            else:  # upgrade
+                print("No version specified in playbook, assuming "+PREV_VERSION)
+                cur_version = PREV_VERSION
         else:
             cur_version = playbook['walkoff_version']
 
@@ -98,10 +107,10 @@ def convert_playbook(path, mode, tgt_version):
                     else:
                         print("Upgrade not supported.")
 
-                playbook['walkoff_version'] = next_version
-
                 cur_version = next_version
 
+            playbook_obj = executiondb.execution_db.session.query(Playbook).filter_by(name=playbook['name']).first()
+
             f.seek(0)
-            json.dump(playbook, f, sort_keys=True, indent=4, separators=(',', ': '))
+            json.dump(playbook_obj.read(), f, sort_keys=True, indent=4, separators=(',', ': '))
             f.truncate()

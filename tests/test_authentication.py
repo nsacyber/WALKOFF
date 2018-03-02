@@ -9,17 +9,17 @@ from walkoff.serverdb.tokens import BlacklistedToken
 from walkoff.serverdb.user import User
 from walkoff.serverdb import add_user
 from walkoff.extensions import db
-from tests.util import device_db_help
+from tests.util import execution_db_help
 
 
 class TestAuthorization(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
 
     @classmethod
     def tearDownClass(cls):
-        device_db_help.tear_down_device_db()
+        execution_db_help.tear_down_device_db()
 
     def setUp(self):
         import walkoff.server.flaskserver

@@ -1,4 +1,4 @@
-import { Component, ElementRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, ElementRef, ViewChild, ViewEncapsulation, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 
@@ -11,7 +11,7 @@ import { AuthService } from '../auth/auth.service';
 	encapsulation: ViewEncapsulation.None,
 	providers: [AuthService],
 })
-export class InterfacesComponent {
+export class InterfacesComponent implements OnInit {
 	@ViewChild('interfacesMain') main: ElementRef;
 	interfaceName: string;
 	paramsSub: any;
@@ -20,11 +20,14 @@ export class InterfacesComponent {
 	constructor(
 		private route: ActivatedRoute, private authService: AuthService,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
-	) {
-		this.toastyConfig.theme = 'bootstrap';
-	}
+	) {}
 
+	/**
+	 * On init, get our interface name from the route params and grab the interface.
+	 */
 	ngOnInit() {
+		this.toastyConfig.theme = 'bootstrap';
+
 		this.paramsSub = this.route.params.subscribe(params => {
 			this.interfaceName = params.interfaceName;
 			this.getInterface();
@@ -36,28 +39,21 @@ export class InterfacesComponent {
 	 * Loads the interface into an iframe currently.
 	 */
 	getInterface() {
-		const self = this;
-
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
 				const xhr = new XMLHttpRequest();
 				xhr.open('GET', `custominterfaces/${this.interfaceName}/`, true);
-				xhr.onreadystatechange = function() {
-					if (this.readyState !== 4) {
-						return;
-					}
-					if (this.status !== 200) {
-						return;
-					}
+				xhr.onreadystatechange = () => {
+					if (xhr.readyState !== 4 || xhr.status !== 200) { return; }
 
 					//Remove our existing iframe if applicable
-					self.main.nativeElement.removeChild(self.main.nativeElement.lastChild);
+					this.main.nativeElement.removeChild(this.main.nativeElement.lastChild);
 
-					self.activeIFrame = document.createElement('iframe');
-					(self.activeIFrame as any).srcdoc = this.responseText;
-					self.activeIFrame.src = 'data:text/html;charset=utf-8,' + this.responseText;
+					this.activeIFrame = document.createElement('iframe');
+					(this.activeIFrame as any).srcdoc = xhr.responseText;
+					this.activeIFrame.src = 'data:text/html;charset=utf-8,' + xhr.responseText;
 
-					self.main.nativeElement.appendChild(self.activeIFrame);
+					this.main.nativeElement.appendChild(this.activeIFrame);
 				};
 				xhr.setRequestHeader('Authorization', 'Bearer ' + authToken);
 				xhr.send();
@@ -65,10 +61,3 @@ export class InterfacesComponent {
 			.catch(e => this.toastyService.error(`Error retrieving interface: ${e.message}`));
 	}
 }
-
-// function makeComponent(_selector: string, _templateUrl: string) {
-// 	// tslint:disable-next-line:max-classes-per-file
-// 	@Component({ selector: _selector, templateUrl: _templateUrl })
-// 	class FakeComponent {}
-// 	return FakeComponent;
-// }

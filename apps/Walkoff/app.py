@@ -102,7 +102,7 @@ class Walkoff(App):
         return self.standard_request('get', '/api/playbooks', timeout, headers=self.headers)
 
     @action
-    def get_workflow_uid(self, playbook_name, workflow_name, timeout=DEFAULT_TIMEOUT):
+    def get_workflow_id(self, playbook_name, workflow_name, timeout=DEFAULT_TIMEOUT):
         try:
             response = self.request_with_refresh('get', '/api/playbooks', timeout, headers=self.headers)
         except Timeout:
@@ -122,39 +122,36 @@ class Walkoff(App):
             if workflow is None:
                 return 'Workflow not found', 'WorkflowNotFound'
             else:
-                return workflow['uid']
+                return workflow['id']
 
     @action
-    def execute_workflow(self, playbook_name, workflow_name, timeout=DEFAULT_TIMEOUT):
-        data = {}
-        r = self.standard_request('post', '/api/playbooks/{}/workflows/{}/execute'.format(playbook_name, workflow_name),
-                                  timeout, headers=self.headers, data=data)
-        r = [r[0]['id']]
+    def execute_workflow(self, workflow_id, timeout=DEFAULT_TIMEOUT):
+        data = {"workflow_id": workflow_id}
+        r = self.standard_request('post', '/api/workflowqueue', timeout, headers=self.headers, data=data)
+        r = [r['id']]
         return r, 'Success'
 
     @action
-    def pause_workflow(self, playbook_name, workflow_name, execution_uid, timeout=DEFAULT_TIMEOUT):
-        return self.standard_request('post',
-                                     '/api/playbooks/{}/workflows/{}/pause'.format(playbook_name, workflow_name),
-                                     timeout, headers=self.headers, data=dict(id=execution_uid))
+    def pause_workflow(self, execution_id, timeout=DEFAULT_TIMEOUT):
+        data = {"execution_id": execution_id, "status": "pause"}
+        return self.standard_request('patch', '/api/workflowqueue', timeout, headers=self.headers, data=data)
 
     @action
-    def resume_workflow(self, playbook_name, workflow_name, execution_uid, timeout=DEFAULT_TIMEOUT):
-        return self.standard_request('post',
-                                     '/api/playbooks/{}/workflows/{}/resume'.format(playbook_name, workflow_name),
-                                     timeout, headers=self.headers, data=dict(id=execution_uid))
+    def resume_workflow(self, execution_id, timeout=DEFAULT_TIMEOUT):
+        data = {"execution_id": execution_id, "status": "resume"}
+        return self.standard_request('patch', '/api/workflowqueue', timeout, headers=self.headers, data=data)
 
     @action
-    def trigger(self, execution_uids, data, inputs=None, timeout=DEFAULT_TIMEOUT):
-        trigger_data = {"execution_uids": execution_uids, "data_in": data, "inputs": inputs}
-        return self.standard_request('post', '/api/triggers/send_data', timeout, headers=self.headers, data=trigger_data)
+    def trigger(self, execution_ids, data, arguments=None, timeout=DEFAULT_TIMEOUT):
+        data = {"execution_ids": execution_ids, "data_in": data, "arguments": arguments}
+        return self.standard_request('post', '/api/triggers/send_data', timeout, headers=self.headers, data=data)
 
     @action
     def get_workflow_results(self, timeout=DEFAULT_TIMEOUT):
-        return self.standard_request('get', '/api/workflowresults', timeout, headers=self.headers)
+        return self.standard_request('get', '/api/workflowqueue', timeout, headers=self.headers)
 
     @action
-    def wait_for_workflow_completion(self, execution_uid, timeout=60 * 5, request_timeout=DEFAULT_TIMEOUT,
+    def wait_for_workflow_completion(self, execution_id, timeout=60 * 5, request_timeout=DEFAULT_TIMEOUT,
                                      wait_between_requests=0.1):
         if timeout < request_timeout:
             return 'Function timeout must be greater than request timeout', 'InvalidInput'
@@ -163,7 +160,7 @@ class Walkoff(App):
         start = time.time()
         while time.time() - start < timeout:
             try:
-                response = self.request_with_refresh('get', '/api/workflowresults/{}'.format(execution_uid), timeout,
+                response = self.request_with_refresh('get', '/api/workflowqueue/{}'.format(execution_id), timeout,
                                                      headers=self.headers)
                 if response.status_code == 200:
                     response = response.json()

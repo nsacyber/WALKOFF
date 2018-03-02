@@ -114,7 +114,8 @@ export class CasesComponent implements OnInit {
 
 	constructor(
 		private casesService: CasesService, private modalService: NgbModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {}
+		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+	) {}
 
 	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
@@ -139,11 +140,20 @@ export class CasesComponent implements OnInit {
 			.subscribe(event => this.filterCases());
 	}
 
-	caseSelectChange($event: any): void {
-		if (!$event.value || $event.value === '') { return; }
-		this.getCaseEvents($event.value);
+	/**
+	 * Grabs case events from the server for the selected case (from the JS event supplied).
+	 * Will update the case events data table with the new case events.
+	 * @param event JS event from the select2 case select box
+	 */
+	caseSelectChange(event: any): void {
+		if (!event.value || event.value === '') { return; }
+		this.getCaseEvents(event.value);
 	}
 
+	/**
+	 * Filters case events based upon the input entered into the search filter box above the data table
+	 * and compared to various fields on the case event (type, message).
+	 */
 	filterEvents(): void {
 		const searchFilter = this.eventFilterQuery.value ? this.eventFilterQuery.value.toLocaleLowerCase() : '';
 
@@ -153,6 +163,10 @@ export class CasesComponent implements OnInit {
 		});
 	}
 
+	/**
+	 * Filters cases based upon the input entered into the search filter box above the data table
+	 * and compared to various fields on the case (name, note).
+	 */
 	filterCases(): void {
 		const searchFilter = this.caseFilterQuery.value ? this.caseFilterQuery.value.toLocaleLowerCase() : '';
 
@@ -162,19 +176,28 @@ export class CasesComponent implements OnInit {
 		});
 	}
 
+	/**
+	 * Grabs all the existing cases in the DB for use in populating the cases datatable.
+	 * Will also populate the case select2 data for use on the case events tab.
+	 */
 	getCases(): void {
 		this.casesService
 			.getCases()
 			.then((cases) => {
 				this.displayCases = this.cases = cases;
-				this.availableCases = [{ id: '', text: '' }].concat(cases.map((c) => ({ id: c.id.toString(), text: c.name })));
+				this.availableCases = [{ id: '', text: '' }].concat(cases.map(c => ({ id: c.id.toString(), text: c.name })));
 			})
 			.catch(e => this.toastyService.error(`Error retrieving cases: ${e.message}`));
 	}
 
-	getCaseEvents(caseName: string): void {
+	/**
+	 * Gets an array of case events for a given case ID from the server.
+	 * It will then populate our array of case events for display in the case events datatable.
+	 * @param caseId CaseId to get events for
+	 */
+	getCaseEvents(caseId: string | number): void {
 		this.casesService
-			.getEventsForCase(caseName)
+			.getEventsForCase(+caseId)
 			.then((caseEvents) => {
 				this.displayCaseEvents = this.caseEvents = caseEvents;
 				this.filterEvents();
@@ -182,6 +205,9 @@ export class CasesComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error retrieving events: ${e.message}`));
 	}
 
+	/**
+	 * Spawns a modal for adding a new case.
+	 */
 	addCase(): void {
 		const modalRef = this.modalService.open(CasesModalComponent, { windowClass: 'casesModal' });
 		modalRef.componentInstance.title = 'Add New Case';
@@ -193,6 +219,9 @@ export class CasesComponent implements OnInit {
 		this._handleModalClose(modalRef);
 	}
 
+	/**
+	 * Spawns a modal for editing an existing case.
+	 */
 	editCase(caseToEdit: Case): void {
 		const modalRef = this.modalService.open(CasesModalComponent, { windowClass: 'casesModal' });
 		modalRef.componentInstance.title = `Edit Case: ${caseToEdit.name}`;
@@ -205,6 +234,10 @@ export class CasesComponent implements OnInit {
 		this._handleModalClose(modalRef);
 	}
 
+	/**
+	 * After user confirmation, will delete a given case from the database and remove it from our list of cases to display.
+	 * @param caseToDelete Case to delete
+	 */
 	deleteCase(caseToDelete: Case): void {
 		if (!confirm('Are you sure you want to delete the case "' + caseToDelete.name +
 			'"? This will also delete any associated events.')) { return; }
@@ -221,6 +254,10 @@ export class CasesComponent implements OnInit {
 			.catch(e => this.toastyService.error(e.message));
 	}
 
+	/**
+	 * Gets a list of available subscriptions from the server,
+	 * and then stores it locally for usage within the add/edit modals.
+	 */
 	getAvailableSubscriptions(): void {
 		this.casesService
 			.getAvailableSubscriptions()
@@ -228,6 +265,10 @@ export class CasesComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error retrieving case subscriptions: ${e.message}`));
 	}
 
+	/**
+	 * Gets an array of fully populated playbooks from the server,
+	 * and then converts them to a subscription tree for usage in the D3 hierarchy tree in add/edit case modal.
+	 */
 	getPlaybooks(): void {
 		this.casesService
 			.getPlaybooks()
@@ -235,8 +276,13 @@ export class CasesComponent implements OnInit {
 			.catch(e => this.toastyService.error(`Error retrieving subscription tree: ${e.message}`));
 	}
 
+	/**
+	 * Converts an array of playbooks to a subscription tree for use in the D3 hierarchy tree in add/edit case modal.
+	 * Remaps some of the info to have better visual/logical flow for an end user (e.g. puts branches under actions).
+	 * Recursively builds the information based upon the CaseHierarchy object defined on the component.
+	 * @param playbooks Array of playbooks to convert
+	 */
 	convertPlaybooksToSubscriptionTree(playbooks: Playbook[]): CaseNode {
-		const self = this;
 		//Top level controller data
 		const tree: CaseNode = { name: 'Controller', id: 'controller', type: 'controller', children: [] };
 
@@ -260,15 +306,19 @@ export class CasesComponent implements OnInit {
 			});
 		});
 
-		playbooks.forEach(function (p) {
-			tree.children.push(self.getNodeRecursive(p, self.caseHierarchy));
+		playbooks.forEach(p => {
+			tree.children.push(this.getNodeRecursive(p, this.caseHierarchy));
 		});
 		return tree;
 	}
 
+	/**
+	 * Recursively crawls through execution elements based upon a defined ICaseHierarchy.
+	 * Returns a hierarchy of CaseNodes to be used in the D3 hierarchy for adding/editing cases.
+	 * @param target Target node to convert
+	 * @param hierarchy Hierarchy information to handle the conversion
+	 */
 	getNodeRecursive(target: any, hierarchy: ICaseHierarchy): CaseNode {
-		const self = this;
-
 		let nodeName = '';
 		if (hierarchy.prefix) { nodeName = hierarchy.prefix; }
 		//For higher level nodes, use the name
@@ -290,16 +340,20 @@ export class CasesComponent implements OnInit {
 		// If we're specifying a recursive association (e.g. ConditionalExpressions),
 		// iterate through children with the same hierarchical structure
 		if (hierarchy.recursivePropertyName) {
-			(target[hierarchy.recursivePropertyName] as any[]).forEach(sub => {
-				node.children.push(self.getNodeRecursive(sub, hierarchy));
-			});
+			if (Array.isArray(target[hierarchy.recursivePropertyName])) {
+				(target[hierarchy.recursivePropertyName] as any[]).forEach(sub => {
+					node.children.push(this.getNodeRecursive(sub, hierarchy));
+				});
+			}
 		}
 		
 		// For each child hierarchy, (most cases only 1 child type), iterate through the child elements
 		hierarchy.children.forEach(childHierarchy => {
-			(target[childHierarchy.arrayPropertyName] as any[]).forEach(sub => {
-				node.children.push(self.getNodeRecursive(sub, childHierarchy));
-			});
+			if (Array.isArray(target[childHierarchy.arrayPropertyName])) {
+				(target[childHierarchy.arrayPropertyName] as any[]).forEach(sub => {
+					node.children.push(this.getNodeRecursive(sub, childHierarchy));
+				});
+			}
 		});
 
 		if (!node.children.length) { delete node.children; }
@@ -307,16 +361,29 @@ export class CasesComponent implements OnInit {
 		return node;
 	}
 
+	/**
+	 * Returns a string of concatenated array values.
+	 * E.g. ['some', 'text', 'here'] => 'some, text, here'
+	 * @param input Array of strings to concat into a friendly string
+	 */
 	getFriendlyArray(input: string[]): string {
 		return input.join(', ');
 	}
 
+	/**
+	 * Converts an input object to a JSON string, removing the quotes for better reading.
+	 * @param input Input object to convert
+	 */
 	getFriendlyObject(input: object): string {
 		let out = JSON.stringify(input, null, 1);
 		out = out.substr(1, out.length - 2).replace(/"/g, '');
 		return out;
 	}
 
+	/**
+	 * On closing an add/edit modal (on clicking save), we will add or update existing cases for display.
+	 * @param modalRef ModalRef that is being closed
+	 */
 	private _handleModalClose(modalRef: NgbModalRef): void {
 		modalRef.result
 			.then((result) => {

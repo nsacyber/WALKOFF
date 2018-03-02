@@ -1,4 +1,5 @@
 import time
+
 from apps import App, action
 from tests.testapps.HelloWorld.exceptions import CustomException
 
@@ -46,10 +47,10 @@ class Main(App):
     def wait_for_pause_and_resume(self):
         import walkoff.case.database as case_database
         from walkoff.case.database import Event
-        from walkoff.executiondb import devicedb
         from walkoff.executiondb.workflowresults import WorkflowStatus
+        from walkoff import executiondb
 
-        workflow_status = devicedb.device_db.session.query(WorkflowStatus).first()
+        workflow_status = executiondb.execution_db.session.query(WorkflowStatus).first()
 
         workflow_id = str(workflow_status.workflow_id)
 

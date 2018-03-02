@@ -5,7 +5,7 @@ from walkoff.events import WalkoffEvent, EventType
 from interfaces import InterfaceEventDispatcher, dispatcher
 from interfaces.exceptions import UnknownEvent, InvalidEventHandler
 from walkoff.helpers import UnknownAppAction, UnknownApp
-from tests.util import device_db_help
+from tests.util import execution_db_help
 import uuid
 from walkoff.executiondb.executionelement import ExecutionElement
 import walkoff.executiondb.schemas
@@ -20,6 +20,7 @@ class MockWorkflow(ExecutionElement):
     def get_execution_id(self):
         return self._execution_id
 
+
 class MockWorkflowSchema(object):
     @staticmethod
     def dump(workflow):
@@ -33,7 +34,7 @@ class MockWorkflowSchema(object):
 class TestInterfaceEventDispatcher(TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
         walkoff.config.config.app_apis = {'App1': {'actions': {'action1': None,
                                                             'action2': None,
                                                             'action3': None}},
@@ -45,14 +46,14 @@ class TestInterfaceEventDispatcher(TestCase):
         dispatcher._clear()
 
     def tearDown(self):
-        device_db_help.cleanup_device_db()
+        execution_db_help.cleanup_device_db()
 
     @classmethod
     def tearDownClass(cls):
         dispatcher._clear()
         walkoff.config.config.app_apis = {}
-        device_db_help.tear_down_device_db()
         walkoff.executiondb.schemas._schema_lookup.pop(MockWorkflow, None)
+        execution_db_help.tear_down_device_db()
 
     def test_singleton(self):
         self.assertEqual(id(dispatcher), id(InterfaceEventDispatcher()))
@@ -328,6 +329,10 @@ class TestInterfaceEventDispatcher(TestCase):
         WalkoffEvent.SchedulerStart.send(self)
         self.assertTrue(result['x'])
 
+    @staticmethod
+    def get_kwargs(workflow):
+        return {'workflow': {'execution_id': str(workflow.get_execution_id())}}
+
     def test_example_on_walkoff_event_noncontroller_event(self):
 
         result = {'x': False}
@@ -339,12 +344,14 @@ class TestInterfaceEventDispatcher(TestCase):
             result['data'] = data
 
         workflow = MockWorkflow()
-        WalkoffEvent.WorkflowExecutionPending.send(workflow)
+        WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema.dump(workflow).data)
 
         data = {'id': self.id, 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
-                'execution_id': uuid.uuid4(), 'workflow_execution_id': workflow.get_execution_id()}
-        WalkoffEvent.ActionStarted.send(data)
+                'execution_id': uuid.uuid4()}
+        kwargs = self.get_kwargs(workflow)
+        WalkoffEvent.ActionStarted.send(data, data=kwargs)
         expected = data
+        expected.update(kwargs)
         expected['sender_id'] = expected.pop('id')
         expected['sender_name'] = expected.pop('name')
         self.assertTrue(result['x'])
@@ -361,12 +368,14 @@ class TestInterfaceEventDispatcher(TestCase):
             result['data'] = data
 
         workflow = MockWorkflow()
-        WalkoffEvent.WorkflowExecutionPending.send(workflow)
+        WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema().dump(workflow).data)
 
         data = {'id': self.id, 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
-                'execution_id': uuid.uuid4(), 'workflow_execution_id': workflow.get_execution_id()}
-        WalkoffEvent.ActionStarted.send(data)
+                'execution_id': uuid.uuid4()}
+        kwargs = self.get_kwargs(workflow)
+        WalkoffEvent.ActionStarted.send(data, data=kwargs)
         expected = data
+        expected.update(kwargs)
         expected['sender_id'] = expected.pop('id')
         expected['sender_name'] = expected.pop('name')
         self.assertTrue(result['x'])
@@ -381,13 +390,15 @@ class TestInterfaceEventDispatcher(TestCase):
             result['data'] = data
 
         workflow = MockWorkflow()
-        WalkoffEvent.WorkflowExecutionPending.send(workflow)
+        WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema().dump(workflow).data)
 
         self.id = 'test'
         data = {'id': uuid.uuid4(), 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
-                'execution_id': uuid.uuid4(), 'workflow_execution_id': workflow.get_execution_id()}
-        WalkoffEvent.ActionStarted.send(data)
+                'execution_id': uuid.uuid4()}
+        kwargs = self.get_kwargs(workflow)
+        WalkoffEvent.ActionStarted.send(data, data=kwargs)
         expected = data
+        expected.update(kwargs)
         expected['sender_id'] = expected.pop('id')
         expected['sender_name'] = expected.pop('name')
         self.assertDictEqual(result['data'], expected)
@@ -406,13 +417,15 @@ class TestInterfaceEventDispatcher(TestCase):
             raise ValueError()
 
         workflow = MockWorkflow()
-        WalkoffEvent.WorkflowExecutionPending.send(workflow)
+        WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema().dump(workflow).data)
 
         self.id = 'test'
         data = {'id': uuid.uuid4(), 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
-                'execution_id': uuid.uuid4(), 'workflow_execution_id': workflow.get_execution_id()}
-        WalkoffEvent.ActionStarted.send(data)
+                'execution_id': uuid.uuid4()}
+        kwargs = self.get_kwargs(workflow)
+        WalkoffEvent.ActionStarted.send(data, data=kwargs)
         expected = data
+        expected.update(kwargs)
         expected['sender_id'] = expected.pop('id')
         expected['sender_name'] = expected.pop('name')
         self.assertDictEqual(result['data'], expected)
@@ -427,12 +440,14 @@ class TestInterfaceEventDispatcher(TestCase):
             result['data'] = data
 
         workflow = MockWorkflow()
-        WalkoffEvent.WorkflowExecutionPending.send(workflow)
+        WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema().dump(workflow).data)
 
         data = {'id': self.id, 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
-                'execution_id': uuid.uuid4(), 'workflow_execution_id': workflow.get_execution_id()}
-        WalkoffEvent.ActionStarted.send(data)
+                'execution_id': uuid.uuid4()}
+        kwargs = self.get_kwargs(workflow)
+        WalkoffEvent.ActionStarted.send(data, data=kwargs)
         expected = data
+        expected.update(kwargs)
         expected['sender_id'] = expected.pop('id')
         expected['sender_name'] = expected.pop('name')
         self.assertDictEqual(result['data'], expected)

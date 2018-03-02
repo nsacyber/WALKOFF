@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Response } from '@angular/http';
+import { Response, RequestOptions, ResponseContentType, Headers } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
 
 import { Workflow } from '../models/playbook/workflow';
@@ -8,12 +8,16 @@ import { AppApi } from '../models/api/appApi';
 import { Device } from '../models/device';
 import { User } from '../models/user';
 import { Role } from '../models/role';
+import { WorkflowStatus } from '../models/execution/workflowStatus';
+import { Observable } from 'rxjs/Observable';
 
 @Injectable()
 export class PlaybookService {
 	constructor(private authHttp: JwtHttp) { }
 
-	// TODO: should maybe just return all playbooks and not just names?
+	/**
+	 * Returns all playbooks and their child workflows in minimal form (id, name).
+	 */
 	getPlaybooks(): Promise<Playbook[]> {
 		return this.authHttp.get('/api/playbooks')
 			.toPromise()
@@ -72,17 +76,53 @@ export class PlaybookService {
 	}
 
 	/**
+	 * Exports a playbook as an Observable (component handles the actual 'save').
+	 * @param playbookId: ID of playbook to export
+	 */
+	exportPlaybook(playbookId: string): Observable<Blob> {
+		// const headers = new Headers();
+		// headers.append('method', 'GET');
+		// const requestOptions = new RequestOptions({
+		// 	headers,
+		// 	responseType: ResponseContentType.Blob, 
+		// });
+
+		// return this.authHttp.get('/api/playbooks', requestOptions => {
+		// 	return new Blob( [res.blob()], { type: 'application/octet-stream'} );
+		// });
+		const options = new RequestOptions({ responseType: ResponseContentType.Blob });
+		return this.authHttp.get(`/api/playbooks/${playbookId}?mode=export`, options)
+			.map(res => res.blob())
+			.catch(this.handleError);
+	}
+
+	/**
+	 * Imports a playbook from a supplied file.
+	 * @param fileToImport File to be imported
+	 */
+	importPlaybook(fileToImport: File): Observable<Playbook> {
+		const formData: FormData = new FormData();
+		formData.append('file', fileToImport, fileToImport.name);
+		const headers = new Headers();
+		// headers.append('Content-Type', 'multipart/form-data');
+		headers.append('Accept', 'application/json');
+		const options = new RequestOptions({ headers });
+		return this.authHttp.post('/api/playbooks', formData, options)
+			.map(res => res.json() as Playbook)
+			.catch(error => Observable.throw(error));
+	}
+
+	/**
 	 * Duplicates a workflow under a given playbook, it's actions, branches, etc. under a new name.
-	 * @param sourcePlaybookId ID of playbook the workflow exists under
 	 * @param sourceWorkflowId Current workflow ID to be duplicated
 	 * @param destinationPlaybookId ID of playbook the workflow will be duplicated to
 	 * @param newName Name for the new copy to be saved
 	 */
 	duplicateWorkflow(
-		sourcePlaybookId: string, sourceWorkflowId: string, destinationPlaybookId: string, newName: string,
+		sourceWorkflowId: string, destinationPlaybookId: string, newName: string,
 	): Promise<Workflow> {
-		return this.authHttp.post(`/api/playbooks/${sourcePlaybookId}/workflows?source=${sourceWorkflowId}`,
-				{ playbook_id: destinationPlaybookId, name: newName })
+		return this.authHttp.post(`/api/workflows?source=${sourceWorkflowId}`,
+			{ playbook_id: destinationPlaybookId, name: newName })
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Workflow)
@@ -91,11 +131,10 @@ export class PlaybookService {
 
 	/**
 	 * Deletes a given workflow under a given playbook.
-	 * @param playbookId ID of the playbook the workflow exists under
 	 * @param workflowIdToDelete ID of the workflow to be deleted
 	 */
-	deleteWorkflow(playbookId: string, workflowIdToDelete: string): Promise<void> {
-		return this.authHttp.delete(`/api/playbooks/${playbookId}/workflows/${workflowIdToDelete}`)
+	deleteWorkflow(workflowIdToDelete: string): Promise<void> {
+		return this.authHttp.delete(`/api/workflows/${workflowIdToDelete}`)
 			.toPromise()
 			.then(this.extractData)
 			.catch(this.handleError);
@@ -107,7 +146,9 @@ export class PlaybookService {
 	 * @param workflow Workflow to be saved
 	 */
 	newWorkflow(playbookId: string, workflow: Workflow): Promise<Workflow> {
-		return this.authHttp.post(`/api/playbooks/${playbookId}/workflows`, workflow)
+		workflow.playbook_id = playbookId;
+
+		return this.authHttp.post('/api/workflows', workflow)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Workflow)
@@ -116,11 +157,10 @@ export class PlaybookService {
 
 	/**
 	 * Saves the data of a given workflow specified under a given playbook.
-	 * @param playbookId ID of the playbook the workflow exists under
 	 * @param workflow Data to be saved under the workflow (actions, etc.)
 	 */
-	saveWorkflow(playbookId: string, workflow: Workflow): Promise<Workflow> {
-		return this.authHttp.put(`/api/playbooks/${playbookId}/workflows`, workflow)
+	saveWorkflow(workflow: Workflow): Promise<Workflow> {
+		return this.authHttp.put('/api/workflows', workflow)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Workflow)
@@ -129,11 +169,10 @@ export class PlaybookService {
 
 	/**
 	 * Loads the data of a given workflow under a given playbook.
-	 * @param playbookId ID of playbook the workflow exists under
 	 * @param workflowId ID of the workflow to load
 	 */
-	loadWorkflow(playbookId: string, workflowId: string): Promise<Workflow> {
-		return this.authHttp.get(`/api/playbooks/${playbookId}/workflows/${workflowId}`)
+	loadWorkflow(workflowId: string): Promise<Workflow> {
+		return this.authHttp.get(`/api/workflows/${workflowId}`)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Workflow)
@@ -141,18 +180,18 @@ export class PlaybookService {
 	}
 
 	/**
-	 * Notifies the server to execute a given workflow under a given playbook.
+	 * Notifies the server to execute a given workflow.
 	 * Note that execution results are not returned here, but on a separate stream-actions EventSource.
-	 * @param playbookId ID of the playbook the workflow exists under
 	 * @param workflowId ID of the workflow to execute
 	 */
-	executeWorkflow(playbookId: string, workflowId: string): Promise<void> {
-		return this.authHttp.post(`/api/playbooks/${playbookId}/workflows/${workflowId}/execute`, {})
+	addWorkflowToQueue(workflowId: string): Promise<WorkflowStatus> {
+		return this.authHttp.post('api/workflowqueue', { workflow_id: workflowId })
 			.toPromise()
 			.then(this.extractData)
+			.then(workflowStatus => workflowStatus as WorkflowStatus)
 			.catch(this.handleError);
 	}
-	
+
 	/**
 	 * Returns an array of all devices within the DB.
 	 */

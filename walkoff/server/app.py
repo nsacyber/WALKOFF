@@ -3,7 +3,7 @@ import os
 
 import connexion
 from jinja2 import FileSystemLoader
-from walkoff.executiondb.devicedb import App
+from walkoff.executiondb.device import App
 from walkoff import helpers
 from walkoff.config import paths
 from walkoff.helpers import format_db_path
@@ -14,12 +14,12 @@ logger = logging.getLogger(__name__)
 
 def register_blueprints(flaskapp):
     from walkoff.server.blueprints import custominterface
-    from walkoff.server.blueprints import workflowresult
+    from walkoff.server.blueprints import workflowqueue
     from walkoff.server.blueprints import notifications
 
     flaskapp.register_blueprint(custominterface.custom_interface_page, url_prefix='/custominterfaces/<interface>')
-    flaskapp.register_blueprint(workflowresult.workflowresults_page, url_prefix='/api/workflowresults')
-    flaskapp.register_blueprint(notifications.notifications_page, url_prefix='/api/notifications')
+    flaskapp.register_blueprint(workflowqueue.workflowqueue_page, url_prefix='/api/streams/workflowqueue')
+    flaskapp.register_blueprint(notifications.notifications_page, url_prefix='/api/streams/messages')
     __register_all_app_blueprints(flaskapp)
 
 
@@ -90,7 +90,7 @@ def create_app():
     register_blueprints(_app)
 
     import walkoff.server.workflowresults  # Don't delete this import
-
+    import walkoff.messaging.utils  # Don't delete this import
     return _app
 
 
@@ -100,7 +100,7 @@ app = create_app()
 
 @app.before_first_request
 def create_user():
-    from walkoff.executiondb.devicedb import device_db
+    from walkoff import executiondb
     from walkoff.serverdb import add_user, User, Role, initialize_default_resources_admin, \
         initialize_default_resources_guest
     db.create_all()
@@ -120,12 +120,12 @@ def create_user():
     db.session.commit()
 
     apps = set(helpers.list_apps()) - set([_app.name
-                                           for _app in device_db.session.query(App).all()])
+                                           for _app in executiondb.execution_db.session.query(App).all()])
     app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:
-        device_db.session.add(App(name=app_name, devices=[]))
+        executiondb.execution_db.session.add(App(name=app_name, devices=[]))
     db.session.commit()
-    device_db.session.commit()
+    executiondb.execution_db.session.commit()
     CaseSubscription.sync_to_subscriptions()
 
     app.logger.handlers = logging.getLogger('server').handlers

@@ -7,11 +7,10 @@ from .conditionalexpression import ConditionalExpression, valid_operators
 from .condition import Condition
 from .transform import Transform
 from .argument import Argument
-import walkoff.executiondb.devicedb as devicedb
+import walkoff.executiondb as executiondb
 from marshmallow_sqlalchemy import ModelSchema, ModelSchemaOpts, field_for
 from marshmallow import validates_schema, ValidationError, fields, post_dump, pre_dump, pre_load, post_load, UnmarshalResult
 from marshmallow.validate import OneOf
-import walkoff.executiondb.devicedb
 from walkoff.helpers import InvalidExecutionElement
 
 
@@ -26,7 +25,7 @@ class ExecutionBaseSchema(ModelSchema):
         }
 
     def load(self, data, session=None, instance=None, *args, **kwargs):
-        session = walkoff.executiondb.devicedb.device_db.session
+        session = executiondb.execution_db.session
         # Maybe automatically find and use instance if 'id' (or key) is passed
         return super(ExecutionBaseSchema, self).load(data, session=session, instance=instance, *args, **kwargs)
 

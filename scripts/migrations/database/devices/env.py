@@ -6,7 +6,7 @@ import sys
 sys.path.append(os.getcwd())
 
 from scripts.migrations.database.commonenv import run
-from walkoff.executiondb.devicedb import Device_Base
+from walkoff.executiondb.device import Device_Base
 
 
 # add your model's MetaData object here

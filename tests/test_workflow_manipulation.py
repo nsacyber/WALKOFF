@@ -1,5 +1,6 @@
 import socket
 import unittest
+from datetime import datetime
 
 import walkoff.appgateway
 import walkoff.config.config
@@ -7,7 +8,7 @@ from walkoff.multiprocessedexecutor import multiprocessedexecutor
 from tests import config
 from tests.util.mock_objects import *
 import walkoff.config.paths
-from tests.util import device_db_help
+from tests.util import execution_db_help
 from walkoff.executiondb.argument import Argument
 from tests.util.case_db_help import *
 
@@ -20,7 +21,7 @@ except ImportError:
 class TestWorkflowManipulation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
 
         walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
@@ -35,7 +36,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         case_database.initialize()
 
     def tearDown(self):
-        device_db_help.cleanup_device_db()
+        execution_db_help.cleanup_device_db()
         case_database.case_db.tear_down()
         case_subscription.clear_subscriptions()
         reload(socket)
@@ -44,7 +45,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
         multiprocessedexecutor.multiprocessedexecutor.shutdown_pool()
-        device_db_help.tear_down_device_db()
+        execution_db_help.tear_down_device_db()
 
     def test_change_action_input(self):
         arguments = [Argument(name='call', value='CHANGE INPUT')]
@@ -52,11 +53,11 @@ class TestWorkflowManipulation(unittest.TestCase):
         result = {'value': None}
 
         def action_finished_listener(sender, **kwargs):
-            result['value'] = kwargs['data']
+            result['value'] = kwargs['data']['data']
 
         WalkoffEvent.ActionExecutionSuccess.connect(action_finished_listener)
 
-        workflow = device_db_help.load_workflow('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
+        workflow = execution_db_help.load_workflow('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
 
         multiprocessedexecutor.multiprocessedexecutor.execute_workflow(workflow.id, start_arguments=arguments)
         multiprocessedexecutor.multiprocessedexecutor.wait_and_reset(1)

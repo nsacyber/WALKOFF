@@ -2,7 +2,7 @@ import { Case } from './case';
 
 export class CaseEvent {
 	id: number;
-	timestamp: Date;
+	timestamp: string;
 	type: string;
 	originator: string;
 	message: string;

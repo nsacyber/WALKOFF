@@ -9,14 +9,15 @@ logger = logging.getLogger(__name__)
 
 class SavedWorkflow(Device_Base):
     __tablename__ = 'saved_workflow'
-    workflow_execution_id = Column(UUIDType(), primary_key=True)
-    workflow_id = Column(UUIDType(), nullable=False)
-    action_id = Column(UUIDType(), nullable=False)
+    workflow_execution_id = Column(UUIDType(binary=False), primary_key=True)
+    workflow_id = Column(UUIDType(binary=False), nullable=False)
+    action_id = Column(UUIDType(binary=False), nullable=False)
     accumulator = Column(PickleType(), nullable=False)
     app_instances = Column(PickleType(), nullable=False)
 
     def __init__(self, workflow_execution_id, workflow_id, action_id, accumulator, app_instances):
-        """Initializes an Argument object.
+        """Initializes a SavedWorkflow object. This is used when a workflow pauses execution, and must be reloaded
+            at a later point.
 
         Args:
             workflow_execution_id (str): The workflow execution UID that this saved state refers to.

@@ -12,12 +12,11 @@ AddUser:
         example: password123
       roles:
         description: A list of role IDs that this user possesses. Roles can only be assigned to a User by an admin.
-        type: array
-        items:
-          type: integer
+        $ref: '#/definitions/RoleIdList'
       active:
         description: activate/deactive a user. Active can only be changed by an admin.
         type: boolean
+
 EditUser:
     type: object
     required: [id]
@@ -44,9 +43,8 @@ EditUser:
         type: boolean
       roles:
         description: A new list of role IDs that this user will possess. Roles can only be assigned by an admin.
-        type: array
-        items:
-          type: integer
+        $ref: '#/definitions/RoleIdList'
+
 DisplayUser:
     type: object
     properties:
@@ -67,3 +65,13 @@ DisplayUser:
         type: array
         items:
           type: integer
+
+RoleIdList:
+  type: array
+  items:
+    type: object
+    required: [id]
+    properties:
+      id:
+        type: integer
+        description: The ID of a role the user posesses

@@ -7,7 +7,7 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from tests.config import test_apps_path
 import walkoff.config.paths
-from tests.util import device_db_help
+from tests.util import execution_db_help
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.schemas import dump_element
 
@@ -15,14 +15,14 @@ from walkoff.executiondb.schemas import dump_element
 class TestCondition(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
         walkoff.appgateway.clear_cache()
         walkoff.appgateway.cache_apps(path=test_apps_path)
         walkoff.config.config.load_app_apis(test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
-        device_db_help.tear_down_device_db()
+        execution_db_help.tear_down_device_db()
         walkoff.appgateway.clear_cache()        
 
     def assert_construction(self, expression, operator='and', is_negated=False, child_expressions=None, conditions=None):

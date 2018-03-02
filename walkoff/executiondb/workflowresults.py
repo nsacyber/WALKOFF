@@ -6,14 +6,14 @@ from sqlalchemy.orm import relationship, backref
 
 from walkoff.executiondb import Device_Base, WorkflowStatusEnum, ActionStatusEnum
 from sqlalchemy_utils import UUIDType
-
+from walkoff.helpers import utc_as_rfc_datetime
 
 class WorkflowStatus(Device_Base):
     """Case ORM for a Workflow event in the database
     """
     __tablename__ = 'workflow_status'
-    execution_id = Column(UUIDType(), primary_key=True)
-    workflow_id = Column(UUIDType(), nullable=False)
+    execution_id = Column(UUIDType(binary=False), primary_key=True)
+    workflow_id = Column(UUIDType(binary=False), nullable=False)
     name = Column(String, nullable=False)
     status = Column(Enum(WorkflowStatusEnum), nullable=False)
     started_at = Column(DateTime)
@@ -35,6 +35,8 @@ class WorkflowStatus(Device_Base):
 
     def awaiting_data(self):
         self.status = WorkflowStatusEnum.awaiting_data
+        if self._action_statuses:
+            self._action_statuses[-1].awaiting_data()
 
     def completed(self):
         self.completed_at = datetime.utcnow()
@@ -43,25 +45,26 @@ class WorkflowStatus(Device_Base):
     def aborted(self):
         self.completed_at = datetime.utcnow()
         self.status = WorkflowStatusEnum.aborted
+        if self._action_statuses:
+            self._action_statuses[-1].aborted()
+
+    def add_action_status(self, action_status):
+        self._action_statuses.append(action_status)
 
     def as_json(self, full_actions=False):
-        ret = {"execution_id": self.execution_id,
-               "workflow_id": self.workflow_id,
+        ret = {"execution_id": str(self.execution_id),
+               "workflow_id": str(self.workflow_id),
                "name": self.name,
-               "status": self.status.name,
-               "started_at": str(self.started_at)}
+               "status": self.status.name}
         if self.started_at:
-            ret["started_at"] = self.started_at.isoformat()
+            ret["started_at"] = utc_as_rfc_datetime(self.started_at)
         if self.status in [WorkflowStatusEnum.completed, WorkflowStatusEnum.aborted]:
-            ret["completed_at"] = self.completed_at.isoformat()
+            ret["completed_at"] = utc_as_rfc_datetime(self.completed_at)
         if full_actions:
             ret["action_statuses"] = [action_status.as_json() for action_status in self._action_statuses]
-        elif self._action_statuses:
+        elif self._action_statuses and self.status != WorkflowStatusEnum.completed:
             current_action = self._action_statuses[-1]
-            ret['current_action_execution_id'] = current_action.execution_id
-            ret['current_action_id'] = current_action.action_id
-            ret['current_action_name'] = current_action.name
-            ret['current_app_name'] = current_action.app_name
+            ret['current_action'] = current_action.as_json(summary=True)
 
         return ret
 
@@ -70,8 +73,8 @@ class ActionStatus(Device_Base):
     """ORM for an Action event in the database
     """
     __tablename__ = 'action_status'
-    execution_id = Column(UUIDType(), primary_key=True)
-    action_id = Column(UUIDType(), nullable=False)
+    execution_id = Column(UUIDType(binary=False), primary_key=True)
+    action_id = Column(UUIDType(binary=False), nullable=False)
     name = Column(String, nullable=False)
     app_name = Column(String, nullable=False)
     action_name = Column(String, nullable=False)
@@ -80,7 +83,7 @@ class ActionStatus(Device_Base):
     status = Column(Enum(ActionStatusEnum), nullable=False)
     started_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime)
-    _workflow_status_id = Column(UUIDType(), ForeignKey('workflow_status.execution_id'))
+    _workflow_status_id = Column(UUIDType(binary=False), ForeignKey('workflow_status.execution_id'))
 
     def __init__(self, execution_id, action_id, name, app_name, action_name, arguments=None):
         self.execution_id = execution_id
@@ -91,11 +94,12 @@ class ActionStatus(Device_Base):
         self.arguments = arguments
         self.status = ActionStatusEnum.executing
 
+    def aborted(self):
+        if self.status == ActionStatusEnum.awaiting_data:
+            self.status = ActionStatusEnum.aborted
+
     def running(self):
         self.status = ActionStatusEnum.executing
-
-    def paused(self):
-        self.status = ActionStatusEnum.paused
 
     def awaiting_data(self):
         self.status = ActionStatusEnum.awaiting_data
@@ -110,17 +114,19 @@ class ActionStatus(Device_Base):
         self.result = json.dumps(data['result'])
         self.completed_at = datetime.utcnow()
 
-    def as_json(self):
-        ret = {"execution_id": self.execution_id,
-               "action_id": self.action_id,
+    def as_json(self, summary=False):
+        ret = {"execution_id": str(self.execution_id),
+               "action_id": str(self.action_id),
                "name": self.name,
                "app_name": self.app_name,
-               "action_name": self.action_name,
-               "arguments": json.loads(self.arguments) if self.arguments else [],
-               "status": self.status.name,
-               "started_at": self.started_at.isoformat()
-               }
+               "action_name": self.action_name}
+        if summary:
+            return ret
+        ret.update(
+            {"arguments": json.loads(self.arguments) if self.arguments else [],
+             "status": self.status.name,
+             "started_at": utc_as_rfc_datetime(self.started_at)})
         if self.status in [ActionStatusEnum.success, ActionStatusEnum.failure]:
             ret["result"] = json.loads(self.result)
-            ret["completed_at"] = self.completed_at.isoformat()
+            ret["completed_at"] = utc_as_rfc_datetime(self.completed_at)
         return ret

@@ -8,20 +8,20 @@ from walkoff.executiondb.transform import Transform
 from walkoff.helpers import InvalidExecutionElement, InvalidArgument
 from tests.config import test_apps_path
 import walkoff.config.paths
-from tests.util import device_db_help
+from tests.util import execution_db_help
 
 
 class TestCondition(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        device_db_help.setup_dbs()
+        execution_db_help.setup_dbs()
         walkoff.appgateway.clear_cache()
         walkoff.appgateway.cache_apps(path=test_apps_path)
         walkoff.config.config.load_app_apis(test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
-        device_db_help.tear_down_device_db()
+        execution_db_help.tear_down_device_db()
         walkoff.appgateway.clear_cache()
 
     def __compare_init(self, condition, app_name, action_name, transforms, arguments=None, is_negated=False):

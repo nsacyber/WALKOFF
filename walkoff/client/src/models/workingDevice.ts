@@ -10,7 +10,7 @@ export class WorkingDevice {
 		out.type = workingDevice.type;
 		out.fields = [];
 
-		Object.keys(workingDevice.fields).forEach(function (key) {
+		Object.keys(workingDevice.fields).forEach(key => {
 			out.fields.push({ name: key, value: workingDevice.fields[key] });
 		});
 

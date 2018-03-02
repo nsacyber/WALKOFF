@@ -1,8 +1,7 @@
-from datetime import datetime
-
 import walkoff.case.database as case_database
 import walkoff.case.subscription as case_subscription
 from walkoff.events import WalkoffEvent
+from walkoff.helpers import timestamp_to_datetime
 
 
 def setup_subscriptions_for_action(workflow_ids, action_ids, action_events=None, workflow_events=None):
@@ -21,6 +20,6 @@ def executed_actions(workflow_id, start_time, end_time):
                   filter(case_database.Event.originator == str(workflow_id)).all()]
     out = []
     for event in events:
-        if start_time <= datetime.strptime(event['timestamp'], '%Y-%m-%d %H:%M:%S.%f') <= end_time:
+        if start_time <= timestamp_to_datetime(event['timestamp']) <= end_time:
             out.append(event)
     return out

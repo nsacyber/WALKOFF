@@ -20,6 +20,7 @@ def client_app_folder(filename):
 
 @app.route('/')
 @app.route('/playbook')
+@app.route('/execution')
 @app.route('/scheduler')
 @app.route('/devices')
 @app.route('/messages')

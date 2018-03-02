@@ -1,16 +1,14 @@
-from uuid import UUID
 import json
 from flask import request, current_app, send_file
 from flask_jwt_extended import jwt_required
 from sqlalchemy import exists, and_
 from sqlalchemy.exc import IntegrityError, StatementError
-import walkoff.config.paths
+from walkoff import executiondb
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
-from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory
-import walkoff.executiondb.devicedb
 from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.workflow import Workflow
+from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid
 from walkoff.helpers import InvalidExecutionElement, regenerate_workflow_ids
 from uuid import uuid4
 try:
@@ -29,27 +27,17 @@ invalid_execution_element_exceptions = (InvalidArgument, UnknownApp, UnknownFunc
 
 
 def does_workflow_exist(playbook_id, workflow_id):
-    return walkoff.executiondb.devicedb.device_db.session.query(
+    return executiondb.execution_db.session.query(
         exists().where(and_(Workflow.id == workflow_id, Workflow.playbook_id == playbook_id))).scalar()
 
 
 def playbook_getter(playbook_id):
-    playbook = walkoff.executiondb.devicedb.device_db.session.query(Playbook).filter_by(id=playbook_id).first()
+    playbook = executiondb.execution_db.session.query(Playbook).filter_by(id=playbook_id).first()
     return playbook
 
 
-def workflow_getter(playbook_id, workflow_id):
-    return walkoff.executiondb.devicedb.device_db.session.query(Workflow).filter_by(
-        id=workflow_id, playbook_id=playbook_id).first()
-
-
-def is_valid_uid(*ids):
-    try:
-        for id_ in ids:
-            UUID(id_)
-        return True
-    except ValueError as e:
-        return False
+def workflow_getter(workflow_id):
+    return executiondb.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
 
 
 with_playbook = with_resource_factory('playbook', playbook_getter, validator=is_valid_uid)
@@ -86,7 +74,7 @@ def get_playbooks(full=None):
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     def __func():
         full_rep = bool(full)
-        playbooks = walkoff.executiondb.devicedb.device_db.session.query(Playbook).all()
+        playbooks = executiondb.execution_db.session.query(Playbook).all()
 
         if full_rep:
             ret_playbooks = [playbook_schema.dump(playbook).data for playbook in playbooks]
@@ -102,7 +90,7 @@ def get_playbooks(full=None):
 
                 ret_playbooks.append(entry)
 
-        return sorted(ret_playbooks, key=(lambda pb: playbook.name.lower())), SUCCESS
+        return sorted(ret_playbooks, key=(lambda pb: pb['name'].lower())), SUCCESS
 
     return __func()
 
@@ -122,19 +110,19 @@ def create_playbook(source=None):
         try:
             playbook = playbook_schema.load(data)
             if playbook.errors:
-                walkoff.executiondb.devicedb.device_db.session.rollback()
+                executiondb.execution_db.session.rollback()
                 current_app.logger.error('Could not create Playbook {}. Invalid input'.format(playbook_name))
                 return improper_json_problem('playbook', 'create', playbook_name, playbook.errors)
             else:
                 playbook = playbook.data
-                walkoff.executiondb.devicedb.device_db.session.add(playbook)
-                walkoff.executiondb.devicedb.device_db.session.commit()
+                executiondb.execution_db.session.add(playbook)
+                executiondb.execution_db.session.commit()
         except (IntegrityError, StatementError):
-            walkoff.executiondb.devicedb.device_db.session.rollback()
+            executiondb.execution_db.session.rollback()
             current_app.logger.error('Could not create Playbook {}. Unique constraint failed'.format(playbook_name))
             return unique_constraint_problem('playbook', 'create', playbook_name)
         except invalid_execution_element_exceptions:
-            walkoff.executiondb.devicedb.device_db.session.rollback()
+            executiondb.execution_db.session.rollback()
             current_app.logger.error('Could not create Playbook {}. Invalid execution element'.format(playbook_name))
             return improper_json_problem(
                 'playbook',
@@ -179,9 +167,9 @@ def update_playbook():
             playbook.name = data['name']
 
         try:
-            walkoff.executiondb.devicedb.device_db.session.commit()
+            executiondb.execution_db.session.commit()
         except IntegrityError:
-            walkoff.executiondb.devicedb.device_db.session.rollback()
+            executiondb.execution_db.session.rollback()
             current_app.logger.error('Could not update Playbook {}. Unique constraint failed'.format(playbook_id))
             return unique_constraint_problem('playbook', 'update', playbook_id)
 
@@ -197,8 +185,8 @@ def delete_playbook(playbook_id):
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['delete']))
     @with_playbook('delete', playbook_id)
     def __func(playbook):
-        walkoff.executiondb.devicedb.device_db.session.delete(playbook)
-        walkoff.executiondb.devicedb.device_db.session.commit()
+        executiondb.execution_db.session.delete(playbook)
+        executiondb.execution_db.session.commit()
         current_app.logger.info('Deleted playbook {0} '.format(playbook_id))
         return {}, NO_CONTENT
 
@@ -227,14 +215,14 @@ def copy_playbook(playbook_id):
 
         try:
             new_playbook = playbook_schema.load(playbook_json).data
-            walkoff.executiondb.devicedb.device_db.session.add(new_playbook)
-            walkoff.executiondb.devicedb.device_db.session.commit()
+            executiondb.execution_db.session.add(new_playbook)
+            executiondb.execution_db.session.commit()
         except IntegrityError:
-            walkoff.executiondb.devicedb.device_db.session.rollback()
+            executiondb.execution_db.session.rollback()
             current_app.logger.error('Could not copy Playbook {}. Unique constraint failed'.format(playbook_id))
             return unique_constraint_problem('playbook', 'copy', playbook_id)
         except ValueError as e:
-            walkoff.executiondb.devicedb.device_db.session.rollback()
+            executiondb.execution_db.session.rollback()
             current_app.logger.error('Could not copy Playbook {}. Invalid input'.format(playbook_id))
             return improper_json_problem('playbook', 'copy', playbook_id)
 
@@ -245,7 +233,17 @@ def copy_playbook(playbook_id):
     return __func()
 
 
-def get_workflows(playbook_id):
+def get_workflows(playbook=None):
+    @jwt_required
+    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
+    def __get():
+        return [workflow_schema.dump(workflow).data for workflow in executiondb.execution_db.session.query(Workflow).all()], SUCCESS
+    if playbook:
+        return get_workflows_for_playbook(playbook)
+    return __get()
+
+
+def get_workflows_for_playbook(playbook_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     @with_playbook('read workflows', playbook_id)
@@ -255,33 +253,34 @@ def get_workflows(playbook_id):
     return __func()
 
 
-def create_workflow(playbook_id, source=None):
+def create_workflow(source=None):
+    data = request.get_json()
+    playbook_id = data.pop('playbook_id')
+
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create']))
     @with_playbook('create workflow', playbook_id)
     def __func(playbook):
-
-        data = request.get_json()
         workflow_name = data['name']
         if 'start' not in data:
             return Problem(BAD_REQUEST, 'Could not create workflow.', '"start" is required field.')
         try:
             workflow = workflow_schema.load(data)
             if workflow.errors:
-                walkoff.executiondb.devicedb.device_db.session.rollback()
+                executiondb.execution_db.session.rollback()
                 current_app.logger.error('Could not create Workflow {}. Invalid input'.format(workflow_name))
                 return improper_json_problem('workflow', 'create', workflow_name, workflow.errors)
             else:
                 workflow = workflow.data
                 playbook.workflows.append(workflow)
-                walkoff.executiondb.devicedb.device_db.session.add(workflow)
-                walkoff.executiondb.devicedb.device_db.session.commit()
+                executiondb.execution_db.session.add(workflow)
+                executiondb.execution_db.session.commit()
         except invalid_execution_element_exceptions:
-            walkoff.executiondb.devicedb.device_db.session.rollback()
+            executiondb.execution_db.session.rollback()
             current_app.logger.error('Could not add workflow {0}-{1}'.format(playbook_id, workflow_name))
             return improper_json_problem('workflow', 'create', '{}-{}'.format(playbook_id, workflow_name))
         except IntegrityError:
-            walkoff.executiondb.devicedb.device_db.session.rollback()
+            executiondb.execution_db.session.rollback()
             current_app.logger.error('Could not create workflow {}. Unique constraint failed'.format(workflow_name))
             return unique_constraint_problem('workflow', 'create', workflow_name)
 
@@ -293,23 +292,23 @@ def create_workflow(playbook_id, source=None):
     return __func()
 
 
-def read_workflow(playbook_id, workflow_id):
+def read_workflow(workflow_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
-    @with_workflow('read', playbook_id, workflow_id)
+    @with_workflow('read', workflow_id)
     def __func(workflow):
         return workflow_schema.dump(workflow).data, SUCCESS
 
     return __func()
 
 
-def update_workflow(playbook_id):
+def update_workflow():
     data = request.get_json()
     workflow_id = data['id']
 
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['update']))
-    @with_workflow('update', playbook_id, workflow_id)
+    @with_workflow('update', workflow_id)
     def __func(workflow):
         try:
             errors = workflow_schema.load(data, instance=workflow).errors
@@ -320,7 +319,7 @@ def update_workflow(playbook_id):
                     'update',
                     'Could not update workflow {}. Invalid input.'.format(workflow_id), ext=errors)
         except InvalidExecutionElement as e:
-            walkoff.executiondb.devicedb.device_db.session.rollback()
+            executiondb.execution_db.session.rollback()
             current_app.logger.error(e.message)
             return Problem.from_crud_resource(
                 INVALID_INPUT_ERROR,
@@ -329,9 +328,9 @@ def update_workflow(playbook_id):
                 'Could not update workflow {}. Invalid input.'.format(workflow_id))
 
         try:
-            walkoff.executiondb.devicedb.device_db.session.commit()
+            executiondb.execution_db.session.commit()
         except IntegrityError:
-            walkoff.executiondb.devicedb.device_db.session.rollback()
+            executiondb.execution_db.session.rollback()
             current_app.logger.error('Could not update workflow {}. Unique constraint failed'.format(workflow_id))
             return unique_constraint_problem('workflow', 'update', workflow_id)
 
@@ -341,21 +340,21 @@ def update_workflow(playbook_id):
     return __func()
 
 
-def delete_workflow(playbook_id, workflow_id):
+def delete_workflow(workflow_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['delete']))
-    @with_workflow('delete', playbook_id, workflow_id)
+    @with_workflow('delete', workflow_id)
     def __func(workflow):
-        playbook = walkoff.executiondb.devicedb.device_db.session.query(Playbook).filter_by(id=workflow.playbook_id).first()
+        playbook = executiondb.execution_db.session.query(Playbook).filter_by(id=workflow.playbook_id).first()
         playbook_workflows = len(playbook.workflows) - 1
-        workflow = walkoff.executiondb.devicedb.device_db.session.query(Workflow).filter_by(id=workflow_id).first()
-        walkoff.executiondb.devicedb.device_db.session.delete(workflow)
+        workflow = executiondb.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
+        executiondb.execution_db.session.delete(workflow)
 
         if playbook_workflows == 0:
-            current_app.logger.debug('Removing playbook {0} since it is empty.'.format(playbook_id))
-            walkoff.executiondb.devicedb.device_db.session.delete(playbook)
+            current_app.logger.debug('Removing playbook {0} since it is empty.'.format(workflow.playbook_id))
+            executiondb.execution_db.session.delete(playbook)
 
-        walkoff.executiondb.devicedb.device_db.session.commit()
+        executiondb.execution_db.session.commit()
 
         current_app.logger.info('Deleted workflow {0}'.format(workflow_id))
         return {}, NO_CONTENT
@@ -367,14 +366,10 @@ def copy_workflow(playbook_id, workflow_id):
 
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create', 'read']))
-    @with_workflow('copy', playbook_id, workflow_id)
+    @with_workflow('copy', workflow_id)
     def __func(workflow):
         data = request.get_json()
 
-        if 'playbook_id' in data and data['playbook_id']:
-            new_playbook_id = data['playbook_id']
-        else:
-            new_playbook_id = playbook_id
         if 'name' in data and data['name']:
             new_workflow_name = data['name']
         else:
@@ -387,26 +382,27 @@ def copy_workflow(playbook_id, workflow_id):
 
         regenerate_workflow_ids(workflow_json)
 
-        if walkoff.executiondb.devicedb.device_db.session.query(exists().where(Playbook.id == new_playbook_id)).scalar():
-            playbook = walkoff.executiondb.devicedb.device_db.session.query(Playbook).filter_by(id=new_playbook_id).first()
+        if executiondb.execution_db.session.query(exists().where(Playbook.id == playbook_id)).scalar():
+            playbook = executiondb.execution_db.session.query(Playbook).filter_by(id=playbook_id).first()
         else:
-            walkoff.executiondb.devicedb.device_db.session.rollback()
-            current_app.logger.error('Could not copy workflow {}. Playbook does not exist'.format(new_playbook_id))
+            executiondb.execution_db.session.rollback()
+            current_app.logger.error('Could not copy workflow {}. Playbook does not exist'.format(playbook_id))
             return Problem.from_crud_resource(
                 OBJECT_DNE_ERROR,
                 'workflow',
                 'copy',
                 'Could not copy workflow {}. Playbook with id {} does not exist.'.format(workflow_id, playbook_id))
+
         try:
 
             new_workflow = workflow_schema.load(workflow_json)
             new_workflow = new_workflow.data
 
-            walkoff.executiondb.devicedb.device_db.session.add(new_workflow)
+            executiondb.execution_db.session.add(new_workflow)
             playbook.add_workflow(new_workflow)
-            walkoff.executiondb.devicedb.device_db.session.commit()
+            executiondb.execution_db.session.commit()
         except IntegrityError:
-            walkoff.executiondb.devicedb.device_db.session.rollback()
+            executiondb.execution_db.session.rollback()
             current_app.logger.error('Could not copy workflow {}. Unique constraint failed'.format(new_workflow_name))
             return unique_constraint_problem('workflow', 'copy', new_workflow_name)
 

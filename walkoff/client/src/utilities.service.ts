@@ -30,6 +30,14 @@ export class UtilitiesService {
 		}
 		return trimmed;
 	}
+
+	/**
+	 * Gets the current datetime as an ISO string
+	 */
+	getCurrentIsoString(): string {
+		return moment.utc().toISOString();
+	}
+
 	/**
 	 * Gets a locale string for a given UTC datetime object or string.
 	 * @param time Inputted date object or string representation of a UTC time

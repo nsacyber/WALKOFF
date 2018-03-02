@@ -22,6 +22,8 @@
 * Playbooks can be exported to and imported from a JSON text file using the new
   `GET /api/playbooks?mode=export` and the `POST /api/playbooks` using a
   `multipart/form-data` body respectively.
+<!--* A new event was created on the notification SSE stream to alert the UI
+  when the current user has deleted a message. -->
 
 ### Changed
 * Significant changes to the REST API
@@ -47,6 +49,11 @@
   in the database which formerly only held the devices. The both greatly
   increased scalability as well as simplified the interactions between the
   server and the worker processes as well as increased scalability.
+* Paused workflows and workflows awaiting trigger data are now pickled
+  (serialized to binary) and stored in a database table. Before, a conditional
+  wait was used to pause the execution of a workflow. By storing the state to
+  the database, all threads on all worker processes are free to execute
+  workflows.
 <!--* Information about the workflow which sent events are now available in both
   the Google Protocol Buffer messages as well as the arguments to callbacks
   using the interface event dispatcher.-->

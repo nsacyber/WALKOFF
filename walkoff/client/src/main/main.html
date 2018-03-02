@@ -37,6 +37,9 @@
               <a routerLink="/playbook" routerLinkActive="active"><i class="fa fa-sitemap"></i><span class="navLink">Playbook</span></a>
             </li>
             <li>
+              <a routerLink="/execution" routerLinkActive="active"><i class="fa fa-flag-checkered"></i><span class="navLink">Execution</span></a>
+            </li>
+            <li>
               <a routerLink="/scheduler" routerLinkActive="active"><i class="fa fa-calendar"></i><span class="navLink">Scheduler</span></a>
             </li>
             <li>
@@ -71,7 +74,7 @@
                       <td>
                           <a class="dropdown-item" href="#" (click)="openMessage($event, messageListing)">{{utils.getTruncatedString(messageListing.subject, 25, '(no subject)')}}</a>    
                       </td>
-                      <td [title]="messageListing.created_at">{{notificationRelativeTimes[messageListing.id]}}</td>
+                      <td [title]="utils.getLocalTime(messageListing.created_at)">{{notificationRelativeTimes[messageListing.id]}}</td>
                     </tr>
                   </table>
                 </div>

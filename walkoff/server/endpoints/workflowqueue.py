@@ -1,52 +1,61 @@
-from uuid import UUID
 from flask import request, current_app
 from flask_jwt_extended import jwt_required
 from sqlalchemy import exists
-import walkoff.config.paths
-from walkoff.executiondb.workflowresults import WorkflowStatus
+from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
-from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory
-import walkoff.executiondb.devicedb
+from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid
+from walkoff import executiondb
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.argument import Argument
 from walkoff.helpers import InvalidArgument
 from walkoff.server.problem import Problem
+from collections import OrderedDict
 
 
 def does_workflow_exist(workflow_id):
-    return walkoff.executiondb.devicedb.device_db.session.query(
-        exists().where(Workflow.id == workflow_id)).scalar()
+    return executiondb.execution_db.session.query(exists().where(Workflow.id == workflow_id)).scalar()
 
 
 def does_execution_id_exist(execution_id):
-    return walkoff.executiondb.devicedb.device_db.session.query(exists().where(WorkflowStatus.execution_id == execution_id)).scalar()
+    return executiondb.execution_db.session.query(exists().where(WorkflowStatus.execution_id == execution_id)).scalar()
 
 
 def workflow_status_getter(execution_id):
-    return walkoff.executiondb.devicedb.device_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
-
-
-def is_valid_uid(*ids):
-    try:
-        for id_ in ids:
-            UUID(id_)
-        return True
-    except ValueError:
-        return False
+    return executiondb.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
 
 
 with_workflow_status = with_resource_factory('workflow', workflow_status_getter, validator=is_valid_uid)
 validate_workflow_is_registered = validate_resource_exists_factory('workflow', does_workflow_exist)
 validate_execution_id_is_registered = validate_resource_exists_factory('workflow', does_execution_id_exist)
 
+status_order = OrderedDict(
+    [((WorkflowStatusEnum.running, WorkflowStatusEnum.awaiting_data, WorkflowStatusEnum.paused),
+      WorkflowStatus.started_at),
+     ((WorkflowStatusEnum.aborted, WorkflowStatusEnum.completed), WorkflowStatus.completed_at)])
 
-def get_all_workflow_status():
+executing_statuses = (WorkflowStatusEnum.running, WorkflowStatusEnum.awaiting_data, WorkflowStatusEnum.paused)
+completed_statuses = (WorkflowStatusEnum.aborted, WorkflowStatusEnum.completed)
+
+
+def get_all_workflow_status(limit=50):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     def __func():
-        workflow_statuses = walkoff.executiondb.devicedb.device_db.session.query(WorkflowStatus).all()
-        ret = [workflow_status.as_json() for workflow_status in workflow_statuses]
+
+        ret = executiondb.execution_db.session.query(WorkflowStatus). \
+            filter(WorkflowStatus.status.in_(executing_statuses)). \
+            order_by(WorkflowStatus.started_at). \
+            all()
+
+        if len(ret) < limit:
+            ret.extend(executiondb.execution_db.session.query(WorkflowStatus).
+                       filter(WorkflowStatus.status.in_(completed_statuses)).
+                       order_by(WorkflowStatus.started_at).
+                       limit(limit - len(ret)).
+                       all())
+
+        ret = [workflow_status.as_json() for workflow_status in ret]
         return ret, SUCCESS
 
     return __func()
@@ -77,15 +86,14 @@ def execute_workflow():
 
         arguments = []
         if args:
-            for arg in args:
-                try:
-                    arguments.append(Argument(**arg))
-                except InvalidArgument as e:
-                    current_app.logger.error('Could not execute workflow. Invalid Argument construction')
-                    return Problem(
-                        INVALID_INPUT_ERROR,
-                        'Cannot execute workflow.',
-                        'Argument with name {} is invalid. Reason: {}'.format(arg.name, e.message))
+            try:
+                arguments = [Argument(**arg) for arg in args]
+            except InvalidArgument as e:
+                current_app.logger.error('Could not execute workflow. Invalid Argument construction')
+                return Problem(
+                    INVALID_INPUT_ERROR,
+                    'Cannot execute workflow.',
+                    'An argument is invalid. Reason: {}'.format(e.message))
 
         execution_id = running_context.executor.execute_workflow(workflow_id, start=start, start_arguments=arguments)
         current_app.logger.info('Executed workflow {0}'.format(workflow_id))
@@ -113,6 +121,6 @@ def control_workflow():
         elif status == 'abort':
             running_context.executor.abort_workflow(execution_id)
 
-        return {}, SUCCESS
+        return '', NO_CONTENT
 
     return __func()

@@ -2,16 +2,14 @@ import logging
 import sys
 
 import pyaes
-from sqlalchemy import Column, Integer, ForeignKey, String, create_engine, LargeBinary, Enum, DateTime, func
+from sqlalchemy import Column, Integer, ForeignKey, String, LargeBinary, Enum, DateTime, func
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import relationship, sessionmaker, scoped_session
-from sqlalchemy.pool import NullPool
+from sqlalchemy.orm import relationship
 
-import walkoff.config.paths
 from walkoff.config.config import secret_key as key
 from walkoff.executiondb import Device_Base
-from walkoff.helpers import format_db_path
+from walkoff import executiondb
 from walkoff.appgateway.validator import convert_primitive_type
 logger = logging.getLogger(__name__)
 
@@ -426,7 +424,7 @@ def get_all_devices_for_app(app_name):
     Returns:
         list[Device]: A list of devices associated with this app. Returns empty list if app is not in database
     """
-    app = device_db.session.query(App).filter(App.name == app_name).first()
+    app = executiondb.execution_db.session.query(App).filter(App.name == app_name).first()
     if app is not None:
         return app.devices[:]
     else:
@@ -443,7 +441,7 @@ def get_all_devices_of_type_from_app(app_name, device_type):
         Returns:
             list[Device]: A list of devices associated with this app. Returns empty list if app is not in database
         """
-    app = device_db.session.query(App).filter(App.name == app_name).first()
+    app = executiondb.execution_db.session.query(App).filter(App.name == app_name).first()
     if app is not None:
         return app.get_devices_of_type(device_type)
     else:
@@ -460,7 +458,7 @@ def get_device(app_name, device_name):
     Returns:
         Device: The desired device. Returns None if app or device not found.
     """
-    app = device_db.session.query(App).filter(App.name == app_name).first()
+    app = executiondb.execution_db.session.query(App).filter(App.name == app_name).first()
     if app is not None:
         return app.get_device(device_name)
     else:
@@ -476,58 +474,9 @@ def get_app(app_name):
     Returns:
         apps.devicedb.App: The desired device. Returns None if app or device not found.
     """
-    app = device_db.session.query(App).filter(App.name == app_name).first()
+    app = executiondb.execution_db.session.query(App).filter(App.name == app_name).first()
     if app is not None:
         return app
     else:
         logger.warning('Cannot get app {}. App does not exist'.format(app_name))
         return None
-
-
-class DeviceDatabase(object):
-    """Wrapper for the SQLAlchemy database connection object
-    """
-
-    __instance = None
-
-    def __init__(self):
-        # All of these imports are necessary
-        from walkoff.executiondb.argument import Argument
-        from walkoff.executiondb.conditionalexpression import ConditionalExpression
-        from walkoff.executiondb.action import Action
-        from walkoff.executiondb.branch import Branch
-        from walkoff.executiondb.condition import Condition
-
-        from walkoff.executiondb.playbook import Playbook
-        from walkoff.executiondb.position import Position
-        from walkoff.executiondb.transform import Transform
-        from walkoff.executiondb.workflow import Workflow
-        from walkoff.executiondb.saved_workflow import SavedWorkflow
-        from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
-
-        self.engine = create_engine(format_db_path(
-            walkoff.config.config.device_db_type, walkoff.config.paths.device_db_path), poolclass=NullPool)
-        self.connection = self.engine.connect()
-        self.transaction = self.connection.begin()
-
-        Session = sessionmaker()
-        Session.configure(bind=self.engine)
-        self.session = scoped_session(Session)
-
-        Device_Base.metadata.bind = self.engine
-        Device_Base.metadata.create_all(self.engine)
-
-    def __new__(cls, *args, **kwargs):
-        if cls.__instance is None:
-            cls.__instance = super(DeviceDatabase, cls).__new__(cls)
-        return cls.__instance
-
-    def tear_down(self):
-        self.session.rollback()
-        self.connection.close()
-        self.engine.dispose()
-
-
-device_db = None
-"""The SQLAlchemy engine/connection object for the device database
-"""

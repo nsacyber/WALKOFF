@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 class Argument(Device_Base):
     __tablename__ = 'argument'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    action_id = Column(UUIDType(), ForeignKey('action.id'))
-    condition_id = Column(UUIDType(), ForeignKey('condition.id'))
-    transform_id = Column(UUIDType(), ForeignKey('transform.id'))
+    action_id = Column(UUIDType(binary=False), ForeignKey('action.id'))
+    condition_id = Column(UUIDType(binary=False), ForeignKey('condition.id'))
+    transform_id = Column(UUIDType(binary=False), ForeignKey('transform.id'))
     name = Column(String(255), nullable=False)
     value = Column(JSONType)
-    reference = Column(UUIDType())
+    reference = Column(UUIDType(binary=False))
     selection = Column(ScalarListType())
 
     def __init__(self, name, value=None, reference=None, selection=None):
@@ -25,11 +25,11 @@ class Argument(Device_Base):
 
         Args:
             name (str): The name of the Argument.
-            value (optional): The value of the Argument. Defaults to None. Value or reference must be included.
+            value (any, optional): The value of the Argument. Defaults to None. Value or reference must be included.
             reference (int, optional): The ID of the Action from which to grab the result. Defaults to None.
                 If value is not provided, then reference must be included.
             selection (list, optional): A list of fields from which to dereference the Action result. Defaults
-                to None.
+                to None. Must be used in conjunction with reference.
         """
         self.name = name
         self.value = value
@@ -41,6 +41,7 @@ class Argument(Device_Base):
 
     @orm.reconstructor
     def init_on_load(self):
+        """Loads all necessary fields upon Argument being loaded from database"""
         self._is_reference = True if self.value is None else False
 
     def validate(self):

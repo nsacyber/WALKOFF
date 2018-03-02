@@ -160,9 +160,38 @@
       - Playbooks
     summary: Read all workflows in playbook
     description: ''
+    operationId: walkoff.server.endpoints.playbooks.get_workflows_for_playbook
+    produces:
+      - application/json
+    responses:
+      200:
+        description: Success
+        schema:
+          type: array
+          description: The JSON representation of all the workflows for the playbook
+          items:
+            $ref: '#/definitions/Workflow'
+      404:
+        description: Playbook does not exist.
+        schema:
+          $ref: '#/definitions/Error'
+
+/workflows:
+  get:
+    tags:
+      - Playbooks
+    summary: Read all workflows in playbook
+    description: ''
     operationId: walkoff.server.endpoints.playbooks.get_workflows
     produces:
       - application/json
+    parameters:
+      - in: query
+        name: playbook
+        description: The ID of the playbook whose workflows to get
+        type: string
+        required: false
+        format: uuid
     responses:
       200:
         description: Success
@@ -245,25 +274,15 @@
         description: Workflow already exists.
         schema:
           $ref: '#/definitions/Error'
-      400:
-        description: Invalid input error.
-        schema:
-          $ref: '#/definitions/Error'
 
-/playbooks/{playbook_id}/workflows/{workflow_id}:
+/workflows/{workflow_id}:
   parameters:
-  - name: playbook_id
-    in: path
-    description: The ID that needs to be fetched.
-    required: true
-    type: string
-    format: uuid
-  - name: workflow_id
-    in: path
-    description: 'The ID that needs to be fetched. '
-    required: true
-    type: string
-    format: uuid
+    - name: workflow_id
+      in: path
+      description: 'The ID that needs to be fetched. '
+      required: true
+      type: string
+      format: uuid
   get:
     tags:
       - Workflows
@@ -281,10 +300,7 @@
         description: Playbook or workflow does not exist.
         schema:
           $ref: '#/definitions/Error'
-      400:
-        description: Element not found, or malformed JSON.
-        schema:
-          $ref: '#/definitions/Error'
+
   delete:
     tags:
       - Workflows

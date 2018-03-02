@@ -226,36 +226,34 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="executionResultsModalTitle">Execution Results</h5>
+                    <h4 class="modal-title" id="executionResultsModalTitle">Execution Results</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body" #workflowResultsContainer>
-                    <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]="workflowResults" [sortType]="'multi'"
-                        [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'timestamp', dir: 'desc'}]"
+                    <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]="actionStatuses" [sortType]="'multi'"
+                        [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'started_at', dir: 'desc'}]"
                         [limit]="10">
                         <!-- Column Templates -->
-                        <ngx-datatable-column name="Action ID" [flexGrow]="1">
+                        <ngx-datatable-column name="Action ID" prop="action_id" [flexGrow]="1"></ngx-datatable-column>
+                        <ngx-datatable-column name="App Name" prop="app_name" [flexGrow]="1"></ngx-datatable-column>
+                        <ngx-datatable-column name="Action Name" prop="action_name" [flexGrow]="1"></ngx-datatable-column>
+                        <ngx-datatable-column name="Started At" prop="started_at" [flexGrow]="1">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                {{row.action_id}}
+                                <span [title]="row.localized_started_at">
+                                    {{actionStatusStartedRelativeTimes[row.execution_id]}}
+                                </span>
                             </ng-template>
                         </ngx-datatable-column>
-                        <ngx-datatable-column name="Action Name" [flexGrow]="1">
+                        <ngx-datatable-column name="Completed At" prop="completed_at" [flexGrow]="1">
                             <ng-template let-row="row" ngx-datatable-cell-template>
-                                {{row.action_name}}
+                                <span [title]="row.localized_completed_at">
+                                    {{actionStatusCompletedRelativeTimes[row.execution_id]}}
+                                </span>
                             </ng-template>
                         </ngx-datatable-column>
-                        <ngx-datatable-column name="Timestamp" [flexGrow]="1">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                {{row.timestamp}}
-                            </ng-template>
-                        </ngx-datatable-column>
-                        <ngx-datatable-column name="Status" [flexGrow]="1">
-                            <ng-template let-row="row" ngx-datatable-cell-template>
-                                {{row.status}}
-                            </ng-template>
-                        </ngx-datatable-column>
+                        <ngx-datatable-column name="Status" prop="status" [flexGrow]="1"></ngx-datatable-column>
                         <ngx-datatable-column name="Arguments" [sortable]="false" [flexGrow]="2">
                             <ng-template let-row="row" ngx-datatable-cell-template>
                                 {{getFriendlyArguments(row.arguments)}}
@@ -277,7 +275,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="playbookAndWorkflowActionModalTitle">{{modalParams.title}}</h5>
+                    <h4 class="modal-title" id="playbookAndWorkflowActionModalTitle">{{modalParams.title}}</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -310,25 +308,37 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="workflowModalTitle">Select a Workflow</h5>
+                    <h4 class="modal-title" id="workflowModalTitle">Playbooks and Workflows</h4>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
+                    <div class="importContainer">
+                        <h4>Import Playbook</h4>
+                        <div class="pull-right">
+                            <input type="file" name="file" id="file" class="importPlaybookInput" (change)="onImportSelectChange($event)"/>
+                            <button [disabled]="!playbookToImport" (click)="importPlaybook()" class="btn btn-primary" title="Import Playbook">
+                                <i class="fa fa-upload"></i>
+                            </button>
+                        </div>
+                    </div>
                     <div class="panel-group" id="workflowAccordion">
                         <div *ngFor="let playbook of playbooks" class="panel panel-default">
                             <div class="panel-heading playbook-heading" data-toggle="collapse" [attr.data-target]="'#loadWorkflowCollapse' + removeWhitespace(playbook.name)">
                                 <h4 class="panel-title">
                                     {{playbook.name}}
                                     <div class="pull-right">
-                                        <button (click)="renamePlaybookModal(playbook)" class="btn btn-primary" title="Rename Playbook">
+                                        <button (click)="renamePlaybookModal($event, playbook)" class="btn btn-primary" title="Rename Playbook">
                                             <i class="fa fa-i-cursor"></i>
                                         </button>
-                                        <button (click)="duplicatePlaybookModal(playbook)" class="btn btn-primary" title="Duplicate Playbook">
+                                        <button (click)="duplicatePlaybookModal($event, playbook)" class="btn btn-primary" title="Duplicate Playbook">
                                             <i class="fa fa-copy"></i>
                                         </button>
-                                        <button (click)="deletePlaybook(playbook)" class="btn btn-danger" title="Delete Playbook">
+                                        <button (click)="exportPlaybook($event, playbook)" class="btn btn-primary" title="Export Playbook">
+                                            <i class="fa fa-download"></i>
+                                        </button>
+                                        <button (click)="deletePlaybook($event, playbook)" class="btn btn-danger" title="Delete Playbook">
                                             <i class="fa fa-times"></i>
                                         </button>
                                     </div>

@@ -16,6 +16,8 @@ class Playbook(ExecutionElement, Device_Base):
             name (str): The name of the Playbook
             workflows (list[Workflow], optional): An optional list of Workflows associated with this Playbook.
                 Defaults to None.
+            id (str|UUID, optional): Optional UUID to pass into the Playbook. Must be UUID object or valid UUID string.
+                Defaults to None.
         """
         ExecutionElement.__init__(self, id)
         self.name = name
