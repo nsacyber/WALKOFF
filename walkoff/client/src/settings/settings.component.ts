@@ -88,7 +88,6 @@ export class SettingsComponent {
 			.getRoles()
 			.then(roles => this.roles = roles)
 			.catch(e => this.toastyService.error(`Error retrieving roles: ${e.message}`));
-
 	}
 
 	getUsers(): void {

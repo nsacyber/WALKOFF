@@ -66,7 +66,6 @@ export class SettingsUserModalComponent {
 		}
 
 		const toSubmit = WorkingUser.toSave(this.workingUser);
-		delete toSubmit.roles;
 
 		//If user has an ID, user already exists, call update
 		if (toSubmit.id) {

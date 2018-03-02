@@ -6,7 +6,7 @@ export class WorkingUser {
 
 		returnUser.id = workingUser.id;
 		returnUser.username = workingUser.username;
-		returnUser.role_ids = workingUser.role_ids;
+		returnUser.roles = workingUser.role_ids.map(id => ({ id }));
 		returnUser.active = workingUser.active;
 
 		returnUser.old_password = workingUser.currentPassword;
