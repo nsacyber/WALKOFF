@@ -99,9 +99,8 @@ Action:
       type: string
       example: action1
     device_id:
-      description: ID of the device to use
-      type: integer
-      example: 42
+      description: ID of the device to use, encapsulated in an Argument object
+      $ref: '#/definitions/DeviceArgument'
     arguments:
       description: The input arguments to the action
       type: array
@@ -175,10 +174,36 @@ Argument:
   properties:
     id:
       type: integer
-      description: The ID of the object. If updating a workflow and the Argument object already exists, ID is required. Otherwise, do not include it.
+      description: The ID of the object. If updating a workflow and the Argument object already exists, ID is required.
     name:
       type: string
       example: regex
+    value:
+      description: The value of the argument
+      example: WALK(.*)
+    reference:
+      $ref: '#/definitions/Uuid'
+      description: The ID of the action whose output should be used
+    selection:
+      description: >-
+        The path to a subsection of the output of the action to use. For example [1, "a"] would use the second element
+        of a list, and the "a" field of that object.
+      type: array
+      items:
+        type: [string, integer]
+
+DeviceArgument:
+  type: object
+  description: Object used for passing a device argument into actions. Either reference or value must be selected.
+  minProperties: 1
+  additionalProperties: false
+  properties:
+    id:
+      type: integer
+      description: The ID of the object. If updating a workflow and the Argument object already exists, ID is required.
+    name:
+      type: string
+      default: '__device__'
     value:
       description: The value of the argument
       example: WALK(.*)

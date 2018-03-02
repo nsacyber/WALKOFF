@@ -2,7 +2,7 @@ import logging
 import uuid
 import traceback
 
-from sqlalchemy import Column, Integer, ForeignKey, String, orm
+from sqlalchemy import Column, ForeignKey, String, orm
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 
@@ -24,8 +24,8 @@ class Action(ExecutionElement, Device_Base):
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     name = Column(String(80), nullable=False)
-    device_id = Column(Integer)
-    arguments = relationship('Argument', backref=backref('_action'), cascade='all, delete, delete-orphan')
+    device_id = relationship('Argument', uselist=False, backref=backref('_action_device'), cascade='all, delete-orphan')
+    arguments = relationship('Argument', backref=backref('_action_arg'), cascade='all, delete, delete-orphan')
     trigger = relationship('ConditionalExpression', backref=backref('_action'), cascade='all, delete-orphan',
                            uselist=False)
     position = relationship('Position', uselist=False, backref=backref('_action'), cascade='all, delete-orphan')
@@ -37,8 +37,10 @@ class Action(ExecutionElement, Device_Base):
             app_name (str): The name of the app associated with the Action
             action_name (str): The name of the action associated with a Action
             name (str): The name of the Action object.
-            device_id (int, optional): The id of the device associated with the app associated with the Action. Defaults
-                to None.
+            device_id (Argument, optional): The device_id for the Action. This device_id is specified in the Argument
+                object. If the device_id should be static, then device_id.value should be set to the static device_id.
+                If the device_id should be fetched from a previous Action, then the reference and optional selection
+                fields of the Argument object should be filled. Defaults to None.
             id (str|UUID, optional): Optional UUID to pass into the Action. Must be UUID object or valid UUID string.
                 Defaults to None.
             arguments (list[Argument], optional): A list of Argument objects that are parameters to the action.
@@ -57,7 +59,7 @@ class Action(ExecutionElement, Device_Base):
         self.action_name = action_name
 
         self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
-        if is_app_action_bound(self.app_name, self._run) and not self.device_id:
+        if is_app_action_bound(self.app_name, self._run) and self.device_id is None:
             raise InvalidArgument(
                 "Cannot initialize Action {}. App action is bound but no device ID was provided.".format(self.name))
 

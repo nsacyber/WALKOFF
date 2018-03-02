@@ -20,7 +20,10 @@
                             "value": 3.0
                         }
                     ],
-                    "device_id": 1,
+                    "device_id": {
+                        "name": "__device__",
+                        "value": 1
+                    },
                     "id": "96ae7509-1d86-45c8-a938-19ca2a293dc0",
                     "name": "start"
                 },
@@ -41,7 +44,10 @@
                             "value": 3.0
                         }
                     ],
-                    "device_id": 1,
+                    "device_id": {
+                        "name": "__device__",
+                        "value": 1
+                    },
                     "id": "d3dccc61-bb03-43b2-b8be-c1a284f07cdf",
                     "name": "1"
                 },
@@ -62,7 +68,10 @@
                             "value": 3.0
                         }
                     ],
-                    "device_id": 1,
+                    "device_id": {
+                        "name": "__device__",
+                        "value": 1
+                    },
                     "id": "8ef77f8c-faef-441a-8a52-b31fa9874c1f",
                     "name": "2"
                 }

@@ -7,7 +7,10 @@
                     "action_name": "wait_for_pause_and_resume",
                     "app_name": "HelloWorldBounded",
                     "arguments": [],
-                    "device_id": 1,
+                    "device_id": {
+                        "name": "__device__",
+                        "value": 1
+                    },
                     "id": "d12e7aad-9ce0-44ca-a18b-ca84f3578c19",
                     "name": "1"
                 }

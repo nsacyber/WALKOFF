@@ -43,8 +43,8 @@ class Argument(Representable, Device_Base):
 
         self.name = name
         self.value = value
-        self.reference = reference if reference else None
-        self.selection = selection if selection else None
+        self.reference = reference
+        self.selection = selection
         self._is_reference = True if value is None else False
 
     @orm.reconstructor
@@ -108,6 +108,10 @@ class Argument(Representable, Device_Base):
             return input_[int(selection)]
         else:
             raise ValueError
+
+    @classmethod
+    def create_device_argument(cls, value=None, reference=None, selection=None):
+        return cls(name='__device__', value=value, reference=reference, selection=selection)
 
     def __eq__(self, other):
         return self.name == other.name and self.value == other.value and self.reference == other.reference and \

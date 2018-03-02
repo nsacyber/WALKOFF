@@ -66,6 +66,8 @@ class JsonElementCreator(object):
             for arg_json in json_in['arguments']:
                 arg_json.pop('id', None)
             json_in['arguments'] = [Argument(**arg_json) for arg_json in json_in['arguments']]
+        if 'device_id' in json_in:
+            json_in['device_id'] = Argument(**json_in['device_id'])
         if 'position' in json_in:
             json_in['position'].pop('id', None)
             json_in['position'] = Position(**json_in['position'])

@@ -13,8 +13,8 @@ class AppInstanceRepo(object):
         if instances:
             self._instances = instances
 
-    def setup_app_instance(self, action):
-        device_id = (action.app_name, action.device_id)
+    def setup_app_instance(self, action, accumulator):
+        device_id = (action.app_name, action.device_id.get_value(accumulator))
         if device_id not in self._instances:
             self._instances[device_id] = AppInstance.create(action.app_name, action.device_id)
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.AppInstanceCreated)
