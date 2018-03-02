@@ -30,6 +30,5 @@ export class User {
 	 */
 	password: string;
 	roles: Role[] = [];
-	role_ids: number[] = [];
 	active: boolean;
 }
