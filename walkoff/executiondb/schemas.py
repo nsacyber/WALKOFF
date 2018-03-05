@@ -64,7 +64,7 @@ class ArgumentSchema(ExecutionBaseSchema):
     @validates_schema
     def validate_argument(self, data):
         has_value = 'value' in data
-        has_reference = 'reference' in data
+        has_reference = 'reference' in data and bool(data['reference'])
         if (not has_value and not has_reference) or (has_value and has_reference):
             raise ValidationError('Arguments must have either a value or a reference.', ['value'])
 
