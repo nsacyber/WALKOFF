@@ -1,4 +1,4 @@
-/api/auth:
+/auth:
   post:
     tags:
       - Authorization
@@ -26,7 +26,7 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/auth/refresh:
+/auth/refresh:
   post:
     tags:
       - Authorization
@@ -45,7 +45,7 @@
         schema:
           $ref: '#/definitions/Error'
 
-/api/auth/logout:
+/auth/logout:
   post:
     tags:
       - Authorization
@@ -68,5 +68,9 @@
               type: string
               description: the refresh token to be revoked
     responses:
-      200:
+      204:
         description: Success
+      400:
+        description: Invalid refresh token
+        schema:
+          $ref: '#/definitions/Error'

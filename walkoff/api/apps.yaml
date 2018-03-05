@@ -1,4 +1,4 @@
-/api/apps:
+/apps:
   get:
     tags:
       - System
@@ -17,7 +17,7 @@
             type: string
             example: [PhillipsHue, OpenDaylight, PaloAlto]
 
-/api/apps/apis:
+/apps/apis:
   get:
     tags:
       - Apps
@@ -41,7 +41,7 @@
           items:
             type: object
 
-/api/apps/apis/{app_name}:
+/apps/apis/{app_name}:
   get:
     tags:
       - Apps
@@ -61,12 +61,12 @@
         description: Success
         schema:
           $ref: '#/definitions/AppApi'
-      461:
+      404:
         description: App does not exist
         schema:
           $ref: '#/definitions/Error'
 
-/api/apps/apis/{app_name}/{field_name}:
+/apps/apis/{app_name}/{field_name}:
   get:
     tags:
       - Apps
@@ -92,7 +92,7 @@
         description: Success
         schema:
           type: object
-      461:
+      404:
         description: App does not exist
         schema:
           $ref: '#/definitions/Error'

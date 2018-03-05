@@ -21,22 +21,22 @@ actions:
       Success:
         schema:
           type: string
-          enum: [Success]
+          enum: ["Success"]
       TimedOut:
         failure: true
         schema:
           type: string
-          enum: [Connection timed out]
+          enum: ["Connection timed out"]
       WalkoffNotFound:
         failure: true
         schema:
           type: string
-          enum: [Could not locate Walkoff instance]
+          enum: ["Could not locate Walkoff instance"]
       AuthenticationError:
         failure: true
         schema:
           type: string
-          enum: [Invalid login]
+          enum: ["Invalid login"]
       UnknownResponse:
         failure: true
         schema:
@@ -50,19 +50,20 @@ actions:
         description: Timeout on the request (in seconds)
         type: number
         default: 2.0
+    default_return: Success
     returns:
       Success:
         schema:
           type: string
-          enum: [Success]
+          enum: ["Success"]
       TimedOut:
         schema:
           type: string
-          enum: [Connection timed out]
+          enum: ["Connection timed out"]
       NotConnected:
         schema:
           type: string
-          enum: [Not connected to Walkoff]
+          enum: ["Not connected to Walkoff"]
   is connected:
     run: app.Walkoff.is_connected
     description: Is Walkoff connected?
@@ -78,6 +79,7 @@ actions:
         description: Timeout on the request (in seconds)
         type: number
         default: 2.0
+    default_return: Success
     returns:
       Success:
         schema:
@@ -125,15 +127,15 @@ actions:
       TimedOut:
         schema:
           type: string
-          enum: [Connection timed out]
+          enum: ["Connection timed out"]
       Unauthorized:
         schema:
           type: string
-          enum: [Unauthorized credentials]
+          enum: ["Unauthorized credentials"]
       NotConnected:
         schema:
           type: string
-          enum: [Not connected to Walkoff]
+          enum: ["Not connected to Walkoff"]
       UnknownResponse:
         schema:
           type: string
@@ -146,6 +148,7 @@ actions:
         description: Timeout on the request (in seconds)
         type: number
         default: 2.0
+    default_return: Success
     returns:
       Success:
         schema:
@@ -169,15 +172,15 @@ actions:
       TimedOut:
         schema:
           type: string
-          enum: [Connection timed out]
+          enum: ["Connection timed out"]
       Unauthorized:
         schema:
           type: string
-          enum: [Unauthorized credentials]
+          enum: ["Unauthorized credentials"]
       NotConnected:
         schema:
           type: string
-          enum: [Not connected to Walkoff]
+          enum: ["Not connected to Walkoff"]
       UnknownResponse:
         schema:
           type: string
@@ -190,6 +193,7 @@ actions:
         description: Timeout on the request (in seconds)
         type: number
         default: 2.0
+    default_return: Success
     returns:
       Success:
         schema:
@@ -217,15 +221,15 @@ actions:
       TimedOut:
         schema:
           type: string
-          enum: [Connection timed out]
+          enum: ["Connection timed out"]
       Unauthorized:
         schema:
           type: string
-          enum: [Unauthorized credentials]
+          enum: ["Unauthorized credentials"]
       NotConnected:
         schema:
           type: string
-          enum: [Not connected to Walkoff]
+          enum: ["Not connected to Walkoff"]
       UnknownResponse:
         schema:
           type: string
@@ -238,6 +242,7 @@ actions:
         description: Timeout on the request (in seconds)
         type: number
         default: 2.0
+    default_return: Success
     returns:
       Success:
         schema:
@@ -262,15 +267,15 @@ actions:
       TimedOut:
         schema:
           type: string
-          enum: [Connection timed out]
+          enum: ["Connection timed out"]
       Unauthorized:
         schema:
           type: string
-          enum: [Unauthorized credentials]
+          enum: ["Unauthorized credentials"]
       NotConnected:
         schema:
           type: string
-          enum: [Not connected to Walkoff]
+          enum: ["Not connected to Walkoff"]
       UnknownResponse:
         schema:
           type: string
@@ -283,6 +288,7 @@ actions:
         description: Timeout on the request (in seconds)
         type: number
         default: 2.0
+    default_return: Success
     returns:
       Success:
         schema:
@@ -306,22 +312,22 @@ actions:
       TimedOut:
         schema:
           type: string
-          enum: [Connection timed out]
+          enum: ["Connection timed out"]
       Unauthorized:
         schema:
           type: string
-          enum: [Unauthorized credentials]
+          enum: ["Unauthorized credentials"]
       NotConnected:
         schema:
           type: string
-          enum: [Not connected to Walkoff]
+          enum: ["Not connected to Walkoff"]
       UnknownResponse:
         schema:
           type: string
           description: Unknown HTTP response from server
-  get workflow uid:
-    run: app.Walkoff.get_workflow_uid
-    description: Gets the uid of a workflow
+  get workflow id:
+    run: app.Walkoff.get_workflow_id
+    description: Gets the ID of a workflow
     parameters:
       - name: playbook_name
         description: name of the playbook
@@ -335,6 +341,7 @@ actions:
         description: Timeout on the request (in seconds)
         type: number
         default: 2.0
+    default_return: Success
     returns:
       Success:
         schema:
@@ -342,82 +349,72 @@ actions:
       WorkflowNotFound:
         schema:
           type: string
-          enum: [Playbook not found, Workflow not found]
+          enum: ["Playbook not found, Workflow not found"]
       TimedOut:
         schema:
           type: string
-          enum: [Connection timed out]
+          enum: ["Connection timed out"]
       Unauthorized:
         schema:
           type: string
-          enum: [Unauthorized credentials]
+          enum: ["Unauthorized credentials"]
       NotConnected:
         schema:
           type: string
-          enum: [Not connected to Walkoff]
+          enum: ["Not connected to Walkoff"]
       UnknownResponse:
         schema:
           type: string
           description: Unknown HTTP response from server
   execute workflow:
     run: app.Walkoff.execute_workflow
-    description: Executes a workflow with the specified playbook and workflow
+    description: Executes a workflow
     parameters:
-      - name: playbook_name
-        description: name of the playbook
-        type: string
-        required: true
-      - name: workflow_name
-        description: name of the workflow
+      - name: workflow_id
+        description: ID of the workflow
         type: string
         required: true
       - name: timeout
         description: Timeout on the request (in seconds)
         type: number
         default: 2.0
+    default_return: Success
     returns:
       Success:
         schema:
           type: array
           items:
             type: string
-            description: execution_uid of the executed workflow in array
+            description: execution_id of the executed workflow in array
       TimedOut:
         schema:
           type: string
-          enum: [Connection timed out]
+          enum: ["Connection timed out"]
       Unauthorized:
         schema:
           type: string
-          enum: [Unauthorized credentials]
+          enum: ["Unauthorized credentials"]
       NotConnected:
         schema:
           type: string
-          enum: [Not connected to Walkoff]
+          enum: ["Not connected to Walkoff"]
       UnknownResponse:
         schema:
           type: string
           description: Unknown HTTP response from server
   pause workflow:
     run: app.Walkoff.pause_workflow
-    description: Pauses a workflow with the specified playbook, workflow and execution uid
+    description: Pauses a workflow with the specified workflow execution ID
     parameters:
-      - name: playbook_name
-        description: name of the playbook
-        type: string
-        required: true
-      - name: workflow_name
-        description: name of the workflow
-        type: string
-        required: true
-      - name: execution_uid
-        description: specific execution_uid of the workflow
+      - name: execution_id
+        description: specific execution_id of the workflow
         type: string
         required: true
       - name: timeout
         description: Timeout on the request (in seconds)
         type: number
         default: 2.0
+    default_return: Success
     returns:
       Success:
         schema:
@@ -425,39 +422,32 @@ actions:
       TimedOut:
         schema:
           type: string
-          enum: [Connection timed out]
+          enum: ["Connection timed out"]
       Unauthorized:
         schema:
           type: string
-          enum: [Unauthorized credentials]
+          enum: ["Unauthorized credentials"]
       NotConnected:
         schema:
           type: string
-          enum: [Not connected to Walkoff]
+          enum: ["Not connected to Walkoff"]
       UnknownResponse:
         schema:
           type: string
           description: Unknown HTTP response from server
   resume workflow:
     run: app.Walkoff.resume_workflow
-    description: Resumes a paused workflow with the specified playbook, workflow and execution uid
+    description: Resumes a paused workflow with the specified workflow execution id
     parameters:
-      - name: playbook_name
-        description: name of the playbook
-        type: string
-        required: true
-      - name: workflow_name
-        description: name of the workflow
-        type: string
-        required: true
-      - name: execution_uid
-        description: specific execution_uid of the workflow
+      - name: execution_id
+        description: specific execution_id of the workflow
         type: string
         required: true
       - name: timeout
         description: Timeout on the request (in seconds)
         type: number
         default: 2.0
+    default_return: Success
     returns:
       Success:
         schema:
@@ -465,15 +455,15 @@ actions:
       TimedOut:
         schema:
           type: string
-          enum: [Connection timed out]
+          enum: ["Connection timed out"]
       Unauthorized:
         schema:
           type: string
-          enum: [Unauthorized credentials]
+          enum: ["Unauthorized credentials"]
       NotConnected:
         schema:
           type: string
-          enum: [Not connected to Walkoff]
+          enum: ["Not connected to Walkoff"]
       UnknownResponse:
         schema:
           type: string
@@ -482,18 +472,18 @@ actions:
     run: app.Walkoff.trigger
     description: Trigger a workflow
     parameters:
-      - name: execution_uids
-        description: execution_uid of workflows to triggers
+      - name: execution_ids
+        description: execution_id of workflows to triggers
         type: array
         items:
           type: string
         required: true
       - name: data
-        description: data to send to waiting workflow
+        description: data to send to waiting workflows
         type: string
         required: true
-      - name: inputs
-        description: Inputs into the starting action as key-value pairs
+      - name: arguments
+        description: Arguments into the starting action
         schema:
           type: object
           additionalProperties: true
@@ -501,6 +491,7 @@ actions:
         description: Timeout on the request (in seconds)
         type: number
         default: 2.0
+    default_return: Success
     returns:
       Success:
         schema:
@@ -526,15 +517,15 @@ actions:
       TimedOut:
         schema:
           type: string
-          enum: [Connection timed out]
+          enum: ["Connection timed out"]
       Unauthorized:
         schema:
           type: string
-          enum: [Unauthorized credentials]
+          enum: ["Unauthorized credentials"]
       NotConnected:
         schema:
           type: string
-          enum: [Not connected to Walkoff]
+          enum: ["Not connected to Walkoff"]
       UnknownResponse:
         schema:
           type: string
@@ -547,6 +538,7 @@ actions:
         description: Timeout on the request (in seconds)
         type: number
         default: 2.0
+    default_return: Success
     returns:
       Success:
         schema:
@@ -607,15 +599,15 @@ actions:
       TimedOut:
         schema:
           type: string
-          enum: [Connection timed out]
+          enum: ["Connection timed out"]
       Unauthorized:
         schema:
           type: string
-          enum: [Unauthorized credentials]
+          enum: ["Unauthorized credentials"]
       NotConnected:
         schema:
           type: string
-          enum: [Not connected to Walkoff]
+          enum: ["Not connected to Walkoff"]
       UnknownResponse:
         schema:
           type: string
@@ -624,8 +616,8 @@ actions:
     run: app.Walkoff.wait_for_workflow_completion
     description: Waits for an executing workflow to complete and gets the results
     parameters:
-      - name: execution_uid
-        description: The execution UID of the workflow to wait upon
+      - name: execution_id
+        description: The execution ID of the workflow to wait upon
         type: string
         required: true
       - name: timeout
@@ -640,6 +632,7 @@ actions:
         description: time to wait in between subsequent requests (in seconds)
         type: number
         default: 0.1
+    default_return: Success
     returns:
       Success:
         schema:
@@ -695,15 +688,15 @@ actions:
       TimedOut:
         schema:
           type: string
-          enum: [Connection timed out]
+          enum: ["Connection timed out"]
       Unauthorized:
         schema:
           type: string
-          enum: [Unauthorized credentials]
+          enum: ["Unauthorized credentials"]
       NotConnected:
         schema:
           type: string
-          enum: [Not connected to Walkoff]
+          enum: ["Not connected to Walkoff"]
       UnknownResponse:
         schema:
           type: string

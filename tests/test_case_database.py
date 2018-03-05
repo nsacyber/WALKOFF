@@ -4,9 +4,19 @@ import unittest
 import walkoff.case.database as case_database
 from walkoff.case.subscription import *
 from tests.util.assertwrappers import orderless_list_compare
+from tests.util import execution_db_help
 
 
 class TestCaseDatabase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        execution_db_help.setup_dbs()
+
+    @classmethod
+    def tearDownClass(cls):
+        execution_db_help.tear_down_device_db()
+        case_database.case_db.tear_down()
+
     def setUp(self):
         case_database.initialize()
 
@@ -17,12 +27,12 @@ class TestCaseDatabase(unittest.TestCase):
 
     @staticmethod
     def __construct_basic_db():
-        cases = {'case1': {'uid1': ['e1', 'e2', 'e3'],
-                           'uid2': ['e1']},
-                 'case2': {'uid1': ['e2', 'e3']},
-                 'case3': {'uid3': ['e', 'b', 'c'],
-                           'uid4': ['d']},
-                 'case4': {'uid1': ['a', 'b']}}
+        cases = {'case1': {'id1': ['e1', 'e2', 'e3'],
+                           'id2': ['e1']},
+                 'case2': {'id1': ['e2', 'e3']},
+                 'case3': {'id3': ['e', 'b', 'c'],
+                           'id4': ['d']},
+                 'case4': {'id1': ['a', 'b']}}
         set_subscriptions(cases)
         return cases
 

@@ -1,494 +1,390 @@
 import json
-import os
-
-from flask import request, current_app
+from flask import request, current_app, send_file
 from flask_jwt_extended import jwt_required
-
-import walkoff.case.database as case_database
-import walkoff.config.paths
-from walkoff import helpers
-from walkoff.case.workflowresults import WorkflowResult
-from walkoff.helpers import UnknownAppAction, UnknownApp, InvalidArgument
+from sqlalchemy import exists, and_
+from sqlalchemy.exc import IntegrityError, StatementError
+from walkoff import executiondb
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
-from walkoff.server.decorators import validate_resource_exists_factory
+from walkoff.executiondb.playbook import Playbook
+from walkoff.executiondb.workflow import Workflow
+from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid
+from walkoff.helpers import InvalidExecutionElement, regenerate_workflow_ids
+from uuid import uuid4
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+from walkoff.server.problem import Problem
 
 
-def does_playbook_exist(playbook_name):
-    from walkoff.server.context import running_context
-    return running_context.controller.is_playbook_registered(playbook_name)
+def does_workflow_exist(playbook_id, workflow_id):
+    return executiondb.execution_db.session.query(
+        exists().where(and_(Workflow.id == workflow_id, Workflow._playbook_id == playbook_id))).scalar()
 
 
-def does_workflow_exist(playbook_name, workflow_name):
-    from walkoff.server.context import running_context
-    return running_context.controller.is_workflow_registered(playbook_name, workflow_name)
+def playbook_getter(playbook_id):
+    playbook = executiondb.execution_db.session.query(Playbook).filter_by(id=playbook_id).first()
+    return playbook
 
 
-validate_playbook_is_registered = validate_resource_exists_factory('playbook', does_playbook_exist)
+def workflow_getter(workflow_id):
+    return executiondb.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
+
+
+with_playbook = with_resource_factory('playbook', playbook_getter, validator=is_valid_uid)
+with_workflow = with_resource_factory('workflow', workflow_getter, validator=is_valid_uid)
 validate_workflow_is_registered = validate_resource_exists_factory('workflow', does_workflow_exist)
 
-'''
-def validate_playbook_is_registered(operation, playbook_name):
-    from walkoff.server.context import running_context
-
-    def wrapper(func):
-        if running_context.controller.is_playbook_registered(playbook_name):
-            return func
-        else:
-            current_app.logger.error(
-                'Could not {0} playbook {1}. Playbook does not exist.'.format(operation, playbook_name))
-            return lambda: ({"error": 'Playbook does not exist'.format(playbook_name)}, OBJECT_DNE_ERROR)
-
-    return wrapper
+ALLOWED_EXTENSIONS = {'json', 'playbook'}
 
 
-def validate_workflow_is_registered(operation, playbook_name, workflow_name):
-    from walkoff.server.context import running_context
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-    def wrapper(func):
-        if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            return func
-        else:
-            current_app.logger.error(
-                'Could not {0} workflow {1}-{2}. Workflow does not exist.'.format(
-                    operation, playbook_name, workflow_name))
-            return lambda: ({"error": 'Workflow does not exist'.format(playbook_name)}, OBJECT_DNE_ERROR)
 
-    return wrapper
-'''
+def unique_constraint_problem(type_, operation, id_):
+    return Problem.from_crud_resource(
+        OBJECT_EXISTS_ERROR,
+        type_,
+        operation,
+        'Could not {} {} {}, possibly because of invalid or non-unique IDs.'.format(operation, type_, id_))
+
+
+def improper_json_problem(type_, operation, id_, reason=None):
+    return Problem.from_crud_resource(
+        BAD_REQUEST,
+        type_,
+        operation,
+        'Could not {} {} {}. Improper JSON. Reason: {}'.format(
+            operation,
+            type_,
+            id_,
+            'Reason: {}.'.format(reason) if reason else ''))
+
 
 def get_playbooks(full=None):
-    from walkoff.server.context import running_context
-
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     def __func():
-        playbooks = running_context.controller.get_all_workflows(full_representation=bool(full))
-        return sorted(playbooks, key=(lambda playbook: playbook['name'].lower())), SUCCESS
+        full_rep = bool(full)
+        playbooks = executiondb.execution_db.session.query(Playbook).all()
+
+        if full_rep:
+            ret_playbooks = [playbook.read() for playbook in playbooks]
+        else:
+            ret_playbooks = []
+            for playbook in playbooks:
+                entry = {'id': playbook.id, 'name': playbook.name}
+
+                workflows = []
+                for workflow in playbook.workflows:
+                    workflows.append({'id': workflow.id, 'name': workflow.name})
+                entry['workflows'] = sorted(workflows, key=(lambda wf: workflow.name.lower()))
+
+                ret_playbooks.append(entry)
+
+        return sorted(ret_playbooks, key=(lambda pb: pb['name'].lower())), SUCCESS
 
     return __func()
 
 
-def create_playbook():
-    from walkoff.server.context import running_context
-
+def create_playbook(source=None):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create']))
     def __func():
-        data = request.get_json()
-        playbook_name = data['name']
-        if running_context.controller.is_playbook_registered(playbook_name):
-            return {"error": "Playbook already exists."}, OBJECT_EXISTS_ERROR
-        running_context.controller.create_playbook(playbook_name)
+        if request.files and 'file' in request.files:
+            f = request.files['file']
+            data = json.loads(f.read().decode('utf-8'))
+            playbook_name = data['name'] if 'name' in data else ''
+        else:
+            data = request.get_json()
+            playbook_name = data['name']
+
+        try:
+            playbook = Playbook.create(data)
+            executiondb.execution_db.session.add(playbook)
+            executiondb.execution_db.session.commit()
+        except IntegrityError:
+            executiondb.execution_db.session.rollback()
+            current_app.logger.error('Could not create Playbook {}. Unique constraint failed'.format(playbook_name))
+            return unique_constraint_problem('playbook', 'create', playbook_name)
+        except StatementError:
+            return unique_constraint_problem('playbook', 'create', playbook_name)
+        except ValueError as e:
+            import traceback
+            traceback.print_exc()
+            executiondb.execution_db.session.rollback()
+            current_app.logger.error('Could not create Playbook {}. Invalid input'.format(playbook_name))
+            return improper_json_problem('playbook', 'create', playbook_name)
+
         current_app.logger.info('Playbook {0} created'.format(playbook_name))
-        return running_context.controller.get_all_workflows(), OBJECT_CREATED
+        return playbook.read(), OBJECT_CREATED
+
+    if source:
+        return copy_playbook(source)
 
     return __func()
 
 
-def read_playbook(playbook_name):
-    from walkoff.server.context import running_context
-
+def read_playbook(playbook_id, mode=None):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
-    def __func():
-        try:
-            playbooks = running_context.controller.get_all_workflows()
-            playbook = next((playbook for playbook in playbooks if playbook['name'] == playbook_name), None)
-            if playbook is not None:
-                return playbook['workflows'], SUCCESS
-            else:
-                current_app.logger.error('Playbook {0} was not found'.format(playbook_name))
-                return {"error": "Playbook does not exist."}, OBJECT_DNE_ERROR
-        except Exception as e:
-            return {"error": "{0}".format(e)}, INVALID_INPUT_ERROR
+    @with_playbook('read', playbook_id)
+    def __func(playbook):
+        if mode == "export":
+            f = StringIO()
+            f.write(json.dumps(playbook.read(), sort_keys=True, indent=4, separators=(',', ': ')))
+            f.seek(0)
+            return send_file(f, attachment_filename=playbook.name + '.playbook', as_attachment=True), SUCCESS
+        else:
+            return playbook.read(), SUCCESS
 
     return __func()
 
 
 def update_playbook():
-    from walkoff.server.context import running_context
-
     data = request.get_json()
-    playbook_name = data['name']
+    playbook_id = data['id']
 
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['update']))
-    @validate_playbook_is_registered('edit', playbook_name)
-    def __func():
-        if 'new_name' not in data or not data['new_name']:
-            current_app.logger.error('No new name provided to update playbook')
-            return {"error": 'No new name provided to update playbook.'}, INVALID_INPUT_ERROR
+    @with_playbook('update', playbook_id)
+    def __func(playbook):
+        if 'name' in data and playbook.name != data['name']:
+            playbook.name = data['name']
 
-        if running_context.controller.is_playbook_registered(data['new_name']):
-            current_app.logger.warning(
-                'Could not update playbook {0}. Playbook already exists.'.format(playbook_name))
-            return {"error": "Playbook already exists."}, OBJECT_EXISTS_ERROR
+        try:
+            executiondb.execution_db.session.commit()
+        except IntegrityError:
+            executiondb.execution_db.session.rollback()
+            current_app.logger.error('Could not update Playbook {}. Unique constraint failed'.format(playbook_id))
+            return unique_constraint_problem('playbook', 'update', playbook_id)
 
-        new_name = data['new_name']
-        running_context.controller.update_playbook_name(playbook_name, new_name)
-        saved_playbooks = [os.path.splitext(playbook)[0]
-                           for playbook in
-                           helpers.locate_playbooks_in_directory(walkoff.config.paths.workflows_path)]
-        if playbook_name in saved_playbooks:
-            os.rename(os.path.join(walkoff.config.paths.workflows_path, '{0}.playbook'.format(playbook_name)),
-                      os.path.join(walkoff.config.paths.workflows_path, '{0}.playbook'.format(new_name)))
-        current_app.logger.info('Playbook renamed from {0} to {1}'.format(playbook_name, new_name))
+        current_app.logger.info('Playbook {} updated'.format(playbook_id))
 
-        workflow = next(playbook for playbook in running_context.controller.get_all_workflows()
-                        if playbook['name'] == new_name)['workflows']
-        return workflow, SUCCESS
+        return playbook.read(), SUCCESS
 
     return __func()
 
 
-def delete_playbook(playbook_name):
-    from walkoff.server.context import running_context
-
+def delete_playbook(playbook_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['delete']))
-    @validate_playbook_is_registered('delete', playbook_name)
-    def __func():
-        running_context.controller.remove_playbook(playbook_name)
-        current_app.logger.info('Deleted playbook {0} from controller'.format(playbook_name))
-        if playbook_name in [os.path.splitext(playbook)[0] for playbook in helpers.locate_playbooks_in_directory()]:
-            try:
-                os.remove(os.path.join(walkoff.config.paths.workflows_path, '{0}.playbook'.format(playbook_name)))
-                current_app.logger.info('Deleted playbook {0} from workflow directory'.format(playbook_name))
-            except (IOError, OSError) as e:
-                current_app.logger.error('Error deleting playbook {0}: {1}'.format(playbook_name, e))
-                return {'error': 'Error occurred while remove playbook file: {0}.'.format(e)}, IO_ERROR
-        return {}, SUCCESS
+    @with_playbook('delete', playbook_id)
+    def __func(playbook):
+        executiondb.execution_db.session.delete(playbook)
+        executiondb.execution_db.session.commit()
+        current_app.logger.info('Deleted playbook {0} '.format(playbook_id))
+        return {}, NO_CONTENT
 
     return __func()
 
 
-def copy_playbook(playbook_name):
-    from walkoff.server.context import running_context
-    from walkoff.server.flaskserver import write_playbook_to_file
-
+def copy_playbook(playbook_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create', 'read']))
-    @validate_playbook_is_registered('copy', playbook_name)
-    def __func():
+    @with_playbook('copy', playbook_id)
+    def __func(playbook):
         data = request.get_json()
-        if 'playbook' in data and data['playbook']:
-            new_playbook_name = data['playbook']
-        else:
-            new_playbook_name = playbook_name + "_Copy"
-        if running_context.controller.is_playbook_registered(new_playbook_name):
-            current_app.logger.error('Cannot copy playbook {0} to {1}. '
-                                     'Name already exists'.format(playbook_name, new_playbook_name))
-            return {"error": 'Playbook already exists.'}, OBJECT_EXISTS_ERROR
-        else:
-            running_context.controller.copy_playbook(playbook_name, new_playbook_name)
-            write_playbook_to_file(new_playbook_name)
-            current_app.logger.info('Copied playbook {0} to {1}'.format(playbook_name, new_playbook_name))
 
-        return running_context.controller.get_all_workflows(), OBJECT_CREATED
+        if 'name' in data and data['name']:
+            new_playbook_name = data['name']
+        else:
+            new_playbook_name = playbook.name + "_Copy"
+
+        playbook_json = playbook.read()
+        playbook_json['name'] = new_playbook_name
+        playbook_json.pop('id')
+
+        if 'workflows' in playbook_json:
+            for workflow in playbook_json['workflows']:
+                regenerate_workflow_ids(workflow)
+
+        try:
+            new_playbook = Playbook.create(playbook_json)
+            executiondb.execution_db.session.add(new_playbook)
+            executiondb.execution_db.session.commit()
+        except IntegrityError:
+            executiondb.execution_db.session.rollback()
+            current_app.logger.error('Could not copy Playbook {}. Unique constraint failed'.format(playbook_id))
+            return unique_constraint_problem('playbook', 'copy', playbook_id)
+        except ValueError as e:
+            executiondb.execution_db.session.rollback()
+            current_app.logger.error('Could not copy Playbook {}. Invalid input'.format(playbook_id))
+            return improper_json_problem('playbook', 'copy', playbook_id)
+
+        current_app.logger.info('Copied playbook {0} to {1}'.format(playbook_id, new_playbook_name))
+
+        return new_playbook.read(), OBJECT_CREATED
 
     return __func()
 
 
-def get_workflows(playbook_name):
-    from walkoff.server.context import running_context
-
+def get_workflows(playbook=None):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
-    def __func():
-        try:
-            workflows = running_context.controller.get_all_workflows(full_representation=True)
-            if playbook_name in workflows:
-                return workflows[playbook_name], SUCCESS
-            else:
-                current_app.logger.error('Playbook {0} not found. Cannot be displayed'.format(playbook_name))
-                return {"error": "Playbook does not exist."}, OBJECT_DNE_ERROR
-        except Exception as e:
-            return {"error": "{0}".format(e)}, INVALID_INPUT_ERROR
+    def __get():
+        return [workflow.read() for workflow in executiondb.execution_db.session.query(Workflow).all()], SUCCESS
+    if playbook:
+        return get_workflows_for_playbook(playbook)
+    return __get()
+
+
+def get_workflows_for_playbook(playbook_id):
+    @jwt_required
+    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
+    @with_playbook('read workflows', playbook_id)
+    def __func(playbook):
+        return [workflow.read() for workflow in playbook.workflows], SUCCESS
 
     return __func()
 
 
-def create_workflow(playbook_name):
-    from walkoff.server.context import running_context
+def create_workflow(source=None):
+    data = request.get_json()
+    playbook_id = data.pop('playbook_id')
 
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create']))
-    def __func():
-        data = request.get_json()
+    @with_playbook('create workflow', playbook_id)
+    def __func(playbook):
         workflow_name = data['name']
+        if 'start' not in data:
+            return Problem(BAD_REQUEST, 'Could not create workflow.', '"start" is required field.')
+        try:
+            workflow = Workflow.create(data)
+            playbook.workflows.append(workflow)
+            executiondb.execution_db.session.add(workflow)
+            executiondb.execution_db.session.commit()
+        except ValueError as e:
+            executiondb.execution_db.session.rollback()
+            current_app.logger.error('Could not add workflow {0}-{1}'.format(playbook_id, workflow_name))
+            return improper_json_problem('workflow', 'create', '{}-{}'.format(playbook_id, workflow_name))
+        except IntegrityError:
+            executiondb.execution_db.session.rollback()
+            current_app.logger.error('Could not create workflow {}. Unique constraint failed'.format(workflow_name))
+            return unique_constraint_problem('workflow', 'create', workflow_name)
 
-        if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            current_app.logger.warning('Could not create workflow {0}. Workflow already exists.'.format(workflow_name))
-            return {"error": "Workflow already exists."}, OBJECT_EXISTS_ERROR
+        current_app.logger.info('Workflow {0}-{1} created'.format(playbook_id, workflow_name))
+        return workflow.read(), OBJECT_CREATED
 
-        running_context.controller.create_workflow(playbook_name, workflow_name)
-        current_app.logger.info('Workflow {0}-{1} created'.format(playbook_name, workflow_name))
-        if running_context.controller.is_workflow_registered(playbook_name, workflow_name):
-            workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
-            return workflow.read(), OBJECT_CREATED
-        else:
-            current_app.logger.error('Could not add workflow {0}-{1}'.format(playbook_name, workflow_name))
-            return {'error': 'Could not add workflow.'}, INVALID_INPUT_ERROR
-
+    if source:
+        return copy_workflow(playbook_id, source)
     return __func()
 
 
-def read_workflow(playbook_name, workflow_name):
-    from walkoff.server.context import running_context
-
+def read_workflow(workflow_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
-    @validate_workflow_is_registered('read', playbook_name, workflow_name)
-    def __func():
-        workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
+    @with_workflow('read', workflow_id)
+    def __func(workflow):
         return workflow.read(), SUCCESS
 
     return __func()
 
 
-def update_workflow(playbook_name):
-    from walkoff.server.context import running_context
-
+def update_workflow():
     data = request.get_json()
-    workflow_name = data['name']
+    workflow_id = data['id']
 
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['update']))
-    @validate_workflow_is_registered('update', playbook_name, workflow_name)
-    def __func():
-        data = request.get_json()
-        workflow_name = data['name']
-        if 'new_name' in data and data['new_name']:
-            if running_context.controller.is_workflow_registered(playbook_name, data['new_name']):
-                current_app.logger.warning(
-                    'Could not update workflow {0}. Workflow already exists.'.format(workflow_name))
-                return {"error": "Workflow already exists."}, OBJECT_EXISTS_ERROR
-            else:
-                running_context.controller.update_workflow_name(playbook_name,
-                                                                workflow_name,
-                                                                playbook_name,
-                                                                data['new_name'])
-                workflow_name = data['new_name']
-        workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
-        if workflow:
-            current_app.logger.info('Updated workflow {0}-{1}'.format(playbook_name, workflow_name))
-            return workflow.read(), SUCCESS
-        else:
-            current_app.logger.error('Altered workflow {0}-{1} no longer in controller'.format(playbook_name,
-                                                                                               workflow_name))
-            return {'error': 'Altered workflow can no longer be located.'}, INVALID_INPUT_ERROR
+    @with_workflow('update', workflow_id)
+    def __func(workflow):
+
+        # TODO: Come back to this...
+        try:
+            workflow.update(data)
+        except InvalidExecutionElement as e:
+            executiondb.execution_db.session.rollback()
+            current_app.logger.error(e.message)
+            return Problem.from_crud_resource(
+                INVALID_INPUT_ERROR,
+                'workflow',
+                'update',
+                'Could not update workflow {}. Invalid input.'.format(workflow_id))
+
+        try:
+            executiondb.execution_db.session.commit()
+        except IntegrityError:
+            executiondb.execution_db.session.rollback()
+            current_app.logger.error('Could not update workflow {}. Unique constraint failed'.format(workflow_id))
+            return unique_constraint_problem('workflow', 'update', workflow_id)
+
+        current_app.logger.info('Updated workflow {0}'.format(workflow_id))
+        return workflow.read(), SUCCESS
 
     return __func()
 
 
-def delete_workflow(playbook_name, workflow_name):
-    from walkoff.server.context import running_context
-    from walkoff.server.flaskserver import write_playbook_to_file
-
+def delete_workflow(workflow_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['delete']))
-    @validate_workflow_is_registered('delete', playbook_name, workflow_name)
-    def __func():
-        running_context.controller.remove_workflow(playbook_name, workflow_name)
+    @with_workflow('delete', workflow_id)
+    def __func(workflow):
+        playbook = executiondb.execution_db.session.query(Playbook).filter_by(id=workflow._playbook_id).first()
+        playbook_workflows = len(playbook.workflows) - 1
+        workflow = executiondb.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
+        executiondb.execution_db.session.delete(workflow)
 
-        if len(running_context.controller.get_all_workflows_by_playbook(playbook_name)) == 0:
-            current_app.logger.debug('Removing playbook {0} since it is empty.'.format(playbook_name))
-            playbook_filename = os.path.join(
-                walkoff.config.paths.workflows_path, '{0}.playbook'.format(playbook_name))
-            try:
-                os.remove(playbook_filename)
-            except OSError:
-                current_app.logger.warning('Cannot remove playbook {0}. '
-                                           'The playbook does not exist.'.format(playbook_name))
+        if playbook_workflows == 0:
+            current_app.logger.debug('Removing playbook {0} since it is empty.'.format(workflow._playbook_id))
+            executiondb.execution_db.session.delete(playbook)
 
-        else:
-            write_playbook_to_file(playbook_name)
+        executiondb.execution_db.session.commit()
 
-        current_app.logger.info('Deleted workflow {0}-{1}'.format(playbook_name, workflow_name))
-        return {}, SUCCESS
+        current_app.logger.info('Deleted workflow {0}'.format(workflow_id))
+        return {}, NO_CONTENT
 
     return __func()
 
 
-def copy_workflow(playbook_name, workflow_name):
-    from walkoff.server.context import running_context
-    from walkoff.server.flaskserver import write_playbook_to_file
-
+def copy_workflow(playbook_id, workflow_id):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create', 'read']))
-    @validate_workflow_is_registered('copy', playbook_name, workflow_name)
-    def __func():
+    @with_workflow('copy', workflow_id)
+    def __func(workflow):
         data = request.get_json()
 
-        if 'playbook' in data and data['playbook']:
-            new_playbook_name = data['playbook']
+        if 'name' in data and data['name']:
+            new_workflow_name = data['name']
         else:
-            new_playbook_name = playbook_name
-        if 'workflow' in data and data['workflow']:
-            new_workflow_name = data['workflow']
+            new_workflow_name = workflow.name + "_Copy"
+
+        workflow_json = workflow.read()
+        workflow_json.pop('id')
+        workflow_json['name'] = new_workflow_name
+
+        regenerate_workflow_ids(workflow_json)
+
+        if executiondb.execution_db.session.query(exists().where(Playbook.id == playbook_id)).scalar():
+            playbook = executiondb.execution_db.session.query(Playbook).filter_by(id=playbook_id).first()
         else:
-            new_workflow_name = workflow_name + "_Copy"
+            executiondb.execution_db.session.rollback()
+            current_app.logger.error('Could not copy workflow {}. Playbook does not exist'.format(playbook_id))
+            return Problem.from_crud_resource(
+                OBJECT_DNE_ERROR,
+                'workflow',
+                'copy',
+                'Could not copy workflow {}. Playbook with id {} does not exist.'.format(workflow_id, playbook_id))
 
-        if running_context.controller.is_workflow_registered(new_playbook_name, new_workflow_name):
-            current_app.logger.error('Cannot copy workflow {0}-{1} to {2}-{3}. '
-                                     'Workflow already exists.'.format(workflow_name, playbook_name,
-                                                                       new_workflow_name, new_playbook_name))
-            return {"error": 'Playbook or workflow already exists.'}, OBJECT_EXISTS_ERROR
-        else:
-            running_context.controller.copy_workflow(playbook_name, new_playbook_name, workflow_name,
-                                                     new_workflow_name)
-            write_playbook_to_file(new_playbook_name)
-            current_app.logger.info('Workflow {0}-{1} copied to {2}-{3}'.format(playbook_name, workflow_name,
-                                                                                new_playbook_name,
-                                                                                new_workflow_name))
-            workflow = running_context.controller.get_workflow(new_playbook_name, new_workflow_name)
-            return workflow.read(), OBJECT_CREATED
-
-    return __func()
-
-
-def execute_workflow(playbook_name, workflow_name):
-    from walkoff.server.context import running_context
-    from walkoff.server.flaskserver import write_playbook_to_file
-
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['execute']))
-    @validate_workflow_is_registered('execute', playbook_name, workflow_name)
-    def __func():
-        data = request.get_json()
-        args = data['arguments'] if 'arguments' in data else None
-        start = data['start'] if 'start' in data else None
-
-        write_playbook_to_file(playbook_name)
-        uid = running_context.controller.execute_workflow(playbook_name, workflow_name, start=start,
-                                                          start_arguments=args)
-        current_app.logger.info('Executed workflow {0}-{1}'.format(playbook_name, workflow_name))
-        return {'id': uid}, SUCCESS_ASYNC
-
-    return __func()
-
-
-def pause_workflow(playbook_name, workflow_name):
-    from walkoff.server.context import running_context
-
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['execute']))
-    @validate_workflow_is_registered('pause', playbook_name, workflow_name)
-    def __func():
-        data = request.get_json()
-        execution_uid = data['id']
-        status = running_context.controller.executor.get_workflow_status(execution_uid)
-        if status == 1:  # WORKFLOW_RUNNING
-            if running_context.controller.pause_workflow(execution_uid):
-                current_app.logger.info(
-                    'Paused workflow {0}-{1}:{2}'.format(playbook_name, workflow_name, execution_uid))
-                return {"info": "Workflow paused"}, SUCCESS
-            else:
-                return {"error": "Invalid UUID."}, INVALID_INPUT_ERROR
-        elif status == 2:
-            return {"info": "Workflow already paused"}, SUCCESS
-        elif status == 0:
-            return {"error": 'Invalid UUID'}, INVALID_INPUT_ERROR
-        else:
-            return {"error": 'Workflow stopped or awaiting data'}, SUCCESS_WITH_WARNING
-
-    return __func()
-
-
-def resume_workflow(playbook_name, workflow_name):
-    from walkoff.server.context import running_context
-
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['execute']))
-    @validate_workflow_is_registered('resume', playbook_name, workflow_name)
-    def __func():
-        data = request.get_json()
-        execution_uid = data['id']
-        status = running_context.controller.executor.get_workflow_status(execution_uid)
-        if status == 2:  # WORKFLOW_PAUSED
-            if running_context.controller.resume_workflow(execution_uid):
-                current_app.logger.info(
-                    'Resumed workflow {0}-{1}:{2}'.format(playbook_name, workflow_name, execution_uid))
-                return {"info": "Workflow resumed"}, SUCCESS
-            else:
-                return {"error": "Invalid UUID."}, INVALID_INPUT_ERROR
-        elif status == 1:
-            return {"info": "Workflow already running"}, SUCCESS
-        elif status == 0:
-            return {"error": 'Invalid UUID'}, INVALID_INPUT_ERROR
-        else:
-            return {"error": 'Workflow stopped or awaiting data'}
-
-    return __func()
-
-
-def save_workflow(playbook_name, workflow_name):
-    from walkoff.server.context import running_context
-    from walkoff.server.flaskserver import write_playbook_to_file
-
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read', 'update']))
-    @validate_workflow_is_registered('save', playbook_name, workflow_name)
-    def __func():
-        workflow = running_context.controller.get_workflow(playbook_name, workflow_name)
         try:
-            workflow.update_from_json(request.get_json())
-        except UnknownApp as e:
-            return {"error": "Unknown app {0}.".format(e.app)}, INVALID_INPUT_ERROR
-        except UnknownAppAction:
-            return {'error': 'Unknown action for app'}, INVALID_INPUT_ERROR
-        except InvalidArgument as e:
-            return {'error': 'Invalid input to action. Error: {0}'.format(str(e))}, INVALID_INPUT_ERROR
-        else:
-            try:
-                write_playbook_to_file(playbook_name)
-                current_app.logger.info('Saved workflow {0}-{1}'.format(playbook_name, workflow_name))
-                return {}, SUCCESS
-            except (OSError, IOError) as e:
-                current_app.logger.info(
-                    'Cannot save workflow {0}-{1} to file'.format(playbook_name, workflow_name))
-                return {"error": "Error saving: {0}".format(e.message)}, IO_ERROR
+            new_workflow = Workflow.create(workflow_json)
+            executiondb.execution_db.session.add(new_workflow)
+            playbook.add_workflow(new_workflow)
+            executiondb.execution_db.session.commit()
+        except IntegrityError:
+            executiondb.execution_db.session.rollback()
+            current_app.logger.error('Could not copy workflow {}. Unique constraint failed'.format(new_workflow_name))
+            return unique_constraint_problem('workflow', 'copy', new_workflow_name)
+
+        current_app.logger.info('Workflow {0} copied to {1}'.format(workflow_id, new_workflow.id))
+        return new_workflow.read(), OBJECT_CREATED
 
     return __func()
 
 
-@jwt_required
-def read_results():
-    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
-    def __func():
-        ret = []
-        completed_workflows = [workflow.as_json() for workflow in
-                               case_database.case_db.session.query(WorkflowResult).filter(
-                                   WorkflowResult.status == 'completed').all()]
-        for result in completed_workflows:
-            if result['status'] == 'completed':
-                ret.append({'name': result['name'],
-                            'timestamp': result['completed_at'],
-                            'result': json.dumps(result['results'])})
-        return ret, SUCCESS
-
-    return __func()
-
-
-def read_all_results():
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
-    def __func():
-        return [workflow.as_json() for workflow in
-                case_database.case_db.session.query(WorkflowResult).all()], SUCCESS
-
-    return __func()
-
-
-def read_result(uid):
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
-    def __func():
-        workflow_result = case_database.case_db.session.query(WorkflowResult).filter(WorkflowResult.uid == uid).first()
-        if workflow_result is not None:
-            return workflow_result.as_json(), SUCCESS
-        else:
-            return {'error': 'No workflow found'}, OBJECT_DNE_ERROR
-
-    return __func()
+def get_uuid():
+    return {'uuid': str(uuid4())}, OBJECT_CREATED

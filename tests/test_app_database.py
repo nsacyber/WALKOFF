@@ -1,15 +1,29 @@
 import unittest
 
-from walkoff.devicedb import App, Device
+from walkoff.executiondb.device import App, Device
+from tests.util import execution_db_help
 
 
 class TestAppDatabase(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        execution_db_help.initialize_databases()
+
+    @classmethod
+    def tearDownClass(cls):
+        execution_db_help.tear_down_device_db()
+
     def setUp(self):
+        from walkoff import executiondb
         self.device1 = Device('test1', [], [], 'type1')
         self.device2 = Device('test2', [], [], 'type1')
         self.device3 = Device('test3', [], [], 'type2')
         self.device4 = Device('test4', [], [], 'type2')
         self.all_devices = [self.device1, self.device2, self.device3, self.device4]
+        for device in self.all_devices:
+            executiondb.execution_db.session.add(device)
+        executiondb.execution_db.session.commit()
 
     def assertConstructionIsCorrect(self, app, name, devices):
         self.assertEqual(app.name, name)
@@ -25,7 +39,7 @@ class TestAppDatabase(unittest.TestCase):
 
     def test_get_device(self):
         app = App('test', devices=self.all_devices)
-        self.assertEqual(app.get_device('test2').as_json(), self.device2.as_json())
+        self.assertEqual(app.get_device(self.device2.id).as_json(), self.device2.as_json())
 
     def test_get_device_invalid(self):
         app = App('test', devices=self.all_devices)

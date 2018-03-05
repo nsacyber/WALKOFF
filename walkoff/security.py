@@ -7,12 +7,12 @@ from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_jwt_extended.tokens import decode_jwt
 from flask_jwt_extended.view_decorators import _load_user
 
-from walkoff.database import User
-from walkoff.server.extensions import jwt
+from walkoff.serverdb import User
+from walkoff.extensions import jwt
 from walkoff.server.returncodes import FORBIDDEN_ERROR
-import walkoff.database
+import walkoff.serverdb
 from walkoff.server.returncodes import UNAUTHORIZED_ERROR
-from walkoff.database.tokens import is_token_revoked
+from walkoff.serverdb.tokens import is_token_revoked
 import json
 import logging
 
@@ -68,7 +68,7 @@ def _permissions_decorator(resource_permissions, all_required=False):
         def decorated_view(*args, **kwargs):
             _roles_accepted = set()
             for resource_permission in resource_permissions:
-                _roles_accepted |= walkoff.database.get_roles_by_resource_permissions(resource_permission)
+                _roles_accepted |= walkoff.serverdb.get_roles_by_resource_permissions(resource_permission)
             if user_has_correct_roles(_roles_accepted, all_required=all_required):
                 return fn(*args, **kwargs)
             return "Unauthorized View", FORBIDDEN_ERROR

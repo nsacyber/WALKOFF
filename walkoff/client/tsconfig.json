@@ -1,24 +1,35 @@
 {
   "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "lib": ["es2015", "dom", "es2017.object"],
+    "lib": [
+      "es2015",
+      "dom",
+      "es2017.object"
+    ],
     "module": "commonjs",
     "moduleResolution": "node",
     "noImplicitAny": true,
     "noUnusedLocals": true,
     "removeComments": true,
     "preserveConstEnums": true,
-    // "outFile": "site.js",
     "target": "es5",
+    "typeRoots": [
+      "node_modules/@types/"
+    ],
     "sourceMap": true
   },
   "include": [
-      "**/*.ts"
+    "**/*.ts"
   ],
   "exclude": [
-      "node_modules",
-      "build",
-      "**/*.spec.ts"
-  ]
+    "node_modules",
+    "build",
+    "dist"
+  ],
+  "awesomeTypescriptLoaderOptions": {
+    "forkChecker": true,
+    "useWebpackText": true
+  }
 }

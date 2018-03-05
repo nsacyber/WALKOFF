@@ -1,0 +1,33 @@
+<div class="modal-header">
+	<h4 class="modal-title">
+		{{message.subject}}
+		<button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="dismiss()">
+		  <span aria-hidden="true">&times;</span>
+		</button>
+	</h4>
+</div>
+<div id="messageModalBody" class="modal-body">
+	<div class="container-fluid">
+		<div *ngIf="message.read_by && message.read_by.length">
+			<i>Read by: {{message.read_by.join(', ')}}</i>
+		</div>
+		<div *ngIf="message.responded_by">
+			<i>
+				Responded by: {{message.responded_by}}
+				<span [title]="utils.getLocalTime(message.responded_at)">({{utils.getRelativeLocalTime(message.responded_at)}})</span>
+			</i>
+		</div>
+		<div *ngFor="let body of message.body">
+			<p *ngIf="body.type === 'text'">{{body.data.text}}</p>
+			<a *ngIf="body.type === 'url'" [href]="body.data.url">{{body.data.title ? body.data.title : body.data.url}}</a>
+			<div *ngIf="body.type === 'accept_decline'">
+				<button type="button" class="btn btn-secondary" (click)="performMessageAction('decline')" [disabled]="!message.awaiting_response">Decline</button>
+				<button type="button" class="btn btn-primary" (click)="performMessageAction('accept')" [disabled]="!message.awaiting_response">Accept</button>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- <div class="modal-footer">
+	<button type="button" class="btn btn-secondary" (click)="dismiss()">Undo Changes and Close</button>
+	<button type="button" class="btn btn-primary" [disabled]="!roleForm.form.valid" (click)="submit()">{{submitText}}</button>
+</div> -->

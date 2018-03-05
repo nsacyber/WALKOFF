@@ -54,18 +54,16 @@ class TestConfigurationServer(ServerTestCase):
         response = self.get_with_status_check('/api/configuration', headers=self.headers)
         self.assertDictEqual(response, expected)
 
-    def test_set_configuration(self):
-        data = {"workflows_path": 'workflows_path_reset',
-                "db_path": 'db_path_reset',
+    def put_post_to_config(self, verb):
+        send_func = self.put_with_status_check if verb == 'put' else self.patch_with_status_check
+        data = {"db_path": 'db_path_reset',
                 "host": 'host_reset',
                 "port": 1100,
                 "access_token_duration": 20,
                 "refresh_token_duration": 35}
-        self.post_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
-                                    content_type='application/json')
+        send_func('/api/configuration', headers=self.headers, data=json.dumps(data), content_type='application/json')
 
-        expected = {walkoff.config.paths.workflows_path: 'workflows_path_reset',
-                    walkoff.config.paths.db_path: 'db_path_reset',
+        expected = {walkoff.config.paths.db_path: 'db_path_reset',
                     walkoff.config.config.host: 'host_reset',
                     walkoff.config.config.port: 1100}
 
@@ -75,12 +73,18 @@ class TestConfigurationServer(ServerTestCase):
         self.assertEqual(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds, 20 * 60)
         self.assertEqual(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days, 35)
 
+    def test_set_configuration_put(self):
+        self.put_post_to_config('put')
+
+    def test_set_configuration_patch(self):
+        self.put_post_to_config('patch')
+
     def test_set_configuration_invalid_token_durations(self):
         access_token_duration = current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds
         refresh_token_duration = current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days
         data = {"access_token_duration": 60 * 25,
                 "refresh_token_duration": 1}
-        self.post_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
+        self.put_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
                                     content_type='application/json', status_code=BAD_REQUEST)
 
         self.assertEqual(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds, access_token_duration)

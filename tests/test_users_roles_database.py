@@ -2,7 +2,10 @@ import unittest
 from datetime import datetime, timedelta
 
 import walkoff.server.flaskserver
-from walkoff.database import db, User, Role, add_user, remove_user
+from walkoff.serverdb import db, User, Role, add_user, remove_user
+import walkoff.config.paths
+from tests.util import execution_db_help
+from walkoff.helpers import timestamp_to_datetime
 
 
 class TestUserRolesDatabase(unittest.TestCase):
@@ -11,6 +14,12 @@ class TestUserRolesDatabase(unittest.TestCase):
         cls.context = walkoff.server.flaskserver.app.test_request_context()
         cls.context.push()
         db.create_all()
+
+        execution_db_help.setup_dbs()
+
+    @classmethod
+    def tearDownClass(cls):
+        execution_db_help.tear_down_device_db()
 
     def tearDown(self):
         db.session.rollback()
@@ -273,8 +282,8 @@ class TestUserRolesDatabase(unittest.TestCase):
         for key in ['username', 'active', 'last_login_ip', 'current_login_ip', 'login_count']:
             self.assertEqual(user_json[key], expected[key], '{} for user\'s json in incorrect'.format(key))
 
-        self.assertAlmostEqual(user_json['last_login_at'], first_login_timestamp, delta=timedelta(milliseconds=100))
-        self.assertAlmostEqual(user_json['current_login_at'], second_login_timestamp, delta=timedelta(milliseconds=100))
+        self.assertAlmostEqual(timestamp_to_datetime(user_json['last_login_at']), first_login_timestamp, delta=timedelta(milliseconds=100))
+        self.assertAlmostEqual(timestamp_to_datetime(user_json['current_login_at']), second_login_timestamp, delta=timedelta(milliseconds=100))
         for role in user_json['roles']:
             self.assertIn('id', role)
             self.assertIn(role['name'], ['role1', 'role2', 'role3'])

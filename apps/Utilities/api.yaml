@@ -234,6 +234,22 @@ actions:
         schema:
           type: string
           enum: ['success']
+  request user approval:
+    run: actions.basic_request_user_approval
+    parameters:
+      - name: users
+        type: array
+        items:
+          type: user
+      - name: roles
+        type: array
+        items:
+          type: role
+    returns:
+      Success:
+        schema:
+          type: string
+          enum: ['success']
   create text message component:
     run: actions.create_text_message_component
     description: Creates a text component for a message
@@ -534,8 +550,13 @@ actions:
       - name: action
         type: string
         required: true
+    default_return: Accepted
     returns:
-      Success:
+      Accepted:
+        schema:
+          type: boolean
+      Declined:
+        failure: true
         schema:
           type: boolean
 conditions:

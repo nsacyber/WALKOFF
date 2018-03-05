@@ -1,4 +1,4 @@
-/api/roles:
+/roles:
   get:
     tags:
       - Roles
@@ -15,7 +15,7 @@
           type: array
           items:
             $ref: '#/definitions/Role'
-  put:
+  post:
     tags:
       - Roles
     summary: Create a role
@@ -37,9 +37,9 @@
         description: Object created.
         schema:
           $ref: '#/definitions/Role'
-      462:
+      400:
         description: Object exists.
-  post:
+  put:
     tags:
       - Roles
     summary: Update a role
@@ -61,9 +61,33 @@
         description: Success
         schema:
           $ref: '#/definitions/Role'
-      461:
+      404:
         description: Object does not exist.
-/api/roles/{role_id}:
+  patch:
+    tags:
+      - Roles
+    summary: Update a role
+    description: ''
+    operationId: walkoff.server.endpoints.roles.patch_role
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        description: Updated fields for the role object
+        required: true
+        schema:
+          $ref: '#/definitions/Role'
+    responses:
+      200:
+        description: Success
+        schema:
+          $ref: '#/definitions/Role'
+      404:
+        description: Object does not exist.
+/roles/{role_id}:
   parameters:
     - name: role_id
       in: path
@@ -83,7 +107,7 @@
         description: Success
         schema:
           $ref: '#/definitions/Role'
-      461:
+      404:
         description: Object does not exist.
   delete:
     tags:
@@ -94,12 +118,12 @@
     produces:
       - application/json
     responses:
-      200:
+      204:
         description: Success
-      461:
+      404:
         description: Object does not exist.
 
-/api/availableresourceactions:
+/availableresourceactions:
     get:
       tags:
         - Roles

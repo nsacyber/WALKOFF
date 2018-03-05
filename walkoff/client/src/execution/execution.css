@@ -1,0 +1,11 @@
+.executionMain {
+	padding: 10px 15px;
+}
+
+.executionMain ngx-datatable datatable-body datatable-body-row datatable-body-cell .datatable-body-cell-label {
+	white-space: initial;
+}
+
+.actionStatusModal > .modal-dialog {
+	width: 95%;
+}

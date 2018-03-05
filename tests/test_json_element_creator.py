@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from unittest import TestCase
 
-from walkoff.core.jsonelementcreator import JsonElementCreator
+from walkoff.executiondb.jsonelementcreator import JsonElementCreator
 
 
 class Base(object):

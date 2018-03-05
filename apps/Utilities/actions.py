@@ -98,6 +98,15 @@ def send_text_message(subject, message, users=None, roles=None):
     text = Text(message)
     message = Message(subject=subject, body=[text])
     send_message(message, users=users, roles=roles)
+    return 'success'
+
+
+@action
+def basic_request_user_approval(users=None, roles=None):
+    text = Text('A workflow requires your authentication')
+    message = Message(subject='Workflow awaiting approval', body=[text, AcceptDecline()])
+    send_message(message, users=users, roles=roles)
+    return 'success'
 
 
 @action
@@ -164,4 +173,5 @@ def send_full_message(message, users=None, roles=None):
 
 @action
 def accept_decline(action):
-    return action.lower() == 'accept'
+    r = action.lower() == 'accept'
+    return r, "Accepted" if r else "Declined"

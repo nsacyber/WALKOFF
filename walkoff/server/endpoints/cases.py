@@ -1,18 +1,32 @@
 import json
-import os
 
-from flask import request, current_app
+from flask import request, current_app, send_file
 from flask_jwt_extended import jwt_required
 
 import walkoff.case.database as case_database
 import walkoff.case.subscription as case_subscription
-import walkoff.config.paths
 from walkoff.case.subscription import delete_cases
-from walkoff.helpers import format_exception_message
-from walkoff.database import db
+from walkoff.serverdb import db
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
-from walkoff.database.casesubscription import CaseSubscription
+from walkoff.serverdb.casesubscription import CaseSubscription
+from walkoff.server.problem import Problem
+from walkoff.server.decorators import with_resource_factory
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
+
+def case_getter(case_id):
+    return case_database.case_db.session.query(case_database.Case) \
+        .filter(case_database.Case.id == case_id).first()
+
+
+with_case = with_resource_factory('case', case_getter)
+with_subscription = with_resource_factory(
+    'subscription',
+    lambda case_id: CaseSubscription.query.filter_by(id=case_id).first())
 
 
 def read_all_cases():
@@ -28,7 +42,11 @@ def create_case():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('cases', ['create']))
     def __func():
-        data = request.get_json()
+        if request.files and 'file' in request.files:
+            f = request.files['file']
+            data = json.loads(f.read().decode('utf-8'))
+        else:
+            data = request.get_json()
         case_name = data['name']
         case_obj = CaseSubscription.query.filter_by(name=case_name).first()
         if case_obj is None:
@@ -39,22 +57,27 @@ def create_case():
             return case.as_json(), OBJECT_CREATED
         else:
             current_app.logger.warning('Cannot create case {0}. Case already exists.'.format(case_name))
-            return {"error": "Case already exists."}, OBJECT_EXISTS_ERROR
+            return Problem.from_crud_resource(
+                OBJECT_EXISTS_ERROR,
+                'case',
+                'create',
+                'Case with name {} already exists.'.format(case_name))
 
     return __func()
 
 
-def read_case(case_id):
+def read_case(case_id, mode=None):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('cases', ['read']))
-    def __func():
-        case_obj = case_database.case_db.session.query(case_database.Case) \
-            .filter(case_database.Case.id == case_id).first()
-        if case_obj:
-            return case_obj.as_json(), SUCCESS
+    @with_case('read', case_id)
+    def __func(case_obj):
+        if mode == "export":
+            f = StringIO()
+            f.write(json.dumps(case_obj.as_json(), sort_keys=True, indent=4, separators=(',', ': ')))
+            f.seek(0)
+            return send_file(f, attachment_filename=case_obj.name + '.json', as_attachment=True), SUCCESS
         else:
-            current_app.logger.error('Cannot read case {0}. Case does not exist.'.format(case_id))
-            return {'error': 'Case does not exist.'}, OBJECT_DNE_ERROR
+            return case_obj.as_json(), SUCCESS
 
     return __func()
 
@@ -77,17 +100,25 @@ def update_case():
                 db.session.commit()
                 current_app.logger.debug('Case name changed from {0} to {1}'.format(original_name, data['name']))
             if 'subscriptions' in data:
-                case_obj.subscriptions = json.dumps(data['subscriptions'])
-                subscriptions = {subscription['uid']: subscription['events'] for subscription in data['subscriptions']}
+                case_obj.subscriptions = data['subscriptions']
+                subscriptions = {subscription['id']: subscription['events'] for subscription in data['subscriptions']}
                 for uid, events in subscriptions.items():
                     case_subscription.modify_subscription(case_name, uid, events)
             db.session.commit()
             return case_obj.as_json(), SUCCESS
         else:
             current_app.logger.error('Cannot update case {0}. Case does not exist.'.format(data['id']))
-            return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
+            return Problem.from_crud_resource(
+                OBJECT_DNE_ERROR,
+                'case.',
+                'update',
+                'Case {} does not exist.'.format(data['id']))
 
     return __func()
+
+
+def patch_case():
+    return update_case()
 
 
 def delete_case(case_id):
@@ -100,63 +131,14 @@ def delete_case(case_id):
             db.session.delete(case_obj)
             db.session.commit()
             current_app.logger.debug('Case deleted {0}'.format(case_id))
-            return {}, SUCCESS
+            return {}, NO_CONTENT
         else:
             current_app.logger.error('Cannot delete case {0}. Case does not exist.'.format(case_id))
-            return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
-
-    return __func()
-
-
-def import_cases():
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('cases', ['create']))
-    def __func():
-        data = request.get_json()
-        filename = (data['filename'] if (data is not None and 'filename' in data and data['filename'])
-                    else walkoff.config.paths.default_case_export_path)
-        if os.path.isfile(filename):
-            try:
-                with open(filename, 'r') as cases_file:
-                    cases_file = cases_file.read()
-                    cases_file = cases_file.replace('\n', '')
-                    cases = json.loads(cases_file)
-                case_subscription.add_cases(cases)
-                for case in cases:
-                    db.session.add(CaseSubscription(name=case))
-                    CaseSubscription.update(case)
-                db.session.commit()
-                return {"cases": case_subscription.subscriptions}, SUCCESS
-            except (OSError, IOError) as e:
-                current_app.logger.error('Error importing cases from file '
-                                         '{0}: {1}'.format(filename, format_exception_message(e)))
-                return {"error": "Error reading file."}, IO_ERROR
-            except ValueError as e:
-                current_app.logger.error('Error importing cases from file {0}: '
-                                         'Invalid JSON {1}'.format(filename, format_exception_message(e)))
-                return {"error": "Invalid JSON file."}, INVALID_INPUT_ERROR
-        else:
-            current_app.logger.debug('Cases successfully imported from {0}'.format(filename))
-            return {"error": "File does not exist."}, IO_ERROR
-
-    return __func()
-
-
-def export_cases():
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('cases', ['read']))
-    def __func():
-        data = request.get_json()
-        filename = (data['filename'] if (data is not None and 'filename' in data and data['filename'])
-                    else walkoff.config.paths.default_case_export_path)
-        try:
-            with open(filename, 'w') as cases_file:
-                cases_file.write(json.dumps(case_subscription.subscriptions))
-            current_app.logger.debug('Cases successfully exported to {0}'.format(filename))
-            return SUCCESS
-        except (OSError, IOError) as e:
-            current_app.logger.error('Error exporting cases to {0}: {1}'.format(filename, format_exception_message(e)))
-            return {"error": "Could not write to file."}, IO_ERROR
+            return Problem.from_crud_resource(
+                OBJECT_DNE_ERROR,
+                'case',
+                'delete',
+                'Case {} does not exist.'.format(case_id))
 
     return __func()
 
@@ -169,7 +151,10 @@ def read_all_events(case_id):
             result = case_database.case_db.case_events_as_json(case_id)
         except Exception:
             current_app.logger.error('Cannot get events for case {0}. Case does not exist.'.format(case_id))
-            return {"error": "Case does not exist."}, OBJECT_DNE_ERROR
+            return Problem(
+                OBJECT_DNE_ERROR,
+                'Could not read events for case.',
+                'Case {} does not exist.'.format(case_id))
 
         return result, SUCCESS
 

@@ -2,8 +2,9 @@ import json
 import logging
 
 from walkoff.events import WalkoffEvent
-from walkoff.database import Message, Role, User
-from walkoff.server.extensions import db
+from walkoff.serverdb.message import Message
+from walkoff.serverdb import Role, User
+from walkoff.extensions import db
 import walkoff.messaging
 
 logger = logging.getLogger(__name__)
@@ -13,14 +14,16 @@ logger = logging.getLogger(__name__)
 def save_message_callback(sender, **message_data):
     from walkoff.server import app
 
-    message_data = message_data['data']
+    workflow_data = message_data['data']['workflow']
+    message_data = message_data['data']['message']
     body = message_data['body']
+
     requires_action = strip_requires_response_from_message_body(body)
     if requires_action:
         walkoff.messaging.workflow_authorization_cache.add_authorized_users(
-            sender['workflow_execution_uid'], users=message_data['users'], roles=message_data['roles'])
+            workflow_data['execution_id'], users=message_data['users'], roles=message_data['roles'])
     with app.app_context():
-        save_message(body, message_data, sender['workflow_execution_uid'], requires_action)
+        save_message(body, message_data,workflow_data['execution_id'], requires_action)
 
 
 def strip_requires_response_from_message_body(body):
@@ -30,12 +33,12 @@ def strip_requires_response_from_message_body(body):
     return is_caching_required
 
 
-def save_message(body, message_data, workflow_execution_uid, requires_action):
+def save_message(body, message_data, workflow_execution_id, requires_action):
     users = get_all_matching_users_for_message(message_data['users'], message_data['roles'])
     if users:
         subject = message_data.get('subject', '')
         message_entry = Message(
-            subject, json.dumps(body), workflow_execution_uid, users, requires_reauth=message_data['requires_reauth'],
+            subject, json.dumps(body), workflow_execution_id, users, requires_reauth=message_data['requires_reauth'],
             requires_response=requires_action)
         db.session.add(message_entry)
         db.session.commit()
@@ -60,28 +63,28 @@ def get_all_matching_users_for_message(user_ids, role_ids):
 
 @WalkoffEvent.TriggerActionNotTaken.connect
 def pop_user_attempt_from_cache(sender, **data):
-    workflow_execution_uid = sender['workflow_execution_uid']
-    if walkoff.messaging.workflow_authorization_cache.workflow_requires_authorization(workflow_execution_uid):
-        walkoff.messaging.workflow_authorization_cache.pop_last_user_in_progress(workflow_execution_uid)
+    workflow_execution_id = data['data']['workflow_execution_id']
+    if walkoff.messaging.workflow_authorization_cache.workflow_requires_authorization(workflow_execution_id):
+        walkoff.messaging.workflow_authorization_cache.pop_last_user_in_progress(workflow_execution_id)
 
 
 @WalkoffEvent.TriggerActionTaken.connect
 def remove_from_cache_and_log(sender, **data):
-    workflow_execution_uid = sender['workflow_execution_uid']
-    if walkoff.messaging.workflow_authorization_cache.workflow_requires_authorization(workflow_execution_uid):
+    workflow_execution_id = data['data']['workflow_execution_id']
+    if walkoff.messaging.workflow_authorization_cache.workflow_requires_authorization(workflow_execution_id):
         from walkoff.server import app
         with app.app_context():
-            user_id = walkoff.messaging.workflow_authorization_cache.pop_last_user_in_progress(workflow_execution_uid)
-            walkoff.messaging.workflow_authorization_cache.remove_authorizations(workflow_execution_uid)
+            user_id = walkoff.messaging.workflow_authorization_cache.pop_last_user_in_progress(workflow_execution_id)
+            walkoff.messaging.workflow_authorization_cache.remove_authorizations(workflow_execution_id)
             if user_id is not None:
-                log_action_taken_on_message(user_id, workflow_execution_uid)
+                log_action_taken_on_message(user_id, workflow_execution_id)
             else:
                 logger.error('Workflow authorization cache invalid for {}. '
-                             'No users found in users queue'.format(workflow_execution_uid))
+                             'No users found in users queue'.format(workflow_execution_id))
 
 
-def log_action_taken_on_message(user_id, workflow_execution_uid):
-    message = Message.query.filter(Message.workflow_execution_uid == workflow_execution_uid).first()
+def log_action_taken_on_message(user_id, workflow_execution_id):
+    message = Message.query.filter(Message.workflow_execution_id == workflow_execution_id).first()
     user = User.query.filter(User.id == user_id).first()
     if user is not None:
         message.record_user_action(user, walkoff.messaging.MessageAction.respond)

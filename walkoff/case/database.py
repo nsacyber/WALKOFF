@@ -5,11 +5,10 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
-
 import walkoff.config.config
-from walkoff.config.paths import case_db_path
 from walkoff.helpers import format_db_path
-
+import walkoff.config.paths
+from walkoff.helpers import utc_as_rfc_datetime
 logger = logging.getLogger(__name__)
 
 Case_Base = declarative_base()
@@ -51,7 +50,7 @@ class Event(Case_Base):
     """
     __tablename__ = 'event'
     id = Column(Integer, primary_key=True)
-    timestamp = Column(DateTime, default=datetime.utcnow())
+    timestamp = Column(DateTime, default=datetime.utcnow)
     type = Column(String)
     originator = Column(String)
     message = Column(String)
@@ -70,9 +69,9 @@ class Event(Case_Base):
             The JSON representation of an Event object.
         """
         output = {'id': self.id,
-                  'timestamp': str(self.timestamp),
+                  'timestamp': utc_as_rfc_datetime(self.timestamp),
                   'type': self.type,
-                  'originator': self.originator,
+                  'originator': str(self.originator),
                   'message': self.message if self.message is not None else '',
                   'note': self.note if self.note is not None else ''}
         if self.data is not None:
@@ -88,12 +87,14 @@ class Event(Case_Base):
 
 
 class CaseDatabase(object):
-    """
-    Wrapper for the SQLAlchemy Case database object
+    """Wrapper for the SQLAlchemy Case database object
     """
 
+    __instance = None
+
     def __init__(self):
-        self.engine = create_engine(format_db_path(walkoff.config.config.case_db_type, case_db_path))
+        self.engine = create_engine(
+            format_db_path(walkoff.config.config.case_db_type, walkoff.config.paths.case_db_path))
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 
@@ -103,6 +104,11 @@ class CaseDatabase(object):
 
         Case_Base.metadata.bind = self.engine
         Case_Base.metadata.create_all(self.engine)
+
+    def __new__(cls, *args, **kwargs):
+        if cls.__instance is None:
+            cls.__instance = super(CaseDatabase, cls).__new__(cls)
+        return cls.__instance
 
     def tear_down(self):
         """ Tears down the database
@@ -165,6 +171,7 @@ class CaseDatabase(object):
             event (cls): A core.case.database.Event object to add to the cases
             cases (list[str]): The names of the cases to add the event to
         """
+        event.originator = str(event.originator)
         existing_cases = case_db.session.query(Case).all()
         existing_case_names = [case.name for case in existing_cases]
         for case in cases:
@@ -208,12 +215,14 @@ class CaseDatabase(object):
         return result
 
 
-def get_case_db(_singleton=CaseDatabase()):
+def get_case_db(_singleton=None):
     """ Singleton factory which returns the case database"""
+    if not _singleton:
+        _singleton = CaseDatabase()
     return _singleton
 
 
-case_db = get_case_db()
+case_db = None
 
 
 # Initialize Module

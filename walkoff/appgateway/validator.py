@@ -356,17 +356,19 @@ def validate_parameter(value, param, message_prefix):
     return converted_value
 
 
-def validate_parameters(api, inputs, message_prefix, accumulator=None):
+def validate_parameters(api, arguments, message_prefix, accumulator=None):
     api_dict = {}
     for param in api:
         api_dict[param['name']] = param
     converted = {}
     seen_params = set()
-    input_set = set(inputs.keys())
+    arg_names = [argument.name for argument in arguments] if arguments else []
+    arguments_set = set(arg_names)
     for param_name, param_api in api_dict.items():
-        if param_name in inputs:
-            arg_val = inputs[param_name].get_value(accumulator)
-            if accumulator or not inputs[param_name].is_ref():
+        argument = get_argument_by_name(arguments, param_name)
+        if argument:
+            arg_val = argument.get_value(accumulator)
+            if accumulator or not argument.is_ref():
                 converted[param_name] = validate_parameter(arg_val, param_api, message_prefix)
         elif 'default' in param_api:
             try:
@@ -379,33 +381,40 @@ def validate_parameters(api, inputs, message_prefix, accumulator=None):
                                            format_exception_message(e)))
 
             converted[param_name] = default_param
-            input_set.add(param_name)
+            arguments_set.add(param_name)
         elif 'required' in param_api:
             message = 'For {0}: Parameter {1} is not specified and has no default'.format(message_prefix, param_name)
             logger.error(message)
             raise InvalidArgument(message)
         else:
             converted[param_name] = None
-            input_set.add(param_name)
+            arguments_set.add(param_name)
         seen_params.add(param_name)
-    if seen_params != input_set:
-        message = 'For {0}: Too many inputs. Extra inputs: {1}'.format(message_prefix, input_set - seen_params)
+    if seen_params != arguments_set:
+        message = 'For {0}: Too many arguments. Extra arguments: {1}'.format(message_prefix, arguments_set - seen_params)
         logger.error(message)
         raise InvalidArgument(message)
     return converted
 
 
-def validate_app_action_parameters(api, inputs, app, action, accumulator=None):
+def get_argument_by_name(arguments, name):
+    for argument in arguments:
+        if argument.name == name:
+            return argument
+    return None
+
+
+def validate_app_action_parameters(api, arguments, app, action, accumulator=None):
     message_prefix = 'app {0} action {1}'.format(app, action)
-    return validate_parameters(api, inputs, message_prefix, accumulator)
+    return validate_parameters(api, arguments, message_prefix, accumulator)
 
 
-def validate_condition_parameters(api, inputs, condition, accumulator=None):
-    return validate_parameters(api, inputs, 'condition {0}'.format(condition), accumulator)
+def validate_condition_parameters(api, arguments, condition, accumulator=None):
+    return validate_parameters(api, arguments, 'condition {0}'.format(condition), accumulator)
 
 
-def validate_transform_parameters(api, inputs, transform, accumulator=None):
-    return validate_parameters(api, inputs, 'transform {0}'.format(transform), accumulator)
+def validate_transform_parameters(api, arguments, transform, accumulator=None):
+    return validate_parameters(api, arguments, 'transform {0}'.format(transform), accumulator)
 
 
 def validate_device_field(field_api, value, message_prefix):

@@ -42,11 +42,10 @@ Case:
 
 Subscription:
   type: object
-  required: [uid, events]
+  required: [id, events]
   properties:
-    uid:
-      description: Universal ID for the execution element  or 'controller' for the controller
-      type: string
+    id:
+      $ref: '#/definitions/Uuid'
     events:
       description: A list of events subscribed to
       type: array
@@ -59,7 +58,7 @@ Subscription:
 
 Event:
   type: object
-  required: [timestamp, event_type, originator, message, note, data]
+  required: [timestamp, type, message, note, data]
   properties:
     id:
       description: Unique identifier for the event
@@ -69,17 +68,18 @@ Event:
     timestamp:
       description: String representation of the time at which the event happened
       type: string
+      format: date-time
       readOnly: true
-      example: '2017-05-12 15:54:18.121421'
-    event_type:
+      example: '2017-05-12T15:54:18.121421Z'
+    type:
       description: The type of event
       type: string
       readOnly: true
-      enum: [System, Workflow, Action, Branch, Condition, Transform]
+      enum: [controller, workflow, action, branch, condition, transform]
       example: Action
     originator:
-      description: The UID of the execution element which caused this event
       type: string
+      description: A UUID used to identify a specific execution element
     message:
       description: The message attached to the event
       type: string

@@ -1,4 +1,4 @@
-/api/system:
+/system:
   get:
     tags:
       - System
@@ -11,7 +11,7 @@
     produces:
       - application/json
     responses:
-      '200':
+      200:
         description: Success
         schema:
           $ref: '#/definitions/SystemUsageDetails'

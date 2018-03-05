@@ -1,14 +1,20 @@
 from unittest import TestCase
+
 from walkoff.messaging import MessageAction
-from walkoff.database import User, db, MessageHistory
 from walkoff.server import flaskserver
+from walkoff.serverdb import db
+from walkoff.serverdb.user import User
+from walkoff.serverdb.message import MessageHistory
 from datetime import datetime
+from tests.util import execution_db_help
 
 
 class TestMessageHistoryDatabase(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        execution_db_help.setup_dbs()
+
         cls.context = flaskserver.app.test_request_context()
         cls.context.push()
         db.create_all()
@@ -35,6 +41,8 @@ class TestMessageHistoryDatabase(TestCase):
             db.session.delete(user)
         for message in MessageHistory.query.all():
             db.session.delete(message)
+
+        execution_db_help.tear_down_device_db()
 
     def assert_message_history_init_correct(self, message_history, action, user):
         self.assertEqual(message_history.action, action)
@@ -74,5 +82,7 @@ class TestMessageHistoryDatabase(TestCase):
         self.assertEqual(message_json['user_id'], self.user1.id)
         self.assertEqual(message_json['username'], self.user1.username)
         message_history = MessageHistory(self.user1, MessageAction.unread)
+        db.session.add(message_history)
+        db.session.commit()
         message_json = message_history.as_json()
         self.assertEqual(message_json['action'], 'unread')

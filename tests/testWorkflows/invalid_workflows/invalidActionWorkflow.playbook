@@ -2,34 +2,6 @@
     "name": "invalidActionWorkflow",
     "workflows": [
         {
-            "name": "multiactionWorkflow",
-            "branches": [
-                {
-                    "conditions": [
-                        {
-                            "action_name": "regMatch",
-                            "app_name": "HelloWorldBounded",
-                            "arguments": [
-                                {
-                                    "name": "regex",
-                                    "value": "(.*)"
-                                }
-                            ],
-                            "transforms": [
-                                {
-                                    "action_name": "length",
-                                    "app_name": "HelloWorldBounded",
-                                    "arguments": []
-                                }
-                            ]
-                        }
-                    ],
-                    "destination_uid": "1",
-                    "source_uid": "2",
-                    "status": "Success"
-                }
-            ],
-            "start": "2",
             "actions": [
                 {
                     "action_name": "invalid",
@@ -40,21 +12,28 @@
                             "value": "Hello World"
                         }
                     ],
-                    "name": "1",
-                    "position": {},
-                    "uid": "1",
-                    "device_id": 1
+                    "device_id": 1,
+                    "id": "4aa1a63e-cc09-4b90-9547-3947120b5126",
+                    "name": -2
                 },
                 {
                     "action_name": "helloWorld",
                     "app_name": "HelloWorldBounded",
                     "arguments": [],
-                    "name": "start",
-                    "position": {},
-                    "uid": "2",
-                    "device_id": 1
+                    "device_id": 1,
+                    "id": "85f33f9a-a5e1-484b-8add-3f7565a192a8",
+                    "name": "start"
                 }
-            ]
+            ],
+            "branches": [
+                {
+                    "destination_id": "4aa1a63e-cc09-4b90-9547-3947120b5126",
+                    "source_id": "85f33f9a-a5e1-484b-8add-3f7565a192a8",
+                    "status": "Success"
+                }
+            ],
+            "name": "multiactionWorkflow",
+            "start": "85f33f9a-a5e1-484b-8add-3f7565a192a8"
         }
     ]
 }

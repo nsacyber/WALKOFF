@@ -1,12 +1,15 @@
 from tests.util.servertestcase import ServerTestCase
-from walkoff.database import User, Role, Message, MessageHistory
-from walkoff.server.extensions import db
+from walkoff.serverdb import User, Role
+from walkoff.serverdb.message import Message, MessageHistory
+from walkoff.extensions import db
 from walkoff.server.returncodes import *
 from walkoff.server import flaskserver
 import json
 from walkoff.messaging import MessageActionEvent, MessageAction
 from datetime import timedelta
 from walkoff.server.endpoints.messages import max_notifications, min_notifications
+from tests.util import execution_db_help
+from sqlalchemy.exc import IntegrityError
 
 
 class UserWrapper(object):
@@ -22,6 +25,8 @@ class TestMessagingEndpoints(ServerTestCase):
 
     @classmethod
     def setUpClass(cls):
+        execution_db_help.setup_dbs()
+
         cls.context = flaskserver.app.test_request_context()
         cls.context.push()
         cls.app = flaskserver.app.test_client(cls)
@@ -34,7 +39,10 @@ class TestMessagingEndpoints(ServerTestCase):
         cls.role_r.set_resources([{'name': 'messages', 'permissions': ['read', 'update']}])
         db.session.add(cls.role_rd)
         db.session.add(cls.role_r)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
         cls.user1 = UserWrapper('username', 'password', roles=[cls.role_rd.id])
         cls.user2 = UserWrapper('username2', 'password2', roles=[cls.role_r.id])
         cls.user3 = UserWrapper('username3', 'password3')
@@ -42,7 +50,10 @@ class TestMessagingEndpoints(ServerTestCase):
         db.session.add(cls.user1.user)
         db.session.add(cls.user2.user)
         db.session.add(cls.user3.user)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
 
     @staticmethod
     def make_message(users, requires_reauth=False, requires_action=False):
@@ -62,7 +73,15 @@ class TestMessagingEndpoints(ServerTestCase):
         self.user1.messages = [self.message1, self.message2]
         self.user2.messages = [self.message2, self.message3]
         self.user3.messages = [self.message3]
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+        self.http_verb_lookup = {'get': self.app.get,
+                                 'post': self.app.post,
+                                 'put': self.app.put,
+                                 'delete': self.app.delete,
+                                 'patch': self.app.patch}
 
     def tearDown(self):
         db.session.rollback()
@@ -81,6 +100,8 @@ class TestMessagingEndpoints(ServerTestCase):
             db.session.delete(role)
         db.session.commit()
 
+        execution_db_help.tear_down_device_db()
+
     def login_user(self, user):
         post = self.app.post('/api/auth', content_type="application/json",
                              data=json.dumps(dict(username=user.username, password=user.password)), follow_redirects=True)
@@ -92,12 +113,12 @@ class TestMessagingEndpoints(ServerTestCase):
 
     def act_on_messages(self, action, user, validate=True, status_code=SUCCESS, messages=None):
         messages = user.messages if messages is None else messages
-        data = {'ids': [message.id for message in messages]}
+        data = {'ids': [message.id for message in messages], 'action': action}
         if validate:
-            self.post_with_status_check('/api/messages/{}'.format(action), headers=user.header, status_code=status_code,
+            self.put_with_status_check('/api/messages', headers=user.header, status_code=status_code,
                                         data=json.dumps(data), content_type='application/json')
         else:
-            self.app.post('/api/messages/{}'.format(action), headers=user.header,
+            self.app.put('/api/messages', headers=user.header,
                           data=json.dumps(data), content_type='application/json')
 
     def get_all_messages_for_user(self, user, status_code=SUCCESS):

@@ -2,17 +2,6 @@
     "name": "dataflowTestActionNotExecuted",
     "workflows": [
         {
-            "name": "dataflowWorkflow",
-            "branches": [
-                {
-                    "conditions": [],
-                    "destination_uid": "0ed91d07f1774d16a991d7815814fff1",
-                    "source_uid": "9fd0559779a84bd584c1ecd43b156656",
-                    "status": "Success",
-                    "uid": "3b4fca83078e4eb8881ee5c4e7ac50ed"
-                }
-            ],
-            "start": "9fd0559779a84bd584c1ecd43b156656",
             "actions": [
                 {
                     "action_name": "Add Three",
@@ -20,21 +9,41 @@
                     "arguments": [
                         {
                             "name": "num1",
-                            "reference": "9fd0559779a84bd584c1ecd43b156656"
+                            "value": 1.0
                         },
                         {
                             "name": "num2",
-                            "reference": "de45a29e29864b39998f60743055a452"
+                            "value": 2.0
                         },
                         {
                             "name": "num3",
                             "value": 3.0
                         }
                     ],
-                    "name": "1",
-                    "position": {},
-                    "uid": "0ed91d07f1774d16a991d7815814fff1",
-                    "device_id": 1
+                    "device_id": 1,
+                    "id": "96ae7509-1d86-45c8-a938-19ca2a293dc0",
+                    "name": "start"
+                },
+                {
+                    "action_name": "Add Three",
+                    "app_name": "HelloWorldBounded",
+                    "arguments": [
+                        {
+                            "name": "num1",
+                            "reference": "96ae7509-1d86-45c8-a938-19ca2a293dc0"
+                        },
+                        {
+                            "name": "num2",
+                            "reference": "8ef77f8c-faef-441a-8a52-b31fa9874c1f"
+                        },
+                        {
+                            "name": "num3",
+                            "value": 3.0
+                        }
+                    ],
+                    "device_id": 1,
+                    "id": "d3dccc61-bb03-43b2-b8be-c1a284f07cdf",
+                    "name": "1"
                 },
                 {
                     "action_name": "Add Three",
@@ -53,35 +62,20 @@
                             "value": 3.0
                         }
                     ],
-                    "name": "start",
-                    "position": {},
-                    "uid": "9fd0559779a84bd584c1ecd43b156656",
-                    "device_id": 1
-                },
-                {
-                    "action_name": "Add Three",
-                    "app_name": "HelloWorldBounded",
-                    "arguments": [
-                        {
-                            "name": "num1",
-                            "value": 1.0
-                        },
-                        {
-                            "name": "num2",
-                            "value": 2.0
-                        },
-                        {
-                            "name": "num3",
-                            "value": 3.0
-                        }
-                    ],
-                    "name": "2",
-                    "position": {},
-                    "uid": "de45a29e29864b39998f60743055a452",
-                    "device_id": 1
+                    "device_id": 1,
+                    "id": "8ef77f8c-faef-441a-8a52-b31fa9874c1f",
+                    "name": "2"
                 }
             ],
-            "uid": "06e80ec0a9b543d29dcd227f04a9c90e"
+            "branches": [
+                {
+                    "destination_id": "d3dccc61-bb03-43b2-b8be-c1a284f07cdf",
+                    "source_id": "96ae7509-1d86-45c8-a938-19ca2a293dc0",
+                    "status": "Success"
+                }
+            ],
+            "name": "dataflowWorkflow",
+            "start": "96ae7509-1d86-45c8-a938-19ca2a293dc0"
         }
     ]
 }

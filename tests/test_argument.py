@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from walkoff.core.argument import Argument
+from walkoff.executiondb.argument import Argument
 from walkoff.helpers import InvalidArgument
 
 
@@ -35,8 +35,8 @@ class TestArgument(TestCase):
         self.assert_init_equals(arg, 'test_name', value=5)
 
     def test_init_with_reference(self):
-        arg = Argument('test_name', reference='some_uid')
-        self.assert_init_equals(arg, 'test_name', reference='some_uid')
+        arg = Argument('test_name', reference='some_id')
+        self.assert_init_equals(arg, 'test_name', reference='some_id')
 
     def test_init_with_reference_empty(self):
         arg = Argument('test_name', value=5, reference='')
@@ -47,8 +47,8 @@ class TestArgument(TestCase):
         self.assert_init_equals(arg, 'test_name', value=5)
 
     def test_init_with_selection(self):
-        arg = Argument('test_name', reference='some_uid', selection=[1, 'a', 2])
-        self.assert_init_equals(arg, 'test_name', reference='some_uid', selection=[1, 'a', 2])
+        arg = Argument('test_name', reference='some_id', selection=[1, 'a', 2])
+        self.assert_init_equals(arg, 'test_name', reference='some_id', selection=[1, 'a', 2])
 
     def test_get_next_selection_key_on_dict(self):
         self.assertEqual(Argument._get_next_selection({'a': 1, '2': 'something'}, 'a'), 1)
@@ -76,30 +76,30 @@ class TestArgument(TestCase):
             Argument._get_next_selection(['a', 1, '2', 'something'], 10)
 
     def test_select_one_on_list(self):
-        arg = Argument('test', reference='some_uid', selection=[1])
+        arg = Argument('test', reference='some_id', selection=[1])
         self.assertEqual(arg._select(['a', 'b', 'c']), 'b')
 
     def test_select_one_on_list_out_of_range(self):
-        arg = Argument('test', reference='some_uid', selection=[10])
+        arg = Argument('test', reference='some_id', selection=[10])
         with self.assertRaises(InvalidArgument):
             arg._select(['a', 'b', 'c'])
 
     def test_select_one_on_dict(self):
-        arg = Argument('test', reference='some_uid', selection=['b'])
+        arg = Argument('test', reference='some_id', selection=['b'])
         self.assertEqual(arg._select({'a': 1, 'b': 2, 'c': 3}), 2)
 
     def test_select_one_on_dict_key_error(self):
-        arg = Argument('test', reference='some_uid', selection=['d'])
+        arg = Argument('test', reference='some_id', selection=['d'])
         with self.assertRaises(InvalidArgument):
             arg._select({'a': 1, 'b': 2, 'c': 3})
 
     def test_select_one_on_value(self):
-        arg = Argument('test', reference='some_uid', selection=['d'])
+        arg = Argument('test', reference='some_id', selection=['d'])
         with self.assertRaises(InvalidArgument):
             arg._select('some raw value')
 
     def test_select(self):
-        arg = Argument('test', reference='some_uid', selection=['a', 0, '1', 'b'])
+        arg = Argument('test', reference='some_id', selection=['a', 0, '1', 'b'])
         input_ = {'a': [[{'one': 1},
                          {'three': 3, 'b': 4}],
                         [{'one': 1}, {'two': 2}]],
@@ -108,7 +108,7 @@ class TestArgument(TestCase):
         self.assertEqual(arg._select(input_), 4)
 
     def test_select_selection_too_deep(self):
-        arg = Argument('test', reference='some_uid', selection=['a', 0, '1', 'b', 10])
+        arg = Argument('test', reference='some_id', selection=['a', 0, '1', 'b', 10])
         input_ = {'a': [[{'one': 1},
                          {'three': 3, 'b': 4}],
                         [{'one': 1}, {'two': 2}]],

@@ -2,16 +2,16 @@ import json
 import threading
 
 import gevent
-from google.protobuf.json_format import MessageToDict
 from zmq.utils.strtypes import cast_unicode
 
-from walkoff.core.argument import Argument
+from walkoff import executiondb
 from walkoff.events import WalkoffEvent
-from walkoff.core.multiprocessedexecutor import loadbalancer
-from walkoff.core.multiprocessedexecutor.worker import convert_to_protobuf, recreate_workflow
-from walkoff.proto.build import data_pb2
+from walkoff.multiprocessedexecutor import loadbalancer
+from walkoff.multiprocessedexecutor.worker import convert_to_protobuf
 from walkoff.cache import RedisCacheAdapter
 from fakeredis import FakeStrictRedis
+from walkoff.executiondb.workflow import Workflow
+from walkoff.executiondb.saved_workflow import SavedWorkflow
 try:
     from Queue import Queue
 except ImportError:
@@ -20,7 +20,7 @@ except ImportError:
 workflows_executed = 0
 
 
-def mock_initialize_threading(self, pids):
+def mock_initialize_threading(self, pids=None):
     global workflows_executed
     workflows_executed = 0
 
@@ -46,7 +46,7 @@ def mock_wait_and_reset(self, num_workflows):
 
 def mock_shutdown_pool(self):
     if self.manager_thread and self.manager_thread.is_alive():
-        self.manager.pending_workflows.put("Exit")
+        self.manager.pending_workflows.put(("Exit", "Exit", "Exit", "Exit", "Exit"))
         self.manager_thread.join(timeout=1)
     self.threading_is_initialized = False
     WalkoffEvent.CommonWorkflowSignal.signal.receivers = {}
@@ -57,10 +57,9 @@ def mock_shutdown_pool(self):
 class MockLoadBalancer(object):
     def __init__(self):
         self.pending_workflows = MockRequestQueue()
-        # self.comm_queue = MockCommQueue()
         self.results_queue = MockReceiveQueue()
         self.workflow_comms = {}
-        self.exec_uid = ''
+        self.exec_id = ''
 
         def handle_data_sent(sender, **kwargs):
             self.on_data_sent(sender, **kwargs)
@@ -70,83 +69,64 @@ class MockLoadBalancer(object):
             WalkoffEvent.CommonWorkflowSignal.connect(handle_data_sent)
 
     def on_data_sent(self, sender, **kwargs):
-        if self.exec_uid or not hasattr(sender, "_execution_uid"):
-            packet_bytes = convert_to_protobuf(sender, self.exec_uid, **kwargs)
+        workflow = self.workflow_comms[self.exec_id]
+        if kwargs['event'] in [WalkoffEvent.TriggerActionAwaitingData, WalkoffEvent.WorkflowPaused]:
+            saved_workflow = SavedWorkflow(workflow_execution_id=workflow.get_execution_id(),
+                                           workflow_id=workflow.id,
+                                           action_id=workflow.get_executing_action_id(),
+                                           accumulator=workflow.get_accumulator(),
+                                           app_instances=workflow.get_instances())
+            executiondb.execution_db.session.add(saved_workflow)
+            executiondb.execution_db.session.commit()
+
+        if self.exec_id or not hasattr(sender, "_execution_id"):
+            packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
         else:
-            packet_bytes = convert_to_protobuf(sender, sender.get_execution_uid(), **kwargs)
-        message_outer = data_pb2.Message()
-        message_outer.ParseFromString(packet_bytes)
+            workflow = self.workflow_comms[sender.get_execution_id()]
+            packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
 
-        if message_outer.type == data_pb2.Message.WORKFLOWPACKET:
-            message = message_outer.workflow_packet
-        elif message_outer.type == data_pb2.Message.WORKFLOWPACKETDATA:
-            message = message_outer.workflow_packet_data
-        elif message_outer.type == data_pb2.Message.ACTIONPACKET:
-            message = message_outer.action_packet
-        elif message_outer.type == data_pb2.Message.ACTIONPACKETDATA:
-            message = message_outer.action_packet_data
-        else:
-            message = message_outer.general_packet
+        self.results_queue.send(packet_bytes)
 
-        sender = message.sender
-        self.results_queue.send(sender, kwargs)
-
-    def add_workflow(self, workflow_json):
-        self.pending_workflows.put(workflow_json)
+    def add_workflow(self, workflow_id, workflow_execution_id, start=None, start_arguments=None, resume=False):
+        self.pending_workflows.put((workflow_id, workflow_execution_id, start, start_arguments, resume))
 
     def manage_workflows(self):
         while True:
-            workflow_json = self.pending_workflows.recv()
-            if workflow_json == "Exit":
+            workflow_id, workflow_execution_id, start, start_arguments, resume = self.pending_workflows.recv()
+            if workflow_id == "Exit":
                 return
 
-            exec_uid = workflow_json['execution_uid']
+            executiondb.execution_db.session.expire_all()
+            workflow = executiondb.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
 
-            workflow, start_arguments = recreate_workflow(workflow_json)
-            self.workflow_comms[exec_uid] = workflow
+            self.workflow_comms[workflow_execution_id] = workflow
 
-            self.exec_uid = exec_uid
+            self.exec_id = workflow_execution_id
 
-            workflow.execute(execution_uid=workflow.get_execution_uid(), start=workflow.start,
-                             start_arguments=start_arguments)
-            self.exec_uid = ''
+            start = start if start else workflow.start
+            workflow.execute(execution_id=workflow_execution_id, start=start, start_arguments=start_arguments, resume=resume)
+            self.exec_id = ''
 
-    def pause_workflow(self, workflow_execution_uid):
-        if workflow_execution_uid in self.workflow_comms:
-            self.workflow_comms[workflow_execution_uid].pause()
+    def pause_workflow(self, workflow_execution_id):
+        if workflow_execution_id in self.workflow_comms:
+            self.workflow_comms[workflow_execution_id].pause()
 
-    def resume_workflow(self, workflow_execution_uid):
-        if workflow_execution_uid in self.workflow_comms:
-            self.workflow_comms[workflow_execution_uid].resume()
-
-    def send_data_to_trigger(self, data_in, workflow_uids, arguments=None):
-        data = dict()
-        data['data_in'] = data_in
-        arg_objects = []
-        if arguments:
-            for arg in arguments:
-                arg_objects.append(Argument(**arg))
-        data["arguments"] = arg_objects
-        for uid in workflow_uids:
-            if uid in self.workflow_comms:
-                self.workflow_comms[uid].send_data_to_action(data)
+    def abort_workflow(self, workflow_execution_id):
+        self.workflow_comms[workflow_execution_id].abort()
+        return True
 
 
 class MockReceiveQueue(loadbalancer.Receiver):
+
     def __init__(self):
         pass
 
-    def send(self, sender, kwargs):
+    def send(self, packet):
+        self.send_callback(packet)
+
+    def _increment_execution_count(self):
         global workflows_executed
-        event = kwargs['event']
-        sender = MessageToDict(sender, preserving_proto_field_name=True)
-        if event is not None:
-            if event.requires_data():
-                event.send(sender, data=kwargs['data'])
-            else:
-                event.send(sender)
-            if event == WalkoffEvent.WorkflowShutdown:
-                workflows_executed += 1
+        workflows_executed += 1
 
 
 class MockRequestQueue(object):

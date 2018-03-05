@@ -6,8 +6,9 @@ from os.path import join
 import walkoff.appgateway
 import walkoff.config.paths
 from walkoff.helpers import *
-from tests.config import test_workflows_path, test_apps_path
+from tests.config import test_apps_path
 from tests.util.assertwrappers import orderless_list_compare
+from walkoff.server.flaskserver import handle_database_errors, handle_generic_server_error
 
 
 class TestHelperFunctions(unittest.TestCase):
@@ -44,30 +45,30 @@ class TestHelperFunctions(unittest.TestCase):
     #         instance = Instance.create('HelloWorld', 'default_device_name')
     #     self.assertIsNone(load_app_function(instance(), 'JunkFunctionName'))
 
-    def test_locate_workflows(self):
-        expected_workflows = ['basicWorkflowTest.playbook',
-                              'DailyQuote.playbook',
-                              'dataflowTest.playbook',
-                              'dataflowTestActionNotExecuted.playbook',
-                              'loopWorkflow.playbook',
-                              'multiactionWorkflowTest.playbook',
-                              'pauseWorkflowTest.playbook',
-                              'multiactionError.playbook',
-                              'simpleDataManipulationWorkflow.playbook',
-                              'templatedWorkflowTest.playbook',
-                              'testExecutionWorkflow.playbook',
-                              'testScheduler.playbook']
-        received_workflows = locate_playbooks_in_directory(test_workflows_path)
-        orderless_list_compare(self, received_workflows, expected_workflows)
-
-        self.assertListEqual(locate_playbooks_in_directory('.'), [])
-
-    def test_get_workflow_names_from_file(self):
-        workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'basicWorkflowTest.playbook'))
-        self.assertListEqual(workflows, ['helloWorldWorkflow'])
-
-        workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'junkfileName.playbook'))
-        self.assertListEqual(workflows, [])
+    # def test_locate_workflows(self):
+    #     expected_workflows = ['basicWorkflowTest.playbook',
+    #                           'DailyQuote.playbook',
+    #                           'dataflowTest.playbook',
+    #                           'dataflowTestActionNotExecuted.playbook',
+    #                           'loopWorkflow.playbook',
+    #                           'multiactionWorkflowTest.playbook',
+    #                           'pauseWorkflowTest.playbook',
+    #                           'multiactionError.playbook',
+    #                           'simpleDataManipulationWorkflow.playbook',
+    #                           'templatedWorkflowTest.playbook',
+    #                           'testExecutionWorkflow.playbook',
+    #                           'testScheduler.playbook']
+    #     received_workflows = locate_playbooks_in_directory(test_workflows_path)
+    #     orderless_list_compare(self, received_workflows, expected_workflows)
+    #
+    #     self.assertListEqual(locate_playbooks_in_directory('.'), [])
+    #
+    # def test_get_workflow_names_from_file(self):
+    #     workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'basicWorkflowTest.playbook'))
+    #     self.assertListEqual(workflows, ['helloWorldWorkflow'])
+    #
+    #     workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'junkfileName.playbook'))
+    #     self.assertListEqual(workflows, [])
 
     def test_list_apps(self):
         expected_apps = ['HelloWorld', 'DailyQuote', 'HelloWorldBounded']
@@ -187,10 +188,10 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertEqual(create_sse_event(), '')
 
     def test_create_sse_event_id_only(self):
-        self.assertEqual(create_sse_event(event_id=1), 'id: 1\n\n')
+        self.assertEqual(create_sse_event(event_id=1), 'id: 1\ndata: ""\n\n')
 
     def test_create_sse_event_only(self):
-        self.assertEqual(create_sse_event(event='some_event'), 'event: some_event\n\n')
+        self.assertEqual(create_sse_event(event='some_event'), 'event: some_event\ndata: ""\n\n')
 
     def test_create_sse_data_only_non_json(self):
         self.assertEqual(create_sse_event(data=42), 'data: 42\n\n')
@@ -222,4 +223,29 @@ class TestHelperFunctions(unittest.TestCase):
 
         self.assertDictEqual(split_args, {'args': set(), 'kwargs': set(), 'keywords': 'kwargs', 'varargs': 'args'})
 
+    def test_database_connection_error_handler(self):
+        from sqlalchemy.exc import SQLAlchemyError
+        class DbException(SQLAlchemyError): pass
 
+        response = handle_database_errors(DbException())
+        self.assertEqual(response.status_code, 500)
+        body = json.loads(response.response[0].decode('utf-8'))
+        expected = {
+            'type': 'about:blank',
+            'status': 500,
+            'title': 'A database error occurred.',
+            'detail': 'DbException'}
+        self.assertDictEqual(body, expected)
+
+    def test_server_error_handler(self):
+        class SomeException(Exception): pass
+
+        response = handle_generic_server_error(SomeException())
+        self.assertEqual(response.status_code, 500)
+        body = json.loads(response.response[0].decode('utf-8'))
+        expected = {
+            'type': 'about:blank',
+            'status': 500,
+            'title': 'An error occurred in the server.',
+            'detail': 'SomeException'}
+        self.assertDictEqual(body, expected)

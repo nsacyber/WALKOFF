@@ -2,12 +2,12 @@ from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from walkoff.server.returncodes import *
-from walkoff.database import add_user
-from walkoff.server.extensions import db
-from walkoff.database.user import User
+from walkoff.serverdb import add_user
+from walkoff.extensions import db
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions, admin_required
 from walkoff.server.decorators import with_resource_factory
-
+from walkoff.serverdb.user import User
+from walkoff.server.problem import Problem
 
 with_user = with_resource_factory('user', lambda user_id: User.query.filter_by(id=user_id).first())
 
@@ -37,8 +37,12 @@ def create_user():
             current_app.logger.info('User added: {0}'.format(user.as_json()))
             return user.as_json(), OBJECT_CREATED
         else:
-            current_app.logger.warning('Could not create user {0}. User already exists.'.format(username))
-            return {"error": "User {0} already exists.".format(username)}, OBJECT_EXISTS_ERROR
+            current_app.logger.warning('Cannot create user {0}. User already exists.'.format(username))
+            return Problem.from_crud_resource(
+                OBJECT_EXISTS_ERROR,
+                'user',
+                'create',
+                'User with username {} already exists'.format(username))
 
     return __func()
 
@@ -65,21 +69,29 @@ def update_user():
         if user.id == current_user:
             return update_user_fields(data, user)
         else:
-            message, return_code = role_update_user_fields(data, user, update=True)
-            if return_code == FORBIDDEN_ERROR:
+            response = role_update_user_fields(data, user, update=True)
+            if isinstance(response, tuple) and response[1] == FORBIDDEN_ERROR:
                 current_app.logger.error('User {0} does not have permission to '
                                          'update user {1}'.format(current_user, user.id))
-                return {"error": 'Insufficient Permissions'}, FORBIDDEN_ERROR
+                return Problem.from_crud_resource(
+                    FORBIDDEN_ERROR,
+                    'user',
+                    'update',
+                    'Current user does not have permission to update user {}.'.format(user_id))
             else:
-                return message, return_code
+                return response
 
     return __func()
+
+
+def patch_user():
+    return update_user()
 
 
 @admin_required
 def role_update_user_fields(data, user, update=False):
     if 'roles' in data:
-        user.set_roles(data['roles'])
+        user.set_roles([role['id'] for role in data['roles']])
     if 'active' in data:
         user.active = data['active']
     if update:
@@ -93,13 +105,17 @@ def update_user_fields(data, user):
         if user_db is None or user_db.id == user.id:
             user.username = data['username']
         else:
-            return {"error": "Username is taken"}, BAD_REQUEST
+            return Problem(BAD_REQUEST, 'Cannot update user.', 'Username {} is already taken.'.format(data['username']))
     if 'old_password' in data and 'password' in data:
         if user.verify_password(data['old_password']):
             user.password = data['password']
         else:
             user.username = original_username
-            return {"error": "User's current password was entered incorrectly."}, BAD_REQUEST
+            return Problem.from_crud_resource(
+                UNAUTHORIZED_ERROR,
+                'user',
+                'update',
+                'Current password is incorrect.')
     db.session.commit()
     current_app.logger.info('Updated user {0}. Updated to: {1}'.format(user.id, user.as_json()))
     return user.as_json(), SUCCESS
@@ -114,9 +130,13 @@ def delete_user(user_id):
             db.session.delete(user)
             db.session.commit()
             current_app.logger.info('User {0} deleted'.format(user.username))
-            return {}, SUCCESS
+            return {}, NO_CONTENT
         else:
             current_app.logger.error('Could not delete user {0}. User is current user.'.format(user.id))
-            return {"error": 'User {0} is current user.'.format(user.username)}, FORBIDDEN_ERROR
+            return Problem.from_crud_resource(
+                FORBIDDEN_ERROR,
+                'user',
+                'delete',
+                'Current user cannot delete self.')
 
     return __func()

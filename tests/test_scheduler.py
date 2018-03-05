@@ -1,11 +1,11 @@
 import unittest
 
-from walkoff.core.scheduler import *
+from walkoff.scheduler import *
 
 
 class MockWorkflow(object):
-    def __init__(self, uid, name=''):
-        self.uid = uid
+    def __init__(self, id_, name=''):
+        self.id = id_
         self.name = name
         self.other = 'other'
         self.children = []
@@ -14,13 +14,13 @@ class MockWorkflow(object):
         pass
 
     def read(self, reader=None):
-        return {'name': self.name, 'uid': self.uid, 'other': self.other}
+        return {'name': self.name, 'id': self.id, 'other': self.other}
 
     def as_json(self):
-        return {'name': self.name, 'uid': self.uid, 'other': self.other}
+        return {'name': self.name, 'id': self.id, 'other': self.other}
 
 
-def execute(playbook_name, workflow_name):
+def execute(workflow_id):
     pass
 
 
@@ -31,7 +31,7 @@ class TestScheduler(unittest.TestCase):
         self.trigger2 = DateTrigger(run_date='2050-12-31 23:59:59')
 
     def test_init(self):
-        self.assertEqual(self.scheduler.uid, 'controller')
+        self.assertEqual(self.scheduler.id, 'controller')
 
     def assertSchedulerHasJobs(self, expected_jobs):
         self.assertSetEqual({job.id for job in self.scheduler.scheduler.get_jobs()}, expected_jobs)
@@ -40,8 +40,7 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(self.scheduler.scheduler.state, state)
 
     def add_tasks(self, task_id, workflow_ids, trigger):
-        workflows = [(i, i + 1, uid) for i, uid in enumerate(workflow_ids)]
-        self.scheduler.schedule_workflows(task_id, execute, workflows, trigger)
+        self.scheduler.schedule_workflows(task_id, execute, workflow_ids, trigger)
 
     def add_task_set_one(self):
         task_id = 'task'
@@ -179,3 +178,4 @@ class TestScheduler(unittest.TestCase):
         self.scheduler.pause()
         self.assertEqual(self.scheduler.resume(), STATE_RUNNING)
         self.assertSchedulerStateIs(STATE_RUNNING)
+    

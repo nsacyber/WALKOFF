@@ -1,13 +1,18 @@
 from datetime import datetime
 
-from flask import Blueprint
+from flask import Blueprint, Response
 from flask_jwt_extended import get_jwt_identity
+from gevent import sleep
+from gevent.event import Event, AsyncResult
 from enum import Enum, unique
+from walkoff.helpers import create_sse_event
 from walkoff.security import jwt_required_in_query
 from walkoff.messaging import MessageActionEvent
-from walkoff.sse import FilteredSseStream
 
 notifications_page = Blueprint('notifications_page', __name__)
+
+notification_event_result = AsyncResult()
+sync_signal = Event()
 
 
 @unique
@@ -17,41 +22,55 @@ class NotificationSseEvent(Enum):
     responded = 3
 
 
-sse_stream = FilteredSseStream('notifications')
+def notification_event_stream(user_id):
+    sync_signal.wait()
+    event_id = 1
+    while True:
+        user_ids, event, data = notification_event_result.get()
+        if user_id in user_ids:
+            yield create_sse_event(event_id=event_id, event=event.name, data=data)
+            event_id += 1
+        sync_signal.wait()
+
+
+def send_sse(user_id, event, data):
+    notification_event_result.set((user_id, event, data))
+    sleep(0)
+    sync_signal.set()
+    sync_signal.clear()
+    sleep(0)
 
 
 @MessageActionEvent.created.connect
-@sse_stream.push(NotificationSseEvent.created.name)
 def message_created_callback(message, **data):
     result = {'id': message.id,
               'subject': message.subject,
-              'created_at': str(message.created_at),
+              'created_at': message.created_at.isoformat(),
               'is_read': False,
               'awaiting_response': message.requires_response}
-    return result, {user.id for user in message.users}
-
-
-def format_read_responded_data(message, data):
-    user = data['data']['user']
-    return {'id': message.id,
-            'username': user.username,
-            'timestamp': str(datetime.utcnow())}
+    send_sse({user.id for user in message.users}, NotificationSseEvent.created, result)
 
 
 @MessageActionEvent.responded.connect
-@sse_stream.push(NotificationSseEvent.responded.name)
 def message_responded_callback(message, **data):
-    return format_read_responded_data(message, data), {user.id for user in message.users}
+    user = data['data']['user']
+    result = {'id': message.id,
+              'username': user.username,
+              'timestamp': datetime.utcnow().isoformat()}
+    send_sse({user.id for user in message.users}, NotificationSseEvent.responded, result)
 
 
 @MessageActionEvent.read.connect
-@sse_stream.push(NotificationSseEvent.read.name)
 def message_read_callback(message, **data):
-    return format_read_responded_data(message, data), {user.id for user in message.users}
+    user = data['data']['user']
+    result = {'id': message.id,
+              'username': user.username,
+              'timestamp': datetime.utcnow().isoformat()}
+    send_sse({user.id for user in message.users}, NotificationSseEvent.read, result)
 
 
-@notifications_page.route('/stream', methods=['GET'])
+@notifications_page.route('/notifications', methods=['GET'])
 @jwt_required_in_query('access_token')
-def stream_notifications():
+def stream_workflow_success_events():
     user_id = get_jwt_identity()
-    return sse_stream.stream(subchannel=user_id)
+    return Response(notification_event_stream(user_id), mimetype='text/event-stream')

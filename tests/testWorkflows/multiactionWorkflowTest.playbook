@@ -2,37 +2,6 @@
     "name": "multiactionWorkflowTest",
     "workflows": [
         {
-            "name": "multiactionWorkflow",
-            "branches": [
-                {
-                    "conditions": [
-                        {
-                            "action_name": "regMatch",
-                            "app_name": "HelloWorldBounded",
-                            "arguments": [
-                                {
-                                    "name": "regex",
-                                    "value": "(.*)"
-                                }
-                            ],
-                            "transforms": [
-                                {
-                                    "action_name": "length",
-                                    "app_name": "HelloWorldBounded",
-                                    "arguments": [],
-                                    "uid": "fead248eba064defbf25b33cccc734fc"
-                                }
-                            ],
-                            "uid": "8f698454d6a74978a730f9f4e429e1f6"
-                        }
-                    ],
-                    "destination_uid": "01204c1451c44f99b828b2367690801b",
-                    "source_uid": "704c94c112fa49c3a4a3b30cf1586fc2",
-                    "status": "Success",
-                    "uid": "f54edf0644ae4bd4878de898bf3997a7"
-                }
-            ],
-            "start": "704c94c112fa49c3a4a3b30cf1586fc2",
             "actions": [
                 {
                     "action_name": "repeatBackToMe",
@@ -43,22 +12,28 @@
                             "value": "Hello World"
                         }
                     ],
-                    "name": "1",
-                    "position": {},
-                    "uid": "01204c1451c44f99b828b2367690801b",
-                    "device_id": 1
+                    "device_id": 1,
+                    "id": "f459f3be-cb1e-4c9b-982e-8ef6a6ce7474",
+                    "name": "1"
                 },
                 {
                     "action_name": "helloWorld",
                     "app_name": "HelloWorldBounded",
                     "arguments": [],
-                    "name": "start",
-                    "position": {},
-                    "uid": "704c94c112fa49c3a4a3b30cf1586fc2",
-                    "device_id": 1
+                    "device_id": 1,
+                    "id": "7dfe5bea-deb0-4668-8cc3-eaf7357e6242",
+                    "name": "start"
                 }
             ],
-            "uid": "81f0ae4aaf4b4eda905d35cbab0cd36d"
+            "branches": [
+                {
+                    "destination_id": "f459f3be-cb1e-4c9b-982e-8ef6a6ce7474",
+                    "source_id": "7dfe5bea-deb0-4668-8cc3-eaf7357e6242",
+                    "status": "Success"
+                }
+            ],
+            "name": "multiactionWorkflow",
+            "start": "7dfe5bea-deb0-4668-8cc3-eaf7357e6242"
         }
     ]
 }

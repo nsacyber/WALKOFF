@@ -5,24 +5,15 @@ from walkoff.helpers import format_exception_message
 
 logger = logging.getLogger(__name__)
 
-"""
-States
-"""
-OK = 1
-SHUTDOWN = 0
-ERROR = -1
-
 
 class AppInstance(object):
-    def __init__(self, instance=None, state=1):
+    def __init__(self, instance=None):
         """Initializes a new Instance of an App.
         
         Args:
             instance (Class): This is an instance of an App's module.
-            state (int, optional): The state of the Instance. 1 is OK, 0 is SHUTDOWN, and -1 is ERROR. Defaults to OK.
         """
         self.instance = instance
-        self.state = state
 
     @staticmethod
     def create(app_name, device_name):
@@ -36,12 +27,12 @@ class AppInstance(object):
             A new Instance object.
         """
         try:
-            return AppInstance(instance=get_app(app_name)(name=app_name, device=device_name), state=OK)
+            return AppInstance(instance=get_app(app_name)(name=app_name, device=device_name))
         except Exception as e:
             if device_name:
                 logger.error('Cannot create app instance. app: {0}, device: {1}. '
                              'Error: {2}'.format(app_name, device_name, format_exception_message(e)))
-            return AppInstance(instance=None, state=OK)
+            return AppInstance(instance=None)
 
     def __call__(self):
         return self.instance
@@ -50,9 +41,6 @@ class AppInstance(object):
         """Shuts down the Instance object.
         """
         self.instance.shutdown()
-        self.state = 0
 
     def __repr__(self):
-        output = {'instance': str(self.instance),
-                  'state': str(self.state)}
-        return str(output)
+        return str({'instance': str(self.instance)})

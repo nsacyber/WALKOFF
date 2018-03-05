@@ -18,7 +18,7 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='data.proto',
   package='core',
-  serialized_pb=_b('\n\ndata.proto\x12\x04\x63ore\"\x83\x03\n\x07Message\x12 \n\x04type\x18\x01 \x01(\x0e\x32\x12.core.Message.Type\x12\x12\n\nevent_name\x18\x02 \x01(\t\x12/\n\x0fworkflow_packet\x18\x03 \x01(\x0b\x32\x14.core.WorkflowPacketH\x00\x12+\n\raction_packet\x18\x04 \x01(\x0b\x32\x12.core.ActionPacketH\x00\x12-\n\x0egeneral_packet\x18\x05 \x01(\x0b\x32\x13.core.GeneralPacketH\x00\x12+\n\x0emessage_packet\x18\x06 \x01(\x0b\x32\x11.core.UserMessageH\x00\"~\n\x04Type\x12\x12\n\x0eWORKFLOWPACKET\x10\x01\x12\x16\n\x12WORKFLOWPACKETDATA\x10\x02\x12\x10\n\x0c\x41\x43TIONPACKET\x10\x03\x12\x14\n\x10\x41\x43TIONPACKETDATA\x10\x04\x12\x11\n\rGENERALPACKET\x10\x05\x12\x0f\n\x0bUSERMESSAGE\x10\x06\x42\x08\n\x06packet\"\xab\x01\n\x0eWorkflowPacket\x12\x33\n\x06sender\x18\x01 \x01(\x0b\x32#.core.WorkflowPacket.WorkflowSender\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x02 \x01(\t\x1aK\n\x0eWorkflowSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03uid\x18\x02 \x01(\t\x12\x1e\n\x16workflow_execution_uid\x18\x03 \x01(\t\"\x80\x03\n\x0c\x41\x63tionPacket\x12/\n\x06sender\x18\x01 \x01(\x0b\x32\x1f.core.ActionPacket.ActionSender\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x02 \x01(\t\x1aS\n\x0e\x41\x63tionArgument\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\x12\x11\n\treference\x18\x03 \x01(\t\x12\x11\n\tselection\x18\x04 \x01(\t\x1a\xd0\x01\n\x0c\x41\x63tionSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0b\n\x03uid\x18\x02 \x01(\t\x12\x15\n\rexecution_uid\x18\x03 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x04 \x01(\t\x12\x13\n\x0b\x61\x63tion_name\x18\x05 \x01(\t\x12\x34\n\targuments\x18\x06 \x03(\x0b\x32!.core.ActionPacket.ActionArgument\x12\x1e\n\x16workflow_execution_uid\x18\x07 \x01(\t\x12\x11\n\tdevice_id\x18\x08 \x01(\x05\"\x92\x01\n\rGeneralPacket\x12\x31\n\x06sender\x18\x01 \x01(\x0b\x32!.core.GeneralPacket.GeneralSender\x1aN\n\rGeneralSender\x12\x0b\n\x03uid\x18\x01 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x02 \x01(\t\x12\x1e\n\x16workflow_execution_uid\x18\x03 \x01(\t\"\xe0\x01\n\x13\x43ommunicationPacket\x12,\n\x04type\x18\x01 \x01(\x0e\x32\x1e.core.CommunicationPacket.Type\x12\x1e\n\x16workflow_execution_uid\x18\x02 \x01(\t\x12\x0f\n\x07\x64\x61ta_in\x18\x03 \x01(\t\x12\x34\n\targuments\x18\x04 \x03(\x0b\x32!.core.ActionPacket.ActionArgument\"4\n\x04Type\x12\t\n\x05PAUSE\x10\x01\x12\n\n\x06RESUME\x10\x02\x12\x0b\n\x07TRIGGER\x10\x03\x12\x08\n\x04\x45XIT\x10\x04\"\x94\x01\n\x0bUserMessage\x12/\n\x06sender\x18\x01 \x01(\x0b\x32\x1f.core.ActionPacket.ActionSender\x12\x0f\n\x07subject\x18\x02 \x01(\t\x12\x0c\n\x04\x62ody\x18\x03 \x01(\t\x12\x17\n\x0frequires_reauth\x18\x04 \x01(\x08\x12\r\n\x05users\x18\x05 \x03(\x05\x12\r\n\x05roles\x18\x06 \x03(\x05')
+  serialized_pb=_b('\n\ndata.proto\x12\x04\x63ore\"\x83\x03\n\x07Message\x12 \n\x04type\x18\x01 \x01(\x0e\x32\x12.core.Message.Type\x12\x12\n\nevent_name\x18\x02 \x01(\t\x12/\n\x0fworkflow_packet\x18\x03 \x01(\x0b\x32\x14.core.WorkflowPacketH\x00\x12+\n\raction_packet\x18\x04 \x01(\x0b\x32\x12.core.ActionPacketH\x00\x12-\n\x0egeneral_packet\x18\x05 \x01(\x0b\x32\x13.core.GeneralPacketH\x00\x12+\n\x0emessage_packet\x18\x06 \x01(\x0b\x32\x11.core.UserMessageH\x00\"~\n\x04Type\x12\x12\n\x0eWORKFLOWPACKET\x10\x01\x12\x16\n\x12WORKFLOWPACKETDATA\x10\x02\x12\x10\n\x0c\x41\x43TIONPACKET\x10\x03\x12\x14\n\x10\x41\x43TIONPACKETDATA\x10\x04\x12\x11\n\rGENERALPACKET\x10\x05\x12\x0f\n\x0bUSERMESSAGE\x10\x06\x42\x08\n\x06packet\"@\n\x0eWorkflowSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x14\n\x0c\x65xecution_id\x18\x03 \x01(\t\"O\n\x0eWorkflowPacket\x12$\n\x06sender\x18\x01 \x01(\x0b\x32\x14.core.WorkflowSender\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x02 \x01(\t\"M\n\x08\x41rgument\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\x12\x11\n\treference\x18\x03 \x01(\t\x12\x11\n\tselection\x18\x04 \x01(\t\"\x9e\x02\n\x0c\x41\x63tionPacket\x12/\n\x06sender\x18\x01 \x01(\x0b\x32\x1f.core.ActionPacket.ActionSender\x12&\n\x08workflow\x18\x02 \x01(\x0b\x32\x14.core.WorkflowSender\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x03 \x01(\t\x1a\x9b\x01\n\x0c\x41\x63tionSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x14\n\x0c\x65xecution_id\x18\x03 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x04 \x01(\t\x12\x13\n\x0b\x61\x63tion_name\x18\x05 \x01(\t\x12!\n\targuments\x18\x06 \x03(\x0b\x32\x0e.core.Argument\x12\x11\n\tdevice_id\x18\t \x01(\x05\"\x99\x01\n\rGeneralPacket\x12\x31\n\x06sender\x18\x01 \x01(\x0b\x32!.core.GeneralPacket.GeneralSender\x12&\n\x08workflow\x18\x02 \x01(\x0b\x32\x14.core.WorkflowSender\x1a-\n\rGeneralSender\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x02 \x01(\t\"\x8a\x01\n\x13\x43ommunicationPacket\x12,\n\x04type\x18\x01 \x01(\x0e\x32\x1e.core.CommunicationPacket.Type\x12\x1d\n\x15workflow_execution_id\x18\x02 \x01(\t\"&\n\x04Type\x12\t\n\x05PAUSE\x10\x01\x12\x08\n\x04\x45XIT\x10\x02\x12\t\n\x05\x41\x42ORT\x10\x03\"\xbc\x01\n\x0bUserMessage\x12/\n\x06sender\x18\x01 \x01(\x0b\x32\x1f.core.ActionPacket.ActionSender\x12&\n\x08workflow\x18\x02 \x01(\x0b\x32\x14.core.WorkflowSender\x12\x0f\n\x07subject\x18\x03 \x01(\t\x12\x0c\n\x04\x62ody\x18\x04 \x01(\t\x12\x17\n\x0frequires_reauth\x18\x05 \x01(\x08\x12\r\n\x05users\x18\x06 \x03(\x05\x12\r\n\x05roles\x18\x07 \x03(\x05\"\x8e\x01\n\x16\x45xecuteWorkflowMessage\x12\x13\n\x0bworkflow_id\x18\x01 \x01(\t\x12\x1d\n\x15workflow_execution_id\x18\x02 \x01(\t\x12\r\n\x05start\x18\x03 \x01(\t\x12!\n\targuments\x18\x04 \x03(\x0b\x32\x0e.core.Argument\x12\x0e\n\x06resume\x18\x05 \x01(\x08')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -73,22 +73,18 @@ _COMMUNICATIONPACKET_TYPE = _descriptor.EnumDescriptor(
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='RESUME', index=1, number=2,
+      name='EXIT', index=1, number=2,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='TRIGGER', index=2, number=3,
-      options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='EXIT', index=3, number=4,
+      name='ABORT', index=2, number=3,
       options=None,
       type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=1293,
-  serialized_end=1345,
+  serialized_start=1182,
+  serialized_end=1220,
 )
 _sym_db.RegisterEnumDescriptor(_COMMUNICATIONPACKET_TYPE)
 
@@ -162,29 +158,29 @@ _MESSAGE = _descriptor.Descriptor(
 )
 
 
-_WORKFLOWPACKET_WORKFLOWSENDER = _descriptor.Descriptor(
+_WORKFLOWSENDER = _descriptor.Descriptor(
   name='WorkflowSender',
-  full_name='core.WorkflowPacket.WorkflowSender',
+  full_name='core.WorkflowSender',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='name', full_name='core.WorkflowPacket.WorkflowSender.name', index=0,
+      name='name', full_name='core.WorkflowSender.name', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='uid', full_name='core.WorkflowPacket.WorkflowSender.uid', index=1,
+      name='id', full_name='core.WorkflowSender.id', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='workflow_execution_uid', full_name='core.WorkflowPacket.WorkflowSender.workflow_execution_uid', index=2,
+      name='execution_id', full_name='core.WorkflowSender.execution_id', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -201,9 +197,10 @@ _WORKFLOWPACKET_WORKFLOWSENDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=507,
-  serialized_end=582,
+  serialized_start=410,
+  serialized_end=474,
 )
+
 
 _WORKFLOWPACKET = _descriptor.Descriptor(
   name='WorkflowPacket',
@@ -229,7 +226,7 @@ _WORKFLOWPACKET = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_WORKFLOWPACKET_WORKFLOWSENDER, ],
+  nested_types=[],
   enum_types=[
   ],
   options=None,
@@ -237,41 +234,41 @@ _WORKFLOWPACKET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=411,
-  serialized_end=582,
+  serialized_start=476,
+  serialized_end=555,
 )
 
 
-_ACTIONPACKET_ACTIONARGUMENT = _descriptor.Descriptor(
-  name='ActionArgument',
-  full_name='core.ActionPacket.ActionArgument',
+_ARGUMENT = _descriptor.Descriptor(
+  name='Argument',
+  full_name='core.Argument',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='name', full_name='core.ActionPacket.ActionArgument.name', index=0,
+      name='name', full_name='core.Argument.name', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='value', full_name='core.ActionPacket.ActionArgument.value', index=1,
+      name='value', full_name='core.Argument.value', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='reference', full_name='core.ActionPacket.ActionArgument.reference', index=2,
+      name='reference', full_name='core.Argument.reference', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='selection', full_name='core.ActionPacket.ActionArgument.selection', index=3,
+      name='selection', full_name='core.Argument.selection', index=3,
       number=4, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -288,9 +285,10 @@ _ACTIONPACKET_ACTIONARGUMENT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=675,
-  serialized_end=758,
+  serialized_start=557,
+  serialized_end=634,
 )
+
 
 _ACTIONPACKET_ACTIONSENDER = _descriptor.Descriptor(
   name='ActionSender',
@@ -307,14 +305,14 @@ _ACTIONPACKET_ACTIONSENDER = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='uid', full_name='core.ActionPacket.ActionSender.uid', index=1,
+      name='id', full_name='core.ActionPacket.ActionSender.id', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='execution_uid', full_name='core.ActionPacket.ActionSender.execution_uid', index=2,
+      name='execution_id', full_name='core.ActionPacket.ActionSender.execution_id', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -342,15 +340,8 @@ _ACTIONPACKET_ACTIONSENDER = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='workflow_execution_uid', full_name='core.ActionPacket.ActionSender.workflow_execution_uid', index=6,
-      number=7, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='device_id', full_name='core.ActionPacket.ActionSender.device_id', index=7,
-      number=8, type=5, cpp_type=1, label=1,
+      name='device_id', full_name='core.ActionPacket.ActionSender.device_id', index=6,
+      number=9, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -366,8 +357,8 @@ _ACTIONPACKET_ACTIONSENDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=761,
-  serialized_end=969,
+  serialized_start=768,
+  serialized_end=923,
 )
 
 _ACTIONPACKET = _descriptor.Descriptor(
@@ -385,8 +376,15 @@ _ACTIONPACKET = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='additional_data', full_name='core.ActionPacket.additional_data', index=1,
-      number=2, type=9, cpp_type=9, label=1,
+      name='workflow', full_name='core.ActionPacket.workflow', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='additional_data', full_name='core.ActionPacket.additional_data', index=2,
+      number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -394,7 +392,7 @@ _ACTIONPACKET = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_ACTIONPACKET_ACTIONARGUMENT, _ACTIONPACKET_ACTIONSENDER, ],
+  nested_types=[_ACTIONPACKET_ACTIONSENDER, ],
   enum_types=[
   ],
   options=None,
@@ -402,8 +400,8 @@ _ACTIONPACKET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=585,
-  serialized_end=969,
+  serialized_start=637,
+  serialized_end=923,
 )
 
 
@@ -415,7 +413,7 @@ _GENERALPACKET_GENERALSENDER = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='uid', full_name='core.GeneralPacket.GeneralSender.uid', index=0,
+      name='id', full_name='core.GeneralPacket.GeneralSender.id', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -424,13 +422,6 @@ _GENERALPACKET_GENERALSENDER = _descriptor.Descriptor(
     _descriptor.FieldDescriptor(
       name='app_name', full_name='core.GeneralPacket.GeneralSender.app_name', index=1,
       number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='workflow_execution_uid', full_name='core.GeneralPacket.GeneralSender.workflow_execution_uid', index=2,
-      number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -446,8 +437,8 @@ _GENERALPACKET_GENERALSENDER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1040,
-  serialized_end=1118,
+  serialized_start=1034,
+  serialized_end=1079,
 )
 
 _GENERALPACKET = _descriptor.Descriptor(
@@ -464,6 +455,13 @@ _GENERALPACKET = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='workflow', full_name='core.GeneralPacket.workflow', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -475,8 +473,8 @@ _GENERALPACKET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=972,
-  serialized_end=1118,
+  serialized_start=926,
+  serialized_end=1079,
 )
 
 
@@ -495,23 +493,9 @@ _COMMUNICATIONPACKET = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='workflow_execution_uid', full_name='core.CommunicationPacket.workflow_execution_uid', index=1,
+      name='workflow_execution_id', full_name='core.CommunicationPacket.workflow_execution_id', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='data_in', full_name='core.CommunicationPacket.data_in', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='arguments', full_name='core.CommunicationPacket.arguments', index=3,
-      number=4, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -527,8 +511,8 @@ _COMMUNICATIONPACKET = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1121,
-  serialized_end=1345,
+  serialized_start=1082,
+  serialized_end=1220,
 )
 
 
@@ -547,36 +531,43 @@ _USERMESSAGE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='subject', full_name='core.UserMessage.subject', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
+      name='workflow', full_name='core.UserMessage.workflow', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='body', full_name='core.UserMessage.body', index=2,
+      name='subject', full_name='core.UserMessage.subject', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='requires_reauth', full_name='core.UserMessage.requires_reauth', index=3,
-      number=4, type=8, cpp_type=7, label=1,
+      name='body', full_name='core.UserMessage.body', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='requires_reauth', full_name='core.UserMessage.requires_reauth', index=4,
+      number=5, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='users', full_name='core.UserMessage.users', index=4,
-      number=5, type=5, cpp_type=1, label=3,
+      name='users', full_name='core.UserMessage.users', index=5,
+      number=6, type=5, cpp_type=1, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='roles', full_name='core.UserMessage.roles', index=5,
-      number=6, type=5, cpp_type=1, label=3,
+      name='roles', full_name='core.UserMessage.roles', index=6,
+      number=7, type=5, cpp_type=1, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -592,8 +583,66 @@ _USERMESSAGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1348,
-  serialized_end=1496,
+  serialized_start=1223,
+  serialized_end=1411,
+)
+
+
+_EXECUTEWORKFLOWMESSAGE = _descriptor.Descriptor(
+  name='ExecuteWorkflowMessage',
+  full_name='core.ExecuteWorkflowMessage',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='workflow_id', full_name='core.ExecuteWorkflowMessage.workflow_id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='workflow_execution_id', full_name='core.ExecuteWorkflowMessage.workflow_execution_id', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='start', full_name='core.ExecuteWorkflowMessage.start', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='arguments', full_name='core.ExecuteWorkflowMessage.arguments', index=3,
+      number=4, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='resume', full_name='core.ExecuteWorkflowMessage.resume', index=4,
+      number=5, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1414,
+  serialized_end=1556,
 )
 
 _MESSAGE.fields_by_name['type'].enum_type = _MESSAGE_TYPE
@@ -614,24 +663,28 @@ _MESSAGE.fields_by_name['general_packet'].containing_oneof = _MESSAGE.oneofs_by_
 _MESSAGE.oneofs_by_name['packet'].fields.append(
   _MESSAGE.fields_by_name['message_packet'])
 _MESSAGE.fields_by_name['message_packet'].containing_oneof = _MESSAGE.oneofs_by_name['packet']
-_WORKFLOWPACKET_WORKFLOWSENDER.containing_type = _WORKFLOWPACKET
-_WORKFLOWPACKET.fields_by_name['sender'].message_type = _WORKFLOWPACKET_WORKFLOWSENDER
-_ACTIONPACKET_ACTIONARGUMENT.containing_type = _ACTIONPACKET
-_ACTIONPACKET_ACTIONSENDER.fields_by_name['arguments'].message_type = _ACTIONPACKET_ACTIONARGUMENT
+_WORKFLOWPACKET.fields_by_name['sender'].message_type = _WORKFLOWSENDER
+_ACTIONPACKET_ACTIONSENDER.fields_by_name['arguments'].message_type = _ARGUMENT
 _ACTIONPACKET_ACTIONSENDER.containing_type = _ACTIONPACKET
 _ACTIONPACKET.fields_by_name['sender'].message_type = _ACTIONPACKET_ACTIONSENDER
+_ACTIONPACKET.fields_by_name['workflow'].message_type = _WORKFLOWSENDER
 _GENERALPACKET_GENERALSENDER.containing_type = _GENERALPACKET
 _GENERALPACKET.fields_by_name['sender'].message_type = _GENERALPACKET_GENERALSENDER
+_GENERALPACKET.fields_by_name['workflow'].message_type = _WORKFLOWSENDER
 _COMMUNICATIONPACKET.fields_by_name['type'].enum_type = _COMMUNICATIONPACKET_TYPE
-_COMMUNICATIONPACKET.fields_by_name['arguments'].message_type = _ACTIONPACKET_ACTIONARGUMENT
 _COMMUNICATIONPACKET_TYPE.containing_type = _COMMUNICATIONPACKET
 _USERMESSAGE.fields_by_name['sender'].message_type = _ACTIONPACKET_ACTIONSENDER
+_USERMESSAGE.fields_by_name['workflow'].message_type = _WORKFLOWSENDER
+_EXECUTEWORKFLOWMESSAGE.fields_by_name['arguments'].message_type = _ARGUMENT
 DESCRIPTOR.message_types_by_name['Message'] = _MESSAGE
+DESCRIPTOR.message_types_by_name['WorkflowSender'] = _WORKFLOWSENDER
 DESCRIPTOR.message_types_by_name['WorkflowPacket'] = _WORKFLOWPACKET
+DESCRIPTOR.message_types_by_name['Argument'] = _ARGUMENT
 DESCRIPTOR.message_types_by_name['ActionPacket'] = _ACTIONPACKET
 DESCRIPTOR.message_types_by_name['GeneralPacket'] = _GENERALPACKET
 DESCRIPTOR.message_types_by_name['CommunicationPacket'] = _COMMUNICATIONPACKET
 DESCRIPTOR.message_types_by_name['UserMessage'] = _USERMESSAGE
+DESCRIPTOR.message_types_by_name['ExecuteWorkflowMessage'] = _EXECUTEWORKFLOWMESSAGE
 
 Message = _reflection.GeneratedProtocolMessageType('Message', (_message.Message,), dict(
   DESCRIPTOR = _MESSAGE,
@@ -640,29 +693,28 @@ Message = _reflection.GeneratedProtocolMessageType('Message', (_message.Message,
   ))
 _sym_db.RegisterMessage(Message)
 
-WorkflowPacket = _reflection.GeneratedProtocolMessageType('WorkflowPacket', (_message.Message,), dict(
+WorkflowSender = _reflection.GeneratedProtocolMessageType('WorkflowSender', (_message.Message,), dict(
+  DESCRIPTOR = _WORKFLOWSENDER,
+  __module__ = 'data_pb2'
+  # @@protoc_insertion_point(class_scope:core.WorkflowSender)
+  ))
+_sym_db.RegisterMessage(WorkflowSender)
 
-  WorkflowSender = _reflection.GeneratedProtocolMessageType('WorkflowSender', (_message.Message,), dict(
-    DESCRIPTOR = _WORKFLOWPACKET_WORKFLOWSENDER,
-    __module__ = 'data_pb2'
-    # @@protoc_insertion_point(class_scope:core.WorkflowPacket.WorkflowSender)
-    ))
-  ,
+WorkflowPacket = _reflection.GeneratedProtocolMessageType('WorkflowPacket', (_message.Message,), dict(
   DESCRIPTOR = _WORKFLOWPACKET,
   __module__ = 'data_pb2'
   # @@protoc_insertion_point(class_scope:core.WorkflowPacket)
   ))
 _sym_db.RegisterMessage(WorkflowPacket)
-_sym_db.RegisterMessage(WorkflowPacket.WorkflowSender)
+
+Argument = _reflection.GeneratedProtocolMessageType('Argument', (_message.Message,), dict(
+  DESCRIPTOR = _ARGUMENT,
+  __module__ = 'data_pb2'
+  # @@protoc_insertion_point(class_scope:core.Argument)
+  ))
+_sym_db.RegisterMessage(Argument)
 
 ActionPacket = _reflection.GeneratedProtocolMessageType('ActionPacket', (_message.Message,), dict(
-
-  ActionArgument = _reflection.GeneratedProtocolMessageType('ActionArgument', (_message.Message,), dict(
-    DESCRIPTOR = _ACTIONPACKET_ACTIONARGUMENT,
-    __module__ = 'data_pb2'
-    # @@protoc_insertion_point(class_scope:core.ActionPacket.ActionArgument)
-    ))
-  ,
 
   ActionSender = _reflection.GeneratedProtocolMessageType('ActionSender', (_message.Message,), dict(
     DESCRIPTOR = _ACTIONPACKET_ACTIONSENDER,
@@ -675,7 +727,6 @@ ActionPacket = _reflection.GeneratedProtocolMessageType('ActionPacket', (_messag
   # @@protoc_insertion_point(class_scope:core.ActionPacket)
   ))
 _sym_db.RegisterMessage(ActionPacket)
-_sym_db.RegisterMessage(ActionPacket.ActionArgument)
 _sym_db.RegisterMessage(ActionPacket.ActionSender)
 
 GeneralPacket = _reflection.GeneratedProtocolMessageType('GeneralPacket', (_message.Message,), dict(
@@ -706,6 +757,13 @@ UserMessage = _reflection.GeneratedProtocolMessageType('UserMessage', (_message.
   # @@protoc_insertion_point(class_scope:core.UserMessage)
   ))
 _sym_db.RegisterMessage(UserMessage)
+
+ExecuteWorkflowMessage = _reflection.GeneratedProtocolMessageType('ExecuteWorkflowMessage', (_message.Message,), dict(
+  DESCRIPTOR = _EXECUTEWORKFLOWMESSAGE,
+  __module__ = 'data_pb2'
+  # @@protoc_insertion_point(class_scope:core.ExecuteWorkflowMessage)
+  ))
+_sym_db.RegisterMessage(ExecuteWorkflowMessage)
 
 
 # @@protoc_insertion_point(module_scope)

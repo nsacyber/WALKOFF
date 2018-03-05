@@ -1,3 +1,6 @@
+import warnings
+from functools import wraps
+
 def orderless_list_compare(cls, list1, list2):
     cls.assertEqual(len(list1), len(list2))
     cls.assertEqual(set(list1), set(list2))

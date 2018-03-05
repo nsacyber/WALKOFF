@@ -1,4 +1,4 @@
-/api/configuration:
+/configuration:
   get:
     tags:
       - Configuration
@@ -15,11 +15,39 @@
         description: Unauthorized access
         schema:
           $ref: '#/definitions/Error'
-  post:
+  put:
     tags:
       - Configuration
     summary: Updates the configuration
     operationId: walkoff.server.endpoints.configuration.update_configuration
+    consumes:
+      - application/json
+    produces:
+      - application/json
+
+    parameters:
+      - name: configuration
+        in: body
+        description: The configuration object
+        required: true
+        schema:
+          $ref: '#/definitions/Configuration'
+    responses:
+      200:
+        description: Success
+      401:
+        description: Unauthorized access
+        schema:
+          $ref: '#/definitions/Error'
+      515:
+        description: Could not write configuration to file
+        schema:
+          $ref: '#/definitions/Error'
+  patch:
+    tags:
+      - Configuration
+    summary: Updates the configuration
+    operationId: walkoff.server.endpoints.configuration.patch_configuration
     consumes:
       - application/json
     produces:

@@ -1,12 +1,13 @@
 from flask import request, current_app
 from flask_jwt_extended import jwt_required
 
-from walkoff.database import clear_resources_for_role, get_all_available_resource_actions
-from walkoff.database.role import Role
-from walkoff.server.extensions import db
+from walkoff.serverdb import clear_resources_for_role, get_all_available_resource_actions
+from walkoff.serverdb.role import Role
+from walkoff.extensions import db
 from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions, admin_required
 from walkoff.server.decorators import with_resource_factory
+from walkoff.server.problem import Problem
 
 
 with_role = with_resource_factory('role', lambda role_id: Role.query.filter_by(id=role_id).first())
@@ -40,7 +41,11 @@ def create_role():
             return new_role.as_json(), OBJECT_CREATED
         else:
             current_app.logger.warning('Cannot add role {0}. Role already exists'.format(json_data['name']))
-            return {"error": "Role already exists."}, OBJECT_EXISTS_ERROR
+            return Problem.from_crud_resource(
+                OBJECT_EXISTS_ERROR,
+                'role',
+                'create',
+                'Role with name {} already exists'.format(json_data['name']))
 
     return __func()
 
@@ -78,6 +83,10 @@ def update_role():
     return __func()
 
 
+def patch_role():
+    return update_role()
+
+
 def delete_role(role_id):
     @jwt_required
     @admin_required
@@ -85,7 +94,8 @@ def delete_role(role_id):
     def __func(role):
         clear_resources_for_role(role.name)
         db.session.delete(role)
-        return {}, SUCCESS
+        db.session.commit()
+        return {}, NO_CONTENT
 
     return __func()
 

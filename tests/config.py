@@ -13,4 +13,6 @@ test_appdevice_backup = join(test_data_path, 'appdevice.json')
 test_cases_backup = join(test_data_path, 'cases.json')
 basic_app_api = join('.', 'tests', 'schemas', 'basic_app_api.yaml')
 cache_path = join('.', 'tests', 'tmp')
-
+test_case_db_path = join('.', 'tests', 'tmp', 'events_test.db')
+test_db_path = join('.', 'tests', 'tmp', 'walkoff_test.db')
+test_execution_db_path = join('.', 'tests', 'tmp', 'execution_test.db')

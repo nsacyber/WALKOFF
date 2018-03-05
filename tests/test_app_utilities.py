@@ -1,21 +1,29 @@
 import unittest
 
-import walkoff.server.flaskserver
-from walkoff.devicedb import get_device, get_all_devices_for_app, \
-    get_all_devices_of_type_from_app, App, Device, device_db
+from walkoff import executiondb
+from walkoff.executiondb.device import get_device, get_all_devices_for_app, \
+    get_all_devices_of_type_from_app, App, Device
+from tests.util import execution_db_help
 
 
 class TestAppUtilities(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        app = device_db.session.query(App).filter(App.name == 'TestApp').first()
+        execution_db_help.setup_dbs()
+
+        app = executiondb.execution_db.session.query(App).filter(App.name == 'TestApp').first()
         if app is not None:
-            device_db.session.delete(app)
-        for device in device_db.session.query(Device).all():
-            device_db.session.delete(device)
-        device_db.session.commit()
+            executiondb.execution_db.session.delete(app)
+        for device in executiondb.execution_db.session.query(Device).all():
+            executiondb.execution_db.session.delete(device)
+        executiondb.execution_db.session.commit()
+
+    @classmethod
+    def tearDownClass(cls):
+        execution_db_help.tear_down_device_db()
 
     def setUp(self):
+        import walkoff.server.flaskserver
         self.app_name = 'TestApp'
         self.app = walkoff.server.flaskserver.app.test_client(self)
         self.app.testing = True
@@ -29,19 +37,19 @@ class TestAppUtilities(unittest.TestCase):
         self.device4 = Device('test4', [], [], 'type2')
 
     def tearDown(self):
-        device_db.session.rollback()
-        app = device_db.session.query(App).filter(App.name == self.app_name).first()
+        executiondb.execution_db.session.rollback()
+        app = executiondb.execution_db.session.query(App).filter(App.name == self.app_name).first()
         if app is not None:
-            device_db.session.delete(app)
-        for device in device_db.session.query(Device).all():
-            device_db.session.delete(device)
-        device_db.session.commit()
+            executiondb.execution_db.session.delete(app)
+        for device in executiondb.execution_db.session.query(Device).all():
+            executiondb.execution_db.session.delete(device)
+        executiondb.execution_db.session.commit()
 
     def add_test_app(self, devices=None):
         devices = devices if devices is not None else []
         app = App(self.app_name, devices=devices)
-        device_db.session.add(app)
-        device_db.session.commit()
+        executiondb.execution_db.session.add(app)
+        executiondb.execution_db.session.commit()
 
     def test_get_all_devices_for_app_dne(self):
         self.assertListEqual(get_all_devices_for_app('invalid'), [])

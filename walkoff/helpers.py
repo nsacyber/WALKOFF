@@ -4,11 +4,12 @@ import logging
 import os
 import pkgutil
 import sys
+from uuid import uuid4
 
 import walkoff.config.config
 import walkoff.config.paths
 import warnings
-
+from datetime import datetime
 try:
     from importlib import reload as reload_module
 except ImportError:
@@ -402,7 +403,7 @@ class UnknownFunction(Exception):
         self.function = function_name
 
 
-class UnknownAppAction(Exception):
+class UnknownAppAction(UnknownFunction):
     def __init__(self, app, action_name):
         super(UnknownAppAction, self).__init__(app, action_name, 'action')
 
@@ -425,9 +426,16 @@ class UnknownCondition(UnknownFunction):
         super(UnknownCondition, self).__init__(app, condition_name, 'condition')
 
 
-class UnknownTransform(Exception):
+class UnknownTransform(UnknownFunction):
     def __init__(self, app, transform_name):
         super(UnknownTransform, self).__init__(app, transform_name, 'transform')
+
+
+class InvalidExecutionElement(Exception):
+    def __init__(self, id_, name, message):
+        self.id = id_
+        self.name = name
+        super(InvalidExecutionElement, self).__init__(message)
 
 
 def get_function_arg_names(func):
@@ -504,9 +512,58 @@ def create_sse_event(event_id=None, event=None, data=None):
         response += 'id: {}\n'.format(event_id)
     if event is not None:
         response += 'event: {}\n'.format(event)
-    if data is not None:
-        try:
-            response += 'data: {}\n'.format(json.dumps(data))
-        except ValueError:
-            response += 'data: {}\n'.format(data)
+    if data is None:
+        data = ''
+    try:
+        response += 'data: {}\n'.format(json.dumps(data))
+    except ValueError:
+        response += 'data: {}\n'.format(data)
     return response + '\n'
+
+
+def regenerate_workflow_ids(workflow):
+    workflow['id'] = str(uuid4())
+    action_mapping = {}
+
+    for action in workflow['actions']:
+        prev_id = action['id']
+        action['id'] = str(uuid4())
+        action_mapping[prev_id] = action['id']
+
+    for action in workflow['actions']:
+        regenerate_ids(action, action_mapping, False)
+
+    for branch in workflow['branches']:
+        branch['source_id'] = action_mapping[branch['source_id']]
+        branch['destination_id'] = action_mapping[branch['destination_id']]
+        regenerate_ids(branch, action_mapping)
+
+    workflow['start'] = action_mapping[workflow['start']]
+
+
+def regenerate_ids(json_in, action_mapping=None, regenerate_id=True):
+    if regenerate_id:
+        json_in['id'] = str(uuid4())
+
+    if 'reference' in json_in and json_in['reference']:
+        json_in['reference'] = action_mapping[json_in['reference']]
+
+    for field, value in json_in.items():
+        if isinstance(value, list):
+            __regenerate_ids_of_list(value, action_mapping)
+        elif isinstance(value, dict):
+            regenerate_ids(value, action_mapping=action_mapping)
+
+
+def __regenerate_ids_of_list(value, action_mapping):
+    for list_element in (list_element_ for list_element_ in value
+                         if isinstance(list_element_, dict)):
+        regenerate_ids(list_element, action_mapping=action_mapping)
+
+
+def utc_as_rfc_datetime(timestamp):
+    return timestamp.isoformat('T') + 'Z'
+
+
+def timestamp_to_datetime(time):
+    return datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%fZ')
