@@ -56,6 +56,7 @@ class ExecutionElementBaseSchema(ExecutionBaseSchema):
 class ArgumentSchema(ExecutionBaseSchema):
     name = field_for(Argument, 'name', required=True)
     value = fields.Raw()
+    selection = fields.List(fields.Raw())  # There should be some validation on this maybe
 
     class Meta:
         model = Argument
@@ -65,7 +66,7 @@ class ArgumentSchema(ExecutionBaseSchema):
         has_value = 'value' in data
         has_reference = 'reference' in data
         if (not has_value and not has_reference) or (has_value and has_reference):
-            raise ValidationError('Arguments must have either a value or a reference.', 'value')
+            raise ValidationError('Arguments must have either a value or a reference.', ['value'])
 
 
 class ActionableSchema(ExecutionElementBaseSchema):
