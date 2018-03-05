@@ -4,6 +4,7 @@ import logging.config
 import os
 import sys
 import traceback
+import warnings
 from os.path import isfile
 
 from gevent import monkey
@@ -33,6 +34,14 @@ def setup_logger():
     else:
         logging.basicConfig()
         logger.info("Basic logging is being used")
+
+    def send_warnings_to_log(message, category, filename, lineno, file=None):
+        logging.warning(
+            '%s:%s: %s:%s' %
+            (filename, lineno, category.__name__, message))
+        return
+
+    warnings.showwarning = send_warnings_to_log
 
 
 def run(host, port):
