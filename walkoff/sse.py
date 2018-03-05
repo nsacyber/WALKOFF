@@ -96,14 +96,24 @@ class SseStream(object):
             @wraps(func)
             def wrapper(*args, **kwargs):
                 response = func(*args, **kwargs)
-                if isinstance(response, tuple):
-                    self.publish(response[0], event=response[1])
-                else:
-                    self.publish(response, event=event)
+                self._publish_response(response, event)
                 return response
             return wrapper
 
         return decorator
+
+    def _publish_response(self, response, default_event):
+        """Publish a response to the SSE stream
+
+        Args:
+            response: The data from the SSE push function. If a tuple is returned, the second element is the event to
+                use in the SSE stream instead of the event passed into this function
+            default_event (str): The default event to use for this SSE stream.
+        """
+        if isinstance(response, tuple):
+            self.publish(response[0], event=response[1])
+        else:
+            self.publish(response, event=default_event)
 
     def publish(self, data, **kwargs):
         """Publishes some data to the stream
@@ -191,36 +201,24 @@ class FilteredSseStream(SseStream):
     def __init__(self, channel, cache=None):
         super(FilteredSseStream, self).__init__(channel, cache)
 
-    def push(self, event=''):
-        """Decorator to use to over a function which pushes data to the SSE stream.
-
-        This function should return data formatted in the way it should appear to the client as well as an identifier or
-        an iterable of identifiers to publish to the subchannel or subchannels. If the stream should push JSON, then the
-        function should return a `dict` (do not use json.dumps()). The subchannel identifier should be something which
-        can be quickly converted to a string. If a `tuple` of (data, subchannel_ids) is returned, then the event passed
-        into the decorator will be used. If a `tuple` of (data, subchannel_id, event) is returned, then that event is
-        used.
+    def _publish_response(self, response, default_event):
+        """Publish a response to the filtered SSE stream.
 
         Args:
-            event (str, optional): The default event to use on this stream. This can be overwritten by returning a
+            response (tuple): Can either take the form of (data, subchannel(s)) or (data, subchannel(s), event).
+                The data should be formatted in the way it should appear to the client. If the stream should push JSON,
+                then the function should return a `dict` (do not use json.dumps()). The subchannels to push the data to
+                can be an identifier or an iterable of identifiers to publish to the subchannel or subchannels.  The
+                subchannel identifier should be something which can be quickly converted to a string. If a `tuple` of
+                (data, subchannel(s), event) is returned, then that event is used instead of the default_event argument.
+            default_event (str): The default event to use on this stream. This can be overwritten by returning a
                 `tuple` of (data, subchannel, event) from the decorated function. If no event is specified, then no
-                even will be appended to the Server-Sent-Event
-
-        Returns:
-            (func): The decorated function
+                even will be appended to the Server-Sent Event
         """
-        def decorator(func):
-            @wraps(func)
-            def wrapper(*args, **kwargs):
-                response = func(*args, **kwargs)
-                if len(response) > 2:
-                    self.publish(response[0], subchannels=response[1], event=response[2])
-                else:
-                    self.publish(response[0], subchannels=response[1], event=event)
-                return response
-            return wrapper
-
-        return decorator
+        if len(response) > 2:
+            self.publish(response[0], subchannels=response[1], event=response[2])
+        else:
+            self.publish(response[0], subchannels=response[1], event=default_event)
 
     def publish(self, data, **kwargs):
         self.cache.register_callbacks()
@@ -233,6 +231,14 @@ class FilteredSseStream(SseStream):
             self.cache.publish(self.create_subchannel_name(subchannels), data)
 
     def create_subchannel_name(self, subchannel):
+        """Creates a unique name for a subchannel
+
+        Args:
+            subchannel: The subchannel whose name should be created.
+
+        Returns:
+            str: The name of the subchannel
+        """
         return '{0}.{1}'.format(self.channel, subchannel)
 
     def subscribe(self, **kwargs):
@@ -269,7 +275,7 @@ class FilteredSseStream(SseStream):
 
 
 def create_interface_channel_name(interface, channel):
-    """Creates a channel name for an SSE stream for an interface.
+    """Creates a unique channel name for an SSE stream for an interface.
 
     This is used to avoid name collisions between interfaces
 
