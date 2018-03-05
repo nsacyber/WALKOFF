@@ -18,7 +18,7 @@ from walkoff.events import EventType, WalkoffEvent
 from walkoff.executiondb.workflow import Workflow
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
 from walkoff.executiondb.saved_workflow import SavedWorkflow
-from walkoff.executiondb.appinstancerepo import AppInstanceRepo
+from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 from walkoff import initialize_databases
 
 try:

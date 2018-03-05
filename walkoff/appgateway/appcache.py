@@ -17,14 +17,19 @@ FunctionEntry = namedtuple('FunctionEntry', ['run', 'is_bound', 'tags'])
 
 
 class AppCacheEntry(object):
+    """An entry into the AppCache.
+
+    Attributes:
+        app_name (str): The name of the cached app
+        main (cls): The main class inside the app which should be run with bounded functions. Defaults to None
+        functions (dict{str: FunctionEntry}): A lookup dictionary of fully qualified path to FunctionEntry
+
+    Args:
+        app_name (str): The name of the app
+    """
     __slots__ = ['app_name', 'main', 'functions']
 
     def __init__(self, app_name):
-        """Creates a new AppCacheEntry object
-
-        Args:
-            app_name (str): The name of the app
-        """
         self.app_name = app_name
         self.main = None
         self.functions = {}
@@ -57,7 +62,7 @@ class AppCacheEntry(object):
             self.functions[qualified_name] = FunctionEntry(run=action_method, is_bound=True, tags=tags)
 
     def cache_functions(self, functions, app_path):
-        """Caches an action
+        """Caches a group of functions
 
         Args:
             functions (list(tuple(func, set(WalkoffTag)))): The functions to cache

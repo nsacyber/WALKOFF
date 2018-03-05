@@ -11,7 +11,7 @@ from walkoff.executiondb import Device_Base
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.action import Action
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.executiondb.appinstancerepo import AppInstanceRepo
+from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 
 logger = logging.getLogger(__name__)
 

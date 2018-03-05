@@ -8,10 +8,17 @@ logger = logging.getLogger(__name__)
 
 
 class AppInstanceRepo(object):
+    """A repository of App instances
+
+    Attributes:
+        _instances (dict): The in-memory repository of app instances
+
+    Args:
+        instances (dict{int: AppInstance}, optional): An existing repository of device ID to AppInstance to
+            initialize this repository to.
+    """
     def __init__(self, instances=None):
-        self._instances = {}
-        if instances:
-            self._instances = instances
+        self._instances = instances or {}
 
     def setup_app_instance(self, action):
         device_id = (action.app_name, action.device_id)
@@ -22,9 +29,7 @@ class AppInstanceRepo(object):
         return device_id
 
     def get_app_instance(self, device_id):
-        if device_id in self._instances:
-            return self._instances[device_id]
-        return None
+        return self._instances.get(device_id, None)
 
     def get_all_app_instances(self):
         return self._instances
