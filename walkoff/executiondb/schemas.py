@@ -15,7 +15,7 @@ from walkoff.helpers import InvalidExecutionElement
 
 
 class ExecutionBaseSchema(ModelSchema):
-    __skipvalues = (None, [], [{}])
+    __skipvalues = (None, [{}])
 
     @post_dump
     def remove_skip_values(self, data):
