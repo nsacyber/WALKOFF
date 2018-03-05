@@ -1,15 +1,15 @@
+from uuid import UUID
+
 from flask import current_app, request
 from flask_jwt_extended import jwt_required
 
-from walkoff.scheduler import InvalidTriggerArgs
-from walkoff.server.returncodes import *
-from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
-from walkoff.serverdb.scheduledtasks import ScheduledTask
 from walkoff.extensions import db
+from walkoff.scheduler import InvalidTriggerArgs
+from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import with_resource_factory
 from walkoff.server.problem import Problem
-from uuid import UUID
-
+from walkoff.server.returncodes import *
+from walkoff.serverdb.scheduledtasks import ScheduledTask
 
 with_task = with_resource_factory('Scheduled task', lambda task_id: ScheduledTask.query.filter_by(id=task_id).first())
 

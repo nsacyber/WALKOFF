@@ -74,7 +74,6 @@ device_db_type = 'sqlite'
 # Secret key
 secret_key = 'SHORTSTOPKEYTEST'
 
-
 # Function Dict Paths/Initialization
 
 app_apis = {}

@@ -1,18 +1,18 @@
+import os
+import shutil
 import threading
 import time
 import unittest
-import os
-import shutil
 from datetime import datetime
 
 import walkoff.appgateway
 import walkoff.config.config
 import walkoff.config.paths
-from walkoff import executiondb
 from tests import config
+from tests.util import execution_db_help
 from tests.util.case_db_help import *
 from tests.util.thread_control import modified_setup_worker_env
-from tests.util import execution_db_help
+from walkoff import executiondb
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import multiprocessedexecutor
 from walkoff.server import workflowresults  # Need this import
@@ -179,7 +179,8 @@ class TestZMQCommunication(unittest.TestCase):
 
         while True:
             executiondb.execution_db.session.expire_all()
-            workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
+            workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
+                execution_id=execution_id).first()
             if workflow_status and workflow_status.status == WorkflowStatusEnum.running:
                 threading.Thread(target=pause_resume_thread).start()
                 time.sleep(0)

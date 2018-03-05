@@ -1,5 +1,5 @@
-from weakref import WeakSet
 import logging
+from weakref import WeakSet
 
 import walkoff.config.config
 from interfaces.util import convert_to_iterable
@@ -20,6 +20,7 @@ class CallbackContainer(object):
         weak (iterable(func), optional): The initial functions to add as weak references. Defaults to None
         strong (iterable(func), optional): The initial functions to add as strong references. Defaults to None
     """
+
     def __init__(self, weak=None, strong=None):
         self.weak = WeakSet() if weak is None else WeakSet(weak)
         self.strong = set() if strong is None else set(strong)
@@ -87,6 +88,7 @@ class AppActionEventDispatcher(object):
         app (str): The app associated with this dispatcher
         action (str): The action associated with this dispatcher
     """
+
     def __init__(self, app, action):
         self.app = app
         self.action = action
@@ -187,6 +189,7 @@ class AppEventDispatcher(object):
     Attributes:
         _router (dict(str: dict(str: AppActionEventDispatcher))): The router
     """
+
     def __init__(self):
         self._router = {}
 
@@ -285,6 +288,7 @@ class EventDispatcher(object):
     Attributes:
         _router (dict(str: dict(WalkoffEvent: CallbackContainer))): The router
     """
+
     def __init__(self):
         self._router = {}
 

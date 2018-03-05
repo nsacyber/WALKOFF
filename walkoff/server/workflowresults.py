@@ -1,10 +1,10 @@
 import json
 
-from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
-from walkoff.events import WalkoffEvent
-from walkoff.executiondb.saved_workflow import SavedWorkflow
-from walkoff.executiondb import WorkflowStatusEnum, ActionStatusEnum
 from walkoff import executiondb
+from walkoff.events import WalkoffEvent
+from walkoff.executiondb import WorkflowStatusEnum, ActionStatusEnum
+from walkoff.executiondb.saved_workflow import SavedWorkflow
+from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
 
 
 @WalkoffEvent.WorkflowExecutionPending.connect
@@ -88,7 +88,8 @@ def __action_start_callback(sender, **kwargs):
     if action_status:
         action_status.status = ActionStatusEnum.executing
     else:
-        workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(execution_id=workflow_execution_id).first()
+        workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
+            execution_id=workflow_execution_id).first()
         arguments = sender['arguments'] if 'arguments' in sender else []
         action_status = ActionStatus(sender['execution_id'], sender['id'], sender['name'], sender['app_name'],
                                      sender['action_name'], json.dumps(arguments))

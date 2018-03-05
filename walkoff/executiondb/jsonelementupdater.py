@@ -1,6 +1,8 @@
-from walkoff import executiondb
 from uuid import UUID
+
 from six import string_types
+
+from walkoff import executiondb
 
 
 class JsonElementUpdater(object):

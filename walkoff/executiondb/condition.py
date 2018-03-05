@@ -6,11 +6,11 @@ from sqlalchemy_utils import UUIDType
 
 from walkoff import executiondb
 from walkoff.appgateway import get_condition
-from walkoff.executiondb.argument import Argument
+from walkoff.appgateway.validator import validate_condition_parameters
 from walkoff.events import WalkoffEvent
+from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.helpers import get_condition_api, InvalidArgument, format_exception_message, split_api_params
-from walkoff.appgateway.validator import validate_condition_parameters
 
 logger = logging.getLogger(__name__)
 

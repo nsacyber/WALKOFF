@@ -1,8 +1,8 @@
 import walkoff.case.subscription as case_subs
+from tests.util.servertestcase import ServerTestCase
 from walkoff.case.subscription import set_subscriptions, clear_subscriptions
 from walkoff.extensions import db
 from walkoff.serverdb.casesubscription import CaseSubscription
-from tests.util.servertestcase import ServerTestCase
 
 
 class TestCaseConfigDatabase(ServerTestCase):

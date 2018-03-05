@@ -1,9 +1,9 @@
 from unittest import TestCase
 
 import walkoff.config.config
+from interfaces import AppEventDispatcher
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.helpers import UnknownApp, UnknownAppAction
-from interfaces import AppEventDispatcher
 
 
 def func(): pass
@@ -13,9 +13,9 @@ class TestAppEventDispatcher(TestCase):
     @classmethod
     def setUpClass(cls):
         walkoff.config.config.app_apis = {'App1': {'actions': {'action1': None,
-                                                            'action2': None,
-                                                            'action3': None}},
-                                       'App2': {}}
+                                                               'action2': None,
+                                                               'action3': None}},
+                                          'App2': {}}
         cls.possible_events = {event for event in WalkoffEvent if event.event_type == EventType.action}
 
     @classmethod

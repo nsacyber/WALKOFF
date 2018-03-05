@@ -1,13 +1,13 @@
 from sqlalchemy import and_
 
-from walkoff import executiondb
 import walkoff.server.metrics as metrics
-from walkoff.server import flaskserver as server
+from tests.util import execution_db_help
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
+from walkoff import executiondb
 from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.workflow import Workflow
-from tests.util import execution_db_help
+from walkoff.server import flaskserver as server
 
 
 class MetricsTest(ServerTestCase):

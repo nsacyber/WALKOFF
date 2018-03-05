@@ -2,10 +2,10 @@ import unittest
 
 import walkoff.appgateway
 import walkoff.config.config
+from tests.config import test_apps_path
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.transform import Transform
 from walkoff.helpers import UnknownTransform, InvalidArgument
-from tests.config import test_apps_path
 
 
 class TestTransform(unittest.TestCase):

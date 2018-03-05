@@ -1,5 +1,6 @@
-import time
 import logging
+import time
+
 from apps import App, action
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ class HelloWorld(App):
     many total actions are called for this app's instance.
 
     """
+
     def __init__(self, name=None, device=None):
         App.__init__(self, name, device)
         # Functions and Variables that are designed to exist across functions go here

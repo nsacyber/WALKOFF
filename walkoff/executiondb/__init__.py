@@ -1,6 +1,6 @@
+import enum
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-import enum
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import NullPool
 

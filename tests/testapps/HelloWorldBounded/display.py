@@ -1,5 +1,5 @@
-import time
 import random
+import time
 
 
 def load(*args, **kwargs):
@@ -7,7 +7,6 @@ def load(*args, **kwargs):
 
 
 def stream_generator(stream_name):
-
     def counter():
         count = 0
         while True:

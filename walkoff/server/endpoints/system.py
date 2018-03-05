@@ -1,15 +1,13 @@
 import psutil
 from flask_jwt_extended import jwt_required
 
-from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
-
-
+from walkoff.server.returncodes import *
 
 metric_symbols = ('K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y')
 bytes_prefix = {}
 for i, symbol in enumerate(metric_symbols):
-    bytes_prefix[symbol] = 1 << (i+1) * 10
+    bytes_prefix[symbol] = 1 << (i + 1) * 10
 
 
 def humanize_bytes(bytes):
@@ -30,7 +28,6 @@ def get_system_usage():
 
 
 def _system_resource_usage():
-
     result = {}
 
     cpu_times = psutil.cpu_percent(interval=None, percpu=True)

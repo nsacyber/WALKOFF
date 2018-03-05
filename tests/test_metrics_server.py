@@ -2,11 +2,11 @@ import json
 from datetime import timedelta
 
 import walkoff.server.metrics as metrics
-from walkoff.server import flaskserver as server
-from walkoff.server.endpoints.metrics import _convert_action_time_averages, _convert_workflow_time_averages
+from tests.util import execution_db_help
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
-from tests.util import execution_db_help
+from walkoff.server import flaskserver as server
+from walkoff.server.endpoints.metrics import _convert_action_time_averages, _convert_workflow_time_averages
 
 
 class MetricsServerTest(ServerTestCase):

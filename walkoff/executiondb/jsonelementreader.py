@@ -1,5 +1,6 @@
-from six import string_types
 from uuid import UUID
+
+from six import string_types
 
 
 class JsonElementReader(object):
@@ -21,9 +22,8 @@ class JsonElementReader(object):
         from walkoff.executiondb.representable import Representable
         accumulator = {}
         for field, value in ((field, getattr(element, field)) for field in dir(element)
-                             if not field.startswith('_')
-                             and not callable(getattr(element, field))
-                             and field != 'metadata'):
+                             if not field.startswith('_') 
+                             and not callable(getattr(element, field)) and field != 'metadata'):
             if isinstance(value, Representable):
                 accumulator[field] = JsonElementReader.read(value)
             elif isinstance(value, UUID):

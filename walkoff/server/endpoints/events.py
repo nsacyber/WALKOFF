@@ -2,9 +2,9 @@ from flask import request
 from flask_jwt_extended import jwt_required
 
 import walkoff.case.database as case_database
-from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import validate_resource_exists_factory
+from walkoff.server.returncodes import *
 
 validate_event_exists = validate_resource_exists_factory(
     'event',

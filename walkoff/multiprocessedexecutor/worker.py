@@ -3,23 +3,23 @@ import logging
 import os
 import signal
 import threading
-from concurrent.futures import ThreadPoolExecutor
 
 import zmq
 import zmq.auth as auth
-from six import string_types
+from concurrent.futures import ThreadPoolExecutor
 from google.protobuf.json_format import MessageToDict
+from six import string_types
 
 import walkoff.config.config
 import walkoff.config.paths
 import walkoff.executiondb
-from walkoff.executiondb.argument import Argument
+from walkoff import initialize_databases
+from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 from walkoff.events import EventType, WalkoffEvent
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
-from walkoff.executiondb.saved_workflow import SavedWorkflow
-from walkoff.appgateway.appinstancerepo import AppInstanceRepo
-from walkoff import initialize_databases
 
 try:
     from Queue import Queue
@@ -51,7 +51,8 @@ def convert_to_protobuf(sender, workflow, **kwargs):
             convert_send_message_to_protobuf(packet, sender, workflow, **kwargs)
         else:
             convert_action_to_proto(packet, sender, workflow, data)
-    elif event.event_type in (EventType.branch, EventType.condition, EventType.transform, EventType.conditonalexpression):
+    elif event.event_type in (
+            EventType.branch, EventType.condition, EventType.transform, EventType.conditonalexpression):
         convert_branch_transform_condition_to_proto(packet, sender, workflow)
     packet_bytes = packet.SerializeToString()
     return packet_bytes

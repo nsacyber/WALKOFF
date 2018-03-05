@@ -1,4 +1,5 @@
 from unittest import TestCase
+
 from apps.messaging import *
 from apps.messaging import MessageComponent, convert_class_name_to_tag
 from walkoff.events import WalkoffEvent
@@ -22,22 +23,30 @@ class TestMessage(TestCase):
     def test_registry(self):
 
         class MessageType1(MessageComponent): pass
+
         self.assertEqual(MessageType1.message_type, convert_class_name_to_tag(MessageType1.__name__))
         self.assertEqual(MessageComponent.registry[MessageType1.message_type], MessageType1)
+
         class MessageType2(MessageComponent): pass
+
         self.assertEqual(MessageType2.message_type, convert_class_name_to_tag(MessageType2.__name__))
         self.assertEqual(MessageComponent.registry[MessageType2.message_type], MessageType2)
 
     def test_registry_duplicate(self):
 
         class MessageType1(MessageComponent): pass
+
         original_class = MessageType1
+
         class MessageType1(MessageComponent): pass
+
         self.assertEqual(MessageComponent.registry['message_type1'], original_class)
 
     def test_registry_duplicate_wrong_class(self):
         class messageType1(MessageComponent): pass
+
         class MessageType1(MessageComponent): pass
+
         self.assertEqual(MessageComponent.registry['message_type1'], messageType1)
 
     def test_message_component_init(self):

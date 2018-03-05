@@ -1,9 +1,9 @@
 import unittest
 
+from tests.util import execution_db_help
 from walkoff import executiondb
 from walkoff.executiondb.device import get_device, get_all_devices_for_app, \
     get_all_devices_of_type_from_app, App, Device
-from tests.util import execution_db_help
 
 
 class TestAppUtilities(unittest.TestCase):

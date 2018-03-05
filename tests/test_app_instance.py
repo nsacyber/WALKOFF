@@ -1,11 +1,11 @@
 import importlib
 import unittest
 
-import walkoff.config.paths
 import walkoff.appgateway
-from walkoff.appgateway import appinstance
+import walkoff.config.paths
 from tests.config import test_apps_path
 from tests.util import execution_db_help
+from walkoff.appgateway import appinstance
 
 
 class TestInstance(unittest.TestCase):

@@ -1,8 +1,9 @@
+from uuid import uuid4
+
+from sqlalchemy import Column
 from sqlalchemy_utils import UUIDType
 
 from walkoff.executiondb.representable import Representable
-from sqlalchemy import Column
-from uuid import uuid4
 
 
 class ExecutionElement(Representable):

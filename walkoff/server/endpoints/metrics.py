@@ -1,7 +1,7 @@
 from flask_jwt_extended import jwt_required
 
-from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
+from walkoff.server.returncodes import *
 
 
 def read_app_metrics():

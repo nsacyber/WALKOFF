@@ -4,10 +4,10 @@ import os.path
 import stat
 from unittest import TestCase
 
+from tests.config import test_data_path
+from tests.util.jsonplaybookloader import JsonPlaybookLoader as Loader
 from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.workflow import Workflow
-from tests.util.jsonplaybookloader import JsonPlaybookLoader as Loader
-from tests.config import test_data_path
 
 
 class TestJsonPlaybookLoader(TestCase):

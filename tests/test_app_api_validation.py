@@ -4,11 +4,11 @@ import yaml
 from jsonschema.exceptions import RefResolutionError
 
 import walkoff.appgateway
+from tests.config import basic_app_api, test_apps_path
 from walkoff.appgateway import get_app_action
+from walkoff.appgateway.validator import *
 from walkoff.config.paths import walkoff_schema_path
 from walkoff.helpers import UnknownApp
-from walkoff.appgateway.validator import *
-from tests.config import basic_app_api, test_apps_path
 
 
 class TestAppApiValidation(unittest.TestCase):

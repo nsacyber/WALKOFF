@@ -1,9 +1,9 @@
 import json
 
-from walkoff.extensions import db
-from walkoff.serverdb import User, Role, add_user
-from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
+from walkoff.extensions import db
+from walkoff.server.returncodes import *
+from walkoff.serverdb import User, Role, add_user
 
 
 class TestUserServer(ServerTestCase):
@@ -36,7 +36,7 @@ class TestUserServer(ServerTestCase):
     def test_create_user_name_password_only(self):
         data = {'username': 'test_user', 'password': 'NoH4x0rzPls!'}
         response = self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                              data=json.dumps(data), status_code=OBJECT_CREATED)
+                                               data=json.dumps(data), status_code=OBJECT_CREATED)
         self.assertUserCreatedResponse('test_user', response)
 
     def test_create_user_username_already_exists(self):
@@ -45,7 +45,7 @@ class TestUserServer(ServerTestCase):
         db.session.commit()
         data = {'username': 'username', 'password': 'NoH4x0rzPls!'}
         self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                   data=json.dumps(data), status_code=OBJECT_EXISTS_ERROR)
+                                    data=json.dumps(data), status_code=OBJECT_EXISTS_ERROR)
 
     def test_create_user_with_roles(self):
         role = Role('role1')
@@ -53,7 +53,7 @@ class TestUserServer(ServerTestCase):
         db.session.commit()
         data = {'username': 'username', 'password': 'NoH4x0rzPls!', 'roles': [{'id': role.id}]}
         response = self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                              data=json.dumps(data), status_code=OBJECT_CREATED)
+                                               data=json.dumps(data), status_code=OBJECT_CREATED)
         self.assertUserCreatedResponse('username', response)
 
     def test_read_user(self):
@@ -73,7 +73,7 @@ class TestUserServer(ServerTestCase):
         db.session.commit()
         data = {'id': user.id, 'old_password': 'asdfghjkl;', 'password': 'changed!'}
         response = self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                               data=json.dumps(data), status_code=SUCCESS)
+                                              data=json.dumps(data), status_code=SUCCESS)
         self.assertDictEqual(response, user.as_json())
         self.assertTrue(user.verify_password('changed!'))
 
@@ -83,7 +83,7 @@ class TestUserServer(ServerTestCase):
         db.session.commit()
         data = {'id': user.id, 'old_password': 'incorrectpassword', 'password': 'changed!'}
         self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                    data=json.dumps(data), status_code=UNAUTHORIZED_ERROR)
+                                   data=json.dumps(data), status_code=UNAUTHORIZED_ERROR)
         self.assertTrue(user.verify_password('asdfghjkl;'))
 
     def put_patch_update_user_with_roles(self, verb):
@@ -96,7 +96,7 @@ class TestUserServer(ServerTestCase):
         db.session.commit()
         data = {'id': user.id, 'roles': [{'id': role.id}]}
         response = send_func('/api/users', headers=self.headers, content_type='application/json',
-                                              data=json.dumps(data), status_code=SUCCESS)
+                             data=json.dumps(data), status_code=SUCCESS)
         self.assertDictEqual(response, user.as_json())
         self.assertSetEqual({role.name for role in user.roles}, {'role1'})
 
@@ -112,7 +112,7 @@ class TestUserServer(ServerTestCase):
         db.session.commit()
         data = {'id': user.id, 'username': 'new_name'}
         response = self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                               data=json.dumps(data), status_code=SUCCESS)
+                                              data=json.dumps(data), status_code=SUCCESS)
         self.assertEqual(user.username, 'new_name')
         self.assertDictEqual(response, user.as_json())
 
@@ -125,7 +125,7 @@ class TestUserServer(ServerTestCase):
         db.session.commit()
         data = {'id': user.id, 'username': 'user2'}
         self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                    data=json.dumps(data), status_code=BAD_REQUEST)
+                                   data=json.dumps(data), status_code=BAD_REQUEST)
         self.assertTrue(user.verify_password('whisperDieselEngine'))  # check password wasn't changed
 
     def test_change_password_and_username(self):
@@ -134,7 +134,7 @@ class TestUserServer(ServerTestCase):
         db.session.commit()
         data = {'id': user.id, 'old_password': 'asdfghjkl;', 'password': 'changed!', 'username': 'new_name'}
         response = self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                               data=json.dumps(data), status_code=SUCCESS)
+                                              data=json.dumps(data), status_code=SUCCESS)
         self.assertTrue(user.verify_password('changed!'))
         self.assertEqual(user.username, 'new_name')
         self.assertDictEqual(response, user.as_json())
@@ -148,7 +148,7 @@ class TestUserServer(ServerTestCase):
         db.session.commit()
         data = {'id': user.id, 'old_password': 'asdfghjkl;', 'password': 'changed!', 'username': 'user2'}
         self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                    data=json.dumps(data), status_code=BAD_REQUEST)
+                                   data=json.dumps(data), status_code=BAD_REQUEST)
         self.assertTrue(user.verify_password('whisperDieselEngine'))
         self.assertEqual(user.username, 'username')
         self.assertTrue(user2.verify_password('somethingelse#@!@#'))
@@ -160,7 +160,7 @@ class TestUserServer(ServerTestCase):
         db.session.commit()
         data = {'id': user.id, 'old_password': 'invalid', 'password': 'changed!', 'username': 'new_name'}
         self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                    data=json.dumps(data), status_code=UNAUTHORIZED_ERROR)
+                                   data=json.dumps(data), status_code=UNAUTHORIZED_ERROR)
         self.assertTrue(user.verify_password('whisperDieselEngine'))
         self.assertEqual(user.username, 'username')
 
@@ -173,14 +173,14 @@ class TestUserServer(ServerTestCase):
         headers = {'Authorization': 'Bearer {}'.format(access_token)}
         data = {'id': user.id, 'active': False}
         self.put_with_status_check('/api/users', headers=headers, content_type='application/json',
-                                    data=json.dumps(data), status_code=SUCCESS)
+                                   data=json.dumps(data), status_code=SUCCESS)
         self.assertTrue(user.active)
 
     def test_update_active_with_admin_user(self):
         user = self.setup_guest_user()
         data = {'id': user.id, 'active': False}
         self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                    data=json.dumps(data), status_code=SUCCESS)
+                                   data=json.dumps(data), status_code=SUCCESS)
         self.assertFalse(user.active)
 
     def test_update_different_user_not_admin(self):
@@ -193,12 +193,12 @@ class TestUserServer(ServerTestCase):
         admin = User.query.filter_by(username='admin').first()
         data = {'id': admin.id, 'username': 'somethingelse'}
         self.put_with_status_check('/api/users', headers=headers, content_type='application/json',
-                                    data=json.dumps(data), status_code=FORBIDDEN_ERROR)
+                                   data=json.dumps(data), status_code=FORBIDDEN_ERROR)
 
     def test_update_user_invalid_id(self):
         data = {'id': 404, 'username': 'new_name'}
         self.put_with_status_check('/api/users', headers=self.headers, content_type='application/json',
-                                    data=json.dumps(data), status_code=OBJECT_DNE_ERROR)
+                                   data=json.dumps(data), status_code=OBJECT_DNE_ERROR)
 
     def test_delete_user(self):
         user = User('username', 'asdfghjkl;')

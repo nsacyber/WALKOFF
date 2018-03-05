@@ -1,16 +1,19 @@
 import json
+from uuid import uuid4
+
 from flask import request, current_app, send_file
 from flask_jwt_extended import jwt_required
 from sqlalchemy import exists, and_
 from sqlalchemy.exc import IntegrityError, StatementError
+
 from walkoff import executiondb
-from walkoff.server.returncodes import *
-from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.workflow import Workflow
-from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid
 from walkoff.helpers import InvalidExecutionElement, regenerate_workflow_ids
-from uuid import uuid4
+from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
+from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid
+from walkoff.server.returncodes import *
+
 try:
     from StringIO import StringIO
 except ImportError:
@@ -227,6 +230,7 @@ def get_workflows(playbook=None):
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     def __get():
         return [workflow.read() for workflow in executiondb.execution_db.session.query(Workflow).all()], SUCCESS
+
     if playbook:
         return get_workflows_for_playbook(playbook)
     return __get()

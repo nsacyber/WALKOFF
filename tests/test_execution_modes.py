@@ -6,11 +6,11 @@ import walkoff.case.database as case_database
 import walkoff.case.subscription as case_subscription
 import walkoff.config.config
 import walkoff.config.config
-from walkoff.scheduler import scheduler
-from walkoff.events import WalkoffEvent, EventType
-from tests import config
 import walkoff.config.paths
+from tests import config
 from tests.util import execution_db_help
+from walkoff.events import WalkoffEvent, EventType
+from walkoff.scheduler import scheduler
 
 
 class TestExecutionModes(unittest.TestCase):

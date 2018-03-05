@@ -4,11 +4,11 @@ import walkoff.appgateway
 import walkoff.case.database as case_database
 import walkoff.case.subscription as case_subscription
 import walkoff.config.config
-from walkoff.multiprocessedexecutor import multiprocessedexecutor
-from tests import config
-from tests.util.mock_objects import *
 import walkoff.config.paths
+from tests import config
 from tests.util import execution_db_help
+from tests.util.mock_objects import *
+from walkoff.multiprocessedexecutor import multiprocessedexecutor
 
 
 class TestExecutionEvents(unittest.TestCase):

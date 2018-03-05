@@ -1,28 +1,27 @@
 import json
 import os
 
-from walkoff import executiondb
-from walkoff.executiondb.playbook import Playbook
-from walkoff.executiondb.argument import Argument
-from walkoff.executiondb.workflow import Workflow
-from walkoff.executiondb.action import Action
-from walkoff.executiondb.condition import Condition
-from walkoff.executiondb.transform import Transform
-from walkoff.executiondb.branch import Branch
-from walkoff.executiondb.conditionalexpression import ConditionalExpression
-from walkoff.executiondb.workflowresults import WorkflowStatus
-from tests.config import test_workflows_path_with_generated, test_workflows_path
-from tests.util.jsonplaybookloader import JsonPlaybookLoader
-import walkoff.config.paths
 import tests.config
+import walkoff.config.paths
+from tests.config import test_workflows_path
+from tests.util.jsonplaybookloader import JsonPlaybookLoader
+from walkoff import executiondb
 from walkoff import initialize_databases
+from walkoff.executiondb.action import Action
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.branch import Branch
+from walkoff.executiondb.condition import Condition
+from walkoff.executiondb.conditionalexpression import ConditionalExpression
+from walkoff.executiondb.playbook import Playbook
+from walkoff.executiondb.transform import Transform
+from walkoff.executiondb.workflow import Workflow
+from walkoff.executiondb.workflowresults import WorkflowStatus
 
 
 def load_playbooks(playbooks):
     paths = []
-    for directory in (test_workflows_path_with_generated, test_workflows_path):
-        paths.extend([os.path.join(directory, filename) for filename in os.listdir(directory)
-                      if filename.endswith('.playbook') and filename.split('.')[0] in playbooks])
+    paths.extend([os.path.join(test_workflows_path, filename) for filename in os.listdir(test_workflows_path)
+                  if filename.endswith('.playbook') and filename.split('.')[0] in playbooks])
     for path in paths:
         with open(path, 'r') as playbook_file:
             playbook = Playbook.create(json.load(playbook_file))
@@ -36,14 +35,14 @@ def standard_load():
 
 
 def load_playbook(playbook_name):
-    playbook = JsonPlaybookLoader.load_playbook(os.path.join(test_workflows_path, playbook_name+'.playbook'))
+    playbook = JsonPlaybookLoader.load_playbook(os.path.join(test_workflows_path, playbook_name + '.playbook'))
     executiondb.execution_db.session.add(playbook)
     executiondb.execution_db.session.commit()
     return playbook
 
 
 def load_workflow(playbook_name, workflow_name):
-    playbook = JsonPlaybookLoader.load_playbook(os.path.join(test_workflows_path, playbook_name+'.playbook'))
+    playbook = JsonPlaybookLoader.load_playbook(os.path.join(test_workflows_path, playbook_name + '.playbook'))
     executiondb.execution_db.session.add(playbook)
     executiondb.execution_db.session.commit()
 

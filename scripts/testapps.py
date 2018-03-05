@@ -1,8 +1,8 @@
 import argparse
 import importlib
 import os
-import unittest
 import sys
+import unittest
 
 sys.path.append(os.path.abspath('.'))
 from walkoff.config.paths import apps_path

@@ -2,16 +2,14 @@ import json
 import threading
 
 import gevent
-from google.protobuf.json_format import MessageToDict
 from zmq.utils.strtypes import cast_unicode
 
 from walkoff import executiondb
 from walkoff.events import WalkoffEvent
+from walkoff.executiondb.saved_workflow import SavedWorkflow
+from walkoff.executiondb.workflow import Workflow
 from walkoff.multiprocessedexecutor import loadbalancer
 from walkoff.multiprocessedexecutor.worker import convert_to_protobuf
-from walkoff.proto.build import data_pb2
-from walkoff.executiondb.workflow import Workflow
-from walkoff.executiondb.saved_workflow import SavedWorkflow
 
 try:
     from Queue import Queue
@@ -105,7 +103,8 @@ class MockLoadBalancer(object):
             self.exec_id = workflow_execution_id
 
             start = start if start else workflow.start
-            workflow.execute(execution_id=workflow_execution_id, start=start, start_arguments=start_arguments, resume=resume)
+            workflow.execute(execution_id=workflow_execution_id, start=start, start_arguments=start_arguments,
+                             resume=resume)
             self.exec_id = ''
 
     def pause_workflow(self, workflow_execution_id):

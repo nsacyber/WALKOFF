@@ -7,11 +7,11 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import attribute_mapped_collection
 from sqlalchemy_utils import UUIDType
 
-from walkoff.executiondb import Device_Base
+from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 from walkoff.events import WalkoffEvent
+from walkoff.executiondb import Device_Base
 from walkoff.executiondb.action import Action
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 
 logger = logging.getLogger(__name__)
 

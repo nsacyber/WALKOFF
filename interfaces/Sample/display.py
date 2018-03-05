@@ -1,15 +1,15 @@
-import time
 import random
-from flask import Blueprint, Response
-from interfaces import AppBlueprint
+import time
 from threading import Thread
-from gevent.event import Event, AsyncResult
-from gevent import sleep
 
+from flask import Blueprint, Response
+from gevent import sleep
+from gevent.event import Event, AsyncResult
+
+from interfaces import AppBlueprint
 
 blueprint = AppBlueprint(blueprint=Blueprint('HelloWorldPage', __name__))
 blueprint2 = AppBlueprint(blueprint=Blueprint('HelloWorldPage2', __name__), rule='/<string:action>')
-
 
 __sync_signal = Event()
 random_event_result = AsyncResult()
@@ -58,12 +58,14 @@ def stream_counter():
     Example of using an infinite generator to create a stream
     :return:
     """
+
     def counter():
         count = 0
         while True:
             time.sleep(1)
             yield 'data: %s\n\n' % count
             count += 1
+
     return Response(counter(), mimetype='text/event-stream')
 
 

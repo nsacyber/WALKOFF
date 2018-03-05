@@ -1,13 +1,13 @@
+import uuid
 from unittest import TestCase
 
 import walkoff.config.config
-from walkoff.events import WalkoffEvent, EventType
 from interfaces import InterfaceEventDispatcher, dispatcher
 from interfaces.exceptions import UnknownEvent, InvalidEventHandler
-from walkoff.helpers import UnknownAppAction, UnknownApp
 from tests.util import execution_db_help
-import uuid
+from walkoff.events import WalkoffEvent, EventType
 from walkoff.executiondb.representable import Representable
+from walkoff.helpers import UnknownAppAction, UnknownApp
 
 
 class MockWorkflow(Representable):
@@ -30,10 +30,11 @@ class TestInterfaceEventDispatcher(TestCase):
     def setUpClass(cls):
         execution_db_help.setup_dbs()
         walkoff.config.config.app_apis = {'App1': {'actions': {'action1': None,
-                                                            'action2': None,
-                                                            'action3': None}},
-                                       'App2': {}}
-        cls.action_events = {event for event in WalkoffEvent if event.event_type == EventType.action and event != WalkoffEvent.SendMessage}
+                                                               'action2': None,
+                                                               'action3': None}},
+                                          'App2': {}}
+        cls.action_events = {event for event in WalkoffEvent if
+                             event.event_type == EventType.action and event != WalkoffEvent.SendMessage}
 
     def setUp(self):
         dispatcher._clear()
@@ -52,7 +53,8 @@ class TestInterfaceEventDispatcher(TestCase):
 
     def test_registration_correct_number_methods_generated(self):
         methods = [method for method in dir(dispatcher) if method.startswith('on_')]
-        expected_number = len([event for event in WalkoffEvent if event.event_type != EventType.other and event != WalkoffEvent.SendMessage]) + 2
+        expected_number = len([event for event in WalkoffEvent if
+                               event.event_type != EventType.other and event != WalkoffEvent.SendMessage]) + 2
         # 2: one for on_app_action and one for on_walkoff_event
         self.assertEqual(len(methods), expected_number)
 

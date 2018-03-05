@@ -1,13 +1,15 @@
 import logging
+from uuid import uuid4
+
 from sqlalchemy import Column, ForeignKey, Enum, orm, Boolean
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 
+from walkoff.events import WalkoffEvent
 from walkoff.executiondb import Device_Base
 from walkoff.executiondb.executionelement import ExecutionElement
-from uuid import uuid4
 from walkoff.helpers import InvalidArgument
-from walkoff.events import WalkoffEvent
+
 logger = logging.getLogger(__name__)
 
 

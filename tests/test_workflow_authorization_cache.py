@@ -1,4 +1,5 @@
 from unittest import TestCase
+
 from walkoff.messaging import WorkflowAuthorizationCache
 
 
@@ -26,10 +27,10 @@ class TestWorkflowAuthorizationCache(TestCase):
         users2 = [4, 5]
         roles2 = [3]
         self.cache.add_authorized_users('workflow_uid1', users=users2, roles=roles2)
-        for user in users+users2:
+        for user in users + users2:
             self.assertTrue(self.cache.is_authorized('workflow_uid1', user, 1))
             self.assertFalse(self.cache.is_authorized('workflow_uid2', user, 1))
-        for role in roles+roles2:
+        for role in roles + roles2:
             self.assertTrue(self.cache.is_authorized('workflow_uid1', 1, role))
             self.assertFalse(self.cache.is_authorized('workflow_uid2', 1, role))
         self.assertFalse(self.cache.is_authorized('workflow_uid1', 6, 6))
@@ -71,5 +72,3 @@ class TestWorkflowAuthorizationCache(TestCase):
         self.assertEqual(self.cache.pop_last_user_in_progress('uid1'), 1)
         self.cache.add_user_in_progress('uid1', 7)
         self.assertEqual(self.cache.pop_last_user_in_progress('uid1'), 7)
-
-

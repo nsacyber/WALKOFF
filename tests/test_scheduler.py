@@ -178,4 +178,3 @@ class TestScheduler(unittest.TestCase):
         self.scheduler.pause()
         self.assertEqual(self.scheduler.resume(), STATE_RUNNING)
         self.assertSchedulerStateIs(STATE_RUNNING)
-    

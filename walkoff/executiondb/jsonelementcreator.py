@@ -90,4 +90,3 @@ class JsonElementCreator(object):
                 (Condition, {'transforms': Transform}),
                 (Transform, None)
             ])
-

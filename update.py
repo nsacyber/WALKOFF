@@ -1,17 +1,19 @@
-import os
-import ctypes as cts
-import sys
-from distutils.util import strtobool
-import subprocess
-import shutil
-import time
 import argparse
-import setup_walkoff
+import ctypes as cts
+import os
+import shutil
+import subprocess
+import sys
+import time
+from distutils.util import strtobool
+
+import semver
+from six.moves import input
+
 import scripts.migrate_api
 import scripts.migrate_workflows
-import semver
+import setup_walkoff
 from walkoff import __version__ as version
-from six.moves import input
 
 LATEST_VERSION = '0.7.0'
 
@@ -112,7 +114,7 @@ def migrate_workflows(flagged, inter, target):
     while inter and (mode is None):
         target = input(
             "Enter the version target, e.g. 'u0.5.2' to upgrade to 0.5.2 or 'd0.5.0' to downgrade to 0.5.0. "
-            "The most recent update is "+LATEST_VERSION+": ")
+            "The most recent update is " + LATEST_VERSION + ": ")
         mode, tgt_version = validate_version(target)
 
     print("{} workflows to version {}".format(mode, tgt_version))
@@ -179,8 +181,8 @@ def create_cli_parser():
     parser.add_argument("-mw", "--migrateworkflows",
                         help="Runs workflow migration script to upgrade/downgrade to the specified version,"
                              " e.g. 'u0.5.2' to upgrade to 0.5.2 or 'd0.5.0' to downgrade to 0.5.0"
-                             " The most recent version is "+LATEST_VERSION,
-                        nargs="?", const="u"+LATEST_VERSION)
+                             " The most recent version is " + LATEST_VERSION,
+                        nargs="?", const="u" + LATEST_VERSION)
     return parser
 
 

@@ -1,11 +1,12 @@
-from unittest import TestCase
-from walkoff.server.problem import Problem
 import json
+from unittest import TestCase
+
+from walkoff.server.problem import Problem
 
 
 class TestProblem(TestCase):
 
-    #examples taken from RFC 7807
+    # examples taken from RFC 7807
 
     def setUp(self):
         self.title = 'You do not have enough credit.'

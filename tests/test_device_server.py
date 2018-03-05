@@ -1,14 +1,14 @@
 import json
 import os
 
+import tests.config
 import walkoff.config.config
 import walkoff.config.paths
-import tests.config
+from tests.config import test_apps_path
+from tests.util.servertestcase import ServerTestCase
 from walkoff import executiondb
 from walkoff.executiondb.device import Device, App, DeviceField
 from walkoff.server.returncodes import *
-from tests.util.servertestcase import ServerTestCase
-from tests.config import test_apps_path
 
 
 class TestDevicesServer(ServerTestCase):

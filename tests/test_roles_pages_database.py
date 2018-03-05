@@ -1,7 +1,7 @@
 import unittest
 
-from walkoff.serverdb import db, Role, Resource, default_resources, initialize_default_resources_admin
 from tests.util import execution_db_help
+from walkoff.serverdb import db, Role, Resource, default_resources, initialize_default_resources_admin
 
 
 class TestRoles(unittest.TestCase):

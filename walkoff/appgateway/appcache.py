@@ -3,8 +3,8 @@ import logging
 import os.path
 import pkgutil
 import sys
-from importlib import import_module
 from collections import namedtuple
+from importlib import import_module
 
 from six import string_types
 
