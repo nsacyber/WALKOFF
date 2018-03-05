@@ -40,11 +40,6 @@
     `POST /api/workflows?source={id_to_copy}` endpoints respectively.
   * Server-Sent Event streams are now located in the `/api/streams` endpoints
   * Errors are now returned using the RFC 7807 Problem Details standard
-  * `/api/devices/import` and `/api/devices/export` endpoints have been
-    removed. Use the new `POST /api/devices` with `multipart/form-data` and
-    `GET /api/devices?mode=export` endpoints respectively.
-  <!--* The field `roles` in the `/api/users` endpoints which describes the list
-    of roles associated with the user has been renamed `role_ids`-->
 * Playbooks, workflows, and their associated execution elements are now stored
   in the database which formerly only held the devices. The both greatly
   increased scalability as well as simplified the interactions between the
@@ -70,6 +65,9 @@
   have been removed. Use the `/api/workflowqueue` resource instead
 * Removed `workflow_version` from the playbooks. This may be added later to
   provide backwards-compatible import functionality to the workflows.
+* `/api/devices/import` and `/api/devices/export` endpoints have been
+removed. Use the new `POST /api/devices` with `multipart/form-data` and
+`GET /api/devices?mode=export` endpoints respectively.
 
 <!--
 ### Contributor

@@ -60,7 +60,7 @@ Resource:
       id:
         type: integer
         minimum: 1
-        description: id of the object
+        description: ID of the object
       name:
         description: Name of the resource
         type: string
