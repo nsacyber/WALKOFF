@@ -689,6 +689,11 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		// Split our string argument selector into what the server expects
 		args.forEach(argument => {
+			if (!argument.reference) {
+				delete argument.selection;
+				return;
+			}
+
 			if (argument.selection == null) {
 				argument.selection = [];
 			} else if (typeof (argument.selection) === 'string') {
