@@ -676,7 +676,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				idsToRemove.unshift(args.indexOf(argument));
 			}
 			// Additionally, remove "value" if reference is specified
-			if (argument.reference !== '' && argument.value !== undefined) {
+			if (argument.reference && argument.value !== undefined) {
 				delete argument.value;
 			}
 			// Remove reference if unspecified
