@@ -1,6 +1,8 @@
 import json
 from datetime import datetime
 
+from sqlalchemy_utils import UUIDType
+
 from walkoff.extensions import db
 from walkoff.helpers import utc_as_rfc_datetime
 from walkoff.messaging import MessageAction
@@ -18,7 +20,7 @@ class Message(db.Model):
     body = db.Column(db.String(), nullable=False)
     users = db.relationship('User', secondary=user_messages_association,
                             backref=db.backref('messages', lazy='dynamic'))
-    workflow_execution_id = db.Column(db.String(25))
+    workflow_execution_id = db.Column(UUIDType(binary=False), nullable=False)
     requires_reauth = db.Column(db.Boolean, default=False)
     requires_response = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -86,7 +88,7 @@ class Message(db.Model):
                 ret['last_read_at'] = utc_as_rfc_datetime(last_read_at)
         if not summary:
             ret.update({'body': json.loads(self.body),
-                        'workflow_execution_id': self.workflow_execution_id,
+                        'workflow_execution_id': str(self.workflow_execution_id),
                         'requires_reauthorization': self.requires_reauth,
                         'requires_response': self.requires_response})
             if responded:
