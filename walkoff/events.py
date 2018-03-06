@@ -1,12 +1,9 @@
 import logging
-from functools import partial
 
 from apscheduler.events import (EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED,
     EVENT_SCHEDULER_RESUMED, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, EVENT_JOB_EXECUTED, EVENT_JOB_ERROR)
 from blinker import Signal
 from enum import unique, Enum
-
-from walkoff.case.callbacks import add_entry_to_case
 
 logger = logging.getLogger(__name__)
 
@@ -36,13 +33,13 @@ class WalkoffSignal(object):
         signal (Signal): The signal object which sends the event and data
         event_type (EventType): The event type of this signal
         is_loggable (bool): Should this event get logged into cases?
-        message (str): The message log with this signal to a case
+        message (str): Human readable message for this event
 
     Args:
         name (str): The name of the signal
         event_type (EventType): The event type of this signal
         loggable (bool, optional): Should this event get logged into cases? Defaults to True
-        message (str, optional): The message log with this signal to a case. Defaults to empty string
+        message (str, optional): Human readable message for this event. Defaults to empty string
     """
     _signals = {}
 
@@ -51,13 +48,7 @@ class WalkoffSignal(object):
         self.signal = Signal(name)
         self.event_type = event_type
         self.is_loggable = loggable
-        if loggable:
-            signal_callback = partial(add_entry_to_case,
-                                      data='',
-                                      event_type=event_type.name,
-                                      entry_message=message,
-                                      message_name=name)
-            self.connect(signal_callback, weak=False)
+        self.message = message
 
     def send(self, sender, **kwargs):
         """Sends the signal with data
