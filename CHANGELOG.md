@@ -22,8 +22,6 @@
 * Playbooks can be exported to and imported from a JSON text file using the new
   `GET /api/playbooks?mode=export` and the `POST /api/playbooks` using a
   `multipart/form-data` body respectively.
-<!--* A new event was created on the notification SSE stream to alert the UI
-  when the current user has deleted a message. -->
 
 ### Changed
 * Significant changes to the REST API
@@ -53,6 +51,8 @@
   the Google Protocol Buffer messages as well as the arguments to callbacks
   using the interface event dispatcher.
 * All times are stored in UTC time and represented in RFC 3339 format
+* The marshmallow object serialization library is now used to serialize and
+  deserialize execution elements instead of our old homemade solution
 
 ### Deprecated
 * The "sender_uids" argument in the interface dispatcher `on_xyz_event`
