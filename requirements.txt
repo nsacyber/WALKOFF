@@ -18,5 +18,5 @@ semver
 jsonschema
 psutil > 5.0.0
 six >= 1.10.0
-marshmallow >= 3.0.0
-marshmallow_sqlalchemy >= 0.13.0
+marshmallow >= 2.15, < 3.0.0
+marshmallow-sqlalchemy >= 0.13.0
