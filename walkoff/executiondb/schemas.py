@@ -3,19 +3,24 @@ from .workflow import Workflow
 from .action import Action
 from .position import Position
 from .branch import Branch
+from .executionelement import ExecutionElement
 from .conditionalexpression import ConditionalExpression, valid_operators
 from .condition import Condition
 from .transform import Transform
 from .argument import Argument
 import walkoff.executiondb as executiondb
-from marshmallow_sqlalchemy import ModelSchema, ModelSchemaOpts, field_for
-from marshmallow import validates_schema, ValidationError, fields, post_dump, pre_dump, pre_load, post_load, UnmarshalResult
+from marshmallow_sqlalchemy import ModelSchema, field_for
+from marshmallow import validates_schema, ValidationError, fields, post_dump, post_load, UnmarshalResult
 from marshmallow.validate import OneOf
 from walkoff.helpers import InvalidExecutionElement
-from marshmallow.compat import iteritems
 
 
 class ExecutionBaseSchema(ModelSchema):
+    """Base schema for the execution database.
+
+    This base class adds functionality to strip null fields from serialized objects and attaches the
+    execution_db.session on load
+    """
     __skipvalues = (None, [{}])
 
     @post_dump
@@ -23,6 +28,14 @@ class ExecutionBaseSchema(ModelSchema):
         return self.remove_skip_values(data)
 
     def remove_skip_values(self, data):
+        """Removes fields with empty values from data
+
+        Args:
+            data (dict): The data passed in
+
+        Returns:
+            (dict): The data with forbidden fields removed
+        """
         return {
             key: value for key, value in data.items()
             if value not in self.__skipvalues
@@ -35,6 +48,10 @@ class ExecutionBaseSchema(ModelSchema):
 
 
 class ExecutionElementBaseSchema(ExecutionBaseSchema):
+    """The base schema for execution elements
+
+    This class validates the deserialized execution elements
+    """
 
     def load(self, data, session=None, instance=None, *args, **kwargs):
         # Can't use post_load because we can't override marshmallow_sqlalchemy's post_load hook
@@ -47,7 +64,7 @@ class ExecutionElementBaseSchema(ExecutionBaseSchema):
             all_objs = objs.data
             if not isinstance(objs.data, list):
                 all_objs = [all_objs]
-            for obj in all_objs:
+            for obj in (obj for obj in all_objs if isinstance(obj, ExecutionElement)):
                 try:
                     obj.validate()
                 except InvalidExecutionElement as e:
@@ -58,6 +75,11 @@ class ExecutionElementBaseSchema(ExecutionBaseSchema):
 
 
 class ArgumentSchema(ExecutionBaseSchema):
+    """The schema for arguments.
+
+    This class handles constructing the argument specially so that either a reference or a value is always non-null,
+    but never both.
+    """
     name = field_for(Argument, 'name', required=True)
     value = fields.Raw()
     selection = fields.List(fields.Raw())  # There should be some validation on this maybe
@@ -86,17 +108,24 @@ class ArgumentSchema(ExecutionBaseSchema):
 
 
 class ActionableSchema(ExecutionElementBaseSchema):
+    """Base schema for execution elements with actions
+    """
     app_name = fields.Str(required=True)
     action_name = fields.Str(required=True)
     arguments = fields.Nested(ArgumentSchema, many=True)
 
 
 class TransformSchema(ActionableSchema):
+    """Schema for transforms
+    """
     class Meta:
         model = Transform
 
 
 class ConditionSchema(ActionableSchema):
+    """Schema for conditions
+    """
+
     transforms = fields.Nested(TransformSchema, many=True)
     is_negated = field_for(Condition, 'is_negated', default=False)
 
@@ -105,6 +134,8 @@ class ConditionSchema(ActionableSchema):
 
 
 class ConditionalExpressionSchema(ExecutionElementBaseSchema):
+    """Schema for conditional expressions
+    """
     conditions = fields.Nested(ConditionSchema, many=True)
     child_expressions = fields.Nested('self', many=True)
     operator = field_for(ConditionalExpression, 'operator', default='and', validates=OneOf(*valid_operators), missing='and')
@@ -116,6 +147,8 @@ class ConditionalExpressionSchema(ExecutionElementBaseSchema):
 
 
 class BranchSchema(ExecutionElementBaseSchema):
+    """Schema for branches
+    """
     source_id = field_for(Branch, 'source_id', required=True)
     destination_id = field_for(Branch, 'destination_id', required=True)
     condition = fields.Nested(ConditionalExpressionSchema())
@@ -127,6 +160,8 @@ class BranchSchema(ExecutionElementBaseSchema):
 
 
 class PositionSchema(ExecutionBaseSchema):
+    """Schema for positions
+    """
     x = field_for(Position, 'x', required=True)
     y = field_for(Position, 'y', required=True)
 
@@ -135,6 +170,8 @@ class PositionSchema(ExecutionBaseSchema):
 
 
 class ActionSchema(ActionableSchema):
+    """Schema for actions
+    """
     trigger = fields.Nested(ConditionalExpressionSchema())
     position = fields.Nested(PositionSchema())
 
@@ -143,6 +180,8 @@ class ActionSchema(ActionableSchema):
 
 
 class WorkflowSchema(ExecutionElementBaseSchema):
+    """Schema for workflows
+    """
     name = field_for(Workflow, 'name', required=True)
     actions = fields.Nested(ActionSchema, many=True)
     branches = fields.Nested(BranchSchema, many=True)
@@ -153,6 +192,8 @@ class WorkflowSchema(ExecutionElementBaseSchema):
 
 
 class PlaybookSchema(ExecutionElementBaseSchema):
+    """Schema for playbooks
+    """
     name = field_for(Playbook, 'name', required=True)
     workflows = fields.Nested(WorkflowSchema, many=True)
 
@@ -174,4 +215,12 @@ _schema_lookup = {
 
 
 def dump_element(element):
+    """Dumps an execution element
+
+    Args:
+        element (ExecutionElement): The element to dump
+
+    Returns:
+        dict: The serialized element
+    """
     return _schema_lookup[element.__class__]().dump(element).data
