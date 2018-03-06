@@ -166,3 +166,34 @@ class TestArgument(TestCase):
                   'c': 'something'}
         with self.assertRaises(InvalidArgument):
             arg.get_value({'a': input_, 'b': 2})
+
+    def test_update_value_reference_from_value(self):
+        input_output = {
+            (None, None): (42, None),
+            (43, None): (43, None),
+            (42, None): (42, None),
+            (43, 'a'): (43, None),
+            (None, 'a'): (None, 'a'),
+            (42, 'a'): (None, 'a')
+        }
+        for inputs, outputs in input_output.items():
+            arg = Argument('test', value=42)
+            arg.update_value_reference(*inputs)
+            self.assertEqual(arg.value, outputs[0])
+            self.assertEqual(arg.reference, outputs[1])
+
+    def test_update_value_reference_from_reference(self):
+        input_output = {
+            (None, None): (None, 'a'),
+            (None, 'b'): (None, 'b'),
+            (None, 'a'): (None, 'a'),
+            (None, ''): (None, 'a'),
+            (42, None): (42, None),
+            (42, 'a'): (42, None),
+            (42, ''): (42, None)
+        }
+        for inputs, outputs in input_output.items():
+            arg = Argument('test', reference='a')
+            arg.update_value_reference(*inputs)
+            self.assertEqual(arg.value, outputs[0])
+            self.assertEqual(arg.reference, outputs[1])

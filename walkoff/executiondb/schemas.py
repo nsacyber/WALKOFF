@@ -12,12 +12,16 @@ from marshmallow_sqlalchemy import ModelSchema, ModelSchemaOpts, field_for
 from marshmallow import validates_schema, ValidationError, fields, post_dump, pre_dump, pre_load, post_load, UnmarshalResult
 from marshmallow.validate import OneOf
 from walkoff.helpers import InvalidExecutionElement
+from marshmallow.compat import iteritems
 
 
 class ExecutionBaseSchema(ModelSchema):
     __skipvalues = (None, [{}])
 
     @post_dump
+    def _do_post_dump(self, data):
+        return self.remove_skip_values(data)
+
     def remove_skip_values(self, data):
         return {
             key: value for key, value in data.items()
@@ -67,6 +71,18 @@ class ArgumentSchema(ExecutionBaseSchema):
         has_reference = 'reference' in data and bool(data['reference'])
         if (not has_value and not has_reference) or (has_value and has_reference):
             raise ValidationError('Arguments must have either a value or a reference.', ['value'])
+
+    @post_load
+    def make_instance(self, data):
+        instance = self.instance or self.get_instance(data)
+        if instance is not None:
+            value = data.pop('value', None)
+            reference = data.pop('reference', None)
+            instance.update_value_reference(value, reference)
+            for key, value in data.items():
+                setattr(instance, key, value)
+            return instance
+        return self.opts.model(**data)
 
 
 class ActionableSchema(ExecutionElementBaseSchema):

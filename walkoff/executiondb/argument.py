@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy import Column, Integer, ForeignKey, String, orm
 from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
-
+from sqlalchemy.ext.hybrid import hybrid_property
 from walkoff.executiondb import Device_Base
 from walkoff.helpers import InvalidArgument
 
@@ -33,10 +33,9 @@ class Argument(Device_Base):
         """
         self.name = name
         self.value = value
+        self._is_reference = True if value is None else False
         self.reference = reference
         self.selection = selection
-        self._is_reference = True if value is None else False
-
         self.validate()
 
     @orm.reconstructor
@@ -52,6 +51,22 @@ class Argument(Device_Base):
         elif self.value is not None and self.reference:
             message = 'Input {} must have either value or reference. Input has both. Using "value"'.format(self.name)
             logger.warning(message)
+            self.reference = None
+
+    def update_value_reference(self, value, reference):
+        """Helper function to ensure that either reference or value is selected and the other is None
+
+        Args:
+            value: The value to set. Can be None
+            reference: The reference to set. Can be none
+        """
+        if value is not None and (self.value != value or self.reference):
+            self.value = value
+            self.reference = None
+        elif reference:
+            self.reference = reference
+            self.value = None
+            self._is_reference = True
 
     def is_ref(self):
         """Returns whether the reference field is being used, or the value field.
