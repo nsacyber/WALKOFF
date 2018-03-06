@@ -4,13 +4,14 @@ import logging.config
 import os
 import sys
 import traceback
+import warnings
 from os.path import isfile
 
 from gevent import monkey
 from gevent import pywsgi
 
-from walkoff.config import paths, config
 import walkoff
+from walkoff.config import paths, config
 
 logger = logging.getLogger('walkoff')
 
@@ -34,6 +35,14 @@ def setup_logger():
         logging.basicConfig()
         logger.info("Basic logging is being used")
 
+    def send_warnings_to_log(message, category, filename, lineno, file=None):
+        logging.warning(
+            '%s:%s: %s:%s' %
+            (filename, lineno, category.__name__, message))
+        return
+
+    warnings.showwarning = send_warnings_to_log
+
 
 def run(host, port):
     from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
@@ -41,10 +50,10 @@ def run(host, port):
     print_banner()
     pids = spawn_worker_processes()
     monkey.patch_all()
-    
+
     from scripts.compose_api import compose_api
     compose_api()
-    
+
     from walkoff.server import flaskserver
     flaskserver.running_context.executor.initialize_threading(pids=pids)
     # The order of these imports matter for initialization (should probably be fixed)
@@ -109,6 +118,7 @@ if __name__ == "__main__":
     try:
         config.initialize()
         from walkoff import initialize_databases
+
         initialize_databases()
         run(*convert_host_port(args))
     except KeyboardInterrupt:

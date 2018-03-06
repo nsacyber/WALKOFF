@@ -7,4 +7,3 @@ def initialize_databases():
 
     walkoff.executiondb.execution_db = walkoff.executiondb.ExecutionDatabase()
     walkoff.case.database.case_db = walkoff.case.database.CaseDatabase()
-

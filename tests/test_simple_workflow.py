@@ -3,13 +3,13 @@ from datetime import datetime
 
 import walkoff.appgateway
 import walkoff.config.config
-from walkoff.case import subscription, database
-from walkoff.multiprocessedexecutor import multiprocessedexecutor
+import walkoff.config.paths
 from tests import config
+from tests.util import execution_db_help
 from tests.util.case_db_help import *
 from tests.util.mock_objects import *
-import walkoff.config.paths
-from tests.util import execution_db_help
+from walkoff.case import subscription, database
+from walkoff.multiprocessedexecutor import multiprocessedexecutor
 
 
 class TestSimpleWorkflow(unittest.TestCase):
@@ -89,7 +89,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         actions = []
         for id_ in action_ids:
             actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
-        #print(actions)
+        # print(actions)
         self.assertEqual(len(actions), 2)
 
         expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},

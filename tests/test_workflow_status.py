@@ -1,19 +1,20 @@
 import json
+from uuid import uuid4
+
 import walkoff.case.database as case_database
-from walkoff.events import WalkoffEvent
-from walkoff.server import flaskserver as flask_server
-from walkoff.server.returncodes import *
+import walkoff.executiondb.schemas
+from tests.util import execution_db_help
 from tests.util.case_db_help import setup_subscriptions_for_action
 from tests.util.servertestcase import ServerTestCase
-from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
-from walkoff.executiondb import WorkflowStatusEnum, ActionStatusEnum
-from walkoff.executiondb.workflow import Workflow
-from uuid import uuid4
-from tests.util import execution_db_help
 from walkoff import executiondb
-from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
+from walkoff.events import WalkoffEvent
+from walkoff.executiondb import WorkflowStatusEnum, ActionStatusEnum
 from walkoff.executiondb.executionelement import ExecutionElement
-import walkoff.executiondb.schemas
+from walkoff.executiondb.workflow import Workflow
+from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
+from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
+from walkoff.server import flaskserver as flask_server
+from walkoff.server.returncodes import *
 
 
 class MockWorkflow(ExecutionElement):
@@ -27,6 +28,7 @@ class MockWorkflow(ExecutionElement):
 
     def as_json(self):
         return {'id': self.id, 'name': self.name, 'execution_id': self.execution_id}
+
 
 class MockWorkflowSchema(object):
     @staticmethod
@@ -203,7 +205,6 @@ class TestWorkflowStatus(ServerTestCase):
         self.assertEqual(workflow_status.status.name, 'completed')
 
     def test_execute_workflow_change_arguments(self):
-
         playbook = execution_db_help.standard_load()
         workflow = executiondb.execution_db.session.query(Workflow).filter_by(playbook_id=playbook.id).first()
 
@@ -228,7 +229,6 @@ class TestWorkflowStatus(ServerTestCase):
         self.assertEqual(result['count'], 1)
 
     def test_execute_workflow_pause_resume(self):
-
         result = {'paused': False, 'resumed': False}
         wf_exec_id = uuid4()
         wf_id = uuid4()
@@ -258,7 +258,7 @@ class TestWorkflowStatus(ServerTestCase):
         self.assertTrue(result['resumed'])
 
     def test_abort_workflow(self):
-        execution_db_help.load_playbook('testGeneratedWorkflows/pauseWorkflowTest')
+        execution_db_help.load_playbook('pauseWorkflowTest')
 
         workflow = executiondb.execution_db.session.query(Workflow).filter_by(name='pauseWorkflow').first()
 

@@ -4,8 +4,8 @@ from sqlalchemy import Column, Integer, ForeignKey, String
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 
-from walkoff.executiondb import Device_Base
 from walkoff.events import WalkoffEvent
+from walkoff.executiondb import Device_Base
 from walkoff.executiondb.executionelement import ExecutionElement
 
 logger = logging.getLogger(__name__)
@@ -72,4 +72,3 @@ class Branch(ExecutionElement, Device_Base):
                 return None
         else:
             return None
-

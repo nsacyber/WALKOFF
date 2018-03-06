@@ -1,8 +1,8 @@
 import os
 import shutil
+import sys
 
 import zmq.auth
-import sys
 
 sys.path.append(os.path.abspath('.'))
 

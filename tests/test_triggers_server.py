@@ -1,16 +1,16 @@
 import json
 import threading
 import time
+from datetime import datetime
 
 import walkoff.case.subscription
 import walkoff.config.paths
+from tests.util import execution_db_help
+from tests.util.assertwrappers import orderless_list_compare
+from tests.util.case_db_help import *
+from tests.util.servertestcase import ServerTestCase
 from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
-from tests.util.servertestcase import ServerTestCase
-from tests.util import execution_db_help
-from tests.util.case_db_help import *
-from tests.util.assertwrappers import orderless_list_compare
-from datetime import datetime
 
 try:
     from importlib import reload
@@ -36,7 +36,7 @@ class TestTriggersServer(ServerTestCase):
         case_database.case_db.session.commit()
 
     def test_trigger_execute(self):
-        workflow = execution_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
+        workflow = execution_db_help.load_workflow('triggerActionWorkflow', 'triggerActionWorkflow')
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids, action_events=self.action_events)
 
@@ -76,7 +76,7 @@ class TestTriggersServer(ServerTestCase):
         self.assertListEqual(expected_events, events)
 
     def test_trigger_execute_multiple_workflows(self):
-        workflow = execution_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
+        workflow = execution_db_help.load_workflow('triggerActionWorkflow', 'triggerActionWorkflow')
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids, action_events=self.action_events)
 
@@ -128,7 +128,7 @@ class TestTriggersServer(ServerTestCase):
 
     # TODO: Is this test really necessary?
     def test_trigger_execute_multiple_data(self):
-        workflow = execution_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
+        workflow = execution_db_help.load_workflow('triggerActionWorkflow', 'triggerActionWorkflow')
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids, action_events=self.action_events)
 
@@ -177,7 +177,7 @@ class TestTriggersServer(ServerTestCase):
         self.assertListEqual(expected_events, events)
 
     def test_trigger_execute_change_input(self):
-        workflow = execution_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
+        workflow = execution_db_help.load_workflow('triggerActionWorkflow', 'triggerActionWorkflow')
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids, action_events=self.action_events)
 

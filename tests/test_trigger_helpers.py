@@ -1,6 +1,7 @@
 from unittest import TestCase
-from walkoff.server.endpoints.triggers import get_authorized_execution_ids, add_user_in_progress
+
 import walkoff.messaging
+from walkoff.server.endpoints.triggers import get_authorized_execution_ids, add_user_in_progress
 
 
 class TestTriggerHelpers(TestCase):
@@ -53,4 +54,3 @@ class TestTriggerHelpers(TestCase):
         for uid in in_progress:
             self.assertTrue(walkoff.messaging.workflow_authorization_cache.peek_user_in_progress(uid), 42)
         self.assertIsNone(walkoff.messaging.workflow_authorization_cache.peek_user_in_progress(self.uid3))
-

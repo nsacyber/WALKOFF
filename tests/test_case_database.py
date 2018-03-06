@@ -2,9 +2,9 @@ import json
 import unittest
 
 import walkoff.case.database as case_database
-from walkoff.case.subscription import *
-from tests.util.assertwrappers import orderless_list_compare
 from tests.util import execution_db_help
+from tests.util.assertwrappers import orderless_list_compare
+from walkoff.case.subscription import *
 
 
 class TestCaseDatabase(unittest.TestCase):

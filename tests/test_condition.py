@@ -2,13 +2,15 @@ import unittest
 
 import walkoff.appgateway
 import walkoff.config.config
+import walkoff.config.paths
+import walkoff.config.paths
+from tests.config import test_apps_path
+from tests.util import execution_db_help
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.transform import Transform
-from walkoff.helpers import InvalidExecutionElement, InvalidArgument
-from tests.config import test_apps_path
-import walkoff.config.paths
-from tests.util import execution_db_help
+from walkoff.helpers import InvalidArgument
+from walkoff.helpers import InvalidExecutionElement
 
 
 class TestCondition(unittest.TestCase):

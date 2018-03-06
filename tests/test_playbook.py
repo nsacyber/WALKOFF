@@ -1,16 +1,16 @@
 import unittest
 
+from tests.util import execution_db_help
+from tests.util.assertwrappers import orderless_list_compare
 from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.workflow import Workflow
-from tests.util.assertwrappers import orderless_list_compare
-from tests.util import execution_db_help
 
 
 class TestPlaybook(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         execution_db_help.setup_dbs()
-        
+
     @classmethod
     def tearDownClass(cls):
         execution_db_help.tear_down_device_db()

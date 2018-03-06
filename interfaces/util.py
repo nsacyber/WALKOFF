@@ -59,9 +59,11 @@ def add_docstring(docstring):
     Returns:
         func: The function with the added docstring
     """
+
     def wrapper(func):
         func.__doc__ = docstring
         return func
+
     return wrapper
 
 

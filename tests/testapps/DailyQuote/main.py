@@ -1,6 +1,8 @@
-from apps import App, action
-import requests
 import json
+
+import requests
+
+from apps import App, action
 
 
 # There is an associated Daily Quote test workflow which can be executed

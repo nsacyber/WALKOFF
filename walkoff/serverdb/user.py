@@ -1,13 +1,15 @@
 import logging
 from datetime import datetime
+
 from passlib.hash import pbkdf2_sha512
 from sqlalchemy.ext.hybrid import hybrid_property
+
 from walkoff.extensions import db
+from walkoff.helpers import utc_as_rfc_datetime
 from walkoff.serverdb.mixins import TrackModificationsMixIn
 from walkoff.serverdb.role import Role
-from walkoff.helpers import utc_as_rfc_datetime
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
 
 user_roles_association = db.Table('user_roles_association',
                                   db.Column('role_id', db.Integer, db.ForeignKey('role.id')),

@@ -3,17 +3,17 @@ import unittest
 import walkoff.appgateway
 import walkoff.config.config
 import walkoff.config.paths
-from walkoff.executiondb.argument import Argument
+from tests.config import test_apps_path
+from tests.util import execution_db_help
 from walkoff.appgateway.actionresult import ActionResult
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.action import Action
+from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.branch import Branch
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.workflow import Workflow
-from tests.config import test_apps_path
 from walkoff.helpers import InvalidExecutionElement
-from tests.util import execution_db_help
 
 
 class TestBranch(unittest.TestCase):
@@ -45,11 +45,11 @@ class TestBranch(unittest.TestCase):
         self.__compare_init(branch, 1, 2, status='test_status')
 
     def test_init_with_conditions(self):
-         condition = ConditionalExpression(
-             'and',
-             conditions=[Condition('HelloWorld', 'Top Condition'), Condition('HelloWorld', 'mod1_flag1')])
-         branch = Branch(1, 2, condition=condition)
-         self.__compare_init(branch, 1, 2, condition=condition)
+        condition = ConditionalExpression(
+            'and',
+            conditions=[Condition('HelloWorld', 'Top Condition'), Condition('HelloWorld', 'mod1_flag1')])
+        branch = Branch(1, 2, condition=condition)
+        self.__compare_init(branch, 1, 2, condition=condition)
 
     def test_eq(self):
         condition = ConditionalExpression(

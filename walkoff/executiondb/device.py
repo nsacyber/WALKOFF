@@ -7,10 +7,11 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
-from walkoff.config.config import secret_key as key
-from walkoff.executiondb import Device_Base
 from walkoff import executiondb
 from walkoff.appgateway.validator import convert_primitive_type
+from walkoff.config.config import secret_key as key
+from walkoff.executiondb import Device_Base
+
 logger = logging.getLogger(__name__)
 
 

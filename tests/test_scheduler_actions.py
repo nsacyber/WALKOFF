@@ -2,8 +2,8 @@ import json
 
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
 
-from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
+from walkoff.server.returncodes import *
 
 
 class TestSchedulerActions(ServerTestCase):

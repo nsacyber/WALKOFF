@@ -43,6 +43,7 @@ def action(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         return format_result(func(*args, **kwargs))
+
     WalkoffTag.action.tag(wrapper)
     wrapper.__arg_names = get_function_arg_names(func)
     return wrapper

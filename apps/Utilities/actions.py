@@ -1,10 +1,11 @@
+import csv
+import json
+import sys
+import time
+from random import SystemRandom
+
 from apps import action
 from apps.messaging import Text, Message, send_message, Url, AcceptDecline
-import time
-import json
-import csv
-import sys
-from random import SystemRandom
 
 
 @action
@@ -162,7 +163,7 @@ def set_message_subject(message, subject):
     message = Message.from_json(message)
     message.subject = subject
     return message.as_json()
-    
+
 
 @action
 def send_full_message(message, users=None, roles=None):

@@ -1,13 +1,14 @@
 from datetime import datetime
 
+from enum import Enum, unique
 from flask import Blueprint, Response
 from flask_jwt_extended import get_jwt_identity
 from gevent import sleep
 from gevent.event import Event, AsyncResult
-from enum import Enum, unique
+
 from walkoff.helpers import create_sse_event
-from walkoff.security import jwt_required_in_query
 from walkoff.messaging import MessageActionEvent
+from walkoff.security import jwt_required_in_query
 
 notifications_page = Blueprint('notifications_page', __name__)
 

@@ -6,11 +6,11 @@ from sqlalchemy import Column, String, ForeignKey, orm, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 
-from walkoff.executiondb import Device_Base
+from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 from walkoff.events import WalkoffEvent
+from walkoff.executiondb import Device_Base
 from walkoff.executiondb.action import Action
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 from walkoff.helpers import InvalidExecutionElement
 
 logger = logging.getLogger(__name__)
@@ -73,7 +73,8 @@ class Workflow(ExecutionElement, Device_Base):
             if branch.source_id not in action_ids:
                 branch_errors.append('Branch source ID {} not found in workflow actions'.format(branch.source_id))
             if branch.destination_id not in action_ids:
-                branch_errors.append('Branch destination ID {} not found in workflow actions'.format(branch.destination_id))
+                branch_errors.append(
+                    'Branch destination ID {} not found in workflow actions'.format(branch.destination_id))
         if branch_errors:
             errors['branches'] = branch_errors
         if errors:

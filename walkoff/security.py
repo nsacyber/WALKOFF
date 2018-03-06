@@ -1,3 +1,5 @@
+import json
+import logging
 from functools import wraps
 
 from flask import request
@@ -7,20 +9,17 @@ from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_jwt_extended.tokens import decode_jwt
 from flask_jwt_extended.view_decorators import _load_user
 
-from walkoff.serverdb import User
+import walkoff.serverdb
 from walkoff.extensions import jwt
 from walkoff.server.returncodes import FORBIDDEN_ERROR
-import walkoff.serverdb
 from walkoff.server.returncodes import UNAUTHORIZED_ERROR
+from walkoff.serverdb import User
 from walkoff.serverdb.tokens import is_token_revoked
-import json
-import logging
 
 try:
     from flask import _app_ctx_stack as ctx_stack
 except ImportError:  # pragma: no cover
     from flask import _request_ctx_stack as ctx_stack
-
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +41,6 @@ def token_is_revoked_loader():
 
 
 def admin_required(fn):
-
     @wraps(fn)
     def wrapper(*args, **kwargs):
         if user_has_correct_roles({1}, all_required=True):
@@ -62,7 +60,6 @@ def permissions_required_for_resources(*resource_permissions):
 
 
 def _permissions_decorator(resource_permissions, all_required=False):
-
     def wrapper(fn):
         @wraps(fn)
         def decorated_view(*args, **kwargs):

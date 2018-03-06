@@ -2,16 +2,18 @@ import logging
 from copy import deepcopy
 
 from sqlalchemy import Column, ForeignKey, String, orm
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway import get_transform
-from walkoff.executiondb.argument import Argument
-from walkoff.executiondb import Device_Base
-from walkoff.events import WalkoffEvent
-from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import get_transform_api, InvalidArgument, split_api_params, UnknownTransform, UnknownApp, InvalidExecutionElement
 from walkoff.appgateway.validator import validate_transform_parameters
+from walkoff.events import WalkoffEvent
+from walkoff.executiondb import Device_Base
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.executionelement import ExecutionElement
+from walkoff.helpers import UnknownTransform, UnknownApp, \
+    InvalidExecutionElement
+from walkoff.helpers import get_transform_api, InvalidArgument, split_api_params
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +50,7 @@ class Transform(ExecutionElement, Device_Base):
 
         self.validate()
         self._transform_executable = get_transform(self.app_name, self._run)
-        
+
     def validate(self):
         errors = {}
         try:

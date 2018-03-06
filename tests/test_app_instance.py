@@ -1,11 +1,11 @@
 import importlib
 import unittest
 
-import walkoff.config.paths
 import walkoff.appgateway
-from walkoff.appgateway import appinstance
+import walkoff.config.paths
 from tests.config import test_apps_path
 from tests.util import execution_db_help
+from walkoff.appgateway import appinstance
 
 
 class TestInstance(unittest.TestCase):
@@ -37,7 +37,3 @@ class TestInstance(unittest.TestCase):
         hello_world_main = importlib.import_module('tests.testapps.HelloWorld.main')
         hello_world_main_class = getattr(hello_world_main, 'Main')
         self.assertIsInstance(created_app, hello_world_main_class)
-
-    def test_shutdown(self):
-        inst = appinstance.AppInstance.create("HelloWorld", "testDevice")
-        inst.shutdown()

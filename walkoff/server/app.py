@@ -6,8 +6,9 @@ from jinja2 import FileSystemLoader
 from walkoff.executiondb.device import App
 from walkoff import helpers
 from walkoff.config import paths
-from walkoff.helpers import format_db_path
+from walkoff.executiondb.device import App
 from walkoff.extensions import db, jwt
+from walkoff.helpers import format_db_path
 from walkoff.serverdb.casesubscription import CaseSubscription
 logger = logging.getLogger(__name__)
 

@@ -1,24 +1,26 @@
 import logging
-import uuid
 import traceback
+import uuid
 
 from sqlalchemy import Column, Integer, ForeignKey, String, orm
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway import get_app_action, is_app_action_bound
-from walkoff.executiondb.argument import Argument
 from walkoff.appgateway.actionresult import ActionResult
-from walkoff.executiondb import Device_Base
-from walkoff.events import WalkoffEvent
-from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message, UnknownApp, UnknownAppAction, InvalidExecutionElement
 from walkoff.appgateway.validator import validate_app_action_parameters
+from walkoff.events import WalkoffEvent
+from walkoff.executiondb import Device_Base
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.executionelement import ExecutionElement
+from walkoff.helpers import UnknownApp, UnknownAppAction, \
+    InvalidExecutionElement
+from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
+
 logger = logging.getLogger(__name__)
 
 
 class Action(ExecutionElement, Device_Base):
-
     __tablename__ = 'action'
     workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id'))
     app_name = Column(String(80), nullable=False)

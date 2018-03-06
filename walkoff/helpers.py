@@ -4,11 +4,12 @@ import logging
 import os
 import pkgutil
 import sys
+from datetime import datetime
 from uuid import uuid4
 
 import walkoff.config.config
 import walkoff.config.paths
-from datetime import datetime
+
 try:
     from importlib import reload as reload_module
 except ImportError:
@@ -43,8 +44,8 @@ def import_py_file(module_name, path_to_file):
             if w:
                 mod_name = module_name.replace('.main', '')
                 if not (type(w[-1].category) == type(exceptions.RuntimeWarning) or
-                                        'Parent module \'apps.' + mod_name + '\' not found while handling absolute import' in
-                                w[-1].message):
+                        'Parent module \'apps.' + mod_name + '\' not found while handling absolute import' in
+                        w[-1].message):
                     print(w[-1].message)
     else:
         from importlib import machinery

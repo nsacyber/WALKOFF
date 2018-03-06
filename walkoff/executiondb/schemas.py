@@ -1,18 +1,19 @@
-from .playbook import Playbook
-from .workflow import Workflow
-from .action import Action
-from .position import Position
-from .branch import Branch
-from .executionelement import ExecutionElement
-from .conditionalexpression import ConditionalExpression, valid_operators
-from .condition import Condition
-from .transform import Transform
-from .argument import Argument
-import walkoff.executiondb as executiondb
-from marshmallow_sqlalchemy import ModelSchema, field_for
 from marshmallow import validates_schema, ValidationError, fields, post_dump, post_load, UnmarshalResult
 from marshmallow.validate import OneOf
+from marshmallow_sqlalchemy import ModelSchema, field_for
+
+import walkoff.executiondb as executiondb
 from walkoff.helpers import InvalidExecutionElement
+from .action import Action
+from .argument import Argument
+from .branch import Branch
+from .condition import Condition
+from .conditionalexpression import ConditionalExpression, valid_operators
+from .executionelement import ExecutionElement
+from .playbook import Playbook
+from .position import Position
+from .transform import Transform
+from .workflow import Workflow
 
 
 class ExecutionBaseSchema(ModelSchema):
@@ -56,7 +57,8 @@ class ExecutionElementBaseSchema(ExecutionBaseSchema):
     def load(self, data, session=None, instance=None, *args, **kwargs):
         # Can't use post_load because we can't override marshmallow_sqlalchemy's post_load hook
         try:
-            objs = super(ExecutionElementBaseSchema, self).load(data, session=session, instance=instance, *args, **kwargs)
+            objs = super(ExecutionElementBaseSchema, self).load(data, session=session, instance=instance, *args,
+                                                                **kwargs)
         except InvalidExecutionElement as e:
             objs = UnmarshalResult({}, e.errors)
         if not objs.errors:
@@ -118,6 +120,7 @@ class ActionableSchema(ExecutionElementBaseSchema):
 class TransformSchema(ActionableSchema):
     """Schema for transforms
     """
+
     class Meta:
         model = Transform
 
@@ -138,12 +141,13 @@ class ConditionalExpressionSchema(ExecutionElementBaseSchema):
     """
     conditions = fields.Nested(ConditionSchema, many=True)
     child_expressions = fields.Nested('self', many=True)
-    operator = field_for(ConditionalExpression, 'operator', default='and', validates=OneOf(*valid_operators), missing='and')
+    operator = field_for(ConditionalExpression, 'operator', default='and', validates=OneOf(*valid_operators),
+                         missing='and')
     is_negated = field_for(ConditionalExpression, 'is_negated', default=False)
 
     class Meta:
         model = ConditionalExpression
-        excludes = ('parent', )
+        excludes = ('parent',)
 
 
 class BranchSchema(ExecutionElementBaseSchema):
@@ -188,7 +192,7 @@ class WorkflowSchema(ExecutionElementBaseSchema):
 
     class Meta:
         model = Workflow
-        exclude = ('playbook', )
+        exclude = ('playbook',)
 
 
 class PlaybookSchema(ExecutionElementBaseSchema):

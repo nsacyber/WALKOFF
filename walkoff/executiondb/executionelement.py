@@ -1,7 +1,7 @@
-from sqlalchemy_utils import UUIDType
+from uuid import uuid4
 
 from sqlalchemy import Column
-from uuid import uuid4
+from sqlalchemy_utils import UUIDType
 
 
 class ExecutionElement(object):

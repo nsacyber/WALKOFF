@@ -1,5 +1,5 @@
-from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
+from walkoff.server.returncodes import *
 
 
 class TestAppBlueprint(ServerTestCase):

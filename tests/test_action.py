@@ -1,19 +1,21 @@
 import unittest
 
+import tests.config
+import tests.config
 import walkoff.appgateway
 import walkoff.config.config
 import walkoff.config.paths
-from walkoff.appgateway.appinstance import AppInstance
-from walkoff.executiondb.argument import Argument
+from tests.util import execution_db_help
 from walkoff.appgateway.actionresult import ActionResult
+from walkoff.appgateway.appinstance import AppInstance
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.action import Action
+from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.position import Position
-from walkoff.helpers import InvalidExecutionElement, InvalidArgument
-import tests.config
-from tests.util import execution_db_help
+from walkoff.helpers import InvalidArgument
+from walkoff.helpers import InvalidExecutionElement
 
 
 class TestAction(unittest.TestCase):

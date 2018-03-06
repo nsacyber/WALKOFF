@@ -10,6 +10,7 @@ class UnknownEvent(Exception):
     Args:
         events (str|WalkoffEvent|iterable(str|WalkoffEvent)): The unallowed event(s)
     """
+
     def __init__(self, events):
         self.message = 'Unknown event(s) {}'.format(events if isinstance(events, string_types) else list(events))
         super(Exception, self).__init__(self.message)
@@ -24,6 +25,7 @@ class InvalidEventHandler(Exception):
     Args:
         message (str): The error message
     """
+
     def __init__(self, message):
         self.message = message
         super(Exception, self).__init__(self.message)

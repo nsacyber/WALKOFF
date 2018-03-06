@@ -1,9 +1,9 @@
 import json
 import os
-from os.path import join
-import semver
-
 import sys
+from os.path import join
+
+import semver
 
 sys.path.append(os.path.abspath('.'))
 from walkoff.appgateway import cache_apps
@@ -79,7 +79,7 @@ def convert_playbook(path, mode, tgt_version):
                 print("Cannot downgrade, no version specified in playbook.")
                 return
             else:  # upgrade
-                print("No version specified in playbook, assuming "+PREV_VERSION)
+                print("No version specified in playbook, assuming " + PREV_VERSION)
                 cur_version = PREV_VERSION
         else:
             cur_version = playbook['walkoff_version']

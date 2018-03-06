@@ -1,10 +1,10 @@
 import logging
-from enum import unique, Enum
 from functools import partial
 
 from apscheduler.events import (EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED,
     EVENT_SCHEDULER_RESUMED, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, EVENT_JOB_EXECUTED, EVENT_JOB_ERROR)
 from blinker import Signal
+from enum import unique, Enum
 
 from walkoff.case.callbacks import add_entry_to_case
 

@@ -395,7 +395,8 @@ def validate_parameters(api, arguments, message_prefix, accumulator=None):
         except InvalidArgument as e:
             errors[param_name] = e.message
     if seen_params != arguments_set:
-        message = 'For {0}: Too many arguments. Extra arguments: {1}'.format(message_prefix, arguments_set - seen_params)
+        message = 'For {0}: Too many arguments. Extra arguments: {1}'.format(message_prefix,
+                                                                             arguments_set - seen_params)
         logger.error(message)
         errors['_arguments'] = message
     if errors:

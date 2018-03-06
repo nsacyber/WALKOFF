@@ -2,7 +2,7 @@ import logging
 
 from sqlalchemy import Column, Integer, ForeignKey, String, orm
 from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
-from sqlalchemy.ext.hybrid import hybrid_property
+
 from walkoff.executiondb import Device_Base
 from walkoff.helpers import InvalidArgument
 
