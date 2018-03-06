@@ -193,7 +193,9 @@ class TestArgument(TestCase):
             (42, ''): (42, None)
         }
         for inputs, outputs in input_output.items():
-            arg = Argument('test', reference='a')
+            arg = Argument('test', reference='a', selection=[1, 'a'])
             arg.update_value_reference(*inputs)
             self.assertEqual(arg.value, outputs[0])
             self.assertEqual(arg.reference, outputs[1])
+            if outputs[1] is None:
+                self.assertListEqual(arg.selection, [])

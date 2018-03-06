@@ -63,6 +63,7 @@ class Argument(Device_Base):
         if value is not None and (self.value != value or self.reference):
             self.value = value
             self.reference = None
+            self.selection = []
         elif reference:
             self.reference = reference
             self.value = None
