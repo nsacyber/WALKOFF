@@ -364,36 +364,42 @@ def validate_parameters(api, arguments, message_prefix, accumulator=None):
     seen_params = set()
     arg_names = [argument.name for argument in arguments] if arguments else []
     arguments_set = set(arg_names)
+    errors = {}
     for param_name, param_api in api_dict.items():
-        argument = get_argument_by_name(arguments, param_name)
-        if argument:
-            arg_val = argument.get_value(accumulator)
-            if accumulator or not argument.is_ref():
-                converted[param_name] = validate_parameter(arg_val, param_api, message_prefix)
-        elif 'default' in param_api:
-            try:
-                default_param = validate_parameter(param_api['default'], param_api, message_prefix)
-            except InvalidArgument as e:
-                default_param = param_api['default']
-                logger.warning(
-                    'For {0}: Default input {1} (value {2}) does not conform to schema. (Error: {3})'
-                    'Using anyways'.format(message_prefix, param_name, param_api['default'],
-                                           format_exception_message(e)))
+        try:
+            argument = get_argument_by_name(arguments, param_name)
+            if argument:
+                arg_val = argument.get_value(accumulator)
+                if accumulator or not argument.is_ref():
+                    converted[param_name] = validate_parameter(arg_val, param_api, message_prefix)
+            elif 'default' in param_api:
+                try:
+                    default_param = validate_parameter(param_api['default'], param_api, message_prefix)
+                except InvalidArgument as e:
+                    default_param = param_api['default']
+                    logger.warning(
+                        'For {0}: Default input {1} (value {2}) does not conform to schema. (Error: {3})'
+                        'Using anyways'.format(message_prefix, param_name, param_api['default'],
+                                               format_exception_message(e)))
 
-            converted[param_name] = default_param
-            arguments_set.add(param_name)
-        elif 'required' in param_api:
-            message = 'For {0}: Parameter {1} is not specified and has no default'.format(message_prefix, param_name)
-            logger.error(message)
-            raise InvalidArgument(message)
-        else:
-            converted[param_name] = None
-            arguments_set.add(param_name)
-        seen_params.add(param_name)
+                converted[param_name] = default_param
+                arguments_set.add(param_name)
+            elif 'required' in param_api:
+                message = 'For {0}: Parameter {1} is not specified and has no default'.format(message_prefix, param_name)
+                logger.error(message)
+                raise InvalidArgument(message)
+            else:
+                converted[param_name] = None
+                arguments_set.add(param_name)
+            seen_params.add(param_name)
+        except InvalidArgument as e:
+            errors[param_name] = e.message
     if seen_params != arguments_set:
         message = 'For {0}: Too many arguments. Extra arguments: {1}'.format(message_prefix, arguments_set - seen_params)
         logger.error(message)
-        raise InvalidArgument(message)
+        errors['_arguments'] = message
+    if errors:
+        raise InvalidArgument('Invalid arguments', errors=errors)
     return converted
 
 

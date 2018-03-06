@@ -5,6 +5,7 @@ from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
 from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.workflow import Workflow
+from walkoff.executiondb.schemas import PlaybookSchema, WorkflowSchema
 from uuid import uuid4, UUID
 from tests.util import execution_db_help
 import os
@@ -18,12 +19,13 @@ class TestWorkflowServer(ServerTestCase):
         self.change_playbook_name = 'change_playbook'
         self.add_workflow_name = 'add_workflow'
         self.change_workflow_name = 'change_workflow'
+        action_id = str(uuid4())
         self.empty_workflow_json = \
             {'actions': [
-                {"app_name": "HelloWorld", "action_name": "helloWorld", "name": "helloworld", "id": str(uuid4()),
+                {"app_name": "HelloWorld", "action_name": "helloWorld", "name": "helloworld", "id": action_id,
                  "arguments": []}],
                 'name': self.add_workflow_name,
-                'start': str(uuid4()),
+                'start': action_id,
                 'branches': []}
         self.verb_lookup = {'get': self.get_with_status_check,
                             'put': self.put_with_status_check,
@@ -74,9 +76,7 @@ class TestWorkflowServer(ServerTestCase):
     def test_read_playbook(self):
         playbook = execution_db_help.standard_load()
         response = self.get_with_status_check('/api/playbooks/{}'.format(playbook.id), headers=self.headers)
-
-        expected_workflows = [self.strip_ids(workflow.read()) for workflow in playbook.workflows]
-
+        expected_workflows = [self.strip_ids(WorkflowSchema().dump(workflow).data) for workflow in playbook.workflows]
         self.assertEqual(response['name'], 'test')
         self.assertEqual(len(response['workflows']), len(expected_workflows))
         self.assertListEqual([self.strip_ids(workflow) for workflow in response['workflows']], expected_workflows)
@@ -97,7 +97,7 @@ class TestWorkflowServer(ServerTestCase):
         playbook = execution_db_help.standard_load()
         response = self.get_with_status_check('/api/playbooks/{}/workflows'.format(playbook.id), headers=self.headers)
 
-        expected_workflows = [self.strip_ids(workflow.read()) for workflow in playbook.workflows]
+        expected_workflows = [self.strip_ids(WorkflowSchema().dump(workflow).data) for workflow in playbook.workflows]
 
         self.assertEqual(len(response), len(expected_workflows))
         self.assertListEqual([self.strip_ids(workflow) for workflow in response], expected_workflows)
@@ -112,7 +112,7 @@ class TestWorkflowServer(ServerTestCase):
         playbook = execution_db_help.standard_load()
         response = self.get_with_status_check('/api/workflows?playbook={}'.format(playbook.id), headers=self.headers)
 
-        expected_workflows = [self.strip_ids(workflow.read()) for workflow in playbook.workflows]
+        expected_workflows = [self.strip_ids(WorkflowSchema().dump(workflow).data) for workflow in playbook.workflows]
 
         self.assertEqual(len(response), len(expected_workflows))
         self.assertListEqual([self.strip_ids(workflow) for workflow in response], expected_workflows)
@@ -129,7 +129,7 @@ class TestWorkflowServer(ServerTestCase):
         response = self.get_with_status_check(
             '/api/workflows/{}'.format(target_workflow.id),
             headers=self.headers)
-        self.assertDictEqual(self.strip_ids(response), self.strip_ids(target_workflow.read()))
+        self.assertDictEqual(self.strip_ids(response), self.strip_ids(WorkflowSchema().dump(target_workflow).data))
 
     def test_read_workflow_invalid_workflow_id(self):
         self.check_invalid_id('get', '/api/workflows/{}'.format(uuid4()), 'workflow')
@@ -208,18 +208,19 @@ class TestWorkflowServer(ServerTestCase):
 
 
     # All the creates
-
+    
     def test_create_playbook(self):
         expected_playbooks = executiondb.execution_db.session.query(Playbook).all()
         original_length = len(list(expected_playbooks))
-        data = {"name": self.add_playbook_name}
+        start = str(uuid4())
+        data = {"name": self.add_playbook_name, 'workflows': [{'name': 'wf1', 'start': start}]}
         self.update_playbooks = True
         response = self.post_with_status_check('/api/playbooks', headers=self.headers,
                                                status_code=OBJECT_CREATED, data=json.dumps(data),
                                                content_type="application/json")
         response.pop('id')
-
-        self.assertDictEqual(response, {'name': self.add_playbook_name, 'workflows': []})
+        response['workflows'][0].pop('id')
+        self.assertDictEqual(response, {'name': self.add_playbook_name, 'workflows': [{'name': 'wf1', 'start': start, 'actions': [], 'branches': []}]})
         self.assertEqual(len(list(executiondb.execution_db.session.query(Playbook).all())),
                          original_length + 1)
 
@@ -232,12 +233,12 @@ class TestWorkflowServer(ServerTestCase):
                                     error='Unique constraint failed.',
                                     data=json.dumps(data), headers=self.headers, status_code=OBJECT_EXISTS_ERROR,
                                     content_type="application/json")
-
+    
     def test_create_playbook_bad_id_in_workflow(self):
         workflow = Workflow('wf1', uuid4())
         executiondb.execution_db.session.add(workflow)
         executiondb.execution_db.session.flush()
-        workflow_json = workflow.read()
+        workflow_json = WorkflowSchema().dump(workflow).data
         workflow_json['id'] = 'garbage'
         data = {'name': self.add_playbook_name, 'workflows': [workflow_json]}
         self.post_with_status_check('/api/playbooks',
@@ -252,7 +253,6 @@ class TestWorkflowServer(ServerTestCase):
                                               headers=self.headers, status_code=OBJECT_CREATED,
                                               data=json.dumps(self.empty_workflow_json),
                                               content_type="application/json")
-
         self.empty_workflow_json['id'] = response['id']
 
         final_workflows = playbook.workflows
@@ -268,7 +268,6 @@ class TestWorkflowServer(ServerTestCase):
                                 content_type="application/json")
 
     # All the updates
-
     def test_update_playbook_name(self):
         playbook = execution_db_help.standard_load()
 
@@ -278,7 +277,7 @@ class TestWorkflowServer(ServerTestCase):
                                                 headers=self.headers,
                                                 content_type='application/json')
         self.assertEqual(response['name'], self.change_playbook_name)
-
+    
     def test_update_playbook_invalid_id(self):
         execution_db_help.standard_load()
         expected = {playbook.name for playbook in executiondb.execution_db.session.query(Playbook).all()}
@@ -296,9 +295,10 @@ class TestWorkflowServer(ServerTestCase):
         self.assertSetEqual({playbook.name for playbook in executiondb.execution_db.session.query(Playbook).all()}, expected)
 
     def test_update_workflow(self):
+        from walkoff.executiondb.schemas import WorkflowSchema
         playbook = execution_db_help.standard_load()
         workflow = playbook.workflows[0]
-        expected_json = workflow.read()
+        expected_json = WorkflowSchema().dump(workflow).data
         expected_json['name'] = self.change_workflow_name
         response = self.put_with_status_check('/api/workflows',
                                                data=json.dumps(expected_json),
@@ -310,7 +310,7 @@ class TestWorkflowServer(ServerTestCase):
         self.assertIsNotNone(
             executiondb.execution_db.session.query(Workflow).filter_by(id=workflow.id).first())
         self.assertIsNone(
-            executiondb.execution_db.session.query(Workflow).join(Workflow._playbook).filter(
+            executiondb.execution_db.session.query(Workflow).join(Workflow.playbook).filter(
                 Workflow.name == self.add_workflow_name).first())
 
     def test_copy_workflow(self):
@@ -330,8 +330,8 @@ class TestWorkflowServer(ServerTestCase):
             elif workflow.name == self.add_workflow_name:
                 workflow_copy = workflow
 
-        copy_workflow_json = workflow_copy.read()
-        original_workflow_json = workflow_original.read()
+        copy_workflow_json = WorkflowSchema().dump(workflow_copy).data
+        original_workflow_json = WorkflowSchema().dump(workflow_original).data
         copy_workflow_json.pop('name', None)
         original_workflow_json.pop('name', None)
         self.assertNotEqual(original_workflow_json['start'], copy_workflow_json['start'])
@@ -390,10 +390,11 @@ class TestWorkflowServer(ServerTestCase):
                                                data=files, content_type='multipart/form-data')
         playbook = executiondb.execution_db.session.query(Playbook).filter_by(id=response['id']).first()
         self.assertIsNotNone(playbook)
-        self.assertDictEqual(playbook.read(), response)
+        self.assertDictEqual(PlaybookSchema().dump(playbook).data, response)
 
     def test_export_workflow(self):
         playbook = execution_db_help.standard_load()
 
         response = self.get_with_status_check('/api/playbooks/{}?mode=export'.format(playbook.id), headers=self.headers)
-        self.assertDictEqual(playbook.read(), response)
+        self.assertDictEqual(PlaybookSchema().dump(playbook).data, response)
+

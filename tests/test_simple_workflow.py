@@ -45,7 +45,7 @@ class TestSimpleWorkflow(unittest.TestCase):
 
     def test_simple_workflow_execution(self):
         workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
         self.executor.execute_workflow(workflow.id)
 
@@ -62,7 +62,7 @@ class TestSimpleWorkflow(unittest.TestCase):
     def test_multi_action_workflow(self):
         workflow = execution_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         action_names = ['start', '1']
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
+        action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
         self.executor.execute_workflow(workflow.id)
 
@@ -80,7 +80,7 @@ class TestSimpleWorkflow(unittest.TestCase):
     def test_error_workflow(self):
         workflow = execution_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
         action_names = ['start', '1', 'error']
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
+        action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
         self.executor.execute_workflow(workflow.id)
 
@@ -100,7 +100,7 @@ class TestSimpleWorkflow(unittest.TestCase):
     def test_workflow_with_dataflow(self):
         workflow = execution_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
         action_names = ['start', '1', '2']
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
+        action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
 
         self.executor.execute_workflow(workflow.id)
@@ -120,7 +120,7 @@ class TestSimpleWorkflow(unittest.TestCase):
     def test_workflow_with_dataflow_action_not_executed(self):
         workflow = execution_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
         action_names = ['start', '1']
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
+        action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
         self.executor.execute_workflow(workflow.id)
 

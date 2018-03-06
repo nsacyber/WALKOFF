@@ -40,6 +40,7 @@ class TestZMQCommunication(unittest.TestCase):
         case_database.case_db.tear_down()
         case_subscription.clear_subscriptions()
 
+
     @classmethod
     def tearDownClass(cls):
         if config.test_data_path in os.listdir(config.test_path):
@@ -55,7 +56,7 @@ class TestZMQCommunication(unittest.TestCase):
 
     def test_simple_workflow_execution(self):
         workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
         multiprocessedexecutor.execute_workflow(workflow.id)
 
@@ -73,7 +74,7 @@ class TestZMQCommunication(unittest.TestCase):
     def test_multi_action_workflow(self):
         workflow = execution_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         action_names = ['start', '1']
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
+        action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
         multiprocessedexecutor.execute_workflow(workflow.id)
 
@@ -91,7 +92,7 @@ class TestZMQCommunication(unittest.TestCase):
     def test_error_workflow(self):
         workflow = execution_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
         action_names = ['start', '1', 'error']
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
+        action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
         multiprocessedexecutor.execute_workflow(workflow.id)
 
@@ -110,7 +111,7 @@ class TestZMQCommunication(unittest.TestCase):
     def test_workflow_with_dataflow(self):
         workflow = execution_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
         action_names = ['start', '1', '2']
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
+        action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
         multiprocessedexecutor.execute_workflow(workflow.id)
 
@@ -128,7 +129,7 @@ class TestZMQCommunication(unittest.TestCase):
 
     def test_execute_multiple_workflows(self):
         workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
         capacity = walkoff.config.config.num_processes * walkoff.config.config.num_threads_per_process
@@ -171,7 +172,7 @@ class TestZMQCommunication(unittest.TestCase):
             result['resumed'] = True
 
         workflow = execution_db_help.load_workflow('pauseResumeWorkflowFixed', 'pauseResumeWorkflow')
-        action_ids = [action_id for action_id in workflow.actions]
+        action_ids = [action.id for action in workflow.actions]
         workflow_events = ['Workflow Paused', 'Workflow Resumed']
         setup_subscriptions_for_action(workflow.id, action_ids, workflow_events=workflow_events)
 

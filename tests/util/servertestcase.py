@@ -141,10 +141,10 @@ class ServerTestCase(unittest.TestCase):
     def __assert_url_access(self, url, method, status_code, error, **kwargs):
         try:
             response = self.http_verb_lookup[method.lower()](url, **kwargs)
-        except KeyError as e:
+        except KeyError:
             import traceback
             traceback.print_exc()
-            print(e)
+            traceback.print_stack()
             raise ValueError('method must be either get, put, post, patch, or delete')
         self.assertEqual(response.status_code, status_code)
         if status_code != NO_CONTENT:

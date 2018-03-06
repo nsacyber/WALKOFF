@@ -3,6 +3,7 @@ import os
 
 from walkoff import executiondb
 from walkoff.executiondb.playbook import Playbook
+from walkoff.executiondb.schemas import PlaybookSchema
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.action import Action
@@ -25,8 +26,11 @@ def load_playbooks(playbooks):
                       if filename.endswith('.playbook') and filename.split('.')[0] in playbooks])
     for path in paths:
         with open(path, 'r') as playbook_file:
-            playbook = Playbook.create(json.load(playbook_file))
-            executiondb.execution_db.session.add(playbook)
+            playbook = PlaybookSchema().load(json.load(playbook_file))
+            if playbook.errors:
+                print(playbook.errors)
+                raise Exception('There be errors in yer playbooks')
+            executiondb.execution_db.session.add(playbook.data)
     executiondb.execution_db.session.commit()
 
 

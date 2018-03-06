@@ -57,7 +57,7 @@ class TestExecutionEvents(unittest.TestCase):
 
     def test_action_execution_events(self):
         workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-        action_ids = [str(action_id) for action_id in workflow.actions]
+        action_ids = [str(action.id) for action in workflow.actions]
         action_events = [WalkoffEvent.ActionExecutionSuccess.signal_name, WalkoffEvent.ActionStarted.signal_name]
         subs = {'case1': {action_id: action_events for action_id in action_ids}}
         case_subscription.set_subscriptions(subs)

@@ -7,22 +7,28 @@ from interfaces.exceptions import UnknownEvent, InvalidEventHandler
 from walkoff.helpers import UnknownAppAction, UnknownApp
 from tests.util import execution_db_help
 import uuid
-from walkoff.executiondb.representable import Representable
+from walkoff.executiondb.executionelement import ExecutionElement
+import walkoff.executiondb.schemas
 
 
-class MockWorkflow(Representable):
+class MockWorkflow(ExecutionElement):
     def __init__(self):
-        self.id = uuid.uuid4()
+        super(MockWorkflow, self).__init__(uuid.uuid4())
         self.name = "name"
         self._execution_id = uuid.uuid4()
 
     def get_execution_id(self):
         return self._execution_id
 
-    def as_json(self):
-        return {'id': self.id,
-                'execution_id': self._execution_id,
-                'name': self.name}
+
+class MockWorkflowSchema(object):
+    @staticmethod
+    def dump(workflow):
+        class Dummy:
+            def __init__(self, data):
+                self.data = data
+
+        return Dummy({'id': str(workflow.id), 'name': workflow.name, 'execution_id': str(workflow._execution_id)})
 
 
 class TestInterfaceEventDispatcher(TestCase):
@@ -34,6 +40,7 @@ class TestInterfaceEventDispatcher(TestCase):
                                                             'action3': None}},
                                        'App2': {}}
         cls.action_events = {event for event in WalkoffEvent if event.event_type == EventType.action and event != WalkoffEvent.SendMessage}
+        walkoff.executiondb.schemas._schema_lookup[MockWorkflow] = MockWorkflowSchema
 
     def setUp(self):
         dispatcher._clear()
@@ -45,6 +52,7 @@ class TestInterfaceEventDispatcher(TestCase):
     def tearDownClass(cls):
         dispatcher._clear()
         walkoff.config.config.app_apis = {}
+        walkoff.executiondb.schemas._schema_lookup.pop(MockWorkflow, None)
         execution_db_help.tear_down_device_db()
 
     def test_singleton(self):
@@ -336,7 +344,7 @@ class TestInterfaceEventDispatcher(TestCase):
             result['data'] = data
 
         workflow = MockWorkflow()
-        WalkoffEvent.WorkflowExecutionPending.send(workflow.as_json())
+        WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema.dump(workflow).data)
 
         data = {'id': self.id, 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
                 'execution_id': uuid.uuid4()}
@@ -360,7 +368,7 @@ class TestInterfaceEventDispatcher(TestCase):
             result['data'] = data
 
         workflow = MockWorkflow()
-        WalkoffEvent.WorkflowExecutionPending.send(workflow.as_json())
+        WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema().dump(workflow).data)
 
         data = {'id': self.id, 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
                 'execution_id': uuid.uuid4()}
@@ -382,7 +390,7 @@ class TestInterfaceEventDispatcher(TestCase):
             result['data'] = data
 
         workflow = MockWorkflow()
-        WalkoffEvent.WorkflowExecutionPending.send(workflow.as_json())
+        WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema().dump(workflow).data)
 
         self.id = 'test'
         data = {'id': uuid.uuid4(), 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
@@ -409,7 +417,7 @@ class TestInterfaceEventDispatcher(TestCase):
             raise ValueError()
 
         workflow = MockWorkflow()
-        WalkoffEvent.WorkflowExecutionPending.send(workflow.as_json())
+        WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema().dump(workflow).data)
 
         self.id = 'test'
         data = {'id': uuid.uuid4(), 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
@@ -432,7 +440,7 @@ class TestInterfaceEventDispatcher(TestCase):
             result['data'] = data
 
         workflow = MockWorkflow()
-        WalkoffEvent.WorkflowExecutionPending.send(workflow.as_json())
+        WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema().dump(workflow).data)
 
         data = {'id': self.id, 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
                 'execution_id': uuid.uuid4()}

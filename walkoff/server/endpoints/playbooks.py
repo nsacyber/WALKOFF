@@ -16,11 +16,19 @@ try:
 except ImportError:
     from io import StringIO
 from walkoff.server.problem import Problem
+from walkoff.executiondb.schemas import PlaybookSchema, WorkflowSchema
+from walkoff.helpers import InvalidArgument, UnknownApp, UnknownFunction
+
+playbook_schema = PlaybookSchema()
+workflow_schema = WorkflowSchema()
+
+
+invalid_execution_element_exceptions = (InvalidArgument, UnknownApp, UnknownFunction)
 
 
 def does_workflow_exist(playbook_id, workflow_id):
     return executiondb.execution_db.session.query(
-        exists().where(and_(Workflow.id == workflow_id, Workflow._playbook_id == playbook_id))).scalar()
+        exists().where(and_(Workflow.id == workflow_id, Workflow.playbook_id == playbook_id))).scalar()
 
 
 def playbook_getter(playbook_id):
@@ -52,16 +60,13 @@ def unique_constraint_problem(type_, operation, id_):
         'Could not {} {} {}, possibly because of invalid or non-unique IDs.'.format(operation, type_, id_))
 
 
-def improper_json_problem(type_, operation, id_, reason=None):
+def improper_json_problem(type_, operation, id_, errors=None):
     return Problem.from_crud_resource(
         BAD_REQUEST,
         type_,
         operation,
-        'Could not {} {} {}. Improper JSON. Reason: {}'.format(
-            operation,
-            type_,
-            id_,
-            'Reason: {}.'.format(reason) if reason else ''))
+        'Could not {} {} {}. Invalid JSON'.format(operation, type_, id_),
+        ext={'errors': errors})
 
 
 def get_playbooks(full=None):
@@ -72,7 +77,7 @@ def get_playbooks(full=None):
         playbooks = executiondb.execution_db.session.query(Playbook).all()
 
         if full_rep:
-            ret_playbooks = [playbook.read() for playbook in playbooks]
+            ret_playbooks = [playbook_schema.dump(playbook).data for playbook in playbooks]
         else:
             ret_playbooks = []
             for playbook in playbooks:
@@ -103,24 +108,29 @@ def create_playbook(source=None):
             playbook_name = data['name']
 
         try:
-            playbook = Playbook.create(data)
-            executiondb.execution_db.session.add(playbook)
-            executiondb.execution_db.session.commit()
-        except IntegrityError:
+            playbook = playbook_schema.load(data)
+            if playbook.errors:
+                executiondb.execution_db.session.rollback()
+                current_app.logger.error('Could not create Playbook {}. Invalid input'.format(playbook_name))
+                return improper_json_problem('playbook', 'create', playbook_name, playbook.errors)
+            else:
+                playbook = playbook.data
+                executiondb.execution_db.session.add(playbook)
+                executiondb.execution_db.session.commit()
+        except (IntegrityError, StatementError):
             executiondb.execution_db.session.rollback()
             current_app.logger.error('Could not create Playbook {}. Unique constraint failed'.format(playbook_name))
             return unique_constraint_problem('playbook', 'create', playbook_name)
-        except StatementError:
-            return unique_constraint_problem('playbook', 'create', playbook_name)
-        except ValueError as e:
-            import traceback
-            traceback.print_exc()
+        except invalid_execution_element_exceptions:
             executiondb.execution_db.session.rollback()
-            current_app.logger.error('Could not create Playbook {}. Invalid input'.format(playbook_name))
-            return improper_json_problem('playbook', 'create', playbook_name)
-
-        current_app.logger.info('Playbook {0} created'.format(playbook_name))
-        return playbook.read(), OBJECT_CREATED
+            current_app.logger.error('Could not create Playbook {}. Invalid execution element'.format(playbook_name))
+            return improper_json_problem(
+                'playbook',
+                'create',
+                playbook_name, {'errors': 'Invalid argument constructed'})
+        else:
+            current_app.logger.info('Playbook {0} created'.format(playbook_name))
+            return playbook_schema.dump(playbook).data, OBJECT_CREATED
 
     if source:
         return copy_playbook(source)
@@ -133,13 +143,14 @@ def read_playbook(playbook_id, mode=None):
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     @with_playbook('read', playbook_id)
     def __func(playbook):
+        playbook_json = playbook_schema.dump(playbook).data
         if mode == "export":
             f = StringIO()
-            f.write(json.dumps(playbook.read(), sort_keys=True, indent=4, separators=(',', ': ')))
+            f.write(json.dumps(playbook_json, sort_keys=True, indent=4, separators=(',', ': ')))
             f.seek(0)
             return send_file(f, attachment_filename=playbook.name + '.playbook', as_attachment=True), SUCCESS
         else:
-            return playbook.read(), SUCCESS
+            return playbook_json, SUCCESS
 
     return __func()
 
@@ -164,7 +175,7 @@ def update_playbook():
 
         current_app.logger.info('Playbook {} updated'.format(playbook_id))
 
-        return playbook.read(), SUCCESS
+        return playbook_schema.dump(playbook).data, SUCCESS
 
     return __func()
 
@@ -194,7 +205,7 @@ def copy_playbook(playbook_id):
         else:
             new_playbook_name = playbook.name + "_Copy"
 
-        playbook_json = playbook.read()
+        playbook_json = playbook_schema.dump(playbook).data
         playbook_json['name'] = new_playbook_name
         playbook_json.pop('id')
 
@@ -203,7 +214,7 @@ def copy_playbook(playbook_id):
                 regenerate_workflow_ids(workflow)
 
         try:
-            new_playbook = Playbook.create(playbook_json)
+            new_playbook = playbook_schema.load(playbook_json).data
             executiondb.execution_db.session.add(new_playbook)
             executiondb.execution_db.session.commit()
         except IntegrityError:
@@ -217,7 +228,7 @@ def copy_playbook(playbook_id):
 
         current_app.logger.info('Copied playbook {0} to {1}'.format(playbook_id, new_playbook_name))
 
-        return new_playbook.read(), OBJECT_CREATED
+        return playbook_schema.dump(new_playbook).data, OBJECT_CREATED
 
     return __func()
 
@@ -226,7 +237,7 @@ def get_workflows(playbook=None):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     def __get():
-        return [workflow.read() for workflow in executiondb.execution_db.session.query(Workflow).all()], SUCCESS
+        return [workflow_schema.dump(workflow).data for workflow in executiondb.execution_db.session.query(Workflow).all()], SUCCESS
     if playbook:
         return get_workflows_for_playbook(playbook)
     return __get()
@@ -237,7 +248,7 @@ def get_workflows_for_playbook(playbook_id):
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     @with_playbook('read workflows', playbook_id)
     def __func(playbook):
-        return [workflow.read() for workflow in playbook.workflows], SUCCESS
+        return [workflow_schema.dump(workflow).data for workflow in playbook.workflows], SUCCESS
 
     return __func()
 
@@ -254,11 +265,17 @@ def create_workflow(source=None):
         if 'start' not in data:
             return Problem(BAD_REQUEST, 'Could not create workflow.', '"start" is required field.')
         try:
-            workflow = Workflow.create(data)
-            playbook.workflows.append(workflow)
-            executiondb.execution_db.session.add(workflow)
-            executiondb.execution_db.session.commit()
-        except ValueError as e:
+            workflow = workflow_schema.load(data)
+            if workflow.errors:
+                executiondb.execution_db.session.rollback()
+                current_app.logger.error('Could not create Workflow {}. Invalid input'.format(workflow_name))
+                return improper_json_problem('workflow', 'create', workflow_name, workflow.errors)
+            else:
+                workflow = workflow.data
+                playbook.workflows.append(workflow)
+                executiondb.execution_db.session.add(workflow)
+                executiondb.execution_db.session.commit()
+        except invalid_execution_element_exceptions:
             executiondb.execution_db.session.rollback()
             current_app.logger.error('Could not add workflow {0}-{1}'.format(playbook_id, workflow_name))
             return improper_json_problem('workflow', 'create', '{}-{}'.format(playbook_id, workflow_name))
@@ -268,7 +285,7 @@ def create_workflow(source=None):
             return unique_constraint_problem('workflow', 'create', workflow_name)
 
         current_app.logger.info('Workflow {0}-{1} created'.format(playbook_id, workflow_name))
-        return workflow.read(), OBJECT_CREATED
+        return workflow_schema.dump(workflow).data, OBJECT_CREATED
 
     if source:
         return copy_workflow(playbook_id, source)
@@ -280,7 +297,7 @@ def read_workflow(workflow_id):
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     @with_workflow('read', workflow_id)
     def __func(workflow):
-        return workflow.read(), SUCCESS
+        return workflow_schema.dump(workflow).data, SUCCESS
 
     return __func()
 
@@ -293,10 +310,14 @@ def update_workflow():
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['update']))
     @with_workflow('update', workflow_id)
     def __func(workflow):
-
-        # TODO: Come back to this...
         try:
-            workflow.update(data)
+            errors = workflow_schema.load(data, instance=workflow).errors
+            if errors:
+                return Problem.from_crud_resource(
+                    INVALID_INPUT_ERROR,
+                    'workflow',
+                    'update',
+                    'Could not update workflow {}. Invalid input.'.format(workflow_id), ext=errors)
         except InvalidExecutionElement as e:
             executiondb.execution_db.session.rollback()
             current_app.logger.error(e.message)
@@ -314,7 +335,7 @@ def update_workflow():
             return unique_constraint_problem('workflow', 'update', workflow_id)
 
         current_app.logger.info('Updated workflow {0}'.format(workflow_id))
-        return workflow.read(), SUCCESS
+        return workflow_schema.dump(workflow).data, SUCCESS
 
     return __func()
 
@@ -324,13 +345,13 @@ def delete_workflow(workflow_id):
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['delete']))
     @with_workflow('delete', workflow_id)
     def __func(workflow):
-        playbook = executiondb.execution_db.session.query(Playbook).filter_by(id=workflow._playbook_id).first()
+        playbook = executiondb.execution_db.session.query(Playbook).filter_by(id=workflow.playbook_id).first()
         playbook_workflows = len(playbook.workflows) - 1
         workflow = executiondb.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
         executiondb.execution_db.session.delete(workflow)
 
         if playbook_workflows == 0:
-            current_app.logger.debug('Removing playbook {0} since it is empty.'.format(workflow._playbook_id))
+            current_app.logger.debug('Removing playbook {0} since it is empty.'.format(workflow.playbook_id))
             executiondb.execution_db.session.delete(playbook)
 
         executiondb.execution_db.session.commit()
@@ -342,6 +363,7 @@ def delete_workflow(workflow_id):
 
 
 def copy_workflow(playbook_id, workflow_id):
+
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['create', 'read']))
     @with_workflow('copy', workflow_id)
@@ -353,7 +375,8 @@ def copy_workflow(playbook_id, workflow_id):
         else:
             new_workflow_name = workflow.name + "_Copy"
 
-        workflow_json = workflow.read()
+        workflow_json = workflow_schema.dump(workflow)
+        workflow_json = workflow_json.data
         workflow_json.pop('id')
         workflow_json['name'] = new_workflow_name
 
@@ -371,7 +394,10 @@ def copy_workflow(playbook_id, workflow_id):
                 'Could not copy workflow {}. Playbook with id {} does not exist.'.format(workflow_id, playbook_id))
 
         try:
-            new_workflow = Workflow.create(workflow_json)
+
+            new_workflow = workflow_schema.load(workflow_json)
+            new_workflow = new_workflow.data
+
             executiondb.execution_db.session.add(new_workflow)
             playbook.add_workflow(new_workflow)
             executiondb.execution_db.session.commit()
@@ -381,7 +407,7 @@ def copy_workflow(playbook_id, workflow_id):
             return unique_constraint_problem('workflow', 'copy', new_workflow_name)
 
         current_app.logger.info('Workflow {0} copied to {1}'.format(workflow_id, new_workflow.id))
-        return new_workflow.read(), OBJECT_CREATED
+        return workflow_schema.dump(new_workflow).data, OBJECT_CREATED
 
     return __func()
 

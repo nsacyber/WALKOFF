@@ -26,12 +26,10 @@ class TestInstance(unittest.TestCase):
         inst = appinstance.AppInstance.create("HelloWorld", "testDevice")
         self.assertIsInstance(inst, appinstance.AppInstance)
         self.assertIsInstance(inst.instance, hello_world_main_class)
-        self.assertEqual(inst.state, appinstance.OK)
 
     def test_create_invalid_app_name(self):
         instance = appinstance.AppInstance.create("InvalidAppName", "testDevice")
         self.assertIsNone(instance.instance)
-        self.assertEqual(instance.state, appinstance.OK)
 
     def test_call(self):
         inst = appinstance.AppInstance.create("HelloWorld", "testDevice")
@@ -42,6 +40,4 @@ class TestInstance(unittest.TestCase):
 
     def test_shutdown(self):
         inst = appinstance.AppInstance.create("HelloWorld", "testDevice")
-        self.assertEqual(inst.state, appinstance.OK)
         inst.shutdown()
-        self.assertEqual(inst.state, appinstance.SHUTDOWN)

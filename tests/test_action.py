@@ -11,7 +11,7 @@ from walkoff.executiondb.action import Action
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.position import Position
-from walkoff.helpers import UnknownApp, UnknownAppAction, InvalidArgument
+from walkoff.helpers import InvalidExecutionElement, InvalidArgument
 import tests.config
 from tests.util import execution_db_help
 
@@ -69,11 +69,11 @@ class TestAction(unittest.TestCase):
         self.__compare_init(action, 'HelloWorld', 'Hello World', 'helloWorld')
 
     def test_init_invalid_app(self):
-        with self.assertRaises(UnknownApp):
+        with self.assertRaises(InvalidExecutionElement):
             Action('InvalidApp', 'helloWorld', 'helloWorld')
 
     def test_init_invalid_action(self):
-        with self.assertRaises(UnknownAppAction):
+        with self.assertRaises(InvalidExecutionElement):
             Action('HelloWorld', 'invalid', 'helloWorld')
 
     def test_init_app_action_only_with_device(self):
@@ -91,11 +91,11 @@ class TestAction(unittest.TestCase):
                             arguments=[Argument('number', value='-5.6')])
 
     def test_init_with_invalid_argument_name(self):
-        with self.assertRaises(InvalidArgument):
+        with self.assertRaises(InvalidExecutionElement):
             Action('HelloWorld', 'returnPlusOne', 'helloWorld', arguments=[Argument('invalid', value='-5.6')])
 
     def test_init_with_invalid_argument_type(self):
-        with self.assertRaises(InvalidArgument):
+        with self.assertRaises(InvalidExecutionElement):
             Action('HelloWorld', 'returnPlusOne', 'helloWorld', arguments=[Argument('number', value='invalid')])
 
     def test_init_with_triggers(self):

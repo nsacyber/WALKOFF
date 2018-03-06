@@ -37,7 +37,7 @@ class TestTriggersServer(ServerTestCase):
 
     def test_trigger_execute(self):
         workflow = execution_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids, action_events=self.action_events)
 
         def wait_thread():
@@ -77,7 +77,7 @@ class TestTriggersServer(ServerTestCase):
 
     def test_trigger_execute_multiple_workflows(self):
         workflow = execution_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids, action_events=self.action_events)
 
         ids = []
@@ -129,7 +129,7 @@ class TestTriggersServer(ServerTestCase):
     # TODO: Is this test really necessary?
     def test_trigger_execute_multiple_data(self):
         workflow = execution_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids, action_events=self.action_events)
 
         def wait_thread():
@@ -178,7 +178,7 @@ class TestTriggersServer(ServerTestCase):
 
     def test_trigger_execute_change_input(self):
         workflow = execution_db_help.load_workflow('testGeneratedWorkflows/triggerActionWorkflow', 'triggerActionWorkflow')
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids, action_events=self.action_events)
 
         def wait_thread():

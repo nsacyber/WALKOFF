@@ -8,7 +8,8 @@ from .exceptions import UnknownEvent, InvalidEventHandler
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.helpers import get_function_arg_names
 import warnings
-from walkoff.executiondb.representable import Representable
+from walkoff.executiondb.executionelement import ExecutionElement
+from walkoff.executiondb.schemas import dump_element
 
 _logger = logging.getLogger(__name__)
 
@@ -77,8 +78,8 @@ class InterfaceEventDispatcher(object):
         """
         def dispatch_method(sender, **kwargs):
             if event.event_type != EventType.controller:
-                if not isinstance(sender, dict) and isinstance(sender, Representable):
-                    data = sender.read()
+                if not isinstance(sender, dict) and isinstance(sender, ExecutionElement):
+                    data = dump_element(sender)
                 else:
                     data = deepcopy(sender)
                 additional_data = deepcopy(kwargs)

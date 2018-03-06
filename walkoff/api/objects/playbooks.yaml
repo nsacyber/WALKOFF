@@ -91,11 +91,11 @@ Action:
       type: string
       example: CyberAnalytics
     action_name:
-      description: The action the action will take
+      description: The name of the function this Action will take
       type: string
       example: pause
     name:
-      description: Name of the action
+      description: User-specified name of the action
       type: string
       example: action1
     device_id:

@@ -9,6 +9,7 @@ from tests.config import test_apps_path
 import walkoff.config.paths
 from tests.util import execution_db_help
 from walkoff.events import WalkoffEvent
+from walkoff.executiondb.schemas import dump_element
 
 
 class TestCondition(unittest.TestCase):
@@ -207,4 +208,4 @@ class TestCondition(unittest.TestCase):
             child_expressions=[
                 ConditionalExpression(conditions=[self.get_regex_condition('bb')]),
                 ConditionalExpression(conditions=[self.get_regex_condition('cc')])])
-        expression.read()
+        dump_element(expression)

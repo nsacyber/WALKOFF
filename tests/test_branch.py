@@ -12,6 +12,7 @@ from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.workflow import Workflow
 from tests.config import test_apps_path
+from walkoff.helpers import InvalidExecutionElement
 from tests.util import execution_db_help
 
 
@@ -98,18 +99,18 @@ class TestBranch(unittest.TestCase):
         branch = Branch(source_id=1, destination_id=2, condition=condition)
         action = Action('HelloWorld', 'helloWorld', 'helloWorld')
         action._output = ActionResult(result='bbb', status='Success')
-        workflow = Workflow('test', 1, actions=[action], branches=[branch])
-        self.assertIsNone(workflow.get_branch(action, {}))
+        with self.assertRaises(InvalidExecutionElement):
+            Workflow('test', 1, actions=[action], branches=[branch])
 
     def test_get_branch(self):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld', id=10)
-
+        action2 = Action('HelloWorld', 'helloWorld', 'helloWorld', id=2)
         condition = ConditionalExpression(
             'and',
             conditions=[Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])])
         branch = Branch(source_id=action.id, destination_id=2, condition=condition)
         action._output = ActionResult(result='aaa', status='Success')
-        workflow = Workflow("helloWorld", 1, actions=[action], branches=[branch])
+        workflow = Workflow("helloWorld", action.id, actions=[action, action2], branches=[branch])
 
         result = {'triggered': False}
 
@@ -126,6 +127,8 @@ class TestBranch(unittest.TestCase):
 
     def test_branch_with_priority(self):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld', id=10)
+        action2 = Action('HelloWorld', 'helloWorld', 'helloWorld', id=5)
+        action3 = Action('HelloWorld', 'helloWorld', 'helloWorld', id=1)
 
         condition = ConditionalExpression(
             'and',
@@ -135,6 +138,6 @@ class TestBranch(unittest.TestCase):
         branch_two = Branch(source_id=action.id, destination_id=1, condition=condition, priority=1)
 
         action._output = ActionResult(result='aaa', status='Success')
-        workflow = Workflow('test', 1, actions=[action], branches=[branch_one, branch_two])
+        workflow = Workflow('test', 1, actions=[action, action2, action3], branches=[branch_one, branch_two])
 
         self.assertEqual(workflow.get_branch(action, {}), 1)

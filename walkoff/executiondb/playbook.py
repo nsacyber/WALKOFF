@@ -1,6 +1,5 @@
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship, backref
-
 from walkoff.executiondb import Device_Base
 from walkoff.executiondb.executionelement import ExecutionElement
 
@@ -8,7 +7,7 @@ from walkoff.executiondb.executionelement import ExecutionElement
 class Playbook(ExecutionElement, Device_Base):
     __tablename__ = 'playbook'
     name = Column(String(255), nullable=False, unique=True)
-    workflows = relationship('Workflow', backref=backref('_playbook'), cascade='all, delete-orphan')
+    workflows = relationship('Workflow', backref=backref('playbook'), cascade='all, delete-orphan')
 
     def __init__(self, name, workflows=None, id=None):
         """Creates a Playbook object.
@@ -24,6 +23,11 @@ class Playbook(ExecutionElement, Device_Base):
         self.name = name
         if workflows:
             self.workflows = workflows
+
+        self.validate()
+
+    def validate(self):
+        pass
 
     def add_workflow(self, workflow):
         """Add a Workflow to the Playbook.

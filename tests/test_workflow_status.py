@@ -12,10 +12,11 @@ from uuid import uuid4
 from tests.util import execution_db_help
 from walkoff import executiondb
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
-from walkoff.executiondb.representable import Representable
+from walkoff.executiondb.executionelement import ExecutionElement
+import walkoff.executiondb.schemas
 
 
-class MockWorkflow(Representable):
+class MockWorkflow(ExecutionElement):
     def __init__(self, execution_id):
         self.execution_id = execution_id
         self.id = '123'
@@ -23,6 +24,18 @@ class MockWorkflow(Representable):
 
     def get_execution_id(self):
         return self.execution_id
+
+    def as_json(self):
+        return {'id': self.id, 'name': self.name, 'execution_id': self.execution_id}
+
+class MockWorkflowSchema(object):
+    @staticmethod
+    def dump(workflow):
+        class Dummy:
+            def __init__(self, data):
+                self.data = data
+
+        return Dummy({'id': str(workflow.id), 'name': workflow.name, 'execution_id': str(workflow.execution_id)})
 
 
 def mock_pause_workflow(self, execution_id):
@@ -39,6 +52,7 @@ class TestWorkflowStatus(ServerTestCase):
         MultiprocessedExecutor.pause_workflow = mock_pause_workflow
         MultiprocessedExecutor.resume_workflow = mock_resume_workflow
         case_database.initialize()
+        walkoff.executiondb.schemas._schema_lookup[MockWorkflow] = MockWorkflowSchema
 
     def tearDown(self):
         execution_db_help.cleanup_device_db()
@@ -46,6 +60,7 @@ class TestWorkflowStatus(ServerTestCase):
         case_database.case_db.session.query(case_database.Event).delete()
         case_database.case_db.session.query(case_database.Case).delete()
         case_database.case_db.session.commit()
+        walkoff.executiondb.schemas._schema_lookup.pop(MockWorkflow, None)
 
     def act_on_workflow(self, execution_id, action):
         data = {'execution_id': execution_id, 'status': action}
@@ -163,8 +178,8 @@ class TestWorkflowStatus(ServerTestCase):
     def test_execute_workflow(self):
         playbook = execution_db_help.standard_load()
 
-        workflow = executiondb.execution_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
+        workflow = executiondb.execution_db.session.query(Workflow).filter_by(playbook_id=playbook.id).first()
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {'count': 0}
@@ -190,9 +205,9 @@ class TestWorkflowStatus(ServerTestCase):
     def test_execute_workflow_change_arguments(self):
 
         playbook = execution_db_help.standard_load()
-        workflow = executiondb.execution_db.session.query(Workflow).filter_by(_playbook_id=playbook.id).first()
+        workflow = executiondb.execution_db.session.query(Workflow).filter_by(playbook_id=playbook.id).first()
 
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {'count': 0}
@@ -247,7 +262,7 @@ class TestWorkflowStatus(ServerTestCase):
 
         workflow = executiondb.execution_db.session.query(Workflow).filter_by(name='pauseWorkflow').first()
 
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {"aborted": False}
