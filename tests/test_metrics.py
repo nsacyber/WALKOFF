@@ -1,13 +1,13 @@
 from sqlalchemy import and_
 
-from walkoff import executiondb
 import walkoff.server.metrics as metrics
-from walkoff.server import flaskserver as server
+from tests.util import execution_db_help
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
+from walkoff import executiondb
 from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.workflow import Workflow
-from tests.util import execution_db_help
+from walkoff.server import flaskserver as server
 
 
 class MetricsTest(ServerTestCase):
@@ -21,7 +21,7 @@ class MetricsTest(ServerTestCase):
     def test_action_metrics(self):
         playbook = execution_db_help.load_playbook('multiactionError')
         workflow_id = executiondb.execution_db.session.query(Workflow).filter(and_(
-            Workflow.name == 'multiactionErrorWorkflow', Workflow._playbook_id == playbook.id)).first().id
+            Workflow.name == 'multiactionErrorWorkflow', Workflow.playbook_id == playbook.id)).first().id
 
         server.running_context.executor.execute_workflow(workflow_id)
 
@@ -52,9 +52,9 @@ class MetricsTest(ServerTestCase):
 
     def test_workflow_metrics(self):
         execution_db_help.load_playbooks(['multiactionError', 'multiactionWorkflowTest'])
-        error_id = executiondb.execution_db.session.query(Workflow).join(Workflow._playbook).filter(and_(
+        error_id = executiondb.execution_db.session.query(Workflow).join(Workflow.playbook).filter(and_(
             Workflow.name == 'multiactionErrorWorkflow', Playbook.name == 'multiactionError')).first().id
-        test_id = executiondb.execution_db.session.query(Workflow).join(Workflow._playbook).filter(and_(
+        test_id = executiondb.execution_db.session.query(Workflow).join(Workflow.playbook).filter(and_(
             Workflow.name == 'multiactionWorkflow', Playbook.name == 'multiactionWorkflowTest')).first().id
 
         error_key = 'multiactionErrorWorkflow'

@@ -4,9 +4,9 @@ import yaml
 
 import walkoff.appgateway
 import walkoff.config.config
-from walkoff.config.paths import walkoff_schema_path
-from walkoff.appgateway.validator import *
 from tests.config import basic_app_api, test_apps_path
+from walkoff.appgateway.validator import *
+from walkoff.config.paths import walkoff_schema_path
 
 
 class TestConditionTransformValidation(unittest.TestCase):

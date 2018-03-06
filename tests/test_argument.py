@@ -40,11 +40,11 @@ class TestArgument(TestCase):
 
     def test_init_with_reference_empty(self):
         arg = Argument('test_name', value=5, reference='')
-        self.assert_init_equals(arg, 'test_name', value=5)
+        self.assert_init_equals(arg, 'test_name', value=5, reference='')
 
     def test_init_with_selection_empty(self):
         arg = Argument('test_name', value=5, selection=[])
-        self.assert_init_equals(arg, 'test_name', value=5)
+        self.assert_init_equals(arg, 'test_name', value=5, selection=[])
 
     def test_init_with_selection(self):
         arg = Argument('test_name', reference='some_id', selection=[1, 'a', 2])
@@ -166,3 +166,36 @@ class TestArgument(TestCase):
                   'c': 'something'}
         with self.assertRaises(InvalidArgument):
             arg.get_value({'a': input_, 'b': 2})
+
+    def test_update_value_reference_from_value(self):
+        input_output = {
+            (None, None): (42, None),
+            (43, None): (43, None),
+            (42, None): (42, None),
+            (43, 'a'): (43, None),
+            (None, 'a'): (None, 'a'),
+            (42, 'a'): (None, 'a')
+        }
+        for inputs, outputs in input_output.items():
+            arg = Argument('test', value=42)
+            arg.update_value_reference(*inputs)
+            self.assertEqual(arg.value, outputs[0])
+            self.assertEqual(arg.reference, outputs[1])
+
+    def test_update_value_reference_from_reference(self):
+        input_output = {
+            (None, None): (None, 'a'),
+            (None, 'b'): (None, 'b'),
+            (None, 'a'): (None, 'a'),
+            (None, ''): (None, 'a'),
+            (42, None): (42, None),
+            (42, 'a'): (42, None),
+            (42, ''): (42, None)
+        }
+        for inputs, outputs in input_output.items():
+            arg = Argument('test', reference='a', selection=[1, 'a'])
+            arg.update_value_reference(*inputs)
+            self.assertEqual(arg.value, outputs[0])
+            self.assertEqual(arg.reference, outputs[1])
+            if outputs[1] is None:
+                self.assertListEqual(arg.selection, [])

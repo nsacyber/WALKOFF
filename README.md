@@ -36,10 +36,11 @@ Walkoff apps can be found at: <https://github.com/iadgov/WALKOFF-Apps>
 
 ## Installation Instructions
 
-To install, you can run (possibly with administrator privileges)
+If the Python environment for your elevated privileges are the same as the Python environment you will be running WALKOFF in (use `pip --version` to check), you can use the all-in-one setup script with elevated privileges:
+
    `python setup_walkoff.py`
 
-Alternatively, you can manually install WALKOFF
+If that is not the case, or if you would like to manually install WALKOFF:
 
 First, install the dependencies with the following command:
 
@@ -51,10 +52,14 @@ To install the dependencies for each individual app, run:
 
 Or to just install the dependencies for specific apps:
 
-   `python scripts/install_dependencies -a AppOne,AppTwo,AppThree`
+   `python scripts/install_dependencies.py -a AppOne,AppTwo,AppThree`
+   
+Then, generate certificates for WALKOFF's internal messaging:
+
+   `python scripts/generate_certificates.py`
 
 Next, navigate to /walkoff/client and install the client dependencies with the
-following commands:
+following commands - these will require elevated privileges:
 
    `npm install`
 
@@ -62,7 +67,7 @@ Next, use gulp to build the client:
 
    `npm run build`
 
-That's it! To start up the server, just navigate back to the walkoff root and
+That's it! To start up the server, just navigate back to the WALKOFF root and
 run:
 
    `python walkoff.py`
@@ -113,6 +118,7 @@ For more options, run
 * Python 2.7+ or Python 3.4+
 * NodeJS and Node Package Manager (npm)
 * Tested on Windows and Linux
+* On Linux, you will need the python-devel package for your distribution.
 
 *Requirements for apps may differ*
 

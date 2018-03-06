@@ -89,7 +89,7 @@ class Scheduler(object):
             trigger (Trigger): The trigger to use for this scheduled task
         """
         for id_ in workflow_ids:
-            self.scheduler.add_job(executable, args=(id_, ),
+            self.scheduler.add_job(executable, args=(id_,),
                                    id=construct_task_id(task_id, id_),
                                    trigger=trigger, replace_existing=True)
 
@@ -134,7 +134,8 @@ class Scheduler(object):
             task_id (str|int): The task id to update
             trigger (Trigger): The new trigger to use
         """
-        existing_tasks = {construct_task_id(task_id, workflow_execution_id) for workflow_execution_id in self.get_scheduled_workflows(task_id)}
+        existing_tasks = {construct_task_id(task_id, workflow_execution_id) for workflow_execution_id in
+                          self.get_scheduled_workflows(task_id)}
         for job_id in existing_tasks:
             self.scheduler.reschedule_job(job_id=job_id, trigger=trigger)
 

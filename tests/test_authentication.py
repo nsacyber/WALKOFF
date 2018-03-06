@@ -4,12 +4,12 @@ from datetime import timedelta
 
 from flask_jwt_extended import decode_token
 
+from tests.util import execution_db_help
+from walkoff.extensions import db
 from walkoff.server.returncodes import *
+from walkoff.serverdb import add_user
 from walkoff.serverdb.tokens import BlacklistedToken
 from walkoff.serverdb.user import User
-from walkoff.serverdb import add_user
-from walkoff.extensions import db
-from tests.util import execution_db_help
 
 
 class TestAuthorization(unittest.TestCase):

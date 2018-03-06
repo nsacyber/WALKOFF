@@ -1,7 +1,9 @@
-from flask import current_app
-from walkoff.server.returncodes import OBJECT_DNE_ERROR, BAD_REQUEST
-from walkoff.server.problem import Problem
 from uuid import UUID
+
+from flask import current_app
+
+from walkoff.server.problem import Problem
+from walkoff.server.returncodes import OBJECT_DNE_ERROR, BAD_REQUEST
 
 
 def get_id_str(ids):
@@ -27,7 +29,6 @@ def dne_error(resource, operation, ids):
 
 
 def validate_resource_exists_factory(resource_name, existence_func):
-
     def validate_resource_exists(operation, *ids):
 
         def wrapper(func):
@@ -35,6 +36,7 @@ def validate_resource_exists_factory(resource_name, existence_func):
                 return func
             else:
                 return dne_error(resource_name, operation, ids)
+
         return wrapper
 
     return validate_resource_exists
@@ -45,7 +47,6 @@ def invalid_id_problem(resource, operation):
 
 
 def with_resource_factory(resource_name, getter_func, validator=None):
-
     def validate_resource_exists(operation, *ids):
         def wrapper(func):
             if validator and not validator(*ids):

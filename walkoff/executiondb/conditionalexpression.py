@@ -1,27 +1,34 @@
 import logging
+from uuid import uuid4
+
 from sqlalchemy import Column, ForeignKey, Enum, orm, Boolean
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 
+from walkoff.events import WalkoffEvent
 from walkoff.executiondb import Device_Base
 from walkoff.executiondb.executionelement import ExecutionElement
-from uuid import uuid4
 from walkoff.helpers import InvalidArgument
-from walkoff.events import WalkoffEvent
+
 logger = logging.getLogger(__name__)
+
+valid_operators = ('and', 'or', 'xor')
 
 
 class ConditionalExpression(ExecutionElement, Device_Base):
     __tablename__ = 'conditional_expression'
     id = Column(UUIDType(binary=False), primary_key=True, default=uuid4)
-    _action_id = Column(UUIDType(binary=False), ForeignKey('action.id'))
-    _branch_id = Column(UUIDType(binary=False), ForeignKey('branch.id'))
-    _parent_id = Column(UUIDType(binary=False), ForeignKey(id))
-    operator = Column(Enum('and', 'or', 'xor', name='operator_types'), nullable=False)
+    action_id = Column(UUIDType(binary=False), ForeignKey('action.id'))
+    branch_id = Column(UUIDType(binary=False), ForeignKey('branch.id'))
+    parent_id = Column(UUIDType(binary=False), ForeignKey(id))
+    operator = Column(Enum(*valid_operators, name='operator_types'), nullable=False)
     is_negated = Column(Boolean, default=False)
-    child_expressions = relationship('ConditionalExpression', cascade='all, delete-orphan',
-                                     backref=backref('_parent', remote_side=id))
-    conditions = relationship('Condition', backref=backref('_expression'), cascade='all, delete-orphan')
+    child_expressions = relationship('ConditionalExpression',
+                                     cascade='all, delete-orphan',
+                                     backref=backref('parent', remote_side=id))
+    conditions = relationship(
+        'Condition',
+        cascade='all, delete-orphan')
 
     def __init__(self, operator='and', id=None, is_negated=False, child_expressions=None, conditions=None):
         """Initializes a new ConditionalExpression object
@@ -46,9 +53,7 @@ class ConditionalExpression(ExecutionElement, Device_Base):
                                   'or': self._or,
                                   'xor': self._xor}
 
-    def _construct_children(self, child_expressions):
-        for child in child_expressions:
-            child._parent = self
+        self.validate()
 
     @orm.reconstructor
     def init_on_load(self):
@@ -56,6 +61,13 @@ class ConditionalExpression(ExecutionElement, Device_Base):
         self.__operator_lookup = {'and': self._and,
                                   'or': self._or,
                                   'xor': self._xor}
+
+    def validate(self):
+        pass
+
+    def _construct_children(self, child_expressions):
+        for child in child_expressions:
+            child.parent = self
 
     def execute(self, data_in, accumulator):
         """Executes the ConditionalExpression object, determining if the statement evaluates to True or False.

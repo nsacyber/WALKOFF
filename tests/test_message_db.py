@@ -1,19 +1,20 @@
+import json
+from datetime import datetime
 from unittest import TestCase
+from uuid import uuid4
 
-from walkoff.server import flaskserver
-from walkoff.serverdb.message import Message, MessageHistory
-from walkoff.messaging import MessageAction
+import walkoff.config.paths
 import walkoff.messaging
+from tests.util import execution_db_help
+from walkoff.events import WalkoffEvent
+from walkoff.helpers import utc_as_rfc_datetime
+from walkoff.messaging import MessageAction
 from walkoff.messaging.utils import strip_requires_response_from_message_body, save_message, \
     get_all_matching_users_for_message, log_action_taken_on_message
+from walkoff.server import flaskserver
 from walkoff.serverdb import db, User, Role
-from datetime import datetime
-from walkoff.events import WalkoffEvent
-import json
-import walkoff.config.paths
-from tests.util import execution_db_help
-from uuid import uuid4
-from walkoff.helpers import utc_as_rfc_datetime
+from walkoff.serverdb.message import Message, MessageHistory
+
 
 class TestMessageDatabase(TestCase):
 
@@ -405,10 +406,10 @@ class TestMessageDatabase(TestCase):
                 {'message': 'also here', 'requires_auth': False},
                 {'message': 'here thing'}]
         message_data = {'message': {'body': body,
-                                'users': [self.user.id],
-                                'roles': [self.role.id],
-                                'subject': 'Warning about thing',
-                                'requires_reauth': False},
+                                    'users': [self.user.id],
+                                    'roles': [self.role.id],
+                                    'subject': 'Warning about thing',
+                                    'requires_reauth': False},
                         'workflow': {'execution_id': 'workflow_uid10'}}
         sender = {}
         WalkoffEvent.SendMessage.send(sender, data=message_data)
@@ -423,10 +424,10 @@ class TestMessageDatabase(TestCase):
                 {'message': 'also here', 'requires_response': True},
                 {'message': 'here thing'}]
         message_data = {'message': {'body': body,
-                                'users': [self.user.id],
-                                'roles': [self.role.id],
-                                'subject': 'Re: Best chicken recipe',
-                                'requires_reauth': False},
+                                    'users': [self.user.id],
+                                    'roles': [self.role.id],
+                                    'subject': 'Re: Best chicken recipe',
+                                    'requires_reauth': False},
                         'workflow': {'execution_id': 'workflow_uid14'}}
         sender = {}
         WalkoffEvent.SendMessage.send(sender, data=message_data)
@@ -443,10 +444,10 @@ class TestMessageDatabase(TestCase):
                 {'message': 'also here', 'requires_response': True},
                 {'message': 'here thing'}]
         message_data = {'message': {'body': body,
-                                'users': [self.user.id],
-                                'roles': [self.role.id],
-                                'subject': 'Re: Best chicken recipe',
-                                'requires_reauth': False},
+                                    'users': [self.user.id],
+                                    'roles': [self.role.id],
+                                    'subject': 'Re: Best chicken recipe',
+                                    'requires_reauth': False},
                         'workflow': {'execution_id': 'workflow_uid14'}}
         sender = {}
         res = {'called': False}
@@ -476,10 +477,12 @@ class TestMessageDatabase(TestCase):
         walkoff.messaging.workflow_authorization_cache.add_user_in_progress('uid1', 1)
         walkoff.messaging.workflow_authorization_cache.add_user_in_progress('uid1', 2)
 
-        WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid2'), data={'workflow_execution_id': 'uid2'})
+        WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid2'),
+                                                data={'workflow_execution_id': 'uid2'})
         self.assertEqual(walkoff.messaging.workflow_authorization_cache.peek_user_in_progress('uid1'), 2)
         self.assertIsNone(walkoff.messaging.workflow_authorization_cache.peek_user_in_progress('uid2'))
-        WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid1'), data={'workflow_execution_id': 'uid1'})
+        WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid1'),
+                                                data={'workflow_execution_id': 'uid1'})
         self.assertEqual(walkoff.messaging.workflow_authorization_cache.peek_user_in_progress('uid1'), 1)
 
     def test_log_action_taken_on_message(self):
@@ -502,7 +505,8 @@ class TestMessageDatabase(TestCase):
         db.session.commit()
         walkoff.messaging.workflow_authorization_cache.add_authorized_users(uid, users=[1, 2])
         walkoff.messaging.workflow_authorization_cache.add_user_in_progress(uid, self.user.id)
-        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender(uid), data={'workflow_execution_id': uid})
+        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender(uid),
+                                             data={'workflow_execution_id': uid})
         message = Message.query.filter(Message.workflow_execution_id == uid).first()
         self.assertEqual(len(list(message.history)), 1)
         self.assertEqual(message.history[0].action, MessageAction.respond)
@@ -524,7 +528,8 @@ class TestMessageDatabase(TestCase):
             self.assertEqual(message_in.id, message.id)
             self.assertEqual(data['data']['user'], self.user)
 
-        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender(uid), data={'workflow_execution_id': uid})
+        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender(uid),
+                                             data={'workflow_execution_id': uid})
         self.assertTrue(res['called'])
 
     def test_message_action_get_all_names(self):

@@ -5,9 +5,9 @@ from os.path import join
 
 import walkoff.appgateway
 import walkoff.config.paths
-from walkoff.helpers import *
 from tests.config import test_apps_path
 from tests.util.assertwrappers import orderless_list_compare
+from walkoff.helpers import *
 from walkoff.server.flaskserver import handle_database_errors, handle_generic_server_error
 
 
@@ -86,7 +86,8 @@ class TestHelperFunctions(unittest.TestCase):
     def test_import_py_file_invalid(self):
         error_type = IOError if sys.version_info[0] == 2 else OSError
         with self.assertRaises(error_type):
-            import_py_file('some.module.name', os.path.join(walkoff.config.paths.apps_path, 'InvalidAppName', 'main.py'))
+            import_py_file('some.module.name',
+                           os.path.join(walkoff.config.paths.apps_path, 'InvalidAppName', 'main.py'))
 
     def test_import_app_main(self):
         module_name = 'tests.testapps.HelloWorld.main'

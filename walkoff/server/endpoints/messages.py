@@ -1,18 +1,18 @@
-from walkoff.security import ResourcePermissions, permissions_accepted_for_resources
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from walkoff.server.returncodes import *
 from flask import request
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
+from walkoff.extensions import db
+from walkoff.security import ResourcePermissions, permissions_accepted_for_resources
+from walkoff.server.problem import Problem
+from walkoff.server.returncodes import *
 from walkoff.serverdb import User
 from walkoff.serverdb.message import Message
-from walkoff.extensions import db
-from walkoff.server.problem import Problem
 
 max_notifications = 20
 min_notifications = 5
 
 
 def get_all_messages():
-
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('messages', ['read']))
     def __func():
@@ -96,7 +96,6 @@ def act_on_message_helper(action):
 
 
 def get_recent_notifications():
-
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('messages', ['read']))
     def __func():

@@ -1,28 +1,29 @@
 import logging
 
 from sqlalchemy import Column, ForeignKey, String, orm, Boolean
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 
 from walkoff import executiondb
 from walkoff.appgateway import get_condition
-from walkoff.executiondb.argument import Argument
-from walkoff.events import WalkoffEvent
-from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import get_condition_api, InvalidArgument, format_exception_message, split_api_params
 from walkoff.appgateway.validator import validate_condition_parameters
+from walkoff.events import WalkoffEvent
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.executionelement import ExecutionElement
+from walkoff.helpers import (UnknownCondition, UnknownApp, InvalidExecutionElement)
+from walkoff.helpers import get_condition_api, InvalidArgument, format_exception_message, split_api_params
 
 logger = logging.getLogger(__name__)
 
 
 class Condition(ExecutionElement, executiondb.Device_Base):
     __tablename__ = 'condition'
-    _conditional_expression_id = Column(UUIDType(binary=False), ForeignKey('conditional_expression.id'))
+    conditional_expression_id = Column(UUIDType(binary=False), ForeignKey('conditional_expression.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     is_negated = Column(Boolean, default=False)
-    arguments = relationship('Argument', backref=backref('_condition'), cascade='all, delete, delete-orphan')
-    transforms = relationship('Transform', backref=backref('_condition'), cascade='all, delete-orphan')
+    arguments = relationship('Argument', cascade='all, delete, delete-orphan')
+    transforms = relationship('Transform', cascade='all, delete-orphan')
 
     def __init__(self, app_name, action_name, id=None, is_negated=False, arguments=None, transforms=None):
         """Initializes a new Condition object.
@@ -42,9 +43,6 @@ class Condition(ExecutionElement, executiondb.Device_Base):
         self.app_name = app_name
         self.action_name = action_name
         self.is_negated = is_negated
-        self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
-        tmp_api = split_api_params(self._api, self._data_param_name)
-        validate_condition_parameters(tmp_api, arguments, self.action_name)
 
         self.arguments = []
         if arguments:
@@ -54,13 +52,38 @@ class Condition(ExecutionElement, executiondb.Device_Base):
         if transforms:
             self.transforms = transforms
 
-        self._condition_executable = get_condition(self.app_name, self._run)
+        self._data_param_name = None
+        self._run = None
+        self._api = None
+        self._condition_executable = None
+
+        self.validate()
 
     @orm.reconstructor
     def init_on_load(self):
         """Loads all necessary fields upon Condition being loaded from database"""
         self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
         self._condition_executable = get_condition(self.app_name, self._run)
+
+    def validate(self):
+        errors = {}
+        try:
+            self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
+            self._condition_executable = get_condition(self.app_name, self._run)
+            tmp_api = split_api_params(self._api, self._data_param_name)
+            validate_condition_parameters(tmp_api, self.arguments, self.action_name)
+        except UnknownApp:
+            errors['executable'] = 'Unknown app {}'.format(self.app_name)
+        except UnknownCondition:
+            errors['executable'] = 'Unknown condition {}'.format(self.action_name)
+        except InvalidArgument as e:
+            errors['arguments'] = e.errors
+        if errors:
+            raise InvalidExecutionElement(
+                self.id,
+                self.action_name,
+                'Invalid condition {}'.format(self.id or self.action_name),
+                errors=[errors])
 
     def execute(self, data_in, accumulator):
         """Executes the Condition object, determining if the Condition evaluates to True or False.

@@ -3,16 +3,15 @@ import logging
 from sqlalchemy import Column, Float, ForeignKey, Integer
 from sqlalchemy_utils import UUIDType
 
-from walkoff.executiondb.representable import Representable
 from walkoff.executiondb import Device_Base
 
 logger = logging.getLogger(__name__)
 
 
-class Position(Representable, Device_Base):
+class Position(Device_Base):
     __tablename__ = 'position'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    _action_id = Column(UUIDType(binary=False), ForeignKey('action.id'))
+    action_id = Column(UUIDType(binary=False), ForeignKey('action.id'))
     x = Column(Float, nullable=False)
     y = Column(Float, nullable=False)
 

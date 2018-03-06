@@ -1,9 +1,11 @@
 import logging
-from apps import App, action
+import time
+
 import requests
 from requests.exceptions import Timeout
+
+from apps import App, action
 from walkoff.config.paths import certificate_path
-import time
 
 logger = logging.getLogger(__name__)
 

@@ -1,11 +1,11 @@
 import json
 import logging
 
-from walkoff.events import WalkoffEvent
-from walkoff.serverdb.message import Message
-from walkoff.serverdb import Role, User
-from walkoff.extensions import db
 import walkoff.messaging
+from walkoff.events import WalkoffEvent
+from walkoff.extensions import db
+from walkoff.serverdb import Role, User
+from walkoff.serverdb.message import Message
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ def save_message_callback(sender, **message_data):
         walkoff.messaging.workflow_authorization_cache.add_authorized_users(
             workflow_data['execution_id'], users=message_data['users'], roles=message_data['roles'])
     with app.app_context():
-        save_message(body, message_data,workflow_data['execution_id'], requires_action)
+        save_message(body, message_data, workflow_data['execution_id'], requires_action)
 
 
 def strip_requires_response_from_message_body(body):

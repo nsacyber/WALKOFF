@@ -1,7 +1,7 @@
 import unittest
 
-from walkoff.executiondb.device import App, Device
 from tests.util import execution_db_help
+from walkoff.executiondb.device import App, Device
 
 
 class TestAppDatabase(unittest.TestCase):

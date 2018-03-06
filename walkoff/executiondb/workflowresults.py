@@ -1,12 +1,13 @@
 import json
 from datetime import datetime
 
-from sqlalchemy import Column, String, DateTime, ForeignKey, Enum, func
+from sqlalchemy import Column, String, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy_utils import UUIDType
 
 from walkoff.executiondb import Device_Base, WorkflowStatusEnum, ActionStatusEnum
-from sqlalchemy_utils import UUIDType
 from walkoff.helpers import utc_as_rfc_datetime
+
 
 class WorkflowStatus(Device_Base):
     """Case ORM for a Workflow event in the database

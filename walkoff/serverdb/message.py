@@ -2,9 +2,8 @@ import json
 from datetime import datetime
 
 from walkoff.extensions import db
-from walkoff.messaging import MessageAction
 from walkoff.helpers import utc_as_rfc_datetime
-
+from walkoff.messaging import MessageAction
 
 user_messages_association = db.Table('user_messages',
                                      db.Column('user_id', db.Integer, db.ForeignKey('user.id')),

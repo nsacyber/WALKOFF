@@ -1,11 +1,13 @@
-from interfaces import dispatcher, AppBlueprint
-from walkoff.events import WalkoffEvent
+from datetime import datetime
+
 from flask import Blueprint, jsonify
 from flask_jwt_extended import jwt_required
-from datetime import datetime
+
+import walkoff.cache as cache
+from interfaces import dispatcher, AppBlueprint
+from walkoff.events import WalkoffEvent
 from walkoff.security import jwt_required_in_query
 from walkoff.sse import InterfaceSseStream, create_interface_channel_name
-import walkoff.cache as cache
 
 blueprint = AppBlueprint(blueprint=Blueprint('HelloWorldPage__', __name__))
 

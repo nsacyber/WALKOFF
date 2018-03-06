@@ -1,13 +1,13 @@
 from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from walkoff.server.returncodes import *
-from walkoff.serverdb import add_user
 from walkoff.extensions import db
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions, admin_required
 from walkoff.server.decorators import with_resource_factory
-from walkoff.serverdb.user import User
 from walkoff.server.problem import Problem
+from walkoff.server.returncodes import *
+from walkoff.serverdb import add_user
+from walkoff.serverdb.user import User
 
 with_user = with_resource_factory('user', lambda user_id: User.query.filter_by(id=user_id).first())
 
@@ -58,7 +58,6 @@ def read_user(user_id):
 
 
 def update_user():
-
     user_id = request.get_json()['id']
 
     @jwt_required

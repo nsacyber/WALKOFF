@@ -2,10 +2,10 @@ from flask import request, current_app
 from flask_jwt_extended import (jwt_refresh_token_required, create_access_token, create_refresh_token, get_jwt_identity,
                                 get_raw_jwt, jwt_required, decode_token)
 
-from walkoff.serverdb import User, db
-from walkoff.server.returncodes import *
-from walkoff.serverdb.tokens import revoke_token
 from walkoff.server.problem import Problem
+from walkoff.server.returncodes import *
+from walkoff.serverdb import User, db
+from walkoff.serverdb.tokens import revoke_token
 
 token_problem_title = 'Could not grant access token.'
 invalid_username_password_problem = Problem(

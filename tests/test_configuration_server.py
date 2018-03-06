@@ -4,8 +4,8 @@ from flask import current_app
 
 import walkoff.config.config
 import walkoff.config.paths
-from walkoff.server.returncodes import *
 from tests.util.servertestcase import ServerTestCase
+from walkoff.server.returncodes import *
 
 
 class TestConfigurationServer(ServerTestCase):
@@ -85,7 +85,7 @@ class TestConfigurationServer(ServerTestCase):
         data = {"access_token_duration": 60 * 25,
                 "refresh_token_duration": 1}
         self.put_with_status_check('/api/configuration', headers=self.headers, data=json.dumps(data),
-                                    content_type='application/json', status_code=BAD_REQUEST)
+                                   content_type='application/json', status_code=BAD_REQUEST)
 
         self.assertEqual(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds, access_token_duration)
         self.assertEqual(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days, refresh_token_duration)

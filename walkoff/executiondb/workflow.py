@@ -3,28 +3,27 @@ import logging
 from uuid import UUID
 
 from sqlalchemy import Column, String, ForeignKey, orm, UniqueConstraint
-from sqlalchemy.orm import relationship, backref
-from sqlalchemy.orm.collections import attribute_mapped_collection
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 
-from walkoff.executiondb import Device_Base
+from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 from walkoff.events import WalkoffEvent
+from walkoff.executiondb import Device_Base
 from walkoff.executiondb.action import Action
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.appgateway.appinstancerepo import AppInstanceRepo
+from walkoff.helpers import InvalidExecutionElement
 
 logger = logging.getLogger(__name__)
 
 
 class Workflow(ExecutionElement, Device_Base):
     __tablename__ = 'workflow'
-    _playbook_id = Column(UUIDType(binary=False), ForeignKey('playbook.id'))
+    playbook_id = Column(UUIDType(binary=False), ForeignKey('playbook.id'))
     name = Column(String(80), nullable=False)
-    actions = relationship('Action', backref=backref('_workflow'), cascade='all, delete-orphan',
-                           collection_class=attribute_mapped_collection('id'))
-    branches = relationship('Branch', backref=backref('_workflow'), cascade='all, delete-orphan')
-    start = Column(UUIDType(binary=False), nullable=False)
-    __table_args__ = (UniqueConstraint('_playbook_id', 'name', name='_playbook_workflow'),)
+    actions = relationship('Action', cascade='all, delete-orphan')
+    branches = relationship('Branch', cascade='all, delete-orphan')
+    start = Column(UUIDType(binary=False))
+    __table_args__ = (UniqueConstraint('playbook_id', 'name', name='_playbook_workflow'),)
 
     def __init__(self, name, start, id=None, actions=None, branches=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Actions
@@ -39,7 +38,7 @@ class Workflow(ExecutionElement, Device_Base):
         """
         ExecutionElement.__init__(self, id)
         self.name = name
-        self.actions = {action.id: action for action in actions} if actions else {}
+        self.actions = actions if actions else []
         self.branches = branches if branches else []
 
         self.start = start
@@ -50,6 +49,8 @@ class Workflow(ExecutionElement, Device_Base):
         self._execution_id = 'default'
         self._instance_repo = None
 
+        self.validate()
+
     @orm.reconstructor
     def init_on_load(self):
         """Loads all necessary fields upon Workflow being loaded from database"""
@@ -59,6 +60,29 @@ class Workflow(ExecutionElement, Device_Base):
         self._instance_repo = AppInstanceRepo()
         self._execution_id = 'default'
 
+    def validate(self):
+        action_ids = [action.id for action in self.actions]
+        errors = {}
+        if not self.start and self.actions:
+            errors['start'] = 'Workflows with actions require a start parameter'
+        elif self.actions and self.start not in action_ids:
+            errors['start'] = 'Workflow start ID {} not found in actions'.format(self.start)
+
+        branch_errors = []
+        for branch in self.branches:
+            if branch.source_id not in action_ids:
+                branch_errors.append('Branch source ID {} not found in workflow actions'.format(branch.source_id))
+            if branch.destination_id not in action_ids:
+                branch_errors.append(
+                    'Branch destination ID {} not found in workflow actions'.format(branch.destination_id))
+        if branch_errors:
+            errors['branches'] = branch_errors
+        if errors:
+            raise InvalidExecutionElement(self.id, self.name, 'Invalid workflow', errors=errors)
+
+    def get_action_by_id(self, action_id):
+        return next((action for action in self.actions if action.id == action_id), None)
+
     def remove_action(self, action_id):
         """Removes a Action object from the Workflow's list of Actions given the Action ID.
         Args:
@@ -66,7 +90,8 @@ class Workflow(ExecutionElement, Device_Base):
         Returns:
             True on success, False otherwise.
         """
-        del self.actions[action_id]
+        action_to_remove = self.get_action_by_id(action_id)
+        self.actions.remove(action_to_remove)
         self.branches[:] = [branch for branch in self.branches if
                             (branch.source_id != action_id and branch.destination_id != action_id)]
 
@@ -135,12 +160,12 @@ class Workflow(ExecutionElement, Device_Base):
 
     def __actions(self, start):
         current_id = start
-        current_action = self.actions[current_id]
+        current_action = self.get_action_by_id(current_id)
 
         while current_action:
             yield current_action
             current_id = self.get_branch(current_action, self._accumulator)
-            current_action = self.actions[current_id] if current_id is not None else None
+            current_action = self.get_action_by_id(current_id) if current_id is not None else None
             yield  # needed so that when for-loop calls next() it doesn't advance too far
         yield  # needed so you can avoid catching StopIteration exception
 

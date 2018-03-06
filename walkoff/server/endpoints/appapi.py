@@ -3,11 +3,11 @@ from copy import deepcopy
 from flask_jwt_extended import jwt_required
 
 import walkoff.config.config
-from walkoff.appgateway import is_app_action_bound
 from walkoff import helpers
-from walkoff.server.returncodes import *
+from walkoff.appgateway import is_app_action_bound
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.problem import Problem
+from walkoff.server.returncodes import *
 
 
 def read_all_apps():

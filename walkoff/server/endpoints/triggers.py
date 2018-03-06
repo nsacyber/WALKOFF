@@ -1,10 +1,10 @@
 from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt_claims
 
-from walkoff.executiondb.argument import Argument
-from walkoff.server.returncodes import *
-from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 import walkoff.messaging
+from walkoff.executiondb.argument import Argument
+from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
+from walkoff.server.returncodes import *
 
 
 def send_data_to_trigger():

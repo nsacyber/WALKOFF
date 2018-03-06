@@ -1,7 +1,6 @@
 from unittest import TestCase
+
 from walkoff.appgateway.appcache import AppCacheEntry, FunctionEntry
-from walkoff.appgateway.walkofftag import WalkoffTag
-from walkoff.appgateway.decorators import *
 from walkoff.appgateway.decorators import *
 
 
@@ -31,6 +30,7 @@ class TestAppCacheEntry(TestCase):
 
     def test_cache_action(self):
         def x(): pass
+
         self.entry.cache_functions([(x, self.action_tag)], self.clspath)
         self.assert_entry_has_functions({'x': FunctionEntry(run=x, is_bound=False, tags=self.action_tag)})
 
@@ -38,6 +38,7 @@ class TestAppCacheEntry(TestCase):
         def x(): pass
 
         def y(): pass
+
         self.entry.cache_functions([(x, self.action_tag), (y, self.action_tag)], self.clspath)
         self.assert_entry_has_functions({'x': FunctionEntry(run=x, is_bound=False, tags=self.action_tag),
                                          'y': FunctionEntry(run=y, is_bound=False, tags=self.action_tag)})
@@ -56,6 +57,7 @@ class TestAppCacheEntry(TestCase):
 
     def test_cache_app_no_actions_empty_cache(self):
         class A: pass
+
         self.entry.cache_app_class(A, self.clspath)
         self.assertEqual(self.entry.main, A)
         self.assertDictEqual(self.entry.functions, {})
@@ -108,6 +110,7 @@ class TestAppCacheEntry(TestCase):
         def x(): pass
 
         def y(): pass
+
         self.entry.cache_functions([(x, self.action_tag), (y, self.action_tag)], self.clspath)
         self.entry.clear_bound_functions()
         self.assert_entry_has_functions({'x': FunctionEntry(run=x, is_bound=False, tags=self.action_tag),
@@ -124,6 +127,7 @@ class TestAppCacheEntry(TestCase):
             def z(self): pass
 
         def z(): pass
+
         self.entry.cache_app_class(A, self.clspath)
         self.entry.cache_functions([(z, self.action_tag)], self.clspath)
         self.entry.clear_bound_functions()

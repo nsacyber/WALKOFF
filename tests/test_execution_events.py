@@ -4,11 +4,11 @@ import walkoff.appgateway
 import walkoff.case.database as case_database
 import walkoff.case.subscription as case_subscription
 import walkoff.config.config
-from walkoff.multiprocessedexecutor import multiprocessedexecutor
-from tests import config
-from tests.util.mock_objects import *
 import walkoff.config.paths
+from tests import config
 from tests.util import execution_db_help
+from tests.util.mock_objects import *
+from walkoff.multiprocessedexecutor import multiprocessedexecutor
 
 
 class TestExecutionEvents(unittest.TestCase):
@@ -57,7 +57,7 @@ class TestExecutionEvents(unittest.TestCase):
 
     def test_action_execution_events(self):
         workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-        action_ids = [str(action_id) for action_id in workflow.actions]
+        action_ids = [str(action.id) for action in workflow.actions]
         action_events = [WalkoffEvent.ActionExecutionSuccess.signal_name, WalkoffEvent.ActionStarted.signal_name]
         subs = {'case1': {action_id: action_events for action_id in action_ids}}
         case_subscription.set_subscriptions(subs)

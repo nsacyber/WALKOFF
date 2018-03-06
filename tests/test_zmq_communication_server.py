@@ -1,15 +1,15 @@
 import json
 from datetime import datetime
 
-from tests.util.servertestcase import ServerTestCase
 import walkoff.case.database as case_database
 import walkoff.case.subscription
 import walkoff.config.paths
+from tests.util import execution_db_help
+from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
+from tests.util.servertestcase import ServerTestCase
+from walkoff.events import WalkoffEvent
 from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
-from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
-from tests.util import execution_db_help
-from walkoff.events import WalkoffEvent
 
 try:
     from importlib import reload
@@ -32,8 +32,8 @@ class TestZmqCommunicationServer(ServerTestCase):
         case_database.case_db.session.commit()
 
     def test_execute_workflow(self):
-        workflow = execution_db_help.load_workflow('testGeneratedWorkflows/test', 'helloWorldWorkflow')
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
+        workflow = execution_db_help.load_workflow('test', 'helloWorldWorkflow')
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
         start = datetime.utcnow()
 
@@ -52,9 +52,9 @@ class TestZmqCommunicationServer(ServerTestCase):
         self.assertEqual(result, {'status': 'Success', 'result': 'REPEATING: Hello World'})
 
     def test_execute_workflow_change_arguments(self):
-        workflow = execution_db_help.load_workflow('testGeneratedWorkflows/test', 'helloWorldWorkflow')
+        workflow = execution_db_help.load_workflow('test', 'helloWorldWorkflow')
 
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {'count': 0}

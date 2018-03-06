@@ -1,10 +1,9 @@
 import json
 
-import apps
+import tests.config
 import walkoff.appgateway
 import walkoff.config.config
 import walkoff.config.paths
-import tests.config
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
 from walkoff.server.endpoints.appapi import *
@@ -69,7 +68,8 @@ class TestAppApiServerFuncs(ServerTestCase):
                     {'status': 'Return2', 'schema': {'type': 'number', 'minimum': 10}},
                     {'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'},
                     {'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'},
-                    {'status': 'EventTimedOut', 'failure': True, 'description': 'Action timed out out waiting for event'}]
+                    {'status': 'EventTimedOut', 'failure': True,
+                     'description': 'Action timed out out waiting for event'}]
         formatted = format_returns(returns, with_event=True)
         self.assertEqual(len(formatted), len(expected))
         for return_ in formatted:
@@ -79,8 +79,10 @@ class TestAppApiServerFuncs(ServerTestCase):
         action_api = walkoff.config.config.app_apis['HelloWorldBounded']['actions']['pause']
         expected = {
             'returns': [{'status': 'Success', 'description': 'successfully paused', 'schema': {'type': 'number'}},
-                        {'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'},
-                        {'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'}],
+                        {'status': 'UnhandledException', 'failure': True,
+                         'description': 'Exception occurred in action'},
+                        {'status': 'InvalidInput', 'failure': True,
+                         'description': 'Input into the action was invalid'}],
             'run': 'main.Main.pause',
             'description': 'Pauses execution',
             'parameters': [

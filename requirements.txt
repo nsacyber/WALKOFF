@@ -19,3 +19,5 @@ jsonschema
 psutil > 5.0.0
 six >= 1.10.0
 diskcache >= 3.0.1
+marshmallow >= 2.15, < 3.0.0
+marshmallow-sqlalchemy >= 0.13.0

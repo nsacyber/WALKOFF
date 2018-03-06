@@ -3,14 +3,14 @@ import shutil
 import stat
 import unittest
 
+import tests.config
 import walkoff.appgateway
 import walkoff.config.config
 import walkoff.config.paths
 from tests.util import execution_db_help
-import tests.config
-from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from tests.util.mock_objects import *
 from tests.util.thread_control import *
+from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from walkoff.server.endpoints.appapi import *
 from walkoff.server.returncodes import NO_CONTENT
 
@@ -19,7 +19,7 @@ if not getattr(__builtins__, 'WindowsError', None):
 
 
 class ServerTestCase(unittest.TestCase):
-    test_workflows_path = tests.config.test_workflows_path_with_generated
+    test_workflows_path = tests.config.test_workflows_path
     patch = True
 
     @classmethod
@@ -44,7 +44,7 @@ class ServerTestCase(unittest.TestCase):
             cls.tearDown = teardown_override
 
         if (tests.config.test_data_dir_name not in os.listdir(tests.config.test_path)
-            or os.path.isfile(tests.config.test_data_path)):
+                or os.path.isfile(tests.config.test_data_path)):
             if os.path.isfile(tests.config.test_data_path):
                 os.remove(tests.config.test_data_path)
             os.makedirs(tests.config.test_data_path)
@@ -92,14 +92,10 @@ class ServerTestCase(unittest.TestCase):
 
     def setUp(self):
         import walkoff.server.flaskserver
-        walkoff.config.paths.workflows_path = tests.config.test_workflows_path_with_generated
+        walkoff.config.paths.workflows_path = tests.config.test_workflows_path
         walkoff.config.paths.apps_path = tests.config.test_apps_path
         walkoff.config.paths.default_appdevice_export_path = tests.config.test_appdevice_backup
         walkoff.config.paths.default_case_export_path = tests.config.test_cases_backup
-        if os.path.exists(tests.config.test_workflows_backup_path):
-            shutil.rmtree(tests.config.test_workflows_backup_path)
-
-        shutil.copytree(walkoff.config.paths.workflows_path, tests.config.test_workflows_backup_path)
 
         self.app = walkoff.server.flaskserver.app.test_client(self)
         self.app.testing = True
@@ -121,9 +117,6 @@ class ServerTestCase(unittest.TestCase):
         from walkoff import executiondb
         executiondb.execution_db.session.rollback()
 
-        shutil.rmtree(walkoff.config.paths.workflows_path)
-        shutil.copytree(tests.config.test_workflows_backup_path, walkoff.config.paths.workflows_path)
-        shutil.rmtree(tests.config.test_workflows_backup_path)
         for data_file in os.listdir(tests.config.test_data_path):
             try:
                 os.remove(os.path.join(tests.config.test_data_path, data_file))
@@ -141,18 +134,18 @@ class ServerTestCase(unittest.TestCase):
     def __assert_url_access(self, url, method, status_code, error, **kwargs):
         try:
             response = self.http_verb_lookup[method.lower()](url, **kwargs)
-        except KeyError as e:
+        except KeyError:
             import traceback
             traceback.print_exc()
-            print(e)
+            traceback.print_stack()
             raise ValueError('method must be either get, put, post, patch, or delete')
         self.assertEqual(response.status_code, status_code)
         if status_code != NO_CONTENT:
             response = json.loads(response.get_data(as_text=True))
         if error:
             pass
-            #self.assertIn('error', response)
-            #self.assertEqual(response['error'], error)
+            # self.assertIn('error', response)
+            # self.assertEqual(response['error'], error)
         return response
 
     def get_with_status_check(self, url, status_code=200, error=False, **kwargs):

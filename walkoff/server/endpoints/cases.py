@@ -6,12 +6,13 @@ from flask_jwt_extended import jwt_required
 import walkoff.case.database as case_database
 import walkoff.case.subscription as case_subscription
 from walkoff.case.subscription import delete_cases
-from walkoff.serverdb import db
-from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
-from walkoff.serverdb.casesubscription import CaseSubscription
-from walkoff.server.problem import Problem
 from walkoff.server.decorators import with_resource_factory
+from walkoff.server.problem import Problem
+from walkoff.server.returncodes import *
+from walkoff.serverdb import db
+from walkoff.serverdb.casesubscription import CaseSubscription
+
 try:
     from StringIO import StringIO
 except ImportError:

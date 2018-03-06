@@ -3,14 +3,13 @@ import os
 
 import connexion
 from jinja2 import FileSystemLoader
-
 from walkoff.executiondb.device import App
 from walkoff import helpers
 from walkoff.config import paths
-from walkoff.helpers import format_db_path
+from walkoff.executiondb.device import App
 from walkoff.extensions import db, jwt
+from walkoff.helpers import format_db_path
 from walkoff.serverdb.casesubscription import CaseSubscription
-
 logger = logging.getLogger(__name__)
 
 
@@ -86,7 +85,6 @@ def create_app():
 
     db.init_app(_app)
     jwt.init_app(_app)
-
     connexion_app.add_api('composed_api.yaml')
 
     walkoff.config.config.initialize()

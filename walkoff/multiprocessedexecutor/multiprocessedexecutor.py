@@ -13,13 +13,13 @@ import walkoff.config.config
 import walkoff.config.paths
 from walkoff import executiondb
 from walkoff.events import WalkoffEvent
-from walkoff.multiprocessedexecutor.loadbalancer import LoadBalancer, Receiver
-from walkoff.multiprocessedexecutor.worker import Worker
-from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
+from walkoff.executiondb import WorkflowStatusEnum
+from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus
-from walkoff.executiondb.saved_workflow import SavedWorkflow
-from walkoff.executiondb import WorkflowStatusEnum
+from walkoff.multiprocessedexecutor.loadbalancer import LoadBalancer, Receiver
+from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
+from walkoff.multiprocessedexecutor.worker import Worker
 
 logger = logging.getLogger(__name__)
 
@@ -222,7 +222,8 @@ class MultiprocessedExecutor(object):
                 workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(
                     id=workflow_status.workflow_id).first()
                 if workflow is not None:
-                    WalkoffEvent.WorkflowAborted.send({'execution_id': execution_id, 'id': workflow_status.workflow_id, 'name': workflow.name})
+                    WalkoffEvent.WorkflowAborted.send(
+                        {'execution_id': execution_id, 'id': workflow_status.workflow_id, 'name': workflow.name})
             elif workflow_status.status == WorkflowStatusEnum.running:
                 self.manager.abort_workflow(execution_id)
             return True
@@ -248,7 +249,7 @@ class MultiprocessedExecutor(object):
 
         executed = False
         exec_action = None
-        for action in workflow.actions.values():
+        for action in workflow.actions:
             if action.id == saved_state.action_id:
                 exec_action = action
                 executed = action.execute_trigger(data_in, saved_state.accumulator)

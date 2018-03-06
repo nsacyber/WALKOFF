@@ -1,8 +1,8 @@
 import logging
-from enum import unique, Enum
 from collections import deque
-from blinker import NamedSignal
 
+from blinker import NamedSignal
+from enum import unique, Enum
 
 logger = logging.getLogger(__name__)
 
@@ -138,4 +138,3 @@ class WorkflowAuthorizationCache(object):
 
 
 workflow_authorization_cache = WorkflowAuthorizationCache()
-

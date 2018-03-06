@@ -4,12 +4,13 @@ import logging
 import os
 import pkgutil
 import sys
+import warnings
+from datetime import datetime
 from uuid import uuid4
 
 import walkoff.config.config
 import walkoff.config.paths
-import warnings
-from datetime import datetime
+
 try:
     from importlib import reload as reload_module
 except ImportError:
@@ -44,8 +45,8 @@ def import_py_file(module_name, path_to_file):
             if w:
                 mod_name = module_name.replace('.main', '')
                 if not (type(w[-1].category) == type(exceptions.RuntimeWarning) or
-                                        'Parent module \'apps.' + mod_name + '\' not found while handling absolute import' in
-                                w[-1].message):
+                        'Parent module \'apps.' + mod_name + '\' not found while handling absolute import' in
+                        w[-1].message):
                     print(w[-1].message)
     else:
         from importlib import machinery
@@ -416,8 +417,9 @@ class UnknownDevice(Exception):
 
 
 class InvalidArgument(Exception):
-    def __init__(self, message):
+    def __init__(self, message, errors=None):
         self.message = message
+        self.errors = errors or {}
         super(InvalidArgument, self).__init__(self.message)
 
 
@@ -432,9 +434,10 @@ class UnknownTransform(UnknownFunction):
 
 
 class InvalidExecutionElement(Exception):
-    def __init__(self, id_, name, message):
+    def __init__(self, id_, name, message, errors=None):
         self.id = id_
         self.name = name
+        self.errors = errors or {}
         super(InvalidExecutionElement, self).__init__(message)
 
 
@@ -524,16 +527,16 @@ def create_sse_event(event_id=None, event=None, data=None):
 def regenerate_workflow_ids(workflow):
     workflow['id'] = str(uuid4())
     action_mapping = {}
-
-    for action in workflow['actions']:
+    actions = workflow.get('actions', [])
+    for action in actions:
         prev_id = action['id']
         action['id'] = str(uuid4())
         action_mapping[prev_id] = action['id']
 
-    for action in workflow['actions']:
+    for action in actions:
         regenerate_ids(action, action_mapping, False)
 
-    for branch in workflow['branches']:
+    for branch in workflow.get('branches', []):
         branch['source_id'] = action_mapping[branch['source_id']]
         branch['destination_id'] = action_mapping[branch['destination_id']]
         regenerate_ids(branch, action_mapping)
@@ -541,24 +544,27 @@ def regenerate_workflow_ids(workflow):
     workflow['start'] = action_mapping[workflow['start']]
 
 
-def regenerate_ids(json_in, action_mapping=None, regenerate_id=True):
+def regenerate_ids(json_in, action_mapping=None, regenerate_id=True, is_arguments=False):
     if regenerate_id:
         json_in['id'] = str(uuid4())
+    if is_arguments:
+        json_in.pop('id', None)
 
     if 'reference' in json_in and json_in['reference']:
         json_in['reference'] = action_mapping[json_in['reference']]
 
     for field, value in json_in.items():
         if isinstance(value, list):
-            __regenerate_ids_of_list(value, action_mapping)
+            is_arguments = field == 'arguments'
+            __regenerate_ids_of_list(value, action_mapping, is_arguments=is_arguments)
         elif isinstance(value, dict):
             regenerate_ids(value, action_mapping=action_mapping)
 
 
-def __regenerate_ids_of_list(value, action_mapping):
+def __regenerate_ids_of_list(value, action_mapping, is_arguments=False):
     for list_element in (list_element_ for list_element_ in value
                          if isinstance(list_element_, dict)):
-        regenerate_ids(list_element, action_mapping=action_mapping)
+        regenerate_ids(list_element, action_mapping=action_mapping, is_arguments=is_arguments)
 
 
 def utc_as_rfc_datetime(timestamp):

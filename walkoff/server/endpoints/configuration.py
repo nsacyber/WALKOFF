@@ -5,10 +5,10 @@ from flask_jwt_extended import jwt_required
 
 import walkoff.config.config
 import walkoff.config.paths
-from walkoff.server.returncodes import *
+from walkoff.helpers import format_exception_message
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.problem import Problem
-from walkoff.helpers import format_exception_message
+from walkoff.server.returncodes import *
 
 
 def __get_current_configuration():

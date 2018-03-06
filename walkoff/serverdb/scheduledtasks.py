@@ -1,8 +1,10 @@
 import json
 import logging
+
 from sqlalchemy_utils import UUIDType
-from walkoff.scheduler import construct_trigger
+
 from walkoff.extensions import db
+from walkoff.scheduler import construct_trigger
 from walkoff.serverdb.mixins import TrackModificationsMixIn
 
 logger = logging.getLogger(__name__)

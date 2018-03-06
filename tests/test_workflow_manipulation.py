@@ -4,13 +4,13 @@ from datetime import datetime
 
 import walkoff.appgateway
 import walkoff.config.config
-from walkoff.multiprocessedexecutor import multiprocessedexecutor
-from tests import config
-from tests.util.mock_objects import *
 import walkoff.config.paths
+from tests import config
 from tests.util import execution_db_help
-from walkoff.executiondb.argument import Argument
 from tests.util.case_db_help import *
+from tests.util.mock_objects import *
+from walkoff.executiondb.argument import Argument
+from walkoff.multiprocessedexecutor import multiprocessedexecutor
 
 try:
     from importlib import reload

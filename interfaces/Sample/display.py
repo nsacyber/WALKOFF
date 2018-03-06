@@ -1,14 +1,15 @@
 import random
-from flask import Blueprint
-from interfaces import AppBlueprint
-from gevent.event import Event, AsyncResult
-from gevent import sleep, spawn
-from walkoff.sse import InterfaceSseStream
 
+from flask import Blueprint
+from gevent import sleep
+from gevent import spawn
+from gevent.event import Event, AsyncResult
+
+from interfaces import AppBlueprint
+from walkoff.sse import InterfaceSseStream
 
 blueprint = AppBlueprint(blueprint=Blueprint('HelloWorldPage', __name__))
 blueprint2 = AppBlueprint(blueprint=Blueprint('HelloWorldPage2', __name__), rule='/<string:action>')
-
 
 __sync_signal = Event()
 random_event_result = AsyncResult()

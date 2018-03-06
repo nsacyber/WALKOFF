@@ -4,8 +4,8 @@ from sqlalchemy import Column, Integer, ForeignKey, String
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 
-from walkoff.executiondb import Device_Base
 from walkoff.events import WalkoffEvent
+from walkoff.executiondb import Device_Base
 from walkoff.executiondb.executionelement import ExecutionElement
 
 logger = logging.getLogger(__name__)
@@ -13,12 +13,11 @@ logger = logging.getLogger(__name__)
 
 class Branch(ExecutionElement, Device_Base):
     __tablename__ = 'branch'
-    _workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id'))
+    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id'))
     source_id = Column(UUIDType(binary=False), nullable=False)
     destination_id = Column(UUIDType(binary=False), nullable=False)
     status = Column(String(80))
-    condition = relationship('ConditionalExpression', backref=backref('_branch'), cascade='all, delete-orphan',
-                             uselist=False)
+    condition = relationship('ConditionalExpression', cascade='all, delete-orphan', uselist=False)
     priority = Column(Integer)
 
     def __init__(self, source_id, destination_id, id=None, status='Success', condition=None, priority=999):
@@ -45,6 +44,11 @@ class Branch(ExecutionElement, Device_Base):
         self.priority = priority
         self.condition = condition
 
+        self.validate()
+
+    def validate(self):
+        pass
+
     def execute(self, data_in, accumulator):
         """Executes the Branch object, determining if this Branch should be taken.
 
@@ -68,4 +72,3 @@ class Branch(ExecutionElement, Device_Base):
                 return None
         else:
             return None
-
