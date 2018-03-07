@@ -1,11 +1,10 @@
-# Changelog
+*# Changelog
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
 
 ## [0.7.0]
-###### [unreleased]
-<!-- Commended out bullets are in development -->
+###### 2018-03-07
 ### Added
 * An execution control page is now available on the user interface. This page
   allows you to start, pause, resume, and abort workflows as well as displays
@@ -69,10 +68,10 @@
 removed. Use the new `POST /api/devices` with `multipart/form-data` and
 `GET /api/devices?mode=export` endpoints respectively.
 
-<!--
+
 ### Contributor
-* The minimum accepted unit test coverage for the Python backend is now 84%
--->
+* The minimum accepted unit test coverage for the Python backend is now 86%
+
 
 ## [0.6.7]
 ###### 2018-02-06
