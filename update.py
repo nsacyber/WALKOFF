@@ -125,31 +125,34 @@ def alembic(flagged, inter):
     if not (flagged or (inter and prompt("Do you want alembic to migrate databases? (This will install alembic.)"))):
         return
 
-    for i in range(0, 1):
-        try:
-            # names = ["device", "events", "walkoff"]
-            names = ["walkoff"]
-            for name in names:
-                try:
-                    r = (subprocess.check_output(["alembic", "--name", name, "current"], stderr=subprocess.STDOUT,
-                                                 universal_newlines=True))
-                    if "(head)" in r:
-                        print("Already up to date, no alembic upgrade needed.")
-                    else:
-                        print(subprocess.check_output(["alembic", "--name", name, "upgrade", "head"],
-                                                      stderr=subprocess.STDOUT, universal_newlines=True))
-                except subprocess.CalledProcessError as e:
-                    print("Alembic encountered an error.")
-                    print("Try manually running 'alembic --name {} upgrade head".format(name))
-                    print("You may already be on the latest revision.")
+    path = os.path.join('.', 'data', 'devices.db')
+    if os.path.isfile(path):
+        new_path = os.path.join('.', 'data', 'execution.db')
+        os.rename(path, new_path)
 
-                return
+    names = ["execution", "events", "walkoff"]
+    for name in names:
+        try:
+            r = (subprocess.check_output(["alembic", "--name", name, "current"], stderr=subprocess.STDOUT,
+                                         universal_newlines=True))
+            if "(head)" in r:
+                print("Already up to date, no alembic upgrade needed.")
+            else:
+                if name == "walkoff":
+                    subprocess.check_output(["alembic", "--name", name, "stamp", "dd74ff55c643"],
+                                            stderr=subprocess.STDOUT, universal_newlines=True)
+                print(subprocess.check_output(["alembic", "--name", name, "upgrade", "head"],
+                                              stderr=subprocess.STDOUT, universal_newlines=True))
+        except subprocess.CalledProcessError:
+            print("Alembic encountered an error.")
+            print("Try manually running 'alembic --name {} upgrade head".format(name))
+            print("You may already be on the latest revision.")
+            continue
         except OSError:
-            print("alembic not installed, installing alembic...")
+            print("alembic not installed, installing alembic...and then you must re-run update script")
             import pip
             pip.main(["install", "alembic"])
-
-    print("Could not install alembic, are you root/administrator?")
+            break
 
 
 def create_cli_parser():

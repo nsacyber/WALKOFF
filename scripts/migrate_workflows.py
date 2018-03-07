@@ -14,6 +14,7 @@ from walkoff.config import paths
 from walkoff import initialize_databases
 from walkoff import executiondb
 from walkoff.executiondb.playbook import Playbook
+from walkoff.executiondb.schemas import PlaybookSchema
 
 UPGRADE = "upgrade"
 DOWNGRADE = "downgrade"
@@ -112,5 +113,5 @@ def convert_playbook(path, mode, tgt_version):
             playbook_obj = executiondb.execution_db.session.query(Playbook).filter_by(name=playbook['name']).first()
 
             f.seek(0)
-            json.dump(playbook_obj.read(), f, sort_keys=True, indent=4, separators=(',', ': '))
+            json.dump(PlaybookSchema().dump(playbook_obj).data, f, sort_keys=True, indent=4, separators=(',', ': '))
             f.truncate()

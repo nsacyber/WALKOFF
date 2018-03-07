@@ -5,9 +5,8 @@ import sys
 
 sys.path.append(os.getcwd())
 
+from walkoff.case.database import *
 from scripts.migrations.database.commonenv import run
-from walkoff.case.database import Case_Base
-
 
 # add your model's MetaData object here
 # for 'autogenerate' support
