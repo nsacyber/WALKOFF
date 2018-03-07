@@ -35,7 +35,7 @@ class DiskSubscription(object):
         _sync (Event): A synchronization event used to block the channel from yielding new values
 
     Args:
-        channel (str): The channel name associated with this sunscription
+        channel (str): The channel name associated with this subscription
     """
     def __init__(self, channel):
         self.channel = channel

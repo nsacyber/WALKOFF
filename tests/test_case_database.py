@@ -2,9 +2,8 @@ import json
 import unittest
 
 import walkoff.case.database as case_database
+from walkoff.case.database import Case
 from tests.util import execution_db_help
-from tests.util.assertwrappers import orderless_list_compare
-from walkoff.case.subscription import *
 
 
 class TestCaseDatabase(unittest.TestCase):
@@ -27,75 +26,26 @@ class TestCaseDatabase(unittest.TestCase):
 
     @staticmethod
     def __construct_basic_db():
-        cases = {'case1': {'id1': ['e1', 'e2', 'e3'],
-                           'id2': ['e1']},
-                 'case2': {'id1': ['e2', 'e3']},
-                 'case3': {'id3': ['e', 'b', 'c'],
-                           'id4': ['d']},
-                 'case4': {'id1': ['a', 'b']}}
-        set_subscriptions(cases)
+        cases = [Case(name='case{}'.format(i)) for i in range(1, 5)]
+        for case in cases:
+            case_database.case_db.session.add(case)
+        case_database.case_db.session.commit()
         return cases
 
-    def test_register_cases(self):
-        cases = TestCaseDatabase.__construct_basic_db()
-        cases_in_db = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
-        self.assertSetEqual(set(cases.keys()), set(cases_in_db), 'Not all cases were added to subscribed cases')
-        self.assertEqual(len(set(cases_in_db)), len(cases_in_db), 'Duplicate case was added to database')
-
-    def test_add_duplicate_case_not_allowed(self):
-        TestCaseDatabase.__construct_basic_db()
-        case_database.case_db.add_cases(['case1', 'case2'])
-        cases_in_db = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
-        orderless_list_compare(self, cases_in_db, ['case1', 'case2', 'case3', 'case4'])
-
-    def test_add_cases_with_empty_list(self):
-        TestCaseDatabase.__construct_basic_db()
-        case_database.case_db.add_cases([])
-        cases_in_db = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
-        orderless_list_compare(self, cases_in_db, ['case1', 'case2', 'case3', 'case4'])
-
-    def test_delete_cases(self):
-        TestCaseDatabase.__construct_basic_db()
-        case_database.case_db.delete_cases(['case1', 'case2'])
-        cases_in_db = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
-        expected_cases = ['case3', 'case4']
-        self.assertSetEqual(set(expected_cases), set(cases_in_db))
-        self.assertEqual(len(set(cases_in_db)), len(expected_cases))
-
-    def test_rename_case(self):
-        TestCaseDatabase.__construct_basic_db()
-        case_database.case_db.rename_case('case1', 'renamed')
-        cases_in_db = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
-        expected_cases = ['renamed', 'case2', 'case3', 'case4']
-        self.assertSetEqual(set(expected_cases), set(cases_in_db))
-        self.assertEqual(len(set(cases_in_db)), len(expected_cases))
-
-    def test_rename_case_empty_name(self):
-        TestCaseDatabase.__construct_basic_db()
-        case_database.case_db.rename_case('case1', '')
-        cases_in_db = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
-        expected_cases = ['case1', 'case2', 'case3', 'case4']
-        self.assertSetEqual(set(expected_cases), set(cases_in_db))
-        self.assertEqual(len(set(cases_in_db)), len(expected_cases))
-
-    def test_rename_case_invalid_case(self):
-        TestCaseDatabase.__construct_basic_db()
-        case_database.case_db.rename_case('case5', 'renamed')
-        cases_in_db = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
-        expected_cases = ['case1', 'case2', 'case3', 'case4']
-        self.assertSetEqual(set(expected_cases), set(cases_in_db))
-        self.assertEqual(len(set(cases_in_db)), len(expected_cases))
+    @staticmethod
+    def get_case_ids(names):
+        return [case.id for case in case_database.case_db.session.query(Case).filter(Case.name.in_(names)).all()]
 
     def test_add_event(self):
         TestCaseDatabase.__construct_basic_db()
         event1 = case_database.Event(type='SYSTEM', message='message1')
-        case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
+        case_database.case_db.add_event(event=event1, case_ids=self.get_case_ids(['case1', 'case3']))
         event2 = case_database.Event(type='WORKFLOW', message='message2')
-        case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
+        case_database.case_db.add_event(event=event2, case_ids=self.get_case_ids(['case2', 'case4']))
         event3 = case_database.Event(type='ACTION', message='message3')
-        case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
+        case_database.case_db.add_event(event=event3, case_ids=self.get_case_ids(['case2', 'case3', 'case4']))
         event4 = case_database.Event(type='BRANCH', message='message4')
-        case_database.case_db.add_event(event=event4, cases=['case1'])
+        case_database.case_db.add_event(event=event4, case_ids=self.get_case_ids(['case1']))
 
         expected_event_messages = {'case1': [('SYSTEM', 'message1'), ('BRANCH', 'message4')],
                                    'case2': [('WORKFLOW', 'message2'), ('ACTION', 'message3')],
@@ -137,13 +87,13 @@ class TestCaseDatabase(unittest.TestCase):
         TestCaseDatabase.__construct_basic_db()
 
         event1 = case_database.Event(type='SYSTEM', message='message1')
-        case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
+        case_database.case_db.add_event(event=event1, case_ids=['case1', 'case3'])
         event2 = case_database.Event(type='WORKFLOW', message='message2')
-        case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
+        case_database.case_db.add_event(event=event2, case_ids=['case2', 'case4'])
         event3 = case_database.Event(type='ACTION', message='message3')
-        case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
+        case_database.case_db.add_event(event=event3, case_ids=['case2', 'case3', 'case4'])
         event4 = case_database.Event(type='BRANCH', message='message4')
-        case_database.case_db.add_event(event=event4, cases=['case1'])
+        case_database.case_db.add_event(event=event4, case_ids=['case1'])
 
         events = case_database.case_db.session.query(case_database.Event).all()
         smallest_id = min([event.id for event in events])
@@ -162,13 +112,13 @@ class TestCaseDatabase(unittest.TestCase):
         TestCaseDatabase.__construct_basic_db()
 
         event1 = case_database.Event(type='SYSTEM', message='message1')
-        case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
+        case_database.case_db.add_event(event=event1, case_ids=['case1', 'case3'])
         event2 = case_database.Event(type='WORKFLOW', message='message2')
-        case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
+        case_database.case_db.add_event(event=event2, case_ids=['case2', 'case4'])
         event3 = case_database.Event(type='ACTION', message='message3')
-        case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
+        case_database.case_db.add_event(event=event3, case_ids=['case2', 'case3', 'case4'])
         event4 = case_database.Event(type='BRANCH', message='message4')
-        case_database.case_db.add_event(event=event4, cases=['case1'])
+        case_database.case_db.add_event(event=event4, case_ids=['case1'])
 
         events = case_database.case_db.session.query(case_database.Event).all()
         expected_json_list = [event.as_json() for event in events]
@@ -190,13 +140,13 @@ class TestCaseDatabase(unittest.TestCase):
         TestCaseDatabase.__construct_basic_db()
         event4_data = {"a": 4, "b": [1, 2, 3], "c": "Some_String"}
         event1 = case_database.Event(type='SYSTEM', message='message1')
-        case_database.case_db.add_event(event=event1, cases=['case1', 'case3'])
+        case_database.case_db.add_event(event=event1, case_ids=['case1', 'case3'])
         event2 = case_database.Event(type='WORKFLOW', message='message2', data='some_string')
-        case_database.case_db.add_event(event=event2, cases=['case2', 'case4'])
+        case_database.case_db.add_event(event=event2, case_ids=['case2', 'case4'])
         event3 = case_database.Event(type='ACTION', message='message3', data=6)
-        case_database.case_db.add_event(event=event3, cases=['case2', 'case3', 'case4'])
+        case_database.case_db.add_event(event=event3, case_ids=['case2', 'case3', 'case4'])
         event4 = case_database.Event(type='BRANCH', message='message4', data=json.dumps(event4_data))
-        case_database.case_db.add_event(event=event4, cases=['case1'])
+        case_database.case_db.add_event(event=event4, case_ids=['case1'])
 
         events = case_database.case_db.session.query(case_database.Event).all()
         event_json_list = [event.as_json() for event in events]
