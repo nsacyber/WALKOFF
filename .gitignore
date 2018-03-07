@@ -35,3 +35,4 @@ walkoff/client/dist/
 !apps/*.py
 !interfaces/*.py
 !interfaces/*.pytests/tmp/*
+data/cache/

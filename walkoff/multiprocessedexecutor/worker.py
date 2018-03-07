@@ -20,6 +20,9 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
+import walkoff.cache
+from walkoff.config.config import cache_config
+import time
 
 try:
     from Queue import Queue
@@ -140,6 +143,7 @@ class Worker:
         """
 
         self.id_ = id_
+        self.capacity = walkoff.config.config.num_threads_per_process
 
         signal.signal(signal.SIGINT, self.exit_handler)
         signal.signal(signal.SIGABRT, self.exit_handler)
@@ -159,18 +163,12 @@ class Worker:
 
         self.ctx = zmq.Context()
 
-        self.request_sock = self.ctx.socket(zmq.DEALER)
-        self.request_sock.setsockopt(zmq.IDENTITY, str.encode("Worker-{}".format(id_)))
-        self.request_sock.curve_secretkey = client_secret
-        self.request_sock.curve_publickey = client_public
-        self.request_sock.curve_serverkey = server_public
-        self.request_sock.connect(walkoff.config.config.zmq_requests_address)
-
-        self.comm_sock = self.ctx.socket(zmq.DEALER)
+        self.comm_sock = self.ctx.socket(zmq.SUB)
         self.comm_sock.identity = u"Worker-{}".format(id_).encode("ascii")
         self.comm_sock.curve_secretkey = client_secret
         self.comm_sock.curve_publickey = client_public
         self.comm_sock.curve_serverkey = server_public
+        self.comm_sock.setsockopt(zmq.SUBSCRIBE, '')
         self.comm_sock.connect(walkoff.config.config.zmq_communication_address)
 
         self.results_sock = self.ctx.socket(zmq.PUSH)
@@ -185,12 +183,13 @@ class Worker:
         else:
             walkoff.config.config.initialize()
             initialize_databases()
+            walkoff.cache.make_cache(cache_config)
 
         self.comm_thread = threading.Thread(target=self.receive_data)
         self.comm_thread.start()
 
         self.workflows = {}
-        self.threadpool = ThreadPoolExecutor(max_workers=walkoff.config.config.num_threads_per_process)
+        self.threadpool = ThreadPoolExecutor(max_workers=self.capacity)
 
         self.receive_requests()
 
@@ -202,8 +201,6 @@ class Worker:
             self.threadpool.shutdown()
         if self.comm_thread:
             self.comm_thread.join(timeout=2)
-        if self.request_sock:
-            self.request_sock.close()
         if self.results_sock:
             self.results_sock.close()
         if self.comm_sock:
@@ -213,22 +210,14 @@ class Worker:
 
     def receive_requests(self):
         """Receives requests to execute workflows, and sends them off to worker threads"""
-        self.request_sock.send(b"Ready")
-
         while True:
-            message_bytes = self.request_sock.recv()
-
-            message = ExecuteWorkflowMessage()
-            message.ParseFromString(message_bytes)
-            start = message.start if hasattr(message, 'start') else None
-
-            start_arguments = []
-            if hasattr(message, 'arguments'):
-                for arg in message.arguments:
-                    start_arguments.append(Argument(**(MessageToDict(arg, preserving_proto_field_name=True))))
-
-            self.threadpool.submit(self.execute_workflow_worker, message.workflow_id, message.workflow_execution_id,
-                                   start, start_arguments, message.resume)
+            if len(self.workflows) < self.capacity:
+                values = walkoff.cache.cache.rpop("request_queue")
+                if values is not None:
+                    workflow_id, workflow_execution_id, start, start_arguments, resume = values
+                    self.threadpool.submit(self.execute_workflow_worker, workflow_id, workflow_execution_id, start,
+                                           start_arguments, resume)
+            time.sleep(0.1)
 
     def execute_workflow_worker(self, workflow_id, workflow_execution_id, start, start_arguments=None, resume=False):
         """Execute a workflow.

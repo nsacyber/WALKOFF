@@ -16,12 +16,14 @@ from walkoff import executiondb
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import multiprocessedexecutor
 from walkoff.server import workflowresults  # Need this import
+import walkoff.cache
 
 
 class TestZMQCommunication(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         execution_db_help.setup_dbs()
+        walkoff.cache.make_cache()
 
         from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
         walkoff.config.config.num_processes = 2

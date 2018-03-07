@@ -53,7 +53,6 @@ class MultiprocessedExecutor(object):
         self.auth = None
 
         self.manager = None
-        self.manager_thread = None
         self.receiver = None
         self.receiver_thread = None
 
@@ -78,9 +77,6 @@ class MultiprocessedExecutor(object):
         self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
         self.receiver_thread.start()
 
-        self.manager_thread = threading.Thread(target=self.manager.manage_workflows)
-        self.manager_thread.start()
-
         self.threading_is_initialized = True
         logger.debug('Controller threading initialized')
 
@@ -99,9 +95,6 @@ class MultiprocessedExecutor(object):
         """Shuts down the threadpool.
         """
         self.manager.send_exit_to_worker_comms()
-        if self.manager_thread:
-            self.manager.thread_exit = True
-            self.manager_thread.join(timeout=1)
         if len(self.pids) > 0:
             for p in self.pids:
                 if p.is_alive():
@@ -129,7 +122,6 @@ class MultiprocessedExecutor(object):
         """
         self.pids = []
         self.receiver_thread = None
-        self.manager_thread = None
         self.workflows_executed = 0
         self.threading_is_initialized = False
         self.manager = None

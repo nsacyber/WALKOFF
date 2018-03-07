@@ -5,16 +5,14 @@ import os
 import gevent
 import zmq.auth as auth
 import zmq.green as zmq
-from gevent.queue import Queue
 from google.protobuf.json_format import MessageToDict
 from six import string_types
 
 import walkoff.config.config
 import walkoff.config.paths
-from walkoff import executiondb
 from walkoff.events import WalkoffEvent, EventType
-from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
+import walkoff.cache
 
 try:
     from Queue import Queue
@@ -32,103 +30,17 @@ class LoadBalancer:
             ctx (Context object): A Context object, shared with the Receiver thread.
         """
 
-        self.workers = {}
-
-        self.workflow_comms = {}
         self.thread_exit = False
-        self.pending_workflows = Queue()
-
-        @WalkoffEvent.WorkflowShutdown.connect
-        def handle_workflow_shutdown(sender, **kwargs):
-            self.on_worker_available(sender, **kwargs)
-
-        self.handle_workflow_shutdown = handle_workflow_shutdown
-
-        @WalkoffEvent.TriggerActionAwaitingData.connect
-        def handle_workflow_awaiting_data(sender, **kwargs):
-            self.on_worker_available(sender, **kwargs)
-
-        self.handle_workflow_awaiting_data = handle_workflow_awaiting_data
-
-        @WalkoffEvent.WorkflowPaused.connect
-        def handle_workflow_paused(sender, **kwargs):
-            self.on_worker_available(sender, **kwargs)
-
-        self.handle_workflow_paused = handle_workflow_paused
 
         self.ctx = ctx
         server_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "server.key_secret")
         server_public, server_secret = auth.load_certificate(server_secret_file)
 
-        self.request_socket = self.ctx.socket(zmq.ROUTER)
-        self.request_socket.curve_secretkey = server_secret
-        self.request_socket.curve_publickey = server_public
-        self.request_socket.curve_server = True
-        self.request_socket.bind(walkoff.config.config.zmq_requests_address)
-
-        self.comm_socket = self.ctx.socket(zmq.ROUTER)
+        self.comm_socket = self.ctx.socket(zmq.PUB)
         self.comm_socket.curve_secretkey = server_secret
         self.comm_socket.curve_publickey = server_public
         self.comm_socket.curve_server = True
         self.comm_socket.bind(walkoff.config.config.zmq_communication_address)
-
-    def manage_workflows(self):
-        """Manages the workflows to be executed and the workers. It waits for the server to submit a request to
-        execute a workflow, and then passes the workflow off to an available worker, once one becomes available.
-        """
-        while True:
-            if self.thread_exit:
-                break
-
-            if len(self.workers) < walkoff.config.config.num_processes:
-                try:
-                    worker, message = self.request_socket.recv_multipart(flags=zmq.NOBLOCK)
-                    if message == b"Ready":
-                        self.workers[worker] = walkoff.config.config.num_threads_per_process
-                except zmq.ZMQError:
-                    pass
-
-            # There is a worker available and a workflow in the queue, so pop it off and send it to the worker
-            if any(val > 0 for val in self.workers.values()) and not self.pending_workflows.empty():
-                workflow_id, workflow_execution_id, start, start_arguments, resume = self.pending_workflows.get()
-
-                executiondb.execution_db.session.expire_all()
-                workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
-                    execution_id=workflow_execution_id).first()
-                if workflow_status.status == WorkflowStatusEnum.aborted:
-                    continue
-
-                worker = self.__get_available_worker()
-                self.workflow_comms[workflow_execution_id] = worker
-
-                message = ExecuteWorkflowMessage()
-                message.workflow_id = str(workflow_id)
-                message.workflow_execution_id = workflow_execution_id
-                message.resume = resume
-
-                if start:
-                    message.start = str(start)
-                if start_arguments:
-                    self.__set_arguments_for_proto(message, start_arguments)
-
-                self.request_socket.send_multipart([worker, message.SerializeToString()])
-
-            gevent.sleep(0.1)
-
-        self.request_socket.close()
-        self.comm_socket.close()
-        return
-
-    def __get_available_worker(self):
-        max_avail = 0
-        available_worker = None
-        for worker, value in self.workers.items():
-            if value > max_avail:
-                max_avail = value
-                available_worker = worker
-        if available_worker:
-            self.workers[available_worker] -= 1
-        return available_worker
 
     def add_workflow(self, workflow_id, workflow_execution_id, start=None, start_arguments=None, resume=False):
         """Adds a workflow ID to the queue to be executed.
@@ -140,7 +52,7 @@ class LoadBalancer:
             start_arguments (list[Argument]): The arguments to the starting action of the workflow. Defaults to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
         """
-        self.pending_workflows.put((workflow_id, workflow_execution_id, start, start_arguments, resume))
+        walkoff.cache.cache.lpush("request_queue", (workflow_id, workflow_execution_id, start, start_arguments, resume))
 
     def pause_workflow(self, workflow_execution_id):
         """Pauses a workflow currently executing.
@@ -149,15 +61,11 @@ class LoadBalancer:
             workflow_execution_id (str): The execution ID of the workflow.
         """
         logger.info('Pausing workflow {0}'.format(workflow_execution_id))
-        if workflow_execution_id in self.workflow_comms:
-            message = CommunicationPacket()
-            message.type = CommunicationPacket.PAUSE
-            message.workflow_execution_id = workflow_execution_id
-            message_bytes = message.SerializeToString()
-            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_id], message_bytes])
-            return True
-        else:
-            return False
+        message = CommunicationPacket()
+        message.type = CommunicationPacket.PAUSE
+        message.workflow_execution_id = workflow_execution_id
+        message_bytes = message.SerializeToString()
+        self.comm_socket.send(message_bytes)
 
     def abort_workflow(self, workflow_execution_id):
         """Aborts a workflow currently executing.
@@ -166,15 +74,11 @@ class LoadBalancer:
             workflow_execution_id (str): The execution ID of the workflow.
         """
         logger.info('Aborting workflow {0}'.format(workflow_execution_id))
-        if workflow_execution_id in self.workflow_comms:
-            message = CommunicationPacket()
-            message.type = CommunicationPacket.ABORT
-            message.workflow_execution_id = workflow_execution_id
-            message_bytes = message.SerializeToString()
-            self.comm_socket.send_multipart([self.workflow_comms[workflow_execution_id], message_bytes])
-            return True
-        else:
-            return False
+        message = CommunicationPacket()
+        message.type = CommunicationPacket.ABORT
+        message.workflow_execution_id = workflow_execution_id
+        message_bytes = message.SerializeToString()
+        self.comm_socket.send(message_bytes)
 
     def send_exit_to_worker_comms(self):
         """Sends the exit message over the communication sockets, otherwise worker receiver threads will hang
@@ -182,14 +86,7 @@ class LoadBalancer:
         message = CommunicationPacket()
         message.type = CommunicationPacket.EXIT
         message_bytes = message.SerializeToString()
-        for worker in self.workers:
-            self.comm_socket.send_multipart([worker, message_bytes])
-
-    def on_worker_available(self, sender, **kwargs):
-        if sender['execution_id'] in self.workflow_comms:
-            worker = self.workflow_comms[sender['execution_id']]
-            self.workers[worker] += 1
-            self.workflow_comms.pop(sender['execution_id'])
+        self.comm_socket.send(message_bytes)
 
     @staticmethod
     def __set_arguments_for_proto(message, arguments):
