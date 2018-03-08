@@ -90,7 +90,6 @@
     "@types/jquery": "~3.2.8",
     "@types/jstree": "^3.3.35",
     "@types/lodash": "~4.14.68",
-    "@types/moment": "~2.13.0",
     "@types/select2": "~4.0.38",
     "add-asset-html-webpack-plugin": "^2.1.2",
     "angular2-template-loader": "^0.6.2",

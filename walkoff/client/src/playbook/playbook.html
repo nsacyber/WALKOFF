@@ -138,6 +138,21 @@
                         <button [disabled]="selectedAction.id === loadedWorkflow.start" class="btn btn-primary pull-right" (click)="setStartNode(selectedAction.id)">Set as Start Action</button>
                     </div>
                 </div>
+                <div class="row">
+                    <div>
+                        <label>Description:</label>
+                        <span>{{selectedActionApi.description}}</span>
+                    </div>
+                    <div>
+                        <label>Returns:</label>
+                        <div  *ngFor="let i of selectedActionApi.returns">
+                            <div class="col-xs-16 col-xs-offset-1">
+                                <label>{{i.status}}</label>
+                                <span>{{i.description}}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label for="name">Name
                         <i class="fa fa-asterisk required" title="This field is required."></i>
