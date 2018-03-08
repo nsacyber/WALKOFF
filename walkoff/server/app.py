@@ -127,6 +127,5 @@ def create_user():
         executiondb.execution_db.session.add(App(name=app_name, devices=[]))
     db.session.commit()
     executiondb.execution_db.session.commit()
-    CaseSubscription.sync_to_subscriptions()
 
     app.logger.handlers = logging.getLogger('server').handlers

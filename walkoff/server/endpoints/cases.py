@@ -4,8 +4,6 @@ from flask import request, current_app, send_file
 from flask_jwt_extended import jwt_required
 
 import walkoff.case.database as case_database
-import walkoff.case.subscription as case_subscription
-from walkoff.case.subscription import delete_cases
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import with_resource_factory
 from walkoff.server.problem import Problem
@@ -51,11 +49,15 @@ def create_case():
         case_name = data['name']
         case_obj = CaseSubscription.query.filter_by(name=case_name).first()
         if case_obj is None:
-            case = CaseSubscription(**data)
-            db.session.add(case)
+            case_subscription = CaseSubscription(**data)
+            db.session.add(case_subscription)
             db.session.commit()
+            case = case_database.Case(name=case_name)
+            case_database.case_db.session.add(case)
+            case_database.case_db.commit()
+            #TODO Send message to workers
             current_app.logger.debug('Case added: {0}'.format(case_name))
-            return case.as_json(), OBJECT_CREATED
+            return case_subscription.as_json(), OBJECT_CREATED
         else:
             current_app.logger.warning('Cannot create case {0}. Case already exists.'.format(case_name))
             return Problem.from_crud_resource(
@@ -96,15 +98,17 @@ def update_case():
             if 'note' in data and data['note']:
                 case_obj.note = data['note']
             if 'name' in data and data['name']:
-                case_subscription.rename_case(case_obj.name, data['name'])
                 case_obj.name = data['name']
-                db.session.commit()
+                case = case_database.case_db.session.query(case_database.Case).filter(case_database.Case.name == original_name).first()
+                if case:
+                    case.name = data['name']
+                case_database.case_db.session.commit()
                 current_app.logger.debug('Case name changed from {0} to {1}'.format(original_name, data['name']))
             if 'subscriptions' in data:
                 case_obj.subscriptions = data['subscriptions']
                 subscriptions = {subscription['id']: subscription['events'] for subscription in data['subscriptions']}
-                for uid, events in subscriptions.items():
-                    case_subscription.modify_subscription(case_name, uid, events)
+                for uid, events in subscriptions.items(): pass
+                # TODO: send message to workers
             db.session.commit()
             return case_obj.as_json(), SUCCESS
         else:
@@ -128,9 +132,15 @@ def delete_case(case_id):
     def __func():
         case_obj = CaseSubscription.query.filter_by(id=case_id).first()
         if case_obj:
-            delete_cases([case_obj.name])
+            case_name = case_obj.name
             db.session.delete(case_obj)
             db.session.commit()
+            case = case_database.case_db.session.query(case_database.Case).filter(
+                case_database.Case.name == case_name).first()
+            if case:
+                case_database.case_db.session.delete(case)
+            case_database.case_db.commit()
+            #TODO: Send message to workers
             current_app.logger.debug('Case deleted {0}'.format(case_id))
             return {}, NO_CONTENT
         else:
