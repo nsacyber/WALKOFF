@@ -1,10 +1,10 @@
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship, backref
-from walkoff.executiondb import Device_Base
+from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.executionelement import ExecutionElement
 
 
-class Playbook(ExecutionElement, Device_Base):
+class Playbook(ExecutionElement, Execution_Base):
     __tablename__ = 'playbook'
     name = Column(String(255), nullable=False, unique=True)
     workflows = relationship('Workflow', backref=backref('playbook'), cascade='all, delete-orphan')

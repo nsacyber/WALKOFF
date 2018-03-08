@@ -8,7 +8,7 @@ import walkoff.config.config
 import walkoff.config.paths
 from walkoff.helpers import format_db_path
 
-Device_Base = declarative_base()
+Execution_Base = declarative_base()
 
 
 class ExecutionDatabase(object):
@@ -41,8 +41,8 @@ class ExecutionDatabase(object):
         Session.configure(bind=self.engine)
         self.session = scoped_session(Session)
 
-        Device_Base.metadata.bind = self.engine
-        Device_Base.metadata.create_all(self.engine)
+        Execution_Base.metadata.bind = self.engine
+        Execution_Base.metadata.create_all(self.engine)
 
     def __new__(cls, *args, **kwargs):
         if cls.__instance is None:

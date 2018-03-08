@@ -3,13 +3,13 @@ import logging
 from sqlalchemy import Column, Integer, ForeignKey, String, orm
 from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
 
-from walkoff.executiondb import Device_Base
+from walkoff.executiondb import Execution_Base
 from walkoff.helpers import InvalidArgument
 
 logger = logging.getLogger(__name__)
 
 
-class Argument(Device_Base):
+class Argument(Execution_Base):
     __tablename__ = 'argument'
     id = Column(Integer, primary_key=True, autoincrement=True)
     action_id = Column(UUIDType(binary=False), ForeignKey('action.id'))

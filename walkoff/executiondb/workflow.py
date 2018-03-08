@@ -8,7 +8,7 @@ from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 from walkoff.events import WalkoffEvent
-from walkoff.executiondb import Device_Base
+from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.action import Action
 from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.helpers import InvalidExecutionElement
@@ -16,7 +16,7 @@ from walkoff.helpers import InvalidExecutionElement
 logger = logging.getLogger(__name__)
 
 
-class Workflow(ExecutionElement, Device_Base):
+class Workflow(ExecutionElement, Execution_Base):
     __tablename__ = 'workflow'
     playbook_id = Column(UUIDType(binary=False), ForeignKey('playbook.id'))
     name = Column(String(80), nullable=False)

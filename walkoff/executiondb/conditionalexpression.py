@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 
 from walkoff.events import WalkoffEvent
-from walkoff.executiondb import Device_Base
+from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.helpers import InvalidArgument
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 valid_operators = ('and', 'or', 'xor')
 
 
-class ConditionalExpression(ExecutionElement, Device_Base):
+class ConditionalExpression(ExecutionElement, Execution_Base):
     __tablename__ = 'conditional_expression'
     id = Column(UUIDType(binary=False), primary_key=True, default=uuid4)
     action_id = Column(UUIDType(binary=False), ForeignKey('action.id'))

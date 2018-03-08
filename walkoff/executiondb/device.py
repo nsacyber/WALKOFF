@@ -10,7 +10,7 @@ from sqlalchemy.orm import relationship
 from walkoff import executiondb
 from walkoff.appgateway.validator import convert_primitive_type
 from walkoff.config.config import secret_key as key
-from walkoff.executiondb import Device_Base
+from walkoff.executiondb import Execution_Base
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class UnknownDeviceField(Exception):
     pass
 
 
-class App(Device_Base):
+class App(Execution_Base):
     """SqlAlchemy ORM class for Apps
 
     Attributes:
@@ -112,7 +112,7 @@ class App(Device_Base):
         return App(data['name'], devices)
 
 
-class Device(Device_Base):
+class Device(Execution_Base):
     """The SqlAlchemy ORM class for a Device
 
     Attributes:
@@ -284,7 +284,7 @@ class DeviceFieldMixin(object):
         return Column(Integer, ForeignKey('device.id'))
 
 
-class DeviceField(Device_Base, DeviceFieldMixin):
+class DeviceField(Execution_Base, DeviceFieldMixin):
     """The SqlAlchemy ORM for an unencrypted DeviceField
 
     Attributes:
@@ -340,7 +340,7 @@ class DeviceField(Device_Base, DeviceFieldMixin):
         return DeviceField(data['name'], type_, data['value'])
 
 
-class EncryptedDeviceField(Device_Base, DeviceFieldMixin):
+class EncryptedDeviceField(Execution_Base, DeviceFieldMixin):
     """The SqlAlchemy ORM for an encrypted DeviceField
 
     Attributes:

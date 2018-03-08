@@ -16,7 +16,7 @@ from walkoff.helpers import get_condition_api, InvalidArgument, format_exception
 logger = logging.getLogger(__name__)
 
 
-class Condition(ExecutionElement, executiondb.Device_Base):
+class Condition(ExecutionElement, executiondb.Execution_Base):
     __tablename__ = 'condition'
     conditional_expression_id = Column(UUIDType(binary=False), ForeignKey('conditional_expression.id'))
     app_name = Column(String(80), nullable=False)
