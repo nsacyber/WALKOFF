@@ -24,12 +24,12 @@ from walkoff.events import EventType, WalkoffEvent
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
-from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
+from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, CaseControl
 import walkoff.cache
 from walkoff.config.config import cache_config
-import time
 import walkoff.case.database as casedb
 from walkoff.case.logger import CaseLogger
+from walkoff.case.subscription import Subscription
 
 try:
     from Queue import Queue
@@ -295,7 +295,14 @@ class Worker:
                 workflow.abort()
 
     def _handle_case_control_packet(self, message):
-        pass
+        if message.type == CaseControl.CREATE:
+            for sub in message.subscriptions:
+                self.case_logger.add_subscriptions(message.id, Subscription(sub.id, sub.events))
+        elif message.type == CaseControl.UPDATE:
+            for sub in message.subscriptions:
+                self.case_logger.update_subscriptions(message.id, Subscription(sub.id, sub.events))
+        elif message.type == CaseControl.DELETE:
+            self.case_logger.delete_case(message.id)
 
     def on_data_sent(self, sender, **kwargs):
         """Listens for the data_sent callback, which signifies that an execution element needs to trigger a
