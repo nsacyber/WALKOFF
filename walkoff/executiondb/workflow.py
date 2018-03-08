@@ -201,19 +201,7 @@ class Workflow(ExecutionElement, Device_Base):
     def __shutdown(self):
         # Upon finishing shut down instances
         self._instance_repo.shutdown_instances()
-        result_str = {}
-        for action, action_result in self._accumulator.items():
-            try:
-                result_str[action] = json.dumps(action_result)
-            except TypeError:
-                logger.error('Result of workflow is neither string or a JSON-able. Cannot record')
-                result_str[action] = 'error: could not convert to JSON'
-        data = dict(self._accumulator)
-        try:
-            data_json = json.dumps(data)
-        except TypeError:
-            data_json = str(data)
-        WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowShutdown, data=data_json)
+        WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowShutdown, data=dict(self._accumulator))
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self._accumulator))
 
     def set_execution_id(self, execution_id):

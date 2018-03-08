@@ -20,12 +20,16 @@ import walkoff.config.paths
 import walkoff.executiondb
 from walkoff import initialize_databases
 from walkoff.appgateway.appinstancerepo import AppInstanceRepo
-from walkoff.config.config import cache_config
 from walkoff.events import EventType, WalkoffEvent
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
+import walkoff.cache
+from walkoff.config.config import cache_config
+import time
+import walkoff.case.database as casedb
+from walkoff.case.logger import CaseLogger
 
 try:
     from Queue import Queue
@@ -191,6 +195,8 @@ class Worker:
             initialize_databases()
             walkoff.cache.make_cache(cache_config)
 
+        self.case_logger = CaseLogger(casedb.case_db)
+
         self.comm_thread = threading.Thread(target=self.receive_data)
         self.comm_thread.start()
 
@@ -207,10 +213,9 @@ class Worker:
             self.threadpool.shutdown()
         if self.comm_thread:
             self.comm_thread.join(timeout=2)
-        if self.results_sock:
-            self.results_sock.close()
-        if self.comm_sock:
-            self.comm_sock.close()
+        for socket in (self.results_sock, self.comm_sock):
+            if socket:
+                socket.close()
         walkoff.executiondb.execution_db.tear_down()
         os._exit(0)
 
@@ -272,18 +277,25 @@ class Worker:
 
             message = CommunicationPacket()
             message.ParseFromString(message_bytes)
-
-            if message.type == CommunicationPacket.EXIT:
+            message_type = message.type
+            if message_type == CommunicationPacket.WORKFLOW:
+                self._handle_workflow_control_packet(message.workflow_control_message)
+            elif message_type == CommunicationPacket.CASE:
+                self._handle_case_control_packet(message.case_control_message)
+            elif message_type == CommunicationPacket.EXIT:
                 break
-
-            workflow = self.__get_workflow_by_execution_id(message.workflow_execution_id)
-            if workflow:
-                if message.type == CommunicationPacket.PAUSE:
-                    workflow.pause()
-                elif message.type == CommunicationPacket.ABORT:
-                    workflow.abort()
-
         return
+
+    def _handle_workflow_control_packet(self, message):
+        workflow = self.__get_workflow_by_execution_id(message.workflow_execution_id)
+        if workflow:
+            if message.type == CommunicationPacket.PAUSE:
+                workflow.pause()
+            elif message.type == CommunicationPacket.ABORT:
+                workflow.abort()
+
+    def _handle_case_control_packet(self, message):
+        pass
 
     def on_data_sent(self, sender, **kwargs):
         """Listens for the data_sent callback, which signifies that an execution element needs to trigger a
@@ -294,17 +306,19 @@ class Worker:
                 kwargs (dict): Any extra data to send.
         """
         workflow = self._get_current_workflow()
-        if kwargs['event'] in [WalkoffEvent.TriggerActionAwaitingData, WalkoffEvent.WorkflowPaused]:
-            saved_workflow = SavedWorkflow(workflow_execution_id=workflow.get_execution_id(),
-                                           workflow_id=workflow.id,
-                                           action_id=workflow.get_executing_action_id(),
-                                           accumulator=workflow.get_accumulator(),
-                                           app_instances=workflow.get_instances())
+        event = kwargs['event']
+        if event in [WalkoffEvent.TriggerActionAwaitingData, WalkoffEvent.WorkflowPaused]:
+            saved_workflow = SavedWorkflow(
+                workflow_execution_id=workflow.get_execution_id(),
+                workflow_id=workflow.id,
+                action_id=workflow.get_executing_action_id(),
+                accumulator=workflow.get_accumulator(),
+                app_instances=workflow.get_instances())
             walkoff.executiondb.execution_db.session.add(saved_workflow)
             walkoff.executiondb.execution_db.session.commit()
 
         packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
-
+        self.case_logger.log(event, sender, kwargs.get('data', None))
         self.results_sock.send(packet_bytes)
 
     def _get_current_workflow(self):

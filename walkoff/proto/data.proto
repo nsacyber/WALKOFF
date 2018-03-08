@@ -38,10 +38,10 @@ message WorkflowPacket {
 
 
 message Argument {
-        optional string name = 1;
-        optional string value = 2;
-        optional string reference = 3;
-        optional string selection = 4;
+    optional string name = 1;
+    optional string value = 2;
+    optional string reference = 3;
+    optional string selection = 4;
 }
 
 message ActionPacket {
@@ -76,15 +76,46 @@ message GeneralPacket {
 message CommunicationPacket {
 
     enum Type {
-        PAUSE = 1;
-        EXIT = 2;
-        ABORT = 3;
+        WORKFLOW = 1;
+        CASE = 2;
+        EXIT = 3;
     }
 
     optional Type type = 1;
-    optional string workflow_execution_id = 2;
-
+    oneof packet {
+        WorkflowControl workflow_control_message = 2;
+        CaseControl case_control_message = 3;
+    }
 }
+
+
+message WorkflowControl {
+    enum Type {
+        PAUSE = 1;
+        ABORT = 3;
+    }
+    optional Type type = 1;
+    optional string workflow_execution_id = 2;
+}
+
+
+message CaseSubscription {
+    optional string id = 1;
+    repeated string events = 2;
+}
+
+
+message CaseControl {
+    enum Type {
+        CREATE = 1;
+        UPDATE = 2;
+        DELETE = 3;
+    }
+    optional Type type = 1;
+    optional int64 id = 2;
+    repeated CaseSubscription subscriptions = 3;
+}
+
 
 message UserMessage {
     optional ActionPacket.ActionSender sender = 1;

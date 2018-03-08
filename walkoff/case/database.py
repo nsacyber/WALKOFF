@@ -187,6 +187,9 @@ class CaseDatabase(object):
                   for event in case.events]
         return result
 
+    def commit(self):
+        self.session.commit()
+
 
 case_db = None
 
