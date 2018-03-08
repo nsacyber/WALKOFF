@@ -6,6 +6,7 @@ import { UUID } from 'angular2-uuid';
 import { Observable } from 'rxjs';
 import 'rxjs/Rx';
 import { saveAs } from 'file-saver';
+import { plainToClass } from 'class-transformer';
 
 import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
@@ -172,7 +173,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Will update the information in the action statuses table as well, adding new rows or updating existing ones.
 	 */
 	actionStatusEventHandler(message: any): void {
-		const actionStatusEvent: ActionStatusEvent = JSON.parse(message.data);
+		const actionStatusEvent = plainToClass(ActionStatusEvent, (JSON.parse(message.data) as object));
 
 		// If we have a graph loaded, find the matching node for this event and style it appropriately if possible.
 		if (this.cy) {
