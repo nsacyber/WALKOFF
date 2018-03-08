@@ -15,7 +15,7 @@ import walkoff.cache
 import walkoff.config.config
 import walkoff.config.paths
 from walkoff.events import WalkoffEvent, EventType
-from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
+from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, WorkflowControl
 
 try:
     from Queue import Queue
@@ -83,8 +83,9 @@ class WorkflowExecutionController:
         """
         logger.info('Pausing workflow {0}'.format(workflow_execution_id))
         message = CommunicationPacket()
-        message.type = CommunicationPacket.PAUSE
-        message.workflow_execution_id = workflow_execution_id
+        message.type = CommunicationPacket.WORKFLOW
+        message.workflow_control_message.type = WorkflowControl.PAUSE
+        message.workflow_control_message.workflow_execution_id = workflow_execution_id
         message_bytes = message.SerializeToString()
         self.comm_socket.send(message_bytes)
 
@@ -96,8 +97,9 @@ class WorkflowExecutionController:
         """
         logger.info('Aborting workflow {0}'.format(workflow_execution_id))
         message = CommunicationPacket()
-        message.type = CommunicationPacket.ABORT
-        message.workflow_execution_id = workflow_execution_id
+        message.type = CommunicationPacket.WORKFLOW
+        message.workflow_control_message.type = WorkflowControl.ABORT
+        message.workflow_control_message.workflow_execution_id = workflow_execution_id
         message_bytes = message.SerializeToString()
         self.comm_socket.send(message_bytes)
 
