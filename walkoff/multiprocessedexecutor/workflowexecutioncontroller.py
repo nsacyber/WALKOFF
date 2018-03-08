@@ -25,7 +25,7 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-class LoadBalancer:
+class WorkflowExecutionController:
     def __init__(self, ctx):
         """Initialize a LoadBalancer object, which manages workflow execution.
 
@@ -35,13 +35,12 @@ class LoadBalancer:
 
         self.thread_exit = False
 
-        self.ctx = ctx
         server_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "server.key_secret")
         server_public, server_secret = auth.load_certificate(server_secret_file)
         client_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "client.key_secret")
         _, client_secret = auth.load_certificate(client_secret_file)
 
-        self.comm_socket = self.ctx.socket(zmq.PUB)
+        self.comm_socket = ctx.socket(zmq.PUB)
         self.comm_socket.curve_secretkey = server_secret
         self.comm_socket.curve_publickey = server_public
         self.comm_socket.curve_server = True
@@ -140,9 +139,7 @@ class Receiver:
         server_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "server.key_secret")
         server_public, server_secret = auth.load_certificate(server_secret_file)
 
-        self.ctx = ctx
-
-        self.results_sock = self.ctx.socket(zmq.PULL)
+        self.results_sock = ctx.socket(zmq.PULL)
         self.results_sock.curve_secretkey = server_secret
         self.results_sock.curve_publickey = server_public
         self.results_sock.curve_server = True

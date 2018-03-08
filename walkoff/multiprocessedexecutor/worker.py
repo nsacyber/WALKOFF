@@ -164,9 +164,9 @@ class Worker:
         client_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "client.key_secret")
         client_public, client_secret = auth.load_certificate(client_secret_file)
 
-        self.ctx = zmq.Context()
+        ctx = zmq.Context()
 
-        self.comm_sock = self.ctx.socket(zmq.SUB)
+        self.comm_sock = ctx.socket(zmq.SUB)
         self.comm_sock.identity = u"Worker-{}".format(id_).encode("ascii")
         self.comm_sock.curve_secretkey = client_secret
         self.comm_sock.curve_publickey = client_public
@@ -174,7 +174,7 @@ class Worker:
         self.comm_sock.setsockopt(zmq.SUBSCRIBE, '')
         self.comm_sock.connect(walkoff.config.config.zmq_communication_address)
 
-        self.results_sock = self.ctx.socket(zmq.PUSH)
+        self.results_sock = ctx.socket(zmq.PUSH)
         self.results_sock.identity = u"Worker-{}".format(id_).encode("ascii")
         self.results_sock.curve_secretkey = client_secret
         self.results_sock.curve_publickey = client_public
@@ -221,7 +221,6 @@ class Worker:
                 rcvd_msg = walkoff.cache.cache.rpop("request_queue")
                 if rcvd_msg is not None:
                     box = Box(self.key, self.server_key)
-
                     dec_msg = box.decrypt(rcvd_msg)
 
                     message = ExecuteWorkflowMessage()

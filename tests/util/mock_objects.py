@@ -10,7 +10,7 @@ from walkoff.cache import RedisCacheAdapter
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
-from walkoff.multiprocessedexecutor import loadbalancer
+from walkoff.multiprocessedexecutor import workflowexecutioncontroller
 from walkoff.multiprocessedexecutor.worker import convert_to_protobuf
 
 try:
@@ -118,7 +118,7 @@ class MockLoadBalancer(object):
         return True
 
 
-class MockReceiveQueue(loadbalancer.Receiver):
+class MockReceiveQueue(workflowexecutioncontroller.Receiver):
 
     def __init__(self):
         pass

@@ -17,7 +17,7 @@ from walkoff.executiondb import WorkflowStatusEnum
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus
-from walkoff.multiprocessedexecutor.loadbalancer import LoadBalancer, Receiver
+from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController, Receiver
 from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
 from walkoff.multiprocessedexecutor.worker import Worker
 
@@ -71,7 +71,7 @@ class MultiprocessedExecutor(object):
         self.auth.allow('127.0.0.1')
         self.auth.configure_curve(domain='*', location=walkoff.config.paths.zmq_public_keys_path)
 
-        self.manager = LoadBalancer(self.ctx)
+        self.manager = WorkflowExecutionController(self.ctx)
         self.receiver = Receiver(self.ctx)
 
         self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
