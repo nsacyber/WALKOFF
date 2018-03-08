@@ -3,16 +3,19 @@ import logging
 import os
 
 import gevent
+import nacl.bindings
+import nacl.utils
 import zmq.auth as auth
 import zmq.green as zmq
 from google.protobuf.json_format import MessageToDict
+from nacl.public import PrivateKey, Box
 from six import string_types
 
+import walkoff.cache
 import walkoff.config.config
 import walkoff.config.paths
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
-import walkoff.cache
 
 try:
     from Queue import Queue
@@ -35,12 +38,17 @@ class LoadBalancer:
         self.ctx = ctx
         server_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "server.key_secret")
         server_public, server_secret = auth.load_certificate(server_secret_file)
+        client_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "client.key_secret")
+        _, client_secret = auth.load_certificate(client_secret_file)
 
         self.comm_socket = self.ctx.socket(zmq.PUB)
         self.comm_socket.curve_secretkey = server_secret
         self.comm_socket.curve_publickey = server_public
         self.comm_socket.curve_server = True
         self.comm_socket.bind(walkoff.config.config.zmq_communication_address)
+
+        self.key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
+        self.worker_key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
 
     def add_workflow(self, workflow_id, workflow_execution_id, start=None, start_arguments=None, resume=False):
         """Adds a workflow ID to the queue to be executed.
@@ -52,7 +60,21 @@ class LoadBalancer:
             start_arguments (list[Argument]): The arguments to the starting action of the workflow. Defaults to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
         """
-        walkoff.cache.cache.lpush("request_queue", (workflow_id, workflow_execution_id, start, start_arguments, resume))
+        message = ExecuteWorkflowMessage()
+        message.workflow_id = str(workflow_id)
+        message.workflow_execution_id = workflow_execution_id
+        message.resume = resume
+
+        if start:
+            message.start = str(start)
+        if start_arguments:
+            self.__set_arguments_for_proto(message, start_arguments)
+
+        message = message.SerializeToString()
+        box = Box(self.key, self.worker_key)
+        enc_message = box.encrypt(message)
+
+        walkoff.cache.cache.lpush("request_queue", enc_message)
 
     def pause_workflow(self, workflow_execution_id):
         """Pauses a workflow currently executing.

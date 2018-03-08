@@ -3,26 +3,29 @@ import logging
 import os
 import signal
 import threading
+import time
 
+import nacl.bindings
+import nacl.utils
 import zmq
 import zmq.auth as auth
 from concurrent.futures import ThreadPoolExecutor
 from google.protobuf.json_format import MessageToDict
+from nacl.public import PrivateKey, Box
 from six import string_types
 
+import walkoff.cache
 import walkoff.config.config
 import walkoff.config.paths
 import walkoff.executiondb
 from walkoff import initialize_databases
 from walkoff.appgateway.appinstancerepo import AppInstanceRepo
+from walkoff.config.config import cache_config
 from walkoff.events import EventType, WalkoffEvent
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
-import walkoff.cache
-from walkoff.config.config import cache_config
-import time
 
 try:
     from Queue import Queue
@@ -178,6 +181,9 @@ class Worker:
         self.results_sock.curve_serverkey = server_public
         self.results_sock.connect(walkoff.config.config.zmq_results_address)
 
+        self.key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
+        self.server_key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
+
         if worker_environment_setup:
             worker_environment_setup()
         else:
@@ -212,11 +218,23 @@ class Worker:
         """Receives requests to execute workflows, and sends them off to worker threads"""
         while True:
             if len(self.workflows) < self.capacity:
-                values = walkoff.cache.cache.rpop("request_queue")
-                if values is not None:
-                    workflow_id, workflow_execution_id, start, start_arguments, resume = values
-                    self.threadpool.submit(self.execute_workflow_worker, workflow_id, workflow_execution_id, start,
-                                           start_arguments, resume)
+                rcvd_msg = walkoff.cache.cache.rpop("request_queue")
+                if rcvd_msg is not None:
+                    box = Box(self.key, self.server_key)
+
+                    dec_msg = box.decrypt(rcvd_msg)
+
+                    message = ExecuteWorkflowMessage()
+                    message.ParseFromString(dec_msg)
+                    start = message.start if hasattr(message, 'start') else None
+
+                    start_arguments = []
+                    if hasattr(message, 'arguments'):
+                        for arg in message.arguments:
+                            start_arguments.append(Argument(**(MessageToDict(arg, preserving_proto_field_name=True))))
+
+                    self.threadpool.submit(self.execute_workflow_worker, message.workflow_id,
+                                           message.workflow_execution_id, start, start_arguments, message.resume)
             time.sleep(0.1)
 
     def execute_workflow_worker(self, workflow_id, workflow_execution_id, start, start_arguments=None, resume=False):
