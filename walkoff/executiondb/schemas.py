@@ -22,7 +22,7 @@ class ExecutionBaseSchema(ModelSchema):
     This base class adds functionality to strip null fields from serialized objects and attaches the
     execution_db.session on load
     """
-    __skipvalues = (None, [{}])
+    __skipvalues = (None, [], [{}])
 
     @post_dump
     def _do_post_dump(self, data):
