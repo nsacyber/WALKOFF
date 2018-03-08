@@ -6,6 +6,7 @@ import { Select2OptionData } from 'ng2-select2';
 import { DatatableComponent } from '@swimlane/ngx-datatable';
 import { Observable } from 'rxjs';
 import 'rxjs/add/operator/debounceTime';
+import { plainToClass } from 'class-transformer';
 
 import { ExecutionService } from './execution.service';
 import { AuthService } from '../auth/auth.service';
@@ -179,7 +180,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * @param message EventSource message for workflow status
 	 */
 	workflowStatusEventHandler(message: any): void {
-		const workflowStatusEvent: WorkflowStatusEvent = JSON.parse(message.data);
+		const workflowStatusEvent = plainToClass(WorkflowStatusEvent, (JSON.parse(message.data) as object));
 
 		const matchingWorkflowStatus = this.workflowStatuses.find(ws => ws.execution_id === workflowStatusEvent.execution_id);
 
@@ -259,7 +260,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * @param message EventSource message for action status
 	 */
 	actionStatusEventHandler(message: any): void {
-		const actionStatusEvent: ActionStatusEvent = JSON.parse(message.data);
+		const actionStatusEvent = plainToClass(ActionStatusEvent, (JSON.parse(message.data) as object));
 
 		// if we have a matching workflow status, update the current app/action info.
 		const matchingWorkflowStatus = this.workflowStatuses
