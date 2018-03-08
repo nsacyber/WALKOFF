@@ -1,25 +1,30 @@
 import { User } from './user';
 
 export class WorkingUser {
-	static toSave(workingUser: WorkingUser): User {
+	id: number;
+
+	username: string;
+	
+	role_ids: number[] = [];
+
+	active: boolean;
+
+	currentPassword: string;
+
+	newPassword: string;
+
+	confirmNewPassword: string;
+
+	toSave(): User {
 		const returnUser = new User();
 
-		returnUser.id = workingUser.id;
-		returnUser.username = workingUser.username;
-		returnUser.roles = workingUser.role_ids.map(id => ({ id }));
-		returnUser.active = workingUser.active;
+		returnUser.id = this.id;
+		returnUser.username = this.username;
+		returnUser.roles = this.role_ids.map(id => ({ id }));
+		returnUser.active = this.active;
 
-		returnUser.old_password = workingUser.currentPassword;
-		returnUser.password = workingUser.newPassword;
+		returnUser.old_password = this.currentPassword;
+		returnUser.password = this.newPassword;
 		return returnUser;
 	}
-
-	id: number;
-	username: string;
-	// roles: number[] = [];
-	role_ids: number[] = [];
-	active: boolean;
-	currentPassword: string;
-	newPassword: string;
-	confirmNewPassword: string;
 }

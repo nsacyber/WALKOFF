@@ -235,7 +235,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			this.recalculateRelativeTimes(matchingActionStatus);
 			this.calculateLocalizedTimes(matchingActionStatus);
 		} else {
-			const newActionStatus = ActionStatusEvent.toNewActionStatus(actionStatusEvent);
+			const newActionStatus = actionStatusEvent.toNewActionStatus();
 			this.calculateLocalizedTimes(newActionStatus);
 			this.actionStatuses.push(newActionStatus);
 		}
@@ -441,14 +441,16 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 						defaultStatus = sourceActionApi.returns[0].status;
 					}
 
+					const newBranch = new Branch();
+
+					newBranch.id = tempId;
+					newBranch.source_id = sourceId;
+					newBranch.destination_id = destinationId;
+					newBranch.status = defaultStatus;
+					newBranch.priority = 1;
+
 					// Add our branch to the actual loadedWorkflow model
-					this.loadedWorkflow.branches.push({
-						id: tempId,
-						source_id: sourceId,
-						destination_id: destinationId,
-						status: defaultStatus,
-						priority: 1,
-					});
+					this.loadedWorkflow.branches.push(newBranch);
 				}
 
 				this.cy.remove(addedEntities);

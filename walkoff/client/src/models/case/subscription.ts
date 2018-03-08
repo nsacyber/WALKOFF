@@ -1,4 +1,5 @@
 export class Subscription {
 	id: string;
-	events: string[];
+
+	events: string[] = [];
 }

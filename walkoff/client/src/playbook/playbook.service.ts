@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Response, RequestOptions, ResponseContentType, Headers } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
+import { plainToClass } from 'class-transformer';
 
 import { Workflow } from '../models/playbook/workflow';
 import { Playbook } from '../models/playbook/playbook';
@@ -22,7 +23,7 @@ export class PlaybookService {
 		return this.authHttp.get('/api/playbooks')
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Playbook[])
+			.then((data: object[]) => plainToClass(Playbook, data))
 			.catch(this.handleError);
 	}
 
@@ -34,7 +35,7 @@ export class PlaybookService {
 		return this.authHttp.post('/api/playbooks', playbook)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Playbook)
+			.then((data: object) => plainToClass(Playbook, data))
 			.catch(this.handleError);
 	}
 
@@ -47,7 +48,7 @@ export class PlaybookService {
 		return this.authHttp.patch('/api/playbooks', { id: playbookId, name: newName })
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Playbook)
+			.then((data: object) => plainToClass(Playbook, data))
 			.catch(this.handleError);
 	}
 
@@ -60,7 +61,7 @@ export class PlaybookService {
 		return this.authHttp.post(`/api/playbooks?source=${playbookId}`, { name: newName })
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Playbook)
+			.then((data: object) => plainToClass(Playbook, data))
 			.catch(this.handleError);
 	}
 
@@ -108,7 +109,7 @@ export class PlaybookService {
 		headers.append('Accept', 'application/json');
 		const options = new RequestOptions({ headers });
 		return this.authHttp.post('/api/playbooks', formData, options)
-			.map(res => res.json() as Playbook)
+			.map(res => plainToClass(Playbook, (res.json() as object)))
 			.catch(error => Observable.throw(error));
 	}
 
@@ -125,7 +126,7 @@ export class PlaybookService {
 			{ playbook_id: destinationPlaybookId, name: newName })
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Workflow)
+			.then((data: object) => plainToClass(Workflow, data))
 			.catch(this.handleError);
 	}
 
@@ -151,7 +152,7 @@ export class PlaybookService {
 		return this.authHttp.post('/api/workflows', workflow)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Workflow)
+			.then((data: object) => plainToClass(Workflow, data))
 			.catch(this.handleError);
 	}
 
@@ -163,7 +164,7 @@ export class PlaybookService {
 		return this.authHttp.put('/api/workflows', workflow)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Workflow)
+			.then((data: object) => plainToClass(Workflow, data))
 			.catch(this.handleError);
 	}
 
@@ -175,7 +176,7 @@ export class PlaybookService {
 		return this.authHttp.get(`/api/workflows/${workflowId}`)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Workflow)
+			.then((data: object) => plainToClass(Workflow, data))
 			.catch(this.handleError);
 	}
 
@@ -188,7 +189,7 @@ export class PlaybookService {
 		return this.authHttp.post('api/workflowqueue', { workflow_id: workflowId })
 			.toPromise()
 			.then(this.extractData)
-			.then(workflowStatus => workflowStatus as WorkflowStatus)
+			.then((data: object) => plainToClass(WorkflowStatus, data))
 			.catch(this.handleError);
 	}
 
@@ -199,7 +200,7 @@ export class PlaybookService {
 		return this.authHttp.get('/api/devices')
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Device[])
+			.then((data: object[]) => plainToClass(Device, data))
 			.catch(this.handleError);
 	}
 
@@ -210,7 +211,7 @@ export class PlaybookService {
 		return this.authHttp.get('/api/apps/apis')
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as AppApi[])
+			.then((data: object[]) => plainToClass(AppApi, data))
 			.catch(this.handleError);
 	}
 
@@ -221,7 +222,7 @@ export class PlaybookService {
 		return this.authHttp.get('/api/users')
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as User[])
+			.then((data: object[]) => plainToClass(User, data))
 			.catch(this.handleError);
 	}
 
@@ -232,7 +233,7 @@ export class PlaybookService {
 		return this.authHttp.get('/api/roles')
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Role[])
+			.then((data: object[]) => plainToClass(Role, data))
 			.catch(this.handleError);
 	}
 

@@ -1,14 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Response } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
-
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
+import { plainToClass } from 'class-transformer';
 
 import { ScheduledTask } from '../models/scheduler/scheduledTask';
 import { Playbook } from '../models/playbook/playbook';
 
-const schedulerStatusNumberMapping: any = {
+const schedulerStatusNumberMapping: { [key: number]: string } = {
 	0: 'stopped',
 	1: 'running',
 	2: 'paused',
@@ -39,7 +39,7 @@ export class SchedulerService {
 		return this.authHttp.get('/api/scheduledtasks')
 			.toPromise()
 			.then(this.extractData)
-			.then(scheduledTasks => scheduledTasks as ScheduledTask[])
+			.then((data: object[]) => plainToClass(ScheduledTask, data))
 			.catch(this.handleError);
 	}
 
@@ -47,7 +47,7 @@ export class SchedulerService {
 		return this.authHttp.post('/api/scheduledtasks', scheduledTask)
 			.toPromise()
 			.then(this.extractData)
-			.then(newScheduledTask => newScheduledTask as ScheduledTask)
+			.then((data: object) => plainToClass(ScheduledTask, data))
 			.catch(this.handleError);
 	}
 
@@ -55,7 +55,7 @@ export class SchedulerService {
 		return this.authHttp.put('/api/scheduledtasks', scheduledTask)
 			.toPromise()
 			.then(this.extractData)
-			.then(editedScheduledTask => editedScheduledTask as ScheduledTask)
+			.then((data: object) => plainToClass(ScheduledTask, data))
 			.catch(this.handleError);
 	}
 
@@ -77,7 +77,7 @@ export class SchedulerService {
 		return this.authHttp.get('/api/playbooks')
 			.toPromise()
 			.then(this.extractData)
-			.then(playbooks => playbooks as Playbook[])
+			.then((data: object[]) => plainToClass(Playbook, data))
 			.catch(this.handleError);
 	}
 

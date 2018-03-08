@@ -222,7 +222,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 			this.calculateLocalizedTimes(matchingWorkflowStatus);
 		} else {
-			const newWorkflowStatus = WorkflowStatusEvent.toNewWorkflowStatus(workflowStatusEvent);
+			const newWorkflowStatus = workflowStatusEvent.toNewWorkflowStatus();
 			this.calculateLocalizedTimes(newWorkflowStatus);
 			this.workflowStatuses.push(newWorkflowStatus);
 			// Induce change detection by slicing array
@@ -306,7 +306,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 				this.calculateLocalizedTimes(matchingActionStatus);
 			} else {
-				const newActionStatus = ActionStatusEvent.toNewActionStatus(actionStatusEvent);
+				const newActionStatus = actionStatusEvent.toNewActionStatus();
 				this.calculateLocalizedTimes(newActionStatus);
 				this.loadedWorkflowStatus.action_statuses.push(newActionStatus);
 				// Induce change detection by slicing array

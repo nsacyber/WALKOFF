@@ -119,7 +119,7 @@ export class DevicesModalComponent implements OnInit, AfterViewInit {
 	submit(): void {
 		if (!this.validate()) { return; }
 
-		const toSubmit = WorkingDevice.toDevice(this.workingDevice);
+		const toSubmit = this.workingDevice.toDevice();
 
 		//If device has an ID, device already exists, call update
 		if (this.workingDevice.id) {
