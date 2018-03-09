@@ -7,6 +7,8 @@
 
 ### Changed
 * Improved deserialization in the user interface
+* Empty arrays are omitted from returned execution element JSON structure in
+  the REST API.
 
 ### Fixed
 * `PATCH /api/devices` now doesn't validate that all the fields of the device
