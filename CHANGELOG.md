@@ -2,6 +2,17 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
+## [0.7.1]
+###### 2018-03-08
+
+### Changed
+* Improved deserialization in the user interface
+
+### Fixed
+* `PATCH /api/devices` now doesn't validate that all the fields of the device
+  are provided.
+* Fixed dependency bug on GoogleProtocolBuffer version
+
 
 ## [0.7.0]
 ###### 2018-03-07
@@ -43,7 +54,7 @@
   server and the worker processes as well as increased scalability.
 * Paused workflows and workflows awaiting trigger data are now pickled
   (serialized to binary) and stored in a database table. Before, a conditional
-  wait was used to pause the execution of a workflow. By storing the state to
+  wait -was used to pause the execution of a workflow. By storing the state to
   the database, all threads on all worker processes are free to execute
   workflows.
 * Information about the workflow which sent events are now available in both
