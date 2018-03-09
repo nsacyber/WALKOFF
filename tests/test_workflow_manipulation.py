@@ -38,7 +38,6 @@ class TestWorkflowManipulation(unittest.TestCase):
     def tearDown(self):
         execution_db_help.cleanup_device_db()
         case_database.case_db.tear_down()
-        case_subscription.clear_subscriptions()
         reload(socket)
 
     @classmethod

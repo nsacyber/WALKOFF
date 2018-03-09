@@ -10,4 +10,3 @@ def modified_setup_worker_env():
     walkoff.appgateway.cache_apps(tests.config.test_apps_path)
     walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
     setup_dbs()
-    walkoff.cache.make_cache()

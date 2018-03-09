@@ -3,11 +3,15 @@ class Context(object):
         """Initializes a new Context object. This acts as an interface for objects to access other event specific
             variables that might be needed.
         """
-        import walkoff.multiprocessedexecutor.multiprocessedexecutor
+        import walkoff.multiprocessedexecutor.multiprocessedexecutor as executor
         import walkoff.scheduler
+        from walkoff.case.logger import CaseLogger
+        import walkoff.case.database as casedb
+        import walkoff.cache
 
-        self.executor = walkoff.multiprocessedexecutor.multiprocessedexecutor.multiprocessedexecutor
-        self.scheduler = walkoff.scheduler.scheduler
+        self.case_logger = CaseLogger(casedb.case_db)
+        self.executor = executor.MultiprocessedExecutor(walkoff.cache.cache, self.case_logger)
+        self.scheduler = walkoff.scheduler.Scheduler(self.case_logger)
 
 
 running_context = Context()

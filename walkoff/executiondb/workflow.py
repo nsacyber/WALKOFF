@@ -201,7 +201,8 @@ class Workflow(ExecutionElement, Execution_Base):
     def __shutdown(self):
         # Upon finishing shut down instances
         self._instance_repo.shutdown_instances()
-        WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowShutdown, data=dict(self._accumulator))
+        accumulator = {str(key): value for key, value in self._accumulator.items()}
+        WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowShutdown, data=accumulator)
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self._accumulator))
 
     def set_execution_id(self, execution_id):

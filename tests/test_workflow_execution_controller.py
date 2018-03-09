@@ -1,9 +1,13 @@
 from unittest import TestCase
 from zmq import Socket
 from mock import patch, create_autospec
-from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController, Message, CaseControl, CommunicationPacket, WorkflowControl
+from walkoff.multiprocessedexecutor.workflowexecutioncontroller import ExecuteWorkflowMessage, WorkflowExecutionController, Message, CaseControl, CommunicationPacket, WorkflowControl
 from walkoff.case.subscription import Subscription
 from uuid import uuid4
+from tests.util.mock_objects import MockRedisCacheAdapter
+from walkoff.executiondb.argument import Argument
+from tests.util.execution_db_help import setup_dbs
+import json
 
 
 class TestWorkflowExecutionController(TestCase):
@@ -11,10 +15,15 @@ class TestWorkflowExecutionController(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.subscriptions = [Subscription(str(uuid4()), ['a', 'b', 'c']), Subscription(str(uuid4()), ['b'])]
-        cls.controller = WorkflowExecutionController()
+        cls.cache = MockRedisCacheAdapter()
+        cls.controller = WorkflowExecutionController(cls.cache)
+        setup_dbs()
+
+    def tearDown(self):
+        self.cache.clear()
 
     @classmethod
-    def tearDown(cls):
+    def tearDownClass(cls):
         cls.controller.comm_socket.close()
 
     @staticmethod
@@ -106,4 +115,20 @@ class TestWorkflowExecutionController(TestCase):
         expected_message = message.SerializeToString()
         self.assert_message_sent(mock_send, expected_message)
 
-    
+    def test_set_argumets_for_proto(self):
+        message = ExecuteWorkflowMessage()
+        uid = uuid4()
+        selection =  [1, 'a', '32', 46]
+        arguments = [
+            Argument('name1', value=32), Argument('name2', reference=uid, selection=selection)]
+        WorkflowExecutionController._set_arguments_for_proto(message, arguments)
+        self.assertEqual(len(message.arguments), len(arguments))
+        self.assertEqual(message.arguments[0].name, arguments[0].name)
+        self.assertEqual(message.arguments[0].value, str(arguments[0].value))
+        self.assertEqual(message.arguments[0].reference, '')
+        self.assertEqual(message.arguments[0].selection, '')
+
+        self.assertEqual(message.arguments[1].name, arguments[1].name)
+        self.assertEqual(message.arguments[1].value, '')
+        self.assertEqual(message.arguments[1].reference, str(uid))
+        self.assertEqual(message.arguments[1].selection, json.dumps(selection))

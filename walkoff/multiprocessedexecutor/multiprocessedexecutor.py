@@ -20,7 +20,7 @@ from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController, Receiver
 from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
 from walkoff.multiprocessedexecutor.worker import Worker
-
+from collections import namedtuple
 logger = logging.getLogger(__name__)
 
 
@@ -41,7 +41,7 @@ def spawn_worker_processes(worker_environment_setup=None):
 
 
 class MultiprocessedExecutor(object):
-    def __init__(self):
+    def __init__(self, cache, event_logger):
         """Initializes a multiprocessed executor, which will handle the execution of workflows.
         """
         self.threading_is_initialized = False
@@ -55,6 +55,8 @@ class MultiprocessedExecutor(object):
         self.manager = None
         self.receiver = None
         self.receiver_thread = None
+        self.cache = cache
+        self.event_logger = event_logger
 
     def initialize_threading(self, pids=None):
         """Initialize the multiprocessing communication threads, allowing for parallel execution of workflows.
@@ -71,7 +73,7 @@ class MultiprocessedExecutor(object):
         self.auth.allow('127.0.0.1')
         self.auth.configure_curve(domain='*', location=walkoff.config.paths.zmq_public_keys_path)
 
-        self.manager = WorkflowExecutionController()
+        self.manager = WorkflowExecutionController(self.cache)
         self.receiver = Receiver(self.ctx)
 
         self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
@@ -154,10 +156,10 @@ class MultiprocessedExecutor(object):
             logger.info('Executing workflow {0} with default starting action'.format(workflow.name, start))
 
         workflow_data = {'execution_id': execution_id, 'id': workflow.id, 'name': workflow.name}
-        WalkoffEvent.WorkflowExecutionPending.send(workflow_data)
+        self._log_and_send_event(WalkoffEvent.WorkflowExecutionPending, sender=workflow_data)
         self.manager.add_workflow(workflow.id, execution_id, start, start_arguments, resume)
 
-        WalkoffEvent.SchedulerJobExecuted.send(self)
+        self._log_and_send_event(WalkoffEvent.SchedulerJobExecuted)
         return execution_id
 
     def pause_workflow(self, execution_id):
@@ -190,7 +192,7 @@ class MultiprocessedExecutor(object):
             workflow = executiondb.execution_db.session.query(Workflow).filter_by(
                 id=workflow_status.workflow_id).first()
             workflow._execution_id = execution_id
-            WalkoffEvent.WorkflowResumed.send(workflow)
+            self._log_and_send_event(WalkoffEvent.WorkflowResumed, sender=workflow)
 
             start = saved_state.action_id if saved_state else workflow.start
             self.execute_workflow(workflow.id, execution_id_in=execution_id, start=start, resume=True)
@@ -211,11 +213,12 @@ class MultiprocessedExecutor(object):
         if workflow_status:
             if workflow_status.status in [WorkflowStatusEnum.pending, WorkflowStatusEnum.paused,
                                           WorkflowStatusEnum.awaiting_data]:
-                workflow = walkoff.coredb.devicedb.device_db.session.query(Workflow).filter_by(
+                workflow = walkoff.executiondb.execution_db.session.query(Workflow).filter_by(
                     id=workflow_status.workflow_id).first()
                 if workflow is not None:
-                    WalkoffEvent.WorkflowAborted.send(
-                        {'execution_id': execution_id, 'id': workflow_status.workflow_id, 'name': workflow.name})
+                    self._log_and_send_event(
+                        WalkoffEvent.WorkflowAborted,
+                        sender={'execution_id': execution_id, 'id': workflow_status.workflow_id, 'name': workflow.name})
             elif workflow_status.status == WorkflowStatusEnum.running:
                 self.manager.abort_workflow(execution_id)
             return True
@@ -248,12 +251,22 @@ class MultiprocessedExecutor(object):
                 break
 
         if executed:
-            WalkoffEvent.TriggerActionTaken.send(exec_action, data={'workflow_execution_id': execution_id})
-            self.execute_workflow(workflow.id, execution_id_in=execution_id, start=saved_state.action_id,
-                                  start_arguments=arguments, resume=True)
+            self._log_and_send_event(
+                WalkoffEvent.TriggerActionTaken,
+                sender=exec_action,
+                data={'workflow_execution_id': execution_id})
+            self.execute_workflow(
+                workflow.id,
+                execution_id_in=execution_id,
+                start=saved_state.action_id,
+                start_arguments=arguments,
+                resume=True)
             return True
         else:
-            WalkoffEvent.TriggerActionNotTaken.send(exec_action, data={'workflow_execution_id': execution_id})
+            self._log_and_send_event(
+                WalkoffEvent.TriggerActionNotTaken,
+                sender=exec_action,
+                data={'workflow_execution_id': execution_id})
             return False
 
     @staticmethod
@@ -268,7 +281,8 @@ class MultiprocessedExecutor(object):
             status=WorkflowStatusEnum.awaiting_data).all()
         return [str(wf_status.execution_id) for wf_status in wf_statuses]
 
-    def get_workflow_status(self, execution_id):
+    @staticmethod
+    def get_workflow_status(execution_id):
         """Gets the current status of a workflow by its execution ID
 
         Args:
@@ -285,5 +299,8 @@ class MultiprocessedExecutor(object):
             logger.error("Key {} does not exist in database.").format(execution_id)
             return 0
 
-
-multiprocessedexecutor = MultiprocessedExecutor()
+    def _log_and_send_event(self, event, sender=None, data=None):
+        sender = sender or self
+        sender_id = sender.id if not isinstance(sender, dict) else sender['id']
+        self.event_logger.log(event, sender_id, data=data)
+        event.send(sender, data=data)

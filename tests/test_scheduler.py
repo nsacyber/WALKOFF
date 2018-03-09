@@ -1,6 +1,8 @@
 import unittest
 
 from walkoff.scheduler import *
+from mock import create_autospec
+from walkoff.case.logger import CaseLogger
 
 
 class MockWorkflow(object):
@@ -26,7 +28,7 @@ def execute(workflow_id):
 
 class TestScheduler(unittest.TestCase):
     def setUp(self):
-        self.scheduler = Scheduler()
+        self.scheduler = Scheduler(create_autospec(CaseLogger))
         self.trigger = DateTrigger(run_date='2050-12-31 23:59:59')
         self.trigger2 = DateTrigger(run_date='2050-12-31 23:59:59')
 

@@ -90,7 +90,7 @@ class InterfaceEventDispatcher(object):
                     data = deepcopy(sender)
                 additional_data = deepcopy(kwargs)
                 additional_data.pop('cls', None)
-                if 'data' in additional_data and 'workflow' in additional_data['data']:
+                if 'data' in additional_data and additional_data['data'] and 'workflow' in additional_data['data']:
                     additional_data['workflow'] = additional_data['data'].pop('workflow')
                     if not additional_data['data']:
                         additional_data.pop('data')

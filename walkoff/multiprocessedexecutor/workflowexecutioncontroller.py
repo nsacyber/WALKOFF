@@ -11,12 +11,11 @@ from google.protobuf.json_format import MessageToDict
 from nacl.public import PrivateKey, Box
 from six import string_types
 
-import walkoff.cache
 import walkoff.config.config
 import walkoff.config.paths
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, CaseControl, WorkflowControl
-
+from walkoff.helpers import json_dumps_or_string
 try:
     from Queue import Queue
 except ImportError:
@@ -26,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 class WorkflowExecutionController:
-    def __init__(self):
+    def __init__(self, cache):
         """Initialize a LoadBalancer object, which manages workflow execution.
         """
         server_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "server.key_secret")
@@ -41,6 +40,7 @@ class WorkflowExecutionController:
         self.comm_socket.bind(walkoff.config.config.zmq_communication_address)
         self.key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
         self.worker_key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
+        self.cache = cache
 
     def add_workflow(self, workflow_id, workflow_execution_id, start=None, start_arguments=None, resume=False):
         """Adds a workflow ID to the queue to be executed.
@@ -60,13 +60,12 @@ class WorkflowExecutionController:
         if start:
             message.start = str(start)
         if start_arguments:
-            self.__set_arguments_for_proto(message, start_arguments)
+            self._set_arguments_for_proto(message, start_arguments)
 
         message = message.SerializeToString()
         box = Box(self.key, self.worker_key)
         enc_message = box.encrypt(message)
-
-        walkoff.cache.cache.lpush("request_queue", enc_message)
+        self.cache.lpush("request_queue", enc_message)
 
     def pause_workflow(self, workflow_execution_id):
         """Pauses a workflow currently executing.
@@ -104,7 +103,7 @@ class WorkflowExecutionController:
         self._send_message(message)
 
     @staticmethod
-    def __set_arguments_for_proto(message, arguments):
+    def _set_arguments_for_proto(message, arguments):
         for argument in arguments:
             arg = message.arguments.add()
             arg.name = argument.name
@@ -112,10 +111,7 @@ class WorkflowExecutionController:
                 val = getattr(argument, field)
                 if val is not None:
                     if not isinstance(val, string_types):
-                        try:
-                            setattr(arg, field, json.dumps(val))
-                        except ValueError:
-                            setattr(arg, field, str(val))
+                        setattr(arg, field, json_dumps_or_string(val))
                     else:
                         setattr(arg, field, val)
 
@@ -184,7 +180,6 @@ class Receiver:
             self.send_callback(message_bytes)
 
         self.results_sock.close()
-        return
 
     def send_callback(self, message_bytes):
         message_outer = Message()
@@ -201,20 +196,25 @@ class Receiver:
         sender = MessageToDict(message.sender, preserving_proto_field_name=True)
         event = WalkoffEvent.get_event_from_name(callback_name)
         if event is not None:
-            if event.event_type != EventType.workflow:
-                data = {'workflow': MessageToDict(message.workflow, preserving_proto_field_name=True)}
-            else:
-                data = {}
-            if event.requires_data():
-                if event != WalkoffEvent.SendMessage:
-                    data['data'] = json.loads(message.additional_data)
-                else:
-                    data['message'] = format_message_event_data(message)
+            data = self._format_data(event, message)
             event.send(sender, data=data)
             if event in [WalkoffEvent.WorkflowShutdown, WalkoffEvent.WorkflowAborted]:
                 self._increment_execution_count()
         else:
             logger.error('Unknown callback {} sent'.format(callback_name))
+
+    @staticmethod
+    def _format_data(event, message):
+        if event.event_type != EventType.workflow:
+            data = {'workflow': MessageToDict(message.workflow, preserving_proto_field_name=True)}
+        else:
+            data = {}
+        if event.requires_data():
+            if event != WalkoffEvent.SendMessage:
+                data['data'] = json.loads(message.additional_data)
+            else:
+                data['message'] = format_message_event_data(message)
+        return data
 
     def _increment_execution_count(self):
         self.workflows_executed += 1

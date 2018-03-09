@@ -24,13 +24,13 @@ from walkoff.events import EventType, WalkoffEvent
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
-from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, CaseControl
+from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, CaseControl, WorkflowControl
 import walkoff.cache
 from walkoff.config.config import cache_config
 import walkoff.case.database as casedb
 from walkoff.case.logger import CaseLogger
 from walkoff.case.subscription import Subscription
-
+from threading import Lock
 try:
     from Queue import Queue
 except ImportError:
@@ -140,7 +140,7 @@ def convert_branch_transform_condition_to_proto(packet, sender, workflow):
         general_packet.sender.app_name = sender.app_name
 
 
-class Worker:
+class Worker(object):
     def __init__(self, id_, worker_environment_setup=None):
         """Initialize a Workflow object, which will be executing workflows.
 
@@ -151,9 +151,10 @@ class Worker:
 
         self.id_ = id_
         self.capacity = walkoff.config.config.num_threads_per_process
-
+        self._lock = Lock()
         signal.signal(signal.SIGINT, self.exit_handler)
         signal.signal(signal.SIGABRT, self.exit_handler)
+
 
         @WalkoffEvent.CommonWorkflowSignal.connect
         def handle_data_sent(sender, **kwargs):
@@ -190,10 +191,11 @@ class Worker:
 
         if worker_environment_setup:
             worker_environment_setup()
+            self.cache = walkoff.cache.make_cache()
         else:
             walkoff.config.config.initialize()
             initialize_databases()
-            walkoff.cache.make_cache(cache_config)
+            self.cache = walkoff.cache.make_cache()
 
         self.case_logger = CaseLogger(casedb.case_db)
 
@@ -222,11 +224,12 @@ class Worker:
     def receive_requests(self):
         """Receives requests to execute workflows, and sends them off to worker threads"""
         while True:
-            if len(self.workflows) < self.capacity:
-                rcvd_msg = walkoff.cache.cache.rpop("request_queue")
-                if rcvd_msg is not None:
+
+            if not self.__is_pool_at_capacity:
+                received_message = self.cache.rpop("request_queue")
+                if received_message is not None:
                     box = Box(self.key, self.server_key)
-                    dec_msg = box.decrypt(rcvd_msg)
+                    dec_msg = box.decrypt(received_message)
 
                     message = ExecuteWorkflowMessage()
                     message.ParseFromString(dec_msg)
@@ -241,27 +244,31 @@ class Worker:
                                            message.workflow_execution_id, start, start_arguments, message.resume)
             time.sleep(0.1)
 
+    @property
+    def __is_pool_at_capacity(self):
+        with self._lock:
+            return len(self.workflows) >= self.capacity
+
     def execute_workflow_worker(self, workflow_id, workflow_execution_id, start, start_arguments=None, resume=False):
         """Execute a workflow.
         """
         walkoff.executiondb.execution_db.session.expire_all()
         workflow = walkoff.executiondb.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
         workflow._execution_id = workflow_execution_id
-
         if resume:
             saved_state = walkoff.executiondb.execution_db.session.query(SavedWorkflow).filter_by(
                 workflow_execution_id=workflow_execution_id).first()
             workflow._accumulator = saved_state.accumulator
             workflow._instance_repo = AppInstanceRepo(saved_state.app_instances)
 
-        self.workflows[threading.current_thread().name] = workflow
+        with self._lock:
+            self.workflows[threading.current_thread().name] = workflow
 
         start = start if start else workflow.start
         workflow.execute(execution_id=workflow_execution_id, start=start, start_arguments=start_arguments,
                          resume=resume)
-
-        self.workflows.pop(threading.current_thread().name)
-        return
+        with self._lock:
+            self.workflows.pop(threading.current_thread().name)
 
     def receive_data(self):
         """Constantly receives data from the ZMQ socket and handles it accordingly.
@@ -284,14 +291,13 @@ class Worker:
                 self._handle_case_control_packet(message.case_control_message)
             elif message_type == CommunicationPacket.EXIT:
                 break
-        return
 
     def _handle_workflow_control_packet(self, message):
         workflow = self.__get_workflow_by_execution_id(message.workflow_execution_id)
         if workflow:
-            if message.type == CommunicationPacket.PAUSE:
+            if message.type == WorkflowControl.PAUSE:
                 workflow.pause()
-            elif message.type == CommunicationPacket.ABORT:
+            elif message.type == WorkflowControl.ABORT:
                 workflow.abort()
 
     def _handle_case_control_packet(self, message):
@@ -329,10 +335,12 @@ class Worker:
         self.results_sock.send(packet_bytes)
 
     def _get_current_workflow(self):
-        return self.workflows[threading.currentThread().name]
+        with self._lock:
+            return self.workflows[threading.currentThread().name]
 
     def __get_workflow_by_execution_id(self, workflow_execution_id):
-        for workflow in self.workflows.values():
-            if workflow.get_execution_id() == workflow_execution_id:
-                return workflow
-        return None
+        with self._lock:
+            for workflow in self.workflows.values():
+                if workflow.get_execution_id() == workflow_execution_id:
+                    return workflow
+            return None

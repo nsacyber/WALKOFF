@@ -10,7 +10,9 @@ import walkoff.config.paths
 from tests import config
 from tests.util import execution_db_help
 from walkoff.events import WalkoffEvent, EventType
-from walkoff.scheduler import scheduler
+from walkoff.scheduler import Scheduler
+from walkoff.case.logger import CaseLogger
+from mock import create_autospec
 
 
 class TestExecutionModes(unittest.TestCase):
@@ -19,6 +21,8 @@ class TestExecutionModes(unittest.TestCase):
         execution_db_help.setup_dbs()
         walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
+        mock_logger = create_autospec(CaseLogger)
+        cls.scheduler = Scheduler(mock_logger)
 
     def setUp(self):
         case_database.initialize()
@@ -39,10 +43,10 @@ class TestExecutionModes(unittest.TestCase):
     def test_start_stop_execution_loop(self):
         execution_db_help.load_playbook('testScheduler')
         subs = {'controller': [event.signal_name for event in WalkoffEvent if event.event_type == EventType.controller]}
-        case_subscription.set_subscriptions({'case1': subs})
-        scheduler.start()
+        #case_subscription.set_subscriptions({'case1': subs})
+        self.scheduler.start()
         time.sleep(0.1)
-        scheduler.stop(wait=False)
+        self.scheduler.stop(wait=False)
 
         start_stop_event_history = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'case1').first().events.all()
@@ -54,14 +58,14 @@ class TestExecutionModes(unittest.TestCase):
         execution_db_help.load_playbook('testScheduler')
 
         subs = {'controller': [event.signal_name for event in WalkoffEvent if event.event_type == EventType.controller]}
-        case_subscription.set_subscriptions({'pauseResume': subs})
+        #case_subscription.set_subscriptions({'pauseResume': subs})
 
-        scheduler.start()
-        scheduler.pause()
+        self.scheduler.start()
+        self.scheduler.pause()
         time.sleep(0.1)
-        scheduler.resume()
+        self.scheduler.resume()
         time.sleep(0.1)
-        scheduler.stop(wait=False)
+        self.scheduler.stop(wait=False)
 
         pause_resume_event_history = case_database.case_db.session.query(case_database.Case) \
             .filter(case_database.Case.name == 'pauseResume').first().events.all()

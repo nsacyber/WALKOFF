@@ -10,6 +10,7 @@ from tests.util.case_db_help import *
 from tests.util.mock_objects import *
 from walkoff.case import subscription, database
 from walkoff.multiprocessedexecutor import multiprocessedexecutor
+from walkoff.events import WalkoffEvent
 
 
 class TestSimpleWorkflow(unittest.TestCase):
@@ -34,8 +35,6 @@ class TestSimpleWorkflow(unittest.TestCase):
 
     def tearDown(self):
         execution_db_help.cleanup_device_db()
-        database.case_db.tear_down()
-        subscription.clear_subscriptions()
 
     @classmethod
     def tearDownClass(cls):
@@ -47,6 +46,12 @@ class TestSimpleWorkflow(unittest.TestCase):
         workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
+
+        @WalkoffEvent.CommonWorkflowSignal.connect
+        def log_event(data, **kwargs):
+            print(data)
+            print(kwargs)
+
         self.executor.execute_workflow(workflow.id)
 
         self.executor.wait_and_reset(1)
@@ -59,6 +64,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         result = action['data']
         self.assertDictEqual(result, {'result': "REPEATING: Hello World", 'status': 'Success'})
 
+    '''
     def test_multi_action_workflow(self):
         workflow = execution_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         action_names = ['start', '1']
@@ -130,3 +136,4 @@ class TestSimpleWorkflow(unittest.TestCase):
         for id_ in action_ids:
             actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
         self.assertEqual(len(actions), 2)
+    '''

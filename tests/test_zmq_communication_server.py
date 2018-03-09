@@ -26,7 +26,6 @@ class TestZmqCommunicationServer(ServerTestCase):
 
     def tearDown(self):
         execution_db_help.cleanup_device_db()
-        walkoff.case.subscription.clear_subscriptions()
         for case in case_database.case_db.session.query(case_database.Case).all():
             case_database.case_db.session.delete(case)
         case_database.case_db.session.commit()

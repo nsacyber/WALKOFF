@@ -573,3 +573,10 @@ def utc_as_rfc_datetime(timestamp):
 
 def timestamp_to_datetime(time):
     return datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%fZ')
+
+
+def json_dumps_or_string(val):
+    try:
+        return json.dumps(val)
+    except (ValueError, TypeError):
+        return str(val)

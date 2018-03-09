@@ -8,7 +8,10 @@ import walkoff.config.paths
 from tests import config
 from tests.util import execution_db_help
 from tests.util.mock_objects import *
-from walkoff.multiprocessedexecutor import multiprocessedexecutor
+from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
+from tests.util.mock_objects import MockRedisCacheAdapter
+from mock import create_autospec
+from walkoff.case.logger import CaseLogger
 
 
 class TestExecutionEvents(unittest.TestCase):
@@ -17,10 +20,11 @@ class TestExecutionEvents(unittest.TestCase):
         execution_db_help.setup_dbs()
         walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
-        multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
-        multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
-        multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
-        multiprocessedexecutor.multiprocessedexecutor.initialize_threading()
+        cls.executor = MultiprocessedExecutor(MockRedisCacheAdapter(), create_autospec(CaseLogger))
+        cls.executor.initialize_threading = mock_initialize_threading
+        cls.executor.wait_and_reset = mock_wait_and_reset
+        cls.executor.shutdown_pool = mock_shutdown_pool
+        cls.executor.initialize_threading()
 
     def setUp(self):
         self.executor = multiprocessedexecutor.multiprocessedexecutor
@@ -44,7 +48,7 @@ class TestExecutionEvents(unittest.TestCase):
         workflow = execution_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
         subs = {'case1': {str(workflow.id): [WalkoffEvent.AppInstanceCreated.signal_name,
                                              WalkoffEvent.WorkflowShutdown.signal_name]}}
-        case_subscription.set_subscriptions(subs)
+        #case_subscription.set_subscriptions(subs)
         self.executor.execute_workflow(workflow.id)
 
         self.executor.wait_and_reset(1)
@@ -60,7 +64,7 @@ class TestExecutionEvents(unittest.TestCase):
         action_ids = [str(action.id) for action in workflow.actions]
         action_events = [WalkoffEvent.ActionExecutionSuccess.signal_name, WalkoffEvent.ActionStarted.signal_name]
         subs = {'case1': {action_id: action_events for action_id in action_ids}}
-        case_subscription.set_subscriptions(subs)
+        #case_subscription.set_subscriptions(subs)
 
         self.executor.execute_workflow(workflow.id)
 

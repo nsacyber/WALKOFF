@@ -14,9 +14,15 @@ from tests.util.case_db_help import *
 from tests.util.thread_control import modified_setup_worker_env
 from walkoff import executiondb
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
-from walkoff.multiprocessedexecutor.multiprocessedexecutor import multiprocessedexecutor
+from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from walkoff.server import workflowresults  # Need this import
 import walkoff.cache
+from tests.util.mock_objects import MockRedisCacheAdapter
+from mock import create_autospec
+from walkoff.case.logger import CaseLogger
+from walkoff.cache import make_cache
+
+# Caches aren't the same on both sides
 
 
 class TestZMQCommunication(unittest.TestCase):
@@ -28,7 +34,9 @@ class TestZMQCommunication(unittest.TestCase):
         from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
         walkoff.config.config.num_processes = 2
         pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)
-        multiprocessedexecutor.initialize_threading(pids)
+
+        cls.executor = MultiprocessedExecutor(make_cache(), create_autospec(CaseLogger))
+        cls.executor.initialize_threading(pids)
         walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
         walkoff.config.config.num_processes = 2
@@ -40,8 +48,6 @@ class TestZMQCommunication(unittest.TestCase):
     def tearDown(self):
         execution_db_help.cleanup_device_db()
         case_database.case_db.tear_down()
-        case_subscription.clear_subscriptions()
-
 
     @classmethod
     def tearDownClass(cls):
@@ -51,7 +57,7 @@ class TestZMQCommunication(unittest.TestCase):
             else:
                 shutil.rmtree(config.test_data_path)
         walkoff.appgateway.clear_cache()
-        multiprocessedexecutor.shutdown_pool()
+        cls.executor.shutdown_pool()
         execution_db_help.tear_down_device_db()
 
     '''Request and Result Socket Testing (Basic Workflow Execution)'''
@@ -60,9 +66,9 @@ class TestZMQCommunication(unittest.TestCase):
         workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
-        multiprocessedexecutor.execute_workflow(workflow.id)
+        self.executor.execute_workflow(workflow.id)
 
-        multiprocessedexecutor.wait_and_reset(1)
+        self.executor.wait_and_reset(1)
 
         actions = []
         for id_ in action_ids:
@@ -78,9 +84,9 @@ class TestZMQCommunication(unittest.TestCase):
         action_names = ['start', '1']
         action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
-        multiprocessedexecutor.execute_workflow(workflow.id)
+        self.executor.execute_workflow(workflow.id)
 
-        multiprocessedexecutor.wait_and_reset(1)
+        self.executor.wait_and_reset(1)
         actions = []
         for id_ in action_ids:
             actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
@@ -96,9 +102,9 @@ class TestZMQCommunication(unittest.TestCase):
         action_names = ['start', '1', 'error']
         action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
-        multiprocessedexecutor.execute_workflow(workflow.id)
+        self.executor.execute_workflow(workflow.id)
 
-        multiprocessedexecutor.wait_and_reset(1)
+        self.executor.wait_and_reset(1)
 
         actions = []
         for id_ in action_ids:
@@ -115,9 +121,9 @@ class TestZMQCommunication(unittest.TestCase):
         action_names = ['start', '1', '2']
         action_ids = [action.id for action in workflow.actions if action.name in action_names]
         setup_subscriptions_for_action(workflow.id, action_ids)
-        multiprocessedexecutor.execute_workflow(workflow.id)
+        self.executor.execute_workflow(workflow.id)
 
-        multiprocessedexecutor.wait_and_reset(1)
+        self.executor.wait_and_reset(1)
 
         actions = []
         for id_ in action_ids:
@@ -137,9 +143,9 @@ class TestZMQCommunication(unittest.TestCase):
         capacity = walkoff.config.config.num_processes * walkoff.config.config.num_threads_per_process
 
         for i in range(capacity * 2):
-            multiprocessedexecutor.execute_workflow(workflow.id)
+            self.executor.execute_workflow(workflow.id)
 
-        multiprocessedexecutor.wait_and_reset(capacity * 2)
+        self.executor.wait_and_reset(capacity * 2)
 
         actions = []
         for id_ in action_ids:
@@ -156,7 +162,7 @@ class TestZMQCommunication(unittest.TestCase):
         result['resumed'] = False
 
         def pause_resume_thread():
-            multiprocessedexecutor.pause_workflow(execution_id)
+            self.executor.pause_workflow(execution_id)
             return
 
         @WalkoffEvent.WorkflowPaused.connect
@@ -167,7 +173,7 @@ class TestZMQCommunication(unittest.TestCase):
             wf_status.paused()
             executiondb.execution_db.session.commit()
 
-            multiprocessedexecutor.resume_workflow(execution_id)
+            self.executor.resume_workflow(execution_id)
 
         @WalkoffEvent.WorkflowResumed.connect
         def workflow_resumed_listener(sender, **kwargs):
@@ -178,7 +184,7 @@ class TestZMQCommunication(unittest.TestCase):
         workflow_events = ['Workflow Paused', 'Workflow Resumed']
         setup_subscriptions_for_action(workflow.id, action_ids, workflow_events=workflow_events)
 
-        execution_id = multiprocessedexecutor.execute_workflow(workflow.id)
+        execution_id = self.executor.execute_workflow(workflow.id)
 
         while True:
             executiondb.execution_db.session.expire_all()
@@ -189,7 +195,7 @@ class TestZMQCommunication(unittest.TestCase):
                 time.sleep(0)
                 break
 
-        multiprocessedexecutor.wait_and_reset(1)
+        self.executor.wait_and_reset(1)
         self.assertTrue(result['paused'])
         self.assertTrue(result['resumed'])
 
