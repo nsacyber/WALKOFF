@@ -39,7 +39,7 @@ export class DevicesService {
 	 * @param device Device to edit
 	 */
 	editDevice(device: Device): Promise<Device> {
-		return this.authHttp.put('/api/devices', device)
+		return this.authHttp.patch('/api/devices', device)
 			.toPromise()
 			.then(this.extractData)
 			.then((data: object) => plainToClass(Device, data))

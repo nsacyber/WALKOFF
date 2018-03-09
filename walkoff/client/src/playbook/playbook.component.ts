@@ -1052,7 +1052,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.cy.clipboard().copy(this.cy.$(':selected'));
 	}
 
-	// TODO: update this to properly get new UIDs for pasted actions...
 	/**
 	 * Cytoscape paste method.
 	 */

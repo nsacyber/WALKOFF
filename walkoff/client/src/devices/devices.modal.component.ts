@@ -182,7 +182,9 @@ export class DevicesModalComponent implements OnInit, AfterViewInit {
 		});
 
 		this.selectedDeviceType.fields.forEach(field => {
-			if (field.required) {
+			// if we have a required field, and this field is NOT an edit to an encrypted field,
+			// check if we have a value specified
+			if (field.required && !(this.workingDevice.id && field.encrypted)) {
 				if (inputs[field.name] == null ||
 					(typeof inputs[field.name] === 'string' && !inputs[field.name]) ||
 					(typeof inputs[field.name] === 'number' && inputs[field.name] === null)) {
