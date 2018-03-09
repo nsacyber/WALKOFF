@@ -92,7 +92,7 @@ message CommunicationPacket {
 message WorkflowControl {
     enum Type {
         PAUSE = 1;
-        ABORT = 3;
+        ABORT = 2;
     }
     optional Type type = 1;
     optional string workflow_execution_id = 2;

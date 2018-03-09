@@ -7,7 +7,7 @@ def add_tests_to_suite(suite, test_modules):
     suite.addTests([TestLoader().loadTestsFromModule(test_module) for test_module in test_modules])
 
 
-__case_tests = [test_case_subscriptions, test_case_database, test_case_config_db]
+__case_tests = [test_case_subscriptions, test_case_database, test_case_config_db, test_case_logger]
 case_suite = TestSuite()
 add_tests_to_suite(case_suite, __case_tests)
 
@@ -31,7 +31,7 @@ __execution_tests = [test_argument, test_execution_events,
                      test_app_utilities, test_input_validation, test_decorators,
                      test_app_api_validation, test_condition_transform_validation,
                      test_roles_pages_database, test_users_roles_database, test_playbook,
-                     test_scheduler, test_walkoff_tag, test_app_cache, test_app_base]
+                     test_scheduler, test_walkoff_tag, test_app_cache, test_app_base, test_workflow_execution_controller]
 execution_suite = TestSuite()
 add_tests_to_suite(execution_suite, __execution_tests)
 

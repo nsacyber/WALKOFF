@@ -49,7 +49,7 @@ class MultiprocessedExecutor(object):
         self.pids = None
         self.workflows_executed = 0
 
-        self.ctx = None
+        self.ctx = None  # TODO: Test if you can always use the singleton
         self.auth = None
 
         self.manager = None
@@ -71,7 +71,7 @@ class MultiprocessedExecutor(object):
         self.auth.allow('127.0.0.1')
         self.auth.configure_curve(domain='*', location=walkoff.config.paths.zmq_public_keys_path)
 
-        self.manager = WorkflowExecutionController(self.ctx)
+        self.manager = WorkflowExecutionController()
         self.receiver = Receiver(self.ctx)
 
         self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
