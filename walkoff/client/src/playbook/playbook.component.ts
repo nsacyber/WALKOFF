@@ -121,11 +121,12 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
 
-		cytoscape.use(clipboard);
-		cytoscape.use(edgehandles);
-		cytoscape.use(gridGuide);
-		cytoscape.use(panzoom);
-		cytoscape.use(undoRedo);
+		const cyDummy = cytoscape();
+		if (!cyDummy.clipboard) { cytoscape.use(clipboard); }
+		if (!cyDummy.edgehandles) { cytoscape.use(edgehandles); }
+		if (!cyDummy.gridGuide) { cytoscape.use(gridGuide); }
+		if (!cyDummy.panzoom) { cytoscape.use(panzoom); }
+		if (!cyDummy.undoRedo) { cytoscape.use(undoRedo); }
 
 		this.playbookService.getDevices().then(devices => this.devices = devices);
 		this.playbookService.getApis().then(appApis => this.appApis = appApis.sort((a, b) => a.name > b.name ? 1 : -1));
