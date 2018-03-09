@@ -57,7 +57,7 @@ class TestWorkflowStatus(ServerTestCase):
         walkoff.executiondb.schemas._schema_lookup[MockWorkflow] = MockWorkflowSchema
 
     def tearDown(self):
-        execution_db_help.cleanup_device_db()
+        execution_db_help.cleanup_execution_db()
 
         case_database.case_db.session.query(case_database.Event).delete()
         case_database.case_db.session.query(case_database.Case).delete()

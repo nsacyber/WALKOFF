@@ -66,7 +66,7 @@ def setup_dbs():
     initialize_databases()
 
 
-def cleanup_device_db():
+def cleanup_execution_db():
     executiondb.execution_db.session.rollback()
     classes = [Playbook, Workflow, Action, Branch, Argument, ConditionalExpression, Condition, Transform]
     for ee in classes:
@@ -78,5 +78,5 @@ def cleanup_device_db():
     executiondb.execution_db.session.commit()
 
 
-def tear_down_device_db():
+def tear_down_execution_db():
     executiondb.execution_db.tear_down()

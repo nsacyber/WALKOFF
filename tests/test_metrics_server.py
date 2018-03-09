@@ -14,7 +14,7 @@ class MetricsServerTest(ServerTestCase):
         metrics.app_metrics = {}
 
     def tearDown(self):
-        execution_db_help.cleanup_device_db()
+        execution_db_help.cleanup_execution_db()
 
     def test_convert_action_time_average(self):
         '''

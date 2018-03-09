@@ -42,7 +42,7 @@ class TestMessageHistoryDatabase(TestCase):
         for message in MessageHistory.query.all():
             db.session.delete(message)
 
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     def assert_message_history_init_correct(self, message_history, action, user):
         self.assertEqual(message_history.action, action)

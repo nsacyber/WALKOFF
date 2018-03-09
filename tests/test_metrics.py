@@ -16,7 +16,7 @@ class MetricsTest(ServerTestCase):
         metrics.workflow_metrics = {}
 
     def tearDown(self):
-        execution_db_help.cleanup_device_db()
+        execution_db_help.cleanup_execution_db()
 
     def test_action_metrics(self):
         playbook = execution_db_help.load_playbook('multiactionError')

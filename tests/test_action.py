@@ -28,7 +28,7 @@ class TestAction(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     def __compare_init(self, elem, app_name, action_name, name, device_id=None, arguments=None, trigger=None,
                        position=None):

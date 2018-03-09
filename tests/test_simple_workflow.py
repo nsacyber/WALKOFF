@@ -33,7 +33,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         database.initialize()
 
     def tearDown(self):
-        execution_db_help.cleanup_device_db()
+        execution_db_help.cleanup_execution_db()
         database.case_db.tear_down()
         subscription.clear_subscriptions()
 
@@ -41,7 +41,7 @@ class TestSimpleWorkflow(unittest.TestCase):
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
         multiprocessedexecutor.multiprocessedexecutor.shutdown_pool()
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     def test_simple_workflow_execution(self):
         workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')

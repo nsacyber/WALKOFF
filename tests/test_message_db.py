@@ -67,7 +67,7 @@ class TestMessageDatabase(TestCase):
             db.session.delete(role)
         db.session.commit()
 
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     def get_default_message(self, commit=False, requires_reauth=False, requires_response=False):
         message = Message('subject here', json.dumps({'message': 'some message'}), 'workflow_uid1',

@@ -13,7 +13,7 @@ class TestCaseDatabase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
         case_database.case_db.tear_down()
 
     def setUp(self):

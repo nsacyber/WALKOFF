@@ -22,7 +22,7 @@ class TestCondition(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
         walkoff.appgateway.clear_cache()
 
     def assert_construction(self, expression, operator='and', is_negated=False, child_expressions=None,
