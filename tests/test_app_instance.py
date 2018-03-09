@@ -16,7 +16,7 @@ class TestInstance(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
         walkoff.appgateway.clear_cache()
 
     def test_create_instance(self):

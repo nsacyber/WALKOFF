@@ -23,7 +23,7 @@ class TestCondition(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
         walkoff.appgateway.clear_cache()
 
     def __compare_init(self, condition, app_name, action_name, transforms, arguments=None, is_negated=False):

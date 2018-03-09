@@ -19,7 +19,7 @@ class TestAuthorization(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     def setUp(self):
         import walkoff.server.flaskserver

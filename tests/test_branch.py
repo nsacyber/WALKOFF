@@ -26,7 +26,7 @@ class TestBranch(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     def __compare_init(self, elem, source_id, destination_id, condition=None, status='Success', priority=999):
         self.assertEqual(elem.source_id, source_id)

@@ -46,14 +46,14 @@ class TestInterfaceEventDispatcher(TestCase):
         dispatcher._clear()
 
     def tearDown(self):
-        execution_db_help.cleanup_device_db()
+        execution_db_help.cleanup_execution_db()
 
     @classmethod
     def tearDownClass(cls):
         dispatcher._clear()
         walkoff.config.config.app_apis = {}
         walkoff.executiondb.schemas._schema_lookup.pop(MockWorkflow, None)
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     def test_singleton(self):
         self.assertEqual(id(dispatcher), id(InterfaceEventDispatcher()))

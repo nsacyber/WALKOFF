@@ -13,13 +13,13 @@ class TestPlaybook(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     def setUp(self):
         self.added_workflows = ['wf_name', '0', '1', '2', 'test2', 'new_name']
 
     def tearDown(self):
-        execution_db_help.cleanup_device_db()
+        execution_db_help.cleanup_execution_db()
 
     def test_init(self):
         playbook = Playbook('test')

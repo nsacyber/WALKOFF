@@ -83,8 +83,8 @@ class ServerTestCase(unittest.TestCase):
 
         walkoff.server.flaskserver.running_context.executor.shutdown_pool()
 
-        execution_db_help.cleanup_device_db()
-        execution_db_help.tear_down_device_db()
+        execution_db_help.cleanup_execution_db()
+        execution_db_help.tear_down_execution_db()
 
         import walkoff.case.database as case_database
         case_database.case_db.tear_down()

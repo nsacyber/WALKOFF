@@ -36,7 +36,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         case_database.initialize()
 
     def tearDown(self):
-        execution_db_help.cleanup_device_db()
+        execution_db_help.cleanup_execution_db()
         case_database.case_db.tear_down()
         reload(socket)
 
@@ -44,7 +44,7 @@ class TestWorkflowManipulation(unittest.TestCase):
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
         multiprocessedexecutor.multiprocessedexecutor.shutdown_pool()
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     def test_change_action_input(self):
         arguments = [Argument(name='call', value='CHANGE INPUT')]

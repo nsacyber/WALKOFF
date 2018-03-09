@@ -46,7 +46,7 @@ class TestZMQCommunication(unittest.TestCase):
         case_database.initialize()
 
     def tearDown(self):
-        execution_db_help.cleanup_device_db()
+        execution_db_help.cleanup_execution_db()
         case_database.case_db.tear_down()
 
     @classmethod
@@ -58,7 +58,7 @@ class TestZMQCommunication(unittest.TestCase):
                 shutil.rmtree(config.test_data_path)
         walkoff.appgateway.clear_cache()
         cls.executor.shutdown_pool()
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     '''Request and Result Socket Testing (Basic Workflow Execution)'''
 

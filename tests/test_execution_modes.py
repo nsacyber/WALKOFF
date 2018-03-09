@@ -28,7 +28,7 @@ class TestExecutionModes(unittest.TestCase):
         case_database.initialize()
 
     def tearDown(self):
-        execution_db_help.cleanup_device_db()
+        execution_db_help.cleanup_execution_db()
 
         case_database.case_db.session.query(case_database.Event).delete()
         case_database.case_db.session.query(case_database.Case).delete()
@@ -38,7 +38,7 @@ class TestExecutionModes(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     def test_start_stop_execution_loop(self):
         execution_db_help.load_playbook('testScheduler')
