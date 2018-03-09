@@ -26,6 +26,7 @@ import 'core-js/es7/reflect';
 import 'zone.js/dist/zone';
 
 import 'event-source-polyfill';
+import 'reflect-metadata';
 // if ('production' === ENV) {
 // 	// Production
 // } else {

@@ -6,6 +6,7 @@ import { UUID } from 'angular2-uuid';
 import { Observable } from 'rxjs';
 import 'rxjs/Rx';
 import { saveAs } from 'file-saver';
+import { plainToClass } from 'class-transformer';
 
 import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
@@ -172,7 +173,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Will update the information in the action statuses table as well, adding new rows or updating existing ones.
 	 */
 	actionStatusEventHandler(message: any): void {
-		const actionStatusEvent: ActionStatusEvent = JSON.parse(message.data);
+		const actionStatusEvent = plainToClass(ActionStatusEvent, (JSON.parse(message.data) as object));
 
 		// If we have a graph loaded, find the matching node for this event and style it appropriately if possible.
 		if (this.cy) {
@@ -235,7 +236,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			this.recalculateRelativeTimes(matchingActionStatus);
 			this.calculateLocalizedTimes(matchingActionStatus);
 		} else {
-			const newActionStatus = ActionStatusEvent.toNewActionStatus(actionStatusEvent);
+			const newActionStatus = actionStatusEvent.toNewActionStatus();
 			this.calculateLocalizedTimes(newActionStatus);
 			this.actionStatuses.push(newActionStatus);
 		}
@@ -441,14 +442,16 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 						defaultStatus = sourceActionApi.returns[0].status;
 					}
 
+					const newBranch = new Branch();
+
+					newBranch.id = tempId;
+					newBranch.source_id = sourceId;
+					newBranch.destination_id = destinationId;
+					newBranch.status = defaultStatus;
+					newBranch.priority = 1;
+
 					// Add our branch to the actual loadedWorkflow model
-					this.loadedWorkflow.branches.push({
-						id: tempId,
-						source_id: sourceId,
-						destination_id: destinationId,
-						status: defaultStatus,
-						priority: 1,
-					});
+					this.loadedWorkflow.branches.push(newBranch);
 				}
 
 				this.cy.remove(addedEntities);
@@ -1049,7 +1052,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.cy.clipboard().copy(this.cy.$(':selected'));
 	}
 
-	// TODO: update this to properly get new UIDs for pasted actions...
 	/**
 	 * Cytoscape paste method.
 	 */

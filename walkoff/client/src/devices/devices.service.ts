@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Response } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
+import { plainToClass } from 'class-transformer';
 
 import { Device } from '../models/device';
 import { AppApi } from '../models/api/appApi';
@@ -17,7 +18,7 @@ export class DevicesService {
 		return this.authHttp.get('/api/devices')
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Device[])
+			.then((data: object[]) => plainToClass(Device, data))
 			.catch(this.handleError);
 	}
 
@@ -29,7 +30,7 @@ export class DevicesService {
 		return this.authHttp.post('/api/devices', device)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Device)
+			.then((data: object) => plainToClass(Device, data))
 			.catch(this.handleError);
 	}
 
@@ -38,10 +39,10 @@ export class DevicesService {
 	 * @param device Device to edit
 	 */
 	editDevice(device: Device): Promise<Device> {
-		return this.authHttp.put('/api/devices', device)
+		return this.authHttp.patch('/api/devices', device)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Device)
+			.then((data: object) => plainToClass(Device, data))
 			.catch(this.handleError);
 	}
 
@@ -64,7 +65,7 @@ export class DevicesService {
 		return this.authHttp.get('api/apps/apis?field_name=device_apis')
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as AppApi[])
+			.then((data: object[]) => plainToClass(AppApi, data))
 			// Clear out any apps without device apis
 			.then(appApis => appApis.filter(a => a.device_apis && a.device_apis.length))
 			.catch(this.handleError);
