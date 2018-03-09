@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Search &mdash; Walkoff 0.7.1 documentation</title>
+  <title>walkoff &mdash; Walkoff 0.7.1 documentation</title>
   
 
   
@@ -26,19 +26,20 @@
 
   
   
-    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   
 
   
 
   
         <link rel="index" title="Index"
-              href="genindex.html"/>
-        <link rel="search" title="Search" href="#"/>
-    <link rel="top" title="Walkoff 0.7.1 documentation" href="index.html"/> 
+              href="../genindex.html"/>
+        <link rel="search" title="Search" href="../search.html"/>
+    <link rel="top" title="Walkoff 0.7.1 documentation" href="../index.html"/>
+        <link rel="up" title="Module code" href="index.html"/> 
 
   
-  <script src="_static/js/modernizr.min.js"></script>
+  <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
@@ -54,7 +55,7 @@
           
 
           
-            <a href="index.html" class="icon icon-home"> Walkoff
+            <a href="../index.html" class="icon icon-home"> Walkoff
           
 
           
@@ -71,7 +72,7 @@
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="#" method="get">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -102,7 +103,7 @@
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">Walkoff</a>
+          <a href="../index.html">Walkoff</a>
         
       </nav>
 
@@ -130,12 +131,16 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html">Docs</a> &raquo;</li>
+      <li><a href="../index.html">Docs</a> &raquo;</li>
         
-      <li>Search</li>
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>walkoff</li>
     
     
       <li class="wy-breadcrumbs-aside">
+        
+            
         
       </li>
     
@@ -147,19 +152,17 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <noscript>
-  <div id="fallback" class="admonition warning">
-    <p class="last">
-      Please activate JavaScript to enable the search
-      functionality.
-    </p>
-  </div>
-  </noscript>
+  <h1>Source code for walkoff</h1><div class="highlight"><pre>
+<span></span><span class="n">__version__</span> <span class="o">=</span> <span class="s1">&#39;0.7.1&#39;</span>
 
-  
-  <div id="search-results">
-  
-  </div>
+
+<div class="viewcode-block" id="initialize_databases"><a class="viewcode-back" href="../index.html#walkoff.initialize_databases">[docs]</a><span class="k">def</span> <span class="nf">initialize_databases</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">walkoff.executiondb</span>
+    <span class="kn">import</span> <span class="nn">walkoff.case.database</span>
+
+    <span class="n">walkoff</span><span class="o">.</span><span class="n">executiondb</span><span class="o">.</span><span class="n">execution_db</span> <span class="o">=</span> <span class="n">walkoff</span><span class="o">.</span><span class="n">executiondb</span><span class="o">.</span><span class="n">ExecutionDatabase</span><span class="p">()</span>
+    <span class="n">walkoff</span><span class="o">.</span><span class="n">case</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">case_db</span> <span class="o">=</span> <span class="n">walkoff</span><span class="o">.</span><span class="n">case</span><span class="o">.</span><span class="n">database</span><span class="o">.</span><span class="n">CaseDatabase</span><span class="p">()</span></div>
+</pre></div>
 
            </div>
            <div class="articleComments">
@@ -194,7 +197,7 @@
 
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
+            URL_ROOT:'../',
             VERSION:'0.7.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
@@ -202,17 +205,16 @@
             SOURCELINK_SUFFIX: '.txt'
         };
     </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-      <script type="text/javascript" src="_static/searchtools.js"></script>
 
   
 
   
   
-    <script type="text/javascript" src="_static/js/theme.js"></script>
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
   
 
   
@@ -222,14 +224,7 @@
           SphinxRtdTheme.StickyNav.enable();
       });
   </script>
-  
-  <script type="text/javascript">
-    jQuery(function() { Search.loadIndex("searchindex.js"); });
-  </script>
-  
-  <script type="text/javascript" id="searchindexloader"></script>
    
-
 
 </body>
 </html>

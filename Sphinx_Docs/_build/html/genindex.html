@@ -9,7 +9,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Index &mdash; Walkoff 0.6.7 documentation</title>
+  <title>Index &mdash; Walkoff 0.7.1 documentation</title>
   
 
   
@@ -36,7 +36,7 @@
         <link rel="index" title="Index"
               href="#"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="Walkoff 0.6.7 documentation" href="index.html"/> 
+    <link rel="top" title="Walkoff 0.7.1 documentation" href="index.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                0.6.7
+                0.7.1
               </div>
             
           
@@ -305,6 +305,8 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="index.html#walkoff.initialize_databases">initialize_databases() (in module walkoff)</a>
+</li>
       <li><a href="index.html#interfaces.InterfaceEventDispatcher">InterfaceEventDispatcher (class in interfaces)</a>
 </li>
       <li><a href="index.html#module-interfaces">interfaces (module)</a>
@@ -315,10 +317,10 @@
 </li>
       <li><a href="index.html#module-interfaces.util">interfaces.util (module)</a>
 </li>
-      <li><a href="index.html#interfaces.exceptions.InvalidEventHandler">InvalidEventHandler</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="index.html#interfaces.exceptions.InvalidEventHandler">InvalidEventHandler</a>
+</li>
       <li><a href="index.html#interfaces.dispatchers.AppActionEventDispatcher.is_registered">is_registered() (interfaces.dispatchers.AppActionEventDispatcher method)</a>
 
       <ul>
@@ -383,6 +385,12 @@
 </li>
       <li><a href="index.html#interfaces.InterfaceEventDispatcher.on_condition_success">on_condition_success() (interfaces.InterfaceEventDispatcher method)</a>
 </li>
+      <li><a href="index.html#interfaces.InterfaceEventDispatcher.on_conditional_expression_error">on_conditional_expression_error() (interfaces.InterfaceEventDispatcher method)</a>
+</li>
+      <li><a href="index.html#interfaces.InterfaceEventDispatcher.on_conditional_expression_false">on_conditional_expression_false() (interfaces.InterfaceEventDispatcher method)</a>
+</li>
+      <li><a href="index.html#interfaces.InterfaceEventDispatcher.on_conditional_expression_true">on_conditional_expression_true() (interfaces.InterfaceEventDispatcher method)</a>
+</li>
       <li><a href="index.html#interfaces.InterfaceEventDispatcher.on_job_added">on_job_added() (interfaces.InterfaceEventDispatcher method)</a>
 </li>
       <li><a href="index.html#interfaces.InterfaceEventDispatcher.on_job_error">on_job_error() (interfaces.InterfaceEventDispatcher method)</a>
@@ -391,10 +399,10 @@
 </li>
       <li><a href="index.html#interfaces.InterfaceEventDispatcher.on_job_removed">on_job_removed() (interfaces.InterfaceEventDispatcher method)</a>
 </li>
-      <li><a href="index.html#interfaces.InterfaceEventDispatcher.on_scheduler_paused">on_scheduler_paused() (interfaces.InterfaceEventDispatcher method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="index.html#interfaces.InterfaceEventDispatcher.on_scheduler_paused">on_scheduler_paused() (interfaces.InterfaceEventDispatcher method)</a>
+</li>
       <li><a href="index.html#interfaces.InterfaceEventDispatcher.on_scheduler_resumed">on_scheduler_resumed() (interfaces.InterfaceEventDispatcher method)</a>
 </li>
       <li><a href="index.html#interfaces.InterfaceEventDispatcher.on_scheduler_shutdown">on_scheduler_shutdown() (interfaces.InterfaceEventDispatcher method)</a>
@@ -413,9 +421,13 @@
 </li>
       <li><a href="index.html#interfaces.InterfaceEventDispatcher.on_walkoff_events">on_walkoff_events() (interfaces.InterfaceEventDispatcher class method)</a>
 </li>
+      <li><a href="index.html#interfaces.InterfaceEventDispatcher.on_workflow_aborted">on_workflow_aborted() (interfaces.InterfaceEventDispatcher method)</a>
+</li>
       <li><a href="index.html#interfaces.InterfaceEventDispatcher.on_workflow_arguments_invalid">on_workflow_arguments_invalid() (interfaces.InterfaceEventDispatcher method)</a>
 </li>
       <li><a href="index.html#interfaces.InterfaceEventDispatcher.on_workflow_arguments_validated">on_workflow_arguments_validated() (interfaces.InterfaceEventDispatcher method)</a>
+</li>
+      <li><a href="index.html#interfaces.InterfaceEventDispatcher.on_workflow_execution_pending">on_workflow_execution_pending() (interfaces.InterfaceEventDispatcher method)</a>
 </li>
       <li><a href="index.html#interfaces.InterfaceEventDispatcher.on_workflow_execution_start">on_workflow_execution_start() (interfaces.InterfaceEventDispatcher method)</a>
 </li>
@@ -540,7 +552,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'0.6.7',
+            VERSION:'0.7.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

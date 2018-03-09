@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>interfaces.dispatchers &mdash; Walkoff 0.6.7 documentation</title>
+  <title>interfaces.dispatchers &mdash; Walkoff 0.7.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../../genindex.html"/>
         <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="Walkoff 0.6.7 documentation" href="../../index.html"/>
+    <link rel="top" title="Walkoff 0.7.1 documentation" href="../../index.html"/>
         <link rel="up" title="interfaces" href="../interfaces.html"/> 
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                0.6.7
+                0.7.1
               </div>
             
           
@@ -155,8 +155,8 @@
            <div itemprop="articleBody">
             
   <h1>Source code for interfaces.dispatchers</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">weakref</span> <span class="k">import</span> <span class="n">WeakSet</span>
-<span class="kn">import</span> <span class="nn">logging</span>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">weakref</span> <span class="k">import</span> <span class="n">WeakSet</span>
 
 <span class="kn">import</span> <span class="nn">walkoff.config.config</span>
 <span class="kn">from</span> <span class="nn">interfaces.util</span> <span class="k">import</span> <span class="n">convert_to_iterable</span>
@@ -177,6 +177,7 @@
 <span class="sd">        weak (iterable(func), optional): The initial functions to add as weak references. Defaults to None</span>
 <span class="sd">        strong (iterable(func), optional): The initial functions to add as strong references. Defaults to None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">strong</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">weak</span> <span class="o">=</span> <span class="n">WeakSet</span><span class="p">()</span> <span class="k">if</span> <span class="n">weak</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">WeakSet</span><span class="p">(</span><span class="n">weak</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">strong</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span> <span class="k">if</span> <span class="n">strong</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">set</span><span class="p">(</span><span class="n">strong</span><span class="p">)</span>
@@ -244,6 +245,7 @@
 <span class="sd">        app (str): The app associated with this dispatcher</span>
 <span class="sd">        action (str): The action associated with this dispatcher</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="o">=</span> <span class="n">app</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="n">action</span>
@@ -344,6 +346,7 @@
 <span class="sd">    Attributes:</span>
 <span class="sd">        _router (dict(str: dict(str: AppActionEventDispatcher))): The router</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_router</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -442,26 +445,27 @@
 <span class="sd">    Attributes:</span>
 <span class="sd">        _router (dict(str: dict(WalkoffEvent: CallbackContainer))): The router</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_router</span> <span class="o">=</span> <span class="p">{}</span>
 
-<div class="viewcode-block" id="EventDispatcher.register_events"><a class="viewcode-back" href="../../index.html#interfaces.EventDispatcher.register_events">[docs]</a>    <span class="k">def</span> <span class="nf">register_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">sender_uids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Registers an event for a given sender UID or name</span>
+<div class="viewcode-block" id="EventDispatcher.register_events"><a class="viewcode-back" href="../../index.html#interfaces.EventDispatcher.register_events">[docs]</a>    <span class="k">def</span> <span class="nf">register_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">sender_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Registers an event for a given sender ID or name</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            func (func): Callback to register</span>
 <span class="sd">            events (iterable(WalkoffEvent)): Events to register the callback to</span>
-<span class="sd">            sender_uids (str|iterable(str), optional): UIDs to register the callback to. Defaults to None</span>
+<span class="sd">            sender_ids (str|iterable(str), optional): IDs to register the callback to. Defaults to None</span>
 <span class="sd">            names (str|iterable(str), optional): The names to register the callback to. Defaults to None</span>
 <span class="sd">            weak (bool, optional): Should the callback be registered with a weak reference? Defaults to true</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">sender_uids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">sender_uids</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">sender_uids</span> <span class="o">=</span> <span class="n">convert_to_iterable</span><span class="p">(</span><span class="n">sender_uids</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sender_ids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sender_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sender_ids</span> <span class="o">=</span> <span class="n">convert_to_iterable</span><span class="p">(</span><span class="n">sender_ids</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">names</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">names</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">names</span> <span class="o">=</span> <span class="n">convert_to_iterable</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
-        <span class="n">entry_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">sender_uids</span><span class="p">)</span> <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+        <span class="n">entry_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">sender_ids</span><span class="p">)</span> <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">entry_ids</span><span class="p">:</span>
             <span class="n">entry_ids</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">entry_id</span> <span class="ow">in</span> <span class="n">entry_ids</span><span class="p">:</span>
@@ -485,8 +489,9 @@
 <span class="sd">            event_ (WalkoffEvent): The event to dispatch</span>
 <span class="sd">            data (dict): The data to send to all the events</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">sender_name</span><span class="p">,</span> <span class="n">sender_uid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_sender_ids</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">event_</span><span class="p">)</span>
-        <span class="n">callbacks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_callbacks</span><span class="p">(</span><span class="n">sender_uid</span><span class="p">,</span> <span class="n">sender_name</span><span class="p">,</span> <span class="n">event_</span><span class="p">)</span>
+        <span class="n">sender_name</span><span class="p">,</span> <span class="n">sender_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_sender_ids</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">event_</span><span class="p">)</span>
+        <span class="n">callbacks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_callbacks</span><span class="p">(</span><span class="n">sender_id</span><span class="p">,</span> <span class="n">sender_name</span><span class="p">,</span> <span class="n">event_</span><span class="p">)</span>
+
         <span class="k">for</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">callbacks</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">,)</span> <span class="k">if</span> <span class="n">event_</span><span class="o">.</span><span class="n">event_type</span> <span class="o">!=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">controller</span> <span class="k">else</span> <span class="nb">tuple</span><span class="p">()</span>
@@ -497,18 +502,18 @@
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">__get_sender_ids</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">event_</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">event_</span><span class="o">.</span><span class="n">event_type</span> <span class="o">!=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">controller</span><span class="p">:</span>
-            <span class="n">sender_uid</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;sender_uid&#39;</span><span class="p">]</span>
+            <span class="n">sender_id</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;sender_id&#39;</span><span class="p">]</span>
             <span class="n">sender_name</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;sender_name&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;sender_name&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">sender_uid</span> <span class="o">=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">sender_id</span> <span class="o">=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">name</span>
             <span class="n">sender_name</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">return</span> <span class="n">sender_name</span><span class="p">,</span> <span class="n">sender_uid</span>
+        <span class="k">return</span> <span class="n">sender_name</span><span class="p">,</span> <span class="n">sender_id</span>
 
-    <span class="k">def</span> <span class="nf">_get_callbacks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sender_uid</span><span class="p">,</span> <span class="n">sender_name</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Gets all the callbacks associated with a given sender UID, name, and event</span>
+    <span class="k">def</span> <span class="nf">_get_callbacks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sender_id</span><span class="p">,</span> <span class="n">sender_name</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets all the callbacks associated with a given sender ID, name, and event</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            sender_uid (str): The UID of the sender of the event</span>
+<span class="sd">            sender_id (str): The ID of the sender of the event</span>
 <span class="sd">            sender_name (str): The name of the sender of the event</span>
 <span class="sd">            event (WalkoffEvent): The event</span>
 
@@ -516,18 +521,15 @@
 <span class="sd">            set(func): The callbacks registered</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">all_callbacks</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">sender_id</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">sender_uid</span><span class="p">,</span> <span class="n">sender_name</span><span class="p">):</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_event_registered_to_sender</span><span class="p">(</span><span class="n">sender_id</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
-                <span class="n">all_callbacks</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_router</span><span class="p">[</span><span class="n">sender_id</span><span class="p">][</span><span class="n">event</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">sender_id_</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">sender_id</span><span class="p">,</span> <span class="n">sender_name</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__is_event_registered_to_sender</span><span class="p">(</span><span class="n">sender_id_</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+                <span class="n">all_callbacks</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_router</span><span class="p">[</span><span class="n">sender_id_</span><span class="p">][</span><span class="n">event</span><span class="p">])</span>
 
         <span class="k">return</span> <span class="n">all_callbacks</span>
 
     <span class="k">def</span> <span class="nf">__is_event_registered_to_sender</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sender_id</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">sender_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
                 <span class="ow">and</span> <span class="n">sender_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router</span> <span class="ow">and</span> <span class="n">event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router</span><span class="p">[</span><span class="n">sender_id</span><span class="p">])</span>
-
-    <span class="k">def</span> <span class="nf">__is_all_registered_to_sender</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s1">&#39;all&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router</span> <span class="ow">and</span> <span class="n">event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span>
 
 <div class="viewcode-block" id="EventDispatcher.is_registered"><a class="viewcode-back" href="../../index.html#interfaces.EventDispatcher.is_registered">[docs]</a>    <span class="k">def</span> <span class="nf">is_registered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Is a function registered for a given entry ID and event?</span>
@@ -538,7 +540,7 @@
 <span class="sd">            func (func): The callback</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            bool: Is the function registred?</span>
+<span class="sd">            bool: Is the function registered?</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">entry</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router</span> <span class="ow">and</span> <span class="n">event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router</span><span class="p">[</span><span class="n">entry</span><span class="p">]</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router</span><span class="p">[</span><span class="n">entry</span><span class="p">][</span><span class="n">event</span><span class="p">]</span><span class="o">.</span><span class="n">is_registered</span><span class="p">(</span><span class="n">func</span><span class="p">)</span></div></div>
 </pre></div>
@@ -577,7 +579,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.6.7',
+            VERSION:'0.7.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>apps &mdash; Walkoff 0.6.7 documentation</title>
+  <title>apps &mdash; Walkoff 0.7.1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <link rel="index" title="Index"
               href="../genindex.html"/>
         <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="Walkoff 0.6.7 documentation" href="../index.html"/>
+    <link rel="top" title="Walkoff 0.7.1 documentation" href="../index.html"/>
         <link rel="up" title="Module code" href="index.html"/> 
 
   
@@ -65,7 +65,7 @@
             
             
               <div class="version">
-                0.6.7
+                0.7.1
               </div>
             
           
@@ -155,9 +155,9 @@
   <h1>Source code for apps</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">logging</span>
 
-<span class="kn">from</span> <span class="nn">walkoff.devicedb</span> <span class="k">import</span> <span class="n">get_app</span> <span class="k">as</span> <span class="n">get_db_app</span>
+<span class="kn">from</span> <span class="nn">walkoff.executiondb.device</span> <span class="k">import</span> <span class="n">get_app</span> <span class="k">as</span> <span class="n">get_db_app</span>
 <span class="kn">from</span> <span class="nn">apps.messaging</span> <span class="k">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">walkoff.appgateway.decorators</span> <span class="k">import</span> <span class="n">action</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">transform</span>
+<span class="kn">from</span> <span class="nn">walkoff.appgateway.decorators</span> <span class="k">import</span> <span class="o">*</span>
 
 <span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
 
@@ -237,7 +237,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.6.7',
+            VERSION:'0.7.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
