@@ -8,6 +8,13 @@ import 'rxjs/Rx';
 import { saveAs } from 'file-saver';
 import { plainToClass } from 'class-transformer';
 
+import * as cytoscape from 'cytoscape';
+import * as clipboard from 'cytoscape-clipboard';
+import * as edgehandles from 'cytoscape-edgehandles';
+import * as gridGuide from 'cytoscape-grid-guide';
+import * as panzoom from 'cytoscape-panzoom';
+import * as undoRedo from 'cytoscape-undo-redo';
+
 import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
 import { UtilitiesService } from '../utilities.service';
@@ -111,6 +118,12 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 */
 	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
+
+		cytoscape.use(clipboard);
+		cytoscape.use(edgehandles);
+		cytoscape.use(gridGuide);
+		cytoscape.use(panzoom);
+		cytoscape.use(undoRedo);
 
 		this.playbookService.getDevices().then(devices => this.devices = devices);
 		this.playbookService.getApis().then(appApis => this.appApis = appApis.sort((a, b) => a.name > b.name ? 1 : -1));
@@ -509,7 +522,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		});
 
 		const nodes = this.loadedWorkflow.actions.map(action => {
-			const node: any = { group: 'nodes', position: _.clone(action.position) };
+			const node: any = { group: 'nodes', position: this.utils.cloneDeep(action.position) };
 			node.data = {
 				id: action.id,
 				_id: action.id,
@@ -569,7 +582,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		// Clone the loadedWorkflow first, so we don't change the parameters 
 		// in the editor when converting it to the format the backend expects.
-		const workflowToSave: Workflow = _.cloneDeep(this.loadedWorkflow);
+		const workflowToSave: Workflow = this.utils.cloneDeep(this.loadedWorkflow);
 
 		if (!workflowToSave.start) {
 			this.toastyService.warning('Workflow cannot be saved without a starting action.');
@@ -600,7 +613,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				savePromise = this.playbookService.newWorkflow(this.loadedPlaybook.id, workflowToSave);
 			}
 		} else {
-			const playbookToSave: Playbook = _.cloneDeep(this.loadedPlaybook);
+			const playbookToSave: Playbook = this.utils.cloneDeep(this.loadedPlaybook);
 			playbookToSave.workflows = [workflowToSave];
 			savePromise = this.playbookService.newPlaybook(playbookToSave)
 				.then(newPlaybook => {
@@ -1060,7 +1073,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		newNodes.forEach((n: any) => {
 			// Get a copy of the action we just copied
-			const pastedAction: Action = _.clone(this.loadedWorkflow.actions.find(a => a.id === n.data('_id')));
+			const pastedAction: Action = this.utils.cloneDeep(this.loadedWorkflow.actions.find(a => a.id === n.data('_id')));
 
 			const newActionUuid = UUID.UUID();
 

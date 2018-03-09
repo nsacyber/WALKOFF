@@ -5,6 +5,7 @@ import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import 'rxjs/add/operator/debounceTime';
 
 import { SettingsService } from './settings.service';
+import { UtilitiesService } from '../utilities.service';
 
 import { SettingsRoleModalComponent } from './settings.roles.modal.component';
 
@@ -19,7 +20,7 @@ import { GenericObject } from '../models/genericObject';
 		'./settings.css',
 	],
 	encapsulation: ViewEncapsulation.None,
-	providers: [SettingsService],
+	providers: [SettingsService, UtilitiesService],
 })
 export class SettingsRolesComponent {
 	availableResourceActions: AvailableResourceAction[] = [];
@@ -31,6 +32,7 @@ export class SettingsRolesComponent {
 	constructor(
 		private settingsService: SettingsService, private modalService: NgbModal,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private utils: UtilitiesService,
 	) {
 		this.toastyConfig.theme = 'bootstrap';
 
@@ -80,7 +82,7 @@ export class SettingsRolesComponent {
 		modalRef.componentInstance.title = `Edit Role: ${role.name}`;
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.availableResourceActions = this.availableResourceActions;
-		modalRef.componentInstance.workingRole = _.cloneDeep(role);
+		modalRef.componentInstance.workingRole = this.utils.cloneDeep(role);
 
 		this._handleModalClose(modalRef);
 	}

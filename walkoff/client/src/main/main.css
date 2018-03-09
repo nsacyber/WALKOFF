@@ -1,6 +1,10 @@
-@import '/client/node_modules/@swimlane/ngx-datatable/release/index.css';
-@import '/client/node_modules/@swimlane/ngx-datatable/release/themes/material.css';
-@import '/client/node_modules/@swimlane/ngx-datatable/release/assets/icons.css';
+@import '~@swimlane/ngx-datatable/release/index.css';
+@import '~@swimlane/ngx-datatable/release/themes/material.css';
+@import '~@swimlane/ngx-datatable/release/assets/icons.css';
+@import '~bootstrap/dist/css/bootstrap.min.css';
+@import '~font-awesome/css/font-awesome.min.css';
+@import '~ng2-toasty/style-bootstrap.css';
+@import '~select2/dist/css/select2.min.css';
 
 /* h1 {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, sans-serif;

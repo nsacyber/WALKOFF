@@ -19,6 +19,7 @@ const CheckerPlugin = require('awesome-typescript-loader').CheckerPlugin;
 // const LoaderOptionsPlugin = require('webpack/lib/LoaderOptionsPlugin');
 // const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
 // const ngcWebpack = require('ngc-webpack');
+const ProvidePlugin = require('webpack/lib/ProvidePlugin')
 
 /**
  * Webpack Constants
@@ -101,8 +102,15 @@ module.exports = function (options) {
 					use: 'file-loader'
 				},
 				{
-					test: /\.(eot|woff2?|svg|ttf)([\?]?.*)$/,
-					use: 'file-loader'
+					test: /.(ttf|otf|eot|svg|woff(2)?)(\?[a-z0-9]+)?$/,
+					use: [{
+						loader: 'file-loader',
+						options: {
+							name: '[name].[ext]',
+							// outputPath: 'dist/',    // where the fonts will go
+							publicPath: '/client/dist/'       // override the default path
+						}
+					}]
 				}
 			]
 		},
@@ -129,6 +137,11 @@ module.exports = function (options) {
 
 			new CommonsChunkPlugin({
 				name: ['polyfills', 'vendor'].reverse()
+			}),
+
+			new ProvidePlugin({
+				$: "jquery",
+				jQuery: "jquery",
 			}),
 
 			// new ContextReplacementPlugin(
