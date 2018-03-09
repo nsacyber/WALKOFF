@@ -44,6 +44,8 @@ import { ActionStatusEvent } from '../models/execution/actionStatusEvent';
 	templateUrl: './playbook.html',
 	styleUrls: [
 		'./playbook.css',
+		'../../node_modules/cytoscape-panzoom/cytoscape.js-panzoom.css',
+		'../../node_modules/ng2-dnd/bundles/style.css',
 	],
 	encapsulation: ViewEncapsulation.None,
 	providers: [PlaybookService, AuthService, UtilitiesService],
