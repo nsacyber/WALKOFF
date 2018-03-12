@@ -81,29 +81,36 @@ class InterfaceEventDispatcher(object):
 
         def dispatch_method(sender, **kwargs):
             if event.event_type != EventType.controller:
-                if not isinstance(sender, dict) and isinstance(sender, ExecutionElement):
-                    data = dump_element(sender)
-                else:
-                    data = deepcopy(sender)
-                additional_data = deepcopy(kwargs)
-                additional_data.pop('cls', None)
-                if 'data' in additional_data and 'workflow' in additional_data['data']:
-                    additional_data['workflow'] = additional_data['data'].pop('workflow')
-                    if not additional_data['data']:
-                        additional_data.pop('data')
-                data.update(additional_data)
-                if 'id' in data:
-                    data['sender_id'] = data.pop('id')
-                if 'name' in data:
-                    data['sender_name'] = data.pop('name')
-
+                sender_data = InterfaceEventDispatcher._format_data(sender, kwargs)
             else:
-                data = None
-            cls.event_dispatcher.dispatch(event, data)
+                sender_data = None
+            cls.event_dispatcher.dispatch(event, sender_data)
             if event.event_type == EventType.action:
-                cls.app_action_dispatcher.dispatch(event, data)
+                cls.app_action_dispatcher.dispatch(event, sender_data)
 
         return dispatch_method
+
+    @staticmethod
+    def _format_data(sender, kwargs):
+        if not isinstance(sender, dict) and isinstance(sender, ExecutionElement):
+            sender_data = dump_element(sender)
+        else:
+            sender_data = deepcopy(sender)
+        additional_data = deepcopy(kwargs)
+        additional_data.pop('cls', None)
+        if 'data' in additional_data:
+            if 'workflow' in additional_data['data']:
+                additional_data['workflow'] = additional_data['data'].pop('workflow')
+            if 'data' in additional_data['data']:
+                additional_data['data'] = additional_data['data'].pop('data')
+            if not additional_data['data']:
+                additional_data.pop('data')
+        sender_data.update(additional_data)
+        if 'id' in sender_data:
+            sender_data['sender_id'] = sender_data.pop('id')
+        if 'name' in sender_data:
+            sender_data['sender_name'] = sender_data.pop('name')
+        return sender_data
 
     @classmethod
     def _make_register_method(cls, event):
