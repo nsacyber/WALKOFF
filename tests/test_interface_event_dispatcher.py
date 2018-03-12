@@ -54,7 +54,7 @@ class TestInterfaceEventDispatcher(TestCase):
         walkoff.config.config.app_apis = {}
         walkoff.executiondb.schemas._schema_lookup.pop(MockWorkflow, None)
         execution_db_help.tear_down_device_db()
-
+    
     def test_singleton(self):
         self.assertEqual(id(dispatcher), id(InterfaceEventDispatcher()))
 
@@ -443,11 +443,12 @@ class TestInterfaceEventDispatcher(TestCase):
         workflow = MockWorkflow()
         WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema().dump(workflow).data)
 
-        data = {'id': self.id, 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
-                'execution_id': uuid.uuid4()}
+        sender_data = {'id': self.id, 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+                       'execution_id': str(uuid.uuid4())}
         kwargs = self.get_kwargs(workflow)
-        WalkoffEvent.ActionStarted.send(data, data=kwargs)
-        expected = data
+        kwargs.update({'data': {'a': 42}})
+        WalkoffEvent.ActionStarted.send(sender_data, data=kwargs)
+        expected = sender_data
         expected.update(kwargs)
         expected['sender_id'] = expected.pop('id')
         expected['sender_name'] = expected.pop('name')
