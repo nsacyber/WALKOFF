@@ -2,6 +2,15 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
+## [0.7.2]
+###### 2018-03-12
+
+### Fixed
+* An unintentional backward-breaking change was made to the format of the
+  dictionary used in the interface dispatcher which sometimes resulted in
+  a dict with a "data" field inside a "data" field. This has been fixed.
+
+
 ## [0.7.1]
 ###### 2018-03-08
 
