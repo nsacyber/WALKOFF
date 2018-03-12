@@ -1,4 +1,5 @@
 from sqlalchemy_utils import UUIDType
+from datetime import timedelta
 
 from sqlalchemy import Column, Integer, ForeignKey, String, Float
 from sqlalchemy.orm import relationship
@@ -31,6 +32,7 @@ class AppMetric(Execution_Base):
         for action in self.actions:
             actions_list.append(action.as_json())
         ret["actions"] = actions_list
+        return ret
 
 
 class ActionMetric(Execution_Base):
@@ -83,7 +85,7 @@ class ActionStatusMetric(Execution_Base):
 
     def as_json(self):
         ret = {"count": self.count,
-               "avg_time": str(self.avg_time)}
+               "avg_time": str(timedelta(seconds=self.avg_time))}
         return ret
 
 
@@ -109,5 +111,5 @@ class WorkflowMetric(Execution_Base):
     def as_json(self):
         ret = {"name": self.workflow_name,
                "count": self.count,
-               "avg_time": str(self.avg_time)}
+               "avg_time": str(timedelta(seconds=self.avg_time))}
         return ret
