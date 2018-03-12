@@ -150,11 +150,9 @@ class Worker(object):
         """
 
         self.id_ = id_
-        self.capacity = walkoff.config.config.num_threads_per_process
         self._lock = Lock()
         signal.signal(signal.SIGINT, self.exit_handler)
         signal.signal(signal.SIGABRT, self.exit_handler)
-
 
         @WalkoffEvent.CommonWorkflowSignal.connect
         def handle_data_sent(sender, **kwargs):
@@ -196,6 +194,8 @@ class Worker(object):
             walkoff.config.config.initialize()
             initialize_databases()
             self.cache = walkoff.cache.make_cache()
+
+        self.capacity = walkoff.config.config.num_threads_per_process
 
         self.case_logger = CaseLogger(casedb.case_db)
 

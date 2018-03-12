@@ -29,7 +29,7 @@ class TestWorkflowExecutionController(TestCase):
     @staticmethod
     def assert_message_sent(mock_send, expected_message):
         mock_send.assert_called_once()
-        mock_send.assert_called_with(expected_message, 1, True, False)
+        mock_send.assert_called_with(expected_message, 1, True, False)  # Not sure why these other args need to exist
 
     @patch.object(Socket, 'send')
     def test_send_message(self, mock_send):
@@ -58,8 +58,8 @@ class TestWorkflowExecutionController(TestCase):
         self.assertEqual(len(message.subscriptions), 0)
 
     @patch.object(Socket, 'send')
-    def test_add_case(self, mock_send):
-        self.controller.add_case(14, self.subscriptions)
+    def test_create_case(self, mock_send):
+        self.controller.create_case(14, self.subscriptions)
         expected_message = WorkflowExecutionController._create_case_update_message(
             14,
             CaseControl.CREATE,
@@ -118,7 +118,7 @@ class TestWorkflowExecutionController(TestCase):
     def test_set_argumets_for_proto(self):
         message = ExecuteWorkflowMessage()
         uid = uuid4()
-        selection =  [1, 'a', '32', 46]
+        selection = [1, 'a', '32', 46]
         arguments = [
             Argument('name1', value=32), Argument('name2', reference=uid, selection=selection)]
         WorkflowExecutionController._set_arguments_for_proto(message, arguments)

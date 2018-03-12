@@ -37,10 +37,10 @@ def write_values_to_file(keys=None):
     """ Writes the current walkoff configuration to a file
     """
     if keys is None:
-        keys = ['apps_path', 'workflows_path', 'templates_path', 'db_path', 'case_db_path', 'certificate_path',
+        keys = ['apps_path', 'workflows_path', 'db_path', 'case_db_path', 'certificate_path',
                 'private_key_path', 'default_appdevice_export_path', 'default_case_export_path',
-                'logging_config_path', 'notifications', 'reinitialize_case_db_on_startup', 'tls_version', 'https',
-                'host', 'port', 'walkoff_db_type', 'case_db_type', 'num_threads', 'debug', 'default_server']
+                'logging_config_path', 'notifications', 'reinitialize_case_db_on_startup',
+                'host', 'port', 'walkoff_db_type', 'case_db_type', 'num_threads']
     self = sys.modules[__name__]
 
     output = {}

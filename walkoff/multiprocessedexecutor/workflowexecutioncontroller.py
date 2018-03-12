@@ -115,7 +115,7 @@ class WorkflowExecutionController:
                     else:
                         setattr(arg, field, val)
 
-    def add_case(self, case_id, subscriptions):
+    def create_case(self, case_id, subscriptions):
         message = self._create_case_update_message(case_id, CaseControl.CREATE, subscriptions=subscriptions)
         self._send_message(message)
 

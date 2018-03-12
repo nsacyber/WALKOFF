@@ -11,7 +11,8 @@ from tests.util.case_db_help import *
 from tests.util.mock_objects import *
 from walkoff.executiondb.argument import Argument
 from walkoff.multiprocessedexecutor import multiprocessedexecutor
-
+from mock import create_autospec
+from walkoff.case.logger import CaseLogger
 try:
     from importlib import reload
 except ImportError:
@@ -29,21 +30,19 @@ class TestWorkflowManipulation(unittest.TestCase):
         multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
-        multiprocessedexecutor.multiprocessedexecutor.initialize_threading()
-
-    def setUp(self):
-        self.start = datetime.utcnow()
-        case_database.initialize()
+        cls.executor = multiprocessedexecutor.MultiprocessedExecutor(
+            MockRedisCacheAdapter(),
+            create_autospec(CaseLogger))
+        cls.executor.initialize_threading()
 
     def tearDown(self):
         execution_db_help.cleanup_execution_db()
-        case_database.case_db.tear_down()
         reload(socket)
 
     @classmethod
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
-        multiprocessedexecutor.multiprocessedexecutor.shutdown_pool()
+        cls.executor.shutdown_pool()
         execution_db_help.tear_down_execution_db()
 
     def test_change_action_input(self):
@@ -58,7 +57,8 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         workflow = execution_db_help.load_workflow('simpleDataManipulationWorkflow', 'helloWorldWorkflow')
 
-        multiprocessedexecutor.multiprocessedexecutor.execute_workflow(workflow.id, start_arguments=arguments)
-        multiprocessedexecutor.multiprocessedexecutor.wait_and_reset(1)
-        self.assertDictEqual(result['value'],
-                             {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'})
+        self.executor.execute_workflow(workflow.id, start_arguments=arguments)
+        self.executor.wait_and_reset(1)
+        self.assertDictEqual(
+            result['value'],
+            {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'})

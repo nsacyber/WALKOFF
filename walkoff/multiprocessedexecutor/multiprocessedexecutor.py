@@ -304,3 +304,12 @@ class MultiprocessedExecutor(object):
         sender_id = sender.id if not isinstance(sender, dict) else sender['id']
         self.event_logger.log(event, sender_id, data=data)
         event.send(sender, data=data)
+
+    def create_case(self, case_id, subscriptions):
+        self.manager.create_case(case_id, subscriptions)
+
+    def update_case(self, case_id, subscriptions):
+        self.manager.create_case(case_id, subscriptions)
+
+    def delete_case(self, case_id):
+        self.manager.delete_case(case_id)
