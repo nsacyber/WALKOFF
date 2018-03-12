@@ -488,6 +488,7 @@ class TestMessageDatabase(TestCase):
     def test_log_action_taken_on_message(self):
         message = Message('subject', 'body', 'uid1', users=[self.user, self.user2], requires_response=True)
         db.session.add(message)
+        # TODO: Change this -- func def changed
         log_action_taken_on_message(self.user.id, 'uid1')
         self.assertEqual(len(list(message.history)), 1)
         self.assertEqual(message.history[0].action, MessageAction.respond)
@@ -495,6 +496,7 @@ class TestMessageDatabase(TestCase):
     def test_log_action_taken_on_message_invalid_user(self):
         message = Message('subject', 'body', 'uid1', users=[self.user, self.user2], requires_response=True)
         db.session.add(message)
+        # TODO: Change this -- func def changed
         log_action_taken_on_message(1000, 'uid1')
         self.assertEqual(len(list(message.history)), 0)
 

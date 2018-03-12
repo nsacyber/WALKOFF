@@ -10,25 +10,32 @@ user_messages_association = db.Table('user_messages',
                                      db.Column('message_id', db.Integer, db.ForeignKey('message.id')))
 
 
+role_messages_association = db.Table('role_messages',
+                                     db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
+                                     db.Column('message_id', db.Integer, db.ForeignKey('message.id')))
+
+
 class Message(db.Model):
     __tablename__ = 'message'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     subject = db.Column(db.String())
     body = db.Column(db.String(), nullable=False)
-    users = db.relationship('User', secondary=user_messages_association,
-                            backref=db.backref('messages', lazy='dynamic'))
+    users = db.relationship('User', secondary=user_messages_association, backref=db.backref('messages', lazy='dynamic'))
+    roles = db.relationship('Role', secondary=role_messages_association, backref=db.backref('messages', lazy='dynamic'))
     workflow_execution_id = db.Column(db.String(25))
     requires_reauth = db.Column(db.Boolean, default=False)
     requires_response = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     history = db.relationship('MessageHistory', backref='message', lazy=True)
 
-    def __init__(self, subject, body, workflow_execution_id, users, requires_reauth=False, requires_response=False):
+    def __init__(self, subject, body, workflow_execution_id, users, roles, requires_reauth=False,
+                 requires_response=False):
         self.subject = subject
         self.body = body
         self.workflow_execution_id = workflow_execution_id
         self.users = users
+        self.roles = roles
         self.requires_reauth = requires_reauth
         self.requires_response = requires_response
 
