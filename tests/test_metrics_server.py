@@ -2,25 +2,13 @@ import json
 import uuid
 from datetime import timedelta
 
-print(1)
 from tests.util import execution_db_help
-print(2)
 from walkoff import executiondb
-print(3)
 from walkoff.executiondb.metrics import AppMetric, ActionMetric, ActionStatusMetric, WorkflowMetric
-print(4)
 from tests.util.assertwrappers import orderless_list_compare
-print(5)
-try:
-    from tests.util.servertestcase import ServerTestCase
-except:
-    import traceback
-    traceback.print_exc()
-print(6)
+from tests.util.servertestcase import ServerTestCase
 from walkoff.server import flaskserver as server
-print(7)
 from walkoff.server.endpoints.metrics import _convert_action_time_averages, _convert_workflow_time_averages
-print(8)
 
 
 class MetricsServerTest(ServerTestCase):
@@ -44,18 +32,18 @@ class MetricsServerTest(ServerTestCase):
                                                                   'avg_time': '0:00:00.001000'},
                                                 'name': 'action2'}]}]}
 
-        action_status_one = ActionStatusMetric("success", timedelta(100, 0, 1))
+        action_status_one = ActionStatusMetric("success", timedelta(100, 0, 1).total_seconds())
         action_status_one.count = 0
-        action_status_two = ActionStatusMetric("error", timedelta(0, 0, 1000))
+        action_status_two = ActionStatusMetric("error", timedelta(0, 0, 1000).total_seconds())
         action_status_two.count = 2
         app_one = AppMetric("app1", actions=[
             ActionMetric(uuid.uuid4(), "action1", [action_status_one]),
             ActionMetric(uuid.uuid4(), "action2", [action_status_two])])
         app_one.count = 2
 
-        action_status_one = ActionStatusMetric("success", timedelta(0, 100, 1))
+        action_status_one = ActionStatusMetric("success", timedelta(0, 100, 1).total_seconds())
         action_status_one.count = 0
-        action_status_two = ActionStatusMetric("error", timedelta(1, 100, 500))
+        action_status_two = ActionStatusMetric("error", timedelta(1, 100, 500).total_seconds())
         action_status_two.count = 100
         app_two = AppMetric("app2", actions=[
             ActionMetric(uuid.uuid4(), "action1", [action_status_one, action_status_two])])
@@ -66,6 +54,7 @@ class MetricsServerTest(ServerTestCase):
         executiondb.execution_db.session.commit()
 
         converted = _convert_action_time_averages()
+        print(converted)
         orderless_list_compare(self, converted.keys(), ['apps'])
         self.assertEqual(len(converted['apps']), len(expected_json['apps']))
         orderless_list_compare(self, [x['name'] for x in converted['apps']], ['app1', 'app2'])

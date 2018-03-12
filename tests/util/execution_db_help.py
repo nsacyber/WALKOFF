@@ -75,6 +75,8 @@ def cleanup_execution_db():
         for instance in executiondb.execution_db.session.query(ee).all():
             executiondb.execution_db.session.delete(instance)
 
+    executiondb.execution_db.session.commit()
+
 
 def tear_down_execution_db():
     executiondb.execution_db.tear_down()

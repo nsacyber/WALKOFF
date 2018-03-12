@@ -11,16 +11,8 @@ from walkoff.executiondb.metrics import AppMetric, WorkflowMetric
 
 class MetricsTest(ServerTestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        execution_db_help.setup_dbs()
-
     def tearDown(self):
         execution_db_help.cleanup_execution_db()
-
-    @classmethod
-    def tearDownClass(cls):
-        execution_db_help.tear_down_execution_db()
 
     def test_action_metrics(self):
         playbook = execution_db_help.load_playbook('multiactionError')
@@ -41,8 +33,8 @@ class MetricsTest(ServerTestCase):
 
         action_names = ['repeatBackToMe', 'helloWorld', 'Buggy']
         for action in app_metric.actions:
-            self.assertIn(action.name, action_names)
-            action_names.remove(action.name)
+            self.assertIn(action.action_name, action_names)
+            action_names.remove(action.action_name)
             if action.action_name in ['repeatBackToMe', 'helloWorld']:
                 self.assertEqual(len(action.action_statuses), 1)
                 self.assertEqual(action.action_statuses[0].status, 'success')
@@ -74,11 +66,11 @@ class MetricsTest(ServerTestCase):
         self.assertEqual(len(workflow_metrics), len(keys))
 
         for workflow in workflow_metrics:
-            self.assertIn(workflow.name, keys)
+            self.assertIn(workflow.workflow_name, keys)
             self.assertIsNotNone(workflow.avg_time)
             self.assertIsNotNone(workflow.count)
             self.assertGreater(workflow.avg_time, 0)
-            if workflow.name == error_key:
+            if workflow.workflow_name == error_key:
                 self.assertEqual(workflow.count, 2)
-            elif workflow.name == multiaction_key:
+            elif workflow.workflow_name == multiaction_key:
                 self.assertEqual(workflow.count, 1)

@@ -63,7 +63,7 @@ def __workflow_ended_callback(sender, **kwargs):
         executiondb.execution_db.session.delete(saved_state)
 
     # Update metrics
-    execution_time = workflow_status.completed_at - workflow_status.started_at
+    execution_time = (workflow_status.completed_at - workflow_status.started_at).total_seconds()
 
     workflow_metric = executiondb.execution_db.session.query(WorkflowMetric).filter_by(workflow_id=sender['id']).first()
     if workflow_metric is None:
@@ -165,7 +165,7 @@ def __update_action_tracker(status, action_status):
 
     app_metric.count += 1
 
-    execution_time = action_status.completed_at - action_status.started_at
+    execution_time = (action_status.completed_at - action_status.started_at).total_seconds()
     action_metric = app_metric.get_action_by_id(action_status.action_id)
     if action_metric is None:
         action_status_metric = ActionStatusMetric(status, execution_time)
