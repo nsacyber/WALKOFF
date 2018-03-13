@@ -32,7 +32,7 @@ def strip_requires_response_from_message_body(body):
 
 def save_message(body, message_data, workflow_execution_id, requires_action):
     users = get_all_matching_users_for_message(message_data['users'], message_data['roles'])
-    roles = message_data['roles']
+    roles = get_all_matching_roles_for_message(message_data['roles'])
     if users:
         subject = message_data.get('subject', '')
         message_entry = Message(
@@ -57,6 +57,13 @@ def get_all_matching_users_for_message(user_ids, role_ids):
         return User.query.filter(User.id.in_(user_id_search)).all()
     else:
         return []
+
+
+def get_all_matching_roles_for_message(role_ids):
+    if role_ids:
+        roles = Role.query.filter(Role.id.in_(role_ids)).all()
+        return roles
+    return []
 
 
 def log_action_taken_on_message(user_id, workflow_execution_id):

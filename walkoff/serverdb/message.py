@@ -1,9 +1,12 @@
 import json
+import logging
 from datetime import datetime
 
 from walkoff.extensions import db
 from walkoff.helpers import utc_as_rfc_datetime
 from walkoff.messaging import MessageAction
+
+logger = logging.getLogger(__name__)
 
 user_messages_association = db.Table('user_messages',
                                      db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
@@ -29,13 +32,17 @@ class Message(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     history = db.relationship('MessageHistory', backref='message', lazy=True)
 
-    def __init__(self, subject, body, workflow_execution_id, users, roles, requires_reauth=False,
+    def __init__(self, subject, body, workflow_execution_id, users=None, roles=None, requires_reauth=False,
                  requires_response=False):
         self.subject = subject
         self.body = body
         self.workflow_execution_id = workflow_execution_id
-        self.users = users
-        self.roles = roles
+        if not (users or roles):
+            message = 'Message must have users and/or roles, but has neither.'
+            logger.error(message)
+            raise ValueError(message)
+        self.users = users if users else []
+        self.roles = roles if roles else []
         self.requires_reauth = requires_reauth
         self.requires_response = requires_response
 
@@ -78,6 +85,22 @@ class Message(db.Model):
                 return True, history_entry.timestamp, history_entry.username
         else:
             return False, None, None
+
+    def is_authorized(self, user_id=None, role_ids=None):
+        if user_id:
+            for user in self.users:
+                if user_id == user.id:
+                    return True
+
+        if role_ids:
+            if isinstance(role_ids, int):
+                role_ids = [role_ids]
+            for role_id in role_ids:
+                for role in self.roles:
+                    if role_id == role.id:
+                        return True
+
+        return False
 
     def as_json(self, with_read_by=True, user=None, summary=False):
         responded, responded_at, responded_by = self.is_responded()
