@@ -122,7 +122,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.toastyConfig.theme = 'bootstrap';
 
 		const cyDummy = cytoscape();
-		if (!cyDummy.clipboard) { cytoscape.use(clipboard); }
+		if (!cyDummy.clipboard) { clipboard(cytoscape, $); }
 		if (!cyDummy.edgehandles) { cytoscape.use(edgehandles); }
 		if (!cyDummy.gridGuide) { cytoscape.use(gridGuide); }
 		if (!cyDummy.panzoom) { cytoscape.use(panzoom); }
