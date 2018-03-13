@@ -53,15 +53,16 @@ class TestZMQCommunication(unittest.TestCase):
 
     def test_simple_workflow_execution(self):
         workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        workflow_id = workflow.id
 
         result = {'called': False}
 
         @WalkoffEvent.WorkflowExecutionStart.connect
         def started(sender, **data):
-            self.assertEqual(sender['id'], str(workflow.id))
+            self.assertEqual(sender['id'], str(workflow_id))
             result['called'] = True
 
-        self.executor.execute_workflow(workflow.id)
+        self.executor.execute_workflow(workflow_id)
 
         self.executor.wait_and_reset(1)
 
@@ -69,6 +70,7 @@ class TestZMQCommunication(unittest.TestCase):
 
     def test_execute_multiple_workflows(self):
         workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        workflow_id = workflow.id
 
         capacity = walkoff.config.config.num_processes * walkoff.config.config.num_threads_per_process
 
@@ -76,15 +78,15 @@ class TestZMQCommunication(unittest.TestCase):
 
         @WalkoffEvent.WorkflowExecutionStart.connect
         def started(sender, **data):
-            self.assertEqual(sender['id'], str(workflow.id))
+            self.assertEqual(sender['id'], str(workflow_id))
             result['workflows_executed'] += 1
 
-        for i in range(capacity * 2):
-            self.executor.execute_workflow(workflow.id)
+        for i in range(capacity):
+            self.executor.execute_workflow(workflow_id)
 
-        self.executor.wait_and_reset(capacity * 2)
+        self.executor.wait_and_reset(capacity)
 
-        self.assertEqual(result['workflows_executed'], capacity * 2)
+        self.assertEqual(result['workflows_executed'], capacity)
 
     '''Communication Socket Testing'''
 
@@ -92,7 +94,8 @@ class TestZMQCommunication(unittest.TestCase):
         execution_id = None
         result = {status: False for status in ('paused', 'resumed', 'called')}
         workflow = execution_db_help.load_workflow('pauseResumeWorkflowFixed', 'pauseResumeWorkflow')
-        workflow_id =str(workflow.id)
+        workflow_id = workflow.id
+
         def pause_resume_thread():
             self.executor.pause_workflow(execution_id)
             return
@@ -116,7 +119,7 @@ class TestZMQCommunication(unittest.TestCase):
             self.assertEqual(sender['id'], str(workflow_id))
             result['called'] = True
 
-        execution_id = self.executor.execute_workflow(workflow.id)
+        execution_id = self.executor.execute_workflow(workflow_id)
 
         while True:
             executiondb.execution_db.session.expire_all()

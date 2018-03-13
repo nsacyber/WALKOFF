@@ -91,6 +91,7 @@ class MultiprocessedExecutor(object):
                 break
             timeout += 0.1
             gevent.sleep(0.1)
+        assert(num_workflows == self.receiver.workflows_executed)
         self.receiver.workflows_executed = 0
 
     def shutdown_pool(self):
