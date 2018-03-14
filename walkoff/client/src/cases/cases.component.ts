@@ -7,6 +7,7 @@ import { Select2OptionData } from 'ng2-select2';
 import 'rxjs/add/operator/debounceTime';
 
 import { CasesService } from './cases.service';
+import { UtilitiesService } from '../utilities.service';
 
 import { CasesModalComponent } from './cases.modal.component';
 
@@ -31,7 +32,7 @@ interface ICaseHierarchy {
 	styleUrls: [
 		'./cases.css',
 	],
-	providers: [CasesService],
+	providers: [CasesService, UtilitiesService],
 })
 export class CasesComponent implements OnInit {
 	cases: Case[] = [];
@@ -115,6 +116,7 @@ export class CasesComponent implements OnInit {
 	constructor(
 		private casesService: CasesService, private modalService: NgbModal,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private utils: UtilitiesService,
 	) {}
 
 	ngOnInit(): void {
@@ -214,7 +216,7 @@ export class CasesComponent implements OnInit {
 		modalRef.componentInstance.submitText = 'Add Case';
 		modalRef.componentInstance.workingCase = new Case();
 		modalRef.componentInstance.availableSubscriptions = this.availableSubscriptions;
-		modalRef.componentInstance.subscriptionTree = _.cloneDeep(this.subscriptionTree);
+		modalRef.componentInstance.subscriptionTree = this.utils.cloneDeep(this.subscriptionTree);
 
 		this._handleModalClose(modalRef);
 	}
@@ -226,10 +228,10 @@ export class CasesComponent implements OnInit {
 		const modalRef = this.modalService.open(CasesModalComponent, { windowClass: 'casesModal' });
 		modalRef.componentInstance.title = `Edit Case: ${caseToEdit.name}`;
 		modalRef.componentInstance.submitText = 'Save Changes';
-		modalRef.componentInstance.workingCase = _.cloneDeep(caseToEdit);
+		modalRef.componentInstance.workingCase = this.utils.cloneDeep(caseToEdit);
 		delete modalRef.componentInstance.workingCase.$$index;
 		modalRef.componentInstance.availableSubscriptions = this.availableSubscriptions;
-		modalRef.componentInstance.subscriptionTree = _.cloneDeep(this.subscriptionTree);
+		modalRef.componentInstance.subscriptionTree = this.utils.cloneDeep(this.subscriptionTree);
 
 		this._handleModalClose(modalRef);
 	}

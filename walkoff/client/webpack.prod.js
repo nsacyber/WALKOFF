@@ -83,28 +83,32 @@ module.exports = function (env) {
 						'HMR': METADATA.HMR,
 					}
 				}),
-				new UglifyJsPlugin({
-					beautify: false, //prod
-					output: {
-						comments: false
-					}, //prod
-					mangle: {
-						screw_ie8: true
-					}, //prod
-					compress: {
-						screw_ie8: true,
-						warnings: false,
-						conditionals: true,
-						unused: true,
-						comparisons: true,
-						sequences: true,
-						dead_code: true,
-						evaluate: true,
-						if_return: true,
-						join_vars: true,
-						negate_iife: false // we need this for lazy v8
-					},
-				}),
+
+				// TODO: this plugin is causing problems with a depedency package (doesn't like for..of).
+				// should be investigated and re-enabled if we can update webpack and its plugins and ensure it all works.
+				// new UglifyJsPlugin({
+				// 	beautify: false, //prod
+				// 	output: {
+				// 		comments: false
+				// 	}, //prod
+				// 	mangle: {
+				// 		screw_ie8: true
+				// 	}, //prod
+				// 	compress: {
+				// 		screw_ie8: true,
+				// 		warnings: false,
+				// 		conditionals: true,
+				// 		unused: true,
+				// 		comparisons: true,
+				// 		sequences: true,
+				// 		dead_code: true,
+				// 		evaluate: true,
+				// 		if_return: true,
+				// 		join_vars: true,
+				// 		negate_iife: false // we need this for lazy v8
+				// 	},
+				// }),
+
 				// new NormalModuleReplacementPlugin(
 				// 	/angular2-hmr/,
 				// 	helpers.root('config/empty.js')
