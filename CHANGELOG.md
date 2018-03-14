@@ -2,6 +2,16 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
+## [0.7.3]
+###### 2018-03-14
+
+### Fixed
+* Bug where on logout an invalid response would be returned
+
+### Changed
+* All node modules are now bundled into webpack
+
+
 ## [0.7.2]
 ###### 2018-03-12
 
