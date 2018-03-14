@@ -9,8 +9,6 @@ import uuid
 import gevent
 import zmq.green as zmq
 
-import walkoff.config.config
-import walkoff.config.paths
 from walkoff import executiondb
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import WorkflowStatusEnum
@@ -20,19 +18,27 @@ from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController, Receiver
 from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
 from walkoff.multiprocessedexecutor.worker import Worker
-from collections import namedtuple
 logger = logging.getLogger(__name__)
 
 
-def spawn_worker_processes(worker_environment_setup=None):
+def spawn_worker_processes(number_processes, num_threads_per_process, zmq_private_keys_path, zmq_results_address,
+                           zmq_communication_address, worker_environment_setup=None):
     """Initialize the multiprocessing pool, allowing for parallel execution of workflows.
 
     Args:
+        number_processes (int): The number of processes to spawn
+        num_threads_per_process (int): The number of threads per process to spawn
+        zmq_private_keys_path (str): The path to the ZMQ private keys
+        zmq_results_address (str): The address of the ZMQ results socket
+        zmq_communication_address (str): The address of the ZMQ comm socket
         worker_environment_setup (function, optional): Optional alternative worker setup environment function.
     """
     pids = []
-    for i in range(walkoff.config.config.num_processes):
-        args = (i, worker_environment_setup) if worker_environment_setup else (i,)
+    for i in range(number_processes):
+        args = (i, num_threads_per_process, zmq_private_keys_path, zmq_results_address, zmq_communication_address,
+                worker_environment_setup) if worker_environment_setup else (i, num_threads_per_process,
+                                                                            zmq_private_keys_path, zmq_results_address,
+                                                                            zmq_communication_address)
 
         pid = multiprocessing.Process(target=Worker, args=args)
         pid.start()
@@ -58,23 +64,31 @@ class MultiprocessedExecutor(object):
         self.cache = cache
         self.event_logger = event_logger
 
-    def initialize_threading(self, pids=None):
+    def initialize_threading(self, zmq_public_keys_path, zmq_private_keys_path, zmq_results_address,
+                             zmq_communication_address, pids=None):
         """Initialize the multiprocessing communication threads, allowing for parallel execution of workflows.
 
+        Args:
+            zmq_public_keys_path (str): The path to the ZMQ public keys.
+            zmq_private_keys_path (str): The path to the ZMQ private keys.
+            zmq_results_address (str): The address of the ZMQ results socket
+            zmq_communication_address (str): The address of the ZMQ comm socket
+            pids (list, optional): Optional list of spawned processes. Defaults to None
+
         """
-        if not (os.path.exists(walkoff.config.paths.zmq_public_keys_path) and
-                os.path.exists(walkoff.config.paths.zmq_private_keys_path)):
+        if not (os.path.exists(zmq_public_keys_path) and
+                os.path.exists(zmq_private_keys_path)):
             logging.error("Certificates are missing - run generate_certificates.py script first.")
             sys.exit(0)
         self.pids = pids
         self.ctx = zmq.Context.instance()
-        self.auth = ThreadAuthenticator(self.ctx)
+        self.auth = ThreadAuthenticator()
         self.auth.start()
         self.auth.allow('127.0.0.1')
-        self.auth.configure_curve(domain='*', location=walkoff.config.paths.zmq_public_keys_path)
+        self.auth.configure_curve(domain='*', location=zmq_public_keys_path)
 
-        self.manager = WorkflowExecutionController(self.cache)
-        self.receiver = Receiver(self.ctx)
+        self.manager = WorkflowExecutionController(self.cache, zmq_private_keys_path, zmq_communication_address)
+        self.receiver = Receiver(zmq_private_keys_path, zmq_results_address)
 
         self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
         self.receiver_thread.start()
@@ -214,7 +228,7 @@ class MultiprocessedExecutor(object):
         if workflow_status:
             if workflow_status.status in [WorkflowStatusEnum.pending, WorkflowStatusEnum.paused,
                                           WorkflowStatusEnum.awaiting_data]:
-                workflow = walkoff.executiondb.execution_db.session.query(Workflow).filter_by(
+                workflow = executiondb.execution_db.session.query(Workflow).filter_by(
                     id=workflow_status.workflow_id).first()
                 if workflow is not None:
                     self._log_and_send_event(

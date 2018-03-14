@@ -25,7 +25,7 @@ def __get_current_configuration():
             'refresh_token_duration': int(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days),
             'zmq_results_address': walkoff.config.config.zmq_results_address,
             'zmq_communication_address': walkoff.config.config.zmq_communication_address,
-            'number_processes': int(walkoff.config.config.num_processes),
+            'number_processes': int(walkoff.config.config.number_processes),
             'number_threads_per_process': int(walkoff.config.config.num_threads_per_process),
             'cache': walkoff.config.config.cache_config}
 

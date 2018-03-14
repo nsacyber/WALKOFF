@@ -6,8 +6,6 @@ from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, create_eng
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 
-import walkoff.config.config
-import walkoff.config.paths
 from walkoff.helpers import format_db_path
 from walkoff.helpers import utc_as_rfc_datetime
 
@@ -94,9 +92,9 @@ class CaseDatabase(object):
 
     __instance = None
 
-    def __init__(self):
+    def __init__(self, case_db_type, case_db_path):
         self.engine = create_engine(
-            format_db_path(walkoff.config.config.case_db_type, walkoff.config.paths.case_db_path))
+            format_db_path(case_db_type, case_db_path))
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 

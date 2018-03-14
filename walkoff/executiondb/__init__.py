@@ -4,8 +4,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import NullPool
 
-import walkoff.config.config
-import walkoff.config.paths
 from walkoff.helpers import format_db_path
 
 Execution_Base = declarative_base()
@@ -17,7 +15,7 @@ class ExecutionDatabase(object):
 
     __instance = None
 
-    def __init__(self):
+    def __init__(self, execution_db_type, execution_db_path):
         # All of these imports are necessary
         from walkoff.executiondb.device import App, Device, DeviceField, EncryptedDeviceField
         from walkoff.executiondb.argument import Argument
@@ -32,8 +30,7 @@ class ExecutionDatabase(object):
         from walkoff.executiondb.saved_workflow import SavedWorkflow
         from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
 
-        self.engine = create_engine(format_db_path(
-            walkoff.config.config.device_db_type, walkoff.config.paths.execution_db_path), poolclass=NullPool)
+        self.engine = create_engine(format_db_path(execution_db_type, execution_db_path), poolclass=NullPool)
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 

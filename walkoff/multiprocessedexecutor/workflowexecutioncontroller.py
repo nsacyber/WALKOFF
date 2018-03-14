@@ -11,8 +11,6 @@ from google.protobuf.json_format import MessageToDict
 from nacl.public import PrivateKey, Box
 from six import string_types
 
-import walkoff.config.config
-import walkoff.config.paths
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, CaseControl, WorkflowControl
 from walkoff.helpers import json_dumps_or_string
@@ -25,19 +23,19 @@ logger = logging.getLogger(__name__)
 
 
 class WorkflowExecutionController:
-    def __init__(self, cache):
+    def __init__(self, cache, zmq_private_keys_path, zmq_communication_address):
         """Initialize a LoadBalancer object, which manages workflow execution.
         """
-        server_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "server.key_secret")
+        server_secret_file = os.path.join(zmq_private_keys_path, "server.key_secret")
         server_public, server_secret = auth.load_certificate(server_secret_file)
-        client_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "client.key_secret")
+        client_secret_file = os.path.join(zmq_private_keys_path, "client.key_secret")
         _, client_secret = auth.load_certificate(client_secret_file)
 
         self.comm_socket = zmq.Context.instance().socket(zmq.PUB)
         self.comm_socket.curve_secretkey = server_secret
         self.comm_socket.curve_publickey = server_public
         self.comm_socket.curve_server = True
-        self.comm_socket.bind(walkoff.config.config.zmq_communication_address)
+        self.comm_socket.bind(zmq_communication_address)
         self.key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
         self.worker_key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
         self.cache = cache
@@ -146,23 +144,25 @@ class WorkflowExecutionController:
 
 
 class Receiver:
-    def __init__(self, ctx):
+    def __init__(self, zmq_private_keys_path, zmq_results_address):
         """Initialize a Receiver object, which will receive callbacks from the execution elements.
 
         Args:
-            ctx (Context object): A Context object, shared with the LoadBalancer thread.
+            zmq_private_keys_path (str): The path to the ZMQ private keys
+            zmq_results_address (str): The address of the ZMQ results socket
         """
+        ctx = zmq.Context.instance()
         self.thread_exit = False
         self.workflows_executed = 0
 
-        server_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "server.key_secret")
+        server_secret_file = os.path.join(zmq_private_keys_path, "server.key_secret")
         server_public, server_secret = auth.load_certificate(server_secret_file)
 
         self.results_sock = ctx.socket(zmq.PULL)
         self.results_sock.curve_secretkey = server_secret
         self.results_sock.curve_publickey = server_public
         self.results_sock.curve_server = True
-        self.results_sock.bind(walkoff.config.config.zmq_results_address)
+        self.results_sock.bind(zmq_results_address)
 
     def receive_results(self):
         """Keep receiving results from execution elements over a ZMQ socket, and trigger the callbacks.

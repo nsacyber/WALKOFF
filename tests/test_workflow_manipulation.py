@@ -1,18 +1,18 @@
 import socket
 import unittest
-from datetime import datetime
+
+from mock import create_autospec
 
 import walkoff.appgateway
 import walkoff.config.config
 import walkoff.config.paths
 from tests import config
 from tests.util import execution_db_help
-from tests.util.case_db_help import *
 from tests.util.mock_objects import *
+from walkoff.case.logger import CaseLogger
 from walkoff.executiondb.argument import Argument
 from walkoff.multiprocessedexecutor import multiprocessedexecutor
-from mock import create_autospec
-from walkoff.case.logger import CaseLogger
+
 try:
     from importlib import reload
 except ImportError:
@@ -26,14 +26,17 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
-        walkoff.config.config.num_processes = 2
+        walkoff.config.config.number_processes = 2
         multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
         cls.executor = multiprocessedexecutor.MultiprocessedExecutor(
             MockRedisCacheAdapter(),
             create_autospec(CaseLogger))
-        cls.executor.initialize_threading()
+        cls.executor.initialize_threading(walkoff.config.paths.zmq_public_keys_path,
+                                          walkoff.config.paths.zmq_private_keys_path,
+                                          walkoff.config.config.zmq_results_address,
+                                          walkoff.config.config.zmq_communication_address)
 
     def tearDown(self):
         execution_db_help.cleanup_execution_db()

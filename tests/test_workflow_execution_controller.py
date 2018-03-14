@@ -1,13 +1,18 @@
-from unittest import TestCase
-from zmq import Socket
-from mock import patch, create_autospec
-from walkoff.multiprocessedexecutor.workflowexecutioncontroller import ExecuteWorkflowMessage, WorkflowExecutionController, Message, CaseControl, CommunicationPacket, WorkflowControl
-from walkoff.case.subscription import Subscription
-from uuid import uuid4
-from tests.util.mock_objects import MockRedisCacheAdapter
-from walkoff.executiondb.argument import Argument
-from tests.util.execution_db_help import setup_dbs
 import json
+from unittest import TestCase
+from uuid import uuid4
+
+from mock import patch
+from zmq import Socket
+
+import walkoff.config.config
+import walkoff.config.paths
+from tests.util.execution_db_help import setup_dbs
+from tests.util.mock_objects import MockRedisCacheAdapter
+from walkoff.case.subscription import Subscription
+from walkoff.executiondb.argument import Argument
+from walkoff.multiprocessedexecutor.workflowexecutioncontroller import ExecuteWorkflowMessage, \
+    WorkflowExecutionController, Message, CaseControl, CommunicationPacket, WorkflowControl
 
 
 class TestWorkflowExecutionController(TestCase):
@@ -16,7 +21,8 @@ class TestWorkflowExecutionController(TestCase):
     def setUpClass(cls):
         cls.subscriptions = [Subscription(str(uuid4()), ['a', 'b', 'c']), Subscription(str(uuid4()), ['b'])]
         cls.cache = MockRedisCacheAdapter()
-        cls.controller = WorkflowExecutionController(cls.cache)
+        cls.controller = WorkflowExecutionController(cls.cache, walkoff.config.paths.zmq_private_keys_path,
+                                                     walkoff.config.config.zmq_communication_address)
         setup_dbs()
 
     def tearDown(self):

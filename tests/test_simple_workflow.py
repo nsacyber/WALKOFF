@@ -1,5 +1,6 @@
 import unittest
-from datetime import datetime
+
+from mock import create_autospec
 
 import walkoff.appgateway
 import walkoff.config.config
@@ -7,10 +8,9 @@ import walkoff.config.paths
 from tests import config
 from tests.util import execution_db_help
 from tests.util.mock_objects import *
-from walkoff.multiprocessedexecutor import multiprocessedexecutor
-from walkoff.events import WalkoffEvent
-from mock import create_autospec
 from walkoff.case.logger import CaseLogger
+from walkoff.events import WalkoffEvent
+from walkoff.multiprocessedexecutor import multiprocessedexecutor
 
 
 class TestSimpleWorkflow(unittest.TestCase):
@@ -21,12 +21,16 @@ class TestSimpleWorkflow(unittest.TestCase):
         from walkoff.appgateway import cache_apps
         cache_apps(path=config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
-        walkoff.config.config.num_processes = 2
+        walkoff.config.config.number_processes = 2
         multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
-        cls.executor = multiprocessedexecutor.MultiprocessedExecutor(MockRedisCacheAdapter(), create_autospec(CaseLogger))
-        cls.executor.initialize_threading()
+        cls.executor = multiprocessedexecutor.MultiprocessedExecutor(MockRedisCacheAdapter(),
+                                                                     create_autospec(CaseLogger))
+        cls.executor.initialize_threading(walkoff.config.paths.zmq_public_keys_path,
+                                          walkoff.config.paths.zmq_private_keys_path,
+                                          walkoff.config.config.zmq_results_address,
+                                          walkoff.config.config.zmq_communication_address)
 
     def tearDown(self):
         execution_db_help.cleanup_execution_db()
@@ -74,7 +78,6 @@ class TestSimpleWorkflow(unittest.TestCase):
         self.assert_execution_event_log('multiactionWorkflowTest', 'multiactionWorkflow', expected_events)
 
     def test_error_workflow(self):
-
         expected_events = [
             WalkoffEvent.WorkflowExecutionStart,
             WalkoffEvent.AppInstanceCreated,
@@ -103,7 +106,7 @@ class TestSimpleWorkflow(unittest.TestCase):
             WalkoffEvent.ActionStarted,
             WalkoffEvent.ActionExecutionSuccess,
             WalkoffEvent.WorkflowShutdown
-            ]
+        ]
 
         self.assert_execution_event_log('dataflowTest', 'dataflowWorkflow', expected_events)
 

@@ -16,7 +16,6 @@ from six import string_types
 
 import walkoff.cache
 import walkoff.config.config
-import walkoff.config.paths
 import walkoff.executiondb
 from walkoff import initialize_databases
 from walkoff.appgateway.appinstancerepo import AppInstanceRepo
@@ -26,7 +25,6 @@ from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, CaseControl, WorkflowControl
 import walkoff.cache
-from walkoff.config.config import cache_config
 import walkoff.case.database as casedb
 from walkoff.case.logger import CaseLogger
 from walkoff.case.subscription import Subscription
@@ -141,7 +139,8 @@ def convert_branch_transform_condition_to_proto(packet, sender, workflow):
 
 
 class Worker(object):
-    def __init__(self, id_, worker_environment_setup=None):
+    def __init__(self, id_, num_threads_per_process, zmq_private_keys_path, zmq_results_address,
+                 zmq_communication_address, worker_environment_setup=None):
         """Initialize a Workflow object, which will be executing workflows.
 
         Args:
@@ -162,9 +161,9 @@ class Worker(object):
 
         self.thread_exit = False
 
-        server_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "server.key_secret")
+        server_secret_file = os.path.join(zmq_private_keys_path, "server.key_secret")
         server_public, server_secret = auth.load_certificate(server_secret_file)
-        client_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "client.key_secret")
+        client_secret_file = os.path.join(zmq_private_keys_path, "client.key_secret")
         client_public, client_secret = auth.load_certificate(client_secret_file)
 
         ctx = zmq.Context()
@@ -175,27 +174,26 @@ class Worker(object):
         self.comm_sock.curve_publickey = client_public
         self.comm_sock.curve_serverkey = server_public
         self.comm_sock.setsockopt(zmq.SUBSCRIBE, '')
-        self.comm_sock.connect(walkoff.config.config.zmq_communication_address)
+        self.comm_sock.connect(zmq_communication_address)
 
         self.results_sock = ctx.socket(zmq.PUSH)
         self.results_sock.identity = u"Worker-{}".format(id_).encode("ascii")
         self.results_sock.curve_secretkey = client_secret
         self.results_sock.curve_publickey = client_public
         self.results_sock.curve_serverkey = server_public
-        self.results_sock.connect(walkoff.config.config.zmq_results_address)
+        self.results_sock.connect(zmq_results_address)
 
         self.key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
         self.server_key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
 
         if worker_environment_setup:
             worker_environment_setup()
-            self.cache = walkoff.cache.make_cache()
         else:
             walkoff.config.config.initialize()
             initialize_databases()
-            self.cache = walkoff.cache.make_cache()
+        self.cache = walkoff.cache.make_cache()
 
-        self.capacity = walkoff.config.config.num_threads_per_process
+        self.capacity = num_threads_per_process
 
         self.case_logger = CaseLogger(casedb.case_db)
 

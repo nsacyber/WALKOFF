@@ -21,7 +21,8 @@ except ImportError:
 workflows_executed = 0
 
 
-def mock_initialize_threading(self, pids=None):
+def mock_initialize_threading(self, zmq_public_keys_path, zmq_private_keys_path, zmq_results_address,
+                              zmq_communication_address, pids=None):
     global workflows_executed
     workflows_executed = 0
 

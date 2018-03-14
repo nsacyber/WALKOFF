@@ -54,7 +54,7 @@ class ServerTestCase(unittest.TestCase):
         walkoff.appgateway.cache_apps(path=tests.config.test_apps_path)
         walkoff.config.config.app_apis = {}
         walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
-        walkoff.config.config.num_processes = 2
+        walkoff.config.config.number_processes = 2
 
         from walkoff.server import flaskserver
         cls.context = flaskserver.app.test_request_context()
@@ -66,11 +66,23 @@ class ServerTestCase(unittest.TestCase):
             MultiprocessedExecutor.initialize_threading = mock_initialize_threading
             MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
             MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
-            flaskserver.running_context.executor.initialize_threading()
+            flaskserver.running_context.executor.initialize_threading(walkoff.config.paths.zmq_public_keys_path,
+                                                                      walkoff.config.paths.zmq_private_keys_path,
+                                                                      walkoff.config.config.zmq_results_address,
+                                                                      walkoff.config.config.zmq_communication_address)
         else:
             from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
-            pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)
-            flaskserver.running_context.executor.initialize_threading(pids)
+            pids = spawn_worker_processes(walkoff.config.config.number_processes,
+                                          walkoff.config.config.num_threads_per_process,
+                                          walkoff.config.paths.zmq_private_keys_path,
+                                          walkoff.config.config.zmq_results_address,
+                                          walkoff.config.config.zmq_communication_address,
+                                          worker_environment_setup=modified_setup_worker_env)
+            flaskserver.running_context.executor.initialize_threading(walkoff.config.paths.zmq_public_keys_path,
+                                                                      walkoff.config.paths.zmq_private_keys_path,
+                                                                      walkoff.config.config.zmq_results_address,
+                                                                      walkoff.config.config.zmq_communication_address,
+                                                                      pids)
 
     @classmethod
     def tearDownClass(cls):

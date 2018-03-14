@@ -67,13 +67,13 @@ zmq_communication_address = 'tcp://127.0.0.1:5557'
 
 # Specify the number of worker processes, and the number of threads for each worker process. Multiplying these numbers
 # together specifies the max number of workflows that may be executing at the same time.
-num_processes = 4
+number_processes = 4
 num_threads_per_process = 3
 
 # Database types
 walkoff_db_type = 'sqlite'
 case_db_type = 'sqlite'
-device_db_type = 'sqlite'
+execution_db_type = 'sqlite'
 
 # Secret key
 secret_key = 'SHORTSTOPKEYTEST'
@@ -107,7 +107,7 @@ def load_app_apis(apps_path=None):
                 with open(url) as function_file:
                     api = yaml.load(function_file.read())
                     from walkoff.appgateway.validator import validate_app_spec
-                    validate_app_spec(api, app)
+                    validate_app_spec(api, app, walkoff.config.paths.walkoff_schema_path)
                     app_apis[app] = api
             except Exception as e:
                 __logger.error(

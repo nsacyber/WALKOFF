@@ -49,14 +49,19 @@ def run(host, port):
     from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
     setup_logger()
     print_banner()
-    pids = spawn_worker_processes()
+    pids = spawn_worker_processes(walkoff.config.config.number_processes, walkoff.config.config.num_threads_per_process,
+                                  walkoff.config.paths.zmq_private_keys_path, walkoff.config.config.zmq_results_address,
+                                  walkoff.config.config.zmq_communication_address)
     monkey.patch_all()
 
     from scripts.compose_api import compose_api
     compose_api()
 
     from walkoff.server import flaskserver
-    flaskserver.running_context.executor.initialize_threading(pids=pids)
+    flaskserver.running_context.executor.initialize_threading(walkoff.config.paths.zmq_public_keys_path,
+                                                              walkoff.config.paths.zmq_private_keys_path,
+                                                              walkoff.config.config.zmq_results_address,
+                                                              walkoff.config.config.zmq_communication_address, pids)
     # The order of these imports matter for initialization (should probably be fixed)
 
     import walkoff.case.database as case_database
