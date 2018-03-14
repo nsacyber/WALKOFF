@@ -1,16 +1,10 @@
 import logging
-import os
-import json
 
 import connexion
 from jinja2 import FileSystemLoader
-from walkoff.executiondb.device import App
 from walkoff import helpers
-from walkoff.config import paths
 from walkoff.executiondb.device import App
 from walkoff.extensions import db, jwt
-from walkoff.helpers import format_db_path
-from walkoff.serverdb.casesubscription import CaseSubscription
 logger = logging.getLogger(__name__)
 
 
@@ -69,20 +63,7 @@ def create_app():
     connexion_app = connexion.App(__name__, specification_dir='../api/')
     _app = connexion_app.app
     _app.jinja_loader = FileSystemLoader(['walkoff/templates'])
-    _app.config.update(
-        # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
-        SECRET_KEY=walkoff.config.config.secret_key,
-        SQLALCHEMY_DATABASE_URI=format_db_path(walkoff.config.config.walkoff_db_type, os.path.abspath(paths.db_path)),
-        SECURITY_PASSWORD_HASH='pbkdf2_sha512',
-        SECURITY_TRACKABLE=False,
-        SECURITY_PASSWORD_SALT='something_super_secret_change_in_production',
-        SECURITY_POST_LOGIN_VIEW='/',
-        WTF_CSRF_ENABLED=False,
-        JWT_BLACKLIST_ENABLED=True,
-        JWT_BLACKLIST_TOKEN_CHECKS=['refresh'],
-        JWT_TOKEN_LOCATION='headers',
-        SQLALCHEMY_TRACK_MODIFICATIONS=False
-    )
+    _app.config.from_object('walkoff.config.config.AppConfig')
 
     db.init_app(_app)
     jwt.init_app(_app)

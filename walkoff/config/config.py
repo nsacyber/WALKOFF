@@ -1,7 +1,7 @@
 import json
 import logging
 import sys
-from os.path import isfile, join
+from os.path import isfile, join, abspath
 
 import yaml
 
@@ -112,6 +112,24 @@ def load_app_apis(apps_path=None):
             except Exception as e:
                 __logger.error(
                     'Cannot load apps api for app {0}: Error {1}'.format(app, str(format_exception_message(e))))
+
+
+class AppConfig(object):
+    # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
+
+    SECRET_KEY = secret_key
+    SQLALCHEMY_DATABASE_URI = '{0}://{1}'.format(walkoff_db_type, abspath(
+        walkoff.config.paths.db_path)) if walkoff_db_type != 'sqlite' else '{0}:///{1}'.format(walkoff_db_type, abspath(
+        walkoff.config.paths.db_path))
+    SECURITY_PASSWORD_HASH = 'pbkdf2_sha512'
+    SECURITY_TRACKABLE = False
+    SECURITY_PASSWORD_SALT = 'something_super_secret_change_in_production'
+    SECURITY_POST_LOGIN_VIEW = '/'
+    WTF_CSRF_ENABLED = False
+    JWT_BLACKLIST_ENABLED = True
+    JWT_BLACKLIST_TOKEN_CHECKS = ['refresh']
+    JWT_TOKEN_LOCATION = 'headers'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
 def initialize():
