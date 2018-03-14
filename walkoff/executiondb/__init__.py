@@ -33,7 +33,7 @@ class ExecutionDatabase(object):
         from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
 
         self.engine = create_engine(format_db_path(
-            walkoff.config.config.execution_db_type, walkoff.config.paths.execution_db_path), poolclass=NullPool)
+            walkoff.config.config.device_db_type, walkoff.config.paths.execution_db_path), poolclass=NullPool)
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 

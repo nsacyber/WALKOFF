@@ -12,43 +12,6 @@ __logger = logging.getLogger(__name__)
 cache_config = None
 
 
-class Config(object):
-    def __init__(self, host="127.0.0.1", port=5000, zmq_res_addr="tcp://127.0.0.1:5556",
-                 zmq_comm_addr="tcp://127.0.0.1:5557", procs=4, threads_per_proc=3, walkoff_db_type="sqlite",
-                 case_db_type="sqlite", exec_db_type="sqlite", key="SHORTSTOPKEYTEST", reinit_case_db=True):
-        self.host = host
-        self.port = port
-        self.zmq_results_address = zmq_res_addr
-        self.zmq_communication_address = zmq_comm_addr
-        self.num_processes = procs
-        self.num_threads_per_process = threads_per_proc
-        self.walkoff_db_type = walkoff_db_type
-        self.case_db_type = case_db_type
-        self.execution_db_type = exec_db_type
-        self.secret_key = key
-        self.reinitialize_case_db_on_startup = reinit_case_db
-
-    def load_config(self):
-        """ Loads Walkoff configuration from JSON file
-        """
-        global cache_config
-        self = sys.modules[__name__]
-        if isfile(walkoff.config.paths.config_path):
-            try:
-                with open(walkoff.config.paths.config_path) as config_file:
-                    config = json.loads(config_file.read())
-                    for key, value in config.items():
-                        if value:
-                            if key == 'cache':
-                                cache_config = value
-                            elif hasattr(walkoff.config.paths, key):
-                                setattr(walkoff.config.paths, key, value)
-                            elif hasattr(self, key):
-                                setattr(self, key, value)
-            except (IOError, OSError, ValueError):
-                __logger.warning('Could not read config file.', exc_info=True)
-
-
 def load_config():
     """ Loads Walkoff configuration from JSON file
     """
@@ -111,7 +74,7 @@ num_threads_per_process = 3
 # Database types
 walkoff_db_type = 'sqlite'
 case_db_type = 'sqlite'
-execution_db_type = 'sqlite'
+device_db_type = 'sqlite'
 
 # Secret key
 secret_key = 'SHORTSTOPKEYTEST'
