@@ -4,7 +4,7 @@ from uuid import uuid4
 from walkoff.case.subscription import SubscriptionCache, Subscription
 
 
-class TestCases(unittest.TestCase):
+class TestCaseSubscriptions(unittest.TestCase):
 
     def setUp(self):
         self.subs = SubscriptionCache()

@@ -11,7 +11,7 @@ from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
 from tests.config import test_apps_path
 from uuid import uuid4
-from mock import create_autospec, patch
+from mock import create_autospec, patch, call
 from walkoff.case.logger import CaseLogger
 import walkoff.server.flaskserver as server
 
@@ -406,3 +406,27 @@ class TestCaseServer(ServerTestCase):
                                 {event.signal_name for event in WalkoffEvent if
                                  event.event_type.name == event_type and event != WalkoffEvent.SendMessage})
 
+    @patch.object(server.running_context.executor, 'update_case')
+    def test_send_cases_to_workers(self, mock_update):
+        from walkoff.case.database import case_db, Case
+        from walkoff.serverdb.casesubscription import CaseSubscription
+        from walkoff.extensions import db
+        from walkoff.server.app import send_all_cases_to_workers
+        ids = [str(uuid4()) for _ in range(4)]
+        case1_subs = [{'id': ids[0], 'events': ['e1', 'e2', 'e3']}, {'id': ids[1], 'events': ['e1']}]
+        case2_subs = [{'id': ids[0], 'events': ['e2', 'e3']}]
+        case3_subs = [{'id': ids[2], 'events': ['e', 'b', 'c']}, {'id': ids[3], 'events': ['d']}]
+        case4_subs = [{'id': ids[0], 'events': ['a', 'b']}]
+        expected = []
+        for i, case_subs in enumerate((case1_subs, case2_subs, case3_subs, case4_subs)):
+            name = 'case{}'.format(i)
+            new_case_subs = CaseSubscription(name, subscriptions=case_subs)
+            db.session.add(new_case_subs)
+            case = Case(name=name)
+            case_db.session.add(case)
+            case_db.session.commit()
+            call_subs = [Subscription(sub['id'], sub['events']) for sub in case_subs]
+            expected.append(call(case.id, call_subs))
+        case_db.session.commit()
+        send_all_cases_to_workers()
+        mock_update.assert_has_calls(expected)

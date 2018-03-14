@@ -1,5 +1,6 @@
 import logging
 import os
+import json
 
 import connexion
 from jinja2 import FileSystemLoader
@@ -127,5 +128,18 @@ def create_user():
         executiondb.execution_db.session.add(App(name=app_name, devices=[]))
     db.session.commit()
     executiondb.execution_db.session.commit()
-
+    send_all_cases_to_workers()
     app.logger.handlers = logging.getLogger('server').handlers
+
+
+def send_all_cases_to_workers():
+    from walkoff.server.flaskserver import running_context
+    from walkoff.serverdb.casesubscription import CaseSubscription
+    from walkoff.case.database import case_db, Case
+    from walkoff.case.subscription import Subscription
+
+    for case_subscription in CaseSubscription.query.all():
+        subscriptions = [Subscription(sub['id'], sub['events']) for sub in case_subscription.subscriptions]
+        case = case_db.session.query(Case).filter(Case.name == case_subscription.name).first()
+        if case is not None:
+            running_context.executor.update_case(case.id, subscriptions)
