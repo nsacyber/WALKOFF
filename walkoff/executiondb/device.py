@@ -1,16 +1,20 @@
 import logging
 import sys
 
-import pyaes
-from sqlalchemy import Column, Integer, ForeignKey, String, LargeBinary, Enum, DateTime, func
+from sqlalchemy import Column, Integer, ForeignKey, String, LargeBinary, Enum, DateTime, func, orm
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
 from walkoff import executiondb
 from walkoff.appgateway.validator import convert_primitive_type
-from walkoff.config.config import secret_key as key
 from walkoff.executiondb import Execution_Base
+
+import nacl.secret
+import nacl.utils
+import os
+import zmq.auth as auth
+import walkoff.config.paths
 
 logger = logging.getLogger(__name__)
 
@@ -358,20 +362,26 @@ class EncryptedDeviceField(Execution_Base, DeviceFieldMixin):
     def __init__(self, name, field_type, value):
         self.name = name
         self.type = field_type if field_type in allowed_device_field_types else 'string'
-        if sys.version_info[0] == 2:
-            aes = pyaes.AESModeOfOperationCTR(key)
-        else:
-            aes = pyaes.AESModeOfOperationCTR(bytearray(key, 'utf-8'))
-        self._value = aes.encrypt(str(value))
+
+        server_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "server.key_secret")
+        _, server_secret = auth.load_certificate(server_secret_file)
+        self.__key = server_secret[:nacl.secret.SecretBox.KEY_SIZE]
+        self.__box = nacl.secret.SecretBox(self.__key)
+        self._value = self.__box.encrypt(str(value))
+
+    @orm.reconstructor
+    def init_on_load(self):
+        server_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "server.key_secret")
+        _, server_secret = auth.load_certificate(server_secret_file)
+        self.__key = server_secret[:nacl.secret.SecretBox.KEY_SIZE]
+        self.__box = nacl.secret.SecretBox(self.__key)
 
     @hybrid_property
     def value(self):
         is_py2 = sys.version_info[0] == 2
-        aes_key = key if is_py2 else bytearray(key, 'utf-8')
         none_string = 'None' if is_py2 else b'None'
 
-        aes = pyaes.AESModeOfOperationCTR(aes_key)
-        val = aes.decrypt(self._value)
+        val = self.__box.decrypt(self._value)
         if val is None or val == none_string:
             return None
         elif not val:
@@ -383,11 +393,7 @@ class EncryptedDeviceField(Execution_Base, DeviceFieldMixin):
 
     @value.setter
     def value(self, new_value):
-        if sys.version_info[0] == 2:
-            aes = pyaes.AESModeOfOperationCTR(key)
-        else:
-            aes = pyaes.AESModeOfOperationCTR(bytearray(key, 'utf-8'))
-        self._value = aes.encrypt(str(new_value))
+        self._value = self.__box.encrypt(str(new_value))
 
     def as_json(self, export=False):
         """Gets a JSON representation of this object

@@ -132,6 +132,32 @@ class AppConfig(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
+class Config(object):
+    REINITIALIZE_CASE_DB_ON_STARTUP = True
+
+    # IP and port for the webserver
+    HOST = "127.0.0.1"
+    PORT = 5000
+
+    # IP addresses and ports for IPC (inter-process communication). Do not change these unless necessary. There must
+    # not be conflicts.
+    ZMQ_RESULTS_ADDRESS = 'tcp://127.0.0.1:5556'
+    ZMQ_COMMUNICATION_ADDRESS = 'tcp://127.0.0.1:5557'
+
+    # Specify the number of worker processes, and the number of threads for each worker process. Multiplying these
+    # numbers together specifies the max number of workflows that may be executing at the same time.
+    NUMBER_PROCESSES = 4
+    NUM_THREADS_PER_PROCESS = 3
+
+    # Database types
+    WALKOFF_DB_TYPE = 'sqlite'
+    CASE_DB_TYPE = 'sqlite'
+    EXECUTION_DB_TYPE = 'sqlite'
+
+    # Secret key
+    SECRET_KEY = 'SHORTSTOPKEYTEST'
+
+
 def initialize():
     """Loads the config file, loads the app cache, and loads the app APIs into memory
     """

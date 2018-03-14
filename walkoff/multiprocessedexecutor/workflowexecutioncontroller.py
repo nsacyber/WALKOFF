@@ -36,8 +36,8 @@ class WorkflowExecutionController:
         self.comm_socket.curve_publickey = server_public
         self.comm_socket.curve_server = True
         self.comm_socket.bind(zmq_communication_address)
-        self.key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
-        self.worker_key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
+        self.__key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
+        self.__worker_key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
         self.cache = cache
 
     def add_workflow(self, workflow_id, workflow_execution_id, start=None, start_arguments=None, resume=False):
@@ -61,7 +61,7 @@ class WorkflowExecutionController:
             self._set_arguments_for_proto(message, start_arguments)
 
         message = message.SerializeToString()
-        box = Box(self.key, self.worker_key)
+        box = Box(self.__key, self.__worker_key)
         enc_message = box.encrypt(message)
         self.cache.lpush("request_queue", enc_message)
 
