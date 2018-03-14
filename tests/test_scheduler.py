@@ -1,7 +1,7 @@
 import unittest
 
 from walkoff.scheduler import *
-from mock import create_autospec
+from mock import create_autospec, call
 from walkoff.case.logger import CaseLogger
 
 
@@ -40,11 +40,7 @@ class TestScheduler(unittest.TestCase):
         self.assertEqual(self.scheduler.scheduler.state, state)
 
     def assert_logger_called_with(self, events):
-        if len(events) < 2:
-            self.logger.log.assert_called_once_with(events[0], self.scheduler.id)
-        else:
-            for event in events:
-                self.logger.log.assert_any_call(event, self.scheduler.id)
+        self.logger.log.assert_has_calls([call(event, self.scheduler.id) for event in events])
 
     def add_tasks(self, task_id, workflow_ids, trigger):
         self.scheduler.schedule_workflows(task_id, execute, workflow_ids, trigger)
