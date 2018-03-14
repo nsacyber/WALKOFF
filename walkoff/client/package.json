@@ -66,7 +66,6 @@
     "jqueryui": "~1.11.1",
     "json-editor": "~0.7.28",
     "jstree": "~3.3.4",
-    "lodash": "~4.17.4",
     "moment": "~2.20.1",
     "ng-pick-datetime": "~4.3.2",
     "ng2-dnd": "^4.2.0",

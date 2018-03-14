@@ -1,5 +1,5 @@
-@import '/client/node_modules/cytoscape-panzoom/cytoscape.js-panzoom.css';
-@import '/client/node_modules/ng2-dnd/bundles/style.css';
+/* @import '/client/node_modules/cytoscape-panzoom/cytoscape.js-panzoom.css';
+@import '/client/node_modules/ng2-dnd/bundles/style.css'; */
 
 #main.playbookMain {
 	padding: 10px 15px 0 15px;

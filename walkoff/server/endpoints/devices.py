@@ -63,7 +63,7 @@ def delete_device(device_id):
         executiondb.execution_db.session.delete(device)
         current_app.logger.info('Device removed {0}'.format(device_id))
         executiondb.execution_db.session.commit()
-        return {}, NO_CONTENT
+        return None, NO_CONTENT
 
     return __func()
 

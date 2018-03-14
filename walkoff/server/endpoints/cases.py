@@ -132,7 +132,7 @@ def delete_case(case_id):
             db.session.delete(case_obj)
             db.session.commit()
             current_app.logger.debug('Case deleted {0}'.format(case_id))
-            return {}, NO_CONTENT
+            return None, NO_CONTENT
         else:
             current_app.logger.error('Cannot delete case {0}. Case does not exist.'.format(case_id))
             return Problem.from_crud_resource(

@@ -9,6 +9,7 @@ import 'rxjs/add/operator/debounceTime';
 import { SchedulerModalComponent } from './scheduler.modal.component';
 
 import { SchedulerService } from './scheduler.service';
+import { UtilitiesService } from '../utilities.service';
 
 import { ScheduledTask } from '../models/scheduler/scheduledTask';
 
@@ -17,9 +18,10 @@ import { ScheduledTask } from '../models/scheduler/scheduledTask';
 	templateUrl: './scheduler.html',
 	styleUrls: [
 		'./scheduler.css',
+		'../../node_modules/ng-pick-datetime/styles/picker.min.css',
 	],
 	encapsulation: ViewEncapsulation.None,
-	providers: [SchedulerService],
+	providers: [SchedulerService, UtilitiesService],
 })
 export class SchedulerComponent implements OnInit {
 	schedulerStatus: string;
@@ -32,6 +34,7 @@ export class SchedulerComponent implements OnInit {
 	constructor(
 		private schedulerService: SchedulerService, private modalService: NgbModal,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private utils: UtilitiesService,
 	) {}
 
 	/**
@@ -120,7 +123,7 @@ export class SchedulerComponent implements OnInit {
 		modalRef.componentInstance.title = `Edit Task ${task.name}`;
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.availableWorkflows = this.availableWorkflows;
-		modalRef.componentInstance.workingScheduledTask = _.cloneDeep(task);
+		modalRef.componentInstance.workingScheduledTask = this.utils.cloneDeep(task);
 		delete modalRef.componentInstance.workingScheduledTask.$$index;
 
 		this._handleModalClose(modalRef);
