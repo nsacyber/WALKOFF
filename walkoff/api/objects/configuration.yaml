@@ -65,7 +65,12 @@ Configuration:
 
 CacheConfig:
   type: object
+  required: [type]
   properties:
+    type:
+      description: The type of cache that should be used
+      type: string
+      enum: [redis, disk]
     directory:
       description: The directory to hold the cache database (DiskCache only)
       type: string

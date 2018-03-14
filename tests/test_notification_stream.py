@@ -1,7 +1,8 @@
 from unittest import TestCase
 from tests.util.mock_objects import MockRedisCacheAdapter
 from walkoff.server.blueprints.notifications import *
-
+from datetime import datetime
+from mock import patch, call
 
 class MockUser:
     def __init__(self, id_, username):
@@ -30,7 +31,7 @@ class TestNotificationStream(TestCase):
 
     @staticmethod
     def get_standard_message_and_user():
-        message = MockMessage(1, 'sub', [MockUser(1, 'uname'), MockUser(2, 'admin2')], 'now', False)
+        message = MockMessage(1, 'sub', [MockUser(1, 'uname'), MockUser(2, 'admin2')], datetime.utcnow(), False)
         user = MockUser(3, 'uname2')
         return message, user
 
@@ -44,28 +45,38 @@ class TestNotificationStream(TestCase):
 
     def test_format_read_responded_data(self):
         message, user = self.get_standard_message_and_user()
-        formatted = format_read_responded_data(message, self._format_user_dict(user))
+        formatted = format_read_responded_data(message, user)
         self.assert_timestamp_is_not_none(formatted)
         self.assertDictEqual(formatted, {'id': 1, 'username': 'uname2'})
 
-    def test_message_created_callback(self):
+    @patch.object(sse_stream, 'publish')
+    def test_message_created_callback(self, mock_publish):
         message, user = self.get_standard_message_and_user()
         result, ids = message_created_callback(message, **self._format_user_dict(user))
         self.assertSetEqual(ids, {1, 2})
-        expected = {'id': message.id, 'subject': message.subject, 'created_at': message.created_at, 'is_read': False,
-                    'awaiting_response': message.requires_response}
+        expected = {
+            'id': message.id,
+            'subject': message.subject,
+            'created_at': message.created_at.isoformat(),
+            'is_read': False,
+            'awaiting_response': message.requires_response}
         self.assertDictEqual(result, expected)
+        mock_publish.assert_called_once_with(result, subchannels=ids, event=NotificationSseEvent.created.name)
 
-    def test_message_read_callback(self):
+    @patch.object(sse_stream, 'publish')
+    def test_message_read_callback(self, mock_publish):
         message, user = self.get_standard_message_and_user()
         result, ids = message_read_callback(message, **self._format_user_dict(user))
         self.assertSetEqual(ids, {1, 2})
+        mock_publish.assert_called_once_with(result, subchannels=ids, event=NotificationSseEvent.read.name)
         self.assert_timestamp_is_not_none(result)
         self.assertDictEqual(result, {'id': message.id, 'username': user.username})
 
-    def test_message_responded_callback(self):
+    @patch.object(sse_stream, 'publish')
+    def test_message_responded_callback(self, mock_publish):
         message, user = self.get_standard_message_and_user()
         result, ids = message_responded_callback(message, **self._format_user_dict(user))
         self.assertSetEqual(ids, {1, 2})
+        mock_publish.assert_called_once_with(result, subchannels=ids, event=NotificationSseEvent.responded.name)
         self.assert_timestamp_is_not_none(result)
         self.assertDictEqual(result, {'id': message.id, 'username': user.username})
