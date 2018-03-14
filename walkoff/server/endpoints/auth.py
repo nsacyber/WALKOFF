@@ -81,7 +81,7 @@ def logout():
             if user is not None:
                 user.logout()
             revoke_token(decode_token(refresh_token))
-            return '', NO_CONTENT
+            return None, NO_CONTENT
         else:
             return Problem(
                 BAD_REQUEST,

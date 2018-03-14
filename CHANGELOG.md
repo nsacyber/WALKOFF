@@ -6,7 +6,7 @@
 ###### 2018-03-14
 
 ### Fixed
-* Bug where on logout an invalid response would be returned
+* Bug where NO_CONTENT return codes were failing on Werkzeug WSGI 0.14
 
 ### Changed
 * All node modules are now bundled into webpack

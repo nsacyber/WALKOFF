@@ -190,7 +190,7 @@ def delete_playbook(playbook_id):
         executiondb.execution_db.session.delete(playbook)
         executiondb.execution_db.session.commit()
         current_app.logger.info('Deleted playbook {0} '.format(playbook_id))
-        return {}, NO_CONTENT
+        return None, NO_CONTENT
 
     return __func()
 
@@ -361,7 +361,7 @@ def delete_workflow(workflow_id):
         executiondb.execution_db.session.commit()
 
         current_app.logger.info('Deleted workflow {0}'.format(workflow_id))
-        return {}, NO_CONTENT
+        return None, NO_CONTENT
 
     return __func()
 
