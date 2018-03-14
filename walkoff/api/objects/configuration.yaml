@@ -20,21 +20,26 @@ Configuration:
         description: The server's port
         minimum: 0
         maximum: 65535
+        default: 5000
       walkoff_db_type:
         type: string
         description: The type of database used by the primary WALKOFF database
         enum: [sqlite, mysql, postgresql, oracle, mssql]
+        default: sqlite
       case_db_type:
         type: string
         description: The type of database used by the case database
         enum: [sqlite, mysql, postgresql, oracle, mssql]
+        default: sqlite
       clear_case_db_on_startup:
         type: boolean
         description: Should the case database be cleared upon a server restart?
+        default: true
       number_processes:
         type: integer
         minimum: 1
         description: Number of worker processes which can execute workflows
+        default: 4
       access_token_duration:
         type: number
         minimum: 1
@@ -43,18 +48,50 @@ Configuration:
         type: number
         minimum: 1
         description: Time (in days) to allow a refresh token to persist. Should greater than the duration of the refresh token
-      zmq_requests_address:
-        type: string
-        description: The IP address and port of the ZMQ requests server. Do not change unless necessary.
       zmq_results_address:
         type: string
         description: The IP address and port of the ZMQ results server. Do not change unless necessary.
+        default: 'tcp://127.0.0.1:5556'
       zmq_communication_address:
         type: string
         description: The IP address and port of the ZMQ communication server. Do not change unless necessary.
-      num_processes:
-        type: number
-        description: The number of worker processes for executing workflows.
+        default: 'tcp://127.0.0.1:5557'
       num_threads_per_process:
         type: number
         description: The number of threads per worker process for executing workflows.
+        default: 3
+      cache:
+        $ref: '#/definitions/CacheConfig'
+
+CacheConfig:
+  type: object
+  properties:
+    directory:
+      description: The directory to hold the cache database (DiskCache only)
+      type: string
+      format: uri
+    shards:
+      description: Number of shards to distribute the cache database to (DiskCache only)
+      type: integer
+      minimum: 1
+    timeout:
+      description: Cache timeout
+      type: number
+      minimum: 0.0
+    retry:
+      description: Should this connection retry timed out connections?
+      type: boolean
+      default: True
+    host:
+      description: Host url for the cache (Redis cache only)
+      type: string
+      default: localhost
+    port:
+      description: Port for the cache (Redis cache only)
+      type: integer
+      minimum: 0
+      maximum: 65535
+      default: 6379
+    unix_socket_path:
+      description: Path to Unix socket to use for the cache instead of host-port. (Redis cache only)
+      type: string

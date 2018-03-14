@@ -23,11 +23,11 @@ def __get_current_configuration():
             'clear_case_db_on_startup': bool(walkoff.config.config.reinitialize_case_db_on_startup),
             'access_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds / 60),
             'refresh_token_duration': int(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days),
-            'zmq_requests_address': walkoff.config.config.zmq_requests_address,
             'zmq_results_address': walkoff.config.config.zmq_results_address,
             'zmq_communication_address': walkoff.config.config.zmq_communication_address,
             'number_processes': int(walkoff.config.config.num_processes),
-            'number_threads_per_process': int(walkoff.config.config.num_threads_per_process)}
+            'number_threads_per_process': int(walkoff.config.config.num_threads_per_process),
+            'cache': walkoff.config.config.cache_config}
 
 
 def read_config_values():

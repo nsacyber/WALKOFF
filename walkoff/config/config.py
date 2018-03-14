@@ -62,7 +62,6 @@ port = 5000
 
 # IP addresses and ports for IPC (inter-process communication). Do not change these unless necessary. There must
 # not be conflicts.
-zmq_requests_address = 'tcp://127.0.0.1:5555'
 zmq_results_address = 'tcp://127.0.0.1:5556'
 zmq_communication_address = 'tcp://127.0.0.1:5557'
 

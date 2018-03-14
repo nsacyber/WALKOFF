@@ -667,9 +667,11 @@ class RedisCacheAdapter(object):
         Returns:
             (RedisCacheAdapter): A RedisCacheAdapter with a configuration reflecting the values in the JSON
         """
-        password = os.getenv('WALKOFF_REDIS_PASS')
+        password = os.getenv('WALKOFF_REDIS_PASSWORD')
         if password is not None:
             json_in['password'] = password
+        if 'timeout' in json_in and json_in['timeout'] > 0.0:
+            json_in['socket_timeout'] = json_in.pop('timeout')
         return cls(**json_in)
 
 
