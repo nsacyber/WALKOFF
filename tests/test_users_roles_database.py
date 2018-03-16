@@ -1,7 +1,6 @@
 import unittest
 from datetime import datetime, timedelta
 
-import walkoff.config.paths
 import walkoff.server.flaskserver
 from tests.util import execution_db_help
 from walkoff.helpers import timestamp_to_datetime

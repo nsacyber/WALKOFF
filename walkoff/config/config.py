@@ -5,8 +5,6 @@ from os.path import isfile, join, abspath
 
 import yaml
 
-import walkoff.config.paths
-
 logger = logging.getLogger(__name__)
 
 
@@ -14,20 +12,14 @@ def write_values_to_file(keys=None):
     """ Writes the current walkoff configuration to a file
     """
     if keys is None:
-        keys = ['apps_path', 'workflows_path', 'db_path', 'case_db_path', 'certificate_path',
-                'private_key_path', 'default_appdevice_export_path', 'default_case_export_path',
-                'logging_config_path', 'notifications', 'REINITIALIZE_CASE_DB_ON_STARTUP',
-                'HOST', 'PORT', 'ZMQ_RESULTS_ADDRESS', 'ZMQ_COMMUNICATION_ADDRESS',  'NUMBER_PROCESSES',
-                'NUM_THREADS_PER_PROCESS', 'WALKOFF_DB_TYPE', 'CASE_DB_TYPE', 'EXECUTION_DB_TYPE', 'CACHE_CONFIG']
+        keys = [key for key in dir(Config) if not key.startswith('__')]
 
     output = {}
     for key in keys:
-        if hasattr(walkoff.config.paths, key):
-            output[key] = getattr(walkoff.config.paths, key)
-        elif hasattr(Config, key):
+        if hasattr(Config, key.upper()):
             output[key] = getattr(Config, key)
 
-    with open(walkoff.config.paths.config_path, 'w') as config_file:
+    with open(Config.CONFIG_PATH, 'w') as config_file:
         config_file.write(json.dumps(output, sort_keys=True, indent=4, separators=(',', ': ')))
 
 
@@ -46,9 +38,9 @@ def load_app_apis(apps_path=None):
     from walkoff.helpers import list_apps, format_exception_message
     global app_apis
     if apps_path is None:
-        apps_path = walkoff.config.paths.apps_path
+        apps_path = Config.APPS_PATH
     try:
-        with open(join(walkoff.config.paths.walkoff_schema_path), 'r') as schema_file:
+        with open(join(Config.WALKOFF_SCHEMA_PATH), 'r') as schema_file:
             json.loads(schema_file.read())
     except Exception as e:
         logger.fatal('Could not load JSON schema for apps. Shutting down...: ' + str(e))
@@ -60,7 +52,7 @@ def load_app_apis(apps_path=None):
                 with open(url) as function_file:
                     api = yaml.load(function_file.read())
                     from walkoff.appgateway.validator import validate_app_spec
-                    validate_app_spec(api, app, walkoff.config.paths.walkoff_schema_path)
+                    validate_app_spec(api, app, Config.WALKOFF_SCHEMA_PATH)
                     app_apis[app] = api
             except Exception as e:
                 logger.error(
@@ -68,6 +60,8 @@ def load_app_apis(apps_path=None):
 
 
 class Config(object):
+    # CONFIG VALUES
+
     REINITIALIZE_CASE_DB_ON_STARTUP = True
 
     # IP and port for the webserver
@@ -91,21 +85,46 @@ class Config(object):
 
     CACHE_CONFIG = None
 
+    # PATHS
+
+    DATA_PATH = join('.', 'data')
+
+    API_PATH = join('.', 'walkoff', 'api')
+    APPS_PATH = join('.', 'apps')
+    CACHE_PATH = join('.', 'data', 'cache')
+    CASE_DB_PATH = join(DATA_PATH, 'events.db')
+
+    CLIENT_PATH = join('.', 'walkoff', 'client')
+    CONFIG_PATH = join(DATA_PATH, 'walkoff.config')
+    DB_PATH = join(DATA_PATH, 'walkoff.db')
+    DEFAULT_APPDEVICE_EXPORT_PATH = join(DATA_PATH, 'appdevice.json')
+    DEFAULT_CASE_EXPORT_PATH = join(DATA_PATH, 'cases.json')
+    EXECUTION_DB_PATH = join(DATA_PATH, 'execution.db')
+    INTERFACES_PATH = join('.', 'interfaces')
+    LOGGING_CONFIG_PATH = join(DATA_PATH, 'log', 'logging.json')
+
+    WALKOFF_SCHEMA_PATH = join(DATA_PATH, 'walkoff_schema.json')
+    WORKFLOWS_PATH = join('.', 'workflows')
+
+    KEYS_PATH = join('.', '.certificates')
+    CERTIFICATE_PATH = join(KEYS_PATH, 'walkoff.crt')
+    PRIVATE_KEY_PATH = join(KEYS_PATH, 'walkoff.key')
+    ZMQ_PRIVATE_KEYS_PATH = join(KEYS_PATH, 'private_keys')
+    ZMQ_PUBLIC_KEYS_PATH = join(KEYS_PATH, 'public_keys')
+
     @classmethod
     def load_config(cls):
         """ Loads Walkoff configuration from JSON file
         """
-        if isfile(walkoff.config.paths.config_path):
+        if isfile(cls.CONFIG_PATH):
             try:
-                with open(walkoff.config.paths.config_path) as config_file:
+                with open(cls.CONFIG_PATH) as config_file:
                     config = json.loads(config_file.read())
                     for key, value in config.items():
                         if value:
                             if key == 'cache':
                                 cls.CACHE_CONFIG = value
-                            elif hasattr(walkoff.config.paths, key):
-                                setattr(walkoff.config.paths, key, value)
-                            elif hasattr(cls, key):
+                            if hasattr(cls, key):
                                 setattr(cls, key, value)
             except (IOError, OSError, ValueError):
                 logger.warning('Could not read config file.', exc_info=True)
@@ -116,8 +135,8 @@ class AppConfig(object):
 
     SECRET_KEY = 'SHORTSTOPKEYTEST'
     SQLALCHEMY_DATABASE_URI = '{0}://{1}'.format(Config.WALKOFF_DB_TYPE, abspath(
-        walkoff.config.paths.db_path)) if Config.WALKOFF_DB_TYPE != 'sqlite' else '{0}:///{1}'.format(
-        Config.WALKOFF_DB_TYPE, abspath(walkoff.config.paths.db_path))
+        Config.DB_PATH)) if Config.WALKOFF_DB_TYPE != 'sqlite' else '{0}:///{1}'.format(Config.WALKOFF_DB_TYPE,
+                                                                                        abspath(Config.DB_PATH))
     SECURITY_PASSWORD_HASH = 'pbkdf2_sha512'
     SECURITY_TRACKABLE = False
     SECURITY_PASSWORD_SALT = 'something_super_secret_change_in_production'
@@ -134,5 +153,5 @@ def initialize():
     """
     Config.load_config()
     from walkoff.appgateway import cache_apps
-    cache_apps(walkoff.config.paths.apps_path)
+    cache_apps(Config.APPS_PATH)
     load_app_apis()

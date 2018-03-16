@@ -2,7 +2,7 @@ import json
 import os
 
 import tests.config
-import walkoff.config.paths
+import walkoff.config.config
 from tests.config import test_workflows_path
 from tests.util.jsonplaybookloader import JsonPlaybookLoader
 from walkoff import executiondb
@@ -61,9 +61,9 @@ def load_workflow(playbook_name, workflow_name):
 
 
 def setup_dbs():
-    walkoff.config.paths.db_path = tests.config.test_db_path
-    walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-    walkoff.config.paths.execution_db_path = tests.config.test_execution_db_path
+    walkoff.config.config.Config.DB_PATH = tests.config.test_db_path
+    walkoff.config.config.Config.CASE_DB_PATH = tests.config.test_case_db_path
+    walkoff.config.config.Config.EXECUTION_DB_PATH = tests.config.test_execution_db_path
     initialize_databases()
 
 

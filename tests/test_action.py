@@ -4,7 +4,6 @@ import tests.config
 import tests.config
 import walkoff.appgateway
 import walkoff.config.config
-import walkoff.config.paths
 from tests.util import execution_db_help
 from walkoff.appgateway.actionresult import ActionResult
 from walkoff.appgateway.appinstance import AppInstance

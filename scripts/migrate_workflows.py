@@ -8,9 +8,9 @@ import semver
 sys.path.append(os.path.abspath('.'))
 from walkoff.appgateway import cache_apps
 from walkoff.config.config import load_app_apis
+import walkoff.config.config
 import importlib
 import scripts.migrations.workflows.versions as versions
-from walkoff.config import paths
 from walkoff import initialize_databases
 from walkoff import executiondb
 from walkoff.executiondb.playbook import Playbook
@@ -62,7 +62,7 @@ def convert_playbooks(mode, tgt_version):
     cache_apps(join('.', 'apps'))
     load_app_apis()
 
-    for subd, d, files in os.walk(paths.workflows_path):
+    for subd, d, files in os.walk(walkoff.config.config.Config.WORKFLOWS_PATH):
         for f in files:
             if f.endswith('.playbook'):
                 path = os.path.join(subd, f)

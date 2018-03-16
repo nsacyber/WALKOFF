@@ -2,7 +2,6 @@ import importlib
 import unittest
 
 import walkoff.appgateway
-import walkoff.config.paths
 from tests.config import test_apps_path
 from tests.util import execution_db_help
 from walkoff.appgateway import appinstance

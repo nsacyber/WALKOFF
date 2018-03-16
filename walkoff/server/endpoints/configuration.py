@@ -4,7 +4,6 @@ from flask import current_app
 from flask_jwt_extended import jwt_required
 
 import walkoff.config.config
-import walkoff.config.paths
 from walkoff.helpers import format_exception_message
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.problem import Problem
@@ -12,10 +11,10 @@ from walkoff.server.returncodes import *
 
 
 def __get_current_configuration():
-    return {'workflows_path': walkoff.config.paths.workflows_path,
-            'db_path': walkoff.config.paths.db_path,
-            'case_db_path': walkoff.config.paths.case_db_path,
-            'log_config_path': walkoff.config.paths.logging_config_path,
+    return {'workflows_path': walkoff.config.config.Config.WORKFLOWS_PATH,
+            'db_path': walkoff.config.config.Config.DB_PATH,
+            'case_db_path': walkoff.config.config.Config.CASE_DB_PATH,
+            'log_config_path': walkoff.config.config.Config.LOGGING_CONFIG_PATH,
             'host': walkoff.config.config.Config.HOST,
             'port': int(walkoff.config.config.Config.PORT),
             'walkoff_db_type': walkoff.config.config.Config.WALKOFF_DB_TYPE,
@@ -52,9 +51,7 @@ def update_configuration(configuration):
                 'Access token duration must be less than refresh token duration.')
 
         for config, config_value in configuration.items():
-            if hasattr(walkoff.config.paths, config):
-                setattr(walkoff.config.paths, config, config_value)
-            elif hasattr(walkoff.config.config.Config, config.upper()):
+            if hasattr(walkoff.config.config.Config, config.upper()):
                 setattr(walkoff.config.config.Config, config.upper(), config_value)
 
         current_app.logger.info('Changed configuration')

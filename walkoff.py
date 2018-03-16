@@ -12,19 +12,19 @@ from gevent import pywsgi
 
 import walkoff
 import walkoff.cache
-from walkoff.config import paths, config
+import walkoff.config.config
 
 logger = logging.getLogger('walkoff')
 
 
 def setup_logger():
     log_config = None
-    if isfile(paths.logging_config_path):
+    if isfile(walkoff.config.config.Config.LOGGING_CONFIG_PATH):
         try:
-            with open(paths.logging_config_path, 'rt') as log_config_file:
+            with open(walkoff.config.config.Config.LOGGING_CONFIG_PATH, 'rt') as log_config_file:
                 log_config = json.loads(log_config_file.read())
         except (IOError, OSError):
-            print('Could not read logging JSON file {}'.format(paths.logging_config_path))
+            print('Could not read logging JSON file {}'.format(walkoff.config.config.Config.LOGGING_CONFIG_PATH))
         except ValueError:
             print('Invalid JSON in logging config file')
     else:
@@ -51,7 +51,7 @@ def run(host, port):
     print_banner()
     pids = spawn_worker_processes(walkoff.config.config.Config.NUMBER_PROCESSES,
                                   walkoff.config.config.Config.NUM_THREADS_PER_PROCESS,
-                                  walkoff.config.paths.zmq_private_keys_path,
+                                  walkoff.config.config.Config.ZMQ_PRIVATE_KEYS_PATH,
                                   walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
                                   walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS)
     monkey.patch_all()
@@ -60,8 +60,8 @@ def run(host, port):
     compose_api()
 
     from walkoff.server import flaskserver
-    flaskserver.running_context.executor.initialize_threading(walkoff.config.paths.zmq_public_keys_path,
-                                                              walkoff.config.paths.zmq_private_keys_path,
+    flaskserver.running_context.executor.initialize_threading(walkoff.config.config.Config.ZMQ_PUBLIC_KEYS_PATH,
+                                                              walkoff.config.config.Config.ZMQ_PRIVATE_KEYS_PATH,
                                                               walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
                                                               walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS,
                                                               pids)
@@ -83,9 +83,10 @@ def print_banner():
 
 
 def setup_server(app, host, port):
-    if isfile(paths.certificate_path) and isfile(paths.private_key_path):
+    if isfile(walkoff.config.config.Config.CERTIFICATE_PATH) and isfile(walkoff.config.config.Config.PRIVATE_KEY_PATH):
         server = pywsgi.WSGIServer((host, port), application=app,
-                                   keyfile=paths.private_key_path, certfile=paths.certificate_path)
+                                   keyfile=walkoff.config.config.Config.PRIVATE_KEY_PATH,
+                                   certfile=walkoff.config.config.Config.CERTIFICATE_PATH)
         protocol = 'https'
     else:
         logger.warning('Cannot find certificates. Using HTTP')

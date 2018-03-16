@@ -6,7 +6,6 @@ from mock import patch
 from zmq import Socket
 
 import walkoff.config.config
-import walkoff.config.paths
 from tests.util.execution_db_help import setup_dbs
 from tests.util.mock_objects import MockRedisCacheAdapter
 from walkoff.case.subscription import Subscription
@@ -21,7 +20,7 @@ class TestWorkflowExecutionController(TestCase):
     def setUpClass(cls):
         cls.subscriptions = [Subscription(str(uuid4()), ['a', 'b', 'c']), Subscription(str(uuid4()), ['b'])]
         cls.cache = MockRedisCacheAdapter()
-        cls.controller = WorkflowExecutionController(cls.cache, walkoff.config.paths.zmq_private_keys_path,
+        cls.controller = WorkflowExecutionController(cls.cache, walkoff.config.config.Config.ZMQ_PRIVATE_KEYS_PATH,
                                                      walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS)
         setup_dbs()
 

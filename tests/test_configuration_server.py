@@ -3,7 +3,6 @@ import json
 from flask import current_app
 
 import walkoff.config.config
-import walkoff.config.paths
 from tests.util.servertestcase import ServerTestCase
 from walkoff.server.returncodes import *
 
@@ -13,32 +12,24 @@ class TestConfigurationServer(ServerTestCase):
         config_fields = [x for x in dir(walkoff.config.config) if
                          not x.startswith('__') and type(getattr(walkoff.config.config, x)).__name__
                          in ['str', 'unicode']]
-        path_fields = [x for x in dir(walkoff.config.paths) if (not x.startswith('__')
-                                                                and type(getattr(walkoff.config.paths, x)).__name__
-                                                                in ['str', 'unicode'])]
         self.original_configs = {key: getattr(walkoff.config.config, key) for key in config_fields}
-        self.original_paths = {key: getattr(walkoff.config.paths, key) for key in path_fields}
         try:
-            with open(walkoff.config.paths.config_path) as config_file:
+            with open(walkoff.config.config.Config.CONFIG_PATH) as config_file:
                 self.original_config_file = config_file.read()
         except:
             self.original_config_file = '{}'
 
-    def preTearDown(self):
-        for key, value in self.original_paths.items():
-            setattr(walkoff.config.paths, key, value)
-
     def tearDown(self):
         for key, value in self.original_configs.items():
-            setattr(walkoff.config.config, key, value)
-        with open(walkoff.config.paths.config_path, 'w') as config_file:
+            setattr(walkoff.config.config.Config, key, value)
+        with open(walkoff.config.config.Config.CONFIG_PATH, 'w') as config_file:
             config_file.write(self.original_config_file)
 
     def test_get_configuration(self):
-        expected = {'workflows_path': walkoff.config.paths.workflows_path,
-                    'db_path': walkoff.config.paths.db_path,
-                    'case_db_path': walkoff.config.paths.case_db_path,
-                    'log_config_path': walkoff.config.paths.logging_config_path,
+        expected = {'workflows_path': walkoff.config.config.Config.WORKFLOWS_PATH,
+                    'db_path': walkoff.config.config.Config.DB_PATH,
+                    'case_db_path': walkoff.config.config.Config.CASE_DB_PATH,
+                    'log_config_path': walkoff.config.config.Config.LOGGING_CONFIG_PATH,
                     'host': walkoff.config.config.Config.HOST,
                     'port': int(walkoff.config.config.Config.PORT),
                     'walkoff_db_type': walkoff.config.config.Config.WALKOFF_DB_TYPE,
@@ -63,7 +54,7 @@ class TestConfigurationServer(ServerTestCase):
                 "refresh_token_duration": 35}
         send_func('/api/configuration', headers=self.headers, data=json.dumps(data), content_type='application/json')
 
-        expected = {walkoff.config.paths.db_path: 'db_path_reset',
+        expected = {walkoff.config.config.Config.DB_PATH: 'db_path_reset',
                     walkoff.config.config.Config.HOST: 'host_reset',
                     walkoff.config.config.Config.PORT: 1100}
 

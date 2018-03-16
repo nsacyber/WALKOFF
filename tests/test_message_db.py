@@ -3,7 +3,6 @@ from datetime import datetime
 from unittest import TestCase
 from uuid import uuid4
 
-import walkoff.config.paths
 import walkoff.messaging
 from tests.util import execution_db_help
 from walkoff.events import WalkoffEvent

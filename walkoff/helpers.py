@@ -9,7 +9,6 @@ from datetime import datetime
 from uuid import uuid4
 
 import walkoff.config.config
-import walkoff.config.paths
 
 try:
     from importlib import reload as reload_module
@@ -96,13 +95,13 @@ def import_app_main(app_name, path=None, reload=False):
     
     Args:
         app_name (str): The name of the App from which to import the main function.
-        path (str, optional): The path to the apps module. Defaults to core.config.paths.apps_path
+        path (str, optional): The path to the apps module. Defaults to walkoff.config.config.Config.APPS_PATH
         reload (bool, optional): Reload the module if already imported. Defaults to True
     Returns:
         The module object that was imported.
     """
     if path is None:
-        path = walkoff.config.paths.apps_path
+        path = walkoff.config.config.Config.APPS_PATH
     app_path = os.path.join(path, app_name, 'main.py')
     module_name = construct_module_name_from_path(app_path[:-3])
     try:
@@ -141,13 +140,13 @@ def list_apps(path=None):
         A list of the apps given the apps path or the apps_path in the configuration.
     """
     if path is None:
-        path = walkoff.config.paths.apps_path
+        path = walkoff.config.config.Config.APPS_PATH
     return __list_valid_directories(path)
 
 
 def list_interfaces(path=None):
     if path is None:
-        path = walkoff.config.paths.interfaces_path
+        path = walkoff.config.config.Config.INTERFACES_PATH
     return __list_valid_directories(path)
 
 
@@ -173,7 +172,7 @@ def locate_playbooks_in_directory(path=None):
     Returns:
         A list of workflow names from the specified path, or the directory specified in the configuration.
     """
-    path = path if path is not None else walkoff.config.paths.workflows_path
+    path = path if path is not None else walkoff.config.config.Config.WORKFLOWS_PATH
     if os.path.exists(path):
         return [workflow for workflow in os.listdir(path) if (os.path.isfile(os.path.join(path, workflow))
                                                               and workflow.endswith('.playbook'))]

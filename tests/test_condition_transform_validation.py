@@ -6,7 +6,6 @@ import walkoff.appgateway
 import walkoff.config.config
 from tests.config import basic_app_api, test_apps_path
 from walkoff.appgateway.validator import *
-from walkoff.config.paths import walkoff_schema_path
 
 
 class TestConditionTransformValidation(unittest.TestCase):
@@ -28,7 +27,7 @@ class TestConditionTransformValidation(unittest.TestCase):
 
     def __generate_resolver_dereferencer(self, spec, expected_success=True):
         try:
-            walkoff_resolver = validate_spec_json(spec, walkoff_schema_path, '', None)
+            walkoff_resolver = validate_spec_json(spec, walkoff.config.config.Config.WALKOFF_SCHEMA_PATH, '', None)
         except Exception as e:
             if expected_success:
                 self.fail('Unexpectedly invalid app api. Error: {}'.format(e))

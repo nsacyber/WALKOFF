@@ -6,7 +6,6 @@ import unittest
 import tests.config
 import walkoff.appgateway
 import walkoff.config.config
-import walkoff.config.paths
 from tests.util import execution_db_help
 from tests.util.mock_objects import *
 from tests.util.thread_control import *
@@ -66,20 +65,20 @@ class ServerTestCase(unittest.TestCase):
             MultiprocessedExecutor.initialize_threading = mock_initialize_threading
             MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
             MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
-            flaskserver.running_context.executor.initialize_threading(walkoff.config.paths.zmq_public_keys_path,
-                                                                      walkoff.config.paths.zmq_private_keys_path,
+            flaskserver.running_context.executor.initialize_threading(walkoff.config.config.Config.ZMQ_PUBLIC_KEYS_PATH,
+                                                                      walkoff.config.config.Config.ZMQ_PRIVATE_KEYS_PATH,
                                                                       walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
                                                                       walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS)
         else:
             from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
             pids = spawn_worker_processes(walkoff.config.config.Config.NUMBER_PROCESSES,
                                           walkoff.config.config.Config.NUM_THREADS_PER_PROCESS,
-                                          walkoff.config.paths.zmq_private_keys_path,
+                                          walkoff.config.config.Config.ZMQ_PRIVATE_KEYS_PATH,
                                           walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
                                           walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS,
                                           worker_environment_setup=modified_setup_worker_env)
-            flaskserver.running_context.executor.initialize_threading(walkoff.config.paths.zmq_public_keys_path,
-                                                                      walkoff.config.paths.zmq_private_keys_path,
+            flaskserver.running_context.executor.initialize_threading(walkoff.config.config.Config.ZMQ_PUBLIC_KEYS_PATH,
+                                                                      walkoff.config.config.Config.ZMQ_PRIVATE_KEYS_PATH,
                                                                       walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
                                                                       walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS,
                                                                       pids)
@@ -104,10 +103,10 @@ class ServerTestCase(unittest.TestCase):
 
     def setUp(self):
         import walkoff.server.flaskserver
-        walkoff.config.paths.workflows_path = tests.config.test_workflows_path
-        walkoff.config.paths.apps_path = tests.config.test_apps_path
-        walkoff.config.paths.default_appdevice_export_path = tests.config.test_appdevice_backup
-        walkoff.config.paths.default_case_export_path = tests.config.test_cases_backup
+        walkoff.config.config.Config.WORKFLOWS_PATH = tests.config.test_workflows_path
+        walkoff.config.config.Config.APPS_PATH = tests.config.test_apps_path
+        walkoff.config.config.Config.DEFAULT_APPDEVICE_EXPORT_PATH = tests.config.test_appdevice_backup
+        walkoff.config.config.Config.DEFAULT_CASE_EXPORT_PATH = tests.config.test_cases_backup
 
         self.app = walkoff.server.flaskserver.app.test_client(self)
         self.app.testing = True

@@ -3,7 +3,6 @@ import os
 
 import tests.config
 import walkoff.config.config
-import walkoff.config.paths
 from tests.config import test_apps_path
 from tests.util.servertestcase import ServerTestCase
 from walkoff import executiondb

@@ -5,7 +5,6 @@ from mock import create_autospec
 
 import walkoff.appgateway
 import walkoff.config.config
-import walkoff.config.paths
 from tests import config
 from tests.util import execution_db_help
 from tests.util.mock_objects import *
@@ -33,8 +32,8 @@ class TestWorkflowManipulation(unittest.TestCase):
         cls.executor = multiprocessedexecutor.MultiprocessedExecutor(
             MockRedisCacheAdapter(),
             create_autospec(CaseLogger))
-        cls.executor.initialize_threading(walkoff.config.paths.zmq_public_keys_path,
-                                          walkoff.config.paths.zmq_private_keys_path,
+        cls.executor.initialize_threading(walkoff.config.config.Config.ZMQ_PUBLIC_KEYS_PATH,
+                                          walkoff.config.config.Config.ZMQ_PRIVATE_KEYS_PATH,
                                           walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
                                           walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS)
 
