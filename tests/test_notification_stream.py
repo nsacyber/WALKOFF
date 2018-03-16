@@ -2,7 +2,7 @@ from unittest import TestCase
 from tests.util.mock_objects import MockRedisCacheAdapter
 from walkoff.server.blueprints.notifications import *
 from datetime import datetime
-from mock import patch, call
+from mock import patch
 
 class MockUser:
     def __init__(self, id_, username):

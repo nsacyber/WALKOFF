@@ -11,11 +11,11 @@ logger = logging.getLogger(__name__)
 
 def register_blueprints(flaskapp):
     from walkoff.server.blueprints import custominterface
-    from walkoff.server.blueprints import workflowqueue
+    from walkoff.server.blueprints import workflowresults
     from walkoff.server.blueprints import notifications
 
     flaskapp.register_blueprint(custominterface.custom_interface_page, url_prefix='/custominterfaces/<interface>')
-    flaskapp.register_blueprint(workflowqueue.workflowqueue_page, url_prefix='/api/streams/workflowqueue')
+    flaskapp.register_blueprint(workflowresults.workflowresults_page, url_prefix='/api/streams/workflowqueue')
     flaskapp.register_blueprint(notifications.notifications_page, url_prefix='/api/streams/messages')
     __register_all_app_blueprints(flaskapp)
 
@@ -50,13 +50,13 @@ def __register_all_app_blueprints(flaskapp):
     imported_apps = import_submodules(interfaces)
     for interface_name, interfaces_module in imported_apps.items():
         try:
-            display_blueprints = []
+            interface_blueprints = []
             for submodule in import_submodules(interfaces_module, recursive=True).values():
-                display_blueprints.extend(__get_blueprints_in_module(submodule))
+                interface_blueprints.extend(__get_blueprints_in_module(submodule))
         except ImportError:
             pass
         else:
-            __register_app_blueprints(flaskapp, interface_name, display_blueprints)
+            __register_app_blueprints(flaskapp, interface_name, interface_blueprints)
 
 
 def create_app(app_config):

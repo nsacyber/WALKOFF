@@ -1,10 +1,25 @@
 import walkoff.cache
 from functools import wraps
-from flask import Response
+from flask import Response, Blueprint
 import json
 from walkoff.cache import unsubscribe_message
 import collections
 from six import string_types
+
+
+class StreamableBlueprint(Blueprint):
+
+    def __init__(self, *args, **kwargs):
+        if 'streams' in kwargs:
+            self.streams = {stream.channel: stream for stream in kwargs.pop('streams')}
+        else:
+            self.streams = {}
+        super(StreamableBlueprint, self).__init__(*args, **kwargs)
+
+    def set_stream_caches(self, cache):
+        for stream in self.streams.values():
+            if stream.cache is None:
+                stream.cache = cache
 
 
 class SseEvent(object):
