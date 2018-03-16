@@ -7,24 +7,6 @@ import yaml
 
 logger = logging.getLogger(__name__)
 
-
-def write_values_to_file(keys=None):
-    """ Writes the current walkoff configuration to a file
-    """
-    if keys is None:
-        keys = [key for key in dir(Config) if not key.startswith('__')]
-
-    output = {}
-    for key in keys:
-        if hasattr(Config, key.upper()):
-            output[key] = getattr(Config, key)
-
-    with open(Config.CONFIG_PATH, 'w') as config_file:
-        config_file.write(json.dumps(output, sort_keys=True, indent=4, separators=(',', ': ')))
-
-
-# Function Dict Paths/Initialization
-
 app_apis = {}
 
 
@@ -33,7 +15,7 @@ def load_app_apis(apps_path=None):
     
     Args:
         apps_path (str, optional): Optional path to specifiy for the apps. Defaults to None, but will be set to the
-            apps_path variable in walkoff.config.paths
+            apps_path variable in Config object
     """
     from walkoff.helpers import list_apps, format_exception_message
     global app_apis
@@ -128,6 +110,21 @@ class Config(object):
                                 setattr(cls, key, value)
             except (IOError, OSError, ValueError):
                 logger.warning('Could not read config file.', exc_info=True)
+
+    @classmethod
+    def write_values_to_file(cls, keys=None):
+        """ Writes the current walkoff configuration to a file
+        """
+        if keys is None:
+            keys = [key for key in dir(cls) if not key.startswith('__')]
+
+        output = {}
+        for key in keys:
+            if hasattr(cls, key.upper()):
+                output[key] = getattr(cls, key)
+
+        with open(cls.CONFIG_PATH, 'w') as config_file:
+            config_file.write(json.dumps(output, sort_keys=True, indent=4, separators=(',', ': ')))
 
 
 class AppConfig(object):

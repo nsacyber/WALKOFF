@@ -56,7 +56,7 @@ def update_configuration(configuration):
 
         current_app.logger.info('Changed configuration')
         try:
-            walkoff.config.config.write_values_to_file()
+            walkoff.config.config.Config.write_values_to_file()
             return __get_current_configuration(), SUCCESS
         except (IOError, OSError) as e:
             current_app.logger.error('Could not write changes to configuration to file')
