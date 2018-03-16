@@ -1,7 +1,7 @@
 import uuid
 from unittest import TestCase
 
-import walkoff.config.config
+import walkoff.config
 import walkoff.executiondb.schemas
 from interfaces import InterfaceEventDispatcher, dispatcher
 from interfaces.exceptions import UnknownEvent, InvalidEventHandler
@@ -35,7 +35,7 @@ class TestInterfaceEventDispatcher(TestCase):
     @classmethod
     def setUpClass(cls):
         execution_db_help.setup_dbs()
-        walkoff.config.config.app_apis = {'App1': {'actions': {'action1': None,
+        walkoff.config.app_apis = {'App1': {'actions': {'action1': None,
                                                                'action2': None,
                                                                'action3': None}},
                                           'App2': {}}
@@ -51,7 +51,7 @@ class TestInterfaceEventDispatcher(TestCase):
     @classmethod
     def tearDownClass(cls):
         dispatcher._clear()
-        walkoff.config.config.app_apis = {}
+        walkoff.config.app_apis = {}
         walkoff.executiondb.schemas._schema_lookup.pop(MockWorkflow, None)
         execution_db_help.tear_down_execution_db()
 

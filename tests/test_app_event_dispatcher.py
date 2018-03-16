@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-import walkoff.config.config
+import walkoff.config
 from interfaces import AppEventDispatcher
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.helpers import UnknownApp, UnknownAppAction
@@ -12,7 +12,7 @@ def func(): pass
 class TestAppEventDispatcher(TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.config.config.app_apis = {'App1': {'actions': {'action1': None,
+        walkoff.config.app_apis = {'App1': {'actions': {'action1': None,
                                                                'action2': None,
                                                                'action3': None}},
                                           'App2': {}}
@@ -20,7 +20,7 @@ class TestAppEventDispatcher(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        walkoff.config.config.app_apis = {}
+        walkoff.config.app_apis = {}
 
     def setUp(self):
         self.router = AppEventDispatcher()

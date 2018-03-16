@@ -2,7 +2,7 @@ import json
 import os
 
 import tests.config
-import walkoff.config.config
+import walkoff.config
 from tests.config import test_apps_path
 from tests.util.servertestcase import ServerTestCase
 from walkoff import executiondb
@@ -24,7 +24,7 @@ class TestDevicesServer(ServerTestCase):
         if app is not None:
             executiondb.execution_db.session.delete(app)
         executiondb.execution_db.session.commit()
-        walkoff.config.config.app_apis = {}
+        walkoff.config.app_apis = {}
         if os.path.exists(os.path.join(test_apps_path, 'testDevice.json')):
             os.remove(os.path.join(test_apps_path, 'testDevice.json'))
 
@@ -87,7 +87,7 @@ class TestDevicesServer(ServerTestCase):
     def test_create_device_app_not_in_apis(self):
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
+        walkoff.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
         device_json = {'app_name': 'Invalid', 'name': 'test', 'type': 'some_type', 'fields': []}
         self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
@@ -96,7 +96,7 @@ class TestDevicesServer(ServerTestCase):
     def test_create_device_device_type_does_not_exist(self):
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
+        walkoff.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
         device_json = {'app_name': 'TestApp', 'name': 'test', 'type': 'invalid', 'fields': []}
         self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
@@ -105,7 +105,7 @@ class TestDevicesServer(ServerTestCase):
     def test_create_device_invalid_fields(self):
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
+        walkoff.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
         device_json = {'app_name': 'TestApp', 'name': 'test', 'type': 'test_type',
                        'fields': [{'name': 'test_name', 'value': 'invalid'}, {'name': 'test2', 'value': 'something'}]}
@@ -115,7 +115,7 @@ class TestDevicesServer(ServerTestCase):
     def test_create_device_app_not_in_db(self):
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
+        walkoff.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
         device_json = {'app_name': 'TestApp', 'name': 'test', 'type': 'test_type',
                        'fields': [{'name': 'test_name', 'value': 123}, {'name': 'test2', 'value': 'something'}]}
@@ -125,7 +125,7 @@ class TestDevicesServer(ServerTestCase):
     def test_create_device(self):
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
+        walkoff.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
         app = App(name=self.test_app_name)
         executiondb.execution_db.session.add(app)
         executiondb.execution_db.session.commit()
@@ -169,7 +169,7 @@ class TestDevicesServer(ServerTestCase):
 
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
+        walkoff.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
         data = {'id': device1.id, 'name': 'renamed', 'app_name': self.test_app_name, 'type': 'Invalid'}
         self.put_with_status_check('/api/devices', headers=self.headers, data=json.dumps(data),
@@ -184,7 +184,7 @@ class TestDevicesServer(ServerTestCase):
 
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
+        walkoff.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
         fields_json = [{'name': 'test_name', 'value': 'invalid'}, {'name': 'test2', 'value': 'something'}]
 
@@ -203,7 +203,7 @@ class TestDevicesServer(ServerTestCase):
 
         fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
                        {'name': 'test2', 'type': 'string', 'encrypted': False}]
-        walkoff.config.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
+        walkoff.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
 
         fields_json = [{'name': 'test_name', 'value': 123}, {'name': 'test2', 'value': 'something'}]
 
@@ -222,7 +222,7 @@ class TestDevicesServer(ServerTestCase):
         self.put_patch_update('patch')
 
     def test_export_apps_devices(self):
-        walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
+        walkoff.config.load_app_apis(apps_path=tests.config.test_apps_path)
 
         fields = [{"name": "Text field", "value": "texts"}, {"name": "Encrypted field", "value": "encrypted"},
                   {"name": "Number field", "value": 5}, {"name": "Enum field", "value": "val 1"},
@@ -244,7 +244,7 @@ class TestDevicesServer(ServerTestCase):
                 {k.encode("utf-8"): str(v).encode("utf-8") for k, v in field.items()})))
 
     def test_import_apps_devices(self):
-        walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
+        walkoff.config.load_app_apis(apps_path=tests.config.test_apps_path)
 
         fields = [{"name": "Text field", "value": "texts"}, {"name": "Number field", "value": 5},
                   {"name": "Enum field", "value": "val 1"}, {"name": "Boolean field", "value": True}]

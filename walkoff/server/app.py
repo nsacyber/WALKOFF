@@ -59,17 +59,17 @@ def __register_all_app_blueprints(flaskapp):
 
 
 def create_app():
-    import walkoff.config.config
+    import walkoff.config
     connexion_app = connexion.App(__name__, specification_dir='../api/')
     _app = connexion_app.app
     _app.jinja_loader = FileSystemLoader(['walkoff/templates'])
-    _app.config.from_object('walkoff.config.config.AppConfig')
+    _app.config.from_object('walkoff.config.AppConfig')
 
     db.init_app(_app)
     jwt.init_app(_app)
     connexion_app.add_api('composed_api.yaml')
 
-    walkoff.config.config.initialize()
+    walkoff.config.initialize()
     register_blueprints(_app)
 
     import walkoff.server.workflowresults  # Don't delete this import

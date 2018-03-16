@@ -10,7 +10,7 @@ from diskcache.core import DBNAME
 from gevent import sleep
 from gevent.event import AsyncResult, Event
 import threading
-import walkoff.config.config
+import walkoff.config
 import pickle
 logger = logging.getLogger(__name__)
 
@@ -432,7 +432,7 @@ class DiskCacheAdapter(object):
         Returns:
             (DiskCacheAdapter): A DiskCacheAdapter with a configuration reflecting the values in the JSON
         """
-        directory = json_in.pop('directory', walkoff.config.config.Config.CACHE_PATH)
+        directory = json_in.pop('directory', walkoff.config.Config.CACHE_PATH)
         shards = json_in.pop('shards', 8)
         timeout = json_in.pop('timeout', 0.01)
         retry = json_in.pop('retry', True)

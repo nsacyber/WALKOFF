@@ -3,7 +3,7 @@ import unittest
 from mock import create_autospec
 
 import walkoff.appgateway
-import walkoff.config.config
+import walkoff.config
 from tests import config
 from tests.util import execution_db_help
 from tests.util.mock_objects import *
@@ -19,17 +19,17 @@ class TestSimpleWorkflow(unittest.TestCase):
 
         from walkoff.appgateway import cache_apps
         cache_apps(path=config.test_apps_path)
-        walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
-        walkoff.config.config.Config.NUMBER_PROCESSES = 2
+        walkoff.config.load_app_apis(apps_path=config.test_apps_path)
+        walkoff.config.Config.NUMBER_PROCESSES = 2
         multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
         cls.executor = multiprocessedexecutor.MultiprocessedExecutor(MockRedisCacheAdapter(),
                                                                      create_autospec(CaseLogger))
-        cls.executor.initialize_threading(walkoff.config.config.Config.ZMQ_PUBLIC_KEYS_PATH,
-                                          walkoff.config.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                          walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
-                                          walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS)
+        cls.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
+                                          walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
+                                          walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
+                                          walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
 
     def tearDown(self):
         execution_db_help.cleanup_execution_db()

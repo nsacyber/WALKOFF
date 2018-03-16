@@ -1,7 +1,7 @@
 import logging
 from weakref import WeakSet
 
-import walkoff.config.config
+import walkoff.config
 from interfaces.util import convert_to_iterable
 from walkoff.events import EventType
 from walkoff.helpers import UnknownAppAction, UnknownApp
@@ -251,7 +251,7 @@ class AppEventDispatcher(object):
             UnknownAppAction: If the action is not found in the give app's actions
         """
         try:
-            available_actions = set(walkoff.config.config.app_apis[app]['actions'].keys())
+            available_actions = set(walkoff.config.app_apis[app]['actions'].keys())
             if actions == 'all':
                 return available_actions
             actions = set(convert_to_iterable(actions))

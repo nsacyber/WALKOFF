@@ -5,7 +5,7 @@ import time
 import unittest
 
 import walkoff.appgateway
-import walkoff.config.config
+import walkoff.config
 from tests import config
 from tests.util import execution_db_help
 from tests.util.thread_control import modified_setup_worker_env
@@ -26,21 +26,21 @@ class TestZMQCommunication(unittest.TestCase):
         execution_db_help.setup_dbs()
 
         from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
-        walkoff.config.config.Config.NUMBER_PROCESSES = 2
-        pids = spawn_worker_processes(walkoff.config.config.Config.NUMBER_PROCESSES,
-                                      walkoff.config.config.Config.NUM_THREADS_PER_PROCESS,
-                                      walkoff.config.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                      walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
-                                      walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS,
+        walkoff.config.Config.NUMBER_PROCESSES = 2
+        pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES,
+                                      walkoff.config.Config.NUM_THREADS_PER_PROCESS,
+                                      walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
+                                      walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
+                                      walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
                                       worker_environment_setup=modified_setup_worker_env)
 
         cls.executor = MultiprocessedExecutor(make_cache(), create_autospec(CaseLogger))
-        cls.executor.initialize_threading(walkoff.config.config.Config.ZMQ_PUBLIC_KEYS_PATH,
-                                          walkoff.config.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                          walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
-                                          walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS, pids)
+        cls.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
+                                          walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
+                                          walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
+                                          walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS, pids)
         walkoff.appgateway.cache_apps(config.test_apps_path)
-        walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
+        walkoff.config.load_app_apis(apps_path=config.test_apps_path)
 
     def tearDown(self):
         execution_db_help.cleanup_execution_db()
@@ -79,7 +79,7 @@ class TestZMQCommunication(unittest.TestCase):
         workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         workflow_id = workflow.id
 
-        capacity = walkoff.config.config.Config.NUMBER_PROCESSES * walkoff.config.config.Config.NUM_THREADS_PER_PROCESS
+        capacity = walkoff.config.Config.NUMBER_PROCESSES * walkoff.config.Config.NUM_THREADS_PER_PROCESS
 
         result = {'workflows_executed': 0}
 

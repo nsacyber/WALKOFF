@@ -15,7 +15,7 @@ from nacl.public import PrivateKey, Box
 from six import string_types
 
 import walkoff.cache
-import walkoff.config.config
+import walkoff.config
 import walkoff.executiondb
 from walkoff import initialize_databases
 from walkoff.appgateway.appinstancerepo import AppInstanceRepo
@@ -189,7 +189,7 @@ class Worker(object):
         if worker_environment_setup:
             worker_environment_setup()
         else:
-            walkoff.config.config.initialize()
+            walkoff.config.initialize()
             initialize_databases()
         self.cache = walkoff.cache.make_cache()
 

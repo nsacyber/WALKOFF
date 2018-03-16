@@ -6,7 +6,7 @@ import unittest
 
 sys.path.append(os.path.abspath('.'))
 from walkoff.helpers import list_apps
-import walkoff.config.config
+import walkoff.config
 
 
 def cmd_line():
@@ -21,7 +21,7 @@ def cmd_line():
 
 
 def get_tests(app_name):
-    tests_path = os.path.join(walkoff.config.config.Config.APPS_PATH, app_name, 'tests')
+    tests_path = os.path.join(walkoff.config.Config.APPS_PATH, app_name, 'tests')
     if os.path.isdir(tests_path):
         test_files = [os.path.splitext(f)[0]
                       for f in os.listdir(tests_path) if (os.path.isfile(os.path.join(tests_path, f))

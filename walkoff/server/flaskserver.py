@@ -3,7 +3,7 @@ import os
 
 from flask import render_template, send_from_directory
 
-import walkoff.config.config
+import walkoff.config
 from walkoff.server import app
 from sqlalchemy.exc import SQLAlchemyError
 from walkoff.server.context import running_context  # Need this import
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 # Custom static data
 @app.route('/client/<path:filename>')
 def client_app_folder(filename):
-    return send_from_directory(os.path.abspath(walkoff.config.config.Config.CLIENT_PATH), filename)
+    return send_from_directory(os.path.abspath(walkoff.config.Config.CLIENT_PATH), filename)
 
 
 @app.route('/')

@@ -3,7 +3,7 @@ import unittest
 import tests.config
 import tests.config
 import walkoff.appgateway
-import walkoff.config.config
+import walkoff.config
 from tests.util import execution_db_help
 from walkoff.appgateway.actionresult import ActionResult
 from walkoff.appgateway.appinstance import AppInstance
@@ -22,7 +22,7 @@ class TestAction(unittest.TestCase):
     def setUpClass(cls):
         execution_db_help.setup_dbs()
         walkoff.appgateway.cache_apps(tests.config.test_apps_path)
-        walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
+        walkoff.config.load_app_apis(apps_path=tests.config.test_apps_path)
 
     @classmethod
     def tearDownClass(cls):

@@ -14,7 +14,7 @@ import nacl.secret
 import nacl.utils
 import os
 import zmq.auth as auth
-import walkoff.config.config
+import walkoff.config
 
 logger = logging.getLogger(__name__)
 
@@ -363,7 +363,7 @@ class EncryptedDeviceField(Execution_Base, DeviceFieldMixin):
         self.name = name
         self.type = field_type if field_type in allowed_device_field_types else 'string'
 
-        server_secret_file = os.path.join(walkoff.config.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
+        server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
         _, server_secret = auth.load_certificate(server_secret_file)
         self.__key = server_secret[:nacl.secret.SecretBox.KEY_SIZE]
         self.__box = nacl.secret.SecretBox(self.__key)
@@ -371,7 +371,7 @@ class EncryptedDeviceField(Execution_Base, DeviceFieldMixin):
 
     @orm.reconstructor
     def init_on_load(self):
-        server_secret_file = os.path.join(walkoff.config.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
+        server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
         _, server_secret = auth.load_certificate(server_secret_file)
         self.__key = server_secret[:nacl.secret.SecretBox.KEY_SIZE]
         self.__box = nacl.secret.SecretBox(self.__key)
