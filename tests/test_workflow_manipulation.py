@@ -26,7 +26,7 @@ class TestWorkflowManipulation(unittest.TestCase):
 
         walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
-        walkoff.config.config.number_processes = 2
+        walkoff.config.config.Config.NUMBER_PROCESSES = 2
         multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
@@ -35,8 +35,8 @@ class TestWorkflowManipulation(unittest.TestCase):
             create_autospec(CaseLogger))
         cls.executor.initialize_threading(walkoff.config.paths.zmq_public_keys_path,
                                           walkoff.config.paths.zmq_private_keys_path,
-                                          walkoff.config.config.zmq_results_address,
-                                          walkoff.config.config.zmq_communication_address)
+                                          walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
+                                          walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS)
 
     def tearDown(self):
         execution_db_help.cleanup_execution_db()

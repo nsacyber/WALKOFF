@@ -49,9 +49,11 @@ def run(host, port):
     from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
     setup_logger()
     print_banner()
-    pids = spawn_worker_processes(walkoff.config.config.number_processes, walkoff.config.config.num_threads_per_process,
-                                  walkoff.config.paths.zmq_private_keys_path, walkoff.config.config.zmq_results_address,
-                                  walkoff.config.config.zmq_communication_address)
+    pids = spawn_worker_processes(walkoff.config.config.Config.NUMBER_PROCESSES,
+                                  walkoff.config.config.Config.NUM_THREADS_PER_PROCESS,
+                                  walkoff.config.paths.zmq_private_keys_path,
+                                  walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
+                                  walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS)
     monkey.patch_all()
 
     from scripts.compose_api import compose_api
@@ -60,8 +62,9 @@ def run(host, port):
     from walkoff.server import flaskserver
     flaskserver.running_context.executor.initialize_threading(walkoff.config.paths.zmq_public_keys_path,
                                                               walkoff.config.paths.zmq_private_keys_path,
-                                                              walkoff.config.config.zmq_results_address,
-                                                              walkoff.config.config.zmq_communication_address, pids)
+                                                              walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
+                                                              walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS,
+                                                              pids)
     # The order of these imports matter for initialization (should probably be fixed)
 
     import walkoff.case.database as case_database
@@ -108,8 +111,8 @@ def parse_args():
 
 
 def convert_host_port(args):
-    host = config.host if args.host is None else args.host
-    port = config.port if args.port is None else args.port
+    host = config.Config.HOST if args.host is None else args.host
+    port = config.Config.PORT if args.port is None else args.port
     try:
         port = int(port)
     except ValueError:
@@ -119,7 +122,7 @@ def convert_host_port(args):
 
 
 def connect_to_cache():
-    walkoff.cache.cache = walkoff.cache.make_cache(config.cache_config)
+    walkoff.cache.cache = walkoff.cache.make_cache(config.Config.CACHE_CONFIG)
 
 
 if __name__ == "__main__":

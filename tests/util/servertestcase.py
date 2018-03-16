@@ -54,7 +54,7 @@ class ServerTestCase(unittest.TestCase):
         walkoff.appgateway.cache_apps(path=tests.config.test_apps_path)
         walkoff.config.config.app_apis = {}
         walkoff.config.config.load_app_apis(apps_path=tests.config.test_apps_path)
-        walkoff.config.config.number_processes = 2
+        walkoff.config.config.Config.NUMBER_PROCESSES = 2
 
         from walkoff.server import flaskserver
         cls.context = flaskserver.app.test_request_context()
@@ -68,20 +68,20 @@ class ServerTestCase(unittest.TestCase):
             MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
             flaskserver.running_context.executor.initialize_threading(walkoff.config.paths.zmq_public_keys_path,
                                                                       walkoff.config.paths.zmq_private_keys_path,
-                                                                      walkoff.config.config.zmq_results_address,
-                                                                      walkoff.config.config.zmq_communication_address)
+                                                                      walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
+                                                                      walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS)
         else:
             from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
-            pids = spawn_worker_processes(walkoff.config.config.number_processes,
-                                          walkoff.config.config.num_threads_per_process,
+            pids = spawn_worker_processes(walkoff.config.config.Config.NUMBER_PROCESSES,
+                                          walkoff.config.config.Config.NUM_THREADS_PER_PROCESS,
                                           walkoff.config.paths.zmq_private_keys_path,
-                                          walkoff.config.config.zmq_results_address,
-                                          walkoff.config.config.zmq_communication_address,
+                                          walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
+                                          walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS,
                                           worker_environment_setup=modified_setup_worker_env)
             flaskserver.running_context.executor.initialize_threading(walkoff.config.paths.zmq_public_keys_path,
                                                                       walkoff.config.paths.zmq_private_keys_path,
-                                                                      walkoff.config.config.zmq_results_address,
-                                                                      walkoff.config.config.zmq_communication_address,
+                                                                      walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
+                                                                      walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS,
                                                                       pids)
 
     @classmethod

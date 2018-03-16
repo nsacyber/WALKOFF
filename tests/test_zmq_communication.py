@@ -27,19 +27,19 @@ class TestZMQCommunication(unittest.TestCase):
         execution_db_help.setup_dbs()
 
         from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
-        walkoff.config.config.number_processes = 2
-        pids = spawn_worker_processes(walkoff.config.config.number_processes,
-                                      walkoff.config.config.num_threads_per_process,
+        walkoff.config.config.Config.NUMBER_PROCESSES = 2
+        pids = spawn_worker_processes(walkoff.config.config.Config.NUMBER_PROCESSES,
+                                      walkoff.config.config.Config.NUM_THREADS_PER_PROCESS,
                                       walkoff.config.paths.zmq_private_keys_path,
-                                      walkoff.config.config.zmq_results_address,
-                                      walkoff.config.config.zmq_communication_address,
+                                      walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
+                                      walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS,
                                       worker_environment_setup=modified_setup_worker_env)
 
         cls.executor = MultiprocessedExecutor(make_cache(), create_autospec(CaseLogger))
         cls.executor.initialize_threading(walkoff.config.paths.zmq_public_keys_path,
                                           walkoff.config.paths.zmq_private_keys_path,
-                                          walkoff.config.config.zmq_results_address,
-                                          walkoff.config.config.zmq_communication_address, pids)
+                                          walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
+                                          walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS, pids)
         walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
 
@@ -80,7 +80,7 @@ class TestZMQCommunication(unittest.TestCase):
         workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         workflow_id = workflow.id
 
-        capacity = walkoff.config.config.number_processes * walkoff.config.config.num_threads_per_process
+        capacity = walkoff.config.config.Config.NUMBER_PROCESSES * walkoff.config.config.Config.NUM_THREADS_PER_PROCESS
 
         result = {'workflows_executed': 0}
 

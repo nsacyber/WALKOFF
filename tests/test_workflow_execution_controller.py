@@ -22,7 +22,7 @@ class TestWorkflowExecutionController(TestCase):
         cls.subscriptions = [Subscription(str(uuid4()), ['a', 'b', 'c']), Subscription(str(uuid4()), ['b'])]
         cls.cache = MockRedisCacheAdapter()
         cls.controller = WorkflowExecutionController(cls.cache, walkoff.config.paths.zmq_private_keys_path,
-                                                     walkoff.config.config.zmq_communication_address)
+                                                     walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS)
         setup_dbs()
 
     def tearDown(self):

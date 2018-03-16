@@ -39,17 +39,18 @@ class TestConfigurationServer(ServerTestCase):
                     'db_path': walkoff.config.paths.db_path,
                     'case_db_path': walkoff.config.paths.case_db_path,
                     'log_config_path': walkoff.config.paths.logging_config_path,
-                    'host': walkoff.config.config.host,
-                    'port': int(walkoff.config.config.port),
-                    'walkoff_db_type': walkoff.config.config.walkoff_db_type,
-                    'case_db_type': walkoff.config.config.case_db_type,
-                    'clear_case_db_on_startup': bool(walkoff.config.config.reinitialize_case_db_on_startup),
-                    'number_threads_per_process': int(walkoff.config.config.num_threads_per_process),
-                    'number_processes': int(walkoff.config.config.number_processes),
+                    'host': walkoff.config.config.Config.HOST,
+                    'port': int(walkoff.config.config.Config.PORT),
+                    'walkoff_db_type': walkoff.config.config.Config.WALKOFF_DB_TYPE,
+                    'case_db_type': walkoff.config.config.Config.CASE_DB_TYPE,
+                    'clear_case_db_on_startup': bool(walkoff.config.config.Config.REINITIALIZE_CASE_DB_ON_STARTUP),
+                    'number_threads_per_process': int(walkoff.config.config.Config.NUM_THREADS_PER_PROCESS),
+                    'number_processes': int(walkoff.config.config.Config.NUMBER_PROCESSES),
                     'access_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds / 60),
                     'refresh_token_duration': int(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days),
-                    'zmq_results_address': walkoff.config.config.zmq_results_address,
-                    'zmq_communication_address': walkoff.config.config.zmq_communication_address}
+                    'zmq_results_address': walkoff.config.config.Config.ZMQ_RESULTS_ADDRESS,
+                    'zmq_communication_address': walkoff.config.config.Config.ZMQ_COMMUNICATION_ADDRESS,
+                    'cache': None}
         response = self.get_with_status_check('/api/configuration', headers=self.headers)
         self.assertDictEqual(response, expected)
 
@@ -63,8 +64,8 @@ class TestConfigurationServer(ServerTestCase):
         send_func('/api/configuration', headers=self.headers, data=json.dumps(data), content_type='application/json')
 
         expected = {walkoff.config.paths.db_path: 'db_path_reset',
-                    walkoff.config.config.host: 'host_reset',
-                    walkoff.config.config.port: 1100}
+                    walkoff.config.config.Config.HOST: 'host_reset',
+                    walkoff.config.config.Config.PORT: 1100}
 
         for actual, expected_ in expected.items():
             self.assertEqual(actual, expected_)
