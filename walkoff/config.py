@@ -104,8 +104,6 @@ class Config(object):
                     config = json.loads(config_file.read())
                     for key, value in config.items():
                         if value:
-                            # if key == 'cache':
-                            #     cls.CACHE = value
                             if hasattr(cls, key):
                                 setattr(cls, key, value)
             except (IOError, OSError, ValueError):
