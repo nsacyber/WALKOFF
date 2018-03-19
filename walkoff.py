@@ -112,8 +112,8 @@ def parse_args():
 
 
 def convert_host_port(args):
-    host = config.Config.HOST if args.host is None else args.host
-    port = config.Config.PORT if args.port is None else args.port
+    host = walkoff.config.Config.HOST if args.host is None else args.host
+    port = walkoff.config.Config.PORT if args.port is None else args.port
     try:
         port = int(port)
     except ValueError:
@@ -123,14 +123,14 @@ def convert_host_port(args):
 
 
 def connect_to_cache():
-    walkoff.cache.cache = walkoff.cache.make_cache(config.Config.CACHE_CONFIG)
+    walkoff.cache.cache = walkoff.cache.make_cache(walkoff.config.Config.CACHE_CONFIG)
 
 
 if __name__ == "__main__":
     args = parse_args()
     exit_code = 0
     try:
-        config.initialize()
+        walkoff.config.initialize()
         connect_to_cache()
         from walkoff import initialize_databases
 
