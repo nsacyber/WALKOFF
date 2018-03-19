@@ -50,7 +50,7 @@ def run(host, port):
     setup_logger()
     print_banner()
     pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES,
-                                  walkoff.config.Config.NUM_THREADS_PER_PROCESS,
+                                  walkoff.config.Config.NUMBER_THREADS_PER_PROCESS,
                                   walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
                                   walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
                                   walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
@@ -123,7 +123,7 @@ def convert_host_port(args):
 
 
 def connect_to_cache():
-    walkoff.cache.cache = walkoff.cache.make_cache(walkoff.config.Config.CACHE_CONFIG)
+    walkoff.cache.cache = walkoff.cache.make_cache(walkoff.config.Config.CACHE)
 
 
 if __name__ == "__main__":

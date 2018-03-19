@@ -44,7 +44,7 @@ def load_app_apis(apps_path=None):
 class Config(object):
     # CONFIG VALUES
 
-    REINITIALIZE_CASE_DB_ON_STARTUP = True
+    CLEAR_CASE_DB_ON_STARTUP = True
 
     # IP and port for the webserver
     HOST = "127.0.0.1"
@@ -58,14 +58,14 @@ class Config(object):
     # Specify the number of worker processes, and the number of threads for each worker process. Multiplying these
     # numbers together specifies the max number of workflows that may be executing at the same time.
     NUMBER_PROCESSES = 4
-    NUM_THREADS_PER_PROCESS = 3
+    NUMBER_THREADS_PER_PROCESS = 3
 
     # Database types
     WALKOFF_DB_TYPE = 'sqlite'
     CASE_DB_TYPE = 'sqlite'
     EXECUTION_DB_TYPE = 'sqlite'
 
-    CACHE_CONFIG = None
+    CACHE = {"type": "disk", "directory": "testdir", "shards": 1, "timeout": 10, "retry": True}
 
     # PATHS
 
@@ -104,8 +104,8 @@ class Config(object):
                     config = json.loads(config_file.read())
                     for key, value in config.items():
                         if value:
-                            if key == 'cache':
-                                cls.CACHE_CONFIG = value
+                            # if key == 'cache':
+                            #     cls.CACHE = value
                             if hasattr(cls, key):
                                 setattr(cls, key, value)
             except (IOError, OSError, ValueError):

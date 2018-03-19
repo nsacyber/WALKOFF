@@ -11,22 +11,21 @@ from walkoff.server.returncodes import *
 
 
 def __get_current_configuration():
-    return {'workflows_path': walkoff.config.Config.WORKFLOWS_PATH,
-            'db_path': walkoff.config.Config.DB_PATH,
+    return {'db_path': walkoff.config.Config.DB_PATH,
             'case_db_path': walkoff.config.Config.CASE_DB_PATH,
-            'log_config_path': walkoff.config.Config.LOGGING_CONFIG_PATH,
+            'logging_config_path': walkoff.config.Config.LOGGING_CONFIG_PATH,
             'host': walkoff.config.Config.HOST,
             'port': int(walkoff.config.Config.PORT),
             'walkoff_db_type': walkoff.config.Config.WALKOFF_DB_TYPE,
             'case_db_type': walkoff.config.Config.CASE_DB_TYPE,
-            'clear_case_db_on_startup': bool(walkoff.config.Config.REINITIALIZE_CASE_DB_ON_STARTUP),
+            'clear_case_db_on_startup': bool(walkoff.config.Config.CLEAR_CASE_DB_ON_STARTUP),
             'access_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds / 60),
             'refresh_token_duration': int(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days),
             'zmq_results_address': walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
             'zmq_communication_address': walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
             'number_processes': int(walkoff.config.Config.NUMBER_PROCESSES),
-            'number_threads_per_process': int(walkoff.config.Config.NUM_THREADS_PER_PROCESS),
-            'cache': walkoff.config.Config.CACHE_CONFIG}
+            'number_threads_per_process': int(walkoff.config.Config.NUMBER_THREADS_PER_PROCESS),
+            'cache': walkoff.config.Config.CACHE}
 
 
 def read_config_values():
@@ -53,6 +52,8 @@ def update_configuration(configuration):
         for config, config_value in configuration.items():
             if hasattr(walkoff.config.Config, config.upper()):
                 setattr(walkoff.config.Config, config.upper(), config_value)
+            elif hasattr(current_app.config, config.upper()):
+                setattr(current_app.config, config.upper(), config_value)
 
         current_app.logger.info('Changed configuration')
         try:

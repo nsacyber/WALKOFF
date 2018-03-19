@@ -28,7 +28,7 @@ class TestZMQCommunication(unittest.TestCase):
         from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
         walkoff.config.Config.NUMBER_PROCESSES = 2
         pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES,
-                                      walkoff.config.Config.NUM_THREADS_PER_PROCESS,
+                                      walkoff.config.Config.NUMBER_THREADS_PER_PROCESS,
                                       walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
                                       walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
                                       walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
@@ -79,7 +79,7 @@ class TestZMQCommunication(unittest.TestCase):
         workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
         workflow_id = workflow.id
 
-        capacity = walkoff.config.Config.NUMBER_PROCESSES * walkoff.config.Config.NUM_THREADS_PER_PROCESS
+        capacity = walkoff.config.Config.NUMBER_PROCESSES * walkoff.config.Config.NUMBER_THREADS_PER_PROCESS
 
         result = {'workflows_executed': 0}
 

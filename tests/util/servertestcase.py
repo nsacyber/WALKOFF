@@ -72,7 +72,7 @@ class ServerTestCase(unittest.TestCase):
         else:
             from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
             pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES,
-                                          walkoff.config.Config.NUM_THREADS_PER_PROCESS,
+                                          walkoff.config.Config.NUMBER_THREADS_PER_PROCESS,
                                           walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
                                           walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
                                           walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,

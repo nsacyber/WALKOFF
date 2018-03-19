@@ -29,10 +29,6 @@ import walkoff.case.database as casedb
 from walkoff.case.logger import CaseLogger
 from walkoff.case.subscription import Subscription
 from threading import Lock
-try:
-    from Queue import Queue
-except ImportError:
-    from queue import Queue
 
 logger = logging.getLogger(__name__)
 

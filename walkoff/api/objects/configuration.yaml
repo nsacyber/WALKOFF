@@ -9,7 +9,7 @@ Configuration:
       case_db_path:
         type: string
         description: The path to the case database
-      log_config_path:
+      logging_config_path:
         type: string
         description: The path to the logging configuration
       host:
@@ -56,7 +56,7 @@ Configuration:
         type: string
         description: The IP address and port of the ZMQ communication server. Do not change unless necessary.
         default: 'tcp://127.0.0.1:5557'
-      num_threads_per_process:
+      number_threads_per_process:
         type: number
         description: The number of threads per worker process for executing workflows.
         default: 3

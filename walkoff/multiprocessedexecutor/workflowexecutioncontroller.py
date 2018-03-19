@@ -14,10 +14,6 @@ from six import string_types
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, CaseControl, WorkflowControl
 from walkoff.helpers import json_dumps_or_string
-try:
-    from Queue import Queue
-except ImportError:
-    from queue import Queue
 
 logger = logging.getLogger(__name__)
 
