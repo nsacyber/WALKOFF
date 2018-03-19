@@ -1,7 +1,13 @@
+import { CacheConfig } from './cacheConfig';
+
 export class Configuration {
+
+	constructor() {
+		this.cache = new CacheConfig();
+	}
+
 	static getDefaultConfiguration(): Configuration {
 		return {
-			workflows_path: './data/workflows',
 			db_path: './data/walkoff.db',
 			walkoff_db_type: 'sqlite',
 			case_db_path: './data/events.db',
@@ -22,11 +28,11 @@ export class Configuration {
 			zmq_results_address: 'tcp://127.0.0.1:5556',
 			zmq_communication_address: 'tcp://127.0.0.1:5557',
 			number_processes: 4,
-			number_threads_per_process: 3,
+			num_threads_per_process: 3,
+			cache: CacheConfig.getDefault()
 		};
 	}
 
-	workflows_path: string;
 	db_path: string;
 	walkoff_db_type: string;
 	case_db_path: string;
@@ -47,5 +53,6 @@ export class Configuration {
 	zmq_results_address: string;
 	zmq_communication_address: string;
 	number_processes: number;
-	number_threads_per_process: number;
+	num_threads_per_process: number;
+	cache: CacheConfig;
 }
