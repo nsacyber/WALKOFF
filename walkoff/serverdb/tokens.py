@@ -70,10 +70,7 @@ def approve_token(token_id, user):
 
 
 def prune_if_necessary():
-    if cache.cache.get("number_of_operations"):
-        cache.cache.incr("number_of_operations")
-    else:
-        cache.cache.add("number_of_operations", 1)
+    cache.cache.incr("number_of_operations")
     if cache.cache.get("number_of_operations") >= prune_frequency:
         prune_database()
 
