@@ -1,6 +1,12 @@
 *# Changelog
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
+     
+## [0.7.4]
+###### 2018-03-20
+
+### Fixed
+* Bug where some device fields were being deleted on update
 
 ## [0.7.3]
 ###### 2018-03-14
