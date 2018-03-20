@@ -1,19 +1,17 @@
 from datetime import datetime
 
-from flask import Blueprint
-
 from walkoff import executiondb
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ActionStatusEnum, WorkflowStatusEnum
 from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.helpers import convert_action_argument, utc_as_rfc_datetime
 from walkoff.security import jwt_required_in_query
-from walkoff.sse import SseStream
+from walkoff.sse import SseStream, StreamableBlueprint
 
 workflow_stream = SseStream('workflow_results')
 action_stream = SseStream('action_results')
 
-workflowresults_page = Blueprint('workflowresults_page', __name__)
+workflowresults_page = StreamableBlueprint('workflowresults_page', __name__, streams=(workflow_stream, action_stream))
 
 
 def format_action_data(sender, kwargs, status):

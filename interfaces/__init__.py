@@ -7,6 +7,7 @@ from walkoff.events import WalkoffEvent, EventType
 from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.executiondb.schemas import dump_element
 from walkoff.helpers import split_function_arg_names
+from walkoff.sse import StreamableBlueprint
 from .dispatchers import AppEventDispatcher, EventDispatcher
 from .dispatchers import AppEventDispatcher, EventDispatcher
 from .exceptions import UnknownEvent, InvalidEventHandler
@@ -17,21 +18,8 @@ from .util import validate_events, add_docstring
 _logger = logging.getLogger(__name__)
 
 
-class AppBlueprint(object):
-    """Class to create blueprints for custom server endpoints in apps
-
-    Attributes:
-        blueprint (flask.Blueprint): The blueprint to register with Walkoff
-        rule (str): The URL rule for the blueprint
-
-    Args:
-        blueprint (flask.Blueprint): The blueprint to register with Walkoff
-        rule (str, optional): The URL rule for the blueprint. Defaults to /custominterfaces/<interface_name>/
-    """
-
-    def __init__(self, blueprint, rule=''):
-        self.blueprint = blueprint
-        self.rule = rule
+class AppBlueprint(StreamableBlueprint):
+    pass
 
 
 class InterfaceEventDispatcher(object):

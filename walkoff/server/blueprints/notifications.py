@@ -1,14 +1,16 @@
 from datetime import datetime
 
 from enum import Enum, unique
-from flask import Blueprint
 from flask_jwt_extended import get_jwt_identity
 
 from walkoff.messaging import MessageActionEvent
 from walkoff.security import jwt_required_in_query
-from walkoff.sse import FilteredSseStream
+from walkoff.sse import FilteredSseStream, StreamableBlueprint
 
-notifications_page = Blueprint('notifications_page', __name__)
+
+sse_stream = FilteredSseStream('notifications')
+
+notifications_page = StreamableBlueprint('notifications_page', __name__, streams=[sse_stream])
 
 
 @unique
@@ -16,9 +18,6 @@ class NotificationSseEvent(Enum):
     created = 1
     read = 2
     responded = 3
-
-
-sse_stream = FilteredSseStream('notifications')
 
 
 def format_read_responded_data(message, user):

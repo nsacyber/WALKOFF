@@ -1,4 +1,3 @@
-import walkoff.cache
 from functools import wraps
 from flask import Response, Blueprint
 import json
@@ -8,18 +7,35 @@ from six import string_types
 
 
 class StreamableBlueprint(Blueprint):
+    """Blueprint which has streams.
 
+    This adds the ability to set the cache sued by the streams when the blueprint is registered
+
+    Attributes:
+        stream (dict{str: Stream}): A lookup for the streams of this blueprint. The key is the channel of the stream
+    """
     def __init__(self, *args, **kwargs):
+        """
+        Kwargs:
+            streams (iterable(Stream)): The streams this blueprint has
+        """
         if 'streams' in kwargs:
             self.streams = {stream.channel: stream for stream in kwargs.pop('streams')}
         else:
             self.streams = {}
+        self.cache = None
         super(StreamableBlueprint, self).__init__(*args, **kwargs)
 
-    def set_stream_caches(self, cache):
+    @property
+    def cache(self):
+        return self.cache
+
+    @cache.setter
+    def cache(self, cache):
         for stream in self.streams.values():
             if stream.cache is None:
                 stream.cache = cache
+        self.cache = cache
 
 
 class SseEvent(object):
@@ -86,11 +102,7 @@ class SseStream(object):
     """
     def __init__(self, channel, cache=None):
         self.channel = channel
-        if cache is None:
-            self.cache = walkoff.cache.cache
-        else:
-
-            self.cache = cache
+        self.cache = cache
         self._default_headers = {'Cache-Control': 'no-cache', 'Connection': 'keep-alive'}
 
     def push(self, event=''):

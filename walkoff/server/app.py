@@ -3,9 +3,11 @@ import logging
 import connexion
 from jinja2 import FileSystemLoader
 from walkoff import helpers
+import walkoff.cache
 from walkoff.executiondb.device import App
 from walkoff.extensions import db, jwt
 from walkoff.config import AppConfig
+
 logger = logging.getLogger(__name__)
 
 
@@ -17,25 +19,26 @@ def register_blueprints(flaskapp):
     flaskapp.register_blueprint(custominterface.custom_interface_page, url_prefix='/custominterfaces/<interface>')
     flaskapp.register_blueprint(workflowresults.workflowresults_page, url_prefix='/api/streams/workflowqueue')
     flaskapp.register_blueprint(notifications.notifications_page, url_prefix='/api/streams/messages')
+    for blueprint in (workflowresults.workflowresults_page, notifications.notifications_page):
+        blueprint.set_cache(walkoff.cache.cache)
     __register_all_app_blueprints(flaskapp)
 
 
 def __get_blueprints_in_module(module):
-    from interfaces import AppBlueprint
+    from flask import Blueprint
     blueprints = [getattr(module, field)
                   for field in dir(module) if (not field.startswith('__')
-                                               and isinstance(getattr(module, field), AppBlueprint))]
+                                               and isinstance(getattr(module, field), Blueprint))]
     return blueprints
 
 
-def __register_app_blueprint(flaskapp, blueprint, url_prefix):
-    rule = '{0}{1}'.format(url_prefix, blueprint.rule) if blueprint.rule else url_prefix
-    flaskapp.register_blueprint(blueprint.blueprint, url_prefix=rule)
-
-
 def __register_blueprint(flaskapp, blueprint, url_prefix):
-    rule = '{0}{1}'.format(url_prefix, blueprint.rule) if blueprint.rule else url_prefix
-    flaskapp.register_blueprint(blueprint.blueprint, url_prefix=rule)
+    from interfaces import AppBlueprint
+    if isinstance(blueprint, AppBlueprint):
+        blueprint.set_cache(walkoff.cache.cache)
+    url_prefix = '{0}{1}'.format(url_prefix, blueprint.url_prefix) if blueprint.url_prefix else url_prefix
+    blueprint.url_prefix = url_prefix
+    flaskapp.register_blueprint(blueprint, url_prefix=url_prefix)
 
 
 def __register_app_blueprints(flaskapp, app_name, blueprints):
