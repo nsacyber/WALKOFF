@@ -68,7 +68,6 @@ class TestRedisCacheAdapter(TestCase):
     def test_r_push_pop_single_value(self):
         self.cache.rpush('queue', 10)
         self.assertEqual(self.cache.rpop('queue'), '10')
-        print(self.cache.rpop('queue'))
 
     def test_r_push_pop_multiple_values(self):
         self.cache.rpush('big', 10, 11, 12)

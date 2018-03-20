@@ -146,4 +146,4 @@ class TestFilteredInterfaceSseStream(TestCase):
     def test_init(self):
         stream = FilteredInterfaceSseStream('HelloWorld3', 'random_filtered')
         self.assertEqual(stream.interface, 'HelloWorld3')
-        self.assertEqual(stream.channel, create_interface_channel_name('HelloWorld2', 'random_filtered'))
+        self.assertEqual(stream.channel, create_interface_channel_name('HelloWorld3', 'random_filtered'))

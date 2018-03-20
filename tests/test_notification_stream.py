@@ -1,8 +1,12 @@
-from unittest import TestCase
 from tests.util.mock_objects import MockRedisCacheAdapter
 from walkoff.server.blueprints.notifications import *
 from datetime import datetime
 from mock import patch
+from tests.util.servertestcase import ServerTestCase
+from walkoff.server.returncodes import SUCCESS
+from flask import Response
+import json
+
 
 class MockUser:
     def __init__(self, id_, username):
@@ -19,12 +23,11 @@ class MockMessage:
         self.requires_response = requires_response
 
 
-class TestNotificationStream(TestCase):
+class TestNotificationStream(ServerTestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        cls.cache = MockRedisCacheAdapter()
-        sse_stream.cache = cls.cache
+    def setUp(self):
+        self.cache = MockRedisCacheAdapter()
+        sse_stream.cache = self.cache
 
     def tearDown(self):
         self.cache.clear()
@@ -80,3 +83,20 @@ class TestNotificationStream(TestCase):
         mock_publish.assert_called_once_with(result, subchannels=ids, event=NotificationSseEvent.responded.name)
         self.assert_timestamp_is_not_none(result)
         self.assertDictEqual(result, {'id': message.id, 'username': user.username})
+
+    @patch.object(sse_stream, 'stream')
+    def test_notifications_stream_endpoint(self,  mock_stream):
+        mock_stream.return_value = Response('something', status=SUCCESS)
+        post = self.app.post('/api/auth', content_type="application/json",
+                             data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
+        key = json.loads(post.get_data(as_text=True))['access_token']
+        response = self.app.get('/api/streams/messages/notifications?access_token={}'.format(key))
+        mock_stream.assert_called_once_with(subchannel=1)
+        self.assertEqual(response.status_code, SUCCESS)
+
+    @patch.object(sse_stream, 'stream')
+    def test_notifications_stream_endpoint_no_key(self, mock_stream):
+        mock_stream.return_value = Response('something', status=SUCCESS)
+        response = self.app.get('/api/streams/messages/notifications?access_token=invalid')
+        mock_stream.assert_not_called()
+        self.assertEqual(response.status_code, 422)

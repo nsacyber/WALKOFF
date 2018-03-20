@@ -20,7 +20,7 @@ def register_blueprints(flaskapp):
     flaskapp.register_blueprint(workflowresults.workflowresults_page, url_prefix='/api/streams/workflowqueue')
     flaskapp.register_blueprint(notifications.notifications_page, url_prefix='/api/streams/messages')
     for blueprint in (workflowresults.workflowresults_page, notifications.notifications_page):
-        blueprint.set_cache(walkoff.cache.cache)
+        blueprint.cache = walkoff.cache.cache
     __register_all_app_blueprints(flaskapp)
 
 
@@ -35,7 +35,7 @@ def __get_blueprints_in_module(module):
 def __register_blueprint(flaskapp, blueprint, url_prefix):
     from interfaces import AppBlueprint
     if isinstance(blueprint, AppBlueprint):
-        blueprint.set_cache(walkoff.cache.cache)
+        blueprint.cache = walkoff.cache.cache
     url_prefix = '{0}{1}'.format(url_prefix, blueprint.url_prefix) if blueprint.url_prefix else url_prefix
     blueprint.url_prefix = url_prefix
     flaskapp.register_blueprint(blueprint, url_prefix=url_prefix)
@@ -74,6 +74,7 @@ def create_app(app_config):
     connexion_app.add_api('composed_api.yaml')
 
     walkoff.config.initialize()
+    walkoff.cache.cache = walkoff.cache.make_cache()
     register_blueprints(_app)
 
     import walkoff.server.workflowresults  # Don't delete this import

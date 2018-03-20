@@ -54,28 +54,6 @@ def import_py_file(module_name, path_to_file):
     return imported
 
 
-def import_lib(directory, module_name):
-    """Dynamically imports a Python library.
-    
-    Args:
-        directory (str): The directory in which the library is located.
-        module_name (str): The name of the library to be imported.
-        
-    Returns:
-        The module object that was imported.
-    """
-    imported_module = None
-    module_name = '.'.join(['core', directory, module_name])
-    try:
-        imported_module = importlib.import_module(module_name)
-    except ImportError:
-        logger.error('Cannot import module {0}. Returning None'.format(module_name))
-        pass
-    finally:
-
-        return imported_module
-
-
 def construct_module_name_from_path(path):
     """Constructs the name of the module with the path name.
     
@@ -150,19 +128,6 @@ def list_interfaces(path=None):
     return __list_valid_directories(path)
 
 
-def list_class_functions(class_name):
-    """Get the functions for a python Class.
-    
-    Args:
-        class_name (str): The name of the python Class from which to get the functions.
-        
-    Returns:
-        The list of functions for a given python Class.
-    """
-    return [field for field in dir(class_name) if (not field.startswith('_')
-                                                   and callable(getattr(class_name, field)))]
-
-
 def locate_playbooks_in_directory(path=None):
     """Get a list of workflows in a specified directory or the workflows_path directory as specified in the configuration.
     
@@ -179,38 +144,6 @@ def locate_playbooks_in_directory(path=None):
     else:
         logger.warning('Could not locate any workflows in directory {0}. Directory does not exist'.format(path))
         return []
-
-
-def get_workflow_names_from_file(filename):
-    """Get a list of workflow names in a given file.
-    
-    Args:
-        filename (str): The filename from which to locate the workflows.
-        
-    Returns:
-        A list of workflow names from the specified file, if the file exists.
-    """
-    if os.path.isfile(filename):
-        with open(filename, 'r') as playbook_file:
-            playbook = playbook_file.read()
-            playbook = json.loads(playbook)
-            return [workflow['name'] for workflow in playbook['workflows']]
-    return []
-
-
-def combine_dicts(x, y):
-    """Combines two dictionaries into one.
-    
-    Args:
-        x (dict): One dictionary to be merged.
-        y (dict): The other dictionary to be merged with x.
-        
-    Returns:
-        The merged dictionary.
-    """
-    z = x.copy()
-    z.update(y)
-    return z
 
 
 def import_submodules(package, recursive=False):
@@ -445,42 +378,6 @@ def get_function_arg_names(func):
         return list(getsignature(func).parameters.keys())
     else:
         return getsignature(func).args
-
-
-def split_function_arg_names(func):
-    if __new_inspection:
-        return __split_args_py3(func)
-    else:
-        return __split_args_py2(func)
-
-
-def __split_args_py2(func):
-    args = getsignature(func)
-    split_args = {'args': [], 'kwargs': []}
-    if args.varargs:
-        split_args['varargs'] = args.varargs
-    if args.keywords:
-        split_args['keywords'] = args.keywords
-    defaults = args.defaults if args.defaults else ()
-    for arg_name, default in zip(defaults, args.args[::-1]):
-        split_args['kwargs'].append(default)
-    split_args['args'] = args.args[:-len(defaults)]
-    return split_args
-
-
-def __split_args_py3(func):
-    args = {'args': [], 'kwargs': []}
-    for name, param in getsignature(func).parameters.items():
-        kind = param.kind
-        if kind in (param.POSITIONAL_OR_KEYWORD, param.POSITIONAL_ONLY):
-            args['args'].append(name)
-        elif kind == param.KEYWORD_ONLY:
-            args['kwargs'].append(name)
-        elif kind == param.VAR_POSITIONAL:
-            args['varargs'] = name
-        elif kind == param.VAR_KEYWORD:
-            args['keywords'] = name
-    return args
 
 
 class InvalidApi(Exception):

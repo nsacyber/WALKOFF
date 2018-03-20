@@ -296,11 +296,9 @@ class Worker(object):
 
     def _handle_case_control_packet(self, message):
         if message.type == CaseControl.CREATE:
-            for sub in message.subscriptions:
-                self.case_logger.add_subscriptions(message.id, Subscription(sub.id, sub.events))
+            self.case_logger.add_subscriptions(message.id, [Subscription(sub.id, sub.events) for sub in message.subscriptions])
         elif message.type == CaseControl.UPDATE:
-            for sub in message.subscriptions:
-                self.case_logger.update_subscriptions(message.id, Subscription(sub.id, sub.events))
+            self.case_logger.update_subscriptions(message.id, [Subscription(sub.id, sub.events) for sub in message.subscriptions])
         elif message.type == CaseControl.DELETE:
             self.case_logger.delete_case(message.id)
 
@@ -325,7 +323,7 @@ class Worker(object):
             walkoff.executiondb.execution_db.session.commit()
 
         packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
-        self.case_logger.log(event, sender, kwargs.get('data', None))
+        self.case_logger.log(event, sender.id, kwargs.get('data', None))
         self.results_sock.send(packet_bytes)
 
     def _get_current_workflow(self):

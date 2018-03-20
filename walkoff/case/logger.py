@@ -1,5 +1,4 @@
 from walkoff.case.subscription import SubscriptionCache
-import json
 from walkoff.case.database import Event
 from walkoff.helpers import json_dumps_or_string
 from six import string_types
@@ -11,8 +10,8 @@ class CaseLogger(object):
         self._repository = repository
 
     def log(self, event, sender_id, data=None):
-        if event.is_loggable:
-            originator = sender_id
+        if event.is_loggable():
+            originator = str(sender_id)
             cases_to_add = self.subscriptions.get_cases_subscribed(originator, event.signal_name)
             if cases_to_add:
                 event = self._create_event_entry(event, originator, data)
@@ -36,7 +35,7 @@ class CaseLogger(object):
         event = Event(
             type=event.event_type.name,
             originator=originator,
-            message=event.signal.message,
+            message=event.value.message,
             data=data)
         return event
 

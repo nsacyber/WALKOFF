@@ -5,7 +5,7 @@ from mock import patch, create_autospec
 from walkoff.case.database import CaseDatabase
 import json
 import uuid
-from walkoff.events import WalkoffEvent, EventType, WalkoffSignal
+from walkoff.events import WalkoffEvent, EventType
 
 
 class TestCaseLogger(TestCase):
@@ -69,27 +69,20 @@ class TestCaseLogger(TestCase):
         self.assertEqual(CaseLogger._format_data(data), expected)
 
     def test_create_event_entry(self):
-        event = create_autospec(WalkoffEvent)
-        signal = create_autospec(WalkoffSignal)
-        signal.message = 'a message'
-        event.event_type = EventType.workflow
-        event.signal = signal
+        event = WalkoffEvent.WorkflowExecutionStart
         uid = uuid.uuid4()
         data = {'a': 'something', 'b': 5}
         expected_data = json.dumps(data)
         event_entry = CaseLogger._create_event_entry(event, uid, data)
         self.assertEqual(event_entry.type, EventType.workflow.name)
         self.assertEqual(event_entry.originator, uid)
-        self.assertEqual(event_entry.message, signal.message)
+        self.assertEqual(event_entry.message, event.value.message)
         self.assertEqual(event_entry.data, expected_data)
 
     @patch.object(SubscriptionCache, 'get_cases_subscribed')
     @patch.object(CaseDatabase, 'add_event')
     def test_log_unloggable_event(self, mock_repo_add_event, mock_get_cases_subscribed):
-        event = create_autospec(WalkoffEvent)
-        signal = create_autospec(WalkoffSignal)
-        signal.is_loggable = False
-        event.signal = signal
+        event = WalkoffEvent.SendMessage
         self.logger.log(event, uuid.uuid4())
         mock_repo_add_event.assert_not_called()
         mock_get_cases_subscribed.assert_not_called()
@@ -97,26 +90,16 @@ class TestCaseLogger(TestCase):
     @patch.object(SubscriptionCache, 'get_cases_subscribed', return_value=set())
     @patch.object(CaseDatabase, 'add_event')
     def test_log_no_cases(self, mock_repo_add_event, mock_get_cases_subscribed):
-        event = create_autospec(WalkoffEvent)
-        signal = create_autospec(WalkoffSignal)
-        signal.is_loggable = True
-        signal.name = 'some event'
-        event.signal = signal
+        event = WalkoffEvent.WorkflowExecutionStart
         uid = uuid.uuid4()
         self.logger.log(event, uid)
         mock_repo_add_event.assert_not_called()
-        self.assert_mock_called_once_with(mock_get_cases_subscribed, uid, signal.name)
+        self.assert_mock_called_once_with(mock_get_cases_subscribed, str(uid), event.signal_name)
 
     @patch.object(SubscriptionCache, 'get_cases_subscribed', return_value={1, 2})
     @patch.object(CaseDatabase, 'add_event')
     def test_log(self, mock_repo_add_event, mock_get_cases_subscribed):
-        event = create_autospec(WalkoffEvent)
-        signal = create_autospec(WalkoffSignal)
-        signal.is_loggable = True
-        signal.message = 'a message'
-        signal.name = 'some event'
-        event.event_type = EventType.workflow
-        event.signal = signal
+        event = WalkoffEvent.WorkflowExecutionStart
         uid = uuid.uuid4()
         self.logger.log(event, uid)
-        self.assert_mock_called_once_with(mock_get_cases_subscribed, uid, signal.name)
+        self.assert_mock_called_once_with(mock_get_cases_subscribed, str(uid), event.signal_name)

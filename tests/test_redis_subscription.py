@@ -41,5 +41,4 @@ class TestRedisSubscription(TestCase):
         thread2.start()
         thread1.join(timeout=5)
         thread2.join(timeout=5)
-        print(result)
 

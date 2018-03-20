@@ -84,40 +84,6 @@ class TestInterfaceEventDispatcher(TestCase):
             InterfaceEventDispatcher._all_events_are_controller({WalkoffEvent.WorkflowShutdown,
                                                                  WalkoffEvent.SchedulerStart})
 
-    def test_validate_handler_function_args_not_controller_too_few(self):
-        def x(): pass
-
-        with self.assertRaises(InvalidEventHandler):
-            InterfaceEventDispatcher._validate_handler_function_args(x, False)
-
-    def test_validate_handler_function_args_not_controller_too_many(self):
-        def x(a, b): pass
-
-        with self.assertRaises(InvalidEventHandler):
-            InterfaceEventDispatcher._validate_handler_function_args(x, False)
-
-    def test_validate_handler_function_args_not_controller_valid(self):
-        def x(a): pass
-
-        InterfaceEventDispatcher._validate_handler_function_args(x, False)
-
-    def test_validate_handler_function_args_controller_valid(self):
-        def x(): pass
-
-        InterfaceEventDispatcher._validate_handler_function_args(x, True)
-
-    def test_validate_handler_function_args_controller_too_many(self):
-        def x(a): pass
-
-        with self.assertRaises(InvalidEventHandler):
-            InterfaceEventDispatcher._validate_handler_function_args(x, True)
-
-    def test_validate_handler_function_args_generic(self):
-        def x(*args): pass
-
-        InterfaceEventDispatcher._validate_handler_function_args(x, True)
-
-
     def test_make_on_event_docstring_not_controller(self):
         doc = InterfaceEventDispatcher._make_on_walkoff_event_docstring(WalkoffEvent.ActionStarted)
         self.assertIn('sender_uids', doc)
@@ -224,16 +190,6 @@ class TestInterfaceEventDispatcher(TestCase):
         self.assertTrue(
             dispatcher.event_dispatcher.is_registered(EventType.controller.name, WalkoffEvent.SchedulerShutdown, x))
 
-    def test_on_walkoff_events_invalid_function(self):
-        with self.assertRaises(InvalidEventHandler):
-            @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, sender_ids='c')
-            def x(): pass
-
-    def test_on_walkoff_events_invalid_function_control_event(self):
-        with self.assertRaises(InvalidEventHandler):
-            @dispatcher.on_walkoff_events({WalkoffEvent.SchedulerStart})
-            def x(data): pass
-
     def test_on_app_action_invalid_event(self):
         with self.assertRaises(UnknownEvent):
             @dispatcher.on_app_actions('App1', events='Invalid')
@@ -243,18 +199,6 @@ class TestInterfaceEventDispatcher(TestCase):
         with self.assertRaises(UnknownEvent):
             @dispatcher.on_app_actions('App1', events=WalkoffEvent.SchedulerStart)
             def x(data): pass
-
-    def test_on_app_action_invalid_handler_function_arg_count(self):
-        with self.assertRaises(InvalidEventHandler):
-            @dispatcher.on_app_actions('App1')
-            def x(): pass
-
-    def test_on_app_action_invalid_handler_function_arg_count_generic(self):
-        @dispatcher.on_app_actions('App1')
-        def x(*args): pass
-
-        @dispatcher.on_app_actions('App1')
-        def x(*args, **kwargs): pass
 
     def test_on_app_action_with_invalid_app(self):
         with self.assertRaises(UnknownApp):

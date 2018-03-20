@@ -23,19 +23,19 @@ class StreamableBlueprint(Blueprint):
             self.streams = {stream.channel: stream for stream in kwargs.pop('streams')}
         else:
             self.streams = {}
-        self.cache = None
+        self._cache = None
         super(StreamableBlueprint, self).__init__(*args, **kwargs)
 
     @property
     def cache(self):
-        return self.cache
+        return self._cache
 
     @cache.setter
     def cache(self, cache):
         for stream in self.streams.values():
             if stream.cache is None:
                 stream.cache = cache
-        self.cache = cache
+        self._cache = cache
 
 
 class SseEvent(object):

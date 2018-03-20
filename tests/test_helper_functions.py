@@ -206,24 +206,6 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertEqual(create_sse_event(event_id=1, event='something', data=data),
                          'id: 1\nevent: something\ndata: {}\n\n'.format(json.dumps(data)))
 
-    def test_split_args(self):
-        def x(a, b, c=42, d=10, **kwargs): pass
-
-        split_args = split_function_arg_names(x)
-        for field in ('args', 'kwargs'):
-            split_args[field] = set(split_args[field])
-
-        self.assertDictEqual(split_args, {'args': {'a', 'b'}, 'kwargs': {'c', 'd'}, 'keywords': 'kwargs'})
-
-        def x(*args, **kwargs):
-            pass
-
-        split_args = split_function_arg_names(x)
-        for field in ('args', 'kwargs'):
-            split_args[field] = set(split_args[field])
-
-        self.assertDictEqual(split_args, {'args': set(), 'kwargs': set(), 'keywords': 'kwargs', 'varargs': 'args'})
-
     def test_database_connection_error_handler(self):
         from sqlalchemy.exc import SQLAlchemyError
         class DbException(SQLAlchemyError): pass

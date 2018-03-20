@@ -143,7 +143,7 @@ class Workflow(ExecutionElement, Execution_Base):
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowAborted)
                 yield
 
-            device_id = self._instance_repo.setup_app_instance(action)
+            device_id = self._instance_repo.setup_app_instance(action, self)
 
             if first:
                 first = False

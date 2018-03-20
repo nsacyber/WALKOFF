@@ -6,7 +6,6 @@ from functools import partial
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.executiondb.schemas import dump_element
-from walkoff.helpers import split_function_arg_names
 from walkoff.sse import StreamableBlueprint
 from .dispatchers import AppEventDispatcher, EventDispatcher
 from .dispatchers import AppEventDispatcher, EventDispatcher
@@ -116,7 +115,6 @@ class InterfaceEventDispatcher(object):
                     sender_ids = sender_uids
 
             def handler(func):
-                InterfaceEventDispatcher._validate_handler_function_args(func, False)
                 cls.event_dispatcher.register_events(func, {event}, sender_ids=sender_ids, names=names, weak=weak)
                 return func  # Needed so weak references aren't deleted
 
@@ -125,7 +123,6 @@ class InterfaceEventDispatcher(object):
         @add_docstring(InterfaceEventDispatcher._make_on_walkoff_event_docstring(event))
         def on_controller_event(cls, weak=True):
             def handler(func):
-                InterfaceEventDispatcher._validate_handler_function_args(func, True)
                 cls.event_dispatcher.register_events(func, {event}, weak=weak)
                 return func
 
@@ -159,7 +156,6 @@ class InterfaceEventDispatcher(object):
         events = validate_events(events, available_events)
 
         def handler(func):
-            InterfaceEventDispatcher._validate_handler_function_args(func, False)
             cls.app_action_dispatcher.register_app_actions(func, app, actions=actions, events=events,
                                                            device_ids=device_ids,
                                                            weak=weak)
@@ -202,7 +198,6 @@ class InterfaceEventDispatcher(object):
             sender_ids = EventType.controller.name
 
         def handler(func):
-            InterfaceEventDispatcher._validate_handler_function_args(func, are_controller_events)
             cls.event_dispatcher.register_events(func, events, sender_ids=sender_ids, names=names, weak=weak)
             return func
 
@@ -214,31 +209,6 @@ class InterfaceEventDispatcher(object):
         """
         cls.event_dispatcher = EventDispatcher()
         cls.app_action_dispatcher = AppEventDispatcher()
-
-    @staticmethod
-    def _validate_handler_function_args(func, is_controller):
-        """Validates a handler function by checking how many arguments it has
-
-        Args:
-            func (func): The function to check
-            is_controller (bool): Is the function intended to handle controller events?
-
-        Raises:
-            InvalidEventHandler: If the number of arguments is incorrect
-        """
-        args = split_function_arg_names(func)
-        print(func.__name__)
-        print(args)
-
-        num_args = len(args['args'])
-        is_generic = 'varargs' in args and not num_args  # allow (*args)
-        print(is_generic)
-        if not is_generic:
-            if is_controller:
-                if num_args != 0:
-                    raise InvalidEventHandler('Handlers for controller events take no arguments')
-            elif num_args != 1:
-                raise InvalidEventHandler('Handlers for events non-controller events take one argument')
 
     @staticmethod
     def _all_events_are_controller(events):
