@@ -1,4 +1,4 @@
-*# Changelog
+# Changelog
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
      
