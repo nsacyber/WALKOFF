@@ -5,6 +5,7 @@ from jinja2 import FileSystemLoader
 from walkoff import helpers
 from walkoff.executiondb.device import App
 from walkoff.extensions import db, jwt
+from walkoff.config import AppConfig
 logger = logging.getLogger(__name__)
 
 
@@ -58,12 +59,12 @@ def __register_all_app_blueprints(flaskapp):
             __register_app_blueprints(flaskapp, interface_name, display_blueprints)
 
 
-def create_app():
+def create_app(app_config):
     import walkoff.config
     connexion_app = connexion.App(__name__, specification_dir='../api/')
     _app = connexion_app.app
     _app.jinja_loader = FileSystemLoader(['walkoff/templates'])
-    _app.config.from_object('walkoff.config.AppConfig')
+    _app.config.from_object(app_config)
 
     db.init_app(_app)
     jwt.init_app(_app)
@@ -78,7 +79,7 @@ def create_app():
 
 
 # Template Loader
-app = create_app()
+app = create_app(AppConfig)
 
 
 @app.before_first_request
