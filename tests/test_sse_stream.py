@@ -189,7 +189,8 @@ class SseStreamTestBase(object):
 class TestDiskSseStream(TestCase, SseStreamTestBase):
     @classmethod
     def setUpClass(cls):
-        os.mkdir(cache_path)
+        if not os.path.exists(cache_path):
+            os.mkdir(cache_path)
         patch_all()
 
     def setUp(self):

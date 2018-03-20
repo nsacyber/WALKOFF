@@ -11,7 +11,8 @@ class TestDiskCacheAdapter(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        os.mkdir(cache_path)
+        if not os.path.exists(cache_path):
+            os.mkdir(cache_path)
 
     def setUp(self):
         self.cache = DiskCacheAdapter(directory=cache_path)

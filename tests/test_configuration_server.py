@@ -9,10 +9,10 @@ from walkoff.server.returncodes import *
 
 class TestConfigurationServer(ServerTestCase):
     def setUp(self):
-        config_fields = [x for x in dir(walkoff.config) if
-                         not x.startswith('__') and type(getattr(walkoff.config, x)).__name__
+        config_fields = [x for x in dir(walkoff.config.Config) if
+                         not x.startswith('__') and type(getattr(walkoff.config.Config, x)).__name__
                          in ['str', 'unicode']]
-        self.original_configs = {key: getattr(walkoff.config, key) for key in config_fields}
+        self.original_configs = {key: getattr(walkoff.config.Config, key) for key in config_fields}
         try:
             with open(walkoff.config.Config.CONFIG_PATH) as config_file:
                 self.original_config_file = config_file.read()

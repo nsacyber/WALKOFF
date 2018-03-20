@@ -101,7 +101,7 @@ def import_app_main(app_name, path=None, reload=False):
         The module object that was imported.
     """
     if path is None:
-        path = walkoff.config.APPS_PATH
+        path = walkoff.config.Config.APPS_PATH
     app_path = os.path.join(path, app_name, 'main.py')
     module_name = construct_module_name_from_path(app_path[:-3])
     try:
@@ -463,7 +463,7 @@ def __split_args_py2(func):
         split_args['keywords'] = args.keywords
     defaults = args.defaults if args.defaults else ()
     for arg_name, default in zip(defaults, args.args[::-1]):
-        split_args['kwargs'].append(arg_name)
+        split_args['kwargs'].append(default)
     split_args['args'] = args.args[:-len(defaults)]
     return split_args
 
