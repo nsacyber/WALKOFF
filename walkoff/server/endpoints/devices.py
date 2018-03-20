@@ -169,7 +169,7 @@ def _update_device(device, update_device_json, validate_required=True):
         if fields is not None:
             fields = update_device_json['fields'] if 'fields' in update_device_json else None
             add_configuration_keys_to_device_json(fields, device_fields_api)
-        device.update_from_json(update_device_json)
+        device.update_from_json(update_device_json, complete_object=validate_required)
         executiondb.execution_db.session.commit()
         device_json = get_device_json_with_app_name(device)
         # remove_configuration_keys_from_device_json(device_json)
