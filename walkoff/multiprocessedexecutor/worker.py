@@ -27,7 +27,7 @@ from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWo
 import walkoff.cache
 import walkoff.case.database as casedb
 from walkoff.case.logger import CaseLogger
-from walkoff.case.subscription import Subscription
+from walkoff.case.subscription import Subscription, SubscriptionCache
 from threading import Lock
 
 logger = logging.getLogger(__name__)
@@ -192,8 +192,8 @@ class Worker(object):
         self.cache = walkoff.cache.make_cache(Config.CACHE)
 
         self.capacity = num_threads_per_process
-
-        self.case_logger = CaseLogger(casedb.case_db)
+        self.subscription_cache = SubscriptionCache()
+        self.case_logger = CaseLogger(casedb.case_db, self.subscription_cache)
 
         self.comm_thread = threading.Thread(target=self.receive_data)
         self.comm_thread.start()
@@ -298,11 +298,15 @@ class Worker(object):
 
     def _handle_case_control_packet(self, message):
         if message.type == CaseControl.CREATE:
-            self.case_logger.add_subscriptions(message.id, [Subscription(sub.id, sub.events) for sub in message.subscriptions])
+            self.subscription_cache.add_subscriptions(
+                message.id,
+                [Subscription(sub.id, sub.events) for sub in message.subscriptions])
         elif message.type == CaseControl.UPDATE:
-            self.case_logger.update_subscriptions(message.id, [Subscription(sub.id, sub.events) for sub in message.subscriptions])
+            self.subscription_cache.update_subscriptions(
+                message.id,
+                [Subscription(sub.id, sub.events) for sub in message.subscriptions])
         elif message.type == CaseControl.DELETE:
-            self.case_logger.delete_case(message.id)
+            self.subscription_cache.delete_case(message.id)
 
     def on_data_sent(self, sender, **kwargs):
         """Listens for the data_sent callback, which signifies that an execution element needs to trigger a

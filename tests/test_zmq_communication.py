@@ -21,6 +21,7 @@ from walkoff.events import WalkoffEvent
 from walkoff.case.subscription import Subscription
 import walkoff.case.database as case_db
 import walkoff.config
+from walkoff.case.subscription import SubscriptionCache
 
 class TestZMQCommunication(unittest.TestCase):
     @classmethod
@@ -36,7 +37,8 @@ class TestZMQCommunication(unittest.TestCase):
                                       walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
                                       worker_environment_setup=modified_setup_worker_env)
         walkoff.config.Config.CACHE = {'type': 'disk', 'directory': config.cache_path}
-        cls.logger = CaseLogger(case_db.case_db)
+        cls.subscription_cache = SubscriptionCache()
+        cls.logger = CaseLogger(case_db.case_db, cls.subscription_cache)
         cls.executor = MultiprocessedExecutor(make_cache(walkoff.config.Config.CACHE), cls.logger)
         cls.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
                                           walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,

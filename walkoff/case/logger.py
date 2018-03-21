@@ -1,12 +1,11 @@
-from walkoff.case.subscription import SubscriptionCache
 from walkoff.case.database import Event
 from walkoff.helpers import json_dumps_or_string
 from six import string_types
 
 
 class CaseLogger(object):
-    def __init__(self, repository, subscriptions=None):
-        self.subscriptions = subscriptions or SubscriptionCache()
+    def __init__(self, repository, subscriptions):
+        self.subscriptions = subscriptions
         self._repository = repository
 
     def log(self, event, sender_id, data=None):
