@@ -9,6 +9,8 @@ logger = logging.getLogger(__name__)
 
 app_apis = {}
 
+_cache_path = join('.', 'data', 'cache')
+
 
 def load_app_apis(apps_path=None):
     """Loads App APIs
@@ -65,7 +67,7 @@ class Config(object):
     CASE_DB_TYPE = 'sqlite'
     EXECUTION_DB_TYPE = 'sqlite'
 
-    CACHE = {"type": "disk", "directory": "testdir", "shards": 1, "timeout": 10, "retry": True}
+    CACHE = {"type": "disk", "directory": _cache_path, "shards": 8, "timeout": 0.01, "retry": True}
 
     # PATHS
 
