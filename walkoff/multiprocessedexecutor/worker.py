@@ -169,7 +169,7 @@ class Worker(object):
         self.comm_sock.curve_secretkey = client_secret
         self.comm_sock.curve_publickey = client_public
         self.comm_sock.curve_serverkey = server_public
-        self.comm_sock.setsockopt(zmq.SUBSCRIBE, '')
+        self.comm_sock.setsockopt(zmq.SUBSCRIBE, b'')
         self.comm_sock.connect(zmq_communication_address)
 
         self.results_sock = ctx.socket(zmq.PUSH)
