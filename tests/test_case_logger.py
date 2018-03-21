@@ -15,8 +15,8 @@ class TestCaseLogger(TestCase):
 
     @staticmethod
     def get_case_logger(subscriptions):
-        repo = create_autospec(CaseDatabase, subscriptions=subscriptions)
-        return CaseLogger(repo)
+        repo = create_autospec(CaseDatabase)
+        return CaseLogger(repo, subscriptions=subscriptions)
 
     @staticmethod
     def get_basic_case_logger():

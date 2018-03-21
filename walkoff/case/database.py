@@ -186,6 +186,8 @@ class CaseDatabase(object):
         return result
 
     def commit(self):
+        """Commit the current changes to the database
+        """
         self.session.commit()
 
 
