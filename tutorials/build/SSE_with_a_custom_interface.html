@@ -108,72 +108,72 @@ img.media-object.image{
   <div class="w3-content">
     <div class="">
       <h1>Server-sent events with a custom interface</h1>
-        <p>In this tutorial we will add a server-sent event (SSE) stream to our HelloWorld interface which will stream
-           the results of HelloWorld actions to the frontend which will display them in another table. Flask can create
-            an SSE stream by returning a Flask <code>Response</code> object which wraps a Python generator.</p>
-        <h4>1. Create the generator</h4>
-        <p> For our backend we will use gevent, the asynchronous IO framework which runs our server, to construct the
-            generator using gevent's <code>AsyncResult</code> and <code>Event</code> condition objects. We'll connect to
-            both the ActionExecutionSuccess and the ActionExecutionError events and create two separate SSE events for
-            each named <code>action_success</code> and <code>action_error</code> respectively. We'll also use the
-            <code>create_sse_event</code> helper function to format the SSE event.
+        <p> In this tutorial we will add a server-sent event (SSE) stream to our HelloWorld interface which will stream
+            the results of HelloWorld actions to the frontend which will display them in another table. SSE streams allow
+            your interface to be highly reative and event-driven. Walkoff has provided objects which makes it much easier
+            to construct these streams.</p>
+        <h4>1. Create the stream object</h4>
+        <p> We'll use the <code>InterfaceSseStream</code>. This object is an event-driven wrapper around Walkoff's
+            key-value cache database. It takes two arguments in its constructor, the name of the interface and the name
+            of the stream. If you have multiple streams in your interface, the name of the streams must be unique.
+            These streams are then attached to the interface's blueprint.
         </p>
         <pre><code class="python">
-from interfaces import dispatcher
-from core.events import WalkoffEvent
-from gevent import sleep
-from gevent.event import AsyncResult, Event
+from interfaces import dispatcher, AppBlueprint
+from walkoff.events import WalkoffEvent
 from datetime import datetime
-from core.helpers import create_sse_event
+from walkoff.sse import InterfaceSseStream
 
-action_event_json = AsyncResult()
-action_signal = Event()
-
-action_event_id_counter = 0
+action_result_stream = InterfaceSseStream('HelloWorld', 'action_results')
 
 
-def action_event_stream():
-    global action_event_id_counter
-    while True:
-        event_type, data = action_event_json.get()
-        yield create_sse_event(event_id=action_event_id_counter, event=event_type, data=data)
-        action_event_id_counter += 1
-        action_signal.wait()
+blueprint = AppBlueprint('HelloWorldPage', __name__, streams=[action_result_stream])
+        </code></pre>
+        <h4>2. Register callbacks which push events</h4>
+        <p> We'll combine the interface event dispatcher with the stream to use the <code>InterfaceSseStream</code>.
+            We'll register a couple of callbacks on the interface event dispatcher for the ActionExecutionSuccess and the
+            ActionExecutionError events for all actions for the HelloWorld app. We'll register those same callbacks to
+            our SSE stream, and we'll make the ActionExecutionSuccess push an "action_success" event to the stream and
+            the ActionExecutionError push an "action_error" event to the stream. The callback only needs to return the
+            data that the event should carry, and if you want to return JSON data, then there is no need to convert it
+            into a string, the stream will handle that for you.
+        </p>
+        <pre><code class="python">
+from interfaces import dispatcher, AppBlueprint
+from walkoff.events import WalkoffEvent
+from datetime import datetime
+from walkoff.sse import InterfaceSseStream
+
+action_result_stream = InterfaceSseStream('HelloWorld', 'action_results')
+
+
+blueprint = AppBlueprint('HelloWorldPage', __name__, streams=[action_result_stream])
 
 
 @dispatcher.on_app_actions('HelloWorld', events=WalkoffEvent.ActionExecutionSuccess)
+@action_result_stream.push('action_success')
 def action_ended_callback(data):
     data['timestamp'] = str(datetime.utcnow())
-    action_event_json.set(('action_success', data))
-    sleep(0)
-    action_signal.set()
-    action_signal.clear()
-    sleep(0)
+    return data
 
 
 @dispatcher.on_app_actions('HelloWorld', events=WalkoffEvent.ActionExecutionError)
+@action_result_stream.push('action_failure')
 def __action_error_callback(data):
     data['timestamp'] = str(datetime.utcnow())
-    action_event_json.set(('action_success', data))
-    sleep(0)
-    action_signal.set()
-    action_signal.clear()
-    sleep(0)
+    return data
         </code></pre>
-        <p> The <code>sleep(0)</code> lines explicitly context switch between the different greenlet threads in the
-            gevent framework. The <code>action_event_stream</code> is the generator.
-        </p>
-        <h4>2. Create the endpoint</h4>
-        <p> Now that we have the generator created, we will create an endpoint to start the SSE connection.</p>
+        <p> Both of these callbacks simply attach a timestamp to the data from the event and push it onto the stream. </p>
+
+        <h4>3. Construct the stream endpoint.</h4>
+        <p> Now that we have the stream created, we will create an endpoint to start the SSE connection.</p>
         <pre><code class="python">
-from flask import Response
-
-@blueprint.blueprint.route('/actionstream', methods=['GET'])
+@blueprint.route('/actionstream', methods=['GET'])
 def stream_workflow_action_events():
-    return Response(action_event_stream(), mimetype='text/event-stream')
+    return action_result_stream.stream()
         </code></pre>
 
-        <h4>3. Secure the endpoint</h4>
+        <h4>4. Secure the endpoint</h4>
         <p> SSE connections cannot accept Authorization headers. Instead, we will pass our JWT token in through a query
             parameter. In the <code>server.security</code> module, we have a decorator which checks for this query
             parameter.</p>
@@ -181,13 +181,13 @@ def stream_workflow_action_events():
 from flask import Response
 from server.security import jwt_required_in_query
 
-@blueprint.blueprint.route('/actionstream', methods=['GET'])
+@blueprint.route('/actionstream', methods=['GET'])
 @jwt_required_in_query
 def stream_workflow_action_events():
-    return Response(action_event_stream(), mimetype='text/event-stream')
+    return action_result_stream.stream()
         </code></pre>
 
-        <h4>4. Use the endpoint in an interface</h4>
+        <h4>5. Use the endpoint in an interface</h4>
         <p>
             Now that we have an endpoint created, it's time to use it in our interface to display the real-time data.
             In our index.html body, append the following HTML:
