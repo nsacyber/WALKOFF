@@ -367,7 +367,7 @@ class EncryptedDeviceField(Execution_Base, DeviceFieldMixin):
         _, server_secret = auth.load_certificate(server_secret_file)
         self.__key = server_secret[:nacl.secret.SecretBox.KEY_SIZE]
         self.__box = nacl.secret.SecretBox(self.__key)
-        self._value = self.__box.encrypt(str(value))
+        self._value = self.__box.encrypt(str(value).encode('utf-8'))
 
     @orm.reconstructor
     def init_on_load(self):
@@ -393,7 +393,7 @@ class EncryptedDeviceField(Execution_Base, DeviceFieldMixin):
 
     @value.setter
     def value(self, new_value):
-        self._value = self.__box.encrypt(str(new_value))
+        self._value = self.__box.encrypt(str(new_value).encode('utf-8'))
 
     def as_json(self, export=False):
         """Gets a JSON representation of this object
