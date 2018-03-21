@@ -187,7 +187,9 @@ class Worker(object):
         else:
             walkoff.config.initialize()
             initialize_databases()
-        self.cache = walkoff.cache.make_cache()
+
+        from walkoff.config import Config
+        self.cache = walkoff.cache.make_cache(Config.CACHE)
 
         self.capacity = num_threads_per_process
 

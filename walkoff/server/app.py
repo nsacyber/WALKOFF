@@ -6,7 +6,7 @@ from walkoff import helpers
 import walkoff.cache
 from walkoff.executiondb.device import App
 from walkoff.extensions import db, jwt
-from walkoff.config import AppConfig
+import walkoff.config as config
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ def __register_all_app_blueprints(flaskapp):
             __register_app_blueprints(flaskapp, interface_name, interface_blueprints)
 
 
-def create_app(app_config):
+def create_app(app_config, walkoff_config):
     import walkoff.config
     connexion_app = connexion.App(__name__, specification_dir='../api/')
     _app = connexion_app.app
@@ -74,7 +74,7 @@ def create_app(app_config):
     connexion_app.add_api('composed_api.yaml')
 
     walkoff.config.initialize()
-    walkoff.cache.cache = walkoff.cache.make_cache()
+    walkoff.cache.cache = walkoff.cache.make_cache(walkoff_config.CACHE)
     register_blueprints(_app)
 
     import walkoff.server.workflowresults  # Don't delete this import
@@ -83,7 +83,7 @@ def create_app(app_config):
 
 
 # Template Loader
-app = create_app(AppConfig)
+app = create_app(config.AppConfig, config.Config)
 
 
 @app.before_first_request

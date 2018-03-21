@@ -12,6 +12,7 @@ from gevent.event import AsyncResult, Event
 import threading
 import walkoff.config
 import pickle
+from copy import deepcopy
 logger = logging.getLogger(__name__)
 
 try:
@@ -670,7 +671,7 @@ class RedisCacheAdapter(object):
         password = os.getenv('WALKOFF_REDIS_PASSWORD')
         if password is not None:
             json_in['password'] = password
-        if 'timeout' in json_in and json_in['timeout'] > 0.0:
+        if 'timeout' in json_in and json_in['timeout'] > 0:
             json_in['socket_timeout'] = json_in.pop('timeout')
         return cls(**json_in)
 
@@ -679,6 +680,8 @@ cache_translation = {'disk': DiskCacheAdapter, 'redis': RedisCacheAdapter}
 """(dict): A mapping between a string type and the corresponding cache adapter
 """
 
+# Ideally this global is replaced entirely by the running_context
+# This is needed currently to get this cache into the blueprints, so there are two cache connections in the apps now
 cache = None
 """ (RedisCacheAdapter|DiskCacheAdapter): The cache used throughout Walkoff 
 """
@@ -695,6 +698,7 @@ def make_cache(config=None):
     """
     if config is None:
         config = {}
+    config = deepcopy(config)
     global cache
     cache_type = config.pop('type', 'disk').lower()
     try:

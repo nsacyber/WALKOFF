@@ -122,16 +122,11 @@ def convert_host_port(args):
     return host, port
 
 
-def connect_to_cache():
-    walkoff.cache.cache = walkoff.cache.make_cache(walkoff.config.Config.CACHE)
-
-
 if __name__ == "__main__":
     args = parse_args()
     exit_code = 0
     try:
         walkoff.config.initialize()
-        connect_to_cache()
         from walkoff import initialize_databases
 
         initialize_databases()

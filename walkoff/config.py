@@ -106,8 +106,8 @@ class Config(object):
                     config = json.loads(config_file.read())
                     for key, value in config.items():
                         if value:
-                            if hasattr(cls, key):
-                                setattr(cls, key, value)
+                            if hasattr(cls, key.upper()):
+                                setattr(cls, key.upper(), value)
             except (IOError, OSError, ValueError):
                 logger.warning('Could not read config file.', exc_info=True)
 
@@ -121,7 +121,7 @@ class Config(object):
         output = {}
         for key in keys:
             if hasattr(cls, key.upper()):
-                output[key] = getattr(cls, key)
+                output[key.lower()] = getattr(cls, key.upper())
 
         with open(cls.CONFIG_PATH, 'w') as config_file:
             config_file.write(json.dumps(output, sort_keys=True, indent=4, separators=(',', ': ')))

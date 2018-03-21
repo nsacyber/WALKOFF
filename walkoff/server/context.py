@@ -8,9 +8,10 @@ class Context(object):
         from walkoff.case.logger import CaseLogger
         import walkoff.case.database as casedb
         import walkoff.cache
+        import walkoff.config as config
 
         self.case_logger = CaseLogger(casedb.case_db)
-        self.cache = walkoff.cache.make_cache()
+        self.cache = walkoff.cache.make_cache(config.Config.CACHE)
         self.executor = executor.MultiprocessedExecutor(self.cache, self.case_logger)
         self.scheduler = walkoff.scheduler.Scheduler(self.case_logger)
 
