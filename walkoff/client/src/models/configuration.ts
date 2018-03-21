@@ -13,7 +13,7 @@ export class Configuration {
 			case_db_path: './data/events.db',
 			case_db_type: 'sqlite',
 			clear_case_db_on_startup: false,
-			log_config_path: './data/log/logging.json',
+			// log_config_path: './data/log/logging.json',
 			// https: false,
 			// tls_version: '1.2',
 			// certificate_path: 'data/shortstop.public.pem',
@@ -37,7 +37,7 @@ export class Configuration {
 	case_db_path: string;
 	case_db_type: string;
 	clear_case_db_on_startup: boolean;
-	log_config_path: string;
+	// log_config_path: string;
 	// https: boolean;
 	// tls_version: string;
 	// certificate_path: string;

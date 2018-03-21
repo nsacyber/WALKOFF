@@ -4,13 +4,10 @@ export class CacheConfig {
 		return {
 			type: 'disk',
             directory: './data/cache',
-            shards: 1,
-            timeout: 10,
+            shards: 8,
+            timeout: 0.01,
             retry: true,
-            host: 'localhost',
-            port: 6379,
-            unix_socket_path: ''
-		};
+		} as CacheConfig;
 	}
 
     type: string = 'disk';
