@@ -21,11 +21,7 @@ export class SettingsService {
 	}
 
 	updateConfiguration(configuration: Configuration): Promise<Configuration> {
-		let updateConfig = JSON.parse(JSON.stringify(configuration));
-		updateConfig.num_threads_per_process = updateConfig.number_threads_per_process;
-		delete updateConfig.workflows_path;
-		delete updateConfig.number_threads_per_process;
-		return this.authHttp.put('/api/configuration', updateConfig)
+		return this.authHttp.put('/api/configuration', configuration)
 			.toPromise()
 			.then(this.extractData)
 			.then(data => data as Configuration)

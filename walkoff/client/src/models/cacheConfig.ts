@@ -5,10 +5,10 @@ export class CacheConfig {
 			type: 'disk',
             directory: './data/cache',
             shards: 1,
-            timeout: 0.0,
+            timeout: 10,
             retry: true,
             host: 'localhost',
-            port: 5000,
+            port: 6379,
             unix_socket_path: ''
 		};
 	}

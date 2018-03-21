@@ -24,11 +24,10 @@ export class Configuration {
 			port: 5000,
 			access_token_duration: 15,
 			refresh_token_duration: 30,
-			zmq_requests_address: 'tcp://127.0.0.1:5555',
 			zmq_results_address: 'tcp://127.0.0.1:5556',
 			zmq_communication_address: 'tcp://127.0.0.1:5557',
 			number_processes: 4,
-			num_threads_per_process: 3,
+			number_threads_per_process: 3,
 			cache: CacheConfig.getDefault()
 		};
 	}
@@ -49,10 +48,9 @@ export class Configuration {
 	port: number;
 	access_token_duration: number; //in minutes
 	refresh_token_duration: number; //in days
-	zmq_requests_address: string;
 	zmq_results_address: string;
 	zmq_communication_address: string;
 	number_processes: number;
-	num_threads_per_process: number;
+	number_threads_per_process: number;
 	cache: CacheConfig;
 }
