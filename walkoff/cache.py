@@ -13,6 +13,9 @@ import threading
 import walkoff.config
 import pickle
 from copy import deepcopy
+from six import string_types, binary_type
+import json
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -157,13 +160,20 @@ class DiskPubSubCache(object):
         return subscription
 
     def __push_to_subscribers(self, channel, value):
-        try:
-            if value != unsubscribe_message:
-                value = pickle.load(BytesIO(value))
-        except KeyError:
-            value = str(value)
+        value = self.__get_value(value)
         for subscriber in self._subscribers.get(str(channel), []):
             subscriber.push(value)
+
+    @staticmethod
+    def __get_value(value):
+        if value == unsubscribe_message or isinstance(value, string_types):
+            return value
+        if isinstance(value, binary_type):
+            return value.decode('utf-8')
+        try:
+            return pickle.load(BytesIO(value))
+        except KeyError:
+            return str(value)
 
     @property
     def _con(self):

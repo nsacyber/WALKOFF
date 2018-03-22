@@ -153,7 +153,7 @@ class SseStream(object):
         """
         self.cache.register_callbacks()
         response = {'data': data, 'event': kwargs.get('event', '')}
-        self.cache.publish(self.channel, response)
+        self.cache.publish(self.channel, json.dumps(response))
 
     def stream(self, headers=None, retry=None, **kwargs):
         """Returns a response used by Flask to create an SSE stream.
@@ -207,11 +207,9 @@ class SseStream(object):
 
         event_id = 0
         for response in channel_queue.listen():
-            print(response)
-            print(type(response))
-            if isinstance(response, string_types) or isinstance(response, binary_type):
-                print('unloading')
-                response = json.loads(response.decode('utf-8'))
+            if isinstance(response, binary_type):
+                response = response.decode('utf-8')
+            response = json.loads(response)
             data, event = response['data'], response['event']
             sse = SseEvent(event, data)
             event_id += 1
@@ -255,7 +253,7 @@ class FilteredSseStream(SseStream):
     def publish(self, data, **kwargs):
         self.cache.register_callbacks()
         subchannels = kwargs.get('subchannels', [])
-        data = {'data': data, 'event': kwargs.get('event', '')}
+        data = json.dumps({'data': data, 'event': kwargs.get('event', '')})
         if not isinstance(subchannels, string_types) and isinstance(subchannels, collections.Iterable):
             for subchannel in subchannels:
                 self.cache.publish(self.create_subchannel_name(subchannel), data)

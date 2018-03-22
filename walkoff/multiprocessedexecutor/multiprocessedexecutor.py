@@ -170,7 +170,7 @@ class MultiprocessedExecutor(object):
         else:
             logger.info('Executing workflow {0} with default starting action'.format(workflow.name, start))
 
-        workflow_data = {'execution_id': execution_id, 'id': workflow.id, 'name': workflow.name}
+        workflow_data = {'execution_id': execution_id, 'id': str(workflow.id), 'name': workflow.name}
         self._log_and_send_event(WalkoffEvent.WorkflowExecutionPending, sender=workflow_data)
         self.manager.add_workflow(workflow.id, execution_id, start, start_arguments, resume)
 
@@ -273,7 +273,7 @@ class MultiprocessedExecutor(object):
             self.execute_workflow(
                 workflow.id,
                 execution_id_in=execution_id,
-                start=saved_state.action_id,
+                start=str(saved_state.action_id),
                 start_arguments=arguments,
                 resume=True)
             return True
