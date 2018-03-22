@@ -3,7 +3,7 @@ from flask import Response, Blueprint
 import json
 from walkoff.cache import unsubscribe_message
 import collections
-from six import string_types
+from six import string_types, binary_type
 
 
 class StreamableBlueprint(Blueprint):
@@ -209,7 +209,7 @@ class SseStream(object):
         for response in channel_queue.listen():
             print(response)
             print(type(response))
-            if isinstance(response, string_types):
+            if isinstance(response, string_types) or isinstance(response, binary_type):
                 print('unloading')
                 response = json.loads(response.decode('utf-8'))
             data, event = response['data'], response['event']
