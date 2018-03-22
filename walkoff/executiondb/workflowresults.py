@@ -5,11 +5,11 @@ from sqlalchemy import Column, String, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 
-from walkoff.executiondb import Device_Base, WorkflowStatusEnum, ActionStatusEnum
+from walkoff.executiondb import Execution_Base, WorkflowStatusEnum, ActionStatusEnum
 from walkoff.helpers import utc_as_rfc_datetime
 
 
-class WorkflowStatus(Device_Base):
+class WorkflowStatus(Execution_Base):
     """Case ORM for a Workflow event in the database
     """
     __tablename__ = 'workflow_status'
@@ -70,7 +70,7 @@ class WorkflowStatus(Device_Base):
         return ret
 
 
-class ActionStatus(Device_Base):
+class ActionStatus(Execution_Base):
     """ORM for an Action event in the database
     """
     __tablename__ = 'action_status'

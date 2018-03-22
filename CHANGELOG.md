@@ -1,7 +1,45 @@
 # Changelog
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
-     
+
+## [0.8.0]
+###### 2018-03-22
+
+### Added
+* The ability to use a key-value storage has been created. This is now used to
+  push workflows to the workers as well as to remove global state. Currently
+  two options are available for key-value store, DiskCache, a SQLite-backed
+  key-value storage, and Redis. By default Walkoff will use DiskCache, but it
+  is recommended that users configure and use Redis.
+* The SSEs now use dedicated SseStream objects which are backed by the cache.
+  These objects make constructing and using streams much easier.
+  `walkoff.see.InterfaceSseStream` and `walkoff.sse.FilteredInterfaceSseStream`
+  objects have been made available to use in custom interfaces.
+* A `CaseLogger` object which makes it much easier to log events to the case
+  database has been created.
+
+### Changed
+* The `interfaces.AppBlueprint` used to construct interfaces has been modified
+  to extend from `walkoff.sse.StreamableBlueprint` which in turn extends
+  Flask's Bleuprint. This makes the interface cleaner and more flexible.
+* There have been changes to the `/api/configuration` REST endpoints.
+  * `workflow_path` and `logging_config_file` have been removed
+  * The ability to edit the cache configuration has been added
+  * All changes will only be applied on server restart
+* Refactorings have been done to minimize the amount of global state used
+  throughout Walkoff. Work will continue on this effort.
+* Metrics are now stored in the execution database
+
+### Deprecated
+* `walkoff.helpers.create_sse_event` has been deprecated and will be removed in
+  version 0.10.0. Use `walkoff.sse.SseEvent` or the streams in `walkoff.sse`
+  instead.
+
+### Contributor
+* Testing the backend now requires the additional the dependencies in
+  `requirements-test.txt`
+* The minimum accepted unit test coverage for the Python backend is now 87%
+
 ## [0.7.4]
 ###### 2018-03-20
 

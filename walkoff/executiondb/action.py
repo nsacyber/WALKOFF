@@ -10,7 +10,7 @@ from walkoff.appgateway import get_app_action, is_app_action_bound
 from walkoff.appgateway.actionresult import ActionResult
 from walkoff.appgateway.validator import validate_app_action_parameters
 from walkoff.events import WalkoffEvent
-from walkoff.executiondb import Device_Base
+from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.helpers import UnknownApp, UnknownAppAction, \
@@ -20,7 +20,7 @@ from walkoff.helpers import get_app_action_api, InvalidArgument, format_exceptio
 logger = logging.getLogger(__name__)
 
 
-class Action(ExecutionElement, Device_Base):
+class Action(ExecutionElement, Execution_Base):
     __tablename__ = 'action'
     workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id'))
     app_name = Column(String(80), nullable=False)

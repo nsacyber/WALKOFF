@@ -1,5 +1,4 @@
 import logging
-from functools import partial
 
 from apscheduler.events import (EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED,
     EVENT_SCHEDULER_RESUMED, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, EVENT_JOB_EXECUTED, EVENT_JOB_ERROR)
@@ -8,6 +7,7 @@ from enum import unique, Enum
 
 from walkoff.case.callbacks import add_entry_to_case
 from walkoff.console.callbacks import console_log_callback
+from functools import partial
 
 logger = logging.getLogger(__name__)
 
@@ -38,13 +38,13 @@ class WalkoffSignal(object):
         signal (Signal): The signal object which sends the event and data
         event_type (EventType): The event type of this signal
         is_loggable (bool): Should this event get logged into cases?
-        message (str): The message log with this signal to a case
+        message (str): Human readable message for this event
 
     Args:
         name (str): The name of the signal
         event_type (EventType): The event type of this signal
         loggable (bool, optional): Should this event get logged into cases? Defaults to True
-        message (str, optional): The message log with this signal to a case. Defaults to empty string
+        message (str, optional): Human readable message for this event. Defaults to empty string
     """
     _signals = {}
 
@@ -64,6 +64,7 @@ class WalkoffSignal(object):
             console_callback = partial(console_log_callback,
                                       data='')
             self.connect(console_callback, weak=False)
+        self.message = message
 
     def send(self, sender, **kwargs):
         """Sends the signal with data

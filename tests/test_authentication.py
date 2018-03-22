@@ -19,7 +19,7 @@ class TestAuthorization(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     def setUp(self):
         import walkoff.server.flaskserver
@@ -45,7 +45,8 @@ class TestAuthorization(unittest.TestCase):
 
         db.session.commit()
 
-        self.admin_id = db.session.query(User).filter_by(username='admin').first().id
+        self.admin_role_id = db.session.query(Role).filter_by(name='admin').first().id
+        self.admin_user_id = db.session.query(User).filter_by(username='admin').first().id
 
     def tearDown(self):
         db.session.rollback()
@@ -78,9 +79,9 @@ class TestAuthorization(unittest.TestCase):
         key = json.loads(response.get_data(as_text=True))
         token = decode_token(key['access_token'])
         self.assertEqual(token['type'], 'access')
-        self.assertEqual(token['identity'], self.admin_id)
+        self.assertEqual(token['identity'], self.admin_user_id)
         self.assertTrue(token['fresh'])
-        self.assertDictEqual(token['user_claims'], {'username': 'admin', 'roles': [self.admin_id]})
+        self.assertDictEqual(token['user_claims'], {'username': 'admin', 'roles': [self.admin_role_id]})
 
     def test_login_authorization_has_valid_refresh_token(self):
         response = self.app.post('/api/auth', content_type="application/json",
@@ -88,13 +89,13 @@ class TestAuthorization(unittest.TestCase):
         key = json.loads(response.get_data(as_text=True))
         token = decode_token(key['refresh_token'])
         self.assertEqual(token['type'], 'refresh')
-        self.assertEqual(token['identity'], self.admin_id)
+        self.assertEqual(token['identity'], self.admin_user_id)
 
     def test_login_updates_user(self):
         user = add_user(username='testlogin', password='test')
         self.app.post('/api/auth', content_type="application/json",
                       data=json.dumps(dict(username='testlogin', password='test')))
-        self.assertEqual(user.login_count, self.admin_id)
+        self.assertEqual(user.login_count, 1)
         self.assertTrue(user.active)
 
     def test_login_authorization_invalid_username(self):
@@ -126,7 +127,7 @@ class TestAuthorization(unittest.TestCase):
         self.assertSetEqual(set(key.keys()), {'access_token'})
         token = decode_token(key['access_token'])
         self.assertEqual(token['type'], 'access')
-        self.assertEqual(token['identity'], self.admin_id)
+        self.assertEqual(token['identity'], self.admin_user_id)
         self.assertFalse(token['fresh'])
 
     def test_refresh_invalid_user_blacklists_token(self):

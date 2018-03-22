@@ -1,7 +1,7 @@
 import unittest
 
 import walkoff.appgateway
-import walkoff.config.config
+import walkoff.config
 from tests.config import test_apps_path
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.transform import Transform
@@ -13,7 +13,7 @@ class TestTransform(unittest.TestCase):
     def setUpClass(cls):
         walkoff.appgateway.clear_cache()
         walkoff.appgateway.cache_apps(path=test_apps_path)
-        walkoff.config.config.load_app_apis(test_apps_path)
+        walkoff.config.load_app_apis(test_apps_path)
 
     @classmethod
     def tearDownClass(cls):

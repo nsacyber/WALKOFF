@@ -6,8 +6,6 @@ from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, create_eng
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
 
-import walkoff.config.config
-import walkoff.config.paths
 from walkoff.helpers import format_db_path
 from walkoff.helpers import utc_as_rfc_datetime
 
@@ -94,9 +92,9 @@ class CaseDatabase(object):
 
     __instance = None
 
-    def __init__(self):
+    def __init__(self, case_db_type, case_db_path):
         self.engine = create_engine(
-            format_db_path(walkoff.config.config.case_db_type, walkoff.config.paths.case_db_path))
+            format_db_path(case_db_type, case_db_path))
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 
@@ -119,39 +117,17 @@ class CaseDatabase(object):
         self.connection.close()
         self.engine.dispose()
 
-    def add_cases(self, case_names):
-        """ Adds empty cases to the database
-        
-        Args:
-            case_names (list[str]): A list of case names to add
-        """
-        existing_cases = {x[0] for x in self.session.query(Case).with_entities(Case.name).all()}
-        additions = [Case(name=case_name) for case_name in (set(case_names) - existing_cases)]
-        self.session.add_all(additions)
-        self.session.commit()
-
-    def delete_cases(self, case_names):
-        """ Removes cases to the database
-        
-        Args:
-            case_names (list[str]): A list of case names to remove
-        """
-        if case_names:
-            self.session.query(Case).filter(Case.name.in_(case_names)).delete(synchronize_session=False)
-            self.session.commit()
-
-    def rename_case(self, old_case_name, new_case_name):
+    def rename_case(self, case_id, new_case_name):
         """ Renames a case
         
         Args:
-            old_case_name (str): The case to rename
+            case_id (int): The case to rename
             new_case_name (str): The case's new name
         """
-        if old_case_name and new_case_name:
-            case = self.session.query(Case).filter(Case.name == old_case_name).first()
-            if case:
-                case.name = new_case_name
-                self.session.commit()
+        case = self.session.query(Case).filter(Case.id == case_id).first()
+        if case:
+            case.name = new_case_name
+            self.session.commit()
 
     def edit_event_note(self, event_id, note):
         """ Edits the note attached to an event
@@ -166,23 +142,16 @@ class CaseDatabase(object):
                 event.note = note
                 self.session.commit()
 
-    def add_event(self, event, cases):
+    def add_event(self, event, case_ids):
         """ Adds an event to some cases
         
         Args:
-            event (cls): A core.case.database.Event object to add to the cases
-            cases (list[str]): The names of the cases to add the event to
+            event (Event): An event to add to the cases
+            case_ids (list[int]): The names of the cases to add the event to
         """
         event.originator = str(event.originator)
-        existing_cases = case_db.session.query(Case).all()
-        existing_case_names = [case.name for case in existing_cases]
-        for case in cases:
-            if case in existing_case_names:
-                for case_elem in existing_cases:
-                    if case_elem.name == case:
-                        event.cases.append(case_elem)
-            else:
-                logger.error("Case is not tracked")
+        cases = case_db.session.query(Case).filter(Case.id.in_(case_ids)).all()
+        event.cases = cases
         self.session.add(event)
         self.session.commit()
 
@@ -208,20 +177,18 @@ class CaseDatabase(object):
         Returns:
             The JSON representation of all Event objects without their cases.
         """
-        event_id = self.session.query(Case).filter(Case.id == case_id).first()
-        if not event_id:
+        case = self.session.query(Case).filter(Case.id == case_id).first()
+        if not case:
             raise Exception
 
         result = [event.as_json()
-                  for event in event_id.events]
+                  for event in case.events]
         return result
 
-
-def get_case_db(_singleton=None):
-    """ Singleton factory which returns the case database"""
-    if not _singleton:
-        _singleton = CaseDatabase()
-    return _singleton
+    def commit(self):
+        """Commit the current changes to the database
+        """
+        self.session.commit()
 
 
 case_db = None

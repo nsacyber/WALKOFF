@@ -2,7 +2,7 @@ from copy import deepcopy
 
 from flask_jwt_extended import jwt_required
 
-import walkoff.config.config
+import walkoff.config
 from walkoff import helpers
 from walkoff.appgateway import is_app_action_bound
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
@@ -108,7 +108,7 @@ def read_all_app_apis(field_name=None):
     @permissions_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
     def __func():
         ret = []
-        for app_name, app_api in walkoff.config.config.app_apis.items():
+        for app_name, app_api in walkoff.config.app_apis.items():
             ret.append(format_full_app_api(app_api, app_name))
         if field_name is not None:
             default = [] if field_name not in ('info', 'external_docs') else {}
@@ -126,7 +126,7 @@ def read_app_api(app_name):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
     def __func():
-        api = walkoff.config.config.app_apis.get(app_name, None)
+        api = walkoff.config.app_apis.get(app_name, None)
         if api is not None:
             return format_full_app_api(api, app_name), SUCCESS
         else:
@@ -139,7 +139,7 @@ def read_app_api(app_name):
 def read_app_api_field(app_name, field_name):
     @permissions_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
     def __func():
-        api = walkoff.config.config.app_apis.get(app_name, None)
+        api = walkoff.config.app_apis.get(app_name, None)
         if api is not None:
             return format_full_app_api(api, app_name)[field_name], SUCCESS
         else:

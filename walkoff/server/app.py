@@ -1,47 +1,46 @@
 import logging
-import os
 
 import connexion
 from jinja2 import FileSystemLoader
-from walkoff.executiondb.device import App
 from walkoff import helpers
-from walkoff.config import paths
+import walkoff.cache
 from walkoff.executiondb.device import App
 from walkoff.extensions import db, jwt
-from walkoff.helpers import format_db_path
-from walkoff.serverdb.casesubscription import CaseSubscription
+import walkoff.config as config
+
 logger = logging.getLogger(__name__)
 
 
 def register_blueprints(flaskapp):
     from walkoff.server.blueprints import custominterface
-    from walkoff.server.blueprints import workflowqueue
+    from walkoff.server.blueprints import workflowresults
     from walkoff.server.blueprints import notifications
     from walkoff.server.blueprints import console
 
     flaskapp.register_blueprint(custominterface.custom_interface_page, url_prefix='/custominterfaces/<interface>')
-    flaskapp.register_blueprint(workflowqueue.workflowqueue_page, url_prefix='/api/streams/workflowqueue')
+    flaskapp.register_blueprint(workflowresults.workflowresults_page, url_prefix='/api/streams/workflowqueue')
     flaskapp.register_blueprint(notifications.notifications_page, url_prefix='/api/streams/messages')
     flaskapp.register_blueprint(console.console_page, url_prefix='/api/streams/console')
+    for blueprint in (workflowresults.workflowresults_page, notifications.notifications_page):
+        blueprint.cache = walkoff.cache.cache
     __register_all_app_blueprints(flaskapp)
 
 
 def __get_blueprints_in_module(module):
-    from interfaces import AppBlueprint
+    from flask import Blueprint
     blueprints = [getattr(module, field)
                   for field in dir(module) if (not field.startswith('__')
-                                               and isinstance(getattr(module, field), AppBlueprint))]
+                                               and isinstance(getattr(module, field), Blueprint))]
     return blueprints
 
 
-def __register_app_blueprint(flaskapp, blueprint, url_prefix):
-    rule = '{0}{1}'.format(url_prefix, blueprint.rule) if blueprint.rule else url_prefix
-    flaskapp.register_blueprint(blueprint.blueprint, url_prefix=rule)
-
-
 def __register_blueprint(flaskapp, blueprint, url_prefix):
-    rule = '{0}{1}'.format(url_prefix, blueprint.rule) if blueprint.rule else url_prefix
-    flaskapp.register_blueprint(blueprint.blueprint, url_prefix=rule)
+    from interfaces import AppBlueprint
+    if isinstance(blueprint, AppBlueprint):
+        blueprint.cache = walkoff.cache.cache
+    url_prefix = '{0}{1}'.format(url_prefix, blueprint.url_prefix) if blueprint.url_prefix else url_prefix
+    blueprint.url_prefix = url_prefix
+    flaskapp.register_blueprint(blueprint, url_prefix=url_prefix)
 
 
 def __register_app_blueprints(flaskapp, app_name, blueprints):
@@ -56,40 +55,28 @@ def __register_all_app_blueprints(flaskapp):
     imported_apps = import_submodules(interfaces)
     for interface_name, interfaces_module in imported_apps.items():
         try:
-            display_blueprints = []
+            interface_blueprints = []
             for submodule in import_submodules(interfaces_module, recursive=True).values():
-                display_blueprints.extend(__get_blueprints_in_module(submodule))
+                interface_blueprints.extend(__get_blueprints_in_module(submodule))
         except ImportError:
             pass
         else:
-            __register_app_blueprints(flaskapp, interface_name, display_blueprints)
+            __register_app_blueprints(flaskapp, interface_name, interface_blueprints)
 
 
-def create_app():
-    import walkoff.config.config
+def create_app(app_config, walkoff_config):
+    import walkoff.config
     connexion_app = connexion.App(__name__, specification_dir='../api/')
     _app = connexion_app.app
     _app.jinja_loader = FileSystemLoader(['walkoff/templates'])
-    _app.config.update(
-        # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
-        SECRET_KEY=walkoff.config.config.secret_key,
-        SQLALCHEMY_DATABASE_URI=format_db_path(walkoff.config.config.walkoff_db_type, os.path.abspath(paths.db_path)),
-        SECURITY_PASSWORD_HASH='pbkdf2_sha512',
-        SECURITY_TRACKABLE=False,
-        SECURITY_PASSWORD_SALT='something_super_secret_change_in_production',
-        SECURITY_POST_LOGIN_VIEW='/',
-        WTF_CSRF_ENABLED=False,
-        JWT_BLACKLIST_ENABLED=True,
-        JWT_BLACKLIST_TOKEN_CHECKS=['refresh'],
-        JWT_TOKEN_LOCATION='headers',
-        SQLALCHEMY_TRACK_MODIFICATIONS=False
-    )
+    _app.config.from_object(app_config)
 
     db.init_app(_app)
     jwt.init_app(_app)
     connexion_app.add_api('composed_api.yaml')
 
-    walkoff.config.config.initialize()
+    walkoff.config.initialize()
+    walkoff.cache.cache = walkoff.cache.make_cache(walkoff_config.CACHE)
     register_blueprints(_app)
 
     import walkoff.server.workflowresults  # Don't delete this import
@@ -98,7 +85,7 @@ def create_app():
 
 
 # Template Loader
-app = create_app()
+app = create_app(config.AppConfig, config.Config)
 
 
 @app.before_first_request
@@ -129,6 +116,18 @@ def create_user():
         executiondb.execution_db.session.add(App(name=app_name, devices=[]))
     db.session.commit()
     executiondb.execution_db.session.commit()
-    CaseSubscription.sync_to_subscriptions()
-
+    send_all_cases_to_workers()
     app.logger.handlers = logging.getLogger('server').handlers
+
+
+def send_all_cases_to_workers():
+    from walkoff.server.flaskserver import running_context
+    from walkoff.serverdb.casesubscription import CaseSubscription
+    from walkoff.case.database import case_db, Case
+    from walkoff.case.subscription import Subscription
+
+    for case_subscription in CaseSubscription.query.all():
+        subscriptions = [Subscription(sub['id'], sub['events']) for sub in case_subscription.subscriptions]
+        case = case_db.session.query(Case).filter(Case.name == case_subscription.name).first()
+        if case is not None:
+            running_context.executor.update_case(case.id, subscriptions)

@@ -8,7 +8,7 @@ from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 from walkoff.events import WalkoffEvent
-from walkoff.executiondb import Device_Base
+from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.action import Action
 from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.helpers import InvalidExecutionElement
@@ -16,7 +16,7 @@ from walkoff.helpers import InvalidExecutionElement
 logger = logging.getLogger(__name__)
 
 
-class Workflow(ExecutionElement, Device_Base):
+class Workflow(ExecutionElement, Execution_Base):
     __tablename__ = 'workflow'
     playbook_id = Column(UUIDType(binary=False), ForeignKey('playbook.id'))
     name = Column(String(80), nullable=False)
@@ -143,7 +143,7 @@ class Workflow(ExecutionElement, Device_Base):
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowAborted)
                 yield
 
-            device_id = self._instance_repo.setup_app_instance(action)
+            device_id = self._instance_repo.setup_app_instance(action, self)
 
             if first:
                 first = False
@@ -201,19 +201,8 @@ class Workflow(ExecutionElement, Device_Base):
     def __shutdown(self):
         # Upon finishing shut down instances
         self._instance_repo.shutdown_instances()
-        result_str = {}
-        for action, action_result in self._accumulator.items():
-            try:
-                result_str[action] = json.dumps(action_result)
-            except TypeError:
-                logger.error('Result of workflow is neither string or a JSON-able. Cannot record')
-                result_str[action] = 'error: could not convert to JSON'
-        data = dict(self._accumulator)
-        try:
-            data_json = json.dumps(data)
-        except TypeError:
-            data_json = str(data)
-        WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowShutdown, data=data_json)
+        accumulator = {str(key): value for key, value in self._accumulator.items()}
+        WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowShutdown, data=accumulator)
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self._accumulator))
 
     def set_execution_id(self, execution_id):

@@ -2,7 +2,7 @@ import json
 import os
 
 import tests.config
-import walkoff.config.paths
+import walkoff.config
 from tests.config import test_workflows_path
 from tests.util.jsonplaybookloader import JsonPlaybookLoader
 from walkoff import executiondb
@@ -16,7 +16,8 @@ from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.schemas import PlaybookSchema
 from walkoff.executiondb.transform import Transform
 from walkoff.executiondb.workflow import Workflow
-from walkoff.executiondb.workflowresults import WorkflowStatus
+from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
+from walkoff.executiondb.metrics import AppMetric, WorkflowMetric
 
 
 def load_playbooks(playbooks):
@@ -60,23 +61,22 @@ def load_workflow(playbook_name, workflow_name):
 
 
 def setup_dbs():
-    walkoff.config.paths.db_path = tests.config.test_db_path
-    walkoff.config.paths.case_db_path = tests.config.test_case_db_path
-    walkoff.config.paths.execution_db_path = tests.config.test_execution_db_path
+    walkoff.config.Config.DB_PATH = tests.config.test_db_path
+    walkoff.config.Config.CASE_DB_PATH = tests.config.test_case_db_path
+    walkoff.config.Config.EXECUTION_DB_PATH = tests.config.test_execution_db_path
     initialize_databases()
 
 
-def cleanup_device_db():
+def cleanup_execution_db():
     executiondb.execution_db.session.rollback()
-    classes = [Playbook, Workflow, Action, Branch, Argument, ConditionalExpression, Condition, Transform]
+    classes = [Playbook, Workflow, Action, Branch, Argument, ConditionalExpression, Condition, Transform,
+               WorkflowStatus, ActionStatus, AppMetric, WorkflowMetric, WorkflowStatus]
     for ee in classes:
         for instance in executiondb.execution_db.session.query(ee).all():
             executiondb.execution_db.session.delete(instance)
 
-    for instance in executiondb.execution_db.session.query(WorkflowStatus).all():
-        executiondb.execution_db.session.delete(instance)
     executiondb.execution_db.session.commit()
 
 
-def tear_down_device_db():
+def tear_down_execution_db():
     executiondb.execution_db.tear_down()

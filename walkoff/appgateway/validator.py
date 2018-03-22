@@ -10,7 +10,6 @@ from jsonschema.validators import Draft4Validator
 from swagger_spec_validator import ref_validators
 from swagger_spec_validator.validator20 import deref
 
-import walkoff.config.paths
 from walkoff.helpers import InvalidArgument, get_function_arg_names, InvalidApi, format_exception_message
 
 logger = logging.getLogger(__name__)
@@ -101,12 +100,12 @@ def convert_json(spec, param_in, message_prefix):
         raise InvalidApi('{0} has invalid api'.format(message_prefix))
 
 
-def validate_app_spec(spec, app_name, spec_url='', http_handlers=None):
+def validate_app_spec(spec, app_name, walkoff_schema_path, spec_url='', http_handlers=None):
     from walkoff.appgateway import get_all_transforms_for_app
     from walkoff.appgateway import get_all_conditions_for_app
     walkoff_resolver = validate_spec_json(
         spec,
-        os.path.join(walkoff.config.paths.walkoff_schema_path),
+        os.path.join(walkoff_schema_path),
         spec_url,
         http_handlers)
     dereference = partial(deref, resolver=walkoff_resolver)

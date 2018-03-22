@@ -8,7 +8,7 @@ from sqlalchemy_utils import UUIDType
 from walkoff.appgateway import get_transform
 from walkoff.appgateway.validator import validate_transform_parameters
 from walkoff.events import WalkoffEvent
-from walkoff.executiondb import Device_Base
+from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.helpers import UnknownTransform, UnknownApp, \
@@ -18,7 +18,7 @@ from walkoff.helpers import get_transform_api, InvalidArgument, split_api_params
 logger = logging.getLogger(__name__)
 
 
-class Transform(ExecutionElement, Device_Base):
+class Transform(ExecutionElement, Execution_Base):
     __tablename__ = 'transform'
     condition_id = Column(UUIDType(binary=False), ForeignKey('condition.id'))
     app_name = Column(String(80), nullable=False)

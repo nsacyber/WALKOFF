@@ -1,73 +1,59 @@
 from datetime import datetime
 
-from flask import Blueprint, jsonify, Response
+from flask import jsonify
 from flask_jwt_extended import jwt_required
-from gevent import sleep
-from gevent.event import AsyncResult, Event
 
 from interfaces import dispatcher, AppBlueprint
 from walkoff.events import WalkoffEvent
-from walkoff.helpers import create_sse_event
 from walkoff.security import jwt_required_in_query
+from walkoff.sse import InterfaceSseStream, create_interface_channel_name
 
-blueprint = AppBlueprint(blueprint=Blueprint('HelloWorldPage__', __name__))
+metrics_stream = InterfaceSseStream('HelloWorld', 'metrics')
 
-hello_world_action_count = {}
+blueprint = AppBlueprint('HelloWorldPage__', __name__, streams=[metrics_stream])
 
-action_event_json = AsyncResult()
-action_signal = Event()
 
-action_event_id_counter = 0
+hello_world_channel_names = {}
+
+
+def retrieve_actions():
+    return {action: blueprint.cache.get(channel_name) for action, channel_name in hello_world_channel_names.items()}
 
 
 @dispatcher.on_app_actions('HelloWorld', events=WalkoffEvent.ActionStarted, weak=False)
 def handle_action_start(data):
-    global hello_world_action_count
     action_name = data['action_name']
+    if action_name not in hello_world_channel_names:
+        hello_world_channel_names[action_name] = \
+            create_interface_channel_name('HelloWorld', 'action_{}'.format(action_name))
 
-    if action_name not in hello_world_action_count:
-        hello_world_action_count[action_name] = 1
-    else:
-        hello_world_action_count[action_name] += 1
+    blueprint.cache.incr(hello_world_channel_names[action_name])
 
 
-@blueprint.blueprint.route('/metrics', methods=['GET'])
+@blueprint.route('/metrics', methods=['GET'])
 @jwt_required
 def get_hello_world_metrics():
-    global hello_world_action_count
-    return jsonify(hello_world_action_count), 200
+    return jsonify(retrieve_actions()), 200
 
 
-def action_event_stream():
-    global action_event_id_counter
-    while True:
-        event_type, data = action_event_json.get()
-        yield create_sse_event(event_id=action_event_id_counter, event=event_type, data=data)
-        action_event_id_counter += 1
-        action_signal.wait()
+def format_action_data(data):
+    data['timestamp'] = str(datetime.utcnow())
+    return data
 
 
 @dispatcher.on_app_actions('HelloWorld', events=WalkoffEvent.ActionExecutionSuccess)
+@metrics_stream.push('action_success')
 def action_ended_callback(data):
-    data['timestamp'] = str(datetime.utcnow())
-    action_event_json.set(('action_success', data))
-    sleep(0)
-    action_signal.set()
-    action_signal.clear()
-    sleep(0)
+    return format_action_data(data)
 
 
 @dispatcher.on_app_actions('HelloWorld', events=WalkoffEvent.ActionExecutionError)
+@metrics_stream.push('action_error')
 def __action_error_callback(data):
-    data['timestamp'] = str(datetime.utcnow())
-    action_event_json.set(('action_success', data))
-    sleep(0)
-    action_signal.set()
-    action_signal.clear()
-    sleep(0)
+    return format_action_data(data)
 
 
-@blueprint.blueprint.route('/actionstream', methods=['GET'])
+@blueprint.route('/actionstream', methods=['GET'])
 @jwt_required_in_query('access_token')
 def stream_workflow_action_events():
-    return Response(action_event_stream(), mimetype='text/event-stream')
+    return metrics_stream.stream()

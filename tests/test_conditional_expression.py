@@ -1,8 +1,7 @@
 import unittest
 
 import walkoff.appgateway
-import walkoff.config.config
-import walkoff.config.paths
+import walkoff.config
 from tests.config import test_apps_path
 from tests.util import execution_db_help
 from walkoff.events import WalkoffEvent
@@ -18,11 +17,11 @@ class TestCondition(unittest.TestCase):
         execution_db_help.setup_dbs()
         walkoff.appgateway.clear_cache()
         walkoff.appgateway.cache_apps(path=test_apps_path)
-        walkoff.config.config.load_app_apis(test_apps_path)
+        walkoff.config.load_app_apis(test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
         walkoff.appgateway.clear_cache()
 
     def assert_construction(self, expression, operator='and', is_negated=False, child_expressions=None,

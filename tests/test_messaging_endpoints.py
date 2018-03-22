@@ -103,7 +103,7 @@ class TestMessagingEndpoints(ServerTestCase):
             db.session.delete(role)
         db.session.commit()
 
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     def login_user(self, user):
         post = self.app.post('/api/auth', content_type="application/json",

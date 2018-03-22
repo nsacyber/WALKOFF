@@ -3,7 +3,7 @@ import os
 from flask import send_file
 from flask_jwt_extended import jwt_required
 
-import walkoff.config.paths
+import walkoff.config
 from walkoff import helpers
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
@@ -52,7 +52,7 @@ def validate_path(directory, filename):
 
 
 def read_client_file(filename):
-    file = validate_path(walkoff.config.paths.client_path, filename)
+    file = validate_path(walkoff.config.Config.CLIENT_PATH, filename)
     if file is not None:
         return send_file(file), 200
     else:

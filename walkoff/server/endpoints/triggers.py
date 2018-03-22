@@ -1,10 +1,11 @@
 from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt_claims
 
-import walkoff.messaging
+from walkoff.messaging.utils import log_action_taken_on_message
 from walkoff.executiondb.argument import Argument
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.returncodes import *
+from walkoff.serverdb.message import Message
 
 
 def send_data_to_trigger():
@@ -24,7 +25,6 @@ def send_data_to_trigger():
         user_id = get_jwt_identity()
         authorization_not_required, authorized_execution_ids = get_authorized_execution_ids(
             execution_ids, user_id, get_jwt_claims().get('roles', []))
-        add_user_in_progress(authorized_execution_ids, user_id)
         execution_ids = list(authorized_execution_ids | authorization_not_required)
         completed_execution_ids = []
 
@@ -35,6 +35,7 @@ def send_data_to_trigger():
         for execution_id in execution_ids:
             if running_context.executor.resume_trigger_step(execution_id, data_in, arg_objects):
                 completed_execution_ids.append(execution_id)
+                log_action_taken_on_message(user_id, execution_id)
 
         return completed_execution_ids, SUCCESS
 
@@ -45,14 +46,9 @@ def get_authorized_execution_ids(execution_ids, user_id, role_ids):
     authorized_execution_ids = set()
     authorization_not_required = set()
     for execution_id in execution_ids:
-        if not walkoff.messaging.workflow_authorization_cache.workflow_requires_authorization(execution_id):
+        message = Message.query.filter(Message.workflow_execution_id == execution_id).first()
+        if not (message and message.requires_response):
             authorization_not_required.add(execution_id)
-        elif any(walkoff.messaging.workflow_authorization_cache.is_authorized(execution_id, user_id, role_id)
-                 for role_id in role_ids):
+        elif message.requires_response and message.is_authorized(user_id, role_ids):
             authorized_execution_ids.add(execution_id)
     return authorization_not_required, authorized_execution_ids
-
-
-def add_user_in_progress(execution_ids, user_id):
-    for execution_id in execution_ids:
-        walkoff.messaging.workflow_authorization_cache.add_user_in_progress(execution_id, user_id)

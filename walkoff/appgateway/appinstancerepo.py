@@ -20,11 +20,11 @@ class AppInstanceRepo(object):
     def __init__(self, instances=None):
         self._instances = instances or {}
 
-    def setup_app_instance(self, action):
+    def setup_app_instance(self, action, workflow):
         device_id = (action.app_name, action.device_id)
         if device_id not in self._instances:
             self._instances[device_id] = AppInstance.create(action.app_name, action.device_id)
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.AppInstanceCreated)
+            WalkoffEvent.CommonWorkflowSignal.send(workflow, event=WalkoffEvent.AppInstanceCreated)
             logger.debug('Created new app instance: App {0}, device {1}'.format(action.app_name, action.device_id))
         return device_id
 

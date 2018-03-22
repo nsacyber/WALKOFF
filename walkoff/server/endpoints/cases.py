@@ -4,13 +4,12 @@ from flask import request, current_app, send_file
 from flask_jwt_extended import jwt_required
 
 import walkoff.case.database as case_database
-import walkoff.case.subscription as case_subscription
-from walkoff.case.subscription import delete_cases
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import with_resource_factory
 from walkoff.server.problem import Problem
 from walkoff.server.returncodes import *
 from walkoff.serverdb import db
+from walkoff.case.subscription import Subscription
 from walkoff.serverdb.casesubscription import CaseSubscription
 
 try:
@@ -30,6 +29,18 @@ with_subscription = with_resource_factory(
     lambda case_id: CaseSubscription.query.filter_by(id=case_id).first())
 
 
+def convert_subscriptions(subscriptions):
+    return [Subscription(subscription['id'], subscription['events']) for subscription in subscriptions]
+
+
+def split_subscriptions(subscriptions):
+    controller_subscriptions = None
+    for i, subscription in enumerate(subscriptions):
+        if subscription.id == 'controller':
+            controller_subscriptions = subscriptions.pop(i)
+    return subscriptions, controller_subscriptions
+
+
 def read_all_cases():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('cases', ['read']))
@@ -40,6 +51,8 @@ def read_all_cases():
 
 
 def create_case():
+    import walkoff.server.flaskserver as server
+
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('cases', ['create']))
     def __func():
@@ -51,11 +64,20 @@ def create_case():
         case_name = data['name']
         case_obj = CaseSubscription.query.filter_by(name=case_name).first()
         if case_obj is None:
-            case = CaseSubscription(**data)
-            db.session.add(case)
+            case_subscription = CaseSubscription(**data)
+            db.session.add(case_subscription)
             db.session.commit()
+            case = case_database.Case(name=case_name)
+            case_database.case_db.session.add(case)
+            case_database.case_db.commit()
+            if 'subscriptions' in data:
+                subscriptions = convert_subscriptions(data['subscriptions'])
+                subscriptions, controller_subscriptions = split_subscriptions(subscriptions)
+                server.running_context.executor.create_case(case.id, subscriptions)
+                if controller_subscriptions:
+                    server.running_context.case_logger.add_subscriptions(case.id, subscriptions)
             current_app.logger.debug('Case added: {0}'.format(case_name))
-            return case.as_json(), OBJECT_CREATED
+            return case_subscription.as_json(), OBJECT_CREATED
         else:
             current_app.logger.warning('Cannot create case {0}. Case already exists.'.format(case_name))
             return Problem.from_crud_resource(
@@ -84,6 +106,8 @@ def read_case(case_id, mode=None):
 
 
 def update_case():
+    import walkoff.server.flaskserver as server
+
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('cases', ['update']))
     def __func():
@@ -91,20 +115,23 @@ def update_case():
         case_obj = CaseSubscription.query.filter_by(id=data['id']).first()
         if case_obj:
             original_name = case_obj.name
-            case_name = data['name'] if 'name' in data else original_name
-
+            case = case_database.case_db.session.query(case_database.Case).filter(
+                case_database.Case.name == original_name).first()
             if 'note' in data and data['note']:
                 case_obj.note = data['note']
             if 'name' in data and data['name']:
-                case_subscription.rename_case(case_obj.name, data['name'])
                 case_obj.name = data['name']
-                db.session.commit()
+                if case:
+                    case.name = data['name']
+                case_database.case_db.session.commit()
                 current_app.logger.debug('Case name changed from {0} to {1}'.format(original_name, data['name']))
             if 'subscriptions' in data:
                 case_obj.subscriptions = data['subscriptions']
-                subscriptions = {subscription['id']: subscription['events'] for subscription in data['subscriptions']}
-                for uid, events in subscriptions.items():
-                    case_subscription.modify_subscription(case_name, uid, events)
+                subscriptions = convert_subscriptions(data['subscriptions'])
+                subscriptions, controller_subscriptions = split_subscriptions(subscriptions)
+                server.running_context.executor.update_case(case.id, subscriptions)
+                if controller_subscriptions:
+                    server.running_context.case_logger.update_subscriptions(case.id, subscriptions)
             db.session.commit()
             return case_obj.as_json(), SUCCESS
         else:
@@ -123,14 +150,22 @@ def patch_case():
 
 
 def delete_case(case_id):
+    import walkoff.server.flaskserver as server
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('cases', ['delete']))
     def __func():
         case_obj = CaseSubscription.query.filter_by(id=case_id).first()
         if case_obj:
-            delete_cases([case_obj.name])
+            case_name = case_obj.name
             db.session.delete(case_obj)
             db.session.commit()
+            case = case_database.case_db.session.query(case_database.Case).filter(
+                case_database.Case.name == case_name).first()
+            if case:
+                server.running_context.executor.delete_case(case_id)
+                server.running_context.case_logger.delete_case(case_id)
+                case_database.case_db.session.delete(case)
+            case_database.case_db.commit()
             current_app.logger.debug('Case deleted {0}'.format(case_id))
             return None, NO_CONTENT
         else:

@@ -1,8 +1,10 @@
 import json
+import uuid
 from datetime import timedelta
 
-import walkoff.server.metrics as metrics
 from tests.util import execution_db_help
+from walkoff import executiondb
+from walkoff.executiondb.metrics import AppMetric, ActionMetric, ActionStatusMetric, WorkflowMetric
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
 from walkoff.server import flaskserver as server
@@ -10,31 +12,10 @@ from walkoff.server.endpoints.metrics import _convert_action_time_averages, _con
 
 
 class MetricsServerTest(ServerTestCase):
-    def setUp(self):
-        metrics.app_metrics = {}
-
     def tearDown(self):
-        execution_db_help.cleanup_device_db()
+        execution_db_help.cleanup_execution_db()
 
     def test_convert_action_time_average(self):
-        '''
-        ret = deepcopy(metrics.app_metrics)
-        for app in ret:
-            for action in app['actions']:
-                ret[app]['actions'][action]['avg_time'] = str(action['avg_time'])
-        return ret
-        '''
-
-        test1 = {'app1': {'actions': {'action1': {'success': {'count': 0,
-                                                              'avg_time': timedelta(100, 0, 1)}},
-                                      'action2': {'error': {'count': 2,
-                                                            'avg_time': timedelta(0, 0, 1000)}}},
-                          'count': 2},
-                 'app2': {'actions': {'action1': {'success': {'count': 0,
-                                                              'avg_time': timedelta(0, 100, 1)},
-                                                  'error': {'count': 100,
-                                                            'avg_time': timedelta(1, 100, 500)}}},
-                          'count': 100}}
         expected_json = {'apps': [{'count': 100,
                                    'name': 'app2',
                                    'actions': [{'error_metrics': {'count': 100,
@@ -50,7 +31,28 @@ class MetricsServerTest(ServerTestCase):
                                                {'error_metrics': {'count': 2,
                                                                   'avg_time': '0:00:00.001000'},
                                                 'name': 'action2'}]}]}
-        metrics.app_metrics = test1
+
+        action_status_one = ActionStatusMetric("success", timedelta(100, 0, 1).total_seconds())
+        action_status_one.count = 0
+        action_status_two = ActionStatusMetric("error", timedelta(0, 0, 1000).total_seconds())
+        action_status_two.count = 2
+        app_one = AppMetric("app1", actions=[
+            ActionMetric(uuid.uuid4(), "action1", [action_status_one]),
+            ActionMetric(uuid.uuid4(), "action2", [action_status_two])])
+        app_one.count = 2
+
+        as_one = ActionStatusMetric("success", timedelta(0, 100, 1).total_seconds())
+        as_one.count = 0
+        as_two = ActionStatusMetric("error", timedelta(1, 100, 500).total_seconds())
+        as_two.count = 100
+        app_two = AppMetric("app2", actions=[
+            ActionMetric(uuid.uuid4(), "action1", [as_one, as_two])])
+        app_two.count = 100
+
+        executiondb.execution_db.session.add(app_one)
+        executiondb.execution_db.session.add(app_two)
+        executiondb.execution_db.session.commit()
+
         converted = _convert_action_time_averages()
         orderless_list_compare(self, converted.keys(), ['apps'])
         self.assertEqual(len(converted['apps']), len(expected_json['apps']))
@@ -73,14 +75,6 @@ class MetricsServerTest(ServerTestCase):
             self.assertIn(action_metric, app2_metrics['actions'])
 
     def test_convert_workflow_time_average(self):
-        test1 = {'workflow1': {'count': 0,
-                               'avg_time': timedelta(100, 0, 1)},
-                 'workflow2': {'count': 2,
-                               'avg_time': timedelta(0, 0, 1000)},
-                 'workflow3': {'count': 0,
-                               'avg_time': timedelta(0, 100, 1)},
-                 'workflow4': {'count': 100,
-                               'avg_time': timedelta(1, 100, 500)}}
         expected_json = {'workflows': [{'count': 100,
                                         'avg_time': '1 day, 0:01:40.000500',
                                         'name': 'workflow4'},
@@ -93,7 +87,19 @@ class MetricsServerTest(ServerTestCase):
                                        {'count': 0,
                                         'avg_time': '100 days, 0:00:00.000001',
                                         'name': 'workflow1'}]}
-        metrics.workflow_metrics = test1
+
+        wf1 = WorkflowMetric(uuid.uuid4(), 'workflow1', timedelta(100, 0, 1).total_seconds())
+        wf1.count = 0
+        wf2 = WorkflowMetric(uuid.uuid4(), 'workflow2', timedelta(0, 0, 1000).total_seconds())
+        wf2.count = 2
+        wf3 = WorkflowMetric(uuid.uuid4(), 'workflow3', timedelta(0, 100, 1).total_seconds())
+        wf3.count = 0
+        wf4 = WorkflowMetric(uuid.uuid4(), 'workflow4', timedelta(1, 100, 500).total_seconds())
+        wf4.count = 100
+
+        executiondb.execution_db.session.add_all([wf1, wf2, wf3, wf4])
+        executiondb.execution_db.session.commit()
+
         converted = _convert_workflow_time_averages()
         orderless_list_compare(self, converted.keys(), ['workflows'])
         self.assertEqual(len(converted['workflows']), len(expected_json['workflows']))

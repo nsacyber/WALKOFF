@@ -2,9 +2,7 @@ import json
 import logging
 import os.path
 
-import walkoff.config.paths
-from walkoff.executiondb.playbook import Playbook
-from walkoff.executiondb.workflow import Workflow
+import walkoff.config
 from walkoff.helpers import (locate_playbooks_in_directory, InvalidArgument, UnknownApp, UnknownAppAction,
                              UnknownTransform, UnknownCondition, format_exception_message)
 from walkoff.executiondb.schemas import PlaybookSchema, WorkflowSchema
@@ -92,7 +90,7 @@ class JsonPlaybookLoader(object):
         """
 
         if resource_collection is None:
-            resource_collection = walkoff.config.paths.workflows_path
+            resource_collection = walkoff.config.Config.WORKFLOWS_PATH
         playbooks = [JsonPlaybookLoader.load_playbook(os.path.join(resource_collection, playbook))
                      for playbook in locate_playbooks_in_directory(resource_collection)]
         return [playbook for playbook in playbooks if playbook]
