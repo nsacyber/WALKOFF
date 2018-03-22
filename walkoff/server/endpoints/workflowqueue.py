@@ -122,6 +122,6 @@ def control_workflow():
         elif status == 'abort':
             running_context.executor.abort_workflow(execution_id)
 
-        return '', NO_CONTENT
+        return None, NO_CONTENT
 
     return __func()

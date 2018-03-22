@@ -221,7 +221,7 @@ class TestWorkflowServer(ServerTestCase):
         response.pop('id')
         response['workflows'][0].pop('id')
         self.assertDictEqual(response, {'name': self.add_playbook_name,
-                                        'workflows': [{'name': 'wf1', 'start': start, 'actions': [], 'branches': []}]})
+                                        'workflows': [{'name': 'wf1', 'start': start}]})
         self.assertEqual(len(list(executiondb.execution_db.session.query(Playbook).all())),
                          original_length + 1)
 

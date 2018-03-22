@@ -1,5 +1,6 @@
 from unittest import TestCase
 import json
+from uuid import uuid4
 
 from walkoff.server.endpoints.triggers import get_authorized_execution_ids
 from walkoff.serverdb import db, User, Role
@@ -10,9 +11,9 @@ class TestTriggerHelpers(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.uid1 = 'uid1'
-        cls.uid2 = 'uid2'
-        cls.uid3 = 'uid3'
+        cls.uid1 = str(uuid4())
+        cls.uid2 = str(uuid4())
+        cls.uid3 = str(uuid4())
         cls.uids = {cls.uid1, cls.uid2, cls.uid3}
         from walkoff.server import flaskserver
         cls.context = flaskserver.app.test_request_context()

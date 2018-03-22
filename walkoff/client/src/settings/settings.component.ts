@@ -121,7 +121,7 @@ export class SettingsComponent {
 		modalRef.componentInstance.title = `Edit User: ${user.username}`;
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.roles = this.roles;
-		modalRef.componentInstance.workingUser = User.toWorkingUser(user);
+		modalRef.componentInstance.workingUser = user.toWorkingUser();
 
 		this._handleModalClose(modalRef);
 	}

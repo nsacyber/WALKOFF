@@ -129,7 +129,7 @@ def delete_user(user_id):
             db.session.delete(user)
             db.session.commit()
             current_app.logger.info('User {0} deleted'.format(user.username))
-            return {}, NO_CONTENT
+            return None, NO_CONTENT
         else:
             current_app.logger.error('Could not delete user {0}. User is current user.'.format(user.id))
             return Problem.from_crud_resource(

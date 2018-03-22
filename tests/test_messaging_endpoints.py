@@ -1,5 +1,6 @@
 import json
 from datetime import timedelta
+from uuid import uuid4
 
 from sqlalchemy.exc import IntegrityError
 
@@ -59,7 +60,7 @@ class TestMessagingEndpoints(ServerTestCase):
 
     @staticmethod
     def make_message(users, requires_reauth=False, requires_action=False):
-        message = Message('subject here', json.dumps({'message': 'some message'}), 'workflow_uid1',
+        message = Message('subject here', json.dumps({'message': 'some message'}), uuid4(),
                           users, requires_reauth=requires_reauth, requires_response=requires_action)
         db.session.add(message)
         return message

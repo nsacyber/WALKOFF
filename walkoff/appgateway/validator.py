@@ -456,7 +456,7 @@ def validate_devices_api(devices_api, app_name):
                     raise
 
 
-def validate_device_fields(device_fields_api, device_fields, device_type, app):
+def validate_device_fields(device_fields_api, device_fields, device_type, app, validate_required=True):
     message_prefix = 'Device type {0} for app {1}'.format(device_type, app)
 
     for field_api in device_fields_api:
@@ -465,7 +465,7 @@ def validate_device_fields(device_fields_api, device_fields, device_type, app):
 
     required_in_api = {field['name'] for field in device_fields_api if 'required' in field and field['required']}
     field_names = set(device_fields)
-    if required_in_api - field_names:
+    if validate_required and (required_in_api - field_names):
         message = '{0} requires {1} field but only got {2}'.format(message_prefix,
                                                                    list(required_in_api), list(field_names))
         logger.error(message)

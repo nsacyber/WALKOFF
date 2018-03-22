@@ -152,7 +152,7 @@ def delete_scheduled_task(scheduled_task_id):
     def __func(task):
         db.session.delete(task)
         db.session.commit()
-        return {}, NO_CONTENT
+        return None, NO_CONTENT
 
     return __func()
 

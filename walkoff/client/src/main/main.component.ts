@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { JwtHelper } from 'angular2-jwt';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
+import { plainToClass } from 'class-transformer';
 
 import { MessagesModalComponent } from '../messages/messages.modal.component';
 
@@ -94,7 +95,7 @@ export class MainComponent implements OnInit, OnDestroy {
 					.EventSource('/api/streams/messages/notifications?access_token=' + authToken);
 
 				this.eventSource.addEventListener('created', (message: any) => {
-					const newMessage: MessageListing = JSON.parse(message.data);
+					const newMessage = plainToClass(MessageListing, (JSON.parse(message.data) as object));
 
 					const existingMessage = this.messageListings.find(m => m.id === newMessage.id);
 					const index = this.messageListings.indexOf(existingMessage);
@@ -116,7 +117,7 @@ export class MainComponent implements OnInit, OnDestroy {
 				});
 				// TODO: re-enable this if we can figure out why componentInstance is throwing an error on get
 				// eventSource.addEventListener('read', (message: any) => {
-				// 	const update: MessageUpdate = JSON.parse(message.data);
+				// const update = plainToClass(MessageUpdate, (JSON.parse(message.data) as object));
 
 				// 	if (!this.messageModalRef || !this.messageModalRef.componentInstance) { return; }
 
@@ -125,7 +126,7 @@ export class MainComponent implements OnInit, OnDestroy {
 				// 	}
 				// });
 				this.eventSource.addEventListener('responded', (message: any) => {
-					const update: MessageUpdate = JSON.parse(message.data);
+					const update = plainToClass(MessageUpdate, (JSON.parse(message.data) as object));
 
 					const existingMessage = this.messageListings.find(m => m.id === update.id);
 

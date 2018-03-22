@@ -116,7 +116,7 @@ export class DevicesComponent implements OnInit {
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.appNames = this.appNames;
 		modalRef.componentInstance.appApis = this.appApis;
-		modalRef.componentInstance.workingDevice = Device.toWorkingDevice(device);
+		modalRef.componentInstance.workingDevice = device.toWorkingDevice();
 
 		this._handleModalClose(modalRef);
 	}

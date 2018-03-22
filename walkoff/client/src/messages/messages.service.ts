@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Response } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
+import { plainToClass } from 'class-transformer';
 
 import { Message } from '../models/message/message';
 import { MessageListing } from '../models/message/messageListing';
@@ -17,7 +18,7 @@ export class MessagesService {
 		return this.authHttp.get('/api/messages')
 			.toPromise()
 			.then(this.extractData)
-			.then(messageListing => messageListing as MessageListing[])
+			.then((data: object[]) => plainToClass(MessageListing, data))
 			.catch(this.handleError);
 	}
 
@@ -29,7 +30,7 @@ export class MessagesService {
 		return this.authHttp.get(`/api/messages/${messageId}`)
 			.toPromise()
 			.then(this.extractData)
-			.then(message => message as Message)
+			.then((data: object) => plainToClass(Message, data))
 			.catch(this.handleError);
 	}
 

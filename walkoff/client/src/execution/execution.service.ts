@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Response } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
 import 'rxjs/add/operator/toPromise';
+import { plainToClass } from 'class-transformer';
 
 import { WorkflowStatus } from '../models/execution/workflowStatus';
 import { Playbook } from '../models/playbook/playbook';
@@ -19,7 +20,7 @@ export class ExecutionService {
 		return this.authHttp.post('api/workflowqueue', { workflow_id: workflowId })
 			.toPromise()
 			.then(this.extractData)
-			.then(workflowStatuses => workflowStatuses as WorkflowStatus)
+			.then((data: object) => plainToClass(WorkflowStatus, data))
 			.catch(this.handleError);
 	}
 
@@ -43,7 +44,7 @@ export class ExecutionService {
 		return this.authHttp.get('api/workflowqueue')
 			.toPromise()
 			.then(this.extractData)
-			.then(workflowStatuses => workflowStatuses as WorkflowStatus[])
+			.then((data: object[]) => plainToClass(WorkflowStatus, data))
 			.catch(this.handleError);
 	}
 
@@ -55,7 +56,7 @@ export class ExecutionService {
 		return this.authHttp.get(`api/workflowqueue/${workflowExecutionId}`)
 			.toPromise()
 			.then(this.extractData)
-			.then(workflowStatus => workflowStatus as WorkflowStatus)
+			.then((data: object) => plainToClass(WorkflowStatus, data))
 			.catch(this.handleError);
 	}
 
@@ -66,7 +67,7 @@ export class ExecutionService {
 		return this.authHttp.get('/api/playbooks')
 			.toPromise()
 			.then(this.extractData)
-			.then(playbooks => playbooks as Playbook[])
+			.then((data: object[]) => plainToClass(Playbook, data))
 			.catch(this.handleError);
 	}
 

@@ -63,7 +63,7 @@ def delete_device(device_id):
         executiondb.execution_db.session.delete(device)
         current_app.logger.info('Device removed {0}'.format(device_id))
         executiondb.execution_db.session.commit()
-        return {}, NO_CONTENT
+        return None, NO_CONTENT
 
     return __func()
 
@@ -137,33 +137,43 @@ def update_device():
     @with_device('update', request.get_json()['id'])
     def __func(device):
         update_device_json = request.get_json()
-
-        fields = ({field['name']: field['value'] for field in update_device_json['fields']}
-                  if 'fields' in update_device_json else None)
-        app = update_device_json['app_name']
-        device_type = update_device_json['type'] if 'type' in update_device_json else device.type
-        try:
-            device_api = get_app_device_api(app, device_type)
-            device_fields_api = device_api['fields']
-            if fields is not None:
-                validate_device_fields(device_fields_api, fields, device_type, app)
-        except (UnknownApp, UnknownDevice, InvalidArgument) as e:
-            return __crud_device_error_handler('update', e, app, device_type)
-        else:
-            if fields is not None:
-                fields = update_device_json['fields'] if 'fields' in update_device_json else None
-                add_configuration_keys_to_device_json(fields, device_fields_api)
-            device.update_from_json(update_device_json)
-            executiondb.execution_db.session.commit()
-            device_json = get_device_json_with_app_name(device)
-            # remove_configuration_keys_from_device_json(device_json)
-            return device_json, SUCCESS
+        return _update_device(device, update_device_json)
 
     return __func()
 
 
 def patch_device():
-    return update_device()
+    @jwt_required
+    @permissions_accepted_for_resources(ResourcePermissions('devices', ['update']))
+    @with_device('update', request.get_json()['id'])
+    def __func(device):
+        update_device_json = request.get_json()
+        return _update_device(device, update_device_json, validate_required=False)
+
+    return __func()
+
+
+def _update_device(device, update_device_json, validate_required=True):
+    fields = ({field['name']: field['value'] for field in update_device_json['fields']}
+    if 'fields' in update_device_json else None)
+    app = update_device_json['app_name']
+    device_type = update_device_json['type'] if 'type' in update_device_json else device.type
+    try:
+        device_api = get_app_device_api(app, device_type)
+        device_fields_api = device_api['fields']
+        if fields is not None:
+            validate_device_fields(device_fields_api, fields, device_type, app, validate_required=validate_required)
+    except (UnknownApp, UnknownDevice, InvalidArgument) as e:
+        return __crud_device_error_handler('update', e, app, device_type)
+    else:
+        if fields is not None:
+            fields = update_device_json['fields'] if 'fields' in update_device_json else None
+            add_configuration_keys_to_device_json(fields, device_fields_api)
+        device.update_from_json(update_device_json, complete_object=validate_required)
+        executiondb.execution_db.session.commit()
+        device_json = get_device_json_with_app_name(device)
+        # remove_configuration_keys_from_device_json(device_json)
+        return device_json, SUCCESS
 
 
 __device_error_messages = {UnknownApp: ('App does not exist', 'Unknown app.'),

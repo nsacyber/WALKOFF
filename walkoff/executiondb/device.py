@@ -225,11 +225,12 @@ class Device(Execution_Base):
 
         return plaintext_fields, encrypted_fields
 
-    def update_from_json(self, json_in):
+    def update_from_json(self, json_in, complete_object):
         """Updates this device from a partial JSON representation of a Device
 
         Args:
             json_in (dict): The partial JSON representation of a Device
+            complete_object (bool): Whether or not this is a PUT or PATCH
         """
         if 'name' in json_in:
             self.name = json_in['name']
@@ -238,14 +239,22 @@ class Device(Execution_Base):
         if 'fields' in json_in:
             updated_plaintext_fields, updated_encrypted_fields = Device._construct_fields_from_json(json_in['fields'])
 
-            for curr_field in self.encrypted_fields:
-                self.encrypted_fields.remove(curr_field)
-                for updated_field in updated_encrypted_fields:
-                    if updated_field.name == curr_field.name:
-                        self.encrypted_fields.remove(curr_field)
-                    self.encrypted_fields.append(updated_field)
+            if complete_object:
+                self.plaintext_fields = updated_plaintext_fields
+                self.encrypted_fields = updated_encrypted_fields
+            else:
+                updated_plaintext_names = [field.name for field in updated_plaintext_fields]
+                self.plaintext_fields = [field for field in self.plaintext_fields if
+                                         field.name not in updated_plaintext_names]
+                for field in updated_plaintext_fields:
+                    self.plaintext_fields.append(field)
 
-            self.plaintext_fields = updated_plaintext_fields
+                updated_encrypted_names = [field.name for field in updated_encrypted_fields]
+                self.encrypted_fields = [field for field in self.encrypted_fields if
+                                         field.name not in updated_encrypted_names]
+                for field in updated_encrypted_fields:
+                    self.encrypted_fields.append(field)
+
         if 'type' in json_in:
             self.type = json_in['type']
 

@@ -1,11 +1,48 @@
 # Changelog
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
+     
+## [0.7.4]
+###### 2018-03-20
+
+### Fixed
+* Bug where some device fields were being deleted on update
+
+## [0.7.3]
+###### 2018-03-14
+
+### Fixed
+* Bug where NO_CONTENT return codes were failing on Werkzeug WSGI 0.14
+
+### Changed
+* All node modules are now bundled into webpack
+
+
+## [0.7.2]
+###### 2018-03-12
+
+### Fixed
+* An unintentional backward-breaking change was made to the format of the
+  dictionary used in the interface dispatcher which sometimes resulted in
+  a dict with a "data" field inside a "data" field. This has been fixed.
+
+
+## [0.7.1]
+###### 2018-03-08
+
+### Changed
+* Improved deserialization in the user interface
+* Empty arrays are omitted from returned execution element JSON structure in
+  the REST API.
+
+### Fixed
+* `PATCH /api/devices` now doesn't validate that all the fields of the device
+  are provided.
+* Fixed dependency bug on GoogleProtocolBuffer version
 
 
 ## [0.7.0]
-###### [unreleased]
-<!-- Commended out bullets are in development -->
+###### 2018-03-07
 ### Added
 * An execution control page is now available on the user interface. This page
   allows you to start, pause, resume, and abort workflows as well as displays
@@ -44,7 +81,7 @@
   server and the worker processes as well as increased scalability.
 * Paused workflows and workflows awaiting trigger data are now pickled
   (serialized to binary) and stored in a database table. Before, a conditional
-  wait was used to pause the execution of a workflow. By storing the state to
+  wait -was used to pause the execution of a workflow. By storing the state to
   the database, all threads on all worker processes are free to execute
   workflows.
 * Information about the workflow which sent events are now available in both
@@ -69,10 +106,10 @@
 removed. Use the new `POST /api/devices` with `multipart/form-data` and
 `GET /api/devices?mode=export` endpoints respectively.
 
-<!--
+
 ### Contributor
-* The minimum accepted unit test coverage for the Python backend is now 84%
--->
+* The minimum accepted unit test coverage for the Python backend is now 86%
+
 
 ## [0.6.7]
 ###### 2018-02-06
