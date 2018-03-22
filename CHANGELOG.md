@@ -28,6 +28,7 @@
   * All changes will only be applied on server restart
 * Refactorings have been done to minimize the amount of global state used
   throughout Walkoff. Work will continue on this effort.
+* Metrics are now stored in the execution database
 
 ### Deprecated
 * `walkoff.helpers.create_sse_event` has been deprecated and will be removed in
