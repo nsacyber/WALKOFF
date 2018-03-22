@@ -21,7 +21,7 @@ except ImportError:
     from cStringIO import StringIO as BytesIO
 
 
-unsubscribe_message = '__UNSUBSCRIBE__'
+unsubscribe_message = b'__UNSUBSCRIBE__'
 """(str): The message used to unsubscribe from and close a PubSub channel
 """
 
@@ -158,7 +158,8 @@ class DiskPubSubCache(object):
 
     def __push_to_subscribers(self, channel, value):
         try:
-            value = pickle.load(BytesIO(value))
+            if value != unsubscribe_message:
+                value = pickle.load(BytesIO(value))
         except KeyError:
             value = str(value)
         for subscriber in self._subscribers.get(str(channel), []):
@@ -501,7 +502,8 @@ class RedisCacheAdapter(object):
         Returns:
             The value stored in the key
         """
-        return self.cache.get(key)
+        value = self.cache.get(key)
+        return value if value is None else value.decode('utf-8')
 
     def add(self, key, value, expire=None, **opts):
         """Add a key and a value to the cache if the key is not already in the cache
@@ -532,7 +534,7 @@ class RedisCacheAdapter(object):
         Returns:
             (int): The incremented value
         """
-        return self.cache.incr(key, amount)
+        return int(self.cache.incr(key, amount))
 
     def decr(self, key, amount=1):
         """Decrements a key by an amount.
@@ -548,7 +550,7 @@ class RedisCacheAdapter(object):
         Returns:
             (int): The decremented value
         """
-        return self.cache.decr(key, amount)
+        return int(self.cache.decr(key, amount))
 
     def rpush(self, key, *values):
         """Pushes a value to the right of a deque.
@@ -574,7 +576,7 @@ class RedisCacheAdapter(object):
         Returns:
             The rightmost value on the deque or None if the key is not a deque or the deque is empty
         """
-        return self.cache.rpop(key)
+        return self.cache.rpop(key).decode('utf-8')
 
     def lpush(self, key, *values):
         """Pushes a value to the left of a deque.
@@ -600,7 +602,7 @@ class RedisCacheAdapter(object):
         Returns:
             The leftmost value on the deque or None if the key is not a deque or the deque is empty
         """
-        return self.cache.lpop(key)
+        return self.cache.lpop(key).decode('utf-8')
 
     def subscribe(self, channel):
         """Subscribe to a channel

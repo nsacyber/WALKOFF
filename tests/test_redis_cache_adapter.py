@@ -90,7 +90,7 @@ class TestRedisCacheAdapter(TestCase):
         sub = self.cache.subscribe('channel_a')
         self.cache.publish('channel_a', '42')
         result = sub._pubsub.get_message()
-        self.assertEqual(result['data'], '42')
+        self.assertEqual(result['data'], b'42')
 
     def test_unsubscribe(self):
         sub = self.cache.subscribe('channel_a')
