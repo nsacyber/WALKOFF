@@ -54,6 +54,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('cyRef') cyRef: ElementRef;
 	@ViewChild('workflowResultsContainer') workflowResultsContainer: ElementRef;
 	@ViewChild('workflowResultsTable') workflowResultsTable: DatatableComponent;
+    @ViewChild('consoleTable') consoleTable: DatatableComponent;
 
 	devices: Device[] = [];
 	relevantDevices: Device[] = [];
@@ -77,11 +78,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	};
 	cyJsonData: string;
 	actionStatuses: ActionStatus[] = [];
+	consoleLog: string[] = [];
 	executionResultsComponentWidth: number;
 	waitingOnData: boolean = false;
 	actionStatusStartedRelativeTimes: { [key: string]: string } = {};
 	actionStatusCompletedRelativeTimes: { [key: string]: string } = {};
 	eventSource: any;
+	consoleEventSource: any;
 	playbookToImport: File;
 
 	// Simple bootstrap modal params
@@ -131,6 +134,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.playbookService.getDevices().then(devices => this.devices = devices);
 		this.playbookService.getApis().then(appApis => this.appApis = appApis.sort((a, b) => a.name > b.name ? 1 : -1));
 		this.getActionStatusSSE();
+		this.getConsoleSSE();
 		this.getPlaybooksWithWorkflows();
 		this._addCytoscapeEventBindings();
 
@@ -157,7 +161,35 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 */
 	ngOnDestroy(): void {
 		if (this.eventSource && this.eventSource.close) { this.eventSource.close(); }
+		if (this.consoleEventSource && this.consoleEventSource.close) { this.consoleEventSource.close(); }
 	}
+
+    ///------------------------------------------------------------------------------------------------------
+	/// Console functions
+	///------------------------------------------------------------------------------------------------------
+	/**
+	 * Sets up the EventStream for receiving console logs from the server. Binds various events to the event handler.
+	 * Will currently return ALL stream actions and not just the ones manually executed.
+	 */
+	getConsoleSSE(): void {
+		this.authService.getAccessTokenRefreshed()
+			.then(authToken => {
+				this.consoleEventSource = new (window as any).EventSource('api/streams/console/log?access_token=' + authToken);
+                this.consoleEventSource.addEventListener('log', (e: any) => this.consoleEventHandler(e));
+				this.consoleEventSource.onerror = (err: Error) => {
+					// this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
+					console.error(err);
+				};
+			});
+	}
+
+    consoleEventHandler(message: any): void {
+		const consoleEvent = message.data;
+		this.consoleLog.push(consoleEvent);
+    }
+
+
+
 
 	///------------------------------------------------------------------------------------------------------
 	/// Playbook CRUD etc functions

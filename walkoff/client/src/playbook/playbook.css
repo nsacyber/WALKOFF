@@ -53,8 +53,13 @@
 	font-size: 18px;
 }
 
+.consoleRow {
+    padding:10px;
+}
+
+/* Console Row = 200px */
 .playbookMain .graphEditorRow, .playbookMain .graphEditorColumn {
-	height: calc(100vh - 110px);
+	height: calc(100vh - 310px);
 	overflow: auto;
 }
 

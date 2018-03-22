@@ -236,7 +236,24 @@
             </div>
         </div>
     </div>
-
+    <div class="row consoleRow">
+        <ul class="nav nav-tabs">
+            <li class="active"><a data-toggle="tab" href="#console"> Console </a></li>
+            <li><a data-toggle="tab" href="#executionLog"> Execution </a></li>
+        </ul>
+        <div class="tab-content">
+            <div id="console" class="tab-pane fade in active">
+                 <ngx-datatable #consoleTable class='material expandable' [columnMode]="'flex'" [rows]="consoleLog" [sortType]="'multi'"
+                        [headerHeight]="25" [footerHeight]="25" [rowHeight]="undefined" [sorts]="[]"
+                        [limit]="10">
+                    <ngx-datatable-column name="log" prop="log" [flexGrow]="1">{{row}}</ngx-datatable-column>
+                 </ngx-datatable>
+            </div>
+            <div id="executionLog" class="tab-pane fade">
+                EXECUTION
+            </div>
+        </div>
+    </div>
     <div class="modal fade" id="executionResultsModal" role="dialog" aria-labelledby="executionResultsModalTitle" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">

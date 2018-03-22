@@ -3,11 +3,11 @@ import time
 
 from apps import App, action
 
-logger = logging.getLogger(__name__)
-
+logger = logging.getLogger("apps")
 
 @action
 def hello_world():
+    logger.debug("This is a test")
     return {"message": "HELLO WORLD"}
 
 
