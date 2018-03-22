@@ -8,10 +8,10 @@ from walkoff.events import WalkoffEvent
 from walkoff.security import jwt_required_in_query
 from walkoff.sse import InterfaceSseStream, create_interface_channel_name
 
-blueprint = AppBlueprint('HelloWorldPage__', __name__)
-
-
 metrics_stream = InterfaceSseStream('HelloWorld', 'metrics')
+
+blueprint = AppBlueprint('HelloWorldPage__', __name__, streams=[metrics_stream])
+
 
 hello_world_channel_names = {}
 

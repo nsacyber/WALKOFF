@@ -91,8 +91,6 @@ class DiskPubSubCache(object):
 
     Attributes:
         cache (Cache): The cache which backs this pubsub cache
-        _insert_func_name (str): The name of the function to be called when an insert occurs on the cache
-        _udpate_func_name (str): The name of the function to be called when an update occurs on the cache
         _subscribers (dict{str: DiskSubscription}): The subscriptions tracked by this cache
         _threads_registered (set(str)): The names of the threads which have registered triggers on the database
         _push_partial (func): The function called when an insert or update happens on the cache

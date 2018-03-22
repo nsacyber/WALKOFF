@@ -29,6 +29,7 @@ class ExecutionDatabase(object):
         from walkoff.executiondb.workflow import Workflow
         from walkoff.executiondb.saved_workflow import SavedWorkflow
         from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
+        from walkoff.executiondb.metrics import AppMetric, WorkflowMetric, ActionMetric, ActionStatusMetric
 
         self.engine = create_engine(format_db_path(execution_db_type, execution_db_path), poolclass=NullPool)
         self.connection = self.engine.connect()

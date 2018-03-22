@@ -6,7 +6,10 @@ from gevent.event import Event, AsyncResult
 from walkoff.sse import InterfaceSseStream
 from interfaces import AppBlueprint
 
-blueprint = AppBlueprint('HelloWorldPage', __name__)
+counter_stream = InterfaceSseStream('Sample', 'counter')
+random_stream = InterfaceSseStream('Sample', 'random')
+
+blueprint = AppBlueprint('HelloWorldPage', __name__, streams=(counter_stream, random_stream))
 blueprint2 = AppBlueprint('HelloWorldPage2', __name__, url_prefix='/<string:action>')
 
 
@@ -23,10 +26,6 @@ def load(*args, **kwargs):
 def test_basic_blueprint():
     # This can be called using the url /apps/HelloWorld/test_blueprint
     return 'successfully called basic blueprint'
-
-
-counter_stream = InterfaceSseStream('Sample', 'counter')
-random_stream = InterfaceSseStream('Sample', 'random')
 
 
 def random_number_pusher():
