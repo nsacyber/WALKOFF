@@ -13,9 +13,19 @@
                     </div>
                     <h6>All configuration parameters require you to restart the server for changes to take effect.</h6>
                     <h2>Enabling HTTPS</h2>
-                    <p>HTTPS is enabled when certificates are located in the <code>./certificates</code>. The default
-                    certificates names are <code>walkoff.crt</code> and <code>walkoff.key</code>, but they can be
-                        changed by modifying the <code>core/config/paths.py</code> file.</p>
+                    <p> HTTPS is enabled when certificates are located in the <code>./certificates</code>. The default
+                        certificates names are <code>walkoff.crt</code> and <code>walkoff.key</code>, but they can be
+                        changed by modifying the <code>walkoff/config.py</code> file.</p>
+                    <h2>Configuring Redis</h2>
+                    <p> Walkoff's key-value cache defaults to using DiskCache, a SQLite-backed database. While this
+                        database is fine for exploring Walkoff, it is better to use Redis. To use Redis, </p>
+                    <ol>
+                        <li>Install Redis (see official site for documentation)</li>
+                        <li>Install the Redis Python client with <code>pip install redis</code></li>
+                        <li>Use the settings page to configure Walkoff's Redis connection</li>
+                    </ol>
+                    <p> If your Redis database is secured with a password (and it should be), set an environment variable
+                     named "WALKOFF_REDIS_PASSWORD" with your redis password before starting Walkoff</p>
                 </div>
         </ul>
     </div>

@@ -91,7 +91,7 @@ def stream_workflow_action_events():
 &lttable id="actionResults"&gt
     &ltthead&gt
         &lttr&gt
-            &lttd&gtAction UID&lt/td&gt
+            &lttd&gtAction ID&lt/td&gt
             &lttd&gtAction Name&lt/td&gt
             &lttd&gtTimestamp&lt/td&gt
             &lttd&gtStatus&lt/td&gt
@@ -115,7 +115,7 @@ function eventHandler(message) {
     
     $('#actionResults tbody').append(`
         &lttr&gt
-            &lttd&gt${result.sender_uid}&lt/td&gt
+            &lttd&gt${result.sender_id}&lt/td&gt
             &lttd&gt${result.sender_name}&lt/td&gt
             &lttd&gt${result.timestamp}&lt/td&gt
             &lttd&gt${result.data.status}&lt/td&gt
@@ -136,6 +136,23 @@ eventSource.addEventListener('error', (err) => {
             and potentially process them in different manners. This code will simply push a new row onto the actionResults
             table which contains some of the information from the action result received from the SSE.
         </p>
+
+        <h4>More options for SSE streams</h4>
+        <p> SSE streams can be used without registering a callback by using the stream's <code>publish</code> method. For
+            example, the following code would push the current time to the event "heartbeat"</p>
+        <pre><code>
+action_result_stream.publish(str(datetime.utcnow()), event='heartbeat')
+        </code></pre>
+        <p> SSE streams can add additional headers to their response using the "headers" option on the <code>stream()</code>
+            method. The default headers are "Cache-Control: no-cache" and "Connection: keep-alive". The following code
+            would add a custom "X-My-Header" header to the response. </p>
+        <pre><code>
+@blueprint.route('/actionstream', methods=['GET'])
+@jwt_required_in_query
+def stream_workflow_action_events():
+    return action_result_stream.stream(headers={'X-My-Header': 'some-value'})
+        </code></pre>
+
     </div>
   </div>
 </div>
