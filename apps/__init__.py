@@ -2,8 +2,7 @@ import logging
 
 from walkoff.executiondb.device import get_app as get_db_app
 from apps.messaging import *
-from walkoff.appgateway.decorators import *
-from apps.console import ConsoleLoggingHandler
+from walkoff.appgateway.console import ConsoleLoggingHandler
 
 _logger = logging.getLogger(__name__)
 _console_handler = ConsoleLoggingHandler()

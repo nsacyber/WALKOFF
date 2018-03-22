@@ -181,16 +181,6 @@ class TransformSignal(WalkoffSignal):
     def __init__(self, name, message):
         super(TransformSignal, self).__init__(name, EventType.transform, message=message)
 
-class ConsoleSignal(WalkoffSignal):
-    """A signal used by action events
-
-    Args:
-        name (str): The name of the signal
-        message (str): The message log with this signal to a case. Defaults to empty string
-        loggable (bool, optional): Should this event get logged into cases? Defaults to True
-    """
-    def __init__(self, name, message, loggable):
-        super(ConsoleSignal, self).__init__(name, EventType.console, message=message, loggable=loggable, console=True)
 
 @unique
 class WalkoffEvent(Enum):
@@ -223,6 +213,7 @@ class WalkoffEvent(Enum):
     TriggerActionTaken = ActionSignal('Trigger Action Taken', 'Trigger action taken')
     TriggerActionNotTaken = ActionSignal('Trigger Action Not Taken', 'Trigger action not taken')
     SendMessage = ActionSignal('Message Sent', 'Walkoff message sent', loggable=False)
+    ConsoleLog = ActionSignal('Console Log', 'Console log', loggable=False)
 
     BranchTaken = BranchSignal('Branch Taken', 'Branch taken')
     BranchNotTaken = BranchSignal('Branch Not Taken', 'Branch not taken')
@@ -239,8 +230,6 @@ class WalkoffEvent(Enum):
 
     TransformSuccess = TransformSignal('Transform Success', 'Transform success')
     TransformError = TransformSignal('Transform Error', 'Transform error')
-
-    ConsoleLogged = ConsoleSignal('Console Log', 'Console log', loggable=False)
 
     CommonWorkflowSignal = WalkoffSignal('Common Workflow Signal', EventType.other, loggable=False)
 
