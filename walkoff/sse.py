@@ -207,6 +207,8 @@ class SseStream(object):
 
         event_id = 0
         for response in channel_queue.listen():
+            if isinstance(response, string_types):
+                response = json.loads(response.decode('utf-8'))
             data, event = response['data'], response['event']
             sse = SseEvent(event, data)
             event_id += 1
