@@ -1,10 +1,8 @@
 import argparse
-import json
-import logging.config
+import logging
 import os
 import sys
 import traceback
-import warnings
 from os.path import isfile
 
 from gevent import monkey
@@ -17,37 +15,8 @@ import walkoff.config
 logger = logging.getLogger('walkoff')
 
 
-def setup_logger():
-    log_config = None
-    if isfile(walkoff.config.Config.LOGGING_CONFIG_PATH):
-        try:
-            with open(walkoff.config.Config.LOGGING_CONFIG_PATH, 'rt') as log_config_file:
-                log_config = json.loads(log_config_file.read())
-        except (IOError, OSError):
-            print('Could not read logging JSON file {}'.format(walkoff.config.Config.LOGGING_CONFIG_PATH))
-        except ValueError:
-            print('Invalid JSON in logging config file')
-    else:
-        print('No logging config found')
-
-    if log_config is not None:
-        logging.config.dictConfig(log_config)
-    else:
-        logging.basicConfig()
-        logger.info("Basic logging is being used")
-
-    def send_warnings_to_log(message, category, filename, lineno, file=None):
-        logging.warning(
-            '%s:%s: %s:%s' %
-            (filename, lineno, category.__name__, message))
-        return
-
-    warnings.showwarning = send_warnings_to_log
-
-
 def run(host, port):
     from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
-    setup_logger()
     print_banner()
     pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES,
                                   walkoff.config.Config.NUMBER_THREADS_PER_PROCESS,

@@ -1,7 +1,9 @@
 import json
 import logging
+import logging.config
 import sys
 from os.path import isfile, join, abspath
+import warnings
 
 import yaml
 
@@ -41,6 +43,35 @@ def load_app_apis(apps_path=None):
             except Exception as e:
                 logger.error(
                     'Cannot load apps api for app {0}: Error {1}'.format(app, str(format_exception_message(e))))
+
+def setup_logger():
+    log_config = None
+    if isfile(Config.LOGGING_CONFIG_PATH):
+        try:
+            with open(Config.LOGGING_CONFIG_PATH, 'rt') as log_config_file:
+                log_config = json.loads(log_config_file.read())
+        except (IOError, OSError):
+            print('Could not read logging JSON file {}'.format(Config.LOGGING_CONFIG_PATH))
+        except ValueError:
+            print('Invalid JSON in logging config file')
+    else:
+        print('No logging config found')
+
+    if log_config is not None:
+        logging.config.dictConfig(log_config)
+    else:
+        logging.basicConfig()
+        logger.info("Basic logging is being used")
+
+    def send_warnings_to_log(message, category, filename, lineno, file=None):
+        logging.warning(
+            '%s:%s: %s:%s' %
+            (filename, lineno, category.__name__, message))
+        return
+
+    warnings.showwarning = send_warnings_to_log
+
+
 
 
 class Config(object):
@@ -148,6 +179,7 @@ class AppConfig(object):
 def initialize():
     """Loads the config file, loads the app cache, and loads the app APIs into memory
     """
+    setup_logger()
     Config.load_config()
     from walkoff.appgateway import cache_apps
     cache_apps(Config.APPS_PATH)
