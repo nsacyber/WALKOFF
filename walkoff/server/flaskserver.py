@@ -48,4 +48,7 @@ def handle_database_errors(e):
 
 @app.errorhandler(500)
 def handle_generic_server_error(e):
+    import traceback, sys
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    traceback.print_exc()
     return Problem(SERVER_ERROR, 'An error occurred in the server.', e.__class__.__name__)

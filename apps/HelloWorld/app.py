@@ -29,7 +29,6 @@ def pause(seconds):
 class HelloWorld(App):
     """This app defines the same actions as above, but bound to an app instance. This instance will keep track fo how
     many total actions are called for this app's instance.
-
     """
 
     def __init__(self, name=None, device=None):

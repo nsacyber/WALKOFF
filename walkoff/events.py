@@ -5,9 +5,7 @@ from apscheduler.events import (EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN,
 from blinker import Signal
 from enum import unique, Enum
 
-from walkoff.case.callbacks import add_entry_to_case
-from walkoff.console.callbacks import console_log_callback
-from functools import partial
+
 
 logger = logging.getLogger(__name__)
 
@@ -48,22 +46,12 @@ class WalkoffSignal(object):
     """
     _signals = {}
 
-    def __init__(self, name, event_type, loggable=True, console=False, message=''):
+    def __init__(self, name, event_type, loggable=True, message=''):
         self.name = name
         self.signal = Signal(name)
         self.event_type = event_type
         self.is_loggable = loggable
-        if loggable:
-            signal_callback = partial(add_entry_to_case,
-                                      data='',
-                                      event_type=event_type.name,
-                                      entry_message=message,
-                                      message_name=name)
-            self.connect(signal_callback, weak=False)
-        if console:
-            console_callback = partial(console_log_callback,
-                                      data='')
-            self.connect(console_callback, weak=False)
+
         self.message = message
 
     def send(self, sender, **kwargs):
@@ -182,6 +170,16 @@ class TransformSignal(WalkoffSignal):
     def __init__(self, name, message):
         super(TransformSignal, self).__init__(name, EventType.transform, message=message)
 
+class ConsoleSignal(WalkoffSignal):
+    """A signal used by action events
+
+    Args:
+        name (str): The name of the signal
+        message (str): The message log with this signal to a case. Defaults to empty string
+        loggable (bool, optional): Should this event get logged into cases? Defaults to True
+    """
+    def __init__(self, name, message, loggable=True):
+        super(ConsoleSignal, self).__init__(name, EventType.console, message=message, loggable=loggable)
 
 @unique
 class WalkoffEvent(Enum):
@@ -213,8 +211,8 @@ class WalkoffEvent(Enum):
     TriggerActionAwaitingData = ActionSignal('Trigger Action Awaiting Data', 'Trigger action awaiting data')
     TriggerActionTaken = ActionSignal('Trigger Action Taken', 'Trigger action taken')
     TriggerActionNotTaken = ActionSignal('Trigger Action Not Taken', 'Trigger action not taken')
-    SendMessage = ActionSignal('Message Sent', 'Walkoff message sent', loggable=False)
-    ConsoleLog = ActionSignal('Console Log', 'Console log', loggable=False)
+    SendMessage = ActionSignal('Message Sent', 'Walkoff message sent')
+    ConsoleLog = ConsoleSignal('Console Log', 'Console log')
 
     BranchTaken = BranchSignal('Branch Taken', 'Branch taken')
     BranchNotTaken = BranchSignal('Branch Not Taken', 'Branch not taken')
@@ -232,7 +230,7 @@ class WalkoffEvent(Enum):
     TransformSuccess = TransformSignal('Transform Success', 'Transform success')
     TransformError = TransformSignal('Transform Error', 'Transform error')
 
-    CommonWorkflowSignal = WalkoffSignal('Common Workflow Signal', EventType.other, loggable=False)
+    CommonWorkflowSignal = WalkoffSignal('Common Workflow Signal', EventType.other)
 
     @property
     def signal_name(self):

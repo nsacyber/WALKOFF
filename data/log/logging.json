@@ -17,7 +17,7 @@
       "stream": "ext://sys.stdout"
     },
     "console_logs": {
-      "class": "apps.console.ConsoleLoggingHandler",
+      "class": "walkoff.appgateway.console.ConsoleLoggingHandler",
       "level": "NOTSET",
       "formatter": "simple"
     },
