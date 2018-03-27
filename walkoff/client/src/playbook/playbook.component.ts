@@ -364,7 +364,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 						'font-family': 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif, sans-serif',
 						'font-weight': 'lighter',
 						'font-size': '15px',
-						'width': '40',
+						'width': 'label',
 						'height': '40',
 					},
 				},

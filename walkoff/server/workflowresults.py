@@ -173,7 +173,7 @@ def __update_action_tracker(status, action_status):
         app_metric.actions.append(action_metric)
     else:
         action_status_metric = action_metric.get_action_status(status)
-        if action_status is None:
+        if action_status_metric is None:
             action_status_metric = ActionStatusMetric(status, execution_time)
             action_metric.action_statuses.append(action_status_metric)
         else:
