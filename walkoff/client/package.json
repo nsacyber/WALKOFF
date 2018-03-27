@@ -52,7 +52,7 @@
     "core-js": "~2.4.1",
     "cytoscape": "^3.2.3",
     "cytoscape-clipboard": "^2.0.4",
-    "cytoscape-edgehandles": "^2.14.0",
+    "cytoscape-edgehandles": "^3.2.3",
     "cytoscape-grid-guide": "^2.0.3",
     "cytoscape-panzoom": "^2.5.2",
     "cytoscape-undo-redo": "^1.2.14",
