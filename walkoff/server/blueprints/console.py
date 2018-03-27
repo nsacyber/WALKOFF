@@ -5,6 +5,7 @@ from walkoff.sse import SseStream, StreamableBlueprint
 console_stream = SseStream('console_results')
 console_page = StreamableBlueprint('console_page', __name__, streams=(console_stream,))
 
+
 def format_console_data(sender, **kwargs):
     result = {}
     data = kwargs["data"]
@@ -16,10 +17,12 @@ def format_console_data(sender, **kwargs):
     result["message"] = data["message"]
     return result
 
+
 @WalkoffEvent.ConsoleLog.connect
-@console_stream.push("log")
-def action_ended_callback(sender, **kwargs):
+@console_stream.push('log')
+def console_log_callback(sender, **kwargs):
     return format_console_data(sender, **kwargs)
+
 
 @console_page.route('/log', methods=['GET'])
 @jwt_required_in_query('access_token')
