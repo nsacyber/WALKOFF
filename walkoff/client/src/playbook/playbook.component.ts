@@ -38,6 +38,7 @@ import { Role } from '../models/role';
 import { ActionStatus } from '../models/execution/actionStatus';
 import { ConditionalExpression } from '../models/playbook/conditionalExpression';
 import { ActionStatusEvent } from '../models/execution/actionStatusEvent';
+import { ConsoleLog } from '../models/execution/consoleLog';
 
 @Component({
 	selector: 'playbook-component',
@@ -54,6 +55,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('cyRef') cyRef: ElementRef;
 	@ViewChild('workflowResultsContainer') workflowResultsContainer: ElementRef;
 	@ViewChild('workflowResultsTable') workflowResultsTable: DatatableComponent;
+	@ViewChild('consoleContainer') consoleContainer: ElementRef;
     @ViewChild('consoleTable') consoleTable: DatatableComponent;
 
 	devices: Device[] = [];
@@ -78,7 +80,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	};
 	cyJsonData: string;
 	actionStatuses: ActionStatus[] = [];
-	consoleLog: string[] = [];
+	consoleLog: ConsoleLog[] = [];
 	executionResultsComponentWidth: number;
 	waitingOnData: boolean = false;
 	actionStatusStartedRelativeTimes: { [key: string]: string } = {};
@@ -184,8 +186,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	}
 
     consoleEventHandler(message: any): void {
-		const consoleEvent = message.data;
-		this.consoleLog.push(consoleEvent);
+		const consoleEvent = plainToClass(ConsoleLog, (JSON.parse(message.data) as object));
+		console.log(consoleEvent)
+		const newConsoleLog = consoleEvent.toNewConsoleLog();
+		this.consoleLog.push(newConsoleLog);
     }
 
 
@@ -1141,6 +1145,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 */
 	clearExecutionHighlighting(): void {
 		this.cy.elements().removeClass('success-highlight failure-highlight executing-highlight');
+		this.consoleLog = [];
 	}
 
 	/**
