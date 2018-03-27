@@ -211,7 +211,7 @@ class WalkoffEvent(Enum):
     TriggerActionAwaitingData = ActionSignal('Trigger Action Awaiting Data', 'Trigger action awaiting data')
     TriggerActionTaken = ActionSignal('Trigger Action Taken', 'Trigger action taken')
     TriggerActionNotTaken = ActionSignal('Trigger Action Not Taken', 'Trigger action not taken')
-    SendMessage = ActionSignal('Message Sent', 'Walkoff message sent')
+    SendMessage = ActionSignal('Message Sent', 'Walkoff message sent', loggable=False)
     ConsoleLog = ConsoleSignal('Console Log', 'Console log')
 
     BranchTaken = BranchSignal('Branch Taken', 'Branch taken')
@@ -230,7 +230,7 @@ class WalkoffEvent(Enum):
     TransformSuccess = TransformSignal('Transform Success', 'Transform success')
     TransformError = TransformSignal('Transform Error', 'Transform error')
 
-    CommonWorkflowSignal = WalkoffSignal('Common Workflow Signal', EventType.other)
+    CommonWorkflowSignal = WalkoffSignal('Common Workflow Signal', EventType.other, loggable=False)
 
     @property
     def signal_name(self):
