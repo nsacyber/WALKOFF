@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import Column, Integer, ForeignKey, String
+from sqlalchemy import Column, Integer, ForeignKey, String, event
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy_utils import UUIDType
 
@@ -19,6 +19,7 @@ class Branch(ExecutionElement, Execution_Base):
     status = Column(String(80))
     condition = relationship('ConditionalExpression', cascade='all, delete-orphan', uselist=False)
     priority = Column(Integer)
+    children = ('condition', )
 
     def __init__(self, source_id, destination_id, id=None, status='Success', condition=None, priority=999):
         """Initializes a new Branch object.
@@ -72,3 +73,7 @@ class Branch(ExecutionElement, Execution_Base):
                 return None
         else:
             return None
+
+@event.listens_for(Branch, 'before_update')
+def validate_before_update(mapper, connection, target):
+    target.validate()

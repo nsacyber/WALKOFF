@@ -53,12 +53,12 @@ class TestCondition(unittest.TestCase):
         self.__compare_init(condition, 'HelloWorld', 'mod1_flag2', [], [Argument('arg1', reference="action2")])
 
     def test_init_with_arguments_invalid_arg_name(self):
-        with self.assertRaises(InvalidExecutionElement):
-            Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('invalid', value='3')])
+        condition = Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('invalid', value='3')])
+        self.assertEqual(len(condition.errors), 2)
 
     def test_init_with_arguments_invalid_arg_type(self):
-        with self.assertRaises(InvalidExecutionElement):
-            Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value='aaa')])
+        condition = Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value='aaa')])
+        self.assertEqual(len(condition.errors), 2)
 
     def test_init_with_transforms(self):
         transforms = [Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='5.4')]),
