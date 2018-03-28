@@ -6,6 +6,7 @@ import { SchedulerComponent } from './scheduler/scheduler.component';
 import { DevicesComponent } from './devices/devices.component';
 import { MessagesComponent } from './messages/messages.component';
 import { CasesComponent } from './cases/cases.component';
+import { MetricsComponent } from './metrics/metrics.component';
 import { SettingsComponent } from './settings/settings.component';
 import { InterfacesComponent } from './interfaces/interfaces.component';
 import { ExecutionComponent } from './execution/execution.component';
@@ -18,6 +19,7 @@ const routes: Routes = [
 	{ path: 'devices', component: DevicesComponent },
 	{ path: 'messages', component: MessagesComponent },
 	{ path: 'cases', component: CasesComponent },
+	{ path: 'metrics', component: MetricsComponent },
 	{ path: 'settings', component: SettingsComponent },
 	{ path: 'execution', component: ExecutionComponent },
 	{ path: 'interfaces/:interfaceName', component: InterfacesComponent },

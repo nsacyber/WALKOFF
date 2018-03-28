@@ -365,7 +365,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 						'font-weight': 'lighter',
 						'font-size': '15px',
 						'width': 'label',
-						'height': '40',
+						'height': 'label',
+						'padding': '10px'
 					},
 				},
 				{
@@ -384,7 +385,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				{
 					selector: 'node[?isStartNode]',
 					css: {
-						'border-width': '2px',
+						'border-width': '3px',
 						'border-color': '#991818',
 					},
 				},
@@ -444,6 +445,39 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 						'curve-style': 'bezier',
 					},
 				},
+				{
+					selector: '.eh-handle',
+					style: {
+						'background-color': '#337ab7',
+						'width': '1',
+						'height': '1',
+						'shape': 'ellipse',
+						'overlay-opacity': '0',
+					}
+				},
+				{
+					selector: '.eh-source',
+					style: {
+						'border-width': '3',
+						'border-color': '#337ab7'
+					}
+				},
+				{
+					selector: '.eh-target',
+					style: {
+						'border-width': '3',
+						'border-color': '#337ab7'
+					}
+				},
+				{
+					selector: '.eh-preview, .eh-ghost-edge',
+					style: {
+						'background-color': '#337ab7',
+						'line-color': '#337ab7',
+						'target-arrow-color': '#337ab7',
+						'source-arrow-color': '#337ab7'
+					}
+				}
 			],
 		});
 

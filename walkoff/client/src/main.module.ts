@@ -20,6 +20,7 @@ import { PlaybookComponent } from './playbook/playbook.component';
 import { DevicesComponent } from './devices/devices.component';
 import { MessagesComponent } from './messages/messages.component';
 import { CasesComponent } from './cases/cases.component';
+import { MetricsComponent } from './metrics/metrics.component';
 import { SettingsComponent } from './settings/settings.component';
 import { InterfacesComponent } from './interfaces/interfaces.component';
 import { ExecutionComponent } from './execution/execution.component';
@@ -62,6 +63,7 @@ import { KeysPipe } from './pipes/keys.pipe';
 		DevicesComponent,
 		MessagesComponent,
 		CasesComponent,
+		MetricsComponent,
 		SettingsComponent,
 		InterfacesComponent,
 		ExecutionComponent,
