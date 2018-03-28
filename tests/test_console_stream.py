@@ -1,15 +1,12 @@
 from tests.util.mock_objects import MockRedisCacheAdapter
 from walkoff.server.blueprints.console import *
-from uuid import uuid4
 from copy import copy
 import json
 from mock import patch
-from copy import deepcopy
 from tests.util.servertestcase import ServerTestCase
-import walkoff.executiondb as execdb
-from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
 from flask import Response
 from walkoff.server.returncodes import SUCCESS
+import logging
 
 
 class TestConsoleStream(ServerTestCase):
@@ -23,9 +20,10 @@ class TestConsoleStream(ServerTestCase):
 
     def test_format_console_data(self):
         sender = {'name': 'workflow1', 'execution_id': 'abc-def-ghi'}
-        data = {'app_name': 'App1', 'action_name': 'action1', 'level': 'WARN', 'message': 'some_message'}
+        data = {'app_name': 'App1', 'action_name': 'action1', 'level': logging.WARN, 'message': 'some_message'}
         expected = copy(data)
         expected['workflow'] = 'workflow1'
+        expected['level'] = logging.getLevelName(logging.WARN)
         self.assertEqual(format_console_data(sender, data=data), expected)
 
     @patch.object(console_stream, 'publish')

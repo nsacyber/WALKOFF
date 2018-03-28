@@ -1,6 +1,7 @@
 from walkoff.events import WalkoffEvent
 from walkoff.security import jwt_required_in_query
 from walkoff.sse import SseStream, StreamableBlueprint
+import logging
 
 console_stream = SseStream('console_results')
 console_page = StreamableBlueprint('console_page', __name__, streams=(console_stream,))
@@ -13,7 +14,7 @@ def format_console_data(sender, **kwargs):
     result["workflow"] = sender["name"]
     result["app_name"] = data["app_name"]
     result["action_name"] = data["action_name"]
-    result["level"] = data["level"]
+    result["level"] = logging.getLevelName(data["level"])
     result["message"] = data["message"]
     return result
 
