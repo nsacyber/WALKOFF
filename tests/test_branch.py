@@ -140,3 +140,23 @@ class TestBranch(unittest.TestCase):
         workflow = Workflow('test', 1, actions=[action, action2, action3], branches=[branch_one, branch_two])
 
         self.assertEqual(workflow.get_branch(action, {}), 1)
+
+    def test_branch_first_action_none(self):
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld', id=10)
+        action2 = Action('HelloWorld', 'helloWorld', 'helloWorld', id=5)
+        action3 = Action('HelloWorld', 'helloWorld', 'helloWorld', id=1)
+
+        condition = ConditionalExpression(
+            'and',
+            conditions=[Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='123')])])
+        condition2 = ConditionalExpression(
+            'and',
+            conditions=[Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])])
+
+        branch_one = Branch(source_id=action.id, destination_id=5, condition=condition, priority=1)
+        branch_two = Branch(source_id=action.id, destination_id=1, condition=condition2, priority=5)
+
+        action._output = ActionResult(result='aaa', status='Success')
+        workflow = Workflow('test', 1, actions=[action, action2, action3], branches=[branch_one, branch_two])
+
+        self.assertEqual(workflow.get_branch(action, {}), 1)

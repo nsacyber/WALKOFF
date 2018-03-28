@@ -185,7 +185,8 @@ class Workflow(ExecutionElement, Execution_Base):
                 # TODO: This here is the only hold up from getting rid of action._output.
                 # Keep whole result in accumulator
                 destination_id = branch.execute(current_action.get_output(), accumulator)
-                return destination_id
+                if destination_id is not None:
+                    return destination_id
             return None
         else:
             return None
