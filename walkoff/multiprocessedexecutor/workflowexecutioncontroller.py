@@ -208,7 +208,7 @@ class Receiver:
 
     @staticmethod
     def _format_data(event, message):
-        if event.event_type == EventType.console:
+        if event == WalkoffEvent.ConsoleLog:
             data = MessageToDict(message, preserving_proto_field_name=True)
         elif event.event_type != EventType.workflow:
             data = {'workflow': MessageToDict(message.workflow, preserving_proto_field_name=True)}

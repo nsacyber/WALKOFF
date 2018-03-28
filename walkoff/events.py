@@ -1,11 +1,10 @@
 import logging
 
 from apscheduler.events import (EVENT_SCHEDULER_START, EVENT_SCHEDULER_SHUTDOWN, EVENT_SCHEDULER_PAUSED,
-    EVENT_SCHEDULER_RESUMED, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, EVENT_JOB_EXECUTED, EVENT_JOB_ERROR)
+                                EVENT_SCHEDULER_RESUMED, EVENT_JOB_ADDED, EVENT_JOB_REMOVED, EVENT_JOB_EXECUTED,
+                                EVENT_JOB_ERROR)
 from blinker import Signal
 from enum import unique, Enum
-
-
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,6 @@ class EventType(Enum):
     conditonalexpression = 6
     condition = 7
     transform = 8
-    console = 9
     other = 256
 
 
@@ -99,6 +97,7 @@ class ControllerSignal(WalkoffSignal):
         message (str): The message log with this signal to a case. Defaults to empty string
         scheduler_event (int): The APScheduler event connected to this signal.
     """
+
     def __init__(self, name, message, scheduler_event):
         super(ControllerSignal, self).__init__(name, EventType.controller, message=message)
         self.scheduler_event = scheduler_event
@@ -111,6 +110,7 @@ class WorkflowSignal(WalkoffSignal):
         name (str): The name of the signal
         message (str): The message log with this signal to a case. Defaults to empty string
     """
+
     def __init__(self, name, message):
         super(WorkflowSignal, self).__init__(name, EventType.workflow, message=message)
 
@@ -123,6 +123,7 @@ class ActionSignal(WalkoffSignal):
         message (str): The message log with this signal to a case. Defaults to empty string
         loggable (bool, optional): Should this event get logged into cases? Defaults to True
     """
+
     def __init__(self, name, message, loggable=True):
         super(ActionSignal, self).__init__(name, EventType.action, message=message, loggable=loggable)
 
@@ -134,6 +135,7 @@ class BranchSignal(WalkoffSignal):
             name (str): The name of the signal
             message (str): The message log with this signal to a case. Defaults to empty string
     """
+
     def __init__(self, name, message):
         super(BranchSignal, self).__init__(name, EventType.branch, message=message)
 
@@ -145,6 +147,7 @@ class ConditionalExpressionSignal(WalkoffSignal):
             name (str): The name of the signal
             message (str): The message log with this signal to a case. Defaults to empty string
     """
+
     def __init__(self, name, message):
         super(ConditionalExpressionSignal, self).__init__(name, EventType.conditonalexpression, message=message)
 
@@ -156,6 +159,7 @@ class ConditionSignal(WalkoffSignal):
             name (str): The name of the signal
             message (str): The message log with this signal to a case. Defaults to empty string
     """
+
     def __init__(self, name, message):
         super(ConditionSignal, self).__init__(name, EventType.condition, message=message)
 
@@ -167,19 +171,10 @@ class TransformSignal(WalkoffSignal):
             name (str): The name of the signal
             message (str): The message log with this signal to a case. Defaults to empty string
     """
+
     def __init__(self, name, message):
         super(TransformSignal, self).__init__(name, EventType.transform, message=message)
 
-class ConsoleSignal(WalkoffSignal):
-    """A signal used by action events
-
-    Args:
-        name (str): The name of the signal
-        message (str): The message log with this signal to a case. Defaults to empty string
-        loggable (bool, optional): Should this event get logged into cases? Defaults to True
-    """
-    def __init__(self, name, message, loggable=True):
-        super(ConsoleSignal, self).__init__(name, EventType.console, message=message, loggable=loggable)
 
 @unique
 class WalkoffEvent(Enum):
@@ -212,7 +207,7 @@ class WalkoffEvent(Enum):
     TriggerActionTaken = ActionSignal('Trigger Action Taken', 'Trigger action taken')
     TriggerActionNotTaken = ActionSignal('Trigger Action Not Taken', 'Trigger action not taken')
     SendMessage = ActionSignal('Message Sent', 'Walkoff message sent', loggable=False)
-    ConsoleLog = ConsoleSignal('Console Log', 'Console log')
+    ConsoleLog = ActionSignal('Console Log', 'Console log')
 
     BranchTaken = BranchSignal('Branch Taken', 'Branch taken')
     BranchNotTaken = BranchSignal('Branch Not Taken', 'Branch not taken')

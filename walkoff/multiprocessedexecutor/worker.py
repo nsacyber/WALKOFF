@@ -50,10 +50,10 @@ def convert_to_protobuf(sender, workflow, **kwargs):
     packet.event_name = event.name
     if event.event_type == EventType.workflow:
         convert_workflow_to_proto(packet, workflow, data)
-    elif event.event_type == EventType.console:
-        convert_log_message_to_protobuf(packet, sender, workflow, **kwargs)
     elif event.event_type == EventType.action:
-        if event == WalkoffEvent.SendMessage:
+        if event == WalkoffEvent.ConsoleLog:
+            convert_log_message_to_protobuf(packet, sender, workflow, **kwargs)
+        elif event == WalkoffEvent.SendMessage:
             convert_send_message_to_protobuf(packet, sender, workflow, **kwargs)
         else:
             convert_action_to_proto(packet, sender, workflow, data)
