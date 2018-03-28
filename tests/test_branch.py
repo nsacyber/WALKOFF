@@ -160,3 +160,18 @@ class TestBranch(unittest.TestCase):
         workflow = Workflow('test', 1, actions=[action, action2, action3], branches=[branch_one, branch_two])
 
         self.assertEqual(workflow.get_branch(action, {}), 1)
+
+    def test_branch_counter(self):
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld', id=1)
+
+        branch = Branch(source_id=action.id, destination_id=action.id)
+        self.assertEqual(branch._counter, 0)
+        accumulator = {}
+
+        action._output = ActionResult(result='aaa', status='Success')
+        workflow = Workflow('test', 1, actions=[action], branches=[branch])
+        workflow.get_branch(action, accumulator)
+
+        self.assertEqual(branch._counter, 1)
+        self.assertIn(branch.id, accumulator)
+        self.assertEqual(accumulator[branch.id], 1)
