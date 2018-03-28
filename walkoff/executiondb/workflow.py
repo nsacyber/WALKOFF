@@ -1,4 +1,3 @@
-import json
 import logging
 from uuid import UUID
 
@@ -45,7 +44,7 @@ class Workflow(ExecutionElement, Execution_Base):
 
         self._is_paused = False
         self._abort = False
-        self._accumulator = {}
+        self._accumulator = {branch.id: 0 for branch in self.branches}
         self._execution_id = 'default'
         self._instance_repo = None
 
@@ -56,7 +55,7 @@ class Workflow(ExecutionElement, Execution_Base):
         """Loads all necessary fields upon Workflow being loaded from database"""
         self._is_paused = False
         self._abort = False
-        self._accumulator = {}
+        self._accumulator = {branch.id: 0 for branch in self.branches}
         self._instance_repo = AppInstanceRepo()
         self._execution_id = 'default'
 

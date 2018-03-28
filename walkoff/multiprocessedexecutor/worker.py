@@ -255,6 +255,11 @@ class Worker(object):
             saved_state = walkoff.executiondb.execution_db.session.query(SavedWorkflow).filter_by(
                 workflow_execution_id=workflow_execution_id).first()
             workflow._accumulator = saved_state.accumulator
+
+            for branch in workflow.branches:
+                if branch.id in workflow._accumulator:
+                    branch._counter = workflow._accumulator[branch.id]
+
             workflow._instance_repo = AppInstanceRepo(saved_state.app_instances)
 
         with self._lock:
