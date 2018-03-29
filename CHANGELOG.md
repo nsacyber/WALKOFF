@@ -52,6 +52,7 @@
   .
 ### Fixed
 * Bug where branches were'all branches weren't being evaluated in a workflow
+* Bug where object arguments could not be converted from strings
 
 ### Contributor
 * Testing the backend now requires the additional the dependencies in

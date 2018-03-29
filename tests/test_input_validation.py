@@ -1,4 +1,5 @@
 import unittest
+import json
 
 from walkoff.appgateway.validator import validate_parameter, validate_parameters, convert_json
 from walkoff.config import initialize
@@ -167,6 +168,18 @@ class TestInputValidation(unittest.TestCase):
                             'b': {'type': 'string'},
                             'c': {'type': 'boolean'}}}}
         value = {'a': 435.6, 'b': 'aaaa', 'c': True}
+        validate_parameter(value, parameter_api, self.message)
+
+    def test_validate_parameter_object_from_string(self):
+        parameter_api = {
+            'name': 'name1',
+            'schema': {'type': 'object',
+                       'required': ['a', 'b'],
+                       'properties':
+                           {'a': {'type': 'number'},
+                            'b': {'type': 'string'},
+                            'c': {'type': 'boolean'}}}}
+        value = json.dumps({'a': 435.6, 'b': 'aaaa', 'c': True})
         validate_parameter(value, parameter_api, self.message)
 
     def test_validate_parameter_object_invalid(self):
