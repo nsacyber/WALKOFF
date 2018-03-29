@@ -430,7 +430,7 @@ def regenerate_workflow_ids(workflow):
         action_mapping[prev_id] = action['id']
 
     for action in actions:
-        regenerate_ids(action, action_mapping, False)
+        regenerate_ids(action, action_mapping, regenerate_id=False)
 
     for branch in workflow.get('branches', []):
         branch['source_id'] = action_mapping[branch['source_id']]
@@ -450,11 +450,11 @@ def regenerate_ids(json_in, action_mapping=None, regenerate_id=True, is_argument
         json_in['reference'] = action_mapping[json_in['reference']]
 
     for field, value in json_in.items():
+        is_arguments = field in ['arguments', 'device_id']
         if isinstance(value, list):
-            is_arguments = field == 'arguments'
             __regenerate_ids_of_list(value, action_mapping, is_arguments=is_arguments)
         elif isinstance(value, dict):
-            regenerate_ids(value, action_mapping=action_mapping)
+            regenerate_ids(value, action_mapping=action_mapping, is_arguments=is_arguments)
 
 
 def __regenerate_ids_of_list(value, action_mapping, is_arguments=False):

@@ -223,7 +223,7 @@ def copy_playbook(playbook_id):
             executiondb.execution_db.session.rollback()
             current_app.logger.error('Could not copy Playbook {}. Unique constraint failed'.format(playbook_id))
             return unique_constraint_problem('playbook', 'copy', playbook_id)
-        except ValueError as e:
+        except ValueError:
             executiondb.execution_db.session.rollback()
             current_app.logger.error('Could not copy Playbook {}. Invalid input'.format(playbook_id))
             return improper_json_problem('playbook', 'copy', playbook_id)

@@ -176,6 +176,7 @@ class PositionSchema(ExecutionBaseSchema):
 class ActionSchema(ActionableSchema):
     """Schema for actions
     """
+    device_id = fields.Nested(ArgumentSchema)
     trigger = fields.Nested(ConditionalExpressionSchema())
     position = fields.Nested(PositionSchema())
 

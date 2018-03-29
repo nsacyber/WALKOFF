@@ -78,8 +78,8 @@ class TestAction(unittest.TestCase):
             Action('HelloWorld', 'invalid', 'helloWorld')
 
     def test_init_app_action_only_with_device(self):
-        action = Action('HelloWorld', 'helloWorld', 'helloWorld', device_id='test')
-        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', device_id='test')
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld', device_id=Argument(name='__device__', value="test"))
+        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', device_id=Argument(name='__device__', value="test"))
 
     def test_init_with_arguments_no_conversion(self):
         action = Action('HelloWorld', 'returnPlusOne', 'returnPlusOne', arguments=[Argument('number', value=-5.6)])

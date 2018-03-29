@@ -26,8 +26,9 @@ class Action(ExecutionElement, Execution_Base):
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     name = Column(String(80), nullable=False)
-    device_id = relationship('Argument', uselist=False, cascade='all, delete-orphan')
-    arguments = relationship('Argument', cascade='all, delete, delete-orphan')
+    device_id = relationship('Argument', uselist=False, cascade='all, delete-orphan',
+                             foreign_keys=[Argument.action_device_id])
+    arguments = relationship('Argument', cascade='all, delete, delete-orphan', foreign_keys=[Argument.action_id])
     trigger = relationship('ConditionalExpression', cascade='all, delete-orphan', uselist=False)
     position = relationship('Position', uselist=False, cascade='all, delete-orphan')
 
@@ -69,9 +70,9 @@ class Action(ExecutionElement, Execution_Base):
         self._arguments_api = None
         self._output = None
         self._execution_id = 'default'
-        self._action_executable = None
 
         self.validate()
+        self._action_executable = get_app_action(self.app_name, self._run)
 
     @orm.reconstructor
     def init_on_load(self):
