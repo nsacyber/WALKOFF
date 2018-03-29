@@ -34,22 +34,24 @@ class WalkoffSignal(object):
         signal (Signal): The signal object which sends the event and data
         event_type (EventType): The event type of this signal
         is_loggable (bool): Should this event get logged into cases?
+        is_sent_to_interfaces (bool, optional): Should this event get sent to the interface dispatcher? Defaults to True
         message (str): Human readable message for this event
 
     Args:
         name (str): The name of the signal
         event_type (EventType): The event type of this signal
         loggable (bool, optional): Should this event get logged into cases? Defaults to True
+        send_to_interfaces (bool, optional): Should this event get sent to the interface dispatcher? Defaults to True
         message (str, optional): Human readable message for this event. Defaults to empty string
     """
     _signals = {}
 
-    def __init__(self, name, event_type, loggable=True, message=''):
+    def __init__(self, name, event_type, loggable=True, send_to_interfaces=True, message=''):
         self.name = name
         self.signal = Signal(name)
         self.event_type = event_type
         self.is_loggable = loggable
-
+        self.is_sent_to_interfaces = send_to_interfaces
         self.message = message
 
     def send(self, sender, **kwargs):
@@ -122,10 +124,16 @@ class ActionSignal(WalkoffSignal):
         name (str): The name of the signal
         message (str): The message log with this signal to a case. Defaults to empty string
         loggable (bool, optional): Should this event get logged into cases? Defaults to True
+        send_to_interfaces (bool, optional): Should this event get sent to the interface dispatcher? Defaults to True
     """
 
-    def __init__(self, name, message, loggable=True):
-        super(ActionSignal, self).__init__(name, EventType.action, message=message, loggable=loggable)
+    def __init__(self, name, message, loggable=True, send_to_interfaces=True):
+        super(ActionSignal, self).__init__(
+            name,
+            EventType.action,
+            message=message,
+            loggable=loggable,
+            send_to_interfaces=send_to_interfaces)
 
 
 class BranchSignal(WalkoffSignal):
@@ -206,8 +214,8 @@ class WalkoffEvent(Enum):
     TriggerActionAwaitingData = ActionSignal('Trigger Action Awaiting Data', 'Trigger action awaiting data')
     TriggerActionTaken = ActionSignal('Trigger Action Taken', 'Trigger action taken')
     TriggerActionNotTaken = ActionSignal('Trigger Action Not Taken', 'Trigger action not taken')
-    SendMessage = ActionSignal('Message Sent', 'Walkoff message sent', loggable=False)
-    ConsoleLog = ActionSignal('Console Log', 'Console log')
+    SendMessage = ActionSignal('Message Sent', 'Walkoff message sent', loggable=False, send_to_interfaces=False)
+    ConsoleLog = ActionSignal('Console Log', 'Console log', loggable=False, send_to_interfaces=False)
 
     BranchTaken = BranchSignal('Branch Taken', 'Branch taken')
     BranchNotTaken = BranchSignal('Branch Not Taken', 'Branch not taken')
@@ -284,3 +292,6 @@ class WalkoffEvent(Enum):
 
     def is_loggable(self):
         return self.value.is_loggable
+
+    def is_sent_to_interfaces(self):
+        return self.value.is_sent_to_interfaces

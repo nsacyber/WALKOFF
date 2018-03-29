@@ -404,7 +404,7 @@ class TestCaseServer(ServerTestCase):
             events = next((event['events'] for event in response if event['type'] == event_type))
             self.assertSetEqual(set(events),
                                 {event.signal_name for event in WalkoffEvent if
-                                 event.event_type.name == event_type and event != WalkoffEvent.SendMessage})
+                                 event.event_type.name == event_type and event.is_loggable()})
 
     @patch.object(server.running_context.executor, 'update_case')
     def test_send_cases_to_workers(self, mock_update):
