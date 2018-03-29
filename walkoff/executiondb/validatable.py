@@ -4,7 +4,7 @@ class Validatable(object):
 
     @property
     def _is_valid(self):
-        if self.errors is not None:
+        if self.errors:
             return False
         for child in self.children:
             child = getattr(self, child, None)

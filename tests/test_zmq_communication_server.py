@@ -8,7 +8,7 @@ from walkoff.events import WalkoffEvent
 from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
 from walkoff.events import WalkoffEvent
-
+import walkoff.executiondb as execution_db
 try:
     from importlib import reload
 except ImportError:
@@ -61,3 +61,19 @@ class TestZmqCommunicationServer(ServerTestCase):
 
         self.assertEqual(result['count'], 1)
         self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: CHANGE INPUT'})
+
+    def test_execute_invalid_workflow(self):
+        workflow = execution_db_help.load_workflow('test', 'helloWorldWorkflow')
+        workflow.is_valid = False
+        execution_db.execution_db.session.add(workflow)
+        execution_db.execution_db.session.commit()
+        self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=INVALID_INPUT_ERROR,
+                                    content_type="application/json")
+
+    def test_execute_workflow_change_to_invalid_arguments(self):
+        workflow = execution_db_help.load_workflow('test', 'helloWorldWorkflow')
+        data = {"workflow_id": str(workflow.id),
+                "arguments": [{"name": "call"}]}
+
+        self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=INVALID_INPUT_ERROR,
+                                    content_type="application/json", data=json.dumps(data))

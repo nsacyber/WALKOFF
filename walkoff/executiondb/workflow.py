@@ -115,14 +115,15 @@ class Workflow(ExecutionElement, Execution_Base):
             start_arguments (list[Argument]): Argument parameters into the first Action. Defaults to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
         """
-        self._execution_id = execution_id
-        logger.info('Executing workflow {0}'.format(self.name))
-        WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowExecutionStart)
-        start = start if start is not None else self.start
-        if not isinstance(start, UUID):
-            start = UUID(start)
-        executor = self.__execute(start, start_arguments, resume)
-        next(executor)
+        if self.is_valid:
+            self._execution_id = execution_id
+            logger.info('Executing workflow {0}'.format(self.name))
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowExecutionStart)
+            start = start if start is not None else self.start
+            if not isinstance(start, UUID):
+                start = UUID(start)
+            executor = self.__execute(start, start_arguments, resume)
+            next(executor)
 
     def __execute(self, start, start_arguments=None, resume=False):
         actions = self.__actions(start=start)

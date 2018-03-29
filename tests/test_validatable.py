@@ -30,6 +30,10 @@ class TestValidatable(TestCase):
         obj = MockValidatableNoChildren()
         self.assertTrue(obj._is_valid)
 
+    def test_is_valid_no_children_empty_errors(self):
+        obj = MockValidatableNoChildren(errors=[])
+        self.assertTrue(obj._is_valid)
+
     def test_is_valid_no_children_with_errors(self):
         obj = MockValidatableNoChildren(errors=['err1', 'err2'])
         self.assertFalse(obj._is_valid)
