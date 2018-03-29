@@ -3,9 +3,16 @@
      Contributor to describe changes -->
 
 ## [0.8.0]
-###### 2018-03-22
+###### unreleased
 
 ### Added
+* Multiple tools have been added to help develop workflows
+  * Playbooks can be saved even if they are invalid. However, playbooks cannot
+    be executed if they are invalid.
+  * The playbook editor displays the errors on a workflow which must be solved
+    before the workflow can be executed
+  * You can now use Python's builtin `logging` module in an app, and the log
+    messages will be displayed in the playbook editor
 * The ability to use a key-value storage has been created. This is now used to
   push workflows to the workers as well as to remove global state. Currently
   two options are available for key-value store, DiskCache, a SQLite-backed
@@ -21,19 +28,30 @@
 ### Changed
 * The `interfaces.AppBlueprint` used to construct interfaces has been modified
   to extend from `walkoff.sse.StreamableBlueprint` which in turn extends
-  Flask's Bleuprint. This makes the interface cleaner and more flexible.
-* There have been changes to the `/api/configuration` REST endpoints.
-  * `workflow_path` and `logging_config_file` have been removed
-  * The ability to edit the cache configuration has been added
-  * All changes will only be applied on server restart
+  Flask's Blueprint. This makes the interface cleaner and more flexible.
+* Changes to the REST API
+  * In the configuration resource:
+    * `workflow_path`, `logging_config_file`, and `zmq_requests` have been
+      removed from the API
+    * The ability to edit the cache configuration has been added
+  * In the playbook resources:
+    * All execution elements have a read only list of human-readable errors
+    * A workflow has a read only Boolean field "is_valid" which indicates if
+      any of its execution elements have errors
+* All changes to the configuration will only be applied on server restart
 * Refactorings have been done to minimize the amount of global state used
   throughout Walkoff. Work will continue on this effort.
 * Metrics are now stored in the execution database
+* Changes to styling on the playbook editor
+
 
 ### Deprecated
 * `walkoff.helpers.create_sse_event` has been deprecated and will be removed in
   version 0.10.0. Use `walkoff.sse.SseEvent` or the streams in `walkoff.sse`
-  instead.
+  instead
+  .
+### Fixed
+* Bug where branches were'all branches weren't being evaluated in a workflow
 
 ### Contributor
 * Testing the backend now requires the additional the dependencies in
