@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Http, Response, Headers } from '@angular/http';
 import { JwtHelper } from 'angular2-jwt';
 import { JwtHttp } from 'angular2-jwt-refresh';
+import { plainToClass } from 'class-transformer';
 
 import { AccessToken } from '../models/accessToken';
 
@@ -93,14 +94,14 @@ export class AuthService {
 	 * Returns an AccessToken object, decoded from the refresh token in session storage.
 	 */
 	getAndDecodeRefreshToken(): AccessToken {
-		return this.jwtHelper.decodeToken(this.getRefreshToken());
+		return plainToClass(AccessToken, (this.jwtHelper.decodeToken(this.getRefreshToken()) as object));
 	}
 
 	/**
 	 * Returns an AccessToken object, decoded from the access token in session storage.
 	 */
 	getAndDecodeAccessToken(): AccessToken {
-		return this.jwtHelper.decodeToken(this.getAccessToken());
+		return plainToClass(AccessToken, (this.jwtHelper.decodeToken(this.getAccessToken()) as object));
 	}
 
 	/**

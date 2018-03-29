@@ -1,9 +1,11 @@
 import logging
-from apps import App, action
+import time
+
 import requests
 from requests.exceptions import Timeout
-from walkoff.config.paths import certificate_path
-import time
+
+from apps import App, action
+import walkoff.config
 
 logger = logging.getLogger(__name__)
 
@@ -200,7 +202,7 @@ class Walkoff(App):
         if data is not None:
             args['json'] = data
         if self.is_https:
-            args['verify'] = certificate_path
+            args['verify'] = walkoff.config.Config.CERTIFICATE_PATH
         return address, args
 
     def _request(self, method, address, timeout, headers=None, data=None, **kwargs):

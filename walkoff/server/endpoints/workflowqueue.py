@@ -1,16 +1,18 @@
+from collections import OrderedDict
+
 from flask import request, current_app
 from flask_jwt_extended import jwt_required
 from sqlalchemy import exists
+
+from walkoff import executiondb
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
-from walkoff.server.returncodes import *
+from walkoff.helpers import InvalidArgument
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid
-from walkoff import executiondb
-from walkoff.executiondb.workflow import Workflow
-from walkoff.executiondb.argument import Argument
-from walkoff.helpers import InvalidArgument
 from walkoff.server.problem import Problem
-from collections import OrderedDict
+from walkoff.server.returncodes import *
 
 
 def does_workflow_exist(workflow_id):
@@ -42,7 +44,6 @@ def get_all_workflow_status(limit=50):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     def __func():
-
         ret = executiondb.execution_db.session.query(WorkflowStatus). \
             filter(WorkflowStatus.status.in_(executing_statuses)). \
             order_by(WorkflowStatus.started_at). \
@@ -121,6 +122,6 @@ def control_workflow():
         elif status == 'abort':
             running_context.executor.abort_workflow(execution_id)
 
-        return '', NO_CONTENT
+        return None, NO_CONTENT
 
     return __func()

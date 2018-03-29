@@ -1,7 +1,7 @@
 import unittest
 
-from walkoff.serverdb import db, Role, Resource, default_resources, initialize_default_resources_admin
 from tests.util import execution_db_help
+from walkoff.serverdb import db, Role, Resource, default_resources, initialize_default_resources_admin
 
 
 class TestRoles(unittest.TestCase):
@@ -18,7 +18,7 @@ class TestRoles(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     def tearDown(self):
         db.session.rollback()

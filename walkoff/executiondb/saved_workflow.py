@@ -1,13 +1,14 @@
 import logging
 
 from sqlalchemy import Column, PickleType
-
-from walkoff.executiondb import Device_Base
 from sqlalchemy_utils import UUIDType
+
+from walkoff.executiondb import Execution_Base
+
 logger = logging.getLogger(__name__)
 
 
-class SavedWorkflow(Device_Base):
+class SavedWorkflow(Execution_Base):
     __tablename__ = 'saved_workflow'
     workflow_execution_id = Column(UUIDType(binary=False), primary_key=True)
     workflow_id = Column(UUIDType(binary=False), nullable=False)

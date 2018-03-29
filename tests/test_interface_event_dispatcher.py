@@ -1,58 +1,67 @@
+import uuid
 from unittest import TestCase
 
-import walkoff.config.config
-from walkoff.events import WalkoffEvent, EventType
+import walkoff.config
+import walkoff.executiondb.schemas
 from interfaces import InterfaceEventDispatcher, dispatcher
 from interfaces.exceptions import UnknownEvent, InvalidEventHandler
-from walkoff.helpers import UnknownAppAction, UnknownApp
 from tests.util import execution_db_help
-import uuid
-from walkoff.executiondb.representable import Representable
+from walkoff.events import WalkoffEvent, EventType
+from walkoff.executiondb.executionelement import ExecutionElement
+from walkoff.helpers import UnknownAppAction, UnknownApp
 
 
-class MockWorkflow(Representable):
+class MockWorkflow(ExecutionElement):
     def __init__(self):
-        self.id = uuid.uuid4()
+        super(MockWorkflow, self).__init__(uuid.uuid4())
         self.name = "name"
-        self._execution_id = uuid.uuid4()
+        self._execution_id = str(uuid.uuid4())
 
     def get_execution_id(self):
         return self._execution_id
 
-    def as_json(self):
-        return {'id': self.id,
-                'execution_id': self._execution_id,
-                'name': self.name}
+
+class MockWorkflowSchema(object):
+    @staticmethod
+    def dump(workflow):
+        class Dummy:
+            def __init__(self, data):
+                self.data = data
+
+        return Dummy({'id': str(workflow.id), 'name': workflow.name, 'execution_id': str(workflow._execution_id)})
 
 
 class TestInterfaceEventDispatcher(TestCase):
     @classmethod
     def setUpClass(cls):
         execution_db_help.setup_dbs()
-        walkoff.config.config.app_apis = {'App1': {'actions': {'action1': None,
-                                                            'action2': None,
-                                                            'action3': None}},
-                                       'App2': {}}
-        cls.action_events = {event for event in WalkoffEvent if event.event_type == EventType.action and event != WalkoffEvent.SendMessage}
+        walkoff.config.app_apis = {'App1': {'actions': {'action1': None,
+                                                               'action2': None,
+                                                               'action3': None}},
+                                          'App2': {}}
+        cls.action_events = {event for event in WalkoffEvent if
+                             event.event_type == EventType.action and event != WalkoffEvent.SendMessage}
 
     def setUp(self):
         dispatcher._clear()
 
     def tearDown(self):
-        execution_db_help.cleanup_device_db()
+        execution_db_help.cleanup_execution_db()
 
     @classmethod
     def tearDownClass(cls):
         dispatcher._clear()
-        walkoff.config.config.app_apis = {}
-        execution_db_help.tear_down_device_db()
+        walkoff.config.app_apis = {}
+        walkoff.executiondb.schemas._schema_lookup.pop(MockWorkflow, None)
+        execution_db_help.tear_down_execution_db()
 
     def test_singleton(self):
         self.assertEqual(id(dispatcher), id(InterfaceEventDispatcher()))
 
     def test_registration_correct_number_methods_generated(self):
         methods = [method for method in dir(dispatcher) if method.startswith('on_')]
-        expected_number = len([event for event in WalkoffEvent if event.event_type != EventType.other and event != WalkoffEvent.SendMessage]) + 2
+        expected_number = len([event for event in WalkoffEvent if
+                               event.event_type != EventType.other and event != WalkoffEvent.SendMessage]) + 2
         # 2: one for on_app_action and one for on_walkoff_event
         self.assertEqual(len(methods), expected_number)
 
@@ -74,34 +83,6 @@ class TestInterfaceEventDispatcher(TestCase):
         with self.assertRaises(ValueError):
             InterfaceEventDispatcher._all_events_are_controller({WalkoffEvent.WorkflowShutdown,
                                                                  WalkoffEvent.SchedulerStart})
-
-    def test_validate_handler_function_args_not_controller_too_few(self):
-        def x(): pass
-
-        with self.assertRaises(InvalidEventHandler):
-            InterfaceEventDispatcher._validate_handler_function_args(x, False)
-
-    def test_validate_handler_function_args_not_controller_too_many(self):
-        def x(a, b): pass
-
-        with self.assertRaises(InvalidEventHandler):
-            InterfaceEventDispatcher._validate_handler_function_args(x, False)
-
-    def test_validate_handler_function_args_not_controller_valid(self):
-        def x(a): pass
-
-        InterfaceEventDispatcher._validate_handler_function_args(x, False)
-
-    def test_validate_handler_function_args_controller_valid(self):
-        def x(): pass
-
-        InterfaceEventDispatcher._validate_handler_function_args(x, True)
-
-    def test_validate_handler_function_args_controller_too_many(self):
-        def x(a): pass
-
-        with self.assertRaises(InvalidEventHandler):
-            InterfaceEventDispatcher._validate_handler_function_args(x, True)
 
     def test_make_on_event_docstring_not_controller(self):
         doc = InterfaceEventDispatcher._make_on_walkoff_event_docstring(WalkoffEvent.ActionStarted)
@@ -209,16 +190,6 @@ class TestInterfaceEventDispatcher(TestCase):
         self.assertTrue(
             dispatcher.event_dispatcher.is_registered(EventType.controller.name, WalkoffEvent.SchedulerShutdown, x))
 
-    def test_on_walkoff_events_invalid_function(self):
-        with self.assertRaises(InvalidEventHandler):
-            @dispatcher.on_walkoff_events({WalkoffEvent.ActionStarted}, sender_ids='c')
-            def x(): pass
-
-    def test_on_walkoff_events_invalid_function_control_event(self):
-        with self.assertRaises(InvalidEventHandler):
-            @dispatcher.on_walkoff_events({WalkoffEvent.SchedulerStart})
-            def x(data): pass
-
     def test_on_app_action_invalid_event(self):
         with self.assertRaises(UnknownEvent):
             @dispatcher.on_app_actions('App1', events='Invalid')
@@ -228,11 +199,6 @@ class TestInterfaceEventDispatcher(TestCase):
         with self.assertRaises(UnknownEvent):
             @dispatcher.on_app_actions('App1', events=WalkoffEvent.SchedulerStart)
             def x(data): pass
-
-    def test_on_app_action_invalid_handler_function_arg_count(self):
-        with self.assertRaises(InvalidEventHandler):
-            @dispatcher.on_app_actions('App1')
-            def x(): pass
 
     def test_on_app_action_with_invalid_app(self):
         with self.assertRaises(UnknownApp):
@@ -328,7 +294,7 @@ class TestInterfaceEventDispatcher(TestCase):
     def test_example_on_walkoff_event_noncontroller_event(self):
 
         result = {'x': False}
-        self.id = uuid.uuid4()
+        self.id = str(uuid.uuid4())
 
         @dispatcher.on_walkoff_events(WalkoffEvent.ActionStarted, sender_ids=self.id)
         def x(data):
@@ -336,10 +302,10 @@ class TestInterfaceEventDispatcher(TestCase):
             result['data'] = data
 
         workflow = MockWorkflow()
-        WalkoffEvent.WorkflowExecutionPending.send(workflow.as_json())
+        WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema.dump(workflow).data)
 
         data = {'id': self.id, 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
-                'execution_id': uuid.uuid4()}
+                'execution_id': str(uuid.uuid4())}
         kwargs = self.get_kwargs(workflow)
         WalkoffEvent.ActionStarted.send(data, data=kwargs)
         expected = data
@@ -352,7 +318,7 @@ class TestInterfaceEventDispatcher(TestCase):
     def test_example_on_walkoff_event_noncontroller_event_with_uids(self):
 
         result = {'x': False}
-        self.id = uuid.uuid4()
+        self.id = str(uuid.uuid4())
 
         @dispatcher.on_walkoff_events(WalkoffEvent.ActionStarted, sender_uids=self.id)
         def x(data):
@@ -360,10 +326,10 @@ class TestInterfaceEventDispatcher(TestCase):
             result['data'] = data
 
         workflow = MockWorkflow()
-        WalkoffEvent.WorkflowExecutionPending.send(workflow.as_json())
+        WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema().dump(workflow).data)
 
         data = {'id': self.id, 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
-                'execution_id': uuid.uuid4()}
+                'execution_id': str(uuid.uuid4())}
         kwargs = self.get_kwargs(workflow)
         WalkoffEvent.ActionStarted.send(data, data=kwargs)
         expected = data
@@ -382,11 +348,11 @@ class TestInterfaceEventDispatcher(TestCase):
             result['data'] = data
 
         workflow = MockWorkflow()
-        WalkoffEvent.WorkflowExecutionPending.send(workflow.as_json())
+        WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema().dump(workflow).data)
 
         self.id = 'test'
-        data = {'id': uuid.uuid4(), 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
-                'execution_id': uuid.uuid4()}
+        data = {'id': str(uuid.uuid4()), 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+                'execution_id': str(uuid.uuid4())}
         kwargs = self.get_kwargs(workflow)
         WalkoffEvent.ActionStarted.send(data, data=kwargs)
         expected = data
@@ -409,11 +375,11 @@ class TestInterfaceEventDispatcher(TestCase):
             raise ValueError()
 
         workflow = MockWorkflow()
-        WalkoffEvent.WorkflowExecutionPending.send(workflow.as_json())
+        WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema().dump(workflow).data)
 
         self.id = 'test'
-        data = {'id': uuid.uuid4(), 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
-                'execution_id': uuid.uuid4()}
+        data = {'id': str(uuid.uuid4()), 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+                'execution_id': str(uuid.uuid4())}
         kwargs = self.get_kwargs(workflow)
         WalkoffEvent.ActionStarted.send(data, data=kwargs)
         expected = data
@@ -425,20 +391,21 @@ class TestInterfaceEventDispatcher(TestCase):
 
     def test_example_autogenerated_registration(self):
         result = {}
-        self.id = uuid.uuid4()
+        self.id = str(uuid.uuid4())
 
         @dispatcher.on_action_started(sender_ids=self.id)
         def x(data):
             result['data'] = data
 
         workflow = MockWorkflow()
-        WalkoffEvent.WorkflowExecutionPending.send(workflow.as_json())
+        WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema().dump(workflow).data)
 
-        data = {'id': self.id, 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
-                'execution_id': uuid.uuid4()}
+        sender_data = {'id': self.id, 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
+                       'execution_id': str(uuid.uuid4())}
         kwargs = self.get_kwargs(workflow)
-        WalkoffEvent.ActionStarted.send(data, data=kwargs)
-        expected = data
+        kwargs.update({'data': {'a': 42}})
+        WalkoffEvent.ActionStarted.send(sender_data, data=kwargs)
+        expected = sender_data
         expected.update(kwargs)
         expected['sender_id'] = expected.pop('id')
         expected['sender_name'] = expected.pop('name')

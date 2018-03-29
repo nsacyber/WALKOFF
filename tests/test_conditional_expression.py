@@ -1,14 +1,14 @@
 import unittest
 
 import walkoff.appgateway
-import walkoff.config.config
-from walkoff.executiondb.conditionalexpression import ConditionalExpression
-from walkoff.executiondb.argument import Argument
-from walkoff.executiondb.condition import Condition
+import walkoff.config
 from tests.config import test_apps_path
-import walkoff.config.paths
 from tests.util import execution_db_help
 from walkoff.events import WalkoffEvent
+from walkoff.executiondb.schemas import dump_element
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.condition import Condition
+from walkoff.executiondb.conditionalexpression import ConditionalExpression
 
 
 class TestCondition(unittest.TestCase):
@@ -17,14 +17,15 @@ class TestCondition(unittest.TestCase):
         execution_db_help.setup_dbs()
         walkoff.appgateway.clear_cache()
         walkoff.appgateway.cache_apps(path=test_apps_path)
-        walkoff.config.config.load_app_apis(test_apps_path)
+        walkoff.config.load_app_apis(test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
-        execution_db_help.tear_down_device_db()
-        walkoff.appgateway.clear_cache()        
+        execution_db_help.tear_down_execution_db()
+        walkoff.appgateway.clear_cache()
 
-    def assert_construction(self, expression, operator='and', is_negated=False, child_expressions=None, conditions=None):
+    def assert_construction(self, expression, operator='and', is_negated=False, child_expressions=None,
+                            conditions=None):
         self.assertEqual(expression.operator, operator)
         self.assertEqual(expression.is_negated, is_negated)
         if child_expressions is None:
@@ -207,4 +208,4 @@ class TestCondition(unittest.TestCase):
             child_expressions=[
                 ConditionalExpression(conditions=[self.get_regex_condition('bb')]),
                 ConditionalExpression(conditions=[self.get_regex_condition('cc')])])
-        expression.read()
+        dump_element(expression)

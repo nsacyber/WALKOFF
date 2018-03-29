@@ -64,7 +64,7 @@ ApiContact:
   properties:
     name:
       type: string
-      description: The ame of the contact person or organization
+      description: The name of the contact person or organization
     url:
       type: string
       description: The URL pointing to the contact information
@@ -94,13 +94,13 @@ ActionApi:
   properties:
     name:
       type: string
-      description: unique name of the action
+      description: Unique name of the action
     run:
       type: string
       description: The path to the executable function
     default_return:
       type: string
-      description: The name of the default return code (if none specified, defaults to Success
+      description: The name of the default return code (if none specified, defaults to "Success")
     returns:
       type: array
       items:
@@ -119,7 +119,7 @@ ActionApi:
       type: array
       items:
         type: string
-      description: tags for this action
+      description: Tags for this action
       uniqueItems: true
     summary:
       type: string
@@ -139,13 +139,13 @@ ConditionApi:
   properties:
     name:
       type: string
-      description: unique name of the action
+      description: Unique name of the action
     run:
       type: string
       description: The path to the executable function
     data_in:
       type: string
-      description: name of parameter which comes from executed action
+      description: Name of parameter which comes from executed action
     parameters:
       type: array
       items:
@@ -159,7 +159,7 @@ ConditionApi:
       type: array
       items:
         type: string
-      description: tags for this action
+      description: Tags for this action
       uniqueItems: true
     summary:
       type: string
@@ -184,13 +184,13 @@ TransformApi:
   properties:
     name:
       type: string
-      description: unique name of the action
+      description: Unique name of the action
     run:
       type: string
       description: The path to the executable function
     data_in:
       type: string
-      description: name of parameter which comes from executed action
+      description: Name of parameter which comes from executed action
     parameters:
       type: array
       items:
@@ -244,14 +244,14 @@ DeviceFieldApi:
       type: string
     description:
       type: string
-      description: description of what the argument provides
+      description: Description of what the argument provides
     encrypted:
       type: boolean
       description: Is this field encrypted
       default: false
     placeholder:
       type: string
-      description: brief description of the field to be used to prompt a user
+      description: Brief description of the field to be used to prompt a user
     required:
       type: boolean
       default: false
@@ -271,10 +271,10 @@ ParameterApi:
       type: [number, integer, string, boolean]
     description:
       type: string
-      description: description of the parameter
+      description: Description of the parameter
     placeholder:
       type: string
-      description: brief description of the field to be used to prompt a user
+      description: Brief description of the field to be used to prompt a user
     required:
       type: boolean
       default: false
@@ -292,7 +292,7 @@ ReturnApi:
       description: Status of the return
     description:
       type: string
-      description: description of the return type
+      description: Description of the return type
     failure:
       type: boolean
       description: Whether this return type indicates action failure

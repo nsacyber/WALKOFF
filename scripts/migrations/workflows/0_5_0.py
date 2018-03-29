@@ -1,8 +1,8 @@
 import os
+import sys
 from copy import deepcopy
 
 from six import string_types
-import sys
 
 sys.path.append(os.path.abspath('.'))
 from walkoff.appgateway import is_app_action_bound

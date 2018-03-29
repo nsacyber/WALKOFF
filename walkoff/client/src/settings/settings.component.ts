@@ -9,6 +9,7 @@ import { SettingsService } from './settings.service';
 import { SettingsUserModalComponent } from './settings.user.modal.component';
 
 import { Configuration } from '../models/configuration';
+import { CacheConfig } from '../models/cacheConfig';
 import { User } from '../models/user';
 import { WorkingUser } from '../models/workingUser';
 import { Role } from '../models/role';
@@ -23,6 +24,7 @@ import { Role } from '../models/role';
 })
 export class SettingsComponent {
 	configuration: Configuration = new Configuration();
+	cacheTypes: string[] = ['disk', 'redis'];
 	dbTypes: string[] = ['sqlite', 'mysql', 'postgresql', 'oracle', 'mssql'];
 	tlsVersions: string[] = ['1.1', '1.2', '1.3'];
 
@@ -61,7 +63,10 @@ export class SettingsComponent {
 	getConfiguration(): void {
 		this.settingsService
 			.getConfiguration()
-			.then(configuration => Object.assign(this.configuration, configuration))
+			.then(configuration => {
+				Object.assign(this.configuration, configuration);
+				if (! this.configuration.cache) this.configuration.cache = new CacheConfig();
+			})
 			.catch(e => this.toastyService.error(e.message));
 	}
 
@@ -70,6 +75,7 @@ export class SettingsComponent {
 			.updateConfiguration(this.configuration)
 			.then((configuration) => {
 				Object.assign(this.configuration, configuration);
+				if (! this.configuration.cache) this.configuration.cache = new CacheConfig();
 				this.toastyService.success('Configuration successfully updated.');
 			})
 			.catch(e => this.toastyService.error(e.message));
@@ -115,7 +121,7 @@ export class SettingsComponent {
 		modalRef.componentInstance.title = `Edit User: ${user.username}`;
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.roles = this.roles;
-		modalRef.componentInstance.workingUser = User.toWorkingUser(user);
+		modalRef.componentInstance.workingUser = user.toWorkingUser();
 
 		this._handleModalClose(modalRef);
 	}

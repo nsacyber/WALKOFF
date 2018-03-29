@@ -1,6 +1,5 @@
 import argparse
-import json
-import logging.config
+import logging
 import os
 import sys
 import traceback
@@ -9,44 +8,32 @@ from os.path import isfile
 from gevent import monkey
 from gevent import pywsgi
 
-from walkoff.config import paths, config
 import walkoff
+import walkoff.cache
+import walkoff.config
 
 logger = logging.getLogger('walkoff')
 
 
-def setup_logger():
-    log_config = None
-    if isfile(paths.logging_config_path):
-        try:
-            with open(paths.logging_config_path, 'rt') as log_config_file:
-                log_config = json.loads(log_config_file.read())
-        except (IOError, OSError):
-            print('Could not read logging JSON file {}'.format(paths.logging_config_path))
-        except ValueError:
-            print('Invalid JSON in logging config file')
-    else:
-        print('No logging config found')
-
-    if log_config is not None:
-        logging.config.dictConfig(log_config)
-    else:
-        logging.basicConfig()
-        logger.info("Basic logging is being used")
-
-
 def run(host, port):
     from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
-    setup_logger()
     print_banner()
-    pids = spawn_worker_processes()
+    pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES,
+                                  walkoff.config.Config.NUMBER_THREADS_PER_PROCESS,
+                                  walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
+                                  walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
+                                  walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
     monkey.patch_all()
-    
+
     from scripts.compose_api import compose_api
     compose_api()
-    
+
     from walkoff.server import flaskserver
-    flaskserver.running_context.executor.initialize_threading(pids=pids)
+    flaskserver.running_context.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
+                                                              walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
+                                                              walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
+                                                              walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
+                                                              pids)
     # The order of these imports matter for initialization (should probably be fixed)
 
     import walkoff.case.database as case_database
@@ -65,9 +52,10 @@ def print_banner():
 
 
 def setup_server(app, host, port):
-    if isfile(paths.certificate_path) and isfile(paths.private_key_path):
+    if isfile(walkoff.config.Config.CERTIFICATE_PATH) and isfile(walkoff.config.Config.PRIVATE_KEY_PATH):
         server = pywsgi.WSGIServer((host, port), application=app,
-                                   keyfile=paths.private_key_path, certfile=paths.certificate_path)
+                                   keyfile=walkoff.config.Config.PRIVATE_KEY_PATH,
+                                   certfile=walkoff.config.Config.CERTIFICATE_PATH)
         protocol = 'https'
     else:
         logger.warning('Cannot find certificates. Using HTTP')
@@ -93,8 +81,8 @@ def parse_args():
 
 
 def convert_host_port(args):
-    host = config.host if args.host is None else args.host
-    port = config.port if args.port is None else args.port
+    host = walkoff.config.Config.HOST if args.host is None else args.host
+    port = walkoff.config.Config.PORT if args.port is None else args.port
     try:
         port = int(port)
     except ValueError:
@@ -107,8 +95,9 @@ if __name__ == "__main__":
     args = parse_args()
     exit_code = 0
     try:
-        config.initialize()
+        walkoff.config.initialize()
         from walkoff import initialize_databases
+
         initialize_databases()
         run(*convert_host_port(args))
     except KeyboardInterrupt:

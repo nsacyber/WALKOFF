@@ -1,15 +1,18 @@
+import json
+from datetime import timedelta
+from uuid import uuid4
+
+from sqlalchemy.exc import IntegrityError
+
+from tests.util import execution_db_help
 from tests.util.servertestcase import ServerTestCase
+from walkoff.extensions import db
+from walkoff.messaging import MessageActionEvent, MessageAction
+from walkoff.server import flaskserver
+from walkoff.server.endpoints.messages import max_notifications, min_notifications
+from walkoff.server.returncodes import *
 from walkoff.serverdb import User, Role
 from walkoff.serverdb.message import Message, MessageHistory
-from walkoff.extensions import db
-from walkoff.server.returncodes import *
-from walkoff.server import flaskserver
-import json
-from walkoff.messaging import MessageActionEvent, MessageAction
-from datetime import timedelta
-from walkoff.server.endpoints.messages import max_notifications, min_notifications
-from tests.util import execution_db_help
-from sqlalchemy.exc import IntegrityError
 
 
 class UserWrapper(object):
@@ -57,7 +60,7 @@ class TestMessagingEndpoints(ServerTestCase):
 
     @staticmethod
     def make_message(users, requires_reauth=False, requires_action=False):
-        message = Message('subject here', json.dumps({'message': 'some message'}), 'workflow_uid1',
+        message = Message('subject here', json.dumps({'message': 'some message'}), uuid4(),
                           users, requires_reauth=requires_reauth, requires_response=requires_action)
         db.session.add(message)
         return message
@@ -100,11 +103,12 @@ class TestMessagingEndpoints(ServerTestCase):
             db.session.delete(role)
         db.session.commit()
 
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     def login_user(self, user):
         post = self.app.post('/api/auth', content_type="application/json",
-                             data=json.dumps(dict(username=user.username, password=user.password)), follow_redirects=True)
+                             data=json.dumps(dict(username=user.username, password=user.password)),
+                             follow_redirects=True)
         key = json.loads(post.get_data(as_text=True))
         return {'Authorization': 'Bearer {}'.format(key['access_token'])}
 
@@ -116,10 +120,10 @@ class TestMessagingEndpoints(ServerTestCase):
         data = {'ids': [message.id for message in messages], 'action': action}
         if validate:
             self.put_with_status_check('/api/messages', headers=user.header, status_code=status_code,
-                                        data=json.dumps(data), content_type='application/json')
+                                       data=json.dumps(data), content_type='application/json')
         else:
             self.app.put('/api/messages', headers=user.header,
-                          data=json.dumps(data), content_type='application/json')
+                         data=json.dumps(data), content_type='application/json')
 
     def get_all_messages_for_user(self, user, status_code=SUCCESS):
         return self.get_with_status_check('/api/messages', headers=user.header, status_code=status_code)
@@ -259,7 +263,7 @@ class TestMessagingEndpoints(ServerTestCase):
 
     def test_get_all_notifications_less_than_minimum_all_unread(self):
         messages = []
-        for i in range(min_notifications - len(self.user1.messages)-1):
+        for i in range(min_notifications - len(self.user1.messages) - 1):
             message = TestMessagingEndpoints.make_message([self.user1.user])
             db.session.commit()
             message.created_at += timedelta(seconds=i)
@@ -292,7 +296,7 @@ class TestMessagingEndpoints(ServerTestCase):
 
     def test_get_all_notifications_more_than_minimum_all_unread(self):
         messages = []
-        for i in range(int((max_notifications - min_notifications)/2)):
+        for i in range(int((max_notifications - min_notifications) / 2)):
             message = TestMessagingEndpoints.make_message([self.user1.user])
             db.session.commit()
             message.created_at += timedelta(seconds=i)
@@ -307,7 +311,7 @@ class TestMessagingEndpoints(ServerTestCase):
 
     def test_get_all_notifications_more_than_minimum_some_unread(self):
         messages = []
-        for i in range(int((max_notifications - min_notifications)/2)+3):
+        for i in range(int((max_notifications - min_notifications) / 2) + 3):
             message = TestMessagingEndpoints.make_message([self.user1.user])
             db.session.commit()
             message.created_at += timedelta(seconds=i)
@@ -318,14 +322,14 @@ class TestMessagingEndpoints(ServerTestCase):
         for message in messages[-num_read:]:
             message.record_user_action(self.user1.user, MessageAction.read)
         notifications = self.get_notifications(self.user1)
-        self.assertEqual(len(notifications), len(messages)-num_read)
+        self.assertEqual(len(notifications), len(messages) - num_read)
         self.assertSetEqual({message.id for message in messages if not message.user_has_read(self.user1.user)},
                             {notification['id'] for notification in notifications})
         self.assertTrue(all(not notification['is_read'] for notification in notifications))
 
     def test_get_all_notifications_more_than_maximum_all_unread(self):
         messages = []
-        for i in range(int(1.5*max_notifications)):
+        for i in range(int(1.5 * max_notifications)):
             message = TestMessagingEndpoints.make_message([self.user1.user])
             db.session.commit()
             message.created_at += timedelta(seconds=i)
@@ -338,7 +342,7 @@ class TestMessagingEndpoints(ServerTestCase):
 
     def test_get_all_notifications_more_than_maximum_some_unread(self):
         messages = []
-        for i in range(int(1.5*max_notifications+min_notifications)):
+        for i in range(int(1.5 * max_notifications + min_notifications)):
             message = TestMessagingEndpoints.make_message([self.user1.user])
             db.session.commit()
             message.created_at += timedelta(seconds=i)
@@ -350,6 +354,3 @@ class TestMessagingEndpoints(ServerTestCase):
         notifications = self.get_notifications(self.user1)
         self.assertEqual(len(notifications), max_notifications)
         self.assertTrue(all(not notification['is_read'] for notification in notifications))
-
-
-

@@ -1,11 +1,11 @@
 import unittest
 
 import walkoff.appgateway
-import walkoff.config.config
+import walkoff.config
+from tests.config import test_apps_path
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.transform import Transform
-from walkoff.helpers import UnknownTransform, InvalidArgument
-from tests.config import test_apps_path
+from walkoff.helpers import InvalidExecutionElement
 
 
 class TestTransform(unittest.TestCase):
@@ -13,7 +13,7 @@ class TestTransform(unittest.TestCase):
     def setUpClass(cls):
         walkoff.appgateway.clear_cache()
         walkoff.appgateway.cache_apps(path=test_apps_path)
-        walkoff.config.config.load_app_apis(test_apps_path)
+        walkoff.config.load_app_apis(test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
@@ -31,7 +31,7 @@ class TestTransform(unittest.TestCase):
         self.__compare_init(filter_elem, 'HelloWorld', 'Top Transform')
 
     def test_init_invalid_action(self):
-        with self.assertRaises(UnknownTransform):
+        with self.assertRaises(InvalidExecutionElement):
             Transform('HelloWorld', 'Invalid')
 
     def test_init_with_args(self):
@@ -45,11 +45,11 @@ class TestTransform(unittest.TestCase):
                             arguments=[Argument('arg1', reference="action1")])
 
     def test_init_with_invalid_arg_name(self):
-        with self.assertRaises(InvalidArgument):
+        with self.assertRaises(InvalidExecutionElement):
             Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('invalid', value='5.4')])
 
     def test_init_with_invalid_arg_type(self):
-        with self.assertRaises(InvalidArgument):
+        with self.assertRaises(InvalidExecutionElement):
             Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='invalid')])
 
     def test_execute_with_no_args_no_conversion(self):

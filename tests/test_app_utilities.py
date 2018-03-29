@@ -1,9 +1,9 @@
 import unittest
 
+from tests.util import execution_db_help
 from walkoff import executiondb
 from walkoff.executiondb.device import get_device, get_all_devices_for_app, \
     get_all_devices_of_type_from_app, App, Device
-from tests.util import execution_db_help
 
 
 class TestAppUtilities(unittest.TestCase):
@@ -20,7 +20,7 @@ class TestAppUtilities(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     def setUp(self):
         import walkoff.server.flaskserver

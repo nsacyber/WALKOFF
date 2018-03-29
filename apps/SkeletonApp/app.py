@@ -1,6 +1,6 @@
 import logging
-from apps import App, action
 
+from apps import App, action
 
 logger = logging.getLogger(__name__)
 
@@ -19,8 +19,9 @@ class SkeletonApp(App):
            device (list[str]): List of associated device names
            
     """
+
     def __init__(self, name=None, device=None):
-        App.__init__(self, name, device)    #Required to call superconstructor
+        App.__init__(self, name, device)  # Required to call superconstructor
 
     @action
     def test_function(self):

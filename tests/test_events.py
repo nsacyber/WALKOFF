@@ -22,7 +22,7 @@ class TestEvents(TestCase):
         self.assertEqual(signal.name, 'name')
         self.assertEqual(signal.event_type, EventType.action)
         self.assertIsInstance(signal.signal, Signal)
-        self.assertEqual(len(WalkoffSignal._signals), 1)
+        self.assertEqual(len(WalkoffSignal._signals), 0)
         self.assertTrue(signal.is_loggable)
 
     def test_walkoff_signal_init_loggable_false(self):

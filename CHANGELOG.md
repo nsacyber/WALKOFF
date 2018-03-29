@@ -2,16 +2,91 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
+## [0.8.0]
+###### 2018-03-22
+
+### Added
+* The ability to use a key-value storage has been created. This is now used to
+  push workflows to the workers as well as to remove global state. Currently
+  two options are available for key-value store, DiskCache, a SQLite-backed
+  key-value storage, and Redis. By default Walkoff will use DiskCache, but it
+  is recommended that users configure and use Redis.
+* The SSEs now use dedicated SseStream objects which are backed by the cache.
+  These objects make constructing and using streams much easier.
+  `walkoff.see.InterfaceSseStream` and `walkoff.sse.FilteredInterfaceSseStream`
+  objects have been made available to use in custom interfaces.
+* A `CaseLogger` object which makes it much easier to log events to the case
+  database has been created.
+
+### Changed
+* The `interfaces.AppBlueprint` used to construct interfaces has been modified
+  to extend from `walkoff.sse.StreamableBlueprint` which in turn extends
+  Flask's Bleuprint. This makes the interface cleaner and more flexible.
+* There have been changes to the `/api/configuration` REST endpoints.
+  * `workflow_path` and `logging_config_file` have been removed
+  * The ability to edit the cache configuration has been added
+  * All changes will only be applied on server restart
+* Refactorings have been done to minimize the amount of global state used
+  throughout Walkoff. Work will continue on this effort.
+* Metrics are now stored in the execution database
+
+### Deprecated
+* `walkoff.helpers.create_sse_event` has been deprecated and will be removed in
+  version 0.10.0. Use `walkoff.sse.SseEvent` or the streams in `walkoff.sse`
+  instead.
+
+### Contributor
+* Testing the backend now requires the additional the dependencies in
+  `requirements-test.txt`
+* The minimum accepted unit test coverage for the Python backend is now 87%
+
+## [0.7.4]
+###### 2018-03-20
+
+### Fixed
+* Bug where some device fields were being deleted on update
+
+## [0.7.3]
+###### 2018-03-14
+
+### Fixed
+* Bug where NO_CONTENT return codes were failing on Werkzeug WSGI 0.14
+
+### Changed
+* All node modules are now bundled into webpack
+
+
+## [0.7.2]
+###### 2018-03-12
+
+### Fixed
+* An unintentional backward-breaking change was made to the format of the
+  dictionary used in the interface dispatcher which sometimes resulted in
+  a dict with a "data" field inside a "data" field. This has been fixed.
+
+
+## [0.7.1]
+###### 2018-03-08
+
+### Changed
+* Improved deserialization in the user interface
+* Empty arrays are omitted from returned execution element JSON structure in
+  the REST API.
+
+### Fixed
+* `PATCH /api/devices` now doesn't validate that all the fields of the device
+  are provided.
+* Fixed dependency bug on GoogleProtocolBuffer version
+
 
 ## [0.7.0]
-###### [unreleased]
-<!-- Commended out bullets are in development -->
+###### 2018-03-07
 ### Added
-<!--* An execution control page is now available on the user interface. This page
+* An execution control page is now available on the user interface. This page
   allows you to start, pause, resume, and abort workflows as well as displays
   the status of all running and pending workflows.
   * With this feature is a new resource named `workflowqueue` which is
-    available through the `/api/workflowqueue` endpoints-->
+    available through the `/api/workflowqueue` endpoints.
 * You now have the ability to use a full set of Boolean logic on conditions.
   This means that on branches and triggers you can specify a list of conditions
   which must all be true (AND operator), or a list of conditions of which any
@@ -22,42 +97,37 @@
 * Playbooks can be exported to and imported from a JSON text file using the new
   `GET /api/playbooks?mode=export` and the `POST /api/playbooks` using a
   `multipart/form-data` body respectively.
-<!--* A new event was created on the notification SSE stream to alert the UI
-  when the current user has deleted a message. -->
 
 ### Changed
 * Significant changes to the REST API
   * We have changed the HTTP verbs used for the REST API to reflect their more
     widely-accepted RESTful usage. Specifically, the POST and PUT verbs have
     been swapped for most of the endpoints.
-  <!--* Workflows are now accessed through the new `/api/workflows` endpoints
-    rather than the `/api/playbooks` endpoints-->
+  * Workflows are now accessed through the new `/api/workflows` endpoints
+    rather than the `/api/playbooks` endpoints
   * The `/api/playbooks` and the `/api/workflows` endpoints now use the UUID
     instead of the name.
   * The `/api/playbook/{id}/copy` and the
     `/api/playbooks/{id}/workflows/{id}/copy` endpoints are now accessed
     through `POST /api/playbooks?source={id_to_copy}` and the
     `POST /api/workflows?source={id_to_copy}` endpoints respectively.
-  <!--* Server-Sent Event streams are now located in the `/api/streams` endpoints-->
+  * Server-Sent Event streams are now located in the `/api/streams` endpoints
   * Errors are now returned using the RFC 7807 Problem Details standard
-  * `/api/devices/import` and `/api/devices/export` endpoints have been
-    removed. Use the new `POST /api/devices` with `multipart/form-data` and
-    `GET /api/devices?mode=export` endpoints respectively.
-  <!--* The field `roles` in the `/api/users` endpoints which describes the list
-    of roles associated with the user has been renamed `role_ids`-->
 * Playbooks, workflows, and their associated execution elements are now stored
   in the database which formerly only held the devices. The both greatly
   increased scalability as well as simplified the interactions between the
   server and the worker processes as well as increased scalability.
 * Paused workflows and workflows awaiting trigger data are now pickled
   (serialized to binary) and stored in a database table. Before, a conditional
-  wait was used to pause the execution of a workflow. By storing the state to
+  wait -was used to pause the execution of a workflow. By storing the state to
   the database, all threads on all worker processes are free to execute
   workflows.
-<!--* Information about the workflow which sent events are now available in both
+* Information about the workflow which sent events are now available in both
   the Google Protocol Buffer messages as well as the arguments to callbacks
-  using the interface event dispatcher.-->
-<!--* All times are stored in UTC time and represented in ISO 8601 format-->
+  using the interface event dispatcher.
+* All times are stored in UTC time and represented in RFC 3339 format
+* The marshmallow object serialization library is now used to serialize and
+  deserialize execution elements instead of our old homemade solution
 
 ### Deprecated
 * The "sender_uids" argument in the interface dispatcher `on_xyz_event`
@@ -66,14 +136,19 @@
 
 ### Removed
 * The `/api/playbooks/{name}/workflows/{name}/save` endpoint has been removed.
-<!--* The `/api/playbooks/{name}/workflows/{name}/{execute/pause/resume}` endpoints
-  have been removed. Use the `/api/workflowqueue` resource instead-->
+* The `/api/playbooks/{name}/workflows/{name}/{execute/pause/resume}` endpoints
+  have been removed. Use the `/api/workflowqueue` resource instead
 * Removed `workflow_version` from the playbooks. This may be added later to
   provide backwards-compatible import functionality to the workflows.
-<!--
+* `/api/devices/import` and `/api/devices/export` endpoints have been
+removed. Use the new `POST /api/devices` with `multipart/form-data` and
+`GET /api/devices?mode=export` endpoints respectively.
+
+
 ### Contributor
-* The minimum accepted unit test coverage for the Python backend is now 84%
--->
+* The minimum accepted unit test coverage for the Python backend is now 86%
+
+
 ## [0.6.7]
 ###### 2018-02-06
 

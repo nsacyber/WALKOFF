@@ -4,10 +4,10 @@ from os import sep
 from os.path import join
 
 import walkoff.appgateway
-import walkoff.config.paths
-from walkoff.helpers import *
+import walkoff.config
 from tests.config import test_apps_path
 from tests.util.assertwrappers import orderless_list_compare
+from walkoff.helpers import *
 from walkoff.server.flaskserver import handle_database_errors, handle_generic_server_error
 
 
@@ -15,14 +15,14 @@ class TestHelperFunctions(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         walkoff.appgateway.cache_apps(test_apps_path)
-        walkoff.config.config.load_app_apis(apps_path=test_apps_path)
+        walkoff.config.load_app_apis(apps_path=test_apps_path)
 
     def setUp(self):
-        self.original_apps_path = walkoff.config.paths.apps_path
-        walkoff.config.paths.apps_path = test_apps_path
+        self.original_apps_path = walkoff.config.Config.APPS_PATH
+        walkoff.config.Config.APPS_PATH = test_apps_path
 
     def tearDown(self):
-        walkoff.config.paths.apps_path = self.original_apps_path
+        walkoff.config.Config.APPS_PATH = self.original_apps_path
 
     @classmethod
     def tearDownClass(cls):
@@ -77,7 +77,7 @@ class TestHelperFunctions(unittest.TestCase):
     def test_import_py_file(self):
         module_name = 'tests.testapps.HelloWorld'
         imported_module = import_py_file(module_name,
-                                         os.path.join(walkoff.config.paths.apps_path, 'HelloWorld', 'main.py'))
+                                         os.path.join(walkoff.config.Config.APPS_PATH, 'HelloWorld', 'main.py'))
         self.assertIsInstance(imported_module, types.ModuleType)
         self.assertEqual(imported_module.__name__, module_name)
         self.assertIn(module_name, sys.modules)
@@ -86,7 +86,8 @@ class TestHelperFunctions(unittest.TestCase):
     def test_import_py_file_invalid(self):
         error_type = IOError if sys.version_info[0] == 2 else OSError
         with self.assertRaises(error_type):
-            import_py_file('some.module.name', os.path.join(walkoff.config.paths.apps_path, 'InvalidAppName', 'main.py'))
+            import_py_file('some.module.name',
+                           os.path.join(walkoff.config.Config.APPS_PATH, 'InvalidAppName', 'main.py'))
 
     def test_import_app_main(self):
         module_name = 'tests.testapps.HelloWorld.main'

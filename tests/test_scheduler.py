@@ -1,6 +1,8 @@
 import unittest
 
 from walkoff.scheduler import *
+from mock import create_autospec, call
+from walkoff.case.logger import CaseLogger
 
 
 class MockWorkflow(object):
@@ -26,18 +28,19 @@ def execute(workflow_id):
 
 class TestScheduler(unittest.TestCase):
     def setUp(self):
-        self.scheduler = Scheduler()
+        self.logger = create_autospec(CaseLogger)
+        self.scheduler = Scheduler(self.logger)
         self.trigger = DateTrigger(run_date='2050-12-31 23:59:59')
         self.trigger2 = DateTrigger(run_date='2050-12-31 23:59:59')
 
-    def test_init(self):
-        self.assertEqual(self.scheduler.id, 'controller')
-
-    def assertSchedulerHasJobs(self, expected_jobs):
+    def assert_scheduler_has_jobs(self, expected_jobs):
         self.assertSetEqual({job.id for job in self.scheduler.scheduler.get_jobs()}, expected_jobs)
 
-    def assertSchedulerStateIs(self, state):
+    def assert_scheduler_state_is(self, state):
         self.assertEqual(self.scheduler.scheduler.state, state)
+
+    def assert_logger_called_with(self, events):
+        self.logger.log.assert_has_calls([call(event, self.scheduler.id) for event in events])
 
     def add_tasks(self, task_id, workflow_ids, trigger):
         self.scheduler.schedule_workflows(task_id, execute, workflow_ids, trigger)
@@ -54,9 +57,12 @@ class TestScheduler(unittest.TestCase):
         self.add_tasks(task_id, workflow_ids, self.trigger2)
         return task_id, workflow_ids
 
+    def test_init(self):
+        self.assertEqual(self.scheduler.id, 'controller')
+
     def test_schedule_workflows(self):
         task_id, workflow_ids = self.add_task_set_one()
-        self.assertSchedulerHasJobs({construct_task_id(task_id, workflow_id) for workflow_id in workflow_ids})
+        self.assert_scheduler_has_jobs({construct_task_id(task_id, workflow_id) for workflow_id in workflow_ids})
         for job in self.scheduler.scheduler.get_jobs():
             self.assertEqual(job.trigger, self.trigger)
 
@@ -118,64 +124,76 @@ class TestScheduler(unittest.TestCase):
 
     def test_start_from_stopped(self):
         self.assertEqual(self.scheduler.start(), STATE_RUNNING)
-        self.assertSchedulerStateIs(STATE_RUNNING)
+        self.assert_logger_called_with([WalkoffEvent.SchedulerStart])
+        self.assert_scheduler_state_is(STATE_RUNNING)
 
     def test_stop_from_stopped(self):
-        self.scheduler.start()
-        self.assertEqual(self.scheduler.stop(), STATE_STOPPED)
-        self.assertSchedulerStateIs(STATE_STOPPED)
+        self.assertEqual(self.scheduler.stop(), 'Scheduler already stopped.')
+        self.logger.log.assert_not_called()
+        self.assert_scheduler_state_is(STATE_STOPPED)
 
     def test_pause_from_stopped(self):
         self.scheduler.start()
         self.assertEqual(self.scheduler.pause(), STATE_PAUSED)
-        self.assertSchedulerStateIs(STATE_PAUSED)
+        self.assert_logger_called_with([WalkoffEvent.SchedulerStart, WalkoffEvent.SchedulerPaused])
+        self.assert_scheduler_state_is(STATE_PAUSED)
 
     def test_resume_from_stopped(self):
         self.scheduler.start()
         self.assertEqual(self.scheduler.resume(), "Scheduler is not in PAUSED state and cannot be resumed.")
-        self.assertSchedulerStateIs(STATE_RUNNING)
+        self.assert_logger_called_with([WalkoffEvent.SchedulerStart])
+        self.assert_scheduler_state_is(STATE_RUNNING)
 
     def test_start_from_running(self):
         self.scheduler.start()
         self.assertEqual(self.scheduler.start(), "Scheduler already running.")
-        self.assertSchedulerStateIs(STATE_RUNNING)
+        self.assert_logger_called_with([WalkoffEvent.SchedulerStart])
+        self.assert_scheduler_state_is(STATE_RUNNING)
 
     def test_stop_from_running(self):
         self.scheduler.start()
         self.assertEqual(self.scheduler.stop(), STATE_STOPPED)
-        self.assertSchedulerStateIs(STATE_STOPPED)
+        self.assert_logger_called_with([WalkoffEvent.SchedulerStart, WalkoffEvent.SchedulerShutdown])
+        self.assert_scheduler_state_is(STATE_STOPPED)
 
     def test_pause_from_running(self):
         self.scheduler.start()
         self.assertEqual(self.scheduler.pause(), STATE_PAUSED)
-        self.assertSchedulerStateIs(STATE_PAUSED)
+        self.assert_logger_called_with([WalkoffEvent.SchedulerStart, WalkoffEvent.SchedulerPaused])
+        self.assert_scheduler_state_is(STATE_PAUSED)
 
     def test_resume_from_running(self):
         self.scheduler.start()
         self.assertEqual(self.scheduler.resume(), "Scheduler is not in PAUSED state and cannot be resumed.")
-        self.assertSchedulerStateIs(STATE_RUNNING)
+        self.assert_logger_called_with([WalkoffEvent.SchedulerStart])
+        self.assert_scheduler_state_is(STATE_RUNNING)
 
     def test_start_from_paused(self):
         self.scheduler.start()
         self.scheduler.pause()
         self.assertEqual(self.scheduler.start(), "Scheduler already running.")
-        self.assertSchedulerStateIs(STATE_PAUSED)
+        self.assert_logger_called_with([WalkoffEvent.SchedulerStart, WalkoffEvent.SchedulerPaused])
+        self.assert_scheduler_state_is(STATE_PAUSED)
 
     def test_stop_from_paused(self):
         self.scheduler.start()
         self.scheduler.pause()
         self.assertEqual(self.scheduler.stop(), STATE_STOPPED)
-        self.assertSchedulerStateIs(STATE_STOPPED)
+        self.assert_logger_called_with(
+            [WalkoffEvent.SchedulerStart, WalkoffEvent.SchedulerPaused, WalkoffEvent.SchedulerShutdown])
+        self.assert_scheduler_state_is(STATE_STOPPED)
 
     def test_pause_from_paused(self):
         self.scheduler.start()
         self.scheduler.pause()
         self.assertEqual(self.scheduler.pause(), "Scheduler already paused.")
-        self.assertSchedulerStateIs(STATE_PAUSED)
+        self.assert_logger_called_with([WalkoffEvent.SchedulerStart, WalkoffEvent.SchedulerPaused])
+        self.assert_scheduler_state_is(STATE_PAUSED)
 
     def test_resume_from_paused(self):
         self.scheduler.start()
         self.scheduler.pause()
         self.assertEqual(self.scheduler.resume(), STATE_RUNNING)
-        self.assertSchedulerStateIs(STATE_RUNNING)
-    
+        self.assert_logger_called_with(
+            [WalkoffEvent.SchedulerStart, WalkoffEvent.SchedulerPaused, WalkoffEvent.SchedulerResumed])
+        self.assert_scheduler_state_is(STATE_RUNNING)

@@ -1,14 +1,12 @@
 import json
 from datetime import datetime
 
+from tests.util import execution_db_help
+from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
 from tests.util.servertestcase import ServerTestCase
-import walkoff.case.database as case_database
-import walkoff.case.subscription
-import walkoff.config.paths
+from walkoff.events import WalkoffEvent
 from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
-from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
-from tests.util import execution_db_help
 from walkoff.events import WalkoffEvent
 
 try:
@@ -20,42 +18,30 @@ except ImportError:
 class TestZmqCommunicationServer(ServerTestCase):
     patch = False
 
-    def setUp(self):
-        walkoff.case.subscription.subscriptions = {}
-        case_database.initialize()
-
     def tearDown(self):
-        execution_db_help.cleanup_device_db()
-        walkoff.case.subscription.clear_subscriptions()
-        for case in case_database.case_db.session.query(case_database.Case).all():
-            case_database.case_db.session.delete(case)
-        case_database.case_db.session.commit()
+        execution_db_help.cleanup_execution_db()
 
     def test_execute_workflow(self):
-        workflow = execution_db_help.load_workflow('testGeneratedWorkflows/test', 'helloWorldWorkflow')
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_ids)
-        start = datetime.utcnow()
+        workflow = execution_db_help.load_workflow('test', 'helloWorldWorkflow')
+        workflow_id = str(workflow.id)
 
-        data = {"workflow_id": str(workflow.id)}
+        data = {"workflow_id": workflow_id}
+
+        result = {'called': True}
+
+        @WalkoffEvent.WorkflowExecutionStart.connect
+        def workflow_started(sender, **data):
+            self.assertEqual(sender['id'], workflow_id)
+            result['called'] = True
 
         response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, data=json.dumps(data),
                                                status_code=SUCCESS_ASYNC, content_type="application/json")
+
         flask_server.running_context.executor.wait_and_reset(1)
-        self.assertIn('id', response)
-        actions = []
-        for id_ in action_ids:
-            actions.extend(executed_actions(id_, start, datetime.utcnow()))
-        self.assertEqual(len(actions), 1)
-        action = actions[0]
-        result = action['data']
-        self.assertEqual(result, {'status': 'Success', 'result': 'REPEATING: Hello World'})
+        self.assertSetEqual(set(response.keys()), {'id'})
 
     def test_execute_workflow_change_arguments(self):
-        workflow = execution_db_help.load_workflow('testGeneratedWorkflows/test', 'helloWorldWorkflow')
-
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_ids)
+        workflow = execution_db_help.load_workflow('test', 'helloWorldWorkflow')
 
         result = {'count': 0}
 

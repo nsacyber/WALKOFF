@@ -1,8 +1,8 @@
 from unittest import TestCase
 
 from apps import App as AppBase
-from walkoff.executiondb.device import App, Device, DeviceField, EncryptedDeviceField
 from tests.util import execution_db_help
+from walkoff.executiondb.device import App, Device, DeviceField, EncryptedDeviceField
 
 
 class TestAppBase(TestCase):
@@ -13,7 +13,7 @@ class TestAppBase(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     def setUp(self):
         from walkoff import executiondb

@@ -1,24 +1,23 @@
 import logging
 
-from sqlalchemy import Column, Integer, ForeignKey, String
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy import Column, Integer, ForeignKey, String, orm
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 
-from walkoff.executiondb import Device_Base
 from walkoff.events import WalkoffEvent
+from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.executionelement import ExecutionElement
 
 logger = logging.getLogger(__name__)
 
 
-class Branch(ExecutionElement, Device_Base):
+class Branch(ExecutionElement, Execution_Base):
     __tablename__ = 'branch'
-    _workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id'))
+    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id'))
     source_id = Column(UUIDType(binary=False), nullable=False)
     destination_id = Column(UUIDType(binary=False), nullable=False)
     status = Column(String(80))
-    condition = relationship('ConditionalExpression', backref=backref('_branch'), cascade='all, delete-orphan',
-                             uselist=False)
+    condition = relationship('ConditionalExpression', cascade='all, delete-orphan', uselist=False)
     priority = Column(Integer)
 
     def __init__(self, source_id, destination_id, id=None, status='Success', condition=None, priority=999):
@@ -44,6 +43,17 @@ class Branch(ExecutionElement, Device_Base):
         self.status = status
         self.priority = priority
         self.condition = condition
+        self._counter = 0
+
+        self.validate()
+
+    @orm.reconstructor
+    def init_on_load(self):
+        """Loads all necessary fields upon Branch being loaded from database"""
+        self._counter = 0
+
+    def validate(self):
+        pass
 
     def execute(self, data_in, accumulator):
         """Executes the Branch object, determining if this Branch should be taken.
@@ -56,6 +66,8 @@ class Branch(ExecutionElement, Device_Base):
             Destination UID for the next Action that should be taken, None if the data_in was not valid
                 for this Branch.
         """
+        self._counter += 1
+        accumulator[self.id] = self._counter
 
         if data_in is not None and data_in.status == self.status:
             if self.condition is None or self.condition.execute(data_in=data_in.result, accumulator=accumulator):
@@ -68,4 +80,3 @@ class Branch(ExecutionElement, Device_Base):
                 return None
         else:
             return None
-

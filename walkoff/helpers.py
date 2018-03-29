@@ -4,11 +4,12 @@ import logging
 import os
 import pkgutil
 import sys
+import warnings
+from datetime import datetime
 from uuid import uuid4
 
-import walkoff.config.config
-import walkoff.config.paths
-from datetime import datetime
+import walkoff.config
+
 try:
     from importlib import reload as reload_module
 except ImportError:
@@ -43,36 +44,14 @@ def import_py_file(module_name, path_to_file):
             if w:
                 mod_name = module_name.replace('.main', '')
                 if not (type(w[-1].category) == type(exceptions.RuntimeWarning) or
-                                        'Parent module \'apps.' + mod_name + '\' not found while handling absolute import' in
-                                w[-1].message):
+                        'Parent module \'apps.' + mod_name + '\' not found while handling absolute import' in
+                        w[-1].message):
                     print(w[-1].message)
     else:
         from importlib import machinery
         loader = machinery.SourceFileLoader(module_name, os.path.abspath(path_to_file))
         imported = loader.load_module(module_name)
     return imported
-
-
-def import_lib(directory, module_name):
-    """Dynamically imports a Python library.
-    
-    Args:
-        directory (str): The directory in which the library is located.
-        module_name (str): The name of the library to be imported.
-        
-    Returns:
-        The module object that was imported.
-    """
-    imported_module = None
-    module_name = '.'.join(['core', directory, module_name])
-    try:
-        imported_module = importlib.import_module(module_name)
-    except ImportError:
-        logger.error('Cannot import module {0}. Returning None'.format(module_name))
-        pass
-    finally:
-
-        return imported_module
 
 
 def construct_module_name_from_path(path):
@@ -94,13 +73,13 @@ def import_app_main(app_name, path=None, reload=False):
     
     Args:
         app_name (str): The name of the App from which to import the main function.
-        path (str, optional): The path to the apps module. Defaults to core.config.paths.apps_path
+        path (str, optional): The path to the apps module. Defaults to walkoff.config.APPS_PATH
         reload (bool, optional): Reload the module if already imported. Defaults to True
     Returns:
         The module object that was imported.
     """
     if path is None:
-        path = walkoff.config.paths.apps_path
+        path = walkoff.config.Config.APPS_PATH
     app_path = os.path.join(path, app_name, 'main.py')
     module_name = construct_module_name_from_path(app_path[:-3])
     try:
@@ -139,27 +118,14 @@ def list_apps(path=None):
         A list of the apps given the apps path or the apps_path in the configuration.
     """
     if path is None:
-        path = walkoff.config.paths.apps_path
+        path = walkoff.config.Config.APPS_PATH
     return __list_valid_directories(path)
 
 
 def list_interfaces(path=None):
     if path is None:
-        path = walkoff.config.paths.interfaces_path
+        path = walkoff.config.Config.INTERFACES_PATH
     return __list_valid_directories(path)
-
-
-def list_class_functions(class_name):
-    """Get the functions for a python Class.
-    
-    Args:
-        class_name (str): The name of the python Class from which to get the functions.
-        
-    Returns:
-        The list of functions for a given python Class.
-    """
-    return [field for field in dir(class_name) if (not field.startswith('_')
-                                                   and callable(getattr(class_name, field)))]
 
 
 def locate_playbooks_in_directory(path=None):
@@ -171,45 +137,13 @@ def locate_playbooks_in_directory(path=None):
     Returns:
         A list of workflow names from the specified path, or the directory specified in the configuration.
     """
-    path = path if path is not None else walkoff.config.paths.workflows_path
+    path = path if path is not None else walkoff.config.WORKFLOWS_PATH
     if os.path.exists(path):
         return [workflow for workflow in os.listdir(path) if (os.path.isfile(os.path.join(path, workflow))
                                                               and workflow.endswith('.playbook'))]
     else:
         logger.warning('Could not locate any workflows in directory {0}. Directory does not exist'.format(path))
         return []
-
-
-def get_workflow_names_from_file(filename):
-    """Get a list of workflow names in a given file.
-    
-    Args:
-        filename (str): The filename from which to locate the workflows.
-        
-    Returns:
-        A list of workflow names from the specified file, if the file exists.
-    """
-    if os.path.isfile(filename):
-        with open(filename, 'r') as playbook_file:
-            playbook = playbook_file.read()
-            playbook = json.loads(playbook)
-            return [workflow['name'] for workflow in playbook['workflows']]
-    return []
-
-
-def combine_dicts(x, y):
-    """Combines two dictionaries into one.
-    
-    Args:
-        x (dict): One dictionary to be merged.
-        y (dict): The other dictionary to be merged with x.
-        
-    Returns:
-        The merged dictionary.
-    """
-    z = x.copy()
-    z.update(y)
-    return z
 
 
 def import_submodules(package, recursive=False):
@@ -271,7 +205,7 @@ def get_app_action_api(app, action):
         (tuple(str, dict)) The name of the function to execute and its parameters
     """
     try:
-        app_api = walkoff.config.config.app_apis[app]
+        app_api = walkoff.config.app_apis[app]
     except KeyError:
         raise UnknownApp(app)
     else:
@@ -295,7 +229,7 @@ def get_app_action_default_return(app, action):
         (str): The name of the default return code or Success if none defined
     """
     try:
-        app_api = walkoff.config.config.app_apis[app]
+        app_api = walkoff.config.app_apis[app]
     except KeyError:
         raise UnknownApp(app)
     else:
@@ -322,7 +256,7 @@ def get_app_action_return_is_failure(app, action, status):
         (boolean): True if status is a failure code, false otherwise
     """
     try:
-        app_api = walkoff.config.config.app_apis[app]
+        app_api = walkoff.config.app_apis[app]
     except KeyError:
         raise UnknownApp(app)
     else:
@@ -338,7 +272,7 @@ def get_app_action_return_is_failure(app, action, status):
 
 def get_app_device_api(app, device_type):
     try:
-        app_api = walkoff.config.config.app_apis[app]
+        app_api = walkoff.config.app_apis[app]
     except KeyError:
         raise UnknownApp(app)
     else:
@@ -358,7 +292,7 @@ def split_api_params(api, data_param_name):
 
 def get_condition_api(app, condition):
     try:
-        app_api = walkoff.config.config.app_apis[app]
+        app_api = walkoff.config.app_apis[app]
     except KeyError:
         raise UnknownApp(app)
     else:
@@ -372,7 +306,7 @@ def get_condition_api(app, condition):
 
 def get_transform_api(app, transform):
     try:
-        app_api = walkoff.config.config.app_apis[app]
+        app_api = walkoff.config.app_apis[app]
     except KeyError:
         raise UnknownApp(app)
     else:
@@ -415,8 +349,9 @@ class UnknownDevice(Exception):
 
 
 class InvalidArgument(Exception):
-    def __init__(self, message):
+    def __init__(self, message, errors=None):
         self.message = message
+        self.errors = errors or {}
         super(InvalidArgument, self).__init__(self.message)
 
 
@@ -431,9 +366,10 @@ class UnknownTransform(UnknownFunction):
 
 
 class InvalidExecutionElement(Exception):
-    def __init__(self, id_, name, message):
+    def __init__(self, id_, name, message, errors=None):
         self.id = id_
         self.name = name
+        self.errors = errors or {}
         super(InvalidExecutionElement, self).__init__(message)
 
 
@@ -465,6 +401,9 @@ def convert_action_argument(argument):
 
 
 def create_sse_event(event_id=None, event=None, data=None):
+    warnings.warn('create_sse_event is deprecated. Please use the walkoff.sse.SseStream class to construct SSE streams.'
+                  ' This function will be removed in version 0.10.0',
+                  DeprecationWarning)
     if data is None and event_id is None and event is None:
         return ''
     response = ''
@@ -484,16 +423,16 @@ def create_sse_event(event_id=None, event=None, data=None):
 def regenerate_workflow_ids(workflow):
     workflow['id'] = str(uuid4())
     action_mapping = {}
-
-    for action in workflow['actions']:
+    actions = workflow.get('actions', [])
+    for action in actions:
         prev_id = action['id']
         action['id'] = str(uuid4())
         action_mapping[prev_id] = action['id']
 
-    for action in workflow['actions']:
+    for action in actions:
         regenerate_ids(action, action_mapping, False)
 
-    for branch in workflow['branches']:
+    for branch in workflow.get('branches', []):
         branch['source_id'] = action_mapping[branch['source_id']]
         branch['destination_id'] = action_mapping[branch['destination_id']]
         regenerate_ids(branch, action_mapping)
@@ -501,24 +440,27 @@ def regenerate_workflow_ids(workflow):
     workflow['start'] = action_mapping[workflow['start']]
 
 
-def regenerate_ids(json_in, action_mapping=None, regenerate_id=True):
+def regenerate_ids(json_in, action_mapping=None, regenerate_id=True, is_arguments=False):
     if regenerate_id:
         json_in['id'] = str(uuid4())
+    if is_arguments:
+        json_in.pop('id', None)
 
     if 'reference' in json_in and json_in['reference']:
         json_in['reference'] = action_mapping[json_in['reference']]
 
     for field, value in json_in.items():
         if isinstance(value, list):
-            __regenerate_ids_of_list(value, action_mapping)
+            is_arguments = field == 'arguments'
+            __regenerate_ids_of_list(value, action_mapping, is_arguments=is_arguments)
         elif isinstance(value, dict):
             regenerate_ids(value, action_mapping=action_mapping)
 
 
-def __regenerate_ids_of_list(value, action_mapping):
+def __regenerate_ids_of_list(value, action_mapping, is_arguments=False):
     for list_element in (list_element_ for list_element_ in value
                          if isinstance(list_element_, dict)):
-        regenerate_ids(list_element, action_mapping=action_mapping)
+        regenerate_ids(list_element, action_mapping=action_mapping, is_arguments=is_arguments)
 
 
 def utc_as_rfc_datetime(timestamp):
@@ -527,3 +469,10 @@ def utc_as_rfc_datetime(timestamp):
 
 def timestamp_to_datetime(time):
     return datetime.strptime(time, '%Y-%m-%dT%H:%M:%S.%fZ')
+
+
+def json_dumps_or_string(val):
+    try:
+        return json.dumps(val)
+    except (ValueError, TypeError):
+        return str(val)

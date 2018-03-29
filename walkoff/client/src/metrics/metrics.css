@@ -1,0 +1,16 @@
+#main.metricsMain {
+	padding: 10px 15px;
+}
+
+.metricsMain .box-title {
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	font-weight: bold;
+}
+
+.metricsMain .form-control.input-sm {
+	margin-left: 10px;
+}
+
+.metricsMain ngx-datatable datatable-body datatable-body-row datatable-body-cell .datatable-body-cell-label {
+	white-space: initial;
+}

@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Response } from '@angular/http';
-
 import { JwtHttp } from 'angular2-jwt-refresh';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
+import { plainToClass } from 'class-transformer';
 
 import { Case } from '../models/case/case';
 import { CaseEvent } from '../models/case/caseEvent';
@@ -22,7 +22,7 @@ export class CasesService {
 		return this.authHttp.get('/api/cases')
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Case[])
+			.then((data: object[]) => plainToClass(Case, data))
 			.catch(this.handleError);
 	}
 
@@ -34,7 +34,7 @@ export class CasesService {
 		return this.authHttp.get(`/api/cases/${caseId}/events`)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as CaseEvent[])
+			.then((data: object[]) => plainToClass(CaseEvent, data))
 			.catch(this.handleError);
 	}
 
@@ -46,7 +46,7 @@ export class CasesService {
 		return this.authHttp.post('/api/cases', caseToAdd)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Case)
+			.then((data: object) => plainToClass(Case, data))
 			.catch(this.handleError);
 	}
 
@@ -58,7 +58,7 @@ export class CasesService {
 		return this.authHttp.put('/api/cases', caseToEdit)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Case)
+			.then((data: object) => plainToClass(Case, data))
 			.catch(this.handleError);
 	}
 
@@ -81,7 +81,7 @@ export class CasesService {
 		return this.authHttp.get('/api/availablesubscriptions')
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as AvailableSubscription[])
+			.then((data: object[]) => plainToClass(AvailableSubscription, data))
 			.catch(this.handleError);
 	}
 
@@ -92,6 +92,7 @@ export class CasesService {
 		return this.authHttp.get('/api/playbooks?full=true')
 			.toPromise()
 			.then(this.extractData)
+			.then((data: object[]) => plainToClass(Playbook, data))
 			.catch(this.handleError);
 	}
 

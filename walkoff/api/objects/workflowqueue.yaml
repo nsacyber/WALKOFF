@@ -1,32 +1,6 @@
 WorkflowStatus:
   type: object
-  allOf:
-    - $ref: '#/definitions/WorkflowIdentification'
-    - $ref: '#/definitions/WorkflowTimestamp'
-    - type: object
-      properties:
-        current_action:
-          description: The currently executing action
-          $ref: '#/definitions/ActionIdentification'
-
-FullWorkflowStatus:
-  type: object
-  allOf:
-    - $ref: '#/definitions/WorkflowIdentification'
-    - $ref: '#/definitions/WorkflowTimestamp'
-    - type: object
-      required: [action_statuses]
-      properties:
-        action_statuses:
-          description: The statuses of the workflow actions
-          type: array
-          items:
-            $ref: '#/definitions/ActionStatus'
-
-WorkflowIdentification:
-  type: object
-  required: [execution_id, workflow_id, name]
-  description: A descriptive identification of a workflow
+  required: [execution_id, workflow_id, name, status]
   properties:
     execution_id:
       $ref: '#/definitions/Uuid'
@@ -37,12 +11,6 @@ WorkflowIdentification:
       type: string
       example: WorkflowName
       readOnly: true
-
-WorkflowTimestamp:
-  type: object
-  description: The status and timestamps for an executing or executed workflow
-  required: [status]
-  properties:
     status:
       description: The current status of the workflow
       type: string
@@ -52,20 +20,97 @@ WorkflowTimestamp:
       description: The timestamp of the start of workflow execution
       type: string
       format: date-time
-      example: '2017-05-24T00:42:22.934058'
+      example: '2017-05-24T00:42:22.934058Z'
       readOnly: true
     completed_at:
       description: The timestamp of the end of workflow execution
       type: string
       format: date-time
-      example: '2017-05-24T00:42:22.934058'
+      example: '2017-05-24T00:42:22.934058Z'
+    current_action:
+      description: The currently executing action
+      $ref: '#/definitions/ActionIdentification'
+
+FullWorkflowStatus:
+  type: object
+  required: [action_statuses, execution_id, workflow_id, name, status]
+  properties:
+    execution_id:
+      $ref: '#/definitions/Uuid'
+    workflow_id:
+      $ref: '#/definitions/Uuid'
+    name:
+      description: The name of the workflow.
+      type: string
+      example: WorkflowName
+      readOnly: true
+    status:
+      description: The current status of the workflow
+      type: string
+      enum: ['pending', 'running', 'paused', 'awaiting_data', 'completed', 'aborted']
+      readOnly: true
+    started_at:
+      description: The timestamp of the start of workflow execution
+      type: string
+      format: date-time
+      example: '2017-05-24T00:42:22.934058Z'
+      readOnly: true
+    completed_at:
+      description: The timestamp of the end of workflow execution
+      type: string
+      format: date-time
+      example: '2017-05-24T00:42:22.934058Z'
+    action_statuses:
+      description: The statuses of the workflow actions
+      type: array
+      items:
+        $ref: '#/definitions/ActionStatus'
 
 ActionStatus:
   type: object
   description: The status of an action execution
-  allOf:
-    - $ref: '#/definitions/ActionIdentification'
-    - $ref: '#/definitions/ActionStatusDetails'
+  required: [action_id, execution_id, name, action_name, app_name, status, started_at]
+  properties:
+    execution_id:
+      $ref: '#/definitions/Uuid'
+    action_id:
+      $ref: '#/definitions/Uuid'
+    name:
+      description: The name of the action
+      type: string
+      example: 'This One action'
+      readOnly: true
+    app_name:
+      description: The name of the app associated with the action
+      type: string
+      example: ThingGetter
+      readOnly: true
+    action_name:
+      description: The name of the action take by the action
+      type: string
+      example: get that thing
+      readOnly: true
+    status:
+      description: The status of the workflow
+      type: string
+      enum: ['executing', 'awaiting_data', 'success', 'failure', 'aborted']
+      readOnly: true
+    result:
+      description: The result of the action
+      type: object
+      readOnly: true
+    started_at:
+      description: The timestamp of when the action started
+      type: string
+      format: date-time
+      example: '2017-05-24T00:42:22.934058Z'
+      readOnly: true
+    completed_at:
+      description: The timestamp of when the action completed
+      type: string
+      format: date-time
+      example: '2017-05-24T00:43:26.930892Z'
+      readOnly: true
 
 ActionIdentification:
   type: object
@@ -100,7 +145,7 @@ ActionStatusDetails:
     status:
       description: The status of the workflow
       type: string
-      enum: ['executing', 'awaiting_data', 'paused', 'success', 'failure']
+      enum: ['executing', 'awaiting_data', 'success', 'failure', 'aborted']
       readOnly: true
     result:
       description: The result of the action
@@ -110,13 +155,13 @@ ActionStatusDetails:
       description: The timestamp of when the action started
       type: string
       format: date-time
-      example: '2017-05-24T00:42:22.934058'
+      example: '2017-05-24T00:42:22.934058Z'
       readOnly: true
     completed_at:
       description: The timestamp of when the action completed
       type: string
       format: date-time
-      example: '2017-05-24T00:43:26.930892'
+      example: '2017-05-24T00:43:26.930892Z'
       readOnly: true
 
 ExecuteWorkflow:
@@ -127,8 +172,7 @@ ExecuteWorkflow:
       $ref: '#/definitions/Uuid'
     start:
       description: The ID of the starting action
-      type: string
-      format: uuid
+      $ref: '#/definitions/Uuid'
     arguments:
       type: array
       items:

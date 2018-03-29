@@ -1,10 +1,8 @@
 import json
 
-import apps
-import walkoff.appgateway
-import walkoff.config.config
-import walkoff.config.paths
 import tests.config
+import walkoff.appgateway
+import walkoff.config
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
 from walkoff.server.endpoints.appapi import *
@@ -12,14 +10,14 @@ from walkoff.server.endpoints.appapi import *
 
 class TestAppApiServerFuncs(ServerTestCase):
     def setUp(self):
-        self.original_apps_path = walkoff.config.paths.apps_path
-        walkoff.config.paths.apps_path = tests.config.test_apps_path
+        self.original_apps_path = walkoff.config.Config.APPS_PATH
+        walkoff.config.Config.APPS_PATH = tests.config.test_apps_path
         walkoff.appgateway.clear_cache()
         walkoff.appgateway.cache_apps(tests.config.test_apps_path)
 
     def tearDown(self):
-        walkoff.config.paths.apps_path = self.original_apps_path
-        walkoff.config.config.app_apis.pop('TestApp', None)
+        walkoff.config.Config.APPS_PATH = self.original_apps_path
+        walkoff.config.app_apis.pop('TestApp', None)
 
     def test_read_all_apps(self):
         expected_apps = ['HelloWorldBounded', 'DailyQuote', 'HelloWorld']
@@ -69,18 +67,21 @@ class TestAppApiServerFuncs(ServerTestCase):
                     {'status': 'Return2', 'schema': {'type': 'number', 'minimum': 10}},
                     {'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'},
                     {'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'},
-                    {'status': 'EventTimedOut', 'failure': True, 'description': 'Action timed out out waiting for event'}]
+                    {'status': 'EventTimedOut', 'failure': True,
+                     'description': 'Action timed out out waiting for event'}]
         formatted = format_returns(returns, with_event=True)
         self.assertEqual(len(formatted), len(expected))
         for return_ in formatted:
             self.assertIn(return_, expected)
 
     def test_format_app_action_api(self):
-        action_api = walkoff.config.config.app_apis['HelloWorldBounded']['actions']['pause']
+        action_api = walkoff.config.app_apis['HelloWorldBounded']['actions']['pause']
         expected = {
             'returns': [{'status': 'Success', 'description': 'successfully paused', 'schema': {'type': 'number'}},
-                        {'status': 'UnhandledException', 'failure': True, 'description': 'Exception occurred in action'},
-                        {'status': 'InvalidInput', 'failure': True, 'description': 'Input into the action was invalid'}],
+                        {'status': 'UnhandledException', 'failure': True,
+                         'description': 'Exception occurred in action'},
+                        {'status': 'InvalidInput', 'failure': True,
+                         'description': 'Input into the action was invalid'}],
             'run': 'main.Main.pause',
             'description': 'Pauses execution',
             'parameters': [

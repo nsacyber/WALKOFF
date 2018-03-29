@@ -2,14 +2,18 @@ import json
 import os
 
 import walkoff.case.database as case_database
-import walkoff.case.subscription as case_subs
-from walkoff.case.subscription import set_subscriptions, clear_subscriptions
+from walkoff.case.subscription import Subscription
 from walkoff.server.returncodes import *
 from walkoff.serverdb.casesubscription import CaseSubscription
 from walkoff.extensions import db
+from walkoff.server.endpoints.cases import convert_subscriptions, split_subscriptions
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
 from tests.config import test_apps_path
+from uuid import uuid4
+from mock import create_autospec, patch, call
+from walkoff.case.logger import CaseLogger
+import walkoff.server.flaskserver as server
 
 
 class TestCaseServer(ServerTestCase):
@@ -26,20 +30,30 @@ class TestCaseServer(ServerTestCase):
                        'case4': {'id1': ['a', 'b']}}
         self.cases_all = dict(self.cases1)
         self.cases_all.update(self.cases2)
+        self.logger = create_autospec(CaseLogger)
+        server.running_context.case_logger = self.logger
 
     def tearDown(self):
-        case_database.case_db.tear_down()
-        clear_subscriptions()
+        for case in case_database.case_db.session.query(case_database.Case).all():
+            case_database.case_db.session.delete(case)
+        case_database.case_db.commit()
         for case in CaseSubscription.query.all():
             db.session.delete(case)
         db.session.commit()
         if os.path.exists(os.path.join(test_apps_path, 'case.json')):
             os.remove(os.path.join(test_apps_path, 'case.json'))
 
-    def __basic_case_setup(self):
-        set_subscriptions(self.cases_all)
+    def create_case(self, name):
+        response = json.loads(
+            self.app.post(
+                'api/cases',
+                headers=self.headers,
+                data=json.dumps({'name': name}),
+                content_type='application/json').get_data(as_text=True))
+        case2_id = response['id']
+        return case2_id
 
-    def test_add_case_no_existing_cases(self):
+    def test_create_case(self):
         data = {'name': 'case1', 'note': 'Test'}
         response = self.post_with_status_check('/api/cases', headers=self.headers, data=json.dumps(data),
                                                content_type='application/json', status_code=OBJECT_CREATED)
@@ -52,15 +66,44 @@ class TestCaseServer(ServerTestCase):
         case = cases_config[0]
         self.assertEqual(case.name, 'case1')
         self.assertEqual(case.subscriptions, [])
-        self.assertDictEqual(case_subs.subscriptions, {'case1': {}})
 
-    def test_add_case_existing_cases(self):
-        set_subscriptions(self.cases1)
-        response = self.post_with_status_check('api/cases', headers=self.headers, data=json.dumps({'name': 'case3'}),
-                                               status_code=OBJECT_CREATED, content_type='application/json')
-        self.assertEqual(response, {'id': 1, 'name': 'case3', 'note': '', 'subscriptions': []})
+    def test_convert_subscriptions_empty_list(self):
+        self.assertListEqual(convert_subscriptions([]), [])
+
+    def test_convert_subscriptions(self):
+        self.assertEqual(
+            convert_subscriptions([{'id': 1, 'events': ['a', 'b']}, {'id': 2, 'events': ['b', 'c', 'd', 'e']}]),
+            [Subscription(1, ['a', 'b']), Subscription(2, ['b', 'c', 'd', 'e'])]
+        )
+
+    def test_split_subscriptions_empty_list(self):
+        self.assertTupleEqual(split_subscriptions([]), ([], None))
+
+    def test_split_subscriptions_no_controller(self):
+        self.assertTupleEqual(
+            split_subscriptions([Subscription(1, ['a', 'b']), Subscription(2, ['b', 'c', 'd', 'e'])]),
+            ([Subscription(1, ['a', 'b']), Subscription(2, ['b', 'c', 'd', 'e'])], None)
+        )
+
+    def test_split_subscriptions_with_controller(self):
+        self.assertTupleEqual(
+            split_subscriptions(
+                [Subscription(1, ['a']), Subscription('controller', ['d']), Subscription(2, ['b', 'c'])]),
+            ([Subscription(1, ['a']), Subscription(2, ['b', 'c'])], Subscription('controller', ['d']))
+        )
+
+    def test_create_case_existing_cases(self):
+        data = json.dumps({'name': 'case3'})
+        self.app.post('api/cases', headers=self.headers, data=data, content_type='application/json')
+        self.post_with_status_check(
+            'api/cases',
+            headers=self.headers,
+            data=data,
+            status_code=OBJECT_EXISTS_ERROR,
+            content_type='application/json')
+
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
-        expected_cases = ['case1', 'case2', 'case3']
+        expected_cases = ['case3']
         orderless_list_compare(self, cases, expected_cases)
         cases_config = CaseSubscription.query.all()
         self.assertEqual(len(cases_config), 1)
@@ -68,107 +111,110 @@ class TestCaseServer(ServerTestCase):
         for case in cases_config:
             self.assertEqual(case.subscriptions, [])
         self.cases1.update({'case1': {}})
-        self.assertDictEqual(case_subs.subscriptions, self.cases1)
 
-    def test_add_case_duplicate_case_out_of_sync(self):
-        set_subscriptions({'case1': {}})
-        expected_json = {'id': 1, 'name': 'case1', 'note': '', 'subscriptions': []}
-        response = self.post_with_status_check('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
-                                               status_code=OBJECT_CREATED, content_type='application/json')
-        self.assertEqual(response, expected_json)
+    @patch.object(server.running_context.executor, 'create_case')
+    def test_create_case_with_subscriptions_no_controller(self, mock_create):
+        uid = str(uuid4())
 
-        cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
-        expected_cases = ['case1']
-        orderless_list_compare(self, cases, expected_cases)
-        cases_config = CaseSubscription.query.all()
-        self.assertEqual(len(cases_config), 1)
-        orderless_list_compare(self, [case.name for case in cases_config], ['case1'])
-        for case in cases_config:
-            self.assertEqual(case.subscriptions, [])
-        self.assertDictEqual(case_subs.subscriptions, {'case1': {}})
-
-    def test_add_case_duplicate_case_in_sync(self):
-        set_subscriptions({'case1': {}})
-        self.app.post('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
-                      content_type='application/json')
-        self.post_with_status_check('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
-                                    status_code=OBJECT_EXISTS_ERROR, content_type='application/json')
-
-        cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
-        expected_cases = ['case1']
-        orderless_list_compare(self, cases, expected_cases)
-        cases_config = CaseSubscription.query.all()
-        self.assertEqual(len(cases_config), 1)
-        orderless_list_compare(self, [case.name for case in cases_config], ['case1'])
-        for case in cases_config:
-            self.assertEqual(case.subscriptions, [])
-        self.assertDictEqual(case_subs.subscriptions, {'case1': {}})
-
-    def test_add_case_with_subscriptions(self):
-        subscription = {'id': 'id1', 'events': ['a', 'b', 'c']}
+        subscription = {'id': uid, 'events': ['a', 'b', 'c']}
         data = {'name': 'case1', 'note': 'Test', 'subscriptions': [subscription]}
-        response = self.post_with_status_check('/api/cases', headers=self.headers, data=json.dumps(data),
-                                               content_type='application/json', status_code=OBJECT_CREATED)
-        self.assertEqual(response, {'id': 1, 'name': 'case1', 'note': 'Test',
-                                    'subscriptions': [{'id': 'id1', 'events': ['a', 'b', 'c']}]})
+        response = self.post_with_status_check(
+            '/api/cases',
+            headers=self.headers,
+            data=json.dumps(data),
+            content_type='application/json',
+            status_code=OBJECT_CREATED)
+        self.assertEqual(
+            response,
+            {'id': 1, 'name': 'case1', 'note': 'Test', 'subscriptions': [{'id': uid, 'events': ['a', 'b', 'c']}]})
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case1']
         orderless_list_compare(self, cases, expected_cases)
         cases_config = CaseSubscription.query.all()
         self.assertEqual(len(cases_config), 1)
         orderless_list_compare(self, [case.name for case in cases_config], ['case1'])
-        self.assertDictEqual(case_subs.subscriptions, {'case1': {'id1': ['a', 'b', 'c']}})
+        mock_create.assert_called_once_with(1, [Subscription(uid, ['a', 'b', 'c'])])
 
-    def test_display_cases_typical(self):
-        response = json.loads(self.app.post('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
-                                            content_type='application/json').get_data(as_text=True))
-        case1_id = response['id']
-        response = json.loads(self.app.post('api/cases', headers=self.headers,
-                                            data=json.dumps({'name': 'case2', "note": 'note1'}),
-                                            content_type='application/json').get_data(as_text=True))
+    @patch.object(server.running_context.executor, 'create_case')
+    def test_create_case_with_subscriptions_with_controller(self, mock_create):
+        uid = str(uuid4())
+
+        subscriptions = [{'id': uid, 'events': ['a', 'b', 'c']}, {'id': 'controller', 'events': ['a']}]
+        data = {'name': 'case1', 'note': 'Test', 'subscriptions': subscriptions}
+        response = self.post_with_status_check(
+            '/api/cases',
+            headers=self.headers,
+            data=json.dumps(data),
+            content_type='application/json',
+            status_code=OBJECT_CREATED)
+        self.assertEqual(
+            response,
+            {'id': 1, 'name': 'case1', 'note': 'Test', 'subscriptions': subscriptions})
+        cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
+        expected_cases = ['case1']
+        orderless_list_compare(self, cases, expected_cases)
+        cases_config = CaseSubscription.query.all()
+        self.assertEqual(len(cases_config), 1)
+        orderless_list_compare(self, [case.name for case in cases_config], ['case1'])
+        mock_create.assert_called_once_with(1, [Subscription(uid, ['a', 'b', 'c'])])
+        self.logger.add_subscriptions.assert_called_once()
+
+    def test_read_cases_typical(self):
+        case1_id = self.create_case('case1')
+        response = json.loads(
+            self.app.post(
+                'api/cases',
+                headers=self.headers,
+                data=json.dumps({'name': 'case2', "note": 'note1'}),
+                content_type='application/json').get_data(as_text=True))
         case2_id = response['id']
 
-        response = json.loads(self.app.post('api/cases', headers=self.headers,
-                                            data=json.dumps({'name': 'case3', "note": 'note2'}),
-                                            content_type='application/json').get_data(as_text=True))
+        response = json.loads(
+            self.app.post(
+                'api/cases',
+                headers=self.headers,
+                data=json.dumps({'name': 'case3', "note": 'note2'}),
+                content_type='application/json').get_data(as_text=True))
         case3_id = response['id']
         response = self.get_with_status_check('/api/cases', headers=self.headers)
-        expected_response = [{'note': '', 'subscriptions': [], 'id': case1_id, 'name': 'case1'},
-                             {'note': 'note1', 'subscriptions': [], 'id': case2_id, 'name': 'case2'},
-                             {'note': 'note2', 'subscriptions': [], 'id': case3_id, 'name': 'case3'}]
+        expected_response = [
+            {'note': '', 'subscriptions': [], 'id': case1_id, 'name': 'case1'},
+            {'note': 'note1', 'subscriptions': [], 'id': case2_id, 'name': 'case2'},
+            {'note': 'note2', 'subscriptions': [], 'id': case3_id, 'name': 'case3'}]
         for case in response:
             self.assertIn(case, expected_response)
 
-    def test_display_cases_none(self):
+    def test_read_cases_none(self):
         response = self.get_with_status_check('/api/cases', headers=self.headers)
         self.assertListEqual(response, [])
 
-    def test_display_case_not_found(self):
-        self.get_with_status_check('/api/cases/404',
-                                   error='Case does not exist.',
-                                   headers=self.headers,
-                                   status_code=OBJECT_DNE_ERROR)
+    def test_read_case_not_found(self):
+        self.get_with_status_check(
+            '/api/cases/404',
+            error='Case does not exist.',
+            headers=self.headers,
+            status_code=OBJECT_DNE_ERROR)
 
-    def test_delete_case_only_case(self):
-        response = json.loads(self.app.post('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
-                                            content_type='application/json').get_data(as_text=True))
-        case_id = response['id']
-        response = self.delete_with_status_check('api/cases/{0}'.format(case_id), headers=self.headers,
-                                                 status_code=NO_CONTENT)
+    @patch.object(server.running_context.executor, 'delete_case')
+    def test_delete_case_only_case(self, mock_delete):
+        case_id = self.create_case('case1')
+        self.delete_with_status_check('api/cases/{0}'.format(case_id), headers=self.headers, status_code=NO_CONTENT)
 
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = []
         orderless_list_compare(self, cases, expected_cases)
         cases_config = CaseSubscription.query.all()
         self.assertListEqual(cases_config, [])
-        self.assertDictEqual(case_subs.subscriptions, {})
+        mock_delete.assert_called_once_with(case_id)
 
-    def test_delete_case(self):
-        response = json.loads(self.app.post('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
-                                            content_type='application/json').get_data(as_text=True))
-        case1_id = response['id']
-        self.app.post('api/cases', headers=self.headers, data=json.dumps({'name': 'case2'}),
-                      content_type='application/json')
+    @patch.object(server.running_context.executor, 'delete_case')
+    def test_delete_case(self, mock_delete):
+        case1_id = self.create_case('case1')
+        self.app.post(
+            'api/cases',
+            headers=self.headers,
+            data=json.dumps({'name': 'case2'}),
+            content_type='application/json')
         self.delete_with_status_check('api/cases/{0}'.format(case1_id), headers=self.headers, status_code=NO_CONTENT)
 
         cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
@@ -180,18 +226,17 @@ class TestCaseServer(ServerTestCase):
 
         self.assertEqual(cases_config[0].name, 'case2')
         self.assertEqual(cases_config[0].subscriptions, [])
-        self.assertDictEqual(case_subs.subscriptions, {'case2': {}})
+        mock_delete.assert_called_once_with(case1_id)
 
-    def test_delete_case_invalid_case(self):
-        set_subscriptions(self.cases1)
-        self.app.post('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
-                      content_type='application/json')
-        self.app.post('api/cases', headers=self.headers, data=json.dumps({'name': 'case2'}),
-                      content_type='application/json')
-        self.delete_with_status_check('api/cases/3',
-                                      error='Case does not exist.',
-                                      headers=self.headers,
-                                      status_code=OBJECT_DNE_ERROR)
+    @patch.object(server.running_context.executor, 'delete_case')
+    def test_delete_case_invalid_case(self, mock_delete):
+        self.create_case('case1')
+        self.create_case('case2')
+        self.delete_with_status_check(
+            'api/cases/3',
+            error='Case does not exist.',
+            headers=self.headers,
+            status_code=OBJECT_DNE_ERROR)
 
         db_cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = list(self.cases1.keys())
@@ -201,13 +246,15 @@ class TestCaseServer(ServerTestCase):
         orderless_list_compare(self, [case.name for case in cases_config], ['case1', 'case2'])
         for case in cases_config:
             self.assertEqual(case.subscriptions, [])
-        self.assertDictEqual(case_subs.subscriptions, self.cases1)
+        mock_delete.assert_not_called()
 
-    def test_delete_case_no_cases(self):
-        self.delete_with_status_check('api/cases/404',
-                                      error='Case does not exist.',
-                                      headers=self.headers,
-                                      status_code=OBJECT_DNE_ERROR)
+    @patch.object(server.running_context.executor, 'delete_case')
+    def test_delete_case_no_cases(self, mock_delete):
+        self.delete_with_status_check(
+            'api/cases/404',
+            error='Case does not exist.',
+            headers=self.headers,
+            status_code=OBJECT_DNE_ERROR)
 
         db_cases = [case.name for case in case_database.case_db.session.query(case_database.Case).all()]
         expected_cases = []
@@ -215,84 +262,120 @@ class TestCaseServer(ServerTestCase):
 
         cases_config = CaseSubscription.query.all()
         self.assertListEqual(cases_config, [])
+        mock_delete.assert_not_called()
 
-    def put_patch_test(self, verb):
+    def put_patch_test(self, verb, mock_update):
+        uid = str(uuid4())
         send_func = self.put_with_status_check if verb == 'put' else self.patch_with_status_check
-        response = json.loads(self.app.post('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
-                                            content_type='application/json').get_data(as_text=True))
+        response = json.loads(
+            self.app.post(
+                'api/cases',
+                headers=self.headers,
+                data=json.dumps({'name': 'case1'}),
+                content_type='application/json').get_data(as_text=True))
         case1_id = response['id']
-        self.app.post('api/cases', headers=self.headers, data=json.dumps({'name': 'case2'}),
-                      content_type='application/json')
+        self.app.post(
+            'api/cases',
+            headers=self.headers,
+            data=json.dumps({'name': 'case2'}),
+            content_type='application/json')
+        subscriptions = [{"id": uid, "events": ['a', 'b', 'c']}, {'id': 'controller', 'events': ['a']}]
         data = {"name": "renamed",
                 "note": "note1",
                 "id": case1_id,
-                "subscriptions": [{"id": 'id1', "events": ['a', 'b', 'c']}]}
-        response = send_func('api/cases', data=json.dumps(data), headers=self.headers,
-                             content_type='application/json', status_code=SUCCESS)
+                "subscriptions": subscriptions}
+        response = send_func(
+            'api/cases',
+            data=json.dumps(data),
+            headers=self.headers,
+            content_type='application/json',
+            status_code=SUCCESS)
 
-        self.assertDictEqual(response, {'note': 'note1', 'subscriptions': [{"id": 'id1', "events": ['a', 'b', 'c']}],
-                                        'id': 1, 'name': 'renamed'})
+        self.assertDictEqual(
+            response,
+            {'note': 'note1',
+             'subscriptions': subscriptions,
+             'id': 1,
+             'name': 'renamed'})
+        mock_update.assert_called_once()
+        self.logger.update_subscriptions.assert_called_once()
 
         result_cases = case_database.case_db.cases_as_json()
         case1_new_json = next((case for case in result_cases if case['name'] == "renamed"), None)
         self.assertIsNotNone(case1_new_json)
         self.assertDictEqual(case1_new_json, {'id': 1, 'name': 'renamed'})
-        self.assertDictEqual(case_subs.subscriptions, {'renamed': {'id1': ['a', 'b', 'c']}, 'case2': {}})
 
-    def test_edit_case_put(self):
-        self.put_patch_test('put')
+    @patch.object(server.running_context.executor, 'update_case')
+    def test_edit_case_put(self, mock_update):
+        self.put_patch_test('put', mock_update)
 
-    def test_edit_case_patch(self):
-        self.put_patch_test('patch')
+    @patch.object(server.running_context.executor, 'update_case')
+    def test_edit_case_patch(self, mock_update):
+        self.put_patch_test('patch', mock_update)
 
-    def test_edit_case_no_name(self):
-        response = json.loads(self.app.post('api/cases', headers=self.headers, data=json.dumps({'name': 'case2'}),
-                                            content_type='application/json').get_data(as_text=True))
-        case2_id = response['id']
+    @patch.object(server.running_context.executor, 'update_case')
+    def test_edit_case_no_name(self, mock_update):
+        case2_id = self.create_case('case1')
         self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
                      content_type='application/json')
         data = {"note": "note1", "id": case2_id}
-        response = self.put_with_status_check('api/cases', data=json.dumps(data), headers=self.headers,
-                                              content_type='application/json', status_code=SUCCESS)
-        self.assertDictEqual(response, {'note': 'note1', 'subscriptions': [], 'id': 1, 'name': 'case2'})
+        response = self.put_with_status_check(
+            'api/cases',
+            data=json.dumps(data),
+            headers=self.headers,
+            content_type='application/json',
+            status_code=SUCCESS)
+        self.assertDictEqual(response, {'note': 'note1', 'subscriptions': [], 'id': 1, 'name': 'case1'})
+        mock_update.assert_not_called()
 
-    def test_edit_case_no_note(self):
-        response = json.loads(self.app.post('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
-                                            content_type='application/json').get_data(as_text=True))
-        case1_id = response['id']
-        self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case2'}),
-                     content_type='application/json')
+    @patch.object(server.running_context.executor, 'update_case')
+    def test_edit_case_no_note(self, mock_update):
+        case1_id = self.create_case('case1')
+        self.app.put(
+            'api/cases',
+            headers=self.headers,
+            data=json.dumps({'name': 'case2'}),
+            content_type='application/json')
         data = {"name": "renamed", "id": case1_id}
-        response = self.put_with_status_check('api/cases', data=json.dumps(data), headers=self.headers,
-                                              content_type='application/json', status_code=SUCCESS)
+        response = self.put_with_status_check(
+            'api/cases',
+            data=json.dumps(data),
+            headers=self.headers,
+            content_type='application/json',
+            status_code=SUCCESS)
         self.assertDictEqual(response, {'note': '', 'subscriptions': [], 'id': 1, 'name': 'renamed'})
+        mock_update.assert_not_called()
 
-    def test_edit_case_invalid_case(self):
-        self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
-                     content_type='application/json')
-        self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case2'}),
-                     content_type='application/json')
+    @patch.object(server.running_context.executor, 'update_case')
+    def test_edit_case_invalid_case(self, mock_update):
+        self.create_case('case1')
+        self.create_case('case2')
         data = {"name": "renamed", "id": 404}
-        self.put_with_status_check('api/cases',
-                                   error='Case does not exist.',
-                                   data=json.dumps(data),
-                                   headers=self.headers,
-                                   content_type='application/json',
-                                   status_code=OBJECT_DNE_ERROR)
+        self.put_with_status_check(
+            'api/cases',
+            data=json.dumps(data),
+            headers=self.headers,
+            content_type='application/json',
+            status_code=OBJECT_DNE_ERROR)
+        mock_update.assert_not_called()
 
-    def test_export_cases(self):
-        self.__basic_case_setup()
+    @patch.object(server.running_context.executor, 'create_case')
+    def test_export_cases(self, mock_create):
         subscription = {'id': 'id1', 'events': ['a', 'b', 'c']}
         data = {'name': 'case1', 'note': 'Test', 'subscriptions': [subscription]}
-        case = self.post_with_status_check('/api/cases', headers=self.headers, data=json.dumps(data),
-                                           content_type='application/json', status_code=OBJECT_CREATED)
+        case = self.post_with_status_check(
+            '/api/cases',
+            headers=self.headers,
+            data=json.dumps(data),
+            content_type='application/json',
+            status_code=OBJECT_CREATED)
         case = self.get_with_status_check('api/cases/{}?mode=export'.format(case['id']), headers=self.headers)
         case.pop('id', None)
         self.assertIn('name', case)
         self.assertListEqual(case['events'], [])
 
-    def test_import_cases(self):
-        self.__basic_case_setup()
+    @patch.object(server.running_context.executor, 'create_case')
+    def test_import_cases(self, mock_create):
         subscription = {'id': 'id1', 'events': ['a', 'b', 'c']}
         data = {'name': 'case1', 'note': 'Test', 'subscriptions': [subscription]}
 
@@ -301,10 +384,16 @@ class TestCaseServer(ServerTestCase):
             f.write(json.dumps(data, indent=4, sort_keys=True))
 
         files = {'file': (path, open(path, 'r'), 'application/json')}
-        case = self.post_with_status_check('/api/cases', headers=self.headers, status_code=OBJECT_CREATED,
-                                           data=files, content_type='multipart/form-data')
+        case = self.post_with_status_check(
+            '/api/cases',
+            headers=self.headers,
+            status_code=OBJECT_CREATED,
+            data=files,
+            content_type='multipart/form-data')
         case.pop('id', None)
         self.assertDictEqual(case, data)
+        subscriptions = [Subscription('id1', ['a', 'b', 'c'])]
+        mock_create.assert_called_once_with(1, subscriptions)
 
     def test_display_possible_subscriptions(self):
         response = self.get_with_status_check('/api/availablesubscriptions', headers=self.headers)
@@ -316,3 +405,28 @@ class TestCaseServer(ServerTestCase):
             self.assertSetEqual(set(events),
                                 {event.signal_name for event in WalkoffEvent if
                                  event.event_type.name == event_type and event != WalkoffEvent.SendMessage})
+
+    @patch.object(server.running_context.executor, 'update_case')
+    def test_send_cases_to_workers(self, mock_update):
+        from walkoff.case.database import case_db, Case
+        from walkoff.serverdb.casesubscription import CaseSubscription
+        from walkoff.extensions import db
+        from walkoff.server.app import send_all_cases_to_workers
+        ids = [str(uuid4()) for _ in range(4)]
+        case1_subs = [{'id': ids[0], 'events': ['e1', 'e2', 'e3']}, {'id': ids[1], 'events': ['e1']}]
+        case2_subs = [{'id': ids[0], 'events': ['e2', 'e3']}]
+        case3_subs = [{'id': ids[2], 'events': ['e', 'b', 'c']}, {'id': ids[3], 'events': ['d']}]
+        case4_subs = [{'id': ids[0], 'events': ['a', 'b']}]
+        expected = []
+        for i, case_subs in enumerate((case1_subs, case2_subs, case3_subs, case4_subs)):
+            name = 'case{}'.format(i)
+            new_case_subs = CaseSubscription(name, subscriptions=case_subs)
+            db.session.add(new_case_subs)
+            case = Case(name=name)
+            case_db.session.add(case)
+            case_db.session.commit()
+            call_subs = [Subscription(sub['id'], sub['events']) for sub in case_subs]
+            expected.append(call(case.id, call_subs))
+        case_db.session.commit()
+        send_all_cases_to_workers()
+        mock_update.assert_has_calls(expected)

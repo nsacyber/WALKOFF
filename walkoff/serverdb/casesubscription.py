@@ -1,9 +1,7 @@
-import logging
 import json
 
 from sqlalchemy_utils import JSONType
 
-import walkoff.case.subscription
 from walkoff.extensions import db
 from walkoff.serverdb.mixins import TrackModificationsMixIn
 
@@ -36,9 +34,6 @@ class CaseSubscription(db.Model, TrackModificationsMixIn):
             self.subscriptions = subscriptions
         except json.JSONDecodeError:
             self.subscriptions = '[]'
-        finally:
-            subscriptions = {subscription['id']: subscription['events'] for subscription in subscriptions}
-            walkoff.case.subscription.add_cases({name: subscriptions})
 
     def as_json(self):
         """ Gets the JSON representation of the CaseSubscription object.
@@ -52,18 +47,6 @@ class CaseSubscription(db.Model, TrackModificationsMixIn):
                 "note": self.note}
 
     @staticmethod
-    def update(case_name):
-        """ Synchronizes the subscription from the subscription in memory in the core.
-        
-        Args:
-            case_name (str): The name of case to synchronize.
-        """
-        case = CaseSubscription.query.filter_by(name=case_name).first()
-        if case and case_name in walkoff.case.subscription.subscriptions:
-            case_subs = walkoff.case.subscription.subscriptions[case_name]
-            case.subscriptions = [{'id': uid, 'events': events} for uid, events in case_subs.items()]
-
-    @staticmethod
     def from_json(name, subscription_json):
         """ Forms a CaseSubscription object from the provided JSON object.
         
@@ -75,13 +58,3 @@ class CaseSubscription(db.Model, TrackModificationsMixIn):
             The CaseSubscription object parsed from the JSON object.
         """
         return CaseSubscription(name, subscriptions=subscription_json)
-
-    @staticmethod
-    def sync_to_subscriptions():
-        """Sets the subscription in memory to that loaded into the database
-        """
-        logging.getLogger(__name__).debug('Syncing cases')
-        cases = CaseSubscription.query.all()
-        subscriptions = {case.name: {subscription['id']: subscription['events']
-                                     for subscription in case.subscriptions} for case in cases}
-        walkoff.case.subscription.set_subscriptions(subscriptions)

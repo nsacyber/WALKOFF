@@ -2,9 +2,9 @@ import json
 import unittest
 
 import walkoff.server.flaskserver as server
+from tests.util.execution_db_help import setup_dbs
 from walkoff.scheduler import InvalidTriggerArgs
 from walkoff.serverdb import db
-from tests.util.execution_db_help import setup_dbs
 from walkoff.serverdb.scheduledtasks import ScheduledTask
 
 
@@ -84,7 +84,7 @@ class TestScheduledTask(unittest.TestCase):
     def test_init_stopped(self):
         task = ScheduledTask(name='test', status='stopped')
         self.assertStructureIsCorrect(task, 'test', status='stopped')
-    
+
     def test_init_with_status_with_trigger_with_workflows(self):
         workflows = ['id1', 'id2', 'id3', 'id4']
         task = ScheduledTask(name='test', task_trigger=self.date_trigger, status='running', workflows=workflows)

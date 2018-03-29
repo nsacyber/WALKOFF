@@ -1,5 +1,6 @@
-from flask import Response
 import json
+
+from flask import Response
 
 
 class Problem(Response):

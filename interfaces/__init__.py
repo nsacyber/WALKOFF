@@ -1,32 +1,24 @@
 import logging
+import warnings
 from copy import deepcopy
 from functools import partial
 
-from .util import validate_events, add_docstring
+from walkoff.events import WalkoffEvent, EventType
+from walkoff.executiondb.executionelement import ExecutionElement
+from walkoff.executiondb.schemas import dump_element
+from walkoff.sse import StreamableBlueprint
+from .dispatchers import AppEventDispatcher, EventDispatcher
 from .dispatchers import AppEventDispatcher, EventDispatcher
 from .exceptions import UnknownEvent, InvalidEventHandler
-from walkoff.events import WalkoffEvent, EventType
-from walkoff.helpers import get_function_arg_names
-import warnings
-from walkoff.executiondb.representable import Representable
+from .exceptions import UnknownEvent, InvalidEventHandler
+from .util import validate_events, add_docstring
+from .util import validate_events, add_docstring
 
 _logger = logging.getLogger(__name__)
 
 
-class AppBlueprint(object):
-    """Class to create blueprints for custom server endpoints in apps
-
-    Attributes:
-        blueprint (flask.Blueprint): The blueprint to register with Walkoff
-        rule (str): The URL rule for the blueprint
-
-    Args:
-        blueprint (flask.Blueprint): The blueprint to register with Walkoff
-        rule (str, optional): The URL rule for the blueprint. Defaults to /custominterfaces/<interface_name>/
-    """
-    def __init__(self, blueprint, rule=''):
-        self.blueprint = blueprint
-        self.rule = rule
+class AppBlueprint(StreamableBlueprint):
+    pass
 
 
 class InterfaceEventDispatcher(object):
@@ -49,7 +41,8 @@ class InterfaceEventDispatcher(object):
 
     def __new__(cls, *args, **kwargs):
         if cls.__instance is None:
-            for event in (event for event in WalkoffEvent if event.event_type != EventType.other and event != WalkoffEvent.SendMessage):
+            for event in (event for event in WalkoffEvent if
+                          event.event_type != EventType.other and event != WalkoffEvent.SendMessage):
                 dispatch_method = cls._make_dispatch_method(event)
                 dispatch_partial = partial(dispatch_method, cls=cls)
                 event.connect(dispatch_partial, weak=False)
@@ -75,30 +68,39 @@ class InterfaceEventDispatcher(object):
         Returns:
             func: The dispatch method
         """
+
         def dispatch_method(sender, **kwargs):
             if event.event_type != EventType.controller:
-                if not isinstance(sender, dict) and isinstance(sender, Representable):
-                    data = sender.read()
-                else:
-                    data = deepcopy(sender)
-                additional_data = deepcopy(kwargs)
-                additional_data.pop('cls', None)
-                if 'data' in additional_data and 'workflow' in additional_data['data']:
-                    additional_data['workflow'] = additional_data['data'].pop('workflow')
-                    if not additional_data['data']:
-                        additional_data.pop('data')
-                data.update(additional_data)
-                if 'id' in data:
-                    data['sender_id'] = data.pop('id')
-                if 'name' in data:
-                    data['sender_name'] = data.pop('name')
-
+                sender_data = InterfaceEventDispatcher._format_data(sender, kwargs)
             else:
-                data = None
-            cls.event_dispatcher.dispatch(event, data)
+                sender_data = None
+            cls.event_dispatcher.dispatch(event, sender_data)
             if event.event_type == EventType.action:
-                cls.app_action_dispatcher.dispatch(event, data)
+                cls.app_action_dispatcher.dispatch(event, sender_data)
+
         return dispatch_method
+
+    @staticmethod
+    def _format_data(sender, kwargs):
+        if not isinstance(sender, dict) and isinstance(sender, ExecutionElement):
+            sender_data = dump_element(sender)
+        else:
+            sender_data = deepcopy(sender)
+        additional_data = deepcopy(kwargs)
+        additional_data.pop('cls', None)
+        if 'data' in additional_data and additional_data['data'] is not None:
+            if 'workflow' in additional_data['data']:
+                additional_data['workflow'] = additional_data['data'].pop('workflow')
+            if 'data' in additional_data['data']:
+                additional_data['data'] = additional_data['data'].pop('data')
+            if not additional_data['data']:
+                additional_data.pop('data')
+        sender_data.update(additional_data)
+        if 'id' in sender_data:
+            sender_data['sender_id'] = sender_data.pop('id')
+        if 'name' in sender_data:
+            sender_data['sender_name'] = sender_data.pop('name')
+        return sender_data
 
     @classmethod
     def _make_register_method(cls, event):
@@ -110,6 +112,7 @@ class InterfaceEventDispatcher(object):
         Returns:
             func: The registration method for the event
         """
+
         @add_docstring(InterfaceEventDispatcher._make_on_walkoff_event_docstring(event))
         def on_event(cls, sender_ids=None, sender_uids=None, names=None, weak=True):
             if sender_uids:
@@ -119,17 +122,17 @@ class InterfaceEventDispatcher(object):
                     sender_ids = sender_uids
 
             def handler(func):
-                InterfaceEventDispatcher._validate_handler_function_args(func, False)
                 cls.event_dispatcher.register_events(func, {event}, sender_ids=sender_ids, names=names, weak=weak)
                 return func  # Needed so weak references aren't deleted
+
             return handler
 
         @add_docstring(InterfaceEventDispatcher._make_on_walkoff_event_docstring(event))
         def on_controller_event(cls, weak=True):
             def handler(func):
-                InterfaceEventDispatcher._validate_handler_function_args(func, True)
                 cls.event_dispatcher.register_events(func, {event}, weak=weak)
                 return func
+
             return handler
 
         return on_event if event.event_type != EventType.controller else on_controller_event
@@ -155,14 +158,16 @@ class InterfaceEventDispatcher(object):
             UnknownEvent: If an unknown or non-action event is set for the handler
             InvalidEventHandler: If the wrapped function does not have exactly one argument
         """
-        available_events = {event for event in WalkoffEvent if event.event_type == EventType.action and event != WalkoffEvent.SendMessage}
+        available_events = {event for event in WalkoffEvent if
+                            event.event_type == EventType.action and event != WalkoffEvent.SendMessage}
         events = validate_events(events, available_events)
 
         def handler(func):
-            InterfaceEventDispatcher._validate_handler_function_args(func, False)
-            cls.app_action_dispatcher.register_app_actions(func, app, actions=actions, events=events, device_ids=device_ids,
+            cls.app_action_dispatcher.register_app_actions(func, app, actions=actions, events=events,
+                                                           device_ids=device_ids,
                                                            weak=weak)
             return func
+
         return handler
 
     @classmethod
@@ -200,9 +205,9 @@ class InterfaceEventDispatcher(object):
             sender_ids = EventType.controller.name
 
         def handler(func):
-            InterfaceEventDispatcher._validate_handler_function_args(func, are_controller_events)
             cls.event_dispatcher.register_events(func, events, sender_ids=sender_ids, names=names, weak=weak)
             return func
+
         return handler
 
     @classmethod
@@ -211,24 +216,6 @@ class InterfaceEventDispatcher(object):
         """
         cls.event_dispatcher = EventDispatcher()
         cls.app_action_dispatcher = AppEventDispatcher()
-
-    @staticmethod
-    def _validate_handler_function_args(func, is_controller):
-        """Validates a handler function by checking how many arguments it has
-
-        Args:
-            func (func): The function to check
-            is_controller (bool): Is the function intended to handle controller events?
-
-        Raises:
-            InvalidEventHandler: If the number of arguments is incorrect
-        """
-        num_args = len(get_function_arg_names(func))
-        if is_controller:
-            if num_args != 0:
-                raise InvalidEventHandler('Handlers for controller events take no arguments')
-        elif num_args != 1:
-            raise InvalidEventHandler('Handlers for events non-controller events take one argument')
 
     @staticmethod
     def _all_events_are_controller(events):
@@ -263,12 +250,13 @@ class InterfaceEventDispatcher(object):
         is_controller = event.event_type == EventType.controller
         if not is_controller:
             args_string = ('{}'
-                '\tsender_uids (str|iterable(str), optional): Deprecated alias for "sender_ids" this will be removed in 0.9.0\n'
-                '\tsender_ids (str|iterable(str), optional): The IDs of the sender which will cause this callback to trigger.\n'
-                '\tnames (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike '
-                'IDS, these are not guaranteed to be unique.\n'.format(args_string))
-        args_string = ('{}\tweak (boolean, optional): Should the callback persist even if function leaves scope? Warning! '
-                       'Could cause memory leaks'.format(args_string))
+                           '\tsender_uids (str|iterable(str), optional): Deprecated alias for "sender_ids" this will be removed in 0.9.0\n'
+                           '\tsender_ids (str|iterable(str), optional): The IDs of the sender which will cause this callback to trigger.\n'
+                           '\tnames (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike '
+                           'IDS, these are not guaranteed to be unique.\n'.format(args_string))
+        args_string = (
+            '{}\tweak (boolean, optional): Should the callback persist even if function leaves scope? Warning! '
+            'Could cause memory leaks'.format(args_string))
         return '''
 
 Creates a callback for the {0} WalkoffEvent. Requires that the function being decorated have the signature `{1}`.

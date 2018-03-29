@@ -1,16 +1,21 @@
 import logging
 import sys
 
-import pyaes
-from sqlalchemy import Column, Integer, ForeignKey, String, LargeBinary, Enum, DateTime, func
+from sqlalchemy import Column, Integer, ForeignKey, String, LargeBinary, Enum, DateTime, func, orm
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
-from walkoff.config.config import secret_key as key
-from walkoff.executiondb import Device_Base
 from walkoff import executiondb
 from walkoff.appgateway.validator import convert_primitive_type
+from walkoff.executiondb import Execution_Base
+
+import nacl.secret
+import nacl.utils
+import os
+import zmq.auth as auth
+import walkoff.config
+
 logger = logging.getLogger(__name__)
 
 
@@ -18,7 +23,7 @@ class UnknownDeviceField(Exception):
     pass
 
 
-class App(Device_Base):
+class App(Execution_Base):
     """SqlAlchemy ORM class for Apps
 
     Attributes:
@@ -111,7 +116,7 @@ class App(Device_Base):
         return App(data['name'], devices)
 
 
-class Device(Device_Base):
+class Device(Execution_Base):
     """The SqlAlchemy ORM class for a Device
 
     Attributes:
@@ -220,11 +225,12 @@ class Device(Device_Base):
 
         return plaintext_fields, encrypted_fields
 
-    def update_from_json(self, json_in):
+    def update_from_json(self, json_in, complete_object):
         """Updates this device from a partial JSON representation of a Device
 
         Args:
             json_in (dict): The partial JSON representation of a Device
+            complete_object (bool): Whether or not this is a PUT or PATCH
         """
         if 'name' in json_in:
             self.name = json_in['name']
@@ -233,14 +239,22 @@ class Device(Device_Base):
         if 'fields' in json_in:
             updated_plaintext_fields, updated_encrypted_fields = Device._construct_fields_from_json(json_in['fields'])
 
-            for curr_field in self.encrypted_fields:
-                self.encrypted_fields.remove(curr_field)
-                for updated_field in updated_encrypted_fields:
-                    if updated_field.name == curr_field.name:
-                        self.encrypted_fields.remove(curr_field)
-                    self.encrypted_fields.append(updated_field)
+            if complete_object:
+                self.plaintext_fields = updated_plaintext_fields
+                self.encrypted_fields = updated_encrypted_fields
+            else:
+                updated_plaintext_names = [field.name for field in updated_plaintext_fields]
+                self.plaintext_fields = [field for field in self.plaintext_fields if
+                                         field.name not in updated_plaintext_names]
+                for field in updated_plaintext_fields:
+                    self.plaintext_fields.append(field)
 
-            self.plaintext_fields = updated_plaintext_fields
+                updated_encrypted_names = [field.name for field in updated_encrypted_fields]
+                self.encrypted_fields = [field for field in self.encrypted_fields if
+                                         field.name not in updated_encrypted_names]
+                for field in updated_encrypted_fields:
+                    self.encrypted_fields.append(field)
+
         if 'type' in json_in:
             self.type = json_in['type']
 
@@ -283,7 +297,7 @@ class DeviceFieldMixin(object):
         return Column(Integer, ForeignKey('device.id'))
 
 
-class DeviceField(Device_Base, DeviceFieldMixin):
+class DeviceField(Execution_Base, DeviceFieldMixin):
     """The SqlAlchemy ORM for an unencrypted DeviceField
 
     Attributes:
@@ -339,7 +353,7 @@ class DeviceField(Device_Base, DeviceFieldMixin):
         return DeviceField(data['name'], type_, data['value'])
 
 
-class EncryptedDeviceField(Device_Base, DeviceFieldMixin):
+class EncryptedDeviceField(Execution_Base, DeviceFieldMixin):
     """The SqlAlchemy ORM for an encrypted DeviceField
 
     Attributes:
@@ -357,20 +371,26 @@ class EncryptedDeviceField(Device_Base, DeviceFieldMixin):
     def __init__(self, name, field_type, value):
         self.name = name
         self.type = field_type if field_type in allowed_device_field_types else 'string'
-        if sys.version_info[0] == 2:
-            aes = pyaes.AESModeOfOperationCTR(key)
-        else:
-            aes = pyaes.AESModeOfOperationCTR(bytearray(key, 'utf-8'))
-        self._value = aes.encrypt(str(value))
+
+        server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
+        _, server_secret = auth.load_certificate(server_secret_file)
+        self.__key = server_secret[:nacl.secret.SecretBox.KEY_SIZE]
+        self.__box = nacl.secret.SecretBox(self.__key)
+        self._value = self.__box.encrypt(str(value).encode('utf-8'))
+
+    @orm.reconstructor
+    def init_on_load(self):
+        server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
+        _, server_secret = auth.load_certificate(server_secret_file)
+        self.__key = server_secret[:nacl.secret.SecretBox.KEY_SIZE]
+        self.__box = nacl.secret.SecretBox(self.__key)
 
     @hybrid_property
     def value(self):
         is_py2 = sys.version_info[0] == 2
-        aes_key = key if is_py2 else bytearray(key, 'utf-8')
         none_string = 'None' if is_py2 else b'None'
 
-        aes = pyaes.AESModeOfOperationCTR(aes_key)
-        val = aes.decrypt(self._value)
+        val = self.__box.decrypt(self._value)
         if val is None or val == none_string:
             return None
         elif not val:
@@ -382,11 +402,7 @@ class EncryptedDeviceField(Device_Base, DeviceFieldMixin):
 
     @value.setter
     def value(self, new_value):
-        if sys.version_info[0] == 2:
-            aes = pyaes.AESModeOfOperationCTR(key)
-        else:
-            aes = pyaes.AESModeOfOperationCTR(bytearray(key, 'utf-8'))
-        self._value = aes.encrypt(str(new_value))
+        self._value = self.__box.encrypt(str(new_value).encode('utf-8'))
 
     def as_json(self, export=False):
         """Gets a JSON representation of this object

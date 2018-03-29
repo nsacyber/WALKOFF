@@ -3,19 +3,18 @@ import logging
 from sqlalchemy import Column, Integer, ForeignKey, String, orm
 from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
 
-from walkoff.executiondb import Device_Base
+from walkoff.executiondb import Execution_Base
 from walkoff.helpers import InvalidArgument
-from walkoff.executiondb.representable import Representable
 
 logger = logging.getLogger(__name__)
 
 
-class Argument(Representable, Device_Base):
+class Argument(Execution_Base):
     __tablename__ = 'argument'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    _action_id = Column(UUIDType(binary=False), ForeignKey('action.id'))
-    _condition_id = Column(UUIDType(binary=False), ForeignKey('condition.id'))
-    _transform_id = Column(UUIDType(binary=False), ForeignKey('transform.id'))
+    action_id = Column(UUIDType(binary=False), ForeignKey('action.id'))
+    condition_id = Column(UUIDType(binary=False), ForeignKey('condition.id'))
+    transform_id = Column(UUIDType(binary=False), ForeignKey('transform.id'))
     name = Column(String(255), nullable=False)
     value = Column(JSONType)
     reference = Column(UUIDType(binary=False))
@@ -32,25 +31,48 @@ class Argument(Representable, Device_Base):
             selection (list, optional): A list of fields from which to dereference the Action result. Defaults
                 to None. Must be used in conjunction with reference.
         """
-        Representable.__init__(self)
-        if value is None and not reference:
-            message = 'Input {} must have either value or reference. Input has neither'.format(name)
-            logger.error(message)
-            raise InvalidArgument(message)
-        elif value is not None and reference:
-            message = 'Input {} must have either value or reference. Input has both. Using "value"'.format(name)
-            logger.warning(message)
-
         self.name = name
         self.value = value
+<<<<<<< HEAD
         self.reference = reference
         self.selection = selection
+=======
+>>>>>>> development
         self._is_reference = True if value is None else False
+        self.reference = reference
+        self.selection = selection
+        self.validate()
 
     @orm.reconstructor
     def init_on_load(self):
         """Loads all necessary fields upon Argument being loaded from database"""
         self._is_reference = True if self.value is None else False
+
+    def validate(self):
+        if self.value is None and not self.reference:
+            message = 'Input {} must have either value or reference. Input has neither'.format(self.name)
+            logger.error(message)
+            raise InvalidArgument(message)
+        elif self.value is not None and self.reference:
+            message = 'Input {} must have either value or reference. Input has both. Using "value"'.format(self.name)
+            logger.warning(message)
+            self.reference = None
+
+    def update_value_reference(self, value, reference):
+        """Helper function to ensure that either reference or value is selected and the other is None
+
+        Args:
+            value: The value to set. Can be None
+            reference: The reference to set. Can be none
+        """
+        if value is not None and (self.value != value or self.reference):
+            self.value = value
+            self.reference = None
+            self.selection = []
+        elif reference:
+            self.reference = reference
+            self.value = None
+            self._is_reference = True
 
     def is_ref(self):
         """Returns whether the reference field is being used, or the value field.

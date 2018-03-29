@@ -1,10 +1,10 @@
 import json
+from uuid import uuid4
 
+from tests.util.servertestcase import ServerTestCase
 from walkoff.extensions import db
 from walkoff.server.returncodes import *
 from walkoff.serverdb.scheduledtasks import ScheduledTask, ScheduledWorkflow
-from tests.util.servertestcase import ServerTestCase
-from uuid import uuid4
 
 
 class TestScheduledTasksServer(ServerTestCase):
@@ -35,7 +35,7 @@ class TestScheduledTasksServer(ServerTestCase):
         workflow_ids = [str(uuid4()) for _ in range(3)]
         data = {"name": 'test', "workflows": workflow_ids, "task_trigger": self.date_scheduler}
         response = self.post_with_status_check('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
-                                              content_type='application/json', status_code=OBJECT_CREATED)
+                                               content_type='application/json', status_code=OBJECT_CREATED)
         expected = {'name': 'test',
                     'workflows': set(workflow_ids),
                     'status': 'running',
@@ -50,22 +50,22 @@ class TestScheduledTasksServer(ServerTestCase):
         workflow_ids = [str(uuid4()) for _ in range(3)]
         data = {"name": 'test', "workflows": workflow_ids, "task_trigger": self.date_scheduler}
         self.app.post('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
-                     content_type='application/json')
+                      content_type='application/json')
         self.post_with_status_check('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
-                                   content_type='application/json', status_code=OBJECT_EXISTS_ERROR)
+                                    content_type='application/json', status_code=OBJECT_EXISTS_ERROR)
         self.assertSetEqual({task.name for task in ScheduledTask.query.all()}, {'test'})
 
     def test_create_scheduled_task_invalid_uuids(self):
         data = {"name": 'test', "workflows": [str(uuid4()), '43hbs', '78'], "task_trigger": self.date_scheduler}
         self.post_with_status_check('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
-                                   content_type='application/json', status_code=BAD_REQUEST)
+                                    content_type='application/json', status_code=BAD_REQUEST)
         self.assertIsNone(ScheduledTask.query.filter_by(name='test').first())
 
     def test_read_scheduled_task(self):
         workflow_ids = [str(uuid4()) for _ in range(3)]
         data = {"name": 'test', "workflows": workflow_ids, "task_trigger": self.date_scheduler}
         response = json.loads(self.app.post('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
-                                           content_type='application/json').get_data(as_text=True))
+                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
         response = self.get_with_status_check('/api/scheduledtasks/{}'.format(task_id), headers=self.headers,
                                               content_type='application/json', status_code=SUCCESS)
@@ -86,11 +86,11 @@ class TestScheduledTasksServer(ServerTestCase):
         workflow_ids = [str(uuid4()) for _ in range(3)]
         data = {"name": 'test', "workflows": workflow_ids, "task_trigger": self.date_scheduler}
         response = json.loads(self.app.post('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
-                                           content_type='application/json').get_data(as_text=True))
+                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
         update = {'name': 'renamed', 'description': 'desc', 'id': task_id}
         response = self.put_with_status_check('/api/scheduledtasks', data=json.dumps(update), headers=self.headers,
-                                               content_type='application/json', status_code=SUCCESS)
+                                              content_type='application/json', status_code=SUCCESS)
         expected = {'id': task_id,
                     'name': 'renamed',
                     'workflows': set(workflow_ids),
@@ -104,21 +104,21 @@ class TestScheduledTasksServer(ServerTestCase):
         workflow_ids = [str(uuid4()) for _ in range(3)]
         data = {"name": 'test', "workflows": workflow_ids, "task_trigger": self.date_scheduler}
         response = json.loads(self.app.post('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
-                                           content_type='application/json').get_data(as_text=True))
+                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
         update = {'workflows': ['a', 'b'], 'id': task_id}
         response = self.put_with_status_check('/api/scheduledtasks', data=json.dumps(update), headers=self.headers,
-                                               content_type='application/json', status_code=BAD_REQUEST)
+                                              content_type='application/json', status_code=BAD_REQUEST)
 
     def test_update_scheduled_task_workflows(self):
         workflow_ids = [str(uuid4()) for _ in range(3)]
         data = {"name": 'test', "workflows": workflow_ids, "task_trigger": self.date_scheduler}
         response = json.loads(self.app.post('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
-                                           content_type='application/json').get_data(as_text=True))
+                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
         update = {'workflows': workflow_ids, 'id': task_id}
         response = self.put_with_status_check('/api/scheduledtasks', data=json.dumps(update), headers=self.headers,
-                                               content_type='application/json', status_code=SUCCESS)
+                                              content_type='application/json', status_code=SUCCESS)
         expected = {'id': task_id,
                     'name': 'test',
                     'workflows': set(workflow_ids),
@@ -132,11 +132,11 @@ class TestScheduledTasksServer(ServerTestCase):
         workflow_ids = [str(uuid4()) for _ in range(3)]
         data = {"name": 'test', "workflows": workflow_ids, "task_trigger": self.date_scheduler}
         response = json.loads(self.app.post('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
-                                           content_type='application/json').get_data(as_text=True))
+                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
         update = {'workflows': workflow_ids, 'id': task_id}
         response = self.put_with_status_check('/api/scheduledtasks', data=json.dumps(update), headers=self.headers,
-                                               content_type='application/json', status_code=SUCCESS)
+                                              content_type='application/json', status_code=SUCCESS)
         expected = {'id': task_id,
                     'name': 'test',
                     'workflows': set(workflow_ids),
@@ -149,34 +149,34 @@ class TestScheduledTasksServer(ServerTestCase):
     def test_update_scheduled_task_does_not_exist(self):
         update = {'workflows': [str(uuid4()) for _ in range(3)], 'id': 404}
         self.put_with_status_check('/api/scheduledtasks', data=json.dumps(update), headers=self.headers,
-                                    content_type='application/json', status_code=OBJECT_DNE_ERROR)
+                                   content_type='application/json', status_code=OBJECT_DNE_ERROR)
 
     def test_update_scheduled_task_name_already_exists_same_id(self):
         data = {"name": 'test1', "workflows": [str(uuid4()) for _ in range(3)], "task_trigger": self.date_scheduler}
         response = json.loads(self.app.post('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
-                                           content_type='application/json').get_data(as_text=True))
+                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
         update = {'name': 'test1', 'description': 'desc', 'id': task_id}
         self.put_with_status_check('/api/scheduledtasks', data=json.dumps(update), headers=self.headers,
-                                    content_type='application/json', status_code=SUCCESS)
+                                   content_type='application/json', status_code=SUCCESS)
 
     def test_update_scheduled_task_name_already_exists_different_id(self):
         workflow_ids = [str(uuid4()) for _ in range(3)]
         data = {"name": 'test1', "workflows": workflow_ids, "task_trigger": self.date_scheduler}
         self.app.post('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
-                     content_type='application/json')
+                      content_type='application/json')
         data = {"name": 'test2', "workflows": workflow_ids, "task_trigger": self.date_scheduler}
         response = json.loads(self.app.post('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
-                                           content_type='application/json').get_data(as_text=True))
+                                            content_type='application/json').get_data(as_text=True))
         task_id2 = response['id']
         update = {'name': 'test1', 'description': 'desc', 'id': task_id2}
         self.put_with_status_check('/api/scheduledtasks', data=json.dumps(update), headers=self.headers,
-                                    content_type='application/json', status_code=OBJECT_EXISTS_ERROR)
+                                   content_type='application/json', status_code=OBJECT_EXISTS_ERROR)
 
     def test_delete_scheduled_task(self):
         data = {"name": 'test', "workflows": [str(uuid4()) for _ in range(3)], "task_trigger": self.date_scheduler}
         response = json.loads(self.app.post('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
-                                           content_type='application/json').get_data(as_text=True))
+                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
         self.delete_with_status_check('/api/scheduledtasks/{}'.format(task_id), headers=self.headers,
                                       content_type='application/json', status_code=NO_CONTENT)
@@ -189,12 +189,13 @@ class TestScheduledTasksServer(ServerTestCase):
     def take_action(self, task_id, action, status_code=SUCCESS):
         data = {'id': task_id, 'action': action}
         self.patch_with_status_check('/api/scheduledtasks', headers=self.headers, data=json.dumps(data),
-                                     content_type = 'application/json', status_code=status_code)
+                                     content_type='application/json', status_code=status_code)
 
     def test_start_from_started(self):
-        data = {"name": 'test1', "workflows": [str(uuid4()) for _ in range(3)], "task_trigger": self.date_scheduler, 'status': 'running'}
+        data = {"name": 'test1', "workflows": [str(uuid4()) for _ in range(3)], "task_trigger": self.date_scheduler,
+                'status': 'running'}
         response = json.loads(self.app.post('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
-                                           content_type='application/json').get_data(as_text=True))
+                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
         self.take_action(task_id, 'start')
         self.assertEqual(ScheduledTask.query.filter_by(id=task_id).first().status, 'running')
@@ -202,7 +203,7 @@ class TestScheduledTasksServer(ServerTestCase):
     def test_start_from_stopped(self):
         data = {"name": 'test1', "workflows": [str(uuid4()) for _ in range(3)], "task_trigger": self.date_scheduler}
         response = json.loads(self.app.post('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
-                                           content_type='application/json').get_data(as_text=True))
+                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
         self.take_action(task_id, 'start')
         self.assertEqual(ScheduledTask.query.filter_by(id=task_id).first().status, 'running')
@@ -211,9 +212,10 @@ class TestScheduledTasksServer(ServerTestCase):
         self.take_action(404, 'start', status_code=OBJECT_DNE_ERROR)
 
     def test_stop_from_started(self):
-        data = {"name": 'test1', "workflows": [str(uuid4()) for _ in range(3)], "task_trigger": self.date_scheduler, 'status': 'running'}
+        data = {"name": 'test1', "workflows": [str(uuid4()) for _ in range(3)], "task_trigger": self.date_scheduler,
+                'status': 'running'}
         response = json.loads(self.app.post('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
-                                           content_type='application/json').get_data(as_text=True))
+                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
         self.take_action(task_id, 'stop')
         self.assertEqual(ScheduledTask.query.filter_by(id=task_id).first().status, 'stopped')
@@ -221,7 +223,7 @@ class TestScheduledTasksServer(ServerTestCase):
     def test_stop_from_stopped(self):
         data = {"name": 'test1', "workflows": [str(uuid4()) for _ in range(3)], "task_trigger": self.date_scheduler}
         response = json.loads(self.app.post('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
-                                           content_type='application/json').get_data(as_text=True))
+                                            content_type='application/json').get_data(as_text=True))
         task_id = response['id']
         self.take_action(task_id, 'stop')
         self.assertEqual(ScheduledTask.query.filter_by(id=task_id).first().status, 'stopped')

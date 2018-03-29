@@ -5,9 +5,17 @@ import sys
 
 sys.path.append(os.getcwd())
 
-
+# Need all these imports
+from walkoff.serverdb.casesubscription import *
+from walkoff.serverdb.message import *
+from walkoff.serverdb.mixins import *
+from walkoff.serverdb.resource import *
+from walkoff.serverdb.scheduledtasks import *
+from walkoff.serverdb.tokens import *
+from walkoff.serverdb.user import *
 from scripts.migrations.database.commonenv import run
 from walkoff.extensions import db
+from walkoff.server import flaskserver
 
 
 # add your model's MetaData object here
@@ -20,5 +28,7 @@ target_metadata = db.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+app_context = flaskserver.app.test_request_context()
+app_context.push()
 
 run(target_metadata)

@@ -69,7 +69,7 @@ def split_task_id(task_id):
 
 # A thin wrapper around APScheduler
 class Scheduler(object):
-    def __init__(self):
+    def __init__(self, event_logger):
         self.scheduler = GeventScheduler()
         self.scheduler.add_listener(self.__scheduler_listener(),
                                     EVENT_SCHEDULER_START | EVENT_SCHEDULER_SHUTDOWN
@@ -77,6 +77,7 @@ class Scheduler(object):
                                     | EVENT_JOB_ADDED | EVENT_JOB_REMOVED
                                     | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.id = 'controller'
+        self.event_logger = event_logger
 
     def schedule_workflows(self, task_id, executable, workflow_ids, trigger):
         """
@@ -89,7 +90,7 @@ class Scheduler(object):
             trigger (Trigger): The trigger to use for this scheduled task
         """
         for id_ in workflow_ids:
-            self.scheduler.add_job(executable, args=(id_, ),
+            self.scheduler.add_job(executable, args=(id_,),
                                    id=construct_task_id(task_id, id_),
                                    trigger=trigger, replace_existing=True)
 
@@ -134,7 +135,8 @@ class Scheduler(object):
             task_id (str|int): The task id to update
             trigger (Trigger): The new trigger to use
         """
-        existing_tasks = {construct_task_id(task_id, workflow_execution_id) for workflow_execution_id in self.get_scheduled_workflows(task_id)}
+        existing_tasks = {construct_task_id(task_id, workflow_execution_id) for workflow_execution_id in
+                          self.get_scheduled_workflows(task_id)}
         for job_id in existing_tasks:
             self.scheduler.reschedule_job(job_id=job_id, trigger=trigger)
 
@@ -249,22 +251,21 @@ class Scheduler(object):
                 logger.warning('Cannot resume scheduled workflow {}. Workflow ID not found'.format(job_id))
 
     def __scheduler_listener(self):
-        event_selector_map = {EVENT_SCHEDULER_START: (lambda: WalkoffEvent.SchedulerStart.send(self)),
-                              EVENT_SCHEDULER_SHUTDOWN: (lambda: WalkoffEvent.SchedulerShutdown.send(self)),
-                              EVENT_SCHEDULER_PAUSED: (lambda: WalkoffEvent.SchedulerPaused.send(self)),
-                              EVENT_SCHEDULER_RESUMED: (lambda: WalkoffEvent.SchedulerResumed.send(self)),
-                              EVENT_JOB_ADDED: (lambda: WalkoffEvent.SchedulerJobAdded.send(self)),
-                              EVENT_JOB_REMOVED: (lambda: WalkoffEvent.SchedulerJobRemoved.send(self)),
-                              EVENT_JOB_EXECUTED: (lambda: WalkoffEvent.SchedulerJobExecuted.send(self)),
-                              EVENT_JOB_ERROR: (lambda: WalkoffEvent.SchedulerJobError.send(self))}
+        event_selector_map = {EVENT_SCHEDULER_START: WalkoffEvent.SchedulerStart,
+                              EVENT_SCHEDULER_SHUTDOWN: WalkoffEvent.SchedulerShutdown,
+                              EVENT_SCHEDULER_PAUSED: WalkoffEvent.SchedulerPaused,
+                              EVENT_SCHEDULER_RESUMED: WalkoffEvent.SchedulerResumed,
+                              EVENT_JOB_ADDED: WalkoffEvent.SchedulerJobAdded,
+                              EVENT_JOB_REMOVED: WalkoffEvent.SchedulerJobRemoved,
+                              EVENT_JOB_EXECUTED: WalkoffEvent.SchedulerJobExecuted,
+                              EVENT_JOB_ERROR: WalkoffEvent.SchedulerJobError}
 
         def event_selector(event):
             try:
-                event_selector_map[event.code]()
+                event = event_selector_map[event.code]
+                self.event_logger.log(event, self.id)
+                event.send(self)
             except KeyError:
                 logger.error('Unknown event sent triggered in scheduler {}'.format(event))
 
         return event_selector
-
-
-scheduler = Scheduler()

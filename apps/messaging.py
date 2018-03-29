@@ -1,7 +1,9 @@
-from walkoff.events import WalkoffEvent
-import re
 import logging
+import re
+
 from six import add_metaclass
+
+from walkoff.events import WalkoffEvent
 
 __all__ = ['Text', 'Url', 'AcceptDecline', 'Message', 'send_message']
 
@@ -27,6 +29,7 @@ class MessageComponentTypeRegistry(type):
     """
     Metaclass used for registering subclasses of MessageComponents
     """
+
     def __init__(cls, name, bases, dct):
         """
         Constructor
@@ -56,6 +59,7 @@ class MessageComponent(object):
         requires_response(bool, optional): Does this message component necessitate a response from a user?
             Defaults to False
     """
+
     def __init__(self, requires_response=False):
         self.requires_response = requires_response
 
@@ -116,6 +120,7 @@ class Text(MessageComponent):
     Args:
         text (str): The text to be rendered
     """
+
     def __init__(self, text):
         super(Text, self).__init__()
         self.text = text
@@ -144,6 +149,7 @@ class Url(MessageComponent):
         url (str): The URL of the link
         title (str, optional): The title to use for the link. Defaults to None.
     """
+
     def __init__(self, url, title=None):
         super(Url, self).__init__()
         self.url = url
@@ -172,6 +178,7 @@ class AcceptDecline(MessageComponent):
     """
     A MessageComponent used for rendering a button to Accept or Decline some action
     """
+
     def __init__(self):
         super(AcceptDecline, self).__init__(requires_response=True)
 
@@ -196,6 +203,7 @@ class Message(object):
         subject (str, optional): The subject of the message. Defaults to None
         body (list[MessageComponent]): The body of the message. Defaults to an empty body.
     """
+
     def __init__(self, subject=None, body=None):
         self.subject = subject
         self.body = body if body is not None else []

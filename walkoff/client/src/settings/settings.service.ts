@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Response } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
+import { plainToClass } from 'class-transformer';
 
 import { Configuration } from '../models/configuration';
 import { User } from '../models/user';
@@ -16,7 +17,7 @@ export class SettingsService {
 		return this.authHttp.get('/api/configuration')
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Configuration)
+			.then((data: object) => plainToClass(Configuration, data))
 			.catch(this.handleError);
 	}
 
@@ -24,7 +25,7 @@ export class SettingsService {
 		return this.authHttp.put('/api/configuration', configuration)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Configuration)
+			.then((data: object) => plainToClass(Configuration, data))
 			.catch(this.handleError);
 	}
 
@@ -32,7 +33,7 @@ export class SettingsService {
 		return this.authHttp.get('/api/users')
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as User[])
+			.then((data: object[]) => plainToClass(User, data))
 			.catch(this.handleError);
 	}
 
@@ -40,7 +41,7 @@ export class SettingsService {
 		return this.authHttp.post('/api/users', user)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as User)
+			.then((data: object) => plainToClass(User, data))
 			.catch(this.handleError);
 	}
 
@@ -48,7 +49,7 @@ export class SettingsService {
 		return this.authHttp.put('/api/users', user)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as User)
+			.then((data: object) => plainToClass(User, data))
 			.catch(this.handleError);
 	}
 
@@ -63,7 +64,7 @@ export class SettingsService {
 		return this.authHttp.get('/api/roles')
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Role[])
+			.then((data: object[]) => plainToClass(Role, data))
 			.catch(this.handleError);
 	}
 
@@ -71,7 +72,7 @@ export class SettingsService {
 		return this.authHttp.post('/api/roles', role)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Role)
+			.then((data: object) => plainToClass(Role, data))
 			.catch(this.handleError);
 	}
 
@@ -79,7 +80,7 @@ export class SettingsService {
 		return this.authHttp.put('/api/roles', role)
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as Role)
+			.then((data: object) => plainToClass(Role, data))
 			.catch(this.handleError);
 	}
 
@@ -119,7 +120,7 @@ export class SettingsService {
 		return this.authHttp.get('/api/availableresourceactions')
 			.toPromise()
 			.then(this.extractData)
-			.then(data => data as AvailableResourceAction[])
+			.then((data: object[]) => plainToClass(AvailableResourceAction, data))
 			.catch(this.handleError);
 	}
 	

@@ -2,11 +2,10 @@ import json
 import logging
 import os.path
 
-import walkoff.config.paths
-from walkoff.executiondb.playbook import Playbook
-from walkoff.executiondb.workflow import Workflow
+import walkoff.config
 from walkoff.helpers import (locate_playbooks_in_directory, InvalidArgument, UnknownApp, UnknownAppAction,
                              UnknownTransform, UnknownCondition, format_exception_message)
+from walkoff.executiondb.schemas import PlaybookSchema, WorkflowSchema
 
 logger = logging.getLogger(__name__)
 
@@ -41,8 +40,8 @@ class JsonPlaybookLoader(object):
                         logger.warning('Workflow {0} not found in playbook {0}. '
                                        'Cannot load.'.format(workflow_name, playbook_name))
                         return None
-                    workflow = Workflow.create(workflow_json)
-                    return playbook_name, workflow
+                    workflow = WorkflowSchema().load(workflow_json)
+                    return playbook_name, workflow.data
                 except ValueError as e:
                     logger.exception('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
                 except (InvalidArgument, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
@@ -70,7 +69,9 @@ class JsonPlaybookLoader(object):
                 workflow_loaded = playbook_file.read()
                 try:
                     playbook_json = json.loads(workflow_loaded)
-                    return Playbook.create(playbook_json)
+
+                    playbook = PlaybookSchema().load(playbook_json)
+                    return playbook.data
                 except ValueError as e:
                     logger.exception('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
                 except (InvalidArgument, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
@@ -89,7 +90,7 @@ class JsonPlaybookLoader(object):
         """
 
         if resource_collection is None:
-            resource_collection = walkoff.config.paths.workflows_path
+            resource_collection = walkoff.config.Config.WORKFLOWS_PATH
         playbooks = [JsonPlaybookLoader.load_playbook(os.path.join(resource_collection, playbook))
                      for playbook in locate_playbooks_in_directory(resource_collection)]
         return [playbook for playbook in playbooks if playbook]

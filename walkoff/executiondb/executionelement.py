@@ -1,11 +1,10 @@
-from sqlalchemy_utils import UUIDType
-
-from walkoff.executiondb.representable import Representable
-from sqlalchemy import Column
 from uuid import uuid4
 
+from sqlalchemy import Column
+from sqlalchemy_utils import UUIDType
 
-class ExecutionElement(Representable):
+
+class ExecutionElement(object):
     id = Column(UUIDType(binary=False), primary_key=True, nullable=False, default=uuid4)
 
     def __init__(self, id):
@@ -13,12 +12,14 @@ class ExecutionElement(Representable):
             self.id = id
 
     def __repr__(self):
-        representation = self.read()
+        from .schemas import dump_element
+
+        representation = dump_element(self)
         out = '<{0} at {1} : '.format(self.__class__.__name__, hex(id(self)))
         first = True
         for key, value in representation.items():
             if self.__is_list_of_dicts_with_uids(value):
-                out += ', {0}={1}'.format(key, [list_value['uid'] for list_value in value])
+                out += ', {0}={1}'.format(key, [list_value['id'] for list_value in value])
             else:
                 out += ', {0}={1}'.format(key, value)
 
@@ -32,4 +33,7 @@ class ExecutionElement(Representable):
     @staticmethod
     def __is_list_of_dicts_with_uids(value):
         return (isinstance(value, list)
-                and all(isinstance(list_value, dict) and 'uid' in list_value for list_value in value))
+                and all(isinstance(list_value, dict) and 'id' in list_value for list_value in value))
+
+    def validate(self):
+        pass

@@ -1,19 +1,19 @@
+import json
+from datetime import datetime
 from unittest import TestCase
+from uuid import uuid4
 
-from walkoff.server import flaskserver
-from walkoff.serverdb.message import Message, MessageHistory
-from walkoff.messaging import MessageAction
 import walkoff.messaging
+from tests.util import execution_db_help
+from walkoff.events import WalkoffEvent
+from walkoff.helpers import utc_as_rfc_datetime
+from walkoff.messaging import MessageAction
 from walkoff.messaging.utils import strip_requires_response_from_message_body, save_message, \
     get_all_matching_users_for_message, log_action_taken_on_message
+from walkoff.server import flaskserver
 from walkoff.serverdb import db, User, Role
-from datetime import datetime
-from walkoff.events import WalkoffEvent
-import json
-import walkoff.config.paths
-from tests.util import execution_db_help
-from uuid import uuid4
-from walkoff.helpers import utc_as_rfc_datetime
+from walkoff.serverdb.message import Message, MessageHistory
+
 
 class TestMessageDatabase(TestCase):
 
@@ -54,7 +54,6 @@ class TestMessageDatabase(TestCase):
             db.session.delete(user)
         for role in [role for role in Role.query.all() if role.name != 'admin']:
             db.session.delete(role)
-        walkoff.messaging.workflow_authorization_cache._cache = {}
         db.session.commit()
 
     @classmethod
@@ -66,21 +65,23 @@ class TestMessageDatabase(TestCase):
             db.session.delete(role)
         db.session.commit()
 
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
 
     def get_default_message(self, commit=False, requires_reauth=False, requires_response=False):
-        message = Message('subject here', json.dumps({'message': 'some message'}), 'workflow_uid1',
+        uid = uuid4()
+        message = Message('subject here', json.dumps({'message': 'some message'}), uid,
                           [self.user, self.user2], requires_reauth=requires_reauth, requires_response=requires_response)
         db.session.add(message)
         if commit:
             db.session.commit()
-        return message
+        return message, uid
 
     def test_init(self):
-        message = Message('subject here', 'body goes here', 'workflow_uid1', [self.user, self.user2])
+        uid = uuid4()
+        message = Message('subject here', 'body goes here', uid, [self.user, self.user2])
         self.assertEqual(message.subject, 'subject here')
         self.assertEqual(message.body, 'body goes here')
-        self.assertEqual(message.workflow_execution_id, 'workflow_uid1')
+        self.assertEqual(message.workflow_execution_id, uid)
         self.assertListEqual(list(message.users), [self.user, self.user2])
         self.assertFalse(message.requires_reauth)
         self.assertFalse(message.requires_response)
@@ -91,15 +92,15 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(len(list(self.user.messages)), 1)
 
     def test_init_message_requires_reauth(self):
-        message = Message('subject here', 'body goes here', 'workflow_uid1', [self.user], requires_reauth=True)
+        message = Message('subject here', 'body goes here', uuid4(), [self.user], requires_reauth=True)
         self.assertTrue(message.requires_reauth)
 
     def test_init_message_requires_action(self):
-        message = Message('subject here', 'body goes here', 'workflow_uid1', [self.user], requires_response=True)
+        message = Message('subject here', 'body goes here', uuid4(), [self.user], requires_response=True)
         self.assertTrue(message.requires_response)
 
     def test_user_reads_message(self):
-        message = self.get_default_message()
+        message, uid = self.get_default_message()
         message.record_user_action(self.user, MessageAction.read)
         self.assertEqual(len(list(message.history)), 1)
         history = list(message.history)[0]
@@ -110,27 +111,27 @@ class TestMessageDatabase(TestCase):
         self.assertFalse(message.user_has_read(self.user2))
 
     def test_invalid_user_reads_message(self):
-        message = self.get_default_message()
+        message, uid = self.get_default_message()
         message.record_user_action(self.user3, MessageAction.read)
         self.assertEqual(len(list(message.history)), 0)
         for user in (self.user, self.user2, self.user3):
             self.assertFalse(message.user_has_read(user))
 
     def test_user_unreads_message_which_is_not_read(self):
-        message = self.get_default_message()
+        message, uid = self.get_default_message()
         message.record_user_action(self.user, MessageAction.unread)
         self.assertEqual(len(list(message.history)), 0)
         self.assertFalse(message.user_has_read(self.user))
 
     def test_invalid_user_unreads_message(self):
-        message = self.get_default_message()
+        message, uid = self.get_default_message()
         message.record_user_action(self.user3, MessageAction.unread)
         self.assertEqual(len(list(message.history)), 0)
         for user in (self.user, self.user2, self.user3):
             self.assertFalse(message.user_has_read(user))
 
     def test_user_unreads_message(self):
-        message = self.get_default_message()
+        message, uid = self.get_default_message()
         message.record_user_action(self.user, MessageAction.read)
         message.record_user_action(self.user, MessageAction.unread)
         self.assertEqual(len(list(message.history)), 2)
@@ -138,7 +139,7 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(list(message.history)[1].action, MessageAction.unread)
 
     def test_user_has_read_message(self):
-        message = self.get_default_message()
+        message, uid = self.get_default_message()
         message.record_user_action(self.user, MessageAction.read)
         message.record_user_action(self.user, MessageAction.unread)
         message.record_user_action(self.user, MessageAction.read)
@@ -147,7 +148,7 @@ class TestMessageDatabase(TestCase):
         self.assertFalse(message.user_has_read(self.user))
 
     def test_user_last_read_at(self):
-        message = self.get_default_message()
+        message, uid = self.get_default_message()
         message.record_user_action(self.user, MessageAction.read)
         message.record_user_action(self.user2, MessageAction.read)
         message.record_user_action(self.user, MessageAction.read)
@@ -156,14 +157,14 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(message.user_last_read_at(self.user2), message.history[1].timestamp)
 
     def test_get_read_by(self):
-        message = self.get_default_message()
+        message, uid = self.get_default_message()
         message.record_user_action(self.user, MessageAction.read)
         message.record_user_action(self.user2, MessageAction.read)
         message.record_user_action(self.user, MessageAction.unread)
         self.assertSetEqual(message.get_read_by(), {self.user.username, self.user2.username})
 
     def test_user_deletes_message(self):
-        message = self.get_default_message()
+        message, uid = self.get_default_message()
         message.record_user_action(self.user, MessageAction.delete)
         self.assertEqual(len(list(message.history)), 1)
         history = list(message.history)[0]
@@ -174,14 +175,14 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(len(list(self.user2.messages)), 1)
 
     def test_invalid_user_deletes_message(self):
-        message = self.get_default_message()
+        message, uid = self.get_default_message()
         message.record_user_action(self.user3, MessageAction.delete)
         self.assertEqual(len(list(message.history)), 0)
         for user in (self.user, self.user2):
             self.assertEqual(len(list(user.messages)), 1)
 
     def test_user_acts_on_message(self):
-        message = self.get_default_message(requires_response=True)
+        message, uid = self.get_default_message(requires_response=True)
         message.record_user_action(self.user, MessageAction.respond)
         self.assertEqual(len(list(message.history)), 1)
         history = list(message.history)[0]
@@ -190,17 +191,17 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(history.username, self.user.username)
 
     def test_acts_on_message_which_does_not_require_action(self):
-        message = self.get_default_message()
+        message, uid = self.get_default_message()
         message.record_user_action(self.user, MessageAction.respond)
         self.assertEqual(len(list(message.history)), 0)
 
     def test_invalid_user_acts_on_message(self):
-        message = self.get_default_message(requires_response=True)
+        message, uid = self.get_default_message(requires_response=True)
         message.record_user_action(self.user3, MessageAction.respond)
         self.assertEqual(len(list(message.history)), 0)
 
     def test_is_responded(self):
-        message = self.get_default_message(requires_response=True)
+        message, uid = self.get_default_message(requires_response=True)
         self.assertFalse(message.is_responded()[0])
         self.assertIsNone(message.is_responded()[1])
         self.assertIsNone(message.is_responded()[2])
@@ -215,19 +216,19 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(message.is_responded()[2], self.user2.username)
 
     def test_is_responded_already_responded(self):
-        message = self.get_default_message(requires_response=True)
+        message, uid = self.get_default_message(requires_response=True)
         message.record_user_action(self.user, MessageAction.respond)
         message.record_user_action(self.user2, MessageAction.respond)
         self.assertEqual(len(list(message.history)), 1)
         self.assertEqual(message.history[0].user_id, self.user.id)
 
     def test_as_json(self):
-        message = self.get_default_message(commit=True)
+        message, uid = self.get_default_message(commit=True)
         message_json = message.as_json(with_read_by=False)
         self.assertEqual(message_json['id'], message.id)
         self.assertEqual(message_json['subject'], 'subject here')
         self.assertDictEqual(message_json['body'], {'message': 'some message'})
-        self.assertEqual(message_json['workflow_execution_id'], 'workflow_uid1')
+        self.assertEqual(message_json['workflow_execution_id'], str(uid))
         self.assertFalse(message_json['requires_reauthorization'])
         self.assertFalse(message_json['requires_response'])
         self.assertFalse(message_json['awaiting_response'])
@@ -235,7 +236,7 @@ class TestMessageDatabase(TestCase):
             self.assertNotIn(field, message_json)
 
     def test_as_json_summary(self):
-        message = self.get_default_message(commit=True)
+        message, uid = self.get_default_message(commit=True)
         message_json = message.as_json(summary=True)
         self.assertEqual(message_json['id'], message.id)
         self.assertEqual(message_json['subject'], 'subject here')
@@ -246,18 +247,18 @@ class TestMessageDatabase(TestCase):
             self.assertNotIn(field, message_json)
 
     def test_as_json_requires_reauth(self):
-        message = self.get_default_message(requires_reauth=True, commit=True)
+        message, uid = self.get_default_message(requires_reauth=True, commit=True)
         message_json = message.as_json(with_read_by=False)
         self.assertTrue(message_json['requires_reauthorization'])
 
     def test_as_json_requires_action(self):
-        message = self.get_default_message(requires_response=True, commit=True)
+        message, uid = self.get_default_message(requires_response=True, commit=True)
         message_json = message.as_json(with_read_by=False)
         self.assertTrue(message_json['requires_response'])
         self.assertTrue(message_json['awaiting_response'])
 
     def test_as_json_with_read_by(self):
-        message = self.get_default_message(commit=True)
+        message, uid = self.get_default_message(commit=True)
         message.record_user_action(self.user, MessageAction.read)
         message_json = message.as_json(with_read_by=True)
         self.assertListEqual(message_json['read_by'], [self.user.username])
@@ -266,7 +267,7 @@ class TestMessageDatabase(TestCase):
         self.assertSetEqual(set(message_json['read_by']), {self.user.username, self.user2.username})
 
     def test_as_json_with_read_by_user_has_unread(self):
-        message = self.get_default_message(commit=True)
+        message, uid = self.get_default_message(commit=True)
         message.record_user_action(self.user, MessageAction.read)
         message_json = message.as_json(with_read_by=True)
         self.assertListEqual(message_json['read_by'], [self.user.username])
@@ -276,7 +277,7 @@ class TestMessageDatabase(TestCase):
         self.assertSetEqual(set(message_json['read_by']), {self.user.username, self.user2.username})
 
     def test_as_json_with_responded(self):
-        message = self.get_default_message(commit=True, requires_response=True)
+        message, uid = self.get_default_message(commit=True, requires_response=True)
         message.record_user_action(self.user, MessageAction.respond)
         db.session.commit()
         message_json = message.as_json()
@@ -286,7 +287,7 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(message_json['responded_by'], message_history.username)
 
     def test_as_json_for_user(self):
-        message = self.get_default_message(commit=True)
+        message, uid = self.get_default_message(commit=True)
         message_json = message.as_json(user=self.user)
         self.assertFalse(message_json['is_read'])
         message_json = message.as_json(user=self.user2)
@@ -304,7 +305,7 @@ class TestMessageDatabase(TestCase):
         self.assertEqual(message_json['last_read_at'], utc_as_rfc_datetime(user2_history.timestamp))
 
     def test_as_json_for_user_summary(self):
-        message = self.get_default_message(commit=True)
+        message, uid = self.get_default_message(commit=True)
         message_json = message.as_json(user=self.user, summary=True)
         self.assertFalse(message_json['is_read'])
         message.record_user_action(self.user, MessageAction.read)
@@ -355,7 +356,7 @@ class TestMessageDatabase(TestCase):
                         'roles': [],
                         'subject': 'Re: This thing',
                         'requires_reauth': False}
-        workflow_execution_id = 'workflow_uid1'
+        workflow_execution_id = uuid4()
         body = [{'text': 'Here is something to look at'}, {'url': 'look.here.com'}]
         save_message(body, message_data, workflow_execution_id, False)
         messages = Message.query.all()
@@ -379,7 +380,7 @@ class TestMessageDatabase(TestCase):
                         'roles': [role.id],
                         'subject': 'Re: This thing',
                         'requires_reauth': False}
-        workflow_execution_id = 'workflow_uid1'
+        workflow_execution_id = uuid4()
         body = [{'text': 'Here is something to look at'}, {'url': 'look.here.com'}]
         save_message(body, message_data, workflow_execution_id, False)
         messages = Message.query.all()
@@ -405,11 +406,11 @@ class TestMessageDatabase(TestCase):
                 {'message': 'also here', 'requires_auth': False},
                 {'message': 'here thing'}]
         message_data = {'message': {'body': body,
-                                'users': [self.user.id],
-                                'roles': [self.role.id],
-                                'subject': 'Warning about thing',
-                                'requires_reauth': False},
-                        'workflow': {'execution_id': 'workflow_uid10'}}
+                                    'users': [self.user.id],
+                                    'roles': [self.role.id],
+                                    'subject': 'Warning about thing',
+                                    'requires_reauth': False},
+                        'workflow': {'execution_id': uuid4()}}
         sender = {}
         WalkoffEvent.SendMessage.send(sender, data=message_data)
         messages = Message.query.all()
@@ -419,23 +420,22 @@ class TestMessageDatabase(TestCase):
         self.assertFalse(message.requires_response)
 
     def test_save_message_callback_requires_auth(self):
+        uid = uuid4()
         body = [{'message': 'look here', 'requires_response': False},
                 {'message': 'also here', 'requires_response': True},
                 {'message': 'here thing'}]
         message_data = {'message': {'body': body,
-                                'users': [self.user.id],
-                                'roles': [self.role.id],
-                                'subject': 'Re: Best chicken recipe',
-                                'requires_reauth': False},
-                        'workflow': {'execution_id': 'workflow_uid14'}}
+                                    'users': [self.user.id],
+                                    'roles': [self.role.id],
+                                    'subject': 'Re: Best chicken recipe',
+                                    'requires_reauth': False},
+                        'workflow': {'execution_id': uid}}
         sender = {}
         WalkoffEvent.SendMessage.send(sender, data=message_data)
         messages = Message.query.all()
         self.assertEqual(len(messages), 1)
         message = messages[0]
         self.assertEqual(message.subject, 'Re: Best chicken recipe')
-        from walkoff import messaging
-        self.assertTrue(messaging.workflow_authorization_cache.workflow_requires_authorization('workflow_uid14'))
         self.assertTrue(message.requires_response)
 
     def test_save_message_callback_sends_message_created(self):
@@ -443,11 +443,11 @@ class TestMessageDatabase(TestCase):
                 {'message': 'also here', 'requires_response': True},
                 {'message': 'here thing'}]
         message_data = {'message': {'body': body,
-                                'users': [self.user.id],
-                                'roles': [self.role.id],
-                                'subject': 'Re: Best chicken recipe',
-                                'requires_reauth': False},
-                        'workflow': {'execution_id': 'workflow_uid14'}}
+                                    'users': [self.user.id],
+                                    'roles': [self.role.id],
+                                    'subject': 'Re: Best chicken recipe',
+                                    'requires_reauth': False},
+                        'workflow': {'execution_id': uuid4()}}
         sender = {}
         res = {'called': False}
 
@@ -471,28 +471,19 @@ class TestMessageDatabase(TestCase):
                 'app_name': 'mock',
                 'action_name': 'mock'}
 
-    def test_invalid_trigger_pops_user_from_cache(self):
-        walkoff.messaging.workflow_authorization_cache.add_authorized_users('uid1', users=[1, 2])
-        walkoff.messaging.workflow_authorization_cache.add_user_in_progress('uid1', 1)
-        walkoff.messaging.workflow_authorization_cache.add_user_in_progress('uid1', 2)
-
-        WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid2'), data={'workflow_execution_id': 'uid2'})
-        self.assertEqual(walkoff.messaging.workflow_authorization_cache.peek_user_in_progress('uid1'), 2)
-        self.assertIsNone(walkoff.messaging.workflow_authorization_cache.peek_user_in_progress('uid2'))
-        WalkoffEvent.TriggerActionNotTaken.send(self.construct_mock_trigger_sender('uid1'), data={'workflow_execution_id': 'uid1'})
-        self.assertEqual(walkoff.messaging.workflow_authorization_cache.peek_user_in_progress('uid1'), 1)
-
     def test_log_action_taken_on_message(self):
-        message = Message('subject', 'body', 'uid1', users=[self.user, self.user2], requires_response=True)
+        uid = uuid4()
+        message = Message('subject', 'body', uid, users=[self.user, self.user2], requires_response=True)
         db.session.add(message)
-        log_action_taken_on_message(self.user.id, 'uid1')
+        log_action_taken_on_message(self.user.id, uid)
         self.assertEqual(len(list(message.history)), 1)
         self.assertEqual(message.history[0].action, MessageAction.respond)
 
     def test_log_action_taken_on_message_invalid_user(self):
-        message = Message('subject', 'body', 'uid1', users=[self.user, self.user2], requires_response=True)
+        uid = uuid4()
+        message = Message('subject', 'body', uid, users=[self.user, self.user2], requires_response=True)
         db.session.add(message)
-        log_action_taken_on_message(1000, 'uid1')
+        log_action_taken_on_message(1000, uid)
         self.assertEqual(len(list(message.history)), 0)
 
     def test_trigger_action_taken_workflow(self):
@@ -500,21 +491,16 @@ class TestMessageDatabase(TestCase):
         message = Message('subject', 'body', uid, users=[self.user, self.user2], requires_response=True)
         db.session.add(message)
         db.session.commit()
-        walkoff.messaging.workflow_authorization_cache.add_authorized_users(uid, users=[1, 2])
-        walkoff.messaging.workflow_authorization_cache.add_user_in_progress(uid, self.user.id)
-        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender(uid), data={'workflow_execution_id': uid})
+        log_action_taken_on_message(self.user.id, uid)
         message = Message.query.filter(Message.workflow_execution_id == uid).first()
         self.assertEqual(len(list(message.history)), 1)
         self.assertEqual(message.history[0].action, MessageAction.respond)
-        self.assertFalse(walkoff.messaging.workflow_authorization_cache.workflow_requires_authorization(uid))
 
     def test_trigger_action_taken_workflow_sends_responded_message(self):
         uid = str(uuid4())
         message = Message('subject', 'body', uid, users=[self.user, self.user2], requires_response=True)
         db.session.add(message)
         db.session.commit()
-        walkoff.messaging.workflow_authorization_cache.add_authorized_users(uid, users=[1, 2])
-        walkoff.messaging.workflow_authorization_cache.add_user_in_progress(uid, self.user.id)
 
         res = {'called': False}
 
@@ -524,7 +510,7 @@ class TestMessageDatabase(TestCase):
             self.assertEqual(message_in.id, message.id)
             self.assertEqual(data['data']['user'], self.user)
 
-        WalkoffEvent.TriggerActionTaken.send(self.construct_mock_trigger_sender(uid), data={'workflow_execution_id': uid})
+        log_action_taken_on_message(self.user.id, uid)
         self.assertTrue(res['called'])
 
     def test_message_action_get_all_names(self):

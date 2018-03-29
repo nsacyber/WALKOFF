@@ -31,7 +31,7 @@ CreateWorkflow:
   additionalProperties: false
   properties:
     name:
-      description: The name of the workflow. Composed of both its enclosing playbook and its own name
+      description: The name of the workflow.
       type: string
       example: HelloWorldWorkflow
     start:
@@ -60,7 +60,7 @@ Workflow:
     id:
       $ref: '#/definitions/Uuid'
     name:
-      description: The name of the workflow. Composed of both its enclosing playbook and its own name
+      description: The name of the workflow.
       type: string
       example: HelloWorldWorkflow
     start:
@@ -91,11 +91,11 @@ Action:
       type: string
       example: CyberAnalytics
     action_name:
-      description: The action the action will take
+      description: The name of the function this Action will take
       type: string
       example: pause
     name:
-      description: Name of the action
+      description: User-specified name of the action
       type: string
       example: action1
     device_id:
@@ -116,7 +116,7 @@ Action:
 Branch:
   type: object
   required: [source_id, destination_id]
-  description: Encapsualtion of a list of possible actions to take and conditionals required to be met before taking that action
+  description: Encapsualtion of a list of possible actions to take and conditions required to be met before taking that action
   additionalProperties: false
   properties:
     id:

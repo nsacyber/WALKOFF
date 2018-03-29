@@ -1,18 +1,18 @@
 import os
 import shutil
+import sys
 
 import zmq.auth
-import sys
 
 sys.path.append(os.path.abspath('.'))
 
-import walkoff.config.paths
+import walkoff.config
 
 
 def generate_certificates():
-    keys_dir = walkoff.config.paths.keys_path
-    public_keys_dir = walkoff.config.paths.zmq_public_keys_path
-    secret_keys_dir = walkoff.config.paths.zmq_private_keys_path
+    keys_dir = walkoff.config.Config.KEYS_PATH
+    public_keys_dir = walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH
+    secret_keys_dir = walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH
 
     # Create dirs for certs, remove old content if necessary
     for d in [keys_dir, public_keys_dir, secret_keys_dir]:
@@ -21,8 +21,8 @@ def generate_certificates():
         os.mkdir(d)
 
     # Create new keys in certs dir
-    server_public_file, server_secret_file = zmq.auth.create_certificates(keys_dir, "server")
-    client_public_file, client_secret_file = zmq.auth.create_certificates(keys_dir, "client")
+    zmq.auth.create_certificates(keys_dir, "server")
+    zmq.auth.create_certificates(keys_dir, "client")
 
     # Move public keys to appropriate dir
     for key_file in os.listdir(keys_dir):

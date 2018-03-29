@@ -1,34 +1,48 @@
 import logging
-import uuid
 import traceback
+import uuid
 
+<<<<<<< HEAD
 from sqlalchemy import Column, ForeignKey, String, orm
 from sqlalchemy.orm import relationship, backref
+=======
+from sqlalchemy import Column, Integer, ForeignKey, String, orm
+from sqlalchemy.orm import relationship
+>>>>>>> development
 from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway import get_app_action, is_app_action_bound
-from walkoff.executiondb.argument import Argument
 from walkoff.appgateway.actionresult import ActionResult
-from walkoff.executiondb import Device_Base
-from walkoff.events import WalkoffEvent
-from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
 from walkoff.appgateway.validator import validate_app_action_parameters
+from walkoff.events import WalkoffEvent
+from walkoff.executiondb import Execution_Base
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.executionelement import ExecutionElement
+from walkoff.helpers import UnknownApp, UnknownAppAction, \
+    InvalidExecutionElement
+from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
+
 logger = logging.getLogger(__name__)
 
 
-class Action(ExecutionElement, Device_Base):
-
+class Action(ExecutionElement, Execution_Base):
     __tablename__ = 'action'
-    _workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id'))
+    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     name = Column(String(80), nullable=False)
+<<<<<<< HEAD
     device_id = relationship('Argument', uselist=False, backref=backref('_action_device'), cascade='all, delete-orphan')
     arguments = relationship('Argument', backref=backref('_action_arg'), cascade='all, delete, delete-orphan')
     trigger = relationship('ConditionalExpression', backref=backref('_action'), cascade='all, delete-orphan',
                            uselist=False)
     position = relationship('Position', uselist=False, backref=backref('_action'), cascade='all, delete-orphan')
+=======
+    device_id = Column(Integer)
+    arguments = relationship('Argument', cascade='all, delete, delete-orphan')
+    trigger = relationship('ConditionalExpression', cascade='all, delete-orphan', uselist=False)
+    position = relationship('Position', uselist=False, cascade='all, delete-orphan')
+>>>>>>> development
 
     def __init__(self, app_name, action_name, name, device_id=None, id=None, arguments=None, trigger=None,
                  position=None):
@@ -58,6 +72,7 @@ class Action(ExecutionElement, Device_Base):
         self.app_name = app_name
         self.action_name = action_name
 
+<<<<<<< HEAD
         self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
         if is_app_action_bound(self.app_name, self._run) and self.device_id is None:
             raise InvalidArgument(
@@ -65,14 +80,20 @@ class Action(ExecutionElement, Device_Base):
 
         validate_app_action_parameters(self._arguments_api, arguments, self.app_name, self.action_name)
 
+=======
+>>>>>>> development
         self.arguments = []
         if arguments:
             self.arguments = arguments
 
         self.position = position
 
+        self._run = None
+        self._arguments_api = None
         self._output = None
         self._execution_id = 'default'
+
+        self.validate()
         self._action_executable = get_app_action(self.app_name, self._run)
 
     @orm.reconstructor
@@ -82,6 +103,27 @@ class Action(ExecutionElement, Device_Base):
         self._output = None
         self._action_executable = get_app_action(self.app_name, self._run)
         self._execution_id = 'default'
+
+    def validate(self):
+        errors = {}
+        try:
+            self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
+            if is_app_action_bound(self.app_name, self._run) and not self.device_id:
+                message = 'App action is bound but no device ID was provided.'.format(self.name)
+                errors['executable'] = message
+            validate_app_action_parameters(self._arguments_api, self.arguments, self.app_name, self.action_name)
+        except UnknownApp:
+            errors['executable'] = 'Unknown app {}'.format(self.app_name)
+        except UnknownAppAction:
+            errors['executable'] = 'Unknown app action {}'.format(self.action_name)
+        except InvalidArgument as e:
+            errors['arguments'] = e.errors
+        if errors:
+            raise InvalidExecutionElement(
+                self.id,
+                self.action_name,
+                'Invalid action {}'.format(self.id or self.action_name),
+                errors=[errors])
 
     def get_output(self):
         """Gets the output of an Action (the result)

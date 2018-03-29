@@ -1,14 +1,12 @@
+import enum
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-import enum
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import NullPool
 
-import walkoff.config.config
-import walkoff.config.paths
 from walkoff.helpers import format_db_path
 
-Device_Base = declarative_base()
+Execution_Base = declarative_base()
 
 
 class ExecutionDatabase(object):
@@ -17,7 +15,7 @@ class ExecutionDatabase(object):
 
     __instance = None
 
-    def __init__(self):
+    def __init__(self, execution_db_type, execution_db_path):
         # All of these imports are necessary
         from walkoff.executiondb.device import App, Device, DeviceField, EncryptedDeviceField
         from walkoff.executiondb.argument import Argument
@@ -31,9 +29,9 @@ class ExecutionDatabase(object):
         from walkoff.executiondb.workflow import Workflow
         from walkoff.executiondb.saved_workflow import SavedWorkflow
         from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
+        from walkoff.executiondb.metrics import AppMetric, WorkflowMetric, ActionMetric, ActionStatusMetric
 
-        self.engine = create_engine(format_db_path(
-            walkoff.config.config.device_db_type, walkoff.config.paths.execution_db_path), poolclass=NullPool)
+        self.engine = create_engine(format_db_path(execution_db_type, execution_db_path), poolclass=NullPool)
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 
@@ -41,8 +39,8 @@ class ExecutionDatabase(object):
         Session.configure(bind=self.engine)
         self.session = scoped_session(Session)
 
-        Device_Base.metadata.bind = self.engine
-        Device_Base.metadata.create_all(self.engine)
+        Execution_Base.metadata.bind = self.engine
+        Execution_Base.metadata.create_all(self.engine)
 
     def __new__(cls, *args, **kwargs):
         if cls.__instance is None:

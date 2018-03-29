@@ -3,28 +3,32 @@ import logging
 import os
 import signal
 import threading
-from concurrent.futures import ThreadPoolExecutor
+import time
 
+import nacl.bindings
+import nacl.utils
 import zmq
 import zmq.auth as auth
-from six import string_types
+from concurrent.futures import ThreadPoolExecutor
 from google.protobuf.json_format import MessageToDict
+from nacl.public import PrivateKey, Box
+from six import string_types
 
-import walkoff.config.config
-import walkoff.config.paths
+import walkoff.cache
+import walkoff.config
 import walkoff.executiondb
-from walkoff.executiondb.argument import Argument
-from walkoff.events import EventType, WalkoffEvent
-from walkoff.executiondb.workflow import Workflow
-from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage
-from walkoff.executiondb.saved_workflow import SavedWorkflow
-from walkoff.executiondb.appinstancerepo import AppInstanceRepo
 from walkoff import initialize_databases
-
-try:
-    from Queue import Queue
-except ImportError:
-    from queue import Queue
+from walkoff.appgateway.appinstancerepo import AppInstanceRepo
+from walkoff.events import EventType, WalkoffEvent
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.saved_workflow import SavedWorkflow
+from walkoff.executiondb.workflow import Workflow
+from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, CaseControl, WorkflowControl
+import walkoff.cache
+import walkoff.case.database as casedb
+from walkoff.case.logger import CaseLogger
+from walkoff.case.subscription import Subscription, SubscriptionCache
+from threading import Lock
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +55,8 @@ def convert_to_protobuf(sender, workflow, **kwargs):
             convert_send_message_to_protobuf(packet, sender, workflow, **kwargs)
         else:
             convert_action_to_proto(packet, sender, workflow, data)
-    elif event.event_type in (EventType.branch, EventType.condition, EventType.transform, EventType.conditonalexpression):
+    elif event.event_type in (
+            EventType.branch, EventType.condition, EventType.transform, EventType.conditonalexpression):
         convert_branch_transform_condition_to_proto(packet, sender, workflow)
     packet_bytes = packet.SerializeToString()
     return packet_bytes
@@ -135,8 +140,9 @@ def convert_branch_transform_condition_to_proto(packet, sender, workflow):
         general_packet.sender.app_name = sender.app_name
 
 
-class Worker:
-    def __init__(self, id_, worker_environment_setup=None):
+class Worker(object):
+    def __init__(self, id_, num_threads_per_process, zmq_private_keys_path, zmq_results_address,
+                 zmq_communication_address, worker_environment_setup=None):
         """Initialize a Workflow object, which will be executing workflows.
 
         Args:
@@ -145,7 +151,7 @@ class Worker:
         """
 
         self.id_ = id_
-
+        self._lock = Lock()
         signal.signal(signal.SIGINT, self.exit_handler)
         signal.signal(signal.SIGABRT, self.exit_handler)
 
@@ -157,45 +163,49 @@ class Worker:
 
         self.thread_exit = False
 
-        server_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "server.key_secret")
+        server_secret_file = os.path.join(zmq_private_keys_path, "server.key_secret")
         server_public, server_secret = auth.load_certificate(server_secret_file)
-        client_secret_file = os.path.join(walkoff.config.paths.zmq_private_keys_path, "client.key_secret")
+        client_secret_file = os.path.join(zmq_private_keys_path, "client.key_secret")
         client_public, client_secret = auth.load_certificate(client_secret_file)
 
-        self.ctx = zmq.Context()
+        ctx = zmq.Context()
 
-        self.request_sock = self.ctx.socket(zmq.DEALER)
-        self.request_sock.setsockopt(zmq.IDENTITY, str.encode("Worker-{}".format(id_)))
-        self.request_sock.curve_secretkey = client_secret
-        self.request_sock.curve_publickey = client_public
-        self.request_sock.curve_serverkey = server_public
-        self.request_sock.connect(walkoff.config.config.zmq_requests_address)
-
-        self.comm_sock = self.ctx.socket(zmq.DEALER)
+        self.comm_sock = ctx.socket(zmq.SUB)
         self.comm_sock.identity = u"Worker-{}".format(id_).encode("ascii")
         self.comm_sock.curve_secretkey = client_secret
         self.comm_sock.curve_publickey = client_public
         self.comm_sock.curve_serverkey = server_public
-        self.comm_sock.connect(walkoff.config.config.zmq_communication_address)
+        self.comm_sock.setsockopt(zmq.SUBSCRIBE, b'')
+        self.comm_sock.connect(zmq_communication_address)
 
-        self.results_sock = self.ctx.socket(zmq.PUSH)
+        self.results_sock = ctx.socket(zmq.PUSH)
         self.results_sock.identity = u"Worker-{}".format(id_).encode("ascii")
         self.results_sock.curve_secretkey = client_secret
         self.results_sock.curve_publickey = client_public
         self.results_sock.curve_serverkey = server_public
-        self.results_sock.connect(walkoff.config.config.zmq_results_address)
+        self.results_sock.connect(zmq_results_address)
+
+        self.key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
+        self.server_key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
 
         if worker_environment_setup:
             worker_environment_setup()
         else:
-            walkoff.config.config.initialize()
+            walkoff.config.initialize()
             initialize_databases()
+
+        from walkoff.config import Config
+        self.cache = walkoff.cache.make_cache(Config.CACHE)
+
+        self.capacity = num_threads_per_process
+        self.subscription_cache = SubscriptionCache()
+        self.case_logger = CaseLogger(casedb.case_db, self.subscription_cache)
 
         self.comm_thread = threading.Thread(target=self.receive_data)
         self.comm_thread.start()
 
         self.workflows = {}
-        self.threadpool = ThreadPoolExecutor(max_workers=walkoff.config.config.num_threads_per_process)
+        self.threadpool = ThreadPoolExecutor(max_workers=self.capacity)
 
         self.receive_requests()
 
@@ -207,33 +217,39 @@ class Worker:
             self.threadpool.shutdown()
         if self.comm_thread:
             self.comm_thread.join(timeout=2)
-        if self.request_sock:
-            self.request_sock.close()
-        if self.results_sock:
-            self.results_sock.close()
-        if self.comm_sock:
-            self.comm_sock.close()
+        for socket in (self.results_sock, self.comm_sock):
+            if socket:
+                socket.close()
         walkoff.executiondb.execution_db.tear_down()
         os._exit(0)
 
     def receive_requests(self):
         """Receives requests to execute workflows, and sends them off to worker threads"""
-        self.request_sock.send(b"Ready")
-
         while True:
-            message_bytes = self.request_sock.recv()
 
-            message = ExecuteWorkflowMessage()
-            message.ParseFromString(message_bytes)
-            start = message.start if hasattr(message, 'start') else None
+            if not self.__is_pool_at_capacity:
+                received_message = self.cache.rpop("request_queue")
+                if received_message is not None:
+                    box = Box(self.key, self.server_key)
+                    dec_msg = box.decrypt(received_message)
 
-            start_arguments = []
-            if hasattr(message, 'arguments'):
-                for arg in message.arguments:
-                    start_arguments.append(Argument(**(MessageToDict(arg, preserving_proto_field_name=True))))
+                    message = ExecuteWorkflowMessage()
+                    message.ParseFromString(dec_msg)
+                    start = message.start if hasattr(message, 'start') else None
 
-            self.threadpool.submit(self.execute_workflow_worker, message.workflow_id, message.workflow_execution_id,
-                                   start, start_arguments, message.resume)
+                    start_arguments = []
+                    if hasattr(message, 'arguments'):
+                        for arg in message.arguments:
+                            start_arguments.append(Argument(**(MessageToDict(arg, preserving_proto_field_name=True))))
+
+                    self.threadpool.submit(self.execute_workflow_worker, message.workflow_id,
+                                           message.workflow_execution_id, start, start_arguments, message.resume)
+            time.sleep(0.1)
+
+    @property
+    def __is_pool_at_capacity(self):
+        with self._lock:
+            return len(self.workflows) >= self.capacity
 
     def execute_workflow_worker(self, workflow_id, workflow_execution_id, start, start_arguments=None, resume=False):
         """Execute a workflow.
@@ -241,21 +257,25 @@ class Worker:
         walkoff.executiondb.execution_db.session.expire_all()
         workflow = walkoff.executiondb.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
         workflow._execution_id = workflow_execution_id
-
         if resume:
             saved_state = walkoff.executiondb.execution_db.session.query(SavedWorkflow).filter_by(
                 workflow_execution_id=workflow_execution_id).first()
             workflow._accumulator = saved_state.accumulator
+
+            for branch in workflow.branches:
+                if branch.id in workflow._accumulator:
+                    branch._counter = workflow._accumulator[branch.id]
+
             workflow._instance_repo = AppInstanceRepo(saved_state.app_instances)
 
-        self.workflows[threading.current_thread().name] = workflow
+        with self._lock:
+            self.workflows[threading.current_thread().name] = workflow
 
         start = start if start else workflow.start
         workflow.execute(execution_id=workflow_execution_id, start=start, start_arguments=start_arguments,
                          resume=resume)
-
-        self.workflows.pop(threading.current_thread().name)
-        return
+        with self._lock:
+            self.workflows.pop(threading.current_thread().name)
 
     def receive_data(self):
         """Constantly receives data from the ZMQ socket and handles it accordingly.
@@ -271,18 +291,33 @@ class Worker:
 
             message = CommunicationPacket()
             message.ParseFromString(message_bytes)
-
-            if message.type == CommunicationPacket.EXIT:
+            message_type = message.type
+            if message_type == CommunicationPacket.WORKFLOW:
+                self._handle_workflow_control_packet(message.workflow_control_message)
+            elif message_type == CommunicationPacket.CASE:
+                self._handle_case_control_packet(message.case_control_message)
+            elif message_type == CommunicationPacket.EXIT:
                 break
 
-            workflow = self.__get_workflow_by_execution_id(message.workflow_execution_id)
-            if workflow:
-                if message.type == CommunicationPacket.PAUSE:
-                    workflow.pause()
-                elif message.type == CommunicationPacket.ABORT:
-                    workflow.abort()
+    def _handle_workflow_control_packet(self, message):
+        workflow = self.__get_workflow_by_execution_id(message.workflow_execution_id)
+        if workflow:
+            if message.type == WorkflowControl.PAUSE:
+                workflow.pause()
+            elif message.type == WorkflowControl.ABORT:
+                workflow.abort()
 
-        return
+    def _handle_case_control_packet(self, message):
+        if message.type == CaseControl.CREATE:
+            self.subscription_cache.add_subscriptions(
+                message.id,
+                [Subscription(sub.id, sub.events) for sub in message.subscriptions])
+        elif message.type == CaseControl.UPDATE:
+            self.subscription_cache.update_subscriptions(
+                message.id,
+                [Subscription(sub.id, sub.events) for sub in message.subscriptions])
+        elif message.type == CaseControl.DELETE:
+            self.subscription_cache.delete_case(message.id)
 
     def on_data_sent(self, sender, **kwargs):
         """Listens for the data_sent callback, which signifies that an execution element needs to trigger a
@@ -293,24 +328,28 @@ class Worker:
                 kwargs (dict): Any extra data to send.
         """
         workflow = self._get_current_workflow()
-        if kwargs['event'] in [WalkoffEvent.TriggerActionAwaitingData, WalkoffEvent.WorkflowPaused]:
-            saved_workflow = SavedWorkflow(workflow_execution_id=workflow.get_execution_id(),
-                                           workflow_id=workflow.id,
-                                           action_id=workflow.get_executing_action_id(),
-                                           accumulator=workflow.get_accumulator(),
-                                           app_instances=workflow.get_instances())
+        event = kwargs['event']
+        if event in [WalkoffEvent.TriggerActionAwaitingData, WalkoffEvent.WorkflowPaused]:
+            saved_workflow = SavedWorkflow(
+                workflow_execution_id=workflow.get_execution_id(),
+                workflow_id=workflow.id,
+                action_id=workflow.get_executing_action_id(),
+                accumulator=workflow.get_accumulator(),
+                app_instances=workflow.get_instances())
             walkoff.executiondb.execution_db.session.add(saved_workflow)
             walkoff.executiondb.execution_db.session.commit()
 
         packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
-
+        self.case_logger.log(event, sender.id, kwargs.get('data', None))
         self.results_sock.send(packet_bytes)
 
     def _get_current_workflow(self):
-        return self.workflows[threading.currentThread().name]
+        with self._lock:
+            return self.workflows[threading.currentThread().name]
 
     def __get_workflow_by_execution_id(self, workflow_execution_id):
-        for workflow in self.workflows.values():
-            if workflow.get_execution_id() == workflow_execution_id:
-                return workflow
-        return None
+        with self._lock:
+            for workflow in self.workflows.values():
+                if workflow.get_execution_id() == workflow_execution_id:
+                    return workflow
+            return None

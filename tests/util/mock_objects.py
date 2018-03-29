@@ -2,16 +2,16 @@ import json
 import threading
 
 import gevent
-from google.protobuf.json_format import MessageToDict
+from fakeredis import FakeStrictRedis
 from zmq.utils.strtypes import cast_unicode
 
 from walkoff import executiondb
+from walkoff.cache import RedisCacheAdapter
 from walkoff.events import WalkoffEvent
-from walkoff.multiprocessedexecutor import loadbalancer
-from walkoff.multiprocessedexecutor.worker import convert_to_protobuf
-from walkoff.proto.build import data_pb2
-from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.saved_workflow import SavedWorkflow
+from walkoff.executiondb.workflow import Workflow
+from walkoff.multiprocessedexecutor import workflowexecutioncontroller
+from walkoff.multiprocessedexecutor.worker import convert_to_protobuf
 
 try:
     from Queue import Queue
@@ -21,7 +21,8 @@ except ImportError:
 workflows_executed = 0
 
 
-def mock_initialize_threading(self, pids=None):
+def mock_initialize_threading(self, zmq_public_keys_path, zmq_private_keys_path, zmq_results_address,
+                              zmq_communication_address, pids=None):
     global workflows_executed
     workflows_executed = 0
 
@@ -105,7 +106,8 @@ class MockLoadBalancer(object):
             self.exec_id = workflow_execution_id
 
             start = start if start else workflow.start
-            workflow.execute(execution_id=workflow_execution_id, start=start, start_arguments=start_arguments, resume=resume)
+            workflow.execute(execution_id=workflow_execution_id, start=start, start_arguments=start_arguments,
+                             resume=resume)
             self.exec_id = ''
 
     def pause_workflow(self, workflow_execution_id):
@@ -117,7 +119,7 @@ class MockLoadBalancer(object):
         return True
 
 
-class MockReceiveQueue(loadbalancer.Receiver):
+class MockReceiveQueue(workflowexecutioncontroller.Receiver):
 
     def __init__(self):
         pass
@@ -162,3 +164,23 @@ class MockRequestQueue(object):
             self.push(workflow_json)
         except:
             self.push(data)
+
+
+class MockRedisCacheAdapter(RedisCacheAdapter):
+    def __init__(self, **opts):
+        self.cache = FakeStrictRedis(**opts)
+
+
+class PubSubCacheSpy(object):
+    def __init__(self):
+        self.subscribed = []
+        self.published = {}
+
+    def subscribe(self, channel):
+        self.subscribed.append(channel)
+
+    def publish(self, channel, data):
+        if channel not in self.published:
+            self.published[channel] = [data]
+        else:
+            self.published[channel].append(data)

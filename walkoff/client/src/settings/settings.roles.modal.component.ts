@@ -4,6 +4,7 @@ import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { Select2OptionData } from 'ng2-select2';
 
 import { SettingsService } from './settings.service';
+import { UtilitiesService } from '../utilities.service';
 
 import { Role } from '../models/role';
 import { AvailableResourceAction } from '../models/availableResourceAction';
@@ -15,7 +16,7 @@ import { Resource } from '../models/resource';
 	styleUrls: [
 		'./settings.css',
 	],
-	providers: [SettingsService],
+	providers: [SettingsService, UtilitiesService],
 })
 export class SettingsRoleModalComponent {
 	@Input() workingRole: Role;
@@ -32,6 +33,7 @@ export class SettingsRoleModalComponent {
 	constructor(
 		private settingsService: SettingsService, private activeModal: NgbActiveModal,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private utils: UtilitiesService,
 	) {
 		this.toastyConfig.theme = 'bootstrap';
 
@@ -109,7 +111,7 @@ export class SettingsRoleModalComponent {
 			return;
 		}
 
-		const toSubmit: Role = _.cloneDeep(this.workingRole);
+		const toSubmit: Role = this.utils.cloneDeep(this.workingRole);
 		
 		// Remove temp Ids for new resources
 		toSubmit.resources.forEach(resource => {

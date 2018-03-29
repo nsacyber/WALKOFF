@@ -10,7 +10,6 @@ from jsonschema.validators import Draft4Validator
 from swagger_spec_validator import ref_validators
 from swagger_spec_validator.validator20 import deref
 
-import walkoff.config.paths
 from walkoff.helpers import InvalidArgument, get_function_arg_names, InvalidApi, format_exception_message
 
 logger = logging.getLogger(__name__)
@@ -101,12 +100,12 @@ def convert_json(spec, param_in, message_prefix):
         raise InvalidApi('{0} has invalid api'.format(message_prefix))
 
 
-def validate_app_spec(spec, app_name, spec_url='', http_handlers=None):
+def validate_app_spec(spec, app_name, walkoff_schema_path, spec_url='', http_handlers=None):
     from walkoff.appgateway import get_all_transforms_for_app
     from walkoff.appgateway import get_all_conditions_for_app
     walkoff_resolver = validate_spec_json(
         spec,
-        os.path.join(walkoff.config.paths.walkoff_schema_path),
+        os.path.join(walkoff_schema_path),
         spec_url,
         http_handlers)
     dereference = partial(deref, resolver=walkoff_resolver)
@@ -364,36 +363,43 @@ def validate_parameters(api, arguments, message_prefix, accumulator=None):
     seen_params = set()
     arg_names = [argument.name for argument in arguments] if arguments else []
     arguments_set = set(arg_names)
+    errors = {}
     for param_name, param_api in api_dict.items():
-        argument = get_argument_by_name(arguments, param_name)
-        if argument:
-            arg_val = argument.get_value(accumulator)
-            if accumulator or not argument.is_ref():
-                converted[param_name] = validate_parameter(arg_val, param_api, message_prefix)
-        elif 'default' in param_api:
-            try:
-                default_param = validate_parameter(param_api['default'], param_api, message_prefix)
-            except InvalidArgument as e:
-                default_param = param_api['default']
-                logger.warning(
-                    'For {0}: Default input {1} (value {2}) does not conform to schema. (Error: {3})'
-                    'Using anyways'.format(message_prefix, param_name, param_api['default'],
-                                           format_exception_message(e)))
+        try:
+            argument = get_argument_by_name(arguments, param_name)
+            if argument:
+                arg_val = argument.get_value(accumulator)
+                if accumulator or not argument.is_ref():
+                    converted[param_name] = validate_parameter(arg_val, param_api, message_prefix)
+            elif 'default' in param_api:
+                try:
+                    default_param = validate_parameter(param_api['default'], param_api, message_prefix)
+                except InvalidArgument as e:
+                    default_param = param_api['default']
+                    logger.warning(
+                        'For {0}: Default input {1} (value {2}) does not conform to schema. (Error: {3})'
+                        'Using anyways'.format(message_prefix, param_name, param_api['default'],
+                                               format_exception_message(e)))
 
-            converted[param_name] = default_param
-            arguments_set.add(param_name)
-        elif 'required' in param_api:
-            message = 'For {0}: Parameter {1} is not specified and has no default'.format(message_prefix, param_name)
-            logger.error(message)
-            raise InvalidArgument(message)
-        else:
-            converted[param_name] = None
-            arguments_set.add(param_name)
-        seen_params.add(param_name)
+                converted[param_name] = default_param
+                arguments_set.add(param_name)
+            elif 'required' in param_api:
+                message = 'For {0}: Parameter {1} is not specified and has no default'.format(message_prefix, param_name)
+                logger.error(message)
+                raise InvalidArgument(message)
+            else:
+                converted[param_name] = None
+                arguments_set.add(param_name)
+            seen_params.add(param_name)
+        except InvalidArgument as e:
+            errors[param_name] = e.message
     if seen_params != arguments_set:
-        message = 'For {0}: Too many arguments. Extra arguments: {1}'.format(message_prefix, arguments_set - seen_params)
+        message = 'For {0}: Too many arguments. Extra arguments: {1}'.format(message_prefix,
+                                                                             arguments_set - seen_params)
         logger.error(message)
-        raise InvalidArgument(message)
+        errors['_arguments'] = message
+    if errors:
+        raise InvalidArgument('Invalid arguments', errors=errors)
     return converted
 
 
@@ -450,7 +456,7 @@ def validate_devices_api(devices_api, app_name):
                     raise
 
 
-def validate_device_fields(device_fields_api, device_fields, device_type, app):
+def validate_device_fields(device_fields_api, device_fields, device_type, app, validate_required=True):
     message_prefix = 'Device type {0} for app {1}'.format(device_type, app)
 
     for field_api in device_fields_api:
@@ -459,7 +465,7 @@ def validate_device_fields(device_fields_api, device_fields, device_type, app):
 
     required_in_api = {field['name'] for field in device_fields_api if 'required' in field and field['required']}
     field_names = set(device_fields)
-    if required_in_api - field_names:
+    if validate_required and (required_in_api - field_names):
         message = '{0} requires {1} field but only got {2}'.format(message_prefix,
                                                                    list(required_in_api), list(field_names))
         logger.error(message)

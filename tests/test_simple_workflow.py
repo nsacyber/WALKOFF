@@ -1,15 +1,15 @@
 import unittest
-from datetime import datetime
+
+from mock import create_autospec
 
 import walkoff.appgateway
-import walkoff.config.config
-from walkoff.case import subscription, database
-from walkoff.multiprocessedexecutor import multiprocessedexecutor
+import walkoff.config
 from tests import config
-from tests.util.case_db_help import *
-from tests.util.mock_objects import *
-import walkoff.config.paths
 from tests.util import execution_db_help
+from tests.util.mock_objects import *
+from walkoff.case.logger import CaseLogger
+from walkoff.events import WalkoffEvent
+from walkoff.multiprocessedexecutor import multiprocessedexecutor
 
 
 class TestSimpleWorkflow(unittest.TestCase):
@@ -19,46 +19,36 @@ class TestSimpleWorkflow(unittest.TestCase):
 
         from walkoff.appgateway import cache_apps
         cache_apps(path=config.test_apps_path)
-        walkoff.config.config.load_app_apis(apps_path=config.test_apps_path)
-        walkoff.config.config.num_processes = 2
+        walkoff.config.load_app_apis(apps_path=config.test_apps_path)
+        walkoff.config.Config.NUMBER_PROCESSES = 2
         multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
-        multiprocessedexecutor.multiprocessedexecutor.initialize_threading()
-
-    def setUp(self):
-        self.executor = multiprocessedexecutor.multiprocessedexecutor
-        self.start = datetime.utcnow()
-
-        database.initialize()
+        cls.executor = multiprocessedexecutor.MultiprocessedExecutor(MockRedisCacheAdapter(),
+                                                                     create_autospec(CaseLogger))
+        cls.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
+                                          walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
+                                          walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
+                                          walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
 
     def tearDown(self):
-        execution_db_help.cleanup_device_db()
-        database.case_db.tear_down()
-        subscription.clear_subscriptions()
+        execution_db_help.cleanup_execution_db()
 
     @classmethod
     def tearDownClass(cls):
         walkoff.appgateway.clear_cache()
-        multiprocessedexecutor.multiprocessedexecutor.shutdown_pool()
-        execution_db_help.tear_down_device_db()
+        cls.executor.shutdown_pool()
+        execution_db_help.tear_down_execution_db()
 
-    def test_simple_workflow_execution(self):
-        workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-        action_ids = [action_id for action_id, action in workflow.actions.items() if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_ids)
-        self.executor.execute_workflow(workflow.id)
+    def assert_execution_event_log(self, playbook, workflow, expected_events):
+        events = []
 
-        self.executor.wait_and_reset(1)
+        @WalkoffEvent.CommonWorkflowSignal.connect
+        def log_event(sender, **kwargs):
+            self.assertIn('event', kwargs)
+            events.append(kwargs['event'])
 
-        actions = []
-        for id_ in action_ids:
-            actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
-        self.assertEqual(len(actions), 1)
-        action = actions[0]
-        result = action['data']
-        self.assertDictEqual(result, {'result': "REPEATING: Hello World", 'status': 'Success'})
-
+<<<<<<< HEAD
     # def test_multi_action_workflow(self):
     #     workflow = execution_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
     #     action_names = ['start', '1']
@@ -130,3 +120,82 @@ class TestSimpleWorkflow(unittest.TestCase):
     #     for id_ in action_ids:
     #         actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
     #     self.assertEqual(len(actions), 2)
+=======
+        workflow = execution_db_help.load_workflow(playbook, workflow)
+        self.executor.execute_workflow(workflow.id)
+        self.executor.wait_and_reset(1)
+        self.assertListEqual(events, expected_events)
+
+    def test_simple_workflow_execution(self):
+        expected_events = [
+            WalkoffEvent.WorkflowExecutionStart,
+            WalkoffEvent.AppInstanceCreated,
+            WalkoffEvent.ActionStarted,
+            WalkoffEvent.ActionExecutionSuccess,
+            WalkoffEvent.WorkflowShutdown]
+
+        self.assert_execution_event_log('basicWorkflowTest', 'helloWorldWorkflow', expected_events)
+
+    def test_multi_action_workflow(self):
+        expected_events = [
+            WalkoffEvent.WorkflowExecutionStart,
+            WalkoffEvent.AppInstanceCreated,
+            WalkoffEvent.ActionStarted,
+            WalkoffEvent.ActionExecutionSuccess,
+            WalkoffEvent.BranchTaken,
+            WalkoffEvent.ActionStarted,
+            WalkoffEvent.ActionExecutionSuccess,
+            WalkoffEvent.WorkflowShutdown]
+
+        self.assert_execution_event_log('multiactionWorkflowTest', 'multiactionWorkflow', expected_events)
+
+    def test_error_workflow(self):
+        expected_events = [
+            WalkoffEvent.WorkflowExecutionStart,
+            WalkoffEvent.AppInstanceCreated,
+            WalkoffEvent.ActionStarted,
+            WalkoffEvent.ActionExecutionSuccess,
+            WalkoffEvent.BranchTaken,
+            WalkoffEvent.ActionStarted,
+            WalkoffEvent.ActionExecutionError,
+            WalkoffEvent.BranchTaken,
+            WalkoffEvent.ActionStarted,
+            WalkoffEvent.ActionExecutionSuccess,
+            WalkoffEvent.WorkflowShutdown]
+
+        self.assert_execution_event_log('multiactionError', 'multiactionErrorWorkflow', expected_events)
+
+    def test_workflow_with_dataflow(self):
+        expected_events = [
+            WalkoffEvent.WorkflowExecutionStart,
+            WalkoffEvent.AppInstanceCreated,
+            WalkoffEvent.ActionStarted,
+            WalkoffEvent.ActionExecutionSuccess,
+            WalkoffEvent.BranchTaken,
+            WalkoffEvent.ActionStarted,
+            WalkoffEvent.ActionExecutionSuccess,
+            WalkoffEvent.BranchTaken,
+            WalkoffEvent.ActionStarted,
+            WalkoffEvent.ActionExecutionSuccess,
+            WalkoffEvent.WorkflowShutdown
+        ]
+
+        self.assert_execution_event_log('dataflowTest', 'dataflowWorkflow', expected_events)
+
+    def test_workflow_with_dataflow_action_not_executed(self):
+        expected_events = [
+            WalkoffEvent.WorkflowExecutionStart,
+            WalkoffEvent.AppInstanceCreated,
+            WalkoffEvent.ActionStarted,
+            WalkoffEvent.ActionExecutionSuccess,
+            WalkoffEvent.BranchTaken,
+            WalkoffEvent.ActionStarted,
+            WalkoffEvent.ActionExecutionSuccess,
+            WalkoffEvent.BranchTaken,
+            WalkoffEvent.ActionStarted,
+            WalkoffEvent.ActionExecutionSuccess,
+            WalkoffEvent.WorkflowShutdown
+        ]
+
+        self.assert_execution_event_log('dataflowTest', 'dataflowWorkflow', expected_events)
+>>>>>>> development

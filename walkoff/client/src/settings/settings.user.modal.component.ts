@@ -65,7 +65,7 @@ export class SettingsUserModalComponent {
 			return;
 		}
 
-		const toSubmit = WorkingUser.toSave(this.workingUser);
+		const toSubmit = this.workingUser.toSave();
 
 		//If user has an ID, user already exists, call update
 		if (toSubmit.id) {

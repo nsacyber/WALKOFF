@@ -6,6 +6,14 @@ import { UUID } from 'angular2-uuid';
 import { Observable } from 'rxjs';
 import 'rxjs/Rx';
 import { saveAs } from 'file-saver';
+import { plainToClass } from 'class-transformer';
+
+import * as cytoscape from 'cytoscape';
+import * as clipboard from 'cytoscape-clipboard';
+import * as edgehandles from 'cytoscape-edgehandles';
+import * as gridGuide from 'cytoscape-grid-guide';
+import * as panzoom from 'cytoscape-panzoom';
+import * as undoRedo from 'cytoscape-undo-redo';
 
 import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
@@ -36,6 +44,8 @@ import { ActionStatusEvent } from '../models/execution/actionStatusEvent';
 	templateUrl: './playbook.html',
 	styleUrls: [
 		'./playbook.css',
+		'../../node_modules/cytoscape-panzoom/cytoscape.js-panzoom.css',
+		'../../node_modules/ng2-dnd/bundles/style.css',
 	],
 	encapsulation: ViewEncapsulation.None,
 	providers: [PlaybookService, AuthService, UtilitiesService],
@@ -111,6 +121,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	ngOnInit(): void {
 		this.toastyConfig.theme = 'bootstrap';
 
+		const cyDummy = cytoscape();
+		if (!cyDummy.clipboard) { clipboard(cytoscape, $); }
+		if (!cyDummy.edgehandles) { cytoscape.use(edgehandles); }
+		if (!cyDummy.gridGuide) { cytoscape.use(gridGuide); }
+		if (!cyDummy.panzoom) { cytoscape.use(panzoom); }
+		if (!cyDummy.undoRedo) { cytoscape.use(undoRedo); }
+
 		this.playbookService.getDevices().then(devices => this.devices = devices);
 		this.playbookService.getApis().then(appApis => this.appApis = appApis.sort((a, b) => a.name > b.name ? 1 : -1));
 		this.getActionStatusSSE();
@@ -172,7 +189,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Will update the information in the action statuses table as well, adding new rows or updating existing ones.
 	 */
 	actionStatusEventHandler(message: any): void {
-		const actionStatusEvent: ActionStatusEvent = JSON.parse(message.data);
+		const actionStatusEvent = plainToClass(ActionStatusEvent, (JSON.parse(message.data) as object));
 
 		// If we have a graph loaded, find the matching node for this event and style it appropriately if possible.
 		if (this.cy) {
@@ -235,7 +252,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			this.recalculateRelativeTimes(matchingActionStatus);
 			this.calculateLocalizedTimes(matchingActionStatus);
 		} else {
-			const newActionStatus = ActionStatusEvent.toNewActionStatus(actionStatusEvent);
+			const newActionStatus = actionStatusEvent.toNewActionStatus();
 			this.calculateLocalizedTimes(newActionStatus);
 			this.actionStatuses.push(newActionStatus);
 		}
@@ -311,8 +328,9 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 						'font-family': 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif, sans-serif',
 						'font-weight': 'lighter',
 						'font-size': '15px',
-						'width': '40',
-						'height': '40',
+						'width': 'label',
+						'height': 'label',
+						'padding': '10px'
 					},
 				},
 				{
@@ -331,7 +349,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				{
 					selector: 'node[?isStartNode]',
 					css: {
-						'border-width': '2px',
+						'border-width': '3px',
 						'border-color': '#991818',
 					},
 				},
@@ -391,6 +409,39 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 						'curve-style': 'bezier',
 					},
 				},
+				{
+					selector: '.eh-handle',
+					style: {
+						'background-color': '#337ab7',
+						'width': '1',
+						'height': '1',
+						'shape': 'ellipse',
+						'overlay-opacity': '0',
+					}
+				},
+				{
+					selector: '.eh-source',
+					style: {
+						'border-width': '3',
+						'border-color': '#337ab7'
+					}
+				},
+				{
+					selector: '.eh-target',
+					style: {
+						'border-width': '3',
+						'border-color': '#337ab7'
+					}
+				},
+				{
+					selector: '.eh-preview, .eh-ghost-edge',
+					style: {
+						'background-color': '#337ab7',
+						'line-color': '#337ab7',
+						'target-arrow-color': '#337ab7',
+						'source-arrow-color': '#337ab7'
+					}
+				}
 			],
 		});
 
@@ -441,14 +492,16 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 						defaultStatus = sourceActionApi.returns[0].status;
 					}
 
+					const newBranch = new Branch();
+
+					newBranch.id = tempId;
+					newBranch.source_id = sourceId;
+					newBranch.destination_id = destinationId;
+					newBranch.status = defaultStatus;
+					newBranch.priority = 1;
+
 					// Add our branch to the actual loadedWorkflow model
-					this.loadedWorkflow.branches.push({
-						id: tempId,
-						source_id: sourceId,
-						destination_id: destinationId,
-						status: defaultStatus,
-						priority: 1,
-					});
+					this.loadedWorkflow.branches.push(newBranch);
 				}
 
 				this.cy.remove(addedEntities);
@@ -506,7 +559,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		});
 
 		const nodes = this.loadedWorkflow.actions.map(action => {
-			const node: any = { group: 'nodes', position: _.clone(action.position) };
+			const node: any = { group: 'nodes', position: this.utils.cloneDeep(action.position) };
 			node.data = {
 				id: action.id,
 				_id: action.id,
@@ -566,7 +619,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		// Clone the loadedWorkflow first, so we don't change the parameters 
 		// in the editor when converting it to the format the backend expects.
-		const workflowToSave: Workflow = _.cloneDeep(this.loadedWorkflow);
+		const workflowToSave: Workflow = this.utils.cloneDeep(this.loadedWorkflow);
 
 		if (!workflowToSave.start) {
 			this.toastyService.warning('Workflow cannot be saved without a starting action.');
@@ -597,7 +650,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				savePromise = this.playbookService.newWorkflow(this.loadedPlaybook.id, workflowToSave);
 			}
 		} else {
-			const playbookToSave: Playbook = _.cloneDeep(this.loadedPlaybook);
+			const playbookToSave: Playbook = this.utils.cloneDeep(this.loadedPlaybook);
 			playbookToSave.workflows = [workflowToSave];
 			savePromise = this.playbookService.newPlaybook(playbookToSave)
 				.then(newPlaybook => {
@@ -676,7 +729,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				idsToRemove.unshift(args.indexOf(argument));
 			}
 			// Additionally, remove "value" if reference is specified
-			if (argument.reference !== '' && argument.value !== undefined) {
+			if (argument.reference && argument.value !== undefined) {
 				delete argument.value;
 			}
 			// Remove reference if unspecified
@@ -689,6 +742,11 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		// Split our string argument selector into what the server expects
 		args.forEach(argument => {
+			if (!argument.reference) {
+				delete argument.selection;
+				return;
+			}
+
 			if (argument.selection == null) {
 				argument.selection = [];
 			} else if (typeof (argument.selection) === 'string') {
@@ -1044,7 +1102,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.cy.clipboard().copy(this.cy.$(':selected'));
 	}
 
-	// TODO: update this to properly get new UIDs for pasted actions...
 	/**
 	 * Cytoscape paste method.
 	 */
@@ -1053,7 +1110,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		newNodes.forEach((n: any) => {
 			// Get a copy of the action we just copied
-			const pastedAction: Action = _.clone(this.loadedWorkflow.actions.find(a => a.id === n.data('_id')));
+			const pastedAction: Action = this.utils.cloneDeep(this.loadedWorkflow.actions.find(a => a.id === n.data('_id')));
 
 			const newActionUuid = UUID.UUID();
 

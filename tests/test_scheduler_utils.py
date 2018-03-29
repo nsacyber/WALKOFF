@@ -15,15 +15,15 @@ class TestSchedulerUtils(unittest.TestCase):
 
     def test_construct_task_id(self):
         task_id_workflow_id_pairs = {('task', 'work'): 'task-work',
-                                      ('', 'work'): '-work',
-                                      ('task', ''): 'task-'}
+                                     ('', 'work'): '-work',
+                                     ('task', ''): 'task-'}
         for input_, output in task_id_workflow_id_pairs.items():
             self.assertEqual(construct_task_id(*input_), output)
 
     def test_split_task_id(self):
         task_id_workflow_id_pairs = {'task-work': ['task', 'work'],
-                                      '-work': ['', 'work'],
-                                      'task-': ['task', '']}
+                                     '-work': ['', 'work'],
+                                     'task-': ['task', '']}
         for input_, output in task_id_workflow_id_pairs.items():
             self.assertListEqual(split_task_id(input_), output)
 

@@ -1,14 +1,14 @@
 import unittest
 
 import walkoff.appgateway
-import walkoff.config.config
+import walkoff.config
+from tests.config import test_apps_path
+from tests.util import execution_db_help
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.transform import Transform
 from walkoff.helpers import InvalidArgument
-from tests.config import test_apps_path
-import walkoff.config.paths
-from tests.util import execution_db_help
+from walkoff.helpers import InvalidExecutionElement
 
 
 class TestCondition(unittest.TestCase):
@@ -17,11 +17,11 @@ class TestCondition(unittest.TestCase):
         execution_db_help.setup_dbs()
         walkoff.appgateway.clear_cache()
         walkoff.appgateway.cache_apps(path=test_apps_path)
-        walkoff.config.config.load_app_apis(test_apps_path)
+        walkoff.config.load_app_apis(test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
-        execution_db_help.tear_down_device_db()
+        execution_db_help.tear_down_execution_db()
         walkoff.appgateway.clear_cache()
 
     def __compare_init(self, condition, app_name, action_name, transforms, arguments=None, is_negated=False):
@@ -53,11 +53,11 @@ class TestCondition(unittest.TestCase):
         self.__compare_init(condition, 'HelloWorld', 'mod1_flag2', [], [Argument('arg1', reference="action2")])
 
     def test_init_with_arguments_invalid_arg_name(self):
-        with self.assertRaises(InvalidArgument):
+        with self.assertRaises(InvalidExecutionElement):
             Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('invalid', value='3')])
 
     def test_init_with_arguments_invalid_arg_type(self):
-        with self.assertRaises(InvalidArgument):
+        with self.assertRaises(InvalidExecutionElement):
             Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value='aaa')])
 
     def test_init_with_transforms(self):

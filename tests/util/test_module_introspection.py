@@ -8,6 +8,7 @@ class ClassA(object):
 
     def public_func1(self, outer_param1):
         local_var = 1
+
         def inner_function(a):
             inner_variable = 'a'
 
@@ -35,6 +36,3 @@ class ClassA(object):
 
 class ClassB(ClassA):
     pass
-
-
-

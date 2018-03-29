@@ -1,14 +1,13 @@
 from flask import request, current_app
 from flask_jwt_extended import jwt_required
 
-from walkoff.serverdb import clear_resources_for_role, get_all_available_resource_actions
-from walkoff.serverdb.role import Role
 from walkoff.extensions import db
-from walkoff.server.returncodes import *
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions, admin_required
 from walkoff.server.decorators import with_resource_factory
 from walkoff.server.problem import Problem
-
+from walkoff.server.returncodes import *
+from walkoff.serverdb import clear_resources_for_role, get_all_available_resource_actions
+from walkoff.serverdb.role import Role
 
 with_role = with_resource_factory('role', lambda role_id: Role.query.filter_by(id=role_id).first())
 
@@ -95,7 +94,7 @@ def delete_role(role_id):
         clear_resources_for_role(role.name)
         db.session.delete(role)
         db.session.commit()
-        return {}, NO_CONTENT
+        return None, NO_CONTENT
 
     return __func()
 
