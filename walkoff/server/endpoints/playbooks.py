@@ -20,7 +20,7 @@ except ImportError:
     from io import StringIO
 from walkoff.server.problem import Problem
 from walkoff.executiondb.schemas import PlaybookSchema, WorkflowSchema
-from walkoff.helpers import InvalidArgument, UnknownApp, UnknownFunction
+from walkoff.helpers import InvalidArgument, UnknownApp, UnknownFunction, strip_device_ids
 
 playbook_schema = PlaybookSchema()
 workflow_schema = WorkflowSchema()
@@ -140,6 +140,7 @@ def read_playbook(playbook_id, mode=None):
     def __func(playbook):
         playbook_json = playbook_schema.dump(playbook).data
         if mode == "export":
+            strip_device_ids(playbook_json)
             f = StringIO()
             f.write(json.dumps(playbook_json, sort_keys=True, indent=4, separators=(',', ': ')))
             f.seek(0)
