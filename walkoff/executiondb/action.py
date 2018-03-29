@@ -2,13 +2,8 @@ import logging
 import traceback
 import uuid
 
-<<<<<<< HEAD
 from sqlalchemy import Column, ForeignKey, String, orm
-from sqlalchemy.orm import relationship, backref
-=======
-from sqlalchemy import Column, Integer, ForeignKey, String, orm
 from sqlalchemy.orm import relationship
->>>>>>> development
 from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway import get_app_action, is_app_action_bound
@@ -31,18 +26,10 @@ class Action(ExecutionElement, Execution_Base):
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     name = Column(String(80), nullable=False)
-<<<<<<< HEAD
-    device_id = relationship('Argument', uselist=False, backref=backref('_action_device'), cascade='all, delete-orphan')
-    arguments = relationship('Argument', backref=backref('_action_arg'), cascade='all, delete, delete-orphan')
-    trigger = relationship('ConditionalExpression', backref=backref('_action'), cascade='all, delete-orphan',
-                           uselist=False)
-    position = relationship('Position', uselist=False, backref=backref('_action'), cascade='all, delete-orphan')
-=======
-    device_id = Column(Integer)
+    device_id = relationship('Argument', uselist=False, cascade='all, delete-orphan')
     arguments = relationship('Argument', cascade='all, delete, delete-orphan')
     trigger = relationship('ConditionalExpression', cascade='all, delete-orphan', uselist=False)
     position = relationship('Position', uselist=False, cascade='all, delete-orphan')
->>>>>>> development
 
     def __init__(self, app_name, action_name, name, device_id=None, id=None, arguments=None, trigger=None,
                  position=None):
@@ -72,16 +59,6 @@ class Action(ExecutionElement, Execution_Base):
         self.app_name = app_name
         self.action_name = action_name
 
-<<<<<<< HEAD
-        self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
-        if is_app_action_bound(self.app_name, self._run) and self.device_id is None:
-            raise InvalidArgument(
-                "Cannot initialize Action {}. App action is bound but no device ID was provided.".format(self.name))
-
-        validate_app_action_parameters(self._arguments_api, arguments, self.app_name, self.action_name)
-
-=======
->>>>>>> development
         self.arguments = []
         if arguments:
             self.arguments = arguments
@@ -92,9 +69,9 @@ class Action(ExecutionElement, Execution_Base):
         self._arguments_api = None
         self._output = None
         self._execution_id = 'default'
+        self._action_executable = None
 
         self.validate()
-        self._action_executable = get_app_action(self.app_name, self._run)
 
     @orm.reconstructor
     def init_on_load(self):

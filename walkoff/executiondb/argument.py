@@ -33,11 +33,6 @@ class Argument(Execution_Base):
         """
         self.name = name
         self.value = value
-<<<<<<< HEAD
-        self.reference = reference
-        self.selection = selection
-=======
->>>>>>> development
         self._is_reference = True if value is None else False
         self.reference = reference
         self.selection = selection

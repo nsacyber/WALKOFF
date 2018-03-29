@@ -48,79 +48,6 @@ class TestSimpleWorkflow(unittest.TestCase):
             self.assertIn('event', kwargs)
             events.append(kwargs['event'])
 
-<<<<<<< HEAD
-    # def test_multi_action_workflow(self):
-    #     workflow = execution_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow')
-    #     action_names = ['start', '1']
-    #     action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
-    #     setup_subscriptions_for_action(workflow.id, action_ids)
-    #     self.executor.execute_workflow(workflow.id)
-    #
-    #     self.executor.wait_and_reset(1)
-    #     actions = []
-    #     for id_ in action_ids:
-    #         actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
-    #
-    #     self.assertEqual(len(actions), 2)
-    #     expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
-    #                         {'result': "REPEATING: Hello World", 'status': 'Success'}]
-    #     for result in [action['data'] for action in actions]:
-    #         self.assertIn(result, expected_results)
-    #
-    # def test_error_workflow(self):
-    #     workflow = execution_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
-    #     action_names = ['start', '1', 'error']
-    #     action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
-    #     setup_subscriptions_for_action(workflow.id, action_ids)
-    #     self.executor.execute_workflow(workflow.id)
-    #
-    #     self.executor.wait_and_reset(1)
-    #
-    #     actions = []
-    #     for id_ in action_ids:
-    #         actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
-    #     #print(actions)
-    #     self.assertEqual(len(actions), 2)
-    #
-    #     expected_results = [{'result': {"message": "HELLO WORLD"}, 'status': 'Success'},
-    #                         {'status': 'Success', 'result': 'REPEATING: Hello World'}]
-    #     for result in [action['data'] for action in actions]:
-    #         self.assertIn(result, expected_results)
-    #
-    # def test_workflow_with_dataflow(self):
-    #     workflow = execution_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
-    #     action_names = ['start', '1', '2']
-    #     action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
-    #     setup_subscriptions_for_action(workflow.id, action_ids)
-    #
-    #     self.executor.execute_workflow(workflow.id)
-    #
-    #     self.executor.wait_and_reset(1)
-    #
-    #     actions = []
-    #     for id_ in action_ids:
-    #         actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
-    #     self.assertEqual(len(actions), 3)
-    #     expected_results = [{'result': 6, 'status': 'Success'},
-    #                         {'result': 6, 'status': 'Success'},
-    #                         {'result': 15, 'status': 'Success'}]
-    #     for result in [action['data'] for action in actions]:
-    #         self.assertIn(result, expected_results)
-    #
-    # def test_workflow_with_dataflow_action_not_executed(self):
-    #     workflow = execution_db_help.load_workflow('dataflowTest', 'dataflowWorkflow')
-    #     action_names = ['start', '1']
-    #     action_ids = [action_id for action_id, action in workflow.actions.items() if action.name in action_names]
-    #     setup_subscriptions_for_action(workflow.id, action_ids)
-    #     self.executor.execute_workflow(workflow.id)
-    #
-    #     self.executor.wait_and_reset(1)
-    #
-    #     actions = []
-    #     for id_ in action_ids:
-    #         actions.extend(executed_actions(id_, self.start, datetime.utcnow()))
-    #     self.assertEqual(len(actions), 2)
-=======
         workflow = execution_db_help.load_workflow(playbook, workflow)
         self.executor.execute_workflow(workflow.id)
         self.executor.wait_and_reset(1)
@@ -198,4 +125,3 @@ class TestSimpleWorkflow(unittest.TestCase):
         ]
 
         self.assert_execution_event_log('dataflowTest', 'dataflowWorkflow', expected_events)
->>>>>>> development
