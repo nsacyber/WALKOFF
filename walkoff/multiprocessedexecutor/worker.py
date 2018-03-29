@@ -14,7 +14,6 @@ from google.protobuf.json_format import MessageToDict
 from nacl.public import PrivateKey, Box
 from six import string_types
 
-import walkoff.cache
 import walkoff.config
 import walkoff.executiondb
 from walkoff import initialize_databases
@@ -215,6 +214,7 @@ class Worker(object):
             if socket:
                 socket.close()
         walkoff.executiondb.execution_db.tear_down()
+        self.cache.shutdown()
         os._exit(0)
 
     def receive_requests(self):

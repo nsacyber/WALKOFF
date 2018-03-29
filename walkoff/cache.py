@@ -200,6 +200,11 @@ class DiskPubSubCache(object):
 
         return con
 
+    def shutdown(self):
+        """Shuts down the connection to the cache
+        """
+        self.cache.close()
+
 
 class DiskCacheAdapter(object):
     """Adapter for a DiskCache backed cache
@@ -426,6 +431,7 @@ class DiskCacheAdapter(object):
         """Shuts down the connection to the cache
         """
         self.cache.close()
+        self.pubsub_cache.shutdown()
 
     def clear(self):
         """Clears all values in the cache

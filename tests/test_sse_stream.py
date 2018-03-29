@@ -200,6 +200,7 @@ class TestDiskSseStream(TestCase, SseStreamTestBase):
 
     def tearDown(self):
         self.cache.clear()
+        self.cache.shutdown()
 
     @classmethod
     def tearDownClass(cls):
