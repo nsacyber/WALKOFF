@@ -3,7 +3,6 @@ from walkoff.cache import DiskCacheAdapter, unsubscribe_message
 from tests.config import cache_path
 from tests.util.mock_objects import PubSubCacheSpy
 import os
-import shutil
 from datetime import timedelta
 
 
@@ -20,10 +19,6 @@ class TestDiskCacheAdapter(TestCase):
     def tearDown(self):
         self.cache.clear()
         self.cache.shutdown()
-
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cache_path)
 
     def test_init(self):
         self.assertEqual(self.cache.directory, cache_path)
@@ -97,9 +92,10 @@ class TestDiskCacheAdapter(TestCase):
         self.assertIsNone(self.cache.lpop('queue'))
 
     def test_l_push_pop_multiple_values(self):
-        self.cache.rpush('big', 10, 11, 12)
-        self.assertEqual(self.cache.lpop('big'), 10)
-        self.assertEqual(self.cache.rpop('big'), 12)
+        self.cache.rpush('big2', 10, 11, 12)
+        self.assertEqual(self.cache.lpop('big2'), 10)
+        self.assertEqual(self.cache.lpop('big2'), 11)
+        self.assertEqual(self.cache.lpop('big2'), 12)
 
     def test_convert_expire_to_seconds_timedelta(self):
         self.assertEqual(DiskCacheAdapter._convert_expire_to_seconds(timedelta(seconds=10, milliseconds=500)), 10.5)
@@ -120,7 +116,7 @@ class TestDiskCacheAdapter(TestCase):
         self.cache.publish('channel1', 87)
         self.assertDictEqual(self.cache.pubsub_cache.published, {'channel1': [87]})
 
-    def test_publish(self):
+    def test_unsubscribe(self):
         self.cache.pubsub_cache = PubSubCacheSpy()
         self.cache.unsubscribe('channel1')
         self.assertDictEqual(self.cache.pubsub_cache.published, {'channel1': [unsubscribe_message]})

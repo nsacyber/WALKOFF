@@ -202,10 +202,6 @@ class TestDiskSseStream(TestCase, SseStreamTestBase):
         self.cache.clear()
         self.cache.shutdown()
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cache_path)
-
 
 class TestRedisSseStream(TestCase, SseStreamTestBase):
     @classmethod
