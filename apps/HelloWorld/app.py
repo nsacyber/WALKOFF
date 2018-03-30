@@ -3,11 +3,11 @@ import time
 
 from apps import App, action
 
-logger = logging.getLogger(__name__)
-
+logger = logging.getLogger("apps")
 
 @action
 def hello_world():
+    logger.debug("This is a test")
     return {"message": "HELLO WORLD"}
 
 
@@ -29,7 +29,6 @@ def pause(seconds):
 class HelloWorld(App):
     """This app defines the same actions as above, but bound to an app instance. This instance will keep track fo how
     many total actions are called for this app's instance.
-
     """
 
     def __init__(self, name=None, device=None):

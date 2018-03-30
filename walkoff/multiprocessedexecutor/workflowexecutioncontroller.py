@@ -181,15 +181,22 @@ class Receiver:
         message_outer = Message()
         message_outer.ParseFromString(message_bytes)
         callback_name = message_outer.event_name
+
         if message_outer.type == Message.WORKFLOWPACKET:
             message = message_outer.workflow_packet
         elif message_outer.type == Message.ACTIONPACKET:
             message = message_outer.action_packet
         elif message_outer.type == Message.USERMESSAGE:
             message = message_outer.message_packet
+        elif message_outer.type == Message.LOGMESSAGE:
+            message = message_outer.logging_packet
         else:
             message = message_outer.general_packet
-        sender = MessageToDict(message.sender, preserving_proto_field_name=True)
+
+        if hasattr(message, "sender"):
+            sender = MessageToDict(message.sender, preserving_proto_field_name=True)
+        elif hasattr(message, "workflow"):
+            sender = MessageToDict(message.workflow, preserving_proto_field_name=True)
         event = WalkoffEvent.get_event_from_name(callback_name)
         if event is not None:
             data = self._format_data(event, message)
@@ -201,7 +208,9 @@ class Receiver:
 
     @staticmethod
     def _format_data(event, message):
-        if event.event_type != EventType.workflow:
+        if event == WalkoffEvent.ConsoleLog:
+            data = MessageToDict(message, preserving_proto_field_name=True)
+        elif event.event_type != EventType.workflow:
             data = {'workflow': MessageToDict(message.workflow, preserving_proto_field_name=True)}
         else:
             data = {}

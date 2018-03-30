@@ -50,7 +50,9 @@ def convert_to_protobuf(sender, workflow, **kwargs):
     if event.event_type == EventType.workflow:
         convert_workflow_to_proto(packet, workflow, data)
     elif event.event_type == EventType.action:
-        if event == WalkoffEvent.SendMessage:
+        if event == WalkoffEvent.ConsoleLog:
+            convert_log_message_to_protobuf(packet, sender, workflow, **kwargs)
+        elif event == WalkoffEvent.SendMessage:
             convert_send_message_to_protobuf(packet, sender, workflow, **kwargs)
         else:
             convert_action_to_proto(packet, sender, workflow, data)
@@ -81,6 +83,17 @@ def convert_send_message_to_protobuf(packet, message, workflow, **kwargs):
         message_packet.roles.extend(kwargs['roles'])
     if 'requires_reauth' in kwargs:
         message_packet.requires_reauth = kwargs['requires_reauth']
+
+
+def convert_log_message_to_protobuf(packet, sender, workflow, **kwargs):
+    packet.type = Message.LOGMESSAGE
+    logging_packet = packet.logging_packet
+    logging_packet.name = sender.name
+    logging_packet.app_name = sender.app_name
+    logging_packet.action_name = sender.action_name
+    logging_packet.level = str(kwargs['level'])  # Needed just in case logging level is set to an int
+    logging_packet.message = kwargs['message']
+    add_workflow_to_proto(logging_packet.workflow, workflow)
 
 
 def convert_action_to_proto(packet, sender, workflow, data=None):
@@ -332,6 +345,9 @@ class Worker(object):
                 app_instances=workflow.get_instances())
             walkoff.executiondb.execution_db.session.add(saved_workflow)
             walkoff.executiondb.execution_db.session.commit()
+        elif kwargs['event'] == WalkoffEvent.ConsoleLog:
+            action = workflow.get_executing_action()
+            sender = action
 
         packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
         self.case_logger.log(event, sender.id, kwargs.get('data', None))

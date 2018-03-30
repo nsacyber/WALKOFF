@@ -15,11 +15,13 @@ def register_blueprints(flaskapp):
     from walkoff.server.blueprints import custominterface
     from walkoff.server.blueprints import workflowresults
     from walkoff.server.blueprints import notifications
+    from walkoff.server.blueprints import console
 
     flaskapp.register_blueprint(custominterface.custom_interface_page, url_prefix='/custominterfaces/<interface>')
     flaskapp.register_blueprint(workflowresults.workflowresults_page, url_prefix='/api/streams/workflowqueue')
     flaskapp.register_blueprint(notifications.notifications_page, url_prefix='/api/streams/messages')
-    for blueprint in (workflowresults.workflowresults_page, notifications.notifications_page):
+    flaskapp.register_blueprint(console.console_page, url_prefix='/api/streams/console')
+    for blueprint in (workflowresults.workflowresults_page, notifications.notifications_page, console.console_page):
         blueprint.cache = walkoff.cache.cache
     __register_all_app_blueprints(flaskapp)
 

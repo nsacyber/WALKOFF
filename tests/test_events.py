@@ -24,6 +24,7 @@ class TestEvents(TestCase):
         self.assertIsInstance(signal.signal, Signal)
         self.assertEqual(len(WalkoffSignal._signals), 0)
         self.assertTrue(signal.is_loggable)
+        self.assertTrue(signal.is_sent_to_interfaces)
 
     def test_walkoff_signal_init_loggable_false(self):
         signal = WalkoffSignal('name', EventType.action, loggable=False)
@@ -32,6 +33,16 @@ class TestEvents(TestCase):
         self.assertIsInstance(signal.signal, Signal)
         self.assertEqual(len(WalkoffSignal._signals), 0)
         self.assertFalse(signal.is_loggable)
+        self.assertTrue(signal.is_sent_to_interfaces)
+
+    def test_walkoff_signal_init_send_to_interfaces_false(self):
+        signal = WalkoffSignal('name', EventType.action, send_to_interfaces=False)
+        self.assertEqual(signal.name, 'name')
+        self.assertEqual(signal.event_type, EventType.action)
+        self.assertIsInstance(signal.signal, Signal)
+        self.assertEqual(len(WalkoffSignal._signals), 0)
+        self.assertTrue(signal.is_loggable)
+        self.assertFalse(signal.is_sent_to_interfaces)
 
     def test_walkoff_signal_connect_strong_ref(self):
         def xx(): pass

@@ -207,6 +207,7 @@ class Workflow(ExecutionElement, Execution_Base):
 
     def set_execution_id(self, execution_id):
         """Sets the execution UD for the Workflow
+
         Args:
             execution_id (str): The execution ID
         """
@@ -214,6 +215,7 @@ class Workflow(ExecutionElement, Execution_Base):
 
     def get_execution_id(self):
         """Gets the execution ID for the Workflow
+
         Returns:
             The execution ID of the Workflow
         """
@@ -221,13 +223,23 @@ class Workflow(ExecutionElement, Execution_Base):
 
     def get_executing_action_id(self):
         """Gets the ID of the currently executing Action
+
         Returns:
             The ID of the currently executing Action
         """
         return self._executing_action.id
 
+    def get_executing_action(self):
+        """Gets the currently executing Action
+
+        Returns:
+            The currently executing Action
+        """
+        return self._executing_action
+
     def get_accumulator(self):
         """Gets the accumulator
+
         Returns:
             The accumulator
         """
@@ -235,6 +247,7 @@ class Workflow(ExecutionElement, Execution_Base):
 
     def get_instances(self):
         """Gets all instances
+
         Returns:
             All instances
         """
