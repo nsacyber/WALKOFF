@@ -247,29 +247,24 @@
                          </ng-template>
                      </ngx-datatable-column>
 
-                     <ngx-datatable-column name="Message" prop="message" [flexGrow]="1">
+                     <ngx-datatable-column name="App Name" prop="app_name" [flexGrow]="2">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{row.app_name}}
+                        </ng-template>
+                    </ngx-datatable-column>                     
+
+                     <ngx-datatable-column name="Action Name" prop="action_name" [flexGrow]="2">
+                         <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{row.action_name}}
+                         </ng-template>
+                     </ngx-datatable-column>
+
+                     <ngx-datatable-column name="Message" prop="message" [flexGrow]="4">
                          <ng-template let-row="row" ngx-datatable-cell-template>
                              {{row.message}}
                          </ng-template>
                      </ngx-datatable-column>
-
-                     <ngx-datatable-column name="Action Name" prop="action_name" [flexGrow]="1">
-                          <ng-template let-row="row" ngx-datatable-cell-template>
-                             {{row.action_name}}
-                         </ng-template>
-                     </ngx-datatable-column>
-
-                     <ngx-datatable-column name="App Name" prop="app_name" [flexGrow]="1">
-                         <ng-template let-row="row" ngx-datatable-cell-template>
-                             {{row.app_name}}
-                         </ng-template>
-                     </ngx-datatable-column>
-
-                     <ngx-datatable-column name="Workflow" prop="workflow" [flexGrow]="1">
-                         <ng-template let-row="row" ngx-datatable-cell-template>
-                             {{row.workflow}}
-                         </ng-template>
-                     </ngx-datatable-column>
+         
                  </ngx-datatable>
             </div>
             <div id="executionLog" class="tab-pane fade">
@@ -279,7 +274,7 @@
                         [headerHeight]="25" [footerHeight]="25" [rowHeight]="undefined" [sorts]="[{prop: 'started_at', dir: 'desc'}]"
                         [limit]="10">
                         <!-- Column Templates -->
-                        <ngx-datatable-column name="Action ID" prop="action_id" [flexGrow]="1"></ngx-datatable-column>
+                        <ngx-datatable-column name="Action IDs" prop="action_id" [flexGrow]="1"></ngx-datatable-column>
                         <ngx-datatable-column name="App Name" prop="app_name" [flexGrow]="1"></ngx-datatable-column>
                         <ngx-datatable-column name="Action Name" prop="action_name" [flexGrow]="1"></ngx-datatable-column>
                         <ngx-datatable-column name="Started At" prop="started_at" [flexGrow]="1">
