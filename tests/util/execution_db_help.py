@@ -18,6 +18,7 @@ from walkoff.executiondb.transform import Transform
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
 from walkoff.executiondb.metrics import AppMetric, WorkflowMetric
+from walkoff.executiondb.device import Device, DeviceField
 
 
 def load_playbooks(playbooks):
@@ -70,7 +71,7 @@ def setup_dbs():
 def cleanup_execution_db():
     executiondb.execution_db.session.rollback()
     classes = [Playbook, Workflow, Action, Branch, Argument, ConditionalExpression, Condition, Transform,
-               WorkflowStatus, ActionStatus, AppMetric, WorkflowMetric, WorkflowStatus]
+               WorkflowStatus, ActionStatus, AppMetric, WorkflowMetric, WorkflowStatus, Device, DeviceField]
     for ee in classes:
         for instance in executiondb.execution_db.session.query(ee).all():
             executiondb.execution_db.session.delete(instance)

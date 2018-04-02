@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from sqlalchemy import Column, Integer, ForeignKey, String, LargeBinary, Enum, DateTime, func, orm
+from sqlalchemy import Column, Integer, ForeignKey, String, LargeBinary, Enum, DateTime, func, orm, and_
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
@@ -496,3 +496,23 @@ def get_app(app_name):
     else:
         logger.warning('Cannot get app {}. App does not exist'.format(app_name))
         return None
+
+
+def get_device_ids_by_fields(fields):
+    """Gets a list of device IDs that contain the fields
+
+    Args:
+        fields (dict {field_name: field_value}): Dict containing a field_name and a field_value for the device
+
+    Returns:
+        A list of device IDs that contain the fields passed in
+    """
+    devices = executiondb.execution_db.session.query(Device).join(Device.plaintext_fields).filter(
+        and_(DeviceField.name.in_(fields.keys()), DeviceField._value.in_(fields.values()))).all()
+
+    device_ids = []
+    for device in devices:
+        if set(fields.items()) <= set(device.get_plaintext_fields().items()):
+            device_ids.append(device.id)
+
+    return device_ids

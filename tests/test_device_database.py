@@ -1,9 +1,24 @@
 import unittest
 
-from walkoff.executiondb.device import Device, UnknownDeviceField, DeviceField, EncryptedDeviceField
+from walkoff.executiondb.device import Device, UnknownDeviceField, DeviceField, EncryptedDeviceField, \
+    get_device_ids_by_fields
+from tests.util import execution_db_help
+from walkoff import executiondb
 
 
 class TestDeviceDatabase(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        execution_db_help.setup_dbs()
+
+    def tearDown(self):
+        execution_db_help.cleanup_execution_db()
+
+    @classmethod
+    def tearDownClass(cls):
+        execution_db_help.tear_down_execution_db()
+
     def assertConstructionIsCorrect(self, device, name, plaintext_fields, encrypted_fields, device_type,
                                     description=''):
         self.assertEqual(device.name, name)
@@ -130,7 +145,7 @@ class TestDeviceDatabase(unittest.TestCase):
         encrypted_fields = [EncryptedDeviceField('test3', 'boolean', True),
                             EncryptedDeviceField('test4', 'string', 'something else')]
         device = Device('test', plaintext_fields, encrypted_fields, 'type', description='desc')
-        device.update_from_json({'name': 'new_name'})
+        device.update_from_json({'name': 'new_name'}, True)
         self.assertConstructionIsCorrect(device, 'new_name', plaintext_fields, encrypted_fields, 'type',
                                          description='desc')
 
@@ -139,7 +154,7 @@ class TestDeviceDatabase(unittest.TestCase):
         encrypted_fields = [EncryptedDeviceField('test3', 'boolean', True),
                             EncryptedDeviceField('test4', 'string', 'something else')]
         device = Device('test', plaintext_fields, encrypted_fields, 'type', description='desc')
-        device.update_from_json({'description': 'new_desc'})
+        device.update_from_json({'description': 'new_desc'}, True)
         self.assertConstructionIsCorrect(device, 'test', plaintext_fields, encrypted_fields, 'type',
                                          description='new_desc')
 
@@ -148,7 +163,7 @@ class TestDeviceDatabase(unittest.TestCase):
         encrypted_fields = [EncryptedDeviceField('test3', 'boolean', True),
                             EncryptedDeviceField('test4', 'string', 'something else')]
         device = Device('test', plaintext_fields, encrypted_fields, 'type', description='desc')
-        device.update_from_json({'type': 'new_type'})
+        device.update_from_json({'type': 'new_type'}, True)
         self.assertConstructionIsCorrect(device, 'test', plaintext_fields, encrypted_fields, 'new_type',
                                          description='desc')
 
@@ -159,7 +174,7 @@ class TestDeviceDatabase(unittest.TestCase):
         new_plaintext_fields = [DeviceField('new_test_name', 'integer', 451),
                                 DeviceField('new_test2', 'string', 'changed')]
         device = Device('test', plaintext_fields, encrypted_fields, 'type', description='desc')
-        device.update_from_json({'fields': [field.as_json() for field in new_plaintext_fields]})
+        device.update_from_json({'fields': [field.as_json() for field in new_plaintext_fields]}, True)
         self.assertEqual(device.name, 'test')
         self.assertEqual(device.type, 'type')
         self.assertEqual(device.description, 'desc')
@@ -177,9 +192,34 @@ class TestDeviceDatabase(unittest.TestCase):
         encrypted_field_json1['value'] = True
         encrypted_field_json2['value'] = 'something_else'
         device = Device('test', plaintext_fields, encrypted_fields, 'type', description='desc')
-        device.update_from_json({'fields': [encrypted_field_json1, encrypted_field_json2]})
+        device.update_from_json({'fields': [encrypted_field_json1, encrypted_field_json2]}, True)
         self.assertEqual(device.name, 'test')
         self.assertEqual(device.type, 'type')
         self.assertEqual(device.description, 'desc')
         self.assertSetEqual({field.name for field in device.plaintext_fields}, set())
         self.assertSetEqual({field.name for field in device.encrypted_fields}, {'new_test3', 'new_test4'})
+
+    def test_get_device_ids(self):
+        device_one = Device('test',
+                            [DeviceField('valid_one', 'integer', 123), DeviceField('valid_two', 'string', '456'),
+                             DeviceField('invalid', 'integer', 789)], [], 'type', description='desc')
+
+        device_two = Device('test',
+                            [DeviceField('valid_one', 'integer', 123), DeviceField('valid_two', 'string', '456')], [],
+                            'type', description='desc')
+
+        device_three = Device('test',
+                              [DeviceField('valid_one', 'string', '456'), DeviceField('valid_two', 'integer', 123)], [],
+                              'type', description='desc')
+
+        device_four = Device('test',
+                             [DeviceField('valid_one', 'integer', 123), DeviceField('invalid', 'integer', 789)], [],
+                             'type', description='desc')
+
+        executiondb.execution_db.session.add_all([device_one, device_two, device_three, device_four])
+        executiondb.execution_db.session.commit()
+
+        device_ids = get_device_ids_by_fields({'valid_one': 123, 'valid_two': '456'})
+        self.assertEqual(len(device_ids), 2)
+        self.assertIn(device_one.id, device_ids)
+        self.assertIn(device_two.id, device_ids)
