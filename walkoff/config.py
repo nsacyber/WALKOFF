@@ -18,7 +18,7 @@ def load_app_apis(apps_path=None):
     """Loads App APIs
     
     Args:
-        apps_path (str, optional): Optional path to specifiy for the apps. Defaults to None, but will be set to the
+        apps_path (str, optional): Optional path to specify for the apps. Defaults to None, but will be set to the
             apps_path variable in Config object
     """
     from walkoff.helpers import list_apps, format_exception_message
@@ -43,6 +43,7 @@ def load_app_apis(apps_path=None):
             except Exception as e:
                 logger.error(
                     'Cannot load apps api for app {0}: Error {1}'.format(app, str(format_exception_message(e))))
+
 
 def setup_logger():
     log_config = None
@@ -70,8 +71,6 @@ def setup_logger():
         return
 
     warnings.showwarning = send_warnings_to_log
-
-
 
 
 class Config(object):
@@ -165,15 +164,10 @@ class AppConfig(object):
     SQLALCHEMY_DATABASE_URI = '{0}://{1}'.format(Config.WALKOFF_DB_TYPE, abspath(
         Config.DB_PATH)) if Config.WALKOFF_DB_TYPE != 'sqlite' else '{0}:///{1}'.format(Config.WALKOFF_DB_TYPE,
                                                                                         abspath(Config.DB_PATH))
-    SECURITY_PASSWORD_HASH = 'pbkdf2_sha512'
-    SECURITY_TRACKABLE = False
-    SECURITY_PASSWORD_SALT = 'something_super_secret_change_in_production'
-    SECURITY_POST_LOGIN_VIEW = '/'
-    WTF_CSRF_ENABLED = False
+
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['refresh']
     JWT_TOKEN_LOCATION = 'headers'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
 def initialize():
