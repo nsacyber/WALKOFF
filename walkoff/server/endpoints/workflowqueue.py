@@ -95,6 +95,12 @@ def execute_workflow():
                     INVALID_INPUT_ERROR,
                     'Cannot execute workflow.',
                     'An argument is invalid. Reason: {}'.format(e.message))
+            except TypeError as e:
+                current_app.logger.error('Could not execute workflow. Unexpected arguments.')
+                return Problem(
+                    INVALID_INPUT_ERROR,
+                    'Cannot execute workflow.',
+                    'An unexpected argument was received. Reason: {}'.format(e.message))
 
         execution_id = running_context.executor.execute_workflow(workflow_id, start=start, start_arguments=arguments)
         current_app.logger.info('Executed workflow {0}'.format(workflow_id))
