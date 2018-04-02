@@ -34,6 +34,16 @@ their processes but allows users to act on their processes faster as well.
 
 Walkoff apps can be found at: <https://github.com/iadgov/WALKOFF-Apps>
 
+## Base Requirements
+
+* Python 2.7+ or Python 3.4+
+* NodeJS and Node Package Manager (npm)
+    * On Ubuntu, if you install `node` via `apt-get`, it will be installed as `nodejs` - you may need to create a symlink from your installed `nodejs` to `node` for `npm` to work correctly.
+* Tested on Windows and Linux
+    * On Linux, you will need the `python-devel` package for your distribution.
+
+*Individual apps may specify their own requirements.*
+
 ## Installation Instructions
 
 If the Python environment for your elevated privileges are the same as the Python environment you will be running WALKOFF in (use `pip --version` to check), you can use the all-in-one setup script with elevated privileges:
@@ -113,15 +123,6 @@ For more options, run
 
    * How often workflows are run?
 
-## Base Requirements
-
-* Python 2.7+ or Python 3.4+
-* NodeJS and Node Package Manager (npm)
-* Tested on Windows and Linux
-* On Linux, you will need the python-devel package for your distribution.
-
-*Requirements for apps may differ*
-
 ## Apps
 
 WALKOFF-enabled apps can be found at www.github.com/iadgov/walkoff-apps
@@ -140,6 +141,7 @@ WALKOFF-enabled apps can be found at www.github.com/iadgov/walkoff-apps
 considered permanent*
 
 ## Updating Walkoff
+
 An update script, `update.py`, is provided to update the repo to the most
 recent release. This script uses SqlAlchemy-Alembic to update database schemas
 and custom upgrade scripts to update the workflow JSON files. To run this
