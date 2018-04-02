@@ -14,7 +14,6 @@ from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEn
 from walkoff.server import workflowresults  # Need this import
 from walkoff import executiondb
 import walkoff.cache
-from mock import create_autospec
 from walkoff.case.logger import CaseLogger
 from walkoff.cache import make_cache
 from walkoff.events import WalkoffEvent
@@ -22,6 +21,7 @@ from walkoff.case.subscription import Subscription
 import walkoff.case.database as case_db
 import walkoff.config
 from walkoff.case.subscription import SubscriptionCache
+
 
 class TestZMQCommunication(unittest.TestCase):
     @classmethod
