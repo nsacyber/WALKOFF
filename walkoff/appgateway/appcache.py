@@ -157,7 +157,7 @@ class AppCache(object):
         try:
             module = import_module(app_path)
         except ImportError:
-            _logger.error('Cannot import base package for apps! No apps will be registered')
+            _logger.exception('Cannot import base package for apps! No apps will be registered')
         else:
             apps = [info[1] for info in pkgutil.walk_packages(module.__path__)]
             for app in apps:

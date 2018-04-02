@@ -1,4 +1,4 @@
-from apps import transform
+from walkoff.appbase import transform
 
 
 @transform

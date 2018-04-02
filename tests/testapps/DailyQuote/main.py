@@ -2,7 +2,7 @@ import json
 
 import requests
 
-from apps import App, action
+from walkoff.appbase import App, action
 
 
 # There is an associated Daily Quote test workflow which can be executed

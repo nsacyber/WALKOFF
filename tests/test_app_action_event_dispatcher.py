@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from interfaces.dispatchers import CallbackContainer, AppActionEventDispatcher
+from walkoff.interfacebase.dispatchers import CallbackContainer, AppActionEventDispatcher
 
 
 def func(): pass

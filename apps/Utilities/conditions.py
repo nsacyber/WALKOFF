@@ -1,6 +1,6 @@
 import re
 
-from apps import condition
+from walkoff.appbase import condition
 
 
 @condition

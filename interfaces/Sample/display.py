@@ -4,7 +4,7 @@ from gevent import sleep
 from gevent import spawn
 from gevent.event import Event, AsyncResult
 from walkoff.sse import InterfaceSseStream
-from interfaces import AppBlueprint
+from walkoff.interfacebase import AppBlueprint
 
 counter_stream = InterfaceSseStream('Sample', 'counter')
 random_stream = InterfaceSseStream('Sample', 'random')

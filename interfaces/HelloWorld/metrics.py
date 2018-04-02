@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import jsonify
 from flask_jwt_extended import jwt_required
 
-from interfaces import dispatcher, AppBlueprint
+from walkoff.interfacebase import AppBlueprint, dispatcher
 from walkoff.events import WalkoffEvent
 from walkoff.security import jwt_required_in_query
 from walkoff.sse import InterfaceSseStream, create_interface_channel_name

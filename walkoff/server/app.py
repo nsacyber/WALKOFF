@@ -35,7 +35,7 @@ def __get_blueprints_in_module(module):
 
 
 def __register_blueprint(flaskapp, blueprint, url_prefix):
-    from interfaces import AppBlueprint
+    from walkoff.interfacebase import AppBlueprint
     if isinstance(blueprint, AppBlueprint):
         blueprint.cache = walkoff.cache.cache
     url_prefix = '{0}{1}'.format(url_prefix, blueprint.url_prefix) if blueprint.url_prefix else url_prefix

@@ -4,7 +4,7 @@ import time
 import requests
 from requests.exceptions import Timeout
 
-from apps import App, action
+from walkoff.appbase import App, action
 import walkoff.config
 
 logger = logging.getLogger(__name__)

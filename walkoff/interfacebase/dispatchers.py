@@ -2,7 +2,7 @@ import logging
 from weakref import WeakSet
 
 import walkoff.config
-from interfaces.util import convert_to_iterable
+from .util import convert_to_iterable
 from walkoff.events import EventType
 from walkoff.helpers import UnknownAppAction, UnknownApp
 

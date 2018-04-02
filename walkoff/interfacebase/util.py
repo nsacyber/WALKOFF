@@ -1,6 +1,6 @@
 from six import string_types
 
-from interfaces.exceptions import UnknownEvent
+from .exceptions import UnknownEvent
 from walkoff.events import WalkoffEvent
 
 

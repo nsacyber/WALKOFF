@@ -2,7 +2,7 @@ from six import string_types
 
 
 class UnknownEvent(Exception):
-    """Exception thrown when an unknown or unallowed event(s) is encountered
+    """Exception thrown when an unknown or disallowed event(s) is encountered
 
     Attributes:
         message (str): The error message

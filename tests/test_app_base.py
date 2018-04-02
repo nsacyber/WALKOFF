@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from apps import App as AppBase
+from walkoff.appbase import App as AppBase
 from tests.util import execution_db_help
 from walkoff.executiondb.device import App, Device, DeviceField, EncryptedDeviceField
 

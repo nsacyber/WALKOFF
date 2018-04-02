@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 import walkoff.config
-from interfaces import AppEventDispatcher
+from walkoff.interfacebase import AppEventDispatcher
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.helpers import UnknownApp, UnknownAppAction
 
