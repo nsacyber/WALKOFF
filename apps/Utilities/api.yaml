@@ -8,6 +8,20 @@ info:
   license:
     name: Creative Commons
 actions:
+  Get Devices By Fields:
+    run: actions.get_devices_by_fields
+    description: Gets a list of device IDs that have the specified fields
+    parameters:
+      - name: fields
+        description: A dictionary of search fields, with the key being the field name and value as field value
+        schema:
+          type: object
+    returns:
+      Success:
+        schema:
+          type: array
+          items:
+            type: integer
   System PRNG:
     run: actions.system_rand
     description: Returns random float between 0.0 and 1.0 using system entropy

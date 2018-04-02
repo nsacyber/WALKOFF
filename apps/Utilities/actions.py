@@ -6,6 +6,12 @@ from random import SystemRandom
 
 from apps import action
 from apps.messaging import Text, Message, send_message, Url, AcceptDecline
+from walkoff.executiondb.device import get_device_ids_by_fields
+
+
+@action
+def get_devices_by_fields(fields):
+    return get_device_ids_by_fields(fields)
 
 
 @action
