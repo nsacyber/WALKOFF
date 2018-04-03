@@ -2,7 +2,6 @@ from sqlalchemy import and_
 
 from tests.util import execution_db_help
 from tests.util.servertestcase import ServerTestCase
-from walkoff import executiondb
 from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.workflow import Workflow
 from walkoff.server import flaskserver as server
@@ -16,14 +15,14 @@ class MetricsTest(ServerTestCase):
 
     def test_action_metrics(self):
         playbook = execution_db_help.load_playbook('multiactionError')
-        workflow_id = executiondb.execution_db.session.query(Workflow).filter(and_(
+        workflow_id = server.app.running_context.execution_db.session.query(Workflow).filter(and_(
             Workflow.name == 'multiactionErrorWorkflow', Workflow.playbook_id == playbook.id)).first().id
 
-        server.running_context.executor.execute_workflow(workflow_id)
+        server.app.running_context.executor.execute_workflow(workflow_id)
 
-        server.running_context.executor.wait_and_reset(1)
+        server.app.running_context.executor.wait_and_reset(1)
 
-        app_metrics = executiondb.execution_db.session.query(AppMetric).all()
+        app_metrics = server.app.running_context.execution_db.session.query(AppMetric).all()
         self.assertEqual(len(app_metrics), 1)
         app_metric = app_metrics[0]
 
@@ -48,21 +47,21 @@ class MetricsTest(ServerTestCase):
 
     def test_workflow_metrics(self):
         execution_db_help.load_playbooks(['multiactionError', 'multiactionWorkflowTest'])
-        error_id = executiondb.execution_db.session.query(Workflow).join(Workflow.playbook).filter(and_(
+        error_id = server.app.running_context.execution_db.session.query(Workflow).join(Workflow.playbook).filter(and_(
             Workflow.name == 'multiactionErrorWorkflow', Playbook.name == 'multiactionError')).first().id
-        test_id = executiondb.execution_db.session.query(Workflow).join(Workflow.playbook).filter(and_(
+        test_id = server.app.running_context.execution_db.session.query(Workflow).join(Workflow.playbook).filter(and_(
             Workflow.name == 'multiactionWorkflow', Playbook.name == 'multiactionWorkflowTest')).first().id
 
         error_key = 'multiactionErrorWorkflow'
         multiaction_key = 'multiactionWorkflow'
-        server.running_context.executor.execute_workflow(error_id)
-        server.running_context.executor.execute_workflow(error_id)
-        server.running_context.executor.execute_workflow(test_id)
+        server.app.running_context.executor.execute_workflow(error_id)
+        server.app.running_context.executor.execute_workflow(error_id)
+        server.app.running_context.executor.execute_workflow(test_id)
 
-        server.running_context.executor.wait_and_reset(3)
+        server.app.running_context.executor.wait_and_reset(3)
 
         keys = [error_key, multiaction_key]
-        workflow_metrics = executiondb.execution_db.session.query(WorkflowMetric).all()
+        workflow_metrics = server.app.running_context.execution_db.session.query(WorkflowMetric).all()
         self.assertEqual(len(workflow_metrics), len(keys))
 
         for workflow in workflow_metrics:

@@ -6,10 +6,10 @@ import json
 from mock import patch
 from copy import deepcopy
 from tests.util.servertestcase import ServerTestCase
-import walkoff.executiondb as execdb
 from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
 from flask import Response
-from walkoff.server.returncodes import SUCCESS, FORBIDDEN_ERROR
+from walkoff.server.returncodes import SUCCESS
+
 
 class TestWorkflowResultsStream(ServerTestCase):
 
@@ -20,9 +20,9 @@ class TestWorkflowResultsStream(ServerTestCase):
 
     def tearDown(self):
         self.cache.clear()
-        for status in execdb.execution_db.session.query(WorkflowStatus).all():
-            execdb.execution_db.session.delete(status)
-        execdb.execution_db.session.commit()
+        for status in self.execution_db.session.query(WorkflowStatus).all():
+            self.execution_db.session.delete(status)
+        self.execution_db.session.commit()
 
     def assert_and_strip_timestamp(self, data, field='timestamp'):
         timestamp = data.pop(field, None)
@@ -153,9 +153,9 @@ class TestWorkflowResultsStream(ServerTestCase):
         workflow_status = WorkflowStatus(workflow_execution_id, workflow_id, 'workflow1')
         action_execution_id = uuid4()
         action_id = uuid4()
-        execdb.execution_db.session.add(workflow_status)
+        self.execution_db.session.add(workflow_status)
         action_status = ActionStatus(action_execution_id, action_id, 'my action', 'the_app', 'the_action')
-        execdb.execution_db.session.add(action_status)
+        self.execution_db.session.add(action_status)
         workflow_status.add_action_status(action_status)
         expected = {
             'execution_id': str(workflow_execution_id),

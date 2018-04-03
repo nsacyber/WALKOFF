@@ -13,8 +13,8 @@ from google.protobuf.json_format import MessageToDict
 from nacl.public import PrivateKey, Box
 
 import walkoff.config
-import walkoff.executiondb
-from walkoff import initialize_databases
+from walkoff.executiondb import ExecutionDatabase
+from walkoff.case.database import CaseDatabase
 from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.argument import Argument
@@ -23,7 +23,6 @@ from walkoff.executiondb.workflow import Workflow
 from walkoff.proto.build.data_pb2 import CommunicationPacket, ExecuteWorkflowMessage, CaseControl, \
     WorkflowControl
 import walkoff.cache
-import walkoff.case.database as casedb
 from walkoff.case.logger import CaseLogger
 from walkoff.case.subscription import Subscription, SubscriptionCache
 from threading import Lock
@@ -84,14 +83,16 @@ class Worker(object):
             worker_environment_setup()
         else:
             walkoff.config.initialize()
-            initialize_databases()
+            self.execution_db = ExecutionDatabase(walkoff.config.Config.EXECUTION_DB_TYPE,
+                                                  walkoff.config.Config.EXECUTION_DB_PATH)
+            self.case_db = CaseDatabase(walkoff.config.Config.CASE_DB_TYPE, walkoff.config.Config.CASE_DB_PATH)
 
         from walkoff.config import Config
         self.cache = walkoff.cache.make_cache(Config.CACHE)
 
         self.capacity = num_threads_per_process
         self.subscription_cache = SubscriptionCache()
-        self.case_logger = CaseLogger(casedb.case_db, self.subscription_cache)
+        self.case_logger = CaseLogger(self.case_db, self.subscription_cache)
 
         self.comm_thread = threading.Thread(target=self.receive_data)
         self.comm_thread.start()
@@ -112,7 +113,7 @@ class Worker(object):
         for socket in (self.results_sock, self.comm_sock):
             if socket:
                 socket.close()
-        walkoff.executiondb.execution_db.tear_down()
+        self.execution_db.tear_down()
         self.cache.shutdown()
         os._exit(0)
 
@@ -147,11 +148,11 @@ class Worker(object):
     def execute_workflow_worker(self, workflow_id, workflow_execution_id, start, start_arguments=None, resume=False):
         """Execute a workflow.
         """
-        walkoff.executiondb.execution_db.session.expire_all()
-        workflow = walkoff.executiondb.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
+        self.execution_db.session.expire_all()
+        workflow = self.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
         workflow._execution_id = workflow_execution_id
         if resume:
-            saved_state = walkoff.executiondb.execution_db.session.query(SavedWorkflow).filter_by(
+            saved_state = self.execution_db.session.query(SavedWorkflow).filter_by(
                 workflow_execution_id=workflow_execution_id).first()
             workflow._accumulator = saved_state.accumulator
 
@@ -229,8 +230,8 @@ class Worker(object):
                 action_id=workflow.get_executing_action_id(),
                 accumulator=workflow.get_accumulator(),
                 app_instances=workflow.get_instances())
-            walkoff.executiondb.execution_db.session.add(saved_workflow)
-            walkoff.executiondb.execution_db.session.commit()
+            self.execution_db.session.add(saved_workflow)
+            self.execution_db.session.commit()
         elif kwargs['event'] == WalkoffEvent.ConsoleLog:
             action = workflow.get_executing_action()
             sender = action

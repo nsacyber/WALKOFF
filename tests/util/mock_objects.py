@@ -5,7 +5,8 @@ import gevent
 from fakeredis import FakeStrictRedis
 from zmq.utils.strtypes import cast_unicode
 
-from walkoff import executiondb
+from walkoff.executiondb import ExecutionDatabase
+from walkoff.case.database import CaseDatabase
 from walkoff.cache import RedisCacheAdapter
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.saved_workflow import SavedWorkflow
@@ -69,6 +70,9 @@ class MockLoadBalancer(object):
         self.handle_data_sent = handle_data_sent
         if not WalkoffEvent.CommonWorkflowSignal.signal.receivers:
             WalkoffEvent.CommonWorkflowSignal.connect(handle_data_sent)
+            
+        self.execution_db = ExecutionDatabase.instance
+        self.case_db = CaseDatabase.instance
 
     def on_data_sent(self, sender, **kwargs):
         workflow = self.workflow_comms[self.exec_id]
@@ -78,8 +82,8 @@ class MockLoadBalancer(object):
                                            action_id=workflow.get_executing_action_id(),
                                            accumulator=workflow.get_accumulator(),
                                            app_instances=workflow.get_instances())
-            executiondb.execution_db.session.add(saved_workflow)
-            executiondb.execution_db.session.commit()
+            self.execution_db.session.add(saved_workflow)
+            self.execution_db.session.commit()
 
         if self.exec_id or not hasattr(sender, "_execution_id"):
             packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
@@ -98,8 +102,8 @@ class MockLoadBalancer(object):
             if workflow_id == "Exit":
                 return
 
-            executiondb.execution_db.session.expire_all()
-            workflow = executiondb.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
+            self.execution_db.session.expire_all()
+            workflow = self.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
 
             self.workflow_comms[workflow_execution_id] = workflow
 

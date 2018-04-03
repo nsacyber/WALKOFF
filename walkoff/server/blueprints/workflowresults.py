@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from walkoff import executiondb
+from flask import current_app
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ActionStatusEnum, WorkflowStatusEnum
 from walkoff.executiondb.workflowresults import WorkflowStatus
@@ -72,7 +72,7 @@ def format_workflow_result(sender, status):
 
 
 def format_workflow_result_with_current_step(workflow_execution_id, status):
-    workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
+    workflow_status = current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
         execution_id=workflow_execution_id).first()
     if workflow_status is not None:
         status_json = workflow_status.as_json()

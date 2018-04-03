@@ -6,7 +6,7 @@ import unittest
 import sys
 from tests import suites as test_suites
 import logging
-import walkoff.server.context
+import walkoff.server.flaskserver
 
 
 def run_tests():
@@ -35,5 +35,5 @@ if __name__ == '__main__':
         print('\nInterrupted! Ending full test')
         successful = False
     finally:
-        walkoff.server.context.running_context.executor.shutdown_pool()
+        walkoff.flaskserver.app.running_context.executor.shutdown_pool()
         sys.exit(not successful)

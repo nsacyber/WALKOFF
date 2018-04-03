@@ -1,26 +1,17 @@
 import json
-import unittest
 from datetime import timedelta
 
 from flask_jwt_extended import decode_token
 
-from tests.util import execution_db_help
 from walkoff.extensions import db
 from walkoff.server.returncodes import *
 from walkoff.serverdb import add_user
 from walkoff.serverdb.tokens import BlacklistedToken
 from walkoff.serverdb.user import User
+from tests.util.servertestcase import ServerTestCase
 
 
-class TestAuthorization(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        execution_db_help.setup_dbs()
-
-    @classmethod
-    def tearDownClass(cls):
-        execution_db_help.tear_down_execution_db()
-
+class TestAuthorization(ServerTestCase):
     def setUp(self):
         import walkoff.server.flaskserver
         self.app = walkoff.server.flaskserver.app.test_client(self)

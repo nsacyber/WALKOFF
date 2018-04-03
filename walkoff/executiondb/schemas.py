@@ -2,7 +2,7 @@ from marshmallow import validates_schema, ValidationError, fields, post_dump, po
 from marshmallow.validate import OneOf
 from marshmallow_sqlalchemy import ModelSchema, field_for
 
-import walkoff.executiondb as executiondb
+from walkoff.executiondb import ExecutionDatabase
 from walkoff.helpers import InvalidExecutionElement
 from .action import Action
 from .argument import Argument
@@ -43,7 +43,7 @@ class ExecutionBaseSchema(ModelSchema):
         }
 
     def load(self, data, session=None, instance=None, *args, **kwargs):
-        session = executiondb.execution_db.session
+        session = ExecutionDatabase.instance.session
         # Maybe automatically find and use instance if 'id' (or key) is passed
         return super(ExecutionBaseSchema, self).load(data, session=session, instance=instance, *args, **kwargs)
 

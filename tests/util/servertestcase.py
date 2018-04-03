@@ -48,31 +48,36 @@ class ServerTestCase(unittest.TestCase):
                 os.remove(tests.config.test_data_path)
             os.makedirs(tests.config.test_data_path)
 
-        execution_db_help.setup_dbs()
+        cls.execution_db, cls.case_db = execution_db_help.setup_dbs()
 
         walkoff.appgateway.cache_apps(path=tests.config.test_apps_path)
         walkoff.config.app_apis = {}
         walkoff.config.load_app_apis(apps_path=tests.config.test_apps_path)
         walkoff.config.NUMBER_PROCESSES = 2
         walkoff.config.Config.CACHE = {'type': 'disk', 'directory': tests.config.cache_path}
+        walkoff.config.Config.DB_PATH = tests.config.test_db_path
+        walkoff.config.Config.CASE_DB_PATH = tests.config.test_case_db_path
+        walkoff.config.Config.EXECUTION_DB_PATH = tests.config.test_execution_db_path
 
         from walkoff.server import flaskserver
         cls.context = flaskserver.app.test_request_context()
         cls.context.push()
 
+        from walkoff.server import context
+        flaskserver.app.running_context = context.Context(walkoff.config.Config)
+        cls.execution_db = flaskserver.app.running_context.execution_db
+        cls.case_db = flaskserver.app.running_context.case_db
+
         from walkoff.server.app import create_user
         create_user()
         if cls.patch:
-
             MultiprocessedExecutor.initialize_threading = mock_initialize_threading
             MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
             MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
-            flaskserver.running_context.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
-                                                                      walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                                                      walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-                                                                      walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
-
-
+            flaskserver.app.running_context.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
+                                                                          walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
+                                                                          walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
+                                                                          walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
         else:
             from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
             pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES,
@@ -81,17 +86,16 @@ class ServerTestCase(unittest.TestCase):
                                           walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
                                           walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
                                           worker_environment_setup=modified_setup_worker_env)
-            flaskserver.running_context.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
-                                                                      walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                                                      walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-                                                                      walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
-                                                                      pids)
+            flaskserver.app.running_context.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
+                                                                          walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
+                                                                          walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
+                                                                          walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
+                                                                          pids)
 
-            from walkoff.server.context import running_context
             from walkoff.cache import make_cache
             cache = make_cache(walkoff.config.Config.CACHE)
-            running_context.executor.cache = cache
-            running_context.executor.manager.cache = cache
+            flaskserver.app.running_context.executor.cache = cache
+            flaskserver.app.running_context.executor.manager.cache = cache
 
     @classmethod
     def tearDownClass(cls):
@@ -102,13 +106,12 @@ class ServerTestCase(unittest.TestCase):
             else:
                 shutil.rmtree(tests.config.test_data_path)
 
-        walkoff.server.flaskserver.running_context.executor.shutdown_pool()
+        walkoff.server.flaskserver.app.running_context.executor.shutdown_pool()
 
         execution_db_help.cleanup_execution_db()
         execution_db_help.tear_down_execution_db()
 
-        import walkoff.case.database as case_database
-        case_database.case_db.tear_down()
+        walkoff.server.flaskserver.app.running_context.case_db.tear_down()
         walkoff.appgateway.clear_cache()
 
     def setUp(self):
@@ -135,8 +138,8 @@ class ServerTestCase(unittest.TestCase):
                                  'patch': self.app.patch}
 
     def tearDown(self):
-        from walkoff import executiondb
-        executiondb.execution_db.session.rollback()
+        import walkoff.server.flaskserver
+        walkoff.server.flaskserver.app.running_context.execution_db.session.rollback()
 
         for data_file in os.listdir(tests.config.test_data_path):
             try:

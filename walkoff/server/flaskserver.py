@@ -6,7 +6,6 @@ from flask import render_template, send_from_directory
 import walkoff.config
 from walkoff.server import app
 from sqlalchemy.exc import SQLAlchemyError
-from walkoff.server.context import running_context  # Need this import
 from walkoff.server.problem import Problem
 from walkoff.server.returncodes import SERVER_ERROR
 

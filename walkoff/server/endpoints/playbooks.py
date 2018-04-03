@@ -6,7 +6,6 @@ from flask_jwt_extended import jwt_required
 from sqlalchemy import exists, and_
 from sqlalchemy.exc import IntegrityError, StatementError
 
-from walkoff import executiondb
 from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.workflow import Workflow
 from walkoff.helpers import InvalidExecutionElement, regenerate_workflow_ids
@@ -29,17 +28,17 @@ invalid_execution_element_exceptions = (InvalidArgument, UnknownApp, UnknownFunc
 
 
 def does_workflow_exist(playbook_id, workflow_id):
-    return executiondb.execution_db.session.query(
+    return current_app.running_context.execution_db.session.query(
         exists().where(and_(Workflow.id == workflow_id, Workflow.playbook_id == playbook_id))).scalar()
 
 
 def playbook_getter(playbook_id):
-    playbook = executiondb.execution_db.session.query(Playbook).filter_by(id=playbook_id).first()
+    playbook = current_app.running_context.execution_db.session.query(Playbook).filter_by(id=playbook_id).first()
     return playbook
 
 
 def workflow_getter(workflow_id):
-    return executiondb.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
+    return current_app.running_context.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
 
 
 with_playbook = with_resource_factory('playbook', playbook_getter, validator=is_valid_uid)
@@ -76,7 +75,7 @@ def get_playbooks(full=None):
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     def __func():
         full_rep = bool(full)
-        playbooks = executiondb.execution_db.session.query(Playbook).all()
+        playbooks = current_app.running_context.execution_db.session.query(Playbook).all()
 
         if full_rep:
             ret_playbooks = [playbook_schema.dump(playbook).data for playbook in playbooks]
@@ -112,19 +111,19 @@ def create_playbook(source=None):
         try:
             playbook = playbook_schema.load(data)
             if playbook.errors:
-                executiondb.execution_db.session.rollback()
+                current_app.running_context.execution_db.session.rollback()
                 current_app.logger.error('Could not create Playbook {}. Invalid input'.format(playbook_name))
                 return improper_json_problem('playbook', 'create', playbook_name, playbook.errors)
             else:
                 playbook = playbook.data
-                executiondb.execution_db.session.add(playbook)
-                executiondb.execution_db.session.commit()
+                current_app.running_context.execution_db.session.add(playbook)
+                current_app.running_context.execution_db.session.commit()
         except (IntegrityError, StatementError):
-            executiondb.execution_db.session.rollback()
+            current_app.running_context.execution_db.session.rollback()
             current_app.logger.error('Could not create Playbook {}. Unique constraint failed'.format(playbook_name))
             return unique_constraint_problem('playbook', 'create', playbook_name)
         except invalid_execution_element_exceptions:
-            executiondb.execution_db.session.rollback()
+            current_app.running_context.execution_db.session.rollback()
             current_app.logger.error('Could not create Playbook {}. Invalid execution element'.format(playbook_name))
             return improper_json_problem(
                 'playbook',
@@ -169,9 +168,9 @@ def update_playbook():
             playbook.name = data['name']
 
         try:
-            executiondb.execution_db.session.commit()
+            current_app.running_context.execution_db.session.commit()
         except IntegrityError:
-            executiondb.execution_db.session.rollback()
+            current_app.running_context.execution_db.session.rollback()
             current_app.logger.error('Could not update Playbook {}. Unique constraint failed'.format(playbook_id))
             return unique_constraint_problem('playbook', 'update', playbook_id)
 
@@ -187,8 +186,8 @@ def delete_playbook(playbook_id):
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['delete']))
     @with_playbook('delete', playbook_id)
     def __func(playbook):
-        executiondb.execution_db.session.delete(playbook)
-        executiondb.execution_db.session.commit()
+        current_app.running_context.execution_db.session.delete(playbook)
+        current_app.running_context.execution_db.session.commit()
         current_app.logger.info('Deleted playbook {0} '.format(playbook_id))
         return None, NO_CONTENT
 
@@ -217,14 +216,14 @@ def copy_playbook(playbook_id):
 
         try:
             new_playbook = playbook_schema.load(playbook_json).data
-            executiondb.execution_db.session.add(new_playbook)
-            executiondb.execution_db.session.commit()
+            current_app.running_context.execution_db.session.add(new_playbook)
+            current_app.running_context.execution_db.session.commit()
         except IntegrityError:
-            executiondb.execution_db.session.rollback()
+            current_app.running_context.execution_db.session.rollback()
             current_app.logger.error('Could not copy Playbook {}. Unique constraint failed'.format(playbook_id))
             return unique_constraint_problem('playbook', 'copy', playbook_id)
         except ValueError as e:
-            executiondb.execution_db.session.rollback()
+            current_app.running_context.execution_db.session.rollback()
             current_app.logger.error('Could not copy Playbook {}. Invalid input'.format(playbook_id))
             return improper_json_problem('playbook', 'copy', playbook_id)
 
@@ -240,7 +239,7 @@ def get_workflows(playbook=None):
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     def __get():
         return [workflow_schema.dump(workflow).data for workflow in
-                executiondb.execution_db.session.query(Workflow).all()], SUCCESS
+                current_app.running_context.execution_db.session.query(Workflow).all()], SUCCESS
 
     if playbook:
         return get_workflows_for_playbook(playbook)
@@ -271,20 +270,20 @@ def create_workflow(source=None):
         try:
             workflow = workflow_schema.load(data)
             if workflow.errors:
-                executiondb.execution_db.session.rollback()
+                current_app.running_context.execution_db.session.rollback()
                 current_app.logger.error('Could not create Workflow {}. Invalid input'.format(workflow_name))
                 return improper_json_problem('workflow', 'create', workflow_name, workflow.errors)
             else:
                 workflow = workflow.data
                 playbook.workflows.append(workflow)
-                executiondb.execution_db.session.add(workflow)
-                executiondb.execution_db.session.commit()
+                current_app.running_context.execution_db.session.add(workflow)
+                current_app.running_context.execution_db.session.commit()
         except invalid_execution_element_exceptions:
-            executiondb.execution_db.session.rollback()
+            current_app.running_context.execution_db.session.rollback()
             current_app.logger.error('Could not add workflow {0}-{1}'.format(playbook_id, workflow_name))
             return improper_json_problem('workflow', 'create', '{}-{}'.format(playbook_id, workflow_name))
         except IntegrityError:
-            executiondb.execution_db.session.rollback()
+            current_app.running_context.execution_db.session.rollback()
             current_app.logger.error('Could not create workflow {}. Unique constraint failed'.format(workflow_name))
             return unique_constraint_problem('workflow', 'create', workflow_name)
 
@@ -323,7 +322,7 @@ def update_workflow():
                     'update',
                     'Could not update workflow {}. Invalid input.'.format(workflow_id), ext=errors)
         except InvalidExecutionElement as e:
-            executiondb.execution_db.session.rollback()
+            current_app.running_context.execution_db.session.rollback()
             current_app.logger.error(e.message)
             return Problem.from_crud_resource(
                 INVALID_INPUT_ERROR,
@@ -332,9 +331,9 @@ def update_workflow():
                 'Could not update workflow {}. Invalid input.'.format(workflow_id))
 
         try:
-            executiondb.execution_db.session.commit()
+            current_app.running_context.execution_db.session.commit()
         except IntegrityError:
-            executiondb.execution_db.session.rollback()
+            current_app.running_context.execution_db.session.rollback()
             current_app.logger.error('Could not update workflow {}. Unique constraint failed'.format(workflow_id))
             return unique_constraint_problem('workflow', 'update', workflow_id)
 
@@ -349,16 +348,16 @@ def delete_workflow(workflow_id):
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['delete']))
     @with_workflow('delete', workflow_id)
     def __func(workflow):
-        playbook = executiondb.execution_db.session.query(Playbook).filter_by(id=workflow.playbook_id).first()
+        playbook = current_app.running_context.execution_db.session.query(Playbook).filter_by(id=workflow.playbook_id).first()
         playbook_workflows = len(playbook.workflows) - 1
-        workflow = executiondb.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
-        executiondb.execution_db.session.delete(workflow)
+        workflow = current_app.running_context.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
+        current_app.running_context.execution_db.session.delete(workflow)
 
         if playbook_workflows == 0:
             current_app.logger.debug('Removing playbook {0} since it is empty.'.format(workflow.playbook_id))
-            executiondb.execution_db.session.delete(playbook)
+            current_app.running_context.execution_db.session.delete(playbook)
 
-        executiondb.execution_db.session.commit()
+        current_app.running_context.execution_db.session.commit()
 
         current_app.logger.info('Deleted workflow {0}'.format(workflow_id))
         return None, NO_CONTENT
@@ -385,10 +384,10 @@ def copy_workflow(playbook_id, workflow_id):
 
         regenerate_workflow_ids(workflow_json)
 
-        if executiondb.execution_db.session.query(exists().where(Playbook.id == playbook_id)).scalar():
-            playbook = executiondb.execution_db.session.query(Playbook).filter_by(id=playbook_id).first()
+        if current_app.running_context.execution_db.session.query(exists().where(Playbook.id == playbook_id)).scalar():
+            playbook = current_app.running_context.execution_db.session.query(Playbook).filter_by(id=playbook_id).first()
         else:
-            executiondb.execution_db.session.rollback()
+            current_app.running_context.execution_db.session.rollback()
             current_app.logger.error('Could not copy workflow {}. Playbook does not exist'.format(playbook_id))
             return Problem.from_crud_resource(
                 OBJECT_DNE_ERROR,
@@ -401,11 +400,11 @@ def copy_workflow(playbook_id, workflow_id):
             new_workflow = workflow_schema.load(workflow_json)
             new_workflow = new_workflow.data
 
-            executiondb.execution_db.session.add(new_workflow)
+            current_app.running_context.execution_db.session.add(new_workflow)
             playbook.add_workflow(new_workflow)
-            executiondb.execution_db.session.commit()
+            current_app.running_context.execution_db.session.commit()
         except IntegrityError:
-            executiondb.execution_db.session.rollback()
+            current_app.running_context.execution_db.session.rollback()
             current_app.logger.error('Could not copy workflow {}. Unique constraint failed'.format(new_workflow_name))
             return unique_constraint_problem('workflow', 'copy', new_workflow_name)
 

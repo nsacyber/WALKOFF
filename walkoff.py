@@ -3,7 +3,6 @@ import logging
 import os
 import sys
 import traceback
-from os.path import isfile
 
 from gevent import monkey
 from gevent import pywsgi
@@ -29,15 +28,14 @@ def run(host, port):
     compose_api()
 
     from walkoff.server import flaskserver
-    flaskserver.running_context.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
-                                                              walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                                              walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-                                                              walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
-                                                              pids)
+    from walkoff.server import context
+    flaskserver.app.running_context = context.Context(walkoff.config.Config)
+    flaskserver.app.running_context.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
+                                                                  walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
+                                                                  walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
+                                                                  walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
+                                                                  pids)
     # The order of these imports matter for initialization (should probably be fixed)
-
-    import walkoff.case.database as case_database
-    case_database.initialize()
 
     server = setup_server(flaskserver.app, host, port)
     server.serve_forever()
@@ -52,7 +50,8 @@ def print_banner():
 
 
 def setup_server(app, host, port):
-    if isfile(walkoff.config.Config.CERTIFICATE_PATH) and isfile(walkoff.config.Config.PRIVATE_KEY_PATH):
+    if os.path.isfile(walkoff.config.Config.CERTIFICATE_PATH) and os.path.isfile(
+            walkoff.config.Config.PRIVATE_KEY_PATH):
         server = pywsgi.WSGIServer((host, port), application=app,
                                    keyfile=walkoff.config.Config.PRIVATE_KEY_PATH,
                                    certfile=walkoff.config.Config.CERTIFICATE_PATH)
@@ -96,9 +95,7 @@ if __name__ == "__main__":
     exit_code = 0
     try:
         walkoff.config.initialize()
-        from walkoff import initialize_databases
 
-        initialize_databases()
         run(*convert_host_port(args))
     except KeyboardInterrupt:
         logger.info('Caught KeyboardInterrupt!')
@@ -109,6 +106,6 @@ if __name__ == "__main__":
     finally:
         from walkoff.server import flaskserver
 
-        flaskserver.running_context.executor.shutdown_pool()
+        flaskserver.app.running_context.executor.shutdown_pool()
         logger.info('Shutting down server')
         os._exit(exit_code)

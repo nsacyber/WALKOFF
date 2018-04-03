@@ -4,7 +4,6 @@ from flask import request, current_app
 from flask_jwt_extended import jwt_required
 from sqlalchemy import exists
 
-from walkoff import executiondb
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
@@ -16,15 +15,15 @@ from walkoff.server.returncodes import *
 
 
 def does_workflow_exist(workflow_id):
-    return executiondb.execution_db.session.query(exists().where(Workflow.id == workflow_id)).scalar()
+    return current_app.running_context.execution_db.session.query(exists().where(Workflow.id == workflow_id)).scalar()
 
 
 def does_execution_id_exist(execution_id):
-    return executiondb.execution_db.session.query(exists().where(WorkflowStatus.execution_id == execution_id)).scalar()
+    return current_app.running_context.execution_db.session.query(exists().where(WorkflowStatus.execution_id == execution_id)).scalar()
 
 
 def workflow_status_getter(execution_id):
-    return executiondb.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
+    return current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
 
 
 with_workflow_status = with_resource_factory('workflow', workflow_status_getter, validator=is_valid_uid)
@@ -44,13 +43,13 @@ def get_all_workflow_status(limit=50):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     def __func():
-        ret = executiondb.execution_db.session.query(WorkflowStatus). \
+        ret = current_app.running_context.execution_db.session.query(WorkflowStatus). \
             filter(WorkflowStatus.status.in_(executing_statuses)). \
             order_by(WorkflowStatus.started_at). \
             all()
 
         if len(ret) < limit:
-            ret.extend(executiondb.execution_db.session.query(WorkflowStatus).
+            ret.extend(current_app.running_context.execution_db.session.query(WorkflowStatus).
                        filter(WorkflowStatus.status.in_(completed_statuses)).
                        order_by(WorkflowStatus.started_at).
                        limit(limit - len(ret)).
@@ -73,8 +72,6 @@ def get_workflow_status(execution_id):
 
 
 def execute_workflow():
-    from walkoff.server.context import running_context
-
     data = request.get_json()
     workflow_id = data['workflow_id']
 
@@ -102,7 +99,7 @@ def execute_workflow():
                     'Cannot execute workflow.',
                     'An unexpected argument was received. Reason: {}'.format(e.message))
 
-        execution_id = running_context.executor.execute_workflow(workflow_id, start=start, start_arguments=arguments)
+        execution_id = current_app.running_context.executor.execute_workflow(workflow_id, start=start, start_arguments=arguments)
         current_app.logger.info('Executed workflow {0}'.format(workflow_id))
         return {'id': execution_id}, SUCCESS_ASYNC
 
@@ -110,8 +107,6 @@ def execute_workflow():
 
 
 def control_workflow():
-    from walkoff.server.context import running_context
-
     data = request.get_json()
     execution_id = data['execution_id']
 
@@ -122,11 +117,11 @@ def control_workflow():
         status = data['status']
 
         if status == 'pause':
-            running_context.executor.pause_workflow(execution_id)
+            current_app.running_context.executor.pause_workflow(execution_id)
         elif status == 'resume':
-            running_context.executor.resume_workflow(execution_id)
+            current_app.running_context.executor.resume_workflow(execution_id)
         elif status == 'abort':
-            running_context.executor.abort_workflow(execution_id)
+            current_app.running_context.executor.abort_workflow(execution_id)
 
         return None, NO_CONTENT
 

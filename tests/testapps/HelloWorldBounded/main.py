@@ -45,16 +45,17 @@ class Main(App):
 
     @action
     def wait_for_pause_and_resume(self):
-        import walkoff.case.database as case_database
-        from walkoff.case.database import Event
+        from walkoff.case.database import CaseDatabase, Event
+        from walkoff.executiondb import ExecutionDatabase
         from walkoff.executiondb.workflowresults import WorkflowStatus
-        from walkoff import executiondb
 
-        workflow_status = executiondb.execution_db.session.query(WorkflowStatus).first()
+        execution_db = ExecutionDatabase.instance
+        case_db = CaseDatabase.instance
+        workflow_status = execution_db.session.query(WorkflowStatus).first()
 
         workflow_id = str(workflow_status.workflow_id)
 
-        events = case_database.case_db.session.query(Event).filter_by(originator=workflow_id).all()
+        events = case_db.session.query(Event).filter_by(originator=workflow_id).all()
 
         pause = False
         resume = False

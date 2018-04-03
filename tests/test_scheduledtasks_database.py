@@ -22,15 +22,15 @@ class TestScheduledTask(unittest.TestCase):
         db.session.rollback()
         for task in db.session.query(ScheduledTask).all():
             db.session.delete(task)
-        server.running_context.scheduler.scheduler.remove_all_jobs()
-        server.running_context.scheduler.stop()
+        server.app.running_context.scheduler.scheduler.remove_all_jobs()
+        server.app.running_context.scheduler.stop()
         db.session.commit()
 
     def assertSchedulerWorkflowsRunningEqual(self, workflows=None):
         if workflows is None:
-            self.assertDictEqual(server.running_context.scheduler.get_all_scheduled_workflows(), {})
+            self.assertDictEqual(server.app.running_context.scheduler.get_all_scheduled_workflows(), {})
         else:
-            scheduled_workflows = server.running_context.scheduler.get_all_scheduled_workflows()
+            scheduled_workflows = server.app.running_context.scheduler.get_all_scheduled_workflows()
             self.assertSetEqual(set(scheduled_workflows['None']), set(workflows))
 
     def assertJsonIsCorrect(self, task, expected):

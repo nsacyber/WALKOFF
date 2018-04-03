@@ -90,7 +90,6 @@ app = create_app(config.AppConfig, config.Config)
 
 @app.before_first_request
 def create_user():
-    from walkoff import executiondb
     from walkoff.serverdb import add_user, User, Role, initialize_default_resources_admin, \
         initialize_default_resources_guest
     db.create_all()
@@ -110,24 +109,23 @@ def create_user():
     db.session.commit()
 
     apps = set(helpers.list_apps()) - set([_app.name
-                                           for _app in executiondb.execution_db.session.query(App).all()])
+                                           for _app in app.running_context.execution_db.session.query(App).all()])
     app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:
-        executiondb.execution_db.session.add(App(name=app_name, devices=[]))
+        app.running_context.execution_db.session.add(App(name=app_name, devices=[]))
     db.session.commit()
-    executiondb.execution_db.session.commit()
+    app.running_context.execution_db.session.commit()
     send_all_cases_to_workers()
     app.logger.handlers = logging.getLogger('server').handlers
 
 
 def send_all_cases_to_workers():
-    from walkoff.server.flaskserver import running_context
     from walkoff.serverdb.casesubscription import CaseSubscription
-    from walkoff.case.database import case_db, Case
+    from walkoff.case.database import Case
     from walkoff.case.subscription import Subscription
 
     for case_subscription in CaseSubscription.query.all():
         subscriptions = [Subscription(sub['id'], sub['events']) for sub in case_subscription.subscriptions]
-        case = case_db.session.query(Case).filter(Case.name == case_subscription.name).first()
+        case = app.running_context.case_db.session.query(Case).filter(Case.name == case_subscription.name).first()
         if case is not None:
-            running_context.executor.update_case(case.id, subscriptions)
+            app.running_context.executor.update_case(case.id, subscriptions)
