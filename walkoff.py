@@ -25,7 +25,7 @@ def run(host, port):
                                   walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
     monkey.patch_all()
 
-    from scripts.compose_api import compose_api
+    from walkoff.scripts.compose_api import compose_api
     compose_api()
 
     from walkoff.server import flaskserver

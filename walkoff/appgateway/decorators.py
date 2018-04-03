@@ -2,7 +2,7 @@ from functools import wraps
 
 from walkoff.appgateway.actionresult import ActionResult
 from walkoff.helpers import get_function_arg_names
-from .walkofftag import WalkoffTag
+from walkoff.appgateway.walkofftag import WalkoffTag
 
 
 def format_result(result):

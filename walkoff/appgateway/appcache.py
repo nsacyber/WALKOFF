@@ -147,13 +147,14 @@ class AppCache(object):
         """Initializes a new AppCache object"""
         self._cache = {}
 
-    def cache_apps(self, path):
+    def cache_apps(self, path, relative=True):
         """Cache apps from a given path
 
         Args:
             path (str): Path to apps module
+            relative (bool): Whether the path should be relative or not
         """
-        app_path = AppCache._path_to_module(path)
+        app_path = AppCache._path_to_module(path, relative=relative)
         try:
             module = import_module(app_path)
         except ImportError:
@@ -366,8 +367,8 @@ class AppCache(object):
             raise self.exception_lookup[function_type](app_name, function_name)
 
     @staticmethod
-    def _path_to_module(path):
-        """Converts a path to a module. Can only handle relative paths without '..' in them.
+    def _path_to_module(path, relative=True):
+        """Converts a path to a module. Handles relative paths without '..' in them, or just returns module name.
 
         Args:
             path (str): Path to convert
@@ -375,9 +376,13 @@ class AppCache(object):
         Returns:
             str: Module form of the path
         """
-        path = path.replace(os.path.sep, '.')
-        path = path.rstrip('.')
-        return path.lstrip('.')
+        if relative:
+            path = path.replace(os.path.sep, '.')
+            path = path.rstrip('.')
+            return path.lstrip('.')
+        else:
+            directory, module_name = os.path.split(path)
+            return module_name
 
     def _import_and_cache_submodules(self, package, app_name, app_path, recursive=True):
         """Imports and caches the submodules from a given package.
@@ -418,7 +423,7 @@ class AppCache(object):
         global_actions = []
         for field, obj in inspect.getmembers(module):
             if (inspect.isclass(obj) and getattr(obj, '_is_walkoff_app', False)
-                    and _get_qualified_class_name(obj) != 'apps.App'):
+                    and _get_qualified_class_name(obj) != 'appbase.App'):
                 self._cache_app(obj, app_name, base_path)
             elif inspect.isfunction(obj):
                 tags = WalkoffTag.get_tags(obj)

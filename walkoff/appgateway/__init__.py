@@ -114,13 +114,13 @@ def get_all_transforms_for_app(app_name):
     return _cache.get_app_transform_names(app_name)
 
 
-def cache_apps(path):
+def cache_apps(path, relative=True):
     """Cache apps from a given path into the global cache
 
     Args:
         path (str): Path to apps module
     """
-    _cache.cache_apps(path)
+    _cache.cache_apps(path, relative=relative)
 
 
 def clear_cache():

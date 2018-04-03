@@ -11,8 +11,8 @@ logger = logging.getLogger(__name__)
 
 app_apis = {}
 
+walkoff_external = abspath(r"C:\Users\589941\PycharmProjects\PipVersion3\NEWPIP_Walkoff\walkoff_external")
 walkoff_internal = abspath(__file__).rsplit(sep, 1)[0]
-print(abspath(__file__).rsplit(sep, 1)[0])
 
 
 def load_app_apis(apps_path=None):
@@ -99,28 +99,33 @@ class Config(object):
     EXECUTION_DB_TYPE = 'sqlite'
 
     # PATHS
-    ROOT_PATH = abspath('.')
-    DATA_PATH = join(ROOT_PATH, 'data')
-    API_PATH = join(walkoff_internal, 'walkoff', 'api')
-    APPS_PATH = join(ROOT_PATH, 'apps')
+    # ROOT_PATH = abspath('.')
+    WALKOFF_INTERNAL_PATH = walkoff_internal
+    WALKOFF_EXTERNAL_PATH = walkoff_external
+
+    DATA_PATH = join(WALKOFF_EXTERNAL_PATH, 'data')
+    API_PATH = join(WALKOFF_INTERNAL_PATH, 'api')
+    APPS_PATH = join(WALKOFF_EXTERNAL_PATH, 'apps')
+    APPBASE_PATH = join(WALKOFF_INTERNAL_PATH, 'appbase')
     CACHE_PATH = join(DATA_PATH, 'cache')
     CASE_DB_PATH = join(DATA_PATH, 'events.db')
     CACHE = {"type": "disk", "directory": CACHE_PATH, "shards": 8, "timeout": 0.01, "retry": True}
-    TEMPLATES_PATH = join(walkoff_internal, 'templates')
+    TEMPLATES_PATH = join(WALKOFF_INTERNAL_PATH, 'templates')
 
-    CLIENT_PATH = join(walkoff_internal, 'walkoff', 'client')
+    CLIENT_PATH = join(WALKOFF_INTERNAL_PATH, 'client')
     CONFIG_PATH = join(DATA_PATH, 'walkoff.config')
     DB_PATH = join(DATA_PATH, 'walkoff.db')
     DEFAULT_APPDEVICE_EXPORT_PATH = join(DATA_PATH, 'appdevice.json')
     DEFAULT_CASE_EXPORT_PATH = join(DATA_PATH, 'cases.json')
     EXECUTION_DB_PATH = join(DATA_PATH, 'execution.db')
-    INTERFACES_PATH = join(ROOT_PATH, 'interfaces')
+    INTERFACES_PATH = join(WALKOFF_EXTERNAL_PATH, 'interfaces')
+    INTERFACEBASE_PATH = join(WALKOFF_INTERNAL_PATH, 'interfacebase')
     LOGGING_CONFIG_PATH = join(DATA_PATH, 'log', 'logging.json')
 
     WALKOFF_SCHEMA_PATH = join(DATA_PATH, 'walkoff_schema.json')
-    WORKFLOWS_PATH = join('.', 'workflows')
+    # WORKFLOWS_PATH = join('.', 'workflows')
 
-    KEYS_PATH = join(ROOT_PATH, '.certificates')
+    KEYS_PATH = join(WALKOFF_EXTERNAL_PATH, '.certificates')
     CERTIFICATE_PATH = join(KEYS_PATH, 'walkoff.crt')
     PRIVATE_KEY_PATH = join(KEYS_PATH, 'walkoff.key')
     ZMQ_PRIVATE_KEYS_PATH = join(KEYS_PATH, 'private_keys')
@@ -176,5 +181,9 @@ def initialize():
     setup_logger()
     Config.load_config()
     from walkoff.appgateway import cache_apps
-    cache_apps(Config.APPS_PATH)
+    sys.path.insert(0, abspath(Config.WALKOFF_EXTERNAL_PATH))
+    print("calling installed apps path")
+    cache_apps(Config.APPS_PATH, relative=False)
+    print("calling appbase")
+    cache_apps("walkoff.appbase", relative=False)
     load_app_apis()

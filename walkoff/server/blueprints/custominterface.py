@@ -4,14 +4,18 @@ from flask import Blueprint, render_template, g, abort
 from flask_jwt_extended import jwt_required
 from jinja2 import TemplateNotFound
 
-custom_interface_page = Blueprint('custom_interface', 'interfaces', template_folder=os.path.abspath('interfaces'),
+from walkoff import config
+
+custom_interface_page = Blueprint('custom_interface', 'interfaces',
+                                  template_folder=os.path.abspath(config.Config.INTERFACES_PATH),
                                   static_folder='static')
 
 
 @custom_interface_page.url_value_preprocessor
 def static_request_handler(endpoint, values):
     g.interface = values.pop('interface', None)
-    static_path = os.path.abspath(os.path.join('interfaces', g.interface, 'interface', 'static'))
+    static_path = os.path.abspath(os.path.join(config.Config.INTERFACES_PATH,
+                                               g.interface, 'interface', 'static'))
     custom_interface_page.static_folder = static_path
 
 
