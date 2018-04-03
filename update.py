@@ -10,8 +10,7 @@ from distutils.util import strtobool
 import semver
 from six.moves import input
 
-import scripts.migrate_api
-import scripts.migrate_workflows
+from walkoff.scripts.migrate_api import convert_apis
 import setup_walkoff
 from walkoff import __version__ as version
 
@@ -81,7 +80,7 @@ def migrate_apps(flagged, inter):
     if not (flagged or (inter and prompt("Do you want to migrate your app APIs?"))):
         return
 
-    scripts.migrate_api.main()
+    convert_apis()
 
 
 def validate_version(target):
@@ -105,17 +104,6 @@ def validate_version(target):
 
     return mode, tgt_version
 
-
-def migrate_workflows(flagged, inter, target):
-    if not (flagged or (inter and prompt("Do you want to migrate your workflows?"))):
-        return
-
-    mode, tgt_version = validate_version(target)
-    while inter and (mode is None):
-        target = input(
-            "Enter the version target, e.g. 'u0.5.2' to upgrade to 0.5.2 or 'd0.5.0' to downgrade to 0.5.0. "
-            "The most recent update is " + LATEST_VERSION + ": ")
-        mode, tgt_version = validate_version(target)
 
     print("{} workflows to version {}".format(mode, tgt_version))
     scripts.migrate_workflows.convert_playbooks(mode, tgt_version)
@@ -181,11 +169,6 @@ def create_cli_parser():
     parser.add_argument("-md", "--migratedatabase",
                         help="Runs alembic database migration.",
                         action="store_true")
-    parser.add_argument("-mw", "--migrateworkflows",
-                        help="Runs workflow migration script to upgrade/downgrade to the specified version,"
-                             " e.g. 'u0.5.2' to upgrade to 0.5.2 or 'd0.5.0' to downgrade to 0.5.0"
-                             " The most recent version is " + LATEST_VERSION,
-                        nargs="?", const="u" + LATEST_VERSION)
     return parser
 
 
@@ -210,7 +193,6 @@ def main():
     setup(args.everything or args.setup, args.interactive)
     migrate_apps(args.everything or args.migrateapps, args.interactive)
     alembic(args.everything or args.migratedatabase, args.interactive)
-    migrate_workflows(args.everything or args.migrateworkflows, args.interactive, args.migrateworkflows)
 
 
 if __name__ == '__main__':
