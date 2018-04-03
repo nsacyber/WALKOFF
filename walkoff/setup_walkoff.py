@@ -14,12 +14,12 @@ def main():
     generate_certificates()
     # os.system('python scripts/generate_certificates.py')
 
-    print('\nInstalling Node Packages...')
-    os.chdir('./walkoff/client')
-    os.system('npm install')
-
-    print('\nCompiling TypeScript Files...')
-    os.system('npm run build')
+    # print('\nInstalling Node Packages...')
+    # os.chdir('./walkoff/client')
+    # os.system('npm install')
+    #
+    # print('\nCompiling TypeScript Files...')
+    # os.system('npm run build')
 
 
 if __name__ == '__main__':
