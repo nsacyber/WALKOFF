@@ -14,8 +14,6 @@ from walkoff.scripts.migrate_api import convert_apis
 import setup_walkoff
 from walkoff import __version__ as version
 
-LATEST_VERSION = '0.7.0'
-
 
 def prompt(question):
     while True:
@@ -81,32 +79,6 @@ def migrate_apps(flagged, inter):
         return
 
     convert_apis()
-
-
-def validate_version(target):
-    if target is None:
-        return None, None
-
-    if target.startswith("d"):
-        mode = "downgrade"
-    elif target.startswith("u"):
-        mode = "upgrade"
-    else:
-        print("Use 'd' or 'u' at the start to specify whether to downgrade or upgrade to the specified version.")
-        return None, None
-
-    tgt_version = target[1:]
-    try:
-        semver.parse(tgt_version)
-    except ValueError:
-        print("{} is not a valid semver string".format(tgt_version))
-        return None, None
-
-    return mode, tgt_version
-
-
-    print("{} workflows to version {}".format(mode, tgt_version))
-    scripts.migrate_workflows.convert_playbooks(mode, tgt_version)
 
 
 def alembic(flagged, inter):
