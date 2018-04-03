@@ -2,7 +2,7 @@ import json
 import logging
 import logging.config
 import sys
-from os.path import isfile, join, abspath
+from os.path import isfile, join, abspath, sep
 import warnings
 
 import yaml
@@ -11,7 +11,8 @@ logger = logging.getLogger(__name__)
 
 app_apis = {}
 
-_cache_path = join('.', 'data', 'cache')
+walkoff_internal = abspath(__file__).rsplit(sep, 1)[0]
+print(abspath(__file__).rsplit(sep, 1)[0])
 
 
 def load_app_apis(apps_path=None):
@@ -97,30 +98,28 @@ class Config(object):
     CASE_DB_TYPE = 'sqlite'
     EXECUTION_DB_TYPE = 'sqlite'
 
-    CACHE = {"type": "disk", "directory": _cache_path, "shards": 8, "timeout": 0.01, "retry": True}
-
     # PATHS
-
-    DATA_PATH = join('.', 'data')
-
-    API_PATH = join('.', 'walkoff', 'api')
-    APPS_PATH = join('.', 'apps')
-    CACHE_PATH = join('.', 'data', 'cache')
+    ROOT_PATH = abspath('.')
+    DATA_PATH = join(ROOT_PATH, 'data')
+    API_PATH = join(walkoff_internal, 'walkoff', 'api')
+    APPS_PATH = join(ROOT_PATH, 'apps')
+    CACHE_PATH = join(DATA_PATH, 'cache')
     CASE_DB_PATH = join(DATA_PATH, 'events.db')
+    CACHE = {"type": "disk", "directory": CACHE_PATH, "shards": 8, "timeout": 0.01, "retry": True}
 
-    CLIENT_PATH = join('.', 'walkoff', 'client')
+    CLIENT_PATH = join(walkoff_internal, 'walkoff', 'client')
     CONFIG_PATH = join(DATA_PATH, 'walkoff.config')
     DB_PATH = join(DATA_PATH, 'walkoff.db')
     DEFAULT_APPDEVICE_EXPORT_PATH = join(DATA_PATH, 'appdevice.json')
     DEFAULT_CASE_EXPORT_PATH = join(DATA_PATH, 'cases.json')
     EXECUTION_DB_PATH = join(DATA_PATH, 'execution.db')
-    INTERFACES_PATH = join('.', 'interfaces')
+    INTERFACES_PATH = join(ROOT_PATH, 'interfaces')
     LOGGING_CONFIG_PATH = join(DATA_PATH, 'log', 'logging.json')
 
     WALKOFF_SCHEMA_PATH = join(DATA_PATH, 'walkoff_schema.json')
     WORKFLOWS_PATH = join('.', 'workflows')
 
-    KEYS_PATH = join('.', '.certificates')
+    KEYS_PATH = join(ROOT_PATH, '.certificates')
     CERTIFICATE_PATH = join(KEYS_PATH, 'walkoff.crt')
     PRIVATE_KEY_PATH = join(KEYS_PATH, 'walkoff.key')
     ZMQ_PRIVATE_KEYS_PATH = join(KEYS_PATH, 'private_keys')
