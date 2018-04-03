@@ -19,8 +19,7 @@ def cmd_line():
     return args
 
 
-if __name__ == '__main__':
-
+def install_dependencies():
     args = cmd_line()
     apps = args.apps
     interfaces = args.interfaces
@@ -46,3 +45,7 @@ if __name__ == '__main__':
             print("No requirements.txt file found in " + interface + " folder. Skipping...")
             continue
         pip.main(['install', '-r', path])
+
+
+if __name__ == '__main__':
+    install_dependencies()
