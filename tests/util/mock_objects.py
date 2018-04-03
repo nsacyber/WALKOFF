@@ -11,7 +11,7 @@ from walkoff.events import WalkoffEvent
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.multiprocessedexecutor import workflowexecutioncontroller
-from walkoff.multiprocessedexecutor.worker import convert_to_protobuf
+from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
 
 try:
     from Queue import Queue
