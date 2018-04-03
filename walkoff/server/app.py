@@ -66,9 +66,9 @@ def __register_all_app_blueprints(flaskapp):
 
 def create_app(app_config, walkoff_config):
     import walkoff.config
-    connexion_app = connexion.App(__name__, specification_dir='../api/')
+    connexion_app = connexion.App(__name__, specification_dir=config.Config.API_PATH)
     _app = connexion_app.app
-    _app.jinja_loader = FileSystemLoader(['walkoff/templates'])
+    _app.jinja_loader = FileSystemLoader([config.Config.TEMPLATES_PATH])
     _app.config.from_object(app_config)
 
     db.init_app(_app)

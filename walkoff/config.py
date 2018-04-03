@@ -106,6 +106,7 @@ class Config(object):
     CACHE_PATH = join(DATA_PATH, 'cache')
     CASE_DB_PATH = join(DATA_PATH, 'events.db')
     CACHE = {"type": "disk", "directory": CACHE_PATH, "shards": 8, "timeout": 0.01, "retry": True}
+    TEMPLATES_PATH = join(walkoff_internal, 'templates')
 
     CLIENT_PATH = join(walkoff_internal, 'walkoff', 'client')
     CONFIG_PATH = join(DATA_PATH, 'walkoff.config')
