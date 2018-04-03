@@ -182,8 +182,6 @@ def initialize():
     Config.load_config()
     from walkoff.appgateway import cache_apps
     sys.path.insert(0, abspath(Config.WALKOFF_EXTERNAL_PATH))
-    print("calling installed apps path")
     cache_apps(Config.APPS_PATH, relative=False)
-    print("calling appbase")
     cache_apps("walkoff.appbase", relative=False)
     load_app_apis()
