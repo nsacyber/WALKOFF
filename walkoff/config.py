@@ -64,7 +64,7 @@ def setup_logger():
         logging.basicConfig()
         logger.info("Basic logging is being used")
 
-    def send_warnings_to_log(message, category, filename, lineno, file=None):
+    def send_warnings_to_log(message, category, filename, lineno, file=None, *args):
         logging.warning(
             '%s:%s: %s:%s' %
             (filename, lineno, category.__name__, message))
@@ -159,7 +159,7 @@ class Config(object):
 
 class AppConfig(object):
     # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
-
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = 'SHORTSTOPKEYTEST'
     SQLALCHEMY_DATABASE_URI = '{0}://{1}'.format(Config.WALKOFF_DB_TYPE, abspath(
         Config.DB_PATH)) if Config.WALKOFF_DB_TYPE != 'sqlite' else '{0}:///{1}'.format(Config.WALKOFF_DB_TYPE,
