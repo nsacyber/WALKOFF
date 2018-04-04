@@ -91,7 +91,7 @@ def convert_host_port(args):
     return host, port
 
 
-if __name__ == "__main__":
+def main():
     args = parse_args()
     exit_code = 0
     try:
@@ -112,3 +112,7 @@ if __name__ == "__main__":
         flaskserver.running_context.executor.shutdown_pool()
         logger.info('Shutting down server')
         os._exit(exit_code)
+
+
+if __name__ == "__main__":
+    main()
