@@ -72,7 +72,14 @@ setup(
     #
     #   py_modules=["my_module"],
     #
-    packages=find_packages(exclude=['docs', 'tests', 'tests.*', 'walkoff_external']),  # Required
+    packages=find_packages(exclude=['docs',
+                                    'tests',
+                                    'tests.*',
+                                    'apps',
+                                    'apps.*',
+                                    'interfaces',
+                                    'interfaces.*',
+                                    'walkoff_external']),  # Required
 
     # This field lists other packages that your project depends on to run.
     # Any package you put here will be installed by pip when your project is
@@ -156,7 +163,7 @@ setup(
     entry_points={  # Optional
         'console_scripts': [
             'walkoff-setup=walkoff.setup_walkoff:main',
-            'walkoff-run=walkoff.__main__:main',
+            'walkoff-run=walkoff:main',
             'walkoff-update=walkoff.update_walkoff:main'
         ],
     },
