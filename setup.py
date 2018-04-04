@@ -130,11 +130,13 @@ setup(
                     'client/dist/main.bundle.js',
                     'client/dist/polyfills.bundle.js',
                     'client/dist/vendor.bundle.js',
+                    'proto/data.proto'
                     'scripts/migrations/alembic.ini',
                     'scripts/migrations/database/*/README',
                     'scripts/migrations/database/*/*.mako',
                     'templates/*',
-                    'walkoff_external.tar.gz']
+                    'walkoff_external.tar.gz'
+                    'walkoff_external.zip']
     },
 
     # Although 'package_data' is the preferred approach, in some case you may
