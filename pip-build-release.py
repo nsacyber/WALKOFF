@@ -3,6 +3,7 @@ import tarfile
 import zipfile
 import argparse
 import os
+import shutil
 
 
 def zip_dir(path, zip_file, arcname=None):
@@ -24,6 +25,9 @@ def main():
     parser.add_argument("-b", "--build",
                         help="Build",
                         action="store_true")
+    parser.add_argument("-c", "--clear",
+                        help="Clear build/ and dist/",
+                        action="store_true")
 
     args = parser.parse_args()
 
@@ -35,6 +39,14 @@ def main():
             os.remove(gzip_filename)
         if os.path.exists(zip_filename):
             os.remove(zip_filename)
+
+        if args.clear:
+            if os.path.exists("build/"):
+                shutil.rmtree("build/")
+            if os.path.exists("dist/"):
+                shutil.rmtree("dist/")
+            if os.path.exists("walkoff.egg-info/"):
+                shutil.rmtree("walkoff.egg-info/")
 
         t = tarfile.open(gzip_filename, "w|gz")
         t.add("apps/", arcname="walkoff_external/apps/")

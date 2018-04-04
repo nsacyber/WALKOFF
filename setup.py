@@ -163,7 +163,7 @@ setup(
     entry_points={  # Optional
         'console_scripts': [
             'walkoff-setup=walkoff.setup_walkoff:main',
-            'walkoff-run=walkoff:main',
+            'walkoff-run=walkoff.__main__:main',
             'walkoff-update=walkoff.update_walkoff:main'
         ],
     },
