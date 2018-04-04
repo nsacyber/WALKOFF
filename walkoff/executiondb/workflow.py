@@ -45,7 +45,7 @@ class Workflow(ExecutionElement, Execution_Base):
 
         self._is_paused = False
         self._abort = False
-        self._accumulator = {}
+        self._accumulator = {branch.id: 0 for branch in self.branches}
         self._execution_id = 'default'
         self._instance_repo = None
 
@@ -56,7 +56,7 @@ class Workflow(ExecutionElement, Execution_Base):
         """Loads all necessary fields upon Workflow being loaded from database"""
         self._is_paused = False
         self._abort = False
-        self._accumulator = {}
+        self._accumulator = {branch.id: 0 for branch in self.branches}
         self._instance_repo = AppInstanceRepo()
         self._execution_id = 'default'
 
@@ -183,7 +183,8 @@ class Workflow(ExecutionElement, Execution_Base):
                 # TODO: This here is the only hold up from getting rid of action._output.
                 # Keep whole result in accumulator
                 destination_id = branch.execute(current_action.get_output(), accumulator)
-                return destination_id
+                if destination_id is not None:
+                    return destination_id
             return None
         else:
             return None
@@ -205,6 +206,7 @@ class Workflow(ExecutionElement, Execution_Base):
 
     def set_execution_id(self, execution_id):
         """Sets the execution UD for the Workflow
+
         Args:
             execution_id (str): The execution ID
         """
@@ -212,6 +214,7 @@ class Workflow(ExecutionElement, Execution_Base):
 
     def get_execution_id(self):
         """Gets the execution ID for the Workflow
+
         Returns:
             The execution ID of the Workflow
         """
@@ -219,13 +222,23 @@ class Workflow(ExecutionElement, Execution_Base):
 
     def get_executing_action_id(self):
         """Gets the ID of the currently executing Action
+
         Returns:
             The ID of the currently executing Action
         """
         return self._executing_action.id
 
+    def get_executing_action(self):
+        """Gets the currently executing Action
+
+        Returns:
+            The currently executing Action
+        """
+        return self._executing_action
+
     def get_accumulator(self):
         """Gets the accumulator
+
         Returns:
             The accumulator
         """
@@ -233,6 +246,7 @@ class Workflow(ExecutionElement, Execution_Base):
 
     def get_instances(self):
         """Gets all instances
+
         Returns:
             All instances
         """

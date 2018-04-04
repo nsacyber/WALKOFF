@@ -61,7 +61,7 @@ class TestInterfaceEventDispatcher(TestCase):
     def test_registration_correct_number_methods_generated(self):
         methods = [method for method in dir(dispatcher) if method.startswith('on_')]
         expected_number = len([event for event in WalkoffEvent if
-                               event.event_type != EventType.other and event != WalkoffEvent.SendMessage]) + 2
+                               event.event_type != EventType.other and event.is_sent_to_interfaces()]) + 2
         # 2: one for on_app_action and one for on_walkoff_event
         self.assertEqual(len(methods), expected_number)
 

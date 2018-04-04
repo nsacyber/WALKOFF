@@ -3,6 +3,7 @@ import logging
 import os
 from copy import deepcopy
 from functools import partial
+from six import string_types
 
 from connexion.utils import boolean
 from jsonschema import RefResolver, draft4_format_checker, ValidationError
@@ -61,10 +62,23 @@ def convert_array(schema, param_in, message_prefix):
 
 
 def __convert_json(schema, param_in, message_prefix):
+    if isinstance(param_in, string_types):
+        try:
+            param_in = json.loads(param_in)
+        except (ValueError, TypeError):
+            raise InvalidArgument(
+                '{0} A JSON object was expected. '
+                'Instead got "{1}" of type {2}.'.format(
+                    message_prefix,
+                    param_in,
+                    type(param_in).__name__))
     if not isinstance(param_in, dict):
         raise InvalidArgument(
-            '{0} A JSON object was expected. '
-            'Instead got "{1}" of type {2}.'.format(message_prefix, param_in, type(param_in).__name__))
+                '{0} A JSON object was expected. '
+                'Instead got "{1}" of type {2}.'.format(
+                    message_prefix,
+                    param_in,
+                    type(param_in).__name__))
     if 'properties' not in schema:
         return param_in
     ret = {}

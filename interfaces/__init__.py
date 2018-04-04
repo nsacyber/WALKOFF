@@ -31,8 +31,8 @@ class InterfaceEventDispatcher(object):
         This class is a singleton.
 
     Attributes:
-        event_dispatcher (interfaces.disatchers.EventDispatcher): Router and dispatcher for WalkoffEvents
-        app_action_dispatcher (interfaces.disatchers.AppEventDispatcher): Router and dispatcher for action WalkfoffEvents
+        event_dispatcher (interfaces.dispatchers.EventDispatcher): Router and dispatcher for WalkoffEvents
+        app_action_dispatcher (interfaces.dispatchers.AppEventDispatcher): Router and dispatcher for action WalkfoffEvents
     """
 
     __instance = None  # to make this class a singleton
@@ -42,7 +42,7 @@ class InterfaceEventDispatcher(object):
     def __new__(cls, *args, **kwargs):
         if cls.__instance is None:
             for event in (event for event in WalkoffEvent if
-                          event.event_type != EventType.other and event != WalkoffEvent.SendMessage):
+                          event.event_type != EventType.other and event.is_sent_to_interfaces()):
                 dispatch_method = cls._make_dispatch_method(event)
                 dispatch_partial = partial(dispatch_method, cls=cls)
                 event.connect(dispatch_partial, weak=False)

@@ -1,7 +1,7 @@
 import logging
 
-from sqlalchemy import Column, Integer, ForeignKey, String, event
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy import Column, Integer, ForeignKey, String, event, orm
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 
 from walkoff.events import WalkoffEvent
@@ -44,8 +44,14 @@ class Branch(ExecutionElement, Execution_Base):
         self.status = status
         self.priority = priority
         self.condition = condition
+        self._counter = 0
 
         self.validate()
+
+    @orm.reconstructor
+    def init_on_load(self):
+        """Loads all necessary fields upon Branch being loaded from database"""
+        self._counter = 0
 
     def validate(self):
         pass
@@ -61,6 +67,8 @@ class Branch(ExecutionElement, Execution_Base):
             Destination UID for the next Action that should be taken, None if the data_in was not valid
                 for this Branch.
         """
+        self._counter += 1
+        accumulator[self.id] = self._counter
 
         if data_in is not None and data_in.status == self.status:
             if self.condition is None or self.condition.execute(data_in=data_in.result, accumulator=accumulator):
@@ -73,6 +81,7 @@ class Branch(ExecutionElement, Execution_Base):
                 return None
         else:
             return None
+
 
 @event.listens_for(Branch, 'before_update')
 def validate_before_update(mapper, connection, target):

@@ -26,6 +26,7 @@ def client_app_folder(filename):
 @app.route('/devices')
 @app.route('/messages')
 @app.route('/cases')
+@app.route('/metrics')
 @app.route('/settings')
 def default():
     return render_template("index.html")

@@ -184,3 +184,6 @@ class PubSubCacheSpy(object):
             self.published[channel] = [data]
         else:
             self.published[channel].append(data)
+
+    def shutdown(self):
+        pass
