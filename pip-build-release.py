@@ -9,7 +9,6 @@ def zip_dir(path, zip_file, arcname=None):
     for root, dirs, files in os.walk(path):
         for f in files:
             new_root = root.replace(path, arcname)
-            print(root, new_root)
             zip_file.write(os.path.join(root, f), arcname=os.path.join(new_root, f))
 
 
@@ -29,13 +28,21 @@ def main():
     args = parser.parse_args()
 
     if args.build:
-        t = tarfile.open("walkoff/walkoff_external.tar.gz", "w|gz")
+        gzip_filename = "walkoff/walkoff_external.tar.gz"
+        zip_filename = "walkoff/walkoff_external.zip"
+
+        if os.path.exists(gzip_filename):
+            os.remove(gzip_filename)
+        if os.path.exists(zip_filename):
+            os.remove(zip_filename)
+
+        t = tarfile.open(gzip_filename, "w|gz")
         t.add("apps/", arcname="walkoff_external/apps/")
         t.add("interfaces/", arcname="walkoff_external/interfaces/")
         t.add("data/", arcname="walkoff_external/data/")
         t.close()
 
-        z = zipfile.ZipFile("walkoff/walkoff_external.zip", "w", zipfile.ZIP_DEFLATED)
+        z = zipfile.ZipFile(zip_filename, "w", zipfile.ZIP_DEFLATED)
         zip_dir("apps/", z, arcname="walkoff_external/apps/")
         zip_dir("interfaces/", z, arcname="walkoff_external/interfaces/")
         zip_dir("data/", z, arcname="walkoff_external/data/")
