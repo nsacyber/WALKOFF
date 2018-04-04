@@ -33,9 +33,9 @@ class TestCaseServer(ServerTestCase):
         server.app.running_context.case_logger = self.logger
 
     def tearDown(self):
-        for case in server.app.case_db.session.query(case_database.Case).all():
-            server.app.case_db.session.delete(case)
-        server.app.case_db.commit()
+        for case in server.app.running_context.case_db.session.query(case_database.Case).all():
+            server.app.running_context.case_db.session.delete(case)
+        server.app.running_context.case_db.commit()
         for case in CaseSubscription.query.all():
             db.session.delete(case)
         db.session.commit()
@@ -57,7 +57,7 @@ class TestCaseServer(ServerTestCase):
         response = self.post_with_status_check('/api/cases', headers=self.headers, data=json.dumps(data),
                                                content_type='application/json', status_code=OBJECT_CREATED)
         self.assertEqual(response, {'id': 1, 'name': 'case1', 'note': 'Test', 'subscriptions': []})
-        cases = [case.name for case in server.app.case_db.session.query(case_database.Case).all()]
+        cases = [case.name for case in server.app.running_context.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case1']
         orderless_list_compare(self, cases, expected_cases)
         cases_config = CaseSubscription.query.all()
@@ -101,7 +101,7 @@ class TestCaseServer(ServerTestCase):
             status_code=OBJECT_EXISTS_ERROR,
             content_type='application/json')
 
-        cases = [case.name for case in server.app.case_db.session.query(case_database.Case).all()]
+        cases = [case.name for case in server.app.running_context.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case3']
         orderless_list_compare(self, cases, expected_cases)
         cases_config = CaseSubscription.query.all()
@@ -126,7 +126,7 @@ class TestCaseServer(ServerTestCase):
         self.assertEqual(
             response,
             {'id': 1, 'name': 'case1', 'note': 'Test', 'subscriptions': [{'id': uid, 'events': ['a', 'b', 'c']}]})
-        cases = [case.name for case in server.app.case_db.session.query(case_database.Case).all()]
+        cases = [case.name for case in server.app.running_context.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case1']
         orderless_list_compare(self, cases, expected_cases)
         cases_config = CaseSubscription.query.all()
@@ -149,7 +149,7 @@ class TestCaseServer(ServerTestCase):
         self.assertEqual(
             response,
             {'id': 1, 'name': 'case1', 'note': 'Test', 'subscriptions': subscriptions})
-        cases = [case.name for case in server.app.case_db.session.query(case_database.Case).all()]
+        cases = [case.name for case in server.app.running_context.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case1']
         orderless_list_compare(self, cases, expected_cases)
         cases_config = CaseSubscription.query.all()
