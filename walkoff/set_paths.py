@@ -6,57 +6,54 @@ from six.moves import input
 import tarfile
 import zipfile
 
-walkoff_ext = ""
-walkoff_internal = os.path.abspath(__file__).rsplit(os.path.sep, 1)[0]
+from walkoff.config import Config
 
 
-def set_config_path():
-    global walkoff_ext
+def set_walkoff_external():
+    default = os.path.join(os.getcwd(), "walkoff_external")
+    sys.stdout.write(" * Enter a directory to install WALKOFF apps, interfaces, and data to (default: {}): "
+                     .format(default))
+    Config.WALKOFF_EXTERNAL_PATH = input()
 
-    ext_json = os.path.join(walkoff_internal, 'config', 'external_paths.json')
-    with open(ext_json, "r") as f:
-        o = json.load(f)
-        sys.stdout.write("* Enter a path for walkoff_external: ")
-        user_input = input()
-        walkoff_ext = user_input
+    if Config.WALKOFF_EXTERNAL_PATH == '':
+        Config.WALKOFF_EXTERNAL_PATH = default
 
+    if not Config.WALKOFF_EXTERNAL_PATH.lower().endswith("walkoff_external"):
+        os.path.join(Config.WALKOFF_EXTERNAL_PATH, "walkoff_external")
+
+    if not os.path.isdir(Config.WALKOFF_EXTERNAL_PATH):
         try:
-            os.makedirs(walkoff_ext)
-            o["walkoff_external"] = walkoff_ext
-        except OSError:
-            if os.path.isdir(walkoff_ext):
-                print("Specified directory exists, assuming this is OK.")
-                o["walkoff_external"] = walkoff_ext
-            else:
-                print("Specified directory could not be created.")
-                sys.exit(1)
+            print("Creating {}".format(Config.WALKOFF_EXTERNAL_PATH))
+            os.makedirs(Config.WALKOFF_EXTERNAL_PATH)
+        except OSError as e:
+            print("Specified directory could not be created: {}".format(e))
+            sys.exit(1)
 
-    with open(ext_json, "w") as f:
-        json.dump(o, f, sort_keys=True)
+    Config.write_values_to_file()
 
-    arch_path = os.path.join(walkoff_internal, "walkoff_external")
+    arch_path = os.path.join(Config.WALKOFF_INTERNAL_PATH, "walkoff_external")
 
-    # if os.name == 'posix':
-    arch_path += ".tar.gz"
-    archf = tarfile.open(arch_path)
+    if os.name == 'posix':
+        arch_path += ".tar.gz"
+        archf = tarfile.open(arch_path)
 
-    # elif os.name == 'nt':
-    #     arch_path += ".zip"
-    #     archf = zipfile.ZipFile(arch_path)
+    elif os.name == 'nt':
+        arch_path += ".zip"
+        archf = zipfile.ZipFile(arch_path)
 
-    archf.extractall(walkoff_ext)
+    archf.extractall(Config.WALKOFF_EXTERNAL_PATH)
+
 
 def set_alembic_paths():
 
     config = configparser.ConfigParser()
-    alembic_ini = os.path.join(walkoff_internal, 'scripts', 'migrations', 'alembic.ini')
+    alembic_ini = os.path.join(Config.WALKOFF_INTERNAL_PATH, 'scripts', 'migrations', 'alembic.ini')
     with open(alembic_ini, "r") as f:
         config.readfp(f)
 
-    urlprefix = "sqlite:///"
-    config.set("walkoff", "sqlalchemy.url", urlprefix + walkoff_ext + os.sep + "walkoff.db")
-    config.set("events", "sqlalchemy.url", urlprefix + walkoff_ext + os.sep + "events.db")
-    config.set("device", "sqlalchemy.url", urlprefix + walkoff_ext + os.sep + "devices.db")
+    config.set("walkoff", "sqlalchemy.url", "sqlite:///{}".format(Config.DB_PATH))
+    config.set("events", "sqlalchemy.url", "sqlite:///{}".format(Config.CASE_DB_PATH))
+    config.set("execution", "sqlalchemy.url", "sqlite:///{}".format(Config.EXECUTION_DB_PATH))
 
     with open(alembic_ini, "w") as f:
         config.write(f)
@@ -64,8 +61,8 @@ def set_alembic_paths():
 
 def set_logging_path():
 
-    logging_json = os.path.join(walkoff_ext, 'walkoff_data', 'log', 'logging.json')
-    log_log = os.path.join(walkoff_ext, 'walkoff_data', 'log', 'log.log')
+    logging_json = Config.LOGGING_CONFIG_PATH
+    log_log = os.path.join(Config.DATA_PATH, 'log', 'log.log')
     with open(logging_json, "r") as f:
         o = json.load(f)
         o["handlers"]["file_handler"]["filename"] = log_log
@@ -75,7 +72,7 @@ def set_logging_path():
 
 
 def main():
-    set_config_path()
+    set_walkoff_external()
     set_alembic_paths()
     set_logging_path()
 

@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 
 app_apis = {}
 
-walkoff_external = abspath(r"temphardcode")
 walkoff_internal = abspath(__file__).rsplit(sep, 1)[0]
 
 
@@ -101,7 +100,7 @@ class Config(object):
     # PATHS
     # ROOT_PATH = abspath('.')
     WALKOFF_INTERNAL_PATH = walkoff_internal
-    WALKOFF_EXTERNAL_PATH = walkoff_external
+    WALKOFF_EXTERNAL_PATH = ''
 
     DATA_PATH = join(WALKOFF_EXTERNAL_PATH, 'data')
     API_PATH = join(WALKOFF_INTERNAL_PATH, 'api')
@@ -112,7 +111,7 @@ class Config(object):
     TEMPLATES_PATH = join(WALKOFF_INTERNAL_PATH, 'templates')
 
     CLIENT_PATH = join(WALKOFF_INTERNAL_PATH, 'client')
-    CONFIG_PATH = join(DATA_PATH, 'walkoff.config')
+    CONFIG_PATH = join(WALKOFF_INTERNAL_PATH, 'walkoff.config')
     DB_PATH = join(DATA_PATH, 'walkoff.db')
     DEFAULT_APPDEVICE_EXPORT_PATH = join(DATA_PATH, 'appdevice.json')
     DEFAULT_CASE_EXPORT_PATH = join(DATA_PATH, 'cases.json')
@@ -181,7 +180,7 @@ def initialize():
     setup_logger()
     from walkoff.appgateway import cache_apps
     cache_apps(Config.APPS_PATH, relative=False)
-    from walkoff import appbase
+    # from walkoff import appbase
     # cache_apps("walkoff.appbase", relative=False)
     load_app_apis()
     Config.write_values_to_file()
