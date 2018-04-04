@@ -154,15 +154,22 @@ class AppCache(object):
             path (str): Path to apps module
             relative (bool): Whether the path should be relative or not
         """
-        app_path = AppCache._path_to_module(path, relative=relative)
-        try:
-            module = import_module(app_path)
-        except ImportError:
-            _logger.exception('Cannot import base package for apps! No apps will be registered')
-        else:
-            apps = [info[1] for info in pkgutil.walk_packages(module.__path__)]
-            for app in apps:
-                self._import_and_cache_submodules('{0}.{1}'.format(app_path, app), app, app_path)
+        sys.path.insert(0, os.path.abspath((os.path.dirname(path))))
+        # dirs = next(os.walk(path))[1]
+        # print("Path: " + path)
+        # for module in dirs:
+        #     print("Module: " + module)
+        #     import_module(module)
+
+        app_path = AppCache._path_to_module(path, relative=False)
+        # try:
+        #     module = import_module(app_path)
+        # except ImportError:
+        #     _logger.exception('Cannot import base package for apps! No apps will be registered')
+        # else:
+        apps = next(os.walk(path))[1]
+        for app in apps:
+            self._import_and_cache_submodules('{0}.{1}'.format(app_path, app), app, app_path)
 
     def clear(self):
         """Clears the cache

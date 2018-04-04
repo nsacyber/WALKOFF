@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 app_apis = {}
 
-walkoff_external = abspath(r"C:\Users\589941\PycharmProjects\PipVersion3\NEWPIP_Walkoff\walkoff_external")
+walkoff_external = abspath(r"temphardcode")
 walkoff_internal = abspath(__file__).rsplit(sep, 1)[0]
 
 
@@ -106,7 +106,6 @@ class Config(object):
     DATA_PATH = join(WALKOFF_EXTERNAL_PATH, 'data')
     API_PATH = join(WALKOFF_INTERNAL_PATH, 'api')
     APPS_PATH = join(WALKOFF_EXTERNAL_PATH, 'apps')
-    APPBASE_PATH = join(WALKOFF_INTERNAL_PATH, 'appbase')
     CACHE_PATH = join(DATA_PATH, 'cache')
     CASE_DB_PATH = join(DATA_PATH, 'events.db')
     CACHE = {"type": "disk", "directory": CACHE_PATH, "shards": 8, "timeout": 0.01, "retry": True}
@@ -119,7 +118,6 @@ class Config(object):
     DEFAULT_CASE_EXPORT_PATH = join(DATA_PATH, 'cases.json')
     EXECUTION_DB_PATH = join(DATA_PATH, 'execution.db')
     INTERFACES_PATH = join(WALKOFF_EXTERNAL_PATH, 'interfaces')
-    INTERFACEBASE_PATH = join(WALKOFF_INTERNAL_PATH, 'interfacebase')
     LOGGING_CONFIG_PATH = join(DATA_PATH, 'log', 'logging.json')
 
     WALKOFF_SCHEMA_PATH = join(DATA_PATH, 'walkoff_schema.json')
@@ -178,10 +176,12 @@ class AppConfig(object):
 def initialize():
     """Loads the config file, loads the app cache, and loads the app APIs into memory
     """
-    setup_logger()
+
     Config.load_config()
+    setup_logger()
     from walkoff.appgateway import cache_apps
-    sys.path.insert(0, abspath(Config.WALKOFF_EXTERNAL_PATH))
     cache_apps(Config.APPS_PATH, relative=False)
-    cache_apps("walkoff.appbase", relative=False)
+    from walkoff import appbase
+    # cache_apps("walkoff.appbase", relative=False)
     load_app_apis()
+    Config.write_values_to_file()

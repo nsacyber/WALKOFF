@@ -8,6 +8,8 @@ from walkoff.appgateway.appcache import (AppCache, WalkoffTag,
 from walkoff.appgateway.decorators import action
 from walkoff.helpers import UnknownApp, UnknownAppAction
 
+from tests import config
+
 
 def f1(): pass
 
@@ -123,9 +125,9 @@ class TestAppCache(TestCase):
         self.assertEqual(AppCache._path_to_module('..' + os.path.sep + 'apppath' + os.path.sep), 'apppath')
 
     def test_cache_apps(self):
-        self.cache.cache_apps(os.path.join('.', 'tests', 'testapps'))
-        from tests.testapps.HelloWorldBounded.main import Main
-        from tests.testapps.DailyQuote.main import Main as DailyMain
+        self.cache.cache_apps(config.test_apps_path)
+        from testapps.HelloWorldBounded.main import Main
+        from testapps.DailyQuote.main import Main as DailyMain
         self.assert_cache_has_main(Main, app='HelloWorldBounded')
         hello_world_expected = {
             'main.Main.helloWorld', 'main.Main.repeatBackToMe', 'main.Main.returnPlusOne', 'main.Main.pause',
@@ -147,7 +149,7 @@ class TestAppCache(TestCase):
         self.assertDictEqual(self.cache._cache, {})
 
     def test_clear_cache(self):
-        self.cache.cache_apps('./tests/apps')
+        self.cache.cache_apps(config.test_apps_path)
         self.cache.clear()
         self.assertDictEqual(self.cache._cache, {})
 

@@ -26,34 +26,6 @@ else:
 logger = logging.getLogger(__name__)
 
 
-def import_py_file(module_name, path_to_file):
-    """Dynamically imports a python module.
-    
-    Args:
-        module_name (str): The name of the module to be imported.
-        path_to_file (str): The path to the module to be imported.
-        
-    Returns:
-        The module object that was imported.
-    """
-    if sys.version_info[0] == 2:
-        from imp import load_source
-        import exceptions, warnings
-        with warnings.catch_warnings(record=True) as w:
-            imported = load_source(module_name, os.path.abspath(path_to_file))
-            if w:
-                mod_name = module_name.replace('.main', '')
-                if not (type(w[-1].category) == type(exceptions.RuntimeWarning) or
-                        'Parent module \'apps.' + mod_name + '\' not found while handling absolute import' in
-                        w[-1].message):
-                    print(w[-1].message)
-    else:
-        from importlib import machinery
-        loader = machinery.SourceFileLoader(module_name, os.path.abspath(path_to_file))
-        imported = loader.load_module(module_name)
-    return imported
-
-
 def construct_module_name_from_path(path):
     """Constructs the name of the module with the path name.
     
@@ -66,36 +38,6 @@ def construct_module_name_from_path(path):
     path = path.lstrip('.{0}'.format(os.sep))
     path = path.replace('.', '')
     return '.'.join([x for x in path.split(os.sep) if x])
-
-
-def import_app_main(app_name, path=None, reload=False):
-    """Dynamically imports the main function of an App.
-    
-    Args:
-        app_name (str): The name of the App from which to import the main function.
-        path (str, optional): The path to the apps module. Defaults to walkoff.config.APPS_PATH
-        reload (bool, optional): Reload the module if already imported. Defaults to True
-    Returns:
-        The module object that was imported.
-    """
-    if path is None:
-        path = walkoff.config.Config.APPS_PATH
-    app_path = os.path.join(path, app_name, 'main.py')
-    module_name = construct_module_name_from_path(app_path[:-3])
-    try:
-        module = sys.modules[module_name]
-        if reload:
-            reload_module(module)
-        return module
-    except KeyError:
-        pass
-    try:
-        imported_module = import_py_file(module_name, app_path)
-        sys.modules[module_name] = imported_module
-        return imported_module
-    except (ImportError, IOError, OSError, SyntaxError) as e:
-        logger.error('Cannot load app main for app {0}. Error: {1}'.format(app_name, format_exception_message(e)))
-        pass
 
 
 def __list_valid_directories(path):

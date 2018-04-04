@@ -74,32 +74,6 @@ class TestHelperFunctions(unittest.TestCase):
         expected_apps = ['HelloWorld', 'DailyQuote', 'HelloWorldBounded']
         orderless_list_compare(self, expected_apps, list_apps())
 
-    def test_import_py_file(self):
-        module_name = 'tests.testapps.HelloWorld'
-        imported_module = import_py_file(module_name,
-                                         os.path.join(walkoff.config.Config.APPS_PATH, 'HelloWorld', 'main.py'))
-        self.assertIsInstance(imported_module, types.ModuleType)
-        self.assertEqual(imported_module.__name__, module_name)
-        self.assertIn(module_name, sys.modules)
-        self.assertEqual(sys.modules[module_name], imported_module)
-
-    def test_import_py_file_invalid(self):
-        error_type = IOError if sys.version_info[0] == 2 else OSError
-        with self.assertRaises(error_type):
-            import_py_file('some.module.name',
-                           os.path.join(walkoff.config.Config.APPS_PATH, 'InvalidAppName', 'main.py'))
-
-    def test_import_app_main(self):
-        module_name = 'tests.testapps.HelloWorld.main'
-        imported_module = import_app_main('HelloWorld')
-        self.assertIsInstance(imported_module, types.ModuleType)
-        self.assertEqual(imported_module.__name__, module_name)
-        self.assertIn(module_name, sys.modules)
-        self.assertEqual(sys.modules[module_name], imported_module)
-
-    def test_import_app_main_invalid_app(self):
-        self.assertIsNone(import_app_main('InvalidAppName'))
-
     def test_construct_module_name_from_path(self):
         input_output = {join('.', 'aaa', 'bbb', 'ccc'): 'aaa.bbb.ccc',
                         join('aaa', 'bbb', 'ccc'): 'aaa.bbb.ccc',
