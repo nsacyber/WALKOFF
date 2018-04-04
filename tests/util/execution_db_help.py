@@ -37,8 +37,7 @@ def cleanup_execution_db():
     classes = [Playbook, Workflow, Action, Branch, Argument, ConditionalExpression, Condition, Transform,
                WorkflowStatus, ActionStatus, AppMetric, WorkflowMetric, WorkflowStatus]
     for ee in classes:
-        for instance in execution_db.session.query(ee).all():
-            execution_db.session.delete(instance)
+        execution_db.session.query(ee).delete()
 
     execution_db.session.commit()
 

@@ -80,7 +80,7 @@ class Worker(object):
         self.server_key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
 
         if worker_environment_setup:
-            worker_environment_setup()
+            self.execution_db, self.case_db = worker_environment_setup()
         else:
             walkoff.config.initialize()
             self.execution_db = ExecutionDatabase(walkoff.config.Config.EXECUTION_DB_TYPE,

@@ -25,6 +25,13 @@ class TestZMQCommunication(unittest.TestCase):
     def setUpClass(cls):
         cls.execution_db, cls.case_db = execution_db_help.setup_dbs()
 
+        from walkoff.server import flaskserver
+        cls.context = flaskserver.app.test_request_context()
+        cls.context.push()
+
+        from walkoff.server import context
+        flaskserver.app.running_context = context.Context(walkoff.config.Config)
+
         from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
         walkoff.config.Config.NUMBER_PROCESSES = 2
         pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES,

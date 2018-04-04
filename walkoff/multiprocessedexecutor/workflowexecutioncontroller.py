@@ -14,6 +14,7 @@ from six import string_types
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, CaseControl, WorkflowControl
 from walkoff.helpers import json_dumps_or_string
+from flask import current_app
 
 logger = logging.getLogger(__name__)
 
@@ -140,12 +141,13 @@ class WorkflowExecutionController:
 
 
 class Receiver:
-    def __init__(self, zmq_private_keys_path, zmq_results_address):
+    def __init__(self, zmq_private_keys_path, zmq_results_address, current_app):
         """Initialize a Receiver object, which will receive callbacks from the execution elements.
 
         Args:
             zmq_private_keys_path (str): The path to the ZMQ private keys
             zmq_results_address (str): The address of the ZMQ results socket
+            current_app (Flask.App): The current Flask app
         """
         ctx = zmq.Context.instance()
         self.thread_exit = False
@@ -160,6 +162,8 @@ class Receiver:
         self.results_sock.curve_server = True
         self.results_sock.bind(zmq_results_address)
 
+        self.current_app = current_app
+
     def receive_results(self):
         """Keep receiving results from execution elements over a ZMQ socket, and trigger the callbacks.
         """
@@ -173,7 +177,8 @@ class Receiver:
                 gevent.sleep(0.1)
                 continue
 
-            self.send_callback(message_bytes)
+            with self.current_app.app_context():
+                self.send_callback(message_bytes)
 
         self.results_sock.close()
 

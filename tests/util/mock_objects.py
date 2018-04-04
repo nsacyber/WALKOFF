@@ -4,6 +4,7 @@ import threading
 import gevent
 from fakeredis import FakeStrictRedis
 from zmq.utils.strtypes import cast_unicode
+from flask import current_app
 
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.case.database import CaseDatabase
@@ -27,7 +28,7 @@ def mock_initialize_threading(self, zmq_public_keys_path, zmq_private_keys_path,
     global workflows_executed
     workflows_executed = 0
 
-    self.manager = MockLoadBalancer()
+    self.manager = MockLoadBalancer(current_app._get_current_object())
     self.manager_thread = threading.Thread(target=self.manager.manage_workflows)
     self.manager_thread.start()
 
@@ -58,9 +59,9 @@ def mock_shutdown_pool(self):
 
 
 class MockLoadBalancer(object):
-    def __init__(self):
+    def __init__(self, current_app):
         self.pending_workflows = MockRequestQueue()
-        self.results_queue = MockReceiveQueue()
+        self.results_queue = MockReceiveQueue(current_app)
         self.workflow_comms = {}
         self.exec_id = ''
 
@@ -125,11 +126,12 @@ class MockLoadBalancer(object):
 
 class MockReceiveQueue(workflowexecutioncontroller.Receiver):
 
-    def __init__(self):
-        pass
+    def __init__(self, current_app):
+        self.current_app = current_app
 
     def send(self, packet):
-        self.send_callback(packet)
+        with self.current_app.app_context():
+            self.send_callback(packet)
 
     def _increment_execution_count(self):
         global workflows_executed

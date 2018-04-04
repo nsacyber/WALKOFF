@@ -35,5 +35,5 @@ if __name__ == '__main__':
         print('\nInterrupted! Ending full test')
         successful = False
     finally:
-        walkoff.flaskserver.app.running_context.executor.shutdown_pool()
+        walkoff.server.flaskserver.app.running_context.executor.shutdown_pool()
         sys.exit(not successful)

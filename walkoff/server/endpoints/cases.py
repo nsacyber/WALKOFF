@@ -159,7 +159,7 @@ def delete_case(case_id):
             if case:
                 current_app.running_context.executor.delete_case(case_id)
                 current_app.running_context.case_logger.delete_case(case_id)
-                case_database.case_db.session.delete(case)
+                current_app.running_context.case_db.session.delete(case)
             current_app.running_context.case_db.commit()
             current_app.logger.debug('Case deleted {0}'.format(case_id))
             return None, NO_CONTENT

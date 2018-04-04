@@ -18,6 +18,7 @@ from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController, Receiver
 from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
 from walkoff.multiprocessedexecutor.worker import Worker
+from flask import current_app
 logger = logging.getLogger(__name__)
 
 
@@ -90,7 +91,7 @@ class MultiprocessedExecutor(object):
         self.auth.configure_curve(domain='*', location=zmq_public_keys_path)
 
         self.manager = WorkflowExecutionController(self.cache, zmq_private_keys_path, zmq_communication_address)
-        self.receiver = Receiver(zmq_private_keys_path, zmq_results_address)
+        self.receiver = Receiver(zmq_private_keys_path, zmq_results_address, current_app._get_current_object())
 
         self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
         self.receiver_thread.start()

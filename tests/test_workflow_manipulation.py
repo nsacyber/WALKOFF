@@ -23,6 +23,13 @@ class TestWorkflowManipulation(unittest.TestCase):
     def setUpClass(cls):
         execution_db_help.setup_dbs()
 
+        from walkoff.server import flaskserver
+        cls.context = flaskserver.app.test_request_context()
+        cls.context.push()
+
+        from walkoff.server import context
+        flaskserver.app.running_context = context.Context(walkoff.config.Config)
+
         walkoff.appgateway.cache_apps(config.test_apps_path)
         walkoff.config.load_app_apis(apps_path=config.test_apps_path)
         walkoff.config.Config.NUMBER_PROCESSES = 2

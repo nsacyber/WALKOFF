@@ -147,8 +147,7 @@ class TestWorkflowResultsStream(ServerTestCase):
         sender['status'] = WorkflowStatusEnum.pending.name
         self.assertDictEqual(result, sender)
 
-    @staticmethod
-    def get_workflow_status(workflow_execution_id, status):
+    def get_workflow_status(self, workflow_execution_id, status):
         workflow_id = uuid4()
         workflow_status = WorkflowStatus(workflow_execution_id, workflow_id, 'workflow1')
         action_execution_id = uuid4()
