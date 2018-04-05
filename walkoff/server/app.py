@@ -3,7 +3,6 @@ import logging
 import connexion
 from jinja2 import FileSystemLoader
 from walkoff import helpers
-import walkoff.cache
 from walkoff.executiondb.device import App
 from walkoff.extensions import db, jwt
 import walkoff.config as config
@@ -22,7 +21,7 @@ def register_blueprints(flaskapp):
     flaskapp.register_blueprint(notifications.notifications_page, url_prefix='/api/streams/messages')
     flaskapp.register_blueprint(console.console_page, url_prefix='/api/streams/console')
     for blueprint in (workflowresults.workflowresults_page, notifications.notifications_page, console.console_page):
-        blueprint.cache = walkoff.cache.cache
+        blueprint.cache = flaskapp.running_context.cache
     __register_all_app_blueprints(flaskapp)
 
 
@@ -37,7 +36,7 @@ def __get_blueprints_in_module(module):
 def __register_blueprint(flaskapp, blueprint, url_prefix):
     from interfaces import AppBlueprint
     if isinstance(blueprint, AppBlueprint):
-        blueprint.cache = walkoff.cache.cache
+        blueprint.cache = flaskapp.running_context.cache
     url_prefix = '{0}{1}'.format(url_prefix, blueprint.url_prefix) if blueprint.url_prefix else url_prefix
     blueprint.url_prefix = url_prefix
     flaskapp.register_blueprint(blueprint, url_prefix=url_prefix)
@@ -64,8 +63,10 @@ def __register_all_app_blueprints(flaskapp):
             __register_app_blueprints(flaskapp, interface_name, interface_blueprints)
 
 
-def create_app(app_config, walkoff_config):
+def create_app(app_config):
     import walkoff.config
+    from walkoff.server import context
+
     connexion_app = connexion.App(__name__, specification_dir='../api/')
     _app = connexion_app.app
     _app.jinja_loader = FileSystemLoader(['walkoff/templates'])
@@ -76,7 +77,7 @@ def create_app(app_config, walkoff_config):
     connexion_app.add_api('composed_api.yaml')
 
     walkoff.config.initialize()
-    walkoff.cache.cache = walkoff.cache.make_cache(walkoff_config.CACHE)
+    _app.running_context = context.Context(walkoff.config.Config)
     register_blueprints(_app)
 
     import walkoff.server.workflowresults  # Don't delete this import
@@ -85,7 +86,7 @@ def create_app(app_config, walkoff_config):
 
 
 # Template Loader
-app = create_app(config.AppConfig, config.Config)
+app = create_app(config.AppConfig)
 
 
 @app.before_first_request

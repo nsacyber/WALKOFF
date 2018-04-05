@@ -696,12 +696,6 @@ cache_translation = {'disk': DiskCacheAdapter, 'redis': RedisCacheAdapter}
 """(dict): A mapping between a string type and the corresponding cache adapter
 """
 
-# Ideally this global is replaced entirely by the running_context
-# This is needed currently to get this cache into the blueprints, so there are two cache connections in the apps now
-cache = None
-""" (RedisCacheAdapter|DiskCacheAdapter): The cache used throughout Walkoff 
-"""
-
 
 def make_cache(config=None):
     """Factory method for constructing Cache Adapters from configuration JSON
@@ -715,7 +709,6 @@ def make_cache(config=None):
     if config is None:
         config = {}
     config = deepcopy(config)
-    global cache
     cache_type = config.pop('type', 'disk').lower()
     try:
         cache = cache_translation[cache_type].from_json(config)

@@ -8,7 +8,6 @@ from gevent import monkey
 from gevent import pywsgi
 
 import walkoff
-import walkoff.cache
 import walkoff.config
 
 logger = logging.getLogger('walkoff')
@@ -28,8 +27,6 @@ def run(host, port):
     compose_api()
 
     from walkoff.server import flaskserver
-    from walkoff.server import context
-    flaskserver.app.running_context = context.Context(walkoff.config.Config)
     flaskserver.app.running_context.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
                                                                   walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
                                                                   walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
