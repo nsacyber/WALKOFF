@@ -21,8 +21,8 @@ class TestAction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         execution_db_help.setup_dbs()
-        walkoff.appgateway.cache_apps(tests.config.test_apps_path)
-        walkoff.config.load_app_apis(apps_path=tests.config.test_apps_path)
+        walkoff.appgateway.cache_apps(tests.config.APPS_PATH)
+        walkoff.config.load_app_apis(apps_path=tests.config.APPS_PATH)
 
     @classmethod
     def tearDownClass(cls):

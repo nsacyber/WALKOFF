@@ -2,7 +2,7 @@ import unittest
 
 import walkoff.appgateway
 import walkoff.config
-from tests.config import test_apps_path
+from tests.config import APPS_PATH
 from tests.util import execution_db_help
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.schemas import dump_element
@@ -16,8 +16,8 @@ class TestCondition(unittest.TestCase):
     def setUpClass(cls):
         execution_db_help.setup_dbs()
         walkoff.appgateway.clear_cache()
-        walkoff.appgateway.cache_apps(path=test_apps_path)
-        walkoff.config.load_app_apis(test_apps_path)
+        walkoff.appgateway.cache_apps(path=APPS_PATH)
+        walkoff.config.load_app_apis(APPS_PATH)
 
     @classmethod
     def tearDownClass(cls):

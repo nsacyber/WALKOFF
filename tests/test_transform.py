@@ -2,7 +2,7 @@ import unittest
 
 import walkoff.appgateway
 import walkoff.config
-from tests.config import test_apps_path
+from tests.config import APPS_PATH
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.transform import Transform
 from walkoff.helpers import InvalidExecutionElement
@@ -12,8 +12,8 @@ class TestTransform(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         walkoff.appgateway.clear_cache()
-        walkoff.appgateway.cache_apps(path=test_apps_path)
-        walkoff.config.load_app_apis(test_apps_path)
+        walkoff.appgateway.cache_apps(path=APPS_PATH)
+        walkoff.config.load_app_apis(APPS_PATH)
 
     @classmethod
     def tearDownClass(cls):

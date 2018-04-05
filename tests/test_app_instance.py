@@ -2,7 +2,7 @@ import importlib
 import unittest
 
 import walkoff.appgateway
-from tests.config import test_apps_path
+from tests.config import APPS_PATH
 from tests.util import execution_db_help
 from walkoff.appgateway import appinstance
 
@@ -11,7 +11,7 @@ class TestInstance(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         execution_db_help.setup_dbs()
-        walkoff.appgateway.cache_apps(test_apps_path)
+        walkoff.appgateway.cache_apps(APPS_PATH)
 
     @classmethod
     def tearDownClass(cls):

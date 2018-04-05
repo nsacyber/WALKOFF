@@ -1,6 +1,6 @@
 from unittest import TestCase
 from walkoff.cache import DiskCacheAdapter, unsubscribe_message
-from tests.config import cache_path
+from tests.config import CACHE_PATH
 from tests.util.mock_objects import PubSubCacheSpy
 import os
 from datetime import timedelta
@@ -10,18 +10,18 @@ class TestDiskCacheAdapter(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        if not os.path.exists(cache_path):
-            os.mkdir(cache_path)
+        if not os.path.exists(CACHE_PATH):
+            os.mkdir(CACHE_PATH)
 
     def setUp(self):
-        self.cache = DiskCacheAdapter(directory=cache_path)
+        self.cache = DiskCacheAdapter(directory=CACHE_PATH)
 
     def tearDown(self):
         self.cache.clear()
         self.cache.shutdown()
 
     def test_init(self):
-        self.assertEqual(self.cache.directory, cache_path)
+        self.assertEqual(self.cache.directory, CACHE_PATH)
         self.assertTrue(self.cache.retry)
 
     def test_set_get(self):
@@ -104,10 +104,10 @@ class TestDiskCacheAdapter(TestCase):
         self.assertEqual(DiskCacheAdapter._convert_expire_to_seconds(1500), 1.5)
 
     def test_from_json(self):
-        data = {'directory': cache_path, 'shards': 4, 'timeout': 30, 'retry': False, 'statistics': True}
+        data = {'directory': CACHE_PATH, 'shards': 4, 'timeout': 30, 'retry': False, 'statistics': True}
         cache = DiskCacheAdapter.from_json(data)
-        self.assertEqual(cache.directory, cache_path)
-        self.assertEqual(cache.cache.directory, cache_path)
+        self.assertEqual(cache.directory, CACHE_PATH)
+        self.assertEqual(cache.cache.directory, CACHE_PATH)
         self.assertEqual(cache.cache._count, 4)
         self.assertFalse(cache.retry)
 

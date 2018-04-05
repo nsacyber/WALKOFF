@@ -3,7 +3,7 @@ import os
 
 import tests.config
 import walkoff.config
-from tests.config import test_workflows_path
+from tests.config import WORKFLOWS_PATH
 from tests.util.jsonplaybookloader import JsonPlaybookLoader
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.case.database import CaseDatabase
@@ -52,7 +52,7 @@ def load_playbooks(playbooks):
     execution_db = ExecutionDatabase.instance
 
     paths = []
-    paths.extend([os.path.join(test_workflows_path, filename) for filename in os.listdir(test_workflows_path)
+    paths.extend([os.path.join(WORKFLOWS_PATH, filename) for filename in os.listdir(WORKFLOWS_PATH)
                   if filename.endswith('.playbook') and filename.split('.')[0] in playbooks])
     for path in paths:
         with open(path, 'r') as playbook_file:
@@ -72,7 +72,7 @@ def standard_load():
 
 def load_playbook(playbook_name):
     execution_db = ExecutionDatabase.instance
-    playbook = JsonPlaybookLoader.load_playbook(os.path.join(test_workflows_path, playbook_name + '.playbook'))
+    playbook = JsonPlaybookLoader.load_playbook(os.path.join(WORKFLOWS_PATH, playbook_name + '.playbook'))
     execution_db.session.add(playbook)
     execution_db.session.commit()
     return playbook
@@ -80,7 +80,7 @@ def load_playbook(playbook_name):
 
 def load_workflow(playbook_name, workflow_name):
     execution_db = ExecutionDatabase.instance
-    playbook = JsonPlaybookLoader.load_playbook(os.path.join(test_workflows_path, playbook_name + '.playbook'))
+    playbook = JsonPlaybookLoader.load_playbook(os.path.join(WORKFLOWS_PATH, playbook_name + '.playbook'))
     execution_db.session.add(playbook)
     execution_db.session.commit()
 

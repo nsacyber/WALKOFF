@@ -6,10 +6,9 @@ def modified_setup_worker_env():
     import walkoff.config
     from tests.util.execution_db_help import setup_dbs
     import apps  # need this import
-    import walkoff.cache
 
-    walkoff.appgateway.cache_apps(tests.config.test_apps_path)
-    walkoff.config.load_app_apis(apps_path=tests.config.test_apps_path)
-    walkoff.config.Config.CACHE = {'type': 'disk', 'directory': tests.config.cache_path}
+    walkoff.config.Config.load_config(config_path=tests.config.TEST_CONFIG_PATH)
+    walkoff.appgateway.cache_apps(walkoff.config.Config.APPS_PATH)
+    walkoff.config.load_app_apis(apps_path=walkoff.config.Config.APPS_PATH)
 
     return setup_dbs()

@@ -32,8 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 class Worker(object):
-    def __init__(self, id_, num_threads_per_process, zmq_private_keys_path, zmq_results_address,
-                 zmq_communication_address, worker_environment_setup=None):
+    def __init__(self, id_, worker_environment_setup=None):
         """Initialize a Workflow object, which will be executing workflows.
 
         Args:

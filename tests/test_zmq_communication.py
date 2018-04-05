@@ -39,7 +39,7 @@ class TestZMQCommunication(unittest.TestCase):
                                       walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
                                       walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
                                       worker_environment_setup=modified_setup_worker_env)
-        walkoff.config.Config.CACHE = {'type': 'disk', 'directory': config.cache_path}
+        walkoff.config.Config.CACHE = {'type': 'disk', 'directory': config.CACHE_PATH}
         cls.subscription_cache = SubscriptionCache()
         cls.logger = CaseLogger(cls.case_db, cls.subscription_cache)
         cls.executor = MultiprocessedExecutor(make_cache(walkoff.config.Config.CACHE), cls.logger)
@@ -47,19 +47,19 @@ class TestZMQCommunication(unittest.TestCase):
                                           walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
                                           walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
                                           walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS, pids)
-        walkoff.appgateway.cache_apps(config.test_apps_path)
-        walkoff.config.load_app_apis(apps_path=config.test_apps_path)
+        walkoff.appgateway.cache_apps(config.APPS_PATH)
+        walkoff.config.load_app_apis(apps_path=config.APPS_PATH)
 
     def tearDown(self):
         execution_db_help.cleanup_execution_db()
 
     @classmethod
     def tearDownClass(cls):
-        if config.test_data_path in os.listdir(config.test_path):
-            if os.path.isfile(config.test_data_path):
-                os.remove(config.test_data_path)
+        if config.DATA_PATH in os.listdir(config.TEST_PATH):
+            if os.path.isfile(config.DATA_PATH):
+                os.remove(config.DATA_PATH)
             else:
-                shutil.rmtree(config.test_data_path)
+                shutil.rmtree(config.DATA_PATH)
         for class_ in (Case, Event):
             for instance in cls.case_db.session.query(class_).all():
                 cls.case_db.session.delete(instance)

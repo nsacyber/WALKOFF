@@ -9,7 +9,7 @@ from walkoff.extensions import db
 from walkoff.server.endpoints.cases import convert_subscriptions, split_subscriptions
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
-from tests.config import test_apps_path
+from tests.config import APPS_PATH
 from uuid import uuid4
 from mock import create_autospec, patch, call
 from walkoff.case.logger import CaseLogger
@@ -39,8 +39,8 @@ class TestCaseServer(ServerTestCase):
         for case in CaseSubscription.query.all():
             db.session.delete(case)
         db.session.commit()
-        if os.path.exists(os.path.join(test_apps_path, 'case.json')):
-            os.remove(os.path.join(test_apps_path, 'case.json'))
+        if os.path.exists(os.path.join(APPS_PATH, 'case.json')):
+            os.remove(os.path.join(APPS_PATH, 'case.json'))
 
     def create_case(self, name):
         response = json.loads(
@@ -310,17 +310,14 @@ class TestCaseServer(ServerTestCase):
         self.assertIsNotNone(case1_new_json)
         self.assertDictEqual(case1_new_json, {'id': 1, 'name': 'renamed'})
 
-    # @patch.object(server.app.running_context.executor, 'update_case')
     def test_edit_case_put(self):
         with patch.object(server.app.running_context.executor, 'update_case') as mock_update:
             self.put_patch_test('put', mock_update)
 
-    # @patch.object(server.app.running_context.executor, 'update_case')
     def test_edit_case_patch(self):
         with patch.object(server.app.running_context.executor, 'update_case') as mock_update:
             self.put_patch_test('patch', mock_update)
 
-    # @patch.object(server.app.running_context.executor, 'update_case')
     def test_edit_case_no_name(self):
         with patch.object(server.app.running_context.executor, 'update_case') as mock_update:
             case2_id = self.create_case('case1')
@@ -336,7 +333,6 @@ class TestCaseServer(ServerTestCase):
             self.assertDictEqual(response, {'note': 'note1', 'subscriptions': [], 'id': 1, 'name': 'case1'})
             mock_update.assert_not_called()
 
-    # @patch.object(server.app.running_context.executor, 'update_case')
     def test_edit_case_no_note(self):
         with patch.object(server.app.running_context.executor, 'update_case') as mock_update:
             case1_id = self.create_case('case1')
@@ -355,7 +351,6 @@ class TestCaseServer(ServerTestCase):
             self.assertDictEqual(response, {'note': '', 'subscriptions': [], 'id': 1, 'name': 'renamed'})
             mock_update.assert_not_called()
 
-    # @patch.object(server.app.running_context.executor, 'update_case')
     def test_edit_case_invalid_case(self):
         with patch.object(server.app.running_context.executor, 'update_case') as mock_update:
             self.create_case('case1')
@@ -369,7 +364,6 @@ class TestCaseServer(ServerTestCase):
                 status_code=OBJECT_DNE_ERROR)
             mock_update.assert_not_called()
 
-    # @patch.object(server.app.running_context.executor, 'create_case')
     def test_export_cases(self):
         with patch.object(server.app.running_context.executor, 'create_case') as mock_create:
             subscription = {'id': 'id1', 'events': ['a', 'b', 'c']}
@@ -385,13 +379,12 @@ class TestCaseServer(ServerTestCase):
             self.assertIn('name', case)
             self.assertListEqual(case['events'], [])
 
-    # @patch.object(server.app.running_context.executor, 'create_case')
     def test_import_cases(self):
         with patch.object(server.app.running_context.executor, 'create_case') as mock_create:
             subscription = {'id': 'id1', 'events': ['a', 'b', 'c']}
             data = {'name': 'case1', 'note': 'Test', 'subscriptions': [subscription]}
 
-            path = os.path.join(test_apps_path, 'case.json')
+            path = os.path.join(APPS_PATH, 'case.json')
             with open(path, 'w') as f:
                 f.write(json.dumps(data, indent=4, sort_keys=True))
 
@@ -418,7 +411,6 @@ class TestCaseServer(ServerTestCase):
                                 {event.signal_name for event in WalkoffEvent if
                                  event.event_type.name == event_type and event.is_loggable()})
 
-    # @patch.object(server.app.running_context.executor, 'update_case')
     def test_send_cases_to_workers(self):
         with patch.object(server.app.running_context.executor, 'update_case') as mock_update:
             from walkoff.case.database import Case

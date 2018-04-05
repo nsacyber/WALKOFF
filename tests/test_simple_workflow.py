@@ -25,8 +25,8 @@ class TestSimpleWorkflow(unittest.TestCase):
         flaskserver.app.running_context = context.Context(walkoff.config.Config)
 
         from walkoff.appgateway import cache_apps
-        cache_apps(path=config.test_apps_path)
-        walkoff.config.load_app_apis(apps_path=config.test_apps_path)
+        cache_apps(path=config.APPS_PATH)
+        walkoff.config.load_app_apis(apps_path=config.APPS_PATH)
         walkoff.config.Config.NUMBER_PROCESSES = 2
         multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset

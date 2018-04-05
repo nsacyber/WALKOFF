@@ -11,8 +11,6 @@ logger = logging.getLogger(__name__)
 
 app_apis = {}
 
-_cache_path = join('.', 'data', 'cache')
-
 
 def load_app_apis(apps_path=None):
     """Loads App APIs
@@ -97,8 +95,6 @@ class Config(object):
     CASE_DB_TYPE = 'sqlite'
     EXECUTION_DB_TYPE = 'sqlite'
 
-    CACHE = {"type": "disk", "directory": _cache_path, "shards": 8, "timeout": 0.01, "retry": True}
-
     # PATHS
 
     DATA_PATH = join('.', 'data')
@@ -106,6 +102,7 @@ class Config(object):
     API_PATH = join('.', 'walkoff', 'api')
     APPS_PATH = join('.', 'apps')
     CACHE_PATH = join('.', 'data', 'cache')
+    CACHE = {"type": "disk", "directory": CACHE_PATH, "shards": 8, "timeout": 0.01, "retry": True}
     CASE_DB_PATH = join(DATA_PATH, 'events.db')
 
     CLIENT_PATH = join('.', 'walkoff', 'client')
@@ -127,17 +124,20 @@ class Config(object):
     ZMQ_PUBLIC_KEYS_PATH = join(KEYS_PATH, 'public_keys')
 
     @classmethod
-    def load_config(cls):
+    def load_config(cls, config_path=None):
         """ Loads Walkoff configuration from JSON file
         """
-        if isfile(cls.CONFIG_PATH):
+        print(config_path)
+        config_path = config_path if config_path else cls.CONFIG_PATH
+        if isfile(config_path):
+            print(config_path)
             try:
-                with open(cls.CONFIG_PATH) as config_file:
+                with open(config_path) as config_file:
                     config = json.loads(config_file.read())
                     for key, value in config.items():
                         if value:
-                            if hasattr(cls, key.upper()):
-                                setattr(cls, key.upper(), value)
+                            print(key, value)
+                            setattr(cls, key.upper(), value)
             except (IOError, OSError, ValueError):
                 logger.warning('Could not read config file.', exc_info=True)
 
@@ -170,11 +170,11 @@ class AppConfig(object):
     JWT_TOKEN_LOCATION = 'headers'
 
 
-def initialize():
+def initialize(config_path=None):
     """Loads the config file, loads the app cache, and loads the app APIs into memory
     """
     setup_logger()
-    Config.load_config()
+    Config.load_config(config_path)
     from walkoff.appgateway import cache_apps
     cache_apps(Config.APPS_PATH)
     load_app_apis()

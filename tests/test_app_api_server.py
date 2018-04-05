@@ -1,6 +1,5 @@
 import json
 
-import tests.config
 import walkoff.appgateway
 import walkoff.config
 from tests.util.assertwrappers import orderless_list_compare
@@ -9,14 +8,7 @@ from walkoff.server.endpoints.appapi import *
 
 
 class TestAppApiServerFuncs(ServerTestCase):
-    def setUp(self):
-        self.original_apps_path = walkoff.config.Config.APPS_PATH
-        walkoff.config.Config.APPS_PATH = tests.config.test_apps_path
-        walkoff.appgateway.clear_cache()
-        walkoff.appgateway.cache_apps(tests.config.test_apps_path)
-
     def tearDown(self):
-        walkoff.config.Config.APPS_PATH = self.original_apps_path
         walkoff.config.app_apis.pop('TestApp', None)
 
     def test_read_all_apps(self):
