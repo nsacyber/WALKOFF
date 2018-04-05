@@ -10,8 +10,6 @@ from tests.util import execution_db_help
 from tests.util.mock_objects import *
 from tests.util.thread_control import *
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
-from walkoff.server.endpoints.appapi import *
-from walkoff.server.returncodes import NO_CONTENT
 
 if not getattr(__builtins__, 'WindowsError', None):
     class WindowsError(OSError): pass
@@ -56,6 +54,7 @@ class ServerTestCase(unittest.TestCase):
         walkoff.config.NUMBER_PROCESSES = 2
         walkoff.config.Config.CACHE = {'type': 'disk', 'directory': tests.config.cache_path}
         walkoff.config.Config.DB_PATH = tests.config.test_db_path
+        print("DB PATH SET")
         walkoff.config.Config.CASE_DB_PATH = tests.config.test_case_db_path
         walkoff.config.Config.EXECUTION_DB_PATH = tests.config.test_execution_db_path
 
@@ -156,6 +155,8 @@ class ServerTestCase(unittest.TestCase):
         pass
 
     def __assert_url_access(self, url, method, status_code, error, **kwargs):
+        from walkoff.server.returncodes import NO_CONTENT
+
         try:
             response = self.http_verb_lookup[method.lower()](url, **kwargs)
         except KeyError:

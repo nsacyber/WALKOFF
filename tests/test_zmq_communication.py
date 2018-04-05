@@ -11,8 +11,6 @@ from tests.util import execution_db_help
 from tests.util.thread_control import modified_setup_worker_env
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
-from walkoff.server import workflowresults  # Need this import
-import walkoff.cache
 from walkoff.case.logger import CaseLogger
 from walkoff.cache import make_cache
 from walkoff.events import WalkoffEvent
@@ -25,6 +23,7 @@ class TestZMQCommunication(unittest.TestCase):
     def setUpClass(cls):
         cls.execution_db, cls.case_db = execution_db_help.setup_dbs()
 
+        from walkoff.server import workflowresults  # Need this import
         from walkoff.server import flaskserver
         cls.context = flaskserver.app.test_request_context()
         cls.context.push()

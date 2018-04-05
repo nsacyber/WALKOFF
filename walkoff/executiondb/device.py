@@ -6,7 +6,6 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
-from walkoff import executiondb
 from walkoff.appgateway.validator import convert_primitive_type
 from walkoff.executiondb import Execution_Base, ExecutionDatabase
 

@@ -1,5 +1,4 @@
 from unittest import TestLoader, TestSuite
-
 from . import *
 
 
