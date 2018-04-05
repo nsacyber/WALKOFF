@@ -17,7 +17,7 @@ from walkoff.executiondb.schemas import PlaybookSchema
 from walkoff.executiondb.transform import Transform
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
-from walkoff.executiondb.metrics import AppMetric, WorkflowMetric
+from walkoff.executiondb.metrics import AppMetric, WorkflowMetric, ActionMetric, ActionStatusMetric
 
 
 def setup_dbs():
@@ -35,7 +35,8 @@ def cleanup_execution_db():
     execution_db = ExecutionDatabase.instance
     execution_db.session.rollback()
     classes = [Playbook, Workflow, Action, Branch, Argument, ConditionalExpression, Condition, Transform,
-               WorkflowStatus, ActionStatus, AppMetric, WorkflowMetric, WorkflowStatus]
+               WorkflowStatus, ActionStatus, AppMetric, WorkflowMetric, WorkflowStatus, ActionMetric,
+               ActionStatusMetric]
     for ee in classes:
         execution_db.session.query(ee).delete()
 
@@ -49,7 +50,7 @@ def tear_down_execution_db():
 
 def load_playbooks(playbooks):
     execution_db = ExecutionDatabase.instance
-    
+
     paths = []
     paths.extend([os.path.join(test_workflows_path, filename) for filename in os.listdir(test_workflows_path)
                   if filename.endswith('.playbook') and filename.split('.')[0] in playbooks])
