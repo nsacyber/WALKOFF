@@ -21,7 +21,6 @@ data/*.db
 tests/tmp/*
 data/*.db-journal
 data/log/*.log
-data/walkoff.config
 docs/_*/
 npm-debug.log
 tests/testWorkflows/testGeneratedWorkflows_bkup
@@ -36,3 +35,9 @@ walkoff/client/dist/
 !interfaces/*.py
 !interfaces/*.pytests/tmp/*
 data/cache/
+walkoff_external/*
+walkoff/walkoff.config
+walkoff/walkoff_external.*
+build/
+dist/
+walkoff.egg-info/

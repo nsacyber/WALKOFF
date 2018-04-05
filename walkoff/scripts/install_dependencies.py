@@ -20,10 +20,7 @@ def cmd_line():
     return args
 
 
-def install_dependencies():
-    args = cmd_line()
-    apps = args.apps
-    interfaces = args.interfaces
+def install_dependencies(apps=None, interfaces=None):
 
     if not apps:
         apps = list_apps()
@@ -49,4 +46,5 @@ def install_dependencies():
 
 
 if __name__ == '__main__':
-    install_dependencies()
+    args = cmd_line()
+    install_dependencies(args.apps, args.interfaces)

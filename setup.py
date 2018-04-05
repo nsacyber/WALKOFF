@@ -78,8 +78,7 @@ setup(
                                     'apps',
                                     'apps.*',
                                     'interfaces',
-                                    'interfaces.*',
-                                    'walkoff_external']),  # Required
+                                    'interfaces.*']),  # Required
 
     # This field lists other packages that your project depends on to run.
     # Any package you put here will be installed by pip when your project is
@@ -137,12 +136,12 @@ setup(
                     'client/dist/main.bundle.js',
                     'client/dist/polyfills.bundle.js',
                     'client/dist/vendor.bundle.js',
-                    'proto/data.proto'
+                    'proto/data.proto',
                     'scripts/migrations/alembic.ini',
                     'scripts/migrations/database/*/README',
                     'scripts/migrations/database/*/*.mako',
                     'templates/*',
-                    'walkoff_external.tar.gz'
+                    'walkoff_external.tar.gz',
                     'walkoff_external.zip']
     },
 

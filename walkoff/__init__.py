@@ -1,4 +1,4 @@
-__version__ = '0.8.0a6'
+__version__ = '0.8.0a8'
 
 
 def initialize_databases():

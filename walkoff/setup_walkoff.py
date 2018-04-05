@@ -11,17 +11,21 @@ def main():
     args = parser.parse_args()
 
     if args.development:
-        os.system('python walkoff/set_paths.py')
+        from scripts.install_dependencies import install_dependencies
+        from scripts.generate_certificates import generate_certificates
+        from set_paths import main as set_paths_main
+        from config import Config
+
+        set_paths_main()
 
         print('\nInstalling Python Dependencies...')
-        os.system('pip install -r requirements.txt')
-        os.system('python walkoff/scripts/install_dependencies.py')
+        install_dependencies()
+
         print('\nGenerating Certificates...')
-        os.system('python walkoff/scripts/generate_certificates.py')
+        generate_certificates()
 
         print('\nInstalling Node Packages...')
         os.chdir(Config.CLIENT_PATH)
-        os.chdir('walkoff/client')
         os.system('npm install')
 
         print('\nCompiling TypeScript Files...')

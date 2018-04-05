@@ -31,6 +31,14 @@ def main():
 
     args = parser.parse_args()
 
+    if args.clear:
+        if os.path.exists("build/"):
+            shutil.rmtree("build/")
+        if os.path.exists("dist/"):
+            shutil.rmtree("dist/")
+        if os.path.exists("walkoff.egg-info/"):
+            shutil.rmtree("walkoff.egg-info/")
+
     if args.build:
         gzip_filename = "walkoff/walkoff_external.tar.gz"
         zip_filename = "walkoff/walkoff_external.zip"
@@ -39,14 +47,6 @@ def main():
             os.remove(gzip_filename)
         if os.path.exists(zip_filename):
             os.remove(zip_filename)
-
-        if args.clear:
-            if os.path.exists("build/"):
-                shutil.rmtree("build/")
-            if os.path.exists("dist/"):
-                shutil.rmtree("dist/")
-            if os.path.exists("walkoff.egg-info/"):
-                shutil.rmtree("walkoff.egg-info/")
 
         t = tarfile.open(gzip_filename, "w|gz")
         t.add("apps/", arcname="walkoff_external/apps/")
