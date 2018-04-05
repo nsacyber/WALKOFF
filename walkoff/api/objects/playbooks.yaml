@@ -28,7 +28,6 @@ CreateWorkflow:
   type: object
   required: [name]
   description: A workflow object
-  additionalProperties: false
   properties:
     name:
       description: The name of the workflow.
