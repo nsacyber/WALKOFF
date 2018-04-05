@@ -386,7 +386,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 					selector: 'node[?isStartNode]',
 					css: {
 						'border-width': '3px',
-						'border-color': '#399645',
+						'border-color': '#991818',
 					},
 				},
 				{
