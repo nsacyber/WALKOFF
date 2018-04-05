@@ -12,4 +12,8 @@ export class Transform extends ExecutionElement {
 
 	@Type(() => Argument)
 	arguments: Argument[] = [];
+
+	get all_errors(): string[] {
+		return this.errors.concat(...this.arguments.map(argument => argument.all_errors))
+	}
 }

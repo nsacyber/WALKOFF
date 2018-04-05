@@ -18,4 +18,10 @@ export class Condition extends ExecutionElement {
 	
 	@Type(() => Transform)
 	transforms: Transform[] = [];
+
+	get all_errors(): string[] {
+		return this.errors
+				   .concat(...this.arguments.map(argument => argument.all_errors))
+				   .concat(...this.transforms.map(transform => transform.all_errors))
+	}
 }
