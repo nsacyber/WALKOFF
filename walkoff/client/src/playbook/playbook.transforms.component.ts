@@ -1,5 +1,6 @@
 import { Component, ViewEncapsulation, Input, OnInit } from '@angular/core';
 
+import { plainToClass } from 'class-transformer';
 import { Workflow } from '../models/playbook/workflow';
 import { AppApi } from '../models/api/appApi';
 import { TransformApi } from '../models/api/transformApi';
@@ -129,12 +130,12 @@ export class PlaybookTransformsComponent implements OnInit {
 	 * @param parameterApi Parameter API used to generate the default argument
 	 */
 	getDefaultArgument(parameterApi: ParameterApi): Argument {
-		return {
+		return plainToClass(Argument, {
 			name: parameterApi.name,
 			value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
 			reference: '',
 			selection: '',
-		};
+		});
 	}
 
 	/**

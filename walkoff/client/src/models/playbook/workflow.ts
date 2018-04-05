@@ -37,4 +37,18 @@ export class Workflow extends ExecutionElement {
 	 * A factor of how often the workflow fails.
 	 */
 	accumulated_risk?: number;
+
+	/**
+	 * Returns true if this workflow doesn't contain any errors
+	 */
+	is_valid: boolean;
+
+	/**
+	 * Array of errors returned from the server for this Argument and any of its descendants 
+	 */
+	get all_errors(): string[] {
+		return this.errors
+				   .concat(...this.actions.map(action => action.all_errors))
+				   .concat(...this.branches.map(branch => branch.all_errors))
+	}
 }
