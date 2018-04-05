@@ -132,7 +132,15 @@ def format_db_path(db_type, path):
     Returns:
         (str): The path of the database formatted for SqlAlchemy
     """
-    return '{0}://{1}'.format(db_type, path) if db_type != 'sqlite' else '{0}:///{1}'.format(db_type, path)
+    if db_type != 'sqlite':
+        sep = '//'
+    else:
+        if os.name == 'nt':
+            sep = '///'
+        elif os.name == 'posix':
+            sep = '////'
+
+    return '{0}:{1}{2}'.format(db_type, sep, path)
 
 
 def get_app_action_api(app, action):

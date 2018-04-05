@@ -4,6 +4,9 @@ import zipfile
 import argparse
 import os
 import shutil
+from six.moves import input
+import sys
+from distutils.util import strtobool
 
 
 def zip_dir(path, zip_file, arcname=None):
@@ -31,6 +34,9 @@ def main():
 
     args = parser.parse_args()
 
+    gzip_filename = "walkoff/walkoff_external.tar.gz"
+    zip_filename = "walkoff/walkoff_external.zip"
+
     if args.clear:
         if os.path.exists("build/"):
             shutil.rmtree("build/")
@@ -39,14 +45,37 @@ def main():
         if os.path.exists("walkoff.egg-info/"):
             shutil.rmtree("walkoff.egg-info/")
 
-    if args.build:
-        gzip_filename = "walkoff/walkoff_external.tar.gz"
-        zip_filename = "walkoff/walkoff_external.zip"
-
         if os.path.exists(gzip_filename):
             os.remove(gzip_filename)
         if os.path.exists(zip_filename):
             os.remove(zip_filename)
+
+        if os.path.exists("README.rst"):
+            os.remove("README.rst")
+
+    if args.build:
+
+        try:
+            import pypandoc
+        except ImportError:
+            print("Run `pip install pypandoc`. This is required to generate a README.rst from our README.md for pypi.")
+            return
+
+        try:
+            pypandoc.convert_file('README.md', 'rst', outputfile="README.rst")
+        except OSError:
+            print("Pandoc executable not found. Install Pandoc: https://pandoc.org/installing.html")
+            print("Can also attempt to install Pandoc automatically, y/n?")
+
+            while True:
+                try:
+                    s = input()
+                    if strtobool(s.lower()):
+                        from pypandoc.pandoc_download import download_pandoc
+                        download_pandoc()
+                        pypandoc.convert_file('README.md', 'rst', outputfile="README.rst")
+                except ValueError:
+                    print("Please respond with 'yes' or 'no'.")
 
         t = tarfile.open(gzip_filename, "w|gz")
         t.add("apps/", arcname="walkoff_external/apps/")

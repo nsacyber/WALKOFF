@@ -12,6 +12,9 @@ from walkoff import __version__ as version
 
 here = path.abspath(path.dirname(__file__))
 
+
+
+
 # Get the long description from the README file
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
@@ -133,9 +136,12 @@ setup(
     package_data={  # Optional
         'walkoff': ['api/*.yaml',
                     'api/objects/*.yaml',
-                    'client/dist/main.bundle.js',
-                    'client/dist/polyfills.bundle.js',
-                    'client/dist/vendor.bundle.js',
+                    'client/assets/*',
+                    'client/assets/img/*',
+                    'client/dist/*',
+                    'client/node_modules/bootstrap/dist/css/bootstrap.min.css',
+                    'client/node_modules/bootstrap/dist/js/bootstrap.min.js',
+                    'client/node_modules/jquery/dist/jquery.min.js',
                     'proto/data.proto',
                     'scripts/migrations/alembic.ini',
                     'scripts/migrations/database/*/README',

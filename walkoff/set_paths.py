@@ -7,6 +7,7 @@ import tarfile
 import zipfile
 
 from walkoff.config import Config
+from walkoff.helpers import format_db_path
 
 
 def set_walkoff_external():
@@ -17,6 +18,8 @@ def set_walkoff_external():
 
     if Config.WALKOFF_EXTERNAL_PATH == '':
         Config.WALKOFF_EXTERNAL_PATH = default
+
+    Config.WALKOFF_EXTERNAL_PATH = os.path.abspath(Config.WALKOFF_EXTERNAL_PATH)
 
     if not os.path.isdir(Config.WALKOFF_EXTERNAL_PATH):
         try:
@@ -70,9 +73,9 @@ def set_alembic_paths():
     with open(alembic_ini, "r") as f:
         config.readfp(f)
 
-    config.set("walkoff", "sqlalchemy.url", "sqlite:///{}".format(Config.DB_PATH))
-    config.set("events", "sqlalchemy.url", "sqlite:///{}".format(Config.CASE_DB_PATH))
-    config.set("execution", "sqlalchemy.url", "sqlite:///{}".format(Config.EXECUTION_DB_PATH))
+    config.set("walkoff", "sqlalchemy.url", format_db_path(Config.WALKOFF_DB_TYPE, Config.DB_PATH))
+    config.set("events", "sqlalchemy.url", format_db_path(Config.CASE_DB_TYPE, Config.CASE_DB_PATH))
+    config.set("execution", "sqlalchemy.url", format_db_path(Config.EXECUTION_DB_TYPE, Config.EXECUTION_DB_PATH))
 
     with open(alembic_ini, "w") as f:
         config.write(f)

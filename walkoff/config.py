@@ -2,6 +2,7 @@ import json
 import logging
 import logging.config
 import sys
+from os import name as os_name
 from os.path import isfile, join, abspath, sep
 import warnings
 
@@ -162,14 +163,22 @@ class Config(object):
 class AppConfig(object):
     # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
 
-    SECRET_KEY = 'SHORTSTOPKEYTEST'
-    SQLALCHEMY_DATABASE_URI = '{0}://{1}'.format(Config.WALKOFF_DB_TYPE, abspath(
-        Config.DB_PATH)) if Config.WALKOFF_DB_TYPE != 'sqlite' else '{0}:///{1}'.format(Config.WALKOFF_DB_TYPE,
-                                                                                        abspath(Config.DB_PATH))
+    Config.load_config()
 
+    if Config.WALKOFF_DB_TYPE != 'sqlite':
+        sep = '//'
+    else:
+        if os_name == 'nt':
+            sep = '///'
+        elif os_name == 'posix':
+            sep = '////'
+
+    SECRET_KEY = 'SHORTSTOPKEYTEST'
+    SQLALCHEMY_DATABASE_URI = '{0}:{1}{2}'.format(Config.WALKOFF_DB_TYPE, sep, Config.DB_PATH)
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['refresh']
     JWT_TOKEN_LOCATION = 'headers'
+
 
 
 def initialize():
