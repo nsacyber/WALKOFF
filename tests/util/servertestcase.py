@@ -54,7 +54,6 @@ class ServerTestCase(unittest.TestCase):
         walkoff.config.NUMBER_PROCESSES = 2
         walkoff.config.Config.CACHE = {'type': 'disk', 'directory': tests.config.cache_path}
         walkoff.config.Config.DB_PATH = tests.config.test_db_path
-        print("DB PATH SET")
         walkoff.config.Config.CASE_DB_PATH = tests.config.test_case_db_path
         walkoff.config.Config.EXECUTION_DB_PATH = tests.config.test_execution_db_path
 

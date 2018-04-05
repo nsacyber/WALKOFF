@@ -64,7 +64,6 @@ def __register_all_app_blueprints(flaskapp):
 
 
 def create_app(app_config):
-    print("APP INITIALIZED")
     import walkoff.config
     from walkoff.server import context
 
