@@ -31,6 +31,7 @@ def run(host, port):
                                                                   walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
                                                                   walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
                                                                   walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
+                                                                  flaskserver.app,
                                                                   pids)
     # The order of these imports matter for initialization (should probably be fixed)
 

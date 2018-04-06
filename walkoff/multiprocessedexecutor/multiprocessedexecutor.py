@@ -68,7 +68,7 @@ class MultiprocessedExecutor(object):
         self.execution_db = ExecutionDatabase.instance
 
     def initialize_threading(self, zmq_public_keys_path, zmq_private_keys_path, zmq_results_address,
-                             zmq_communication_address, pids=None):
+                             zmq_communication_address, app, pids=None):
         """Initialize the multiprocessing communication threads, allowing for parallel execution of workflows.
 
         Args:
@@ -91,7 +91,7 @@ class MultiprocessedExecutor(object):
         self.auth.configure_curve(domain='*', location=zmq_public_keys_path)
 
         self.manager = WorkflowExecutionController(self.cache, zmq_private_keys_path, zmq_communication_address)
-        self.receiver = Receiver(zmq_private_keys_path, zmq_results_address, current_app._get_current_object())
+        self.receiver = Receiver(zmq_private_keys_path, zmq_results_address, app)
 
         self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
         self.receiver_thread.start()

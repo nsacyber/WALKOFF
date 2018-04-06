@@ -205,7 +205,8 @@ class Receiver:
         event = WalkoffEvent.get_event_from_name(callback_name)
         if event is not None:
             data = self._format_data(event, message)
-            event.send(sender, data=data)
+            with self.current_app.app_context():
+                event.send(sender, data=data)
             if event in [WalkoffEvent.WorkflowShutdown, WalkoffEvent.WorkflowAborted]:
                 self._increment_execution_count()
         else:
