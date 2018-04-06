@@ -25,7 +25,7 @@
       "class": "logging.handlers.RotatingFileHandler",
       "level": "NOTSET",
       "formatter": "simple",
-      "filename": "walkoff_external/data/log/log.log",
+      "filename": "./data/log/log.log",
       "maxBytes": 10485760,
       "backupCount": 20,
       "encoding": "utf8"

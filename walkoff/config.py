@@ -2,8 +2,7 @@ import json
 import logging
 import logging.config
 import sys
-from os import name as os_name
-from os.path import isfile, join, abspath, sep
+from os.path import isfile, join, abspath
 import warnings
 
 import yaml
@@ -12,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 app_apis = {}
 
-walkoff_internal = abspath(__file__).rsplit(sep, 1)[0]
+_cache_path = join('.', 'data', 'cache')
 
 
 def load_app_apis(apps_path=None):
@@ -65,7 +64,7 @@ def setup_logger():
         logging.basicConfig()
         logger.info("Basic logging is being used")
 
-    def send_warnings_to_log(message, category, filename, lineno, file=None):
+    def send_warnings_to_log(message, category, filename, lineno, file=None, *args):
         logging.warning(
             '%s:%s: %s:%s' %
             (filename, lineno, category.__name__, message))
@@ -98,32 +97,31 @@ class Config(object):
     CASE_DB_TYPE = 'sqlite'
     EXECUTION_DB_TYPE = 'sqlite'
 
+    CACHE = {"type": "disk", "directory": _cache_path, "shards": 8, "timeout": 0.01, "retry": True}
+
     # PATHS
-    # ROOT_PATH = abspath('.')
-    WALKOFF_INTERNAL_PATH = walkoff_internal
-    WALKOFF_EXTERNAL_PATH = ''
 
-    DATA_PATH = join(WALKOFF_EXTERNAL_PATH, 'data')
-    API_PATH = join(WALKOFF_INTERNAL_PATH, 'api')
-    APPS_PATH = join(WALKOFF_EXTERNAL_PATH, 'apps')
-    CACHE_PATH = join(DATA_PATH, 'cache')
+    DATA_PATH = join('.', 'data')
+
+    API_PATH = join('.', 'walkoff', 'api')
+    APPS_PATH = join('.', 'apps')
+    CACHE_PATH = join('.', 'data', 'cache')
     CASE_DB_PATH = join(DATA_PATH, 'events.db')
-    CACHE = {"type": "disk", "directory": CACHE_PATH, "shards": 8, "timeout": 0.01, "retry": True}
-    TEMPLATES_PATH = join(WALKOFF_INTERNAL_PATH, 'templates')
 
-    CLIENT_PATH = join(WALKOFF_INTERNAL_PATH, 'client')
-    CONFIG_PATH = join(WALKOFF_INTERNAL_PATH, 'walkoff.config')
+    TEMPLATES_PATH = join('.', 'walkoff', 'templates')
+    CLIENT_PATH = join('.', 'walkoff', 'client')
+    CONFIG_PATH = join(DATA_PATH, 'walkoff.config')
     DB_PATH = join(DATA_PATH, 'walkoff.db')
     DEFAULT_APPDEVICE_EXPORT_PATH = join(DATA_PATH, 'appdevice.json')
     DEFAULT_CASE_EXPORT_PATH = join(DATA_PATH, 'cases.json')
     EXECUTION_DB_PATH = join(DATA_PATH, 'execution.db')
-    INTERFACES_PATH = join(WALKOFF_EXTERNAL_PATH, 'interfaces')
+    INTERFACES_PATH = join('.', 'interfaces')
     LOGGING_CONFIG_PATH = join(DATA_PATH, 'log', 'logging.json')
 
     WALKOFF_SCHEMA_PATH = join(DATA_PATH, 'walkoff_schema.json')
-    # WORKFLOWS_PATH = join('.', 'workflows')
+    WORKFLOWS_PATH = join('.', 'workflows')
 
-    KEYS_PATH = join(WALKOFF_EXTERNAL_PATH, '.certificates')
+    KEYS_PATH = join('.', '.certificates')
     CERTIFICATE_PATH = join(KEYS_PATH, 'walkoff.crt')
     PRIVATE_KEY_PATH = join(KEYS_PATH, 'walkoff.key')
     ZMQ_PRIVATE_KEYS_PATH = join(KEYS_PATH, 'private_keys')
@@ -162,34 +160,22 @@ class Config(object):
 
 class AppConfig(object):
     # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
-
-    Config.load_config()
-
-    if Config.WALKOFF_DB_TYPE != 'sqlite':
-        sep = '//'
-    else:
-        if os_name == 'nt':
-            sep = '///'
-        elif os_name == 'posix':
-            sep = '////'
-
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = 'SHORTSTOPKEYTEST'
-    SQLALCHEMY_DATABASE_URI = '{0}:{1}{2}'.format(Config.WALKOFF_DB_TYPE, sep, Config.DB_PATH)
+    SQLALCHEMY_DATABASE_URI = '{0}://{1}'.format(Config.WALKOFF_DB_TYPE, abspath(
+        Config.DB_PATH)) if Config.WALKOFF_DB_TYPE != 'sqlite' else '{0}:///{1}'.format(Config.WALKOFF_DB_TYPE,
+                                                                                        abspath(Config.DB_PATH))
+
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['refresh']
     JWT_TOKEN_LOCATION = 'headers'
 
 
-
 def initialize():
     """Loads the config file, loads the app cache, and loads the app APIs into memory
     """
-
-    Config.load_config()
     setup_logger()
+    Config.load_config()
     from walkoff.appgateway import cache_apps
-    cache_apps(Config.APPS_PATH, relative=False)
-    # from walkoff import appbase
-    # cache_apps("walkoff.appbase", relative=False)
+    cache_apps(Config.APPS_PATH, relative=True)
     load_app_apis()
-    Config.write_values_to_file()

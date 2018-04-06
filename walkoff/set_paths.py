@@ -9,27 +9,29 @@ import zipfile
 from walkoff.config import Config
 from walkoff.helpers import format_db_path
 
+walkoff_internal = os.path.abspath(__file__).rsplit(os.path.sep, 1)[0]
+
 
 def set_walkoff_external():
     default = os.getcwd()
     sys.stdout.write(" * Enter a directory to install WALKOFF apps, interfaces, and data to (default: {}): "
                      .format(default))
-    Config.WALKOFF_EXTERNAL_PATH = input()
+    external_path = input()
 
-    if Config.WALKOFF_EXTERNAL_PATH == '':
-        Config.WALKOFF_EXTERNAL_PATH = default
+    if external_path == '':
+        external_path = default
 
-    Config.WALKOFF_EXTERNAL_PATH = os.path.abspath(Config.WALKOFF_EXTERNAL_PATH)
+    external_path = os.path.abspath(external_path)
 
-    if not os.path.isdir(Config.WALKOFF_EXTERNAL_PATH):
+    if not os.path.isdir(external_path):
         try:
-            print("Creating {}".format(Config.WALKOFF_EXTERNAL_PATH))
-            os.makedirs(Config.WALKOFF_EXTERNAL_PATH)
+            print("Creating {}".format(external_path))
+            os.makedirs(external_path)
         except OSError as e:
             print("Specified directory could not be created: {}".format(e))
             sys.exit(1)
 
-    arch_path = os.path.join(Config.WALKOFF_INTERNAL_PATH, "walkoff_external")
+    arch_path = os.path.join(walkoff_internal, "walkoff_external")
 
     if os.name == 'posix':
         arch_path += ".tar.gz"
@@ -39,12 +41,12 @@ def set_walkoff_external():
         arch_path += ".zip"
         archf = zipfile.ZipFile(arch_path)
 
-    archf.extractall(Config.WALKOFF_EXTERNAL_PATH)
+    archf.extractall(external_path)
 
-    Config.WALKOFF_EXTERNAL_PATH = os.path.join(Config.WALKOFF_EXTERNAL_PATH, "walkoff_external")
+    external_path = os.path.join(external_path, "walkoff_external")
 
-    Config.DATA_PATH = os.path.join(Config.WALKOFF_EXTERNAL_PATH, 'data')
-    Config.APPS_PATH = os.path.join(Config.WALKOFF_EXTERNAL_PATH, 'apps')
+    Config.DATA_PATH = os.path.join(external_path, 'data')
+    Config.APPS_PATH = os.path.join(external_path, 'apps')
     Config.CACHE_PATH = os.path.join(Config.DATA_PATH, 'cache')
     Config.CASE_DB_PATH = os.path.join(Config.DATA_PATH, 'events.db')
     Config.CACHE = {"type": "disk", "directory": Config.CACHE_PATH, "shards": 8, "timeout": 0.01, "retry": True}
@@ -52,12 +54,12 @@ def set_walkoff_external():
     Config.DEFAULT_APPDEVICE_EXPORT_PATH = os.path.join(Config.DATA_PATH, 'appdevice.json')
     Config.DEFAULT_CASE_EXPORT_PATH = os.path.join(Config.DATA_PATH, 'cases.json')
     Config.EXECUTION_DB_PATH = os.path.join(Config.DATA_PATH, 'execution.db')
-    Config.INTERFACES_PATH = os.path.join(Config.WALKOFF_EXTERNAL_PATH, 'interfaces')
+    Config.INTERFACES_PATH = os.path.join(external_path, 'interfaces')
     Config.LOGGING_CONFIG_PATH = os.path.join(Config.DATA_PATH, 'log', 'logging.json')
 
     Config.WALKOFF_SCHEMA_PATH = os.path.join(Config.DATA_PATH, 'walkoff_schema.json')
 
-    Config.KEYS_PATH = os.path.join(Config.WALKOFF_EXTERNAL_PATH, '.certificates')
+    Config.KEYS_PATH = os.path.join(external_path, '.certificates')
     Config.CERTIFICATE_PATH = os.path.join(Config.KEYS_PATH, 'walkoff.crt')
     Config.PRIVATE_KEY_PATH = os.path.join(Config.KEYS_PATH, 'walkoff.key')
     Config.ZMQ_PRIVATE_KEYS_PATH = os.path.join(Config.KEYS_PATH, 'private_keys')
@@ -69,7 +71,7 @@ def set_walkoff_external():
 def set_alembic_paths():
     Config.load_config()
     config = configparser.ConfigParser()
-    alembic_ini = os.path.join(Config.WALKOFF_INTERNAL_PATH, 'scripts', 'migrations', 'alembic.ini')
+    alembic_ini = os.path.join(walkoff_internal, 'scripts', 'migrations', 'alembic.ini')
     with open(alembic_ini, "r") as f:
         config.readfp(f)
 

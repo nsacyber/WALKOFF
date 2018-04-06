@@ -1,4 +1,4 @@
-from scripts.compose_api import compose_api
+from walkoff.scripts.compose_api import compose_api
 
 compose_api()
 
