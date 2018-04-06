@@ -8,7 +8,7 @@ from tests.config import basic_app_api, test_apps_path
 from walkoff.appgateway import get_app_action
 from walkoff.appgateway.validator import *
 import walkoff.config
-from walkoff.helpers import UnknownApp
+from walkoff.appgateway.apiutil import UnknownApp, InvalidApi
 
 
 class TestAppApiValidation(unittest.TestCase):

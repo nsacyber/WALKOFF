@@ -114,7 +114,7 @@ def create_user():
 
     db.session.commit()
 
-    apps = set(helpers.list_apps()) - set([_app.name
+    apps = set(helpers.list_valid_directories(config.Config.APPS_PATH)) - set([_app.name
                                            for _app in executiondb.execution_db.session.query(App).all()])
     app.logger.debug('Found apps: {0}'.format(apps))
     for app_name in apps:

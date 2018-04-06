@@ -4,7 +4,7 @@ import json
 from walkoff.appgateway.validator import validate_parameter, validate_parameters, convert_json
 from walkoff.config import initialize
 from walkoff.executiondb.argument import Argument
-from walkoff.helpers import InvalidArgument
+from walkoff.appgateway.apiutil import InvalidArgument
 
 
 class TestInputValidation(unittest.TestCase):

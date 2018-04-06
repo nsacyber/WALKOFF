@@ -7,7 +7,7 @@ from tests.util import execution_db_help
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.transform import Transform
-from walkoff.helpers import InvalidArgument
+from walkoff.appgateway.apiutil import InvalidArgument
 from walkoff.helpers import InvalidExecutionElement
 
 

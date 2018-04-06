@@ -8,7 +8,7 @@ from walkoff import executiondb
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
-from walkoff.helpers import InvalidArgument
+from walkoff.appgateway.apiutil import InvalidArgument
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid
 from walkoff.server.problem import Problem

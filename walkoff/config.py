@@ -4,7 +4,7 @@ import logging.config
 import sys
 from os.path import isfile, join, abspath
 import warnings
-
+from walkoff.helpers import list_valid_directories, format_exception_message, format_db_path
 import yaml
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,6 @@ def load_app_apis(apps_path=None):
         apps_path (str, optional): Optional path to specify for the apps. Defaults to None, but will be set to the
             apps_path variable in Config object
     """
-    from walkoff.helpers import list_apps, format_exception_message
     global app_apis
     if apps_path is None:
         apps_path = Config.APPS_PATH
@@ -32,7 +31,7 @@ def load_app_apis(apps_path=None):
         logger.fatal('Could not load JSON schema for apps. Shutting down...: ' + str(e))
         sys.exit(1)
     else:
-        for app in list_apps(apps_path):
+        for app in list_valid_directories(apps_path):
             try:
                 url = join(apps_path, app, 'api.yaml')
                 with open(url) as function_file:
@@ -162,9 +161,7 @@ class AppConfig(object):
     # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = 'SHORTSTOPKEYTEST'
-    SQLALCHEMY_DATABASE_URI = '{0}://{1}'.format(Config.WALKOFF_DB_TYPE, abspath(
-        Config.DB_PATH)) if Config.WALKOFF_DB_TYPE != 'sqlite' else '{0}:///{1}'.format(Config.WALKOFF_DB_TYPE,
-                                                                                        abspath(Config.DB_PATH))
+    SQLALCHEMY_DATABASE_URI = format_db_path(Config.WALKOFF_DB_TYPE, Config.DB_PATH)
 
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['refresh']

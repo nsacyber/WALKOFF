@@ -8,7 +8,7 @@ from walkoff.interfacebase.exceptions import UnknownEvent, InvalidEventHandler
 from tests.util import execution_db_help
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import UnknownAppAction, UnknownApp
+from walkoff.appgateway.apiutil import UnknownApp, UnknownAppAction
 
 
 class MockWorkflow(ExecutionElement):

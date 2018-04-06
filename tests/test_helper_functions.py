@@ -1,4 +1,3 @@
-import types
 import unittest
 from os import sep
 from os.path import join
@@ -7,6 +6,8 @@ import walkoff.appgateway
 import walkoff.config
 from tests.config import test_apps_path
 from tests.util.assertwrappers import orderless_list_compare
+from walkoff.appgateway.apiutil import get_app_action_api, get_condition_api, get_transform_api, UnknownApp, \
+    UnknownAppAction, UnknownCondition, UnknownTransform
 from walkoff.helpers import *
 from walkoff.server.flaskserver import handle_database_errors, handle_generic_server_error
 
@@ -70,9 +71,9 @@ class TestHelperFunctions(unittest.TestCase):
     #     workflows = get_workflow_names_from_file(os.path.join(test_workflows_path, 'junkfileName.playbook'))
     #     self.assertListEqual(workflows, [])
 
-    def test_list_apps(self):
+    def test_list_valid_directories(self):
         expected_apps = ['HelloWorld', 'DailyQuote', 'HelloWorldBounded']
-        orderless_list_compare(self, expected_apps, list_apps())
+        orderless_list_compare(self, expected_apps, list_valid_directories(walkoff.config.Config.APPS_PATH))
 
     def test_construct_module_name_from_path(self):
         input_output = {join('.', 'aaa', 'bbb', 'ccc'): 'aaa.bbb.ccc',
@@ -104,7 +105,8 @@ class TestHelperFunctions(unittest.TestCase):
             self.assertIn(name, sys.modules.keys())
 
     def test_format_db_path(self):
-        self.assertEqual(format_db_path('sqlite', 'aa.db'), 'sqlite:///aa.db')
+        sep = '////' if os.name == 'posix' else '///'
+        self.assertEqual(format_db_path('sqlite', './aa.db'), 'sqlite:{}{}'.format(sep, os.path.abspath('./aa.db')))
         self.assertEqual(format_db_path('postgresql', 'aa.db'), 'postgresql://aa.db')
 
     def test_get_app_action_api_invalid_app(self):

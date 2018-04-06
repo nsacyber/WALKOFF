@@ -5,7 +5,7 @@ import sys
 import unittest
 
 sys.path.append(os.path.abspath('.'))
-from walkoff.helpers import list_apps
+from walkoff.helpers import list_valid_directories
 import walkoff.config
 
 
@@ -49,7 +49,7 @@ def test_app(app_name):
 
 if __name__ == '__main__':
     cmd_args = cmd_line()
-    all_apps = list_apps()
+    all_apps = list_valid_directories(walkoff.config.Config.APPS_PATH)
     ret = True
     if cmd_args.all:
         for app in all_apps:

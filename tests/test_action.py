@@ -13,7 +13,7 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.position import Position
-from walkoff.helpers import InvalidArgument
+from walkoff.appgateway.apiutil import InvalidArgument
 from walkoff.helpers import InvalidExecutionElement
 
 

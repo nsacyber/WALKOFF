@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath('.'))
 from walkoff.appgateway import is_app_action_bound
 from walkoff.executiondb.device import App
 from walkoff import executiondb
-from walkoff.helpers import get_app_action_api
+from walkoff.appgateway.apiutil import get_app_action_api
 import walkoff.__version__ as walkoff_version
 
 down_version = "0.4.2"

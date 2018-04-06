@@ -3,8 +3,8 @@ import logging
 import os.path
 
 import walkoff.config
-from walkoff.helpers import (locate_playbooks_in_directory, InvalidArgument, UnknownApp, UnknownAppAction,
-                             UnknownTransform, UnknownCondition, format_exception_message)
+from walkoff.helpers import format_exception_message
+from walkoff.appgateway.apiutil import UnknownApp, UnknownAppAction, InvalidArgument, UnknownCondition, UnknownTransform
 from walkoff.executiondb.schemas import PlaybookSchema, WorkflowSchema
 
 logger = logging.getLogger(__name__)
@@ -94,3 +94,21 @@ class JsonPlaybookLoader(object):
         playbooks = [JsonPlaybookLoader.load_playbook(os.path.join(resource_collection, playbook))
                      for playbook in locate_playbooks_in_directory(resource_collection)]
         return [playbook for playbook in playbooks if playbook]
+
+
+def locate_playbooks_in_directory(path=None):
+    """Get a list of workflows in a specified directory or the workflows_path directory as specified in the configuration.
+
+    Args:
+        path (str, optional): The directory path from which to locate the workflows. Defaults to None.
+
+    Returns:
+        A list of workflow names from the specified path, or the directory specified in the configuration.
+    """
+    path = path if path is not None else walkoff.config.WORKFLOWS_PATH
+    if os.path.exists(path):
+        return [workflow for workflow in os.listdir(path) if (os.path.isfile(os.path.join(path, workflow))
+                                                              and workflow.endswith('.playbook'))]
+    else:
+        logger.warning('Could not locate any workflows in directory {0}. Directory does not exist'.format(path))
+        return []

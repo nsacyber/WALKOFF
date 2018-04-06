@@ -14,7 +14,7 @@ def read_all_apps():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
     def __func():
-        apps = helpers.list_apps()
+        apps = helpers.list_valid_directories(walkoff.config.Config.APPS_PATH)
         return sorted(apps, key=(lambda app_name: app_name.lower())), SUCCESS
 
     return __func()

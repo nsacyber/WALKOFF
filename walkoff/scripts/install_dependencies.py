@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath('.'))
 
 import pip
 
-from walkoff.helpers import list_apps, list_interfaces
+from walkoff.helpers import list_valid_directories
 from walkoff import config
 
 
@@ -23,10 +23,10 @@ def cmd_line():
 def install_dependencies(apps=None, interfaces=None):
 
     if not apps:
-        apps = list_apps()
+        apps = list_valid_directories(config.Config.APPS_PATH)
 
     if not interfaces:
-        interfaces = list_interfaces()
+        interfaces = list_valid_directories(config.Config.INTERFACES_PATH)
 
     for app in apps:
         print("Installing dependencies for " + app + " App...")

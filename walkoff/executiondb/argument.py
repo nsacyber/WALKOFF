@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, ForeignKey, String, orm
 from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
 
 from walkoff.executiondb import Execution_Base
-from walkoff.helpers import InvalidArgument
+from walkoff.appgateway.apiutil import InvalidArgument
 
 logger = logging.getLogger(__name__)
 

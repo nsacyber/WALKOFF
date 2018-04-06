@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from walkoff.executiondb.argument import Argument
-from walkoff.helpers import InvalidArgument
+from walkoff.appgateway.apiutil import InvalidArgument
 
 
 class TestArgument(TestCase):

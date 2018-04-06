@@ -8,7 +8,7 @@ import warnings
 from datetime import datetime
 from uuid import uuid4
 
-import walkoff.config
+
 
 try:
     from importlib import reload as reload_module
@@ -40,51 +40,13 @@ def construct_module_name_from_path(path):
     return '.'.join([x for x in path.split(os.sep) if x])
 
 
-def __list_valid_directories(path):
+def list_valid_directories(path):
     try:
         return [f for f in os.listdir(path)
                 if (os.path.isdir(os.path.join(path, f))
                     and not f.startswith('__'))]
     except (IOError, OSError) as e:
         logger.error('Cannot get valid directories inside {0}. Error: {1}'.format(path, format_exception_message(e)))
-        return []
-
-
-def list_apps(path=None):
-    """Get a list of the apps.
-    
-    Args:
-        path (str, optional): The path to the apps folder. Default is None.
-        
-    Returns:
-        A list of the apps given the apps path or the apps_path in the configuration.
-    """
-    if path is None:
-        path = walkoff.config.Config.APPS_PATH
-    return __list_valid_directories(path)
-
-
-def list_interfaces(path=None):
-    if path is None:
-        path = walkoff.config.Config.INTERFACES_PATH
-    return __list_valid_directories(path)
-
-
-def locate_playbooks_in_directory(path=None):
-    """Get a list of workflows in a specified directory or the workflows_path directory as specified in the configuration.
-    
-    Args:
-        path (str, optional): The directory path from which to locate the workflows. Defaults to None.
-        
-    Returns:
-        A list of workflow names from the specified path, or the directory specified in the configuration.
-    """
-    path = path if path is not None else walkoff.config.WORKFLOWS_PATH
-    if os.path.exists(path):
-        return [workflow for workflow in os.listdir(path) if (os.path.isfile(os.path.join(path, workflow))
-                                                              and workflow.endswith('.playbook'))]
-    else:
-        logger.warning('Could not locate any workflows in directory {0}. Directory does not exist'.format(path))
         return []
 
 
@@ -139,180 +101,9 @@ def format_db_path(db_type, path):
             sep = '///'
         elif os.name == 'posix':
             sep = '////'
+        path = os.path.abspath(path)
 
     return '{0}:{1}{2}'.format(db_type, sep, path)
-
-
-def get_app_action_api(app, action):
-    """
-    Gets the api for a given app and action
-
-    Args:
-        app (str): Name of the app
-        action (str): Name of the action
-
-    Returns:
-        (tuple(str, dict)) The name of the function to execute and its parameters
-    """
-    try:
-        app_api = walkoff.config.app_apis[app]
-    except KeyError:
-        raise UnknownApp(app)
-    else:
-        try:
-            action_api = app_api['actions'][action]
-            run = action_api['run']
-            return run, action_api.get('parameters', [])
-        except KeyError:
-            raise UnknownAppAction(app, action)
-
-
-def get_app_action_default_return(app, action):
-    """
-    Gets the default return code for a given app and action
-
-    Args:
-        app (str): Name of the app
-        action (str): Name of the action
-
-    Returns:
-        (str): The name of the default return code or Success if none defined
-    """
-    try:
-        app_api = walkoff.config.app_apis[app]
-    except KeyError:
-        raise UnknownApp(app)
-    else:
-        try:
-            action_api = app_api['actions'][action]
-            if 'default_return' in action_api:
-                return action_api['default_return']
-            else:
-                return 'Success'
-        except KeyError:
-            raise UnknownAppAction(app, action)
-
-
-def get_app_action_return_is_failure(app, action, status):
-    """
-    Checks the api for whether a status code is a failure code for a given app and action
-
-    Args:
-        app (str): Name of the app
-        action (str): Name of the action
-        status (str): Name of the status
-
-    Returns:
-        (boolean): True if status is a failure code, false otherwise
-    """
-    try:
-        app_api = walkoff.config.app_apis[app]
-    except KeyError:
-        raise UnknownApp(app)
-    else:
-        try:
-            action_api = app_api['actions'][action]
-            if 'failure' in action_api['returns'][status]:
-                return True if action_api['returns'][status]['failure'] is True else False
-            else:
-                return False
-        except KeyError:
-            raise UnknownAppAction(app, action)
-
-
-def get_app_device_api(app, device_type):
-    try:
-        app_api = walkoff.config.app_apis[app]
-    except KeyError:
-        raise UnknownApp(app)
-    else:
-        try:
-            return app_api['devices'][device_type]
-        except KeyError:
-            raise UnknownDevice(app, device_type)
-
-
-def split_api_params(api, data_param_name):
-    args = []
-    for api_param in api:
-        if api_param['name'] != data_param_name:
-            args.append(api_param)
-    return args
-
-
-def get_condition_api(app, condition):
-    try:
-        app_api = walkoff.config.app_apis[app]
-    except KeyError:
-        raise UnknownApp(app)
-    else:
-        try:
-            condition_api = app_api['conditions'][condition]
-            run = condition_api['run']
-            return condition_api['data_in'], run, condition_api.get('parameters', [])
-        except KeyError:
-            raise UnknownCondition(app, condition)
-
-
-def get_transform_api(app, transform):
-    try:
-        app_api = walkoff.config.app_apis[app]
-    except KeyError:
-        raise UnknownApp(app)
-    else:
-        try:
-            transform_api = app_api['transforms'][transform]
-            run = transform_api['run']
-            return transform_api['data_in'], run, transform_api.get('parameters', [])
-        except KeyError:
-            raise UnknownTransform(app, transform)
-
-
-class InvalidAppStructure(Exception):
-    pass
-
-
-class UnknownApp(Exception):
-    def __init__(self, app):
-        super(UnknownApp, self).__init__('Unknown app {0}'.format(app))
-        self.app = app
-
-
-class UnknownFunction(Exception):
-    def __init__(self, app, function_name, function_type):
-        self.message = 'Unknown {0} {1} for app {2}'.format(function_type, function_name, app)
-        super(UnknownFunction, self).__init__(self.message)
-        self.app = app
-        self.function = function_name
-
-
-class UnknownAppAction(UnknownFunction):
-    def __init__(self, app, action_name):
-        super(UnknownAppAction, self).__init__(app, action_name, 'action')
-
-
-class UnknownDevice(Exception):
-    def __init__(self, app, device_type):
-        super(UnknownDevice, self).__init__('Unknown device {0} for device {1} '.format(app, device_type))
-        self.app = app
-        self.device_type = device_type
-
-
-class InvalidArgument(Exception):
-    def __init__(self, message, errors=None):
-        self.message = message
-        self.errors = errors or {}
-        super(InvalidArgument, self).__init__(self.message)
-
-
-class UnknownCondition(UnknownFunction):
-    def __init__(self, app, condition_name):
-        super(UnknownCondition, self).__init__(app, condition_name, 'condition')
-
-
-class UnknownTransform(UnknownFunction):
-    def __init__(self, app, transform_name):
-        super(UnknownTransform, self).__init__(app, transform_name, 'transform')
 
 
 class InvalidExecutionElement(Exception):
@@ -328,10 +119,6 @@ def get_function_arg_names(func):
         return list(getsignature(func).parameters.keys())
     else:
         return getsignature(func).args
-
-
-class InvalidApi(Exception):
-    pass
 
 
 def format_exception_message(exception):

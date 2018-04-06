@@ -32,7 +32,7 @@ def read_all_interfaces():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
     def __func():
-        return helpers.list_interfaces(), SUCCESS
+        return helpers.list_valid_directories(walkoff.config.Config.INTERFACES_PATH), SUCCESS
 
     return __func()
 

@@ -13,9 +13,9 @@ from walkoff.events import WalkoffEvent
 from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import UnknownApp, UnknownAppAction, \
-    InvalidExecutionElement
-from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
+from walkoff.helpers import InvalidExecutionElement
+from walkoff.helpers import format_exception_message
+from walkoff.appgateway.apiutil import get_app_action_api, UnknownApp, UnknownAppAction, InvalidArgument
 
 logger = logging.getLogger(__name__)
 
