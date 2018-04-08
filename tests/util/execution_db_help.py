@@ -1,7 +1,6 @@
 import json
 import os
 
-import tests.config
 import walkoff.config
 from tests.config import WORKFLOWS_PATH
 from tests.util.jsonplaybookloader import JsonPlaybookLoader
@@ -21,10 +20,6 @@ from walkoff.executiondb.metrics import AppMetric, WorkflowMetric, ActionMetric,
 
 
 def setup_dbs():
-    walkoff.config.Config.DB_PATH = tests.config.test_db_path
-    walkoff.config.Config.CASE_DB_PATH = tests.config.test_case_db_path
-    walkoff.config.Config.EXECUTION_DB_PATH = tests.config.test_execution_db_path
-
     execution_db = ExecutionDatabase(walkoff.config.Config.EXECUTION_DB_TYPE, walkoff.config.Config.EXECUTION_DB_PATH)
     case_db = CaseDatabase(walkoff.config.Config.CASE_DB_TYPE, walkoff.config.Config.CASE_DB_PATH)
 

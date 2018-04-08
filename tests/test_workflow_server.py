@@ -3,7 +3,6 @@ import os
 from uuid import uuid4, UUID
 
 import walkoff.case.database as case_database
-from tests.config import test_workflows_path
 from tests.util import execution_db_help
 from tests.util.servertestcase import ServerTestCase
 from walkoff.executiondb.playbook import Playbook
@@ -386,7 +385,7 @@ class TestWorkflowServer(ServerTestCase):
         UUID(response['uuid'])
 
     def test_import_workflow(self):
-        path = os.path.join(test_workflows_path, 'basicWorkflowTest.playbook')
+        path = os.path.join(self.conf.WORKFLOWS_PATH, 'basicWorkflowTest.playbook')
         files = {'file': (path, open(path, 'r'), 'application/json')}
 
         response = self.post_with_status_check('/api/playbooks', headers=self.headers, status_code=OBJECT_CREATED,

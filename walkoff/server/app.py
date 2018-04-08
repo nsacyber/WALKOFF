@@ -76,7 +76,6 @@ def create_app(app_config):
     jwt.init_app(_app)
     connexion_app.add_api('composed_api.yaml')
 
-    walkoff.config.initialize()
     _app.running_context = context.Context(walkoff.config.Config)
     register_blueprints(_app)
 

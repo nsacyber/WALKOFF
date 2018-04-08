@@ -32,14 +32,14 @@ logger = logging.getLogger(__name__)
 
 
 class Worker(object):
-    def __init__(self, id_, worker_environment_setup=None):
+    def __init__(self, id_, num_threads_per_process, zmq_private_keys_path, zmq_results_address,
+                 zmq_communication_address, worker_environment_setup=None):
         """Initialize a Workflow object, which will be executing workflows.
 
         Args:
             id_ (str): The ID of the worker. Needed for ZMQ socket communication.
             worker_environment_setup (func, optional): Function to setup globals in the worker.
         """
-
         self.id_ = id_
         self._lock = Lock()
         signal.signal(signal.SIGINT, self.exit_handler)

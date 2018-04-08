@@ -40,7 +40,6 @@ def spawn_worker_processes(number_processes, num_threads_per_process, zmq_privat
                 worker_environment_setup) if worker_environment_setup else (i, num_threads_per_process,
                                                                             zmq_private_keys_path, zmq_results_address,
                                                                             zmq_communication_address)
-
         pid = multiprocessing.Process(target=Worker, args=args)
         pid.start()
         pids.append(pid)

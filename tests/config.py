@@ -1,7 +1,7 @@
 from os import sep
 from os.path import join
 
-TEST_CONFIG_PATH = join('.', 'tests', 'config')
+TEST_CONFIG_PATH = join('.', 'tests', 'config.py')
 TEST_PATH = join('.', 'tests')
 WORKFLOWS_PATH = join('.', 'tests', 'testWorkflows') + sep
 APPS_PATH = join('.', 'tests', 'testapps')

@@ -127,18 +127,19 @@ class Config(object):
     def load_config(cls, config_path=None):
         """ Loads Walkoff configuration from JSON file
         """
-        print(config_path)
         config_path = config_path if config_path else cls.CONFIG_PATH
-        if isfile(config_path):
-            print(config_path)
+        if config_path:
             try:
-                with open(config_path) as config_file:
-                    config = json.loads(config_file.read())
-                    for key, value in config.items():
-                        if value:
-                            print(key, value)
-                            setattr(cls, key.upper(), value)
-            except (IOError, OSError, ValueError):
+                if isinstance(config_path, str) and isfile(config_path):
+                    with open(config_path) as config_file:
+                        config = json.loads(config_file.read())
+                else:
+                    config = {attr: getattr(config_path, attr) for attr in dir(config_path) if attr[0].isupper()}
+                for key, value in config.items():
+                    if value:
+                        setattr(cls, key.upper(), value)
+            except (IOError, OSError, ValueError) as e:
+                print("EXCEPTION", e)
                 logger.warning('Could not read config file.', exc_info=True)
 
     @classmethod
