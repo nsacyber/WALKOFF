@@ -18,30 +18,31 @@ root_page = Blueprint('root_page', __name__)
 
 
 # Custom static data
-@root_page.route('/client/<path:filename>')
+@root_page.route('client/<path:filename>')
 def client_app_folder(filename):
+    print(os.path.abspath(walkoff.config.Config.CLIENT_PATH))
     return send_from_directory(os.path.abspath(walkoff.config.Config.CLIENT_PATH), filename)
 
 
 @root_page.route('/')
-@root_page.route('/playbook')
-@root_page.route('/execution')
-@root_page.route('/scheduler')
-@root_page.route('/devices')
-@root_page.route('/messages')
-@root_page.route('/cases')
-@root_page.route('/metrics')
-@root_page.route('/settings')
+@root_page.route('playbook')
+@root_page.route('execution')
+@root_page.route('scheduler')
+@root_page.route('devices')
+@root_page.route('messages')
+@root_page.route('cases')
+@root_page.route('metrics')
+@root_page.route('settings')
 def default():
     return render_template("index.html")
 
 
-@root_page.route('/interfaces/<interface_name>')
+@root_page.route('interfaces/<interface_name>')
 def app_page(interface_name):
     return render_template("index.html")
 
 
-@root_page.route('/login')
+@root_page.route('login')
 def login_page():
     return render_template("login.html")
 
