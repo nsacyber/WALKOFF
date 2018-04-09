@@ -2,11 +2,15 @@ import unittest
 
 from tests.util import execution_db_help
 from walkoff.serverdb import db, Role, Resource, default_resources, initialize_default_resources_admin
+import walkoff.config
+import tests.config
 
 
 class TestRoles(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        walkoff.config.Config.load_config(tests.config)
+
         from flask import current_app
         cls.context = current_app.test_request_context()
         cls.context.push()

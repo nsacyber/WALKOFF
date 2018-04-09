@@ -6,11 +6,14 @@ from tests.util.execution_db_help import setup_dbs
 from walkoff.scheduler import InvalidTriggerArgs
 from walkoff.serverdb import db
 from walkoff.serverdb.scheduledtasks import ScheduledTask
+import walkoff.config
+import tests.config
 
 
 class TestScheduledTask(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        walkoff.config.Config.load_config(tests.config)
         cls.context = current_app.test_request_context()
         cls.context.push()
         setup_dbs()

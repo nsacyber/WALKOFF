@@ -2,7 +2,6 @@ import logging
 
 import connexion
 from jinja2 import FileSystemLoader
-from walkoff.extensions import db, jwt
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +60,7 @@ def __register_all_app_blueprints(flaskapp):
 def create_app(app_config):
     import walkoff.config
     from walkoff.server import context
+    from walkoff.extensions import db, jwt
 
     connexion_app = connexion.App(__name__, specification_dir='../api/')
     _app = connexion_app.app

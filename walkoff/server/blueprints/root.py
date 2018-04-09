@@ -20,7 +20,6 @@ root_page = Blueprint('root_page', __name__)
 # Custom static data
 @root_page.route('client/<path:filename>')
 def client_app_folder(filename):
-    print(os.path.abspath(walkoff.config.Config.CLIENT_PATH))
     return send_from_directory(os.path.abspath(walkoff.config.Config.CLIENT_PATH), filename)
 
 

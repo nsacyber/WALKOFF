@@ -4,11 +4,12 @@ from unittest import TestCase
 import walkoff.config
 import walkoff.executiondb.schemas
 from interfaces import InterfaceEventDispatcher, dispatcher
-from interfaces.exceptions import UnknownEvent, InvalidEventHandler
+from interfaces.exceptions import UnknownEvent
 from tests.util import execution_db_help
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.helpers import UnknownAppAction, UnknownApp
+import tests.config
 
 
 class MockWorkflow(ExecutionElement):
@@ -34,6 +35,7 @@ class MockWorkflowSchema(object):
 class TestInterfaceEventDispatcher(TestCase):
     @classmethod
     def setUpClass(cls):
+        walkoff.config.Config.load_config(tests.config)
         execution_db_help.setup_dbs()
         walkoff.config.app_apis = {'App1': {'actions': {'action1': None,
                                                                'action2': None,

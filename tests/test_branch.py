@@ -2,7 +2,7 @@ import unittest
 
 import walkoff.appgateway
 import walkoff.config
-from tests.config import APPS_PATH
+import tests.config
 from tests.util import execution_db_help
 from walkoff.appgateway.actionresult import ActionResult
 from walkoff.events import WalkoffEvent
@@ -17,9 +17,10 @@ from walkoff.executiondb.workflow import Workflow
 class TestBranch(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        walkoff.config.Config.load_config(tests.config)
         execution_db_help.setup_dbs()
-        walkoff.appgateway.cache_apps(APPS_PATH)
-        walkoff.config.load_app_apis(apps_path=APPS_PATH)
+        walkoff.appgateway.cache_apps(walkoff.config.Config.APPS_PATH)
+        walkoff.config.load_app_apis(apps_path=walkoff.config.Config.APPS_PATH)
 
     @classmethod
     def tearDownClass(cls):

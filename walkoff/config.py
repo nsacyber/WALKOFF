@@ -123,6 +123,16 @@ class Config(object):
     ZMQ_PRIVATE_KEYS_PATH = join(KEYS_PATH, 'private_keys')
     ZMQ_PUBLIC_KEYS_PATH = join(KEYS_PATH, 'public_keys')
 
+    # AppConfig
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SECRET_KEY = 'SHORTSTOPKEYTEST'
+    SQLALCHEMY_DATABASE_URI = '{0}://{1}'.format(WALKOFF_DB_TYPE, abspath(
+        DB_PATH)) if WALKOFF_DB_TYPE != 'sqlite' else '{0}:///{1}'.format(WALKOFF_DB_TYPE, abspath(DB_PATH))
+
+    JWT_BLACKLIST_ENABLED = True
+    JWT_BLACKLIST_TOKEN_CHECKS = ['refresh']
+    JWT_TOKEN_LOCATION = 'headers'
+
     @classmethod
     def load_config(cls, config_path=None):
         """ Loads Walkoff configuration from JSON file
@@ -141,6 +151,9 @@ class Config(object):
             except (IOError, OSError, ValueError) as e:
                 print("EXCEPTION", e)
                 logger.warning('Could not read config file.', exc_info=True)
+        cls.SQLALCHEMY_DATABASE_URI = '{0}://{1}'.format(cls.WALKOFF_DB_TYPE, abspath(
+            cls.DB_PATH)) if cls.WALKOFF_DB_TYPE != 'sqlite' else '{0}:///{1}'.format(cls.WALKOFF_DB_TYPE,
+                                                                                      abspath(cls.DB_PATH))
 
     @classmethod
     def write_values_to_file(cls, keys=None):
@@ -156,19 +169,6 @@ class Config(object):
 
         with open(cls.CONFIG_PATH, 'w') as config_file:
             config_file.write(json.dumps(output, sort_keys=True, indent=4, separators=(',', ': ')))
-
-
-class AppConfig(object):
-    # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SECRET_KEY = 'SHORTSTOPKEYTEST'
-    SQLALCHEMY_DATABASE_URI = '{0}://{1}'.format(Config.WALKOFF_DB_TYPE, abspath(
-        Config.DB_PATH)) if Config.WALKOFF_DB_TYPE != 'sqlite' else '{0}:///{1}'.format(Config.WALKOFF_DB_TYPE,
-                                                                                        abspath(Config.DB_PATH))
-
-    JWT_BLACKLIST_ENABLED = True
-    JWT_BLACKLIST_TOKEN_CHECKS = ['refresh']
-    JWT_TOKEN_LOCATION = 'headers'
 
 
 def initialize(config_path=None):

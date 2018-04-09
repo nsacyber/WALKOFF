@@ -18,9 +18,8 @@ from walkoff.executiondb.position import Position
 class TestAction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        walkoff.config.initialize(tests.config)
         execution_db_help.setup_dbs()
-        walkoff.appgateway.cache_apps(tests.config.APPS_PATH)
-        walkoff.config.load_app_apis(apps_path=tests.config.APPS_PATH)
 
     @classmethod
     def tearDownClass(cls):

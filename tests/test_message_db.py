@@ -23,10 +23,10 @@ class TestMessageDatabase(TestCase):
     @classmethod
     def setUpClass(cls):
         walkoff.config.initialize(config_path=tests.config)
-        cls.app = create_app(walkoff.config.AppConfig)
+        cls.app = create_app(walkoff.config.Config)
         cls.context = current_app.test_request_context()
         cls.context.push()
-        
+
         db.create_all()
         for user in [user for user in User.query.all() if user.username != 'admin']:
             db.session.delete(user)

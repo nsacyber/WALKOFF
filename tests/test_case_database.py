@@ -3,11 +3,14 @@ import unittest
 
 from walkoff.case.database import Case, Event
 from tests.util import execution_db_help
+import walkoff.config
+import tests.config
 
 
 class TestCaseDatabase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        walkoff.config.Config.load_config(tests.config)
         _, cls.case_db = execution_db_help.setup_dbs()
 
     @classmethod

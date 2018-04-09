@@ -2,12 +2,15 @@ import unittest
 
 from tests.util import execution_db_help
 from walkoff.executiondb.device import App, Device
+import walkoff.config
+import tests.config
 
 
 class TestAppDatabase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        walkoff.config.Config.load_config(tests.config)
         cls.execution_db, _ = execution_db_help.setup_dbs()
 
     @classmethod

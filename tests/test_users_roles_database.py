@@ -5,16 +5,19 @@ from flask import current_app
 from tests.util import execution_db_help
 from walkoff.helpers import timestamp_to_datetime
 from walkoff.serverdb import db, User, Role, add_user, remove_user
+import walkoff.config
+import tests.config
 
 
 class TestUserRolesDatabase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        walkoff.config.Config.load_config(tests.config)
+        execution_db_help.setup_dbs()
+
         cls.context = current_app.test_request_context()
         cls.context.push()
         db.create_all()
-
-        execution_db_help.setup_dbs()
 
     @classmethod
     def tearDownClass(cls):

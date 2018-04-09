@@ -15,6 +15,7 @@ from walkoff.multiprocessedexecutor import multiprocessedexecutor
 class TestSimpleWorkflow(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        walkoff.config.initialize(config)
         execution_db_help.setup_dbs()
 
         from flask import current_app
@@ -24,10 +25,6 @@ class TestSimpleWorkflow(unittest.TestCase):
         from walkoff.server import context
         current_app.running_context = context.Context(walkoff.config.Config)
 
-        from walkoff.appgateway import cache_apps
-        cache_apps(path=config.APPS_PATH)
-        walkoff.config.load_app_apis(apps_path=config.APPS_PATH)
-        walkoff.config.Config.NUMBER_PROCESSES = 2
         multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool

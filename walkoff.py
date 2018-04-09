@@ -92,7 +92,7 @@ if __name__ == "__main__":
     args = parse_args()
     exit_code = 0
     walkoff.config.initialize()
-    app = create_app(walkoff.config.AppConfig)
+    app = create_app(walkoff.config.Config)
     try:
         run(app, *convert_host_port(args))
     except KeyboardInterrupt:

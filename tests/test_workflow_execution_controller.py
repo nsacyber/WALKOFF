@@ -12,12 +12,14 @@ from walkoff.case.subscription import Subscription
 from walkoff.executiondb.argument import Argument
 from walkoff.multiprocessedexecutor.workflowexecutioncontroller import ExecuteWorkflowMessage, \
     WorkflowExecutionController, Message, CaseControl, CommunicationPacket, WorkflowControl
+import tests.config
 
 
 class TestWorkflowExecutionController(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        walkoff.config.Config.load_config(tests.config)
         cls.subscriptions = [Subscription(str(uuid4()), ['a', 'b', 'c']), Subscription(str(uuid4()), ['b'])]
         cls.cache = MockRedisCacheAdapter()
         cls.controller = WorkflowExecutionController(cls.cache, walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,

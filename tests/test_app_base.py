@@ -3,12 +3,15 @@ from unittest import TestCase
 from apps import App as AppBase
 from tests.util import execution_db_help
 from walkoff.executiondb.device import App, Device, DeviceField, EncryptedDeviceField
+import walkoff.config
+import tests.config
 
 
 class TestAppBase(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        walkoff.config.Config.load_config(tests.config)
         cls.execution_db, _ = execution_db_help.setup_dbs()
 
     @classmethod

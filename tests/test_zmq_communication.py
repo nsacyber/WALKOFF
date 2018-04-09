@@ -22,8 +22,7 @@ class TestZMQCommunication(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         walkoff.config.initialize(config_path=config)
-
-        cls.app = create_app(walkoff.config.AppConfig)
+        cls.app = create_app(walkoff.config.Config)
         cls.context = cls.app.test_request_context()
         cls.context.push()
 

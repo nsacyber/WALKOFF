@@ -13,6 +13,8 @@ from walkoff.server.endpoints.messages import max_notifications, min_notificatio
 from walkoff.server.returncodes import *
 from walkoff.serverdb import User, Role
 from walkoff.serverdb.message import Message, MessageHistory
+import walkoff.config
+import tests.config
 
 
 class UserWrapper(object):
@@ -28,6 +30,7 @@ class TestMessagingEndpoints(ServerTestCase):
 
     @classmethod
     def setUpClass(cls):
+        walkoff.config.Config.load_config(tests.config)
         execution_db_help.setup_dbs()
 
         cls.context = current_app.test_request_context()

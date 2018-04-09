@@ -3,11 +3,14 @@ import unittest
 from tests.util import execution_db_help
 from walkoff.executiondb.device import get_device, get_all_devices_for_app, \
     get_all_devices_of_type_from_app, App, Device
+import walkoff.config
+import tests.config
 
 
 class TestAppUtilities(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        walkoff.config.Config.load_config(tests.config)
         cls.execution_db, _ = execution_db_help.setup_dbs()
 
         app = cls.execution_db.session.query(App).filter(App.name == 'TestApp').first()

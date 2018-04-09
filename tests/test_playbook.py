@@ -4,11 +4,14 @@ from tests.util import execution_db_help
 from tests.util.assertwrappers import orderless_list_compare
 from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.workflow import Workflow
+import walkoff.config
+import tests.config
 
 
 class TestPlaybook(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        walkoff.config.Config.load_config(tests.config)
         execution_db_help.setup_dbs()
 
     @classmethod
