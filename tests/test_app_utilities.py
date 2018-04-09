@@ -22,12 +22,12 @@ class TestAppUtilities(unittest.TestCase):
         execution_db_help.tear_down_execution_db()
 
     def setUp(self):
-        import walkoff.server.flaskserver
+        from flask import current_app
         self.app_name = 'TestApp'
-        self.app = walkoff.server.flaskserver.app.test_client(self)
+        self.app = current_app.test_client(self)
         self.app.testing = True
 
-        self.context = walkoff.server.flaskserver.app.test_request_context()
+        self.context = current_app.test_request_context()
         self.context.push()
 
         self.device1 = Device('test1', [], [], 'type1')

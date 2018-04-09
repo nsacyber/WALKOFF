@@ -6,20 +6,19 @@ from walkoff.events import WalkoffEvent
 from walkoff.extensions import db
 from walkoff.serverdb import Role, User
 from walkoff.serverdb.message import Message
+from flask import current_app
 
 logger = logging.getLogger(__name__)
 
 
 @WalkoffEvent.SendMessage.connect
 def save_message_callback(sender, **message_data):
-    from walkoff.server import app
-
     workflow_data = message_data['data']['workflow']
     message_data = message_data['data']['message']
     body = message_data['body']
 
     requires_action = strip_requires_response_from_message_body(body)
-    with app.app_context():
+    with current_app.app_context():
         save_message(body, message_data, workflow_data['execution_id'], requires_action)
 
 

@@ -2,10 +2,9 @@ import json
 
 from tests.util import execution_db_help
 from tests.util.servertestcase import ServerTestCase
-from walkoff.server import flaskserver as flask_server
+from flask import current_app
 from walkoff.server.returncodes import *
 from walkoff.events import WalkoffEvent
-import walkoff.executiondb as execution_db
 try:
     from importlib import reload
 except ImportError:
@@ -34,7 +33,7 @@ class TestZmqCommunicationServer(ServerTestCase):
         response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, data=json.dumps(data),
                                                status_code=SUCCESS_ASYNC, content_type="application/json")
 
-        flask_server.app.running_context.executor.wait_and_reset(1)
+        current_app.running_context.executor.wait_and_reset(1)
         self.assertSetEqual(set(response.keys()), {'id'})
 
     def test_execute_workflow_change_arguments(self):
@@ -54,7 +53,7 @@ class TestZmqCommunicationServer(ServerTestCase):
         self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
                                     content_type="application/json", data=json.dumps(data))
 
-        flask_server.app.running_context.executor.wait_and_reset(1)
+        current_app.running_context.executor.wait_and_reset(1)
 
         self.assertEqual(result['count'], 1)
         self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: CHANGE INPUT'})

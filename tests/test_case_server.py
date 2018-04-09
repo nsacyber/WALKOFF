@@ -13,7 +13,7 @@ from tests.config import APPS_PATH
 from uuid import uuid4
 from mock import create_autospec, patch, call
 from walkoff.case.logger import CaseLogger
-import walkoff.server.flaskserver as server
+from flask import current_app
 
 
 class TestCaseServer(ServerTestCase):
@@ -30,12 +30,12 @@ class TestCaseServer(ServerTestCase):
         self.cases_all = dict(self.cases1)
         self.cases_all.update(self.cases2)
         self.logger = create_autospec(CaseLogger)
-        server.app.running_context.case_logger = self.logger
+        current_app.running_context.case_logger = self.logger
 
     def tearDown(self):
-        for case in server.app.running_context.case_db.session.query(case_database.Case).all():
-            server.app.running_context.case_db.session.delete(case)
-        server.app.running_context.case_db.commit()
+        for case in current_app.running_context.case_db.session.query(case_database.Case).all():
+            current_app.running_context.case_db.session.delete(case)
+        current_app.running_context.case_db.commit()
         for case in CaseSubscription.query.all():
             db.session.delete(case)
         db.session.commit()
@@ -44,7 +44,7 @@ class TestCaseServer(ServerTestCase):
 
     def create_case(self, name):
         response = json.loads(
-            self.app.post(
+            self.test_client.post(
                 'api/cases',
                 headers=self.headers,
                 data=json.dumps({'name': name}),
@@ -57,7 +57,7 @@ class TestCaseServer(ServerTestCase):
         response = self.post_with_status_check('/api/cases', headers=self.headers, data=json.dumps(data),
                                                content_type='application/json', status_code=OBJECT_CREATED)
         self.assertEqual(response, {'id': 1, 'name': 'case1', 'note': 'Test', 'subscriptions': []})
-        cases = [case.name for case in server.app.running_context.case_db.session.query(case_database.Case).all()]
+        cases = [case.name for case in current_app.running_context.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case1']
         orderless_list_compare(self, cases, expected_cases)
         cases_config = CaseSubscription.query.all()
@@ -93,7 +93,7 @@ class TestCaseServer(ServerTestCase):
 
     def test_create_case_existing_cases(self):
         data = json.dumps({'name': 'case3'})
-        self.app.post('api/cases', headers=self.headers, data=data, content_type='application/json')
+        self.test_client.post('api/cases', headers=self.headers, data=data, content_type='application/json')
         self.post_with_status_check(
             'api/cases',
             headers=self.headers,
@@ -101,7 +101,7 @@ class TestCaseServer(ServerTestCase):
             status_code=OBJECT_EXISTS_ERROR,
             content_type='application/json')
 
-        cases = [case.name for case in server.app.running_context.case_db.session.query(case_database.Case).all()]
+        cases = [case.name for case in current_app.running_context.case_db.session.query(case_database.Case).all()]
         expected_cases = ['case3']
         orderless_list_compare(self, cases, expected_cases)
         cases_config = CaseSubscription.query.all()
@@ -111,9 +111,9 @@ class TestCaseServer(ServerTestCase):
             self.assertEqual(case.subscriptions, [])
         self.cases1.update({'case1': {}})
 
-    # @patch.object(server.app.running_context.executor, 'create_case')
+    # @patch.object(current_app.running_context.executor, 'create_case')
     def test_create_case_with_subscriptions_no_controller(self):
-        with patch.object(server.app.running_context.executor, 'create_case') as mock_create:
+        with patch.object(current_app.running_context.executor, 'create_case') as mock_create:
             uid = str(uuid4())
 
             subscription = {'id': uid, 'events': ['a', 'b', 'c']}
@@ -127,7 +127,7 @@ class TestCaseServer(ServerTestCase):
             self.assertEqual(
                 response,
                 {'id': 1, 'name': 'case1', 'note': 'Test', 'subscriptions': [{'id': uid, 'events': ['a', 'b', 'c']}]})
-            cases = [case.name for case in server.app.running_context.case_db.session.query(case_database.Case).all()]
+            cases = [case.name for case in current_app.running_context.case_db.session.query(case_database.Case).all()]
             expected_cases = ['case1']
             orderless_list_compare(self, cases, expected_cases)
             cases_config = CaseSubscription.query.all()
@@ -135,9 +135,9 @@ class TestCaseServer(ServerTestCase):
             orderless_list_compare(self, [case.name for case in cases_config], ['case1'])
             mock_create.assert_called_once_with(1, [Subscription(uid, ['a', 'b', 'c'])])
 
-    # @patch.object(server.app.running_context.executor, 'create_case')
+    # @patch.object(current_app.running_context.executor, 'create_case')
     def test_create_case_with_subscriptions_with_controller(self):
-        with patch.object(server.app.running_context.executor, 'create_case') as mock_create:
+        with patch.object(current_app.running_context.executor, 'create_case') as mock_create:
             uid = str(uuid4())
 
             subscriptions = [{'id': uid, 'events': ['a', 'b', 'c']}, {'id': 'controller', 'events': ['a']}]
@@ -151,7 +151,7 @@ class TestCaseServer(ServerTestCase):
             self.assertEqual(
                 response,
                 {'id': 1, 'name': 'case1', 'note': 'Test', 'subscriptions': subscriptions})
-            cases = [case.name for case in server.app.running_context.case_db.session.query(case_database.Case).all()]
+            cases = [case.name for case in current_app.running_context.case_db.session.query(case_database.Case).all()]
             expected_cases = ['case1']
             orderless_list_compare(self, cases, expected_cases)
             cases_config = CaseSubscription.query.all()
@@ -163,7 +163,7 @@ class TestCaseServer(ServerTestCase):
     def test_read_cases_typical(self):
         case1_id = self.create_case('case1')
         response = json.loads(
-            self.app.post(
+            self.test_client.post(
                 'api/cases',
                 headers=self.headers,
                 data=json.dumps({'name': 'case2', "note": 'note1'}),
@@ -171,7 +171,7 @@ class TestCaseServer(ServerTestCase):
         case2_id = response['id']
 
         response = json.loads(
-            self.app.post(
+            self.test_client.post(
                 'api/cases',
                 headers=self.headers,
                 data=json.dumps({'name': 'case3', "note": 'note2'}),
@@ -196,31 +196,31 @@ class TestCaseServer(ServerTestCase):
             headers=self.headers,
             status_code=OBJECT_DNE_ERROR)
 
-    # @patch.object(server.app.running_context.executor, 'delete_case')
+    # @patch.object(current_app.running_context.executor, 'delete_case')
     def test_delete_case_only_case(self):
-        with patch.object(server.app.running_context.executor, 'delete_case') as mock_delete:
+        with patch.object(current_app.running_context.executor, 'delete_case') as mock_delete:
             case_id = self.create_case('case1')
             self.delete_with_status_check('api/cases/{0}'.format(case_id), headers=self.headers, status_code=NO_CONTENT)
 
-            cases = [case.name for case in server.app.running_context.case_db.session.query(case_database.Case).all()]
+            cases = [case.name for case in current_app.running_context.case_db.session.query(case_database.Case).all()]
             expected_cases = []
             orderless_list_compare(self, cases, expected_cases)
             cases_config = CaseSubscription.query.all()
             self.assertListEqual(cases_config, [])
             mock_delete.assert_called_once_with(case_id)
 
-    # @patch.object(server.app.running_context.executor, 'delete_case')
+    # @patch.object(current_app.running_context.executor, 'delete_case')
     def test_delete_case(self):
-        with patch.object(server.app.running_context.executor, 'delete_case') as mock_delete:
+        with patch.object(current_app.running_context.executor, 'delete_case') as mock_delete:
             case1_id = self.create_case('case1')
-            self.app.post(
+            self.test_client.post(
                 'api/cases',
                 headers=self.headers,
                 data=json.dumps({'name': 'case2'}),
                 content_type='application/json')
             self.delete_with_status_check('api/cases/{0}'.format(case1_id), headers=self.headers, status_code=NO_CONTENT)
 
-            cases = [case.name for case in server.app.running_context.case_db.session.query(case_database.Case).all()]
+            cases = [case.name for case in current_app.running_context.case_db.session.query(case_database.Case).all()]
             expected_cases = ['case2']
             orderless_list_compare(self, cases, expected_cases)
 
@@ -231,9 +231,9 @@ class TestCaseServer(ServerTestCase):
             self.assertEqual(cases_config[0].subscriptions, [])
             mock_delete.assert_called_once_with(case1_id)
 
-    # @patch.object(server.app.running_context.executor, 'delete_case')
+    # @patch.object(current_app.running_context.executor, 'delete_case')
     def test_delete_case_invalid_case(self):
-        with patch.object(server.app.running_context.executor, 'delete_case') as mock_delete:
+        with patch.object(current_app.running_context.executor, 'delete_case') as mock_delete:
             self.create_case('case1')
             self.create_case('case2')
             self.delete_with_status_check(
@@ -242,7 +242,7 @@ class TestCaseServer(ServerTestCase):
                 headers=self.headers,
                 status_code=OBJECT_DNE_ERROR)
 
-            db_cases = [case.name for case in server.app.running_context.case_db.session.query(case_database.Case).all()]
+            db_cases = [case.name for case in current_app.running_context.case_db.session.query(case_database.Case).all()]
             expected_cases = list(self.cases1.keys())
             orderless_list_compare(self, db_cases, expected_cases)
 
@@ -252,16 +252,16 @@ class TestCaseServer(ServerTestCase):
                 self.assertEqual(case.subscriptions, [])
             mock_delete.assert_not_called()
 
-    # @patch.object(server.app.running_context.executor, 'delete_case')
+    # @patch.object(current_app.running_context.executor, 'delete_case')
     def test_delete_case_no_cases(self):
-        with patch.object(server.app.running_context.executor, 'delete_case') as mock_delete:
+        with patch.object(current_app.running_context.executor, 'delete_case') as mock_delete:
             self.delete_with_status_check(
                 'api/cases/404',
                 error='Case does not exist.',
                 headers=self.headers,
                 status_code=OBJECT_DNE_ERROR)
 
-            db_cases = [case.name for case in server.app.running_context.case_db.session.query(case_database.Case).all()]
+            db_cases = [case.name for case in current_app.running_context.case_db.session.query(case_database.Case).all()]
             expected_cases = []
             orderless_list_compare(self, db_cases, expected_cases)
 
@@ -273,13 +273,13 @@ class TestCaseServer(ServerTestCase):
         uid = str(uuid4())
         send_func = self.put_with_status_check if verb == 'put' else self.patch_with_status_check
         response = json.loads(
-            self.app.post(
+            self.test_client.post(
                 'api/cases',
                 headers=self.headers,
                 data=json.dumps({'name': 'case1'}),
                 content_type='application/json').get_data(as_text=True))
         case1_id = response['id']
-        self.app.post(
+        self.test_client.post(
             'api/cases',
             headers=self.headers,
             data=json.dumps({'name': 'case2'}),
@@ -305,23 +305,23 @@ class TestCaseServer(ServerTestCase):
         mock_update.assert_called_once()
         self.logger.update_subscriptions.assert_called_once()
 
-        result_cases = server.app.running_context.case_db.cases_as_json()
+        result_cases = current_app.running_context.case_db.cases_as_json()
         case1_new_json = next((case for case in result_cases if case['name'] == "renamed"), None)
         self.assertIsNotNone(case1_new_json)
         self.assertDictEqual(case1_new_json, {'id': 1, 'name': 'renamed'})
 
     def test_edit_case_put(self):
-        with patch.object(server.app.running_context.executor, 'update_case') as mock_update:
+        with patch.object(current_app.running_context.executor, 'update_case') as mock_update:
             self.put_patch_test('put', mock_update)
 
     def test_edit_case_patch(self):
-        with patch.object(server.app.running_context.executor, 'update_case') as mock_update:
+        with patch.object(current_app.running_context.executor, 'update_case') as mock_update:
             self.put_patch_test('patch', mock_update)
 
     def test_edit_case_no_name(self):
-        with patch.object(server.app.running_context.executor, 'update_case') as mock_update:
+        with patch.object(current_app.running_context.executor, 'update_case') as mock_update:
             case2_id = self.create_case('case1')
-            self.app.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
+            self.test_client.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
                          content_type='application/json')
             data = {"note": "note1", "id": case2_id}
             response = self.put_with_status_check(
@@ -334,9 +334,9 @@ class TestCaseServer(ServerTestCase):
             mock_update.assert_not_called()
 
     def test_edit_case_no_note(self):
-        with patch.object(server.app.running_context.executor, 'update_case') as mock_update:
+        with patch.object(current_app.running_context.executor, 'update_case') as mock_update:
             case1_id = self.create_case('case1')
-            self.app.put(
+            self.test_client.put(
                 'api/cases',
                 headers=self.headers,
                 data=json.dumps({'name': 'case2'}),
@@ -352,7 +352,7 @@ class TestCaseServer(ServerTestCase):
             mock_update.assert_not_called()
 
     def test_edit_case_invalid_case(self):
-        with patch.object(server.app.running_context.executor, 'update_case') as mock_update:
+        with patch.object(current_app.running_context.executor, 'update_case') as mock_update:
             self.create_case('case1')
             self.create_case('case2')
             data = {"name": "renamed", "id": 404}
@@ -365,7 +365,7 @@ class TestCaseServer(ServerTestCase):
             mock_update.assert_not_called()
 
     def test_export_cases(self):
-        with patch.object(server.app.running_context.executor, 'create_case') as mock_create:
+        with patch.object(current_app.running_context.executor, 'create_case') as mock_create:
             subscription = {'id': 'id1', 'events': ['a', 'b', 'c']}
             data = {'name': 'case1', 'note': 'Test', 'subscriptions': [subscription]}
             case = self.post_with_status_check(
@@ -380,7 +380,7 @@ class TestCaseServer(ServerTestCase):
             self.assertListEqual(case['events'], [])
 
     def test_import_cases(self):
-        with patch.object(server.app.running_context.executor, 'create_case') as mock_create:
+        with patch.object(current_app.running_context.executor, 'create_case') as mock_create:
             subscription = {'id': 'id1', 'events': ['a', 'b', 'c']}
             data = {'name': 'case1', 'note': 'Test', 'subscriptions': [subscription]}
 
@@ -412,11 +412,11 @@ class TestCaseServer(ServerTestCase):
                                  event.event_type.name == event_type and event.is_loggable()})
 
     def test_send_cases_to_workers(self):
-        with patch.object(server.app.running_context.executor, 'update_case') as mock_update:
+        with patch.object(current_app.running_context.executor, 'update_case') as mock_update:
             from walkoff.case.database import Case
             from walkoff.serverdb.casesubscription import CaseSubscription
             from walkoff.extensions import db
-            from walkoff.server.app import send_all_cases_to_workers
+            from walkoff.server.blueprints.root import send_all_cases_to_workers
             ids = [str(uuid4()) for _ in range(4)]
             case1_subs = [{'id': ids[0], 'events': ['e1', 'e2', 'e3']}, {'id': ids[1], 'events': ['e1']}]
             case2_subs = [{'id': ids[0], 'events': ['e2', 'e3']}]
@@ -428,10 +428,10 @@ class TestCaseServer(ServerTestCase):
                 new_case_subs = CaseSubscription(name, subscriptions=case_subs)
                 db.session.add(new_case_subs)
                 case = Case(name=name)
-                server.app.running_context.case_db.session.add(case)
-                server.app.running_context.case_db.session.commit()
+                current_app.running_context.case_db.session.add(case)
+                current_app.running_context.case_db.session.commit()
                 call_subs = [Subscription(sub['id'], sub['events']) for sub in case_subs]
                 expected.append(call(case.id, call_subs))
-                server.app.running_context.case_db.session.commit()
+                current_app.running_context.case_db.session.commit()
             send_all_cases_to_workers()
             mock_update.assert_has_calls(expected)

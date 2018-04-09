@@ -1,7 +1,7 @@
 import json
 import unittest
 
-import walkoff.server.flaskserver as server
+from flask import current_app
 from tests.util.execution_db_help import setup_dbs
 from walkoff.scheduler import InvalidTriggerArgs
 from walkoff.serverdb import db
@@ -11,7 +11,7 @@ from walkoff.serverdb.scheduledtasks import ScheduledTask
 class TestScheduledTask(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.context = server.app.test_request_context()
+        cls.context = current_app.test_request_context()
         cls.context.push()
         setup_dbs()
 
@@ -22,15 +22,15 @@ class TestScheduledTask(unittest.TestCase):
         db.session.rollback()
         for task in db.session.query(ScheduledTask).all():
             db.session.delete(task)
-        server.app.running_context.scheduler.scheduler.remove_all_jobs()
-        server.app.running_context.scheduler.stop()
+        current_app.running_context.scheduler.scheduler.remove_all_jobs()
+        current_app.running_context.scheduler.stop()
         db.session.commit()
 
     def assertSchedulerWorkflowsRunningEqual(self, workflows=None):
         if workflows is None:
-            self.assertDictEqual(server.app.running_context.scheduler.get_all_scheduled_workflows(), {})
+            self.assertDictEqual(current_app.running_context.scheduler.get_all_scheduled_workflows(), {})
         else:
-            scheduled_workflows = server.app.running_context.scheduler.get_all_scheduled_workflows()
+            scheduled_workflows = current_app.running_context.scheduler.get_all_scheduled_workflows()
             self.assertSetEqual(set(scheduled_workflows['None']), set(workflows))
 
     def assertJsonIsCorrect(self, task, expected):

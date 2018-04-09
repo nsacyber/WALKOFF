@@ -17,12 +17,12 @@ class TestSimpleWorkflow(unittest.TestCase):
     def setUpClass(cls):
         execution_db_help.setup_dbs()
 
-        from walkoff.server import flaskserver
-        cls.context = flaskserver.app.test_request_context()
+        from flask import current_app
+        cls.context = current_app.test_request_context()
         cls.context.push()
 
         from walkoff.server import context
-        flaskserver.app.running_context = context.Context(walkoff.config.Config)
+        current_app.running_context = context.Context(walkoff.config.Config)
 
         from walkoff.appgateway import cache_apps
         cache_apps(path=config.APPS_PATH)

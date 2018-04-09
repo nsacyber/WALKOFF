@@ -7,8 +7,8 @@ from walkoff.serverdb import db, Role, Resource, default_resources, initialize_d
 class TestRoles(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        import walkoff.server.flaskserver
-        cls.context = walkoff.server.flaskserver.app.test_request_context()
+        from flask import current_app
+        cls.context = current_app.test_request_context()
         cls.context.push()
 
         execution_db_help.setup_dbs()

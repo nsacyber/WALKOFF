@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime, timedelta
 
-import walkoff.server.flaskserver
+from flask import current_app
 from tests.util import execution_db_help
 from walkoff.helpers import timestamp_to_datetime
 from walkoff.serverdb import db, User, Role, add_user, remove_user
@@ -10,7 +10,7 @@ from walkoff.serverdb import db, User, Role, add_user, remove_user
 class TestUserRolesDatabase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.context = walkoff.server.flaskserver.app.test_request_context()
+        cls.context = current_app.test_request_context()
         cls.context.push()
         db.create_all()
 

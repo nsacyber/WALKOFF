@@ -8,7 +8,7 @@ import walkoff.config
 from tests.config import APPS_PATH
 from tests.util.assertwrappers import orderless_list_compare
 from walkoff.helpers import *
-from walkoff.server.flaskserver import handle_database_errors, handle_generic_server_error
+from walkoff.server.blueprints.root import handle_database_errors, handle_generic_server_error
 
 
 class TestHelperFunctions(unittest.TestCase):

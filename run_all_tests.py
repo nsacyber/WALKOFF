@@ -12,7 +12,7 @@ import os
 
 
 def delete_dbs():
-    db_paths = [tests.config.test_case_db_path, tests.config.test_execution_db_path, walkoff.config.Config.DB_PATH]
+    db_paths = [tests.config.CASE_DB_PATH, tests.config.EXECUTION_DB_PATH, walkoff.config.Config.DB_PATH]
     for db in db_paths:
         if os.path.exists(db):
             os.remove(db)
@@ -45,6 +45,6 @@ if __name__ == '__main__':
         print('\nInterrupted! Ending full test')
         successful = False
     finally:
-        import walkoff.server.flaskserver
-        walkoff.server.flaskserver.app.running_context.executor.shutdown_pool()
+        from flask import current_app
+        current_app.running_context.executor.shutdown_pool()
         sys.exit(not successful)

@@ -13,7 +13,7 @@ class TestAppApiServerFuncs(ServerTestCase):
 
     def test_read_all_apps(self):
         expected_apps = ['HelloWorldBounded', 'DailyQuote', 'HelloWorld']
-        response = self.app.get('/api/apps', headers=self.headers)
+        response = self.test_client.get('/api/apps', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         orderless_list_compare(self, response, expected_apps)
@@ -111,14 +111,14 @@ class TestAppApiServerFuncs(ServerTestCase):
             self.assertIn(field, expected['fields'])
 
     def test_read_all_app_apis(self):
-        response = self.app.get('/api/apps/apis', headers=self.headers)
+        response = self.test_client.get('/api/apps/apis', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         orderless_list_compare(self, [app['name'] for app in response],
                                ['HelloWorldBounded', 'DailyQuote', 'HelloWorld'])
 
     def test_read_all_app_apis_with_field(self):
-        response = self.app.get('/api/apps/apis?field_name=action_apis', headers=self.headers)
+        response = self.test_client.get('/api/apps/apis?field_name=action_apis', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         orderless_list_compare(self, [app['name'] for app in response],
@@ -127,7 +127,7 @@ class TestAppApiServerFuncs(ServerTestCase):
             self.assertSetEqual(set(app.keys()), {'name', 'action_apis'})
 
     def test_read_all_app_apis_with_device(self):
-        response = self.app.get('/api/apps/apis?field_name=device_apis', headers=self.headers)
+        response = self.test_client.get('/api/apps/apis?field_name=device_apis', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         orderless_list_compare(self, [app['name'] for app in response],
@@ -136,11 +136,11 @@ class TestAppApiServerFuncs(ServerTestCase):
             self.assertSetEqual(set(app.keys()), {'name', 'device_apis'})
 
     def test_read_all_app_apis_with_field_field_dne(self):
-        response = self.app.get('/api/apps/apis?field_name=invalid', headers=self.headers)
+        response = self.test_client.get('/api/apps/apis?field_name=invalid', headers=self.headers)
         self.assertEqual(response.status_code, BAD_REQUEST)
 
     def test_read_app_api(self):
-        response = self.app.get('/api/apps/apis/HelloWorldBounded', headers=self.headers)
+        response = self.test_client.get('/api/apps/apis/HelloWorldBounded', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         self.assertSetEqual(set(response.keys()), {'name', 'tags', 'info', 'external_docs',
@@ -149,19 +149,19 @@ class TestAppApiServerFuncs(ServerTestCase):
         self.assertEqual(response['name'], 'HelloWorldBounded')
 
     def test_read_app_api_app_dne(self):
-        response = self.app.get('/api/apps/apis/Invalid', headers=self.headers)
+        response = self.test_client.get('/api/apps/apis/Invalid', headers=self.headers)
         self.assertEqual(response.status_code, OBJECT_DNE_ERROR)
 
     def test_read_app_api_field(self):
-        response = self.app.get('/api/apps/apis/HelloWorldBounded/info', headers=self.headers)
+        response = self.test_client.get('/api/apps/apis/HelloWorldBounded/info', headers=self.headers)
         self.assertEqual(response.status_code, SUCCESS)
         response = json.loads(response.get_data(as_text=True))
         self.assertSetEqual(set(response.keys()), {'version', 'title', 'contact', 'license', 'description'})
 
     def test_read_app_api_field_app_dne(self):
-        response = self.app.get('/api/apps/apis/Invalid/info', headers=self.headers)
+        response = self.test_client.get('/api/apps/apis/Invalid/info', headers=self.headers)
         self.assertEqual(response.status_code, OBJECT_DNE_ERROR)
 
     def test_read_app_api_field_field_dne(self):
-        response = self.app.get('/api/apps/apis/HelloWorldBounded/invalid', headers=self.headers)
+        response = self.test_client.get('/api/apps/apis/HelloWorldBounded/invalid', headers=self.headers)
         self.assertEqual(response.status_code, BAD_REQUEST)

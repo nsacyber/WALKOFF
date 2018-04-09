@@ -9,39 +9,35 @@ import walkoff.config
 from tests import config
 from tests.util import execution_db_help
 from tests.util.thread_control import modified_setup_worker_env
-from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
-from walkoff.case.logger import CaseLogger
 from walkoff.events import WalkoffEvent
-from walkoff.case.subscription import Subscription, SubscriptionCache
+from walkoff.case.subscription import Subscription
 from walkoff.case.database import Case, Event
+from walkoff.server.app import create_app
+from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
+from walkoff.server import workflowresults  # Need this import
 
 
 class TestZMQCommunication(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         walkoff.config.initialize(config_path=config)
-        cls.execution_db, cls.case_db = execution_db_help.setup_dbs()
 
-        from walkoff.server import workflowresults  # Need this import
-        from walkoff.server import flaskserver
-        cls.context = flaskserver.app.test_request_context()
+        cls.app = create_app(walkoff.config.AppConfig)
+        cls.context = cls.app.test_request_context()
         cls.context.push()
 
-        from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
         pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES,
                                       walkoff.config.Config.NUMBER_THREADS_PER_PROCESS,
                                       walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
                                       walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
                                       walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
                                       worker_environment_setup=modified_setup_worker_env)
-        cls.subscription_cache = SubscriptionCache()
-        cls.logger = CaseLogger(cls.case_db, cls.subscription_cache)
-        cls.executor = MultiprocessedExecutor(flaskserver.app.running_context.cache, cls.logger)
-        cls.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
-                                          walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                          walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-                                          walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS, flaskserver.app, pids)
+        cls.app.running_context.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
+                                                              walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
+                                                              walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
+                                                              walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS, cls.app,
+                                                              pids)
 
     def tearDown(self):
         execution_db_help.cleanup_execution_db()
@@ -54,11 +50,11 @@ class TestZMQCommunication(unittest.TestCase):
             else:
                 shutil.rmtree(config.DATA_PATH)
         for class_ in (Case, Event):
-            for instance in cls.case_db.session.query(class_).all():
-                cls.case_db.session.delete(instance)
-        cls.case_db.session.commit()
+            for instance in cls.app.running_context.case_db.session.query(class_).all():
+                cls.app.running_context.case_db.session.delete(instance)
+        cls.app.running_context.case_db.session.commit()
         walkoff.appgateway.clear_cache()
-        cls.executor.shutdown_pool()
+        cls.app.running_context.executor.shutdown_pool()
         execution_db_help.tear_down_execution_db()
 
     '''Request and Result Socket Testing (Basic Workflow Execution)'''
@@ -74,9 +70,9 @@ class TestZMQCommunication(unittest.TestCase):
             self.assertEqual(sender['id'], str(workflow_id))
             result['called'] = True
 
-        self.executor.execute_workflow(workflow_id)
+        self.app.running_context.executor.execute_workflow(workflow_id)
 
-        self.executor.wait_and_reset(1)
+        self.app.running_context.executor.wait_and_reset(1)
 
         self.assertTrue(result['called'])
 
@@ -94,9 +90,9 @@ class TestZMQCommunication(unittest.TestCase):
             result['workflows_executed'] += 1
 
         for i in range(capacity):
-            self.executor.execute_workflow(workflow_id)
+            self.app.running_context.executor.execute_workflow(workflow_id)
 
-        self.executor.wait_and_reset(capacity)
+        self.app.running_context.executor.wait_and_reset(capacity)
 
         self.assertEqual(result['workflows_executed'], capacity)
 
@@ -109,27 +105,28 @@ class TestZMQCommunication(unittest.TestCase):
         workflow_id = workflow.id
 
         case = Case(name='name')
-        self.case_db.session.add(case)
-        self.case_db.session.commit()
+        self.app.running_context.case_db.session.add(case)
+        self.app.running_context.case_db.session.commit()
         subscriptions = [Subscription(
             id=str(workflow_id),
             events=[WalkoffEvent.WorkflowPaused.signal_name])]
-        self.executor.create_case(case.id, subscriptions)
-        self.logger.add_subscriptions(case.id, [Subscription(str(workflow_id), [WalkoffEvent.WorkflowResumed.signal_name])])
+        self.app.running_context.executor.create_case(case.id, subscriptions)
+        self.app.running_context.case_logger.add_subscriptions(case.id, [
+            Subscription(str(workflow_id), [WalkoffEvent.WorkflowResumed.signal_name])])
 
         def pause_resume_thread():
-            self.executor.pause_workflow(execution_id)
+            self.app.running_context.executor.pause_workflow(execution_id)
             return
 
         @WalkoffEvent.WorkflowPaused.connect
         def workflow_paused_listener(sender, **kwargs):
             result['paused'] = True
-            wf_status = self.execution_db.session.query(WorkflowStatus).filter_by(
+            wf_status = self.app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
                 execution_id=sender['execution_id']).first()
             wf_status.paused()
-            self.execution_db.session.commit()
+            self.app.running_context.execution_db.session.commit()
 
-            self.executor.resume_workflow(execution_id)
+            self.app.running_context.executor.resume_workflow(execution_id)
 
         @WalkoffEvent.WorkflowResumed.connect
         def workflow_resumed_listener(sender, **kwargs):
@@ -140,17 +137,17 @@ class TestZMQCommunication(unittest.TestCase):
             self.assertEqual(sender['id'], str(workflow_id))
             result['called'] = True
 
-        execution_id = self.executor.execute_workflow(workflow_id)
+        execution_id = self.app.running_context.executor.execute_workflow(workflow_id)
 
         while True:
-            self.execution_db.session.expire_all()
-            workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
+            self.app.running_context.execution_db.session.expire_all()
+            workflow_status = self.app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
                 execution_id=execution_id).first()
             if workflow_status and workflow_status.status == WorkflowStatusEnum.running:
                 threading.Thread(target=pause_resume_thread).start()
                 time.sleep(0)
                 break
 
-        self.executor.wait_and_reset(1)
+        self.app.running_context.executor.wait_and_reset(1)
         for status in ('called', 'paused', 'resumed'):
             self.assertTrue(result[status])

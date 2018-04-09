@@ -3,7 +3,7 @@ from unittest import TestCase
 
 from tests.util import execution_db_help
 from walkoff.messaging import MessageAction
-from walkoff.server import flaskserver
+from flask import current_app
 from walkoff.serverdb import db
 from walkoff.serverdb.message import MessageHistory
 from walkoff.serverdb.user import User
@@ -15,7 +15,7 @@ class TestMessageHistoryDatabase(TestCase):
     def setUpClass(cls):
         execution_db_help.setup_dbs()
 
-        cls.context = flaskserver.app.test_request_context()
+        cls.context = current_app.test_request_context()
         cls.context.push()
         db.create_all()
         for user in [user for user in User.query.all() if user.username != 'admin']:

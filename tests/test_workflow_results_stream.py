@@ -20,9 +20,9 @@ class TestWorkflowResultsStream(ServerTestCase):
 
     def tearDown(self):
         self.cache.clear()
-        for status in self.execution_db.session.query(WorkflowStatus).all():
-            self.execution_db.session.delete(status)
-        self.execution_db.session.commit()
+        for status in self.app.running_context.execution_db.session.query(WorkflowStatus).all():
+            self.app.running_context.execution_db.session.delete(status)
+        self.app.running_context.execution_db.session.commit()
 
     def assert_and_strip_timestamp(self, data, field='timestamp'):
         timestamp = data.pop(field, None)
@@ -152,9 +152,9 @@ class TestWorkflowResultsStream(ServerTestCase):
         workflow_status = WorkflowStatus(workflow_execution_id, workflow_id, 'workflow1')
         action_execution_id = uuid4()
         action_id = uuid4()
-        self.execution_db.session.add(workflow_status)
+        self.app.running_context.execution_db.session.add(workflow_status)
         action_status = ActionStatus(action_execution_id, action_id, 'my action', 'the_app', 'the_action')
-        self.execution_db.session.add(action_status)
+        self.app.running_context.execution_db.session.add(action_status)
         workflow_status.add_action_status(action_status)
         expected = {
             'execution_id': str(workflow_execution_id),
@@ -295,16 +295,16 @@ class TestWorkflowResultsStream(ServerTestCase):
 
     def check_stream_endpoint(self, endpoint, mock_stream):
         mock_stream.return_value = Response('something', status=SUCCESS)
-        post = self.app.post('/api/auth', content_type="application/json",
+        post = self.test_client.post('/api/auth', content_type="application/json",
                              data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
         key = json.loads(post.get_data(as_text=True))['access_token']
-        response = self.app.get('/api/streams/workflowqueue/{}?access_token={}'.format(endpoint, key))
+        response = self.test_client.get('/api/streams/workflowqueue/{}?access_token={}'.format(endpoint, key))
         mock_stream.assert_called_once_with()
         self.assertEqual(response.status_code, SUCCESS)
 
     def check_stream_endpoint_no_key(self, endpoint, mock_stream):
         mock_stream.return_value = Response('something', status=SUCCESS)
-        response = self.app.get('/api/streams/workflowqueue/{}?access_token=invalid'.format(endpoint))
+        response = self.test_client.get('/api/streams/workflowqueue/{}?access_token=invalid'.format(endpoint))
         mock_stream.assert_not_called()
         self.assertEqual(response.status_code, 422)
 
