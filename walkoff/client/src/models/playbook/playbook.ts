@@ -8,4 +8,8 @@ export class Playbook extends ExecutionElement {
 
 	@Type(() => Workflow)
 	workflows: Workflow[] = [];
+
+	get all_errors(): string[] {
+		return this.errors.concat(...this.workflows.map(workflow => workflow.all_errors))
+	}
 }

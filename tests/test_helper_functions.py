@@ -232,3 +232,23 @@ class TestHelperFunctions(unittest.TestCase):
             'title': 'An error occurred in the server.',
             'detail': 'SomeException'}
         self.assertDictEqual(body, expected)
+
+    def test_strip_device_ids(self):
+        playbook = {
+            'name': 'some_playbook',
+            'workflows': [
+                {'name': 'wf1',
+                 'actions': [{'name': 'action1'}, {'name': 'action2', 'device_id': 42}]},
+                {'name': 'wf2',
+                 'actions': [{'name': 'action1', 'device_id': 13}, {'name': 'some_action', 'device_id': 21}]}
+            ]}
+        expected = {
+            'name': 'some_playbook',
+            'workflows': [
+                {'name': 'wf1',
+                 'actions': [{'name': 'action1'}, {'name': 'action2'}]},
+                {'name': 'wf2',
+                 'actions': [{'name': 'action1'}, {'name': 'some_action'}]}
+            ]}
+        strip_device_ids(playbook)
+        self.assertDictEqual(playbook, expected)

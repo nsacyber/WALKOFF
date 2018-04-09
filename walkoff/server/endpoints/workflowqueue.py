@@ -7,7 +7,6 @@ from sqlalchemy import exists
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
-from walkoff.helpers import InvalidArgument
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid
 from walkoff.server.problem import Problem
@@ -24,6 +23,13 @@ def does_execution_id_exist(execution_id):
 
 def workflow_status_getter(execution_id):
     return current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
+
+
+def workflow_getter(workflow_id):
+    return current_app.running_context.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
+
+
+with_workflow = with_resource_factory('workflow', workflow_getter, validator=is_valid_uid)
 
 
 with_workflow_status = with_resource_factory('workflow', workflow_status_getter, validator=is_valid_uid)
@@ -77,27 +83,26 @@ def execute_workflow():
 
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['execute']))
-    @validate_workflow_is_registered('execute', workflow_id)
-    def __func():
+    @with_workflow('execute', workflow_id)
+    def __func(workflow):
+        if not workflow.is_valid:
+            return Problem(INVALID_INPUT_ERROR, 'Cannot execute workflow', 'Workflow is invalid')
         args = data['arguments'] if 'arguments' in data else None
         start = data['start'] if 'start' in data else None
 
         arguments = []
         if args:
-            try:
-                arguments = [Argument(**arg) for arg in args]
-            except InvalidArgument as e:
+            errors = []
+            arguments = [Argument(**arg) for arg in args]
+            for argument in arguments:
+                if argument.errors:
+                    errors.append('Errors in argument {}: {}'.format(argument.name, argument.errors))
+            if errors:
                 current_app.logger.error('Could not execute workflow. Invalid Argument construction')
                 return Problem(
                     INVALID_INPUT_ERROR,
                     'Cannot execute workflow.',
-                    'An argument is invalid. Reason: {}'.format(e.message))
-            except TypeError as e:
-                current_app.logger.error('Could not execute workflow. Unexpected arguments.')
-                return Problem(
-                    INVALID_INPUT_ERROR,
-                    'Cannot execute workflow.',
-                    'An unexpected argument was received. Reason: {}'.format(e.message))
+                    'Some arguments are invalid. Reason: {}'.format(errors))
 
         execution_id = current_app.running_context.executor.execute_workflow(workflow_id, start=start, start_arguments=arguments)
         current_app.logger.info('Executed workflow {0}'.format(workflow_id))

@@ -13,8 +13,6 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.position import Position
-from walkoff.helpers import InvalidArgument
-from walkoff.helpers import InvalidExecutionElement
 
 
 class TestAction(unittest.TestCase):
@@ -70,12 +68,12 @@ class TestAction(unittest.TestCase):
         self.__compare_init(action, 'HelloWorld', 'Hello World', 'helloWorld')
 
     def test_init_invalid_app(self):
-        with self.assertRaises(InvalidExecutionElement):
-            Action('InvalidApp', 'helloWorld', 'helloWorld')
+        action = Action('InvalidApp', 'helloWorld', 'helloWorld')
+        self.assertEqual(len(action.errors), 1)
 
     def test_init_invalid_action(self):
-        with self.assertRaises(InvalidExecutionElement):
-            Action('HelloWorld', 'invalid', 'helloWorld')
+        action = Action('HelloWorld', 'invalid', 'helloWorld')
+        self.assertEqual(len(action.errors), 1)
 
     def test_init_app_action_only_with_device(self):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld', device_id='test')
@@ -92,12 +90,12 @@ class TestAction(unittest.TestCase):
                             arguments=[Argument('number', value='-5.6')])
 
     def test_init_with_invalid_argument_name(self):
-        with self.assertRaises(InvalidExecutionElement):
-            Action('HelloWorld', 'returnPlusOne', 'helloWorld', arguments=[Argument('invalid', value='-5.6')])
+        action = Action('HelloWorld', 'returnPlusOne', 'helloWorld', arguments=[Argument('invalid', value='-5.6')])
+        self.assertEqual(len(action.errors), 2)
 
     def test_init_with_invalid_argument_type(self):
-        with self.assertRaises(InvalidExecutionElement):
-            Action('HelloWorld', 'returnPlusOne', 'helloWorld', arguments=[Argument('number', value='invalid')])
+        action = Action('HelloWorld', 'returnPlusOne', 'helloWorld', arguments=[Argument('number', value='invalid')])
+        self.assertEqual(len(action.errors), 2)
 
     def test_init_with_triggers(self):
         trigger = ConditionalExpression(
@@ -316,36 +314,6 @@ class TestAction(unittest.TestCase):
         self.assertAlmostEqual(result.result, 'something')
         self.assertEqual(result.status, 'Success')
         self.assertEqual(action._output, result)
-
-    def test_set_args_valid(self):
-        action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
-                        arguments=[Argument('num1', value='-5.6'),
-                                   Argument('num2', value='4.3'),
-                                   Argument('num3', value='10.2')])
-        arguments = [Argument('num1', value='-5.62'), Argument('num2', value='5'), Argument('num3', value='42.42')]
-        action.set_arguments(arguments)
-
-        self.assertEqual(len(action.arguments), len(arguments))
-        for arg in action.arguments:
-            self.assertIn(arg, arguments)
-
-    def test_set_args_invalid_name(self):
-        action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
-                        arguments=[Argument('num1', value='-5.6'),
-                                   Argument('num2', value='4.3'),
-                                   Argument('num3', value='10.2')])
-        with self.assertRaises(InvalidArgument):
-            action.set_arguments(
-                [Argument('num1', value='-5.62'), Argument('invalid', value='5'), Argument('num3', value='42.42')])
-
-    def test_set_args_invalid_format(self):
-        action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
-                        arguments=[Argument('num1', value='-5.6'),
-                                   Argument('num2', value='4.3'),
-                                   Argument('num3', value='10.2')])
-        with self.assertRaises(InvalidArgument):
-            action.set_arguments(
-                [Argument('num1', value='-5.62'), Argument('num2', value='5'), Argument('num3', value='invalid')])
 
     def test_execute_with_triggers(self):
         trigger = ConditionalExpression(

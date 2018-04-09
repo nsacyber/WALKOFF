@@ -1,6 +1,6 @@
 import logging
 
-from sqlalchemy import Column, ForeignKey, String, orm, Boolean
+from sqlalchemy import Column, ForeignKey, String, orm, Boolean, event
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 
@@ -24,6 +24,7 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
     is_negated = Column(Boolean, default=False)
     arguments = relationship('Argument', cascade='all, delete, delete-orphan')
     transforms = relationship('Transform', cascade='all, delete-orphan')
+    children = ('arguments', 'transforms')
 
     def __init__(self, app_name, action_name, id=None, is_negated=False, arguments=None, transforms=None):
         """Initializes a new Condition object.
@@ -62,28 +63,25 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
     @orm.reconstructor
     def init_on_load(self):
         """Loads all necessary fields upon Condition being loaded from database"""
-        self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
-        self._condition_executable = get_condition(self.app_name, self._run)
+        if not self.errors:
+            self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
+            self._condition_executable = get_condition(self.app_name, self._run)
 
     def validate(self):
-        errors = {}
+        errors = []
         try:
             self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
             self._condition_executable = get_condition(self.app_name, self._run)
             tmp_api = split_api_params(self._api, self._data_param_name)
             validate_condition_parameters(tmp_api, self.arguments, self.action_name)
         except UnknownApp:
-            errors['executable'] = 'Unknown app {}'.format(self.app_name)
+            errors.append('Unknown app {}'.format(self.app_name))
         except UnknownCondition:
-            errors['executable'] = 'Unknown condition {}'.format(self.action_name)
+            errors.append('Unknown condition {}'.format(self.action_name))
         except InvalidArgument as e:
-            errors['arguments'] = e.errors
+            errors.extend(e.errors)
         if errors:
-            raise InvalidExecutionElement(
-                self.id,
-                self.action_name,
-                'Invalid condition {}'.format(self.id or self.action_name),
-                errors=[errors])
+            self.errors = errors
 
     def execute(self, data_in, accumulator):
         """Executes the Condition object, determining if the Condition evaluates to True or False.
@@ -127,3 +125,7 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
                 arguments.append(argument)
         arguments.append(Argument(self._data_param_name, value=data))
         return arguments
+
+@event.listens_for(Condition, 'before_update')
+def validate_before_update(mapper, connection, target):
+    target.validate()

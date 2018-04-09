@@ -32,7 +32,7 @@ def run(app, host, port):
                                                       walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
                                                       walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
                                                       walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
-                                                      pids)
+                                                      app, pids)
     # The order of these imports matter for initialization (should probably be fixed)
 
     server = setup_server(app, host, port)

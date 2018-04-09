@@ -390,6 +390,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 					},
 				},
 				{
+					selector: 'node[?hasErrors]',
+					css: {
+						'color': '#991818',
+						'font-style': 'italic',
+					},
+				},
+				{
 					selector: 'node:selected',
 					css: {
 						'background-color': '#77b0d0',
@@ -443,6 +450,14 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 					css: {
 						'target-arrow-shape': 'triangle',
 						'curve-style': 'bezier',
+					},
+				},
+				{
+					selector: 'edge[?hasErrors]',
+					css: {
+						'target-arrow-color': '#991818',
+						'line-color': '#991818',
+						'line-style': 'dashed'
 					},
 				},
 				{
@@ -590,6 +605,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				_id: branch.id,
 				source: branch.source_id,
 				target: branch.destination_id,
+				hasErrors: branch.has_errors
 			};
 			return edge;
 		});
@@ -601,6 +617,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				_id: action.id,
 				label: action.name,
 				isStartNode: action.id === this.loadedWorkflow.start,
+				hasErrors: action.has_errors
 			};
 			this._setNodeDisplayProperties(node, action);
 			return node;
@@ -1527,12 +1544,12 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * @param parameterApi Parameter API used to generate the default argument
 	 */
 	getDefaultArgument(parameterApi: ParameterApi): Argument {
-		return {
+		return plainToClass(Argument, {
 			name: parameterApi.name,
 			value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
 			reference: '',
 			selection: '',
-		};
+		});
 	}
 
 	/**
@@ -1653,5 +1670,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		if (status.completed_at) { 
 			status.localized_completed_at = this.utils.getLocalTime(status.completed_at);
 		}
+	}
+
+	/**
+	 * Returns errors in the loaded workflow
+	 */
+	getErrors() : any[] {
+		if (!this.loadedWorkflow) return [];
+		return this.loadedWorkflow.all_errors.map(error => ({ error }));
 	}
 }

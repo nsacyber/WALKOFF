@@ -6,6 +6,16 @@ import unittest
 import sys
 from tests import suites as test_suites
 import logging
+import tests.config
+import walkoff.config
+import os
+
+
+def delete_dbs():
+    db_paths = [tests.config.test_case_db_path, tests.config.test_execution_db_path, walkoff.config.Config.DB_PATH]
+    for db in db_paths:
+        if os.path.exists(db):
+            os.remove(db)
 
 
 def run_tests():
@@ -29,6 +39,7 @@ def run_tests():
 
 if __name__ == '__main__':
     try:
+        delete_dbs()
         successful = run_tests()
     except KeyboardInterrupt:
         print('\nInterrupted! Ending full test')

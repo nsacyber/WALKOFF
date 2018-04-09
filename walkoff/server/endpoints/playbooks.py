@@ -19,7 +19,7 @@ except ImportError:
     from io import StringIO
 from walkoff.server.problem import Problem
 from walkoff.executiondb.schemas import PlaybookSchema, WorkflowSchema
-from walkoff.helpers import InvalidArgument, UnknownApp, UnknownFunction
+from walkoff.helpers import InvalidArgument, UnknownApp, UnknownFunction, strip_device_ids
 
 playbook_schema = PlaybookSchema()
 workflow_schema = WorkflowSchema()
@@ -122,13 +122,6 @@ def create_playbook(source=None):
             current_app.running_context.execution_db.session.rollback()
             current_app.logger.error('Could not create Playbook {}. Unique constraint failed'.format(playbook_name))
             return unique_constraint_problem('playbook', 'create', playbook_name)
-        except invalid_execution_element_exceptions:
-            current_app.running_context.execution_db.session.rollback()
-            current_app.logger.error('Could not create Playbook {}. Invalid execution element'.format(playbook_name))
-            return improper_json_problem(
-                'playbook',
-                'create',
-                playbook_name, {'errors': 'Invalid argument constructed'})
         else:
             current_app.logger.info('Playbook {0} created'.format(playbook_name))
             return playbook_schema.dump(playbook).data, OBJECT_CREATED
@@ -146,6 +139,7 @@ def read_playbook(playbook_id, mode=None):
     def __func(playbook):
         playbook_json = playbook_schema.dump(playbook).data
         if mode == "export":
+            strip_device_ids(playbook_json)
             f = StringIO()
             f.write(json.dumps(playbook_json, sort_keys=True, indent=4, separators=(',', ': ')))
             f.seek(0)
@@ -278,10 +272,6 @@ def create_workflow(source=None):
                 playbook.workflows.append(workflow)
                 current_app.running_context.execution_db.session.add(workflow)
                 current_app.running_context.execution_db.session.commit()
-        except invalid_execution_element_exceptions:
-            current_app.running_context.execution_db.session.rollback()
-            current_app.logger.error('Could not add workflow {0}-{1}'.format(playbook_id, workflow_name))
-            return improper_json_problem('workflow', 'create', '{}-{}'.format(playbook_id, workflow_name))
         except IntegrityError:
             current_app.running_context.execution_db.session.rollback()
             current_app.logger.error('Could not create workflow {}. Unique constraint failed'.format(workflow_name))
@@ -313,22 +303,13 @@ def update_workflow():
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['update']))
     @with_workflow('update', workflow_id)
     def __func(workflow):
-        try:
-            errors = workflow_schema.load(data, instance=workflow).errors
-            if errors:
-                return Problem.from_crud_resource(
-                    INVALID_INPUT_ERROR,
-                    'workflow',
-                    'update',
-                    'Could not update workflow {}. Invalid input.'.format(workflow_id), ext=errors)
-        except InvalidExecutionElement as e:
-            current_app.running_context.execution_db.session.rollback()
-            current_app.logger.error(e.message)
+        errors = workflow_schema.load(data, instance=workflow).errors
+        if errors:
             return Problem.from_crud_resource(
                 INVALID_INPUT_ERROR,
                 'workflow',
                 'update',
-                'Could not update workflow {}. Invalid input.'.format(workflow_id))
+                'Could not update workflow {}. Invalid input.'.format(workflow_id), ext=errors)
 
         try:
             current_app.running_context.execution_db.session.commit()
@@ -383,7 +364,6 @@ def copy_workflow(playbook_id, workflow_id):
         workflow_json['name'] = new_workflow_name
 
         regenerate_workflow_ids(workflow_json)
-
         if current_app.running_context.execution_db.session.query(exists().where(Playbook.id == playbook_id)).scalar():
             playbook = current_app.running_context.execution_db.session.query(Playbook).filter_by(id=playbook_id).first()
         else:

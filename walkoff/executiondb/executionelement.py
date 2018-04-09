@@ -1,13 +1,15 @@
 from uuid import uuid4
 
 from sqlalchemy import Column
-from sqlalchemy_utils import UUIDType
+from sqlalchemy_utils import UUIDType, ScalarListType
+from walkoff.executiondb.validatable import Validatable
 
 
-class ExecutionElement(object):
+class ExecutionElement(Validatable):
     id = Column(UUIDType(binary=False), primary_key=True, nullable=False, default=uuid4)
+    errors = Column(ScalarListType(), nullable=True)
 
-    def __init__(self, id):
+    def __init__(self, id=None):
         if id:
             self.id = id
 
@@ -34,6 +36,3 @@ class ExecutionElement(object):
     def __is_list_of_dicts_with_uids(value):
         return (isinstance(value, list)
                 and all(isinstance(list_value, dict) and 'id' in list_value for list_value in value))
-
-    def validate(self):
-        pass

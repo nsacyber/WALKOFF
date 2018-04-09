@@ -377,13 +377,13 @@ def validate_parameters(api, arguments, message_prefix, accumulator=None):
     seen_params = set()
     arg_names = [argument.name for argument in arguments] if arguments else []
     arguments_set = set(arg_names)
-    errors = {}
+    errors = []
     for param_name, param_api in api_dict.items():
         try:
             argument = get_argument_by_name(arguments, param_name)
             if argument:
                 arg_val = argument.get_value(accumulator)
-                if accumulator or not argument.is_ref():
+                if accumulator or not argument.is_ref:
                     converted[param_name] = validate_parameter(arg_val, param_api, message_prefix)
             elif 'default' in param_api:
                 try:
@@ -406,12 +406,12 @@ def validate_parameters(api, arguments, message_prefix, accumulator=None):
                 arguments_set.add(param_name)
             seen_params.add(param_name)
         except InvalidArgument as e:
-            errors[param_name] = e.message
+            errors.append(e.message)
     if seen_params != arguments_set:
         message = 'For {0}: Too many arguments. Extra arguments: {1}'.format(message_prefix,
                                                                              arguments_set - seen_params)
         logger.error(message)
-        errors['_arguments'] = message
+        errors.append(message)
     if errors:
         raise InvalidArgument('Invalid arguments', errors=errors)
     return converted

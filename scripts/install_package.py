@@ -16,7 +16,7 @@ def safe_unzip(zip_file, extract_path):
 
 
 def safe_untar(tar_file, compression, extract_path):
-    with tarfile.TarFile(tar_file, 'r'+compression) as tf:
+    with tarfile.open(tar_file, 'r'+compression) as tf:
         for member in tf.getmembers():
             abspath = os.path.abspath(os.path.join(extract_path, member.name))
             if abspath.startswith(os.path.abspath(extract_path)):

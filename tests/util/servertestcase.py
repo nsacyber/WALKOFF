@@ -74,7 +74,8 @@ class ServerTestCase(unittest.TestCase):
             flaskserver.app.running_context.executor.initialize_threading(cls.conf.ZMQ_PUBLIC_KEYS_PATH,
                                                                       cls.conf.ZMQ_PRIVATE_KEYS_PATH,
                                                                       cls.conf.ZMQ_RESULTS_ADDRESS,
-                                                                      cls.conf.ZMQ_COMMUNICATION_ADDRESS)
+                                                                      cls.conf.ZMQ_COMMUNICATION_ADDRESS,
+                                                                          flaskserver.app)
         else:
             from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
             pids = spawn_worker_processes(cls.conf.NUMBER_PROCESSES, cls.conf.NUMBER_THREADS_PER_PROCESS,
@@ -85,7 +86,7 @@ class ServerTestCase(unittest.TestCase):
                                                                       cls.conf.ZMQ_PRIVATE_KEYS_PATH,
                                                                       cls.conf.ZMQ_RESULTS_ADDRESS,
                                                                       cls.conf.ZMQ_COMMUNICATION_ADDRESS,
-                                                                      pids)
+                                                                      flaskserver.app, pids)
 
             from walkoff.cache import make_cache
             cache = make_cache(cls.conf.CACHE)
