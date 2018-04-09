@@ -10,10 +10,12 @@ from gevent import pywsgi
 import walkoff
 import walkoff.config
 
+from walkoff.server.app import create_app
+
 logger = logging.getLogger('walkoff')
 
 
-def run(host, port):
+def run(app, host, port):
     from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
     print_banner()
     pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES,
@@ -26,15 +28,14 @@ def run(host, port):
     from scripts.compose_api import compose_api
     compose_api()
 
-    from walkoff.server import flaskserver
-    flaskserver.app.running_context.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
-                                                                  walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                                                  walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-                                                                  walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
-                                                                  pids)
+    app.running_context.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
+                                                      walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
+                                                      walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
+                                                      walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
+                                                      pids)
     # The order of these imports matter for initialization (should probably be fixed)
 
-    server = setup_server(flaskserver.app, host, port)
+    server = setup_server(app, host, port)
     server.serve_forever()
 
 
@@ -90,10 +91,10 @@ def convert_host_port(args):
 if __name__ == "__main__":
     args = parse_args()
     exit_code = 0
+    walkoff.config.initialize()
+    app = create_app(walkoff.config.AppConfig)
     try:
-        walkoff.config.initialize()
-
-        run(*convert_host_port(args))
+        run(app, *convert_host_port(args))
     except KeyboardInterrupt:
         logger.info('Caught KeyboardInterrupt!')
     except Exception as e:
@@ -101,8 +102,6 @@ if __name__ == "__main__":
         traceback.print_exc()
         exit_code = 1
     finally:
-        from walkoff.server import flaskserver
-
-        flaskserver.app.running_context.executor.shutdown_pool()
+        app.running_context.executor.shutdown_pool()
         logger.info('Shutting down server')
         os._exit(exit_code)

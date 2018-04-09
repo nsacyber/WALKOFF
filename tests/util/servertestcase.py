@@ -77,8 +77,7 @@ class ServerTestCase(unittest.TestCase):
                                                                       cls.conf.ZMQ_COMMUNICATION_ADDRESS)
         else:
             from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
-            pids = spawn_work
-            er_processes(cls.conf.NUMBER_PROCESSES, cls.conf.NUMBER_THREADS_PER_PROCESS,
+            pids = spawn_worker_processes(cls.conf.NUMBER_PROCESSES, cls.conf.NUMBER_THREADS_PER_PROCESS,
                                           cls.conf.ZMQ_PRIVATE_KEYS_PATH, cls.conf.ZMQ_RESULTS_ADDRESS,
                                           cls.conf.ZMQ_COMMUNICATION_ADDRESS,
                                           worker_environment_setup=modified_setup_worker_env)
