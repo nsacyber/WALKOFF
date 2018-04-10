@@ -26,17 +26,8 @@ class TestZMQCommunication(unittest.TestCase):
         cls.context = cls.app.test_request_context()
         cls.context.push()
 
-        pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES,
-                                      walkoff.config.Config.NUMBER_THREADS_PER_PROCESS,
-                                      walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                      walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-                                      walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
-                                      worker_environment_setup=modified_setup_worker_env)
-        cls.app.running_context.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
-                                                              walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                                              walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-                                                              walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS, cls.app,
-                                                              pids)
+        pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)
+        cls.app.running_context.executor.initialize_threading(cls.app, pids)
 
     def tearDown(self):
         execution_db_help.cleanup_execution_db()

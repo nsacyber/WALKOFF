@@ -18,21 +18,13 @@ logger = logging.getLogger('walkoff')
 def run(app, host, port):
     from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
     print_banner()
-    pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES,
-                                  walkoff.config.Config.NUMBER_THREADS_PER_PROCESS,
-                                  walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                  walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-                                  walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
+    pids = spawn_worker_processes()
     monkey.patch_all()
 
     from scripts.compose_api import compose_api
     compose_api()
 
-    app.running_context.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
-                                                      walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                                      walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-                                                      walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
-                                                      app, pids)
+    app.running_context.executor.initialize_threading(app, pids)
     # The order of these imports matter for initialization (should probably be fixed)
 
     server = setup_server(app, host, port)

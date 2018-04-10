@@ -37,10 +37,7 @@ class TestWorkflowManipulation(unittest.TestCase):
         cls.executor = multiprocessedexecutor.MultiprocessedExecutor(
             MockRedisCacheAdapter(),
             create_autospec(CaseLogger))
-        cls.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
-                                          walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                          walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-                                          walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
+        cls.executor.initialize_threading(current_app)
 
     def tearDown(self):
         execution_db_help.cleanup_execution_db()

@@ -63,21 +63,10 @@ class ServerTestCase(unittest.TestCase):
             MultiprocessedExecutor.initialize_threading = mock_initialize_threading
             MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
             MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
-            cls.app.running_context.executor.initialize_threading(cls.conf.ZMQ_PUBLIC_KEYS_PATH,
-                                                                      cls.conf.ZMQ_PRIVATE_KEYS_PATH,
-                                                                      cls.conf.ZMQ_RESULTS_ADDRESS,
-                                                                      cls.conf.ZMQ_COMMUNICATION_ADDRESS,
-                                                                          cls.app)
+            cls.app.running_context.executor.initialize_threading(cls.app)
         else:
-            pids = spawn_worker_processes(cls.conf.NUMBER_PROCESSES, cls.conf.NUMBER_THREADS_PER_PROCESS,
-                                          cls.conf.ZMQ_PRIVATE_KEYS_PATH, cls.conf.ZMQ_RESULTS_ADDRESS,
-                                          cls.conf.ZMQ_COMMUNICATION_ADDRESS,
-                                          worker_environment_setup=modified_setup_worker_env)
-            cls.app.running_context.executor.initialize_threading(cls.conf.ZMQ_PUBLIC_KEYS_PATH,
-                                                                      cls.conf.ZMQ_PRIVATE_KEYS_PATH,
-                                                                      cls.conf.ZMQ_RESULTS_ADDRESS,
-                                                                      cls.conf.ZMQ_COMMUNICATION_ADDRESS,
-                                                                      cls.app, pids)
+            pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)
+            cls.app.running_context.executor.initialize_threading(cls.app, pids)
 
     @classmethod
     def tearDownClass(cls):

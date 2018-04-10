@@ -149,7 +149,6 @@ class Config(object):
                     if value:
                         setattr(cls, key.upper(), value)
             except (IOError, OSError, ValueError) as e:
-                print("EXCEPTION", e)
                 logger.warning('Could not read config file.', exc_info=True)
         cls.SQLALCHEMY_DATABASE_URI = '{0}://{1}'.format(cls.WALKOFF_DB_TYPE, abspath(
             cls.DB_PATH)) if cls.WALKOFF_DB_TYPE != 'sqlite' else '{0}:///{1}'.format(cls.WALKOFF_DB_TYPE,
