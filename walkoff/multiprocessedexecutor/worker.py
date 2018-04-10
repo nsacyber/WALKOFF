@@ -12,10 +12,10 @@ from concurrent.futures import ThreadPoolExecutor
 from google.protobuf.json_format import MessageToDict
 from nacl.public import PrivateKey, Box
 
-import walkoff.config
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.case.database import CaseDatabase
 from walkoff.appgateway.appinstancerepo import AppInstanceRepo
+from walkoff.appgateway import cache_apps
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.saved_workflow import SavedWorkflow
@@ -27,12 +27,13 @@ from walkoff.case.logger import CaseLogger
 from walkoff.case.subscription import Subscription, SubscriptionCache
 from threading import Lock
 from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
+import walkoff.config
 
 logger = logging.getLogger(__name__)
 
 
 class Worker(object):
-    def __init__(self, id_, worker_environment_setup=None):
+    def __init__(self, id_, config, worker_environment_setup=None):
         """Initialize a Workflow object, which will be executing workflows.
 
         Args:
@@ -47,10 +48,12 @@ class Worker(object):
         if worker_environment_setup:
             self.execution_db, self.case_db = worker_environment_setup()
         else:
-            walkoff.config.initialize()
-            self.execution_db = ExecutionDatabase(walkoff.config.Config.EXECUTION_DB_TYPE,
-                                                  walkoff.config.Config.EXECUTION_DB_PATH)
-            self.case_db = CaseDatabase(walkoff.config.Config.CASE_DB_TYPE, walkoff.config.Config.CASE_DB_PATH)
+            walkoff.config.Config = config
+            walkoff.config.setup_logger()
+            cache_apps(config.APPS_PATH)
+            walkoff.config.load_app_apis()
+            self.execution_db = ExecutionDatabase(config.EXECUTION_DB_TYPE, config.EXECUTION_DB_PATH)
+            self.case_db = CaseDatabase(config.CASE_DB_TYPE, config.CASE_DB_PATH)
 
         @WalkoffEvent.CommonWorkflowSignal.connect
         def handle_data_sent(sender, **kwargs):
@@ -60,9 +63,9 @@ class Worker(object):
 
         self.thread_exit = False
 
-        server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
+        server_secret_file = os.path.join(config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
         server_public, server_secret = auth.load_certificate(server_secret_file)
-        client_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "client.key_secret")
+        client_secret_file = os.path.join(config.ZMQ_PRIVATE_KEYS_PATH, "client.key_secret")
         client_public, client_secret = auth.load_certificate(client_secret_file)
 
         ctx = zmq.Context()
@@ -73,14 +76,14 @@ class Worker(object):
         self.comm_sock.curve_publickey = client_public
         self.comm_sock.curve_serverkey = server_public
         self.comm_sock.setsockopt(zmq.SUBSCRIBE, b'')
-        self.comm_sock.connect(walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
+        self.comm_sock.connect(config.ZMQ_COMMUNICATION_ADDRESS)
 
         self.results_sock = ctx.socket(zmq.PUSH)
         self.results_sock.identity = u"Worker-{}".format(id_).encode("ascii")
         self.results_sock.curve_secretkey = client_secret
         self.results_sock.curve_publickey = client_public
         self.results_sock.curve_serverkey = server_public
-        self.results_sock.connect(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
+        self.results_sock.connect(config.ZMQ_RESULTS_ADDRESS)
 
         self.key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
         self.server_key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
@@ -88,7 +91,7 @@ class Worker(object):
         from walkoff.config import Config
         self.cache = walkoff.cache.make_cache(Config.CACHE)
 
-        self.capacity = walkoff.config.Config.NUMBER_THREADS_PER_PROCESS
+        self.capacity = config.NUMBER_THREADS_PER_PROCESS
         self.subscription_cache = SubscriptionCache()
         self.case_logger = CaseLogger(self.case_db, self.subscription_cache)
 

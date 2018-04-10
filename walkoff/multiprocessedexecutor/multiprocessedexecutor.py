@@ -19,6 +19,7 @@ from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowE
 from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
 from walkoff.multiprocessedexecutor.worker import Worker
 import walkoff.config
+
 logger = logging.getLogger(__name__)
 
 
@@ -30,7 +31,8 @@ def spawn_worker_processes(worker_environment_setup=None):
     """
     pids = []
     for i in range(walkoff.config.Config.NUMBER_PROCESSES):
-        args = (i, worker_environment_setup) if worker_environment_setup else (i, )
+        args = (i, walkoff.config.Config, worker_environment_setup) if worker_environment_setup else \
+            (i, walkoff.config.Config)
         pid = multiprocessing.Process(target=Worker, args=args)
         pid.start()
         pids.append(pid)
@@ -54,7 +56,7 @@ class MultiprocessedExecutor(object):
         self.receiver_thread = None
         self.cache = cache
         self.event_logger = event_logger
-        
+
         self.execution_db = ExecutionDatabase.instance
 
     def initialize_threading(self, app, pids=None):
@@ -93,7 +95,7 @@ class MultiprocessedExecutor(object):
                 break
             timeout += 0.1
             gevent.sleep(0.1)
-        assert(num_workflows == self.receiver.workflows_executed)
+        assert (num_workflows == self.receiver.workflows_executed)
         self.receiver.workflows_executed = 0
 
     def shutdown_pool(self):
