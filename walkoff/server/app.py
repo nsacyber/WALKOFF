@@ -31,7 +31,7 @@ def __register_blueprint(flaskapp, blueprint, url_prefix):
     from interfaces import AppBlueprint
     if isinstance(blueprint, AppBlueprint):
         blueprint.cache = flaskapp.running_context.cache
-    url_prefix = '{0}{1}'.format(url_prefix, blueprint.url_prefix) if blueprint.url_prefix else url_prefix
+    url_prefix = '{0}{1}'.format(url_prefix, blueprint.url_suffix) if blueprint.url_suffix else url_prefix
     blueprint.url_prefix = url_prefix
     flaskapp.register_blueprint(blueprint, url_prefix=url_prefix)
 
