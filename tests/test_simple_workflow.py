@@ -4,18 +4,18 @@ from mock import create_autospec
 
 import walkoff.appgateway
 import walkoff.config
-from tests import config
 from tests.util import execution_db_help
 from tests.util.mock_objects import *
 from walkoff.case.logger import CaseLogger
 from walkoff.events import WalkoffEvent
 from walkoff.multiprocessedexecutor import multiprocessedexecutor
+from tests.util import initialize_test_config
 
 
 class TestSimpleWorkflow(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.config.initialize(config)
+        initialize_test_config()
         execution_db_help.setup_dbs()
 
         from flask import current_app

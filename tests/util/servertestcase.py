@@ -6,9 +6,8 @@ import unittest
 import tests.config
 import walkoff.appgateway
 import walkoff.config
-from tests.util import execution_db_help
+from tests.util import execution_db_help, initialize_test_config
 from tests.util.mock_objects import *
-from tests.util.thread_control import *
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from walkoff.server.app import create_app
 from walkoff.server.blueprints.root import create_user
@@ -23,9 +22,7 @@ class ServerTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        walkoff.appgateway.clear_cache()
-        walkoff.config.app_apis = {}
-        walkoff.config.initialize(config_path=tests.config)
+        initialize_test_config()
         cls.conf = walkoff.config.Config
 
         if cls != ServerTestCase and cls.setUp != ServerTestCase.setUp:
@@ -65,7 +62,8 @@ class ServerTestCase(unittest.TestCase):
             MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
             cls.app.running_context.executor.initialize_threading(cls.app)
         else:
-            pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)
+            walkoff.config.Config.write_values_to_file()
+            pids = spawn_worker_processes()
             cls.app.running_context.executor.initialize_threading(cls.app, pids)
 
     @classmethod

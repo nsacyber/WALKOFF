@@ -23,17 +23,12 @@ import walkoff.config
 logger = logging.getLogger(__name__)
 
 
-def spawn_worker_processes(worker_environment_setup=None):
+def spawn_worker_processes():
     """Initialize the multiprocessing pool, allowing for parallel execution of workflows.
-
-    Args:
-        worker_environment_setup (function, optional): Optional alternative worker setup environment function.
     """
     pids = []
     for i in range(walkoff.config.Config.NUMBER_PROCESSES):
-        args = (i, walkoff.config.Config, worker_environment_setup) if worker_environment_setup else \
-            (i, walkoff.config.Config)
-        pid = multiprocessing.Process(target=Worker, args=args)
+        pid = multiprocessing.Process(target=Worker, args=(i, walkoff.config.Config.CONFIG_PATH))
         pid.start()
         pids.append(pid)
     return pids

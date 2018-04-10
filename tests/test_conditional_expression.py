@@ -2,20 +2,19 @@ import unittest
 
 import walkoff.appgateway
 import walkoff.config
-import tests.config
 from tests.util import execution_db_help
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.schemas import dump_element
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
+from tests.util import initialize_test_config
 
 
 class TestCondition(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.appgateway.clear_cache()
-        walkoff.config.initialize(tests.config)
+        initialize_test_config()
         execution_db_help.setup_dbs()
 
     @classmethod

@@ -140,15 +140,13 @@ class Config(object):
         config_path = config_path if config_path else cls.CONFIG_PATH
         if config_path:
             try:
-                if isinstance(config_path, str) and isfile(config_path):
+                if isfile(config_path):
                     with open(config_path) as config_file:
                         config = json.loads(config_file.read())
-                else:
-                    config = {attr: getattr(config_path, attr) for attr in dir(config_path) if attr[0].isupper()}
-                for key, value in config.items():
-                    if value:
-                        setattr(cls, key.upper(), value)
-            except (IOError, OSError, ValueError) as e:
+                        for key, value in config.items():
+                            if value:
+                                setattr(cls, key.upper(), value)
+            except (IOError, OSError, ValueError):
                 logger.warning('Could not read config file.', exc_info=True)
         cls.SQLALCHEMY_DATABASE_URI = '{0}://{1}'.format(cls.WALKOFF_DB_TYPE, abspath(
             cls.DB_PATH)) if cls.WALKOFF_DB_TYPE != 'sqlite' else '{0}:///{1}'.format(cls.WALKOFF_DB_TYPE,
@@ -173,8 +171,8 @@ class Config(object):
 def initialize(config_path=None):
     """Loads the config file, loads the app cache, and loads the app APIs into memory
     """
-    setup_logger()
     Config.load_config(config_path)
+    setup_logger()
     from walkoff.appgateway import cache_apps
     cache_apps(Config.APPS_PATH)
     load_app_apis()

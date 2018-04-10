@@ -15,14 +15,14 @@ from walkoff.serverdb import db, User, Role
 from walkoff.serverdb.message import Message, MessageHistory
 from walkoff.server.app import create_app
 import walkoff.config
-import tests.config
+from tests.util import initialize_test_config
 
 
 class TestMessageDatabase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        walkoff.config.initialize(config_path=tests.config)
+        initialize_test_config()
         cls.app = create_app(walkoff.config.Config)
         cls.context = current_app.test_request_context()
         cls.context.push()

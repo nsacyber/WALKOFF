@@ -6,9 +6,7 @@ import time
 
 import walkoff.appgateway
 import walkoff.config
-from tests import config
-from tests.util import execution_db_help
-from tests.util.thread_control import modified_setup_worker_env
+from tests.util import execution_db_help, initialize_test_config
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
 from walkoff.events import WalkoffEvent
 from walkoff.case.subscription import Subscription
@@ -21,12 +19,14 @@ from walkoff.server import workflowresults  # Need this import
 class TestZMQCommunication(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.config.initialize(config_path=config)
+        initialize_test_config()
+        walkoff.config.Config.write_values_to_file()
+
         cls.app = create_app(walkoff.config.Config)
         cls.context = cls.app.test_request_context()
         cls.context.push()
 
-        pids = spawn_worker_processes(worker_environment_setup=modified_setup_worker_env)
+        pids = spawn_worker_processes()
         cls.app.running_context.executor.initialize_threading(cls.app, pids)
 
     def tearDown(self):
@@ -34,11 +34,11 @@ class TestZMQCommunication(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        if config.DATA_PATH in os.listdir(config.TEST_PATH):
-            if os.path.isfile(config.DATA_PATH):
-                os.remove(config.DATA_PATH)
+        if walkoff.config.Config.DATA_PATH in os.listdir(walkoff.config.Config.TEST_PATH):
+            if os.path.isfile(walkoff.config.Config.DATA_PATH):
+                os.remove(walkoff.config.Config.DATA_PATH)
             else:
-                shutil.rmtree(config.DATA_PATH)
+                shutil.rmtree(walkoff.config.Config.DATA_PATH)
         for class_ in (Case, Event):
             for instance in cls.app.running_context.case_db.session.query(class_).all():
                 cls.app.running_context.case_db.session.delete(instance)

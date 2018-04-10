@@ -8,13 +8,13 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.transform import Transform
 from walkoff.helpers import InvalidArgument
+from tests.util import initialize_test_config
 
 
 class TestCondition(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.appgateway.clear_cache()
-        walkoff.config.initialize(tests.config)
+        initialize_test_config()
         execution_db_help.setup_dbs()
 
     @classmethod
