@@ -14,9 +14,6 @@ except ImportError:
 class TestZmqCommunicationServer(ServerTestCase):
     patch = False
 
-    def tearDown(self):
-        execution_db_help.cleanup_execution_db()
-
     def test_execute_workflow(self):
         workflow = execution_db_help.load_workflow('test', 'helloWorldWorkflow')
         workflow_id = str(workflow.id)

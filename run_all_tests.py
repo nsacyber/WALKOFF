@@ -7,12 +7,12 @@ import sys
 from tests import suites as test_suites
 import logging
 import tests.config
-import walkoff.config
 import os
 
 
 def delete_dbs():
-    db_paths = [tests.config.CASE_DB_PATH, tests.config.EXECUTION_DB_PATH, walkoff.config.Config.DB_PATH]
+    db_paths = [tests.config.TestConfig.CASE_DB_PATH, tests.config.TestConfig.EXECUTION_DB_PATH,
+                tests.config.TestConfig.DB_PATH]
     for db in db_paths:
         if os.path.exists(db):
             os.remove(db)

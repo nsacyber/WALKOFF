@@ -1,18 +1,15 @@
 import unittest
 
 import walkoff.appgateway
-import walkoff.config
-from tests.config import APPS_PATH
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.transform import Transform
+from tests.util import initialize_test_config
 
 
 class TestTransform(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.appgateway.clear_cache()
-        walkoff.appgateway.cache_apps(path=APPS_PATH)
-        walkoff.config.load_app_apis(APPS_PATH)
+        initialize_test_config()
 
     @classmethod
     def tearDownClass(cls):

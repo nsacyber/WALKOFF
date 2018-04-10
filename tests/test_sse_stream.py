@@ -4,10 +4,10 @@ from tests.util.mock_objects import MockRedisCacheAdapter
 import json
 import gevent
 from gevent.monkey import patch_all
-from tests.config import CACHE_PATH
 import os
-import shutil
 from walkoff.cache import DiskCacheAdapter
+from tests.util import initialize_test_config
+import walkoff.config
 
 
 class TestSseEvent(TestCase):
@@ -189,12 +189,13 @@ class SseStreamTestBase(object):
 class TestDiskSseStream(TestCase, SseStreamTestBase):
     @classmethod
     def setUpClass(cls):
-        if not os.path.exists(CACHE_PATH):
-            os.mkdir(CACHE_PATH)
+        initialize_test_config()
+        if not os.path.exists(walkoff.config.Config.CACHE_PATH):
+            os.mkdir(walkoff.config.Config.CACHE_PATH)
         patch_all()
 
     def setUp(self):
-        self.cache = DiskCacheAdapter(directory=CACHE_PATH)
+        self.cache = DiskCacheAdapter(directory=walkoff.config.Config.CACHE_PATH)
         self.channel = 'channel1'
         self.stream = SseStream(self.channel, self.cache)
 

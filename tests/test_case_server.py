@@ -9,11 +9,11 @@ from walkoff.extensions import db
 from walkoff.server.endpoints.cases import convert_subscriptions, split_subscriptions
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
-from tests.config import APPS_PATH
 from uuid import uuid4
 from mock import create_autospec, patch, call
 from walkoff.case.logger import CaseLogger
 from flask import current_app
+import walkoff.config
 
 
 class TestCaseServer(ServerTestCase):
@@ -39,8 +39,8 @@ class TestCaseServer(ServerTestCase):
         for case in CaseSubscription.query.all():
             db.session.delete(case)
         db.session.commit()
-        if os.path.exists(os.path.join(APPS_PATH, 'case.json')):
-            os.remove(os.path.join(APPS_PATH, 'case.json'))
+        if os.path.exists(os.path.join(walkoff.config.Config.APPS_PATH, 'case.json')):
+            os.remove(os.path.join(walkoff.config.Config.APPS_PATH, 'case.json'))
 
     def create_case(self, name):
         response = json.loads(
@@ -384,7 +384,7 @@ class TestCaseServer(ServerTestCase):
             subscription = {'id': 'id1', 'events': ['a', 'b', 'c']}
             data = {'name': 'case1', 'note': 'Test', 'subscriptions': [subscription]}
 
-            path = os.path.join(APPS_PATH, 'case.json')
+            path = os.path.join(walkoff.config.Config.APPS_PATH, 'case.json')
             with open(path, 'w') as f:
                 f.write(json.dumps(data, indent=4, sort_keys=True))
 

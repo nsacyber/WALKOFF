@@ -4,11 +4,11 @@ import yaml
 from jsonschema.exceptions import RefResolutionError
 
 import walkoff.appgateway
-from tests.config import BASIC_APP_API, APPS_PATH
 from walkoff.appgateway import get_app_action
 from walkoff.appgateway.validator import *
 import walkoff.config
 from walkoff.helpers import UnknownApp
+from tests.util import initialize_test_config
 
 
 class TestAppApiValidation(unittest.TestCase):
@@ -18,10 +18,10 @@ class TestAppApiValidation(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        walkoff.appgateway.cache_apps(path=APPS_PATH)
+        initialize_test_config()
 
     def setUp(self):
-        with open(BASIC_APP_API, 'r') as f:
+        with open(walkoff.config.Config.BASIC_APP_API, 'r') as f:
             self.basicapi = yaml.load(f.read())
 
     @classmethod

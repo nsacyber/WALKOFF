@@ -5,7 +5,7 @@ from os.path import join
 
 import walkoff.appgateway
 import walkoff.config
-from tests.config import APPS_PATH
+from tests.util import initialize_test_config
 from tests.util.assertwrappers import orderless_list_compare
 from walkoff.helpers import *
 from walkoff.server.blueprints.root import handle_database_errors, handle_generic_server_error
@@ -14,15 +14,7 @@ from walkoff.server.blueprints.root import handle_database_errors, handle_generi
 class TestHelperFunctions(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.appgateway.cache_apps(APPS_PATH)
-        walkoff.config.load_app_apis(apps_path=APPS_PATH)
-
-    def setUp(self):
-        self.original_apps_path = walkoff.config.Config.APPS_PATH
-        walkoff.config.Config.APPS_PATH = APPS_PATH
-
-    def tearDown(self):
-        walkoff.config.Config.APPS_PATH = self.original_apps_path
+        initialize_test_config()
 
     @classmethod
     def tearDownClass(cls):

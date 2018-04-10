@@ -113,6 +113,7 @@ class Worker(object):
             if socket:
                 socket.close()
         self.execution_db.tear_down()
+        self.case_db.tear_down()
         self.cache.shutdown()
         os._exit(0)
 

@@ -56,6 +56,7 @@ class ServerTestCase(unittest.TestCase):
         cls.context.push()
 
         create_user()
+
         if cls.patch:
             MultiprocessedExecutor.initialize_threading = mock_initialize_threading
             MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
@@ -81,15 +82,12 @@ class ServerTestCase(unittest.TestCase):
 
         cls.app.running_context.case_db.tear_down()
         walkoff.appgateway.clear_cache()
-        walkoff.config.Config.load_config()
 
     def setUp(self):
-        from flask import current_app
-
-        self.test_client = current_app.test_client(self)
+        self.test_client = self.app.test_client(self)
 
         post = self.test_client.post('/api/auth', content_type="application/json",
-                             data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
+                                     data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
         key = json.loads(post.get_data(as_text=True))
         self.headers = {'Authorization': 'Bearer {}'.format(key['access_token'])}
         self.http_verb_lookup = {'get': self.test_client.get,
@@ -99,12 +97,12 @@ class ServerTestCase(unittest.TestCase):
                                  'patch': self.test_client.patch}
 
     def tearDown(self):
-        self.app.running_context.execution_db.session.rollback()
+        execution_db_help.cleanup_execution_db()
 
         for data_file in os.listdir(self.conf.DATA_PATH):
             try:
                 os.remove(os.path.join(self.conf.DATA_PATH, data_file))
-            except WindowsError as we:  # Windows sometimes makes files read only when created
+            except WindowsError:  # Windows sometimes makes files read only when created
                 os.chmod(os.path.join(self.conf.DATA_PATH, data_file), stat.S_IWRITE)
                 os.remove(os.path.join(self.conf.DATA_PATH, data_file))
 

@@ -2,7 +2,6 @@ import json
 import os
 
 import walkoff.config
-from tests.config import APPS_PATH
 from tests.util.servertestcase import ServerTestCase
 from walkoff.executiondb.device import Device, App, DeviceField
 from walkoff.server.returncodes import *
@@ -23,8 +22,8 @@ class TestDevicesServer(ServerTestCase):
             self.app.running_context.execution_db.session.delete(app)
         self.app.running_context.execution_db.session.commit()
         walkoff.config.app_apis = {}
-        if os.path.exists(os.path.join(APPS_PATH, 'testDevice.json')):
-            os.remove(os.path.join(APPS_PATH, 'testDevice.json'))
+        if os.path.exists(os.path.join(walkoff.config.Config.APPS_PATH, 'testDevice.json')):
+            os.remove(os.path.join(walkoff.config.Config.APPS_PATH, 'testDevice.json'))
 
     def test_read_all_devices_no_devices_in_db(self):
         response = self.get_with_status_check('/api/devices', headers=self.headers, status_code=SUCCESS)
@@ -220,7 +219,7 @@ class TestDevicesServer(ServerTestCase):
         self.put_patch_update('patch')
 
     def test_export_apps_devices(self):
-        walkoff.config.load_app_apis(apps_path=APPS_PATH)
+        walkoff.config.load_app_apis(apps_path=walkoff.config.Config.APPS_PATH)
 
         fields = [{"name": "Text field", "value": "texts"}, {"name": "Encrypted field", "value": "encrypted"},
                   {"name": "Number field", "value": 5}, {"name": "Enum field", "value": "val 1"},
@@ -242,7 +241,7 @@ class TestDevicesServer(ServerTestCase):
                 {k.encode("utf-8"): str(v).encode("utf-8") for k, v in field.items()})))
 
     def test_import_apps_devices(self):
-        walkoff.config.load_app_apis(apps_path=APPS_PATH)
+        walkoff.config.load_app_apis(apps_path=walkoff.config.Config.APPS_PATH)
 
         fields = [{"name": "Text field", "value": "texts"}, {"name": "Number field", "value": 5},
                   {"name": "Enum field", "value": "val 1"}, {"name": "Boolean field", "value": True}]
@@ -256,7 +255,7 @@ class TestDevicesServer(ServerTestCase):
         for field in device['fields']:
             field.pop('id', None)
 
-        path = os.path.join(APPS_PATH, 'testDevice.json')
+        path = os.path.join(walkoff.config.Config.APPS_PATH, 'testDevice.json')
         with open(path, 'w') as f:
             f.write(json.dumps(device, indent=4, sort_keys=True))
 

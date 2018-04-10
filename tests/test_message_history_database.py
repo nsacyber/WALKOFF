@@ -7,15 +7,14 @@ from flask import current_app
 from walkoff.serverdb import db
 from walkoff.serverdb.message import MessageHistory
 from walkoff.serverdb.user import User
-import walkoff.config
-import tests.config
+from tests.util import initialize_test_config
 
 
 class TestMessageHistoryDatabase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        walkoff.config.Config.load_config(tests.config)
+        initialize_test_config()
         execution_db_help.setup_dbs()
 
         cls.context = current_app.test_request_context()
