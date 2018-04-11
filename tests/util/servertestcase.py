@@ -3,7 +3,6 @@ import shutil
 import stat
 import unittest
 
-import tests.config
 import walkoff.appgateway
 import walkoff.config
 from tests.util import execution_db_help, initialize_test_config
