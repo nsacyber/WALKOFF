@@ -32,7 +32,7 @@ class TestWorkflowResultsHandler(TestCase):
         with patch.object(Socket, 'connect') as mock_connect:
             logger = create_autospec(CaseLogger)
             database = create_autospec(ExecutionDatabase)
-            socket_id = 'test_id'
+            socket_id = b'test_id'
             address = '127.0.0.1:5557'
             handler = WorkflowResultsHandler(
                 socket_id,
@@ -50,7 +50,7 @@ class TestWorkflowResultsHandler(TestCase):
         with patch.object(Socket, 'connect'):
             logger = create_autospec(CaseLogger)
             database = create_autospec(ExecutionDatabase)
-            socket_id = 'test_id'
+            socket_id = b'test_id'
             address = '127.0.0.1:5557'
             handler = WorkflowResultsHandler(
                 socket_id,

@@ -17,7 +17,7 @@ class TestWorkflowResultsHandler(TestCase):
 
     def test_init(self):
         with patch.object(Socket, 'connect') as mock_connect:
-            socket_id = 'test_id'
+            socket_id = b'test_id'
             address = '127.0.0.1:5557'
             receiver = WorkflowCommunicationReceiver(
                 socket_id,
@@ -30,7 +30,7 @@ class TestWorkflowResultsHandler(TestCase):
 
     def get_receiver(self):
         with patch.object(Socket, 'connect'):
-            socket_id = 'test_id'
+            socket_id = b'test_id'
             address = '127.0.0.1:5557'
             receiver = WorkflowCommunicationReceiver(
                 socket_id,

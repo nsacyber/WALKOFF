@@ -301,12 +301,10 @@ class WorkflowReceiver(object):
         box = Box(self.key, self.server_key)
         while not self.exit:
             received_message = self.cache.rpop("request_queue")
-            print(received_message)
-            print(type(received_message))
             if received_message is not None:
-                dec_msg = box.decrypt(received_message)
+                decrypted_msg = box.decrypt(received_message)
                 message = ExecuteWorkflowMessage()
-                message.ParseFromString(dec_msg)
+                message.ParseFromString(decrypted_msg)
                 start = message.start if hasattr(message, 'start') else None
 
                 start_arguments = []
@@ -317,6 +315,7 @@ class WorkflowReceiver(object):
                 yield message.workflow_id, message.workflow_execution_id, start, start_arguments, message.resume
             else:
                 yield None
+        raise StopIteration
 
 
 class Worker(object):

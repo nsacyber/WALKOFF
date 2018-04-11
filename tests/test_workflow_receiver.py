@@ -1,13 +1,15 @@
 from unittest import TestCase
-from walkoff.multiprocessedexecutor.worker import WorkflowReceiver
+from walkoff.multiprocessedexecutor.worker import WorkflowReceiver, ExecuteWorkflowMessage
 import nacl.bindings.crypto_box
-from nacl.public import PrivateKey
+from nacl.public import PrivateKey, Box
 from walkoff.config import Config
 from zmq import auth
 import walkoff.cache
 from mock import patch, create_autospec
 from tests.util.mock_objects import MockRedisCacheAdapter
 import os.path
+from uuid import uuid4
+from tests.util.execution_db_help import initialize_databases, cleanup_execution_db
 
 
 class TestWorkflowReceiver(TestCase):
@@ -20,6 +22,8 @@ class TestWorkflowReceiver(TestCase):
         client_public, client_secret = auth.load_certificate(client_secret_file)
         cls.key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
         cls.server_key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
+        cls.box = Box(cls.key, cls.server_key)
+        initialize_databases()
 
     @patch.object(walkoff.cache, 'make_cache', return_value=MockRedisCacheAdapter())
     def test_init(self, mock_make_cache):
@@ -46,3 +50,69 @@ class TestWorkflowReceiver(TestCase):
         workflow_generator = receiver.receive_workflows()
         workflow = next(workflow_generator)
         self.assertIsNone(workflow)
+
+    def check_workflow_message(self, message, expected):
+        receiver = self.get_receiver()
+        encrypted_message = self.box.encrypt(message.SerializeToString())
+        workflow_generator = receiver.receive_workflows()
+        receiver.cache.lpush('request_queue', encrypted_message)
+        workflow = next(workflow_generator)
+        self.assertTupleEqual(workflow, expected)
+
+    def test_receive_workflow_basic_workflow(self):
+        workflow_id = str(uuid4())
+        execution_id = str(uuid4())
+        message = ExecuteWorkflowMessage()
+        message.workflow_id = workflow_id
+        message.workflow_execution_id = execution_id
+        message.resume = True
+        self.check_workflow_message(message, (workflow_id, execution_id, '', [], True))
+
+    def test_receive_workflow_with_start(self):
+        workflow_id = str(uuid4())
+        execution_id = str(uuid4())
+        start = str(uuid4())
+        message = ExecuteWorkflowMessage()
+        message.workflow_id = workflow_id
+        message.workflow_execution_id = execution_id
+        message.resume = True
+        message.start = start
+        self.check_workflow_message(message, (workflow_id, execution_id, start, [], True))
+
+    def test_receive_workflow_with_arguments(self):
+        workflow_id = str(uuid4())
+        execution_id = str(uuid4())
+        start = str(uuid4())
+        ref = str(uuid4())
+        arguments = [{'name': 'arg1', 'value': 42}, {'name': 'arg2', 'reference': ref, 'selection': ['a', 1]}]
+        message = ExecuteWorkflowMessage()
+        message.workflow_id = workflow_id
+        message.workflow_execution_id = execution_id
+        message.resume = True
+        message.start = start
+        arg = message.arguments.add()
+        arg.name = arguments[0]['name']
+        arg.value = str(arguments[0]['value'])
+        arg = message.arguments.add()
+        arg.name = arguments[1]['name']
+        arg.reference = arguments[1]['reference']
+        arg.selection = str(arguments[1]['selection'])
+
+        receiver = self.get_receiver()
+        encrypted_message = self.box.encrypt(message.SerializeToString())
+        workflow_generator = receiver.receive_workflows()
+        receiver.cache.lpush('request_queue', encrypted_message)
+        workflow = next(workflow_generator)
+        workflow_arguments = workflow[3]
+        self.assertEqual(workflow_arguments[0].name, arguments[0]['name'])
+        self.assertEqual(workflow_arguments[0].value, str(arguments[0]['value']))
+        self.assertEqual(workflow_arguments[1].name, arguments[1]['name'])
+        self.assertEqual(workflow_arguments[1].reference, ref)
+        self.assertEqual(workflow_arguments[1].selection, str(arguments[1]['selection']))
+
+    def test_receive_workflow_exit(self):
+        receiver = self.get_receiver()
+        workflow_generator = receiver.receive_workflows()
+        receiver.exit = True
+        with self.assertRaises(StopIteration):
+            next(workflow_generator)
