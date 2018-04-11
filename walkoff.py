@@ -60,7 +60,7 @@ def parse_args():
     parser.add_argument('-v', '--version', help='Get the version of WALKOFF running', action='store_true')
     parser.add_argument('-p', '--port', help='port to run the server on')
     parser.add_argument('-H', '--host', help='host address to run the server on')
-
+    parser.add_argument('-c', '--config', help='configuration file to use')
     args = parser.parse_args()
     if args.version:
         print(walkoff.__version__)
@@ -83,7 +83,7 @@ def convert_host_port(args):
 if __name__ == "__main__":
     args = parse_args()
     exit_code = 0
-    walkoff.config.initialize()
+    walkoff.config.initialize(args.config)
     app = create_app(walkoff.config.Config)
     try:
         run(app, *convert_host_port(args))

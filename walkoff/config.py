@@ -137,17 +137,21 @@ class Config(object):
     def load_config(cls, config_path=None):
         """ Loads Walkoff configuration from JSON file
         """
-        config_path = config_path if config_path else cls.CONFIG_PATH
         if config_path:
+            cls.CONFIG_PATH = config_path
+        if cls.CONFIG_PATH:
             try:
-                if isfile(config_path):
-                    with open(config_path) as config_file:
+                if isfile(cls.CONFIG_PATH):
+                    with open(cls.CONFIG_PATH) as config_file:
                         config = json.loads(config_file.read())
                         for key, value in config.items():
                             if value:
                                 setattr(cls, key.upper(), value)
-            except (IOError, OSError, ValueError):
+            except (IOError, OSError, ValueError) as e:
+                import traceback
+                traceback.print_exc()
                 logger.warning('Could not read config file.', exc_info=True)
+
         cls.SQLALCHEMY_DATABASE_URI = '{0}://{1}'.format(cls.WALKOFF_DB_TYPE, abspath(
             cls.DB_PATH)) if cls.WALKOFF_DB_TYPE != 'sqlite' else '{0}:///{1}'.format(cls.WALKOFF_DB_TYPE,
                                                                                       abspath(cls.DB_PATH))
