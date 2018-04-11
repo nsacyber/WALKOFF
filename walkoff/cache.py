@@ -516,8 +516,7 @@ class RedisCacheAdapter(object):
         Returns:
             The value stored in the key
         """
-        value = self.cache.get(key)
-        return value if value is None else value.decode('utf-8')
+        return self._decode_response(self.cache.get(key))
 
     def add(self, key, value, expire=None, **opts):
         """Add a key and a value to the cache if the key is not already in the cache
@@ -590,7 +589,7 @@ class RedisCacheAdapter(object):
         Returns:
             The rightmost value on the deque or None if the key is not a deque or the deque is empty
         """
-        return self.cache.rpop(key).decode('utf-8')
+        return self._decode_response(self.cache.rpop(key))
 
     def lpush(self, key, *values):
         """Pushes a value to the left of a deque.
@@ -616,7 +615,16 @@ class RedisCacheAdapter(object):
         Returns:
             The leftmost value on the deque or None if the key is not a deque or the deque is empty
         """
-        return self.cache.lpop(key).decode('utf-8')
+        return self._decode_response(self.cache.lpop(key))
+
+    @staticmethod
+    def _decode_response(response):
+        if response is None:
+            return response
+        try:
+            return response.decode('utf-8')
+        except UnicodeDecodeError:
+            return response
 
     def subscribe(self, channel):
         """Subscribe to a channel

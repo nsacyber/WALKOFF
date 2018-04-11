@@ -8,12 +8,14 @@ import walkoff.appgateway
 import walkoff.config
 from tests.util import execution_db_help, initialize_test_config
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
+import walkoff.cache
 from walkoff.events import WalkoffEvent
 from walkoff.case.subscription import Subscription
 from walkoff.case.database import Case, Event
 from walkoff.server.app import create_app
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
 from walkoff.server import workflowresults  # Need this import
+
 
 
 class TestZMQCommunication(unittest.TestCase):

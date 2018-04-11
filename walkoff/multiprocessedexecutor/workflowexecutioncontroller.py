@@ -34,9 +34,10 @@ class WorkflowExecutionController:
         self.comm_socket.curve_publickey = server_public
         self.comm_socket.curve_server = True
         self.comm_socket.bind(walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
-        self.__key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
-        self.__worker_key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
         self.cache = cache
+        key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
+        worker_key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
+        self.box = Box(key, worker_key)
 
     def add_workflow(self, workflow_id, workflow_execution_id, start=None, start_arguments=None, resume=False):
         """Adds a workflow ID to the queue to be executed.
@@ -59,9 +60,8 @@ class WorkflowExecutionController:
             self._set_arguments_for_proto(message, start_arguments)
 
         message = message.SerializeToString()
-        box = Box(self.__key, self.__worker_key)
-        enc_message = box.encrypt(message)
-        self.cache.lpush("request_queue", enc_message)
+        encrypted_message = self.box.encrypt(message)
+        self.cache.lpush("request_queue", encrypted_message)
 
     def pause_workflow(self, workflow_execution_id):
         """Pauses a workflow currently executing.
