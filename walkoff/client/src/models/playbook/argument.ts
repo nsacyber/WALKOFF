@@ -25,4 +25,51 @@ export class Argument {
 	 * but is split and sent/ingested as an array containing strings and numbers
 	 */
 	selection?: string | Array<string | number>;
+
+	isValid() : boolean {
+		return ! ((this.value == null || this.value === '') && this.reference === '');
+	}
+
+	sanitize(): void {
+		// First trim any string inputs for sanitation and so we can check against ''
+		if (typeof (this.value) === 'string') { this.value = this.value.trim(); }
+
+		// Additionally, remove "value" if reference is specified
+		if (this.reference && this.value !== undefined) {
+			delete this.value;
+		}
+
+		// Remove reference if unspecified
+		if (this.reference === '') { delete this.reference; }
+
+		// If nothing specified set value to empty array
+		if (!this.value && !this.reference) {
+			this.value = '';
+			return;
+		}
+
+		// Split our string argument selector into what the server expects
+		if (!this.reference) {
+			delete this.selection;
+			return;
+		}
+
+		if (this.selection == null) {
+			this.selection = [];
+		} else if (typeof (this.selection) === 'string') {
+			this.selection = this.selection.trim();
+			this.selection = this.selection.split('.');
+
+			if (this.selection[0] === '') {
+				this.selection = [];
+			} else {
+				// For each value, if it's a valid number, convert it to a number.
+				for (let i = 0; i < this.selection.length; i++) {
+					if (!isNaN(this.selection[i] as number)) { this.selection[i] = +this.selection[i]; }
+				}
+			}
+		}
+	}
+
+
 }

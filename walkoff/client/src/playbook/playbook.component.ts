@@ -619,7 +619,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		// Clone the loadedWorkflow first, so we don't change the parameters 
 		// in the editor when converting it to the format the backend expects.
-		const workflowToSave: Workflow = this.utils.cloneDeep(this.loadedWorkflow);
+		const workflowToSave: Workflow = plainToClass(Workflow, this.utils.cloneDeep(this.loadedWorkflow));
 
 		if (!workflowToSave.start) {
 			this.toastyService.warning('Workflow cannot be saved without a starting action.');
@@ -631,7 +631,9 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			// Set the new cytoscape positions on our loadedworkflow
 			action.position = cyData.find(cyAction => cyAction.data._id === action.id).position;
 
-			if (action.device_id === 0) { delete action.device_id; }
+			// Sanitize and set device_id argument
+			action.device_id.sanitize();
+			if (action.device_id.name !== '__device__') { delete action.device_id; }
 
 			// Properly sanitize arguments through the tree
 			this._sanitizeArgumentsForSave(action.arguments);
@@ -1490,12 +1492,12 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * @param parameterApi Parameter API used to generate the default argument
 	 */
 	getDefaultArgument(parameterApi: ParameterApi): Argument {
-		return {
+		return plainToClass(Argument, {
 			name: parameterApi.name,
 			value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
 			reference: '',
 			selection: '',
-		};
+		});
 	}
 
 	/**

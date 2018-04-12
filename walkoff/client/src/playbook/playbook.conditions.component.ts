@@ -6,6 +6,7 @@ import { ParameterApi } from '../models/api/parameterApi';
 import { Workflow } from '../models/playbook/workflow';
 import { Argument } from '../models/playbook/argument';
 import { Condition } from '../models/playbook/condition';
+import { plainToClass } from 'class-transformer';
 
 @Component({
 	selector: 'playbook-conditions-component',
@@ -129,12 +130,12 @@ export class PlaybookConditionsComponent implements OnInit {
 	 * @param parameterApi Parameter API used to generate the default argument
 	 */
 	getDefaultArgument(parameterApi: ParameterApi): Argument {
-		return {
+		return plainToClass(Argument, {
 			name: parameterApi.name,
 			value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
 			reference: '',
 			selection: '',
-		};
+		});
 	}
 
 	/**

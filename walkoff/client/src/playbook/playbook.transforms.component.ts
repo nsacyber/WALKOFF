@@ -6,6 +6,7 @@ import { TransformApi } from '../models/api/transformApi';
 import { ParameterApi } from '../models/api/parameterApi';
 import { Argument } from '../models/playbook/argument';
 import { Transform } from '../models/playbook/transform';
+import { plainToClass } from 'class-transformer';
 
 @Component({
 	selector: 'playbook-transforms-component',
@@ -129,12 +130,12 @@ export class PlaybookTransformsComponent implements OnInit {
 	 * @param parameterApi Parameter API used to generate the default argument
 	 */
 	getDefaultArgument(parameterApi: ParameterApi): Argument {
-		return {
+		return plainToClass(Argument, {
 			name: parameterApi.name,
 			value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
 			reference: '',
 			selection: '',
-		};
+		});
 	}
 
 	/**
