@@ -789,6 +789,9 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			}
 			// Remove reference if unspecified
 			if (argument.reference === '') { delete argument.reference; }
+
+			// Remove error
+			delete argument.errors;
 		}
 		// Actually splice out all the args
 		for (const id of idsToRemove) {

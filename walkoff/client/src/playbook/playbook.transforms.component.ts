@@ -1,5 +1,4 @@
 import { Component, ViewEncapsulation, Input, OnInit } from '@angular/core';
-
 import { plainToClass } from 'class-transformer';
 import { Workflow } from '../models/playbook/workflow';
 import { AppApi } from '../models/api/appApi';
@@ -7,7 +6,6 @@ import { TransformApi } from '../models/api/transformApi';
 import { ParameterApi } from '../models/api/parameterApi';
 import { Argument } from '../models/playbook/argument';
 import { Transform } from '../models/playbook/transform';
-import { plainToClass } from 'class-transformer';
 
 @Component({
 	selector: 'playbook-transforms-component',

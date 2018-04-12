@@ -26,12 +26,33 @@ export class Argument {
 	 */
 	selection?: string | Array<string | number>;
 
-<<<<<<< HEAD
+	/**
+	 * Array of errors returned from the server for this Argument
+	 */
+	errors?: string[] = [];
+
+	/**
+	 * Array of errors returned from the server for this Argument and any of its descendants 
+	 */
+	get all_errors(): string[] {
+		return this.errors;
+	}
+	
+	/**
+	 * Returns true if this Argument or any of its descendants contain errors
+	 */
+	get has_errors(): boolean {
+		return (this.all_errors.length > 0) ? true : false;
+	}
+
 	isValid() : boolean {
 		return ! ((this.value == null || this.value === '') && this.reference === '');
 	}
 
 	sanitize(): void {
+		// Delete errors
+		delete this.errors;
+
 		// First trim any string inputs for sanitation and so we can check against ''
 		if (typeof (this.value) === 'string') { this.value = this.value.trim(); }
 
@@ -71,26 +92,4 @@ export class Argument {
 			}
 		}
 	}
-
-
-=======
-	/**
-	 * Array of errors returned from the server for this Argument
-	 */
-	errors: string[] = [];
-
-	/**
-	 * Array of errors returned from the server for this Argument and any of its descendants 
-	 */
-	get all_errors(): string[] {
-		return this.errors;
-	}
-	
-	/**
-	 * Returns true if this Argument or any of its descendants contain errors
-	 */
-	get has_errors(): boolean {
-		return (this.all_errors.length > 0) ? true : false;
-	}
->>>>>>> development
 }

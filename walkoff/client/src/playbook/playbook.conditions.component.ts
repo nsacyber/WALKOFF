@@ -1,5 +1,4 @@
 import { Component, ViewEncapsulation, Input, OnInit } from '@angular/core';
-
 import { plainToClass } from 'class-transformer';
 import { AppApi } from '../models/api/appApi';
 import { ConditionApi } from '../models/api/conditionApi';
@@ -7,7 +6,7 @@ import { ParameterApi } from '../models/api/parameterApi';
 import { Workflow } from '../models/playbook/workflow';
 import { Argument } from '../models/playbook/argument';
 import { Condition } from '../models/playbook/condition';
-import { plainToClass } from 'class-transformer';
+
 
 @Component({
 	selector: 'playbook-conditions-component',
