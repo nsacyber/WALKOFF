@@ -176,3 +176,21 @@ def send_full_message(message, users=None, roles=None):
 def accept_decline(action):
     r = action.lower() == 'accept'
     return r, "Accepted" if r else "Declined"
+
+
+@action
+def csv_to_json(path, separator=',', encoding='ascii', headers=None):
+    import sys
+    if sys.version[0] == '2':
+        from io import open
+    try:
+        with open(path, encoding=encoding) as f:
+            results = []
+            if not headers:
+                headers = f.readline().split(separator)
+            for line in f.readlines():
+                line = line.strip('\r\n')
+                results.append({key: value for key, value in zip(headers, line.split(','))})
+        return results
+    except (IOError, OSError) as e:
+        return e, 'File Error'
