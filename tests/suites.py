@@ -27,12 +27,8 @@ __execution_tests = [test_validatable, test_argument, test_action, test_helper_f
                      test_transform, test_condition, test_branch, test_app_instance, test_metrics, test_app_utilities,
                      test_input_validation, test_decorators, test_app_api_validation, test_playbook,
                      test_condition_transform_validation, test_roles_pages_database, test_users_roles_database,
-                     test_scheduler, test_walkoff_tag, test_app_cache, test_app_base,
-<<<<<<< HEAD
+                     test_scheduler, test_walkoff_tag, test_app_cache, test_app_base, test_console_logging_handler,
                      test_workflow_execution_controller, test_device_database, test_device_field_database]
-=======
-                     test_workflow_execution_controller, test_console_logging_handler]
->>>>>>> development
 
 execution_suite = TestSuite()
 add_tests_to_suite(execution_suite, __execution_tests)

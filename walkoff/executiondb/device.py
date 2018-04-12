@@ -510,7 +510,8 @@ def get_device_ids_by_fields(fields):
     Returns:
         A list of device IDs that contain the fields passed in
     """
-    devices = executiondb.execution_db.session.query(Device).join(Device.plaintext_fields).filter(
+    execution_db = ExecutionDatabase.instance
+    devices = execution_db.session.query(Device).join(Device.plaintext_fields).filter(
         and_(DeviceField.name.in_(fields.keys()), DeviceField._value.in_(fields.values()))).all()
 
     device_ids = []

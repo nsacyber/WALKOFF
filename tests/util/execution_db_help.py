@@ -15,10 +15,7 @@ from walkoff.executiondb.schemas import PlaybookSchema
 from walkoff.executiondb.transform import Transform
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
-<<<<<<< HEAD
-from walkoff.executiondb.metrics import AppMetric, WorkflowMetric
 from walkoff.executiondb.device import Device, DeviceField
-=======
 from walkoff.executiondb.metrics import AppMetric, WorkflowMetric, ActionMetric, ActionStatusMetric
 
 
@@ -34,7 +31,7 @@ def cleanup_execution_db():
     execution_db.session.rollback()
     classes = [Playbook, Workflow, Action, Branch, Argument, ConditionalExpression, Condition, Transform,
                WorkflowStatus, ActionStatus, AppMetric, WorkflowMetric, WorkflowStatus, ActionMetric,
-               ActionStatusMetric]
+               ActionStatusMetric, Device, DeviceField]
     for ee in classes:
         execution_db.session.query(ee).delete()
 
@@ -44,7 +41,6 @@ def cleanup_execution_db():
 def tear_down_execution_db():
     execution_db = ExecutionDatabase.instance
     execution_db.tear_down()
->>>>>>> development
 
 
 def load_playbooks(playbooks):
@@ -91,28 +87,3 @@ def load_workflow(playbook_name, workflow_name):
             break
 
     return workflow
-<<<<<<< HEAD
-
-
-def setup_dbs():
-    walkoff.config.Config.DB_PATH = tests.config.test_db_path
-    walkoff.config.Config.CASE_DB_PATH = tests.config.test_case_db_path
-    walkoff.config.Config.EXECUTION_DB_PATH = tests.config.test_execution_db_path
-    initialize_databases()
-
-
-def cleanup_execution_db():
-    executiondb.execution_db.session.rollback()
-    classes = [Playbook, Workflow, Action, Branch, Argument, ConditionalExpression, Condition, Transform,
-               WorkflowStatus, ActionStatus, AppMetric, WorkflowMetric, WorkflowStatus, Device, DeviceField]
-    for ee in classes:
-        for instance in executiondb.execution_db.session.query(ee).all():
-            executiondb.execution_db.session.delete(instance)
-
-    executiondb.execution_db.session.commit()
-
-
-def tear_down_execution_db():
-    executiondb.execution_db.tear_down()
-=======
->>>>>>> development

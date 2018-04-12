@@ -3,14 +3,15 @@ import unittest
 from walkoff.executiondb.device import Device, UnknownDeviceField, DeviceField, EncryptedDeviceField, \
     get_device_ids_by_fields
 from tests.util import execution_db_help
-from walkoff import executiondb
+from tests.util import initialize_test_config
 
 
 class TestDeviceDatabase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        execution_db_help.setup_dbs()
+        initialize_test_config()
+        cls.execution_db, _ = execution_db_help.setup_dbs()
 
     def tearDown(self):
         execution_db_help.cleanup_execution_db()
@@ -216,8 +217,8 @@ class TestDeviceDatabase(unittest.TestCase):
                              [DeviceField('valid_one', 'integer', 123), DeviceField('invalid', 'integer', 789)], [],
                              'type', description='desc')
 
-        executiondb.execution_db.session.add_all([device_one, device_two, device_three, device_four])
-        executiondb.execution_db.session.commit()
+        self.execution_db.session.add_all([device_one, device_two, device_three, device_four])
+        self.execution_db.session.commit()
 
         device_ids = get_device_ids_by_fields({'valid_one': 123, 'valid_two': '456'})
         self.assertEqual(len(device_ids), 2)

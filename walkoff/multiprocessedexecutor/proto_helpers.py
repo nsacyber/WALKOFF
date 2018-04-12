@@ -89,23 +89,29 @@ def add_sender_to_action_packet_proto(action_packet, sender):
     action_packet.sender.execution_id = sender.get_execution_id()
     action_packet.sender.app_name = sender.app_name
     action_packet.sender.action_name = sender.action_name
-    action_packet.sender.device_id = sender.device_id if sender.device_id is not None else -1
+    if sender.device_id is not None:
+        set_argument_proto(action_packet.sender.device_id, sender.device_id)
 
 
 def add_arguments_to_action_proto(action_packet, sender):
     for argument in sender.arguments:
         arg = action_packet.sender.arguments.add()
         arg.name = argument.name
-        for field in ('value', 'reference', 'selection'):
-            val = getattr(argument, field)
-            if val is not None:
-                if not isinstance(val, string_types):
-                    try:
-                        setattr(arg, field, json.dumps(val))
-                    except (ValueError, TypeError):
-                        setattr(arg, field, str(val))
-                else:
-                    setattr(arg, field, val)
+        set_argument_proto(arg, argument)
+
+
+def set_argument_proto(arg_proto, arg_obj):
+    arg_proto.name = arg_obj.name
+    for field in ('value', 'reference', 'selection'):
+        val = getattr(arg_obj, field)
+        if val is not None:
+            if not isinstance(val, string_types):
+                try:
+                    setattr(arg_proto, field, json.dumps(val))
+                except (ValueError, TypeError):
+                    setattr(arg_proto, field, str(val))
+            else:
+                setattr(arg_proto, field, val)
 
 
 def add_workflow_to_proto(packet, workflow):

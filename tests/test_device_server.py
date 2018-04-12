@@ -245,7 +245,7 @@ class TestDevicesServer(ServerTestCase):
 
         fields = [{"name": "Text field", "value": "texts"}, {"name": "Number field", "value": 5},
                   {"name": "Enum field", "value": "val 1"}, {"name": "Boolean field", "value": True}]
-        data = {"name": "testDevice", 'app_name': "HelloWorld", "type": "Test Device Type", "fields": fields}
+        data = {"name": "testDevice", 'app_name': "HelloWorld", "type": "Test Device Type 3", "fields": fields}
         response = self.post_with_status_check('/api/devices', data=json.dumps(data), headers=self.headers,
                                                status_code=OBJECT_CREATED, content_type="application/json")
 
