@@ -1,11 +1,11 @@
 import json
 import os
 
-from tests.config import test_workflows_path
+from tests.config import WORKFLOWS_PATH
 
 
 def convert_playbooks():
-    for subd, d, files in os.walk(test_workflows_path):
+    for subd, d, files in os.walk(WORKFLOWS_PATH):
         for f in files:
             if f.endswith('.playbook'):
                 path = os.path.join(subd, f)

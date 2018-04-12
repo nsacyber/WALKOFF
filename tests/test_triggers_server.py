@@ -4,7 +4,7 @@ import time
 
 from tests.util import execution_db_help
 from tests.util.servertestcase import ServerTestCase
-from walkoff.server import flaskserver as flask_server
+from flask import current_app
 from walkoff.server.returncodes import *
 from walkoff.events import WalkoffEvent
 
@@ -20,9 +20,6 @@ class TestTriggersServer(ServerTestCase):
     def setUp(self):
         self.action_events = ['Action Execution Success', 'Trigger Action Awaiting Data', 'Trigger Action Taken',
                               'Trigger Action Not Taken']
-
-    def tearDown(self):
-        execution_db_help.cleanup_execution_db()
 
     def test_trigger_execute(self):
         workflow = execution_db_help.load_workflow('triggerActionWorkflow', 'triggerActionWorkflow')
@@ -42,12 +39,9 @@ class TestTriggersServer(ServerTestCase):
             threshold = 5
             data = {"execution_ids": ids, "data_in": {"data": "1"}}
             while len(executed_ids) != len(ids) and timeout < threshold:
-                trigger_response = self.put_with_status_check(
-                    '/api/triggers/send_data',
-                    headers=self.headers,
-                    data=json.dumps(data),
-                    status_code=SUCCESS,
-                    content_type='application/json')
+                trigger_response = self.put_with_status_check('/api/triggers/send_data', headers=self.headers,
+                                                              data=json.dumps(data), status_code=SUCCESS,
+                                                              content_type='application/json')
                 executed_ids.update(set.intersection(set(ids), set(trigger_response)))
                 time.sleep(0.1)
                 timeout += 0.1
@@ -77,7 +71,7 @@ class TestTriggersServer(ServerTestCase):
             data=json.dumps(execute_data))
         ids = [response['id']]
 
-        flask_server.running_context.executor.wait_and_reset(1)
+        current_app.running_context.executor.wait_and_reset(1)
 
         for count in callback_count.values():
             self.assertEqual(count, 1)
@@ -137,7 +131,7 @@ class TestTriggersServer(ServerTestCase):
                 data=json.dumps(execute_data))
             ids.append(response['id'])
 
-        flask_server.running_context.executor.wait_and_reset(num_workflows)
+        current_app.running_context.executor.wait_and_reset(num_workflows)
 
         for count in callback_count.values():
             self.assertEqual(count, num_workflows)
@@ -208,7 +202,7 @@ class TestTriggersServer(ServerTestCase):
             data=json.dumps(execute_data))
         ids = [response['id']]
 
-        flask_server.running_context.executor.wait_and_reset(1)
+        current_app.running_context.executor.wait_and_reset(1)
 
         for event, count in callback_count.items():
             self.assertEqual(count, 1)
@@ -265,7 +259,7 @@ class TestTriggersServer(ServerTestCase):
             data=json.dumps(execute_data))
         ids = [response['id']]
 
-        flask_server.running_context.executor.wait_and_reset(1)
+        current_app.running_context.executor.wait_and_reset(1)
 
         for event, count in callback_count.items():
             self.assertEqual(count, 1)

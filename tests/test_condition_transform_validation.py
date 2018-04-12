@@ -4,16 +4,14 @@ import yaml
 
 import walkoff.appgateway
 import walkoff.config
-from tests.config import basic_app_api, test_apps_path
+from tests.util import initialize_test_config
 from walkoff.appgateway.validator import *
 
 
 class TestConditionTransformValidation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.appgateway.clear_cache()
-        walkoff.appgateway.cache_apps(test_apps_path)
-        walkoff.config.load_app_apis(test_apps_path)
+        initialize_test_config()
         cls.conditions = walkoff.appgateway.get_all_conditions_for_app('HelloWorld')
         cls.transforms = walkoff.appgateway.get_all_transforms_for_app('HelloWorld')
 
@@ -22,7 +20,7 @@ class TestConditionTransformValidation(unittest.TestCase):
         walkoff.appgateway.clear_cache()
 
     def setUp(self):
-        with open(basic_app_api, 'r') as f:
+        with open(walkoff.config.Config.BASIC_APP_API, 'r') as f:
             self.basicapi = yaml.load(f.read())
 
     def __generate_resolver_dereferencer(self, spec, expected_success=True):

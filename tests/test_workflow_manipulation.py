@@ -5,12 +5,12 @@ from mock import create_autospec
 
 import walkoff.appgateway
 import walkoff.config
-from tests import config
 from tests.util import execution_db_help
 from tests.util.mock_objects import *
 from walkoff.case.logger import CaseLogger
 from walkoff.executiondb.argument import Argument
 from walkoff.multiprocessedexecutor import multiprocessedexecutor
+from tests.util import initialize_test_config
 
 try:
     from importlib import reload
@@ -21,21 +21,23 @@ except ImportError:
 class TestWorkflowManipulation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        initialize_test_config()
         execution_db_help.setup_dbs()
 
-        walkoff.appgateway.cache_apps(config.test_apps_path)
-        walkoff.config.load_app_apis(apps_path=config.test_apps_path)
-        walkoff.config.Config.NUMBER_PROCESSES = 2
+        from flask import current_app
+        cls.context = current_app.test_request_context()
+        cls.context.push()
+
+        from walkoff.server import context
+        current_app.running_context = context.Context(walkoff.config.Config)
+
         multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
         cls.executor = multiprocessedexecutor.MultiprocessedExecutor(
             MockRedisCacheAdapter(),
             create_autospec(CaseLogger))
-        cls.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
-                                          walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                          walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-                                          walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
+        cls.executor.initialize_threading(current_app)
 
     def tearDown(self):
         execution_db_help.cleanup_execution_db()

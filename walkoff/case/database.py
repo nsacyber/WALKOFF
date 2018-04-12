@@ -90,7 +90,7 @@ class CaseDatabase(object):
     """Wrapper for the SQLAlchemy Case database object
     """
 
-    __instance = None
+    instance = None
 
     def __init__(self, case_db_type, case_db_path):
         self.engine = create_engine(
@@ -106,9 +106,9 @@ class CaseDatabase(object):
         Case_Base.metadata.create_all(self.engine)
 
     def __new__(cls, *args, **kwargs):
-        if cls.__instance is None:
-            cls.__instance = super(CaseDatabase, cls).__new__(cls)
-        return cls.__instance
+        if cls.instance is None:
+            cls.instance = super(CaseDatabase, cls).__new__(cls)
+        return cls.instance
 
     def tear_down(self):
         """ Tears down the database
@@ -150,7 +150,7 @@ class CaseDatabase(object):
             case_ids (list[int]): The names of the cases to add the event to
         """
         event.originator = str(event.originator)
-        cases = case_db.session.query(Case).filter(Case.id.in_(case_ids)).all()
+        cases = self.session.query(Case).filter(Case.id.in_(case_ids)).all()
         event.cases = cases
         self.session.add(event)
         self.session.commit()
@@ -189,14 +189,3 @@ class CaseDatabase(object):
         """Commit the current changes to the database
         """
         self.session.commit()
-
-
-case_db = None
-
-
-# Initialize Module
-def initialize():
-    """ Initializes the case database
-    """
-    Case_Base.metadata.drop_all()
-    Case_Base.metadata.create_all()

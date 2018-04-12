@@ -1,5 +1,6 @@
 import { Component, ViewEncapsulation, Input, OnInit } from '@angular/core';
 
+import { plainToClass } from 'class-transformer';
 import { Workflow } from '../models/playbook/workflow';
 import { AppApi } from '../models/api/appApi';
 import { TransformApi } from '../models/api/transformApi';

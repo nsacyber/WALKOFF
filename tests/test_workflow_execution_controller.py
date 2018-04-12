@@ -5,23 +5,23 @@ from uuid import uuid4
 from mock import patch
 from zmq import Socket
 
-import walkoff.config
 from tests.util.execution_db_help import setup_dbs
 from tests.util.mock_objects import MockRedisCacheAdapter
 from walkoff.case.subscription import Subscription
 from walkoff.executiondb.argument import Argument
 from walkoff.multiprocessedexecutor.workflowexecutioncontroller import ExecuteWorkflowMessage, \
     WorkflowExecutionController, Message, CaseControl, CommunicationPacket, WorkflowControl
+from tests.util import initialize_test_config
 
 
 class TestWorkflowExecutionController(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        initialize_test_config()
         cls.subscriptions = [Subscription(str(uuid4()), ['a', 'b', 'c']), Subscription(str(uuid4()), ['b'])]
         cls.cache = MockRedisCacheAdapter()
-        cls.controller = WorkflowExecutionController(cls.cache, walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                                     walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
+        cls.controller = WorkflowExecutionController(cls.cache)
         setup_dbs()
 
     def tearDown(self):

@@ -2,7 +2,7 @@ import logging
 import traceback
 import uuid
 
-from sqlalchemy import Column, ForeignKey, String, orm
+from sqlalchemy import Column, ForeignKey, String, orm, event
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 
@@ -13,8 +13,7 @@ from walkoff.events import WalkoffEvent
 from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import UnknownApp, UnknownAppAction, \
-    InvalidExecutionElement
+from walkoff.helpers import UnknownApp, UnknownAppAction
 from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
 
 logger = logging.getLogger(__name__)
@@ -31,6 +30,7 @@ class Action(ExecutionElement, Execution_Base):
     arguments = relationship('Argument', cascade='all, delete, delete-orphan', foreign_keys=[Argument.action_id])
     trigger = relationship('ConditionalExpression', cascade='all, delete-orphan', uselist=False)
     position = relationship('Position', uselist=False, cascade='all, delete-orphan')
+    children = ('arguments', 'trigger')
 
     def __init__(self, app_name, action_name, name, device_id=None, id=None, arguments=None, trigger=None,
                  position=None):
@@ -70,38 +70,34 @@ class Action(ExecutionElement, Execution_Base):
         self._arguments_api = None
         self._output = None
         self._execution_id = 'default'
-
+        self._action_executable = None
         self.validate()
-        self._action_executable = get_app_action(self.app_name, self._run)
 
     @orm.reconstructor
     def init_on_load(self):
         """Loads all necessary fields upon Action being loaded from database"""
-        self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
+        if not self.errors:
+            self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
+            self._action_executable = get_app_action(self.app_name, self._run)
         self._output = None
-        self._action_executable = get_app_action(self.app_name, self._run)
         self._execution_id = 'default'
 
     def validate(self):
-        errors = {}
+        errors = []
         try:
             self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
+            self._action_executable = get_app_action(self.app_name, self._run)
             if is_app_action_bound(self.app_name, self._run) and not self.device_id:
                 message = 'App action is bound but no device ID was provided.'.format(self.name)
-                errors['executable'] = message
+                errors.append(message)
             validate_app_action_parameters(self._arguments_api, self.arguments, self.app_name, self.action_name)
         except UnknownApp:
-            errors['executable'] = 'Unknown app {}'.format(self.app_name)
+            errors.append('Unknown app {}'.format(self.app_name))
         except UnknownAppAction:
-            errors['executable'] = 'Unknown app action {}'.format(self.action_name)
+            errors.append('Unknown app action {}'.format(self.action_name))
         except InvalidArgument as e:
-            errors['arguments'] = e.errors
-        if errors:
-            raise InvalidExecutionElement(
-                self.id,
-                self.action_name,
-                'Invalid action {}'.format(self.id or self.action_name),
-                errors=[errors])
+            errors.extend(e.errors)
+        self.errors = errors
 
     def get_output(self):
         """Gets the output of an Action (the result)
@@ -116,14 +112,6 @@ class Action(ExecutionElement, Execution_Base):
             The execution ID
         """
         return self._execution_id
-
-    def set_arguments(self, new_arguments):
-        """Updates the arguments for an Action object.
-        Args:
-            new_arguments ([Argument]): The new Arguments for the Action object.
-        """
-        validate_app_action_parameters(self._arguments_api, new_arguments, self.app_name, self.action_name)
-        self.arguments = new_arguments
 
     def execute(self, instance, accumulator, arguments=None, resume=False):
         """Executes an Action by calling the associated app function.
@@ -196,3 +184,8 @@ class Action(ExecutionElement, Execution_Base):
         else:
             logger.debug('Trigger is not valid for input {0}'.format(data_in))
             return False
+
+
+@event.listens_for(Action, 'before_update')
+def validate_before_update(mapper, connection, target):
+    target.validate()

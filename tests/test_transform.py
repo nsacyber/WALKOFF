@@ -1,19 +1,15 @@
 import unittest
 
 import walkoff.appgateway
-import walkoff.config
-from tests.config import test_apps_path
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.transform import Transform
-from walkoff.helpers import InvalidExecutionElement
+from tests.util import initialize_test_config
 
 
 class TestTransform(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.appgateway.clear_cache()
-        walkoff.appgateway.cache_apps(path=test_apps_path)
-        walkoff.config.load_app_apis(test_apps_path)
+        initialize_test_config()
 
     @classmethod
     def tearDownClass(cls):
@@ -31,8 +27,8 @@ class TestTransform(unittest.TestCase):
         self.__compare_init(filter_elem, 'HelloWorld', 'Top Transform')
 
     def test_init_invalid_action(self):
-        with self.assertRaises(InvalidExecutionElement):
-            Transform('HelloWorld', 'Invalid')
+        transform = Transform('HelloWorld', 'Invalid')
+        self.assertEqual(len(transform.errors), 1)
 
     def test_init_with_args(self):
         filter_elem = Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='5.4')])
@@ -45,12 +41,12 @@ class TestTransform(unittest.TestCase):
                             arguments=[Argument('arg1', reference="action1")])
 
     def test_init_with_invalid_arg_name(self):
-        with self.assertRaises(InvalidExecutionElement):
-            Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('invalid', value='5.4')])
+        transform = Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('invalid', value='5.4')])
+        self.assertEqual(len(transform.errors), 2)
 
     def test_init_with_invalid_arg_type(self):
-        with self.assertRaises(InvalidExecutionElement):
-            Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='invalid')])
+        transform = Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='invalid')])
+        self.assertEqual(len(transform.errors), 2)
 
     def test_execute_with_no_args_no_conversion(self):
         self.assertAlmostEqual(Transform('HelloWorld', 'Top Transform').execute(5.4, {}), 5.4)

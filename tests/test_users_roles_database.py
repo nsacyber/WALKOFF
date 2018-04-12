@@ -1,20 +1,26 @@
 import unittest
 from datetime import datetime, timedelta
 
-import walkoff.server.flaskserver
 from tests.util import execution_db_help
 from walkoff.helpers import timestamp_to_datetime
-from walkoff.serverdb import db, User, Role, add_user, remove_user
+from walkoff.extensions import db
+from walkoff.serverdb import User, Role, add_user, remove_user
+from tests.util import initialize_test_config
+from walkoff.server.app import create_app
+import walkoff.config
+from walkoff.server.blueprints.root import create_user
 
 
 class TestUserRolesDatabase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.context = walkoff.server.flaskserver.app.test_request_context()
-        cls.context.push()
-        db.create_all()
-
+        initialize_test_config()
         execution_db_help.setup_dbs()
+
+        app = create_app(walkoff.config.Config)
+        cls.context = app.test_request_context()
+        cls.context.push()
+        create_user()
 
     @classmethod
     def tearDownClass(cls):

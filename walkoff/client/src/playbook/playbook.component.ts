@@ -38,6 +38,7 @@ import { Role } from '../models/role';
 import { ActionStatus } from '../models/execution/actionStatus';
 import { ConditionalExpression } from '../models/playbook/conditionalExpression';
 import { ActionStatusEvent } from '../models/execution/actionStatusEvent';
+import { ConsoleLog } from '../models/execution/consoleLog';
 
 @Component({
 	selector: 'playbook-component',
@@ -54,6 +55,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('cyRef') cyRef: ElementRef;
 	@ViewChild('workflowResultsContainer') workflowResultsContainer: ElementRef;
 	@ViewChild('workflowResultsTable') workflowResultsTable: DatatableComponent;
+	@ViewChild('consoleContainer') consoleContainer: ElementRef;
+    @ViewChild('consoleTable') consoleTable: DatatableComponent;
 
 	devices: Device[] = [];
 	relevantDevices: Device[] = [];
@@ -77,11 +80,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	};
 	cyJsonData: string;
 	actionStatuses: ActionStatus[] = [];
+	consoleLog: ConsoleLog[] = [];
 	executionResultsComponentWidth: number;
 	waitingOnData: boolean = false;
 	actionStatusStartedRelativeTimes: { [key: string]: string } = {};
 	actionStatusCompletedRelativeTimes: { [key: string]: string } = {};
 	eventSource: any;
+	consoleEventSource: any;
 	playbookToImport: File;
 
 	// Simple bootstrap modal params
@@ -131,6 +136,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		this.playbookService.getDevices().then(devices => this.devices = devices);
 		this.playbookService.getApis().then(appApis => this.appApis = appApis.sort((a, b) => a.name > b.name ? 1 : -1));
 		this.getActionStatusSSE();
+		this.getConsoleSSE();
 		this.getPlaybooksWithWorkflows();
 		this._addCytoscapeEventBindings();
 
@@ -157,7 +163,37 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 */
 	ngOnDestroy(): void {
 		if (this.eventSource && this.eventSource.close) { this.eventSource.close(); }
+		if (this.consoleEventSource && this.consoleEventSource.close) { this.consoleEventSource.close(); }
 	}
+
+    ///------------------------------------------------------------------------------------------------------
+	/// Console functions
+	///------------------------------------------------------------------------------------------------------
+	/**
+	 * Sets up the EventStream for receiving console logs from the server. Binds various events to the event handler.
+	 * Will currently return ALL stream actions and not just the ones manually executed.
+	 */
+	getConsoleSSE(): void {
+		this.authService.getAccessTokenRefreshed()
+			.then(authToken => {
+				this.consoleEventSource = new (window as any).EventSource('api/streams/console/log?access_token=' + authToken);
+                this.consoleEventSource.addEventListener('log', (e: any) => this.consoleEventHandler(e));
+				this.consoleEventSource.onerror = (err: Error) => {
+					// this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
+					console.error(err);
+				};
+			});
+	}
+
+    consoleEventHandler(message: any): void {
+		const consoleEvent = plainToClass(ConsoleLog, (JSON.parse(message.data) as object));
+		console.log(consoleEvent)
+		const newConsoleLog = consoleEvent.toNewConsoleLog();
+		this.consoleLog.push(newConsoleLog);
+    }
+
+
+
 
 	///------------------------------------------------------------------------------------------------------
 	/// Playbook CRUD etc functions
@@ -354,6 +390,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 					},
 				},
 				{
+					selector: 'node[?hasErrors]',
+					css: {
+						'color': '#991818',
+						'font-style': 'italic',
+					},
+				},
+				{
 					selector: 'node:selected',
 					css: {
 						'background-color': '#77b0d0',
@@ -407,6 +450,14 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 					css: {
 						'target-arrow-shape': 'triangle',
 						'curve-style': 'bezier',
+					},
+				},
+				{
+					selector: 'edge[?hasErrors]',
+					css: {
+						'target-arrow-color': '#991818',
+						'line-color': '#991818',
+						'line-style': 'dashed'
 					},
 				},
 				{
@@ -554,6 +605,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				_id: branch.id,
 				source: branch.source_id,
 				target: branch.destination_id,
+				hasErrors: branch.has_errors
 			};
 			return edge;
 		});
@@ -565,6 +617,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				_id: action.id,
 				label: action.name,
 				isStartNode: action.id === this.loadedWorkflow.start,
+				hasErrors: action.has_errors
 			};
 			this._setNodeDisplayProperties(node, action);
 			return node;
@@ -1145,6 +1198,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 */
 	clearExecutionHighlighting(): void {
 		this.cy.elements().removeClass('success-highlight failure-highlight executing-highlight');
+		this.consoleLog = [];
 	}
 
 	/**
@@ -1618,5 +1672,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		if (status.completed_at) { 
 			status.localized_completed_at = this.utils.getLocalTime(status.completed_at);
 		}
+	}
+
+	/**
+	 * Returns errors in the loaded workflow
+	 */
+	getErrors() : any[] {
+		if (!this.loadedWorkflow) return [];
+		return this.loadedWorkflow.all_errors.map(error => ({ error }));
 	}
 }

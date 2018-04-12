@@ -13,7 +13,7 @@ class ExecutionDatabase(object):
     """Wrapper for the SQLAlchemy database connection object
     """
 
-    __instance = None
+    instance = None
 
     def __init__(self, execution_db_type, execution_db_path):
         # All of these imports are necessary
@@ -31,7 +31,8 @@ class ExecutionDatabase(object):
         from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
         from walkoff.executiondb.metrics import AppMetric, WorkflowMetric, ActionMetric, ActionStatusMetric
 
-        self.engine = create_engine(format_db_path(execution_db_type, execution_db_path), poolclass=NullPool)
+        self.engine = create_engine(format_db_path(execution_db_type, execution_db_path),
+                                    connect_args={'check_same_thread': False}, poolclass=NullPool)
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 
@@ -43,19 +44,14 @@ class ExecutionDatabase(object):
         Execution_Base.metadata.create_all(self.engine)
 
     def __new__(cls, *args, **kwargs):
-        if cls.__instance is None:
-            cls.__instance = super(ExecutionDatabase, cls).__new__(cls)
-        return cls.__instance
+        if cls.instance is None:
+            cls.instance = super(ExecutionDatabase, cls).__new__(cls)
+        return cls.instance
 
     def tear_down(self):
         self.session.rollback()
         self.connection.close()
         self.engine.dispose()
-
-
-execution_db = None
-"""The SQLAlchemy engine/connection object for the execution database
-"""
 
 
 class WorkflowStatusEnum(enum.Enum):

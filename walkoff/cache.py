@@ -200,6 +200,11 @@ class DiskPubSubCache(object):
 
         return con
 
+    def shutdown(self):
+        """Shuts down the connection to the cache
+        """
+        self.cache.close()
+
 
 class DiskCacheAdapter(object):
     """Adapter for a DiskCache backed cache
@@ -426,6 +431,7 @@ class DiskCacheAdapter(object):
         """Shuts down the connection to the cache
         """
         self.cache.close()
+        self.pubsub_cache.shutdown()
 
     def clear(self):
         """Clears all values in the cache
@@ -510,8 +516,7 @@ class RedisCacheAdapter(object):
         Returns:
             The value stored in the key
         """
-        value = self.cache.get(key)
-        return value if value is None else value.decode('utf-8')
+        return self._decode_response(self.cache.get(key))
 
     def add(self, key, value, expire=None, **opts):
         """Add a key and a value to the cache if the key is not already in the cache
@@ -584,7 +589,7 @@ class RedisCacheAdapter(object):
         Returns:
             The rightmost value on the deque or None if the key is not a deque or the deque is empty
         """
-        return self.cache.rpop(key).decode('utf-8')
+        return self._decode_response(self.cache.rpop(key))
 
     def lpush(self, key, *values):
         """Pushes a value to the left of a deque.
@@ -610,7 +615,16 @@ class RedisCacheAdapter(object):
         Returns:
             The leftmost value on the deque or None if the key is not a deque or the deque is empty
         """
-        return self.cache.lpop(key).decode('utf-8')
+        return self._decode_response(self.cache.lpop(key))
+
+    @staticmethod
+    def _decode_response(response):
+        if response is None:
+            return response
+        try:
+            return response.decode('utf-8')
+        except UnicodeDecodeError:
+            return response
 
     def subscribe(self, channel):
         """Subscribe to a channel
@@ -690,12 +704,6 @@ cache_translation = {'disk': DiskCacheAdapter, 'redis': RedisCacheAdapter}
 """(dict): A mapping between a string type and the corresponding cache adapter
 """
 
-# Ideally this global is replaced entirely by the running_context
-# This is needed currently to get this cache into the blueprints, so there are two cache connections in the apps now
-cache = None
-""" (RedisCacheAdapter|DiskCacheAdapter): The cache used throughout Walkoff 
-"""
-
 
 def make_cache(config=None):
     """Factory method for constructing Cache Adapters from configuration JSON
@@ -709,7 +717,6 @@ def make_cache(config=None):
     if config is None:
         config = {}
     config = deepcopy(config)
-    global cache
     cache_type = config.pop('type', 'disk').lower()
     try:
         cache = cache_translation[cache_type].from_json(config)

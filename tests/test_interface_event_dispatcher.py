@@ -4,11 +4,12 @@ from unittest import TestCase
 import walkoff.config
 import walkoff.executiondb.schemas
 from interfaces import InterfaceEventDispatcher, dispatcher
-from interfaces.exceptions import UnknownEvent, InvalidEventHandler
+from interfaces.exceptions import UnknownEvent
 from tests.util import execution_db_help
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.helpers import UnknownAppAction, UnknownApp
+from tests.util import initialize_test_config
 
 
 class MockWorkflow(ExecutionElement):
@@ -34,6 +35,7 @@ class MockWorkflowSchema(object):
 class TestInterfaceEventDispatcher(TestCase):
     @classmethod
     def setUpClass(cls):
+        initialize_test_config()
         execution_db_help.setup_dbs()
         walkoff.config.app_apis = {'App1': {'actions': {'action1': None,
                                                                'action2': None,
@@ -61,7 +63,7 @@ class TestInterfaceEventDispatcher(TestCase):
     def test_registration_correct_number_methods_generated(self):
         methods = [method for method in dir(dispatcher) if method.startswith('on_')]
         expected_number = len([event for event in WalkoffEvent if
-                               event.event_type != EventType.other and event != WalkoffEvent.SendMessage]) + 2
+                               event.event_type != EventType.other and event.is_sent_to_interfaces()]) + 2
         # 2: one for on_app_action and one for on_walkoff_event
         self.assertEqual(len(methods), expected_number)
 

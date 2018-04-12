@@ -1,32 +1,29 @@
 from unittest import TestCase
 from walkoff.cache import DiskCacheAdapter, unsubscribe_message
-from tests.config import cache_path
 from tests.util.mock_objects import PubSubCacheSpy
 import os
-import shutil
 from datetime import timedelta
+import walkoff.config
+from tests.util import initialize_test_config
 
 
 class TestDiskCacheAdapter(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        if not os.path.exists(cache_path):
-            os.mkdir(cache_path)
+        initialize_test_config()
+        if not os.path.exists(walkoff.config.Config.CACHE_PATH):
+            os.mkdir(walkoff.config.Config.CACHE_PATH)
 
     def setUp(self):
-        self.cache = DiskCacheAdapter(directory=cache_path)
+        self.cache = DiskCacheAdapter(directory=walkoff.config.Config.CACHE_PATH)
 
     def tearDown(self):
         self.cache.clear()
         self.cache.shutdown()
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cache_path)
-
     def test_init(self):
-        self.assertEqual(self.cache.directory, cache_path)
+        self.assertEqual(self.cache.directory, walkoff.config.Config.CACHE_PATH)
         self.assertTrue(self.cache.retry)
 
     def test_set_get(self):
@@ -97,9 +94,10 @@ class TestDiskCacheAdapter(TestCase):
         self.assertIsNone(self.cache.lpop('queue'))
 
     def test_l_push_pop_multiple_values(self):
-        self.cache.rpush('big', 10, 11, 12)
-        self.assertEqual(self.cache.lpop('big'), 10)
-        self.assertEqual(self.cache.rpop('big'), 12)
+        self.cache.rpush('big2', 10, 11, 12)
+        self.assertEqual(self.cache.lpop('big2'), 10)
+        self.assertEqual(self.cache.lpop('big2'), 11)
+        self.assertEqual(self.cache.lpop('big2'), 12)
 
     def test_convert_expire_to_seconds_timedelta(self):
         self.assertEqual(DiskCacheAdapter._convert_expire_to_seconds(timedelta(seconds=10, milliseconds=500)), 10.5)
@@ -108,10 +106,10 @@ class TestDiskCacheAdapter(TestCase):
         self.assertEqual(DiskCacheAdapter._convert_expire_to_seconds(1500), 1.5)
 
     def test_from_json(self):
-        data = {'directory': cache_path, 'shards': 4, 'timeout': 30, 'retry': False, 'statistics': True}
+        data = {'directory': walkoff.config.Config.CACHE_PATH, 'shards': 4, 'timeout': 30, 'retry': False, 'statistics': True}
         cache = DiskCacheAdapter.from_json(data)
-        self.assertEqual(cache.directory, cache_path)
-        self.assertEqual(cache.cache.directory, cache_path)
+        self.assertEqual(cache.directory, walkoff.config.Config.CACHE_PATH)
+        self.assertEqual(cache.cache.directory, walkoff.config.Config.CACHE_PATH)
         self.assertEqual(cache.cache._count, 4)
         self.assertFalse(cache.retry)
 
@@ -120,7 +118,7 @@ class TestDiskCacheAdapter(TestCase):
         self.cache.publish('channel1', 87)
         self.assertDictEqual(self.cache.pubsub_cache.published, {'channel1': [87]})
 
-    def test_publish(self):
+    def test_unsubscribe(self):
         self.cache.pubsub_cache = PubSubCacheSpy()
         self.cache.unsubscribe('channel1')
         self.assertDictEqual(self.cache.pubsub_cache.published, {'channel1': [unsubscribe_message]})

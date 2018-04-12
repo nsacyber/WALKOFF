@@ -2,22 +2,20 @@ import unittest
 
 import walkoff.appgateway
 import walkoff.config
-from tests.config import test_apps_path
 from tests.util import execution_db_help
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.schemas import dump_element
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
+from tests.util import initialize_test_config
 
 
 class TestCondition(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        initialize_test_config()
         execution_db_help.setup_dbs()
-        walkoff.appgateway.clear_cache()
-        walkoff.appgateway.cache_apps(path=test_apps_path)
-        walkoff.config.load_app_apis(test_apps_path)
 
     @classmethod
     def tearDownClass(cls):

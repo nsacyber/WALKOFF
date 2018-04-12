@@ -54,26 +54,21 @@
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="execute-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Execute Workflow" [disabled]="!loadedWorkflow"
+            <button id="execute-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Execute Workflow" [disabled]="!loadedWorkflow || !loadedWorkflow.is_valid"
                 (click)="executeWorkflow()">
                 <i class="fa fa-play-circle"></i>
             </button>
         </div>
         <div class="btn-group" role="group">
-            <button id="execution-results-button" type="button" class="btn btn-default" data-toggle="modal" data-target="#executionResultsModal"
-                title="Open Execution Results">
-                <i class="fa fa-table"></i>
-            </button>
-        </div>
-        <div class="btn-group" role="group">
             <button id="clear-execution-highlighting-button" type="button" class="btn btn-default" data-toggle="tooltip" title="Clear Execution Results Highlighting"
-                [disabled]="!loadedWorkflow" (click)="clearExecutionHighlighting()">
+                [disabled]="!loadedWorkflow || !loadedWorkflow.is_valid" (click)="clearExecutionHighlighting()">
                 <i class="fa fa-eraser"></i>
             </button>
         </div>
         <label *ngIf="loadedWorkflow" id="currentWorkflowText">{{loadedPlaybook.name}} -</label>
         <input *ngIf="loadedWorkflow" type="text" class="form-control workflowNameInput" [(ngModel)]="loadedWorkflow.name" name="name"
             required>
+        <label *ngIf="loadedWorkflow && !loadedWorkflow?.is_valid" id="currentWorkflowText">(In Progress)</label>
     </div>
     <!-- Graph editor -->
     <div class="row graphEditorRow">
@@ -235,22 +230,52 @@
             </div>
         </div>
     </div>
+    <div class="row consoleRow" *ngIf="loadedWorkflow?.id">
+        <ul class="nav nav-tabs">
+            <li *ngIf="!loadedWorkflow?.has_errors" class="active"><a data-toggle="tab" href="#console"> Console </a></li>
+            <li *ngIf="!loadedWorkflow?.has_errors"><a data-toggle="tab" href="#executionLog"> Execution </a></li>
+            <li *ngIf="loadedWorkflow?.has_errors" class="active"><a data-toggle="tab" href="#errorLog"> Workflow Errors ({{ loadedWorkflow?.all_errors.length }}) </a></li>
+        </ul>
+        <div class="tab-content">
+            <div id="console" #consoleContainer class="tab-pane fade in active" *ngIf="!loadedWorkflow?.has_errors">
+                 <ngx-datatable #consoleTable class='material expandable' [columnMode]="'flex'" [rows]="consoleLog" [sortType]="'multi'"
+                        [headerHeight]="25" [footerHeight]="25" [rowHeight]="undefined" [sorts]="[]"
+                        [limit]="10">
 
-    <div class="modal fade" id="executionResultsModal" role="dialog" aria-labelledby="executionResultsModalTitle" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title" id="executionResultsModalTitle">Execution Results</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" #workflowResultsContainer>
-                    <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]="actionStatuses" [sortType]="'multi'"
-                        [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'started_at', dir: 'desc'}]"
+                     <ngx-datatable-column name="Level" prop="level" [flexGrow]="1">
+                         <ng-template let-row="row" ngx-datatable-cell-template>
+                             {{row.level}}
+                         </ng-template>
+                     </ngx-datatable-column>
+
+                     <ngx-datatable-column name="App Name" prop="app_name" [flexGrow]="2">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{row.app_name}}
+                        </ng-template>
+                    </ngx-datatable-column>                     
+
+                     <ngx-datatable-column name="Action Name" prop="action_name" [flexGrow]="2">
+                         <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{row.action_name}}
+                         </ng-template>
+                     </ngx-datatable-column>
+
+                     <ngx-datatable-column name="Message" prop="message" [flexGrow]="4">
+                         <ng-template let-row="row" ngx-datatable-cell-template>
+                             {{row.message}}
+                         </ng-template>
+                     </ngx-datatable-column>
+         
+                 </ngx-datatable>
+            </div>
+            <div id="executionLog" class="tab-pane fade" *ngIf="!loadedWorkflow?.has_errors">
+                <div id="executionResultsModal">
+                    <div #workflowResultsContainer>
+                        <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]="actionStatuses" [sortType]="'multi'"
+                        [headerHeight]="25" [footerHeight]="25" [rowHeight]="undefined" [sorts]="[{prop: 'started_at', dir: 'desc'}]"
                         [limit]="10">
                         <!-- Column Templates -->
-                        <ngx-datatable-column name="Action ID" prop="action_id" [flexGrow]="1"></ngx-datatable-column>
+                        <ngx-datatable-column name="Action IDs" prop="action_id" [flexGrow]="1"></ngx-datatable-column>
                         <ngx-datatable-column name="App Name" prop="app_name" [flexGrow]="1"></ngx-datatable-column>
                         <ngx-datatable-column name="Action Name" prop="action_name" [flexGrow]="1"></ngx-datatable-column>
                         <ngx-datatable-column name="Started At" prop="started_at" [flexGrow]="1">
@@ -278,9 +303,17 @@
                                 {{getFriendlyJSON(row.result)}}
                             </ng-template>
                         </ngx-datatable-column>
-                    </ngx-datatable>
+                        </ngx-datatable>
+                    </div>
                 </div>
             </div>
+            <div id="errorLog" #errorLogContainer class="tab-pane fade in active" *ngIf="loadedWorkflow?.has_errors">
+                <ngx-datatable #errorLogTable class='material expandable' [columnMode]="'flex'" [rows]="getErrors()" [sortType]="'multi'"
+                       [headerHeight]="25" [footerHeight]="25" [rowHeight]="undefined" [sorts]="[]"
+                       [limit]="10">
+                    <ngx-datatable-column name="Error"  prop="error" [sortable]="false" [flexGrow]="1"></ngx-datatable-column>
+                </ngx-datatable>
+           </div>
         </div>
     </div>
 

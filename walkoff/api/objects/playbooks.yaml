@@ -28,7 +28,6 @@ CreateWorkflow:
   type: object
   required: [name]
   description: A workflow object
-  additionalProperties: false
   properties:
     name:
       description: The name of the workflow.
@@ -76,6 +75,12 @@ Workflow:
       type: array
       items:
         $ref: '#/definitions/Branch'
+    is_valid:
+      description: Is this workflow able to be run?
+      type: boolean
+      readOnly: true
+    errors:
+      $ref: '#/definitions/ExecutionElementErrors'
 
 Action:
   type: object
@@ -112,6 +117,8 @@ Action:
     position:
       description: Position object representing various fields of the position of the Action in the playbook editor.
       $ref: '#/definitions/Position'
+    errors:
+      $ref: '#/definitions/ExecutionElementErrors'
 
 Branch:
   type: object
@@ -138,6 +145,8 @@ Branch:
     condition:
       description: List of condition to evaluate
       $ref: '#/definitions/ConditionalExpression'
+    errors:
+      $ref: '#/definitions/ExecutionElementErrors'
 
 
 ConditionalExpression:
@@ -163,6 +172,8 @@ ConditionalExpression:
       type: array
       items:
         $ref: '#/definitions/ConditionalExpression'
+    errors:
+      $ref: '#/definitions/ExecutionElementErrors'
 
 
 Argument:
@@ -191,6 +202,8 @@ Argument:
       type: array
       items:
         type: [string, integer]
+    errors:
+      $ref: '#/definitions/ExecutionElementErrors'
 
 DeviceArgument:
   type: object
@@ -249,6 +262,8 @@ Condition:
       type: array
       items:
         $ref: '#/definitions/Transform'
+    errors:
+      $ref: '#/definitions/ExecutionElementErrors'
 
 Transform:
   type: object
@@ -272,6 +287,8 @@ Transform:
       type: array
       items:
         $ref: '#/definitions/Argument'
+    errors:
+      $ref: '#/definitions/ExecutionElementErrors'
 
 Position:
   type: object
@@ -307,3 +324,10 @@ UpdatePlaybook:
     name:
       type: string
       description: The new name of the playbook
+
+ExecutionElementErrors:
+  description: Errors attached to this ExecutionElement
+  readOnly: true
+  type: array
+  items:
+    type: string

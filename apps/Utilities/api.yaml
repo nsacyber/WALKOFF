@@ -573,6 +573,36 @@ actions:
         failure: true
         schema:
           type: boolean
+  csv to json:
+    run: actions.csv_to_json
+    description: Reads a CSV file and return a list of JSON objects representing the CSV
+    parameters:
+      - name: path
+        description: path to the csv file
+        type: string
+        required: true
+      - name: separator
+        type: string
+        default: ','
+      - name: encoding
+        type: string
+        default: ascii
+      - name: headers
+        description: headers to use for teh CSV. If none are provided, the first line of the CSV is used
+        type: array
+        items:
+          type: string
+    default_return: Success
+    returns:
+      Success:
+        schema:
+          type: array
+          items:
+            type: object
+      File Error:
+        failure: true
+        schema:
+          type: string
 conditions:
   regex match:
     run: conditions.regMatch

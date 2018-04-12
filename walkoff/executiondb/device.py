@@ -6,9 +6,8 @@ from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
-from walkoff import executiondb
 from walkoff.appgateway.validator import convert_primitive_type
-from walkoff.executiondb import Execution_Base
+from walkoff.executiondb import Execution_Base, ExecutionDatabase
 
 import nacl.secret
 import nacl.utils
@@ -440,7 +439,8 @@ def get_all_devices_for_app(app_name):
     Returns:
         list[Device]: A list of devices associated with this app. Returns empty list if app is not in database
     """
-    app = executiondb.execution_db.session.query(App).filter(App.name == app_name).first()
+    execution_db = ExecutionDatabase.instance
+    app = execution_db.session.query(App).filter(App.name == app_name).first()
     if app is not None:
         return app.devices[:]
     else:
@@ -457,7 +457,8 @@ def get_all_devices_of_type_from_app(app_name, device_type):
         Returns:
             list[Device]: A list of devices associated with this app. Returns empty list if app is not in database
         """
-    app = executiondb.execution_db.session.query(App).filter(App.name == app_name).first()
+    execution_db = ExecutionDatabase.instance
+    app = execution_db.session.query(App).filter(App.name == app_name).first()
     if app is not None:
         return app.get_devices_of_type(device_type)
     else:
@@ -474,7 +475,8 @@ def get_device(app_name, device_name):
     Returns:
         Device: The desired device. Returns None if app or device not found.
     """
-    app = executiondb.execution_db.session.query(App).filter(App.name == app_name).first()
+    execution_db = ExecutionDatabase.instance
+    app = execution_db.session.query(App).filter(App.name == app_name).first()
     if app is not None:
         return app.get_device(device_name)
     else:
@@ -490,7 +492,8 @@ def get_app(app_name):
     Returns:
         apps.devicedb.App: The desired device. Returns None if app or device not found.
     """
-    app = executiondb.execution_db.session.query(App).filter(App.name == app_name).first()
+    execution_db = ExecutionDatabase.instance
+    app = execution_db.session.query(App).filter(App.name == app_name).first()
     if app is not None:
         return app
     else:

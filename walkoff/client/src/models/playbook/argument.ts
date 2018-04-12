@@ -26,6 +26,7 @@ export class Argument {
 	 */
 	selection?: string | Array<string | number>;
 
+<<<<<<< HEAD
 	isValid() : boolean {
 		return ! ((this.value == null || this.value === '') && this.reference === '');
 	}
@@ -72,4 +73,24 @@ export class Argument {
 	}
 
 
+=======
+	/**
+	 * Array of errors returned from the server for this Argument
+	 */
+	errors: string[] = [];
+
+	/**
+	 * Array of errors returned from the server for this Argument and any of its descendants 
+	 */
+	get all_errors(): string[] {
+		return this.errors;
+	}
+	
+	/**
+	 * Returns true if this Argument or any of its descendants contain errors
+	 */
+	get has_errors(): boolean {
+		return (this.all_errors.length > 0) ? true : false;
+	}
+>>>>>>> development
 }

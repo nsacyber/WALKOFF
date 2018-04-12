@@ -4,14 +4,16 @@ import threading
 import gevent
 from fakeredis import FakeStrictRedis
 from zmq.utils.strtypes import cast_unicode
+from flask import current_app
 
-from walkoff import executiondb
+from walkoff.executiondb import ExecutionDatabase
+from walkoff.case.database import CaseDatabase
 from walkoff.cache import RedisCacheAdapter
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.multiprocessedexecutor import workflowexecutioncontroller
-from walkoff.multiprocessedexecutor.worker import convert_to_protobuf
+from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
 
 try:
     from Queue import Queue
@@ -21,12 +23,11 @@ except ImportError:
 workflows_executed = 0
 
 
-def mock_initialize_threading(self, zmq_public_keys_path, zmq_private_keys_path, zmq_results_address,
-                              zmq_communication_address, pids=None):
+def mock_initialize_threading(self, pids=None):
     global workflows_executed
     workflows_executed = 0
 
-    self.manager = MockLoadBalancer()
+    self.manager = MockLoadBalancer(current_app._get_current_object())
     self.manager_thread = threading.Thread(target=self.manager.manage_workflows)
     self.manager_thread.start()
 
@@ -57,9 +58,9 @@ def mock_shutdown_pool(self):
 
 
 class MockLoadBalancer(object):
-    def __init__(self):
+    def __init__(self, current_app):
         self.pending_workflows = MockRequestQueue()
-        self.results_queue = MockReceiveQueue()
+        self.results_queue = MockReceiveQueue(current_app)
         self.workflow_comms = {}
         self.exec_id = ''
 
@@ -69,6 +70,9 @@ class MockLoadBalancer(object):
         self.handle_data_sent = handle_data_sent
         if not WalkoffEvent.CommonWorkflowSignal.signal.receivers:
             WalkoffEvent.CommonWorkflowSignal.connect(handle_data_sent)
+            
+        self.execution_db = ExecutionDatabase.instance
+        self.case_db = CaseDatabase.instance
 
     def on_data_sent(self, sender, **kwargs):
         workflow = self.workflow_comms[self.exec_id]
@@ -78,8 +82,8 @@ class MockLoadBalancer(object):
                                            action_id=workflow.get_executing_action_id(),
                                            accumulator=workflow.get_accumulator(),
                                            app_instances=workflow.get_instances())
-            executiondb.execution_db.session.add(saved_workflow)
-            executiondb.execution_db.session.commit()
+            self.execution_db.session.add(saved_workflow)
+            self.execution_db.session.commit()
 
         if self.exec_id or not hasattr(sender, "_execution_id"):
             packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
@@ -98,8 +102,8 @@ class MockLoadBalancer(object):
             if workflow_id == "Exit":
                 return
 
-            executiondb.execution_db.session.expire_all()
-            workflow = executiondb.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
+            self.execution_db.session.expire_all()
+            workflow = self.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
 
             self.workflow_comms[workflow_execution_id] = workflow
 
@@ -121,11 +125,12 @@ class MockLoadBalancer(object):
 
 class MockReceiveQueue(workflowexecutioncontroller.Receiver):
 
-    def __init__(self):
-        pass
+    def __init__(self, current_app):
+        self.current_app = current_app
 
     def send(self, packet):
-        self.send_callback(packet)
+        with self.current_app.app_context():
+            self.send_callback(packet)
 
     def _increment_execution_count(self):
         global workflows_executed
@@ -184,3 +189,6 @@ class PubSubCacheSpy(object):
             self.published[channel] = [data]
         else:
             self.published[channel].append(data)
+
+    def shutdown(self):
+        pass

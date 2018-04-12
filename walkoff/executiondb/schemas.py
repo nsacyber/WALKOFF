@@ -2,7 +2,7 @@ from marshmallow import validates_schema, ValidationError, fields, post_dump, po
 from marshmallow.validate import OneOf
 from marshmallow_sqlalchemy import ModelSchema, field_for
 
-import walkoff.executiondb as executiondb
+from walkoff.executiondb import ExecutionDatabase
 from walkoff.helpers import InvalidExecutionElement
 from .action import Action
 from .argument import Argument
@@ -43,40 +43,16 @@ class ExecutionBaseSchema(ModelSchema):
         }
 
     def load(self, data, session=None, instance=None, *args, **kwargs):
-        session = executiondb.execution_db.session
+        session = ExecutionDatabase.instance.session
         # Maybe automatically find and use instance if 'id' (or key) is passed
         return super(ExecutionBaseSchema, self).load(data, session=session, instance=instance, *args, **kwargs)
 
 
 class ExecutionElementBaseSchema(ExecutionBaseSchema):
-    """The base schema for execution elements
-
-    This class validates the deserialized execution elements
-    """
-
-    def load(self, data, session=None, instance=None, *args, **kwargs):
-        # Can't use post_load because we can't override marshmallow_sqlalchemy's post_load hook
-        try:
-            objs = super(ExecutionElementBaseSchema, self).load(data, session=session, instance=instance, *args,
-                                                                **kwargs)
-        except InvalidExecutionElement as e:
-            objs = UnmarshalResult({}, e.errors)
-        if not objs.errors:
-            errors = {}
-            all_objs = objs.data
-            if not isinstance(objs.data, list):
-                all_objs = [all_objs]
-            for obj in (obj for obj in all_objs if isinstance(obj, ExecutionElement)):
-                try:
-                    obj.validate()
-                except InvalidExecutionElement as e:
-                    errors[e.name] = e.errors
-            if errors:
-                objs.errors.update(errors)
-        return objs
+    errors = fields.List(fields.String(), dump_only=True)
 
 
-class ArgumentSchema(ExecutionBaseSchema):
+class ArgumentSchema(ExecutionElementBaseSchema):
     """The schema for arguments.
 
     This class handles constructing the argument specially so that either a reference or a value is always non-null,
@@ -190,7 +166,8 @@ class WorkflowSchema(ExecutionElementBaseSchema):
     name = field_for(Workflow, 'name', required=True)
     actions = fields.Nested(ActionSchema, many=True)
     branches = fields.Nested(BranchSchema, many=True)
-
+    is_valid = field_for(Workflow, 'is_valid', dump_only=True)
+    
     class Meta:
         model = Workflow
         exclude = ('playbook',)

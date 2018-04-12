@@ -6,7 +6,16 @@ import unittest
 import sys
 from tests import suites as test_suites
 import logging
-import walkoff.server.context
+import tests.config
+import os
+
+
+def delete_dbs():
+    db_paths = [tests.config.TestConfig.CASE_DB_PATH, tests.config.TestConfig.EXECUTION_DB_PATH,
+                tests.config.TestConfig.DB_PATH]
+    for db in db_paths:
+        if os.path.exists(db):
+            os.remove(db)
 
 
 def run_tests():
@@ -30,10 +39,12 @@ def run_tests():
 
 if __name__ == '__main__':
     try:
+        delete_dbs()
         successful = run_tests()
     except KeyboardInterrupt:
         print('\nInterrupted! Ending full test')
         successful = False
     finally:
-        walkoff.server.context.running_context.executor.shutdown_pool()
+        from flask import current_app
+        current_app.running_context.executor.shutdown_pool()
         sys.exit(not successful)

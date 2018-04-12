@@ -5,24 +5,16 @@ from os.path import join
 
 import walkoff.appgateway
 import walkoff.config
-from tests.config import test_apps_path
+from tests.util import initialize_test_config
 from tests.util.assertwrappers import orderless_list_compare
 from walkoff.helpers import *
-from walkoff.server.flaskserver import handle_database_errors, handle_generic_server_error
+from walkoff.server.blueprints.root import handle_database_errors, handle_generic_server_error
 
 
 class TestHelperFunctions(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.appgateway.cache_apps(test_apps_path)
-        walkoff.config.load_app_apis(apps_path=test_apps_path)
-
-    def setUp(self):
-        self.original_apps_path = walkoff.config.Config.APPS_PATH
-        walkoff.config.Config.APPS_PATH = test_apps_path
-
-    def tearDown(self):
-        walkoff.config.Config.APPS_PATH = self.original_apps_path
+        initialize_test_config()
 
     @classmethod
     def tearDownClass(cls):
@@ -232,3 +224,23 @@ class TestHelperFunctions(unittest.TestCase):
             'title': 'An error occurred in the server.',
             'detail': 'SomeException'}
         self.assertDictEqual(body, expected)
+
+    def test_strip_device_ids(self):
+        playbook = {
+            'name': 'some_playbook',
+            'workflows': [
+                {'name': 'wf1',
+                 'actions': [{'name': 'action1'}, {'name': 'action2', 'device_id': 42}]},
+                {'name': 'wf2',
+                 'actions': [{'name': 'action1', 'device_id': 13}, {'name': 'some_action', 'device_id': 21}]}
+            ]}
+        expected = {
+            'name': 'some_playbook',
+            'workflows': [
+                {'name': 'wf1',
+                 'actions': [{'name': 'action1'}, {'name': 'action2'}]},
+                {'name': 'wf2',
+                 'actions': [{'name': 'action1'}, {'name': 'some_action'}]}
+            ]}
+        strip_device_ids(playbook)
+        self.assertDictEqual(playbook, expected)

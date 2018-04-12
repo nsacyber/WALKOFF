@@ -10,18 +10,23 @@ from walkoff.helpers import utc_as_rfc_datetime
 from walkoff.messaging import MessageAction
 from walkoff.messaging.utils import strip_requires_response_from_message_body, save_message, \
     get_all_matching_users_for_message, log_action_taken_on_message
-from walkoff.server import flaskserver
+from flask import current_app
 from walkoff.serverdb import db, User, Role
 from walkoff.serverdb.message import Message, MessageHistory
+from walkoff.server.app import create_app
+import walkoff.config
+from tests.util import initialize_test_config
 
 
 class TestMessageDatabase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        execution_db_help.setup_dbs()
-        cls.context = flaskserver.app.test_request_context()
+        initialize_test_config()
+        cls.app = create_app(walkoff.config.Config)
+        cls.context = current_app.test_request_context()
         cls.context.push()
+
         db.create_all()
         for user in [user for user in User.query.all() if user.username != 'admin']:
             db.session.delete(user)

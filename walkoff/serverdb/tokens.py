@@ -3,7 +3,6 @@ from datetime import datetime
 from flask import current_app
 
 from walkoff.extensions import db
-from walkoff import cache
 
 prune_frequency = 1000
 
@@ -70,8 +69,8 @@ def approve_token(token_id, user):
 
 
 def prune_if_necessary():
-    cache.cache.incr("number_of_operations")
-    if cache.cache.get("number_of_operations") >= prune_frequency:
+    current_app.running_context.cache.incr("number_of_operations")
+    if current_app.running_context.cache.get("number_of_operations") >= prune_frequency:
         prune_database()
 
 

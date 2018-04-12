@@ -2,7 +2,6 @@ import unittest
 
 import walkoff.appgateway
 import walkoff.config
-from tests.config import test_apps_path
 from tests.util import execution_db_help
 from walkoff.appgateway.actionresult import ActionResult
 from walkoff.events import WalkoffEvent
@@ -12,15 +11,14 @@ from walkoff.executiondb.branch import Branch
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.workflow import Workflow
-from walkoff.helpers import InvalidExecutionElement
+from tests.util import initialize_test_config
 
 
 class TestBranch(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        initialize_test_config()
         execution_db_help.setup_dbs()
-        walkoff.appgateway.cache_apps(test_apps_path)
-        walkoff.config.load_app_apis(apps_path=test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
@@ -87,19 +85,9 @@ class TestBranch(unittest.TestCase):
             else:
                 self.assertIsNone(branch.execute(input_str, {}))
 
-    def test_get_branch_no_branchs(self):
+    def test_get_branch_no_branches(self):
         workflow = Workflow('test', 1)
         self.assertIsNone(workflow.get_branch(None, {}))
-
-    def test_get_branch_invalid_action(self):
-        condition = ConditionalExpression(
-            'and',
-            conditions=[Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])])
-        branch = Branch(source_id=1, destination_id=2, condition=condition)
-        action = Action('HelloWorld', 'helloWorld', 'helloWorld')
-        action._output = ActionResult(result='bbb', status='Success')
-        with self.assertRaises(InvalidExecutionElement):
-            Workflow('test', 1, actions=[action], branches=[branch])
 
     def test_get_branch(self):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld', id=10)

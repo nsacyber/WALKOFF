@@ -1,6 +1,6 @@
 from unittest import TestCase
 from walkoff.cache import DiskPubSubCache, unsubscribe_message
-from tests.config import cache_path
+from tests.config import CACHE_PATH
 import os
 import shutil
 import gevent
@@ -12,21 +12,21 @@ class TestDiskCachePubSub(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        os.mkdir(cache_path)
+        os.mkdir(CACHE_PATH)
         patch_all()
 
     def setUp(self):
-        self.cache = DiskPubSubCache(cache_path)
+        self.cache = DiskPubSubCache(CACHE_PATH)
 
     def tearDown(self):
         self.cache.cache.clear()
 
     @classmethod
     def tearDownClass(cls):
-        shutil.rmtree(cache_path)
+        shutil.rmtree(CACHE_PATH)
 
     def test_init(self):
-        self.assertEqual(self.cache.cache.directory, cache_path)
+        self.assertEqual(self.cache.cache.directory, CACHE_PATH)
 
     def test_publish(self):
         self.cache.register_callbacks()

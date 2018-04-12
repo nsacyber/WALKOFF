@@ -2,28 +2,29 @@ import unittest
 
 from tests.util import execution_db_help
 from walkoff.executiondb.device import App, Device
+from tests.util import initialize_test_config
 
 
 class TestAppDatabase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        execution_db_help.initialize_databases()
+        initialize_test_config()
+        cls.execution_db, _ = execution_db_help.setup_dbs()
 
     @classmethod
     def tearDownClass(cls):
         execution_db_help.tear_down_execution_db()
 
     def setUp(self):
-        from walkoff import executiondb
         self.device1 = Device('test1', [], [], 'type1')
         self.device2 = Device('test2', [], [], 'type1')
         self.device3 = Device('test3', [], [], 'type2')
         self.device4 = Device('test4', [], [], 'type2')
         self.all_devices = [self.device1, self.device2, self.device3, self.device4]
         for device in self.all_devices:
-            executiondb.execution_db.session.add(device)
-        executiondb.execution_db.session.commit()
+            self.execution_db.session.add(device)
+        self.execution_db.session.commit()
 
     def assertConstructionIsCorrect(self, app, name, devices):
         self.assertEqual(app.name, name)

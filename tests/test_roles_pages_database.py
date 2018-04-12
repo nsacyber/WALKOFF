@@ -1,20 +1,26 @@
 import unittest
 
 from tests.util import execution_db_help
-from walkoff.serverdb import db, Role, Resource, default_resources, initialize_default_resources_admin
+from walkoff.extensions import db
+from walkoff.serverdb import Role, Resource, default_resources
+from tests.util import initialize_test_config
+import walkoff.config
+from walkoff.server.app import create_app
+from walkoff.server.blueprints.root import create_user
 
 
 class TestRoles(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        import walkoff.server.flaskserver
-        cls.context = walkoff.server.flaskserver.app.test_request_context()
+        initialize_test_config()
+
+        app = create_app(walkoff.config.Config)
+        cls.context = app.test_request_context()
         cls.context.push()
 
         execution_db_help.setup_dbs()
 
-        initialize_default_resources_admin()
-        db.create_all()
+        create_user()
 
     @classmethod
     def tearDownClass(cls):
