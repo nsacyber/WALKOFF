@@ -4,7 +4,7 @@ import walkoff.config
 
 
 class TestConfig(walkoff.config.Config):
-    CONFIG_PATH = join('.', 'tests', 'config.json')
+    CONFIG_PATH = join('.', 'tests', 'tmp', 'config.json')
     TEST_PATH = join('.', 'tests')
     WORKFLOWS_PATH = join('.', 'tests', 'testWorkflows') + sep
     APPS_PATH = join('.', 'tests', 'testapps')
