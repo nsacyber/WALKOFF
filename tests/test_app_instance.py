@@ -2,9 +2,8 @@ import importlib
 import unittest
 
 import walkoff.appgateway
-from tests.util import execution_db_help
+from tests.util import execution_db_help, initialize_test_config
 from walkoff.appgateway import appinstance
-from tests.util import initialize_test_config
 
 
 class TestInstance(unittest.TestCase):

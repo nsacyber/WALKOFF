@@ -1,6 +1,7 @@
 import types
 import unittest
 from os import sep
+
 from os.path import join
 
 import walkoff.appgateway

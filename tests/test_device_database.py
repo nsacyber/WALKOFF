@@ -1,9 +1,8 @@
 import unittest
 
+from tests.util import execution_db_help, initialize_test_config
 from walkoff.executiondb.device import Device, UnknownDeviceField, DeviceField, EncryptedDeviceField, \
     get_device_ids_by_fields
-from tests.util import execution_db_help
-from tests.util import initialize_test_config
 
 
 class TestDeviceDatabase(unittest.TestCase):

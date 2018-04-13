@@ -1,21 +1,20 @@
 import os
 import shutil
-import unittest
 import threading
 import time
+import unittest
 
 import walkoff.appgateway
+import walkoff.cache
 import walkoff.config
 from tests.util import execution_db_help, initialize_test_config
-from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
-import walkoff.cache
-from walkoff.events import WalkoffEvent
-from walkoff.case.subscription import Subscription
 from walkoff.case.database import Case, Event
-from walkoff.server.app import create_app
+from walkoff.case.subscription import Subscription
+from walkoff.events import WalkoffEvent
+from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
+from walkoff.server.app import create_app
 from walkoff.server import workflowresults  # Need this import
-
 
 
 class TestZMQCommunication(unittest.TestCase):

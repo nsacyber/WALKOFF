@@ -1,10 +1,11 @@
-from unittest import TestCase
-from walkoff.cache import DiskCacheAdapter, unsubscribe_message
-from tests.util.mock_objects import PubSubCacheSpy
 import os
 from datetime import timedelta
+from unittest import TestCase
+
 import walkoff.config
 from tests.util import initialize_test_config
+from tests.util.mock_objects import PubSubCacheSpy
+from walkoff.cache import DiskCacheAdapter, unsubscribe_message
 
 
 class TestDiskCacheAdapter(TestCase):
@@ -106,7 +107,8 @@ class TestDiskCacheAdapter(TestCase):
         self.assertEqual(DiskCacheAdapter._convert_expire_to_seconds(1500), 1.5)
 
     def test_from_json(self):
-        data = {'directory': walkoff.config.Config.CACHE_PATH, 'shards': 4, 'timeout': 30, 'retry': False, 'statistics': True}
+        data = {'directory': walkoff.config.Config.CACHE_PATH, 'shards': 4, 'timeout': 30, 'retry': False,
+                'statistics': True}
         cache = DiskCacheAdapter.from_json(data)
         self.assertEqual(cache.directory, walkoff.config.Config.CACHE_PATH)
         self.assertEqual(cache.cache.directory, walkoff.config.Config.CACHE_PATH)

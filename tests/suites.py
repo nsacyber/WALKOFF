@@ -1,4 +1,5 @@
 from unittest import TestLoader, TestSuite
+
 from . import *
 
 
@@ -17,7 +18,8 @@ __server_tests = [test_workflow_server, test_app_api_server, test_case_server, t
                   test_messaging_endpoints, test_trigger_helpers, test_system_server, test_disk_cache_adapter,
                   test_redis_cache_adapter, test_redis_subscription, test_disk_subscription, test_sse_stream,
                   test_filtered_sse_stream, test_notification_stream, test_workflow_status, test_problem,
-                  test_workflow_results_stream, test_streamable_blueprint, test_console_stream]
+                  test_workflow_results_stream, test_streamable_blueprint, test_console_stream, test_disk_pubsub_cache,
+                  test_make_cache]
 server_suite = TestSuite()
 add_tests_to_suite(server_suite, __server_tests)
 

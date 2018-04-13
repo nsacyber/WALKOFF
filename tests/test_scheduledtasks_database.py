@@ -2,11 +2,12 @@ import json
 import unittest
 
 from flask import current_app
+
+from tests.util import initialize_test_config
 from tests.util.execution_db_help import setup_dbs
 from walkoff.scheduler import InvalidTriggerArgs
 from walkoff.serverdb import db
 from walkoff.serverdb.scheduledtasks import ScheduledTask
-from tests.util import initialize_test_config
 
 
 class TestScheduledTask(unittest.TestCase):

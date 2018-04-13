@@ -1,19 +1,20 @@
 import json
 import os
+from uuid import uuid4
+
+from flask import current_app
+from mock import create_autospec, patch, call
 
 import walkoff.case.database as case_database
-from walkoff.case.subscription import Subscription
-from walkoff.server.returncodes import *
-from walkoff.serverdb.casesubscription import CaseSubscription
-from walkoff.extensions import db
-from walkoff.server.endpoints.cases import convert_subscriptions, split_subscriptions
+import walkoff.config
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
-from uuid import uuid4
-from mock import create_autospec, patch, call
 from walkoff.case.logger import CaseLogger
-from flask import current_app
-import walkoff.config
+from walkoff.case.subscription import Subscription
+from walkoff.extensions import db
+from walkoff.server.endpoints.cases import convert_subscriptions, split_subscriptions
+from walkoff.server.returncodes import *
+from walkoff.serverdb.casesubscription import CaseSubscription
 
 
 class TestCaseServer(ServerTestCase):
@@ -218,7 +219,8 @@ class TestCaseServer(ServerTestCase):
                 headers=self.headers,
                 data=json.dumps({'name': 'case2'}),
                 content_type='application/json')
-            self.delete_with_status_check('api/cases/{0}'.format(case1_id), headers=self.headers, status_code=NO_CONTENT)
+            self.delete_with_status_check('api/cases/{0}'.format(case1_id), headers=self.headers,
+                                          status_code=NO_CONTENT)
 
             cases = [case.name for case in current_app.running_context.case_db.session.query(case_database.Case).all()]
             expected_cases = ['case2']
@@ -242,7 +244,8 @@ class TestCaseServer(ServerTestCase):
                 headers=self.headers,
                 status_code=OBJECT_DNE_ERROR)
 
-            db_cases = [case.name for case in current_app.running_context.case_db.session.query(case_database.Case).all()]
+            db_cases = [case.name for case in
+                        current_app.running_context.case_db.session.query(case_database.Case).all()]
             expected_cases = list(self.cases1.keys())
             orderless_list_compare(self, db_cases, expected_cases)
 
@@ -261,7 +264,8 @@ class TestCaseServer(ServerTestCase):
                 headers=self.headers,
                 status_code=OBJECT_DNE_ERROR)
 
-            db_cases = [case.name for case in current_app.running_context.case_db.session.query(case_database.Case).all()]
+            db_cases = [case.name for case in
+                        current_app.running_context.case_db.session.query(case_database.Case).all()]
             expected_cases = []
             orderless_list_compare(self, db_cases, expected_cases)
 
@@ -322,7 +326,7 @@ class TestCaseServer(ServerTestCase):
         with patch.object(current_app.running_context.executor, 'update_case') as mock_update:
             case2_id = self.create_case('case1')
             self.test_client.put('api/cases', headers=self.headers, data=json.dumps({'name': 'case1'}),
-                         content_type='application/json')
+                                 content_type='application/json')
             data = {"note": "note1", "id": case2_id}
             response = self.put_with_status_check(
                 'api/cases',

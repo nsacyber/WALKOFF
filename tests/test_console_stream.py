@@ -1,12 +1,13 @@
-from tests.util.mock_objects import MockRedisCacheAdapter
-from walkoff.server.blueprints.console import *
-from copy import copy
 import json
-from mock import patch
-from tests.util.servertestcase import ServerTestCase
+from copy import copy
+
 from flask import Response
+from mock import patch
+
+from tests.util.mock_objects import MockRedisCacheAdapter
+from tests.util.servertestcase import ServerTestCase
+from walkoff.server.blueprints.console import *
 from walkoff.server.returncodes import SUCCESS
-import logging
 
 
 class TestConsoleStream(ServerTestCase):

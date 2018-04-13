@@ -1,11 +1,12 @@
-from tests.util.mock_objects import MockRedisCacheAdapter
-from walkoff.server.blueprints.notifications import *
-from datetime import datetime
-from mock import patch
-from tests.util.servertestcase import ServerTestCase
-from walkoff.server.returncodes import SUCCESS
-from flask import Response
 import json
+
+from flask import Response
+from mock import patch
+
+from tests.util.mock_objects import MockRedisCacheAdapter
+from tests.util.servertestcase import ServerTestCase
+from walkoff.server.blueprints.notifications import *
+from walkoff.server.returncodes import SUCCESS
 
 
 class MockUser:
@@ -85,10 +86,10 @@ class TestNotificationStream(ServerTestCase):
         self.assertDictEqual(result, {'id': message.id, 'username': user.username})
 
     @patch.object(sse_stream, 'stream')
-    def test_notifications_stream_endpoint(self,  mock_stream):
+    def test_notifications_stream_endpoint(self, mock_stream):
         mock_stream.return_value = Response('something', status=SUCCESS)
         post = self.test_client.post('/api/auth', content_type="application/json",
-                             data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
+                                     data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
         key = json.loads(post.get_data(as_text=True))['access_token']
         response = self.test_client.get('/api/streams/messages/notifications?access_token={}'.format(key))
         mock_stream.assert_called_once_with(subchannel=1)

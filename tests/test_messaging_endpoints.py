@@ -2,18 +2,17 @@ import json
 from datetime import timedelta
 from uuid import uuid4
 
+from flask import current_app
 from sqlalchemy.exc import IntegrityError
 
-from tests.util import execution_db_help
+from tests.util import execution_db_help, initialize_test_config
 from tests.util.servertestcase import ServerTestCase
 from walkoff.extensions import db
 from walkoff.messaging import MessageActionEvent, MessageAction
-from flask import current_app
 from walkoff.server.endpoints.messages import max_notifications, min_notifications
 from walkoff.server.returncodes import *
 from walkoff.serverdb import User, Role
 from walkoff.serverdb.message import Message, MessageHistory
-from tests.util import initialize_test_config
 
 
 class UserWrapper(object):

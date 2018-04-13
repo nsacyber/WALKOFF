@@ -1,8 +1,7 @@
-import unittest
 import json
+import unittest
 
 from walkoff.appgateway.validator import validate_parameter, validate_parameters, convert_json
-from walkoff.config import initialize
 from walkoff.executiondb.argument import Argument
 from walkoff.helpers import InvalidArgument
 
@@ -10,7 +9,6 @@ from walkoff.helpers import InvalidArgument
 class TestInputValidation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        initialize()
         cls.message = 'app1 action1'
 
     def test_validate_parameter_primitive_no_formats_not_required_valid_string(self):

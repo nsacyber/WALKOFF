@@ -1,8 +1,8 @@
 import unittest
 
 import walkoff.appgateway
-import walkoff.config
 from tests.util import execution_db_help
+from tests.util import initialize_test_config
 from walkoff.appgateway.actionresult import ActionResult
 from walkoff.appgateway.appinstance import AppInstance
 from walkoff.events import WalkoffEvent
@@ -11,7 +11,6 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.position import Position
-from tests.util import initialize_test_config
 
 
 class TestAction(unittest.TestCase):
@@ -75,7 +74,8 @@ class TestAction(unittest.TestCase):
 
     def test_init_app_action_only_with_device(self):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld', device_id=Argument(name='__device__', value="test"))
-        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', device_id=Argument(name='__device__', value="test"))
+        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld',
+                            device_id=Argument(name='__device__', value="test"))
 
     def test_init_with_arguments_no_conversion(self):
         action = Action('HelloWorld', 'returnPlusOne', 'returnPlusOne', arguments=[Argument('number', value=-5.6)])

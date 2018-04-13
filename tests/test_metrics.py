@@ -1,11 +1,11 @@
+from flask import current_app
 from sqlalchemy import and_
 
 from tests.util import execution_db_help
 from tests.util.servertestcase import ServerTestCase
+from walkoff.executiondb.metrics import AppMetric, WorkflowMetric
 from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.workflow import Workflow
-from flask import current_app
-from walkoff.executiondb.metrics import AppMetric, WorkflowMetric
 
 
 class MetricsTest(ServerTestCase):

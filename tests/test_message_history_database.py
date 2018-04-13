@@ -1,13 +1,13 @@
 from datetime import datetime
 from unittest import TestCase
 
-from tests.util import execution_db_help
-from walkoff.messaging import MessageAction
 from flask import current_app
+
+from tests.util import execution_db_help, initialize_test_config
+from walkoff.messaging import MessageAction
 from walkoff.serverdb import db
 from walkoff.serverdb.message import MessageHistory
 from walkoff.serverdb.user import User
-from tests.util import initialize_test_config
 
 
 class TestMessageHistoryDatabase(TestCase):

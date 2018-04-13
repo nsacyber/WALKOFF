@@ -1,14 +1,12 @@
 import unittest
 
 import walkoff.appgateway
-import walkoff.config
-from tests.util import execution_db_help
+from tests.util import execution_db_help, initialize_test_config
 from walkoff.events import WalkoffEvent
-from walkoff.executiondb.schemas import dump_element
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
-from tests.util import initialize_test_config
+from walkoff.executiondb.schemas import dump_element
 
 
 class TestCondition(unittest.TestCase):

@@ -1,6 +1,8 @@
 import json
 from uuid import uuid4
 
+from flask import current_app
+
 import walkoff.case.database as case_database
 import walkoff.executiondb.schemas
 from tests.util import execution_db_help
@@ -12,7 +14,6 @@ from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
-from flask import current_app
 from walkoff.server.returncodes import *
 
 
@@ -178,7 +179,8 @@ class TestWorkflowStatus(ServerTestCase):
     def test_execute_workflow(self):
         playbook = execution_db_help.standard_load()
 
-        workflow = self.app.running_context.execution_db.session.query(Workflow).filter_by(playbook_id=playbook.id).first()
+        workflow = self.app.running_context.execution_db.session.query(Workflow).filter_by(
+            playbook_id=playbook.id).first()
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)
 
@@ -204,7 +206,8 @@ class TestWorkflowStatus(ServerTestCase):
 
     def test_execute_workflow_change_arguments(self):
         playbook = execution_db_help.standard_load()
-        workflow = self.app.running_context.execution_db.session.query(Workflow).filter_by(playbook_id=playbook.id).first()
+        workflow = self.app.running_context.execution_db.session.query(Workflow).filter_by(
+            playbook_id=playbook.id).first()
 
         action_ids = [action.id for action in workflow.actions if action.name == 'start']
         setup_subscriptions_for_action(workflow.id, action_ids)

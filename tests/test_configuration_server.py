@@ -1,12 +1,12 @@
 import json
+import os
+import shutil
 
 from flask import current_app
 
 import walkoff.config
 from tests.util.servertestcase import ServerTestCase
 from walkoff.server.returncodes import *
-import os
-import shutil
 
 
 class TestConfigurationServer(ServerTestCase):

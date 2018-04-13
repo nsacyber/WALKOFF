@@ -2,11 +2,12 @@ import json
 import uuid
 from datetime import timedelta
 
+from flask import current_app
+
 from tests.util import execution_db_help
-from walkoff.executiondb.metrics import AppMetric, ActionMetric, ActionStatusMetric, WorkflowMetric
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
-from flask import current_app
+from walkoff.executiondb.metrics import AppMetric, ActionMetric, ActionStatusMetric, WorkflowMetric
 from walkoff.server.endpoints.metrics import _convert_action_time_averages, _convert_workflow_time_averages
 
 

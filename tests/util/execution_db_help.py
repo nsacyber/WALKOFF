@@ -3,20 +3,20 @@ import os
 
 import walkoff.config
 from tests.util.jsonplaybookloader import JsonPlaybookLoader
-from walkoff.executiondb import ExecutionDatabase
 from walkoff.case.database import CaseDatabase
+from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.action import Action
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.branch import Branch
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
+from walkoff.executiondb.device import Device, DeviceField
+from walkoff.executiondb.metrics import AppMetric, WorkflowMetric, ActionMetric, ActionStatusMetric
 from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.schemas import PlaybookSchema
 from walkoff.executiondb.transform import Transform
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
-from walkoff.executiondb.device import Device, DeviceField
-from walkoff.executiondb.metrics import AppMetric, WorkflowMetric, ActionMetric, ActionStatusMetric
 
 
 def setup_dbs():
@@ -68,7 +68,8 @@ def standard_load():
 
 def load_playbook(playbook_name):
     execution_db = ExecutionDatabase.instance
-    playbook = JsonPlaybookLoader.load_playbook(os.path.join(walkoff.config.Config.WORKFLOWS_PATH, playbook_name + '.playbook'))
+    playbook = JsonPlaybookLoader.load_playbook(
+        os.path.join(walkoff.config.Config.WORKFLOWS_PATH, playbook_name + '.playbook'))
     execution_db.session.add(playbook)
     execution_db.session.commit()
     return playbook
@@ -76,7 +77,8 @@ def load_playbook(playbook_name):
 
 def load_workflow(playbook_name, workflow_name):
     execution_db = ExecutionDatabase.instance
-    playbook = JsonPlaybookLoader.load_playbook(os.path.join(walkoff.config.Config.WORKFLOWS_PATH, playbook_name + '.playbook'))
+    playbook = JsonPlaybookLoader.load_playbook(
+        os.path.join(walkoff.config.Config.WORKFLOWS_PATH, playbook_name + '.playbook'))
     execution_db.session.add(playbook)
     execution_db.session.commit()
 

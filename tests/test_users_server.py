@@ -167,7 +167,7 @@ class TestUserServer(ServerTestCase):
     def test_update_active_with_guest_user(self):
         user = self.setup_guest_user()
         response = self.test_client.post('/api/auth', content_type="application/json",
-                                 data=json.dumps(dict(username='guest', password='guest')))
+                                         data=json.dumps(dict(username='guest', password='guest')))
         key = json.loads(response.get_data(as_text=True))
         access_token = key['access_token']
         headers = {'Authorization': 'Bearer {}'.format(access_token)}
@@ -186,7 +186,7 @@ class TestUserServer(ServerTestCase):
     def test_update_different_user_not_admin(self):
         self.setup_guest_user()
         response = self.test_client.post('/api/auth', content_type="application/json",
-                                 data=json.dumps(dict(username='guest', password='guest')))
+                                         data=json.dumps(dict(username='guest', password='guest')))
         key = json.loads(response.get_data(as_text=True))
         access_token = key['access_token']
         headers = {'Authorization': 'Bearer {}'.format(access_token)}
@@ -213,7 +213,7 @@ class TestUserServer(ServerTestCase):
         user = add_user('test', 'test')
         user.set_roles({'admin'})
         response = self.test_client.post('/api/auth', content_type="application/json",
-                                 data=json.dumps(dict(username='test', password='test')))
+                                         data=json.dumps(dict(username='test', password='test')))
         key = json.loads(response.get_data(as_text=True))
         access_token = key['access_token']
         headers = {'Authorization': 'Bearer {}'.format(access_token)}

@@ -1,8 +1,10 @@
 from unittest import TestCase
-from walkoff.sse import FilteredSseStream, SseEvent, create_interface_channel_name, FilteredInterfaceSseStream
-from tests.util.mock_objects import MockRedisCacheAdapter
+
 import gevent
 from gevent.monkey import patch_all
+
+from tests.util.mock_objects import MockRedisCacheAdapter
+from walkoff.sse import FilteredSseStream, SseEvent, create_interface_channel_name, FilteredInterfaceSseStream
 
 
 class TestSimpleFilteredSseStream(TestCase):
@@ -131,7 +133,8 @@ class TestSimpleFilteredSseStream(TestCase):
             self.stream.unsubscribe(sub)
 
         sses = {sub: [SseEvent(event, {'a': arg}) for event, arg in args[sub]] for sub in subs}
-        formatted_sses = {sub: [sse.format(i + 1, retry=50) for i, sse in enumerate(sse_vals)] for sub, sse_vals in sses.items()}
+        formatted_sses = {sub: [sse.format(i + 1, retry=50) for i, sse in enumerate(sse_vals)] for sub, sse_vals in
+                          sses.items()}
 
         listen_threads = [gevent.spawn(listen, sub) for sub in subs]
         publish_threads = [gevent.spawn(publish, sub) for sub in subs]

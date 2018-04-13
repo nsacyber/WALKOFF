@@ -3,13 +3,13 @@ import threading
 
 import gevent
 from fakeredis import FakeStrictRedis
-from zmq.utils.strtypes import cast_unicode
 from flask import current_app
+from zmq.utils.strtypes import cast_unicode
 
-from walkoff.executiondb import ExecutionDatabase
-from walkoff.case.database import CaseDatabase
 from walkoff.cache import RedisCacheAdapter
+from walkoff.case.database import CaseDatabase
 from walkoff.events import WalkoffEvent
+from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.multiprocessedexecutor import workflowexecutioncontroller
@@ -70,7 +70,7 @@ class MockLoadBalancer(object):
         self.handle_data_sent = handle_data_sent
         if not WalkoffEvent.CommonWorkflowSignal.signal.receivers:
             WalkoffEvent.CommonWorkflowSignal.connect(handle_data_sent)
-            
+
         self.execution_db = ExecutionDatabase.instance
         self.case_db = CaseDatabase.instance
 

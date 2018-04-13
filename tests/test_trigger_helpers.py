@@ -1,5 +1,5 @@
-from unittest import TestCase
 import json
+from unittest import TestCase
 from uuid import uuid4
 
 from walkoff.server.endpoints.triggers import get_authorized_execution_ids

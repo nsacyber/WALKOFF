@@ -1,7 +1,9 @@
-from walkoff.sse import StreamableBlueprint, SseStream
-from walkoff.cache import RedisCacheAdapter
 from unittest import TestCase
+
 from mock import create_autospec
+
+from walkoff.cache import RedisCacheAdapter
+from walkoff.sse import StreamableBlueprint, SseStream
 
 
 class TestStreamableBlueprint(TestCase):
@@ -43,6 +45,7 @@ class TestStreamableBlueprint(TestCase):
 
     def test_set_caches_some_not_none(self):
         class MockCache: pass
+
         cache2 = MockCache()
         stream1 = SseStream('name1')
         stream2 = SseStream('name2', cache=cache2)

@@ -89,7 +89,8 @@ class TestWorkflowServer(ServerTestCase):
 
     def test_read_workflows(self):
         execution_db_help.standard_load()
-        workflows = {str(workflow.id) for workflow in self.app.running_context.execution_db.session.query(Workflow).all()}
+        workflows = {str(workflow.id) for workflow in
+                     self.app.running_context.execution_db.session.query(Workflow).all()}
         response = self.get_with_status_check('/api/workflows', headers=self.headers)
         self.assertSetEqual({workflow['id'] for workflow in response}, workflows)
 
@@ -152,13 +153,15 @@ class TestWorkflowServer(ServerTestCase):
         execution_db_help.standard_load()
         previous_num_playbooks = len(self.app.running_context.execution_db.session.query(Playbook).all())
         self.check_invalid_id('delete', '/api/playbooks/{}'.format(uuid4()), 'playbook')
-        self.assertEqual(previous_num_playbooks, len(self.app.running_context.execution_db.session.query(Playbook).all()))
+        self.assertEqual(previous_num_playbooks,
+                         len(self.app.running_context.execution_db.session.query(Playbook).all()))
 
     def test_delete_playbook_invalid_id_format(self):
         execution_db_help.standard_load()
         previous_num_playbooks = len(self.app.running_context.execution_db.session.query(Playbook).all())
         self.check_invalid_id('delete', '/api/playbooks/{}'.format(uuid4()), 'playbook')
-        self.assertEqual(previous_num_playbooks, len(self.app.running_context.execution_db.session.query(Playbook).all()))
+        self.assertEqual(previous_num_playbooks,
+                         len(self.app.running_context.execution_db.session.query(Playbook).all()))
 
     def test_delete_workflow(self):
         execution_db_help.standard_load()
@@ -178,7 +181,8 @@ class TestWorkflowServer(ServerTestCase):
                                       headers=self.headers, status_code=NO_CONTENT)
         self.assertEqual(len(list(target_playbook.workflows)), len(workflow_ids) - 1)
         self.assertNotIn(workflow_ids[0], [workflow.id for workflow in target_playbook.workflows])
-        self.assertEqual(len(self.app.running_context.execution_db.session.query(Playbook).all()), original_num_playbooks)
+        self.assertEqual(len(self.app.running_context.execution_db.session.query(Playbook).all()),
+                         original_num_playbooks)
 
     def test_delete_last_workflow(self):
         execution_db_help.standard_load()
@@ -192,19 +196,22 @@ class TestWorkflowServer(ServerTestCase):
         self.delete_with_status_check('/api/workflows/{}'.format(workflow.id),
                                       headers=self.headers, status_code=NO_CONTENT)
         self.assertIsNone(self.app.running_context.execution_db.session.query(Playbook).filter_by(name='play1').first())
-        self.assertEqual(len(self.app.running_context.execution_db.session.query(Playbook).all()), original_num_playbooks - 1)
+        self.assertEqual(len(self.app.running_context.execution_db.session.query(Playbook).all()),
+                         original_num_playbooks - 1)
 
     def test_delete_workflow_invalid_workflow_id(self):
         execution_db_help.standard_load()
         original_num_playbooks = len(self.app.running_context.execution_db.session.query(Playbook).all())
         self.check_invalid_id('delete', '/api/workflows/{}'.format(uuid4()), 'workflow')
-        self.assertEqual(len(self.app.running_context.execution_db.session.query(Playbook).all()), original_num_playbooks)
+        self.assertEqual(len(self.app.running_context.execution_db.session.query(Playbook).all()),
+                         original_num_playbooks)
 
     def test_delete_workflow_invalid_workflow_id_format(self):
         execution_db_help.standard_load()
         original_num_playbooks = len(self.app.running_context.execution_db.session.query(Playbook).all())
         self.check_invalid_uuid('delete', '/api/workflows/37b', 'workflow')
-        self.assertEqual(len(self.app.running_context.execution_db.session.query(Playbook).all()), original_num_playbooks)
+        self.assertEqual(len(self.app.running_context.execution_db.session.query(Playbook).all()),
+                         original_num_playbooks)
 
     # All the creates
 
@@ -298,8 +305,9 @@ class TestWorkflowServer(ServerTestCase):
         data = {'id': str(uuid4()), 'name': self.change_playbook_name}
         self.check_invalid_id('patch', '/api/playbooks', 'playbook', content_type="application/json",
                               data=json.dumps(data))
-        self.assertSetEqual({playbook.name for playbook in self.app.running_context.execution_db.session.query(Playbook).all()},
-                            expected)
+        self.assertSetEqual(
+            {playbook.name for playbook in self.app.running_context.execution_db.session.query(Playbook).all()},
+            expected)
 
     def test_update_playbook_invalid_id_format(self):
         execution_db_help.standard_load()
@@ -307,8 +315,9 @@ class TestWorkflowServer(ServerTestCase):
         data = {'id': '475', 'name': self.change_playbook_name}
         self.check_invalid_uuid('patch', '/api/playbooks', 'playbook', content_type="application/json",
                                 data=json.dumps(data))
-        self.assertSetEqual({playbook.name for playbook in self.app.running_context.execution_db.session.query(Playbook).all()},
-                            expected)
+        self.assertSetEqual(
+            {playbook.name for playbook in self.app.running_context.execution_db.session.query(Playbook).all()},
+            expected)
 
     def test_update_workflow(self):
         from walkoff.executiondb.schemas import WorkflowSchema
@@ -383,7 +392,8 @@ class TestWorkflowServer(ServerTestCase):
         for workflow in playbook.workflows:
             workflow_id = workflow.id
 
-        transfer_playbook = self.app.running_context.execution_db.session.query(Playbook).filter_by(name='dataflowTest').first()
+        transfer_playbook = self.app.running_context.execution_db.session.query(Playbook).filter_by(
+            name='dataflowTest').first()
 
         data = {"name": self.add_workflow_name, "playbook_id": str(transfer_playbook.id)}
         self.post_with_status_check('/api/workflows?source={}'.format(workflow_id),
@@ -393,7 +403,8 @@ class TestWorkflowServer(ServerTestCase):
         for workflow in playbook.workflows:
             if workflow.name == 'helloWorldWorkflow':
                 original_workflow = workflow
-        copy_workflow = self.app.running_context.execution_db.session.query(Workflow).filter_by(name=self.add_workflow_name).first()
+        copy_workflow = self.app.running_context.execution_db.session.query(Workflow).filter_by(
+            name=self.add_workflow_name).first()
 
         self.assertEqual(len(playbook.workflows), 1)
         self.assertEqual(len(transfer_playbook.workflows), 2)
@@ -410,7 +421,8 @@ class TestWorkflowServer(ServerTestCase):
                                     data=json.dumps(data),
                                     headers=self.headers, status_code=OBJECT_CREATED, content_type="application/json")
 
-        copy_playbook = self.app.running_context.execution_db.session.query(Playbook).filter_by(name=self.add_playbook_name).first()
+        copy_playbook = self.app.running_context.execution_db.session.query(Playbook).filter_by(
+            name=self.add_playbook_name).first()
 
         self.assertIsNotNone(copy_playbook)
 

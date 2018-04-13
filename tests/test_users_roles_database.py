@@ -1,14 +1,13 @@
 import unittest
 from datetime import datetime, timedelta
 
-from tests.util import execution_db_help
-from walkoff.helpers import timestamp_to_datetime
-from walkoff.extensions import db
-from walkoff.serverdb import User, Role, add_user, remove_user
-from tests.util import initialize_test_config
-from walkoff.server.app import create_app
 import walkoff.config
+from tests.util import execution_db_help, initialize_test_config
+from walkoff.extensions import db
+from walkoff.helpers import timestamp_to_datetime
+from walkoff.server.app import create_app
 from walkoff.server.blueprints.root import create_user
+from walkoff.serverdb import User, Role, add_user, remove_user
 
 
 class TestUserRolesDatabase(unittest.TestCase):

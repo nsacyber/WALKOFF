@@ -1,6 +1,6 @@
-import walkoff.config
 import tests.config
 import walkoff.appgateway
+import walkoff.config
 
 
 def initialize_test_config():

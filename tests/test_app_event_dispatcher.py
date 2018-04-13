@@ -13,9 +13,9 @@ class TestAppEventDispatcher(TestCase):
     @classmethod
     def setUpClass(cls):
         walkoff.config.app_apis = {'App1': {'actions': {'action1': None,
-                                                               'action2': None,
-                                                               'action3': None}},
-                                          'App2': {}}
+                                                        'action2': None,
+                                                        'action3': None}},
+                                   'App2': {}}
         cls.possible_events = {event for event in WalkoffEvent if event.event_type == EventType.action}
 
     @classmethod

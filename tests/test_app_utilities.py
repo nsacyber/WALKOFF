@@ -1,9 +1,8 @@
 import unittest
 
-from tests.util import execution_db_help
+from tests.util import execution_db_help, initialize_test_config
 from walkoff.executiondb.device import get_device, get_all_devices_for_app, \
     get_all_devices_of_type_from_app, App, Device
-from tests.util import initialize_test_config
 
 
 class TestAppUtilities(unittest.TestCase):

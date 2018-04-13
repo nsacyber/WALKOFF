@@ -1,9 +1,11 @@
 from unittest import TestCase
-from zmq import Socket
-from walkoff.multiprocessedexecutor.worker import *
-from walkoff.config import Config
-from mock import patch
 from uuid import uuid4
+
+from mock import patch
+from zmq import Socket
+
+from walkoff.config import Config
+from walkoff.multiprocessedexecutor.worker import *
 
 
 class TestWorkflowResultsHandler(TestCase):

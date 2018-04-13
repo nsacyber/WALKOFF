@@ -1,8 +1,10 @@
 from unittest import TestCase
-from fakeredis import FakeStrictRedis
-from walkoff.cache import RedisSubscription, unsubscribe_message
+
 import gevent
+from fakeredis import FakeStrictRedis
 from gevent.monkey import patch_all
+
+from walkoff.cache import RedisSubscription, unsubscribe_message
 
 
 class TestRedisSubscription(TestCase):
@@ -22,7 +24,6 @@ class TestRedisSubscription(TestCase):
         self.assertEqual(self.sub.channel, self.channel)
 
     def test_listen(self):
-
         result = []
 
         def listen():
@@ -41,4 +42,3 @@ class TestRedisSubscription(TestCase):
         thread2.start()
         thread1.join(timeout=5)
         thread2.join(timeout=5)
-

@@ -3,7 +3,6 @@ import json
 from flask import current_app, request, send_file
 from flask_jwt_extended import jwt_required
 
-from walkoff import executiondb
 from walkoff.appgateway.validator import validate_device_fields
 from walkoff.executiondb.device import Device, App
 from walkoff.helpers import get_app_device_api, InvalidArgument, UnknownDevice, UnknownApp

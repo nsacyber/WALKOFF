@@ -1,14 +1,11 @@
 import unittest
 
 import walkoff.appgateway
-import walkoff.config
-import tests.config
-from tests.util import execution_db_help
+from tests.util import execution_db_help, initialize_test_config
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.transform import Transform
 from walkoff.helpers import InvalidArgument
-from tests.util import initialize_test_config
 
 
 class TestCondition(unittest.TestCase):

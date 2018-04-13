@@ -1,15 +1,17 @@
 from unittest import TestCase
-from walkoff.multiprocessedexecutor.worker import WorkflowReceiver, ExecuteWorkflowMessage
-import nacl.bindings.crypto_box
-from nacl.public import PrivateKey, Box
-from walkoff.config import Config
-from zmq import auth
-import walkoff.cache
-from mock import patch
-from tests.util.mock_objects import MockRedisCacheAdapter
-import os.path
 from uuid import uuid4
+
+import nacl.bindings.crypto_box
+import os.path
+from mock import patch
+from nacl.public import PrivateKey, Box
+from zmq import auth
+
+import walkoff.cache
+import walkoff.config
 from tests.util import initialize_test_config
+from tests.util.mock_objects import MockRedisCacheAdapter
+from walkoff.multiprocessedexecutor.worker import WorkflowReceiver, ExecuteWorkflowMessage
 
 
 class TestWorkflowReceiver(TestCase):
@@ -17,9 +19,9 @@ class TestWorkflowReceiver(TestCase):
     @classmethod
     def setUpClass(cls):
         initialize_test_config()
-        server_secret_file = os.path.join(Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
+        server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
         server_public, server_secret = auth.load_certificate(server_secret_file)
-        client_secret_file = os.path.join(Config.ZMQ_PRIVATE_KEYS_PATH, "client.key_secret")
+        client_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "client.key_secret")
         client_public, client_secret = auth.load_certificate(client_secret_file)
         cls.key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
         cls.server_key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
@@ -27,16 +29,16 @@ class TestWorkflowReceiver(TestCase):
 
     @patch.object(walkoff.cache, 'make_cache', return_value=MockRedisCacheAdapter())
     def test_init(self, mock_make_cache):
-        receiver = WorkflowReceiver(self.key, self.server_key, Config.CACHE)
+        receiver = WorkflowReceiver(self.key, self.server_key, walkoff.config.Config.CACHE)
         self.assertEqual(receiver.key, self.key)
         self.assertEqual(receiver.server_key, self.server_key)
-        mock_make_cache.assert_called_once_with(Config.CACHE)
+        mock_make_cache.assert_called_once_with(walkoff.config.Config.CACHE)
         self.assertIsInstance(receiver.cache, MockRedisCacheAdapter)
         self.assertFalse(receiver.exit)
 
     @patch.object(walkoff.cache, 'make_cache', return_value=MockRedisCacheAdapter())
     def get_receiver(self, mock_create_cache):
-        return WorkflowReceiver(self.key, self.server_key, Config.CACHE)
+        return WorkflowReceiver(self.key, self.server_key, walkoff.config.Config.CACHE)
 
     def test_shutdown(self):
         receiver = self.get_receiver()

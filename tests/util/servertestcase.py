@@ -7,10 +7,9 @@ import walkoff.appgateway
 import walkoff.config
 from tests.util import execution_db_help, initialize_test_config
 from tests.util.mock_objects import *
-from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
+from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor, spawn_worker_processes
 from walkoff.server.app import create_app
 from walkoff.server.blueprints.root import create_user
-from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
 
 if not getattr(__builtins__, 'WindowsError', None):
     class WindowsError(OSError): pass

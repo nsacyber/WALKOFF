@@ -1,8 +1,7 @@
 import unittest
 
 import walkoff.appgateway
-import walkoff.config
-from tests.util import execution_db_help
+from tests.util import execution_db_help, initialize_test_config
 from walkoff.appgateway.actionresult import ActionResult
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.action import Action
@@ -11,7 +10,6 @@ from walkoff.executiondb.branch import Branch
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.workflow import Workflow
-from tests.util import initialize_test_config
 
 
 class TestBranch(unittest.TestCase):

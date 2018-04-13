@@ -1,9 +1,9 @@
 import unittest
 
 import walkoff.appgateway
+from tests.util import initialize_test_config
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.transform import Transform
-from tests.util import initialize_test_config
 
 
 class TestTransform(unittest.TestCase):

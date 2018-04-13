@@ -1,7 +1,9 @@
-from unittest import TestCase
-from mock import patch
-from walkoff.appgateway.console import ConsoleLoggingHandler
 from logging import WARN
+from unittest import TestCase
+
+from mock import patch
+
+from walkoff.appgateway.console import ConsoleLoggingHandler
 from walkoff.events import WalkoffEvent
 
 

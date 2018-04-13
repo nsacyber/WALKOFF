@@ -1,6 +1,7 @@
-import os.path
 from importlib import import_module
 from unittest import TestCase
+
+import os.path
 
 from walkoff.appgateway.appcache import (AppCache, WalkoffTag,
                                          _get_qualified_class_name, _get_qualified_function_name,

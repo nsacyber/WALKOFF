@@ -5,13 +5,13 @@ from uuid import uuid4
 from mock import patch
 from zmq import Socket
 
+from tests.util import initialize_test_config
 from tests.util.execution_db_help import setup_dbs
 from tests.util.mock_objects import MockRedisCacheAdapter
 from walkoff.case.subscription import Subscription
 from walkoff.executiondb.argument import Argument
 from walkoff.multiprocessedexecutor.workflowexecutioncontroller import ExecuteWorkflowMessage, \
     WorkflowExecutionController, Message, CaseControl, CommunicationPacket, WorkflowControl
-from tests.util import initialize_test_config
 
 
 class TestWorkflowExecutionController(TestCase):

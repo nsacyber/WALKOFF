@@ -1,11 +1,12 @@
 import json
 import logging
+
 import os.path
 
 import walkoff.config
+from walkoff.executiondb.schemas import PlaybookSchema, WorkflowSchema
 from walkoff.helpers import (locate_playbooks_in_directory, InvalidArgument, UnknownApp, UnknownAppAction,
                              UnknownTransform, UnknownCondition, format_exception_message)
-from walkoff.executiondb.schemas import PlaybookSchema, WorkflowSchema
 
 logger = logging.getLogger(__name__)
 

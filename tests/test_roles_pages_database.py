@@ -1,12 +1,11 @@
 import unittest
 
-from tests.util import execution_db_help
-from walkoff.extensions import db
-from walkoff.serverdb import Role, Resource, default_resources
-from tests.util import initialize_test_config
 import walkoff.config
+from tests.util import execution_db_help, initialize_test_config
+from walkoff.extensions import db
 from walkoff.server.app import create_app
 from walkoff.server.blueprints.root import create_user
+from walkoff.serverdb import Role, Resource, default_resources
 
 
 class TestRoles(unittest.TestCase):

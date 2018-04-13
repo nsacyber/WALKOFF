@@ -1,13 +1,15 @@
-from walkoff.sse import SseEvent, SseStream, InterfaceSseStream, create_interface_channel_name
-from unittest import TestCase
-from tests.util.mock_objects import MockRedisCacheAdapter
 import json
+import os
+from unittest import TestCase
+
 import gevent
 from gevent.monkey import patch_all
-import os
-from walkoff.cache import DiskCacheAdapter
-from tests.util import initialize_test_config
+
 import walkoff.config
+from tests.util import initialize_test_config
+from tests.util.mock_objects import MockRedisCacheAdapter
+from walkoff.cache import DiskCacheAdapter
+from walkoff.sse import SseEvent, SseStream, InterfaceSseStream, create_interface_channel_name
 
 
 class TestSseEvent(TestCase):

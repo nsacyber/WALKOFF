@@ -3,19 +3,19 @@ from datetime import datetime
 from unittest import TestCase
 from uuid import uuid4
 
+from flask import current_app
+
+import walkoff.config
 import walkoff.messaging
-from tests.util import execution_db_help
+from tests.util import execution_db_help, initialize_test_config
 from walkoff.events import WalkoffEvent
 from walkoff.helpers import utc_as_rfc_datetime
 from walkoff.messaging import MessageAction
 from walkoff.messaging.utils import strip_requires_response_from_message_body, save_message, \
     get_all_matching_users_for_message, log_action_taken_on_message
-from flask import current_app
+from walkoff.server.app import create_app
 from walkoff.serverdb import db, User, Role
 from walkoff.serverdb.message import Message, MessageHistory
-from walkoff.server.app import create_app
-import walkoff.config
-from tests.util import initialize_test_config
 
 
 class TestMessageDatabase(TestCase):
