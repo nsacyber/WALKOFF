@@ -3,7 +3,7 @@ import os
 
 import walkoff.config
 from tests.util.servertestcase import ServerTestCase
-from walkoff.executiondb.device import Device, App, DeviceField
+from walkoff.executiondb.device import Device, App, DeviceField, EncryptedDeviceField
 from walkoff.server.returncodes import *
 
 
@@ -15,7 +15,10 @@ class TestDevicesServer(ServerTestCase):
         self.app.running_context.execution_db.session.rollback()
         for device in self.app.running_context.execution_db.session.query(Device).all():
             self.app.running_context.execution_db.session.delete(device)
+        self.app.running_context.execution_db.session.commit()
         for field in self.app.running_context.execution_db.session.query(DeviceField).all():
+            self.app.running_context.execution_db.session.delete(field)
+        for field in self.app.running_context.execution_db.session.query(EncryptedDeviceField).all():
             self.app.running_context.execution_db.session.delete(field)
         app = self.app.running_context.execution_db.session.query(App).filter(App.name == self.test_app_name).first()
         if app is not None:
@@ -269,7 +272,7 @@ class TestDevicesServer(ServerTestCase):
 
         self.assertEqual(device['name'], 'testDevice')
         self.assertEqual(device['app_name'], 'HelloWorld')
-        self.assertEqual(device['type'], 'Test Device Type')
+        self.assertEqual(device['type'], 'Test Device Type 3')
         self.assertEqual(len(device['fields']), len(fields))
         for field in fields:
             # Checks if test field is a subset of the device json fields
