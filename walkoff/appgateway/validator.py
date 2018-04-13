@@ -3,11 +3,11 @@ import logging
 import os
 from copy import deepcopy
 from functools import partial
-from six import string_types
 
 from connexion.utils import boolean
 from jsonschema import RefResolver, draft4_format_checker, ValidationError
 from jsonschema.validators import Draft4Validator
+from six import string_types
 from swagger_spec_validator import ref_validators
 from swagger_spec_validator.validator20 import deref
 
@@ -74,11 +74,11 @@ def __convert_json(schema, param_in, message_prefix):
                     type(param_in).__name__))
     if not isinstance(param_in, dict):
         raise InvalidArgument(
-                '{0} A JSON object was expected. '
-                'Instead got "{1}" of type {2}.'.format(
-                    message_prefix,
-                    param_in,
-                    type(param_in).__name__))
+            '{0} A JSON object was expected. '
+            'Instead got "{1}" of type {2}.'.format(
+                message_prefix,
+                param_in,
+                type(param_in).__name__))
     if 'properties' not in schema:
         return param_in
     ret = {}
@@ -398,7 +398,8 @@ def validate_parameters(api, arguments, message_prefix, accumulator=None):
                 converted[param_name] = default_param
                 arguments_set.add(param_name)
             elif 'required' in param_api:
-                message = 'For {0}: Parameter {1} is not specified and has no default'.format(message_prefix, param_name)
+                message = 'For {0}: Parameter {1} is not specified and has no default'.format(message_prefix,
+                                                                                              param_name)
                 logger.error(message)
                 raise InvalidArgument(message)
             else:

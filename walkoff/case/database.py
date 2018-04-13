@@ -21,8 +21,7 @@ class _CaseEventLink(Case_Base):
 
 
 class Case(Case_Base):
-    """Case ORM for the events database
-    """
+    """Case ORM for the events database"""
     __tablename__ = 'case'
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -46,8 +45,7 @@ class Case(Case_Base):
 
 
 class Event(Case_Base):
-    """ORM for an Event in the events database
-    """
+    """ORM for an Event in the events database"""
     __tablename__ = 'event'
     id = Column(Integer, primary_key=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
@@ -87,12 +85,16 @@ class Event(Case_Base):
 
 
 class CaseDatabase(object):
-    """Wrapper for the SQLAlchemy Case database object
-    """
-
+    """Wrapper for the SQLAlchemy Case database object"""
     instance = None
 
     def __init__(self, case_db_type, case_db_path):
+        """Initializes a new CaseDatabase
+
+        Args:
+            case_db_type (str): The type of database
+            case_db_path (str): The path to the database
+        """
         self.engine = create_engine(
             format_db_path(case_db_type, case_db_path))
         self.connection = self.engine.connect()
@@ -111,14 +113,13 @@ class CaseDatabase(object):
         return cls.instance
 
     def tear_down(self):
-        """ Tears down the database
-        """
+        """ ears down the database"""
         self.session.rollback()
         self.connection.close()
         self.engine.dispose()
 
     def rename_case(self, case_id, new_case_name):
-        """ Renames a case
+        """Renames a case
         
         Args:
             case_id (int): The case to rename

@@ -1,11 +1,11 @@
 import inspect
 import logging
-import os.path
 import pkgutil
 import sys
 from collections import namedtuple
 from importlib import import_module
 
+import os.path
 from six import string_types
 
 from walkoff.helpers import UnknownApp, UnknownAppAction, UnknownCondition, UnknownTransform
@@ -81,8 +81,7 @@ class AppCacheEntry(object):
             self.functions[qualified_action_name] = FunctionEntry(run=function_, is_bound=False, tags=tags)
 
     def clear_bound_functions(self):
-        """Clears any bounded functions from the object
-        """
+        """Clears any bounded functions from the object"""
         self.functions = {action_name: action for action_name, action in self.functions.items() if not action.is_bound}
 
     def is_bound(self, func_name):
@@ -92,10 +91,10 @@ class AppCacheEntry(object):
             func_name (str): The name of the function
 
         Returns:
-            True if the function is bound, False otherwise
+            (bool): True if the function is bound, False otherwise
 
         Raises:
-            UnknownAppAction if the function name is not an existing function in the app
+            UnknownAppAction: If the function name is not an existing function in the app
         """
         try:
             return self.functions[func_name].is_bound
@@ -109,7 +108,7 @@ class AppCacheEntry(object):
             tag (str): The tag to search by
 
         Returns:
-            A list of function names with the provided tag
+            list[str]: A list of function names with the provided tag
         """
         return [function_name for function_name, entry in self.functions.items() if tag in entry.tags]
 
@@ -121,10 +120,10 @@ class AppCacheEntry(object):
             function_type (str): The type of the function
 
         Returns:
-            The function executable
+            (func): The function executable
 
         Raises:
-            Exception if the function type is not in the function entry tags
+            Exception: If the function type is not in the function entry tags
         """
         func_entry = self.functions[func_name]
         if function_type in func_entry.tags:
@@ -164,8 +163,7 @@ class AppCache(object):
                 self._import_and_cache_submodules('{0}.{1}'.format(app_path, app), app, app_path)
 
     def clear(self):
-        """Clears the cache
-        """
+        """Clears the cache"""
         self._cache = {}
 
     def get_app_names(self):
@@ -277,7 +275,7 @@ class AppCache(object):
             condition_name(str): Name of the action
 
         Returns:
-            func: The action
+            (func): The action
 
         Raises:
             UnknownApp: If the app is not found in the cache
@@ -307,7 +305,7 @@ class AppCache(object):
             transform_name(str): Name of the action
 
         Returns:
-            func: The transform
+            (func): The transform
 
         Raises:
             UnknownApp: If the app is not found in the cache
@@ -339,11 +337,11 @@ class AppCache(object):
 
         Args:
             app_name (str): Name of the app
-            function_name(str): Name of the action
+            function_name (str): Name of the action
             function_type (WalkoffTag): Type of function, 'actions', 'conditions', or 'transforms'
 
         Returns:
-            func: The function
+            (func): The function
 
         Raises:
             UnknownApp: If the app is not found in the cache
@@ -373,7 +371,7 @@ class AppCache(object):
             path (str): Path to convert
 
         Returns:
-            str: Module form of the path
+            (str): Module form of the path
         """
         path = path.replace(os.path.sep, '.')
         path = path.rstrip('.')
@@ -384,6 +382,8 @@ class AppCache(object):
 
         Args:
             package (str|module): The name of the package or the package itself from which to import the submodules.
+            app_name (str): The name of the app
+            app_path (str): The path for the app
             recursive (bool, optional): A boolean to determine whether or not to recursively load the submodules.
                 Defaults to True.
         """
@@ -413,6 +413,7 @@ class AppCache(object):
         Args:
             module (module): The module to cache
             app_name (str): The name of the app associated with the module
+            app_path (str): The path of the app
         """
         base_path = '.'.join([app_path, app_name])
         global_actions = []
@@ -435,6 +436,7 @@ class AppCache(object):
         Args:
             app_class (cls): The app class to cache
             app_name (str): The name of the app associated with the class
+            app_path (str): The path of the app
         """
         if app_name not in self._cache:
             self._cache[app_name] = AppCacheEntry(app_name)
@@ -448,7 +450,7 @@ def _get_qualified_class_name(obj):
         obj (cls): The class to get the name
 
     Returns:
-        str: The qualified name of the class
+        (str): The qualified name of the class
     """
     return '{0}.{1}'.format(obj.__module__, obj.__name__)
 
@@ -461,7 +463,7 @@ def _get_qualified_function_name(method, cls=None):
         cls (cls, optional): The class containing this function or method is any
 
     Returns:
-        str: The qualified name of the function or method
+        (str): The qualified name of the function or method
     """
     if cls:
         return '{0}.{1}.{2}'.format(method.__module__, cls.__name__, method.__name__)

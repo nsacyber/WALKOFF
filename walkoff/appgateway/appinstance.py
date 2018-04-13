@@ -24,7 +24,7 @@ class AppInstance(object):
             device_name (str): A device pertaining to the App.
             
         Returns:
-            A new Instance object.
+            (AppInstance): A new Instance object.
         """
         try:
             return AppInstance(instance=get_app(app_name)(name=app_name, device=device_name))
@@ -38,8 +38,7 @@ class AppInstance(object):
         return self.instance
 
     def shutdown(self):
-        """Shuts down the Instance object.
-        """
+        """Shuts down the Instance object."""
         self.instance.shutdown()
 
     def __repr__(self):

@@ -58,7 +58,7 @@ def get_condition(app_name, condition_name):
         condition_name(str): Name of the action
 
     Returns:
-        (func) The action
+        (func): The action
 
     Raises:
         UnknownApp: If the app is not found in the cache
@@ -87,10 +87,10 @@ def get_transform(app_name, transform_name):
 
     Args:
         app_name (str): Name of the app
-        transform_name(str): Name of the transform
+        transform_name (str): Name of the transform
 
     Returns:
-        (func) The action
+        (func): The action
 
     Raises:
         UnknownApp: If the app is not found in the cache
@@ -124,8 +124,7 @@ def cache_apps(path):
 
 
 def clear_cache():
-    """Clears the global cache
-    """
+    """Clears the global cache"""
     _cache.clear()
 
 
@@ -137,7 +136,7 @@ def is_app_action_bound(app_name, action_name):
         action_name(str): Name of the action
 
     Returns:
-        (bool) Is the action bound?
+        (bool): Is the action bound?
 
     Raises:
         UnknownApp: If the app is not found in the cache

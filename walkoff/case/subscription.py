@@ -1,30 +1,30 @@
 import logging
-
-from threading import RLock
 from collections import namedtuple
+from threading import RLock
 
 logger = logging.getLogger(__name__)
 
+"""A subscription for a single execution element"""
 Subscription = namedtuple('Subscription', ['id', 'events'])
-"""A subscription for a single execution element
-"""
 
 
 class SubscriptionCache(object):
-    """Cache for case subscriptions
+    """Cache for case subscriptions. Structure is optimized for efficient lookup at the cost of efficient
+        modification"""
 
-    Structure is optimized for efficient lookup at the cost of efficient modification
-    """
     def __init__(self):
         self._lock = RLock()
         self._subscriptions = {}
 
     def get_cases_subscribed(self, sender_id, event):
-        """Gets the cases which are subscribed to a a given sender and event
+        """Gets the cases which are subscribed a given sender and event
 
         Args:
             sender_id (UUID): The id of the sender
             event (WalkoffEvent): The event of the sender
+
+        Returns:
+            (list[Case]): The list of Cases which are subscribed to a given sender and event
         """
         with self._lock:
             return self._subscriptions.get(sender_id, {}).get(event, set())
@@ -81,7 +81,6 @@ class SubscriptionCache(object):
                                    for sender_id, events in self._subscriptions.items()}
 
     def clear(self):
-        """Clears all the subscriptions for all cases
-        """
+        """Clears all the subscriptions for all cases"""
         with self._lock:
             self._subscriptions = {}

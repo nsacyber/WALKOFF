@@ -6,6 +6,7 @@ from walkoff.helpers import get_app_action_default_return, get_app_action_return
 class ActionResult(object):
     def __init__(self, result, status):
         """ActionResult object, which stores the result of an action
+
         Args:
             result (str): The returned result from the action
             status (str): The status of the action, success or error
@@ -14,7 +15,11 @@ class ActionResult(object):
         self.status = status
 
     def as_json(self):
-        """Displays the object"""
+        """Displays the object
+
+        Returns:
+            (dict): Dict containing the result and the status
+        """
         try:
             json.dumps(self.result)
             return {"result": self.result, "status": self.status}
@@ -39,7 +44,7 @@ class ActionResult(object):
             action_name (str): Name of the action
 
         Returns:
-            (boolean): True if status is a failure code, false otherwise
+            (bool): True if status is a failure code, false otherwise
         """
         return get_app_action_return_is_failure(app_name, action_name, self.status)
 

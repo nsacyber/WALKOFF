@@ -8,19 +8,29 @@ logger = logging.getLogger(__name__)
 
 
 class AppInstanceRepo(object):
-    """A repository of App instances
+    """A repository of AppInstance objects
 
     Attributes:
-        _instances (dict): The in-memory repository of app instances
+        _instances (dict): The in-memory repository of AppInstance objects
 
     Args:
-        instances (dict{int: AppInstance}, optional): An existing repository of device ID to AppInstance to
-            initialize this repository to.
+        instances (dict{tuple(app_name, device_id): AppInstance}, optional): An existing repository of device ID to
+            AppInstance to initialize this repository to.
     """
+
     def __init__(self, instances=None):
         self._instances = instances or {}
 
     def setup_app_instance(self, action, workflow):
+        """Sets up an AppInstance for a device in an action
+
+        Args:
+            action (Action): The Action which has the Device
+            workflow (Workflow): The Workflow which has the Action
+
+        Returns:
+            (tuple(app_name, device_id)): A tuple containing the app name for the Action, and the device_id int
+        """
         device_id = (action.app_name, action.device_id.get_value(workflow.get_accumulator()))
         if device_id not in self._instances:
             self._instances[device_id] = AppInstance.create(action.app_name, action.device_id)
@@ -29,15 +39,38 @@ class AppInstanceRepo(object):
         return device_id
 
     def get_app_instance(self, device_id):
+        """Gets the AppInstance given a device ID
+
+        Args:
+            device_id (tuple(app_name, device_id)): The device_id tuple containing the app name and the device_id
+
+        Returns:
+            (AppInstance): The AppInstance for the given device_id tuple. Setup_app_instance() must have been called
+                before this function is called
+        """
         return self._instances.get(device_id, None)
 
     def get_all_app_instances(self):
+        """Gets all AppInstance objects
+
+        Returns:
+            dict(dict{tuple(app_name, device_id): AppInstance}): A dictionary containing all of the AppInstance objs
+        """
         return self._instances
 
     def set_all_app_instances(self, instances):
+        """Sets the AppInstance attribute
+
+        Args:
+            instances (dict{tuple(app_name, device_id): AppInstance}): A dict containing the new AppInstance objs
+
+        Returns:
+
+        """
         self._instances = instances
 
     def shutdown_instances(self):
+        """Calls the shutdown() method on all of the AppInstance objects"""
         for instance_name, instance in self._instances.items():
             try:
                 if instance() is not None:

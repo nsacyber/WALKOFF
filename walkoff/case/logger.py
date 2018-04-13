@@ -1,19 +1,21 @@
+from six import string_types
+
 from walkoff.case.database import Event
 from walkoff.helpers import json_dumps_or_string
-from six import string_types
 
 
 class CaseLogger(object):
     """A logger for cases
 
     Attributes:
-        subscriptions: The subscriptions for all cases used by this logger
-        _repository: The repository used to store cases and events
+        subscriptions (SubscriptionCache): The subscriptions for all cases used by this logger
+        _repository (CaseDatabase): The repository used to store cases and events
 
     Args:
-        repository: The repository used to store cases and events
-        subscriptions: The subscriptions for all cases used by this logger
+        repository (CaseDatabase): The repository used to store cases and events
+        subscriptions (SubscriptionCache): The subscriptions for all cases used by this logger
     """
+
     def __init__(self, repository, subscriptions):
         self.subscriptions = subscriptions
         self._repository = repository
@@ -24,7 +26,7 @@ class CaseLogger(object):
         Args:
             event (WalkoffEvent): The event to log
             sender_id (UUID|str): The id of the entity which sent the event
-            data (optional): Additional data to log for this event
+            data (optional): Additional data to log for this event. Defaults to None
         """
         if event.is_loggable():
             originator = str(sender_id)
@@ -60,8 +62,7 @@ class CaseLogger(object):
         self.subscriptions.delete_case(case_id)
 
     def clear_subscriptions(self):
-        """Clears all subscriptions from the logger
-        """
+        """Clears all subscriptions from the logger"""
         self.subscriptions.clear()
 
     @staticmethod
@@ -86,12 +87,11 @@ class CaseLogger(object):
 
     @staticmethod
     def _format_data(data):
-        """Formats additional data for an event entry
-
-        Essentially this attempts to store a JSON version of the data and falls back on simply casting it to a string
+        """Formats additional data for an event entry. Essentially this attempts to store a JSON version of the data
+            and falls back on simply casting it to a string
 
         Args:
-            data: The data to format
+            data (any): The data to format
 
         Returns:
             (str): The formatted data
