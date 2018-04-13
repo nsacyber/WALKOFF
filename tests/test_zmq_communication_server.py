@@ -1,10 +1,12 @@
 import json
 
+from flask import current_app
+
 from tests.util import execution_db_help
 from tests.util.servertestcase import ServerTestCase
-from flask import current_app
-from walkoff.server.returncodes import *
 from walkoff.events import WalkoffEvent
+from walkoff.server.returncodes import *
+
 try:
     from importlib import reload
 except ImportError:
