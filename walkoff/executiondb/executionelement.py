@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from sqlalchemy import Column
 from sqlalchemy_utils import UUIDType, ScalarListType
+
 from walkoff.executiondb.validatable import Validatable
 
 
@@ -31,6 +32,9 @@ class ExecutionElement(Validatable):
 
         out += '>'
         return out
+
+    def validate(self):
+        pass
 
     @staticmethod
     def __is_list_of_dicts_with_uids(value):

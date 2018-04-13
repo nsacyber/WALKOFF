@@ -11,8 +11,7 @@ from walkoff.events import WalkoffEvent
 from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import UnknownTransform, UnknownApp, \
-    InvalidExecutionElement
+from walkoff.helpers import UnknownTransform, UnknownApp
 from walkoff.helpers import get_transform_api, InvalidArgument, split_api_params
 
 logger = logging.getLogger(__name__)
@@ -24,7 +23,7 @@ class Transform(ExecutionElement, Execution_Base):
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     arguments = relationship('Argument', cascade='all, delete, delete-orphan')
-    children = ('arguments', )
+    children = ('arguments',)
 
     def __init__(self, app_name, action_name, id=None, arguments=None):
         """Initializes a new Transform object. A Transform is used to transform input into a workflow.
@@ -52,6 +51,7 @@ class Transform(ExecutionElement, Execution_Base):
         self.validate()
 
     def validate(self):
+        """Validates the object"""
         errors = []
         try:
             self._data_param_name, self._run, self._api = get_transform_api(self.app_name, self.action_name)
@@ -76,9 +76,11 @@ class Transform(ExecutionElement, Execution_Base):
 
     def execute(self, data_in, accumulator):
         """Executes the transform.
+
         Args:
             data_in: The input to the condition, the last executed action of the workflow or the input to a trigger.
             accumulator (dict): A record of executed actions and their results. Of form {action_name: result}.
+
         Returns:
             (obj): The transformed data
         """

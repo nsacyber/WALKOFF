@@ -10,9 +10,7 @@ Execution_Base = declarative_base()
 
 
 class ExecutionDatabase(object):
-    """Wrapper for the SQLAlchemy database connection object
-    """
-
+    """Wrapper for the SQLAlchemy database connection object"""
     instance = None
 
     def __init__(self, execution_db_type, execution_db_path):

@@ -4,8 +4,9 @@ from sqlalchemy import Column, Integer, ForeignKey, String, orm, event
 from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
 
 from walkoff.executiondb import Execution_Base
-from walkoff.helpers import InvalidArgument
 from walkoff.executiondb.validatable import Validatable
+from walkoff.helpers import InvalidArgument
+
 logger = logging.getLogger(__name__)
 
 
@@ -46,6 +47,7 @@ class Argument(Execution_Base, Validatable):
         self._is_reference = True if self.value is None else False
 
     def validate(self):
+        """Validates the object"""
         if self.value is None and not self.reference:
             message = 'Input {} must have either value or reference. Input has neither'.format(self.name)
             logger.error(message)
@@ -59,8 +61,8 @@ class Argument(Execution_Base, Validatable):
         """Helper function to ensure that either reference or value is selected and the other is None
 
         Args:
-            value: The value to set. Can be None
-            reference: The reference to set. Can be none
+            value (any): The value to set. Can be None
+            reference (int): The reference to set. Can be none
         """
         if value is not None and (self.value != value or self.reference):
             self.value = value
@@ -76,7 +78,7 @@ class Argument(Execution_Base, Validatable):
         """Returns whether the reference field is being used, or the value field.
 
         Returns:
-            True if the reference field is being used, False if otherwise.
+            (bool): True if the reference field is being used, False if otherwise.
         """
         return self._is_reference
 
@@ -88,7 +90,7 @@ class Argument(Execution_Base, Validatable):
             accumulator (dict): The accumulated output from previous Actions.
 
         Returns:
-            The value associated with this Argument.
+            (any): The value associated with this Argument.
         """
         if self.value is not None:
             return self.value

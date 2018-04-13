@@ -72,11 +72,11 @@ class ConditionalExpression(ExecutionElement, Execution_Base):
         """Executes the ConditionalExpression object, determining if the statement evaluates to True or False.
 
         Args:
-            data_in (): The input to the Transform objects associated with this ConditionalExpression.
+            data_in (dict): The input to the Transform objects associated with this ConditionalExpression.
             accumulator (dict): The accumulated data from previous Actions.
 
         Returns:
-            True if the Condition evaluated to True, False otherwise
+            (bool): True if the Condition evaluated to True, False otherwise
         """
         try:
             result = self.__operator_lookup[self.operator](data_in, accumulator)
@@ -116,6 +116,7 @@ class ConditionalExpression(ExecutionElement, Execution_Base):
                     return False
                 is_one_found = True
         return is_one_found
+
 
 @event.listens_for(ConditionalExpression, 'before_update')
 def validate_before_update(mapper, connection, target):

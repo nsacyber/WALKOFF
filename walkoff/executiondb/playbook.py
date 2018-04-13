@@ -1,5 +1,6 @@
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship, backref
+
 from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.executionelement import ExecutionElement
 
@@ -44,7 +45,7 @@ class Playbook(ExecutionElement, Execution_Base):
             workflow_name (str): The name of the Workflow
 
         Returns:
-            True if there is a Workflow by that name associated with the Playbook, False otherwise
+            (bool): True if there is a Workflow by that name associated with the Playbook, False otherwise
         """
         for workflow in self.workflows:
             if workflow.name == workflow_name:
@@ -55,10 +56,10 @@ class Playbook(ExecutionElement, Execution_Base):
         """Checks if there is a Workflow with the specified ID associated with the Playbook
 
         Args:
-            workflow_id (int): The ID of the Workflow
+            workflow_id (UUID): The ID of the Workflow
 
         Returns:
-            True if there is a Workflow with that ID associated with the Playbook, False otherwise
+            (bool): True if there is a Workflow with that ID associated with the Playbook, False otherwise
         """
         for workflow in self.workflows:
             if workflow.id == workflow_id:
@@ -72,7 +73,7 @@ class Playbook(ExecutionElement, Execution_Base):
             workflow_name (str): The name of the Workflow
 
         Returns:
-            The Workflow by that name if found, None otherwise
+            (Workflow): The Workflow by that name if found, None otherwise
         """
         for workflow in self.workflows:
             if workflow.name == workflow_name:
@@ -83,10 +84,10 @@ class Playbook(ExecutionElement, Execution_Base):
         """Gets the Workflow by the specified ID
 
         Args:
-            workflow_id (str): The ID of the Workflow
+            workflow_id (UUID): The ID of the Workflow
 
         Returns:
-            The Workflow with that ID if found, None otherwise
+            (Workflow): The Workflow with that ID if found, None otherwise
         """
         for workflow in self.workflows:
             if workflow.id == workflow_id:
@@ -97,15 +98,15 @@ class Playbook(ExecutionElement, Execution_Base):
         """Gets the names of all of the Workflows associated with the Playbook
 
         Returns:
-            A list of the names of all of the Workflows associated with the Playbook
+            (list[str]): A list of the names of all of the Workflows associated with the Playbook
         """
         return [workflow.name for workflow in self.workflows]
 
     def get_all_workflow_ids(self):
         """Gets the IDs of all of the Workflows associated with the Playbook
 
-            Returns:
-                A list of the IDs of all of the Workflows associated with the Playbook
+        Returns:
+            (list[UUID]): A list of the IDs of all of the Workflows associated with the Playbook
         """
         return [workflow.id for workflow in self.workflows]
 
@@ -116,8 +117,8 @@ class Playbook(ExecutionElement, Execution_Base):
             reader (cls, optional): An optional reader class that specifies the representation of the Workflows
 
         Returns:
-            A list of all of the Workflows associated with the Playbook in the form specified by the reader,
-                or the default
+            (list[representation]): A list of all of the Workflows associated with the Playbook in the form specified
+                by the reader, or the default
         """
         return [workflow.read(reader=reader) for workflow in self.workflows]
 
@@ -125,7 +126,7 @@ class Playbook(ExecutionElement, Execution_Base):
         """Gets a list of all the Workflows associated with the Playbook, in limited JSON form
 
         Returns:
-            A list of all of the Workflows associated with the Playbook, in limited JSON form
+            (list[dict]): A list of all of the Workflows associated with the Playbook, in limited JSON form
         """
         return [{'name': workflow.name, 'id': workflow.id} for workflow in self.workflows]
 

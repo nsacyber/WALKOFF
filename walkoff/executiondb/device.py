@@ -1,19 +1,18 @@
 import logging
+import os
 import sys
 
+import nacl.secret
+import nacl.utils
+import zmq.auth as auth
 from sqlalchemy import Column, Integer, ForeignKey, String, LargeBinary, Enum, DateTime, func, orm, and_
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
+import walkoff.config
 from walkoff.appgateway.validator import convert_primitive_type
 from walkoff.executiondb import Execution_Base, ExecutionDatabase
-
-import nacl.secret
-import nacl.utils
-import os
-import zmq.auth as auth
-import walkoff.config
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +55,7 @@ class App(Execution_Base):
             device_id (int): The device's ID
 
         Returns:
-            Device: The Device with the given ID if found. None otherwise
+            (Device): The Device with the given ID if found. None otherwise
         """
         device = next((device for device in self.devices if device.id == device_id), None)
         if device is not None:
@@ -73,13 +72,13 @@ class App(Execution_Base):
             device_type (str): The device type to get
 
         Returns:
-            list[Device]: All the devices associated with this app which have the given device type
+            (list[Device]): All the devices associated with this app which have the given device type
         """
         return [device for device in self.devices if device.type == device_type]
 
     def add_device(self, device):
-        """Adds a device to this app.
-        If the name of the device to add to this app already exists, then no device will be added
+        """Adds a device to this app. If the name of the device to add to this app already exists, then
+            no device will be added
 
         Args:
             device (Device): The device to add
@@ -91,10 +90,10 @@ class App(Execution_Base):
         """Gets the JSON representation of an App object.
 
         Args:
-            with_devices (bool, optional): Should the devices of this app be included in its JSON? Defaults to False
+            with_devices (bool, optional): Should the devices of this app be included in its JSON? Defaults to False.
 
         Returns:
-            dict: The JSON representation of an App object.
+            (dict): The JSON representation of an App object.
         """
         output = {'name': self.name}
         if with_devices:
@@ -109,7 +108,7 @@ class App(Execution_Base):
             data (dict): The JSON representation of the App
 
         Returns:
-            apps.devicedb.App: The constructed app
+            (apps.devicedb.App): The constructed app
         """
         devices = [Device.from_json(device) for device in data['devices']] if 'devices' in data else None
         return App(data['name'], devices)
@@ -142,13 +141,8 @@ class Device(Execution_Base):
     name = Column(String(25), nullable=False)
     type = Column(String(25), nullable=False)
     description = Column(String(255), default='')
-    plaintext_fields = relationship('DeviceField',
-                                    cascade='all, delete-orphan',
-                                    backref='post',
-                                    lazy='dynamic')
-    encrypted_fields = relationship('EncryptedDeviceField',
-                                    cascade='all, delete-orphan',
-                                    backref='post',
+    plaintext_fields = relationship('DeviceField', cascade='all, delete-orphan', backref='post', lazy='dynamic')
+    encrypted_fields = relationship('EncryptedDeviceField', cascade='all, delete-orphan', backref='post',
                                     lazy='dynamic')
     app_id = Column(Integer, ForeignKey('app.id'))
     created_at = Column(DateTime, default=func.current_timestamp())
@@ -165,7 +159,7 @@ class Device(Execution_Base):
         """Gets all the plaintext fields associated with this device
 
         Returns:
-            dict{str: str|int|bool|float}: All the plaintext fields associated with this device.
+            (dict{str: str|int|bool|float}): All the plaintext fields associated with this device.
                 In the form of {field_name: value}
         """
         return {field.name: field.value for field in self.plaintext_fields}
@@ -177,7 +171,7 @@ class Device(Execution_Base):
             field_name (str): The name of the encrypted field to get
 
         Returns:
-            The encrypted field
+            (any): The encrypted field
 
         Raises:
             UnknownDeviceField: If the device does not have an encrypted field with this name
@@ -195,7 +189,7 @@ class Device(Execution_Base):
             export (bool, optional): Should the value of all the encrypted device field be sent? Defaults to False
 
         Returns:
-            dict: The JSON representation of this device
+            (dict): The JSON representation of this device
         """
         fields_json = [field.as_json() for field in self.plaintext_fields]
         fields_json.extend([field.as_json(export) for field in self.encrypted_fields])
@@ -213,7 +207,7 @@ class Device(Execution_Base):
             fields_json (list[dict]): List of the JSON represnetaion of the device fields
 
         Returns:
-            tuple(list[DeviceField], list[EncryptedDeviceField]): The constructed device fields
+            (tuple(list[DeviceField], list[EncryptedDeviceField])): The constructed device fields
         """
         plaintext_fields, encrypted_fields = [], []
         for field in fields_json:
@@ -265,7 +259,7 @@ class Device(Execution_Base):
             json_in (dict): A JSON representation of a Device
 
         Returns:
-            Device: The constructed device
+            (Device): The constructed device
         """
         description = json_in['description'] if 'description' in json_in else ''
         plaintext_fields, encrypted_fields = Device._construct_fields_from_json(json_in['fields'])
@@ -273,9 +267,8 @@ class Device(Execution_Base):
             json_in['name'], plaintext_fields, encrypted_fields, device_type=json_in['type'], description=description)
 
 
+"""tuple: The string representations from JSON Schema of the allowed fields to be stored in a DeviceField"""
 allowed_device_field_types = ('string', 'number', 'boolean', 'integer')
-"""tuple: The string representations from JSON Schema of the allowed fields to be stored in a DeviceField
-"""
 
 
 class DeviceFieldMixin(object):
@@ -334,7 +327,7 @@ class DeviceField(Execution_Base, DeviceFieldMixin):
         """Gets a JSON representation of this object
 
         Returns:
-            dict: The JSON representation of this object
+            (dict): The JSON representation of this object
         """
         return {"name": self.name, "type": self.type, "value": self.value, "encrypted": False}
 
@@ -346,7 +339,7 @@ class DeviceField(Execution_Base, DeviceFieldMixin):
             data (dict): The JSON representation of a DeviceField
 
         Returns:
-            DeviceField: The constructed DeviceField
+            (DeviceField): The constructed DeviceField
         """
         type_ = data['type'] if data['type'] in allowed_device_field_types else 'string'
         return DeviceField(data['name'], type_, data['value'])
@@ -358,6 +351,7 @@ class EncryptedDeviceField(Execution_Base, DeviceFieldMixin):
     Attributes:
         value (str|int|bool|float): The value of the field. This is stored as an encrypted string. When accessed it is
             decrypted and cast back to the appropriate type
+
     Args:
         name (str): The name of the device field
         field_type (str): The type of the field. Must come from allowed_device_field_types else it will be cast to a
@@ -410,7 +404,7 @@ class EncryptedDeviceField(Execution_Base, DeviceFieldMixin):
             export (bool, optional): Should the value be decrypted and returned? Defaults to False
 
         Returns:
-            dict: The JSON representation of this object
+            (dict): The JSON representation of this object
         """
         field = {"name": self.name, "type": self.type, "encrypted": True}
         if export:
@@ -425,7 +419,7 @@ class EncryptedDeviceField(Execution_Base, DeviceFieldMixin):
             data (dict): The JSON representation of a DeviceField
 
         Returns:
-            DeviceField: The constructed DeviceField
+            (DeviceField): The constructed DeviceField
         """
         type_ = data['type'] if data['type'] in allowed_device_field_types else 'string'
         return EncryptedDeviceField(data['name'], type_, data['value'])
@@ -436,8 +430,9 @@ def get_all_devices_for_app(app_name):
 
     Args:
         app_name (str): The name of the app
+
     Returns:
-        list[Device]: A list of devices associated with this app. Returns empty list if app is not in database
+        (list[Device]): A list of devices associated with this app. Returns empty list if app is not in database
     """
     execution_db = ExecutionDatabase.instance
     app = execution_db.session.query(App).filter(App.name == app_name).first()
@@ -454,8 +449,9 @@ def get_all_devices_of_type_from_app(app_name, device_type):
         Args:
             app_name (str): The name of the app
             device_type (str): The type of device
+
         Returns:
-            list[Device]: A list of devices associated with this app. Returns empty list if app is not in database
+            (list[Device]): A list of devices associated with this app. Returns empty list if app is not in database
         """
     execution_db = ExecutionDatabase.instance
     app = execution_db.session.query(App).filter(App.name == app_name).first()
@@ -472,8 +468,9 @@ def get_device(app_name, device_name):
     Args:
         app_name (str): The name of the app
         device_name (str): The name of the device
+
     Returns:
-        Device: The desired device. Returns None if app or device not found.
+        (Device): The desired device. Returns None if app or device not found.
     """
     execution_db = ExecutionDatabase.instance
     app = execution_db.session.query(App).filter(App.name == app_name).first()
@@ -489,8 +486,9 @@ def get_app(app_name):
 
     Args:
         app_name (str): The name of the app
+
     Returns:
-        apps.devicedb.App: The desired device. Returns None if app or device not found.
+        (apps.devicedb.App): The desired device. Returns None if app or device not found.
     """
     execution_db = ExecutionDatabase.instance
     app = execution_db.session.query(App).filter(App.name == app_name).first()
@@ -508,7 +506,7 @@ def get_device_ids_by_fields(fields):
         fields (dict {field_name: field_value}): Dict containing a field_name and a field_value for the device
 
     Returns:
-        A list of device IDs that contain the fields passed in
+        (list[int]): A list of device IDs that contain the fields passed in
     """
     execution_db = ExecutionDatabase.instance
     devices = execution_db.session.query(Device).join(Device.plaintext_fields).filter(

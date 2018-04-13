@@ -83,6 +83,7 @@ class Action(ExecutionElement, Execution_Base):
         self._execution_id = 'default'
 
     def validate(self):
+        """Validates the object"""
         errors = []
         try:
             self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
@@ -101,28 +102,32 @@ class Action(ExecutionElement, Execution_Base):
 
     def get_output(self):
         """Gets the output of an Action (the result)
+
         Returns:
-            The result of the Action
+            (ActionResult): The result of the Action
         """
         return self._output
 
     def get_execution_id(self):
         """Gets the execution ID of the Action
+
         Returns:
-            The execution ID
+            (UUID): The execution ID
         """
         return self._execution_id
 
     def execute(self, instance, accumulator, arguments=None, resume=False):
         """Executes an Action by calling the associated app function.
+
         Args:
             instance (App): The instance of an App object to be used to execute the associated function.
             accumulator (dict): Dict containing the results of the previous actions
-            arguments (list[Argument]): Optional list of Arguments to be used if the Action is the starting step of
+            arguments (list[Argument], optional): List of Arguments to be used if the Action is the starting step of
                 the Workflow. Defaults to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
+
         Returns:
-            The result of the executed function.
+            (ActionResult): The result of the executed function.
         """
         self._execution_id = str(uuid.uuid4())
 
@@ -172,11 +177,13 @@ class Action(ExecutionElement, Execution_Base):
 
     def execute_trigger(self, data_in, accumulator):
         """Executes the trigger for an Action, which will continue execution if the trigger returns True
+
         Args:
             data_in (dict): The data to send to the trigger to test against
             accumulator (dict): Dict containing the results of the previous actions
+
         Returns:
-            True if the trigger returned True, False otherwise
+            (bool): True if the trigger returned True, False otherwise
         """
         if self.trigger.execute(data_in=data_in, accumulator=accumulator):
             logger.debug('Trigger is valid for input {0}'.format(data_in))

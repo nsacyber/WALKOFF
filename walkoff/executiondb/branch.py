@@ -19,7 +19,7 @@ class Branch(ExecutionElement, Execution_Base):
     status = Column(String(80))
     condition = relationship('ConditionalExpression', cascade='all, delete-orphan', uselist=False)
     priority = Column(Integer)
-    children = ('condition', )
+    children = ('condition',)
 
     def __init__(self, source_id, destination_id, id=None, status='Success', condition=None, priority=999):
         """Initializes a new Branch object.
@@ -60,11 +60,11 @@ class Branch(ExecutionElement, Execution_Base):
         """Executes the Branch object, determining if this Branch should be taken.
 
         Args:
-            data_in (): The input to the Condition objects associated with this Branch.
+            data_in (dict): The input to the Condition objects associated with this Branch.
             accumulator (dict): The accumulated data from previous Actions.
 
         Returns:
-            Destination UID for the next Action that should be taken, None if the data_in was not valid
+            (UUID): Destination UID for the next Action that should be taken, None if the data_in was not valid
                 for this Branch.
         """
         self._counter += 1

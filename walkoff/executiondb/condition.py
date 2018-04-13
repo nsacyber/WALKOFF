@@ -10,7 +10,7 @@ from walkoff.appgateway.validator import validate_condition_parameters
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import (UnknownCondition, UnknownApp, InvalidExecutionElement)
+from walkoff.helpers import (UnknownCondition, UnknownApp)
 from walkoff.helpers import get_condition_api, InvalidArgument, format_exception_message, split_api_params
 
 logger = logging.getLogger(__name__)
@@ -68,6 +68,7 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
             self._condition_executable = get_condition(self.app_name, self._run)
 
     def validate(self):
+        """Validates the object"""
         errors = []
         try:
             self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
@@ -85,11 +86,13 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
 
     def execute(self, data_in, accumulator):
         """Executes the Condition object, determining if the Condition evaluates to True or False.
+
         Args:
-            data_in (): The input to the Transform objects associated with this Condition.
+            data_in (dict): The input to the Transform objects associated with this Condition.
             accumulator (dict): The accumulated data from previous Actions.
+
         Returns:
-            True if the Condition evaluated to True, False otherwise
+            (bool): True if the Condition evaluated to True, False otherwise
         """
         data = data_in
 
@@ -125,6 +128,7 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
                 arguments.append(argument)
         arguments.append(Argument(self._data_param_name, value=data))
         return arguments
+
 
 @event.listens_for(Condition, 'before_update')
 def validate_before_update(mapper, connection, target):

@@ -1,9 +1,8 @@
-from marshmallow import validates_schema, ValidationError, fields, post_dump, post_load, UnmarshalResult
+from marshmallow import validates_schema, ValidationError, fields, post_dump, post_load
 from marshmallow.validate import OneOf
 from marshmallow_sqlalchemy import ModelSchema, field_for
 
 from walkoff.executiondb import ExecutionDatabase
-from walkoff.helpers import InvalidExecutionElement
 from .action import Action
 from .argument import Argument
 from .branch import Branch
@@ -167,7 +166,7 @@ class WorkflowSchema(ExecutionElementBaseSchema):
     actions = fields.Nested(ActionSchema, many=True)
     branches = fields.Nested(BranchSchema, many=True)
     is_valid = field_for(Workflow, 'is_valid', dump_only=True)
-    
+
     class Meta:
         model = Workflow
         exclude = ('playbook',)

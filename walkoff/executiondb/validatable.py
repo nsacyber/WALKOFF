@@ -1,4 +1,3 @@
-
 class Validatable(object):
     children = []
 
