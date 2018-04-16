@@ -135,6 +135,8 @@ class Config(object):
     JWT_BLACKLIST_TOKEN_CHECKS = ['refresh']
     JWT_TOKEN_LOCATION = 'headers'
 
+    JWT_BLACKLIST_PRUNE_FREQUENCY = 1000
+
     @classmethod
     def load_config(cls, config_path=None):
         """ Loads Walkoff configuration from JSON file

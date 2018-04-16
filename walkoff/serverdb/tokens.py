@@ -4,8 +4,6 @@ from flask import current_app
 
 from walkoff.extensions import db
 
-prune_frequency = 1000
-
 
 class BlacklistedToken(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -77,8 +75,8 @@ def approve_token(token_id, user):
 
 def prune_if_necessary():
     """Prunes the database if necessary"""
-    current_app.running_context.cache.incr("number_of_operations")
-    if current_app.running_context.cache.get("number_of_operations") >= prune_frequency:
+    if (current_app.running_context.cache.incr("number_of_operations")
+            >= current_app.config['JWT_BLACKLIST_PRUNE_FREQUENCY']):
         prune_database()
 
 
@@ -89,3 +87,4 @@ def prune_database():
     for token in expired:
         db.session.delete(token)
     db.session.commit()
+    current_app.running_context.cache.set("number_of_operations", 0)
