@@ -7,8 +7,6 @@ import warnings
 import yaml
 from os.path import isfile, join, abspath
 
-from walkoff.appgateway import cache_apps
-
 logger = logging.getLogger(__name__)
 
 app_apis = {}
@@ -182,5 +180,6 @@ def initialize(config_path=None):
     """Loads the config file, loads the app cache, and loads the app APIs into memory"""
     Config.load_config(config_path)
     setup_logger()
+    from walkoff.appgateway import cache_apps
     cache_apps(Config.APPS_PATH)
     load_app_apis()
