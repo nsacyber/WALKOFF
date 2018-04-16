@@ -130,7 +130,7 @@ class MockReceiveQueue(workflowexecutioncontroller.Receiver):
 
     def send(self, packet):
         with self.current_app.app_context():
-            self.send_callback(packet)
+            self._send_callback(packet)
 
     def _increment_execution_count(self):
         global workflows_executed

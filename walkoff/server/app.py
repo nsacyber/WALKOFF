@@ -1,14 +1,20 @@
 import logging
 
 import connexion
+from flask import Blueprint
 from jinja2 import FileSystemLoader
+
+import interfaces
+import walkoff.config
+from walkoff.extensions import db, jwt
+from walkoff.helpers import import_submodules
+from walkoff.server import context
+from walkoff.server.blueprints import custominterface, workflowresults, notifications, console, root
 
 logger = logging.getLogger(__name__)
 
 
 def register_blueprints(flaskapp):
-    from walkoff.server.blueprints import custominterface, workflowresults, notifications, console, root
-
     flaskapp.register_blueprint(custominterface.custom_interface_page, url_prefix='/custominterfaces/<interface>')
     flaskapp.register_blueprint(workflowresults.workflowresults_page, url_prefix='/api/streams/workflowqueue')
     flaskapp.register_blueprint(notifications.notifications_page, url_prefix='/api/streams/messages')
@@ -20,7 +26,6 @@ def register_blueprints(flaskapp):
 
 
 def __get_blueprints_in_module(module):
-    from flask import Blueprint
     blueprints = [getattr(module, field)
                   for field in dir(module) if (not field.startswith('__')
                                                and isinstance(getattr(module, field), Blueprint))]
@@ -28,8 +33,7 @@ def __get_blueprints_in_module(module):
 
 
 def __register_blueprint(flaskapp, blueprint, url_prefix):
-    from interfaces import AppBlueprint
-    if isinstance(blueprint, AppBlueprint):
+    if isinstance(blueprint, interfaces.AppBlueprint):
         blueprint.cache = flaskapp.running_context.cache
     url_prefix = '{0}{1}'.format(url_prefix, blueprint.url_suffix) if blueprint.url_suffix else url_prefix
     blueprint.url_prefix = url_prefix
@@ -43,8 +47,6 @@ def __register_app_blueprints(flaskapp, app_name, blueprints):
 
 
 def __register_all_app_blueprints(flaskapp):
-    from walkoff.helpers import import_submodules
-    import interfaces
     imported_apps = import_submodules(interfaces)
     for interface_name, interfaces_module in imported_apps.items():
         try:
@@ -58,10 +60,6 @@ def __register_all_app_blueprints(flaskapp):
 
 
 def create_app(app_config):
-    import walkoff.config
-    from walkoff.server import context
-    from walkoff.extensions import db, jwt
-
     connexion_app = connexion.App(__name__, specification_dir='../api/')
     _app = connexion_app.app
     _app.jinja_loader = FileSystemLoader(['walkoff/templates'])
@@ -74,6 +72,4 @@ def create_app(app_config):
     _app.running_context = context.Context(walkoff.config.Config)
     register_blueprints(_app)
 
-    import walkoff.server.workflowresults  # Don't delete this import
-    import walkoff.messaging.utils  # Don't delete this import
     return _app

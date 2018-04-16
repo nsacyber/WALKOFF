@@ -1,16 +1,16 @@
 import logging
 import os
 
+from flask import current_app
 from flask import render_template, send_from_directory, Blueprint
+from sqlalchemy.exc import SQLAlchemyError
 
 import walkoff.config
-from sqlalchemy.exc import SQLAlchemyError
-from walkoff.server.problem import Problem
-from walkoff.server.returncodes import SERVER_ERROR
-from walkoff.extensions import db
 from walkoff import helpers
 from walkoff.executiondb.device import App
-from flask import current_app
+from walkoff.extensions import db
+from walkoff.server.problem import Problem
+from walkoff.server.returncodes import SERVER_ERROR
 
 logger = logging.getLogger(__name__)
 

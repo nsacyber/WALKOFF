@@ -1,9 +1,9 @@
-from flask_jwt_extended import jwt_required
 from flask import current_app
+from flask_jwt_extended import jwt_required
 
+from walkoff.executiondb.metrics import AppMetric, WorkflowMetric
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.returncodes import *
-from walkoff.executiondb.metrics import AppMetric, WorkflowMetric
 
 
 def read_app_metrics():

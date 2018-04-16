@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from flask import current_app
+
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ActionStatusEnum, WorkflowStatusEnum
 from walkoff.executiondb.workflowresults import WorkflowStatus

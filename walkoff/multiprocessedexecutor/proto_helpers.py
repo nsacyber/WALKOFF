@@ -1,5 +1,6 @@
 import json
 import logging
+
 from six import string_types
 
 from walkoff.events import EventType, WalkoffEvent
@@ -18,7 +19,7 @@ def convert_to_protobuf(sender, workflow, **kwargs):
         kwargs (dict, optional): A dict of extra fields, such as data, callback_name, etc.
 
     Returns:
-        The newly formed protobuf object, serialized as a string to send over the ZMQ socket.
+        (str): The newly formed protobuf object, serialized as a string to send over the ZMQ socket.
     """
     event = kwargs['event']
     data = kwargs['data'] if 'data' in kwargs else None
@@ -41,6 +42,13 @@ def convert_to_protobuf(sender, workflow, **kwargs):
 
 
 def convert_workflow_to_proto(packet, sender, data=None):
+    """Converts a Workflow object to a protobuf object
+
+    Args:
+        packet (Message): The protobuf packet to add the Workflow to
+        sender (Workflow): The Workflow to add to the packet
+        data (dict): Any additional data to add to the protobuf packet
+    """
     packet.type = Message.WORKFLOWPACKET
     workflow_packet = packet.workflow_packet
     if 'data' is not None:
@@ -49,6 +57,14 @@ def convert_workflow_to_proto(packet, sender, data=None):
 
 
 def convert_send_message_to_protobuf(packet, message, workflow, **kwargs):
+    """Converts a Message object to a protobuf object
+
+    Args:
+        packet (protobuf): The protobuf packet
+        message (Message): The Message object to be converted
+        workflow (Workflow): The Workflow relating to this Message
+        **kwargs (dict, optional): Any additional arguments
+    """
     packet.type = Message.USERMESSAGE
     message_packet = packet.message_packet
     message_packet.subject = message.pop('subject', '')
@@ -63,6 +79,14 @@ def convert_send_message_to_protobuf(packet, message, workflow, **kwargs):
 
 
 def convert_log_message_to_protobuf(packet, sender, workflow, **kwargs):
+    """Converts a logging message to protobuf
+
+    Args:
+        packet (protobuf): The protobuf packet
+        sender (Action): The Action from which this logging message originated
+        workflow (Workflow): The Workflow under which this Action falls
+        **kwargs (dict, optional): Any additional arguments
+    """
     packet.type = Message.LOGMESSAGE
     logging_packet = packet.logging_packet
     logging_packet.name = sender.name
@@ -74,6 +98,14 @@ def convert_log_message_to_protobuf(packet, sender, workflow, **kwargs):
 
 
 def convert_action_to_proto(packet, sender, workflow, data=None):
+    """Converts an Action to protobuf
+
+    Args:
+        packet (protobuf): The protobuf packet
+        sender (Action): The Action
+        workflow (Workflow): The WOrkflow under which this Action falls
+        data (dict, optional): Any additional data. Defaults to None.
+    """
     packet.type = Message.ACTIONPACKET
     action_packet = packet.action_packet
     if 'data' is not None:
@@ -84,6 +116,12 @@ def convert_action_to_proto(packet, sender, workflow, data=None):
 
 
 def add_sender_to_action_packet_proto(action_packet, sender):
+    """Adds a sender to a protobuf packet
+
+    Args:
+        action_packet (protobuf): The protobuf packet
+        sender (Action): The sender
+    """
     action_packet.sender.name = sender.name
     action_packet.sender.id = str(sender.id)
     action_packet.sender.execution_id = sender.get_execution_id()
@@ -94,6 +132,12 @@ def add_sender_to_action_packet_proto(action_packet, sender):
 
 
 def add_arguments_to_action_proto(action_packet, sender):
+    """Adds Arguments to the Action protobuf packet
+
+    Args:
+        action_packet (protobuf): The protobuf packet
+        sender (Action): The Action under which fall the Arguments
+    """
     for argument in sender.arguments:
         arg = action_packet.sender.arguments.add()
         arg.name = argument.name
@@ -101,6 +145,12 @@ def add_arguments_to_action_proto(action_packet, sender):
 
 
 def set_argument_proto(arg_proto, arg_obj):
+    """Sets up the Argument protobuf
+
+    Args:
+        arg_proto (protobuf): The Argument protobuf field
+        arg_obj (Argument): The Argument object
+    """
     arg_proto.name = arg_obj.name
     for field in ('value', 'reference', 'selection'):
         val = getattr(arg_obj, field)
@@ -115,12 +165,25 @@ def set_argument_proto(arg_proto, arg_obj):
 
 
 def add_workflow_to_proto(packet, workflow):
+    """Adds a Workflow to a protobuf packet
+
+    Args:
+        packet (protobuf): The protobuf packet
+        workflow (Workflow): The Workflow object to add to the protobuf message
+    """
     packet.name = workflow.name
     packet.id = str(workflow.id)
     packet.execution_id = str(workflow.get_execution_id())
 
 
 def convert_branch_transform_condition_to_proto(packet, sender, workflow):
+    """Converts a Branch, Transform, or Condition to protobuf
+
+    Args:
+        packet (protobuf): The protobuf packet
+        sender (Branch|Transform|Condition): The object to be converted to protobuf
+        workflow (Workflow): The Workflow under which the object falls
+    """
     packet.type = Message.GENERALPACKET
     general_packet = packet.general_packet
     general_packet.sender.id = str(sender.id)

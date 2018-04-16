@@ -9,16 +9,16 @@ import uuid
 import gevent
 import zmq.green as zmq
 
-from walkoff.executiondb import ExecutionDatabase
+import walkoff.config
 from walkoff.events import WalkoffEvent
+from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb import WorkflowStatusEnum
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus
-from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController, Receiver
 from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
 from walkoff.multiprocessedexecutor.worker import Worker
-import walkoff.config
+from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController, Receiver
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +58,8 @@ class MultiprocessedExecutor(object):
         """Initialize the multiprocessing communication threads, allowing for parallel execution of workflows.
 
         Args:
-            pids (list, optional): Optional list of spawned processes. Defaults to None
+            app (FlaskApp): The current_app object
+            pids (list[Process], optional): Optional list of spawned processes. Defaults to None
 
         """
         if not (os.path.exists(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH) and
@@ -82,6 +83,11 @@ class MultiprocessedExecutor(object):
         logger.debug('Controller threading initialized')
 
     def wait_and_reset(self, num_workflows):
+        """Waits for all of the workflows to be completed
+
+        Args:
+            num_workflows (int): The number of workflows to wait for
+        """
         timeout = 0
         shutdown = 10
 
@@ -94,8 +100,7 @@ class MultiprocessedExecutor(object):
         self.receiver.workflows_executed = 0
 
     def shutdown_pool(self):
-        """Shuts down the threadpool.
-        """
+        """Shuts down the threadpool"""
         self.manager.send_exit_to_worker_comms()
         if len(self.pids) > 0:
             for p in self.pids:
@@ -120,8 +125,7 @@ class MultiprocessedExecutor(object):
         return
 
     def cleanup_threading(self):
-        """Once the threadpool has been shutdown, clear out all of the data structures used in the pool.
-        """
+        """Once the threadpool has been shutdown, clear out all of the data structures used in the pool"""
         self.pids = []
         self.receiver_thread = None
         self.workflows_executed = 0
@@ -130,18 +134,18 @@ class MultiprocessedExecutor(object):
         self.receiver = None
 
     def execute_workflow(self, workflow_id, execution_id_in=None, start=None, start_arguments=None, resume=False):
-        """Executes a workflow.
+        """Executes a workflow
 
         Args:
             workflow_id (Workflow): The Workflow to be executed.
-            execution_id_in (str, optional): The optional execution ID to provide for the workflow. Should only be
+            execution_id_in (UUID, optional): The optional execution ID to provide for the workflow. Should only be
                 used (and is required) when resuming a workflow. Must be valid UUID4. Defaults to None.
-            start (str, optional): The ID of the first, or starting action. Defaults to None.
+            start (UUID, optional): The ID of the first, or starting action. Defaults to None.
             start_arguments (list[Argument]): The arguments to the starting action of the workflow. Defaults to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
 
         Returns:
-            The execution ID of the Workflow.
+            (UUID): The execution ID of the Workflow.
         """
         workflow = self.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
         if not workflow:
@@ -166,7 +170,10 @@ class MultiprocessedExecutor(object):
         """Pauses a workflow that is currently executing.
 
         Args:
-            execution_id (str): The execution id of the workflow.
+            execution_id (UUID): The execution id of the workflow.
+
+        Returns:
+            (bool): True if Workflow successfully paused, False otherwise
         """
         workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
@@ -181,7 +188,10 @@ class MultiprocessedExecutor(object):
         """Resumes a workflow that is currently paused.
 
         Args:
-            execution_id (str): The execution id of the workflow.
+            execution_id (UUID): The execution id of the workflow.
+
+        Returns:
+            (bool): True if workflow successfully resumed, False otherwise
         """
         workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
@@ -202,10 +212,13 @@ class MultiprocessedExecutor(object):
             return False
 
     def abort_workflow(self, execution_id):
-        """Abort a workflow.
+        """Abort a workflow
 
         Args:
-            execution_id (str): The execution id of the workflow.
+            execution_id (UUID): The execution id of the workflow.
+
+        Returns:
+            (bool): True if successfully aborted workflow, False otherwise
         """
         workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
@@ -231,10 +244,13 @@ class MultiprocessedExecutor(object):
         """Resumes a workflow awaiting trigger data, if the conditions are met.
 
         Args:
-            execution_id (str): The execution ID of the workflow
+            execution_id (UUID): The execution ID of the workflow
             data_in (dict): The data to send to the trigger
             arguments (list[Argument], optional): Optional list of new Arguments for the trigger action.
                 Defaults to None.
+
+        Returns:
+            (bool): True if successfully resumed trigger step, false otherwise
         """
         saved_state = self.execution_db.session.query(SavedWorkflow).filter_by(
             workflow_execution_id=execution_id).first()
@@ -273,7 +289,7 @@ class MultiprocessedExecutor(object):
         """Gets a list of the execution IDs of workflows currently awaiting data to be sent to a trigger.
 
         Returns:
-            A list of execution IDs of workflows currently awaiting data to be sent to a trigger.
+            (list[UUID]): A list of execution IDs of workflows currently awaiting data to be sent to a trigger.
         """
         self.execution_db.session.expire_all()
         wf_statuses = self.execution_db.session.query(WorkflowStatus).filter_by(
@@ -284,10 +300,10 @@ class MultiprocessedExecutor(object):
         """Gets the current status of a workflow by its execution ID
 
         Args:
-            execution_id (str): The execution ID of the workflow
+            execution_id (UUID): The execution ID of the workflow
 
         Returns:
-            The status of the workflow
+            (int): The status of the workflow
         """
         workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
@@ -304,10 +320,27 @@ class MultiprocessedExecutor(object):
         event.send(sender, data=data)
 
     def create_case(self, case_id, subscriptions):
+        """Creates a Case
+
+        Args:
+            case_id (int): The ID of the Case
+            subscriptions (list[Subscription]): List of Subscriptions to subscribe to
+        """
         self.manager.create_case(case_id, subscriptions)
 
     def update_case(self, case_id, subscriptions):
+        """Updates a Case
+
+        Args:
+            case_id (int): The ID of the Case
+            subscriptions (list[Subscription]): List of Subscriptions to subscribe to
+        """
         self.manager.create_case(case_id, subscriptions)
 
     def delete_case(self, case_id):
+        """Deletes a Case
+
+        Args:
+            case_id (int): The ID of the Case to delete
+        """
         self.manager.delete_case(case_id)

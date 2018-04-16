@@ -3,41 +3,49 @@ import os
 import signal
 import threading
 import time
-from enum import Enum
 from collections import namedtuple
+from threading import Lock
+
 import nacl.bindings
 import nacl.utils
 import zmq
 import zmq.auth as auth
 from concurrent.futures import ThreadPoolExecutor
+from enum import Enum
 from google.protobuf.json_format import MessageToDict
 from nacl.public import PrivateKey, Box
 
-from walkoff.executiondb import ExecutionDatabase
-from walkoff.case.database import CaseDatabase
+import walkoff.cache
+import walkoff.config
 from walkoff.appgateway.appinstancerepo import AppInstanceRepo
+from walkoff.case.database import CaseDatabase
+from walkoff.case.logger import CaseLogger
+from walkoff.case.subscription import Subscription, SubscriptionCache
 from walkoff.events import WalkoffEvent
+from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
+from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
 from walkoff.proto.build.data_pb2 import CommunicationPacket, ExecuteWorkflowMessage, CaseControl, \
     WorkflowControl
-import walkoff.cache
-from walkoff.case.logger import CaseLogger
-from walkoff.case.subscription import Subscription, SubscriptionCache
-from threading import Lock
-from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
-import walkoff.config
 
 logger = logging.getLogger(__name__)
 
 
 class WorkflowResultsHandler(object):
-    def __init__(self, socket_id, client_secret_key, client_public_key, server_public_key, zmq_results_address, execution_db, case_logger):
-        """Initialize a Workflow object, which will be executing workflows.
+    def __init__(self, socket_id, client_secret_key, client_public_key, server_public_key, zmq_results_address,
+                 execution_db, case_logger):
+        """Initialize a WorkflowResultsHandler object, which will be executing workflows.
 
         Args:
-            id_ (str): The ID of the worker. Needed for ZMQ socket communication.
+            socket_id (str): The ID for the results socket
+            client_secret_key (str): The secret key for the client
+            client_public_key (str): The public key for the client
+            server_public_key (str): The public key for the server
+            zmq_results_address (str): The address for the ZMQ results socket
+            execution_db (ExecutionDatabase): An ExecutionDatabase connection object
+            case_logger (CaseLoger): A CaseLogger instance
         """
         self.results_sock = zmq.Context().socket(zmq.PUSH)
         self.results_sock.identity = socket_id
@@ -51,6 +59,8 @@ class WorkflowResultsHandler(object):
         self.case_logger = case_logger
 
     def shutdown(self):
+        """Shuts down the results socket and tears down the ExecutionDatabase
+        """
         self.results_sock.close()
         self.execution_db.tear_down()
 
@@ -59,7 +69,8 @@ class WorkflowResultsHandler(object):
                 callback in the main thread.
 
             Args:
-                sender (execution element): The execution element that sent the signal.
+                workflow (Workflow): The Workflow object that triggered the event
+                sender (ExecutionElement): The execution element that sent the signal.
                 kwargs (dict): Any extra data to send.
         """
         event = kwargs['event']
@@ -102,11 +113,14 @@ CaseCommunicationMessageData = namedtuple('CaseCommunicationMessageData', ['type
 
 class WorkflowCommunicationReceiver(object):
     def __init__(self, socket_id, client_secret_key, client_public_key, server_public_key, zmq_communication_address):
-        """Initialize a Workflow object, which will be executing workflows.
+        """Initialize a WorkflowCommunicationReceiver object, which will receive messages on the comm socket
 
         Args:
-            id_ (str): The ID of the worker. Needed for ZMQ socket communication.
-            worker_environment_setup (func, optional): Function to setup globals in the worker.
+            socket_id (str): The socket ID for the ZMQ communication socket
+            client_secret_key (str): The secret key for the client
+            client_public_key (str): The public key for the client
+            server_public_key (str): The public key for the server
+            zmq_communication_address (str): The IP address for the ZMQ communication socket
         """
         self.comm_sock = zmq.Context().socket(zmq.SUB)
         self.comm_sock.identity = socket_id
@@ -118,12 +132,13 @@ class WorkflowCommunicationReceiver(object):
         self.exit = False
 
     def shutdown(self):
+        """Shuts down the object by setting self.exit to True and closing the communication socket
+        """
         self.exit = True
         self.comm_sock.close()
 
     def receive_communications(self):
-        """Constantly receives data from the ZMQ socket and handles it accordingly.
-        """
+        """Constantly receives data from the ZMQ socket and handles it accordingly"""
 
         while not self.exit:
             try:
@@ -172,12 +187,22 @@ class WorkflowCommunicationReceiver(object):
 
 class WorkflowReceiver(object):
     def __init__(self, key, server_key, cache_config):
+        """Initializes a WorkflowReceiver object, which receives workflow execution requests and ships them off to a
+            worker to execute
+
+        Args:
+            key (PrivateKey): The NaCl PrivateKey generated by the Worker
+            server_key (PrivateKey): The NaCl PrivateKey generated by the Worker
+            cache_config (dict): Cache configuration
+        """
         self.key = key
         self.server_key = server_key
         self.cache = walkoff.cache.make_cache(cache_config)
         self.exit = False
 
     def shutdown(self):
+        """Shuts down the object by setting self.exit to True and shutting down the cache
+        """
         self.exit = True
         self.cache.shutdown()
 
@@ -205,10 +230,10 @@ class WorkflowReceiver(object):
 
 class Worker(object):
     def __init__(self, id_, config_path):
-        """Initialize a Workflow object, which will be executing workflows.
+        """Initialize a Workfer object, which will be managing the execution of Workflows
 
         Args:
-            id_ (str): The ID of the worker. Needed for ZMQ socket communication.
+            id_ (str): The ID of the worker
             config_path (str): The path to the configuration file to be loaded
         """
         self.id_ = id_
@@ -217,7 +242,6 @@ class Worker(object):
         signal.signal(signal.SIGABRT, self.exit_handler)
 
         if os.name == 'nt':
-            import apps  # need this import
             walkoff.config.initialize(config_path=config_path)
         else:
             walkoff.config.Config.load_config(config_path)
@@ -279,8 +303,7 @@ class Worker(object):
         self.receive_workflows()
 
     def exit_handler(self, signum, frame):
-        """Clean up upon receiving a SIGINT or SIGABT.
-        """
+        """Clean up upon receiving a SIGINT or SIGABT"""
         self.thread_exit = True
         self.workflow_receiver.shutdown()
         if self.threadpool:
@@ -307,7 +330,14 @@ class Worker(object):
             return len(self.workflows) >= self.capacity
 
     def execute_workflow_worker(self, workflow_id, workflow_execution_id, start, start_arguments=None, resume=False):
-        """Execute a workflow.
+        """Execute a workflow
+
+        Args:
+            workflow_id (UUID): The ID of the Workflow to be executed
+            workflow_execution_id (UUID): The execution ID of the Workflow to be executed
+            start (UUID): The ID of the starting Action
+            start_arguments (list[Argument], optional): Optional list of starting Arguments. Defaults to None
+            resume (bool, optional): Optional boolean to signify that this Workflow is being resumed. Defaults to False.
         """
         self.execution_db.session.expire_all()
         workflow = self.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
@@ -333,8 +363,7 @@ class Worker(object):
             self.workflows.pop(threading.current_thread().name)
 
     def receive_communications(self):
-        """Constantly receives data from the ZMQ socket and handles it accordingly.
-        """
+        """Constantly receives data from the ZMQ socket and handles it accordingly"""
         for message in self.workflow_communication_receiver.receive_communications():
             if message.type == WorkerCommunicationMessageType.workflow:
                 self._handle_workflow_control_communication(message.data)
@@ -362,7 +391,7 @@ class Worker(object):
                 callback in the main thread.
 
             Args:
-                sender (execution element): The execution element that sent the signal.
+                sender (ExecutionElement): The execution element that sent the signal.
                 kwargs (dict): Any extra data to send.
         """
         workflow = self._get_current_workflow()

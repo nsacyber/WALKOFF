@@ -11,11 +11,11 @@ from google.protobuf.json_format import MessageToDict
 from nacl.public import PrivateKey, Box
 from six import string_types
 
-from walkoff.events import WalkoffEvent, EventType
-from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, CaseControl, WorkflowControl
-from walkoff.helpers import json_dumps_or_string
 import walkoff.config
-from flask import current_app
+from walkoff.events import WalkoffEvent, EventType
+from walkoff.helpers import json_dumps_or_string
+from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, CaseControl, \
+    WorkflowControl
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +23,9 @@ logger = logging.getLogger(__name__)
 class WorkflowExecutionController:
     def __init__(self, cache):
         """Initialize a LoadBalancer object, which manages workflow execution.
+
+        Args:
+            cache (Cache): The Cache object
         """
         server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
         server_public, server_secret = auth.load_certificate(server_secret_file)
@@ -43,10 +46,11 @@ class WorkflowExecutionController:
         """Adds a workflow ID to the queue to be executed.
 
         Args:
-            workflow_id (int): The ID of the workflow to be executed.
-            workflow_execution_id (str): The execution ID of the workflow to be executed.
-            start (str, optional): The ID of the first, or starting action. Defaults to None.
-            start_arguments (list[Argument]): The arguments to the starting action of the workflow. Defaults to None.
+            workflow_id (UUID): The ID of the workflow to be executed.
+            workflow_execution_id (UUID): The execution ID of the workflow to be executed.
+            start (UUID, optional): The ID of the first, or starting action. Defaults to None.
+            start_arguments (list[Argument], optional): The arguments to the starting action of the workflow. Defaults
+                to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
         """
         message = ExecuteWorkflowMessage()
@@ -67,7 +71,7 @@ class WorkflowExecutionController:
         """Pauses a workflow currently executing.
 
         Args:
-            workflow_execution_id (str): The execution ID of the workflow.
+            workflow_execution_id (UUID): The execution ID of the workflow.
         """
         logger.info('Pausing workflow {0}'.format(workflow_execution_id))
         message = self._create_workflow_control_message(WorkflowControl.PAUSE, workflow_execution_id)
@@ -77,7 +81,7 @@ class WorkflowExecutionController:
         """Aborts a workflow currently executing.
 
         Args:
-            workflow_execution_id (str): The execution ID of the workflow.
+            workflow_execution_id (UUID): The execution ID of the workflow.
         """
         logger.info('Aborting workflow {0}'.format(workflow_execution_id))
         message = self._create_workflow_control_message(WorkflowControl.ABORT, workflow_execution_id)
@@ -92,8 +96,7 @@ class WorkflowExecutionController:
         return message
 
     def send_exit_to_worker_comms(self):
-        """Sends the exit message over the communication sockets, otherwise worker receiver threads will hang
-        """
+        """Sends the exit message over the communication sockets, otherwise worker receiver threads will hang"""
         message = CommunicationPacket()
         message.type = CommunicationPacket.EXIT
         self._send_message(message)
@@ -112,14 +115,31 @@ class WorkflowExecutionController:
                         setattr(arg, field, val)
 
     def create_case(self, case_id, subscriptions):
+        """Creates a Case
+
+        Args:
+            case_id (int): The ID of the Case
+            subscriptions (list[Subscription]): List of Subscriptions to subscribe to
+        """
         message = self._create_case_update_message(case_id, CaseControl.CREATE, subscriptions=subscriptions)
         self._send_message(message)
 
     def update_case(self, case_id, subscriptions):
+        """Updates a Case
+
+        Args:
+            case_id (int): The ID of the Case
+            subscriptions (list[Subscription]): List of Subscriptions to subscribe to
+        """
         message = self._create_case_update_message(case_id, CaseControl.UPDATE, subscriptions=subscriptions)
         self._send_message(message)
 
     def delete_case(self, case_id):
+        """Deletes a Case
+
+        Args:
+            case_id (int): The ID of the Case to delete
+        """
         message = self._create_case_update_message(case_id, CaseControl.DELETE)
         self._send_message(message)
 
@@ -143,7 +163,7 @@ class WorkflowExecutionController:
 
 class Receiver:
     def __init__(self, current_app):
-        """Initialize a Receiver object, which will receive callbacks from the execution elements.
+        """Initialize a Receiver object, which will receive callbacks from the ExecutionElements.
 
         Args:
             current_app (Flask.App): The current Flask app
@@ -164,9 +184,7 @@ class Receiver:
         self.current_app = current_app
 
     def receive_results(self):
-        """Keep receiving results from execution elements over a ZMQ socket, and trigger the callbacks.
-        """
-
+        """Keep receiving results from execution elements over a ZMQ socket, and trigger the callbacks"""
         while True:
             if self.thread_exit:
                 break
@@ -177,11 +195,12 @@ class Receiver:
                 continue
 
             with self.current_app.app_context():
-                self.send_callback(message_bytes)
+                self._send_callback(message_bytes)
 
         self.results_sock.close()
 
-    def send_callback(self, message_bytes):
+    def _send_callback(self, message_bytes):
+
         message_outer = Message()
         message_outer.ParseFromString(message_bytes)
         callback_name = message_outer.event_name
@@ -231,6 +250,14 @@ class Receiver:
 
 
 def format_message_event_data(message):
+    """Formats a Message
+
+    Args:
+        message (Message): The Message to be formatted
+
+    Returns:
+        (dict): The formatted Message object
+    """
     return {'users': message.users,
             'roles': message.roles,
             'requires_reauth': message.requires_reauth,

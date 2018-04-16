@@ -18,7 +18,8 @@ except ImportError:
 
 with_device = with_resource_factory(
     'device',
-    lambda device_id: current_app.running_context.execution_db.session.query(Device).filter(Device.id == device_id).first())
+    lambda device_id: current_app.running_context.execution_db.session.query(Device).filter(
+        Device.id == device_id).first())
 
 
 def get_device_json_with_app_name(device):
@@ -154,7 +155,7 @@ def patch_device():
 
 def _update_device(device, update_device_json, validate_required=True):
     fields = ({field['name']: field['value'] for field in update_device_json['fields']}
-    if 'fields' in update_device_json else None)
+              if 'fields' in update_device_json else None)
     app = update_device_json['app_name']
     device_type = update_device_json['type'] if 'type' in update_device_json else device.type
     try:
@@ -171,7 +172,6 @@ def _update_device(device, update_device_json, validate_required=True):
         device.update_from_json(update_device_json, complete_object=validate_required)
         current_app.running_context.execution_db.session.commit()
         device_json = get_device_json_with_app_name(device)
-        # remove_configuration_keys_from_device_json(device_json)
         return device_json, SUCCESS
 
 

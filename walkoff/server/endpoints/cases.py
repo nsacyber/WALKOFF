@@ -4,12 +4,12 @@ from flask import request, current_app, send_file
 from flask_jwt_extended import jwt_required
 
 import walkoff.case.database as case_database
+from walkoff.case.subscription import Subscription
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import with_resource_factory
 from walkoff.server.problem import Problem
 from walkoff.server.returncodes import *
 from walkoff.serverdb import db
-from walkoff.case.subscription import Subscription
 from walkoff.serverdb.casesubscription import CaseSubscription
 
 try:

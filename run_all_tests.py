@@ -46,5 +46,6 @@ if __name__ == '__main__':
         successful = False
     finally:
         from flask import current_app
+
         current_app.running_context.executor.shutdown_pool()
         sys.exit(not successful)

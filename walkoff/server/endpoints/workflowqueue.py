@@ -18,11 +18,13 @@ def does_workflow_exist(workflow_id):
 
 
 def does_execution_id_exist(execution_id):
-    return current_app.running_context.execution_db.session.query(exists().where(WorkflowStatus.execution_id == execution_id)).scalar()
+    return current_app.running_context.execution_db.session.query(
+        exists().where(WorkflowStatus.execution_id == execution_id)).scalar()
 
 
 def workflow_status_getter(execution_id):
-    return current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
+    return current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
+        execution_id=execution_id).first()
 
 
 def workflow_getter(workflow_id):
@@ -30,7 +32,6 @@ def workflow_getter(workflow_id):
 
 
 with_workflow = with_resource_factory('workflow', workflow_getter, validator=is_valid_uid)
-
 
 with_workflow_status = with_resource_factory('workflow', workflow_status_getter, validator=is_valid_uid)
 validate_workflow_is_registered = validate_resource_exists_factory('workflow', does_workflow_exist)
@@ -104,7 +105,8 @@ def execute_workflow():
                     'Cannot execute workflow.',
                     'Some arguments are invalid. Reason: {}'.format(errors))
 
-        execution_id = current_app.running_context.executor.execute_workflow(workflow_id, start=start, start_arguments=arguments)
+        execution_id = current_app.running_context.executor.execute_workflow(workflow_id, start=start,
+                                                                             start_arguments=arguments)
         current_app.logger.info('Executed workflow {0}'.format(workflow_id))
         return {'id': execution_id}, SUCCESS_ASYNC
 

@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError, StatementError
 
 from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.workflow import Workflow
-from walkoff.helpers import InvalidExecutionElement, regenerate_workflow_ids
+from walkoff.helpers import regenerate_workflow_ids
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid
 from walkoff.server.returncodes import *
@@ -329,7 +329,8 @@ def delete_workflow(workflow_id):
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['delete']))
     @with_workflow('delete', workflow_id)
     def __func(workflow):
-        playbook = current_app.running_context.execution_db.session.query(Playbook).filter_by(id=workflow.playbook_id).first()
+        playbook = current_app.running_context.execution_db.session.query(Playbook).filter_by(
+            id=workflow.playbook_id).first()
         playbook_workflows = len(playbook.workflows) - 1
         workflow = current_app.running_context.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
         current_app.running_context.execution_db.session.delete(workflow)
@@ -365,7 +366,8 @@ def copy_workflow(playbook_id, workflow_id):
 
         regenerate_workflow_ids(workflow_json)
         if current_app.running_context.execution_db.session.query(exists().where(Playbook.id == playbook_id)).scalar():
-            playbook = current_app.running_context.execution_db.session.query(Playbook).filter_by(id=playbook_id).first()
+            playbook = current_app.running_context.execution_db.session.query(Playbook).filter_by(
+                id=playbook_id).first()
         else:
             current_app.running_context.execution_db.session.rollback()
             current_app.logger.error('Could not copy workflow {}. Playbook does not exist'.format(playbook_id))

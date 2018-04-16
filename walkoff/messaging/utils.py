@@ -1,12 +1,13 @@
 import json
 import logging
 
+from flask import current_app
+
 import walkoff.messaging
 from walkoff.events import WalkoffEvent
 from walkoff.extensions import db
 from walkoff.serverdb import Role, User
 from walkoff.serverdb.message import Message
-from flask import current_app
 
 logger = logging.getLogger(__name__)
 

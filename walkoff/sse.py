@@ -1,9 +1,11 @@
-from functools import wraps
-from flask import Response, Blueprint
-import json
-from walkoff.cache import unsubscribe_message
 import collections
+import json
+from functools import wraps
+
+from flask import Response, Blueprint
 from six import string_types, binary_type
+
+from walkoff.cache import unsubscribe_message
 
 
 class StreamableBlueprint(Blueprint):
@@ -14,6 +16,7 @@ class StreamableBlueprint(Blueprint):
     Attributes:
         stream (dict{str: Stream}): A lookup for the streams of this blueprint. The key is the channel of the stream
     """
+
     def __init__(self, *args, **kwargs):
         """
         Kwargs:
@@ -50,6 +53,7 @@ class SseEvent(object):
         data: The data related to this SSE
 
     """
+
     def __init__(self, event, data):
         self.event = event
         self.data = data
@@ -100,6 +104,7 @@ class SseStream(object):
         cache (:obj:, optional): The cache to use for this SSE stream. Defaults to the `walkoff.cache.cache` used
             throughout Walkoff
     """
+
     def __init__(self, channel, cache=None):
         self.channel = channel
         self.cache = cache
@@ -119,12 +124,14 @@ class SseStream(object):
         Returns:
             (func): The decorated function
         """
+
         def decorator(func):
             @wraps(func)
             def wrapper(*args, **kwargs):
                 response = func(*args, **kwargs)
                 self._publish_response(response, event)
                 return response
+
             return wrapper
 
         return decorator
@@ -228,6 +235,7 @@ class FilteredSseStream(SseStream):
         cache (:obj:, optional): The cache to use for this SSE stream. Defaults to the `walkoff.cache.cache` used
             throughout Walkoff
     """
+
     def __init__(self, channel, cache=None):
         super(FilteredSseStream, self).__init__(channel, cache)
 
@@ -330,6 +338,7 @@ class InterfaceSseStream(SseStream):
         channel (str): The name of the channel
         cache (optional): The cache object used for this SSE stream
     """
+
     def __init__(self, interface, channel, cache=None):
         super(InterfaceSseStream, self).__init__(create_interface_channel_name(interface, channel), cache=cache)
         self.interface = interface
@@ -346,6 +355,7 @@ class FilteredInterfaceSseStream(FilteredSseStream):
         channel (str): The name of the channel
         cache (optional): The cache object used for this SSE stream
     """
+
     def __init__(self, interface, channel, cache=None):
         super(FilteredInterfaceSseStream, self).__init__(create_interface_channel_name(interface, channel), cache=cache)
         self.interface = interface

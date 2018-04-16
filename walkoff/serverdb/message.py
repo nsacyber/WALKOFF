@@ -14,7 +14,6 @@ user_messages_association = db.Table('user_messages',
                                      db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
                                      db.Column('message_id', db.Integer, db.ForeignKey('message.id')))
 
-
 role_messages_association = db.Table('role_messages',
                                      db.Column('role_id', db.Integer, db.ForeignKey('role.id')),
                                      db.Column('message_id', db.Integer, db.ForeignKey('message.id')))

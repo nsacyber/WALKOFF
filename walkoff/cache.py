@@ -1,20 +1,21 @@
 import logging
 import os
-import os.path
+import pickle
 import sqlite3
+import threading
+from copy import deepcopy
 from datetime import timedelta
 from functools import partial
 from weakref import WeakSet
+
+import os.path
 from diskcache import FanoutCache, DEFAULT_SETTINGS, Cache
 from diskcache.core import DBNAME
 from gevent import sleep
 from gevent.event import AsyncResult, Event
-import threading
-import walkoff.config
-import pickle
-from copy import deepcopy
 from six import string_types, binary_type
-import json
+
+import walkoff.config
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,6 @@ try:
     from io import BytesIO
 except ImportError:
     from cStringIO import StringIO as BytesIO
-
 
 unsubscribe_message = b'__UNSUBSCRIBE__'
 """(str): The message used to unsubscribe from and close a PubSub channel
@@ -41,6 +41,7 @@ class DiskSubscription(object):
     Args:
         channel (str): The channel name associated with this subscription
     """
+
     def __init__(self, channel):
         self.channel = channel
         self._listener = None
@@ -169,7 +170,8 @@ class DiskPubSubCache(object):
 
     @staticmethod
     def __get_value(value):
-        if value == unsubscribe_message or isinstance(value, string_types) or isinstance(value, int) or isinstance(value, float):
+        if value == unsubscribe_message or isinstance(value, string_types) or isinstance(value, int) or isinstance(
+                value, float):
             return value
         if isinstance(value, binary_type):
             return value.decode('utf-8')
@@ -231,6 +233,7 @@ class DiskCacheAdapter(object):
         retry (bool, optional): Should this database retry timed out transactions? Default to True
         **settings: Other setting which will be passsed to the `cache` attribute on initialization
     """
+
     def __init__(self, directory, shards=8, timeout=0.01, retry=True, **settings):
         self.directory = directory
         self.retry = retry
@@ -430,7 +433,7 @@ class DiskCacheAdapter(object):
         Returns:
             (float): The expiration time in seconds
         """
-        return time.total_seconds() if isinstance(time, timedelta) else float(time)/1000.
+        return time.total_seconds() if isinstance(time, timedelta) else float(time) / 1000.
 
     def shutdown(self):
         """Shuts down the connection to the cache

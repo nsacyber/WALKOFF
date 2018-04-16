@@ -1,8 +1,8 @@
 from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt_claims
 
-from walkoff.messaging.utils import log_action_taken_on_message
 from walkoff.executiondb.argument import Argument
+from walkoff.messaging.utils import log_action_taken_on_message
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.returncodes import *
 from walkoff.serverdb.message import Message

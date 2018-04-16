@@ -1,3 +1,12 @@
+import walkoff.cache
+import walkoff.case.database
+import walkoff.executiondb
+import walkoff.multiprocessedexecutor.multiprocessedexecutor as executor
+import walkoff.scheduler
+from walkoff.case.logger import CaseLogger
+from walkoff.case.subscription import SubscriptionCache
+
+
 class Context(object):
 
     def __init__(self, config):
@@ -7,14 +16,6 @@ class Context(object):
         Args:
             config (Config): A config object
         """
-        import walkoff.multiprocessedexecutor.multiprocessedexecutor as executor
-        import walkoff.scheduler
-        from walkoff.case.logger import CaseLogger
-        import walkoff.case.database
-        import walkoff.cache
-        from walkoff.case.subscription import SubscriptionCache
-        import walkoff.executiondb
-
         self.execution_db = walkoff.executiondb.ExecutionDatabase(config.EXECUTION_DB_TYPE, config.EXECUTION_DB_PATH)
         self.case_db = walkoff.case.database.CaseDatabase(config.CASE_DB_TYPE, config.CASE_DB_PATH)
 

@@ -17,7 +17,7 @@ class BlacklistedToken(db.Model):
         """Get the JSON representation of a BlacklistedToken object.
 
         Returns:
-            The JSON representation of a BlacklistedToken object.
+            (dict): The JSON representation of a BlacklistedToken object.
         """
         return {
             'id': self.id,
@@ -28,7 +28,10 @@ class BlacklistedToken(db.Model):
 
 
 def revoke_token(decoded_token):
-    """Adds a new token to the database. It is not revoked when it is added.
+    """Adds a new token to the database. It is not revoked when it is added
+
+    Args:
+        decoded_token (dict): The decoded token
     """
     jti = decoded_token['jti']
     user_identity = decoded_token[current_app.config['JWT_IDENTITY_CLAIM']]
@@ -51,7 +54,7 @@ def is_token_revoked(decoded_token):
     it was created.
 
     Returns:
-        True if the token is revoked, False otherwise.
+        (bool): True if the token is revoked, False otherwise.
     """
     jti = decoded_token['jti']
     token = BlacklistedToken.query.filter_by(jti=jti).first()
@@ -59,7 +62,11 @@ def is_token_revoked(decoded_token):
 
 
 def approve_token(token_id, user):
-    """Approves the given token.
+    """Approves the given token
+
+    Args:
+        token_id (int): The ID of the token
+        user (User): The User
     """
     token = BlacklistedToken.query.filter_by(id=token_id, user_identity=user).first()
     if token is not None:
@@ -69,14 +76,14 @@ def approve_token(token_id, user):
 
 
 def prune_if_necessary():
+    """Prunes the database if necessary"""
     current_app.running_context.cache.incr("number_of_operations")
     if current_app.running_context.cache.get("number_of_operations") >= prune_frequency:
         prune_database()
 
 
 def prune_database():
-    """Delete tokens that have expired from the database.
-    """
+    """Delete tokens that have expired from the database"""
     now = datetime.now()
     expired = BlacklistedToken.query.filter(BlacklistedToken.expires < now).all()
     for token in expired:

@@ -2,10 +2,12 @@ import json
 import logging
 import logging.config
 import sys
-from os.path import isfile, join, abspath
 import warnings
 
 import yaml
+from os.path import isfile, join, abspath
+
+from walkoff.appgateway import cache_apps
 
 logger = logging.getLogger(__name__)
 
@@ -136,6 +138,9 @@ class Config(object):
     @classmethod
     def load_config(cls, config_path=None):
         """ Loads Walkoff configuration from JSON file
+
+        Args:
+            config_path (str): Optional path to the config. Defaults to the CONFIG_PATH class variable.
         """
         if config_path:
             cls.CONFIG_PATH = config_path
@@ -158,8 +163,7 @@ class Config(object):
 
     @classmethod
     def write_values_to_file(cls, keys=None):
-        """ Writes the current walkoff configuration to a file
-        """
+        """ Writes the current walkoff configuration to a file"""
         if keys is None:
             keys = [key for key in dir(cls) if not key.startswith('__')]
 
@@ -173,10 +177,8 @@ class Config(object):
 
 
 def initialize(config_path=None):
-    """Loads the config file, loads the app cache, and loads the app APIs into memory
-    """
+    """Loads the config file, loads the app cache, and loads the app APIs into memory"""
     Config.load_config(config_path)
     setup_logger()
-    from walkoff.appgateway import cache_apps
     cache_apps(Config.APPS_PATH)
     load_app_apis()

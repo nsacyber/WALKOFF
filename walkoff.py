@@ -9,19 +9,18 @@ from gevent import pywsgi
 
 import walkoff
 import walkoff.config
-
+from scripts.compose_api import compose_api
+from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
 from walkoff.server.app import create_app
 
 logger = logging.getLogger('walkoff')
 
 
 def run(app, host, port):
-    from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
     print_banner()
     pids = spawn_worker_processes()
     monkey.patch_all()
 
-    from scripts.compose_api import compose_api
     compose_api()
 
     app.running_context.executor.initialize_threading(app, pids)
