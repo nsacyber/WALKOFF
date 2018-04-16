@@ -158,19 +158,24 @@ class DiskPubSubCache(object):
         return subscription
 
     def __push_to_subscribers(self, channel, value):
-        value = self.__get_value(value)
-        for subscriber in self._subscribers.get(str(channel), []):
-            subscriber.push(value)
+        try:
+            value = self.__get_value(value)
+            for subscriber in self._subscribers.get(str(channel), []):
+                subscriber.push(value)
+        except:
+            import traceback
+            traceback.print_exc()
+            raise
 
     @staticmethod
     def __get_value(value):
-        if value == unsubscribe_message or isinstance(value, string_types):
+        if value == unsubscribe_message or isinstance(value, string_types) or isinstance(value, int) or isinstance(value, float):
             return value
         if isinstance(value, binary_type):
             return value.decode('utf-8')
         try:
             return pickle.load(BytesIO(value))
-        except KeyError:
+        except (KeyError, TypeError, IndexError):
             return str(value)
 
     @property
