@@ -48,7 +48,7 @@ WALKOFF
         <h4><b>3. Create some Walkoff event callbacks</b></h4>
         <p>Let's start with the callbacks which collect the data. You can connect to all the events which can be logged
            inside of a case using decorators. These events are listed in the Case Overview page and are contained in the
-           <code>core.events</code> module in the backend. For example, if you want to connect to the event triggered
+           <code>walkoff.events</code> module in the backend. For example, if you want to connect to the event triggered
            when a workflow begins executing, which is called 'Workflow Execution Start', you could use register a
            function like this:
         </p>
@@ -82,8 +82,8 @@ def handle_workflow_start(data):
     print(data)
 
 
-uids = ['4faf9d28-3631-44bd-838e-81501978714f', 'abba99ac-c97c-418b-ac1f-d8b8378f20ca']
-@dispatcher.on_workflow_execution_start(sender_uids=uids)
+ids = ['4faf9d28-3631-44bd-838e-81501978714f', 'abba99ac-c97c-418b-ac1f-d8b8378f20ca']
+@dispatcher.on_workflow_execution_start(sender_ids=ids)
 def handle_workflows_start(data):
     print(data)
 
@@ -103,12 +103,12 @@ def handle_workflow12_start(data):
         shuts down, you could use: </p>
     <pre><code class="python">
 from interfaces import dispatcher
-from core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 
 
 @dispatcher.on_walkoff_events(
     events=[WalkoffEvent.WorkflowStarted, WalkoffEvent.WorkflowShutdown],
-    sender_uids='4faf9d28-3631-44bd-838e-81501978714f')
+    sender_ids='4faf9d28-3631-44bd-838e-81501978714f')
 def handle_workflow_start_stop(data):
     print(data)
     </code></pre>
@@ -120,7 +120,7 @@ def handle_workflow_start_stop(data):
     </p>
     <pre><code class="python">
 from interfaces import dispatcher
-from core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 
 
 @dispatcher.on_app_actions(
@@ -136,7 +136,7 @@ def handle_hello_world_actions(data):
 
         <pre><code class="python">
 from interfaces import dispatcher
-from core.events import WalkoffEvent
+from walkoff.events import WalkoffEvent
 
 hello_world_action_count = {}
 
@@ -155,10 +155,10 @@ def handle_workflow1_start(data):
            using a very thin wrapper around Flask's blueprints to register the endpoint.</p>
                 <pre><code class="python">
 from interfaces import dispatcher, AppBlueprint
-from core.events import WalkoffEvent
-from flask import Blueprint, jsonify
+from workflow.events import WalkoffEvent
+from flask import jsonify
 
-blueprint = AppBlueprint(blueprint=Blueprint('HelloWorldPage', __name__))
+blueprint = AppBlueprint('HelloWorldPage', __name__)
 
 hello_world_action_count = {}
 
@@ -172,7 +172,7 @@ def handle_workflow1_start(data):
         hello_world_action_count[action_name] += 1
 
 
-@blueprint.blueprint.route('/metrics', methods=['GET'])
+@blueprint.route('/metrics', methods=['GET'])
 def get_hello_world_metrics():
     global hello_world_action_count
     return jsonify(hello_world_action_count), 200

@@ -7,11 +7,11 @@
            protect endpoints. To require a valid JWT token to access your endpoint, you can use the following code:</p>
         <pre><code class="python">
 from interfaces import dispatcher, AppBlueprint
-from core.events import WalkoffEvent
-from flask import Blueprint, jsonify
+from walkoff.events import WalkoffEvent
+from flask import jsonify
 from flask_jwt_extended import jwt_required
 
-blueprint = AppBlueprint(blueprint=Blueprint('HelloWorldPage', __name__))
+blueprint = AppBlueprint('HelloWorldPage', __name__)
 
 hello_world_action_count = {}
 
@@ -25,7 +25,7 @@ def handle_workflow1_start(data):
         hello_world_action_count[action_name] += 1
 
 
-@blueprint.blueprint.route('/metrics', methods=['GET'])
+@blueprint.route('/metrics', methods=['GET'])
 @jwt_required
 def get_hello_world_metrics():
     global hello_world_action_count
