@@ -13,9 +13,15 @@
     before the workflow can be executed
   * You can now use Python's builtin `logging` module in an app, and the log
     messages will be displayed in the playbook editor
-* The ability to use a key-value storage has been created. This is now used to
-  push workflows to the workers as well as to remove global state. Currently
-  two options are available for key-value store, DiskCache, a SQLite-backed
+* The metrics page has been introduced in the UI which displays simple metrics
+  related to the execution of workflows and actions.
+* The devices used in the actions in workflows are now objects, enabling
+  dynamic selection of the device used for the action. To further support this,
+  an action in the Utilities app named `get devices by fields` allows you to
+  query the devices database.
+* The ability to use a key-value storage has been created. This is now the
+  mechanism used to push workflows and backs the SSE streams. Currently two
+  options are available for key-value store, DiskCache, a SQLite-backed
   key-value storage, and Redis. By default Walkoff will use DiskCache, but it
   is recommended that users configure and use Redis.
 * The SSEs now use dedicated SseStream objects which are backed by the cache.
@@ -51,13 +57,13 @@
   instead
   .
 ### Fixed
-* Bug where branches were'all branches weren't being evaluated in a workflow
+* Bug where branches where all branches weren't being evaluated in a workflow
 * Bug where object arguments could not be converted from strings
 
 ### Contributor
 * Testing the backend now requires the additional the dependencies in
   `requirements-test.txt`
-* The minimum accepted unit test coverage for the Python backend is now 87%
+* The minimum accepted unit test coverage for the Python backend is now 88%
 
 ## [0.7.4]
 ###### 2018-03-20

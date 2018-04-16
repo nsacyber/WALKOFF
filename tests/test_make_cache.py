@@ -48,6 +48,7 @@ class TestMakeCache(TestCase):
             _requires = ['something_strange']
 
             def __init__(self):
+                import something_strange
                 self.cache = {}
 
             @classmethod
@@ -62,6 +63,7 @@ class TestMakeCache(TestCase):
     def test_bad_import_no_requires(self):
         class CustomCacheAdapter(object):
             def __init__(self):
+                import something_strange
                 self.cache = {}
 
             @classmethod
