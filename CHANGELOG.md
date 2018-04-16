@@ -3,7 +3,7 @@
      Contributor to describe changes -->
 
 ## [0.8.0]
-###### unreleased
+###### 2018-04-16
 
 ### Added
 * Multiple tools have been added to help develop workflows
