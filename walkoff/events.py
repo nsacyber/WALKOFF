@@ -284,14 +284,39 @@ class WalkoffEvent(Enum):
                          WalkoffEvent.SendMessage))
 
     def send(self, sender, **kwargs):
+        """Sends an event to the signal
+
+        Args:
+            sender: the sender of the event
+            **kwargs: Additional data to send with the event
+        """
         self.value.send(sender, **kwargs)
 
     def connect(self, func, weak=True):
+        """ Decorator used to connect a callback to an event
+
+        Args:
+            func (func): The function to connect
+            weak (bool optional): Should the callback be stored as a weak reference? Defaults to True.
+
+        Returns:
+            (func): The connected function
+        """
         self.value.connect(func, weak=weak)
         return func
 
     def is_loggable(self):
+        """Is this event loggable?
+
+        Returns:
+            (bool)
+        """
         return self.value.is_loggable
 
     def is_sent_to_interfaces(self):
+        """Is this event supposed to be sent to the interfaces?
+
+        Returns:
+            (bool)
+        """
         return self.value.is_sent_to_interfaces

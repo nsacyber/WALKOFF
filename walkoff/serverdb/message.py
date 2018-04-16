@@ -20,6 +20,30 @@ role_messages_association = db.Table('role_messages',
 
 
 class Message(db.Model):
+    """Flask-SqlAlchemy Table which holds messages for users.
+
+    It has a many to many relationship with both the users and roles tables.
+
+    Attributes:
+        id (int): The primary key
+        subject (str): The subject of the message
+        body (str): The body of the message as a JSON string
+        users (list[User]): The users to which this message was sent and who haven't deleted the message
+        roles (list[Role]): The roles to which this message was sent
+        workflow_execution_id (UUID): The execution id of the workflow which sent the message
+        requires_reauth (bool): Does the message require reauthentication to address it?
+        requires_response (bool): Does the message require a response?
+        created_at (datetime): Timestamp of message creation
+        history (list[MessageHistory]): The timeline of actions taken on this message
+
+    Args:
+        subject (str): The subject of the message
+        body (str): The body of the message as a JSON string
+        users (list[User]): The users to which this message was sent and who haven't deleted the message
+        roles (list[Role]): The roles to which this message was sent
+        requires_reauth (bool): Does the message require reauthentication to address it?
+        requires_response (bool): Does the message require a response?
+    """
     __tablename__ = 'message'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -48,6 +72,12 @@ class Message(db.Model):
         self.requires_response = requires_response
 
     def record_user_action(self, user, action):
+        """Records an action taken by a user on this message
+
+        Args:
+            user (User): The user taking the action
+            action (MessageAction): The action taken
+        """
         if user in self.users:
             if ((action == MessageAction.unread and not self.user_has_read(user))
                     or (action == MessageAction.respond and (not self.requires_response or self.is_responded()[0]))):
@@ -57,6 +87,14 @@ class Message(db.Model):
             self.history.append(MessageHistory(user, action))
 
     def user_has_read(self, user):
+        """Determines if a user has read the message
+
+        Args:
+            user (User): The user of the query
+
+        Returns:
+            (bool): Has the user read the message?
+        """
         user_history = [history_entry for history_entry in self.history if history_entry.user_id == user.id]
         for history_entry in user_history[::-1]:
             if history_entry.action in (MessageAction.read, MessageAction.unread):
@@ -68,6 +106,15 @@ class Message(db.Model):
             return False
 
     def user_last_read_at(self, user):
+        """Gets the last time the user has read the message
+
+        Args:
+            user (User): The user of the query
+
+        Returns:
+            (datetime|None): The timestamp of the last time the user has read the message or None if the message has not
+                been read by this user
+        """
         user_history = [history_entry for history_entry in self.history if history_entry.user_id == user.id]
         for history_entry in user_history[::-1]:
             if history_entry.action == MessageAction.read:
@@ -76,9 +123,20 @@ class Message(db.Model):
             return None
 
     def get_read_by(self):
+        """Gets all the usernames of the users who have read this message
+
+        Returns:
+            set(str): The usernames of the users who have read this message
+        """
         return {entry.username for entry in self.history if entry.action == MessageAction.read}
 
     def is_responded(self):
+        """Has this message been responded to?
+
+        Returns:
+            tuple(bool, datetime|None, str|None): A tuple of if the message has been responded to, if it has then the
+                datetime of when it was responded to and username of the user who responded to it.
+        """
         if not self.requires_response:
             return False, None, None
         for history_entry in self.history[::-1]:
@@ -88,6 +146,15 @@ class Message(db.Model):
             return False, None, None
 
     def is_authorized(self, user_id=None, role_ids=None):
+        """Is a user authorized to respond to this message?
+
+        Args:
+            user_id (int): The ID of the user
+            role_ids (list[int]): The ids of the roles the user has
+
+        Returns:
+            (bool)
+        """
         if user_id:
             for user in self.users:
                 if user_id == user.id:
@@ -104,6 +171,16 @@ class Message(db.Model):
         return False
 
     def as_json(self, with_read_by=True, user=None, summary=False):
+        """Gets a JSON representation of the message
+
+        Args:
+            with_read_by (bool, optional): Should the JSON include who has read the message? Defaults to True.
+            user (User, optional): If provided, information specific to the user is included.
+            summary (bool, optional): If True, only give a brief summary of the messsage. Defaults to False.
+
+        Returns:
+
+        """
         responded, responded_at, responded_by = self.is_responded()
         ret = {'id': self.id,
                'subject': self.subject,
@@ -129,6 +206,19 @@ class Message(db.Model):
 
 
 class MessageHistory(db.Model):
+    """A Flask-SqlAlchemy table which contains entries related to the history of a message
+
+    Attributes:
+        id (int): The primary key
+        action (MessageAction): The action taken
+        timestamp (datetime): The timestamp of the action
+        user_id (int): The ID of the user who took the action
+        username (str): The username of the user who took the action
+
+    Args:
+        user (User): The user who took the action
+        action (MessageAction): The action taken
+    """
     __tablename__ = 'message_history'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     action = db.Column(db.Enum(MessageAction))
@@ -143,6 +233,11 @@ class MessageHistory(db.Model):
         self.username = user.username
 
     def as_json(self):
+        """gets a JSON representation of the message history entry
+
+        Returns:
+            dict: The JSON representation of the message history entry
+        """
         return {'action': self.action.name,
                 'user_id': self.user_id,
                 'username': self.username,

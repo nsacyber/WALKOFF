@@ -11,6 +11,12 @@ logger = logging.getLogger(__name__)
 
 
 class ScheduledWorkflow(db.Model):
+    """A SqlAlchemy table representing a workflow scheduled for execution
+
+    Attributes:
+        id (int): The primary key
+        workflow_id (UUID): The id of the workflow scheduled for execution
+    """
     __tablename__ = 'scheduled_workflow'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     workflow_id = db.Column(UUIDType(), nullable=False)
@@ -18,6 +24,26 @@ class ScheduledWorkflow(db.Model):
 
 
 class ScheduledTask(db.Model, TrackModificationsMixIn):
+    """A SqlAlchemy table representing a a task scheduled for periodic execution
+
+    Attributes:
+        id (int): The primary key
+        name (str): The name of the task
+        description (str): A description of the task
+        status (str): The status of the task. either "running" or "stopped"
+        workflows (list[ScheduledWorkflow]): The workflows attached to this task
+        trigger_type (str): The type of trigger to use for the scheduler. Either "date", "interval", "cron", or
+            "unspecified"
+        trigger_args (str): The arguments for the scheduler trigger
+
+    Args:
+        name (str): The name of the task
+        description (str, optional): A description of the task. Defaults to empty string
+        workflows (list[str], optional): The uuids of the workflows attached to this task. Defaults to empty list,
+        task_trigger (dict): A dict containing two fields: "type", which contains the type of trigger to use for the
+            scheduler ("date", "interval", "cron", or "unspecified"), and "args", which contains the arguments for the
+            scheduler trigger
+    """
     __tablename__ = 'scheduled_task'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
@@ -48,6 +74,11 @@ class ScheduledTask(db.Model, TrackModificationsMixIn):
             self._start_workflows()
 
     def update(self, json_in):
+        """Updates this task from a JSON representation of it
+
+        Args:
+            json_in (dict): The JSON representation of the updated task
+        """
         trigger = None
         if 'task_trigger' in json_in and json_in['task_trigger']:
             trigger = construct_trigger(json_in['task_trigger'])  # Throws an error if the args are invalid
@@ -64,12 +95,16 @@ class ScheduledTask(db.Model, TrackModificationsMixIn):
             self._update_status(json_in)
 
     def start(self):
+        """Start executing this task
+        """
         if self.status != 'running':
             self.status = 'running'
             if self.trigger_type != 'unspecified':
                 self._start_workflows()
 
     def stop(self):
+        """Stop executing this scheduled task
+        """
         if self.status != 'stopped':
             self.status = 'stopped'
             self._stop_workflows()
@@ -127,6 +162,11 @@ class ScheduledTask(db.Model, TrackModificationsMixIn):
         return new, removed
 
     def as_json(self):
+        """Gets a JSON representation of this ScheduledTask
+
+        Returns:
+            (dict): The JSON representation of this ScheduledTask
+        """
         return {'id': self.id,
                 'name': self.name,
                 'description': self.description,
