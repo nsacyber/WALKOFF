@@ -4,7 +4,7 @@ info:
     An active cyber defense development framework enabling orchestration
     capabilities to be written once and deployed across WALKOFF-enabled
     orchestration tools. https://iadgov.github.io/WALKOFF/
-  version: 0.6.1
+  version: 0.8.0
   title: WALKOFF
   contact:
     email: walkoff@nsa.gov
@@ -35,6 +35,8 @@ tags:
     description: Playbook Operations
   - name: Workflows
     description: Workflow Operations
+  - name: WorkflowQueue
+    description: Workflow Control Operations
   - name: Events
     description: Event Operations
   - name: Scheduler
@@ -50,12 +52,14 @@ tags:
   - name: System
     description: System Resources
 
+basePath: /api
+
 schemes:
   - http
   - https
 
 paths:
-  /api/apps:
+  /apps:
     get:
       tags:
         - System
@@ -74,7 +78,7 @@ paths:
               type: string
               example: [PhillipsHue, OpenDaylight, PaloAlto]
   
-  /api/apps/apis:
+  /apps/apis:
     get:
       tags:
         - Apps
@@ -98,7 +102,7 @@ paths:
             items:
               type: object
   
-  /api/apps/apis/{app_name}:
+  /apps/apis/{app_name}:
     get:
       tags:
         - Apps
@@ -118,12 +122,12 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/AppApi'
-        461:
+        404:
           description: App does not exist
           schema:
             $ref: '#/definitions/Error'
   
-  /api/apps/apis/{app_name}/{field_name}:
+  /apps/apis/{app_name}/{field_name}:
     get:
       tags:
         - Apps
@@ -149,12 +153,12 @@ paths:
           description: Success
           schema:
             type: object
-        461:
+        404:
           description: App does not exist
           schema:
             $ref: '#/definitions/Error'
-
-  /api/auth:
+
+  /auth:
     post:
       tags:
         - Authorization
@@ -182,7 +186,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   
-  /api/auth/refresh:
+  /auth/refresh:
     post:
       tags:
         - Authorization
@@ -201,7 +205,7 @@ paths:
           schema:
             $ref: '#/definitions/Error'
   
-  /api/auth/logout:
+  /auth/logout:
     post:
       tags:
         - Authorization
@@ -224,9 +228,13 @@ paths:
                 type: string
                 description: the refresh token to be revoked
       responses:
-        200:
+        204:
           description: Success
-  /api/cases:
+        400:
+          description: Invalid refresh token
+          schema:
+            $ref: '#/definitions/Error'
+  /cases:
     get:
       tags:
         - Cases
@@ -242,37 +250,43 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Case'
-    put:
+    post:
       tags:
         - Cases
-      summary: Create a case
+      summary: Create or upload a case
       description: ''
       operationId: walkoff.server.endpoints.cases.create_case
       produces:
         - application/json
       consumes:
         - application/json
+        - multipart/form-data
       parameters:
         - in: body
           name: body
           description: The name of the case to be created
-          required: true
+          required: false
           schema:
             type: object
             properties:
               name:
                 type: string
                 example: Case_One
+        - in: formData
+          name: formData
+          description: The case file to be imported
+          required: false
+          type: file
       responses:
         201:
           description: Object created
           schema:
             $ref: '#/definitions/Case'
-        462:
+        400:
           description: Case already exists.
           schema:
             $ref: '#/definitions/Error'
-    post:
+    put:
       tags:
         - Cases
       summary: Update a case
@@ -293,21 +307,51 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Case'
-        461:
+        404:
           description: Case does not exist.
           schema:
             $ref: '#/definitions/Error'
-  /api/cases/{case_id}:
+    patch:
+      tags:
+        - Cases
+      summary: Update a case
+      description: ''
+      operationId: walkoff.server.endpoints.cases.patch_case
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/Case'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Case'
+        404:
+          description: Case does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+  /cases/{case_id}:
     parameters:
       - name: case_id
         in: path
         description: The ID of the case
         required: true
         type: integer
+      - in: query
+        name: mode
+        description: Specify mode as export to download the device file
+        type: string
+        required: false
     get:
       tags:
         - Cases
-      summary: Read a case
+      summary: Read or download a case
       description: ''
       operationId: walkoff.server.endpoints.cases.read_case
       produces:
@@ -317,7 +361,7 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Case'
-        461:
+        404:
           description: Case does not exist.
           schema:
             $ref: '#/definitions/Error'
@@ -330,14 +374,14 @@ paths:
       produces:
         - application/json
       responses:
-        200:
+        204:
           description: Success
-        461:
+        404:
           description: Case does not exist.
           schema:
             $ref: '#/definitions/Error'
   
-  /api/cases/{case_id}/events:
+  /cases/{case_id}/events:
     parameters:
       - name: case_id
         in: path
@@ -359,77 +403,12 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Event'
-        461:
+        404:
           description: Case does not exist.
           schema:
             $ref: '#/definitions/Error'
-  
-  /api/cases/import:
-    get:
-      tags:
-        - Cases
-      summary: Import case data
-      description: ''
-      operationId: walkoff.server.endpoints.cases.import_cases
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      parameters:
-        - in: body
-          name: body
-          description: Filename of JSON to import into Case database
-          required: false
-          x-nullable: true
-          schema:
-            type: object
-            properties:
-              filename:
-                type: string
-                example: import_list.json
-      responses:
-        200:
-          description: Success
-        463:
-          description: Invalid JSON in file.
-          schema:
-            $ref: '#/definitions/Error'
-        515:
-          description: An error occurred opening the file.
-          schema:
-            $ref: '#/definitions/Error'
-  
-  /api/cases/export:
-    post:
-      tags:
-        - Cases
-      summary: Export case data
-      description: ''
-      operationId: walkoff.server.endpoints.cases.export_cases
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      parameters:
-        - in: body
-          name: body
-          description: The name of the JSON file to export to.
-          required: false
-          x-nullable: true
-          schema:
-            type: object
-            properties:
-              filename:
-                type: string
-                example: export_list.json
-      responses:
-        200:
-          description: Success
-        515:
-          description: Could not write to file.
-          schema:
-            $ref: '#/definitions/Error'
-  /api/configuration:
+
+  /configuration:
     get:
       tags:
         - Configuration
@@ -446,11 +425,39 @@ paths:
           description: Unauthorized access
           schema:
             $ref: '#/definitions/Error'
-    post:
+    put:
       tags:
         - Configuration
       summary: Updates the configuration
       operationId: walkoff.server.endpoints.configuration.update_configuration
+      consumes:
+        - application/json
+      produces:
+        - application/json
+  
+      parameters:
+        - name: configuration
+          in: body
+          description: The configuration object
+          required: true
+          schema:
+            $ref: '#/definitions/Configuration'
+      responses:
+        200:
+          description: Success
+        401:
+          description: Unauthorized access
+          schema:
+            $ref: '#/definitions/Error'
+        515:
+          description: Could not write configuration to file
+          schema:
+            $ref: '#/definitions/Error'
+    patch:
+      tags:
+        - Configuration
+      summary: Updates the configuration
+      operationId: walkoff.server.endpoints.configuration.patch_configuration
       consumes:
         - application/json
       produces:
@@ -472,78 +479,23 @@ paths:
         515:
           description: Could not write configuration to file
           schema:
-            $ref: '#/definitions/Error'
-  /api/devices/import:
-    get:
-      tags:
-        - Devices
-      summary: Import devices
-      description: ''
-      operationId: walkoff.server.endpoints.devices.import_devices
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      parameters:
-        - in: body
-          name: body
-          description: The name of the JSON file to import. Defaults to ./data/appdevice.json
-          required: false
-          schema:
-            type: object
-            properties:
-              filename:
-                type: string
-                example: import_list.json
-      responses:
-        200:
-          description: Success
-        515:
-          description: Error reading file
-          schema:
-            $ref: '#/definitions/Error'
-        405:
-          description: Validation exception
-          schema:
-            $ref: '#/definitions/Error'
-  /api/devices/export:
-    post:
-      tags:
-        - Devices
-      summary: Export devices
-      description: ''
-      operationId: walkoff.server.endpoints.devices.export_devices
-      produces:
-        - application/json
-      parameters:
-        - in: body
-          name: body
-          description: The name of the JSON file to export to. Defaults to ./data/appdevice.json
-          required: false
-          schema:
-            type: object
-            properties:
-              filename:
-                type: string
-                example: export_list.json
-      responses:
-        200:
-          description: Success
-        515:
-          description: Error writing to file
-          schema:
-            $ref: '#/definitions/Error'
-  /api/devices/{device_id}:
+            $ref: '#/definitions/Error'
+  /devices/{device_id}:
     parameters:
       - in: path
         name: device_id
         description: ID of the device
         type: integer
         required: true
+      - in: query
+        name: mode
+        description: Specify mode as export to download the device file
+        type: string
+        required: false
     get:
       tags:
         - Devices
-      summary: Get a device
+      summary: Read or download a device
       description: ''
       operationId: walkoff.server.endpoints.devices.read_device
       produces:
@@ -553,7 +505,7 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Device'
-        461:
+        404:
           description: Device does not exist.
     delete:
       tags:
@@ -564,13 +516,13 @@ paths:
       produces:
         - application/json
       responses:
-        200:
+        204:
           description: Success
-        461:
+        404:
           description: Device does not exist
           schema:
             $ref: '#/definitions/Error'
-  /api/devices:
+  /devices:
     get:
       tags:
         - Devices
@@ -587,7 +539,7 @@ paths:
             description: A list of devices
             items:
               $ref: '#/definitions/Device'
-    put:
+    post:
       tags:
         - Devices
       summary: Add a device
@@ -595,26 +547,32 @@ paths:
       operationId: walkoff.server.endpoints.devices.create_device
       consumes:
         - application/json
+        - multipart/form-data
       produces:
         - application/json
       parameters:
         - in: body
           name: body
           description: The new device object to be created
-          required: true
+          required: false
           schema:
             $ref: '#/definitions/AddDevice'
+        - in: formData
+          name: formData
+          description: The device file to be imported
+          required: false
+          type: file
       responses:
         201:
-          description: Success
+          description: Object created
           schema:
             $ref: '#/definitions/Device'
-        462:
+        400:
           description: Device already exists
           schema:
             $ref: '#/definitions/Error'
   
-    post:
+    put:
       tags:
         - Devices
       summary: Update a device
@@ -636,11 +594,37 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Device'
-        461:
+        404:
           description: Device does not exist
           schema:
             $ref: '#/definitions/Error'
-  /api/events/{event_id}:
+    patch:
+      tags:
+        - Devices
+      summary: Update a device
+      description: ''
+      operationId: walkoff.server.endpoints.devices.patch_device
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: The new device object to be created
+          required: true
+          schema:
+            $ref: '#/definitions/Device'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Device'
+        404:
+          description: Device does not exist
+          schema:
+            $ref: '#/definitions/Error'
+  /events/{event_id}:
     parameters:
       - name: event_id
         in: path
@@ -660,12 +644,12 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Event'
-        461:
+        404:
           description: Object does not exist
           schema:
             $ref: '#/definitions/Error'
-  /api/events:
-    post:
+  /events:
+    put:
       tags:
         - Events
       summary: Update an event note
@@ -695,12 +679,12 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Event'
-        461:
+        404:
           description: Object does not exist
           schema:
             $ref: '#/definitions/Error'
-
-  /api/messages:
+
+  /messages:
     get:
       tags:
         - Messages
@@ -717,16 +701,7 @@ paths:
             description: A list of messages
             items:
               $ref: '#/definitions/MessageSummary'
-  
-  /api/messages/{action}:
-    parameters:
-      - name: action
-        in: path
-        description: The action to take on multiple messages
-        required: true
-        type: string
-        enum: [read, unread, delete]
-    post:
+    put:
       tags:
         - Messages
       summary: Acts on a user's messages
@@ -742,25 +717,29 @@ paths:
           required: true
           schema:
             type: object
-            required: [ids]
+            required: [ids, action]
             properties:
               ids:
                 type: array
                 items:
                   type: integer
                   minimum: 1
+              action:
+                description: The action to take on multiple messages
+                type: string
+                enum: [read, unread, delete]
       responses:
         200:
           description: Success
           schema:
             type: string
             enum: [Success]
-        461:
+        404:
           description: Action is invalid or User doesn't exist
           schema:
             $ref: "#/definitions/Error"
   
-  /api/messages/{message_id}:
+  /messages/{message_id}:
     parameters:
       - name: message_id
         in: path
@@ -784,12 +763,12 @@ paths:
           description: User does not have access to message
           schema:
             $ref: '#/definitions/Error'
-        461:
+        404:
           description: Message doesn't exist
           schema:
             $ref: "#/definitions/Error"
   
-  /api/notifications:
+  /notifications:
     get:
       tags:
         - Messages
@@ -802,8 +781,8 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/MessageSummary'
-
-  /api/availablesubscriptions:
+
+  /availablesubscriptions:
     get:
       tags:
         - System
@@ -821,7 +800,7 @@ paths:
             items:
               $ref: '#/definitions/AvailableSubscriptions'
   
-  /api/interfaces:
+  /interfaces:
     get:
       tags:
         - System
@@ -840,7 +819,7 @@ paths:
               type: string
   
   
-  /api/client/{filename}:
+  /client/{filename}:
     get:
       tags:
         - Client
@@ -858,9 +837,9 @@ paths:
       responses:
         200:
           description: Success
-        463:
+        400:
           description: Invalid filename
-
+
   /metrics/apps:
     get:
       tags:
@@ -871,7 +850,7 @@ paths:
       produces:
         - application/json
       responses:
-        '200':
+        200:
           description: Success
           schema:
             $ref: '#/definitions/AppMetrics'
@@ -885,11 +864,11 @@ paths:
       produces:
         - application/json
       responses:
-        '200':
+        200:
           description: Success
           schema:
-            $ref: '#/definitions/WorkflowMetrics'
-  /api/playbooks:
+            $ref: '#/definitions/WorkflowMetrics'
+  /playbooks:
     get:
       tags:
         - Playbooks
@@ -909,8 +888,8 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/AllPlaybooksOverview'
-    put:
+              $ref: '#/definitions/Playbook'
+    post:
       tags:
         - Playbooks
       summary: Create a playbook
@@ -918,31 +897,37 @@ paths:
       operationId: walkoff.server.endpoints.playbooks.create_playbook
       consumes:
         - application/json
+        - multipart/form-data
       produces:
         - application/json
       parameters:
+        - in: query
+          name: source
+          description: The ID of the playbook to clone
+          type: string
+          required: false
+          format: uuid
         - in: body
           name: body
           description: The playbook object to be created
-          required: true
+          required: false
           schema:
-            $ref: '#/definitions/Playbook'
+            $ref: '#/definitions/CreatePlaybook'
+        - in: formData
+          name: formData
+          description: The playbook file to be imported
+          required: false
+          type: file
       responses:
         201:
           description: Object created
           schema:
-            type: object
-            description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
-        211:
-          description: Playbook created with empty template
-          schema:
-            type: object
-            description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
-        462:
-          description: Playbook already exists.
+            $ref: '#/definitions/Playbook'
+        400:
+          description: Object exists
           schema:
             $ref: '#/definitions/Error'
-    post:
+    patch:
       tags:
         - Playbooks
       summary: Update a playbook
@@ -963,31 +948,33 @@ paths:
         200:
           description: Success
           schema:
-            type: object
-            description: All workflows for the associated playbook. Form of '{playbook_name -> [workflow_name]}'
-        461:
+            $ref: '#/definitions/Playbook'
+        404:
           description: Playbook does not exist.
           schema:
             $ref: '#/definitions/Error'
-        462:
-          description: Playbook with that name already exists.
+        400:
+          description: Playbook already exists.
           schema:
             $ref: '#/definitions/Error'
-        463:
-          description: Invalid input error.
-          schema:
-            $ref: '#/definitions/Error'
-  /api/playbooks/{playbook_name}:
+  
+  /playbooks/{playbook_id}:
     parameters:
-      - name: playbook_name
+      - name: playbook_id
         in: path
-        description: The name that needs to be fetched.
+        description: The ID that needs to be fetched.
         required: true
         type: string
+        format: uuid
+      - in: query
+        name: mode
+        description: Specify mode as export to download the playbook file
+        type: string
+        required: false
     get:
       tags:
         - Playbooks
-      summary: Read a playbook
+      summary: Read or download a playbook
       description: ''
       operationId: walkoff.server.endpoints.playbooks.read_playbook
       produces:
@@ -996,14 +983,17 @@ paths:
         200:
           description: Success
           schema:
-            type: object
-            description: All workflows for the specified playbook. Form of '{playbook_name -> [workflow_name]}'
-        461:
+            $ref: '#/definitions/Playbook'
+        404:
           description: Object does not exist.
           schema:
             $ref: '#/definitions/Error'
-        463:
+        400:
           description: Invalid input error.
+          schema:
+            $ref: '#/definitions/Error'
+        515:
+          description: I/O error.
           schema:
             $ref: '#/definitions/Error'
     delete:
@@ -1015,9 +1005,9 @@ paths:
       produces:
         - application/json
       responses:
-        200:
+        204:
           description: Success
-        461:
+        404:
           description: Playbook does not exist.
           schema:
             $ref: '#/definitions/Error'
@@ -1025,59 +1015,22 @@ paths:
           description: I/O error.
           schema:
             $ref: '#/definitions/Error'
-  /api/playbooks/{playbook_name}/copy:
-    post:
-      tags:
-        - Playbooks
-      summary: Copy a playbook
-      description: ''
-      operationId: walkoff.server.endpoints.playbooks.copy_playbook
-      parameters:
-        - name: playbook_name
-          in: path
-          description: 'The name that needs to be fetched. '
-          required: true
-          type: string
-        - in: body
-          name: body
-          description: New playbook name (defaults to <Current_Name>_Copy)
-          required: false
-          schema:
-            type: object
-            properties:
-              playbook:
-                type: string
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      responses:
-        201:
-          description: Playbook created
-          schema:
-            type: object
-            description: All workflows and their associated playbooks. Form of '{playbook_name -> [workflow_name]}'
-        461:
-          description: Playbook does not exist.
-          schema:
-            $ref: '#/definitions/Error'
-        462:
-          description: Invalid playbook name. Playbook already exists.
-          schema:
-            $ref: '#/definitions/Error'
-  /api/playbooks/{playbook_name}/workflows:
+  
+  
+  /playbooks/{playbook_id}/workflows:
     parameters:
-      - name: playbook_name
+      - name: playbook_id
         in: path
-        description: 'The name that needs to be fetched. '
+        description: 'The ID that needs to be fetched. '
         required: true
         type: string
+        format: uuid
     get:
       tags:
         - Playbooks
       summary: Read all workflows in playbook
       description: ''
-      operationId: walkoff.server.endpoints.playbooks.get_workflows
+      operationId: walkoff.server.endpoints.playbooks.get_workflows_for_playbook
       produces:
         - application/json
       responses:
@@ -1087,19 +1040,41 @@ paths:
             type: array
             description: The JSON representation of all the workflows for the playbook
             items:
-              type: object
-              properties:
-                schema:
-                  $ref: '#/definitions/Workflow'
-        461:
+              $ref: '#/definitions/Workflow'
+        404:
           description: Playbook does not exist.
           schema:
             $ref: '#/definitions/Error'
-        463:
-          description: Invalid input error.
+  
+  /workflows:
+    get:
+      tags:
+        - Playbooks
+      summary: Read all workflows in playbook
+      description: ''
+      operationId: walkoff.server.endpoints.playbooks.get_workflows
+      produces:
+        - application/json
+      parameters:
+        - in: query
+          name: playbook
+          description: The ID of the playbook whose workflows to get
+          type: string
+          required: false
+          format: uuid
+      responses:
+        200:
+          description: Success
+          schema:
+            type: array
+            description: The JSON representation of all the workflows for the playbook
+            items:
+              $ref: '#/definitions/Workflow'
+        404:
+          description: Playbook does not exist.
           schema:
             $ref: '#/definitions/Error'
-    put:
+    post:
       tags:
         - Workflows
       summary: Create a workflow
@@ -1110,30 +1085,32 @@ paths:
       produces:
         - application/json
       parameters:
+        - in: query
+          name: source
+          description: The ID of the workflow to clone
+          type: string
+          format: uuid
+          required: false
         - in: body
           name: body
           description: The workflow object to be created
           required: true
           schema:
-            $ref: '#/definitions/AddWorkflow'
+            $ref: '#/definitions/CreateWorkflow'
       responses:
         201:
           description: Workflow created.
           schema:
             $ref: '#/definitions/Workflow'
-        211:
-          description: Workflow created using default template.
-          schema:
-            $ref: '#/definitions/Workflow'
-        461:
+        404:
           description: Playbook does not exist.
           schema:
             $ref: '#/definitions/Error'
-        462:
+        400:
           description: Workflow already exists.
           schema:
             $ref: '#/definitions/Error'
-    post:
+    put:
       tags:
         - Workflows
       summary: Update a workflow
@@ -1149,7 +1126,7 @@ paths:
           description: The fields of the workflow object to be updated
           required: true
           schema:
-            $ref: '#/definitions/WorkflowUpdate'
+            $ref: '#/definitions/Workflow'
       responses:
         200:
           description: Success
@@ -1159,30 +1136,23 @@ paths:
             properties:
               workflow:
                 $ref: '#/definitions/Workflow'
-        461:
+        404:
           description: Playbook or workflow does not exist.
           schema:
             $ref: '#/definitions/Error'
-        462:
+        400:
           description: Workflow already exists.
           schema:
             $ref: '#/definitions/Error'
-        463:
-          description: Invalid input error.
-          schema:
-            $ref: '#/definitions/Error'
-  /api/playbooks/{playbook_name}/workflows/{workflow_name}:
+  
+  /workflows/{workflow_id}:
     parameters:
-    - name: playbook_name
-      in: path
-      description: The name that needs to be fetched.
-      required: true
-      type: string
-    - name: workflow_name
-      in: path
-      description: 'The name that needs to be fetched. '
-      required: true
-      type: string
+      - name: workflow_id
+        in: path
+        description: 'The ID that needs to be fetched. '
+        required: true
+        type: string
+        format: uuid
     get:
       tags:
         - Workflows
@@ -1196,14 +1166,11 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Workflow'
-        461:
+        404:
           description: Playbook or workflow does not exist.
           schema:
             $ref: '#/definitions/Error'
-        463:
-          description: Element not found, or malformed JSON.
-          schema:
-            $ref: '#/definitions/Error'
+  
     delete:
       tags:
         - Workflows
@@ -1213,225 +1180,33 @@ paths:
       produces:
         - application/json
       responses:
-        200:
+        204:
           description: Success
-        461:
+        404:
           description: Playbook or workflow does not exist.
           schema:
             $ref: '#/definitions/Error'
   
-  /api/playbooks/{playbook_name}/workflows/{workflow_name}/copy:
-    post:
+  /uuid:
+    get:
       tags:
         - Workflows
-      summary: Copy a workflow
+      summary: Get a new UUID
       description: ''
-      operationId: walkoff.server.endpoints.playbooks.copy_workflow
-      parameters:
-        - name: playbook_name
-          in: path
-          description: 'The name that needs to be fetched. '
-          required: true
-          type: string
-        - name: workflow_name
-          in: path
-          description: 'The name that needs to be fetched. '
-          required: true
-          type: string
-        - in: body
-          name: body
-          description: The new playbook and/or workflow name
-          required: false
-          schema:
-            $ref: '#/definitions/CopyWorkflow'
-      consumes:
-        - application/json
+      operationId: walkoff.server.endpoints.playbooks.get_uuid
       produces:
         - application/json
       responses:
         201:
-          description: Workflow copied.
-          schema:
-            $ref: '#/definitions/Workflow'
-        461:
-          description: Playbook or workflow does not exist.
-          schema:
-            $ref: '#/definitions/Error'
-        462:
-          description: Workflow already exists.
-          schema:
-            $ref: '#/definitions/Error'
-  /api/playbooks/{playbook_name}/workflows/{workflow_name}/execute:
-    post:
-      tags:
-        - Workflows
-      summary: Execute a workflow
-      description: ''
-      operationId: walkoff.server.endpoints.playbooks.execute_workflow
-      parameters:
-        - name: playbook_name
-          in: path
-          description: 'The name that needs to be fetched. '
-          required: true
-          type: string
-        - name: workflow_name
-          in: path
-          description: 'The name that needs to be fetched. '
-          required: true
-          type: string
-        - name: body
-          in: body
+          description: Success
           schema:
             type: object
+            required: [uuid]
             properties:
-              start:
-                description: The UID of the starting action
-                type: string
-              arguments:
-                type: array
-                items:
-                  $ref: '#/definitions/Argument'
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      responses:
-        202:
-          description: Success asynchronous.
-          schema:
-            $ref: '#/definitions/WorkflowId'
-        461:
-          description: Playbook or workflow does not exist.
-          schema:
-            $ref: '#/definitions/Error'
-  /api/playbooks/{playbook_name}/workflows/{workflow_name}/pause:
-    post:
-      tags:
-        - Workflows
-      summary: Pause a workflow
-      description: ''
-      operationId: walkoff.server.endpoints.playbooks.pause_workflow
-      parameters:
-        - name: playbook_name
-          in: path
-          description: 'The name that needs to be fetched. '
-          required: true
-          type: string
-        - name: workflow_name
-          in: path
-          description: 'The name that needs to be fetched. '
-          required: true
-          type: string
-        - name: id
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/WorkflowId'
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      responses:
-        200:
-          description: Success
-        461:
-          description: Playbook or workflow does not exist.
-          schema:
-            $ref: '#/definitions/Error'
-  /api/playbooks/{playbook_name}/workflows/{workflow_name}/resume:
-    post:
-      tags:
-        - Workflows
-      summary: Resume a workflow
-      description: ''
-      operationId: walkoff.server.endpoints.playbooks.resume_workflow
-      parameters:
-        - name: playbook_name
-          in: path
-          description: 'The name that needs to be fetched. '
-          required: true
-          type: string
-        - name: workflow_name
-          in: path
-          description: 'The name that needs to be fetched. '
-          required: true
-          type: string
-        - name: id
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/WorkflowId'
-      consumes:
-        - application/json
-      produces:
-        - application/json
-      responses:
-        200:
-          description: Success
-        461:
-          description: Playbook or workflow does not exist.
-          schema:
-            $ref: '#/definitions/Error'
-        463:
-          description: Invalid UUID.
-          schema:
-            $ref: '#/definitions/Error'
-  /api/playbooks/{playbook_name}/workflows/{workflow_name}/save:
-    post:
-      tags:
-        - Workflows
-      summary: Save a workflow
-      description: ''
-      operationId: walkoff.server.endpoints.playbooks.save_workflow
-      parameters:
-        - name: playbook_name
-          in: path
-          description: 'The name that needs to be fetched. '
-          required: true
-          type: string
-        - name: workflow_name
-          in: path
-          description: 'The name that needs to be fetched. '
-          required: true
-          type: string
-        - in: body
-          name: body
-          description: Start action and Actions
-          required: true
-          schema:
-            type: object
-            required: [actions]
-            properties:
-              start:
-                type: string
-              actions:
-                type: array
-                items:
-                  $ref: "#/definitions/Action"
-              branches:
-                type: array
-                items:
-                  $ref: "#/definitions/Branch"
-      produces:
-        - application/json
-      consumes:
-        - application/json
-      responses:
-        200:
-          description: Success
-        461:
-          description: Playbook or workflow does not exist.
-          schema:
-            $ref: '#/definitions/Error'
-        463:
-          description: Invalid action or app in workflow
-          schema:
-            $ref: '#/definitions/Error'
-        515:
-          description: I/O error.
-          schema:
-            $ref: '#/definitions/Error'
-  /api/roles:
+              uuid:
+                $ref: '#/definitions/Uuid'
+
+  /roles:
     get:
       tags:
         - Roles
@@ -1448,7 +1223,7 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Role'
-    put:
+    post:
       tags:
         - Roles
       summary: Create a role
@@ -1470,9 +1245,9 @@ paths:
           description: Object created.
           schema:
             $ref: '#/definitions/Role'
-        462:
+        400:
           description: Object exists.
-    post:
+    put:
       tags:
         - Roles
       summary: Update a role
@@ -1494,9 +1269,33 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Role'
-        461:
+        404:
           description: Object does not exist.
-  /api/roles/{role_id}:
+    patch:
+      tags:
+        - Roles
+      summary: Update a role
+      description: ''
+      operationId: walkoff.server.endpoints.roles.patch_role
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Updated fields for the role object
+          required: true
+          schema:
+            $ref: '#/definitions/Role'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/Role'
+        404:
+          description: Object does not exist.
+  /roles/{role_id}:
     parameters:
       - name: role_id
         in: path
@@ -1516,7 +1315,7 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Role'
-        461:
+        404:
           description: Object does not exist.
     delete:
       tags:
@@ -1527,12 +1326,12 @@ paths:
       produces:
         - application/json
       responses:
-        200:
+        204:
           description: Success
-        461:
+        404:
           description: Object does not exist.
   
-  /api/availableresourceactions:
+  /availableresourceactions:
       get:
         tags:
           - Roles
@@ -1549,8 +1348,8 @@ paths:
               type: array
               items:
                 $ref: '#/definitions/AvailableResourceAction'
-
-  /api/scheduler:
+
+  /scheduler:
     get:
       tags:
         - Scheduler
@@ -1564,15 +1363,7 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/Scheduler'
-  
-  /api/scheduler/{status}:
-    parameters:
-      - in: path
-        name: status
-        description: Requested status of the scheduler
-        type: string
-        required: true
-    get:
+    put:
       tags:
         - Scheduler
       summary: Update the status of the scheduler
@@ -1580,13 +1371,33 @@ paths:
       operationId: walkoff.server.endpoints.scheduler.update_scheduler_status
       produces:
         - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: The new Scheduled Task object
+          required: true
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status:
+                description: Requested status of the scheduler
+                type: string
+                enum: [start, stop, pause, resume]
       responses:
         200:
           description: Success
           schema:
-            $ref: '#/definitions/Scheduler'
+            type: object
+            required: [status]
+            properties:
+              status:
+                type: string
+                description: The current status of the scheduler
   
-  /api/scheduledtasks:
+  /scheduledtasks:
     get:
       tags:
         - Scheduler
@@ -1602,7 +1413,7 @@ paths:
             type: array
             items:
               $ref: '#/definitions/ScheduledTask'
-    put:
+    post:
       tags:
         - Scheduler
       summary: Create a new Scheduled Task
@@ -1626,11 +1437,11 @@ paths:
             type: array
             items:
               $ref: '#/definitions/ScheduledTask'
-        462:
+        400:
           description: Scheduled task already exists
           schema:
             $ref: '#/definitions/Error'
-    post:
+    put:
       tags:
         - Scheduler
       summary: Update a new Scheduled Task
@@ -1651,16 +1462,47 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/ScheduledTask'
-        461:
+        404:
           description: Scheduled task does not exist
           schema:
             $ref: '#/definitions/Error'
-        462:
+        400:
           description: Scheduled task name already exists
           schema:
             $ref: '#/definitions/Error'
+    patch:
+      tags:
+        - Scheduler
+      summary: Enable the scheduled task
+      operationId: walkoff.server.endpoints.scheduler.control_scheduled_task
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: The updated Scheduled Task object
+          required: true
+          schema:
+            type: object
+            required: [id, action]
+            properties:
+              id:
+                type: integer
+              action:
+                type: string
+                description: The requested status of the task
+                enum: [start, stop]
+      responses:
+        200:
+          description: Success
+        404:
+          description: Scheduled task does not exist
+          schema:
+            $ref: '#/definitions/Error'
   
-  /api/scheduledtasks/{scheduled_task_id}:
+  /scheduledtasks/{scheduled_task_id}:
     parameters:
       - name: scheduled_task_id
         in: path
@@ -1679,7 +1521,7 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/ScheduledTask'
-        461:
+        404:
           description: Scheduled task does not exist
           schema:
             $ref: '#/definitions/Error'
@@ -1691,41 +1533,13 @@ paths:
       produces:
         - application/json
       responses:
-        200:
+        204:
           description: Success
-        461:
+        404:
           description: Scheduled task does not exist
           schema:
-            $ref: '#/definitions/Error'
-  
-  /api/scheduledtasks/{scheduled_task_id}/{action}:
-    put:
-      tags:
-        - Scheduler
-      summary: Enable the scheduled task
-      operationId: walkoff.server.endpoints.scheduler.control_scheduled_task
-      produces:
-        - application/json
-      parameters:
-        - name: scheduled_task_id
-          in: path
-          description: The ID of the scheduled task.
-          required: true
-          type: string
-        - name: action
-          in: path
-          description: The action to take on the task.
-          required: true
-          type: string
-          enum: [start, stop]
-      responses:
-        200:
-          description: Success
-        461:
-          description: Scheduled task does not exist
-          schema:
-            $ref: '#/definitions/Error'
-  /api/system:
+            $ref: '#/definitions/Error'
+  /system:
     get:
       tags:
         - System
@@ -1738,12 +1552,12 @@ paths:
       produces:
         - application/json
       responses:
-        '200':
+        200:
           description: Success
           schema:
-            $ref: '#/definitions/SystemUsageDetails'
-  /api/triggers/send_data:
-    post:
+            $ref: '#/definitions/SystemUsageDetails'
+  /triggers/send_data:
+    put:
       summary: Send data to one or more workflows with trigger actions awaiting data before continuing execution
       description: ''
       operationId: walkoff.server.endpoints.triggers.send_data_to_trigger
@@ -1759,10 +1573,10 @@ paths:
           required: true
           schema:
             type: object
-            required: [execution_uids, data_in]
+            required: [execution_ids, data_in]
             properties:
-              execution_uids:
-                description: Execution UIDs of currently paused workflows
+              execution_ids:
+                description: Execution IDs of currently paused workflows
                 type: array
                 items:
                   type: string
@@ -1780,9 +1594,9 @@ paths:
             type: array
             items:
               type: string
-              description: The execution UIDs of workflows that were sent data.
-
-  /api/users:
+              description: The execution IDs of workflows that were sent data.
+
+  /users:
     get:
       tags:
         - Users
@@ -1799,7 +1613,7 @@ paths:
             description: A list of users
             items:
               $ref: '#/definitions/DisplayUser'
-    put:
+    post:
       tags:
         - Users
       summary: Create a user
@@ -1822,11 +1636,11 @@ paths:
           schema:
             description: The newly created user.
             $ref: '#/definitions/DisplayUser'
-        462:
+        400:
           description: Could not create user <username>. User already exists.
           schema:
             $ref: '#/definitions/Error'
-    post:
+    put:
       tags:
         - Users
       summary: Update a user
@@ -1853,13 +1667,44 @@ paths:
           description: Invalid password
           schema:
             $ref: '#/definitions/Error'
-        461:
+        404:
+          description: Could not edit user <username>. User does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+    patch:
+      tags:
+        - Users
+      summary: Update a user
+      description: ''
+      operationId: walkoff.server.endpoints.users.patch_user
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Updated fields for the user object
+          required: true
+          schema:
+            $ref: '#/definitions/EditUser'
+      responses:
+        200:
+          description: Success
+          schema:
+            description: The updated user.
+            $ref: '#/definitions/DisplayUser'
+        400:
+          description: Invalid password
+          schema:
+            $ref: '#/definitions/Error'
+        404:
           description: Could not edit user <username>. User does not exist.
           schema:
             $ref: '#/definitions/Error'
   
   
-  /api/users/{user_id}:
+  /users/{user_id}:
     parameters:
       - name: user_id
         in: path
@@ -1880,7 +1725,7 @@ paths:
           schema:
             description: The user object matching the user id inputted
             $ref: '#/definitions/DisplayUser'
-        461:
+        404:
           description: Could not display user <username>. User does not exist.
           schema:
             $ref: '#/definitions/Error'
@@ -1893,49 +1738,121 @@ paths:
       produces:
         - application/json
       responses:
-        200:
+        204:
           description: Success
         401:
           description: Could not delete user <username>. User is current user.
           schema:
             $ref: '#/definitions/Error'
-        461:
+        404:
           description: Could not delete user <username>. User does not exist.
           schema:
-            $ref: '#/definitions/Error'
-  /api/workflowresults:
+            $ref: '#/definitions/Error'
+  /workflowqueue:
     get:
-      tags: [Workflow]
-      summary: Gets all the results from all the executed workflows
-      operationId: walkoff.server.endpoints.playbooks.read_all_results
-      produces: [application/json]
-      responses:
-        200:
-          description: Success
-          schema:
-            $ref: '#/definitions/CompleteWorkflowResults'
-  
-  /api/workflowresults/{uid}:
-    get:
-      tags: [Workflow]
-      summary: Gets the results from an executed workflow
-      operationId: walkoff.server.endpoints.playbooks.read_result
-      produces: [application/json]
+      tags:
+        - WorkflowQueue
+      summary: Get status information on the workflows currently executing
+      description: ''
+      operationId: walkoff.server.endpoints.workflowqueue.get_all_workflow_status
+      produces:
+        - application/json
       parameters:
-        - name: uid
-          in: path
-          description: The name that needs to be fetched.
-          required: true
-          type: string
+        - name: limit
+          in: query
+          type: integer
+          minimum: 1
+          default: 50
+          required: false
       responses:
         200:
           description: Success
           schema:
-            $ref: '#/definitions/WorkflowResult'
-        461:
-          description: Object does not exist
+            type: array
+            items:
+              $ref: '#/definitions/WorkflowStatus'
+    post:
+      tags:
+        - WorkflowQueue
+      summary: Execute a workflow
+      description: ''
+      operationId: walkoff.server.endpoints.workflowqueue.execute_workflow
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ExecuteWorkflow'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        202:
+          description: Success asynchronous.
+          schema:
+            $ref: '#/definitions/Uuid'
+        404:
+          description: Workflow does not exist.
           schema:
             $ref: '#/definitions/Error'
+        400:
+          description: Invalid input error.
+          schema:
+            $ref: '#/definitions/Error'
+    patch:
+      tags:
+        - WorkflowQueue
+      summary: Pause, resume, or abort a workflow
+      description: ''
+      operationId: walkoff.server.endpoints.workflowqueue.control_workflow
+      parameters:
+        - name: body
+          in: body
+          schema:
+            $ref: '#/definitions/ControlWorkflow'
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        204:
+          description: Success.
+        404:
+          description: Workflow does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+        400:
+          description: Invalid input error.
+          schema:
+            $ref: '#/definitions/Error'
+  
+  /workflowqueue/{execution_id}:
+    parameters:
+      - name: execution_id
+        in: path
+        description: The ID that needs to be fetched.
+        required: true
+        type: string
+        format: uuid
+    get:
+      tags:
+        - WorkflowQueue
+      summary: Get status information on a currently executing workflow
+      description: ''
+      operationId: walkoff.server.endpoints.workflowqueue.get_workflow_status
+      produces:
+        - application/json
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/FullWorkflowStatus'
+        404:
+          description: Object does not exist.
+          schema:
+            $ref: '#/definitions/Error'
+
 
 securityDefinitions:
   AuthenticationToken:
@@ -1954,28 +1871,34 @@ security:
   - AuthenticationToken: []
 
 definitions:
-    ActionArgument:
-      type: object
-      required: [name, type]
-      properties:
-        name:
-          type: string
-        type:
-          type: string
-        required:
-          description: is the argument required
-          type: boolean
-        default:
-          description: default value for the argument
     Error:
       type: object
-      required: [error]
-      description: An error
+      required: [title, detail, status, type]
+      description: An error in RFC 7807 format
       properties:
-        error:
+        title:
           type: string
-          description: error message
-          example: Something really bad happened
+          description: A short, human-readable summary of the problem type.
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of the problem
+        status:
+          type: string
+          description: The HTTP status code generated for this occurrence of the problem
+        type:
+          type: string
+          description: >
+            A URI reference that identifies the problem type. When dereferenced it should provide
+            human-readable documentation for the problem type.
+          default: 'about:blank'
+        instance:
+          type: string
+          description: >
+            A URI reference that identifies the specific occurrence of the problem. It may or may
+            not yield further information if dereferenced.
+    
+    
+    
     AvailableSubscriptions:
       type: object
       required: [type, events]
@@ -1992,6 +1915,11 @@ definitions:
           items:
             type: string
           example: [Event1, Event_2, 'Event 3']
+    
+    Uuid:
+      type: string
+      description: A 32-bit hexadecimal string representing a globally unique identifier
+      format: uuid
     AppApi:
       type: object
       description: Api used for an app
@@ -2058,7 +1986,7 @@ definitions:
       properties:
         name:
           type: string
-          description: The ame of the contact person or organization
+          description: The name of the contact person or organization
         url:
           type: string
           description: The URL pointing to the contact information
@@ -2088,13 +2016,13 @@ definitions:
       properties:
         name:
           type: string
-          description: unique name of the action
+          description: Unique name of the action
         run:
           type: string
           description: The path to the executable function
         default_return:
           type: string
-          description: The name of the default return code (if none specified, defaults to Success
+          description: The name of the default return code (if none specified, defaults to "Success")
         returns:
           type: array
           items:
@@ -2113,7 +2041,7 @@ definitions:
           type: array
           items:
             type: string
-          description: tags for this action
+          description: Tags for this action
           uniqueItems: true
         summary:
           type: string
@@ -2133,13 +2061,13 @@ definitions:
       properties:
         name:
           type: string
-          description: unique name of the action
+          description: Unique name of the action
         run:
           type: string
           description: The path to the executable function
         data_in:
           type: string
-          description: name of parameter which comes from executed action
+          description: Name of parameter which comes from executed action
         parameters:
           type: array
           items:
@@ -2153,7 +2081,7 @@ definitions:
           type: array
           items:
             type: string
-          description: tags for this action
+          description: Tags for this action
           uniqueItems: true
         summary:
           type: string
@@ -2178,13 +2106,13 @@ definitions:
       properties:
         name:
           type: string
-          description: unique name of the action
+          description: Unique name of the action
         run:
           type: string
           description: The path to the executable function
         data_in:
           type: string
-          description: name of parameter which comes from executed action
+          description: Name of parameter which comes from executed action
         parameters:
           type: array
           items:
@@ -2238,14 +2166,14 @@ definitions:
           type: string
         description:
           type: string
-          description: description of what the argument provides
+          description: Description of what the argument provides
         encrypted:
           type: boolean
           description: Is this field encrypted
           default: false
         placeholder:
           type: string
-          description: brief description of the field to be used to prompt a user
+          description: Brief description of the field to be used to prompt a user
         required:
           type: boolean
           default: false
@@ -2265,10 +2193,10 @@ definitions:
           type: [number, integer, string, boolean]
         description:
           type: string
-          description: description of the parameter
+          description: Description of the parameter
         placeholder:
           type: string
-          description: brief description of the field to be used to prompt a user
+          description: Brief description of the field to be used to prompt a user
         required:
           type: boolean
           default: false
@@ -2286,7 +2214,7 @@ definitions:
           description: Status of the return
         description:
           type: string
-          description: description of the return type
+          description: Description of the return type
         failure:
           type: boolean
           description: Whether this return type indicates action failure
@@ -2367,7 +2295,7 @@ definitions:
         enum:
           type: array
           minItems: 1
-
+
     Authentication:
       type: object
       required: [username, password]
@@ -2388,7 +2316,7 @@ definitions:
         refresh_token:
           type: string
           description: Long-lived JWT used to refresh a token
-
+
     AddCase:
       type: object
       required: [name]
@@ -2433,11 +2361,10 @@ definitions:
     
     Subscription:
       type: object
-      required: [uid, events]
+      required: [id, events]
       properties:
-        uid:
-          description: Universal ID for the execution element  or 'controller' for the controller
-          type: string
+        id:
+          $ref: '#/definitions/Uuid'
         events:
           description: A list of events subscribed to
           type: array
@@ -2450,7 +2377,7 @@ definitions:
     
     Event:
       type: object
-      required: [timestamp, event_type, originator, message, note, data]
+      required: [timestamp, type, message, note, data]
       properties:
         id:
           description: Unique identifier for the event
@@ -2460,17 +2387,18 @@ definitions:
         timestamp:
           description: String representation of the time at which the event happened
           type: string
+          format: date-time
           readOnly: true
-          example: '2017-05-12 15:54:18.121421'
-        event_type:
+          example: '2017-05-12T15:54:18.121421Z'
+        type:
           description: The type of event
           type: string
           readOnly: true
-          enum: [System, Workflow, Action, Branch, Condition, Transform]
+          enum: [controller, workflow, action, branch, condition, transform]
           example: Action
         originator:
-          description: The UID of the execution element which caused this event
           type: string
+          description: A UUID used to identify a specific execution element
         message:
           description: The message attached to the event
           type: string
@@ -2492,21 +2420,19 @@ definitions:
           example: [case1, mycase, thatonecase, thatothercase]
           items:
             $ref: '#/definitions/Case'
+
     Configuration:
         type: object
         description: The configuration
         additionalProperties : false
         properties:
-          workflows_path:
-            type: string
-            description: The path to the workflows
           db_path:
             type: string
             description: The path to the primary WALKOFF database
           case_db_path:
             type: string
             description: The path to the case database
-          log_config_path:
+          logging_config_path:
             type: string
             description: The path to the logging configuration
           host:
@@ -2517,21 +2443,26 @@ definitions:
             description: The server's port
             minimum: 0
             maximum: 65535
+            default: 5000
           walkoff_db_type:
             type: string
             description: The type of database used by the primary WALKOFF database
             enum: [sqlite, mysql, postgresql, oracle, mssql]
+            default: sqlite
           case_db_type:
             type: string
             description: The type of database used by the case database
             enum: [sqlite, mysql, postgresql, oracle, mssql]
+            default: sqlite
           clear_case_db_on_startup:
             type: boolean
             description: Should the case database be cleared upon a server restart?
+            default: true
           number_processes:
             type: integer
             minimum: 1
             description: Number of worker processes which can execute workflows
+            default: 4
           access_token_duration:
             type: number
             minimum: 1
@@ -2540,22 +2471,58 @@ definitions:
             type: number
             minimum: 1
             description: Time (in days) to allow a refresh token to persist. Should greater than the duration of the refresh token
-          zmq_requests_address:
-            type: string
-            description: The IP address and port of the ZMQ requests server. Do not change unless necessary.
           zmq_results_address:
             type: string
             description: The IP address and port of the ZMQ results server. Do not change unless necessary.
+            default: 'tcp://127.0.0.1:5556'
           zmq_communication_address:
             type: string
             description: The IP address and port of the ZMQ communication server. Do not change unless necessary.
-          num_processes:
-            type: number
-            description: The number of worker processes for executing workflows.
-          num_threads_per_process:
+            default: 'tcp://127.0.0.1:5557'
+          number_threads_per_process:
             type: number
             description: The number of threads per worker process for executing workflows.
-
+            default: 3
+          cache:
+            $ref: '#/definitions/CacheConfig'
+    
+    CacheConfig:
+      type: object
+      required: [type]
+      properties:
+        type:
+          description: The type of cache that should be used
+          type: string
+          enum: [redis, disk]
+        directory:
+          description: The directory to hold the cache database (DiskCache only)
+          type: string
+          format: uri
+        shards:
+          description: Number of shards to distribute the cache database to (DiskCache only)
+          type: integer
+          minimum: 1
+        timeout:
+          description: Cache timeout
+          type: number
+          minimum: 0.0
+        retry:
+          description: Should this connection retry timed out connections?
+          type: boolean
+          default: True
+        host:
+          description: Host url for the cache (Redis cache only)
+          type: string
+          default: localhost
+        port:
+          description: Port for the cache (Redis cache only)
+          type: integer
+          minimum: 0
+          maximum: 65535
+          default: 6379
+        unix_socket_path:
+          description: Path to Unix socket to use for the cache instead of host-port. (Redis cache only)
+          type: string
     AddDevice:
       type: object
       required: [name, app_name, type, fields]
@@ -2655,7 +2622,7 @@ definitions:
           example: regex
         value:
           example: WALK(.*)
-
+
     ActionMetricDetails:
       type: object
       required: [count, avg_time]
@@ -2739,12 +2706,11 @@ definitions:
           type: array
           items:
             $ref: '#/definitions/WorkflowMetric'
-
+
     Message:
       type: object
-      required: [id, body, subject, created_at, is_read, workflow_execution_uid, requires_reauthorization, requires_response,
-        awaiting_response]
       description: A message sent to a user
+      required: [id, subject, created_at, is_read, awaiting_response, body, workflow_execution_id, requires_reauthorization, requires_response]
       properties:
         id:
           description: Id of this message
@@ -2757,16 +2723,31 @@ definitions:
           type: string
           example: Remove user?
           readOnly: true
+        is_read:
+          description: Has this message been read yet?
+          type: boolean
+          default: false
+        created_at:
+          description: UTC timestamp of message creation
+          type: string
+          readOnly: true
+          format: date-time
+        last_read_at:
+          description: UTC timestamp of when message was last read
+          type: string
+          format: date-time
+        awaiting_response:
+          description: Is this message awaiting a response
+          type: boolean
         body:
           type: array
           items:
             $ref: "#/definitions/MessageComponent"
           description: The body of the message. Each component is rendered in order
           readOnly: true
-        workflow_execution_uid:
-          type: string
-          example: abd-12345-aaa
-          description: The UUID of the executing workflow
+        workflow_execution_id:
+          $ref: '#/definitions/Uuid'
+          description: The UUID of the executing workflow which sent this message
           readOnly: true
         requires_reauthorization:
           type: boolean
@@ -2777,23 +2758,10 @@ definitions:
           type: boolean
           description: Does this message require a response
           readOnly: true
-        is_read:
-          description: Has this message been read yet?
-          type: boolean
-          default: false
-        created_at:
-          description: UTC timestamp of message creation
-          type: string
-          readOnly: true
-        last_read_at:
-          description: UTC timestamp of when message was last read
-          type: string
-        awaiting_response:
-          description: Is this message awaiting a response
-          type: boolean
         responded_at:
           type: string
           description: UTC timestamp of when the message was responded
+          format: date-time
         responded_by:
           type: string
           description: username of user who responded to the action
@@ -2827,9 +2795,11 @@ definitions:
           description: UTC timestamp of message creation
           type: string
           readOnly: true
+          format: date-time
         last_read_at:
           description: UTC timestamp of when message was last read
           type: string
+          format: date-time
         awaiting_response:
           description: Is this message awaiting a response
           type: boolean
@@ -2844,250 +2814,249 @@ definitions:
           enum: [text, accept_decline, url]
         data:
           type: object
-          description: JSON representation of the message component
+          description: JSON representation of the message component
+    CreatePlaybook:
+        type: object
+        required: [name]
+        additionalProperties: false
+        properties:
+          name:
+            type: string
+          workflows:
+            type: array
+            items:
+              $ref: '#/definitions/CreateWorkflow'
+    
     Playbook:
         type: object
-        required: [name]
+        required: [id]
+        additionalProperties: false
         properties:
+          id:
+            $ref: '#/definitions/Uuid'
           name:
             type: string
+          workflows:
+            type: array
+            items:
+              $ref: '#/definitions/Workflow'
     
-    AllPlaybooksOverview:
-      type: array
-      items:
-        $ref: '#/definitions/PlaybookOverview'
-    
-    PlaybookOverview:
-      type: object
-      description: Stripped-down view of a playbook
-      required: [name, workflows]
-      properties:
-        name:
-          type: string
-          description: name of the playbook
-        workflows:
-          description: workflows inside of this playbook
-          type: array
-          items:
-            $ref: '#/definitions/WorkflowDescription'
-    
-    WorkflowDescription:
-      type: object
-      required: [name, uid]
-      properties:
-        name:
-          type: string
-          description: name of the workflow
-        uid:
-          type: string
-          description: UID of the workflow
-    
-    UpdatePlaybook:
-        type: object
-        required: [name]
-        properties:
-          name:
-            type: string
-          new_name:
-            type: string
-    
-    Workflow:
+    CreateWorkflow:
       type: object
       required: [name]
       description: A workflow object
-      additionalProperties: false
       properties:
         name:
-          description: The name of the workflow. Composed of both its enclosing playbook and its own name
+          description: The name of the workflow.
           type: string
           example: HelloWorldWorkflow
+        start:
+          description: ID of the starting action
+          $ref: '#/definitions/Uuid'
         actions:
           description: The actions defined in this workflow.
           type: array
           items:
-            $ref: "#/definitions/DisplayAction"
+            $ref: "#/definitions/Action"
         branches:
           description: The possible branches
           type: array
           items:
             $ref: '#/definitions/Branch'
-        start:
-          description: UID of the starting action
-          type: string
-          default: start
-          example: action1
-        accumulated_risk:
-          description: The risk which has been accumulated as this workflow has been executed
-          type: number
-          example: 0.43
-          readOnly: true
+        playbook_id:
+          description: Only used when copying a workflow to a different playbook
+          $ref: '#/definitions/Uuid'
     
-    AddWorkflow:
-        type: object
-        required: [name]
-        properties:
-          name:
-            type: string
-    
-    WorkflowUpdate:
-        type: object
-        required: [name]
-        properties:
-          name:
-            type: string
-          new_name:
-            type: string
-    
-    CopyWorkflow:
-        type: object
-        properties:
-          playbook:
-            type: string
-          workflow:
-            type: string
-    
-    WorkflowId:
+    Workflow:
       type: object
-      required: [id]
+      required: [id, name, start]
+      description: A workflow object
+      additionalProperties: false
       properties:
         id:
+          $ref: '#/definitions/Uuid'
+        name:
+          description: The name of the workflow.
           type: string
-          description: 32-byte hexidecimal string representing the ID of the workflow
+          example: HelloWorldWorkflow
+        start:
+          description: ID of the starting action
+          $ref: '#/definitions/Uuid'
+        actions:
+          description: The actions defined in this workflow.
+          type: array
+          items:
+            $ref: "#/definitions/Action"
+        branches:
+          description: The possible branches
+          type: array
+          items:
+            $ref: '#/definitions/Branch'
+        is_valid:
+          description: Is this workflow able to be run?
+          type: boolean
           readOnly: true
+        errors:
+          $ref: '#/definitions/ExecutionElementErrors'
     
     Action:
       type: object
-      required: [name, action_name, app_name]
-      description: Encapsulation of executing an action in an app
+      required: [id, app_name, action_name, name]
+      description: Encapsulation of executing an action in an app.
       additionalProperties: false
       properties:
-        uid:
-          description: UID of this action
-          type: string
-          x-nullable: true
-        name:
-          description: Name of the action
-          type: string
-          example: action1
-        action_name:
-          description: The action the action will take
-          type: string
-          example: pause
+        id:
+          $ref: '#/definitions/Uuid'
+          description: The ID of the object. If updating a workflow and the Action object already exists, ID is required. Otherwise, this ID must be UUID4.
         app_name:
           description: The app to which the action belongs
           type: string
           example: CyberAnalytics
-        triggers:
-          description: String representation of a list of Trigger objects
-          type: array
-          items:
-            $ref: '#/definitions/Condition'
+        action_name:
+          description: The name of the function this Action will take
+          type: string
+          example: pause
+        name:
+          description: User-specified name of the action
+          type: string
+          example: action1
         device_id:
-          description: ID of the device to use
-          type: integer
-          example: 42
+          description: ID of the device to use, encapsulated in an Argument object
+          $ref: '#/definitions/DeviceArgument'
         arguments:
           description: The input arguments to the action
           type: array
           items:
             $ref: '#/definitions/Argument'
+        trigger:
+          description: The trigger condition
+          $ref: '#/definitions/ConditionalExpression'
         position:
-          description:  position of the action onthe workflow editor
-          type: object
-          required: [x, y]
-          properties:
-            x:
-              description: x position
-              type: number
-              example: 443.22
-            y:
-              description: y position
-              type: number
-              example: -12.036
-    
-    DisplayAction:
-      type: object
-      description: Encapsulation of executing an action in an app
-      properties:
-        name:
-          description: Name of the action
-          type: string
-          example: action1
-        action_name:
-          description: The action the action will take
-          type: string
-          example: pause
-        app_name:
-          description: The app to which the action belongs
-          type: string
-          example: CyberAnalytics
-        triggers:
-          description: String representation of a list of Trigger objects
-          type: array
-          items:
-            $ref: '#/definitions/Condition'
-        device_id:
-          description: ID of the device to use
-          type: integer
-          example: 42
-        arguments:
-          description: The input arguments to the action
-          type: array
-          items:
-            $ref: '#/definitions/Argument'
-        position:
-          description:  position of the action onthe workflow editor
-          type: object
-          required: [x, y]
-          properties:
-            x:
-              description: x position
-              type: number
-              example: 443.22
-            y:
-              description: y position
-              type: number
-              example: -12.036
+          description: Position object representing various fields of the position of the Action in the playbook editor.
+          $ref: '#/definitions/Position'
+        errors:
+          $ref: '#/definitions/ExecutionElementErrors'
     
     Branch:
       type: object
-      required: [source_uid, destination_uid]
-      description: Encapsualtion of a list of possible actions to take and conditionals required to be met before taking that action
+      required: [source_id, destination_id]
+      description: Encapsualtion of a list of possible actions to take and conditions required to be met before taking that action
       additionalProperties: false
       properties:
-        source_uid:
-          description: The source Action UID for this Branch
-          type: string
-        destination_uid:
-          description: The destination Action UID for this Branch, if the conditions evaluate to True
-          type: string
-        uid:
-          description: UID of this action
-          type: string
-          x-nullable: true
+        id:
+          $ref: '#/definitions/Uuid'
+          description: The ID of the object. If updating a workflow and the Branch object already exists, ID is required. Otherwise, do not include it.
+        source_id:
+          description: The source Action ID for this Branch
+          $ref: '#/definitions/Uuid'
+        destination_id:
+          description: The destination Action ID for this Branch, if the conditions evaluate to True
+          $ref: '#/definitions/Uuid'
         priority:
-          description: The priority for this Branch, which will be compared to other Branches with the same source_uid Action, ascending, i.e. 1 is the highest priority.
+          description: The priority for this Branch, which will be compared to other Branches with the same source_id Action, ascending, i.e. 1 is the highest priority.
           type: integer
         status:
           description: The status return code to use
           type: string
           example: Success
+        condition:
+          description: List of condition to evaluate
+          $ref: '#/definitions/ConditionalExpression'
+        errors:
+          $ref: '#/definitions/ExecutionElementErrors'
+    
+    
+    ConditionalExpression:
+      type: object
+      description: Object which encapsulates Boolean logic
+      properties:
+        operator:
+          type: string
+          description: The operation to use which on the conditions
+          enum: [and, or, xor]
+          default: and
+        is_negated:
+          description: Should the result of this condition be negated? For example if the condition would return True, then invert it to return False.
+          type: boolean
+          default: false
         conditions:
-          description: List of conditions to evaluate
+          description: Base conditions to evaluate.
           type: array
           items:
             $ref: '#/definitions/Condition'
+        child_expressions:
+          description: Sub-expressions to evaluate.
+          type: array
+          items:
+            $ref: '#/definitions/ConditionalExpression'
+        errors:
+          $ref: '#/definitions/ExecutionElementErrors'
+    
+    
+    Argument:
+      type: object
+      required: [name]
+      description: Object used for passing an argument into actions. Either reference or value must be selected.
+      minProperties: 2
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+          description: The ID of the object. If updating a workflow and the Argument object already exists, ID is required.
+        name:
+          type: string
+          example: regex
+        value:
+          description: The value of the argument
+          example: WALK(.*)
+        reference:
+          $ref: '#/definitions/Uuid'
+          description: The ID of the action whose output should be used
+        selection:
+          description: >-
+            The path to a subsection of the output of the action to use. For example [1, "a"] would use the second element
+            of a list, and the "a" field of that object.
+          type: array
+          items:
+            type: [string, integer]
+        errors:
+          $ref: '#/definitions/ExecutionElementErrors'
+    
+    DeviceArgument:
+      type: object
+      description: Object used for passing a device argument into actions. Either reference or value must be selected.
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        id:
+          type: integer
+          description: The ID of the object. If updating a workflow and the Argument object already exists, ID is required.
+        name:
+          type: string
+          default: '__device__'
+        value:
+          description: The value of the argument
+          example: WALK(.*)
+        reference:
+          $ref: '#/definitions/Uuid'
+          description: The ID of the action whose output should be used
+        selection:
+          description: >-
+            The path to a subsection of the output of the action to use. For example [1, "a"] would use the second element
+            of a list, and the "a" field of that object.
+          type: array
+          items:
+            type: [string, integer]
     
     Condition:
       type: object
-      required: [action_name, app_name]
+      required: [app_name, action_name]
       description: Takes data and checks it against a condition given by its action Optionally filters the data before checking.
       additionalProperties: false
       properties:
-        uid:
-          description: UID of this condition
-          type: string
-          x-nullable: true
+        id:
+          $ref: '#/definitions/Uuid'
+          description: The ID of the object. If updating a workflow and the Condition object already exists, ID is required. Otherwise, do not include it.
         app_name:
           description: The app to which the conditon belongs
           type: string
@@ -3101,22 +3070,27 @@ definitions:
           type: array
           items:
             $ref: '#/definitions/Argument'
+        is_negated:
+          description: Should the result of this condition be negated? For example if the condition would return True, then invert it to return False.
+          type: boolean
+          default: false
         transforms:
           description: transforms for the data before passing it into the condition
           type: array
           items:
             $ref: '#/definitions/Transform'
+        errors:
+          $ref: '#/definitions/ExecutionElementErrors'
     
     Transform:
       type: object
-      required: [action_name, app_name]
+      required: [app_name, action_name]
       description: Filters or otherwise transforms the data given to it
       additionalProperties: false
       properties:
-        uid:
-          description: UID of this transform
-          type: string
-          x-nullable: true
+        id:
+          $ref: '#/definitions/Uuid'
+          description: The ID of the object. If updating a workflow and the Transform object already exists, ID is required. Otherwise, do not include it.
         app_name:
           description: The app to which the transform belongs
           type: string
@@ -3130,31 +3104,50 @@ definitions:
           type: array
           items:
             $ref: '#/definitions/Argument'
+        errors:
+          $ref: '#/definitions/ExecutionElementErrors'
     
-    Argument:
+    Position:
       type: object
-      required: [name]
-      description: Object used for passing an argument into actions. Either reference or value must be selected.
-      minProperties: 2
+      required: [x, y]
+      description: Various specifications for how the Action is displayed in the playbook editor
+      additionalProperties: false
       properties:
+        id:
+          type: integer
+          description: The ID of the object. If updating a workflow and the Position object already exists, ID is required. Otherwise, do not include it.
+        x:
+          type: number
+          description: The X coordinate for the Action
+        y:
+          type: number
+          description: The Y coordinate for the Action
+    
+    CopyWorkflow:
+        type: object
+        properties:
+          playbook_id:
+            $ref: '#/definitions/Uuid'
+          workflow_name:
+            type: string
+    
+    UpdatePlaybook:
+      type: object
+      required: [id]
+      additionalProperties: false
+      properties:
+        id:
+          $ref: '#/definitions/Uuid'
         name:
           type: string
-          example: regex
-        value:
-          description: The value of the argument
-          example: WALK(.*)
-        reference:
-          description: The UID of the action whose output should be used
-          type: string
-        selection:
-          description: >-
-            The path to a subsection of the output of the action to use. For example [1, "a"] would use the second element
-            of a list, and the "a" field of that object.
-          type: array
-          items:
-            type: [string, integer]
+          description: The new name of the playbook
     
-
+    ExecutionElementErrors:
+      description: Errors attached to this ExecutionElement
+      readOnly: true
+      type: array
+      items:
+        type: string
     AddRole:
         type: object
         required: [name]
@@ -3217,7 +3210,7 @@ definitions:
           id:
             type: integer
             minimum: 1
-            description: id of the object
+            description: ID of the object
           name:
             description: Name of the resource
             type: string
@@ -3246,7 +3239,7 @@ definitions:
           type: string
           description: The name of the app associated with this resource, if applicable
           example: HelloWorld, DailyQuote
-
+
     Scheduler:
       type: object
       required: [status]
@@ -3262,10 +3255,10 @@ definitions:
       additionalProperties: false
       properties:
         workflows:
-          description: List if UIDs of workflows attached to this task
+          description: List if IDs of workflows attached to this task
           type: array
           items:
-            type: string
+            $ref: '#/definitions/Uuid'
         name:
           type: string
           description: Name of this task
@@ -3289,10 +3282,10 @@ definitions:
           description: ID of the object
           readOnly: true
         workflows:
-          description: List if UIDs of workflows attached to this task
+          description: List if IDs of workflows attached to this task
           type: array
           items:
-            type: string
+            $ref: '#/definitions/Uuid'
         name:
           type: string
           description: Name of this task
@@ -3305,6 +3298,9 @@ definitions:
           enum: [running, stopped]
         task_trigger:
           $ref: '#/definitions/TaskTrigger'
+        action:
+          type: string
+          enum: [start, stop]
     
     TaskTrigger:
       type: object
@@ -3319,7 +3315,7 @@ definitions:
         args:
           type: object
           description: Arguments for the trigger.
-
+
     SystemUsageDetails:
       type: object
       required: [cpu, memory, disk, net]
@@ -3421,7 +3417,7 @@ definitions:
         dropped_out:
           description: Number of outgoing packets dropped
           type: integer
-          readOnly: true
+          readOnly: true
     AddUser:
         type: object
         required: [username, password]
@@ -3436,12 +3432,11 @@ definitions:
             example: password123
           roles:
             description: A list of role IDs that this user possesses. Roles can only be assigned to a User by an admin.
-            type: array
-            items:
-              type: integer
+            $ref: '#/definitions/RoleIdList'
           active:
             description: activate/deactive a user. Active can only be changed by an admin.
             type: boolean
+    
     EditUser:
         type: object
         required: [id]
@@ -3468,9 +3463,8 @@ definitions:
             type: boolean
           roles:
             description: A new list of role IDs that this user will possess. Roles can only be assigned by an admin.
-            type: array
-            items:
-              type: integer
+            $ref: '#/definitions/RoleIdList'
+    
     DisplayUser:
         type: object
         properties:
@@ -3491,84 +3485,206 @@ definitions:
             type: array
             items:
               type: integer
-    CompleteWorkflowResults:
-      type: object
-      required: [id]
-      properties:
-        id:
-          $ref: '#/definitions/WorkflowResult'
     
-    WorkflowResult:
+    RoleIdList:
+      type: array
+      items:
+        type: object
+        required: [id]
+        properties:
+          id:
+            type: integer
+            description: The ID of a role the user posesses
+
+    WorkflowStatus:
       type: object
-      required: [name, started_at, status, results, uid]
+      required: [execution_id, workflow_id, name, status]
       properties:
+        execution_id:
+          $ref: '#/definitions/Uuid'
+        workflow_id:
+          $ref: '#/definitions/Uuid'
         name:
-          description: The name of the workflow. Contains both playbook and workflow information
+          description: The name of the workflow.
           type: string
-          example: PlaybookName-WorkflowName
-          readOnly: true
-        started_at:
-          description: The timestamp of when the workflow completed
-          type: string
-          example: '2017-05-24 00:42:22.934058'
-          readOnly: true
-        completed_at:
-          description: The timestamp of when the workflow completed
-          type: string
-          example: '2017-05-24 00:43:26.930892'
+          example: WorkflowName
           readOnly: true
         status:
-          description: The status of the workflow
+          description: The current status of the workflow
           type: string
-          enum: [completed, running, 'awaiting_data', 'paused']
+          enum: ['pending', 'running', 'paused', 'awaiting_data', 'completed', 'aborted']
           readOnly: true
-        results:
-          description: The results of the workflow actions
+        started_at:
+          description: The timestamp of the start of workflow execution
+          type: string
+          format: date-time
+          example: '2017-05-24T00:42:22.934058Z'
+          readOnly: true
+        completed_at:
+          description: The timestamp of the end of workflow execution
+          type: string
+          format: date-time
+          example: '2017-05-24T00:42:22.934058Z'
+        current_action:
+          description: The currently executing action
+          $ref: '#/definitions/ActionIdentification'
+    
+    FullWorkflowStatus:
+      type: object
+      required: [action_statuses, execution_id, workflow_id, name, status]
+      properties:
+        execution_id:
+          $ref: '#/definitions/Uuid'
+        workflow_id:
+          $ref: '#/definitions/Uuid'
+        name:
+          description: The name of the workflow.
+          type: string
+          example: WorkflowName
+          readOnly: true
+        status:
+          description: The current status of the workflow
+          type: string
+          enum: ['pending', 'running', 'paused', 'awaiting_data', 'completed', 'aborted']
+          readOnly: true
+        started_at:
+          description: The timestamp of the start of workflow execution
+          type: string
+          format: date-time
+          example: '2017-05-24T00:42:22.934058Z'
+          readOnly: true
+        completed_at:
+          description: The timestamp of the end of workflow execution
+          type: string
+          format: date-time
+          example: '2017-05-24T00:42:22.934058Z'
+        action_statuses:
+          description: The statuses of the workflow actions
           type: array
           items:
-            $ref: '#/definitions/DetailedActionResult'
-        uid:
-          description: The UID of the workflow
-          type: string
+            $ref: '#/definitions/ActionStatus'
     
-    DetailedActionResult:
+    ActionStatus:
       type: object
-      required: [name, result, input, type, timestamp]
-      description: A result of an action execution
+      description: The status of an action execution
+      required: [action_id, execution_id, name, action_name, app_name, status, started_at]
       properties:
+        execution_id:
+          $ref: '#/definitions/Uuid'
+        action_id:
+          $ref: '#/definitions/Uuid'
         name:
           description: The name of the action
           type: string
           example: 'This One action'
-          readOnly: true
-        action_name:
-          description: The name of the action take by the action
-          type: string
-          example: get that thing
           readOnly: true
         app_name:
           description: The name of the app associated with the action
           type: string
           example: ThingGetter
           readOnly: true
+        action_name:
+          description: The name of the action take by the action
+          type: string
+          example: get that thing
+          readOnly: true
+        status:
+          description: The status of the workflow
+          type: string
+          enum: ['executing', 'awaiting_data', 'success', 'failure', 'aborted']
+          readOnly: true
         result:
           description: The result of the action
           type: object
           readOnly: true
-        type:
-          description: Success or failure of the action
+        started_at:
+          description: The timestamp of when the action started
           type: string
-          example: SUCCESS
-          enum: [SUCCESS, ERROR]
+          format: date-time
+          example: '2017-05-24T00:42:22.934058Z'
           readOnly: true
-        timestamp:
+        completed_at:
           description: The timestamp of when the action completed
           type: string
-          example: '2017-05-24 00:43:26.930892'
+          format: date-time
+          example: '2017-05-24T00:43:26.930892Z'
           readOnly: true
-        input:
-          description: The input to the action. Of form {input_name -> value}
+    
+    ActionIdentification:
+      type: object
+      description: The descriptive identification of an action
+      required: [action_id, execution_id, name, action_name, app_name]
+      properties:
+        execution_id:
+          $ref: '#/definitions/Uuid'
+        action_id:
+          $ref: '#/definitions/Uuid'
+        name:
+          description: The name of the action
+          type: string
+          example: 'This One action'
+          readOnly: true
+        app_name:
+          description: The name of the app associated with the action
+          type: string
+          example: ThingGetter
+          readOnly: true
+        action_name:
+          description: The name of the action take by the action
+          type: string
+          example: get that thing
+          readOnly: true
+    
+    ActionStatusDetails:
+      type: object
+      required: [status, started_at]
+      description: The details of an action execution
+      properties:
+        status:
+          description: The status of the workflow
+          type: string
+          enum: ['executing', 'awaiting_data', 'success', 'failure', 'aborted']
+          readOnly: true
+        result:
+          description: The result of the action
           type: object
           readOnly: true
-
+        started_at:
+          description: The timestamp of when the action started
+          type: string
+          format: date-time
+          example: '2017-05-24T00:42:22.934058Z'
+          readOnly: true
+        completed_at:
+          description: The timestamp of when the action completed
+          type: string
+          format: date-time
+          example: '2017-05-24T00:43:26.930892Z'
+          readOnly: true
+    
+    ExecuteWorkflow:
+      type: object
+      required: [workflow_id]
+      properties:
+        workflow_id:
+          $ref: '#/definitions/Uuid'
+        start:
+          description: The ID of the starting action
+          $ref: '#/definitions/Uuid'
+        arguments:
+          type: array
+          items:
+            $ref: '#/definitions/Argument'
+    
+    ControlWorkflow:
+      type: object
+      required: [execution_id, status]
+      properties:
+        execution_id:
+          $ref: '#/definitions/Uuid'
+        status:
+          description: The action to take on the executing workflow
+          type: string
+          enum: ['pause', 'resume', 'abort']
+
 
