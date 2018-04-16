@@ -19,7 +19,7 @@ class ScheduledWorkflow(db.Model):
     """
     __tablename__ = 'scheduled_workflow'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    workflow_id = db.Column(UUIDType(), nullable=False)
+    workflow_id = db.Column(UUIDType(binary=False), nullable=False)
     task_id = db.Column(db.Integer, db.ForeignKey('scheduled_task.id'))
 
 

@@ -70,7 +70,7 @@ class ActionMetric(Execution_Base):
     __tablename__ = 'action_metric'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    action_id = Column(UUIDType, nullable=False)
+    action_id = Column(UUIDType(binary=False), nullable=False)
     action_name = Column(String(255), nullable=False)
     app_metric_id = Column(Integer, ForeignKey('app_metric.id'))
     action_statuses = relationship('ActionStatusMetric', cascade='all, delete, delete-orphan')
@@ -166,7 +166,7 @@ class WorkflowMetric(Execution_Base):
     __tablename__ = 'workflow_metric'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    workflow_id = Column(UUIDType, nullable=False)
+    workflow_id = Column(UUIDType(binary=False), nullable=False)
     workflow_name = Column(String(255), nullable=False)
     count = Column(Integer)
     avg_time = Column(Float)
