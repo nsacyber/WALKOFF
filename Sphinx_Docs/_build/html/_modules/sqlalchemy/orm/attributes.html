@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>sqlalchemy.orm.attributes &mdash; Walkoff 0.7.1 documentation</title>
+  <title>sqlalchemy.orm.attributes &mdash; Walkoff 0.8.1 documentation</title>
   
 
   
@@ -25,25 +25,17 @@
   
 
   
-  
     <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="../../../genindex.html"/>
-        <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="Walkoff 0.7.1 documentation" href="../../../index.html"/>
-        <link rel="up" title="Module code" href="../../index.html"/> 
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
 
   
   <script src="../../../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -65,7 +57,7 @@
             
             
               <div class="version">
-                0.7.1
+                0.8.1
               </div>
             
           
@@ -89,8 +81,13 @@
               
             
             
-              <!-- Local TOC -->
-              <div class="local-toc"></div>
+              <p class="caption"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../apps.html">App Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../interfaces.html">Interface Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../platform.html">Walkoff Platform</a></li>
+</ul>
+
             
           
         </div>
@@ -100,7 +97,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../../index.html">Walkoff</a>
@@ -108,9 +105,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -139,8 +137,6 @@
     
     
       <li class="wy-breadcrumbs-aside">
-        
-            
         
       </li>
     
@@ -308,20 +304,20 @@
 
     <span class="k">def</span> <span class="nf">adapt_to_entity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">adapt_to_entity</span><span class="p">):</span>
         <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_of_type</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">adapt_to_entity</span><span class="o">.</span><span class="n">entity</span><span class="p">,</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">adapt_to_entity</span><span class="o">.</span><span class="n">entity</span><span class="p">,</span>
                               <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">impl</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">impl</span><span class="p">,</span>
                               <span class="n">comparator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">comparator</span><span class="o">.</span><span class="n">adapt_to_entity</span><span class="p">(</span>
                                   <span class="n">adapt_to_entity</span><span class="p">),</span>
                               <span class="n">parententity</span><span class="o">=</span><span class="n">adapt_to_entity</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">of_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cls</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">of_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">QueryableAttribute</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">class_</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">impl</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">comparator</span><span class="o">.</span><span class="n">of_type</span><span class="p">(</span><span class="n">cls</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">comparator</span><span class="o">.</span><span class="n">of_type</span><span class="p">(</span><span class="bp">cls</span><span class="p">),</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_parententity</span><span class="p">,</span>
-            <span class="n">of_type</span><span class="o">=</span><span class="n">cls</span><span class="p">)</span>
+            <span class="n">of_type</span><span class="o">=</span><span class="bp">cls</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_clause_element</span><span class="p">()</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
@@ -342,14 +338,14 @@
             <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
                 <span class="s1">&#39;Neither </span><span class="si">%r</span><span class="s1"> object nor </span><span class="si">%r</span><span class="s1"> object associated with </span><span class="si">%s</span><span class="s1"> &#39;</span>
                 <span class="s1">&#39;has an attribute </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
-                    <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
-                    <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comparator</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+                    <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                    <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comparator</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
                     <span class="bp">self</span><span class="p">,</span>
                     <span class="n">key</span><span class="p">)</span>
             <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">class_</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">class_</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
 
     <span class="nd">@util</span><span class="o">.</span><span class="n">memoized_property</span>
     <span class="k">def</span> <span class="nf">property</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -419,7 +415,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">original_property</span> <span class="o">=</span> <span class="n">original_property</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_comparator</span> <span class="o">=</span> <span class="n">comparator</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_adapt_to_entity</span> <span class="o">=</span> <span class="n">adapt_to_entity</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="n">doc</span>
+            <span class="bp">self</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">doc</span>
 
         <span class="nd">@property</span>
         <span class="k">def</span> <span class="nf">property</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -435,7 +431,7 @@
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_comparator</span>
 
         <span class="k">def</span> <span class="nf">adapt_to_entity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">adapt_to_entity</span><span class="p">):</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">(</span><span class="n">adapt_to_entity</span><span class="o">.</span><span class="n">entity</span><span class="p">,</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">adapt_to_entity</span><span class="o">.</span><span class="n">entity</span><span class="p">,</span>
                                   <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">,</span>
                                   <span class="bp">self</span><span class="o">.</span><span class="n">descriptor</span><span class="p">,</span>
                                   <span class="bp">self</span><span class="o">.</span><span class="n">_comparator</span><span class="p">,</span>
@@ -445,10 +441,10 @@
             <span class="k">if</span> <span class="n">instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span> <span class="bp">self</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">descriptor</span><span class="o">.</span><span class="n">__get__</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">owner</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">descriptor</span><span class="o">.</span><span class="fm">__get__</span><span class="p">(</span><span class="n">instance</span><span class="p">,</span> <span class="n">owner</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">class_</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">class_</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">):</span>
             <span class="sd">&quot;&quot;&quot;Delegate __getattr__ to the original descriptor and/or</span>
@@ -463,13 +459,13 @@
                     <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
                         <span class="s1">&#39;Neither </span><span class="si">%r</span><span class="s1"> object nor </span><span class="si">%r</span><span class="s1"> object associated with </span><span class="si">%s</span><span class="s1"> &#39;</span>
                         <span class="s1">&#39;has an attribute </span><span class="si">%r</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span>
-                            <span class="nb">type</span><span class="p">(</span><span class="n">descriptor</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
-                            <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comparator</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span>
+                            <span class="nb">type</span><span class="p">(</span><span class="n">descriptor</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+                            <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comparator</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
                             <span class="bp">self</span><span class="p">,</span>
                             <span class="n">attribute</span><span class="p">)</span>
                     <span class="p">)</span>
 
-    <span class="n">Proxy</span><span class="o">.</span><span class="n">__name__</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">descriptor</span><span class="p">)</span><span class="o">.</span><span class="n">__name__</span> <span class="o">+</span> <span class="s1">&#39;Proxy&#39;</span>
+    <span class="n">Proxy</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">descriptor</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">+</span> <span class="s1">&#39;Proxy&#39;</span>
 
     <span class="n">util</span><span class="o">.</span><span class="n">monkeypatch_proxied_specials</span><span class="p">(</span><span class="n">Proxy</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">descriptor</span><span class="p">),</span>
                                       <span class="n">name</span><span class="o">=</span><span class="s1">&#39;descriptor&#39;</span><span class="p">,</span>
@@ -508,7 +504,7 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">__slots__</span> <span class="o">=</span> <span class="s1">&#39;impl&#39;</span><span class="p">,</span> <span class="s1">&#39;op&#39;</span><span class="p">,</span> <span class="s1">&#39;parent_token&#39;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;impl&#39;</span><span class="p">,</span> <span class="s1">&#39;op&#39;</span><span class="p">,</span> <span class="s1">&#39;parent_token&#39;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute_impl</span><span class="p">,</span> <span class="n">op</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">impl</span> <span class="o">=</span> <span class="n">attribute_impl</span>
@@ -537,7 +533,7 @@
                  <span class="n">parent_token</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">expire_missing</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="n">send_modified_events</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">r&quot;&quot;&quot;Construct an AttributeImpl.</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Construct an AttributeImpl.</span>
 
 <span class="sd">        \class_</span>
 <span class="sd">          associated class</span>
@@ -608,13 +604,13 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">expire_missing</span> <span class="o">=</span> <span class="n">expire_missing</span>
 
-    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
         <span class="s1">&#39;class_&#39;</span><span class="p">,</span> <span class="s1">&#39;key&#39;</span><span class="p">,</span> <span class="s1">&#39;callable_&#39;</span><span class="p">,</span> <span class="s1">&#39;dispatch&#39;</span><span class="p">,</span> <span class="s1">&#39;trackparent&#39;</span><span class="p">,</span>
         <span class="s1">&#39;parent_token&#39;</span><span class="p">,</span> <span class="s1">&#39;send_modified_events&#39;</span><span class="p">,</span> <span class="s1">&#39;is_equal&#39;</span><span class="p">,</span> <span class="s1">&#39;expire_missing&#39;</span>
     <span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">class_</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">class_</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">key</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_get_active_history</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Backwards compat for impl.active_history&quot;&quot;&quot;</span>
@@ -803,10 +799,10 @@
     <span class="n">supports_population</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">collection</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="n">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_replace_token&#39;</span><span class="p">,</span> <span class="s1">&#39;_append_token&#39;</span><span class="p">,</span> <span class="s1">&#39;_remove_token&#39;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="s1">&#39;_replace_token&#39;</span><span class="p">,</span> <span class="s1">&#39;_append_token&#39;</span><span class="p">,</span> <span class="s1">&#39;_remove_token&#39;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">arg</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">ScalarAttributeImpl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">arg</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ScalarAttributeImpl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">arg</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_replace_token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_append_token</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_remove_token</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -889,7 +885,7 @@
     <span class="n">supports_population</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">collection</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">dict_</span><span class="p">):</span>
         <span class="n">old</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">dict_</span><span class="p">)</span>
@@ -1013,7 +1009,7 @@
     <span class="n">supports_population</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">collection</span> <span class="o">=</span> <span class="kc">True</span>
 
-    <span class="n">__slots__</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
         <span class="s1">&#39;copy&#39;</span><span class="p">,</span> <span class="s1">&#39;collection_factory&#39;</span><span class="p">,</span> <span class="s1">&#39;_append_token&#39;</span><span class="p">,</span> <span class="s1">&#39;_remove_token&#39;</span><span class="p">,</span>
         <span class="s1">&#39;_duck_typed_as&#39;</span>
     <span class="p">)</span>
@@ -1021,7 +1017,7 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">class_</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">callable_</span><span class="p">,</span> <span class="n">dispatch</span><span class="p">,</span>
                  <span class="n">typecallable</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">trackparent</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">copy_function</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">compare_function</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">CollectionAttributeImpl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CollectionAttributeImpl</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">class_</span><span class="p">,</span>
             <span class="n">key</span><span class="p">,</span>
             <span class="n">callable_</span><span class="p">,</span> <span class="n">dispatch</span><span class="p">,</span>
@@ -1197,8 +1193,8 @@
 
                 <span class="k">if</span> <span class="n">setting_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">receiving_type</span><span class="p">:</span>
                     <span class="n">given</span> <span class="o">=</span> <span class="n">iterable</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s1">&#39;None&#39;</span> <span class="ow">or</span> \
-                        <span class="n">iterable</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span>
-                    <span class="n">wanted</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_duck_typed_as</span><span class="o">.</span><span class="n">__name__</span>
+                        <span class="n">iterable</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+                    <span class="n">wanted</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_duck_typed_as</span><span class="o">.</span><span class="vm">__name__</span>
                     <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
                         <span class="s2">&quot;Incompatible collection type: </span><span class="si">%s</span><span class="s2"> is not </span><span class="si">%s</span><span class="s2">-like&quot;</span> <span class="o">%</span> <span class="p">(</span>
                             <span class="n">given</span><span class="p">,</span> <span class="n">wanted</span><span class="p">))</span>
@@ -1429,7 +1425,7 @@
 
     <span class="k">def</span> <span class="nf">__bool__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span> <span class="o">!=</span> <span class="n">HISTORY_BLANK</span>
-    <span class="n">__nonzero__</span> <span class="o">=</span> <span class="n">__bool__</span>
+    <span class="n">__nonzero__</span> <span class="o">=</span> <span class="fm">__bool__</span>
 
     <span class="k">def</span> <span class="nf">empty</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return True if this :class:`.History` has no changes</span>
@@ -1480,17 +1476,17 @@
         <span class="p">)</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_scalar_attribute</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">current</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">from_scalar_attribute</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">current</span><span class="p">):</span>
         <span class="n">original</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">committed_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attribute</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">_NO_HISTORY</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">original</span> <span class="ow">is</span> <span class="n">_NO_HISTORY</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">current</span> <span class="ow">is</span> <span class="n">NEVER_SET</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">cls</span><span class="p">((),</span> <span class="p">(),</span> <span class="p">())</span>
+                <span class="k">return</span> <span class="bp">cls</span><span class="p">((),</span> <span class="p">(),</span> <span class="p">())</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">cls</span><span class="p">((),</span> <span class="p">[</span><span class="n">current</span><span class="p">],</span> <span class="p">())</span>
+                <span class="k">return</span> <span class="bp">cls</span><span class="p">((),</span> <span class="p">[</span><span class="n">current</span><span class="p">],</span> <span class="p">())</span>
         <span class="c1"># don&#39;t let ClauseElement expressions here trip things up</span>
         <span class="k">elif</span> <span class="n">attribute</span><span class="o">.</span><span class="n">is_equal</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="n">original</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">cls</span><span class="p">((),</span> <span class="p">[</span><span class="n">current</span><span class="p">],</span> <span class="p">())</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">((),</span> <span class="p">[</span><span class="n">current</span><span class="p">],</span> <span class="p">())</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># current convention on native scalars is to not</span>
             <span class="c1"># include information</span>
@@ -1502,21 +1498,21 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">deleted</span> <span class="o">=</span> <span class="p">[</span><span class="n">original</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">current</span> <span class="ow">is</span> <span class="n">NEVER_SET</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">cls</span><span class="p">((),</span> <span class="p">(),</span> <span class="n">deleted</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">cls</span><span class="p">((),</span> <span class="p">(),</span> <span class="n">deleted</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">cls</span><span class="p">([</span><span class="n">current</span><span class="p">],</span> <span class="p">(),</span> <span class="n">deleted</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">cls</span><span class="p">([</span><span class="n">current</span><span class="p">],</span> <span class="p">(),</span> <span class="n">deleted</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_object_attribute</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">current</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">from_object_attribute</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">current</span><span class="p">):</span>
         <span class="n">original</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">committed_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attribute</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">_NO_HISTORY</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">original</span> <span class="ow">is</span> <span class="n">_NO_HISTORY</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">current</span> <span class="ow">is</span> <span class="n">NO_VALUE</span> <span class="ow">or</span> <span class="n">current</span> <span class="ow">is</span> <span class="n">NEVER_SET</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">cls</span><span class="p">((),</span> <span class="p">(),</span> <span class="p">())</span>
+                <span class="k">return</span> <span class="bp">cls</span><span class="p">((),</span> <span class="p">(),</span> <span class="p">())</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">cls</span><span class="p">((),</span> <span class="p">[</span><span class="n">current</span><span class="p">],</span> <span class="p">())</span>
+                <span class="k">return</span> <span class="bp">cls</span><span class="p">((),</span> <span class="p">[</span><span class="n">current</span><span class="p">],</span> <span class="p">())</span>
         <span class="k">elif</span> <span class="n">current</span> <span class="ow">is</span> <span class="n">original</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">cls</span><span class="p">((),</span> <span class="p">[</span><span class="n">current</span><span class="p">],</span> <span class="p">())</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">((),</span> <span class="p">[</span><span class="n">current</span><span class="p">],</span> <span class="p">())</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># current convention on related objects is to not</span>
             <span class="c1"># include information</span>
@@ -1528,22 +1524,22 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">deleted</span> <span class="o">=</span> <span class="p">[</span><span class="n">original</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">current</span> <span class="ow">is</span> <span class="n">NO_VALUE</span> <span class="ow">or</span> <span class="n">current</span> <span class="ow">is</span> <span class="n">NEVER_SET</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">cls</span><span class="p">((),</span> <span class="p">(),</span> <span class="n">deleted</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">cls</span><span class="p">((),</span> <span class="p">(),</span> <span class="n">deleted</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">cls</span><span class="p">([</span><span class="n">current</span><span class="p">],</span> <span class="p">(),</span> <span class="n">deleted</span><span class="p">)</span>
+                <span class="k">return</span> <span class="bp">cls</span><span class="p">([</span><span class="n">current</span><span class="p">],</span> <span class="p">(),</span> <span class="n">deleted</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">from_collection</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">current</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">from_collection</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">current</span><span class="p">):</span>
         <span class="n">original</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">committed_state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">attribute</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="n">_NO_HISTORY</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">current</span> <span class="ow">is</span> <span class="n">NO_VALUE</span> <span class="ow">or</span> <span class="n">current</span> <span class="ow">is</span> <span class="n">NEVER_SET</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">cls</span><span class="p">((),</span> <span class="p">(),</span> <span class="p">())</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">((),</span> <span class="p">(),</span> <span class="p">())</span>
 
         <span class="n">current</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">current</span><span class="p">,</span> <span class="s1">&#39;_sa_adapter&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">original</span> <span class="ow">in</span> <span class="p">(</span><span class="n">NO_VALUE</span><span class="p">,</span> <span class="n">NEVER_SET</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">current</span><span class="p">),</span> <span class="p">(),</span> <span class="p">())</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">current</span><span class="p">),</span> <span class="p">(),</span> <span class="p">())</span>
         <span class="k">elif</span> <span class="n">original</span> <span class="ow">is</span> <span class="n">_NO_HISTORY</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">cls</span><span class="p">((),</span> <span class="nb">list</span><span class="p">(</span><span class="n">current</span><span class="p">),</span> <span class="p">())</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">((),</span> <span class="nb">list</span><span class="p">(</span><span class="n">current</span><span class="p">),</span> <span class="p">())</span>
         <span class="k">else</span><span class="p">:</span>
 
             <span class="n">current_states</span> <span class="o">=</span> <span class="p">[((</span><span class="n">c</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="n">instance_state</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
@@ -1558,7 +1554,7 @@
             <span class="n">current_set</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">current_states</span><span class="p">)</span>
             <span class="n">original_set</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">original_states</span><span class="p">)</span>
 
-            <span class="k">return</span> <span class="n">cls</span><span class="p">(</span>
+            <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
                 <span class="p">[</span><span class="n">o</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">current_states</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">original_set</span><span class="p">],</span>
                 <span class="p">[</span><span class="n">o</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">current_states</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">original_set</span><span class="p">],</span>
                 <span class="p">[</span><span class="n">o</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">original_states</span> <span class="k">if</span> <span class="n">s</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">current_set</span><span class="p">]</span>
@@ -1599,9 +1595,9 @@
     <span class="k">return</span> <span class="n">state</span><span class="o">.</span><span class="n">get_history</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">passive</span><span class="p">)</span>
 
 
-<span class="k">def</span> <span class="nf">has_parent</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">optimistic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">has_parent</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">optimistic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;TODO&quot;&quot;&quot;</span>
-    <span class="n">manager</span> <span class="o">=</span> <span class="n">manager_of_class</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+    <span class="n">manager</span> <span class="o">=</span> <span class="n">manager_of_class</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
     <span class="n">state</span> <span class="o">=</span> <span class="n">instance_state</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">manager</span><span class="o">.</span><span class="n">has_parent</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">optimistic</span><span class="p">)</span>
 
@@ -1658,7 +1654,7 @@
     <span class="n">descriptor</span> <span class="o">=</span> <span class="n">InstrumentedAttribute</span><span class="p">(</span><span class="n">class_</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">comparator</span><span class="o">=</span><span class="n">comparator</span><span class="p">,</span>
                                        <span class="n">parententity</span><span class="o">=</span><span class="n">parententity</span><span class="p">)</span>
 
-    <span class="n">descriptor</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="n">doc</span>
+    <span class="n">descriptor</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">doc</span>
 
     <span class="n">manager</span><span class="o">.</span><span class="n">instrument_attribute</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">descriptor</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">descriptor</span>
@@ -1773,9 +1769,7 @@
 </pre></div>
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -1788,7 +1782,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -1806,7 +1800,8 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'0.7.1',
+            VERSION:'0.8.1',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -1825,14 +1820,13 @@
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

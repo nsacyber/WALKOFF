@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>apps &mdash; Walkoff 0.7.1 documentation</title>
+  <title>apps &mdash; Walkoff 0.8.1 documentation</title>
   
 
   
@@ -25,25 +25,17 @@
   
 
   
-  
     <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="Walkoff 0.7.1 documentation" href="../index.html"/>
-        <link rel="up" title="Module code" href="index.html"/> 
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -65,7 +57,7 @@
             
             
               <div class="version">
-                0.7.1
+                0.8.1
               </div>
             
           
@@ -89,8 +81,13 @@
               
             
             
-              <!-- Local TOC -->
-              <div class="local-toc"></div>
+              <p class="caption"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../apps.html">App Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../interfaces.html">Interface Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../platform.html">Walkoff Platform</a></li>
+</ul>
+
             
           
         </div>
@@ -100,7 +97,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">Walkoff</a>
@@ -108,9 +105,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -140,8 +138,6 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
-        
       </li>
     
   </ul>
@@ -157,20 +153,21 @@
 
 <span class="kn">from</span> <span class="nn">walkoff.executiondb.device</span> <span class="k">import</span> <span class="n">get_app</span> <span class="k">as</span> <span class="n">get_db_app</span>
 <span class="kn">from</span> <span class="nn">apps.messaging</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">walkoff.appgateway.console</span> <span class="k">import</span> <span class="n">ConsoleLoggingHandler</span>
 <span class="kn">from</span> <span class="nn">walkoff.appgateway.decorators</span> <span class="k">import</span> <span class="o">*</span>
 
-<span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">_console_handler</span> <span class="o">=</span> <span class="n">ConsoleLoggingHandler</span><span class="p">()</span>
+<span class="n">_logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<span class="n">_logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">_console_handler</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="App"><a class="viewcode-back" href="../index.html#apps.App">[docs]</a><span class="k">class</span> <span class="nc">App</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="App"><a class="viewcode-back" href="../apps.html#apps.App">[docs]</a><span class="k">class</span> <span class="nc">App</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Base class for apps</span>
-
 <span class="sd">    Attributes:</span>
 <span class="sd">        app (apps.devicedb.App): The ORM of the App with the name passed into the constructor</span>
 <span class="sd">        device (apps.devicedb.Device): The ORM of the device with the ID passed into teh constructor</span>
 <span class="sd">        device_fields (dict): A dict of the plaintext fields of the device</span>
 <span class="sd">        device_type (str): The type of device associated with self.device</span>
-
 <span class="sd">    Args:</span>
 <span class="sd">        app (str): The name of the app</span>
 <span class="sd">        device (int): The ID of the device</span>
@@ -189,24 +186,21 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">device_type</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">device_id</span> <span class="o">=</span> <span class="n">device</span>
 
-<div class="viewcode-block" id="App.get_all_devices"><a class="viewcode-back" href="../index.html#apps.App.get_all_devices">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="App.get_all_devices"><a class="viewcode-back" href="../apps.html#apps.App.get_all_devices">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Gets all the devices associated with this app</span>
-
 <span class="sd">        Returns:</span>
 <span class="sd">            list: A list of apps.appdevice.Device objects associated with this app</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">devices</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">app</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span></div>
 
-<div class="viewcode-block" id="App.shutdown"><a class="viewcode-back" href="../index.html#apps.App.shutdown">[docs]</a>    <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="App.shutdown"><a class="viewcode-back" href="../apps.html#apps.App.shutdown">[docs]</a>    <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;When implemented, this method performs shutdown procedures for the app</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div></div>
 </pre></div>
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -219,7 +213,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -237,7 +231,8 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.7.1',
+            VERSION:'0.8.1',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -256,14 +251,13 @@
     <script type="text/javascript" src="../_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

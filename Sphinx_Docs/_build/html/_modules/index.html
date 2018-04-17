@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Overview: module code &mdash; Walkoff 0.7.1 documentation</title>
+  <title>Overview: module code &mdash; Walkoff 0.8.1 documentation</title>
   
 
   
@@ -25,24 +25,17 @@
   
 
   
-  
     <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="Walkoff 0.7.1 documentation" href="../index.html"/> 
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -64,7 +57,7 @@
             
             
               <div class="version">
-                0.7.1
+                0.8.1
               </div>
             
           
@@ -88,8 +81,13 @@
               
             
             
-              <!-- Local TOC -->
-              <div class="local-toc"></div>
+              <p class="caption"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../apps.html">App Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../interfaces.html">Interface Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../platform.html">Walkoff Platform</a></li>
+</ul>
+
             
           
         </div>
@@ -99,7 +97,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">Walkoff</a>
@@ -107,9 +105,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -137,8 +136,6 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
-        
       </li>
     
   </ul>
@@ -151,23 +148,65 @@
             
   <h1>All modules for which code is available</h1>
 <ul><li><a href="apps.html">apps</a></li>
-<ul><li><a href="apps/decorators.html">apps.decorators</a></li>
-<li><a href="apps/devicedb.html">apps.devicedb</a></li>
-<li><a href="apps/messaging.html">apps.messaging</a></li>
+<ul><li><a href="apps/messaging.html">apps.messaging</a></li>
 </ul><li><a href="interfaces.html">interfaces</a></li>
-<ul><li><a href="interfaces/disatchers.html">interfaces.disatchers</a></li>
-<li><a href="interfaces/dispatchers.html">interfaces.dispatchers</a></li>
+<ul><li><a href="interfaces/dispatchers.html">interfaces.dispatchers</a></li>
 <li><a href="interfaces/exceptions.html">interfaces.exceptions</a></li>
 <li><a href="interfaces/util.html">interfaces.util</a></li>
-</ul><li><a href="sqlalchemy/orm/attributes.html">sqlalchemy.orm.attributes</a></li>
+</ul><li><a href="logging.html">logging</a></li>
+<li><a href="sqlalchemy/orm/attributes.html">sqlalchemy.orm.attributes</a></li>
 <li><a href="sqlalchemy/sql/schema.html">sqlalchemy.sql.schema</a></li>
-<li><a href="walkoff.html">walkoff</a></li>
+<li><a href="walkoff/appgateway.html">walkoff.appgateway</a></li>
+<ul><li><a href="walkoff/appgateway/appcache.html">walkoff.appgateway.appcache</a></li>
+<li><a href="walkoff/appgateway/appinstancerepo.html">walkoff.appgateway.appinstancerepo</a></li>
+<li><a href="walkoff/appgateway/console.html">walkoff.appgateway.console</a></li>
+<li><a href="walkoff/appgateway/decorators.html">walkoff.appgateway.decorators</a></li>
+<li><a href="walkoff/appgateway/walkofftag.html">walkoff.appgateway.walkofftag</a></li>
+</ul><li><a href="walkoff/cache.html">walkoff.cache</a></li>
+<li><a href="walkoff/case/database.html">walkoff.case.database</a></li>
+<li><a href="walkoff/case/logger.html">walkoff.case.logger</a></li>
+<li><a href="walkoff/case/subscription.html">walkoff.case.subscription</a></li>
+<li><a href="walkoff/config.html">walkoff.config</a></li>
+<li><a href="walkoff/events.html">walkoff.events</a></li>
+<li><a href="walkoff/executiondb.html">walkoff.executiondb</a></li>
+<ul><li><a href="walkoff/executiondb/action.html">walkoff.executiondb.action</a></li>
+<li><a href="walkoff/executiondb/argument.html">walkoff.executiondb.argument</a></li>
+<li><a href="walkoff/executiondb/branch.html">walkoff.executiondb.branch</a></li>
+<li><a href="walkoff/executiondb/condition.html">walkoff.executiondb.condition</a></li>
+<li><a href="walkoff/executiondb/conditionalexpression.html">walkoff.executiondb.conditionalexpression</a></li>
+<li><a href="walkoff/executiondb/device.html">walkoff.executiondb.device</a></li>
+<li><a href="walkoff/executiondb/metrics.html">walkoff.executiondb.metrics</a></li>
+<li><a href="walkoff/executiondb/playbook.html">walkoff.executiondb.playbook</a></li>
+<li><a href="walkoff/executiondb/position.html">walkoff.executiondb.position</a></li>
+<li><a href="walkoff/executiondb/saved_workflow.html">walkoff.executiondb.saved_workflow</a></li>
+<li><a href="walkoff/executiondb/schemas.html">walkoff.executiondb.schemas</a></li>
+<li><a href="walkoff/executiondb/transform.html">walkoff.executiondb.transform</a></li>
+<li><a href="walkoff/executiondb/workflow.html">walkoff.executiondb.workflow</a></li>
+<li><a href="walkoff/executiondb/workflowresults.html">walkoff.executiondb.workflowresults</a></li>
+</ul><li><a href="walkoff/helpers.html">walkoff.helpers</a></li>
+<li><a href="walkoff/messaging.html">walkoff.messaging</a></li>
+<li><a href="walkoff/multiprocessedexecutor/multiprocessedexecutor.html">walkoff.multiprocessedexecutor.multiprocessedexecutor</a></li>
+<li><a href="walkoff/multiprocessedexecutor/proto_helpers.html">walkoff.multiprocessedexecutor.proto_helpers</a></li>
+<li><a href="walkoff/multiprocessedexecutor/threadauthenticator.html">walkoff.multiprocessedexecutor.threadauthenticator</a></li>
+<li><a href="walkoff/multiprocessedexecutor/worker.html">walkoff.multiprocessedexecutor.worker</a></li>
+<li><a href="walkoff/multiprocessedexecutor/workflowexecutioncontroller.html">walkoff.multiprocessedexecutor.workflowexecutioncontroller</a></li>
+<li><a href="walkoff/scheduler.html">walkoff.scheduler</a></li>
+<li><a href="walkoff/server/blueprints/notifications.html">walkoff.server.blueprints.notifications</a></li>
+<li><a href="walkoff/server/endpoints/metadata.html">walkoff.server.endpoints.metadata</a></li>
+<li><a href="walkoff/server/problem.html">walkoff.server.problem</a></li>
+<li><a href="walkoff/serverdb.html">walkoff.serverdb</a></li>
+<ul><li><a href="walkoff/serverdb/casesubscription.html">walkoff.serverdb.casesubscription</a></li>
+<li><a href="walkoff/serverdb/message.html">walkoff.serverdb.message</a></li>
+<li><a href="walkoff/serverdb/resource.html">walkoff.serverdb.resource</a></li>
+<li><a href="walkoff/serverdb/role.html">walkoff.serverdb.role</a></li>
+<li><a href="walkoff/serverdb/scheduledtasks.html">walkoff.serverdb.scheduledtasks</a></li>
+<li><a href="walkoff/serverdb/tokens.html">walkoff.serverdb.tokens</a></li>
+<li><a href="walkoff/serverdb/user.html">walkoff.serverdb.user</a></li>
+</ul><li><a href="walkoff/sse.html">walkoff.sse</a></li>
 </ul>
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -180,7 +219,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -198,7 +237,8 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.7.1',
+            VERSION:'0.8.1',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -217,14 +257,13 @@
     <script type="text/javascript" src="../_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

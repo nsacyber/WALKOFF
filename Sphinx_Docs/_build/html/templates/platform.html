@@ -1,0 +1,268 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Walkoff Platform &mdash; Walkoff 0.8.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Walkoff
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.8.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../apps.html">App Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../interfaces.html">Interface Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../platform.html">Walkoff Platform</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Walkoff</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+      <li>Walkoff Platform</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/templates/platform.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="walkoff-platform">
+<h1>Walkoff Platform<a class="headerlink" href="#walkoff-platform" title="Permalink to this headline">¶</a></h1>
+<p>{{ generate_module_autodocs(‘walkoff’) }}</p>
+<div class="section" id="workflow-executor">
+<h2>Workflow Executor<a class="headerlink" href="#workflow-executor" title="Permalink to this headline">¶</a></h2>
+<p>This package contains classes used to execute workflows on both the server and the workers.</p>
+<p>{{ generate_module_autodocs(‘walkoff.multiprocessedexecutor’) }}</p>
+</div>
+<div class="section" id="execution-database">
+<h2>Execution Database<a class="headerlink" href="#execution-database" title="Permalink to this headline">¶</a></h2>
+<p>This package contains the SQLAlchemy tables used to define the workflows and related objects as well as the Marshmallow
+schemas for the workflows.</p>
+<p>{{ generate_module_autodocs(‘walkoff.executiondb’) }}</p>
+</div>
+<div class="section" id="app-gateway">
+<h2>App Gateway<a class="headerlink" href="#app-gateway" title="Permalink to this headline">¶</a></h2>
+<p>This package provides the interface between the platform and the apps including providing the mechanisms to cache the
+apps and actions, create app instances, and validate app api schemas and inputs to actions.</p>
+<p>{{ generate_module_autodocs(‘walkoff.appgateway’) }}</p>
+</div>
+<div class="section" id="cases">
+<h2>Cases<a class="headerlink" href="#cases" title="Permalink to this headline">¶</a></h2>
+<p>This package supports the case logger</p>
+<p>{{ generate_module_autodocs(‘walkoff.case’) }}</p>
+</div>
+<div class="section" id="messaging">
+<h2>Messaging<a class="headerlink" href="#messaging" title="Permalink to this headline">¶</a></h2>
+<p>This package provides methods to receive user messages from the workers and handle them appropriately.</p>
+<p>{{ generate_module_autodocs(‘walkoff.messaging’) }}</p>
+</div>
+<div class="section" id="server">
+<h2>Server<a class="headerlink" href="#server" title="Permalink to this headline">¶</a></h2>
+<p>This package contains functions and classes used by the server</p>
+<p>{{ generate_module_autodocs(‘walkoff.server’) }}</p>
+<div class="section" id="server-blueprints">
+<h3>Server Blueprints<a class="headerlink" href="#server-blueprints" title="Permalink to this headline">¶</a></h3>
+<p>This package contains the Flask Blueprints used by the server for the root, interfaces, and SSE streams.</p>
+<p>{{ generate_module_autodocs(‘walkoff.server.blueprints’) }}</p>
+</div>
+<div class="section" id="server-endpoints">
+<h3>Server Endpoints<a class="headerlink" href="#server-endpoints" title="Permalink to this headline">¶</a></h3>
+<p>This package contains the functions which define the endpoints for the REST API. The OpenAPI definitions in walkoff/api
+contain information about which endpoint is connected to which function.</p>
+<p>{{ generate_module_autodocs(‘walkoff.server.endpoints’) }}</p>
+</div>
+</div>
+<div class="section" id="server-database">
+<h2>Server Database<a class="headerlink" href="#server-database" title="Permalink to this headline">¶</a></h2>
+<p>This module contains the SqlAlchemy table definitions used by the server for tasks such as authentication and messaging.</p>
+<p>{{ generate_module_autodocs(‘walkoff.serverdb’) }}</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, United States Government.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.8.1',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
+      });
+  </script> 
+
+</body>
+</html>
