@@ -31,12 +31,14 @@ class AppInstanceRepo(object):
         Returns:
             (tuple(app_name, device_id)): A tuple containing the app name for the Action, and the device_id int
         """
-        device_id = (action.app_name, action.device_id.get_value(workflow.get_accumulator()))
-        if device_id not in self._instances:
-            self._instances[device_id] = AppInstance.create(action.app_name, action.device_id)
-            WalkoffEvent.CommonWorkflowSignal.send(workflow, event=WalkoffEvent.AppInstanceCreated)
-            logger.debug('Created new app instance: App {0}, device {1}'.format(action.app_name, action.device_id))
-        return device_id
+        if action.device_id:
+            device_id = (action.app_name, action.device_id.get_value(workflow.get_accumulator()))
+            if device_id not in self._instances:
+                self._instances[device_id] = AppInstance.create(action.app_name, action.device_id)
+                WalkoffEvent.CommonWorkflowSignal.send(workflow, event=WalkoffEvent.AppInstanceCreated)
+                logger.debug('Created new app instance: App {0}, device {1}'.format(action.app_name, action.device_id))
+            return device_id
+        return None
 
     def get_app_instance(self, device_id):
         """Gets the AppInstance given a device ID

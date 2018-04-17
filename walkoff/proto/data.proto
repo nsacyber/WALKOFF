@@ -55,7 +55,7 @@ message ActionPacket {
         optional string app_name = 4;
         optional string action_name = 5;
         repeated Argument arguments = 6;
-        optional Argument device_id = 9;
+        optional int32 device_id = 9;
     }
 
     optional ActionSender sender = 1;

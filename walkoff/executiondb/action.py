@@ -71,6 +71,7 @@ class Action(ExecutionElement, Execution_Base):
         self._output = None
         self._execution_id = 'default'
         self._action_executable = None
+        self._resolved_device_id = -1
         self.validate()
 
     @orm.reconstructor
@@ -81,6 +82,7 @@ class Action(ExecutionElement, Execution_Base):
             self._action_executable = get_app_action(self.app_name, self._run)
         self._output = None
         self._execution_id = 'default'
+        self._resolved_device_id = -1
 
     def validate(self):
         """Validates the object"""
@@ -116,12 +118,13 @@ class Action(ExecutionElement, Execution_Base):
         """
         return self._execution_id
 
-    def execute(self, instance, accumulator, arguments=None, resume=False):
+    def execute(self, accumulator, instance=None, arguments=None, resume=False):
         """Executes an Action by calling the associated app function.
 
         Args:
-            instance (App): The instance of an App object to be used to execute the associated function.
             accumulator (dict): Dict containing the results of the previous actions
+            instance (App, optional): The instance of an App object to be used to execute the associated function.
+                This field is required if the Action is a bounded action. Otherwise, it defaults to None.
             arguments (list[Argument], optional): List of Arguments to be used if the Action is the starting step of
                 the Workflow. Defaults to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
@@ -130,6 +133,9 @@ class Action(ExecutionElement, Execution_Base):
             (ActionResult): The result of the executed function.
         """
         self._execution_id = str(uuid.uuid4())
+
+        if self.device_id:
+            self._resolved_device_id = self.device_id.get_value(accumulator)
 
         WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionStarted)
         if self.trigger and not resume:
@@ -191,6 +197,9 @@ class Action(ExecutionElement, Execution_Base):
         else:
             logger.debug('Trigger is not valid for input {0}'.format(data_in))
             return False
+
+    def get_resolved_device_id(self):
+        return self._resolved_device_id
 
 
 @event.listens_for(Action, 'before_update')
