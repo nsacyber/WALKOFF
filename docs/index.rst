@@ -19,34 +19,13 @@ guarantee is made of the stability of the walkoff module itself until version 1.
 
 .. toctree::
    :maxdepth: 5
-   :caption: Contents:
+   :caption: API Reference:
 
+   apps
+   interfaces
+   platform
 
-.. automodule:: walkoff
-   :members:
-   :undoc-members:
-
-.. automodule:: interfaces
-   :members:
-
-.. automodule:: interfaces.exceptions
-   :members:
-
-.. automodule:: interfaces.dispatchers
-   :members:
-
-.. automodule:: interfaces.util
-   :members:
-
-.. automodule:: apps
-   :members:
-
-.. automodule:: apps.messaging
-   :members:
-   :undoc-members:
-
-
-API Reference
+Indices and tables
 ==================
 
 * :ref:`genindex`
