@@ -2,6 +2,12 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
+## [0.8.1]
+###### 2018-04-17
+
+### Fixed
+* Bug where Workflows with unbounded Actions were unable to be executed
+
 ## [0.8.0]
 ###### unreleased
 
