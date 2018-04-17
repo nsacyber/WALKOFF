@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>interfaces.dispatchers &mdash; Walkoff 0.7.1 documentation</title>
+  <title>interfaces.dispatchers &mdash; Walkoff 0.8.1 documentation</title>
   
 
   
@@ -25,25 +25,17 @@
   
 
   
-  
     <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="../../genindex.html"/>
-        <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="Walkoff 0.7.1 documentation" href="../../index.html"/>
-        <link rel="up" title="interfaces" href="../interfaces.html"/> 
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -65,7 +57,7 @@
             
             
               <div class="version">
-                0.7.1
+                0.8.1
               </div>
             
           
@@ -89,8 +81,13 @@
               
             
             
-              <!-- Local TOC -->
-              <div class="local-toc"></div>
+              <p class="caption"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../apps.html">App Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../interfaces.html">Interface Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../platform.html">Walkoff Platform</a></li>
+</ul>
+
             
           
         </div>
@@ -100,7 +97,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">Walkoff</a>
@@ -108,9 +105,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -142,8 +140,6 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
-        
       </li>
     
   </ul>
@@ -158,15 +154,15 @@
 <span></span><span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">from</span> <span class="nn">weakref</span> <span class="k">import</span> <span class="n">WeakSet</span>
 
-<span class="kn">import</span> <span class="nn">walkoff.config.config</span>
+<span class="kn">import</span> <span class="nn">walkoff.config</span>
 <span class="kn">from</span> <span class="nn">interfaces.util</span> <span class="k">import</span> <span class="n">convert_to_iterable</span>
 <span class="kn">from</span> <span class="nn">walkoff.events</span> <span class="k">import</span> <span class="n">EventType</span>
 <span class="kn">from</span> <span class="nn">walkoff.helpers</span> <span class="k">import</span> <span class="n">UnknownAppAction</span><span class="p">,</span> <span class="n">UnknownApp</span>
 
-<span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="CallbackContainer"><a class="viewcode-back" href="../../index.html#interfaces.CallbackContainer">[docs]</a><span class="k">class</span> <span class="nc">CallbackContainer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="CallbackContainer"><a class="viewcode-back" href="../../interfaces.html#interfaces.CallbackContainer">[docs]</a><span class="k">class</span> <span class="nc">CallbackContainer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A container holding both strong and weak references to callbacks</span>
 
 <span class="sd">    Attributes:</span>
@@ -182,7 +178,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">weak</span> <span class="o">=</span> <span class="n">WeakSet</span><span class="p">()</span> <span class="k">if</span> <span class="n">weak</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">WeakSet</span><span class="p">(</span><span class="n">weak</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">strong</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span> <span class="k">if</span> <span class="n">strong</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">set</span><span class="p">(</span><span class="n">strong</span><span class="p">)</span>
 
-<div class="viewcode-block" id="CallbackContainer.register"><a class="viewcode-back" href="../../index.html#interfaces.CallbackContainer.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="CallbackContainer.register"><a class="viewcode-back" href="../../interfaces.html#interfaces.CallbackContainer.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Registers a function in the container</span>
 
 <span class="sd">        Args:</span>
@@ -201,7 +197,7 @@
             <span class="k">yield</span> <span class="n">strong_callback</span>
         <span class="k">raise</span> <span class="ne">StopIteration</span>
 
-<div class="viewcode-block" id="CallbackContainer.iter_strong"><a class="viewcode-back" href="../../index.html#interfaces.CallbackContainer.iter_strong">[docs]</a>    <span class="k">def</span> <span class="nf">iter_strong</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="CallbackContainer.iter_strong"><a class="viewcode-back" href="../../interfaces.html#interfaces.CallbackContainer.iter_strong">[docs]</a>    <span class="k">def</span> <span class="nf">iter_strong</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterates over all the strong references</span>
 
 <span class="sd">        Yields:</span>
@@ -211,7 +207,7 @@
             <span class="k">yield</span> <span class="n">strong_callback</span>
         <span class="k">raise</span> <span class="ne">StopIteration</span></div>
 
-<div class="viewcode-block" id="CallbackContainer.iter_weak"><a class="viewcode-back" href="../../index.html#interfaces.CallbackContainer.iter_weak">[docs]</a>    <span class="k">def</span> <span class="nf">iter_weak</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="CallbackContainer.iter_weak"><a class="viewcode-back" href="../../interfaces.html#interfaces.CallbackContainer.iter_weak">[docs]</a>    <span class="k">def</span> <span class="nf">iter_weak</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Iterates over all the weak references</span>
 
 <span class="sd">        Yields:</span>
@@ -221,7 +217,7 @@
             <span class="k">yield</span> <span class="n">weak_callback</span>
         <span class="k">raise</span> <span class="ne">StopIteration</span></div>
 
-<div class="viewcode-block" id="CallbackContainer.is_registered"><a class="viewcode-back" href="../../index.html#interfaces.CallbackContainer.is_registered">[docs]</a>    <span class="k">def</span> <span class="nf">is_registered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+<div class="viewcode-block" id="CallbackContainer.is_registered"><a class="viewcode-back" href="../../interfaces.html#interfaces.CallbackContainer.is_registered">[docs]</a>    <span class="k">def</span> <span class="nf">is_registered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Is a function registered?</span>
 
 <span class="sd">        Args:</span>
@@ -233,7 +229,7 @@
         <span class="k">return</span> <span class="n">func</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">weak</span> <span class="ow">or</span> <span class="n">func</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">strong</span></div></div>
 
 
-<div class="viewcode-block" id="AppActionEventDispatcher"><a class="viewcode-back" href="../../index.html#interfaces.AppActionEventDispatcher">[docs]</a><span class="k">class</span> <span class="nc">AppActionEventDispatcher</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="AppActionEventDispatcher"><a class="viewcode-back" href="../../interfaces.html#interfaces.AppActionEventDispatcher">[docs]</a><span class="k">class</span> <span class="nc">AppActionEventDispatcher</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Container for routing and dispatching action events for a specific app and action</span>
 
 <span class="sd">    Attributes:</span>
@@ -251,7 +247,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="n">action</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_event_router</span> <span class="o">=</span> <span class="p">{}</span>
 
-<div class="viewcode-block" id="AppActionEventDispatcher.register_event"><a class="viewcode-back" href="../../index.html#interfaces.AppActionEventDispatcher.register_event">[docs]</a>    <span class="k">def</span> <span class="nf">register_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">device_ids</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="AppActionEventDispatcher.register_event"><a class="viewcode-back" href="../../interfaces.html#interfaces.AppActionEventDispatcher.register_event">[docs]</a>    <span class="k">def</span> <span class="nf">register_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">device_ids</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Registers an event and device_ids to a function</span>
 
 <span class="sd">        Args:</span>
@@ -270,7 +266,7 @@
             <span class="k">for</span> <span class="n">device_id</span> <span class="ow">in</span> <span class="n">device_ids</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_register_event_for_device_id</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">device_id</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">weak</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AppActionEventDispatcher.dispatch"><a class="viewcode-back" href="../../index.html#interfaces.AppActionEventDispatcher.dispatch">[docs]</a>    <span class="k">def</span> <span class="nf">dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="AppActionEventDispatcher.dispatch"><a class="viewcode-back" href="../../interfaces.html#interfaces.AppActionEventDispatcher.dispatch">[docs]</a>    <span class="k">def</span> <span class="nf">dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Dispatches an event to all registered callbacks</span>
 
 <span class="sd">        Note:</span>
@@ -318,7 +314,7 @@
                     <span class="k">yield</span> <span class="n">callback</span>
         <span class="k">raise</span> <span class="ne">StopIteration</span>
 
-<div class="viewcode-block" id="AppActionEventDispatcher.is_registered"><a class="viewcode-back" href="../../index.html#interfaces.AppActionEventDispatcher.is_registered">[docs]</a>    <span class="k">def</span> <span class="nf">is_registered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">device_id</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+<div class="viewcode-block" id="AppActionEventDispatcher.is_registered"><a class="viewcode-back" href="../../interfaces.html#interfaces.AppActionEventDispatcher.is_registered">[docs]</a>    <span class="k">def</span> <span class="nf">is_registered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">device_id</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Is a function registered?</span>
 
 <span class="sd">        Args:</span>
@@ -340,7 +336,7 @@
         <span class="k">return</span> <span class="kc">False</span></div></div>
 
 
-<div class="viewcode-block" id="AppEventDispatcher"><a class="viewcode-back" href="../../index.html#interfaces.AppEventDispatcher">[docs]</a><span class="k">class</span> <span class="nc">AppEventDispatcher</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="AppEventDispatcher"><a class="viewcode-back" href="../../interfaces.html#interfaces.AppEventDispatcher">[docs]</a><span class="k">class</span> <span class="nc">AppEventDispatcher</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Object which routes and dispatches action events</span>
 
 <span class="sd">    Attributes:</span>
@@ -350,7 +346,7 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_router</span> <span class="o">=</span> <span class="p">{}</span>
 
-<div class="viewcode-block" id="AppEventDispatcher.register_app_actions"><a class="viewcode-back" href="../../index.html#interfaces.AppEventDispatcher.register_app_actions">[docs]</a>    <span class="k">def</span> <span class="nf">register_app_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="AppEventDispatcher.register_app_actions"><a class="viewcode-back" href="../../interfaces.html#interfaces.AppEventDispatcher.register_app_actions">[docs]</a>    <span class="k">def</span> <span class="nf">register_app_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Registers an callback for a given event, app, action, and device ID</span>
 
 <span class="sd">        Args:</span>
@@ -377,7 +373,7 @@
             <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_router</span><span class="p">[</span><span class="n">app</span><span class="p">][</span><span class="n">action</span><span class="p">]</span><span class="o">.</span><span class="n">register_event</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">device_ids</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="n">weak</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AppEventDispatcher.dispatch"><a class="viewcode-back" href="../../index.html#interfaces.AppEventDispatcher.dispatch">[docs]</a>    <span class="k">def</span> <span class="nf">dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="AppEventDispatcher.dispatch"><a class="viewcode-back" href="../../interfaces.html#interfaces.AppEventDispatcher.dispatch">[docs]</a>    <span class="k">def</span> <span class="nf">dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Dispatches an event to all registered callbacks</span>
 
 <span class="sd">        Note:</span>
@@ -392,7 +388,7 @@
         <span class="k">if</span> <span class="n">app_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router</span> <span class="ow">and</span> <span class="n">action_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router</span><span class="p">[</span><span class="n">app_name</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_router</span><span class="p">[</span><span class="n">app_name</span><span class="p">][</span><span class="n">action_name</span><span class="p">]</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">event_</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AppEventDispatcher.validate_app_actions"><a class="viewcode-back" href="../../index.html#interfaces.AppEventDispatcher.validate_app_actions">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AppEventDispatcher.validate_app_actions"><a class="viewcode-back" href="../../interfaces.html#interfaces.AppEventDispatcher.validate_app_actions">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">validate_app_actions</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">actions</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Validates that an app&#39;s actions are valid, meaning that they exist in a defined app API</span>
 
@@ -408,7 +404,7 @@
 <span class="sd">            UnknownAppAction: If the action is not found in the give app&#39;s actions</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">available_actions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">walkoff</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">app_apis</span><span class="p">[</span><span class="n">app</span><span class="p">][</span><span class="s1">&#39;actions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="n">available_actions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">walkoff</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">app_apis</span><span class="p">[</span><span class="n">app</span><span class="p">][</span><span class="s1">&#39;actions&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
             <span class="k">if</span> <span class="n">actions</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">available_actions</span>
             <span class="n">actions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">convert_to_iterable</span><span class="p">(</span><span class="n">actions</span><span class="p">))</span>
@@ -422,7 +418,7 @@
             <span class="n">_logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">UnknownApp</span><span class="p">(</span><span class="n">app</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="AppEventDispatcher.is_registered"><a class="viewcode-back" href="../../index.html#interfaces.AppEventDispatcher.is_registered">[docs]</a>    <span class="k">def</span> <span class="nf">is_registered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+<div class="viewcode-block" id="AppEventDispatcher.is_registered"><a class="viewcode-back" href="../../interfaces.html#interfaces.AppEventDispatcher.is_registered">[docs]</a>    <span class="k">def</span> <span class="nf">is_registered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Is a given callback registered</span>
 
 <span class="sd">        Args:</span>
@@ -439,7 +435,7 @@
                 <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router</span><span class="p">[</span><span class="n">app</span><span class="p">][</span><span class="n">action</span><span class="p">]</span><span class="o">.</span><span class="n">is_registered</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">func</span><span class="p">))</span></div></div>
 
 
-<div class="viewcode-block" id="EventDispatcher"><a class="viewcode-back" href="../../index.html#interfaces.EventDispatcher">[docs]</a><span class="k">class</span> <span class="nc">EventDispatcher</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<div class="viewcode-block" id="EventDispatcher"><a class="viewcode-back" href="../../interfaces.html#interfaces.EventDispatcher">[docs]</a><span class="k">class</span> <span class="nc">EventDispatcher</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Routes and dispatches generic WalkoffEvents to their given callbacks</span>
 
 <span class="sd">    Attributes:</span>
@@ -449,7 +445,7 @@
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_router</span> <span class="o">=</span> <span class="p">{}</span>
 
-<div class="viewcode-block" id="EventDispatcher.register_events"><a class="viewcode-back" href="../../index.html#interfaces.EventDispatcher.register_events">[docs]</a>    <span class="k">def</span> <span class="nf">register_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">sender_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="EventDispatcher.register_events"><a class="viewcode-back" href="../../interfaces.html#interfaces.EventDispatcher.register_events">[docs]</a>    <span class="k">def</span> <span class="nf">register_events</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">sender_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Registers an event for a given sender ID or name</span>
 
 <span class="sd">        Args:</span>
@@ -479,7 +475,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_router</span><span class="p">[</span><span class="n">entry_id</span><span class="p">][</span><span class="n">event</span><span class="p">]</span> <span class="o">=</span> <span class="n">CallbackContainer</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_router</span><span class="p">[</span><span class="n">entry_id</span><span class="p">][</span><span class="n">event</span><span class="p">]</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="n">weak</span><span class="p">)</span>
 
-<div class="viewcode-block" id="EventDispatcher.dispatch"><a class="viewcode-back" href="../../index.html#interfaces.EventDispatcher.dispatch">[docs]</a>    <span class="k">def</span> <span class="nf">dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="EventDispatcher.dispatch"><a class="viewcode-back" href="../../interfaces.html#interfaces.EventDispatcher.dispatch">[docs]</a>    <span class="k">def</span> <span class="nf">dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Dispatches an event to all its registered callbacks</span>
 
 <span class="sd">        Note:</span>
@@ -531,7 +527,7 @@
         <span class="k">return</span> <span class="p">(</span><span class="n">sender_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
                 <span class="ow">and</span> <span class="n">sender_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router</span> <span class="ow">and</span> <span class="n">event</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_router</span><span class="p">[</span><span class="n">sender_id</span><span class="p">])</span>
 
-<div class="viewcode-block" id="EventDispatcher.is_registered"><a class="viewcode-back" href="../../index.html#interfaces.EventDispatcher.is_registered">[docs]</a>    <span class="k">def</span> <span class="nf">is_registered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+<div class="viewcode-block" id="EventDispatcher.is_registered"><a class="viewcode-back" href="../../interfaces.html#interfaces.EventDispatcher.is_registered">[docs]</a>    <span class="k">def</span> <span class="nf">is_registered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">entry</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Is a function registered for a given entry ID and event?</span>
 
 <span class="sd">        Args:</span>
@@ -546,9 +542,7 @@
 </pre></div>
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -561,7 +555,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -579,7 +573,8 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.7.1',
+            VERSION:'0.8.1',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -598,14 +593,13 @@
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>interfaces &mdash; Walkoff 0.7.1 documentation</title>
+  <title>interfaces &mdash; Walkoff 0.8.1 documentation</title>
   
 
   
@@ -25,25 +25,17 @@
   
 
   
-  
     <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="../genindex.html"/>
-        <link rel="search" title="Search" href="../search.html"/>
-    <link rel="top" title="Walkoff 0.7.1 documentation" href="../index.html"/>
-        <link rel="up" title="Module code" href="index.html"/> 
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
 
   
   <script src="../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -65,7 +57,7 @@
             
             
               <div class="version">
-                0.7.1
+                0.8.1
               </div>
             
           
@@ -89,8 +81,13 @@
               
             
             
-              <!-- Local TOC -->
-              <div class="local-toc"></div>
+              <p class="caption"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../apps.html">App Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../interfaces.html">Interface Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../platform.html">Walkoff Platform</a></li>
+</ul>
+
             
           
         </div>
@@ -100,7 +97,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../index.html">Walkoff</a>
@@ -108,9 +105,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -140,8 +138,6 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
-        
       </li>
     
   </ul>
@@ -161,32 +157,25 @@
 <span class="kn">from</span> <span class="nn">walkoff.events</span> <span class="k">import</span> <span class="n">WalkoffEvent</span><span class="p">,</span> <span class="n">EventType</span>
 <span class="kn">from</span> <span class="nn">walkoff.executiondb.executionelement</span> <span class="k">import</span> <span class="n">ExecutionElement</span>
 <span class="kn">from</span> <span class="nn">walkoff.executiondb.schemas</span> <span class="k">import</span> <span class="n">dump_element</span>
-<span class="kn">from</span> <span class="nn">walkoff.helpers</span> <span class="k">import</span> <span class="n">get_function_arg_names</span>
+<span class="kn">from</span> <span class="nn">walkoff.sse</span> <span class="k">import</span> <span class="n">StreamableBlueprint</span>
+<span class="kn">from</span> <span class="nn">.dispatchers</span> <span class="k">import</span> <span class="n">AppEventDispatcher</span><span class="p">,</span> <span class="n">EventDispatcher</span>
 <span class="kn">from</span> <span class="nn">.dispatchers</span> <span class="k">import</span> <span class="n">AppEventDispatcher</span><span class="p">,</span> <span class="n">EventDispatcher</span>
 <span class="kn">from</span> <span class="nn">.exceptions</span> <span class="k">import</span> <span class="n">UnknownEvent</span><span class="p">,</span> <span class="n">InvalidEventHandler</span>
+<span class="kn">from</span> <span class="nn">.exceptions</span> <span class="k">import</span> <span class="n">UnknownEvent</span><span class="p">,</span> <span class="n">InvalidEventHandler</span>
+<span class="kn">from</span> <span class="nn">.util</span> <span class="k">import</span> <span class="n">validate_events</span><span class="p">,</span> <span class="n">add_docstring</span>
 <span class="kn">from</span> <span class="nn">.util</span> <span class="k">import</span> <span class="n">validate_events</span><span class="p">,</span> <span class="n">add_docstring</span>
 
-<span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+<span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="AppBlueprint"><a class="viewcode-back" href="../index.html#interfaces.AppBlueprint">[docs]</a><span class="k">class</span> <span class="nc">AppBlueprint</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Class to create blueprints for custom server endpoints in apps</span>
-
-<span class="sd">    Attributes:</span>
-<span class="sd">        blueprint (flask.Blueprint): The blueprint to register with Walkoff</span>
-<span class="sd">        rule (str): The URL rule for the blueprint</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        blueprint (flask.Blueprint): The blueprint to register with Walkoff</span>
-<span class="sd">        rule (str, optional): The URL rule for the blueprint. Defaults to /custominterfaces/&lt;interface_name&gt;/</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blueprint</span><span class="p">,</span> <span class="n">rule</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">blueprint</span> <span class="o">=</span> <span class="n">blueprint</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">rule</span> <span class="o">=</span> <span class="n">rule</span></div>
+<div class="viewcode-block" id="AppBlueprint"><a class="viewcode-back" href="../interfaces.html#interfaces.AppBlueprint">[docs]</a><span class="k">class</span> <span class="nc">AppBlueprint</span><span class="p">(</span><span class="n">StreamableBlueprint</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">import_name</span><span class="p">,</span> <span class="n">url_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url_suffix</span> <span class="o">=</span> <span class="n">url_prefix</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AppBlueprint</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">import_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="InterfaceEventDispatcher"><a class="viewcode-back" href="../index.html#interfaces.InterfaceEventDispatcher">[docs]</a><span class="k">class</span> <span class="nc">InterfaceEventDispatcher</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+<div class="viewcode-block" id="InterfaceEventDispatcher"><a class="viewcode-back" href="../interfaces.html#interfaces.InterfaceEventDispatcher">[docs]</a><span class="k">class</span> <span class="nc">InterfaceEventDispatcher</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Primary dispatcher of events to interfaces</span>
 
 <span class="sd">    This class generates event registration methods of the form &quot;on_&lt;signal_name&gt;&quot; on __new__ for all WalkoffEvents</span>
@@ -196,35 +185,35 @@
 <span class="sd">        This class is a singleton.</span>
 
 <span class="sd">    Attributes:</span>
-<span class="sd">        event_dispatcher (interfaces.disatchers.EventDispatcher): Router and dispatcher for WalkoffEvents</span>
-<span class="sd">        app_action_dispatcher (interfaces.disatchers.AppEventDispatcher): Router and dispatcher for action WalkfoffEvents</span>
+<span class="sd">        event_dispatcher (interfaces.dispatchers.EventDispatcher): Router and dispatcher for WalkoffEvents</span>
+<span class="sd">        app_action_dispatcher (interfaces.dispatchers.AppEventDispatcher): Router and dispatcher for action WalkfoffEvents</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">__instance</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># to make this class a singleton</span>
     <span class="n">event_dispatcher</span> <span class="o">=</span> <span class="n">EventDispatcher</span><span class="p">()</span>
     <span class="n">app_action_dispatcher</span> <span class="o">=</span> <span class="n">AppEventDispatcher</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">cls</span><span class="o">.</span><span class="n">__instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="p">(</span><span class="n">event</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">WalkoffEvent</span> <span class="k">if</span>
-                          <span class="n">event</span><span class="o">.</span><span class="n">event_type</span> <span class="o">!=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">other</span> <span class="ow">and</span> <span class="n">event</span> <span class="o">!=</span> <span class="n">WalkoffEvent</span><span class="o">.</span><span class="n">SendMessage</span><span class="p">):</span>
-                <span class="n">dispatch_method</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_make_dispatch_method</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
-                <span class="n">dispatch_partial</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">dispatch_method</span><span class="p">,</span> <span class="n">cls</span><span class="o">=</span><span class="n">cls</span><span class="p">)</span>
+                          <span class="n">event</span><span class="o">.</span><span class="n">event_type</span> <span class="o">!=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">other</span> <span class="ow">and</span> <span class="n">event</span><span class="o">.</span><span class="n">is_sent_to_interfaces</span><span class="p">()):</span>
+                <span class="n">dispatch_method</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_make_dispatch_method</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+                <span class="n">dispatch_partial</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">dispatch_method</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="bp">cls</span><span class="p">)</span>
                 <span class="n">event</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">dispatch_partial</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-                <span class="n">register_method</span> <span class="o">=</span> <span class="n">cls</span><span class="o">.</span><span class="n">_make_register_method</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+                <span class="n">register_method</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_make_register_method</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
                 <span class="n">event_name</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">signal_name</span>
                 <span class="n">event_name</span> <span class="o">=</span> <span class="n">event_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span>
                 <span class="n">event_name</span> <span class="o">=</span> <span class="n">event_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
                 <span class="n">register_method_name</span> <span class="o">=</span> <span class="s1">&#39;on_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">event_name</span><span class="p">)</span>
-                <span class="nb">setattr</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">register_method_name</span><span class="p">,</span> <span class="n">register_method</span><span class="p">)</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">register_method_name</span><span class="p">,</span> <span class="n">register_method</span><span class="p">)</span>
 
-            <span class="n">cls</span><span class="o">.</span><span class="n">__instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">InterfaceEventDispatcher</span><span class="p">,</span> <span class="n">cls</span><span class="p">)</span><span class="o">.</span><span class="n">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">InterfaceEventDispatcher</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">__instance</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__instance</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_make_dispatch_method</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_make_dispatch_method</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Constructs a method used to connect to the WalkoffEvent and dispatch events</span>
 
 <span class="sd">        Args:</span>
@@ -236,32 +225,39 @@
 
         <span class="k">def</span> <span class="nf">dispatch_method</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">event_type</span> <span class="o">!=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">controller</span><span class="p">:</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">ExecutionElement</span><span class="p">):</span>
-                    <span class="n">data</span> <span class="o">=</span> <span class="n">dump_element</span><span class="p">(</span><span class="n">sender</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">data</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">sender</span><span class="p">)</span>
-                <span class="n">additional_data</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-                <span class="n">additional_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;cls&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-                <span class="k">if</span> <span class="s1">&#39;data&#39;</span> <span class="ow">in</span> <span class="n">additional_data</span> <span class="ow">and</span> <span class="s1">&#39;workflow&#39;</span> <span class="ow">in</span> <span class="n">additional_data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]:</span>
-                    <span class="n">additional_data</span><span class="p">[</span><span class="s1">&#39;workflow&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">additional_data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;workflow&#39;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="n">additional_data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]:</span>
-                        <span class="n">additional_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
-                <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">additional_data</span><span class="p">)</span>
-                <span class="k">if</span> <span class="s1">&#39;id&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;sender_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
-                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;sender_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
-
+                <span class="n">sender_data</span> <span class="o">=</span> <span class="n">InterfaceEventDispatcher</span><span class="o">.</span><span class="n">_format_data</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="n">cls</span><span class="o">.</span><span class="n">event_dispatcher</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+                <span class="n">sender_data</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">event_dispatcher</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">sender_data</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">event_type</span> <span class="o">==</span> <span class="n">EventType</span><span class="o">.</span><span class="n">action</span><span class="p">:</span>
-                <span class="n">cls</span><span class="o">.</span><span class="n">app_action_dispatcher</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">app_action_dispatcher</span><span class="o">.</span><span class="n">dispatch</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">sender_data</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">dispatch_method</span>
 
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_format_data</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sender</span><span class="p">,</span> <span class="n">ExecutionElement</span><span class="p">):</span>
+            <span class="n">sender_data</span> <span class="o">=</span> <span class="n">dump_element</span><span class="p">(</span><span class="n">sender</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sender_data</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">sender</span><span class="p">)</span>
+        <span class="n">additional_data</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">additional_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;cls&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;data&#39;</span> <span class="ow">in</span> <span class="n">additional_data</span> <span class="ow">and</span> <span class="n">additional_data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;workflow&#39;</span> <span class="ow">in</span> <span class="n">additional_data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]:</span>
+                <span class="n">additional_data</span><span class="p">[</span><span class="s1">&#39;workflow&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">additional_data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;workflow&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;data&#39;</span> <span class="ow">in</span> <span class="n">additional_data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]:</span>
+                <span class="n">additional_data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">additional_data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">additional_data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]:</span>
+                <span class="n">additional_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+        <span class="n">sender_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">additional_data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;id&#39;</span> <span class="ow">in</span> <span class="n">sender_data</span><span class="p">:</span>
+            <span class="n">sender_data</span><span class="p">[</span><span class="s1">&#39;sender_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sender_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">in</span> <span class="n">sender_data</span><span class="p">:</span>
+            <span class="n">sender_data</span><span class="p">[</span><span class="s1">&#39;sender_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sender_data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sender_data</span>
+
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_make_register_method</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_make_register_method</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Constructs a method used by interface event handlers to connect to the dispatcher and register their callbacks</span>
 
 <span class="sd">        Args:</span>
@@ -272,7 +268,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="nd">@add_docstring</span><span class="p">(</span><span class="n">InterfaceEventDispatcher</span><span class="o">.</span><span class="n">_make_on_walkoff_event_docstring</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>
-        <span class="k">def</span> <span class="nf">on_event</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">sender_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sender_uids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">on_event</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">sender_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sender_uids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">sender_uids</span><span class="p">:</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;&quot;sender_uids&quot; is a deprecated alias for &quot;sender_ids&quot;. &#39;</span>
                               <span class="s1">&#39;This alias will be removed in version 0.9.0&#39;</span><span class="p">,</span> <span class="ne">PendingDeprecationWarning</span><span class="p">)</span>
@@ -280,25 +276,23 @@
                     <span class="n">sender_ids</span> <span class="o">=</span> <span class="n">sender_uids</span>
 
             <span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-                <span class="n">InterfaceEventDispatcher</span><span class="o">.</span><span class="n">_validate_handler_function_args</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-                <span class="n">cls</span><span class="o">.</span><span class="n">event_dispatcher</span><span class="o">.</span><span class="n">register_events</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="p">{</span><span class="n">event</span><span class="p">},</span> <span class="n">sender_ids</span><span class="o">=</span><span class="n">sender_ids</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">names</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="n">weak</span><span class="p">)</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">event_dispatcher</span><span class="o">.</span><span class="n">register_events</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="p">{</span><span class="n">event</span><span class="p">},</span> <span class="n">sender_ids</span><span class="o">=</span><span class="n">sender_ids</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">names</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="n">weak</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">func</span>  <span class="c1"># Needed so weak references aren&#39;t deleted</span>
 
             <span class="k">return</span> <span class="n">handler</span>
 
         <span class="nd">@add_docstring</span><span class="p">(</span><span class="n">InterfaceEventDispatcher</span><span class="o">.</span><span class="n">_make_on_walkoff_event_docstring</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>
-        <span class="k">def</span> <span class="nf">on_controller_event</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">on_controller_event</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
             <span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-                <span class="n">InterfaceEventDispatcher</span><span class="o">.</span><span class="n">_validate_handler_function_args</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-                <span class="n">cls</span><span class="o">.</span><span class="n">event_dispatcher</span><span class="o">.</span><span class="n">register_events</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="p">{</span><span class="n">event</span><span class="p">},</span> <span class="n">weak</span><span class="o">=</span><span class="n">weak</span><span class="p">)</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">event_dispatcher</span><span class="o">.</span><span class="n">register_events</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="p">{</span><span class="n">event</span><span class="p">},</span> <span class="n">weak</span><span class="o">=</span><span class="n">weak</span><span class="p">)</span>
                 <span class="k">return</span> <span class="n">func</span>
 
             <span class="k">return</span> <span class="n">handler</span>
 
         <span class="k">return</span> <span class="n">on_event</span> <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">event_type</span> <span class="o">!=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">controller</span> <span class="k">else</span> <span class="n">on_controller_event</span>
 
-<div class="viewcode-block" id="InterfaceEventDispatcher.on_app_actions"><a class="viewcode-back" href="../index.html#interfaces.InterfaceEventDispatcher.on_app_actions">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">on_app_actions</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">events</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="InterfaceEventDispatcher.on_app_actions"><a class="viewcode-back" href="../interfaces.html#interfaces.InterfaceEventDispatcher.on_app_actions">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">on_app_actions</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">events</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">device_ids</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Decorator to register a function as a callback for a given app, action(s), event(s), and device(s)</span>
 
 <span class="sd">        Args:</span>
@@ -323,16 +317,15 @@
         <span class="n">events</span> <span class="o">=</span> <span class="n">validate_events</span><span class="p">(</span><span class="n">events</span><span class="p">,</span> <span class="n">available_events</span><span class="p">)</span>
 
         <span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-            <span class="n">InterfaceEventDispatcher</span><span class="o">.</span><span class="n">_validate_handler_function_args</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-            <span class="n">cls</span><span class="o">.</span><span class="n">app_action_dispatcher</span><span class="o">.</span><span class="n">register_app_actions</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">events</span><span class="o">=</span><span class="n">events</span><span class="p">,</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">app_action_dispatcher</span><span class="o">.</span><span class="n">register_app_actions</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="n">actions</span><span class="p">,</span> <span class="n">events</span><span class="o">=</span><span class="n">events</span><span class="p">,</span>
                                                            <span class="n">device_ids</span><span class="o">=</span><span class="n">device_ids</span><span class="p">,</span>
                                                            <span class="n">weak</span><span class="o">=</span><span class="n">weak</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">func</span>
 
         <span class="k">return</span> <span class="n">handler</span></div>
 
-<div class="viewcode-block" id="InterfaceEventDispatcher.on_walkoff_events"><a class="viewcode-back" href="../index.html#interfaces.InterfaceEventDispatcher.on_walkoff_events">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">on_walkoff_events</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">sender_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sender_uids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="InterfaceEventDispatcher.on_walkoff_events"><a class="viewcode-back" href="../interfaces.html#interfaces.InterfaceEventDispatcher.on_walkoff_events">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">on_walkoff_events</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">sender_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sender_uids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Decorator to register a function as a callback for given WalkoffEvent(s)</span>
 
 <span class="sd">        Args:</span>
@@ -366,36 +359,17 @@
             <span class="n">sender_ids</span> <span class="o">=</span> <span class="n">EventType</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">name</span>
 
         <span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-            <span class="n">InterfaceEventDispatcher</span><span class="o">.</span><span class="n">_validate_handler_function_args</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">are_controller_events</span><span class="p">)</span>
-            <span class="n">cls</span><span class="o">.</span><span class="n">event_dispatcher</span><span class="o">.</span><span class="n">register_events</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">sender_ids</span><span class="o">=</span><span class="n">sender_ids</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">names</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="n">weak</span><span class="p">)</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">event_dispatcher</span><span class="o">.</span><span class="n">register_events</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">events</span><span class="p">,</span> <span class="n">sender_ids</span><span class="o">=</span><span class="n">sender_ids</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">names</span><span class="p">,</span> <span class="n">weak</span><span class="o">=</span><span class="n">weak</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">func</span>
 
         <span class="k">return</span> <span class="n">handler</span></div>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">_clear</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_clear</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Clears all the registered callbacks</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">cls</span><span class="o">.</span><span class="n">event_dispatcher</span> <span class="o">=</span> <span class="n">EventDispatcher</span><span class="p">()</span>
-        <span class="n">cls</span><span class="o">.</span><span class="n">app_action_dispatcher</span> <span class="o">=</span> <span class="n">AppEventDispatcher</span><span class="p">()</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">_validate_handler_function_args</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">is_controller</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Validates a handler function by checking how many arguments it has</span>
-
-<span class="sd">        Args:</span>
-<span class="sd">            func (func): The function to check</span>
-<span class="sd">            is_controller (bool): Is the function intended to handle controller events?</span>
-
-<span class="sd">        Raises:</span>
-<span class="sd">            InvalidEventHandler: If the number of arguments is incorrect</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">num_args</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">get_function_arg_names</span><span class="p">(</span><span class="n">func</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">is_controller</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">num_args</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="n">InvalidEventHandler</span><span class="p">(</span><span class="s1">&#39;Handlers for controller events take no arguments&#39;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">num_args</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">InvalidEventHandler</span><span class="p">(</span><span class="s1">&#39;Handlers for events non-controller events take one argument&#39;</span><span class="p">)</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">event_dispatcher</span> <span class="o">=</span> <span class="n">EventDispatcher</span><span class="p">()</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">app_action_dispatcher</span> <span class="o">=</span> <span class="n">AppEventDispatcher</span><span class="p">()</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_all_events_are_controller</span><span class="p">(</span><span class="n">events</span><span class="p">):</span>
@@ -454,9 +428,7 @@
 </pre></div>
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -469,7 +441,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -487,7 +459,8 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../',
-            VERSION:'0.7.1',
+            VERSION:'0.8.1',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -506,14 +479,13 @@
     <script type="text/javascript" src="../_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

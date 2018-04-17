@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>interfaces.util &mdash; Walkoff 0.7.1 documentation</title>
+  <title>interfaces.util &mdash; Walkoff 0.8.1 documentation</title>
   
 
   
@@ -25,25 +25,17 @@
   
 
   
-  
     <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  
-
-  
-
-  
-        <link rel="index" title="Index"
-              href="../../genindex.html"/>
-        <link rel="search" title="Search" href="../../search.html"/>
-    <link rel="top" title="Walkoff 0.7.1 documentation" href="../../index.html"/>
-        <link rel="up" title="interfaces" href="../interfaces.html"/> 
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
 
   
   <script src="../../_static/js/modernizr.min.js"></script>
 
 </head>
 
-<body class="wy-body-for-nav" role="document">
+<body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
@@ -65,7 +57,7 @@
             
             
               <div class="version">
-                0.7.1
+                0.8.1
               </div>
             
           
@@ -89,8 +81,13 @@
               
             
             
-              <!-- Local TOC -->
-              <div class="local-toc"></div>
+              <p class="caption"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../apps.html">App Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../interfaces.html">Interface Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../platform.html">Walkoff Platform</a></li>
+</ul>
+
             
           
         </div>
@@ -100,7 +97,7 @@
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
 
       
-      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+      <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">Walkoff</a>
@@ -108,9 +105,10 @@
       </nav>
 
 
-      
       <div class="wy-nav-content">
+        
         <div class="rst-content">
+        
           
 
 
@@ -142,8 +140,6 @@
     
       <li class="wy-breadcrumbs-aside">
         
-            
-        
       </li>
     
   </ul>
@@ -161,7 +157,7 @@
 <span class="kn">from</span> <span class="nn">walkoff.events</span> <span class="k">import</span> <span class="n">WalkoffEvent</span>
 
 
-<div class="viewcode-block" id="convert_events"><a class="viewcode-back" href="../../index.html#interfaces.util.convert_events">[docs]</a><span class="k">def</span> <span class="nf">convert_events</span><span class="p">(</span><span class="n">events</span><span class="p">):</span>
+<div class="viewcode-block" id="convert_events"><a class="viewcode-back" href="../../interfaces.html#interfaces.util.convert_events">[docs]</a><span class="k">def</span> <span class="nf">convert_events</span><span class="p">(</span><span class="n">events</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Converts events from signal names to WalkoffEvents</span>
 
 <span class="sd">    Args:</span>
@@ -185,7 +181,7 @@
     <span class="k">return</span> <span class="n">converted_events</span></div>
 
 
-<div class="viewcode-block" id="validate_events"><a class="viewcode-back" href="../../index.html#interfaces.util.validate_events">[docs]</a><span class="k">def</span> <span class="nf">validate_events</span><span class="p">(</span><span class="n">events</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">allowed_events</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">WalkoffEvent</span><span class="p">)):</span>
+<div class="viewcode-block" id="validate_events"><a class="viewcode-back" href="../../interfaces.html#interfaces.util.validate_events">[docs]</a><span class="k">def</span> <span class="nf">validate_events</span><span class="p">(</span><span class="n">events</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">allowed_events</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">WalkoffEvent</span><span class="p">)):</span>
     <span class="sd">&quot;&quot;&quot;Validates a set of events against allowed events. Converts strings to events if possible.</span>
 
 <span class="sd">    Args:</span>
@@ -207,7 +203,7 @@
     <span class="k">return</span> <span class="n">converted_events</span></div>
 
 
-<div class="viewcode-block" id="add_docstring"><a class="viewcode-back" href="../../index.html#interfaces.util.add_docstring">[docs]</a><span class="k">def</span> <span class="nf">add_docstring</span><span class="p">(</span><span class="n">docstring</span><span class="p">):</span>
+<div class="viewcode-block" id="add_docstring"><a class="viewcode-back" href="../../interfaces.html#interfaces.util.add_docstring">[docs]</a><span class="k">def</span> <span class="nf">add_docstring</span><span class="p">(</span><span class="n">docstring</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Decorator to add a docstring dynamically to a function</span>
 
 <span class="sd">    Args:</span>
@@ -218,13 +214,13 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-        <span class="n">func</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="n">docstring</span>
+        <span class="n">func</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">docstring</span>
         <span class="k">return</span> <span class="n">func</span>
 
     <span class="k">return</span> <span class="n">wrapper</span></div>
 
 
-<div class="viewcode-block" id="convert_to_iterable"><a class="viewcode-back" href="../../index.html#interfaces.util.convert_to_iterable">[docs]</a><span class="k">def</span> <span class="nf">convert_to_iterable</span><span class="p">(</span><span class="n">elements</span><span class="p">):</span>
+<div class="viewcode-block" id="convert_to_iterable"><a class="viewcode-back" href="../../interfaces.html#interfaces.util.convert_to_iterable">[docs]</a><span class="k">def</span> <span class="nf">convert_to_iterable</span><span class="p">(</span><span class="n">elements</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Converts an element or elements to list if it not already iterable</span>
 
 <span class="sd">    Args:</span>
@@ -244,9 +240,7 @@
 </pre></div>
 
            </div>
-           <div class="articleComments">
-            
-           </div>
+           
           </div>
           <footer>
   
@@ -259,7 +253,7 @@
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -277,7 +271,8 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../',
-            VERSION:'0.7.1',
+            VERSION:'0.8.1',
+            LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true,
@@ -296,14 +291,13 @@
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
   
 
-  
-  
   <script type="text/javascript">
       jQuery(function () {
-          SphinxRtdTheme.StickyNav.enable();
+          
+          SphinxRtdTheme.Navigation.enableSticky();
+          
       });
-  </script>
-   
+  </script> 
 
 </body>
 </html>

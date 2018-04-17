@@ -1,0 +1,528 @@
+Walkoff Platform
+================
+
+
+.. automodule:: walkoff
+   :members:
+
+
+
+.. automodule:: walkoff.appgateway
+   :members:
+
+
+
+.. automodule:: walkoff.cache
+   :members:
+
+
+
+.. automodule:: walkoff.case
+   :members:
+
+
+
+.. automodule:: walkoff.config
+   :members:
+
+
+
+.. automodule:: walkoff.events
+   :members:
+
+
+
+.. automodule:: walkoff.executiondb
+   :members:
+
+
+
+.. automodule:: walkoff.extensions
+   :members:
+
+
+
+.. automodule:: walkoff.helpers
+   :members:
+
+
+
+.. automodule:: walkoff.messaging
+   :members:
+
+
+
+.. automodule:: walkoff.multiprocessedexecutor
+   :members:
+
+
+
+.. automodule:: walkoff.proto
+   :members:
+
+
+
+.. automodule:: walkoff.scheduler
+   :members:
+
+
+
+.. automodule:: walkoff.security
+   :members:
+
+
+
+.. automodule:: walkoff.server
+   :members:
+
+
+
+.. automodule:: walkoff.serverdb
+   :members:
+
+
+
+.. automodule:: walkoff.sse
+   :members:
+
+
+
+Workflow Executor
+-----------------
+This package contains classes used to execute workflows on both the server and the workers.
+
+
+.. automodule:: walkoff.multiprocessedexecutor
+   :members:
+
+
+
+.. automodule:: walkoff.multiprocessedexecutor.multiprocessedexecutor
+   :members:
+
+
+
+.. automodule:: walkoff.multiprocessedexecutor.proto_helpers
+   :members:
+
+
+
+.. automodule:: walkoff.multiprocessedexecutor.threadauthenticator
+   :members:
+
+
+
+.. automodule:: walkoff.multiprocessedexecutor.worker
+   :members:
+
+
+
+.. automodule:: walkoff.multiprocessedexecutor.workflowexecutioncontroller
+   :members:
+
+
+Execution Database
+------------------
+This package contains the SQLAlchemy tables used to define the workflows and related objects as well as the Marshmallow
+schemas for the workflows.
+
+
+.. automodule:: walkoff.executiondb
+   :members:
+
+
+
+.. automodule:: walkoff.executiondb.action
+   :members:
+
+
+
+.. automodule:: walkoff.executiondb.argument
+   :members:
+
+
+
+.. automodule:: walkoff.executiondb.branch
+   :members:
+
+
+
+.. automodule:: walkoff.executiondb.condition
+   :members:
+
+
+
+.. automodule:: walkoff.executiondb.conditionalexpression
+   :members:
+
+
+
+.. automodule:: walkoff.executiondb.device
+   :members:
+
+
+
+.. automodule:: walkoff.executiondb.executionelement
+   :members:
+
+
+
+.. automodule:: walkoff.executiondb.metrics
+   :members:
+
+
+
+.. automodule:: walkoff.executiondb.playbook
+   :members:
+
+
+
+.. automodule:: walkoff.executiondb.position
+   :members:
+
+
+
+.. automodule:: walkoff.executiondb.saved_workflow
+   :members:
+
+
+
+.. automodule:: walkoff.executiondb.schemas
+   :members:
+
+
+
+.. automodule:: walkoff.executiondb.transform
+   :members:
+
+
+
+.. automodule:: walkoff.executiondb.validatable
+   :members:
+
+
+
+.. automodule:: walkoff.executiondb.workflow
+   :members:
+
+
+
+.. automodule:: walkoff.executiondb.workflowresults
+   :members:
+
+
+App Gateway
+-----------
+This package provides the interface between the platform and the apps including providing the mechanisms to cache the
+apps and actions, create app instances, and validate app api schemas and inputs to actions.
+
+
+.. automodule:: walkoff.appgateway
+   :members:
+
+
+
+.. automodule:: walkoff.appgateway.actionresult
+   :members:
+
+
+
+.. automodule:: walkoff.appgateway.appcache
+   :members:
+
+
+
+.. automodule:: walkoff.appgateway.appinstance
+   :members:
+
+
+
+.. automodule:: walkoff.appgateway.appinstancerepo
+   :members:
+
+
+
+.. automodule:: walkoff.appgateway.console
+   :members:
+
+
+
+.. automodule:: walkoff.appgateway.decorators
+   :members:
+
+
+
+.. automodule:: walkoff.appgateway.validator
+   :members:
+
+
+
+.. automodule:: walkoff.appgateway.walkofftag
+   :members:
+
+
+Cases
+-----
+This package supports the case logger
+
+
+.. automodule:: walkoff.case
+   :members:
+
+
+
+.. automodule:: walkoff.case.database
+   :members:
+
+
+
+.. automodule:: walkoff.case.logger
+   :members:
+
+
+
+.. automodule:: walkoff.case.subscription
+   :members:
+
+
+Messaging
+---------
+This package provides methods to receive user messages from the workers and handle them appropriately.
+
+
+.. automodule:: walkoff.messaging
+   :members:
+
+
+
+.. automodule:: walkoff.messaging.utils
+   :members:
+
+
+Server
+------
+This package contains functions and classes used by the server
+
+
+.. automodule:: walkoff.server
+   :members:
+
+
+
+.. automodule:: walkoff.server.app
+   :members:
+
+
+
+.. automodule:: walkoff.server.blueprints
+   :members:
+
+
+
+.. automodule:: walkoff.server.context
+   :members:
+
+
+
+.. automodule:: walkoff.server.decorators
+   :members:
+
+
+
+.. automodule:: walkoff.server.endpoints
+   :members:
+
+
+
+.. automodule:: walkoff.server.flaskserver
+   :members:
+
+
+
+.. automodule:: walkoff.server.problem
+   :members:
+
+
+
+.. automodule:: walkoff.server.returncodes
+   :members:
+
+
+
+.. automodule:: walkoff.server.workflowresults
+   :members:
+
+
+Server Blueprints
+~~~~~~~~~~~~~~~~~
+This package contains the Flask Blueprints used by the server for the root, interfaces, and SSE streams.
+
+
+.. automodule:: walkoff.server.blueprints
+   :members:
+
+
+
+.. automodule:: walkoff.server.blueprints.console
+   :members:
+
+
+
+.. automodule:: walkoff.server.blueprints.custominterface
+   :members:
+
+
+
+.. automodule:: walkoff.server.blueprints.notifications
+   :members:
+
+
+
+.. automodule:: walkoff.server.blueprints.root
+   :members:
+
+
+
+.. automodule:: walkoff.server.blueprints.workflowresults
+   :members:
+
+
+Server Endpoints
+~~~~~~~~~~~~~~~~
+This package contains the functions which define the endpoints for the REST API. The OpenAPI definitions in walkoff/api
+contain information about which endpoint is connected to which function.
+
+
+.. automodule:: walkoff.server.endpoints
+   :members:
+
+
+
+.. automodule:: walkoff.server.endpoints.appapi
+   :members:
+
+
+
+.. automodule:: walkoff.server.endpoints.auth
+   :members:
+
+
+
+.. automodule:: walkoff.server.endpoints.cases
+   :members:
+
+
+
+.. automodule:: walkoff.server.endpoints.configuration
+   :members:
+
+
+
+.. automodule:: walkoff.server.endpoints.devices
+   :members:
+
+
+
+.. automodule:: walkoff.server.endpoints.events
+   :members:
+
+
+
+.. automodule:: walkoff.server.endpoints.messages
+   :members:
+
+
+
+.. automodule:: walkoff.server.endpoints.metadata
+   :members:
+
+
+
+.. automodule:: walkoff.server.endpoints.metrics
+   :members:
+
+
+
+.. automodule:: walkoff.server.endpoints.playbooks
+   :members:
+
+
+
+.. automodule:: walkoff.server.endpoints.roles
+   :members:
+
+
+
+.. automodule:: walkoff.server.endpoints.scheduler
+   :members:
+
+
+
+.. automodule:: walkoff.server.endpoints.system
+   :members:
+
+
+
+.. automodule:: walkoff.server.endpoints.triggers
+   :members:
+
+
+
+.. automodule:: walkoff.server.endpoints.users
+   :members:
+
+
+
+.. automodule:: walkoff.server.endpoints.workflowqueue
+   :members:
+
+
+
+Server Database
+---------------
+This module contains the SqlAlchemy table definitions used by the server for tasks such as authentication and messaging.
+
+
+.. automodule:: walkoff.serverdb
+   :members:
+
+
+
+.. automodule:: walkoff.serverdb.casesubscription
+   :members:
+
+
+
+.. automodule:: walkoff.serverdb.message
+   :members:
+
+
+
+.. automodule:: walkoff.serverdb.mixins
+   :members:
+
+
+
+.. automodule:: walkoff.serverdb.resource
+   :members:
+
+
+
+.. automodule:: walkoff.serverdb.role
+   :members:
+
+
+
+.. automodule:: walkoff.serverdb.scheduledtasks
+   :members:
+
+
+
+.. automodule:: walkoff.serverdb.tokens
+   :members:
+
+
+
+.. automodule:: walkoff.serverdb.user
+   :members:
+
