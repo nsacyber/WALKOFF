@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 class WorkflowResultsHandler(object):
     def __init__(self, socket_id, client_secret_key, client_public_key, server_public_key, zmq_results_address,
                  execution_db, case_logger):
-        """Initialize a WorkflowResultsHandler object, which will be executing workflows.
+        """Initialize a WorkflowResultsHandler object, which will be sending results of workflow execution
 
         Args:
             socket_id (str): The ID for the results socket

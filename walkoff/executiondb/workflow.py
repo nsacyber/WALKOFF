@@ -138,7 +138,6 @@ class Workflow(ExecutionElement, Execution_Base):
 
     def __execute(self, start, start_arguments=None, resume=False):
         actions = self.__actions(start=start)
-        first = True
         for action in (action_ for action_ in actions if action_ is not None):
             self._executing_action = action
             logger.debug('Executing action {0} of workflow {1}'.format(action, self.name))
@@ -154,13 +153,15 @@ class Workflow(ExecutionElement, Execution_Base):
 
             device_id = self._instance_repo.setup_app_instance(action, self)
 
-            if first:
-                first = False
-                result = action.execute(instance=self._instance_repo.get_app_instance(device_id)(),
-                                        accumulator=self._accumulator, arguments=start_arguments, resume=resume)
+            if device_id:
+                result = action.execute(self._accumulator, instance=self._instance_repo.get_app_instance(device_id)(),
+                                        arguments=start_arguments, resume=resume)
             else:
-                result = action.execute(instance=self._instance_repo.get_app_instance(device_id)(),
-                                        accumulator=self._accumulator, resume=resume)
+                result = action.execute(self._accumulator, arguments=start_arguments, resume=resume)
+
+            if start_arguments:
+                start_arguments = None
+
             if result and result.status == "trigger":
                 yield
             self._accumulator[action.id] = action.get_output().result

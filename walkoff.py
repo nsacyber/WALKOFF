@@ -87,7 +87,7 @@ if __name__ == "__main__":
     try:
         run(app, *convert_host_port(args))
     except KeyboardInterrupt:
-        logger.info('Caught KeyboardInterrupt!')
+        logger.info('Caught KeyboardInterrupt! Please wait a few seconds for WALKOFF to shutdown.')
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_exc()

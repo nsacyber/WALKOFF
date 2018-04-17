@@ -127,8 +127,7 @@ def add_sender_to_action_packet_proto(action_packet, sender):
     action_packet.sender.execution_id = sender.get_execution_id()
     action_packet.sender.app_name = sender.app_name
     action_packet.sender.action_name = sender.action_name
-    if sender.device_id is not None:
-        set_argument_proto(action_packet.sender.device_id, sender.device_id)
+    action_packet.sender.device_id = sender.get_resolved_device_id()
 
 
 def add_arguments_to_action_proto(action_packet, sender):
