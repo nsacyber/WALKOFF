@@ -3,9 +3,11 @@ import logging
 import logging.config
 import sys
 import warnings
+from os.path import isfile, join
 
 import yaml
-from os.path import isfile, join, abspath
+
+from walkoff.helpers import format_db_path
 
 logger = logging.getLogger(__name__)
 
@@ -126,8 +128,8 @@ class Config(object):
     # AppConfig
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = 'SHORTSTOPKEYTEST'
-    SQLALCHEMY_DATABASE_URI = '{0}://{1}'.format(WALKOFF_DB_TYPE, abspath(
-        DB_PATH)) if WALKOFF_DB_TYPE != 'sqlite' else '{0}:///{1}'.format(WALKOFF_DB_TYPE, abspath(DB_PATH))
+
+    SQLALCHEMY_DATABASE_URI = format_db_path(WALKOFF_DB_TYPE, DB_PATH, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD')
 
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['refresh']
@@ -152,14 +154,11 @@ class Config(object):
                         for key, value in config.items():
                             if value:
                                 setattr(cls, key.upper(), value)
-            except (IOError, OSError, ValueError) as e:
-                import traceback
-                traceback.print_exc()
+            except (IOError, OSError, ValueError):
                 logger.warning('Could not read config file.', exc_info=True)
 
-        cls.SQLALCHEMY_DATABASE_URI = '{0}://{1}'.format(cls.WALKOFF_DB_TYPE, abspath(
-            cls.DB_PATH)) if cls.WALKOFF_DB_TYPE != 'sqlite' else '{0}:///{1}'.format(cls.WALKOFF_DB_TYPE,
-                                                                                      abspath(cls.DB_PATH))
+        cls.SQLALCHEMY_DATABASE_URI = format_db_path(cls.WALKOFF_DB_TYPE, cls.DB_PATH, 'WALKOFF_DB_USERNAME',
+                                                     'WALKOFF_DB_PASSWORD')
 
     @classmethod
     def write_values_to_file(cls, keys=None):

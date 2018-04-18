@@ -2,6 +2,7 @@ from os import sep
 from os.path import join, abspath
 
 import walkoff.config
+from walkoff.helpers import format_db_path
 
 
 class TestConfig(walkoff.config.Config):
@@ -15,11 +16,10 @@ class TestConfig(walkoff.config.Config):
     DEFAULT_CASE_EXPORT_PATH = join(DATA_PATH, 'cases.json')
     BASIC_APP_API = join('.', 'tests', 'schemas', 'basic_app_api.yaml')
     CACHE_PATH = join('.', 'tests', 'tmp', 'cache')
-    CASE_DB_PATH = join('.', 'tests', 'tmp', 'events_test.db')
-    DB_PATH = join('.', 'tests', 'tmp', 'walkoff_test.db')
-    EXECUTION_DB_PATH = join('.', 'tests', 'tmp', 'execution_test.db')
+    CASE_DB_PATH = abspath(join('.', 'tests', 'tmp', 'events_test.db'))
+    DB_PATH = abspath(join('.', 'tests', 'tmp', 'walkoff_test.db'))
+    EXECUTION_DB_PATH = abspath(join('.', 'tests', 'tmp', 'execution_test.db'))
     NUMBER_PROCESSES = 2
     CACHE = {'type': 'disk', 'directory': CACHE_PATH}
     WALKOFF_DB_TYPE = 'sqlite'
-    SQLALCHEMY_DATABASE_URI = '{0}://{1}'.format(WALKOFF_DB_TYPE, abspath(
-        DB_PATH)) if WALKOFF_DB_TYPE != 'sqlite' else '{0}:///{1}'.format(WALKOFF_DB_TYPE, abspath(DB_PATH))
+    SQLALCHEMY_DATABASE_URI = format_db_path(WALKOFF_DB_TYPE, DB_PATH)

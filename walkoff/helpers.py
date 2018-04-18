@@ -179,18 +179,31 @@ def import_submodules(package, recursive=False):
     return {}
 
 
-def format_db_path(db_type, path):
+def format_db_path(db_type, path, username=None, password=None):
     """
     Formats the path to the database
 
     Args:
         db_type (str): Type of database being used
         path (str): Path to the database
+        username (str): The name of the username environment variable for this db
+        password (str): The name of the password environment variable for this db
 
     Returns:
         (str): The path of the database formatted for SqlAlchemy
     """
-    return '{0}://{1}'.format(db_type, path) if db_type != 'sqlite' else '{0}:///{1}'.format(db_type, path)
+    sqlalchemy_path = ''
+    if db_type == 'sqlite':
+        sqlalchemy_path = '{0}:///{1}'.format(db_type, path)
+    elif db_type == 'postgresql':
+        if username in os.environ and password in os.environ:
+            sqlalchemy_path = 'postgresql://{0}:{1}@{2}'.format(os.environ[username], os.environ[password], path)
+        elif username in os.environ:
+            sqlalchemy_path = 'postgresql://{0}@{1}'.format(os.environ[username], path)
+        else:
+            sqlalchemy_path = 'postgresql://{}'.format(path)
+
+    return sqlalchemy_path
 
 
 def get_app_action_api(app, action):
