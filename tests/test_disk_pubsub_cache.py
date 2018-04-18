@@ -1,7 +1,6 @@
 from unittest import TestCase
 from walkoff.cache import DiskPubSubCache, unsubscribe_message
 import os
-import shutil
 import gevent
 from gevent.monkey import patch_all
 from tests.util import initialize_test_config
@@ -22,11 +21,6 @@ class TestDiskCachePubSub(TestCase):
 
     def tearDown(self):
         self.cache.cache.clear()
-
-    @classmethod
-    def tearDownClass(cls):
-        if os.path.exists(walkoff.config.Config.CACHE_PATH):
-            shutil.rmtree(walkoff.config.Config.CACHE_PATH)
 
     def test_init(self):
         self.assertEqual(self.cache.cache.directory, walkoff.config.Config.CACHE_PATH)
