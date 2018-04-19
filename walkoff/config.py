@@ -3,7 +3,7 @@ import logging
 import logging.config
 import sys
 import warnings
-from os.path import isfile, join
+from os.path import isfile, join, abspath
 
 import yaml
 
@@ -105,14 +105,14 @@ class Config(object):
     APPS_PATH = join('.', 'apps')
     CACHE_PATH = join('.', 'data', 'cache')
     CACHE = {"type": "disk", "directory": CACHE_PATH, "shards": 8, "timeout": 0.01, "retry": True}
-    CASE_DB_PATH = join(DATA_PATH, 'events.db')
+    CASE_DB_PATH = abspath(join(DATA_PATH, 'events.db'))
 
     CLIENT_PATH = join('.', 'walkoff', 'client')
     CONFIG_PATH = join(DATA_PATH, 'walkoff.config')
-    DB_PATH = join(DATA_PATH, 'walkoff.db')
+    DB_PATH = abspath(join(DATA_PATH, 'walkoff.db'))
     DEFAULT_APPDEVICE_EXPORT_PATH = join(DATA_PATH, 'appdevice.json')
     DEFAULT_CASE_EXPORT_PATH = join(DATA_PATH, 'cases.json')
-    EXECUTION_DB_PATH = join(DATA_PATH, 'execution.db')
+    EXECUTION_DB_PATH = abspath(join(DATA_PATH, 'execution.db'))
     INTERFACES_PATH = join('.', 'interfaces')
     LOGGING_CONFIG_PATH = join(DATA_PATH, 'log', 'logging.json')
 
