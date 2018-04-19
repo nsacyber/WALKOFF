@@ -192,16 +192,15 @@ def format_db_path(db_type, path, username=None, password=None):
     Returns:
         (str): The path of the database formatted for SqlAlchemy
     """
-    sqlalchemy_path = ''
     if db_type == 'sqlite':
         sqlalchemy_path = '{0}:///{1}'.format(db_type, path)
-    elif db_type == 'postgresql':
+    else:
         if username and username in os.environ and password and password in os.environ:
-            sqlalchemy_path = 'postgresql://{0}:{1}@{2}'.format(os.environ[username], os.environ[password], path)
+            sqlalchemy_path = '{0}://{1}:{2}@{3}'.format(db_type, os.environ[username], os.environ[password], path)
         elif username and username in os.environ:
-            sqlalchemy_path = 'postgresql://{0}@{1}'.format(os.environ[username], path)
+            sqlalchemy_path = '{0}://{1}@{2}'.format(db_type, os.environ[username], path)
         else:
-            sqlalchemy_path = 'postgresql://{}'.format(path)
+            sqlalchemy_path = '{0}://{1}'.format(db_type, path)
 
     return sqlalchemy_path
 
