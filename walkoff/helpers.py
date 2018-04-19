@@ -192,15 +192,21 @@ def format_db_path(db_type, path, username=None, password=None):
     Returns:
         (str): The path of the database formatted for SqlAlchemy
     """
+    supported_dbs = ['postgresql', 'postgresql+psycopg2', 'postgresql+pg8000',
+                     'mysql', 'mysql+mysqldb', 'mysql+mysqlconnector', 'mysql+oursql',
+                     'oracle', 'oracle+cx_oracle', 'mssql+pyodbc', 'mssql+pymssql']
+    sqlalchemy_path = None
     if db_type == 'sqlite':
         sqlalchemy_path = '{0}:///{1}'.format(db_type, path)
-    else:
+    elif db_type in supported_dbs:
         if username and username in os.environ and password and password in os.environ:
             sqlalchemy_path = '{0}://{1}:{2}@{3}'.format(db_type, os.environ[username], os.environ[password], path)
         elif username and username in os.environ:
             sqlalchemy_path = '{0}://{1}@{2}'.format(db_type, os.environ[username], path)
         else:
             sqlalchemy_path = '{0}://{1}'.format(db_type, path)
+    else:
+        logger.error('Database type {0} not supported for database {1}'.format(db_type, path))
 
     return sqlalchemy_path
 
