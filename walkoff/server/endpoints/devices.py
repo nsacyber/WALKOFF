@@ -5,7 +5,7 @@ from flask_jwt_extended import jwt_required
 
 from walkoff.appgateway.validator import validate_device_fields
 from walkoff.executiondb.device import Device, App
-from walkoff.helpers import get_app_device_api, InvalidArgument, UnknownDevice, UnknownApp
+from walkoff.appgateway.apiutil import get_app_device_api, UnknownApp, UnknownDevice, InvalidArgument
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import with_resource_factory
 from walkoff.server.problem import Problem

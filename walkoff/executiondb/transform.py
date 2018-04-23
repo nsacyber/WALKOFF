@@ -11,8 +11,8 @@ from walkoff.events import WalkoffEvent
 from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import UnknownTransform, UnknownApp
-from walkoff.helpers import get_transform_api, InvalidArgument, split_api_params
+from walkoff.appgateway.apiutil import split_api_params, get_transform_api, UnknownApp, InvalidArgument, \
+    UnknownTransform
 
 logger = logging.getLogger(__name__)
 

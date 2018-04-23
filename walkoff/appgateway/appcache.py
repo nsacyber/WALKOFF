@@ -8,7 +8,7 @@ from importlib import import_module
 import os.path
 from six import string_types
 
-from walkoff.helpers import UnknownApp, UnknownAppAction, UnknownCondition, UnknownTransform
+from walkoff.appgateway.apiutil import UnknownApp, UnknownAppAction, UnknownCondition, UnknownTransform
 from .walkofftag import WalkoffTag
 
 _logger = logging.getLogger(__name__)

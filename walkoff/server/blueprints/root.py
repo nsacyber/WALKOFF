@@ -76,7 +76,7 @@ def create_user():
 
     db.session.commit()
 
-    apps = set(helpers.list_apps()) - set([_app.name
+    apps = set(helpers.list_apps(walkoff.config.Config.APPS_PATH)) - set([_app.name
                                            for _app in
                                            current_app.running_context.execution_db.session.query(App).all()])
     current_app.logger.debug('Found apps: {0}'.format(apps))

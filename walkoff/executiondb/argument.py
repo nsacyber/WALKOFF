@@ -5,7 +5,7 @@ from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
 
 from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.validatable import Validatable
-from walkoff.helpers import InvalidArgument
+from walkoff.appgateway.apiutil import InvalidArgument
 
 logger = logging.getLogger(__name__)
 

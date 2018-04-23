@@ -10,8 +10,9 @@ from walkoff.appgateway.validator import validate_condition_parameters
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import (UnknownCondition, UnknownApp)
-from walkoff.helpers import get_condition_api, InvalidArgument, format_exception_message, split_api_params
+from walkoff.helpers import format_exception_message
+from walkoff.appgateway.apiutil import split_api_params, get_condition_api, UnknownApp, InvalidArgument, \
+    UnknownCondition
 
 logger = logging.getLogger(__name__)
 

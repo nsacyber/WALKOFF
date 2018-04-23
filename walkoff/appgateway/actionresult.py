@@ -1,6 +1,6 @@
 import json
 
-from walkoff.helpers import get_app_action_default_return, get_app_action_return_is_failure
+from walkoff.appgateway.apiutil import get_app_action_default_return, get_app_action_return_is_failure
 
 
 class ActionResult(object):

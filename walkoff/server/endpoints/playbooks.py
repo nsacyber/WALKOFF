@@ -19,7 +19,8 @@ except ImportError:
     from io import StringIO
 from walkoff.server.problem import Problem
 from walkoff.executiondb.schemas import PlaybookSchema, WorkflowSchema
-from walkoff.helpers import InvalidArgument, UnknownApp, UnknownFunction, strip_device_ids
+from walkoff.helpers import strip_device_ids
+from walkoff.appgateway.apiutil import UnknownApp, UnknownFunction, InvalidArgument
 
 playbook_schema = PlaybookSchema()
 workflow_schema = WorkflowSchema()

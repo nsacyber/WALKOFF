@@ -24,12 +24,13 @@ if __name__ == '__main__':
     args = cmd_line()
     apps = args.apps
     interfaces = args.interfaces
+    from walkoff.config import Config
 
     if not apps:
-        apps = list_apps()
+        apps = list_apps(Config.APPS_PATH)
 
     if not interfaces:
-        interfaces = list_interfaces()
+        interfaces = list_interfaces(Config.INTERFACES_PATH)
 
     for app in apps:
         print("Installing dependencies for " + app + " App...")
