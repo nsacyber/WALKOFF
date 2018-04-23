@@ -146,6 +146,7 @@ class PositionSchema(ExecutionBaseSchema):
 
     class Meta:
         model = Position
+        exclude = ('id',)
 
 
 class ActionSchema(ActionableSchema):

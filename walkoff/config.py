@@ -7,7 +7,7 @@ from os.path import isfile, join, abspath
 
 import yaml
 
-from walkoff.helpers import format_db_path
+# from walkoff.helpers import format_db_path
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +117,7 @@ class Config(object):
     LOGGING_CONFIG_PATH = join(DATA_PATH, 'log', 'logging.json')
 
     WALKOFF_SCHEMA_PATH = join(DATA_PATH, 'walkoff_schema.json')
-    WORKFLOWS_PATH = join('.', 'workflows')
+    WORKFLOWS_PATH = join('.', 'data', 'workflows')
 
     KEYS_PATH = join('.', '.certificates')
     CERTIFICATE_PATH = join(KEYS_PATH, 'walkoff.crt')
@@ -129,7 +129,9 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SECRET_KEY = 'SHORTSTOPKEYTEST'
 
-    SQLALCHEMY_DATABASE_URI = format_db_path(WALKOFF_DB_TYPE, DB_PATH, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD')
+    # TODO: Change back.
+    # SQLALCHEMY_DATABASE_URI = format_db_path(WALKOFF_DB_TYPE, DB_PATH, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD')
+    SQLALCHEMY_DATABASE_URI = '{0}:///{1}'.format(WALKOFF_DB_TYPE, DB_PATH)
 
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['refresh']
@@ -157,8 +159,10 @@ class Config(object):
             except (IOError, OSError, ValueError):
                 logger.warning('Could not read config file.', exc_info=True)
 
-        cls.SQLALCHEMY_DATABASE_URI = format_db_path(cls.WALKOFF_DB_TYPE, cls.DB_PATH, 'WALKOFF_DB_USERNAME',
-                                                     'WALKOFF_DB_PASSWORD')
+        # TODO: Change back.
+        # cls.SQLALCHEMY_DATABASE_URI = format_db_path(cls.WALKOFF_DB_TYPE, cls.DB_PATH, 'WALKOFF_DB_USERNAME',
+        #                                              'WALKOFF_DB_PASSWORD')
+        cls.SQLALCHEMY_DATABASE_URI = '{0}:///{1}'.format(cls.WALKOFF_DB_TYPE, cls.DB_PATH)
 
     @classmethod
     def write_values_to_file(cls, keys=None):
