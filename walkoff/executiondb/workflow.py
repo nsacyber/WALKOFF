@@ -152,7 +152,6 @@ class Workflow(ExecutionElement, Execution_Base):
                 yield
 
             device_id = self._instance_repo.setup_app_instance(action, self)
-
             if device_id:
                 result = action.execute(self._accumulator, instance=self._instance_repo.get_app_instance(device_id)(),
                                         arguments=start_arguments, resume=resume)
