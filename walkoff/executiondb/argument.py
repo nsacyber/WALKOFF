@@ -48,6 +48,7 @@ class Argument(Execution_Base, Validatable):
 
     def validate(self):
         """Validates the object"""
+        self.errors = []
         if self.value is None and not self.reference:
             message = 'Input {} must have either value or reference. Input has neither'.format(self.name)
             logger.error(message)

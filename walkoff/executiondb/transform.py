@@ -64,8 +64,7 @@ class Transform(ExecutionElement, Execution_Base):
             errors.append('Unknown transform {}'.format(self.action_name))
         except InvalidArgument as e:
             errors.extend(e.errors)
-        if errors:
-            self.errors = errors
+        self.errors = errors
 
     @orm.reconstructor
     def init_on_load(self):

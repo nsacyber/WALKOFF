@@ -82,8 +82,7 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
             errors.append('Unknown condition {}'.format(self.action_name))
         except InvalidArgument as e:
             errors.extend(e.errors)
-        if errors:
-            self.errors = errors
+        self.errors = errors
 
     def execute(self, data_in, accumulator):
         """Executes the Condition object, determining if the Condition evaluates to True or False.

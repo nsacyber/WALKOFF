@@ -69,14 +69,12 @@ class Workflow(ExecutionElement, Execution_Base):
             errors.append('Workflows with actions require a start parameter')
         elif self.actions and self.start not in action_ids:
             errors.append('Workflow start ID {} not found in actions'.format(self.start))
-
         for branch in self.branches:
             if branch.source_id not in action_ids:
                 errors.append('Branch source ID {} not found in workflow actions'.format(branch.source_id))
             if branch.destination_id not in action_ids:
                 errors.append('Branch destination ID {} not found in workflow actions'.format(branch.destination_id))
-        if errors:
-            self.errors = errors
+        self.errors = errors
         self.is_valid = self._is_valid
 
     def get_action_by_id(self, action_id):
