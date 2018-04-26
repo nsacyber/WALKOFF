@@ -1,5 +1,7 @@
 import os
 
+from scripts.compose_api import compose_api
+
 
 def main():
     print('\nInstalling Python Dependencies...')
@@ -15,6 +17,8 @@ def main():
 
     print('\nCompiling TypeScript Files...')
     os.system('npm run build')
+
+    compose_api()
 
 
 if __name__ == '__main__':
