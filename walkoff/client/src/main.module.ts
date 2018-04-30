@@ -32,7 +32,6 @@ import { SettingsUserModalComponent } from './settings/settings.user.modal.compo
 import { SettingsRoleModalComponent } from './settings/settings.roles.modal.component';
 
 import { PlaybookArgumentComponent } from './playbook/playbook.argument.component';
-import { PlaybookDeviceArgumentComponent } from './playbook/playbook.device.argument.component';
 import { PlaybookConditionsComponent } from './playbook/playbook.conditions.component';
 import { PlaybookTransformsComponent } from './playbook/playbook.transforms.component';
 import { PlaybookConditionalExpressionComponent } from './playbook/playbook.conditional.expression.component';
@@ -77,7 +76,6 @@ import { KeysPipe } from './pipes/keys.pipe';
 		MessagesModalComponent,
 		// Other subcomponents
 		PlaybookArgumentComponent,
-		PlaybookDeviceArgumentComponent,
 		PlaybookConditionsComponent,
 		PlaybookTransformsComponent,
 		PlaybookConditionalExpressionComponent,

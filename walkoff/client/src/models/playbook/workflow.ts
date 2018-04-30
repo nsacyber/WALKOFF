@@ -1,4 +1,5 @@
 import { Type } from 'class-transformer';
+import { Select2OptionData } from 'ng2-select2/ng2-select2';
 
 import { Action } from './action';
 import { Branch } from './branch';
@@ -50,5 +51,17 @@ export class Workflow extends ExecutionElement {
 		return this.errors
 				   .concat(...this.actions.map(action => action.all_errors))
 				   .concat(...this.branches.map(branch => branch.all_errors))
+	}
+
+	listBranchCounters() : Select2OptionData[] {
+		return this.branches.map(branch  => {
+			const sourceAction = this.findActionById(branch.source_id);
+			const destAction = this.findActionById(branch.destination_id);
+			return { id: branch.id, text: `${ (sourceAction || { name: null}).name } > ${ (destAction || { name: null}).name }` }
+		})
+	}
+
+	findActionById(id: string) : Action {
+		return this.actions.find(action => action.id == id)
 	}
 }

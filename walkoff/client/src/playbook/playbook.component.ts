@@ -685,8 +685,9 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			action.position = cyData.find(cyAction => cyAction.data._id === action.id).position;
 
 			// Sanitize and set device_id argument
-			action.device_id.sanitize();
-			if (action.device_id.name !== '__device__') { delete action.device_id; }
+			(action.device_id.hasInput()) ? 
+				action.device_id.sanitize() :
+				delete action.device_id;
 
 			// Properly sanitize arguments through the tree
 			this._sanitizeArgumentsForSave(action.arguments);

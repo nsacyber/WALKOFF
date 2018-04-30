@@ -158,9 +158,9 @@
                     <label for="device_id">Device
                         <i class="fa fa-asterisk required" title="This field is required."></i>
                     </label>
-                    <playbook-device-argument-component [loadedWorkflow]="loadedWorkflow"
+                    <playbook-argument-component [loadedWorkflow]="loadedWorkflow"
                         [argument]="selectedAction.device_id" [id]="id"
-                        [users]="users" [roles]="roles" [devices]="relevantDevices"></playbook-device-argument-component>
+                        [users]="users" [roles]="roles" [devices]="relevantDevices"></playbook-argument-component>
                 </div>
                 <!-- Inputs -->
                 <div *ngIf="selectedActionApi.parameters.length">
