@@ -6,7 +6,7 @@ import { UUID } from 'angular2-uuid';
 import { Observable } from 'rxjs';
 import 'rxjs/Rx';
 import { saveAs } from 'file-saver';
-import { plainToClass } from 'class-transformer';
+import { plainToClass, classToClass } from 'class-transformer';
 
 import * as cytoscape from 'cytoscape';
 import * as clipboard from 'cytoscape-clipboard';
@@ -672,7 +672,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		// Clone the loadedWorkflow first, so we don't change the parameters 
 		// in the editor when converting it to the format the backend expects.
-		const workflowToSave: Workflow = plainToClass(Workflow, this.utils.cloneDeep(this.loadedWorkflow));
+		const workflowToSave: Workflow = classToClass(this.loadedWorkflow);
 
 		if (!workflowToSave.start) {
 			this.toastyService.warning('Workflow cannot be saved without a starting action.');
@@ -706,7 +706,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				savePromise = this.playbookService.newWorkflow(this.loadedPlaybook.id, workflowToSave);
 			}
 		} else {
-			const playbookToSave: Playbook = this.utils.cloneDeep(this.loadedPlaybook);
+			const playbookToSave: Playbook = classToClass(this.loadedPlaybook);
 			playbookToSave.workflows = [workflowToSave];
 			savePromise = this.playbookService.newPlaybook(playbookToSave)
 				.then(newPlaybook => {
@@ -1169,11 +1169,11 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		newNodes.forEach((n: any) => {
 			// Get a copy of the action we just copied
-			const pastedAction: Action = this.utils.cloneDeep(this.loadedWorkflow.actions.find(a => a.id === n.data('_id')));
-
+			const pastedAction: Action = classToClass(this.loadedWorkflow.actions.find(a => a.id === n.data('_id')));
 			const newActionUuid = UUID.UUID();
 
 			pastedAction.id = newActionUuid;
+			pastedAction.arguments.forEach(argument => delete argument.id);
 
 			n.data({
 				id: newActionUuid,
