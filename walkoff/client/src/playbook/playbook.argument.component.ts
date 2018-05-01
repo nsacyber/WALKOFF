@@ -72,18 +72,21 @@ export class PlaybookArgumentComponent implements OnInit {
 		if (this.isDeviceArgument) return;
 
 		this.parameterSchema = this.parameterApi.schema;
-		if (this.argument.reference == null) { this.argument.reference = ''; }
+		if (this.argument.reference == null) { 
+			this.argument.reference = ''; 
+		} 
+
 		if (this.argument.value == null) {
 			if (this.parameterSchema.type === 'array') { 
 				this.argument.value = [];
 			} else if (this.parameterSchema.type === 'object') {
 				this.argument.value = {};
 			}
-		} else if (this.parameterSchema.type === 'array') {
+		} else if (this.argument.value && this.parameterSchema.type === 'array') {
 			for (const item of (this.argument.value as any[])) {
 				this.arrayTypes.push(typeof(item));
 			}
-		} else if (this.parameterSchema.type === 'object') {
+		} else if (this.argument.value && this.parameterSchema.type === 'object') {
 			for (const key in (this.argument.value as GenericObject)) {
 				if ((this.argument.value as GenericObject).hasOwnProperty(key)) {
 					this.objectTypes[key] = typeof((this.argument.value as GenericObject)[key]);
@@ -104,7 +107,7 @@ export class PlaybookArgumentComponent implements OnInit {
 		]
 
 		if (this.isDeviceArgument && !this.argument.reference) this.valueType = 'device';
-		else if (this.argument.reference && !this.argument.value) {
+		else if (this.argument.reference) {
 			if (this.loadedWorkflow.actions.find(action => action.id == this.argument.reference)) this.valueType = 'action';
 			else if (this.loadedWorkflow.branches.find(branch => branch.id == this.argument.reference)) this.valueType = 'branch';
 		}
@@ -193,6 +196,7 @@ export class PlaybookArgumentComponent implements OnInit {
 	 * Adds an item to an array if the argument parameter is array.
 	 */
 	addItem(): void {
+		this.clearReference();
 		switch (this.selectedType) {
 			case 'string':
 				(this.argument.value as any[]).push('');
@@ -254,6 +258,7 @@ export class PlaybookArgumentComponent implements OnInit {
 	 * Adds a new property to an our argument's value object of a given name and type.
 	 */
 	addProperty(): void {
+		this.clearReference();
 		if ((this.argument.value as object).hasOwnProperty(this.propertyName)) { return; }
 		this.propertyName = this.propertyName.trim();
 		switch (this.selectedType) {

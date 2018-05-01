@@ -65,7 +65,7 @@
 		</div>
 	</div>
 </div>
-<div *ngIf="!isDeviceArgument && !argument.reference && isNormalArray(parameterSchema)" class="indent">
+<div *ngIf="!isDeviceArgument && isStatic && isNormalArray(parameterSchema)" class="indent">
 	<div class="row">
 		<div class="col-xs-6">
 			<select class="form-control" [(ngModel)]="selectedType" name="selectedType">
@@ -100,7 +100,7 @@
 		<input *ngIf="arrayTypes[itemId] === 'boolean'" type="checkbox" class="form-control" [(ngModel)]="argument.value[itemId]">
 	</div>
 </div>
-<div *ngIf="!isDeviceArgument && !argument.reference && parameterSchema.type === 'object'" class="indent">
+<div *ngIf="!isDeviceArgument && isStatic && parameterSchema.type === 'object'" class="indent">
 	<div class="row">
 		<div class="col-xs-6">
 			<input type="text" class="form-control" [(ngModel)]="propertyName" placeholder="Enter a parameter name">
