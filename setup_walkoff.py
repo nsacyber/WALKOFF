@@ -18,8 +18,6 @@ def main():
     print('\nCompiling TypeScript Files...')
     os.system('npm run build')
 
-    compose_api()
-
 
 if __name__ == '__main__':
     main()
