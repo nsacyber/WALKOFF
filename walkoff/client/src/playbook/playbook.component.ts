@@ -1198,11 +1198,19 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	}
 
 	/**
+	 * Clears execution results table and execution highlighting
+	 */
+	clearExecutionResults() {
+		this.clearExecutionHighlighting();
+		this.consoleLog = [];
+		this.actionStatuses = [];
+	}
+
+	/**
 	 * Clears the red/green highlighting in the cytoscape graph.
 	 */
 	clearExecutionHighlighting(): void {
 		this.cy.elements().removeClass('success-highlight failure-highlight executing-highlight');
-		this.consoleLog = [];
 	}
 
 	/**
