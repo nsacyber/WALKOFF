@@ -224,6 +224,31 @@ def strip_device_ids(playbook):
             action.pop('device_id', None)
 
 
+def strip_argument_ids(playbook):
+    for workflow in playbook.get('workflows', []):
+        for action in workflow.get('actions', []):
+            strip_argument_ids_from_element(action)
+            if 'device_id' in action:
+                action['device_id'].pop('id', None)
+        for branch in workflow.get('branches', []):
+            if 'condition' in branch:
+                strip_argument_ids_from_conditional(branch['conditional'])
+
+
+def strip_argument_ids_from_conditional(conditional):
+    for conditional_expression in conditional.get('child_expressions', []):
+        strip_argument_ids_from_conditional(conditional_expression)
+    for condition in conditional.get('conditions', []):
+        strip_argument_ids_from_element(condition)
+        for transform in condition.get('transforms', []):
+            strip_argument_ids_from_element(transform)
+
+
+def strip_argument_ids_from_element(element):
+    for argument in element.get('arguments', []):
+        argument.pop('id', None)
+
+
 def utc_as_rfc_datetime(timestamp):
     return timestamp.isoformat('T') + 'Z'
 

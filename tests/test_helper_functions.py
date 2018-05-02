@@ -209,3 +209,202 @@ class TestHelperFunctions(unittest.TestCase):
             ]}
         strip_device_ids(playbook)
         self.assertDictEqual(playbook, expected)
+
+    def test_strip_argument_ids_from_element(self):
+        element_with_arguments = {
+            'a': 'string1',
+            'b': {'red': 'blue', 'green': 'red'},
+            'arguments': [
+                {
+                    'id': 4,
+                    'value': 32
+                },
+                {
+                    'id': 12,
+                    'reference': 'abc-123-456gh'
+                }
+            ]
+        }
+        expected = {
+            'a': 'string1',
+            'b': {'red': 'blue', 'green': 'red'},
+            'arguments': [
+                {
+                    'value': 32
+                },
+                {
+                    'reference': 'abc-123-456gh'
+                }
+            ]
+        }
+        strip_argument_ids_from_element(element_with_arguments)
+        self.assertDictEqual(element_with_arguments, expected)
+        element_no_arguments = {
+            'a': 'string1',
+            'b': {'red': 'blue', 'green': 'red'},
+        }
+        expected = {
+            'a': 'string1',
+            'b': {'red': 'blue', 'green': 'red'},
+        }
+        strip_argument_ids_from_element(element_no_arguments)
+        self.assertDictEqual(element_no_arguments, expected)
+
+    def test_strip_argument_ids_from_conditional(self):
+        conditional = {
+            'operator': 'and',
+            'is_negated': True,
+            'conditions': [
+                {
+                    'app_name': 'ArgleBargle',
+                    'action_name': 'flim flam',
+                    'arguments': [
+                        {
+                            'id': 42,
+                            'value': 'foobar'
+                        },
+                        {
+                            'id': 12,
+                            'value': 'wizbang'
+                        }
+                    ],
+                    'transforms': [
+                        {
+                            'app_name': 'transmorgifier',
+                            'action': 'transmorgify',
+                            'arguments': [
+                                {
+                                    'id': 23,
+                                    'value': 'zapzorp'
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    'app_name': 'Wombology',
+                    'action_name': 'wombo',
+                    'arguments': [
+                        {
+                            'id': 13,
+                            'value': 'gee'
+                        },
+                        {
+                            'id': 12,
+                            'reference': 'abc-def-ghi123'
+                        }
+                    ]
+                }
+            ],
+            'child_expressions': [
+                {
+                    'operator': 'and',
+                    'is_negated': True,
+                    'conditions': [
+                        {
+                            'app_name': 'ArgleBargle',
+                            'action_name': 'flim flam',
+                            'arguments': [
+                                {
+                                    'id': 42,
+                                    'value': 'foobar'
+                                },
+                                {
+                                    'id': 12,
+                                    'value': 'wizbang'
+                                }
+                            ]
+                        },
+                        {
+                            'app_name': 'Wombology',
+                            'action_name': 'wombo',
+                            'arguments': [
+                                {
+                                    'id': 13,
+                                    'value': 'gee'
+                                },
+                                {
+                                    'id': 12,
+                                    'reference': 'abc-def-ghi123'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+        expected = {
+            'operator': 'and',
+            'is_negated': True,
+            'conditions': [
+                {
+                    'app_name': 'ArgleBargle',
+                    'action_name': 'flim flam',
+                    'arguments': [
+                        {
+                            'value': 'foobar'
+                        },
+                        {
+                            'value': 'wizbang'
+                        }
+                    ],
+                    'transforms': [
+                        {
+                            'app_name': 'transmorgifier',
+                            'action': 'transmorgify',
+                            'arguments': [
+                                {
+                                    'value': 'zapzorp'
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    'app_name': 'Wombology',
+                    'action_name': 'wombo',
+                    'arguments': [
+                        {
+                            'value': 'gee'
+                        },
+                        {
+                            'reference': 'abc-def-ghi123'
+                        }
+                    ]
+                }
+            ],
+            'child_expressions': [
+                {
+                    'operator': 'and',
+                    'is_negated': True,
+                    'conditions': [
+                        {
+                            'app_name': 'ArgleBargle',
+                            'action_name': 'flim flam',
+                            'arguments': [
+                                {
+                                    'value': 'foobar'
+                                },
+                                {
+                                    'value': 'wizbang'
+                                }
+                            ]
+                        },
+                        {
+                            'app_name': 'Wombology',
+                            'action_name': 'wombo',
+                            'arguments': [
+                                {
+                                    'value': 'gee'
+                                },
+                                {
+                                    'reference': 'abc-def-ghi123'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+        strip_argument_ids_from_conditional(conditional)
+        self.assertDictEqual(conditional, expected)

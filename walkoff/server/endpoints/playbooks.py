@@ -17,7 +17,7 @@ from walkoff.server.returncodes import *
 from io import BytesIO
 from walkoff.server.problem import Problem
 from walkoff.executiondb.schemas import PlaybookSchema, WorkflowSchema
-from walkoff.helpers import strip_device_ids
+from walkoff.helpers import strip_device_ids, strip_argument_ids
 from walkoff.appgateway.apiutil import UnknownApp, UnknownFunction, InvalidArgument
 
 playbook_schema = PlaybookSchema()
@@ -139,6 +139,7 @@ def read_playbook(playbook_id, mode=None):
         playbook_json = playbook_schema.dump(playbook).data
         if mode == "export":
             strip_device_ids(playbook_json)
+            strip_argument_ids(playbook_json)
             f = BytesIO()
             f.write(json.dumps(playbook_json, sort_keys=True, indent=4, separators=(',', ': ')).encode('utf-8'))
             f.seek(0)
