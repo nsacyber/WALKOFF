@@ -133,6 +133,8 @@ class Workflow(ExecutionElement, Execution_Base):
                 start = UUID(start)
             executor = self.__execute(start, start_arguments, resume)
             next(executor)
+        else:
+            logger.error('Workflow is invalid, yet executor attempted to execute.')
 
     def __execute(self, start, start_arguments=None, resume=False):
         actions = self.__actions(start=start)
@@ -143,10 +145,12 @@ class Workflow(ExecutionElement, Execution_Base):
             if self._is_paused:
                 self._is_paused = False
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowPaused)
+                logger.debug('Paused workflow {} (id={})'.format(self.name, str(self.id)))
                 yield
             if self._abort:
                 self._abort = False
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowAborted)
+                logger.info('Aborted workflow {} (id={})'.format(self.name, str(self.id)))
                 yield
 
             device_id = self._instance_repo.setup_app_instance(action, self)
@@ -195,6 +199,8 @@ class Workflow(ExecutionElement, Execution_Base):
                 # Keep whole result in accumulator
                 destination_id = branch.execute(current_action.get_output(), accumulator)
                 if destination_id is not None:
+                    logger.debug('Branch {} with destination {} chosen by workflow {} (id={})'.format(
+                        str(branch.id), str(destination_id), self.name, str(self.id)))
                     return destination_id
             return None
         else:

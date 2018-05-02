@@ -64,7 +64,7 @@ class MultiprocessedExecutor(object):
         """
         if not (os.path.exists(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH) and
                 os.path.exists(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH)):
-            logging.error("Certificates are missing - run generate_certificates.py script first.")
+            logging.fatal("Certificates are missing - run generate_certificates.py script first.")
             sys.exit(0)
         self.pids = pids
         self.ctx = zmq.Context.instance()
@@ -105,6 +105,7 @@ class MultiprocessedExecutor(object):
         if len(self.pids) > 0:
             for p in self.pids:
                 if p.is_alive():
+                    logger.info('Multiprocessed executor shutting down process {}'.format(p))
                     os.kill(p.pid, signal.SIGABRT)
                     p.join(timeout=3)
                     try:
@@ -149,15 +150,17 @@ class MultiprocessedExecutor(object):
         """
         workflow = self.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
         if not workflow:
-            logger.error('Attempted to execute workflow which does not exist')
+            logger.error('Attempted to execute workflow {} which does not exist'.format(execution_id_in))
             return None, 'Attempted to execute workflow which does not exist'
 
         execution_id = execution_id_in if execution_id_in else str(uuid.uuid4())
 
         if start is not None:
-            logger.info('Executing workflow {0} for action {1}'.format(workflow.name, start))
+            logger.info('Executing workflow {0} (id={1}) with starting action action {2}'.format(
+                workflow.name, workflow.id, start))
         else:
-            logger.info('Executing workflow {0} with default starting action'.format(workflow.name, start))
+            logger.info('Executing workflow {0} (id={1}) with default starting action'.format(
+                workflow.name, workflow.id, start))
 
         workflow_data = {'execution_id': execution_id, 'id': str(workflow.id), 'name': workflow.name}
         self._log_and_send_event(WalkoffEvent.WorkflowExecutionPending, sender=workflow_data)
@@ -175,6 +178,7 @@ class MultiprocessedExecutor(object):
         Returns:
             (bool): True if Workflow successfully paused, False otherwise
         """
+        logger.info('Pausing workflow {}'.format(execution_id))
         workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
         if workflow_status and workflow_status.status == WorkflowStatusEnum.running:
@@ -193,6 +197,7 @@ class MultiprocessedExecutor(object):
         Returns:
             (bool): True if workflow successfully resumed, False otherwise
         """
+        logger.info('Resuming workflow {}'.format(execution_id))
         workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
 
@@ -220,6 +225,7 @@ class MultiprocessedExecutor(object):
         Returns:
             (bool): True if successfully aborted workflow, False otherwise
         """
+        logger.info('Aborting workflow {}'.format(execution_id))
         workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
 
@@ -252,6 +258,7 @@ class MultiprocessedExecutor(object):
         Returns:
             (bool): True if successfully resumed trigger step, false otherwise
         """
+        logger.info('Resuming workflow {} from trigger'.format(execution_id))
         saved_state = self.execution_db.session.query(SavedWorkflow).filter_by(
             workflow_execution_id=execution_id).first()
         workflow = self.execution_db.session.query(Workflow).filter_by(
@@ -310,7 +317,7 @@ class MultiprocessedExecutor(object):
         if workflow_status:
             return workflow_status.status
         else:
-            logger.error("Key {} does not exist in database.").format(execution_id)
+            logger.error("Workflow execution id {} does not exist in WorkflowStatus table.").format(execution_id)
             return 0
 
     def _log_and_send_event(self, event, sender=None, data=None):

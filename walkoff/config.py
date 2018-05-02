@@ -154,6 +154,8 @@ class Config(object):
                         for key, value in config.items():
                             if value:
                                 setattr(cls, key.upper(), value)
+                else:
+                    logger.warning('Config path {} is not a file.'.format(cls.CONFIG_PATH))
             except (IOError, OSError, ValueError):
                 logger.warning('Could not read config file.', exc_info=True)
 

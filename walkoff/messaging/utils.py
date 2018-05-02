@@ -17,6 +17,7 @@ def save_message_callback(sender, **message_data):
     workflow_data = message_data['data']['workflow']
     message_data = message_data['data']['message']
     body = message_data['body']
+    logger.debug('Saving message from workflow {}'.format(workflow_data))
 
     requires_action = strip_requires_response_from_message_body(body)
     with current_app.app_context():

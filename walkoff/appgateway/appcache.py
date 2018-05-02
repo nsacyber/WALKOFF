@@ -128,7 +128,6 @@ class AppCacheEntry(object):
         func_entry = self.functions[func_name]
         if function_type in func_entry.tags:
             return func_entry.run
-        raise Exception()
 
 
 class AppCache(object):

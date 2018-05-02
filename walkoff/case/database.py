@@ -180,6 +180,7 @@ class CaseDatabase(object):
         """
         case = self.session.query(Case).filter(Case.id == case_id).first()
         if not case:
+            logger.error('Could not get events for case {}. Case not found.'.format(case_id))
             raise Exception
 
         result = [event.as_json()

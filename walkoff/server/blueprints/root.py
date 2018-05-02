@@ -48,11 +48,13 @@ def login_page():
 
 @root_page.errorhandler(SQLAlchemyError)
 def handle_database_errors(e):
+    current_app.logger.exception('Caught an unhandled SqlAlchemy exception.')
     return Problem(SERVER_ERROR, 'A database error occurred.', e.__class__.__name__)
 
 
 @root_page.errorhandler(500)
 def handle_generic_server_error(e):
+    current_app.logger.exception('Caught an unhandled error.')
     return Problem(SERVER_ERROR, 'An error occurred in the server.', e.__class__.__name__)
 
 
@@ -79,7 +81,7 @@ def create_user():
     apps = set(helpers.list_apps(walkoff.config.Config.APPS_PATH)) - set([_app.name
                                            for _app in
                                            current_app.running_context.execution_db.session.query(App).all()])
-    current_app.logger.debug('Found apps: {0}'.format(apps))
+    current_app.logger.debug('Found new apps: {0}'.format(apps))
     for app_name in apps:
         current_app.running_context.execution_db.session.add(App(name=app_name, devices=[]))
     db.session.commit()
@@ -92,7 +94,7 @@ def send_all_cases_to_workers():
     from walkoff.serverdb.casesubscription import CaseSubscription
     from walkoff.case.database import Case
     from walkoff.case.subscription import Subscription
-
+    current_app.logger.info('Sending existing cases to workers')
     for case_subscription in CaseSubscription.query.all():
         subscriptions = [Subscription(sub['id'], sub['events']) for sub in case_subscription.subscriptions]
         case = current_app.running_context.case_db.session.query(Case).filter(

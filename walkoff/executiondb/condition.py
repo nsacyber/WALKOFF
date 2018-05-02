@@ -114,10 +114,9 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionError)
             raise
         except Exception as e:
-            logger.error('Error encountered executing '
-                         'condition {0} with arguments {1} and value {2}: '
-                         'Error {3}. Returning False'.format(self.action_name, arguments, data,
-                                                             format_exception_message(e)))
+            logger.exception(
+                'Error encountered executing condition {0} with arguments {1} and value {2}: Returning False'.format(
+                    self.action_name, arguments, data))
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionError)
             raise
 

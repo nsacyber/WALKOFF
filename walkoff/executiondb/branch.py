@@ -67,6 +67,7 @@ class Branch(ExecutionElement, Execution_Base):
             (UUID): Destination UID for the next Action that should be taken, None if the data_in was not valid
                 for this Branch.
         """
+        logger.debug('Executing branch {}'.format(str(self.id)))
         self._counter += 1
         accumulator[self.id] = self._counter
 

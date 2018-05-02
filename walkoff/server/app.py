@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def register_blueprints(flaskapp):
+    flaskapp.logger.info('Registering builtin blueprints')
     flaskapp.register_blueprint(custominterface.custom_interface_page, url_prefix='/custominterfaces/<interface>')
     flaskapp.register_blueprint(workflowresults.workflowresults_page, url_prefix='/api/streams/workflowqueue')
     flaskapp.register_blueprint(notifications.notifications_page, url_prefix='/api/streams/messages')
@@ -38,6 +39,7 @@ def __register_blueprint(flaskapp, blueprint, url_prefix):
     url_prefix = '{0}{1}'.format(url_prefix, blueprint.url_suffix) if blueprint.url_suffix else url_prefix
     blueprint.url_prefix = url_prefix
     flaskapp.register_blueprint(blueprint, url_prefix=url_prefix)
+    flaskapp.logger.info('Registered custom interface blueprint at url prefix {}'.format(url_prefix))
 
 
 def __register_app_blueprints(flaskapp, app_name, blueprints):

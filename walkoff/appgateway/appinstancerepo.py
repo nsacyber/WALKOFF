@@ -79,5 +79,5 @@ class AppInstanceRepo(object):
                     logger.debug('Shutting down app instance: Device: {0}'.format(instance_name))
                     instance.shutdown()
             except Exception as e:
-                logger.error('Error caught while shutting down app instance. '
-                             'Device: {0}. Error {1}'.format(instance_name, format_exception_message(e)))
+                logger.exception('Error caught while shutting down app instance. '
+                                 'Device: {0}. Error {1}'.format(instance_name, format_exception_message(e)))

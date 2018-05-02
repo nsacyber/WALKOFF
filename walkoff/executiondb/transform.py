@@ -96,8 +96,9 @@ class Transform(ExecutionElement, Execution_Base):
                          'Returning unmodified data'.format(self.action_name, original_data_in, str(e)))
         except Exception as e:
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformError)
-            logger.error(
-                'Transform {0} encountered an error: {1}. Returning unmodified data'.format(self.action_name, str(e)))
+            logger.exception(
+                'Transform {0} (id={1}) encountered an error. Returning unmodified data'.format(
+                    self.action_name, str(self.id)))
         return original_data_in
 
     def __update_arguments_with_data(self, data):

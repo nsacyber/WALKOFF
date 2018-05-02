@@ -111,6 +111,7 @@ class Argument(Execution_Base, Validatable):
         except KeyError:
             message = ('Referenced action {} '
                        'has not been executed'.format(self.reference))
+            logger.info(message)
             raise InvalidArgument(message)
 
     def _select(self, input_):

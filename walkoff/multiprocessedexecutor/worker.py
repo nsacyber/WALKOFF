@@ -8,11 +8,14 @@ from threading import Lock
 
 import nacl.bindings
 import nacl.utils
+from nacl.exceptions import CryptoError
 import zmq
 import zmq.auth as auth
+from zmq.error import ZMQError
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from google.protobuf.json_format import MessageToDict
+from google.protobuf.message import DecodeError
 from nacl.public import PrivateKey, Box
 
 import walkoff.cache
@@ -52,7 +55,12 @@ class WorkflowResultsHandler(object):
         self.results_sock.curve_secretkey = client_secret_key
         self.results_sock.curve_publickey = client_public_key
         self.results_sock.curve_serverkey = server_public_key
-        self.results_sock.connect(zmq_results_address)
+        try:
+            self.results_sock.connect(zmq_results_address)
+        except ZMQError:
+            logger.exception('Workflow Results handler could not connect to {}!'.format(zmq_results_address))
+            raise
+
 
         self.execution_db = execution_db
 
@@ -128,18 +136,24 @@ class WorkflowCommunicationReceiver(object):
         self.comm_sock.curve_publickey = client_public_key
         self.comm_sock.curve_serverkey = server_public_key
         self.comm_sock.setsockopt(zmq.SUBSCRIBE, b'')
-        self.comm_sock.connect(zmq_communication_address)
+        try:
+            self.comm_sock.connect(zmq_communication_address)
+        except ZMQError:
+            logger.exception('Workflow Communication Receiver could not connect to {}!'.format(
+                zmq_communication_address))
+            raise
         self.exit = False
 
     def shutdown(self):
         """Shuts down the object by setting self.exit to True and closing the communication socket
         """
+        logger.debug('Shutting down Workflow Communication Recevier')
         self.exit = True
         self.comm_sock.close()
 
     def receive_communications(self):
         """Constantly receives data from the ZMQ socket and handles it accordingly"""
-
+        logger.info('Starting workflow communication receiver')
         while not self.exit:
             try:
                 message_bytes = self.comm_sock.recv()
@@ -147,18 +161,25 @@ class WorkflowCommunicationReceiver(object):
                 continue
 
             message = CommunicationPacket()
-            message.ParseFromString(message_bytes)
-            message_type = message.type
-            if message_type == CommunicationPacket.WORKFLOW:
-                yield WorkerCommunicationMessageData(
-                    WorkerCommunicationMessageType.workflow,
-                    self._format_workflow_message_data(message.workflow_control_message))
-            elif message_type == CommunicationPacket.CASE:
-                yield WorkerCommunicationMessageData(
-                    WorkerCommunicationMessageType.case,
-                    self._format_case_message_data(message.case_control_message))
-            elif message_type == CommunicationPacket.EXIT:
-                break
+            try:
+                message.ParseFromString(message_bytes)
+            except DecodeError:
+                logger.error('Worker communication handler could not decode communication packet')
+            else:
+                message_type = message.type
+                if message_type == CommunicationPacket.WORKFLOW:
+                    logger.debug('Worker received workflow communication packet')
+                    yield WorkerCommunicationMessageData(
+                        WorkerCommunicationMessageType.workflow,
+                        self._format_workflow_message_data(message.workflow_control_message))
+                elif message_type == CommunicationPacket.CASE:
+                    logger.debug('Workflow received case communication packet')
+                    yield WorkerCommunicationMessageData(
+                        WorkerCommunicationMessageType.case,
+                        self._format_case_message_data(message.case_control_message))
+                elif message_type == CommunicationPacket.EXIT:
+                    logger.info('Worker received exit message')
+                    break
         raise StopIteration
 
     @staticmethod
@@ -203,26 +224,36 @@ class WorkflowReceiver(object):
     def shutdown(self):
         """Shuts down the object by setting self.exit to True and shutting down the cache
         """
+        logger.debug('Shutting down Workflow Receiver')
         self.exit = True
         self.cache.shutdown()
 
     def receive_workflows(self):
         """Receives requests to execute workflows, and sends them off to worker threads"""
+        logger.info('Starting workflow receiver')
         box = Box(self.key, self.server_key)
         while not self.exit:
             received_message = self.cache.rpop("request_queue")
             if received_message is not None:
-                decrypted_msg = box.decrypt(received_message)
-                message = ExecuteWorkflowMessage()
-                message.ParseFromString(decrypted_msg)
-                start = message.start if hasattr(message, 'start') else None
+                try:
+                    decrypted_msg = box.decrypt(received_message)
+                except CryptoError:
+                    logger.error('Worker could not decrypt received workflow message')
+                    continue
+                try:
+                    message = ExecuteWorkflowMessage()
+                    message.ParseFromString(decrypted_msg)
+                except DecodeError:
+                    logger.error('Workflow could not decode received workflow message')
+                else:
+                    start = message.start if hasattr(message, 'start') else None
 
-                start_arguments = []
-                if hasattr(message, 'arguments'):
-                    for arg in message.arguments:
-                        start_arguments.append(
-                            Argument(**(MessageToDict(arg, preserving_proto_field_name=True))))
-                yield message.workflow_id, message.workflow_execution_id, start, start_arguments, message.resume
+                    start_arguments = []
+                    if hasattr(message, 'arguments'):
+                        for arg in message.arguments:
+                            start_arguments.append(
+                                Argument(**(MessageToDict(arg, preserving_proto_field_name=True))))
+                    yield message.workflow_id, message.workflow_execution_id, start, start_arguments, message.resume
             else:
                 yield None
         raise StopIteration
@@ -236,6 +267,7 @@ class Worker(object):
             id_ (str): The ID of the worker
             config_path (str): The path to the configuration file to be loaded
         """
+        logger.info('Spawning worker {}'.format(id_))
         self.id_ = id_
         self._lock = Lock()
         signal.signal(signal.SIGINT, self.exit_handler)
@@ -304,6 +336,7 @@ class Worker(object):
 
     def exit_handler(self, signum, frame):
         """Clean up upon receiving a SIGINT or SIGABT"""
+        logger.info('Worker received exit signal {}'.format(signum))
         self.thread_exit = True
         self.workflow_receiver.shutdown()
         if self.threadpool:

@@ -30,7 +30,7 @@ class AppInstance(object):
             return AppInstance(instance=get_app(app_name)(name=app_name, device=device_name))
         except Exception as e:
             if device_name:
-                logger.exception('Cannot create app instance. app: {0}, device: {1}.')
+                logger.exception('Cannot create app instance. app: {0}, device: {1}.'.format(app_name, device_name))
             return AppInstance(instance=None)
 
     def __call__(self):
