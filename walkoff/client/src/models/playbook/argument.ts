@@ -45,8 +45,8 @@ export class Argument {
 		return (this.all_errors.length > 0) ? true : false;
 	}
 
-	isValid() : boolean {
-		return ! ((this.value == null || this.value === '') && this.reference === '');
+	hasInput() : boolean {
+		return this.reference || this.value;
 	}
 
 	sanitize(): void {
@@ -66,7 +66,6 @@ export class Argument {
 
 		// If nothing specified set value to empty array
 		if (!this.value && !this.reference) {
-			this.value = '';
 			return;
 		}
 

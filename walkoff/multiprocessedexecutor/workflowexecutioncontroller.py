@@ -83,7 +83,7 @@ class WorkflowExecutionController:
         Args:
             workflow_execution_id (UUID): The execution ID of the workflow.
         """
-        logger.info('Aborting workflow {0}'.format(workflow_execution_id))
+        logger.info('Aborting running workflow {0}'.format(workflow_execution_id))
         message = self._create_workflow_control_message(WorkflowControl.ABORT, workflow_execution_id)
         self._send_message(message)
 

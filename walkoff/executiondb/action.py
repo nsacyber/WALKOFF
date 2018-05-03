@@ -13,8 +13,8 @@ from walkoff.events import WalkoffEvent
 from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import UnknownApp, UnknownAppAction
-from walkoff.helpers import get_app_action_api, InvalidArgument, format_exception_message
+from walkoff.helpers import format_exception_message
+from walkoff.appgateway.apiutil import get_app_action_api, UnknownApp, UnknownAppAction, InvalidArgument
 
 logger = logging.getLogger(__name__)
 
@@ -132,10 +132,12 @@ class Action(ExecutionElement, Execution_Base):
         Returns:
             (ActionResult): The result of the executed function.
         """
+        logger.info('Executing action {} (id={})'.format(self.name, str(self.name)))
         self._execution_id = str(uuid.uuid4())
 
         if self.device_id:
             self._resolved_device_id = self.device_id.get_value(accumulator)
+            logger.debug('Device resolved to {} for action {}'.format(self._resolved_device_id, str(self.id)))
 
         WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionStarted)
         if self.trigger and not resume:
@@ -161,6 +163,7 @@ class Action(ExecutionElement, Execution_Base):
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionSuccess,
                                                        data=result.as_json())
         except Exception as e:
+            logger.exception('Error executing action {} (id={})'.format(self.name, str(self.id)))
             self.__handle_execution_error(e)
         else:
             self._output = result
@@ -176,8 +179,6 @@ class Action(ExecutionElement, Execution_Base):
         else:
             event = WalkoffEvent.ActionExecutionError
             return_type = 'UnhandledException'
-        logger.warning('Exception in {0}: \n{1}'.format(self.name, traceback.format_exc()))
-        logger.error('Error calling action {0}. Error: {1}'.format(self.name, formatted_error))
         self._output = ActionResult('error: {0}'.format(formatted_error), return_type)
         WalkoffEvent.CommonWorkflowSignal.send(self, event=event, data=self._output.as_json())
 

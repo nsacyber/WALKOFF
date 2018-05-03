@@ -2,6 +2,27 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
+## [0.8.2]
+###### 2018-05-03
+
+### Added
+* Arguments can now reference branches. This will resolve to the number of
+  times that branch has been executed.
+* Log messages are more comprehensive and useful.
+* More error checking on the worker processes to harden them.
+
+### Fixed
+* Bug where databases couldn't be used with a password.
+* Bug where app instances would receive an Argument rather than the necessary
+  integer ID.
+* Compatibility issue with pip 10 and the `install_dependencies.py` script.
+* Bug in validation of execution elements where, once an error was found it
+  wouldn't be removed.
+* Fixed bug where exporting playbooks with Python 3 would cause an error.
+* Bug where argument ids were not stripped on exporting of playbooks, causing
+  errors when importing them onto a different instance of Walkoff.
+
+
 ## [0.8.1]
 ###### 2018-04-17
 

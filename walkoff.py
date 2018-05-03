@@ -12,6 +12,8 @@ import walkoff.config
 from scripts.compose_api import compose_api
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
 from walkoff.server.app import create_app
+from tests.util.jsonplaybookloader import JsonPlaybookLoader
+from walkoff.executiondb.playbook import Playbook
 
 logger = logging.getLogger('walkoff')
 
@@ -79,11 +81,25 @@ def convert_host_port(args):
     return host, port
 
 
+def import_workflows(app):
+    playbook_name = [playbook.id for playbook in app.running_context.execution_db.session.query(Playbook).all()]
+    if os.path.exists(walkoff.config.Config.WORKFLOWS_PATH):
+        logger.info('Importing any workflows not currently in database')
+        for p in os.listdir(walkoff.config.Config.WORKFLOWS_PATH):
+            full_path = os.path.join(walkoff.config.Config.WORKFLOWS_PATH, p)
+            if os.path.isfile(full_path):
+                playbook = JsonPlaybookLoader.load_playbook(full_path)
+                if playbook.name not in playbook_name:
+                    app.running_context.execution_db.session.add(playbook)
+        app.running_context.execution_db.session.commit()
+
+
 if __name__ == "__main__":
     args = parse_args()
     exit_code = 0
     walkoff.config.initialize(args.config)
     app = create_app(walkoff.config.Config)
+    import_workflows(app)
     try:
         run(app, *convert_host_port(args))
     except KeyboardInterrupt:

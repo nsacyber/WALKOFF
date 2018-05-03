@@ -116,8 +116,12 @@ class ConditionalExpressionSchema(ExecutionElementBaseSchema):
     """
     conditions = fields.Nested(ConditionSchema, many=True)
     child_expressions = fields.Nested('self', many=True)
-    operator = field_for(ConditionalExpression, 'operator', default='and', validates=OneOf(*valid_operators),
-                         missing='and')
+    operator = field_for(
+        ConditionalExpression,
+        'operator',
+        default='and',
+        validates=OneOf(*valid_operators),
+        missing='and')
     is_negated = field_for(ConditionalExpression, 'is_negated', default=False)
 
     class Meta:
@@ -146,6 +150,7 @@ class PositionSchema(ExecutionBaseSchema):
 
     class Meta:
         model = Position
+        exclude = ('id',)
 
 
 class ActionSchema(ActionableSchema):

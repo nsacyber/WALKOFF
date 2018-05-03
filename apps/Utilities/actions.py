@@ -200,3 +200,23 @@ def csv_to_json(path, separator=',', encoding='ascii', headers=None):
         return results
     except (IOError, OSError) as e:
         return e, 'File Error'
+
+
+@action
+def mark_blacklist(data, blacklisted=True):
+    for element in data:
+        element['blacklisted'] = blacklisted
+    return data, 'Success'
+
+
+@action
+def mark_whitelist(data, whitelisted=True):
+    for element in data:
+        element['whitelisted'] = whitelisted
+    return data, 'Success'
+
+
+@action
+def mark_whitelist_blacklist(data, whitelisted=False, blacklisted=False):
+    for element in data:
+        element.update({'whitelisted': whitelisted, 'blacklisted': blacklisted})

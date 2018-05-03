@@ -5,7 +5,7 @@ from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
 
 from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.validatable import Validatable
-from walkoff.helpers import InvalidArgument
+from walkoff.appgateway.apiutil import InvalidArgument
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +48,7 @@ class Argument(Execution_Base, Validatable):
 
     def validate(self):
         """Validates the object"""
+        self.errors = []
         if self.value is None and not self.reference:
             message = 'Input {} must have either value or reference. Input has neither'.format(self.name)
             logger.error(message)
@@ -110,6 +111,7 @@ class Argument(Execution_Base, Validatable):
         except KeyError:
             message = ('Referenced action {} '
                        'has not been executed'.format(self.reference))
+            logger.info(message)
             raise InvalidArgument(message)
 
     def _select(self, input_):

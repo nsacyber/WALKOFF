@@ -1,0 +1,103 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: Palo Alto App
+  description: An app to interact with Palo Alto Networks firewalls
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+actions:
+
+  'execute operational command':
+    run: app.PaloAlto.execute_operational_command
+    description: Executes an operational command
+    parameters:
+    - name: command
+      description: The operational command to be run
+      required: true
+      type: string
+    returns:
+      Success:
+        schema:
+          type: string
+  commit:
+    run: app.PaloAlto.commit
+    description: Commits to the Palo Alto firewall
+    returns:
+      Success:
+        schema:
+          type: string
+  validate:
+    run: app.PaloAlto.validate
+    description: Validates the Palo Alto firewall
+    returns:
+      Success:
+        schema:
+          type: string
+  'add IP to dynamic block list':
+    run: app.PaloAlto.add_ip_to_dynamic_block_list
+    description: Adds an IP address to the dynamic block list
+    parameters:
+    - name: name
+      description: The name of the entry
+      type: string
+      required: true
+    - name: ip
+      description: The IP to add to the dynamic block list
+      type: string
+      required: true
+    - name: description
+      description: The description for the entry
+      type: string
+      required: true
+    returns:
+      Success:
+        schema:
+          type: string
+  'remove IP from dynamic block list':
+    run: app.PaloAlto.remove_ip_from_dynamic_block_list
+    description: Removes an IP address from the dynamic block list
+    parameters:
+    - name: name
+      description: The name of the entry
+      type: string
+      required: true
+    - name: ip
+      description: The IP to add to the dynamic block list
+      type: string
+      required: true
+    - name: description
+      description: The description for the entry
+      type: string
+      required: true
+    returns:
+      Success:
+        schema:
+          type: string
+  'get running config':
+    run: app.PaloAlto.get_running_config
+    description: Gets the running config on the firewall
+    returns:
+      Success:
+        schema:
+          type: string
+devices:
+  PaloAltoDevice:
+    description: Palo Alto configuration device
+    fields:
+      - name: ip
+        type: string
+        minLength: 8
+        maxLength: 16
+        required: true
+      - name: port
+        type: integer
+        required: true
+      - name: username
+        type: string
+        required: true
+      - name: password
+        type: string
+        encrypted: true
+        minLength: 4

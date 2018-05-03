@@ -11,8 +11,8 @@ from walkoff.events import WalkoffEvent
 from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import UnknownTransform, UnknownApp
-from walkoff.helpers import get_transform_api, InvalidArgument, split_api_params
+from walkoff.appgateway.apiutil import split_api_params, get_transform_api, UnknownApp, InvalidArgument, \
+    UnknownTransform
 
 logger = logging.getLogger(__name__)
 
@@ -64,8 +64,7 @@ class Transform(ExecutionElement, Execution_Base):
             errors.append('Unknown transform {}'.format(self.action_name))
         except InvalidArgument as e:
             errors.extend(e.errors)
-        if errors:
-            self.errors = errors
+        self.errors = errors
 
     @orm.reconstructor
     def init_on_load(self):
@@ -97,8 +96,9 @@ class Transform(ExecutionElement, Execution_Base):
                          'Returning unmodified data'.format(self.action_name, original_data_in, str(e)))
         except Exception as e:
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformError)
-            logger.error(
-                'Transform {0} encountered an error: {1}. Returning unmodified data'.format(self.action_name, str(e)))
+            logger.exception(
+                'Transform {0} (id={1}) encountered an error. Returning unmodified data'.format(
+                    self.action_name, str(self.id)))
         return original_data_in
 
     def __update_arguments_with_data(self, data):

@@ -4,7 +4,7 @@ import sys
 
 sys.path.append(os.path.abspath('.'))
 
-import pip
+import subprocess
 
 from walkoff.helpers import list_apps, list_interfaces
 
@@ -24,25 +24,26 @@ if __name__ == '__main__':
     args = cmd_line()
     apps = args.apps
     interfaces = args.interfaces
+    from walkoff.config import Config
 
     if not apps:
-        apps = list_apps()
+        apps = list_apps(Config.APPS_PATH)
 
     if not interfaces:
-        interfaces = list_interfaces()
+        interfaces = list_interfaces(Config.INTERFACES_PATH)
 
     for app in apps:
         print("Installing dependencies for " + app + " App...")
-        path = os.path.abspath('apps/' + app + '/requirements.txt')
+        path = os.path.abspath(os.path.join('apps', app, 'requirements.txt'))
         if os.path.isfile(path) is False:
             print("No requirements.txt file found in " + app + " folder. Skipping...")
             continue
-        pip.main(['install', '-r', path])
+        subprocess.call(['pip', 'install', '-r', path])
 
     for interface in interfaces:
         print("Installing dependencies for " + interface + " Interface...")
-        path = os.path.abspath('interfaces/' + interface + '/requirements.txt')
+        path = os.path.abspath(os.path.join('interfaces', interface, 'requirements.txt'))
         if os.path.isfile(path) is False:
             print("No requirements.txt file found in " + interface + " folder. Skipping...")
             continue
-        pip.main(['install', '-r', path])
+        subprocess.call(['pip', 'install', '-r', path])

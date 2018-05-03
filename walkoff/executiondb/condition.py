@@ -10,8 +10,9 @@ from walkoff.appgateway.validator import validate_condition_parameters
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import (UnknownCondition, UnknownApp)
-from walkoff.helpers import get_condition_api, InvalidArgument, format_exception_message, split_api_params
+from walkoff.helpers import format_exception_message
+from walkoff.appgateway.apiutil import split_api_params, get_condition_api, UnknownApp, InvalidArgument, \
+    UnknownCondition
 
 logger = logging.getLogger(__name__)
 
@@ -81,8 +82,7 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
             errors.append('Unknown condition {}'.format(self.action_name))
         except InvalidArgument as e:
             errors.extend(e.errors)
-        if errors:
-            self.errors = errors
+        self.errors = errors
 
     def execute(self, data_in, accumulator):
         """Executes the Condition object, determining if the Condition evaluates to True or False.
@@ -114,10 +114,9 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionError)
             raise
         except Exception as e:
-            logger.error('Error encountered executing '
-                         'condition {0} with arguments {1} and value {2}: '
-                         'Error {3}. Returning False'.format(self.action_name, arguments, data,
-                                                             format_exception_message(e)))
+            logger.exception(
+                'Error encountered executing condition {0} with arguments {1} and value {2}: Returning False'.format(
+                    self.action_name, arguments, data))
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionError)
             raise
 

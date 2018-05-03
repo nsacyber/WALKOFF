@@ -8,7 +8,7 @@ from importlib import import_module
 import os.path
 from six import string_types
 
-from walkoff.helpers import UnknownApp, UnknownAppAction, UnknownCondition, UnknownTransform
+from walkoff.appgateway.apiutil import UnknownApp, UnknownAppAction, UnknownCondition, UnknownTransform
 from .walkofftag import WalkoffTag
 
 _logger = logging.getLogger(__name__)
@@ -128,7 +128,6 @@ class AppCacheEntry(object):
         func_entry = self.functions[func_name]
         if function_type in func_entry.tags:
             return func_entry.run
-        raise Exception()
 
 
 class AppCache(object):

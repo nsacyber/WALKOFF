@@ -444,10 +444,11 @@ class TestWorkflowServer(ServerTestCase):
         self.assertDictEqual(PlaybookSchema().dump(playbook).data, response)
 
     def test_export_workflow(self):
-        from walkoff.helpers import strip_device_ids
+        from walkoff.helpers import strip_device_ids, strip_argument_ids
         playbook = execution_db_help.standard_load()
 
         response = self.get_with_status_check('/api/playbooks/{}?mode=export'.format(playbook.id), headers=self.headers)
         expected = PlaybookSchema().dump(playbook).data
         strip_device_ids(expected)
+        strip_argument_ids(expected)
         self.assertDictEqual(response, expected)

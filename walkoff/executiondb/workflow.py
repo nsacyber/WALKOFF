@@ -69,14 +69,12 @@ class Workflow(ExecutionElement, Execution_Base):
             errors.append('Workflows with actions require a start parameter')
         elif self.actions and self.start not in action_ids:
             errors.append('Workflow start ID {} not found in actions'.format(self.start))
-
         for branch in self.branches:
             if branch.source_id not in action_ids:
                 errors.append('Branch source ID {} not found in workflow actions'.format(branch.source_id))
             if branch.destination_id not in action_ids:
                 errors.append('Branch destination ID {} not found in workflow actions'.format(branch.destination_id))
-        if errors:
-            self.errors = errors
+        self.errors = errors
         self.is_valid = self._is_valid
 
     def get_action_by_id(self, action_id):
@@ -135,6 +133,8 @@ class Workflow(ExecutionElement, Execution_Base):
                 start = UUID(start)
             executor = self.__execute(start, start_arguments, resume)
             next(executor)
+        else:
+            logger.error('Workflow is invalid, yet executor attempted to execute.')
 
     def __execute(self, start, start_arguments=None, resume=False):
         actions = self.__actions(start=start)
@@ -145,14 +145,15 @@ class Workflow(ExecutionElement, Execution_Base):
             if self._is_paused:
                 self._is_paused = False
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowPaused)
+                logger.debug('Paused workflow {} (id={})'.format(self.name, str(self.id)))
                 yield
             if self._abort:
                 self._abort = False
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowAborted)
+                logger.info('Aborted workflow {} (id={})'.format(self.name, str(self.id)))
                 yield
 
             device_id = self._instance_repo.setup_app_instance(action, self)
-
             if device_id:
                 result = action.execute(self._accumulator, instance=self._instance_repo.get_app_instance(device_id)(),
                                         arguments=start_arguments, resume=resume)
@@ -198,6 +199,8 @@ class Workflow(ExecutionElement, Execution_Base):
                 # Keep whole result in accumulator
                 destination_id = branch.execute(current_action.get_output(), accumulator)
                 if destination_id is not None:
+                    logger.debug('Branch {} with destination {} chosen by workflow {} (id={})'.format(
+                        str(branch.id), str(destination_id), self.name, str(self.id)))
                     return destination_id
             return None
         else:
