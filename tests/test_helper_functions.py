@@ -87,9 +87,8 @@ class TestHelperFunctions(unittest.TestCase):
             self.assertIn(name, sys.modules.keys())
 
     def test_format_db_path(self):
-        sep = '////' if os.name == 'posix' else '///'
-        self.assertEqual(format_db_path('sqlite', './aa.db'), 'sqlite:{}{}'.format(sep, os.path.abspath('./aa.db')))
-        self.assertEqual(format_db_path('postgresql', 'aa.db'), 'postgresql://aa.db')
+        self.assertEqual(format_db_path('sqlite', './aa.db'), 'sqlite:///{}'.format(os.path.abspath('./aa.db')))
+        self.assertEqual(format_db_path('postgresql', './aa.db'), 'postgresql://{}'.format(os.path.abspath('./aa.db')))
 
     def test_get_app_action_api_invalid_app(self):
         with self.assertRaises(UnknownApp):

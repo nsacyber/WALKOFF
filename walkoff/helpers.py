@@ -117,6 +117,8 @@ def format_db_path(db_type, path, username=None, password=None):
                      'mysql', 'mysql+mysqldb', 'mysql+mysqlconnector', 'mysql+oursql',
                      'oracle', 'oracle+cx_oracle', 'mssql+pyodbc', 'mssql+pymssql']
     sqlalchemy_path = None
+    path = os.path.abspath(path)
+
     if db_type == 'sqlite':
         sqlalchemy_path = '{0}:///{1}'.format(db_type, path)
     elif db_type in supported_dbs:

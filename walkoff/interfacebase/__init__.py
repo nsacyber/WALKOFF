@@ -16,7 +16,9 @@ _logger = logging.getLogger(__name__)
 
 
 class AppBlueprint(StreamableBlueprint):
-    pass
+    def __init__(self, name, import_name, url_prefix='', **kwargs):
+        self.url_suffix = url_prefix
+        super(AppBlueprint, self).__init__(name, import_name, **kwargs)
 
 
 class InterfaceEventDispatcher(object):

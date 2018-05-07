@@ -12,6 +12,7 @@ class TestConfig(walkoff.config.Config):
     APPS_PATH = join('.', 'tests', 'testapps')
     DATA_DIR_NAME = 'testdata'
     DATA_PATH = join('.', 'tests', DATA_DIR_NAME)
+    API_PATH = abspath(join('.', 'data', 'api.yaml'))
     DEFAULT_APPDEVICE_EXPORT_PATH = join(DATA_PATH, 'appdevice.json')
     DEFAULT_CASE_EXPORT_PATH = join(DATA_PATH, 'cases.json')
     BASIC_APP_API = join('.', 'tests', 'schemas', 'basic_app_api.yaml')

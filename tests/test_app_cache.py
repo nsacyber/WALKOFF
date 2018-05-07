@@ -126,7 +126,7 @@ class TestAppCache(TestCase):
         self.assertEqual(AppCache._path_to_module('..' + os.path.sep + 'apppath' + os.path.sep), 'apppath')
 
     def test_cache_apps(self):
-        self.cache.cache_apps(config.test_apps_path)
+        self.cache.cache_apps(config.TestConfig.APPS_PATH)
         from testapps.HelloWorldBounded.main import Main
         from testapps.DailyQuote.main import Main as DailyMain
         self.assert_cache_has_main(Main, app='HelloWorldBounded')
@@ -150,7 +150,7 @@ class TestAppCache(TestCase):
         self.assertDictEqual(self.cache._cache, {})
 
     def test_clear_cache(self):
-        self.cache.cache_apps(config.test_apps_path)
+        self.cache.cache_apps(config.TestConfig.APPS_PATH)
         self.cache.clear()
         self.assertDictEqual(self.cache._cache, {})
 
