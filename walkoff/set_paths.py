@@ -43,8 +43,6 @@ def set_walkoff_external():
 
     archf.extractall(external_path)
 
-    external_path = os.path.join(external_path, "walkoff_external")
-
     Config.DATA_PATH = os.path.join(external_path, 'data')
     Config.APPS_PATH = os.path.join(external_path, 'apps')
     Config.CACHE_PATH = os.path.join(Config.DATA_PATH, 'cache')
