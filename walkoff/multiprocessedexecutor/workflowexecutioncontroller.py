@@ -11,39 +11,46 @@ from google.protobuf.json_format import MessageToDict
 from nacl.public import PrivateKey, Box
 from six import string_types
 
+import walkoff.config
 from walkoff.events import WalkoffEvent, EventType
-from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, CaseControl, WorkflowControl
 from walkoff.helpers import json_dumps_or_string
+from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, CaseControl, \
+    WorkflowControl
 
 logger = logging.getLogger(__name__)
 
 
 class WorkflowExecutionController:
-    def __init__(self, cache, zmq_private_keys_path, zmq_communication_address):
+    def __init__(self, cache):
         """Initialize a LoadBalancer object, which manages workflow execution.
+
+        Args:
+            cache (Cache): The Cache object
         """
-        server_secret_file = os.path.join(zmq_private_keys_path, "server.key_secret")
+        server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
         server_public, server_secret = auth.load_certificate(server_secret_file)
-        client_secret_file = os.path.join(zmq_private_keys_path, "client.key_secret")
+        client_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "client.key_secret")
         _, client_secret = auth.load_certificate(client_secret_file)
 
         self.comm_socket = zmq.Context.instance().socket(zmq.PUB)
         self.comm_socket.curve_secretkey = server_secret
         self.comm_socket.curve_publickey = server_public
         self.comm_socket.curve_server = True
-        self.comm_socket.bind(zmq_communication_address)
-        self.__key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
-        self.__worker_key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
+        self.comm_socket.bind(walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
         self.cache = cache
+        key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
+        worker_key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
+        self.box = Box(key, worker_key)
 
     def add_workflow(self, workflow_id, workflow_execution_id, start=None, start_arguments=None, resume=False):
         """Adds a workflow ID to the queue to be executed.
 
         Args:
-            workflow_id (int): The ID of the workflow to be executed.
-            workflow_execution_id (str): The execution ID of the workflow to be executed.
-            start (str, optional): The ID of the first, or starting action. Defaults to None.
-            start_arguments (list[Argument]): The arguments to the starting action of the workflow. Defaults to None.
+            workflow_id (UUID): The ID of the workflow to be executed.
+            workflow_execution_id (UUID): The execution ID of the workflow to be executed.
+            start (UUID, optional): The ID of the first, or starting action. Defaults to None.
+            start_arguments (list[Argument], optional): The arguments to the starting action of the workflow. Defaults
+                to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
         """
         message = ExecuteWorkflowMessage()
@@ -57,15 +64,14 @@ class WorkflowExecutionController:
             self._set_arguments_for_proto(message, start_arguments)
 
         message = message.SerializeToString()
-        box = Box(self.__key, self.__worker_key)
-        enc_message = box.encrypt(message)
-        self.cache.lpush("request_queue", enc_message)
+        encrypted_message = self.box.encrypt(message)
+        self.cache.lpush("request_queue", encrypted_message)
 
     def pause_workflow(self, workflow_execution_id):
         """Pauses a workflow currently executing.
 
         Args:
-            workflow_execution_id (str): The execution ID of the workflow.
+            workflow_execution_id (UUID): The execution ID of the workflow.
         """
         logger.info('Pausing workflow {0}'.format(workflow_execution_id))
         message = self._create_workflow_control_message(WorkflowControl.PAUSE, workflow_execution_id)
@@ -75,9 +81,9 @@ class WorkflowExecutionController:
         """Aborts a workflow currently executing.
 
         Args:
-            workflow_execution_id (str): The execution ID of the workflow.
+            workflow_execution_id (UUID): The execution ID of the workflow.
         """
-        logger.info('Aborting workflow {0}'.format(workflow_execution_id))
+        logger.info('Aborting running workflow {0}'.format(workflow_execution_id))
         message = self._create_workflow_control_message(WorkflowControl.ABORT, workflow_execution_id)
         self._send_message(message)
 
@@ -90,8 +96,7 @@ class WorkflowExecutionController:
         return message
 
     def send_exit_to_worker_comms(self):
-        """Sends the exit message over the communication sockets, otherwise worker receiver threads will hang
-        """
+        """Sends the exit message over the communication sockets, otherwise worker receiver threads will hang"""
         message = CommunicationPacket()
         message.type = CommunicationPacket.EXIT
         self._send_message(message)
@@ -110,14 +115,31 @@ class WorkflowExecutionController:
                         setattr(arg, field, val)
 
     def create_case(self, case_id, subscriptions):
+        """Creates a Case
+
+        Args:
+            case_id (int): The ID of the Case
+            subscriptions (list[Subscription]): List of Subscriptions to subscribe to
+        """
         message = self._create_case_update_message(case_id, CaseControl.CREATE, subscriptions=subscriptions)
         self._send_message(message)
 
     def update_case(self, case_id, subscriptions):
+        """Updates a Case
+
+        Args:
+            case_id (int): The ID of the Case
+            subscriptions (list[Subscription]): List of Subscriptions to subscribe to
+        """
         message = self._create_case_update_message(case_id, CaseControl.UPDATE, subscriptions=subscriptions)
         self._send_message(message)
 
     def delete_case(self, case_id):
+        """Deletes a Case
+
+        Args:
+            case_id (int): The ID of the Case to delete
+        """
         message = self._create_case_update_message(case_id, CaseControl.DELETE)
         self._send_message(message)
 
@@ -140,30 +162,29 @@ class WorkflowExecutionController:
 
 
 class Receiver:
-    def __init__(self, zmq_private_keys_path, zmq_results_address):
-        """Initialize a Receiver object, which will receive callbacks from the execution elements.
+    def __init__(self, current_app):
+        """Initialize a Receiver object, which will receive callbacks from the ExecutionElements.
 
         Args:
-            zmq_private_keys_path (str): The path to the ZMQ private keys
-            zmq_results_address (str): The address of the ZMQ results socket
+            current_app (Flask.App): The current Flask app
         """
         ctx = zmq.Context.instance()
         self.thread_exit = False
         self.workflows_executed = 0
 
-        server_secret_file = os.path.join(zmq_private_keys_path, "server.key_secret")
+        server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
         server_public, server_secret = auth.load_certificate(server_secret_file)
 
         self.results_sock = ctx.socket(zmq.PULL)
         self.results_sock.curve_secretkey = server_secret
         self.results_sock.curve_publickey = server_public
         self.results_sock.curve_server = True
-        self.results_sock.bind(zmq_results_address)
+        self.results_sock.bind(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
+
+        self.current_app = current_app
 
     def receive_results(self):
-        """Keep receiving results from execution elements over a ZMQ socket, and trigger the callbacks.
-        """
-
+        """Keep receiving results from execution elements over a ZMQ socket, and trigger the callbacks"""
         while True:
             if self.thread_exit:
                 break
@@ -173,11 +194,13 @@ class Receiver:
                 gevent.sleep(0.1)
                 continue
 
-            self.send_callback(message_bytes)
+            with self.current_app.app_context():
+                self._send_callback(message_bytes)
 
         self.results_sock.close()
 
-    def send_callback(self, message_bytes):
+    def _send_callback(self, message_bytes):
+
         message_outer = Message()
         message_outer.ParseFromString(message_bytes)
         callback_name = message_outer.event_name
@@ -200,7 +223,8 @@ class Receiver:
         event = WalkoffEvent.get_event_from_name(callback_name)
         if event is not None:
             data = self._format_data(event, message)
-            event.send(sender, data=data)
+            with self.current_app.app_context():
+                event.send(sender, data=data)
             if event in [WalkoffEvent.WorkflowShutdown, WalkoffEvent.WorkflowAborted]:
                 self._increment_execution_count()
         else:
@@ -226,6 +250,14 @@ class Receiver:
 
 
 def format_message_event_data(message):
+    """Formats a Message
+
+    Args:
+        message (Message): The Message to be formatted
+
+    Returns:
+        (dict): The formatted Message object
+    """
     return {'users': message.users,
             'roles': message.roles,
             'requires_reauth': message.requires_reauth,

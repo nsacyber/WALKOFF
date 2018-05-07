@@ -1,7 +1,8 @@
+import logging
+
 from walkoff.events import WalkoffEvent
 from walkoff.security import jwt_required_in_query
 from walkoff.sse import SseStream, StreamableBlueprint
-import logging
 
 console_stream = SseStream('console_results')
 console_page = StreamableBlueprint('console_page', __name__, streams=(console_stream,))
@@ -29,6 +30,3 @@ def console_log_callback(sender, **kwargs):
 @jwt_required_in_query('access_token')
 def stream_console_events():
     return console_stream.stream()
-
-
-

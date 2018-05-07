@@ -1,8 +1,9 @@
 import unittest
 
-from walkoff.scheduler import *
 from mock import create_autospec, call
+
 from walkoff.case.logger import CaseLogger
+from walkoff.scheduler import *
 
 
 class MockWorkflow(object):

@@ -6,27 +6,28 @@ import sys
 sys.path.append(os.getcwd())
 
 # Need all these imports
-from walkoff.executiondb.action import *
-from walkoff.executiondb.argument import *
-from walkoff.executiondb.branch import *
-from walkoff.executiondb.condition import *
-from walkoff.executiondb.conditionalexpression import *
+from walkoff.executiondb.action import Action
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.branch import Branch
+from walkoff.executiondb.condition import Condition
+from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.device import *
 from walkoff.executiondb.executionelement import *
-from walkoff.executiondb.playbook import *
-from walkoff.executiondb.position import *
-from walkoff.executiondb.saved_workflow import *
-from walkoff.executiondb.transform import *
-from walkoff.executiondb.workflow import *
+from walkoff.executiondb.metrics import *
+from walkoff.executiondb.playbook import Playbook
+from walkoff.executiondb.position import Position
+from walkoff.executiondb.saved_workflow import SavedWorkflow
+from walkoff.executiondb.transform import Transform
+from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import *
+from walkoff.executiondb import Execution_Base
 from scripts.migrations.database.commonenv import run
-from walkoff.executiondb.device import Device_Base
 
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = Device_Base.metadata
+target_metadata = Execution_Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

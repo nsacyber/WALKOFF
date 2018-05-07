@@ -36,6 +36,7 @@ default_resources = ['app_apis', 'cases', 'configuration', 'devices', 'messages'
 
 
 def initialize_default_resources_admin():
+    """Initializes the default resources for an admin user"""
     admin = Role.query.filter(Role.id == 1).first()
     if not admin:
         admin = Role("admin", resources=default_resource_permissions_admin)
@@ -46,6 +47,7 @@ def initialize_default_resources_admin():
 
 
 def initialize_default_resources_guest():
+    """Initializes the default resources for a guest user"""
     guest = Role.query.filter(Role.name == "guest").first()
     if not guest:
         guest = Role("guest", resources=default_resource_permissions_guest)
@@ -56,15 +58,15 @@ def initialize_default_resources_guest():
 
 
 def get_roles_by_resource_permissions(resource_permission):
-    resource = resource_permission.resource
+    r = resource_permission.resource
     permissions = resource_permission.permissions
 
     roles = []
     for permission in permissions:
         roles.extend(Role.query.join(Role.resources).join(Resource.permissions).filter(
-            Resource.name == resource, Permission.name == permission).all())
+            Resource.name == r, Permission.name == permission).all())
 
-    return {role.id for role in roles}
+    return {role_obj.id for role_obj in roles}
 
 
 def set_resources_for_role(role_name, resources):
@@ -75,8 +77,8 @@ def set_resources_for_role(role_name, resources):
         resources (dict[resource:list[permission]): A dictionary containing the name of the resource, with the value
                 being a list of permission names
     """
-    role = Role.query.filter(Role.name == role_name).first()
-    role.set_resources(resources)
+    r = Role.query.filter(Role.name == role_name).first()
+    r.set_resources(resources)
 
 
 def clear_resources_for_role(role_name):
@@ -85,12 +87,17 @@ def clear_resources_for_role(role_name):
     Args:
         role_name (str): The name of the role.
     """
-    role = Role.query.filter(Role.name == role_name).first()
-    role.resources = []
+    r = Role.query.filter(Role.name == role_name).first()
+    r.resources = []
     db.session.commit()
 
 
 def get_all_available_resource_actions():
+    """Gets a list of all of the available resource actions
+
+    Returns:
+        (list[dict]): A list of dicts containing the resource name and the actions available for that resource
+    """
     resource_actions = []
     for resource_perm in default_resource_permissions_admin:
         resource_actions.append(
@@ -104,16 +111,16 @@ def add_user(username, password, roles=None):
     Args:
         username (str): The username for the User.
         password (str): The password for the User.
-        roles (list[int]): A list of roles for the User.
+        roles (list[int], optional): A list of roles for the User. Defaults to None.
 
     Returns:
-        The new User object if successful, else None.
+        (User): The new User object if successful, else None.
     """
     if User.query.filter_by(username=username).first() is None:
-        user = User(username, password, roles=roles)
-        db.session.add(user)
+        u = User(username, password, roles=roles)
+        db.session.add(u)
         db.session.commit()
-        return user
+        return u
     else:
         return None
 

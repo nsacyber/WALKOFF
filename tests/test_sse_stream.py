@@ -1,13 +1,15 @@
-from walkoff.sse import SseEvent, SseStream, InterfaceSseStream, create_interface_channel_name
-from unittest import TestCase
-from tests.util.mock_objects import MockRedisCacheAdapter
 import json
+import os
+from unittest import TestCase
+
 import gevent
 from gevent.monkey import patch_all
-from tests.config import cache_path
-import os
-import shutil
+
+import walkoff.config
+from tests.util import initialize_test_config
+from tests.util.mock_objects import MockRedisCacheAdapter
 from walkoff.cache import DiskCacheAdapter
+from walkoff.sse import SseEvent, SseStream, InterfaceSseStream, create_interface_channel_name
 
 
 class TestSseEvent(TestCase):
@@ -189,12 +191,13 @@ class SseStreamTestBase(object):
 class TestDiskSseStream(TestCase, SseStreamTestBase):
     @classmethod
     def setUpClass(cls):
-        if not os.path.exists(cache_path):
-            os.mkdir(cache_path)
+        initialize_test_config()
+        if not os.path.exists(walkoff.config.Config.CACHE_PATH):
+            os.mkdir(walkoff.config.Config.CACHE_PATH)
         patch_all()
 
     def setUp(self):
-        self.cache = DiskCacheAdapter(directory=cache_path)
+        self.cache = DiskCacheAdapter(directory=walkoff.config.Config.CACHE_PATH)
         self.channel = 'channel1'
         self.stream = SseStream(self.channel, self.cache)
 

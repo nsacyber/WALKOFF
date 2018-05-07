@@ -2,12 +2,12 @@ import json
 import uuid
 from datetime import timedelta
 
+from flask import current_app
+
 from tests.util import execution_db_help
-from walkoff import executiondb
-from walkoff.executiondb.metrics import AppMetric, ActionMetric, ActionStatusMetric, WorkflowMetric
 from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
-from walkoff.server import flaskserver as server
+from walkoff.executiondb.metrics import AppMetric, ActionMetric, ActionStatusMetric, WorkflowMetric
 from walkoff.server.endpoints.metrics import _convert_action_time_averages, _convert_workflow_time_averages
 
 
@@ -49,9 +49,9 @@ class MetricsServerTest(ServerTestCase):
             ActionMetric(uuid.uuid4(), "action1", [as_one, as_two])])
         app_two.count = 100
 
-        executiondb.execution_db.session.add(app_one)
-        executiondb.execution_db.session.add(app_two)
-        executiondb.execution_db.session.commit()
+        current_app.running_context.execution_db.session.add(app_one)
+        current_app.running_context.execution_db.session.add(app_two)
+        current_app.running_context.execution_db.session.commit()
 
         converted = _convert_action_time_averages()
         orderless_list_compare(self, converted.keys(), ['apps'])
@@ -97,8 +97,8 @@ class MetricsServerTest(ServerTestCase):
         wf4 = WorkflowMetric(uuid.uuid4(), 'workflow4', timedelta(1, 100, 500).total_seconds())
         wf4.count = 100
 
-        executiondb.execution_db.session.add_all([wf1, wf2, wf3, wf4])
-        executiondb.execution_db.session.commit()
+        current_app.running_context.execution_db.session.add_all([wf1, wf2, wf3, wf4])
+        current_app.running_context.execution_db.session.commit()
 
         converted = _convert_workflow_time_averages()
         orderless_list_compare(self, converted.keys(), ['workflows'])
@@ -110,10 +110,10 @@ class MetricsServerTest(ServerTestCase):
 
         workflow = execution_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow')
 
-        server.running_context.executor.execute_workflow(workflow.id)
-        server.running_context.executor.wait_and_reset(1)
+        current_app.running_context.executor.execute_workflow(workflow.id)
+        current_app.running_context.executor.wait_and_reset(1)
 
-        response = self.app.get('/api/metrics/apps', headers=self.headers)
+        response = self.test_client.get('/api/metrics/apps', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, _convert_action_time_averages())
@@ -122,12 +122,12 @@ class MetricsServerTest(ServerTestCase):
         error_id = execution_db_help.load_workflow('multiactionError', 'multiactionErrorWorkflow').id
         test_id = execution_db_help.load_workflow('multiactionWorkflowTest', 'multiactionWorkflow').id
 
-        server.running_context.executor.execute_workflow(error_id)
-        server.running_context.executor.execute_workflow(error_id)
-        server.running_context.executor.execute_workflow(test_id)
-        server.running_context.executor.wait_and_reset(3)
+        current_app.running_context.executor.execute_workflow(error_id)
+        current_app.running_context.executor.execute_workflow(error_id)
+        current_app.running_context.executor.execute_workflow(test_id)
+        current_app.running_context.executor.wait_and_reset(3)
 
-        response = self.app.get('/api/metrics/workflows', headers=self.headers)
+        response = self.test_client.get('/api/metrics/workflows', headers=self.headers)
         self.assertEqual(response.status_code, 200)
         response = json.loads(response.get_data(as_text=True))
         self.assertDictEqual(response, _convert_workflow_time_averages())

@@ -1,32 +1,29 @@
 from unittest import TestCase
 from walkoff.cache import DiskPubSubCache, unsubscribe_message
-from tests.config import cache_path
 import os
-import shutil
 import gevent
-import threading
 from gevent.monkey import patch_all
+from tests.util import initialize_test_config
+import walkoff.config
 
 
 class TestDiskCachePubSub(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        os.mkdir(cache_path)
+        initialize_test_config()
+        if not os.path.exists(walkoff.config.Config.CACHE_PATH):
+            os.mkdir(walkoff.config.Config.CACHE_PATH)
         patch_all()
 
     def setUp(self):
-        self.cache = DiskPubSubCache(cache_path)
+        self.cache = DiskPubSubCache(walkoff.config.Config.CACHE_PATH)
 
     def tearDown(self):
         self.cache.cache.clear()
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cache_path)
-
     def test_init(self):
-        self.assertEqual(self.cache.cache.directory, cache_path)
+        self.assertEqual(self.cache.cache.directory, walkoff.config.Config.CACHE_PATH)
 
     def test_publish(self):
         self.cache.register_callbacks()

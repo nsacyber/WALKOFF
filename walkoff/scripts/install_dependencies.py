@@ -4,7 +4,7 @@ import sys
 
 sys.path.append(os.path.abspath('.'))
 
-import pip
+import subprocess
 
 from walkoff.helpers import list_valid_directories
 from walkoff import config
@@ -34,7 +34,7 @@ def install_dependencies(apps=None, interfaces=None):
         if os.path.isfile(path) is False:
             print("No requirements.txt file found in {}. Skipping...".format(path))
             continue
-        pip.main(['install', '-r', path])
+        subprocess.call(['pip', 'install', '-r', path])
 
     for interface in interfaces:
         print("Installing dependencies for " + interface + " Interface...")
@@ -42,7 +42,7 @@ def install_dependencies(apps=None, interfaces=None):
         if os.path.isfile(path) is False:
             print("No requirements.txt file found in {}. Skipping...".format(path))
             continue
-        pip.main(['install', '-r', path])
+        subprocess.call(['pip', 'install', '-r', path])
 
 
 if __name__ == '__main__':

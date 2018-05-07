@@ -12,8 +12,7 @@ def format_result(result):
         result (str|tuple): The result of the action
 
     Returns:
-        An ActionResult object with the result included in the object
-
+        (ActionResult): An ActionResult object with the result included in the object
     """
     if not isinstance(result, tuple):
         return ActionResult(result, None)
@@ -36,8 +35,9 @@ def action(func):
 
     Args:
         func (func): Function to tag
+
     Returns:
-        (func) Tagged function
+        (func): Tagged function
     """
 
     @wraps(func)
@@ -54,8 +54,9 @@ def condition(func):
 
     Args:
         func (func): Function to tag
+
     Returns:
-        (func) Tagged function
+        (func): Tagged function
     """
     WalkoffTag.condition.tag(func)
     return func
@@ -66,8 +67,9 @@ def transform(func):
 
     Args:
         func (func): Function to tag
+
     Returns:
-        (func) Tagged function
+        (func): Tagged function
     """
     WalkoffTag.transform.tag(func)
     return func

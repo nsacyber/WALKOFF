@@ -1,11 +1,12 @@
 import { Component, ViewEncapsulation, Input, OnInit } from '@angular/core';
-
+import { plainToClass } from 'class-transformer';
 import { AppApi } from '../models/api/appApi';
 import { ConditionApi } from '../models/api/conditionApi';
 import { ParameterApi } from '../models/api/parameterApi';
 import { Workflow } from '../models/playbook/workflow';
 import { Argument } from '../models/playbook/argument';
 import { Condition } from '../models/playbook/condition';
+
 
 @Component({
 	selector: 'playbook-conditions-component',
@@ -129,12 +130,12 @@ export class PlaybookConditionsComponent implements OnInit {
 	 * @param parameterApi Parameter API used to generate the default argument
 	 */
 	getDefaultArgument(parameterApi: ParameterApi): Argument {
-		return {
+		return plainToClass(Argument, {
 			name: parameterApi.name,
 			value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
 			reference: '',
 			selection: '',
-		};
+		});
 	}
 
 	/**

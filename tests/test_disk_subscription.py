@@ -1,6 +1,8 @@
 from unittest import TestCase
-from walkoff.cache import DiskSubscription, unsubscribe_message
+
 import gevent
+
+from walkoff.cache import DiskSubscription, unsubscribe_message
 
 
 class TestDiskSubscription(TestCase):
@@ -12,7 +14,6 @@ class TestDiskSubscription(TestCase):
         self.assertEqual(self.pubsub.channel, 'channel1')
 
     def test_listen_push(self):
-
         result = []
 
         def listen():
@@ -24,6 +25,7 @@ class TestDiskSubscription(TestCase):
             self.pubsub.push(2)
             self.pubsub.push(10)
             self.pubsub.push(unsubscribe_message)
+
         thread = gevent.spawn(listen)
         push_thread = gevent.spawn(push)
         thread.join(timeout=5)

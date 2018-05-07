@@ -1,7 +1,7 @@
 import logging
 from copy import deepcopy
 
-from sqlalchemy import Column, ForeignKey, String, orm
+from sqlalchemy import Column, ForeignKey, String, orm, event
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 
@@ -11,7 +11,6 @@ from walkoff.events import WalkoffEvent
 from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import InvalidExecutionElement
 from walkoff.appgateway.apiutil import split_api_params, get_transform_api, UnknownApp, InvalidArgument, \
     UnknownTransform
 
@@ -24,6 +23,7 @@ class Transform(ExecutionElement, Execution_Base):
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     arguments = relationship('Argument', cascade='all, delete, delete-orphan')
+    children = ('arguments',)
 
     def __init__(self, app_name, action_name, id=None, arguments=None):
         """Initializes a new Transform object. A Transform is used to transform input into a workflow.
@@ -47,40 +47,39 @@ class Transform(ExecutionElement, Execution_Base):
         self.arguments = []
         if arguments:
             self.arguments = arguments
-
+        self._transform_executable = None
         self.validate()
-        self._transform_executable = get_transform(self.app_name, self._run)
 
     def validate(self):
-        errors = {}
+        """Validates the object"""
+        errors = []
         try:
             self._data_param_name, self._run, self._api = get_transform_api(self.app_name, self.action_name)
+            self._transform_executable = get_transform(self.app_name, self._run)
             tmp_api = split_api_params(self._api, self._data_param_name)
             validate_transform_parameters(tmp_api, self.arguments, self.action_name)
         except UnknownApp:
-            errors['executable'] = 'Unknown app {}'.format(self.app_name)
+            errors.append('Unknown app {}'.format(self.app_name))
         except UnknownTransform:
-            errors['executable'] = 'Unknown transform {}'.format(self.action_name)
+            errors.append('Unknown transform {}'.format(self.action_name))
         except InvalidArgument as e:
-            errors['arguments'] = e.errors
-        if errors:
-            raise InvalidExecutionElement(
-                self.id,
-                self.action_name,
-                'Invalid transform {}'.format(self.id or self.action_name),
-                errors=[errors])
+            errors.extend(e.errors)
+        self.errors = errors
 
     @orm.reconstructor
     def init_on_load(self):
         """Loads all necessary fields upon Condition being loaded from database"""
-        self._data_param_name, self._run, self._api = get_transform_api(self.app_name, self.action_name)
-        self._transform_executable = get_transform(self.app_name, self._run)
+        if not self.errors:
+            self._data_param_name, self._run, self._api = get_transform_api(self.app_name, self.action_name)
+            self._transform_executable = get_transform(self.app_name, self._run)
 
     def execute(self, data_in, accumulator):
         """Executes the transform.
+
         Args:
             data_in: The input to the condition, the last executed action of the workflow or the input to a trigger.
             accumulator (dict): A record of executed actions and their results. Of form {action_name: result}.
+
         Returns:
             (obj): The transformed data
         """
@@ -97,8 +96,9 @@ class Transform(ExecutionElement, Execution_Base):
                          'Returning unmodified data'.format(self.action_name, original_data_in, str(e)))
         except Exception as e:
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformError)
-            logger.error(
-                'Transform {0} encountered an error: {1}. Returning unmodified data'.format(self.action_name, str(e)))
+            logger.exception(
+                'Transform {0} (id={1}) encountered an error. Returning unmodified data'.format(
+                    self.action_name, str(self.id)))
         return original_data_in
 
     def __update_arguments_with_data(self, data):
@@ -108,3 +108,8 @@ class Transform(ExecutionElement, Execution_Base):
                 arguments.append(argument)
         arguments.append(Argument(self._data_param_name, value=data))
         return arguments
+
+
+@event.listens_for(Transform, 'before_update')
+def validate_before_update(mapper, connection, target):
+    target.validate()

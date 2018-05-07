@@ -8,6 +8,20 @@ info:
   license:
     name: Creative Commons
 actions:
+  Get Devices By Fields:
+    run: actions.get_devices_by_fields
+    description: Gets a list of device IDs that have the specified fields
+    parameters:
+      - name: fields
+        description: A dictionary of search fields, with the key being the field name and value as field value
+        schema:
+          type: object
+    returns:
+      Success:
+        schema:
+          type: array
+          items:
+            type: integer
   System PRNG:
     run: actions.system_rand
     description: Returns random float between 0.0 and 1.0 using system entropy
@@ -559,6 +573,97 @@ actions:
         failure: true
         schema:
           type: boolean
+  csv to json:
+    run: actions.csv_to_json
+    description: Reads a CSV file and return a list of JSON objects representing the CSV
+    parameters:
+      - name: path
+        description: path to the csv file
+        type: string
+        required: true
+      - name: separator
+        type: string
+        default: ','
+      - name: encoding
+        type: string
+        default: ascii
+      - name: headers
+        description: headers to use for teh CSV. If none are provided, the first line of the CSV is used
+        type: array
+        items:
+          type: string
+    default_return: Success
+    returns:
+      Success:
+        schema:
+          type: array
+          items:
+            type: object
+      File Error:
+        failure: true
+        schema:
+          type: string
+  mark blacklist:
+    run: actions.mark_blacklist
+    description: Mark data as being blacklisted by appending a "blacklisted" field to each element of an array of JSON data
+    parameters:
+      - name: data
+        description: The data to mark as blacklisted
+        type: array
+        required: true
+      - name: blacklisted
+        type: boolean
+        default: true
+        required: true
+    default_return: Success
+    returns:
+      Success:
+        schema:
+          type: array
+          items:
+            type: object
+  mark whitelist:
+    run: actions.mark_whitelist
+    description: Mark data as being whitelisted by appending a "whitelisted" field to each element in an array of JSON data
+    parameters:
+      - name: data
+        description: The data to mark as whitelisted
+        type: array
+        required: true
+      - name: whitelisted
+        type: boolean
+        default: true
+        required: true
+    default_return: Success
+    returns:
+      Success:
+        schema:
+          type: array
+          items:
+            type: object
+  mark whitelist and blacklist:
+    run: actions.mark_whitelist_blacklist
+    description: Mark data as being whitelisted or blacklisted by appending a "whitelisted"  and a "blacklisted" field to each element of JSON the data
+    parameters:
+      - name: data
+        description: The data to mark as whitelisted
+        type: array
+        required: true
+      - name: whitelisted
+        type: boolean
+        default: false
+        required: true
+      - name: blacklisted
+        type: boolean
+        default: false
+        required: true
+    default_return: Success
+    returns:
+      Success:
+        schema:
+          type: array
+          items:
+            type: object
 conditions:
   regex match:
     run: conditions.regMatch

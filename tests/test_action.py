@@ -1,10 +1,8 @@
 import unittest
 
-import tests.config
-import tests.config
 import walkoff.appgateway
-import walkoff.config
 from tests.util import execution_db_help
+from tests.util import initialize_test_config
 from walkoff.appgateway.actionresult import ActionResult
 from walkoff.appgateway.appinstance import AppInstance
 from walkoff.events import WalkoffEvent
@@ -13,16 +11,13 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.position import Position
-from walkoff.appgateway.apiutil import InvalidArgument
-from walkoff.helpers import InvalidExecutionElement
 
 
 class TestAction(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        initialize_test_config()
         execution_db_help.setup_dbs()
-        walkoff.appgateway.cache_apps(tests.config.test_apps_path)
-        walkoff.config.load_app_apis(apps_path=tests.config.test_apps_path)
 
     @classmethod
     def tearDownClass(cls):
@@ -70,16 +65,17 @@ class TestAction(unittest.TestCase):
         self.__compare_init(action, 'HelloWorld', 'Hello World', 'helloWorld')
 
     def test_init_invalid_app(self):
-        with self.assertRaises(InvalidExecutionElement):
-            Action('InvalidApp', 'helloWorld', 'helloWorld')
+        action = Action('InvalidApp', 'helloWorld', 'helloWorld')
+        self.assertEqual(len(action.errors), 1)
 
     def test_init_invalid_action(self):
-        with self.assertRaises(InvalidExecutionElement):
-            Action('HelloWorld', 'invalid', 'helloWorld')
+        action = Action('HelloWorld', 'invalid', 'helloWorld')
+        self.assertEqual(len(action.errors), 1)
 
     def test_init_app_action_only_with_device(self):
-        action = Action('HelloWorld', 'helloWorld', 'helloWorld', device_id='test')
-        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', device_id='test')
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld', device_id=Argument(name='__device__', value="test"))
+        self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld',
+                            device_id=Argument(name='__device__', value="test"))
 
     def test_init_with_arguments_no_conversion(self):
         action = Action('HelloWorld', 'returnPlusOne', 'returnPlusOne', arguments=[Argument('number', value=-5.6)])
@@ -92,12 +88,12 @@ class TestAction(unittest.TestCase):
                             arguments=[Argument('number', value='-5.6')])
 
     def test_init_with_invalid_argument_name(self):
-        with self.assertRaises(InvalidExecutionElement):
-            Action('HelloWorld', 'returnPlusOne', 'helloWorld', arguments=[Argument('invalid', value='-5.6')])
+        action = Action('HelloWorld', 'returnPlusOne', 'helloWorld', arguments=[Argument('invalid', value='-5.6')])
+        self.assertEqual(len(action.errors), 2)
 
     def test_init_with_invalid_argument_type(self):
-        with self.assertRaises(InvalidExecutionElement):
-            Action('HelloWorld', 'returnPlusOne', 'helloWorld', arguments=[Argument('number', value='invalid')])
+        action = Action('HelloWorld', 'returnPlusOne', 'helloWorld', arguments=[Argument('number', value='invalid')])
+        self.assertEqual(len(action.errors), 2)
 
     def test_init_with_triggers(self):
         trigger = ConditionalExpression(
@@ -110,7 +106,7 @@ class TestAction(unittest.TestCase):
     def test_execute_no_args(self):
         action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld')
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        self.assertEqual(action.execute(instance.instance, {}), ActionResult({'message': 'HELLO WORLD'}, 'Success'))
+        self.assertEqual(action.execute({}, instance.instance), ActionResult({'message': 'HELLO WORLD'}, 'Success'))
         self.assertEqual(action._output, ActionResult({'message': 'HELLO WORLD'}, 'Success'))
 
     def test_execute_return_failure(self):
@@ -134,7 +130,7 @@ class TestAction(unittest.TestCase):
 
         WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
 
-        action.execute(instance.instance, {})
+        action.execute({}, instance.instance)
         self.assertTrue(result['started_triggered'])
         self.assertTrue(result['result_triggered'])
 
@@ -159,7 +155,7 @@ class TestAction(unittest.TestCase):
 
         WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
 
-        action.execute(instance.instance, {})
+        action.execute({}, instance.instance)
 
         self.assertTrue(result['started_triggered'])
         self.assertTrue(result['result_triggered'])
@@ -168,7 +164,7 @@ class TestAction(unittest.TestCase):
         action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld')
         original_execution_id = action.get_execution_id()
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        action.execute(instance.instance, {})
+        action.execute({}, instance.instance)
         self.assertNotEqual(action.get_execution_id(), original_execution_id)
 
     def test_execute_with_args(self):
@@ -177,7 +173,7 @@ class TestAction(unittest.TestCase):
                                    Argument('num2', value='4.3'),
                                    Argument('num3', value='10.2')])
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        result = action.execute(instance.instance, {})
+        result = action.execute({}, instance.instance)
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
         self.assertEqual(action._output, result)
@@ -206,7 +202,7 @@ class TestAction(unittest.TestCase):
 
         WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
 
-        action.execute(instance.instance, {})
+        action.execute({}, instance.instance)
         self.assertTrue(result['started_triggered'])
         self.assertTrue(result['result_triggered'])
 
@@ -217,7 +213,7 @@ class TestAction(unittest.TestCase):
                                    Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'action2': '4.3'}
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        result = action.execute(instance.instance, accumulator)
+        result = action.execute(accumulator, instance.instance)
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
         self.assertEqual(action._output, result)
@@ -229,7 +225,7 @@ class TestAction(unittest.TestCase):
                                    Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'action2': '4.3', '3': '45'}
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        result = action.execute(instance.instance, accumulator)
+        result = action.execute(accumulator, instance.instance)
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
         self.assertEqual(action._output, result)
@@ -241,7 +237,7 @@ class TestAction(unittest.TestCase):
                                    Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'missing': '4.3', '3': '45'}
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        action.execute(instance.instance, accumulator)
+        action.execute(accumulator, instance.instance)
 
     def test_execute_with_accumulator_missing_action_callbacks(self):
         action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
@@ -263,7 +259,7 @@ class TestAction(unittest.TestCase):
                     result['result_triggered'] = True
 
         WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
-        action.execute(instance.instance, accumulator)
+        action.execute(accumulator, instance.instance)
 
         self.assertTrue(result['started_triggered'])
         self.assertTrue(result['result_triggered'])
@@ -275,7 +271,7 @@ class TestAction(unittest.TestCase):
                                                        'd': [{'a': '', 'b': 3}, {'a': '', 'b': -1.5},
                                                              {'a': '', 'b': -0.5}]})])
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        result = action.execute(instance.instance, {})
+        result = action.execute({}, instance.instance)
         self.assertAlmostEqual(result.result, 11.0)
         self.assertEqual(result.status, 'Success')
         self.assertEqual(action._output, result)
@@ -283,7 +279,7 @@ class TestAction(unittest.TestCase):
     def test_execute_action_which_raises_exception(self):
         action = Action(app_name='HelloWorld', action_name='Buggy', name='helloWorld')
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        action.execute(instance.instance, {})
+        action.execute({}, instance.instance)
         self.assertIsNotNone(action.get_output())
 
     def test_execute_action_which_raises_exception_sends_callbacks(self):
@@ -303,7 +299,7 @@ class TestAction(unittest.TestCase):
 
         WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
 
-        action.execute(instance.instance, {})
+        action.execute({}, instance.instance)
 
         self.assertTrue(result['started_triggered'])
         self.assertTrue(result['result_triggered'])
@@ -312,40 +308,10 @@ class TestAction(unittest.TestCase):
         action = Action(app_name='HelloWorld', action_name='global2', name='helloWorld',
                         arguments=[Argument('arg1', value='something')])
         instance = AppInstance.create(app_name='HelloWorld', device_name='')
-        result = action.execute(instance.instance, {})
+        result = action.execute({}, instance.instance)
         self.assertAlmostEqual(result.result, 'something')
         self.assertEqual(result.status, 'Success')
         self.assertEqual(action._output, result)
-
-    def test_set_args_valid(self):
-        action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
-                        arguments=[Argument('num1', value='-5.6'),
-                                   Argument('num2', value='4.3'),
-                                   Argument('num3', value='10.2')])
-        arguments = [Argument('num1', value='-5.62'), Argument('num2', value='5'), Argument('num3', value='42.42')]
-        action.set_arguments(arguments)
-
-        self.assertEqual(len(action.arguments), len(arguments))
-        for arg in action.arguments:
-            self.assertIn(arg, arguments)
-
-    def test_set_args_invalid_name(self):
-        action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
-                        arguments=[Argument('num1', value='-5.6'),
-                                   Argument('num2', value='4.3'),
-                                   Argument('num3', value='10.2')])
-        with self.assertRaises(InvalidArgument):
-            action.set_arguments(
-                [Argument('num1', value='-5.62'), Argument('invalid', value='5'), Argument('num3', value='42.42')])
-
-    def test_set_args_invalid_format(self):
-        action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
-                        arguments=[Argument('num1', value='-5.6'),
-                                   Argument('num2', value='4.3'),
-                                   Argument('num3', value='10.2')])
-        with self.assertRaises(InvalidArgument):
-            action.set_arguments(
-                [Argument('num1', value='-5.62'), Argument('num2', value='5'), Argument('num3', value='invalid')])
 
     def test_execute_with_triggers(self):
         trigger = ConditionalExpression(

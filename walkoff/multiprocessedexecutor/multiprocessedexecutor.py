@@ -9,38 +9,26 @@ import uuid
 import gevent
 import zmq.green as zmq
 
-from walkoff import executiondb
+import walkoff.config
 from walkoff.events import WalkoffEvent
+from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb import WorkflowStatusEnum
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus
-from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController, Receiver
 from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
 from walkoff.multiprocessedexecutor.worker import Worker
+from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController, Receiver
+
 logger = logging.getLogger(__name__)
 
 
-def spawn_worker_processes(number_processes, num_threads_per_process, zmq_private_keys_path, zmq_results_address,
-                           zmq_communication_address, worker_environment_setup=None):
+def spawn_worker_processes():
     """Initialize the multiprocessing pool, allowing for parallel execution of workflows.
-
-    Args:
-        number_processes (int): The number of processes to spawn
-        num_threads_per_process (int): The number of threads per process to spawn
-        zmq_private_keys_path (str): The path to the ZMQ private keys
-        zmq_results_address (str): The address of the ZMQ results socket
-        zmq_communication_address (str): The address of the ZMQ comm socket
-        worker_environment_setup (function, optional): Optional alternative worker setup environment function.
     """
     pids = []
-    for i in range(number_processes):
-        args = (i, num_threads_per_process, zmq_private_keys_path, zmq_results_address, zmq_communication_address,
-                worker_environment_setup) if worker_environment_setup else (i, num_threads_per_process,
-                                                                            zmq_private_keys_path, zmq_results_address,
-                                                                            zmq_communication_address)
-
-        pid = multiprocessing.Process(target=Worker, args=args)
+    for i in range(walkoff.config.Config.NUMBER_PROCESSES):
+        pid = multiprocessing.Process(target=Worker, args=(i, walkoff.config.Config.CONFIG_PATH))
         pid.start()
         pids.append(pid)
     return pids
@@ -64,31 +52,29 @@ class MultiprocessedExecutor(object):
         self.cache = cache
         self.event_logger = event_logger
 
-    def initialize_threading(self, zmq_public_keys_path, zmq_private_keys_path, zmq_results_address,
-                             zmq_communication_address, pids=None):
+        self.execution_db = ExecutionDatabase.instance
+
+    def initialize_threading(self, app, pids=None):
         """Initialize the multiprocessing communication threads, allowing for parallel execution of workflows.
 
         Args:
-            zmq_public_keys_path (str): The path to the ZMQ public keys.
-            zmq_private_keys_path (str): The path to the ZMQ private keys.
-            zmq_results_address (str): The address of the ZMQ results socket
-            zmq_communication_address (str): The address of the ZMQ comm socket
-            pids (list, optional): Optional list of spawned processes. Defaults to None
+            app (FlaskApp): The current_app object
+            pids (list[Process], optional): Optional list of spawned processes. Defaults to None
 
         """
-        if not (os.path.exists(zmq_public_keys_path) and
-                os.path.exists(zmq_private_keys_path)):
-            logging.error("Certificates are missing - run generate_certificates.py script first.")
+        if not (os.path.exists(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH) and
+                os.path.exists(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH)):
+            logging.fatal("Certificates are missing - run generate_certificates.py script first.")
             sys.exit(0)
         self.pids = pids
         self.ctx = zmq.Context.instance()
         self.auth = ThreadAuthenticator()
         self.auth.start()
         self.auth.allow('127.0.0.1')
-        self.auth.configure_curve(domain='*', location=zmq_public_keys_path)
+        self.auth.configure_curve(domain='*', location=walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH)
 
-        self.manager = WorkflowExecutionController(self.cache, zmq_private_keys_path, zmq_communication_address)
-        self.receiver = Receiver(zmq_private_keys_path, zmq_results_address)
+        self.manager = WorkflowExecutionController(self.cache)
+        self.receiver = Receiver(app)
 
         self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
         self.receiver_thread.start()
@@ -97,6 +83,11 @@ class MultiprocessedExecutor(object):
         logger.debug('Controller threading initialized')
 
     def wait_and_reset(self, num_workflows):
+        """Waits for all of the workflows to be completed
+
+        Args:
+            num_workflows (int): The number of workflows to wait for
+        """
         timeout = 0
         shutdown = 10
 
@@ -105,16 +96,16 @@ class MultiprocessedExecutor(object):
                 break
             timeout += 0.1
             gevent.sleep(0.1)
-        assert(num_workflows == self.receiver.workflows_executed)
+        assert (num_workflows == self.receiver.workflows_executed)
         self.receiver.workflows_executed = 0
 
     def shutdown_pool(self):
-        """Shuts down the threadpool.
-        """
+        """Shuts down the threadpool"""
         self.manager.send_exit_to_worker_comms()
         if len(self.pids) > 0:
             for p in self.pids:
                 if p.is_alive():
+                    logger.info('Multiprocessed executor shutting down process {}'.format(p))
                     os.kill(p.pid, signal.SIGABRT)
                     p.join(timeout=3)
                     try:
@@ -135,8 +126,7 @@ class MultiprocessedExecutor(object):
         return
 
     def cleanup_threading(self):
-        """Once the threadpool has been shutdown, clear out all of the data structures used in the pool.
-        """
+        """Once the threadpool has been shutdown, clear out all of the data structures used in the pool"""
         self.pids = []
         self.receiver_thread = None
         self.workflows_executed = 0
@@ -145,30 +135,32 @@ class MultiprocessedExecutor(object):
         self.receiver = None
 
     def execute_workflow(self, workflow_id, execution_id_in=None, start=None, start_arguments=None, resume=False):
-        """Executes a workflow.
+        """Executes a workflow
 
         Args:
             workflow_id (Workflow): The Workflow to be executed.
-            execution_id_in (str, optional): The optional execution ID to provide for the workflow. Should only be
+            execution_id_in (UUID, optional): The optional execution ID to provide for the workflow. Should only be
                 used (and is required) when resuming a workflow. Must be valid UUID4. Defaults to None.
-            start (str, optional): The ID of the first, or starting action. Defaults to None.
+            start (UUID, optional): The ID of the first, or starting action. Defaults to None.
             start_arguments (list[Argument]): The arguments to the starting action of the workflow. Defaults to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
 
         Returns:
-            The execution ID of the Workflow.
+            (UUID): The execution ID of the Workflow.
         """
-        workflow = executiondb.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
+        workflow = self.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
         if not workflow:
-            logger.error('Attempted to execute workflow which does not exist')
+            logger.error('Attempted to execute workflow {} which does not exist'.format(execution_id_in))
             return None, 'Attempted to execute workflow which does not exist'
 
         execution_id = execution_id_in if execution_id_in else str(uuid.uuid4())
 
         if start is not None:
-            logger.info('Executing workflow {0} for action {1}'.format(workflow.name, start))
+            logger.info('Executing workflow {0} (id={1}) with starting action action {2}'.format(
+                workflow.name, workflow.id, start))
         else:
-            logger.info('Executing workflow {0} with default starting action'.format(workflow.name, start))
+            logger.info('Executing workflow {0} (id={1}) with default starting action'.format(
+                workflow.name, workflow.id, start))
 
         workflow_data = {'execution_id': execution_id, 'id': str(workflow.id), 'name': workflow.name}
         self._log_and_send_event(WalkoffEvent.WorkflowExecutionPending, sender=workflow_data)
@@ -181,9 +173,13 @@ class MultiprocessedExecutor(object):
         """Pauses a workflow that is currently executing.
 
         Args:
-            execution_id (str): The execution id of the workflow.
+            execution_id (UUID): The execution id of the workflow.
+
+        Returns:
+            (bool): True if Workflow successfully paused, False otherwise
         """
-        workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
+        logger.info('Pausing workflow {}'.format(execution_id))
+        workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
         if workflow_status and workflow_status.status == WorkflowStatusEnum.running:
             self.manager.pause_workflow(execution_id)
@@ -196,15 +192,19 @@ class MultiprocessedExecutor(object):
         """Resumes a workflow that is currently paused.
 
         Args:
-            execution_id (str): The execution id of the workflow.
+            execution_id (UUID): The execution id of the workflow.
+
+        Returns:
+            (bool): True if workflow successfully resumed, False otherwise
         """
-        workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
+        logger.info('Resuming workflow {}'.format(execution_id))
+        workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
 
         if workflow_status and workflow_status.status == WorkflowStatusEnum.paused:
-            saved_state = executiondb.execution_db.session.query(SavedWorkflow).filter_by(
+            saved_state = self.execution_db.session.query(SavedWorkflow).filter_by(
                 workflow_execution_id=execution_id).first()
-            workflow = executiondb.execution_db.session.query(Workflow).filter_by(
+            workflow = self.execution_db.session.query(Workflow).filter_by(
                 id=workflow_status.workflow_id).first()
             workflow._execution_id = execution_id
             self._log_and_send_event(WalkoffEvent.WorkflowResumed, sender=workflow)
@@ -217,18 +217,22 @@ class MultiprocessedExecutor(object):
             return False
 
     def abort_workflow(self, execution_id):
-        """Abort a workflow.
+        """Abort a workflow
 
         Args:
-            execution_id (str): The execution id of the workflow.
+            execution_id (UUID): The execution id of the workflow.
+
+        Returns:
+            (bool): True if successfully aborted workflow, False otherwise
         """
-        workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
+        logger.info('Aborting workflow {}'.format(execution_id))
+        workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
 
         if workflow_status:
             if workflow_status.status in [WorkflowStatusEnum.pending, WorkflowStatusEnum.paused,
                                           WorkflowStatusEnum.awaiting_data]:
-                workflow = executiondb.execution_db.session.query(Workflow).filter_by(
+                workflow = self.execution_db.session.query(Workflow).filter_by(
                     id=workflow_status.workflow_id).first()
                 if workflow is not None:
                     self._log_and_send_event(
@@ -246,14 +250,18 @@ class MultiprocessedExecutor(object):
         """Resumes a workflow awaiting trigger data, if the conditions are met.
 
         Args:
-            execution_id (str): The execution ID of the workflow
+            execution_id (UUID): The execution ID of the workflow
             data_in (dict): The data to send to the trigger
             arguments (list[Argument], optional): Optional list of new Arguments for the trigger action.
                 Defaults to None.
+
+        Returns:
+            (bool): True if successfully resumed trigger step, false otherwise
         """
-        saved_state = executiondb.execution_db.session.query(SavedWorkflow).filter_by(
+        logger.info('Resuming workflow {} from trigger'.format(execution_id))
+        saved_state = self.execution_db.session.query(SavedWorkflow).filter_by(
             workflow_execution_id=execution_id).first()
-        workflow = executiondb.execution_db.session.query(Workflow).filter_by(
+        workflow = self.execution_db.session.query(Workflow).filter_by(
             id=saved_state.workflow_id).first()
         workflow._execution_id = execution_id
 
@@ -284,34 +292,32 @@ class MultiprocessedExecutor(object):
                 data={'workflow_execution_id': execution_id})
             return False
 
-    @staticmethod
-    def get_waiting_workflows():
+    def get_waiting_workflows(self):
         """Gets a list of the execution IDs of workflows currently awaiting data to be sent to a trigger.
 
         Returns:
-            A list of execution IDs of workflows currently awaiting data to be sent to a trigger.
+            (list[UUID]): A list of execution IDs of workflows currently awaiting data to be sent to a trigger.
         """
-        executiondb.execution_db.session.expire_all()
-        wf_statuses = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
+        self.execution_db.session.expire_all()
+        wf_statuses = self.execution_db.session.query(WorkflowStatus).filter_by(
             status=WorkflowStatusEnum.awaiting_data).all()
         return [str(wf_status.execution_id) for wf_status in wf_statuses]
 
-    @staticmethod
-    def get_workflow_status(execution_id):
+    def get_workflow_status(self, execution_id):
         """Gets the current status of a workflow by its execution ID
 
         Args:
-            execution_id (str): The execution ID of the workflow
+            execution_id (UUID): The execution ID of the workflow
 
         Returns:
-            The status of the workflow
+            (int): The status of the workflow
         """
-        workflow_status = executiondb.execution_db.session.query(WorkflowStatus).filter_by(
+        workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
         if workflow_status:
             return workflow_status.status
         else:
-            logger.error("Key {} does not exist in database.").format(execution_id)
+            logger.error("Workflow execution id {} does not exist in WorkflowStatus table.").format(execution_id)
             return 0
 
     def _log_and_send_event(self, event, sender=None, data=None):
@@ -321,10 +327,27 @@ class MultiprocessedExecutor(object):
         event.send(sender, data=data)
 
     def create_case(self, case_id, subscriptions):
+        """Creates a Case
+
+        Args:
+            case_id (int): The ID of the Case
+            subscriptions (list[Subscription]): List of Subscriptions to subscribe to
+        """
         self.manager.create_case(case_id, subscriptions)
 
     def update_case(self, case_id, subscriptions):
+        """Updates a Case
+
+        Args:
+            case_id (int): The ID of the Case
+            subscriptions (list[Subscription]): List of Subscriptions to subscribe to
+        """
         self.manager.create_case(case_id, subscriptions)
 
     def delete_case(self, case_id):
+        """Deletes a Case
+
+        Args:
+            case_id (int): The ID of the Case to delete
+        """
         self.manager.delete_case(case_id)

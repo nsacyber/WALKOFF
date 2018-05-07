@@ -1,4 +1,5 @@
 from logging import Handler
+
 from walkoff.events import WalkoffEvent
 
 

@@ -5,12 +5,12 @@ from mock import create_autospec
 
 import walkoff.appgateway
 import walkoff.config
-from tests import config
-from tests.util import execution_db_help
+from tests.util import execution_db_help, initialize_test_config
 from tests.util.mock_objects import *
 from walkoff.case.logger import CaseLogger
 from walkoff.executiondb.argument import Argument
 from walkoff.multiprocessedexecutor import multiprocessedexecutor
+from walkoff.server.app import create_app
 
 try:
     from importlib import reload
@@ -21,21 +21,19 @@ except ImportError:
 class TestWorkflowManipulation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        initialize_test_config()
         execution_db_help.setup_dbs()
 
-        walkoff.appgateway.cache_apps(config.test_apps_path)
-        walkoff.config.load_app_apis(apps_path=config.test_apps_path)
-        walkoff.config.Config.NUMBER_PROCESSES = 2
+        app = create_app(walkoff.config.Config)
+        cls.context = app.test_request_context()
+        cls.context.push()
+
         multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
-        cls.executor = multiprocessedexecutor.MultiprocessedExecutor(
-            MockRedisCacheAdapter(),
-            create_autospec(CaseLogger))
-        cls.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
-                                          walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                          walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-                                          walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
+        cls.executor = multiprocessedexecutor.MultiprocessedExecutor(MockRedisCacheAdapter(),
+                                                                     create_autospec(CaseLogger))
+        cls.executor.initialize_threading(app)
 
     def tearDown(self):
         execution_db_help.cleanup_execution_db()

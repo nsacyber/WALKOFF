@@ -7,6 +7,9 @@
     },
     "detailed": {
       "format": "[%(asctime)s] %(levelname)s: %(message)s  <in %(name)s.%(funcName)s:%(lineno)d)>"
+    },
+    "simple_with_proc": {
+      "format": "[%(asctime)s] %(processName)s %(threadName)s %(levelname)s - %(message)s"
     }
   },
   "handlers": {
@@ -26,6 +29,15 @@
       "level": "NOTSET",
       "formatter": "simple",
       "filename": "./data/log/log.log",
+      "maxBytes": 10485760,
+      "backupCount": 20,
+      "encoding": "utf8"
+    },
+    "file_handler_with_proc": {
+      "class": "logging.handlers.RotatingFileHandler",
+      "level": "NOTSET",
+      "formatter": "simple_with_proc",
+      "filename": "data/log/log.log",
       "maxBytes": 10485760,
       "backupCount": 20,
       "encoding": "utf8"
@@ -63,6 +75,14 @@
     "walkoff.server.app": {
       "level": "ERROR",
       "handlers": ["file_handler"]
+    },
+    "walkoff.executiondb": {
+      "level": "WARNING",
+      "handlers": ["file_handler_with_proc"]
+    },
+    "walkoff.multiprocessedexecutor": {
+      "level": "INFO",
+      "handlers": ["file_handler_with_proc"]
     }
   },
   "root": {

@@ -21,8 +21,7 @@ class _CaseEventLink(Case_Base):
 
 
 class Case(Case_Base):
-    """Case ORM for the events database
-    """
+    """Case ORM for the events database"""
     __tablename__ = 'case'
     id = Column(Integer, primary_key=True)
     name = Column(String)
@@ -46,8 +45,7 @@ class Case(Case_Base):
 
 
 class Event(Case_Base):
-    """ORM for an Event in the events database
-    """
+    """ORM for an Event in the events database"""
     __tablename__ = 'event'
     id = Column(Integer, primary_key=True)
     timestamp = Column(DateTime, default=datetime.utcnow)
@@ -87,12 +85,16 @@ class Event(Case_Base):
 
 
 class CaseDatabase(object):
-    """Wrapper for the SQLAlchemy Case database object
-    """
-
-    __instance = None
+    """Wrapper for the SQLAlchemy Case database object"""
+    instance = None
 
     def __init__(self, case_db_type, case_db_path):
+        """Initializes a new CaseDatabase
+
+        Args:
+            case_db_type (str): The type of database
+            case_db_path (str): The path to the database
+        """
         self.engine = create_engine(
             format_db_path(case_db_type, case_db_path))
         self.connection = self.engine.connect()
@@ -106,19 +108,18 @@ class CaseDatabase(object):
         Case_Base.metadata.create_all(self.engine)
 
     def __new__(cls, *args, **kwargs):
-        if cls.__instance is None:
-            cls.__instance = super(CaseDatabase, cls).__new__(cls)
-        return cls.__instance
+        if cls.instance is None:
+            cls.instance = super(CaseDatabase, cls).__new__(cls)
+        return cls.instance
 
     def tear_down(self):
-        """ Tears down the database
-        """
+        """ ears down the database"""
         self.session.rollback()
         self.connection.close()
         self.engine.dispose()
 
     def rename_case(self, case_id, new_case_name):
-        """ Renames a case
+        """Renames a case
         
         Args:
             case_id (int): The case to rename
@@ -150,7 +151,7 @@ class CaseDatabase(object):
             case_ids (list[int]): The names of the cases to add the event to
         """
         event.originator = str(event.originator)
-        cases = case_db.session.query(Case).filter(Case.id.in_(case_ids)).all()
+        cases = self.session.query(Case).filter(Case.id.in_(case_ids)).all()
         event.cases = cases
         self.session.add(event)
         self.session.commit()
@@ -179,6 +180,7 @@ class CaseDatabase(object):
         """
         case = self.session.query(Case).filter(Case.id == case_id).first()
         if not case:
+            logger.error('Could not get events for case {}. Case not found.'.format(case_id))
             raise Exception
 
         result = [event.as_json()
@@ -189,14 +191,3 @@ class CaseDatabase(object):
         """Commit the current changes to the database
         """
         self.session.commit()
-
-
-case_db = None
-
-
-# Initialize Module
-def initialize():
-    """ Initializes the case database
-    """
-    Case_Base.metadata.drop_all()
-    Case_Base.metadata.create_all()

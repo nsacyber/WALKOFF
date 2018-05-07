@@ -15,9 +15,14 @@ from walkoff.serverdb.tokens import *
 from walkoff.serverdb.user import *
 from scripts.migrations.database.commonenv import run
 from walkoff.extensions import db
-from walkoff.server import flaskserver
+from walkoff.server.app import create_app
+import walkoff.config
 
 
+walkoff.config.initialize()
+app = create_app(walkoff.config.Config)
+app_context = app.test_request_context()
+app_context.push()
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
@@ -28,7 +33,6 @@ target_metadata = db.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-app_context = flaskserver.app.test_request_context()
-app_context.push()
+
 
 run(target_metadata)

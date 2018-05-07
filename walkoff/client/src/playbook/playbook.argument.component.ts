@@ -9,6 +9,7 @@ import { Argument } from '../models/playbook/argument';
 import { GenericObject } from '../models/genericObject';
 import { User } from '../models/user';
 import { Role } from '../models/role';
+import { Device } from '../models/device';
 
 const AVAILABLE_TYPES = ['string', 'number', 'boolean'];
 
@@ -26,7 +27,12 @@ export class PlaybookArgumentComponent implements OnInit {
 	@Input() loadedWorkflow: Workflow;
 	@Input() users: User[];
 	@Input() roles: Role[];
+	@Input() devices: Device[];
+	@Input() branchCounters: any[];
 
+	valueType: string = 'static';
+	valueTypes: any[];
+	
 	propertyName: string = '';
 	selectedType: string;
 	availableTypes: string[] = AVAILABLE_TYPES;
@@ -49,36 +55,71 @@ export class PlaybookArgumentComponent implements OnInit {
 	 * Initialize user and role selects if necessary (if schema type user or role is used).
 	 */
 	ngOnInit(): void {
+		this.initParameterSchema();
+		this.initUserSelect();
+		this.initRoleSelect();
+		this.initDeviceSelect()
+		this.initBranchCounterSelect();
+		this.initTypeSelector();
+	}
+
+	initDeviceSelect(): void {
+		if (!this.isDeviceArgument) return;
+		this.argument.name = '__device__';
+	}
+
+	initParameterSchema(): void {
+		if (this.isDeviceArgument) return;
+
 		this.parameterSchema = this.parameterApi.schema;
-		if (this.argument.reference == null) { this.argument.reference = ''; }
+		if (this.argument.reference == null) { 
+			this.argument.reference = ''; 
+		} 
+
 		if (this.argument.value == null) {
 			if (this.parameterSchema.type === 'array') { 
 				this.argument.value = [];
 			} else if (this.parameterSchema.type === 'object') {
 				this.argument.value = {};
 			}
-		} else if (this.parameterSchema.type === 'array') {
+		} else if (this.argument.value && this.parameterSchema.type === 'array') {
 			for (const item of (this.argument.value as any[])) {
 				this.arrayTypes.push(typeof(item));
 			}
-		} else if (this.parameterSchema.type === 'object') {
+		} else if (this.argument.value && this.parameterSchema.type === 'object') {
 			for (const key in (this.argument.value as GenericObject)) {
 				if ((this.argument.value as GenericObject).hasOwnProperty(key)) {
 					this.objectTypes[key] = typeof((this.argument.value as GenericObject)[key]);
 				}
 			}
 		}
-		this.selectedType = this.availableTypes[0];
+	}
 
-		this.initUserSelect();
-		this.initRoleSelect();
+	initTypeSelector(): void {
+		this.valueTypes = (this.isDeviceArgument) ? 
+		[
+			{ id: 'device', name: 'Device'},
+			{ id: 'action', name: 'Action Output'},
+		] : [
+			{ id: 'static', name: 'Static Value'},
+			{ id: 'action', name: 'Action Output'},
+			{ id: 'branch', name: 'Branch Counter'}
+		]
+
+		if (this.isDeviceArgument && !this.argument.reference) this.valueType = 'device';
+		else if (this.argument.reference) {
+			if (this.loadedWorkflow.actions.find(action => action.id == this.argument.reference)) this.valueType = 'action';
+			else if (this.loadedWorkflow.branches.find(branch => branch.id == this.argument.reference)) this.valueType = 'branch';
+		}
+
+		this.selectedType = this.availableTypes[0];
 	}
 
 	/**
 	 * Initializes the user select2 box for arguments that have { type: 'user' } ParameterSchemas.
 	 */
 	initUserSelect(): void {
-		if (!this.isUserSelect(this.parameterSchema)) { return; }
+		if (!this.isUserSelect) { return; }
 
 		this.selectData = this.users.map((user) => {
 			return { id: user.id.toString(), text: user.username };
@@ -103,7 +144,7 @@ export class PlaybookArgumentComponent implements OnInit {
 	 * Initializes the role select2 box for arguments that have { type: 'role' } ParameterSchemas.
 	 */
 	initRoleSelect(): void {
-		if (!this.isRoleSelect(this.parameterSchema)) { return; }
+		if (!this.isRoleSelect) { return; }
 
 		this.selectData = this.roles.map((role) => {
 			return { id: role.id.toString(), text: role.name };
@@ -124,11 +165,16 @@ export class PlaybookArgumentComponent implements OnInit {
 		this.selectInitialValue = JSON.parse(JSON.stringify(this.argument.value));
 	}
 
+	initBranchCounterSelect(): void {
+		this.branchCounters = this.loadedWorkflow.listBranchCounters();
+	}
+
 	/**
 	 * Event fired on the select2 change for users/roles. Updates the value based on the event value.
 	 * @param $event JS Event Fired
 	 */
 	selectChange($event: any): void {
+		this.clearReference();
 		// Convert strings to numbers here
 		if (this.parameterSchema.type === 'array') {
 			const array = $event.value.map((id: string) => +id);
@@ -139,9 +185,18 @@ export class PlaybookArgumentComponent implements OnInit {
 	}
 
 	/**
+	 * Event fired on the select2 change for users/roles. Updates the value based on the event value.
+	 * @param $event JS Event Fired
+	 */
+	clearReference(): void {
+		delete this.argument.reference;
+	}
+
+	/**
 	 * Adds an item to an array if the argument parameter is array.
 	 */
 	addItem(): void {
+		this.clearReference();
 		switch (this.selectedType) {
 			case 'string':
 				(this.argument.value as any[]).push('');
@@ -203,6 +258,7 @@ export class PlaybookArgumentComponent implements OnInit {
 	 * Adds a new property to an our argument's value object of a given name and type.
 	 */
 	addProperty(): void {
+		this.clearReference();
 		if ((this.argument.value as object).hasOwnProperty(this.propertyName)) { return; }
 		this.propertyName = this.propertyName.trim();
 		switch (this.selectedType) {
@@ -283,29 +339,71 @@ export class PlaybookArgumentComponent implements OnInit {
 		return true;
 	}
 
+	get isDeviceArgument(): boolean {
+		return this.devices && !this.parameterApi;
+	}
+
 	/**
 	 * Checks if this schema represents a user select (single or multiple via array type).
 	 * @param schema JSON Schema Object to check against
 	 */
-	isUserSelect(schema: ParameterSchema): boolean {
-		if (schema.type === 'user' || 
-		(schema.type === 'array' && schema.items && !Array.isArray(schema.items) && schema.items.type === 'user')) { 
-			return true;
-		}
-
-		return false;
+	get isUserSelect(): boolean {
+		return this.parameterSchema && 
+			   (this.parameterSchema.type === 'user' || 
+			   (this.parameterSchema.type === 'array' && this.parameterSchema.items && 
+			   !Array.isArray(this.parameterSchema.items) && this.parameterSchema.items.type === 'user'));
 	}
 
 	/**
 	 * Checks if this schema represents a role select (single or multiple via array type).
 	 * @param schema JSON Schema Object to check against
 	 */
-	isRoleSelect(schema: ParameterSchema): boolean {
-		if (schema.type === 'role' || 
-		(schema.type === 'array' && schema.items && !Array.isArray(schema.items) && schema.items.type === 'role')) { 
-			return true;
-		}
+	get isRoleSelect(): boolean {
+		return this.parameterSchema &&
+			   (this.parameterSchema.type === 'role' || 
+			   (this.parameterSchema.type === 'array' && this.parameterSchema.items && 
+			   !Array.isArray(this.parameterSchema.items) && this.parameterSchema.items.type === 'role'));
+	}
 
-		return false;
+	get isReference(): boolean {
+		return ['static', 'device', 'branch'].indexOf(this.valueType) == -1;
+	}
+
+	get isStatic(): boolean {
+		return this.valueType == 'static';
+	}
+
+	get isActionSelect(): boolean {
+		return this.valueType == 'action';
+	}
+
+	get isStringSelect(): boolean {
+		return this.isStatic && this.parameterSchema && this.parameterSchema.type === 'string' && !this.parameterSchema.enum;
+	}
+
+	get isNumberSelect(): boolean {
+		return this.isStatic && this.parameterSchema && (this.parameterSchema.type === 'number' || this.parameterSchema.type === 'integer')
+	}
+
+	get isEnumSelect(): boolean {
+		return this.isStatic && this.parameterSchema && this.parameterSchema.enum;
+	}
+
+	get isBooleanSelect(): boolean {
+		return this.isStatic && this.parameterSchema && this.parameterSchema.type === 'boolean';
+	}
+
+	get isDeviceSelect() : boolean {
+		return this.valueType == 'device';
+	}
+
+	get isBranchCounterSelect(): boolean {
+		return this.valueType == 'branch'
+	}
+
+	resetValue(): void {
+		// this.argument.value = null;
+		// this.argument.reference = null;
+		// this.argument.selection = null;
 	}
 }

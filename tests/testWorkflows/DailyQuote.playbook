@@ -7,7 +7,10 @@
                     "action_name": "getQuote",
                     "app_name": "DailyQuote",
                     "arguments": [],
-                    "device_id": 1,
+                    "device_id": {
+                        "name": "__device__",
+                        "value": 1
+                    },
                     "id": "c5fe00b7-f5dd-42d2-ad56-ba720c9eccff",
                     "name": "start"
                 }

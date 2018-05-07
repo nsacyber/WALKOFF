@@ -14,4 +14,8 @@ export class Branch extends ExecutionElement {
 	
 	@Type(() => ConditionalExpression)
 	condition?: ConditionalExpression;
+
+	get all_errors(): string[] {
+		return this.errors.concat((this.condition) ? this.condition.all_errors : []);
+	}
 }

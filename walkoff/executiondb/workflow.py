@@ -1,7 +1,7 @@
 import logging
 from uuid import UUID
 
-from sqlalchemy import Column, String, ForeignKey, orm, UniqueConstraint
+from sqlalchemy import Column, String, ForeignKey, orm, UniqueConstraint, Boolean, event
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 
@@ -10,7 +10,6 @@ from walkoff.events import WalkoffEvent
 from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.action import Action
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import InvalidExecutionElement
 
 logger = logging.getLogger(__name__)
 
@@ -22,11 +21,14 @@ class Workflow(ExecutionElement, Execution_Base):
     actions = relationship('Action', cascade='all, delete-orphan')
     branches = relationship('Branch', cascade='all, delete-orphan')
     start = Column(UUIDType(binary=False))
+    is_valid = Column(Boolean, default=False)
+    children = ('actions', 'branches')
     __table_args__ = (UniqueConstraint('playbook_id', 'name', name='_playbook_workflow'),)
 
     def __init__(self, name, start, id=None, actions=None, branches=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Actions
             within it that get executed.
+
         Args:
             name (str): The name of the Workflow object.
             start (int): ID of the starting Action.
@@ -60,34 +62,40 @@ class Workflow(ExecutionElement, Execution_Base):
         self._execution_id = 'default'
 
     def validate(self):
+        """Validates the object"""
         action_ids = [action.id for action in self.actions]
-        errors = {}
+        errors = []
         if not self.start and self.actions:
-            errors['start'] = 'Workflows with actions require a start parameter'
+            errors.append('Workflows with actions require a start parameter')
         elif self.actions and self.start not in action_ids:
-            errors['start'] = 'Workflow start ID {} not found in actions'.format(self.start)
-
-        branch_errors = []
+            errors.append('Workflow start ID {} not found in actions'.format(self.start))
         for branch in self.branches:
             if branch.source_id not in action_ids:
-                branch_errors.append('Branch source ID {} not found in workflow actions'.format(branch.source_id))
+                errors.append('Branch source ID {} not found in workflow actions'.format(branch.source_id))
             if branch.destination_id not in action_ids:
-                branch_errors.append(
-                    'Branch destination ID {} not found in workflow actions'.format(branch.destination_id))
-        if branch_errors:
-            errors['branches'] = branch_errors
-        if errors:
-            raise InvalidExecutionElement(self.id, self.name, 'Invalid workflow', errors=errors)
+                errors.append('Branch destination ID {} not found in workflow actions'.format(branch.destination_id))
+        self.errors = errors
+        self.is_valid = self._is_valid
 
     def get_action_by_id(self, action_id):
+        """Gets an Action by its ID
+
+        Args:
+            action_id (UUID): The ID of the Action to find
+
+        Returns:
+            (Action): The Action from its ID
+        """
         return next((action for action in self.actions if action.id == action_id), None)
 
     def remove_action(self, action_id):
         """Removes a Action object from the Workflow's list of Actions given the Action ID.
+
         Args:
-            action_id (str): The ID of the Action object to be removed.
+            action_id (UUID): The ID of the Action object to be removed.
+
         Returns:
-            True on success, False otherwise.
+            (bool): True on success, False otherwise.
         """
         action_to_remove = self.get_action_by_id(action_id)
         self.actions.remove(action_to_remove)
@@ -98,37 +106,38 @@ class Workflow(ExecutionElement, Execution_Base):
         return True
 
     def pause(self):
-        """Pauses the execution of the Workflow. The Workflow will pause execution before starting the next Action.
-        """
+        """Pauses the execution of the Workflow. The Workflow will pause execution before starting the next Action"""
         self._is_paused = True
         logger.info('Pausing workflow {0}'.format(self.name))
 
     def abort(self):
-        """Aborts the execution of the Workflow. The Workflow will abort execution before starting the next Action.
-        """
+        """Aborts the execution of the Workflow. The Workflow will abort execution before starting the next Action"""
         self._abort = True
         logger.info('Aborting workflow {0}'.format(self.name))
 
     def execute(self, execution_id, start=None, start_arguments=None, resume=False):
         """Executes a Workflow by executing all Actions in the Workflow list of Action objects.
+
         Args:
-            execution_id (str): The UUID4 hex string uniquely identifying this workflow instance
+            execution_id (UUID): The UUID4 hex string uniquely identifying this workflow instance
             start (int, optional): The ID of the first Action. Defaults to None.
             start_arguments (list[Argument]): Argument parameters into the first Action. Defaults to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
         """
-        self._execution_id = execution_id
-        logger.info('Executing workflow {0}'.format(self.name))
-        WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowExecutionStart)
-        start = start if start is not None else self.start
-        if not isinstance(start, UUID):
-            start = UUID(start)
-        executor = self.__execute(start, start_arguments, resume)
-        next(executor)
+        if self.is_valid:
+            self._execution_id = execution_id
+            logger.info('Executing workflow {0}'.format(self.name))
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowExecutionStart)
+            start = start if start is not None else self.start
+            if not isinstance(start, UUID):
+                start = UUID(start)
+            executor = self.__execute(start, start_arguments, resume)
+            next(executor)
+        else:
+            logger.error('Workflow is invalid, yet executor attempted to execute.')
 
     def __execute(self, start, start_arguments=None, resume=False):
         actions = self.__actions(start=start)
-        first = True
         for action in (action_ for action_ in actions if action_ is not None):
             self._executing_action = action
             logger.debug('Executing action {0} of workflow {1}'.format(action, self.name))
@@ -136,21 +145,24 @@ class Workflow(ExecutionElement, Execution_Base):
             if self._is_paused:
                 self._is_paused = False
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowPaused)
+                logger.debug('Paused workflow {} (id={})'.format(self.name, str(self.id)))
                 yield
             if self._abort:
                 self._abort = False
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowAborted)
+                logger.info('Aborted workflow {} (id={})'.format(self.name, str(self.id)))
                 yield
 
             device_id = self._instance_repo.setup_app_instance(action, self)
-
-            if first:
-                first = False
-                result = action.execute(instance=self._instance_repo.get_app_instance(device_id)(),
-                                        accumulator=self._accumulator, arguments=start_arguments, resume=resume)
+            if device_id:
+                result = action.execute(self._accumulator, instance=self._instance_repo.get_app_instance(device_id)(),
+                                        arguments=start_arguments, resume=resume)
             else:
-                result = action.execute(instance=self._instance_repo.get_app_instance(device_id)(),
-                                        accumulator=self._accumulator, resume=resume)
+                result = action.execute(self._accumulator, arguments=start_arguments, resume=resume)
+
+            if start_arguments:
+                start_arguments = None
+
             if result and result.status == "trigger":
                 yield
             self._accumulator[action.id] = action.get_output().result
@@ -171,11 +183,13 @@ class Workflow(ExecutionElement, Execution_Base):
     def get_branch(self, current_action, accumulator):
         """Executes the Branch objects associated with this Workflow to determine which Action should be
             executed next.
+
         Args:
             current_action(Action): The current action that has just finished executing.
             accumulator (dict): The accumulated results of previous Actions.
+
         Returns:
-            The ID of the next Action to be executed if successful, else None.
+            (UUID): The ID of the next Action to be executed if successful, else None.
         """
         if self.branches:
             branches = sorted(
@@ -185,6 +199,8 @@ class Workflow(ExecutionElement, Execution_Base):
                 # Keep whole result in accumulator
                 destination_id = branch.execute(current_action.get_output(), accumulator)
                 if destination_id is not None:
+                    logger.debug('Branch {} with destination {} chosen by workflow {} (id={})'.format(
+                        str(branch.id), str(destination_id), self.name, str(self.id)))
                     return destination_id
             return None
         else:
@@ -206,10 +222,10 @@ class Workflow(ExecutionElement, Execution_Base):
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self._accumulator))
 
     def set_execution_id(self, execution_id):
-        """Sets the execution UD for the Workflow
+        """Sets the execution UUIDD for the Workflow
 
         Args:
-            execution_id (str): The execution ID
+            execution_id (UUID): The execution ID
         """
         self._execution_id = execution_id
 
@@ -217,7 +233,7 @@ class Workflow(ExecutionElement, Execution_Base):
         """Gets the execution ID for the Workflow
 
         Returns:
-            The execution ID of the Workflow
+            (UUID): The execution ID of the Workflow
         """
         return self._execution_id
 
@@ -225,7 +241,7 @@ class Workflow(ExecutionElement, Execution_Base):
         """Gets the ID of the currently executing Action
 
         Returns:
-            The ID of the currently executing Action
+            (UUID): The ID of the currently executing Action
         """
         return self._executing_action.id
 
@@ -233,7 +249,7 @@ class Workflow(ExecutionElement, Execution_Base):
         """Gets the currently executing Action
 
         Returns:
-            The currently executing Action
+            (Action): The currently executing Action
         """
         return self._executing_action
 
@@ -241,7 +257,7 @@ class Workflow(ExecutionElement, Execution_Base):
         """Gets the accumulator
 
         Returns:
-            The accumulator
+            (dict): The accumulator
         """
         return self._accumulator
 
@@ -249,6 +265,11 @@ class Workflow(ExecutionElement, Execution_Base):
         """Gets all instances
 
         Returns:
-            All instances
+            (list[AppInstance]): All instances
         """
         return self._instance_repo.get_all_app_instances()
+
+
+@event.listens_for(Workflow, 'before_update')
+def validate_before_update(mapper, connection, target):
+    target.validate()

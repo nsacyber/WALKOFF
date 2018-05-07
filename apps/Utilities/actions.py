@@ -6,6 +6,12 @@ from random import SystemRandom
 
 from walkoff.appbase import action
 from walkoff.appbase.messaging import Text, Message, send_message, Url, AcceptDecline
+from walkoff.executiondb.device import get_device_ids_by_fields
+
+
+@action
+def get_devices_by_fields(fields):
+    return get_device_ids_by_fields(fields)
 
 
 @action
@@ -176,3 +182,41 @@ def send_full_message(message, users=None, roles=None):
 def accept_decline(action):
     r = action.lower() == 'accept'
     return r, "Accepted" if r else "Declined"
+
+
+@action
+def csv_to_json(path, separator=',', encoding='ascii', headers=None):
+    import sys
+    if sys.version[0] == '2':
+        from io import open
+    try:
+        with open(path, encoding=encoding) as f:
+            results = []
+            if not headers:
+                headers = f.readline().split(separator)
+            for line in f.readlines():
+                line = line.strip('\r\n')
+                results.append({key: value for key, value in zip(headers, line.split(','))})
+        return results
+    except (IOError, OSError) as e:
+        return e, 'File Error'
+
+
+@action
+def mark_blacklist(data, blacklisted=True):
+    for element in data:
+        element['blacklisted'] = blacklisted
+    return data, 'Success'
+
+
+@action
+def mark_whitelist(data, whitelisted=True):
+    for element in data:
+        element['whitelisted'] = whitelisted
+    return data, 'Success'
+
+
+@action
+def mark_whitelist_blacklist(data, whitelisted=False, blacklisted=False):
+    for element in data:
+        element.update({'whitelisted': whitelisted, 'blacklisted': blacklisted})

@@ -52,8 +52,8 @@ def validate_path(directory, filename):
 
 
 def read_client_file(filename):
-    file = validate_path(walkoff.config.Config.CLIENT_PATH, filename)
-    if file is not None:
-        return send_file(file), 200
+    f = validate_path(walkoff.config.Config.CLIENT_PATH, filename)
+    if f is not None:
+        return send_file(f), 200
     else:
         return {"error": "invalid path"}, 463

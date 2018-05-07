@@ -24,22 +24,20 @@ class AppInstance(object):
             device_name (str): A device pertaining to the App.
             
         Returns:
-            A new Instance object.
+            (AppInstance): A new Instance object.
         """
         try:
             return AppInstance(instance=get_app(app_name)(name=app_name, device=device_name))
         except Exception as e:
             if device_name:
-                logger.error('Cannot create app instance. app: {0}, device: {1}. '
-                             'Error: {2}'.format(app_name, device_name, format_exception_message(e)))
+                logger.exception('Cannot create app instance. app: {0}, device: {1}.'.format(app_name, device_name))
             return AppInstance(instance=None)
 
     def __call__(self):
         return self.instance
 
     def shutdown(self):
-        """Shuts down the Instance object.
-        """
+        """Shuts down the Instance object."""
         self.instance.shutdown()
 
     def __repr__(self):

@@ -58,7 +58,7 @@ class Role(db.Model, TrackModificationsMixIn):
                 Role in the JSON representation. Defaults to False.
 
         Returns:
-            The dictionary representation of the Role object.
+            (dict): The dictionary representation of the Role object.
         """
         out = {"id": self.id,
                "name": self.name,

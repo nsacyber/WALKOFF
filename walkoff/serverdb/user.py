@@ -35,7 +35,7 @@ class User(db.Model, TrackModificationsMixIn):
         Args:
             name (str): The username for the User.
             password (str): The password for the User.
-            roles (list[int]): List of Role ids for the User. Defaults to None.
+            roles (list[int], optional): List of Role ids for the User. Defaults to None.
         """
         self.username = name
         self._password = pbkdf2_sha512.hash(password)
@@ -46,6 +46,9 @@ class User(db.Model, TrackModificationsMixIn):
     @hybrid_property
     def password(self):
         """Returns the password for the user.
+
+        Returns:
+            (str): The password
         """
         return self._password
 
@@ -65,7 +68,7 @@ class User(db.Model, TrackModificationsMixIn):
             password_attempt(str): The input password.
 
         Returns:
-            True if the passwords match, False if not.
+            (bool): True if the passwords match, False if not.
         """
         return pbkdf2_sha512.verify(password_attempt, self._password)
 
@@ -98,8 +101,7 @@ class User(db.Model, TrackModificationsMixIn):
         self.login_count += 1
 
     def logout(self):
-        """Tracks login/logout information for the User upon logging out.
-        """
+        """Tracks login/logout information for the User upon logging out"""
         if self.login_count > 0:
             self.login_count -= 1
         else:
@@ -113,7 +115,7 @@ class User(db.Model, TrackModificationsMixIn):
             role (int): The ID of the Role.
 
         Returns:
-            True if the User has the Role, False otherwise.
+            (bool): True if the User has the Role, False otherwise.
         """
         return role in [role.id for role in self.roles]
 
@@ -125,7 +127,7 @@ class User(db.Model, TrackModificationsMixIn):
                 representation of the User. Defaults to False.
 
         Returns:
-            The dictionary representation of a User object.
+            (dict): The dictionary representation of a User object.
         """
         out = {"id": self.id,
                "username": self.username,

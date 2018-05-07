@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Response, RequestOptions, ResponseContentType, Headers } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
-import { plainToClass } from 'class-transformer';
+import { plainToClass, classToPlain } from 'class-transformer';
 
 import { Workflow } from '../models/playbook/workflow';
 import { Playbook } from '../models/playbook/playbook';
@@ -149,7 +149,7 @@ export class PlaybookService {
 	newWorkflow(playbookId: string, workflow: Workflow): Promise<Workflow> {
 		workflow.playbook_id = playbookId;
 
-		return this.authHttp.post('/api/workflows', workflow)
+		return this.authHttp.post('/api/workflows', classToPlain(workflow))
 			.toPromise()
 			.then(this.extractData)
 			.then((data: object) => plainToClass(Workflow, data))
@@ -161,7 +161,7 @@ export class PlaybookService {
 	 * @param workflow Data to be saved under the workflow (actions, etc.)
 	 */
 	saveWorkflow(workflow: Workflow): Promise<Workflow> {
-		return this.authHttp.put('/api/workflows', workflow)
+		return this.authHttp.put('/api/workflows', classToPlain(workflow))
 			.toPromise()
 			.then(this.extractData)
 			.then((data: object) => plainToClass(Workflow, data))

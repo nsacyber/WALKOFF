@@ -2,16 +2,15 @@ import json
 import logging
 import logging.config
 import sys
-from os.path import isfile, join, abspath
 import warnings
 from walkoff.helpers import list_valid_directories, format_exception_message, format_db_path
+from os.path import isfile, join, abspath
+
 import yaml
 
 logger = logging.getLogger(__name__)
 
 app_apis = {}
-
-_cache_path = join('.', 'data', 'cache')
 
 
 def load_app_apis(apps_path=None):
@@ -96,29 +95,28 @@ class Config(object):
     CASE_DB_TYPE = 'sqlite'
     EXECUTION_DB_TYPE = 'sqlite'
 
-    CACHE = {"type": "disk", "directory": _cache_path, "shards": 8, "timeout": 0.01, "retry": True}
-
     # PATHS
 
     DATA_PATH = join('.', 'data')
 
-    API_PATH = join('.', 'walkoff', 'api')
+    API_PATH = join(DATA_PATH, 'api.yaml')
     APPS_PATH = join('.', 'apps')
     CACHE_PATH = join('.', 'data', 'cache')
-    CASE_DB_PATH = join(DATA_PATH, 'events.db')
+    CACHE = {"type": "disk", "directory": CACHE_PATH, "shards": 8, "timeout": 0.01, "retry": True}
+    CASE_DB_PATH = abspath(join(DATA_PATH, 'events.db'))
 
     TEMPLATES_PATH = join('.', 'walkoff', 'templates')
     CLIENT_PATH = join('.', 'walkoff', 'client')
     CONFIG_PATH = join(DATA_PATH, 'walkoff.config')
-    DB_PATH = join(DATA_PATH, 'walkoff.db')
+    DB_PATH = abspath(join(DATA_PATH, 'walkoff.db'))
     DEFAULT_APPDEVICE_EXPORT_PATH = join(DATA_PATH, 'appdevice.json')
     DEFAULT_CASE_EXPORT_PATH = join(DATA_PATH, 'cases.json')
-    EXECUTION_DB_PATH = join(DATA_PATH, 'execution.db')
+    EXECUTION_DB_PATH = abspath(join(DATA_PATH, 'execution.db'))
     INTERFACES_PATH = join('.', 'interfaces')
     LOGGING_CONFIG_PATH = join(DATA_PATH, 'log', 'logging.json')
 
     WALKOFF_SCHEMA_PATH = join(DATA_PATH, 'walkoff_schema.json')
-    WORKFLOWS_PATH = join('.', 'workflows')
+    WORKFLOWS_PATH = join('.', 'data', 'workflows')
 
     KEYS_PATH = join('.', '.certificates')
     CERTIFICATE_PATH = join(KEYS_PATH, 'walkoff.crt')
@@ -126,25 +124,46 @@ class Config(object):
     ZMQ_PRIVATE_KEYS_PATH = join(KEYS_PATH, 'private_keys')
     ZMQ_PUBLIC_KEYS_PATH = join(KEYS_PATH, 'public_keys')
 
+    # AppConfig
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SECRET_KEY = 'SHORTSTOPKEYTEST'
+
+    SQLALCHEMY_DATABASE_URI = format_db_path(WALKOFF_DB_TYPE, DB_PATH, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD')
+
+    JWT_BLACKLIST_ENABLED = True
+    JWT_BLACKLIST_TOKEN_CHECKS = ['refresh']
+    JWT_TOKEN_LOCATION = 'headers'
+
+    JWT_BLACKLIST_PRUNE_FREQUENCY = 1000
+
     @classmethod
-    def load_config(cls):
+    def load_config(cls, config_path=None):
         """ Loads Walkoff configuration from JSON file
+
+        Args:
+            config_path (str): Optional path to the config. Defaults to the CONFIG_PATH class variable.
         """
-        if isfile(cls.CONFIG_PATH):
+        if config_path:
+            cls.CONFIG_PATH = config_path
+        if cls.CONFIG_PATH:
             try:
-                with open(cls.CONFIG_PATH) as config_file:
-                    config = json.loads(config_file.read())
-                    for key, value in config.items():
-                        if value:
-                            if hasattr(cls, key.upper()):
+                if isfile(cls.CONFIG_PATH):
+                    with open(cls.CONFIG_PATH) as config_file:
+                        config = json.loads(config_file.read())
+                        for key, value in config.items():
+                            if value:
                                 setattr(cls, key.upper(), value)
+                else:
+                    logger.warning('Config path {} is not a file.'.format(cls.CONFIG_PATH))
             except (IOError, OSError, ValueError):
                 logger.warning('Could not read config file.', exc_info=True)
 
+        cls.SQLALCHEMY_DATABASE_URI = format_db_path(cls.WALKOFF_DB_TYPE, cls.DB_PATH, 'WALKOFF_DB_USERNAME',
+                                                     'WALKOFF_DB_PASSWORD')
+
     @classmethod
     def write_values_to_file(cls, keys=None):
-        """ Writes the current walkoff configuration to a file
-        """
+        """ Writes the current walkoff configuration to a file"""
         if keys is None:
             keys = [key for key in dir(cls) if not key.startswith('__')]
 
@@ -157,22 +176,10 @@ class Config(object):
             config_file.write(json.dumps(output, sort_keys=True, indent=4, separators=(',', ': ')))
 
 
-class AppConfig(object):
-    # CHANGE SECRET KEY AND SECURITY PASSWORD SALT!!!
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SECRET_KEY = 'SHORTSTOPKEYTEST'
-    SQLALCHEMY_DATABASE_URI = format_db_path(Config.WALKOFF_DB_TYPE, Config.DB_PATH)
-
-    JWT_BLACKLIST_ENABLED = True
-    JWT_BLACKLIST_TOKEN_CHECKS = ['refresh']
-    JWT_TOKEN_LOCATION = 'headers'
-
-
-def initialize():
-    """Loads the config file, loads the app cache, and loads the app APIs into memory
-    """
+def initialize(config_path=None):
+    """Loads the config file, loads the app cache, and loads the app APIs into memory"""
+    Config.load_config(config_path)
     setup_logger()
-    Config.load_config()
     from walkoff.appgateway import cache_apps
     cache_apps(Config.APPS_PATH, relative=True)
     load_app_apis()

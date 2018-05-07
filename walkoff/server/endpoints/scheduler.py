@@ -25,35 +25,31 @@ def validate_uuids(uuids):
 
 
 def get_scheduler_status():
-    from walkoff.server.context import running_context
-
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['read']))
     def __func():
-        return {"status": running_context.scheduler.scheduler.state}, SUCCESS
+        return {"status": current_app.running_context.scheduler.scheduler.state}, SUCCESS
 
     return __func()
 
 
 def update_scheduler_status():
-    from walkoff.server.context import running_context
-
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['update', 'execute']))
     def __func():
         status = request.get_json()['status']
-        updated_status = running_context.scheduler.scheduler.state
+        updated_status = current_app.running_context.scheduler.scheduler.state
         if status == "start":
-            updated_status = running_context.scheduler.start()
+            updated_status = current_app.running_context.scheduler.start()
             current_app.logger.info('Scheduler started. Status {0}'.format(updated_status))
         elif status == "stop":
-            updated_status = running_context.scheduler.stop()
+            updated_status = current_app.running_context.scheduler.stop()
             current_app.logger.info('Scheduler stopped. Status {0}'.format(updated_status))
         elif status == "pause":
-            updated_status = running_context.scheduler.pause()
+            updated_status = current_app.running_context.scheduler.pause()
             current_app.logger.info('Scheduler paused. Status {0}'.format(updated_status))
         elif status == "resume":
-            updated_status = running_context.scheduler.resume()
+            updated_status = current_app.running_context.scheduler.resume()
             current_app.logger.info('Scheduler resumed. Status {0}'.format(updated_status))
         return {"status": updated_status}, SUCCESS
 

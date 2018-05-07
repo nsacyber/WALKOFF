@@ -3,7 +3,6 @@ import time
 
 import requests
 from requests.exceptions import Timeout
-
 from walkoff.appbase import App, action
 import walkoff.config
 

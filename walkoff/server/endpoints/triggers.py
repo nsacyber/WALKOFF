@@ -1,16 +1,14 @@
-from flask import request
+from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt_claims
 
-from walkoff.messaging.utils import log_action_taken_on_message
 from walkoff.executiondb.argument import Argument
+from walkoff.messaging.utils import log_action_taken_on_message
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.returncodes import *
 from walkoff.serverdb.message import Message
 
 
 def send_data_to_trigger():
-    from walkoff.server.context import running_context
-
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['execute']))
     def __func():
@@ -19,7 +17,7 @@ def send_data_to_trigger():
         data_in = data['data_in']
         arguments = data['arguments'] if 'arguments' in data else []
 
-        workflows_awaiting_data = set(running_context.executor.get_waiting_workflows())
+        workflows_awaiting_data = set(current_app.running_context.executor.get_waiting_workflows())
         execution_ids = set.intersection(workflows_in, workflows_awaiting_data)
 
         user_id = get_jwt_identity()
@@ -33,7 +31,7 @@ def send_data_to_trigger():
             arg_objects.append(Argument(**arg))
 
         for execution_id in execution_ids:
-            if running_context.executor.resume_trigger_step(execution_id, data_in, arg_objects):
+            if current_app.running_context.executor.resume_trigger_step(execution_id, data_in, arg_objects):
                 completed_execution_ids.append(execution_id)
                 log_action_taken_on_message(user_id, execution_id)
 

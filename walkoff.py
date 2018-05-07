@@ -3,43 +3,31 @@ import logging
 import os
 import sys
 import traceback
-from os.path import isfile
 
 from gevent import monkey
 from gevent import pywsgi
 
 import walkoff
-import walkoff.cache
 import walkoff.config
+from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
+from walkoff.server.app import create_app
+from tests.util.jsonplaybookloader import JsonPlaybookLoader
+from walkoff.executiondb.playbook import Playbook
+from walkoff.scripts.compose_api import compose_api
 
 logger = logging.getLogger('walkoff')
 
 
-def run(host, port):
-    from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
+def run(app, host, port):
     print_banner()
-    pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES,
-                                  walkoff.config.Config.NUMBER_THREADS_PER_PROCESS,
-                                  walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                  walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-                                  walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
+    pids = spawn_worker_processes()
     monkey.patch_all()
 
-    from walkoff.scripts.compose_api import compose_api
-    compose_api()
 
-    from walkoff.server import flaskserver
-    flaskserver.running_context.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
-                                                              walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                                              walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-                                                              walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
-                                                              pids)
+    app.running_context.executor.initialize_threading(app, pids)
     # The order of these imports matter for initialization (should probably be fixed)
 
-    import walkoff.case.database as case_database
-    case_database.initialize()
-
-    server = setup_server(flaskserver.app, host, port)
+    server = setup_server(app, host, port)
     server.serve_forever()
 
 
@@ -52,7 +40,8 @@ def print_banner():
 
 
 def setup_server(app, host, port):
-    if isfile(walkoff.config.Config.CERTIFICATE_PATH) and isfile(walkoff.config.Config.PRIVATE_KEY_PATH):
+    if os.path.isfile(walkoff.config.Config.CERTIFICATE_PATH) and os.path.isfile(
+            walkoff.config.Config.PRIVATE_KEY_PATH):
         server = pywsgi.WSGIServer((host, port), application=app,
                                    keyfile=walkoff.config.Config.PRIVATE_KEY_PATH,
                                    certfile=walkoff.config.Config.CERTIFICATE_PATH)
@@ -71,7 +60,7 @@ def parse_args():
     parser.add_argument('-v', '--version', help='Get the version of WALKOFF running', action='store_true')
     parser.add_argument('-p', '--port', help='port to run the server on')
     parser.add_argument('-H', '--host', help='host address to run the server on')
-
+    parser.add_argument('-c', '--config', help='configuration file to use')
     args = parser.parse_args()
     if args.version:
         print(walkoff.__version__)
@@ -91,24 +80,35 @@ def convert_host_port(args):
     return host, port
 
 
+def import_workflows(app):
+    playbook_name = [playbook.id for playbook in app.running_context.execution_db.session.query(Playbook).all()]
+    if os.path.exists(walkoff.config.Config.WORKFLOWS_PATH):
+        logger.info('Importing any workflows not currently in database')
+        for p in os.listdir(walkoff.config.Config.WORKFLOWS_PATH):
+            full_path = os.path.join(walkoff.config.Config.WORKFLOWS_PATH, p)
+            if os.path.isfile(full_path):
+                playbook = JsonPlaybookLoader.load_playbook(full_path)
+                if playbook.name not in playbook_name:
+                    app.running_context.execution_db.session.add(playbook)
+        app.running_context.execution_db.session.commit()
+
+
 if __name__ == "__main__":
     args = parse_args()
     exit_code = 0
+    compose_api()
+    walkoff.config.initialize(args.config)
+    app = create_app(walkoff.config.Config)
+    import_workflows(app)
     try:
-        walkoff.config.initialize()
-        from walkoff import initialize_databases
-
-        initialize_databases()
-        run(*convert_host_port(args))
+        run(app, *convert_host_port(args))
     except KeyboardInterrupt:
-        logger.info('Caught KeyboardInterrupt!')
+        logger.info('Caught KeyboardInterrupt! Please wait a few seconds for WALKOFF to shutdown.')
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_exc()
         exit_code = 1
     finally:
-        from walkoff.server import flaskserver
-
-        flaskserver.running_context.executor.shutdown_pool()
+        app.running_context.executor.shutdown_pool()
         logger.info('Shutting down server')
         os._exit(exit_code)

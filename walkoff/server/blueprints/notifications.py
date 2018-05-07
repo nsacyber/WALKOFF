@@ -7,7 +7,6 @@ from walkoff.messaging import MessageActionEvent
 from walkoff.security import jwt_required_in_query
 from walkoff.sse import FilteredSseStream, StreamableBlueprint
 
-
 sse_stream = FilteredSseStream('notifications')
 
 notifications_page = StreamableBlueprint('notifications_page', __name__, streams=[sse_stream])

@@ -1,20 +1,21 @@
 import logging
 import os
-import os.path
+import pickle
 import sqlite3
+import threading
+from copy import deepcopy
 from datetime import timedelta
 from functools import partial
 from weakref import WeakSet
+
+import os.path
 from diskcache import FanoutCache, DEFAULT_SETTINGS, Cache
 from diskcache.core import DBNAME
 from gevent import sleep
 from gevent.event import AsyncResult, Event
-import threading
-import walkoff.config
-import pickle
-from copy import deepcopy
 from six import string_types, binary_type
-import json
+
+import walkoff.config
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,6 @@ try:
     from io import BytesIO
 except ImportError:
     from cStringIO import StringIO as BytesIO
-
 
 unsubscribe_message = b'__UNSUBSCRIBE__'
 """(str): The message used to unsubscribe from and close a PubSub channel
@@ -41,6 +41,7 @@ class DiskSubscription(object):
     Args:
         channel (str): The channel name associated with this subscription
     """
+
     def __init__(self, channel):
         self.channel = channel
         self._listener = None
@@ -158,19 +159,25 @@ class DiskPubSubCache(object):
         return subscription
 
     def __push_to_subscribers(self, channel, value):
-        value = self.__get_value(value)
-        for subscriber in self._subscribers.get(str(channel), []):
-            subscriber.push(value)
+        try:
+            value = self.__get_value(value)
+            for subscriber in self._subscribers.get(str(channel), []):
+                subscriber.push(value)
+        except:
+            import traceback
+            traceback.print_exc()
+            raise
 
     @staticmethod
     def __get_value(value):
-        if value == unsubscribe_message or isinstance(value, string_types):
+        if value == unsubscribe_message or isinstance(value, string_types) or isinstance(value, int) or isinstance(
+                value, float):
             return value
         if isinstance(value, binary_type):
             return value.decode('utf-8')
         try:
             return pickle.load(BytesIO(value))
-        except KeyError:
+        except (KeyError, TypeError, IndexError):
             return str(value)
 
     @property
@@ -226,6 +233,7 @@ class DiskCacheAdapter(object):
         retry (bool, optional): Should this database retry timed out transactions? Default to True
         **settings: Other setting which will be passsed to the `cache` attribute on initialization
     """
+
     def __init__(self, directory, shards=8, timeout=0.01, retry=True, **settings):
         self.directory = directory
         self.retry = retry
@@ -425,7 +433,7 @@ class DiskCacheAdapter(object):
         Returns:
             (float): The expiration time in seconds
         """
-        return time.total_seconds() if isinstance(time, timedelta) else float(time)/1000.
+        return time.total_seconds() if isinstance(time, timedelta) else float(time) / 1000.
 
     def shutdown(self):
         """Shuts down the connection to the cache
@@ -516,8 +524,7 @@ class RedisCacheAdapter(object):
         Returns:
             The value stored in the key
         """
-        value = self.cache.get(key)
-        return value if value is None else value.decode('utf-8')
+        return self._decode_response(self.cache.get(key))
 
     def add(self, key, value, expire=None, **opts):
         """Add a key and a value to the cache if the key is not already in the cache
@@ -590,7 +597,7 @@ class RedisCacheAdapter(object):
         Returns:
             The rightmost value on the deque or None if the key is not a deque or the deque is empty
         """
-        return self.cache.rpop(key).decode('utf-8')
+        return self._decode_response(self.cache.rpop(key))
 
     def lpush(self, key, *values):
         """Pushes a value to the left of a deque.
@@ -616,7 +623,16 @@ class RedisCacheAdapter(object):
         Returns:
             The leftmost value on the deque or None if the key is not a deque or the deque is empty
         """
-        return self.cache.lpop(key).decode('utf-8')
+        return self._decode_response(self.cache.lpop(key))
+
+    @staticmethod
+    def _decode_response(response):
+        if response is None:
+            return response
+        try:
+            return response.decode('utf-8')
+        except UnicodeDecodeError:
+            return response
 
     def subscribe(self, channel):
         """Subscribe to a channel
@@ -696,12 +712,6 @@ cache_translation = {'disk': DiskCacheAdapter, 'redis': RedisCacheAdapter}
 """(dict): A mapping between a string type and the corresponding cache adapter
 """
 
-# Ideally this global is replaced entirely by the running_context
-# This is needed currently to get this cache into the blueprints, so there are two cache connections in the apps now
-cache = None
-""" (RedisCacheAdapter|DiskCacheAdapter): The cache used throughout Walkoff 
-"""
-
 
 def make_cache(config=None):
     """Factory method for constructing Cache Adapters from configuration JSON
@@ -715,7 +725,6 @@ def make_cache(config=None):
     if config is None:
         config = {}
     config = deepcopy(config)
-    global cache
     cache_type = config.pop('type', 'disk').lower()
     try:
         cache = cache_translation[cache_type].from_json(config)

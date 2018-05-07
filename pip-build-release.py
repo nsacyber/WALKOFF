@@ -18,6 +18,8 @@ def zip_dir(path, zip_file, arcname=None):
 
 def main():
 
+    #ToDO: compose api here
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--production",
                         help="Upload to pypi.org.",

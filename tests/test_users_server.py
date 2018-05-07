@@ -166,8 +166,8 @@ class TestUserServer(ServerTestCase):
 
     def test_update_active_with_guest_user(self):
         user = self.setup_guest_user()
-        response = self.app.post('/api/auth', content_type="application/json",
-                                 data=json.dumps(dict(username='guest', password='guest')))
+        response = self.test_client.post('/api/auth', content_type="application/json",
+                                         data=json.dumps(dict(username='guest', password='guest')))
         key = json.loads(response.get_data(as_text=True))
         access_token = key['access_token']
         headers = {'Authorization': 'Bearer {}'.format(access_token)}
@@ -185,8 +185,8 @@ class TestUserServer(ServerTestCase):
 
     def test_update_different_user_not_admin(self):
         self.setup_guest_user()
-        response = self.app.post('/api/auth', content_type="application/json",
-                                 data=json.dumps(dict(username='guest', password='guest')))
+        response = self.test_client.post('/api/auth', content_type="application/json",
+                                         data=json.dumps(dict(username='guest', password='guest')))
         key = json.loads(response.get_data(as_text=True))
         access_token = key['access_token']
         headers = {'Authorization': 'Bearer {}'.format(access_token)}
@@ -212,8 +212,8 @@ class TestUserServer(ServerTestCase):
     def test_delete_current_user(self):
         user = add_user('test', 'test')
         user.set_roles({'admin'})
-        response = self.app.post('/api/auth', content_type="application/json",
-                                 data=json.dumps(dict(username='test', password='test')))
+        response = self.test_client.post('/api/auth', content_type="application/json",
+                                         data=json.dumps(dict(username='test', password='test')))
         key = json.loads(response.get_data(as_text=True))
         access_token = key['access_token']
         headers = {'Authorization': 'Bearer {}'.format(access_token)}

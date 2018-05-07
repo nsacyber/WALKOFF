@@ -16,7 +16,8 @@ export class Action extends ExecutionElement {
 
 	action_name: string;
 
-	device_id?: number;
+	@Type(() => Argument)
+	device_id?: Argument = new Argument();
 
 	risk?: number;
 
@@ -27,4 +28,10 @@ export class Action extends ExecutionElement {
 	
 	@Type(() => ConditionalExpression)
 	trigger?: ConditionalExpression;
+
+	get all_errors(): string[] {
+		return this.errors
+				   .concat(...this.arguments.map(argument => argument.all_errors))
+				   .concat((this.trigger) ? this.trigger.all_errors : [])
+	}
 }

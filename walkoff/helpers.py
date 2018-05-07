@@ -8,8 +8,6 @@ import warnings
 from datetime import datetime
 from uuid import uuid4
 
-
-
 try:
     from importlib import reload as reload_module
 except ImportError:
@@ -26,20 +24,6 @@ else:
 logger = logging.getLogger(__name__)
 
 
-def construct_module_name_from_path(path):
-    """Constructs the name of the module with the path name.
-    
-    Args:
-        path (str): The path to the module.
-        
-    Returns:
-         The name of the module with the path name.
-    """
-    path = path.lstrip('.{0}'.format(os.sep))
-    path = path.replace('.', '')
-    return '.'.join([x for x in path.split(os.sep) if x])
-
-
 def list_valid_directories(path):
     try:
         return [f for f in os.listdir(path)
@@ -47,6 +31,39 @@ def list_valid_directories(path):
                     and not f.startswith('__'))]
     except (IOError, OSError) as e:
         logger.error('Cannot get valid directories inside {0}. Error: {1}'.format(path, format_exception_message(e)))
+        return []
+
+
+def list_apps(path):
+    """Get a list of the apps.
+    
+    Args:
+        path (str): The path to the apps folder
+        
+    Returns:
+        A list of the apps given the apps path or the apps_path in the configuration.
+    """
+    return list_valid_directories(path)
+
+
+def list_interfaces(path=None):
+    return list_valid_directories(path)
+
+
+def locate_playbooks_in_directory(path):
+    """Get a list of workflows in a specified directory or the workflows_path directory as specified in the configuration.
+    
+    Args:
+        path (str, optional): The directory path from which to locate the workflows.
+        
+    Returns:
+        A list of workflow names from the specified path, or the directory specified in the configuration.
+    """
+    if os.path.exists(path):
+        return [workflow for workflow in os.listdir(path) if (os.path.isfile(os.path.join(path, workflow))
+                                                              and workflow.endswith('.playbook'))]
+    else:
+        logger.warning('Could not locate any workflows in directory {0}. Directory does not exist'.format(path))
         return []
 
 
@@ -83,35 +100,36 @@ def import_submodules(package, recursive=False):
     return {}
 
 
-def format_db_path(db_type, path):
+def format_db_path(db_type, path, username=None, password=None):
     """
     Formats the path to the database
 
     Args:
         db_type (str): Type of database being used
         path (str): Path to the database
+        username (str): The name of the username environment variable for this db
+        password (str): The name of the password environment variable for this db
 
     Returns:
         (str): The path of the database formatted for SqlAlchemy
     """
-    if db_type != 'sqlite':
-        sep = '//'
+    supported_dbs = ['postgresql', 'postgresql+psycopg2', 'postgresql+pg8000',
+                     'mysql', 'mysql+mysqldb', 'mysql+mysqlconnector', 'mysql+oursql',
+                     'oracle', 'oracle+cx_oracle', 'mssql+pyodbc', 'mssql+pymssql']
+    sqlalchemy_path = None
+    if db_type == 'sqlite':
+        sqlalchemy_path = '{0}:///{1}'.format(db_type, path)
+    elif db_type in supported_dbs:
+        if username and username in os.environ and password and password in os.environ:
+            sqlalchemy_path = '{0}://{1}:{2}@{3}'.format(db_type, os.environ[username], os.environ[password], path)
+        elif username and username in os.environ:
+            sqlalchemy_path = '{0}://{1}@{2}'.format(db_type, os.environ[username], path)
+        else:
+            sqlalchemy_path = '{0}://{1}'.format(db_type, path)
     else:
-        if os.name == 'nt':
-            sep = '///'
-        elif os.name == 'posix':
-            sep = '////'
-        path = os.path.abspath(path)
+        logger.error('Database type {0} not supported for database {1}'.format(db_type, path))
 
-    return '{0}:{1}{2}'.format(db_type, sep, path)
-
-
-class InvalidExecutionElement(Exception):
-    def __init__(self, id_, name, message, errors=None):
-        self.id = id_
-        self.name = name
-        self.errors = errors or {}
-        super(InvalidExecutionElement, self).__init__(message)
+    return sqlalchemy_path
 
 
 def get_function_arg_names(func):
@@ -167,7 +185,7 @@ def regenerate_workflow_ids(workflow):
         action_mapping[prev_id] = action['id']
 
     for action in actions:
-        regenerate_ids(action, action_mapping, False)
+        regenerate_ids(action, action_mapping, regenerate_id=False)
 
     for branch in workflow.get('branches', []):
         branch['source_id'] = action_mapping[branch['source_id']]
@@ -187,17 +205,48 @@ def regenerate_ids(json_in, action_mapping=None, regenerate_id=True, is_argument
         json_in['reference'] = action_mapping[json_in['reference']]
 
     for field, value in json_in.items():
+        is_arguments = field in ['arguments', 'device_id']
         if isinstance(value, list):
-            is_arguments = field == 'arguments'
             __regenerate_ids_of_list(value, action_mapping, is_arguments=is_arguments)
         elif isinstance(value, dict):
-            regenerate_ids(value, action_mapping=action_mapping)
+            regenerate_ids(value, action_mapping=action_mapping, is_arguments=is_arguments)
 
 
 def __regenerate_ids_of_list(value, action_mapping, is_arguments=False):
     for list_element in (list_element_ for list_element_ in value
                          if isinstance(list_element_, dict)):
         regenerate_ids(list_element, action_mapping=action_mapping, is_arguments=is_arguments)
+
+
+def strip_device_ids(playbook):
+    for workflow in playbook.get('workflows', []):
+        for action in workflow.get('actions', []):
+            action.pop('device_id', None)
+
+
+def strip_argument_ids(playbook):
+    for workflow in playbook.get('workflows', []):
+        for action in workflow.get('actions', []):
+            strip_argument_ids_from_element(action)
+            if 'device_id' in action:
+                action['device_id'].pop('id', None)
+        for branch in workflow.get('branches', []):
+            if 'condition' in branch:
+                strip_argument_ids_from_conditional(branch['conditional'])
+
+
+def strip_argument_ids_from_conditional(conditional):
+    for conditional_expression in conditional.get('child_expressions', []):
+        strip_argument_ids_from_conditional(conditional_expression)
+    for condition in conditional.get('conditions', []):
+        strip_argument_ids_from_element(condition)
+        for transform in condition.get('transforms', []):
+            strip_argument_ids_from_element(transform)
+
+
+def strip_argument_ids_from_element(element):
+    for argument in element.get('arguments', []):
+        argument.pop('id', None)
 
 
 def utc_as_rfc_datetime(timestamp):

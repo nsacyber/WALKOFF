@@ -68,5 +68,5 @@ def is_valid_uid(*ids):
         for id_ in ids:
             UUID(id_)
         return True
-    except ValueError as e:
+    except ValueError:
         return False

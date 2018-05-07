@@ -1,16 +1,25 @@
 from os import sep
 from os.path import join, abspath
 
+import walkoff.config
+from walkoff.helpers import format_db_path
 
-test_path = abspath(__file__).rsplit(sep, 1)[0]
-test_workflows_path = join(test_path, 'testWorkflows') + sep
-test_apps_path = join(test_path, 'testapps')
-test_data_dir_name = 'testdata'
-test_data_path = join(test_path, test_data_dir_name)
-test_appdevice_backup = join(test_data_path, 'appdevice.json')
-test_cases_backup = join(test_data_path, 'cases.json')
-basic_app_api = join(test_path, 'schemas', 'basic_app_api.yaml')
-cache_path = join(test_path, 'tmp', 'cache')
-test_case_db_path = join(test_path, 'tmp', 'events_test.db')
-test_db_path = join(test_path, 'tmp', 'walkoff_test.db')
-test_execution_db_path = join(test_path, 'tmp', 'execution_test.db')
+
+class TestConfig(walkoff.config.Config):
+    CONFIG_PATH = join('.', 'tests', 'tmp', 'config.json')
+    TEST_PATH = join('.', 'tests')
+    WORKFLOWS_PATH = join('.', 'tests', 'testWorkflows') + sep
+    APPS_PATH = join('.', 'tests', 'testapps')
+    DATA_DIR_NAME = 'testdata'
+    DATA_PATH = join('.', 'tests', DATA_DIR_NAME)
+    DEFAULT_APPDEVICE_EXPORT_PATH = join(DATA_PATH, 'appdevice.json')
+    DEFAULT_CASE_EXPORT_PATH = join(DATA_PATH, 'cases.json')
+    BASIC_APP_API = join('.', 'tests', 'schemas', 'basic_app_api.yaml')
+    CACHE_PATH = join('.', 'tests', 'tmp', 'cache')
+    CASE_DB_PATH = abspath(join('.', 'tests', 'tmp', 'events_test.db'))
+    DB_PATH = abspath(join('.', 'tests', 'tmp', 'walkoff_test.db'))
+    EXECUTION_DB_PATH = abspath(join('.', 'tests', 'tmp', 'execution_test.db'))
+    NUMBER_PROCESSES = 2
+    CACHE = {'type': 'disk', 'directory': CACHE_PATH}
+    WALKOFF_DB_TYPE = 'sqlite'
+    SQLALCHEMY_DATABASE_URI = format_db_path(WALKOFF_DB_TYPE, DB_PATH)

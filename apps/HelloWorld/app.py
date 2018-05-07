@@ -5,6 +5,7 @@ from walkoff.appbase import App, action
 
 logger = logging.getLogger("apps")
 
+
 @action
 def hello_world():
     logger.debug("This is a test")

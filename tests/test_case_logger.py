@@ -1,10 +1,12 @@
-from walkoff.case.logger import CaseLogger
-from walkoff.case.subscription import SubscriptionCache, Subscription
-from unittest import TestCase
-from mock import patch, create_autospec
-from walkoff.case.database import CaseDatabase
 import json
 import uuid
+from unittest import TestCase
+
+from mock import patch, create_autospec
+
+from walkoff.case.database import CaseDatabase
+from walkoff.case.logger import CaseLogger
+from walkoff.case.subscription import SubscriptionCache, Subscription
 from walkoff.events import WalkoffEvent, EventType
 
 
@@ -64,6 +66,7 @@ class TestCaseLogger(TestCase):
 
     def test_format_data_with_unjsonable_dict(self):
         class A: pass
+
         data = {'a': 'something', 'b': A()}
         expected = str(data)
         self.assertEqual(CaseLogger._format_data(data), expected)

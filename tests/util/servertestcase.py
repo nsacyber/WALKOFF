@@ -3,26 +3,26 @@ import shutil
 import stat
 import unittest
 
-import tests.config
 import walkoff.appgateway
 import walkoff.config
-from tests.util import execution_db_help
+from tests.util import execution_db_help, initialize_test_config
 from tests.util.mock_objects import *
-from tests.util.thread_control import *
-from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
-from walkoff.server.endpoints.appapi import *
-from walkoff.server.returncodes import NO_CONTENT
+from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor, spawn_worker_processes
+from walkoff.server.app import create_app
+from walkoff.server.blueprints.root import create_user
 
 if not getattr(__builtins__, 'WindowsError', None):
     class WindowsError(OSError): pass
 
 
 class ServerTestCase(unittest.TestCase):
-    test_workflows_path = tests.config.test_workflows_path
     patch = True
 
     @classmethod
     def setUpClass(cls):
+        initialize_test_config()
+        cls.conf = walkoff.config.Config
+
         if cls != ServerTestCase and cls.setUp != ServerTestCase.setUp:
             original_setup = cls.setUp
 
@@ -42,108 +42,67 @@ class ServerTestCase(unittest.TestCase):
 
             cls.tearDown = teardown_override
 
-        if (tests.config.test_data_dir_name not in os.listdir(tests.config.test_path)
-                or os.path.isfile(tests.config.test_data_path)):
-            if os.path.isfile(tests.config.test_data_path):
-                os.remove(tests.config.test_data_path)
-            os.makedirs(tests.config.test_data_path)
+        if (cls.conf.DATA_DIR_NAME not in os.listdir(cls.conf.TEST_PATH)
+                or os.path.isfile(cls.conf.DATA_PATH)):
+            if os.path.isfile(cls.conf.DATA_PATH):
+                os.remove(cls.conf.DATA_PATH)
+            os.makedirs(cls.conf.DATA_PATH)
 
-        execution_db_help.setup_dbs()
-
-        walkoff.appgateway.cache_apps(path=tests.config.test_apps_path)
-        walkoff.config.app_apis = {}
-        walkoff.config.load_app_apis(apps_path=tests.config.test_apps_path)
-        walkoff.config.NUMBER_PROCESSES = 2
-        walkoff.config.Config.CACHE = {'type': 'disk', 'directory': tests.config.cache_path}
-
-        from walkoff.server import flaskserver
-        cls.context = flaskserver.app.test_request_context()
+        cls.app = create_app(walkoff.config.Config)
+        cls.app.testing = True
+        cls.context = cls.app.test_request_context()
         cls.context.push()
 
-        from walkoff.server.app import create_user
         create_user()
-        if cls.patch:
 
+        if cls.patch:
             MultiprocessedExecutor.initialize_threading = mock_initialize_threading
             MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
             MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
-            flaskserver.running_context.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
-                                                                      walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                                                      walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-                                                                      walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
-
-
+            cls.app.running_context.executor.initialize_threading(cls.app)
         else:
-            from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
-            pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES,
-                                          walkoff.config.Config.NUMBER_THREADS_PER_PROCESS,
-                                          walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                          walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-                                          walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
-                                          worker_environment_setup=modified_setup_worker_env)
-            flaskserver.running_context.executor.initialize_threading(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH,
-                                                                      walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH,
-                                                                      walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-                                                                      walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS,
-                                                                      pids)
-
-            from walkoff.server.context import running_context
-            from walkoff.cache import make_cache
-            cache = make_cache(walkoff.config.Config.CACHE)
-            running_context.executor.cache = cache
-            running_context.executor.manager.cache = cache
+            walkoff.config.Config.write_values_to_file()
+            pids = spawn_worker_processes()
+            cls.app.running_context.executor.initialize_threading(cls.app, pids)
 
     @classmethod
     def tearDownClass(cls):
-        import walkoff.server.flaskserver
-        if tests.config.test_data_path in os.listdir(tests.config.test_path):
-            if os.path.isfile(tests.config.test_data_path):
-                os.remove(tests.config.test_data_path)
+        if cls.conf.DATA_PATH in os.listdir(cls.conf.TEST_PATH):
+            if os.path.isfile(cls.conf.DATA_PATH):
+                os.remove(cls.conf.DATA_PATH)
             else:
-                shutil.rmtree(tests.config.test_data_path)
+                shutil.rmtree(cls.conf.DATA_PATH)
 
-        walkoff.server.flaskserver.running_context.executor.shutdown_pool()
+        cls.app.running_context.executor.shutdown_pool()
 
         execution_db_help.cleanup_execution_db()
         execution_db_help.tear_down_execution_db()
 
-        import walkoff.case.database as case_database
-        case_database.case_db.tear_down()
+        cls.app.running_context.case_db.tear_down()
         walkoff.appgateway.clear_cache()
 
     def setUp(self):
-        import walkoff.server.flaskserver
-        walkoff.config.WORKFLOWS_PATH = tests.config.test_workflows_path
-        walkoff.config.APPS_PATH = tests.config.test_apps_path
-        walkoff.config.DEFAULT_APPDEVICE_EXPORT_PATH = tests.config.test_appdevice_backup
-        walkoff.config.DEFAULT_CASE_EXPORT_PATH = tests.config.test_cases_backup
+        self.test_client = self.app.test_client(self)
 
-        self.app = walkoff.server.flaskserver.app.test_client(self)
-        self.app.testing = True
-
-        self.context = walkoff.server.flaskserver.app.test_request_context()
-        self.context.push()
-
-        post = self.app.post('/api/auth', content_type="application/json",
-                             data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
+        post = self.test_client.post('/api/auth', content_type="application/json",
+                                     data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
         key = json.loads(post.get_data(as_text=True))
         self.headers = {'Authorization': 'Bearer {}'.format(key['access_token'])}
-        self.http_verb_lookup = {'get': self.app.get,
-                                 'post': self.app.post,
-                                 'put': self.app.put,
-                                 'delete': self.app.delete,
-                                 'patch': self.app.patch}
+        self.http_verb_lookup = {'get': self.test_client.get,
+                                 'post': self.test_client.post,
+                                 'put': self.test_client.put,
+                                 'delete': self.test_client.delete,
+                                 'patch': self.test_client.patch}
 
     def tearDown(self):
-        from walkoff import executiondb
-        executiondb.execution_db.session.rollback()
+        execution_db_help.cleanup_execution_db()
 
-        for data_file in os.listdir(tests.config.test_data_path):
+        for data_file in os.listdir(self.conf.DATA_PATH):
             try:
-                os.remove(os.path.join(tests.config.test_data_path, data_file))
-            except WindowsError as we:  # Windows sometimes makes files read only when created
-                os.chmod(os.path.join(tests.config.test_data_path, data_file), stat.S_IWRITE)
-                os.remove(os.path.join(tests.config.test_data_path, data_file))
+                os.remove(os.path.join(self.conf.DATA_PATH, data_file))
+            except WindowsError:  # Windows sometimes makes files read only when created
+                os.chmod(os.path.join(self.conf.DATA_PATH, data_file), stat.S_IWRITE)
+                os.remove(os.path.join(self.conf.DATA_PATH, data_file))
 
     def preTearDown(self):
         """
@@ -153,6 +112,8 @@ class ServerTestCase(unittest.TestCase):
         pass
 
     def __assert_url_access(self, url, method, status_code, error, **kwargs):
+        from walkoff.server.returncodes import NO_CONTENT
+
         try:
             response = self.http_verb_lookup[method.lower()](url, **kwargs)
         except KeyError:

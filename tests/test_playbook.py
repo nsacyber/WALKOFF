@@ -1,6 +1,6 @@
 import unittest
 
-from tests.util import execution_db_help
+from tests.util import execution_db_help, initialize_test_config
 from tests.util.assertwrappers import orderless_list_compare
 from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.workflow import Workflow
@@ -9,6 +9,7 @@ from walkoff.executiondb.workflow import Workflow
 class TestPlaybook(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        initialize_test_config()
         execution_db_help.setup_dbs()
 
     @classmethod

@@ -1,29 +1,19 @@
 import unittest
-from os import sep
-from os.path import join
 
 import walkoff.appgateway
 import walkoff.config
-from tests.config import test_apps_path
+from tests.util import initialize_test_config
 from tests.util.assertwrappers import orderless_list_compare
 from walkoff.appgateway.apiutil import get_app_action_api, get_condition_api, get_transform_api, UnknownApp, \
     UnknownAppAction, UnknownCondition, UnknownTransform
 from walkoff.helpers import *
-from walkoff.server.flaskserver import handle_database_errors, handle_generic_server_error
+from walkoff.server.blueprints.root import handle_database_errors, handle_generic_server_error
 
 
 class TestHelperFunctions(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        walkoff.appgateway.cache_apps(test_apps_path)
-        walkoff.config.load_app_apis(apps_path=test_apps_path)
-
-    def setUp(self):
-        self.original_apps_path = walkoff.config.Config.APPS_PATH
-        walkoff.config.Config.APPS_PATH = test_apps_path
-
-    def tearDown(self):
-        walkoff.config.Config.APPS_PATH = self.original_apps_path
+        initialize_test_config()
 
     @classmethod
     def tearDownClass(cls):
@@ -74,14 +64,6 @@ class TestHelperFunctions(unittest.TestCase):
     def test_list_valid_directories(self):
         expected_apps = ['HelloWorld', 'DailyQuote', 'HelloWorldBounded']
         orderless_list_compare(self, expected_apps, list_valid_directories(walkoff.config.Config.APPS_PATH))
-
-    def test_construct_module_name_from_path(self):
-        input_output = {join('.', 'aaa', 'bbb', 'ccc'): 'aaa.bbb.ccc',
-                        join('aaa', 'bbb', 'ccc'): 'aaa.bbb.ccc',
-                        join('aaa', '..', 'bbb', 'ccc'): 'aaa.bbb.ccc',
-                        '{0}{1}'.format(join('aaa', 'bbb', 'ccc'), sep): 'aaa.bbb.ccc'}
-        for input_path, expected_output in input_output.items():
-            self.assertEqual(construct_module_name_from_path(input_path), expected_output)
 
     def test_import_submodules(self):
         from tests import testpkg
@@ -208,3 +190,222 @@ class TestHelperFunctions(unittest.TestCase):
             'title': 'An error occurred in the server.',
             'detail': 'SomeException'}
         self.assertDictEqual(body, expected)
+
+    def test_strip_device_ids(self):
+        playbook = {
+            'name': 'some_playbook',
+            'workflows': [
+                {'name': 'wf1',
+                 'actions': [{'name': 'action1'}, {'name': 'action2', 'device_id': 42}]},
+                {'name': 'wf2',
+                 'actions': [{'name': 'action1', 'device_id': 13}, {'name': 'some_action', 'device_id': 21}]}
+            ]}
+        expected = {
+            'name': 'some_playbook',
+            'workflows': [
+                {'name': 'wf1',
+                 'actions': [{'name': 'action1'}, {'name': 'action2'}]},
+                {'name': 'wf2',
+                 'actions': [{'name': 'action1'}, {'name': 'some_action'}]}
+            ]}
+        strip_device_ids(playbook)
+        self.assertDictEqual(playbook, expected)
+
+    def test_strip_argument_ids_from_element(self):
+        element_with_arguments = {
+            'a': 'string1',
+            'b': {'red': 'blue', 'green': 'red'},
+            'arguments': [
+                {
+                    'id': 4,
+                    'value': 32
+                },
+                {
+                    'id': 12,
+                    'reference': 'abc-123-456gh'
+                }
+            ]
+        }
+        expected = {
+            'a': 'string1',
+            'b': {'red': 'blue', 'green': 'red'},
+            'arguments': [
+                {
+                    'value': 32
+                },
+                {
+                    'reference': 'abc-123-456gh'
+                }
+            ]
+        }
+        strip_argument_ids_from_element(element_with_arguments)
+        self.assertDictEqual(element_with_arguments, expected)
+        element_no_arguments = {
+            'a': 'string1',
+            'b': {'red': 'blue', 'green': 'red'},
+        }
+        expected = {
+            'a': 'string1',
+            'b': {'red': 'blue', 'green': 'red'},
+        }
+        strip_argument_ids_from_element(element_no_arguments)
+        self.assertDictEqual(element_no_arguments, expected)
+
+    def test_strip_argument_ids_from_conditional(self):
+        conditional = {
+            'operator': 'and',
+            'is_negated': True,
+            'conditions': [
+                {
+                    'app_name': 'ArgleBargle',
+                    'action_name': 'flim flam',
+                    'arguments': [
+                        {
+                            'id': 42,
+                            'value': 'foobar'
+                        },
+                        {
+                            'id': 12,
+                            'value': 'wizbang'
+                        }
+                    ],
+                    'transforms': [
+                        {
+                            'app_name': 'transmorgifier',
+                            'action': 'transmorgify',
+                            'arguments': [
+                                {
+                                    'id': 23,
+                                    'value': 'zapzorp'
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    'app_name': 'Wombology',
+                    'action_name': 'wombo',
+                    'arguments': [
+                        {
+                            'id': 13,
+                            'value': 'gee'
+                        },
+                        {
+                            'id': 12,
+                            'reference': 'abc-def-ghi123'
+                        }
+                    ]
+                }
+            ],
+            'child_expressions': [
+                {
+                    'operator': 'and',
+                    'is_negated': True,
+                    'conditions': [
+                        {
+                            'app_name': 'ArgleBargle',
+                            'action_name': 'flim flam',
+                            'arguments': [
+                                {
+                                    'id': 42,
+                                    'value': 'foobar'
+                                },
+                                {
+                                    'id': 12,
+                                    'value': 'wizbang'
+                                }
+                            ]
+                        },
+                        {
+                            'app_name': 'Wombology',
+                            'action_name': 'wombo',
+                            'arguments': [
+                                {
+                                    'id': 13,
+                                    'value': 'gee'
+                                },
+                                {
+                                    'id': 12,
+                                    'reference': 'abc-def-ghi123'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+        expected = {
+            'operator': 'and',
+            'is_negated': True,
+            'conditions': [
+                {
+                    'app_name': 'ArgleBargle',
+                    'action_name': 'flim flam',
+                    'arguments': [
+                        {
+                            'value': 'foobar'
+                        },
+                        {
+                            'value': 'wizbang'
+                        }
+                    ],
+                    'transforms': [
+                        {
+                            'app_name': 'transmorgifier',
+                            'action': 'transmorgify',
+                            'arguments': [
+                                {
+                                    'value': 'zapzorp'
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    'app_name': 'Wombology',
+                    'action_name': 'wombo',
+                    'arguments': [
+                        {
+                            'value': 'gee'
+                        },
+                        {
+                            'reference': 'abc-def-ghi123'
+                        }
+                    ]
+                }
+            ],
+            'child_expressions': [
+                {
+                    'operator': 'and',
+                    'is_negated': True,
+                    'conditions': [
+                        {
+                            'app_name': 'ArgleBargle',
+                            'action_name': 'flim flam',
+                            'arguments': [
+                                {
+                                    'value': 'foobar'
+                                },
+                                {
+                                    'value': 'wizbang'
+                                }
+                            ]
+                        },
+                        {
+                            'app_name': 'Wombology',
+                            'action_name': 'wombo',
+                            'arguments': [
+                                {
+                                    'value': 'gee'
+                                },
+                                {
+                                    'reference': 'abc-def-ghi123'
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+        strip_argument_ids_from_conditional(conditional)
+        self.assertDictEqual(conditional, expected)

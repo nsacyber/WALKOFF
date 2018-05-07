@@ -18,16 +18,19 @@ __server_tests = [test_workflow_server, test_app_api_server, test_case_server, t
                   test_messaging_endpoints, test_trigger_helpers, test_system_server, test_disk_cache_adapter,
                   test_redis_cache_adapter, test_redis_subscription, test_disk_subscription, test_sse_stream,
                   test_filtered_sse_stream, test_notification_stream, test_workflow_status, test_problem,
-                  test_workflow_results_stream, test_streamable_blueprint, test_console_stream]
+                  test_workflow_results_stream, test_streamable_blueprint, test_console_stream, test_disk_pubsub_cache,
+                  test_make_cache]
 server_suite = TestSuite()
 add_tests_to_suite(server_suite, __server_tests)
 
-__execution_tests = [test_argument, test_action, test_helper_functions,
+__execution_tests = [test_validatable, test_argument, test_action, test_helper_functions,
+                     test_workflow_results_handler, test_make_cache, test_disk_pubsub_cache,
+                     test_workflow_communication_receiver, test_workflow_receiver,
                      test_transform, test_condition, test_branch, test_app_instance, test_metrics, test_app_utilities,
                      test_input_validation, test_decorators, test_app_api_validation, test_playbook,
                      test_condition_transform_validation, test_roles_pages_database, test_users_roles_database,
-                     test_scheduler, test_walkoff_tag, test_app_cache, test_app_base,
-                     test_workflow_execution_controller, test_console_logging_handler]
+                     test_scheduler, test_walkoff_tag, test_app_cache, test_app_base, test_console_logging_handler,
+                     test_workflow_execution_controller, test_device_database, test_device_field_database]
 
 execution_suite = TestSuite()
 add_tests_to_suite(execution_suite, __execution_tests)

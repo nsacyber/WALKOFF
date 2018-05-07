@@ -1,13 +1,11 @@
 import json
-from datetime import datetime
+
+from flask import current_app
 
 from tests.util import execution_db_help
-from tests.util.case_db_help import executed_actions, setup_subscriptions_for_action
 from tests.util.servertestcase import ServerTestCase
 from walkoff.events import WalkoffEvent
-from walkoff.server import flaskserver as flask_server
 from walkoff.server.returncodes import *
-from walkoff.events import WalkoffEvent
 
 try:
     from importlib import reload
@@ -17,9 +15,6 @@ except ImportError:
 
 class TestZmqCommunicationServer(ServerTestCase):
     patch = False
-
-    def tearDown(self):
-        execution_db_help.cleanup_execution_db()
 
     def test_execute_workflow(self):
         workflow = execution_db_help.load_workflow('test', 'helloWorldWorkflow')
@@ -37,7 +32,7 @@ class TestZmqCommunicationServer(ServerTestCase):
         response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, data=json.dumps(data),
                                                status_code=SUCCESS_ASYNC, content_type="application/json")
 
-        flask_server.running_context.executor.wait_and_reset(1)
+        current_app.running_context.executor.wait_and_reset(1)
         self.assertSetEqual(set(response.keys()), {'id'})
 
     def test_execute_workflow_change_arguments(self):
@@ -57,7 +52,24 @@ class TestZmqCommunicationServer(ServerTestCase):
         self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
                                     content_type="application/json", data=json.dumps(data))
 
-        flask_server.running_context.executor.wait_and_reset(1)
+        current_app.running_context.executor.wait_and_reset(1)
 
         self.assertEqual(result['count'], 1)
         self.assertDictEqual(result['data'], {'status': 'Success', 'result': 'REPEATING: CHANGE INPUT'})
+
+    def test_execute_invalid_workflow(self):
+        workflow = execution_db_help.load_workflow('test', 'helloWorldWorkflow')
+        workflow.is_valid = False
+        from walkoff.executiondb import ExecutionDatabase
+        ExecutionDatabase.instance.session.add(workflow)
+        ExecutionDatabase.instance.session.commit()
+        self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=INVALID_INPUT_ERROR,
+                                    content_type="application/json")
+
+    def test_execute_workflow_change_to_invalid_arguments(self):
+        workflow = execution_db_help.load_workflow('test', 'helloWorldWorkflow')
+        data = {"workflow_id": str(workflow.id),
+                "arguments": [{"name": "call"}]}
+
+        self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=INVALID_INPUT_ERROR,
+                                    content_type="application/json", data=json.dumps(data))

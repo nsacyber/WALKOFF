@@ -1,24 +1,27 @@
 import logging
 
-from sqlalchemy import Column, Integer, ForeignKey, String, orm
+from sqlalchemy import Column, Integer, ForeignKey, String, orm, event
 from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
 
 from walkoff.executiondb import Execution_Base
+from walkoff.executiondb.validatable import Validatable
 from walkoff.appgateway.apiutil import InvalidArgument
 
 logger = logging.getLogger(__name__)
 
 
-class Argument(Execution_Base):
+class Argument(Execution_Base, Validatable):
     __tablename__ = 'argument'
     id = Column(Integer, primary_key=True, autoincrement=True)
     action_id = Column(UUIDType(binary=False), ForeignKey('action.id'))
+    action_device_id = Column(UUIDType(binary=False), ForeignKey('action.id'))
     condition_id = Column(UUIDType(binary=False), ForeignKey('condition.id'))
     transform_id = Column(UUIDType(binary=False), ForeignKey('transform.id'))
     name = Column(String(255), nullable=False)
     value = Column(JSONType)
     reference = Column(UUIDType(binary=False))
     selection = Column(ScalarListType())
+    errors = Column(ScalarListType())
 
     def __init__(self, name, value=None, reference=None, selection=None):
         """Initializes an Argument object.
@@ -44,10 +47,12 @@ class Argument(Execution_Base):
         self._is_reference = True if self.value is None else False
 
     def validate(self):
+        """Validates the object"""
+        self.errors = []
         if self.value is None and not self.reference:
             message = 'Input {} must have either value or reference. Input has neither'.format(self.name)
             logger.error(message)
-            raise InvalidArgument(message)
+            self.errors = [message]
         elif self.value is not None and self.reference:
             message = 'Input {} must have either value or reference. Input has both. Using "value"'.format(self.name)
             logger.warning(message)
@@ -57,8 +62,8 @@ class Argument(Execution_Base):
         """Helper function to ensure that either reference or value is selected and the other is None
 
         Args:
-            value: The value to set. Can be None
-            reference: The reference to set. Can be none
+            value (any): The value to set. Can be None
+            reference (int): The reference to set. Can be none
         """
         if value is not None and (self.value != value or self.reference):
             self.value = value
@@ -69,11 +74,12 @@ class Argument(Execution_Base):
             self.value = None
             self._is_reference = True
 
+    @property
     def is_ref(self):
         """Returns whether the reference field is being used, or the value field.
 
         Returns:
-            True if the reference field is being used, False if otherwise.
+            (bool): True if the reference field is being used, False if otherwise.
         """
         return self._is_reference
 
@@ -85,7 +91,7 @@ class Argument(Execution_Base):
             accumulator (dict): The accumulated output from previous Actions.
 
         Returns:
-            The value associated with this Argument.
+            (any): The value associated with this Argument.
         """
         if self.value is not None:
             return self.value
@@ -105,6 +111,7 @@ class Argument(Execution_Base):
         except KeyError:
             message = ('Referenced action {} '
                        'has not been executed'.format(self.reference))
+            logger.info(message)
             raise InvalidArgument(message)
 
     def _select(self, input_):
@@ -126,9 +133,18 @@ class Argument(Execution_Base):
         else:
             raise ValueError
 
+    @classmethod
+    def create_device_argument(cls, value=None, reference=None, selection=None):
+        return cls(name='__device__', value=value, reference=reference, selection=selection)
+
     def __eq__(self, other):
         return self.name == other.name and self.value == other.value and self.reference == other.reference and \
-               self.selection == other.selection and self._is_reference == other.is_ref()
+               self.selection == other.selection and self._is_reference == other.is_ref
 
     def __hash__(self):
         return hash(self.id)
+
+
+@event.listens_for(Argument, 'before_update')
+def validate_before_update(mapper, connection, target):
+    target.validate()

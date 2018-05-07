@@ -23,12 +23,12 @@ class TestArgument(TestCase):
             self.assertListEqual(arg.selection, selection)
 
     def test_init_no_value_or_reference(self):
-        with self.assertRaises(InvalidArgument):
-            Argument('test')
+        arg = Argument('test')
+        self.assertEqual(len(arg.errors), 1)
 
     def test_init_no_value_empty_reference(self):
-        with self.assertRaises(InvalidArgument):
-            Argument('test', reference='')
+        arg = Argument('test', reference='')
+        self.assertEqual(len(arg.errors), 1)
 
     def test_init_with_value(self):
         arg = Argument('test_name', value=5)

@@ -1,4 +1,6 @@
 import json
+import os
+import shutil
 
 from flask import current_app
 
@@ -11,7 +13,7 @@ class TestConfigurationServer(ServerTestCase):
     def setUp(self):
         config_fields = [x for x in dir(walkoff.config.Config) if
                          not x.startswith('__') and type(getattr(walkoff.config.Config, x)).__name__
-                         in ['str', 'unicode']]
+                         in ['str', 'unicode', 'dict']]
         self.original_configs = {key: getattr(walkoff.config.Config, key) for key in config_fields}
         try:
             with open(walkoff.config.Config.CONFIG_PATH) as config_file:
@@ -24,6 +26,8 @@ class TestConfigurationServer(ServerTestCase):
             setattr(walkoff.config.Config, key, value)
         with open(walkoff.config.Config.CONFIG_PATH, 'w') as config_file:
             config_file.write(self.original_config_file)
+        if os.path.exists(os.path.join('.', 'abc')):
+            shutil.rmtree(os.path.join('.', 'abc'))
 
     def test_get_configuration(self):
         expected = {'db_path': walkoff.config.Config.DB_PATH,

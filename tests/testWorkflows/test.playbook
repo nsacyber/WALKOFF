@@ -12,7 +12,10 @@
                             "value": "Hello World"
                         }
                     ],
-                    "device_id": 1,
+                    "device_id": {
+                        "name": "__device__",
+                        "value": 1
+                    },
                     "id": "4269a5b5-bbb7-49d9-becc-31152ccc29b7",
                     "name": "start"
                 }

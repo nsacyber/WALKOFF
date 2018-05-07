@@ -6,7 +6,7 @@ import { UUID } from 'angular2-uuid';
 import { Observable } from 'rxjs';
 import 'rxjs/Rx';
 import { saveAs } from 'file-saver';
-import { plainToClass } from 'class-transformer';
+import { plainToClass, classToClass } from 'class-transformer';
 
 import * as cytoscape from 'cytoscape';
 import * as clipboard from 'cytoscape-clipboard';
@@ -390,6 +390,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 					},
 				},
 				{
+					selector: 'node[?hasErrors]',
+					css: {
+						'color': '#991818',
+						'font-style': 'italic',
+					},
+				},
+				{
 					selector: 'node:selected',
 					css: {
 						'background-color': '#77b0d0',
@@ -443,6 +450,14 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 					css: {
 						'target-arrow-shape': 'triangle',
 						'curve-style': 'bezier',
+					},
+				},
+				{
+					selector: 'edge[?hasErrors]',
+					css: {
+						'target-arrow-color': '#991818',
+						'line-color': '#991818',
+						'line-style': 'dashed'
 					},
 				},
 				{
@@ -590,6 +605,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				_id: branch.id,
 				source: branch.source_id,
 				target: branch.destination_id,
+				hasErrors: branch.has_errors
 			};
 			return edge;
 		});
@@ -601,6 +617,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				_id: action.id,
 				label: action.name,
 				isStartNode: action.id === this.loadedWorkflow.start,
+				hasErrors: action.has_errors
 			};
 			this._setNodeDisplayProperties(node, action);
 			return node;
@@ -655,7 +672,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		// Clone the loadedWorkflow first, so we don't change the parameters 
 		// in the editor when converting it to the format the backend expects.
-		const workflowToSave: Workflow = this.utils.cloneDeep(this.loadedWorkflow);
+		const workflowToSave: Workflow = classToClass(this.loadedWorkflow);
 
 		if (!workflowToSave.start) {
 			this.toastyService.warning('Workflow cannot be saved without a starting action.');
@@ -667,7 +684,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			// Set the new cytoscape positions on our loadedworkflow
 			action.position = cyData.find(cyAction => cyAction.data._id === action.id).position;
 
-			if (action.device_id === 0) { delete action.device_id; }
+			// Sanitize and set device_id argument
+			(action.device_id.hasInput()) ? 
+				action.device_id.sanitize() :
+				delete action.device_id;
 
 			// Properly sanitize arguments through the tree
 			this._sanitizeArgumentsForSave(action.arguments);
@@ -686,7 +706,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				savePromise = this.playbookService.newWorkflow(this.loadedPlaybook.id, workflowToSave);
 			}
 		} else {
-			const playbookToSave: Playbook = this.utils.cloneDeep(this.loadedPlaybook);
+			const playbookToSave: Playbook = classToClass(this.loadedPlaybook);
 			playbookToSave.workflows = [workflowToSave];
 			savePromise = this.playbookService.newPlaybook(playbookToSave)
 				.then(newPlaybook => {
@@ -770,6 +790,9 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			}
 			// Remove reference if unspecified
 			if (argument.reference === '') { delete argument.reference; }
+
+			// Remove error
+			delete argument.errors;
 		}
 		// Actually splice out all the args
 		for (const id of idsToRemove) {
@@ -1146,11 +1169,11 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		newNodes.forEach((n: any) => {
 			// Get a copy of the action we just copied
-			const pastedAction: Action = this.utils.cloneDeep(this.loadedWorkflow.actions.find(a => a.id === n.data('_id')));
-
+			const pastedAction: Action = classToClass(this.loadedWorkflow.actions.find(a => a.id === n.data('_id')));
 			const newActionUuid = UUID.UUID();
 
 			pastedAction.id = newActionUuid;
+			pastedAction.arguments.forEach(argument => delete argument.id);
 
 			n.data({
 				id: newActionUuid,
@@ -1175,11 +1198,19 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	}
 
 	/**
+	 * Clears execution results table and execution highlighting
+	 */
+	clearExecutionResults() {
+		this.clearExecutionHighlighting();
+		this.consoleLog = [];
+		this.actionStatuses = [];
+	}
+
+	/**
 	 * Clears the red/green highlighting in the cytoscape graph.
 	 */
 	clearExecutionHighlighting(): void {
 		this.cy.elements().removeClass('success-highlight failure-highlight executing-highlight');
-		this.consoleLog = [];
 	}
 
 	/**
@@ -1527,12 +1558,12 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * @param parameterApi Parameter API used to generate the default argument
 	 */
 	getDefaultArgument(parameterApi: ParameterApi): Argument {
-		return {
+		return plainToClass(Argument, {
 			name: parameterApi.name,
 			value: parameterApi.schema.default != null ? parameterApi.schema.default : null,
 			reference: '',
 			selection: '',
-		};
+		});
 	}
 
 	/**
@@ -1653,5 +1684,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		if (status.completed_at) { 
 			status.localized_completed_at = this.utils.getLocalTime(status.completed_at);
 		}
+	}
+
+	/**
+	 * Returns errors in the loaded workflow
+	 */
+	getErrors() : any[] {
+		if (!this.loadedWorkflow) return [];
+		return this.loadedWorkflow.all_errors.map(error => ({ error }));
 	}
 }

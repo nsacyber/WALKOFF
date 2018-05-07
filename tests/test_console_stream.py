@@ -1,12 +1,13 @@
-from tests.util.mock_objects import MockRedisCacheAdapter
-from walkoff.server.blueprints.console import *
-from copy import copy
 import json
-from mock import patch
-from tests.util.servertestcase import ServerTestCase
+from copy import copy
+
 from flask import Response
+from mock import patch
+
+from tests.util.mock_objects import MockRedisCacheAdapter
+from tests.util.servertestcase import ServerTestCase
+from walkoff.server.blueprints.console import *
 from walkoff.server.returncodes import SUCCESS
-import logging
 
 
 class TestConsoleStream(ServerTestCase):
@@ -37,16 +38,16 @@ class TestConsoleStream(ServerTestCase):
     @patch.object(console_stream, 'stream')
     def test_stream_endpoint(self, mock_stream):
         mock_stream.return_value = Response('something', status=SUCCESS)
-        post = self.app.post('/api/auth', content_type="application/json",
-                             data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
+        post = self.test_client.post('/api/auth', content_type="application/json",
+                                     data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
         key = json.loads(post.get_data(as_text=True))['access_token']
-        response = self.app.get('/api/streams/console/log?access_token={}'.format(key))
+        response = self.test_client.get('/api/streams/console/log?access_token={}'.format(key))
         mock_stream.assert_called_once_with()
         self.assertEqual(response.status_code, SUCCESS)
 
     @patch.object(console_stream, 'stream')
     def check_stream_endpoint_no_key(self, mock_stream):
         mock_stream.return_value = Response('something', status=SUCCESS)
-        response = self.app.get('/api/streams/console/log?access_token=invalid')
+        response = self.test_client.get('/api/streams/console/log?access_token=invalid')
         mock_stream.assert_not_called()
         self.assertEqual(response.status_code, 422)
