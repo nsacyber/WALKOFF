@@ -44,10 +44,16 @@ def set_walkoff_external():
     archf.extractall(external_path)
 
     Config.DATA_PATH = os.path.join(external_path, 'data')
+
+    Config.API_PATH = os.path.join(Config.DATA_PATH, 'api.yaml')
     Config.APPS_PATH = os.path.join(external_path, 'apps')
     Config.CACHE_PATH = os.path.join(Config.DATA_PATH, 'cache')
-    Config.CASE_DB_PATH = os.path.join(Config.DATA_PATH, 'events.db')
     Config.CACHE = {"type": "disk", "directory": Config.CACHE_PATH, "shards": 8, "timeout": 0.01, "retry": True}
+    Config.CASE_DB_PATH = os.path.join(Config.DATA_PATH, 'events.db')
+
+    Config.TEMPLATES_PATH = os.path.join(walkoff_internal, 'templates')
+    Config.CLIENT_PATH = os.path.join(walkoff_internal, 'client')
+    Config.CONFIG_PATH = os.path.join(Config.DATA_PATH, 'walkoff.config')
     Config.DB_PATH = os.path.join(Config.DATA_PATH, 'walkoff.db')
     Config.DEFAULT_APPDEVICE_EXPORT_PATH = os.path.join(Config.DATA_PATH, 'appdevice.json')
     Config.DEFAULT_CASE_EXPORT_PATH = os.path.join(Config.DATA_PATH, 'cases.json')
@@ -56,6 +62,7 @@ def set_walkoff_external():
     Config.LOGGING_CONFIG_PATH = os.path.join(Config.DATA_PATH, 'log', 'logging.json')
 
     Config.WALKOFF_SCHEMA_PATH = os.path.join(Config.DATA_PATH, 'walkoff_schema.json')
+    Config.WORKFLOWS_PATH = os.path.join(Config.DATA_PATH, 'workflows')
 
     Config.KEYS_PATH = os.path.join(external_path, '.certificates')
     Config.CERTIFICATE_PATH = os.path.join(Config.KEYS_PATH, 'walkoff.crt')

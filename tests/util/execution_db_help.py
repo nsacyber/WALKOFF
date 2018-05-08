@@ -2,7 +2,7 @@ import json
 import os
 
 import walkoff.config
-from tests.util.jsonplaybookloader import JsonPlaybookLoader
+from walkoff.jsonplaybookloader import JsonPlaybookLoader
 from walkoff.case.database import CaseDatabase
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.action import Action

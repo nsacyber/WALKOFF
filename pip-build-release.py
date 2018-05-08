@@ -12,13 +12,13 @@ from distutils.util import strtobool
 def zip_dir(path, zip_file, arcname=None):
     for root, dirs, files in os.walk(path):
         for f in files:
-            new_root = root.replace(path, arcname)
-            zip_file.write(os.path.join(root, f), arcname=os.path.join(new_root, f))
+            new_root = {}
+            if arcname is not None:
+                new_root = {"arcname": os.path.join(root.replace(path, arcname), f)}
+            zip_file.write(os.path.join(root, f), **new_root)
 
 
 def main():
-
-    #ToDO: compose api here
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--production",
@@ -79,16 +79,19 @@ def main():
                 except ValueError:
                     print("Please respond with 'yes' or 'no'.")
 
+        from walkoff.scripts.compose_api import compose_api
+        compose_api()
+
         t = tarfile.open(gzip_filename, "w|gz")
-        t.add("apps/", arcname="walkoff_external/apps/")
-        t.add("interfaces/", arcname="walkoff_external/interfaces/")
-        t.add("data/", arcname="walkoff_external/data/")
+        t.add("apps/")
+        t.add("interfaces/")
+        t.add("data/")
         t.close()
 
         z = zipfile.ZipFile(zip_filename, "w", zipfile.ZIP_DEFLATED)
-        zip_dir("apps/", z, arcname="walkoff_external/apps/")
-        zip_dir("interfaces/", z, arcname="walkoff_external/interfaces/")
-        zip_dir("data/", z, arcname="walkoff_external/data/")
+        zip_dir("apps/", z)
+        zip_dir("interfaces/", z)
+        zip_dir("data/", z)
         z.close()
 
         subprocess.call(['python', 'setup.py', 'sdist'])
