@@ -214,6 +214,8 @@ class SseStream(object):
 
         event_id = 0
         for response in channel_queue.listen():
+            if response == 1:
+                continue
             if isinstance(response, binary_type):
                 response = response.decode('utf-8')
             response = json.loads(response)
