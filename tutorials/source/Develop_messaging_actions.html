@@ -14,12 +14,12 @@ from apps import Text, Url, AcceptDecline, Message
 text_component = Text('Here is the text')
 assert text.text == 'Here is the text'
 
-url_component = Url('http://iadgov.github.io/WALKOFF')
-assert url_component.url = 'http://iadgov.github.io/WALKOFF'
+url_component = Url('http://nsacyber.github.io/WALKOFF')
+assert url_component.url = 'http://nsacyber.github.io/WALKOFF'
 assert url_component.title is None
 
-url_component_with_title = Url('http://iadgov.github.io/WALKOFF', title='docs here')
-assert url_component_with_title.url == 'http://iadgov.github.io/WALKOFF'
+url_component_with_title = Url('http://nsacyber.github.io/WALKOFF', title='docs here')
+assert url_component_with_title.url == 'http://nsacyber.github.io/WALKOFF'
 assert url_component_with_title.title == 'docs here'
 
 accept_component = AcceptDecline()  # takes no arguments and has no fields

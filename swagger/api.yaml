@@ -3,7 +3,7 @@ info:
   description: >-
     An active cyber defense development framework enabling orchestration
     capabilities to be written once and deployed across WALKOFF-enabled
-    orchestration tools. https://iadgov.github.io/WALKOFF/
+    orchestration tools. https://nsacyber.github.io/WALKOFF/
   version: 0.8.0
   title: WALKOFF
   contact:
@@ -157,7 +157,8 @@ paths:
           description: App does not exist
           schema:
             $ref: '#/definitions/Error'
-
+
+
   /auth:
     post:
       tags:
@@ -233,7 +234,8 @@ paths:
         400:
           description: Invalid refresh token
           schema:
-            $ref: '#/definitions/Error'
+            $ref: '#/definitions/Error'
+
   /cases:
     get:
       tags:
@@ -407,7 +409,8 @@ paths:
           description: Case does not exist.
           schema:
             $ref: '#/definitions/Error'
-
+
+
   /configuration:
     get:
       tags:
@@ -479,7 +482,8 @@ paths:
         515:
           description: Could not write configuration to file
           schema:
-            $ref: '#/definitions/Error'
+            $ref: '#/definitions/Error'
+
   /devices/{device_id}:
     parameters:
       - in: path
@@ -623,7 +627,8 @@ paths:
         404:
           description: Device does not exist
           schema:
-            $ref: '#/definitions/Error'
+            $ref: '#/definitions/Error'
+
   /events/{event_id}:
     parameters:
       - name: event_id
@@ -683,7 +688,8 @@ paths:
           description: Object does not exist
           schema:
             $ref: '#/definitions/Error'
-
+
+
   /messages:
     get:
       tags:
@@ -781,7 +787,8 @@ paths:
           description: Success
           schema:
             $ref: '#/definitions/MessageSummary'
-
+
+
   /availablesubscriptions:
     get:
       tags:
@@ -839,7 +846,8 @@ paths:
           description: Success
         400:
           description: Invalid filename
-
+
+
   /metrics/apps:
     get:
       tags:
@@ -867,7 +875,8 @@ paths:
         200:
           description: Success
           schema:
-            $ref: '#/definitions/WorkflowMetrics'
+            $ref: '#/definitions/WorkflowMetrics'
+
   /playbooks:
     get:
       tags:
@@ -1205,7 +1214,8 @@ paths:
             properties:
               uuid:
                 $ref: '#/definitions/Uuid'
-
+
+
   /roles:
     get:
       tags:
@@ -1348,7 +1358,8 @@ paths:
               type: array
               items:
                 $ref: '#/definitions/AvailableResourceAction'
-
+
+
   /scheduler:
     get:
       tags:
@@ -1538,7 +1549,8 @@ paths:
         404:
           description: Scheduled task does not exist
           schema:
-            $ref: '#/definitions/Error'
+            $ref: '#/definitions/Error'
+
   /system:
     get:
       tags:
@@ -1555,7 +1567,8 @@ paths:
         200:
           description: Success
           schema:
-            $ref: '#/definitions/SystemUsageDetails'
+            $ref: '#/definitions/SystemUsageDetails'
+
   /triggers/send_data:
     put:
       summary: Send data to one or more workflows with trigger actions awaiting data before continuing execution
@@ -1595,7 +1608,8 @@ paths:
             items:
               type: string
               description: The execution IDs of workflows that were sent data.
-
+
+
   /users:
     get:
       tags:
@@ -1747,7 +1761,8 @@ paths:
         404:
           description: Could not delete user <username>. User does not exist.
           schema:
-            $ref: '#/definitions/Error'
+            $ref: '#/definitions/Error'
+
   /workflowqueue:
     get:
       tags:
@@ -1852,7 +1867,8 @@ paths:
           description: Object does not exist.
           schema:
             $ref: '#/definitions/Error'
-
+
+
 
 securityDefinitions:
   AuthenticationToken:
@@ -1919,7 +1935,8 @@ definitions:
     Uuid:
       type: string
       description: A 32-bit hexadecimal string representing a globally unique identifier
-      format: uuid
+      format: uuid
+
     AppApi:
       type: object
       description: Api used for an app
@@ -2295,7 +2312,8 @@ definitions:
         enum:
           type: array
           minItems: 1
-
+
+
     Authentication:
       type: object
       required: [username, password]
@@ -2316,7 +2334,8 @@ definitions:
         refresh_token:
           type: string
           description: Long-lived JWT used to refresh a token
-
+
+
     AddCase:
       type: object
       required: [name]
@@ -2420,7 +2439,8 @@ definitions:
           example: [case1, mycase, thatonecase, thatothercase]
           items:
             $ref: '#/definitions/Case'
-
+
+
     Configuration:
         type: object
         description: The configuration
@@ -2522,7 +2542,8 @@ definitions:
           default: 6379
         unix_socket_path:
           description: Path to Unix socket to use for the cache instead of host-port. (Redis cache only)
-          type: string
+          type: string
+
     AddDevice:
       type: object
       required: [name, app_name, type, fields]
@@ -2622,7 +2643,8 @@ definitions:
           example: regex
         value:
           example: WALK(.*)
-
+
+
     ActionMetricDetails:
       type: object
       required: [count, avg_time]
@@ -2706,7 +2728,8 @@ definitions:
           type: array
           items:
             $ref: '#/definitions/WorkflowMetric'
-
+
+
     Message:
       type: object
       description: A message sent to a user
@@ -2814,7 +2837,8 @@ definitions:
           enum: [text, accept_decline, url]
         data:
           type: object
-          description: JSON representation of the message component
+          description: JSON representation of the message component
+
     CreatePlaybook:
         type: object
         required: [name]
@@ -3147,7 +3171,8 @@ definitions:
       readOnly: true
       type: array
       items:
-        type: string
+        type: string
+
     AddRole:
         type: object
         required: [name]
@@ -3239,7 +3264,8 @@ definitions:
           type: string
           description: The name of the app associated with this resource, if applicable
           example: HelloWorld, DailyQuote
-
+
+
     Scheduler:
       type: object
       required: [status]
@@ -3315,7 +3341,8 @@ definitions:
         args:
           type: object
           description: Arguments for the trigger.
-
+
+
     SystemUsageDetails:
       type: object
       required: [cpu, memory, disk, net]
@@ -3417,7 +3444,8 @@ definitions:
         dropped_out:
           description: Number of outgoing packets dropped
           type: integer
-          readOnly: true
+          readOnly: true
+
     AddUser:
         type: object
         required: [username, password]
@@ -3495,7 +3523,8 @@ definitions:
           id:
             type: integer
             description: The ID of a role the user posesses
-
+
+
     WorkflowStatus:
       type: object
       required: [execution_id, workflow_id, name, status]
@@ -3686,5 +3715,6 @@ definitions:
           description: The action to take on the executing workflow
           type: string
           enum: ['pause', 'resume', 'abort']
-
+
+
 
