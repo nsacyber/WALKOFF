@@ -43,7 +43,7 @@ message Argument {
     optional string name = 1;
     optional string value = 2;
     optional string reference = 3;
-    optional string selection = 4;
+    repeated Argument selection = 4;
 }
 
 message ActionPacket {

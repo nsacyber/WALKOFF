@@ -59,7 +59,7 @@ class ArgumentSchema(ExecutionElementBaseSchema):
     """
     name = field_for(Argument, 'name', required=True)
     value = fields.Raw()
-    selection = fields.List(fields.Raw())  # There should be some validation on this maybe
+    selection = fields.Nested('self', exclude=('selection',), many=True)  # There should be some validation on this?
 
     class Meta:
         model = Argument

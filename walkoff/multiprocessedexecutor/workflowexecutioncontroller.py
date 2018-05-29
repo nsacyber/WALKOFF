@@ -106,7 +106,7 @@ class WorkflowExecutionController:
         for argument in arguments:
             arg = message.arguments.add()
             arg.name = argument.name
-            for field in ('value', 'reference', 'selection'):
+            for field in ('value', 'reference'):
                 val = getattr(argument, field)
                 if val is not None:
                     if not isinstance(val, string_types):

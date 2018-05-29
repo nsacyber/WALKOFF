@@ -1,6 +1,7 @@
 import logging
 
 from sqlalchemy import Column, Integer, ForeignKey, String, orm, event
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
 
 from walkoff.executiondb import Execution_Base
@@ -20,7 +21,8 @@ class Argument(Execution_Base, Validatable):
     name = Column(String(255), nullable=False)
     value = Column(JSONType)
     reference = Column(UUIDType(binary=False))
-    selection = Column(ScalarListType())
+    selection = relationship('Argument', cascade='all, delete, delete-orphan')
+    selection_id = Column(UUIDType(binary=False), ForeignKey('argument.id'))
     errors = Column(ScalarListType())
 
     def __init__(self, name, value=None, reference=None, selection=None):
@@ -31,14 +33,14 @@ class Argument(Execution_Base, Validatable):
             value (any, optional): The value of the Argument. Defaults to None. Value or reference must be included.
             reference (int, optional): The ID of the Action from which to grab the result. Defaults to None.
                 If value is not provided, then reference must be included.
-            selection (list, optional): A list of fields from which to dereference the Action result. Defaults
-                to None. Must be used in conjunction with reference.
+            selection (list[Argument], optional): A list of Arguments from which to dereference the Action result.
+                Defaults to None. Must be used in conjunction with reference.
         """
         self.name = name
         self.value = value
         self._is_reference = True if value is None else False
         self.reference = reference
-        self.selection = selection
+        self.selection = selection if selection else []
         self.validate()
 
     @orm.reconstructor
@@ -101,7 +103,7 @@ class Argument(Execution_Base, Validatable):
             if not self.selection:
                 return action_output
 
-            return self._select(action_output)
+            return self._select(action_output, accumulator)
         else:
             return self.reference
 
@@ -114,10 +116,10 @@ class Argument(Execution_Base, Validatable):
             logger.info(message)
             raise InvalidArgument(message)
 
-    def _select(self, input_):
+    def _select(self, input_, accumulator):
         try:
             for selection in self.selection:
-                input_ = Argument._get_next_selection(input_, selection)
+                input_ = Argument._get_next_selection(input_, selection, accumulator)
             return input_
 
         except (KeyError, ValueError, IndexError):
@@ -125,11 +127,11 @@ class Argument(Execution_Base, Validatable):
                 self.selection, self.reference))
 
     @staticmethod
-    def _get_next_selection(input_, selection):
+    def _get_next_selection(input_, selection, accumulator):
         if isinstance(input_, dict):
-            return input_[selection]
+            return input_[selection.get_value(accumulator)]
         elif isinstance(input_, list):
-            return input_[int(selection)]
+            return input_[int(selection.get_value(accumulator))]
         else:
             raise ValueError
 

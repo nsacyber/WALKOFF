@@ -123,7 +123,7 @@ class TestWorkflowExecutionController(TestCase):
     def test_set_argumets_for_proto(self):
         message = ExecuteWorkflowMessage()
         uid = uuid4()
-        selection = [1, 'a', '32', 46]
+        selection = [Argument('test', 1), Argument('test', 'a'), Argument('test', '32'), Argument('test', 46)]
         arguments = [
             Argument('name1', value=32), Argument('name2', reference=uid, selection=selection)]
         WorkflowExecutionController._set_arguments_for_proto(message, arguments)
