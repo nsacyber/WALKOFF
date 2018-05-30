@@ -86,19 +86,28 @@ class TestWorkflowReceiver(TestCase):
         execution_id = str(uuid4())
         start = str(uuid4())
         ref = str(uuid4())
-        arguments = [{'name': 'arg1', 'value': 42}, {'name': 'arg2', 'reference': ref, 'selection': ['a', 1]}]
+        arguments = [{'name': 'arg1', 'value': 42}, {'name': 'arg2', 'reference': ref,
+                                                     'selection': [{'name': 'test', 'value': 'a'},
+                                                                   {'name': 'test', 'value': 1}]}]
         message = ExecuteWorkflowMessage()
         message.workflow_id = workflow_id
         message.workflow_execution_id = execution_id
         message.resume = True
         message.start = start
+
         arg = message.arguments.add()
         arg.name = arguments[0]['name']
         arg.value = str(arguments[0]['value'])
         arg = message.arguments.add()
         arg.name = arguments[1]['name']
         arg.reference = arguments[1]['reference']
-        arg.selection = str(arguments[1]['selection'])
+
+        s1 = arg.selection.add()
+        s1.name = arguments[1]['selection'][0]['name']
+        s1.value = arguments[1]['selection'][0]['value']
+        s2 = arg.selection.add()
+        s2.name = arguments[1]['selection'][1]['name']
+        s2.value = str(arguments[1]['selection'][1]['value'])
 
         receiver = self.get_receiver()
         encrypted_message = self.box.encrypt(message.SerializeToString())

@@ -251,6 +251,7 @@ class WorkflowReceiver(object):
                     start_arguments = []
                     if hasattr(message, 'arguments'):
                         for arg in message.arguments:
+                            print(MessageToDict(arg, preserving_proto_field_name=True))
                             start_arguments.append(
                                 Argument(**(MessageToDict(arg, preserving_proto_field_name=True))))
                     yield message.workflow_id, message.workflow_execution_id, start, start_arguments, message.resume

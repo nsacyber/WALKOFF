@@ -16,6 +16,7 @@ from walkoff.events import WalkoffEvent, EventType
 from walkoff.helpers import json_dumps_or_string
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, CaseControl, \
     WorkflowControl
+from walkoff.multiprocessedexecutor.proto_helpers import add_arguments_to_proto
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +62,7 @@ class WorkflowExecutionController:
         if start:
             message.start = str(start)
         if start_arguments:
-            self._set_arguments_for_proto(message, start_arguments)
+            add_arguments_to_proto(message.arguments, start_arguments)
 
         message = message.SerializeToString()
         encrypted_message = self.box.encrypt(message)
@@ -113,6 +114,8 @@ class WorkflowExecutionController:
                         setattr(arg, field, json_dumps_or_string(val))
                     else:
                         setattr(arg, field, val)
+            if hasattr(argument, 'selection'):
+                WorkflowExecutionController._set_arguments_for_proto(message.selection.add(), argument.selection)
 
     def create_case(self, case_id, subscriptions):
         """Creates a Case

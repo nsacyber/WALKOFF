@@ -111,7 +111,7 @@ def convert_action_to_proto(packet, sender, workflow, data=None):
     if 'data' is not None:
         action_packet.additional_data = json.dumps(data)
     add_sender_to_action_packet_proto(action_packet, sender)
-    add_arguments_to_action_proto(action_packet, sender)
+    add_arguments_to_proto(action_packet.sender.arguments, sender.arguments)
     add_workflow_to_proto(action_packet.workflow, workflow)
 
 
@@ -130,17 +130,16 @@ def add_sender_to_action_packet_proto(action_packet, sender):
     action_packet.sender.device_id = sender.get_resolved_device_id()
 
 
-def add_arguments_to_action_proto(action_packet, sender):
+def add_arguments_to_proto(proto, arguments):
     """Adds Arguments to the Action protobuf packet
 
     Args:
-        action_packet (protobuf): The protobuf packet
-        sender (Action): The Action under which fall the Arguments
+        proto (protobuf): The protobuf packet
+        arguments (list[Argument]): The list of Arguments
     """
-    for argument in sender.arguments:
-        arg = action_packet.sender.arguments.add()
-        arg.name = argument.name
-        set_argument_proto(arg, argument)
+    for arg_obj in arguments:
+        arg_proto = proto.add()
+        set_argument_proto(arg_proto, arg_obj)
 
 
 def set_argument_proto(arg_proto, arg_obj):
@@ -151,7 +150,7 @@ def set_argument_proto(arg_proto, arg_obj):
         arg_obj (Argument): The Argument object
     """
     arg_proto.name = arg_obj.name
-    for field in ('value', 'reference', 'selection'):
+    for field in ('value', 'reference'):
         val = getattr(arg_obj, field)
         if val is not None:
             if not isinstance(val, string_types):
@@ -161,6 +160,8 @@ def set_argument_proto(arg_proto, arg_obj):
                     setattr(arg_proto, field, str(val))
             else:
                 setattr(arg_proto, field, val)
+    if hasattr(arg_obj, 'selection'):
+        add_arguments_to_proto(arg_proto.selection, arg_obj.selection)
 
 
 def add_workflow_to_proto(packet, workflow):
