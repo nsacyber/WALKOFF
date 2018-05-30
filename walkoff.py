@@ -23,7 +23,6 @@ def run(app, host, port):
     pids = spawn_worker_processes()
     monkey.patch_all()
 
-    compose_api()
 
     app.running_context.executor.initialize_threading(app, pids)
     # The order of these imports matter for initialization (should probably be fixed)
@@ -97,6 +96,7 @@ def import_workflows(app):
 if __name__ == "__main__":
     args = parse_args()
     exit_code = 0
+    compose_api()
     walkoff.config.initialize(args.config)
     app = create_app(walkoff.config.Config)
     import_workflows(app)
