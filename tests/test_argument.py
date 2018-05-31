@@ -208,3 +208,7 @@ class TestArgument(TestCase):
             self.assertEqual(arg.reference, outputs[1])
             if outputs[1] is None:
                 self.assertListEqual(arg.selection, [])
+
+    def test_create_device_argument(self):
+        dev = Argument.create_device_argument(value='test_device_UUID')
+        self.assert_init_equals(dev, '__device__', value='test_device_UUID')
