@@ -32,6 +32,7 @@ from walkoff.executiondb.workflow import Workflow
 from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
 from walkoff.proto.build.data_pb2 import CommunicationPacket, ExecuteWorkflowMessage, CaseControl, \
     WorkflowControl
+from walkoff.executiondb.schemas import ArgumentSchema
 
 logger = logging.getLogger(__name__)
 
@@ -251,9 +252,8 @@ class WorkflowReceiver(object):
                     start_arguments = []
                     if hasattr(message, 'arguments'):
                         for arg in message.arguments:
-                            print(MessageToDict(arg, preserving_proto_field_name=True))
                             start_arguments.append(
-                                Argument(**(MessageToDict(arg, preserving_proto_field_name=True))))
+                                ArgumentSchema().load(MessageToDict(arg, preserving_proto_field_name=True)).data)
                     yield message.workflow_id, message.workflow_execution_id, start, start_arguments, message.resume
             else:
                 yield None
