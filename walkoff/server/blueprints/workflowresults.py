@@ -1,4 +1,6 @@
 from datetime import datetime
+import sys
+import json
 
 from flask import current_app
 
@@ -30,7 +32,14 @@ def format_action_data(sender, kwargs, status):
 
 def format_action_data_with_results(sender, kwargs, status):
     result = format_action_data(sender, kwargs, status)
-    result['result'] = kwargs['data']['data']['result']
+    action_result = kwargs['data']['data']['result']
+    with current_app.app_context():
+        max_len = current_app.config['MAX_STREAM_RESULTS_SIZE_KB'] * 1024
+    result_str = str(action_result)
+    if len(result_str) > max_len:
+        result['result'] = {'truncated': result_str[:max_len]}
+    else:
+        result['result'] = action_result
     return result
 
 
