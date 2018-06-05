@@ -136,6 +136,7 @@ class Config(object):
     JWT_TOKEN_LOCATION = 'headers'
 
     JWT_BLACKLIST_PRUNE_FREQUENCY = 1000
+    MAX_STREAM_RESULTS_SIZE_KB = 156
 
     @classmethod
     def load_config(cls, config_path=None):

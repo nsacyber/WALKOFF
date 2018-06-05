@@ -42,7 +42,7 @@ export class PlaybookArgumentComponent implements OnInit {
 	parameterSchema: ParameterSchema;
 	selectData: Select2OptionData[];
 	selectConfig: Select2Options;
-	selectInitialValue: number[];
+	selectInitialValue: string[];
 
 	// tslint:disable-next-line:no-empty
 	constructor() { }
@@ -56,11 +56,11 @@ export class PlaybookArgumentComponent implements OnInit {
 	 */
 	ngOnInit(): void {
 		this.initParameterSchema();
-		this.initUserSelect();
-		this.initRoleSelect();
 		this.initDeviceSelect()
 		this.initBranchCounterSelect();
 		this.initTypeSelector();
+		this.initUserSelect();
+		this.initRoleSelect();
 	}
 
 	initDeviceSelect(): void {
@@ -130,14 +130,16 @@ export class PlaybookArgumentComponent implements OnInit {
 			placeholder: 'Select user',
 		};
 
+		this.selectInitialValue = JSON.parse(JSON.stringify(this.argument.value));
+
 		if (this.parameterSchema.type === 'array') {
 			this.selectConfig.placeholder += '(s)';
 			this.selectConfig.multiple = true;
 			this.selectConfig.allowClear = true;
 			this.selectConfig.closeOnSelect = false;
+			if (Array.isArray(this.argument.value)) 
+				this.selectInitialValue = this.argument.value.map((val: number) => val.toString());
 		}
-
-		this.selectInitialValue = JSON.parse(JSON.stringify(this.argument.value));
 	}
 
 	/**
@@ -155,14 +157,16 @@ export class PlaybookArgumentComponent implements OnInit {
 			placeholder: 'Select role',
 		};
 
+		this.selectInitialValue = JSON.parse(JSON.stringify(this.argument.value));
+
 		if (this.parameterSchema.type === 'array') {
 			this.selectConfig.placeholder += '(s)';
 			this.selectConfig.multiple = true;
 			this.selectConfig.allowClear = true;
 			this.selectConfig.closeOnSelect = false;
+			if (Array.isArray(this.argument.value)) 
+				this.selectInitialValue = this.argument.value.map((val: number) => val.toString());
 		}
-
-		this.selectInitialValue = JSON.parse(JSON.stringify(this.argument.value));
 	}
 
 	initBranchCounterSelect(): void {

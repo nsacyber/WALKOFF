@@ -53,6 +53,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 	workflowStatusEventSource: any;
 	actionStatusEventSource: any;
+	recalculateTableCallback: any;
 
 	constructor(
 		private executionService: ExecutionService, private authService: AuthService, private cdr: ChangeDetectorRef,
@@ -90,6 +91,14 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 		Observable.interval(30000).subscribe(() => {
 			this.recalculateRelativeTimes();
 		});
+
+		this.recalculateTableCallback = (e: JQuery.Event<HTMLElement, null>) => {
+			if (this.actionStatusTable && this.actionStatusTable.recalculate) {
+				this.actionStatusTable.recalculate();
+			}
+		}
+
+		$(document).on('shown.bs.modal', '.actionStatusModal', this.recalculateTableCallback)
 	}
 
 	/**
@@ -114,6 +123,9 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 		}
 		if (this.actionStatusEventSource && this.actionStatusEventSource.close) {
 			this.actionStatusEventSource.close();
+		}
+		if (this.recalculateTableCallback) {
+			$(document).off('shown.bs.modal', '.actionStatusModal', this.recalculateTableCallback)
 		}
 	}
 

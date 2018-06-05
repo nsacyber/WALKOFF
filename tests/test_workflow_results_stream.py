@@ -81,6 +81,23 @@ class TestWorkflowResultsStream(ServerTestCase):
         self.assert_and_strip_timestamp(result)
         self.assertDictEqual(result, expected)
 
+    def test_format_action_data_with_long_results(self):
+        size_limit = 128
+        self.app.config['MAX_STREAM_RESULTS_SIZE_KB'] = size_limit
+        workflow_id = str(uuid4())
+        kwargs = {'data': {'workflow': {'execution_id': workflow_id},
+                           'data': {'result': 'x'*1024*2*size_limit}}}  # should exceed limit
+        sender = self.get_sample_action_sender()
+        status = ActionStatusEnum.executing
+        result = format_action_data_with_results(sender, kwargs, status)
+        expected = sender
+        expected['action_id'] = expected.pop('id')
+        expected['workflow_execution_id'] = workflow_id
+        expected['status'] = status.name
+        expected['result'] = {'truncated': 'x'*1024*size_limit}
+        self.assert_and_strip_timestamp(result)
+        self.assertDictEqual(result, expected)
+
     def check_action_callback(self, callback, status, event, mock_publish, with_result=False):
         sender = self.get_sample_action_sender()
         kwargs = self.get_action_kwargs(with_result=with_result)
