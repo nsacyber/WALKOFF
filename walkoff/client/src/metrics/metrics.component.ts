@@ -1,5 +1,4 @@
-import { Component, ViewEncapsulation, OnInit, ViewChild } from '@angular/core';
-import * as _ from 'lodash';
+import { Component, ViewEncapsulation, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { Select2OptionData } from 'ng2-select2';
 import 'rxjs/add/operator/debounceTime';
@@ -8,10 +7,8 @@ import { DatatableComponent } from '@swimlane/ngx-datatable';
 import { MetricsService } from './metrics.service';
 import { UtilitiesService } from '../utilities.service';
 
-import { Playbook } from '../models/playbook/playbook';
 import { AppMetric } from '../models/metric/appMetric';
 import { WorkflowMetric } from '../models/metric/workflowMetric';
-import { ActionMetric } from '../models/metric/actionMetric';
 
 @Component({
 	selector: 'metrics-component',
@@ -28,13 +25,16 @@ export class MetricsComponent implements OnInit {
     appFilter: string = '';
     workflowMetrics: WorkflowMetric[] = [];
 	availableApps: Select2OptionData[] = [];
-    appSelectConfig: Select2Options;
+	appSelectConfig: Select2Options;
+	recalculateTableCallback: any;
 
-    @ViewChild('appMetricsTable') appMetricsTable: DatatableComponent; 
+	@ViewChild('appMetricsTable') appMetricsTable: DatatableComponent; 
+	@ViewChild('workflowMetricsTable') workflowMetricsTable: DatatableComponent; 
 
 	constructor(
         private metricsService: MetricsService, private toastyService: ToastyService, 
-        private toastyConfig: ToastyConfig, private utils: UtilitiesService,
+		private toastyConfig: ToastyConfig, private utils: UtilitiesService,
+		private cdr: ChangeDetectorRef
 	) {}
 
 	ngOnInit(): void {
@@ -45,10 +45,39 @@ export class MetricsComponent implements OnInit {
 			placeholder: 'Select an App to view its Metrics',
 		};
 
+		this.recalculateTableCallback = (e: JQuery.Event<HTMLElement, null>) => {
+			this.recalculateTable(e);
+		}
+		$(document).on('shown.bs.tab', 'a[data-toggle="tab"]', this.recalculateTableCallback)
+
 		this.getAppMetrics();
 		this.getWorkflowMetrics();
 	}
 
+	/**
+	 * Closes our SSEs on component destroy.
+	 */
+	ngOnDestroy(): void {
+		if (this.recalculateTableCallback) { $(document).off('shown.bs.tab', 'a[data-toggle="tab"]', this.recalculateTableCallback); }
+	}
+
+	/**
+	 * This angular function is used primarily to recalculate column widths for execution results table.
+	 */
+	recalculateTable(event: JQuery.Event<HTMLElement, null>) : void {
+		let table: DatatableComponent;
+		switch(event.target.getAttribute('href')) {
+			case '#apps':
+				table = this.appMetricsTable;
+				break;
+			case '#workflows':
+				table = this.workflowMetricsTable;
+		}
+		if (table && table.recalculate) {
+			this.cdr.detectChanges();
+			table.recalculate();
+		}
+	}
 	/**
 	 * Grabs case events from the server for the selected case (from the JS event supplied).
 	 * Will update the case events data table with the new case events.
@@ -62,22 +91,6 @@ export class MetricsComponent implements OnInit {
             this.appFilter = event.value;
         }
     }
-
-    test(event: any): void {
-        //this.appMetricsTable.recalculate();
-        //setTimeout(() => this.appMetricsTable.recalculate(), 100)
-        //console.log(this.appMetricsTable);
-    }
-
-    /**
-	 * This angular function is used primarily to recalculate column widths for execution results table.
-	 */
-	ngAfterViewChecked(): void {
-		// Check if the table size has changed,
-		if (this.appMetricsTable && this.appMetricsTable.recalculate) {
-			this.appMetricsTable.recalculate();
-		}
-	}
     
     getFilteredAppMetrics(): AppMetric[] {
         if (!this.appFilter || this.appFilter == 'all') return this.appMetrics;

@@ -1716,6 +1716,9 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			case '#errorLog':
 				table = this.errorLogTable;
 		}
-		if (table && table.recalculate) { table.recalculate(); }
+		if (table && table.recalculate) { 
+			this.cdr.detectChanges();
+			table.recalculate(); 
+		}
 	}
 }
