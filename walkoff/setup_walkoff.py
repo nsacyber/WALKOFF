@@ -2,6 +2,7 @@ import os
 import argparse
 import subprocess
 
+walkoff_root = os.path.abspath(__file__).rsplit(os.path.sep, 1)[0]
 
 def local_install():
     subprocess.call(["pip", "install", "-r", "requirements.txt"])
@@ -25,8 +26,6 @@ def local_install():
 
 
 def pip_install():
-    subprocess.call(["pip", "install", "-r", "requirements.txt"])
-
     from walkoff.scripts.install_dependencies import install_dependencies
     from walkoff.scripts.generate_certificates import generate_certificates
     from walkoff.set_paths import main as set_paths_main
@@ -54,7 +53,7 @@ def main():
         local_install()
 
     else:
-        if not os.path.isfile(os.path.join('.', 'walkoff', 'walkoff_external.tar.gz')):
+        if not os.path.isfile(os.path.join(walkoff_root, 'walkoff_external.tar.gz')):
             print("Could not find walkoff_external archive.\n"
                   "If you downloaded this from Github, run python walkoff/setup_walkoff.py --localinstall\n"
                   "This will use the existing apps, interfaces, and data directories.")

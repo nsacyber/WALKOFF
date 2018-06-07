@@ -95,7 +95,6 @@ def import_workflows(app):
 def main():
     args = parse_args()
     exit_code = 0
-    compose_api()
     walkoff.config.initialize(args.config)
     app = create_app(walkoff.config.Config)
     import_workflows(app)

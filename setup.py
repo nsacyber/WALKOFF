@@ -134,9 +134,7 @@ setup(
     # If using Python 2.6 or earlier, then these have to be included in
     # MANIFEST.in as well.
     package_data={  # Optional
-        'walkoff': ['api/*.yaml',
-                    'api/objects/*.yaml',
-                    'client/assets/*',
+        'walkoff': ['client/assets/*',
                     'client/assets/img/*',
                     'client/dist/*',
                     'client/node_modules/bootstrap/dist/css/bootstrap.min.css',
