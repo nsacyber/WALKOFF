@@ -33,8 +33,10 @@ def read_all_devices():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('devices', ['read']))
     def __func():
+        page = request.args.get('page', 1, type=int)
         return [get_device_json_with_app_name(device) for device in
-                current_app.running_context.execution_db.session.query(Device).all()], SUCCESS
+                current_app.running_context.execution_db.session.query(Device).limit(
+                    current_app['ITEMS_PER_PAGE']).offset(page * current_app['ITEMS_PER_PAGE'])], SUCCESS
 
     return __func()
 

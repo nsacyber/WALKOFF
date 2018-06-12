@@ -45,7 +45,9 @@ def read_all_cases():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('cases', ['read']))
     def __func():
-        return [case.as_json() for case in CaseSubscription.query.all()], SUCCESS
+        page = request.args.get('page', 1, type=int)
+        return [case.as_json() for case in
+                CaseSubscription.query.paginate(page, current_app.config['ITEMS_PER_PAGE'], False).items], SUCCESS
 
     return __func()
 
@@ -179,6 +181,7 @@ def read_all_events(case_id):
     @permissions_accepted_for_resources(ResourcePermissions('cases', ['read']))
     def __func():
         try:
+            page = request.args.get('page', 1, type=int)
             result = current_app.running_context.case_db.case_events_as_json(case_id)
         except Exception:
             current_app.logger.error('Cannot get events for case {0}. Case does not exist.'.format(case_id))
