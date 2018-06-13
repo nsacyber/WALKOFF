@@ -98,56 +98,74 @@ class TestWorkflowResultsStream(ServerTestCase):
         self.assert_and_strip_timestamp(result)
         self.assertDictEqual(result, expected)
 
-    def check_action_callback(self, callback, status, event, mock_publish, with_result=False):
+    def check_action_callback(self, callback, status, event, mock_publish, mock_summary, with_result=False):
         sender = self.get_sample_action_sender()
         kwargs = self.get_action_kwargs(with_result=with_result)
         if not with_result:
             expected = format_action_data(deepcopy(sender), {'data': kwargs}, status)
         else:
             expected = format_action_data_with_results(deepcopy(sender), {'data': kwargs}, status)
-        expected.pop('timestamp')
+        summary = {key: expected[key] for key in action_summary_keys}
         callback(sender, data=kwargs)
-        mock_publish.assert_called_once()
-        mock_publish.call_args[0][0].pop('timestamp')
-        mock_publish.assert_called_with(expected, event=event)
+        for result, mocked in zip((expected, summary), (mock_publish, mock_summary)):
+            result.pop('timestamp')
+            mocked.assert_called_once()
+            mocked.call_args[0][0].pop('timestamp')
+            mocked.assert_called_with(result, event=event, subchannels=(kwargs['workflow']['execution_id'], 'all'))
 
+    @patch.object(action_summary_stream, 'publish')
     @patch.object(action_stream, 'publish')
-    def test_action_started_callback(self, mock_publish):
-        self.check_action_callback(action_started_callback, ActionStatusEnum.executing, 'started', mock_publish)
+    def test_action_started_callback(self, mock_publish, mock_summary):
+        self.check_action_callback(
+            action_started_callback,
+            ActionStatusEnum.executing,
+            'started',
+            mock_publish,
+            mock_summary)
 
+    @patch.object(action_summary_stream, 'publish')
     @patch.object(action_stream, 'publish')
-    def test_action_ended_callback(self, mock_publish):
+    def test_action_ended_callback(self, mock_publish, mock_summary):
         self.check_action_callback(
             action_ended_callback,
             ActionStatusEnum.success,
             'success',
             mock_publish,
+            mock_summary,
             with_result=True)
 
+    @patch.object(action_summary_stream, 'publish')
     @patch.object(action_stream, 'publish')
-    def test_action_error_callback(self, mock_publish):
+    def test_action_error_callback(self, mock_publish, mock_summary):
         self.check_action_callback(
             action_error_callback,
             ActionStatusEnum.failure,
-            'failure', mock_publish,
+            'failure',
+            mock_publish,
+            mock_summary,
             with_result=True)
 
+    @patch.object(action_summary_stream, 'publish')
     @patch.object(action_stream, 'publish')
-    def test_action_args_invalid_callback(self, mock_publish):
+    def test_action_args_invalid_callback(self, mock_publish, mock_summary):
         self.check_action_callback(
-            action_args_invalid_callback,
+            action_error_callback,
             ActionStatusEnum.failure,
             'failure',
             mock_publish,
+            mock_summary,
             with_result=True)
 
+    @patch.object(action_summary_stream, 'publish')
     @patch.object(action_stream, 'publish')
-    def test_trigger_waiting_data_action_callback(self, mock_publish):
+    def test_trigger_waiting_data_action_callback(self, mock_publish, mock_summary):
         self.check_action_callback(
             trigger_awaiting_data_action_callback,
             ActionStatusEnum.awaiting_data,
             'awaiting_data',
-            mock_publish)
+            mock_publish,
+            mock_summary
+        )
 
     @staticmethod
     def get_workflow_sender(execution_id=None):
@@ -212,7 +230,7 @@ class TestWorkflowResultsStream(ServerTestCase):
         callback(sender, **kwargs)
         mock_publish.assert_called_once()
         self.assert_and_strip_timestamp(mock_publish.call_args[0][0])
-        mock_publish.assert_called_with(expected, event=event)
+        mock_publish.assert_called_with(expected, event=event, subchannels=(expected['execution_id'], 'all'))
 
     @patch.object(workflow_stream, 'publish')
     def test_workflow_pending_callback(self, mock_publish):
@@ -311,13 +329,20 @@ class TestWorkflowResultsStream(ServerTestCase):
             'completed',
             mock_publish)
 
-    def check_stream_endpoint(self, endpoint, mock_stream):
+    def check_stream_endpoint(self, endpoint, mock_stream, execution_id=None, summary=False):
         mock_stream.return_value = Response('something', status=SUCCESS)
         post = self.test_client.post('/api/auth', content_type="application/json",
                                      data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
         key = json.loads(post.get_data(as_text=True))['access_token']
-        response = self.test_client.get('/api/streams/workflowqueue/{}?access_token={}'.format(endpoint, key))
-        mock_stream.assert_called_once_with()
+        url = '/api/streams/workflowqueue/{}?access_token={}'.format(endpoint, key)
+        if execution_id:
+            url += '&workflow_execution_id={}'.format(execution_id)
+        if summary:
+            url += '&summary=true'
+        response = self.test_client.get(url)
+        if execution_id is None:
+            execution_id = 'all'
+        mock_stream.assert_called_once_with(subchannel=execution_id)
         self.assertEqual(response.status_code, SUCCESS)
 
     def check_stream_endpoint_no_key(self, endpoint, mock_stream):
@@ -330,9 +355,28 @@ class TestWorkflowResultsStream(ServerTestCase):
     def test_action_stream_endpoint(self, mock_stream):
         self.check_stream_endpoint('actions', mock_stream)
 
+    @patch.object(action_stream, 'stream')
+    def test_action_stream_endpoint_with_execution_id(self, mock_stream):
+        execution_id = str(uuid4())
+        self.check_stream_endpoint('actions', mock_stream, execution_id=execution_id)
+
+    @patch.object(action_summary_stream, 'stream')
+    def test_action_stream_endpoint_with_summary(self, mock_stream):
+        self.check_stream_endpoint('actions', mock_stream, summary=True)
+
+    @patch.object(action_summary_stream, 'stream')
+    def test_action_stream_endpoint_with_execution_id_with_summary(self, mock_stream):
+        execution_id = str(uuid4())
+        self.check_stream_endpoint('actions', mock_stream, execution_id=execution_id, summary=True)
+
     @patch.object(workflow_stream, 'stream')
     def test_workflow_stream_endpoint(self, mock_stream):
         self.check_stream_endpoint('workflow_status', mock_stream)
+
+    @patch.object(workflow_stream, 'stream')
+    def test_workflow_stream_endpoint_with_execution_id(self, mock_stream):
+        execution_id = str(uuid4())
+        self.check_stream_endpoint('workflow_status', mock_stream, execution_id=execution_id)
 
     @patch.object(action_stream, 'stream')
     def test_action_stream_endpoint_invalid_key(self, mock_stream):
@@ -341,3 +385,5 @@ class TestWorkflowResultsStream(ServerTestCase):
     @patch.object(workflow_stream, 'stream')
     def test_workflow_stream_endpoint_invalid_key(self, mock_stream):
         self.check_stream_endpoint_no_key('workflow_status', mock_stream)
+
+

@@ -1,20 +1,34 @@
 from datetime import datetime
-import sys
-import json
+from enum import Enum, unique
 
-from flask import current_app
+from flask import current_app, request
 
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ActionStatusEnum, WorkflowStatusEnum
 from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.helpers import convert_action_argument, utc_as_rfc_datetime
 from walkoff.security import jwt_required_in_query
-from walkoff.sse import SseStream, StreamableBlueprint
+from walkoff.sse import FilteredSseStream, StreamableBlueprint
 
-workflow_stream = SseStream('workflow_results')
-action_stream = SseStream('action_results')
+workflow_stream = FilteredSseStream('workflow_results')
+action_stream = FilteredSseStream('action_results')
+action_summary_stream = FilteredSseStream('action_results_summary')
 
-workflowresults_page = StreamableBlueprint('workflowresults_page', __name__, streams=(workflow_stream, action_stream))
+workflowresults_page = StreamableBlueprint(
+    'workflowresults_page',
+    __name__,
+    streams=(workflow_stream, action_stream, action_summary_stream)
+)
+
+action_summary_keys = ('action_name', 'app_name', 'action_id', 'name', 'timestamp', 'workflow_execution_id')
+
+
+@unique
+class ActionStreamEvent(Enum):
+    started = 1
+    success = 2
+    failure = 3
+    awaiting_data = 4
 
 
 def format_action_data(sender, kwargs, status):
@@ -43,34 +57,60 @@ def format_action_data_with_results(sender, kwargs, status):
     return result
 
 
+def format_action_return(data, event):
+    return data, (data['workflow_execution_id'], 'all'), event
+
+
+@action_stream.push(None)
+def push_to_action_stream(data, event):
+    return format_action_return(data, event)
+
+
+@action_summary_stream.push(None)
+def push_to_action_summary_stream(data, event):
+    data = {key: data[key] for key in action_summary_keys}
+    return format_action_return(data, event)
+
+
 @WalkoffEvent.ActionStarted.connect
-@action_stream.push('started')
 def action_started_callback(sender, **kwargs):
-    return format_action_data(sender, kwargs, ActionStatusEnum.executing)
+    data = format_action_data(sender, kwargs, ActionStatusEnum.executing)
+    push_to_action_stream(data, ActionStreamEvent.started.name)
+    push_to_action_summary_stream(data, ActionStreamEvent.started.name)
 
 
 @WalkoffEvent.ActionExecutionSuccess.connect
-@action_stream.push('success')
 def action_ended_callback(sender, **kwargs):
-    return format_action_data_with_results(sender, kwargs, ActionStatusEnum.success)
+    data = format_action_data_with_results(sender, kwargs, ActionStatusEnum.success)
+    push_to_action_stream(data, ActionStreamEvent.success.name)
+    push_to_action_summary_stream(data, ActionStreamEvent.success.name)
 
 
 @WalkoffEvent.ActionExecutionError.connect
-@action_stream.push('failure')
-def action_error_callback(sender, **kwargs):
-    return format_action_data_with_results(sender, kwargs, ActionStatusEnum.failure)
-
-
 @WalkoffEvent.ActionArgumentsInvalid.connect
-@action_stream.push('failure')
-def action_args_invalid_callback(sender, **kwargs):
-    return format_action_data_with_results(sender, kwargs, ActionStatusEnum.failure)
+def action_error_callback(sender, **kwargs):
+    data = format_action_data_with_results(sender, kwargs, ActionStatusEnum.failure)
+    push_to_action_stream(data, ActionStreamEvent.failure.name)
+    push_to_action_summary_stream(data, ActionStreamEvent.failure.name)
 
 
 @WalkoffEvent.TriggerActionAwaitingData.connect
-@action_stream.push('awaiting_data')
 def trigger_awaiting_data_action_callback(sender, **kwargs):
-    return format_action_data(sender, kwargs, ActionStatusEnum.awaiting_data)
+    data = format_action_data(sender, kwargs, ActionStatusEnum.awaiting_data)
+    push_to_action_stream(data, ActionStreamEvent.awaiting_data.name)
+    push_to_action_summary_stream(data, ActionStreamEvent.awaiting_data.name)
+
+
+@unique
+class WorkflowStreamEvent(Enum):
+    queued = 1
+    started = 2
+    paused = 3
+    resumed = 4
+    awaiting_data = 5
+    triggered = 6
+    aborted = 7
+    completed = 8
 
 
 def format_workflow_result(sender, status):
@@ -98,63 +138,80 @@ def format_workflow_result_with_current_step(workflow_execution_id, status):
         'status': status.name}
 
 
+def format_workflow_return(data):
+    return data, (data['execution_id'], 'all')
+
+
 @WalkoffEvent.WorkflowExecutionPending.connect
-@workflow_stream.push('queued')
+@workflow_stream.push(WorkflowStreamEvent.queued.name)
 def workflow_pending_callback(sender, **kwargs):
-    return format_workflow_result(sender, WorkflowStatusEnum.pending)
+    data = format_workflow_result(sender, WorkflowStatusEnum.pending)
+    return format_workflow_return(data)
 
 
 @WalkoffEvent.WorkflowExecutionStart.connect
-@workflow_stream.push('started')
+@workflow_stream.push(WorkflowStreamEvent.started.name)
 def workflow_started_callback(sender, **kwargs):
-    return format_workflow_result(sender, WorkflowStatusEnum.running)
+    data = format_workflow_result(sender, WorkflowStatusEnum.running)
+    return format_workflow_return(data)
 
 
 @WalkoffEvent.WorkflowPaused.connect
-@workflow_stream.push('paused')
+@workflow_stream.push(WorkflowStreamEvent.paused.name)
 def workflow_paused_callback(sender, **kwargs):
-    return format_workflow_result_with_current_step(sender['execution_id'], WorkflowStatusEnum.paused)
+    data = format_workflow_result_with_current_step(sender['execution_id'], WorkflowStatusEnum.paused)
+    return format_workflow_return(data)
 
 
 @WalkoffEvent.WorkflowResumed.connect
-@workflow_stream.push('resumed')
+@workflow_stream.push(WorkflowStreamEvent.resumed.name)
 def workflow_resumed_callback(sender, **kwargs):
-    return format_workflow_result_with_current_step(sender.get_execution_id(), WorkflowStatusEnum.running)
+    data = format_workflow_result_with_current_step(sender.get_execution_id(), WorkflowStatusEnum.running)
+    return format_workflow_return(data)
 
 
 @WalkoffEvent.TriggerActionAwaitingData.connect
-@workflow_stream.push('awaiting_data')
+@workflow_stream.push(WorkflowStreamEvent.awaiting_data.name)
 def trigger_awaiting_data_workflow_callback(sender, **kwargs):
     workflow_execution_id = kwargs['data']['workflow']['execution_id']
-    return format_workflow_result_with_current_step(workflow_execution_id, WorkflowStatusEnum.awaiting_data)
+    data = format_workflow_result_with_current_step(workflow_execution_id, WorkflowStatusEnum.awaiting_data)
+    return format_workflow_return(data)
 
 
 @WalkoffEvent.TriggerActionTaken.connect
-@workflow_stream.push('triggered')
+@workflow_stream.push(WorkflowStreamEvent.triggered.name)
 def trigger_action_taken_callback(sender, **kwargs):
     workflow_execution_id = kwargs['data']['workflow_execution_id']
-    return format_workflow_result_with_current_step(workflow_execution_id, WorkflowStatusEnum.pending)
+    data = format_workflow_result_with_current_step(workflow_execution_id, WorkflowStatusEnum.pending)
+    return format_workflow_return(data)
 
 
 @WalkoffEvent.WorkflowAborted.connect
-@workflow_stream.push('aborted')
+@workflow_stream.push(WorkflowStreamEvent.aborted.name)
 def workflow_aborted_callback(sender, **kwargs):
-    return format_workflow_result(sender, WorkflowStatusEnum.aborted)
+    data = format_workflow_result(sender, WorkflowStatusEnum.aborted)
+    return format_workflow_return(data)
 
 
 @WalkoffEvent.WorkflowShutdown.connect
-@workflow_stream.push('completed')
+@workflow_stream.push(WorkflowStreamEvent.completed.name)
 def workflow_shutdown_callback(sender, **kwargs):
-    return format_workflow_result(sender, WorkflowStatusEnum.completed)
+    data = format_workflow_result(sender, WorkflowStatusEnum.completed)
+    return format_workflow_return(data)
 
 
 @workflowresults_page.route('/actions', methods=['GET'])
 @jwt_required_in_query('access_token')
 def stream_workflow_action_events():
-    return action_stream.stream()
+    workflow_execution_id = request.args.get('workflow_execution_id', 'all')
+    if request.args.get('summary'):
+        return action_summary_stream.stream(subchannel=workflow_execution_id)
+    else:
+        return action_stream.stream(subchannel=workflow_execution_id)
 
 
 @workflowresults_page.route('/workflow_status', methods=['GET'])
 @jwt_required_in_query('access_token')
 def stream_workflow_status():
-    return workflow_stream.stream()
+    workflow_execution_id = request.args.get('workflow_execution_id', 'all')
+    return workflow_stream.stream(subchannel=workflow_execution_id)
