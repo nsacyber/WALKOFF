@@ -20,7 +20,7 @@ def get_all_messages():
         user = User.query.filter(User.id == user_id).first()
 
         page = request.args.get('page', 1, type=int)
-        messages = user.messages[(page-1)*current_app['ITEMS_PER_PAGE']: page*current_app['ITEMS_PER_PAGE']]
+        messages = user.messages[(page-1)*current_app.config['ITEMS_PER_PAGE']: page*current_app.config['ITEMS_PER_PAGE']]
         return [message.as_json(user=user, summary=True) for message in messages]
 
     return __func()

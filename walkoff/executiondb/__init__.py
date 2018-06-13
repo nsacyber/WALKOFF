@@ -53,10 +53,10 @@ class ExecutionDatabase(object):
 
 
 class WorkflowStatusEnum(enum.Enum):
-    pending = 1
-    running = 2
-    paused = 3
-    awaiting_data = 4
+    running = 1
+    paused = 2
+    awaiting_data = 3
+    pending = 4
     completed = 5
     aborted = 6
 

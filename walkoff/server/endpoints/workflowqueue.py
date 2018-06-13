@@ -46,21 +46,16 @@ executing_statuses = (WorkflowStatusEnum.running, WorkflowStatusEnum.awaiting_da
 completed_statuses = (WorkflowStatusEnum.aborted, WorkflowStatusEnum.completed)
 
 
-def get_all_workflow_status(limit=50):
+def get_all_workflow_status():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
     def __func():
-        ret = current_app.running_context.execution_db.session.query(WorkflowStatus). \
-            filter(WorkflowStatus.status.in_(executing_statuses)). \
-            order_by(WorkflowStatus.started_at). \
-            all()
+        page = request.args.get('page', 1, type=int)
 
-        if len(ret) < limit:
-            ret.extend(current_app.running_context.execution_db.session.query(WorkflowStatus).
-                       filter(WorkflowStatus.status.in_(completed_statuses)).
-                       order_by(WorkflowStatus.started_at).
-                       limit(limit - len(ret)).
-                       all())
+        ret = current_app.running_context.execution_db.session.query(WorkflowStatus). \
+            order_by(WorkflowStatus.status, WorkflowStatus.started_at.desc()). \
+            limit(current_app.config['ITEMS_PER_PAGE']).\
+            offset((page-1) * current_app.config['ITEMS_PER_PAGE'])
 
         ret = [workflow_status.as_json() for workflow_status in ret]
         return ret, SUCCESS

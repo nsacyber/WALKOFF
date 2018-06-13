@@ -38,7 +38,7 @@ class TestDevicesServer(ServerTestCase):
         app = App(name=self.test_app_name, devices=[device1, device2])
         self.app.running_context.execution_db.session.add(app)
         self.app.running_context.execution_db.session.commit()
-        response = self.get_with_status_check('/api/devices', headers=self.headers, status_code=SUCCESS)
+        response = self.get_with_status_check('/api/devices?page=1', headers=self.headers, status_code=SUCCESS)
         expected_device1 = device1.as_json()
         expected_device1['app_name'] = 'TestApp'
         expected_device2 = device2.as_json()
