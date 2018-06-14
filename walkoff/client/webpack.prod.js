@@ -10,12 +10,11 @@ const commonConfig = require('./webpack.common.js'); // the settings that are co
  * Webpack Plugins
  */
 const DefinePlugin = require('webpack/lib/DefinePlugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const IgnorePlugin = require('webpack/lib/IgnorePlugin');
 const LoaderOptionsPlugin = require('webpack/lib/LoaderOptionsPlugin');
 const NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacementPlugin');
 const ProvidePlugin = require('webpack/lib/ProvidePlugin');
-const UglifyJsPlugin = require('webpack/lib/optimize/UglifyJsPlugin');
 const OptimizeJsPlugin = require('optimize-js-plugin');
 
 /**
@@ -40,6 +39,7 @@ module.exports = function (env) {
 	return webpackMerge(commonConfig({
 		env: ENV
 	}), {
+			mode: 'production',
 			devtool: 'source-map',
 			// TODO: enable assets plugin for cache busting
 			// output: {
@@ -52,18 +52,19 @@ module.exports = function (env) {
 				rules: [
 					{
 						test: /\.css$/,
-						loader: ExtractTextPlugin.extract({
-							fallback: 'style-loader',
-							use: 'css-loader'
-						}),
+						use: [
+							MiniCssExtractPlugin.loader,
+							"css-loader"
+						  ],
 						include: [helpers.root('src', 'styles')]
 					},
 					{
 						test: /\.scss$/,
-						loader: ExtractTextPlugin.extract({
-							fallback: 'style-loader',
-							use: 'css-loader!sass-loader'
-						}),
+						use: [
+							MiniCssExtractPlugin.loader,
+							"css-loader!sass-loader",
+							"style-loader"
+						  ],
 						include: [helpers.root('src', 'styles')]
 					},
 				]
@@ -73,7 +74,9 @@ module.exports = function (env) {
 				new OptimizeJsPlugin({
 					sourceMap: false
 				}),
-				new ExtractTextPlugin('[name].[contenthash].css'),
+				new MiniCssExtractPlugin({
+					filename: '[name].[contenthash].css'
+				}),
 				new DefinePlugin({
 					'ENV': JSON.stringify(METADATA.ENV),
 					'HMR': METADATA.HMR,

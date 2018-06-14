@@ -48,7 +48,7 @@ module.exports = function (options) {
 		{
 			env: ENV
 		}),
-		{
+		{	mode: 'development',
 			devtool: 'cheap-module-source-map',
 			output: {
 				path: helpers.root('dist'),
