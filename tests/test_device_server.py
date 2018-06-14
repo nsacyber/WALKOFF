@@ -278,3 +278,30 @@ class TestDevicesServer(ServerTestCase):
             # Checks if test field is a subset of the device json fields
             self.assertTrue(any(x for x in device['fields'] if set(x) not in set(
                 {k.encode("utf-8"): str(v).encode("utf-8") for k, v in field.items()})))
+
+    def test_device_pagination(self):
+        fields_json = [{'name': 'test_name', 'type': 'integer', 'encrypted': False},
+                       {'name': 'test2', 'type': 'string', 'encrypted': False}]
+        walkoff.config.app_apis = {self.test_app_name: {'devices': {'test_type': {'fields': fields_json}}}}
+        app = App(name=self.test_app_name)
+        self.app.running_context.execution_db.session.add(app)
+        self.app.running_context.execution_db.session.commit()
+
+        for i in range(40):
+            device_json = {'app_name': 'TestApp', 'name': str(i), 'type': 'test_type',
+                           'fields': [{'name': 'test_name', 'value': 123}, {'name': 'test2', 'value': 'something'}]}
+            self.post_with_status_check('/api/devices', headers=self.headers, data=json.dumps(device_json),
+                                        status_code=OBJECT_CREATED, content_type='application/json')
+
+        response = self.get_with_status_check('/api/devices?page=1', headers=self.headers, status_code=SUCCESS)
+        self.assertEqual(len(response), 20)
+        devices = [str(i) for i in range(20)]
+        for device in response:
+            self.assertIn(device['name'], devices)
+        response = self.get_with_status_check('/api/devices?page=2', headers=self.headers, status_code=SUCCESS)
+        self.assertEqual(len(response), 20)
+        devices = [str(i) for i in range(20, 40)]
+        for device in response:
+            self.assertIn(device['name'], devices)
+        response = self.get_with_status_check('/api/devices?page=3', headers=self.headers, status_code=SUCCESS)
+        self.assertEqual(len(response), 0)
