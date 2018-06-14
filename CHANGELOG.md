@@ -3,6 +3,26 @@
      Contributor to describe changes -->
 
 ## [0.8.2]
+###### 2018-06-14
+
+### Added
+* CSV to Array action in the Utilities app
+
+
+### Changed
+* The action results SSE stream truncates the result using the
+  `MAX_STREAM_RESULTS_SIZE_KB` config option
+
+
+### Fixed
+* Bytes conversion bug in the RedisCacheAdapter
+* Bug in playbook editor using users and roles as arguments
+* Bug where some callbacks weren't getting registered
+* Column width bug in playbook editor, execution, and metrics pages
+* OpenAPI validation bug with newest version of the swagger validator
+
+
+## [0.8.2]
 ###### 2018-05-03
 
 ### Added
