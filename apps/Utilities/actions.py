@@ -35,6 +35,11 @@ def echo_array(data):
 
 
 @action
+def csv_as_array(data):
+    return data.split(",")
+
+
+@action
 def json_select(json_reference, element):
     return json.loads(json_reference)[element]
 

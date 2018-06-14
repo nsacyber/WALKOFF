@@ -35,11 +35,11 @@
 			<input *ngIf="isBooleanSelect" type="checkbox" class="form-control" name="{{argument.name}}" [(ngModel)]="argument.value" (change)="clearReference()">
 
 			<!-- User select -->
-			<select2 *ngIf="isUserSelect" [data]="selectData" [value]="selectInitialValue" [options]="selectConfig"
+			<select2 *ngIf="isStatic && isUserSelect" [data]="selectData" [value]="selectInitialValue" [options]="selectConfig"
 				(valueChanged)="selectChange($event)"></select2>
 
 			<!-- Role select -->
-			<select2 *ngIf="isRoleSelect" [data]="selectData" [value]="selectInitialValue" [options]="selectConfig"
+			<select2 *ngIf="isStatic && isRoleSelect" [data]="selectData" [value]="selectInitialValue" [options]="selectConfig"
 				(valueChanged)="selectChange($event)"></select2>
 
 			<!-- Device select -->

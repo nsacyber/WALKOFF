@@ -1,7 +1,5 @@
 import os
 
-from scripts.compose_api import compose_api
-
 
 def main():
     print('\nInstalling Python Dependencies...')

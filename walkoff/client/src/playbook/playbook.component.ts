@@ -56,7 +56,9 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('workflowResultsContainer') workflowResultsContainer: ElementRef;
 	@ViewChild('workflowResultsTable') workflowResultsTable: DatatableComponent;
 	@ViewChild('consoleContainer') consoleContainer: ElementRef;
-    @ViewChild('consoleTable') consoleTable: DatatableComponent;
+	@ViewChild('consoleTable') consoleTable: DatatableComponent;
+	@ViewChild('errorLogContainer') errorLogContainer: ElementRef;
+    @ViewChild('errorLogTable') errorLogTable: DatatableComponent;
 
 	devices: Device[] = [];
 	relevantDevices: Device[] = [];
@@ -88,6 +90,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	eventSource: any;
 	consoleEventSource: any;
 	playbookToImport: File;
+	recalculateConsoleTableCallback: any;
 
 	// Simple bootstrap modal params
 	modalParams: {
@@ -143,6 +146,9 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		Observable.interval(30000).subscribe(() => {
 			this.recalculateRelativeTimes();
 		});
+
+		this.recalculateConsoleTableCallback = (e: JQuery.Event<HTMLElement, null>) => this.recalculateConsoleTable(e);
+		$(document).on('shown.bs.tab', 'a[data-toggle="tab"]', this.recalculateConsoleTableCallback)
 	}
 
 	/**
@@ -164,6 +170,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	ngOnDestroy(): void {
 		if (this.eventSource && this.eventSource.close) { this.eventSource.close(); }
 		if (this.consoleEventSource && this.consoleEventSource.close) { this.consoleEventSource.close(); }
+		if (this.recalculateConsoleTableCallback) { $(document).off('shown.bs.tab', 'a[data-toggle="tab"]', this.recalculateConsoleTableCallback); }
 	}
 
     ///------------------------------------------------------------------------------------------------------
@@ -1692,5 +1699,26 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	getErrors() : any[] {
 		if (!this.loadedWorkflow) return [];
 		return this.loadedWorkflow.all_errors.map(error => ({ error }));
+	}
+
+	/**
+	 * This function is used primarily to recalculate column widths for execution results table.
+	 */
+	recalculateConsoleTable(e: JQuery.Event<HTMLElement, null>) {
+		let table: DatatableComponent;
+		switch(e.target.getAttribute('href')) {
+			case '#console':
+				table = this.consoleTable;
+				break;
+			case '#executionLog':
+				table = this.workflowResultsTable;
+				break;
+			case '#errorLog':
+				table = this.errorLogTable;
+		}
+		if (table && table.recalculate) { 
+			this.cdr.detectChanges();
+			table.recalculate(); 
+		}
 	}
 }
