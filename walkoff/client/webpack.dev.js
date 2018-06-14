@@ -54,7 +54,7 @@ module.exports = function (options) {
 				path: helpers.root('dist'),
 				filename: '[name].bundle.js',
 				sourceMapFilename: '[file].map',
-				chunkFilename: '[id].chunk.js',
+				chunkFilename: '[id].bundle.js',
 				library: 'ac_[name]',
 				libraryTarget: 'var',
 			},

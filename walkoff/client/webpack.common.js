@@ -52,7 +52,7 @@ module.exports = function (options) {
 			path: helpers.root('dist'),
 			filename: '[name].bundle.js',
 			sourceMapFilename: '[file].map',
-			chunkFilename: '[id].chunk.js',
+			chunkFilename: '[id].bundle.js',
 			library: 'ac_[name]',
 			libraryTarget: 'var',
 		},
@@ -115,30 +115,16 @@ module.exports = function (options) {
 		},
 		optimization: {
 			splitChunks: {
-			  cacheGroups: {
-				polyfills: {
-					name: 'polyfills',
-					chunks: "all"
-				},
-				vendor: {
-					name: 'vendor',
-					chunks: "all",
-					test: /[\\/]node_modules[\\/]/,
-					priority: -10
-				},
-				default: {
-					minChunks: 2,
-					chunks: "initial",
-					reuseExistingChunk: true
+				cacheGroups: {
+					vendors: {
+						test: /[\\/]node_modules[\\/]/,
+						name: 'vendor',
+						enforce: true,
+						chunks: chunk => chunk.name == 'main'
+					}
 				}
-            },
 			},
-			
-		  },
-/*
-			new CommonsChunkPlugin({
-				name: ['polyfills', 'vendor'].reverse()
-			}),*/
+		},
 		plugins: [
 			// new AssetsPlugin({
 			// 	path: helpers.root('dist'),
@@ -147,11 +133,7 @@ module.exports = function (options) {
 			// }),
 
 			new CheckerPlugin(),
-/*
-			new CommonsChunkPlugin({
-				name: ['polyfills', 'vendor'].reverse()
-			}),
-*/
+
 			new ProvidePlugin({
 				$: "jquery",
 				jQuery: "jquery",
