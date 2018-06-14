@@ -11,7 +11,6 @@ const helpers = require('./helpers');
 const AssetsPlugin = require('assets-webpack-plugin');
 // const NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacementPlugin');
 // const ContextReplacementPlugin = require('webpack/lib/ContextReplacementPlugin');
-const CommonsChunkPlugin = require('webpack/lib/optimize/CommonsChunkPlugin');
 // const CopyWebpackPlugin = require('copy-webpack-plugin');
 const CheckerPlugin = require('awesome-typescript-loader').CheckerPlugin;
 // const HtmlElementsPlugin = require('./html-elements-plugin');
@@ -53,7 +52,7 @@ module.exports = function (options) {
 			path: helpers.root('dist'),
 			filename: '[name].bundle.js',
 			sourceMapFilename: '[file].map',
-			chunkFilename: '[id].chunk.js',
+			chunkFilename: '[id].bundle.js',
 			library: 'ac_[name]',
 			libraryTarget: 'var',
 		},
@@ -114,7 +113,18 @@ module.exports = function (options) {
 				}
 			]
 		},
-
+		optimization: {
+			splitChunks: {
+				cacheGroups: {
+					vendors: {
+						test: /[\\/]node_modules[\\/]/,
+						name: 'vendor',
+						enforce: true,
+						chunks: chunk => chunk.name == 'main'
+					}
+				}
+			},
+		},
 		plugins: [
 			// new AssetsPlugin({
 			// 	path: helpers.root('dist'),
@@ -123,21 +133,6 @@ module.exports = function (options) {
 			// }),
 
 			new CheckerPlugin(),
-
-			new CommonsChunkPlugin({
-				name: 'polyfills',
-				chunks: ['polyfills']
-			}),
-
-			new CommonsChunkPlugin({
-				name: 'vendor',
-				chunks: ['main'],
-				minChunks: module => /node_modules/.test(module.resource)
-			}),
-
-			new CommonsChunkPlugin({
-				name: ['polyfills', 'vendor'].reverse()
-			}),
 
 			new ProvidePlugin({
 				$: "jquery",
