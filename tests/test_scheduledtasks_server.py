@@ -230,3 +230,19 @@ class TestScheduledTasksServer(ServerTestCase):
 
     def test_stop_does_not_exist(self):
         self.take_action(404, 'stop', status_code=OBJECT_DNE_ERROR)
+
+    def test_scheduler_pagination(self):
+        workflow_id = [str(uuid4())]
+        for i in range(40):
+            data = {"name": str(i), "workflows": workflow_id, "task_trigger": self.date_scheduler}
+            self.post_with_status_check('/api/scheduledtasks', data=json.dumps(data), headers=self.headers,
+                                        content_type='application/json', status_code=OBJECT_CREATED)
+
+        response = self.get_with_status_check('/api/scheduledtasks', headers=self.headers)
+        self.assertEqual(len(response), 20)
+
+        response = self.get_with_status_check('/api/scheduledtasks?page=2', headers=self.headers)
+        self.assertEqual(len(response), 20)
+
+        response = self.get_with_status_check('/api/scheduledtasks?page=3', headers=self.headers)
+        self.assertEqual(len(response), 0)

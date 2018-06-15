@@ -439,3 +439,16 @@ class TestCaseServer(ServerTestCase):
                 current_app.running_context.case_db.session.commit()
             send_all_cases_to_workers()
             mock_update.assert_has_calls(expected)
+
+    def test_cases_pagination(self):
+        for i in range(40):
+            self.create_case(str(i))
+
+        response = self.get_with_status_check('/api/cases', headers=self.headers)
+        self.assertEqual(len(response), 20)
+
+        response = self.get_with_status_check('/api/cases?page=2', headers=self.headers)
+        self.assertEqual(len(response), 20)
+
+        response = self.get_with_status_check('/api/cases?page=3', headers=self.headers)
+        self.assertEqual(len(response), 0)
