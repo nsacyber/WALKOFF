@@ -23,6 +23,7 @@ class Workflow(ExecutionElement, Execution_Base):
     start = Column(UUIDType(binary=False))
     is_valid = Column(Boolean, default=False)
     children = ('actions', 'branches')
+    environment_variables = relationship('EnvironmentVariable', cascade='all, delete-orphan')
     __table_args__ = (UniqueConstraint('playbook_id', 'name', name='_playbook_workflow'),)
 
     def __init__(self, name, start, id=None, actions=None, branches=None):
@@ -47,6 +48,7 @@ class Workflow(ExecutionElement, Execution_Base):
         self._is_paused = False
         self._abort = False
         self._accumulator = {branch.id: 0 for branch in self.branches}
+        # TODO: Add fields from env_vars to this
         self._execution_id = 'default'
         self._instance_repo = None
 
