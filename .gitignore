@@ -8,6 +8,7 @@
 *.py[co]
 *.sw[ponm]
 *~
+.DS_Store
 .certificates/
 .coverage/
 .idea/

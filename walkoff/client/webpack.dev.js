@@ -48,13 +48,13 @@ module.exports = function (options) {
 		{
 			env: ENV
 		}),
-		{
+		{	mode: 'development',
 			devtool: 'cheap-module-source-map',
 			output: {
 				path: helpers.root('dist'),
 				filename: '[name].bundle.js',
 				sourceMapFilename: '[file].map',
-				chunkFilename: '[id].chunk.js',
+				chunkFilename: '[id].bundle.js',
 				library: 'ac_[name]',
 				libraryTarget: 'var',
 			},
