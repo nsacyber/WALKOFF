@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum, unique
+from uuid import UUID
 
 from flask import current_app, request
 
@@ -9,6 +10,8 @@ from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.helpers import convert_action_argument, utc_as_rfc_datetime
 from walkoff.security import jwt_required_in_query
 from walkoff.sse import FilteredSseStream, StreamableBlueprint
+from walkoff.server.problem import Problem
+from walkoff.server.returncodes import BAD_REQUEST
 
 workflow_stream = FilteredSseStream('workflow_results')
 action_stream = FilteredSseStream('action_results')
@@ -204,6 +207,14 @@ def workflow_shutdown_callback(sender, **kwargs):
 @jwt_required_in_query('access_token')
 def stream_workflow_action_events():
     workflow_execution_id = request.args.get('workflow_execution_id', 'all')
+    if workflow_execution_id != 'all':
+        try:
+            UUID(workflow_execution_id)
+        except ValueError:
+            return Problem(
+                BAD_REQUEST,
+                'Could not connect to action results stream',
+                'workflow_execution_id must be a valid UUID')
     if request.args.get('summary'):
         return action_summary_stream.stream(subchannel=workflow_execution_id)
     else:
@@ -214,4 +225,12 @@ def stream_workflow_action_events():
 @jwt_required_in_query('access_token')
 def stream_workflow_status():
     workflow_execution_id = request.args.get('workflow_execution_id', 'all')
+    if workflow_execution_id != 'all':
+        try:
+            UUID(workflow_execution_id)
+        except ValueError:
+            return Problem(
+                BAD_REQUEST,
+                'Could not connect to action results stream',
+                'workflow_execution_id must be a valid UUID')
     return workflow_stream.stream(subchannel=workflow_execution_id)

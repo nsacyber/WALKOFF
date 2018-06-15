@@ -342,8 +342,12 @@ class TestWorkflowResultsStream(ServerTestCase):
         response = self.test_client.get(url)
         if execution_id is None:
             execution_id = 'all'
-        mock_stream.assert_called_once_with(subchannel=execution_id)
-        self.assertEqual(response.status_code, SUCCESS)
+        if execution_id != 'invalid':
+            mock_stream.assert_called_once_with(subchannel=execution_id)
+            self.assertEqual(response.status_code, SUCCESS)
+        else:
+            mock_stream.assert_not_called()
+            self.assertEqual(response.status_code, BAD_REQUEST)
 
     def check_stream_endpoint_no_key(self, endpoint, mock_stream):
         mock_stream.return_value = Response('something', status=SUCCESS)
@@ -359,6 +363,10 @@ class TestWorkflowResultsStream(ServerTestCase):
     def test_action_stream_endpoint_with_execution_id(self, mock_stream):
         execution_id = str(uuid4())
         self.check_stream_endpoint('actions', mock_stream, execution_id=execution_id)
+
+    @patch.object(action_stream, 'stream')
+    def test_action_stream_endpoint_with_invalid_execution_id(self, mock_stream):
+        self.check_stream_endpoint('actions', mock_stream, execution_id='invalid')
 
     @patch.object(action_summary_stream, 'stream')
     def test_action_stream_endpoint_with_summary(self, mock_stream):
@@ -377,6 +385,10 @@ class TestWorkflowResultsStream(ServerTestCase):
     def test_workflow_stream_endpoint_with_execution_id(self, mock_stream):
         execution_id = str(uuid4())
         self.check_stream_endpoint('workflow_status', mock_stream, execution_id=execution_id)
+
+    @patch.object(workflow_stream, 'stream')
+    def test_workflow_stream_endpoint_with_invalid_execution_id(self, mock_stream):
+        self.check_stream_endpoint('workflow_status', mock_stream, execution_id='invalid')
 
     @patch.object(action_stream, 'stream')
     def test_action_stream_endpoint_invalid_key(self, mock_stream):
