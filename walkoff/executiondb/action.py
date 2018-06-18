@@ -1,5 +1,4 @@
 import logging
-import traceback
 import uuid
 
 from sqlalchemy import Column, ForeignKey, String, orm, event
@@ -139,7 +138,12 @@ class Action(ExecutionElement, Execution_Base):
             self._resolved_device_id = self.device_id.get_value(accumulator)
             logger.debug('Device resolved to {} for action {}'.format(self._resolved_device_id, str(self.id)))
 
-        WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionStarted)
+        if arguments:
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionStarted,
+                                                   data={'start_arguments': arguments})
+        else:
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionStarted)
+
         if self.trigger and not resume:
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionAwaitingData)
             logger.debug('Trigger Action {} is awaiting data'.format(self.name))
