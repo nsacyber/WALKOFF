@@ -26,7 +26,7 @@ class Workflow(ExecutionElement, Execution_Base):
     environment_variables = relationship('EnvironmentVariable', cascade='all, delete-orphan')
     __table_args__ = (UniqueConstraint('playbook_id', 'name', name='_playbook_workflow'),)
 
-    def __init__(self, name, start, id=None, actions=None, branches=None):
+    def __init__(self, name, start, id=None, actions=None, branches=None, environment_variables=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Actions
             within it that get executed.
 
@@ -37,18 +37,20 @@ class Workflow(ExecutionElement, Execution_Base):
                 Defaults to None.
             actions (list[Action]): Optional Action objects. Defaults to None.
             branches (list[Branch], optional): A list of Branch objects for the Workflow object. Defaults to None.
+            environment_variables (list[EnvironmentVariable], optional): A list of environment variables for the
+                Workflow. Defaults to None.
         """
         ExecutionElement.__init__(self, id)
         self.name = name
         self.actions = actions if actions else []
         self.branches = branches if branches else []
+        self.environment_variables = environment_variables
 
         self.start = start
 
         self._is_paused = False
         self._abort = False
         self._accumulator = {branch.id: 0 for branch in self.branches}
-        # TODO: Add fields from env_vars to this
         self._execution_id = 'default'
         self._instance_repo = None
 
@@ -60,6 +62,7 @@ class Workflow(ExecutionElement, Execution_Base):
         self._is_paused = False
         self._abort = False
         self._accumulator = {branch.id: 0 for branch in self.branches}
+        self._accumulator.update({env_var.id: env_var.value for env_var in self.environment_variables})
         self._instance_repo = AppInstanceRepo()
         self._execution_id = 'default'
 
@@ -117,7 +120,7 @@ class Workflow(ExecutionElement, Execution_Base):
         self._abort = True
         logger.info('Aborting workflow {0}'.format(self.name))
 
-    def execute(self, execution_id, start=None, start_arguments=None, resume=False):
+    def execute(self, execution_id, start=None, start_arguments=None, resume=False, environment_variables=None):
         """Executes a Workflow by executing all Actions in the Workflow list of Action objects.
 
         Args:
@@ -125,9 +128,12 @@ class Workflow(ExecutionElement, Execution_Base):
             start (int, optional): The ID of the first Action. Defaults to None.
             start_arguments (list[Argument]): Argument parameters into the first Action. Defaults to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
+            environment_variables (list[EnvironmentVariable], optional): Optional list of environment variables to
+                pass into the workflow execution.
         """
         if self.is_valid:
             self._execution_id = execution_id
+            self._accumulator.update({env_var.id: env_var.value for env_var in environment_variables})
             logger.info('Executing workflow {0}'.format(self.name))
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowExecutionStart)
             start = start if start is not None else self.start

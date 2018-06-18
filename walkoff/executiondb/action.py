@@ -1,5 +1,4 @@
 import logging
-import traceback
 import uuid
 
 from sqlalchemy import Column, ForeignKey, String, orm, event

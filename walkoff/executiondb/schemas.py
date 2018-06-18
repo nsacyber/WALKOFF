@@ -13,6 +13,7 @@ from .playbook import Playbook
 from .position import Position
 from .transform import Transform
 from .workflow import Workflow
+from .environment_variable import EnvironmentVariable
 
 
 class ExecutionBaseSchema(ModelSchema):
@@ -153,6 +154,17 @@ class PositionSchema(ExecutionBaseSchema):
         exclude = ('id',)
 
 
+class EnvironmentVariableSchema(ExecutionBaseSchema):
+    """Schema for environment variables
+    """
+    name = field_for(EnvironmentVariable, 'name', required=True)
+    value = field_for(EnvironmentVariable, 'value', required=True)
+    type = fields.Nested(EnvironmentVariable, 'type', required=True)
+
+    class Meta:
+        model = EnvironmentVariable
+
+
 class ActionSchema(ActionableSchema):
     """Schema for actions
     """
@@ -170,6 +182,7 @@ class WorkflowSchema(ExecutionElementBaseSchema):
     name = field_for(Workflow, 'name', required=True)
     actions = fields.Nested(ActionSchema, many=True)
     branches = fields.Nested(BranchSchema, many=True)
+    environment_variables = fields.Nested(EnvironmentVariableSchema, many=True)
     is_valid = field_for(Workflow, 'is_valid', dump_only=True)
 
     class Meta:
