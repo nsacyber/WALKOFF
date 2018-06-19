@@ -44,7 +44,7 @@ class Workflow(ExecutionElement, Execution_Base):
         self.name = name
         self.actions = actions if actions else []
         self.branches = branches if branches else []
-        self.environment_variables = environment_variables
+        self.environment_variables = environment_variables if environment_variables else []
 
         self.start = start
 
@@ -62,7 +62,8 @@ class Workflow(ExecutionElement, Execution_Base):
         self._is_paused = False
         self._abort = False
         self._accumulator = {branch.id: 0 for branch in self.branches}
-        self._accumulator.update({env_var.id: env_var.value for env_var in self.environment_variables})
+        if self.environment_variables:
+            self._accumulator.update({env_var.id: env_var.value for env_var in self.environment_variables})
         self._instance_repo = AppInstanceRepo()
         self._execution_id = 'default'
 
@@ -133,7 +134,8 @@ class Workflow(ExecutionElement, Execution_Base):
         """
         if self.is_valid:
             self._execution_id = execution_id
-            self._accumulator.update({env_var.id: env_var.value for env_var in environment_variables})
+            if environment_variables:
+                self._accumulator.update({env_var.id: env_var.value for env_var in environment_variables})
             logger.info('Executing workflow {0}'.format(self.name))
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowExecutionStart)
             start = start if start is not None else self.start

@@ -24,11 +24,11 @@ class ExecutionDatabase(object):
         from walkoff.executiondb.playbook import Playbook
         from walkoff.executiondb.position import Position
         from walkoff.executiondb.transform import Transform
+        from walkoff.executiondb.environment_variable import EnvironmentVariable
         from walkoff.executiondb.workflow import Workflow
         from walkoff.executiondb.saved_workflow import SavedWorkflow
         from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
         from walkoff.executiondb.metrics import AppMetric, WorkflowMetric, ActionMetric, ActionStatusMetric
-        from walkoff.executiondb.environment_variable import EnvironmentVariable
 
         self.engine = create_engine(format_db_path(execution_db_type, execution_db_path),
                                     connect_args={'check_same_thread': False}, poolclass=NullPool)

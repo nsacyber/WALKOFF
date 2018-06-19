@@ -3,6 +3,7 @@ from marshmallow.validate import OneOf
 from marshmallow_sqlalchemy import ModelSchema, field_for
 
 from walkoff.executiondb import ExecutionDatabase
+from .environment_variable import EnvironmentVariable
 from .action import Action
 from .argument import Argument
 from .branch import Branch
@@ -13,7 +14,6 @@ from .playbook import Playbook
 from .position import Position
 from .transform import Transform
 from .workflow import Workflow
-from .environment_variable import EnvironmentVariable
 
 
 class ExecutionBaseSchema(ModelSchema):
@@ -50,6 +50,17 @@ class ExecutionBaseSchema(ModelSchema):
 
 class ExecutionElementBaseSchema(ExecutionBaseSchema):
     errors = fields.List(fields.String(), dump_only=True)
+
+
+class EnvironmentVariableSchema(ExecutionBaseSchema):
+    """Schema for environment variables
+    """
+    name = field_for(EnvironmentVariable, 'name', required=True)
+    value = field_for(EnvironmentVariable, 'value', required=True)
+    type = field_for(EnvironmentVariable, 'type', required=True)
+
+    class Meta:
+        model = EnvironmentVariable
 
 
 class ArgumentSchema(ExecutionElementBaseSchema):
@@ -152,17 +163,6 @@ class PositionSchema(ExecutionBaseSchema):
     class Meta:
         model = Position
         exclude = ('id',)
-
-
-class EnvironmentVariableSchema(ExecutionBaseSchema):
-    """Schema for environment variables
-    """
-    name = field_for(EnvironmentVariable, 'name', required=True)
-    value = field_for(EnvironmentVariable, 'value', required=True)
-    type = fields.Nested(EnvironmentVariable, 'type', required=True)
-
-    class Meta:
-        model = EnvironmentVariable
 
 
 class ActionSchema(ActionableSchema):
