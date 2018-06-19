@@ -77,15 +77,9 @@ def load_playbook(playbook_name):
 
 def load_workflow(playbook_name, workflow_name):
     execution_db = ExecutionDatabase.instance
-    playbook = JsonPlaybookLoader.load_playbook(
+    playbook, workflow = JsonPlaybookLoader.load_workflow(
         os.path.join(walkoff.config.Config.WORKFLOWS_PATH, playbook_name + '.playbook'))
     execution_db.session.add(playbook)
     execution_db.session.commit()
-
-    workflow = None
-    for wf in playbook.workflows:
-        if wf.name == workflow_name:
-            workflow = wf
-            break
 
     return workflow

@@ -34,15 +34,19 @@ class JsonPlaybookLoader(object):
                 try:
                     playbook_json = json.loads(workflow_loaded)
                     playbook_name = playbook_json['name']
-                    workflow_json = next(
-                        (workflow for workflow in playbook_json['workflows']
-                         if workflow['name'] == workflow_name), None)
-                    if workflow_json is None:
+                    playbook = PlaybookSchema().load(playbook_json)
+                    workflow = None
+                    for wf in playbook.workflows:
+                        if wf.name == workflow_name:
+                            workflow = wf
+                            break
+
+                    if workflow is None:
                         logger.warning('Workflow {0} not found in playbook {0}. '
                                        'Cannot load.'.format(workflow_name, playbook_name))
                         return None
-                    workflow = WorkflowSchema().load(workflow_json)
-                    return playbook_name, workflow.data
+
+                    return playbook.data, workflow
                 except ValueError as e:
                     logger.exception('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
                 except (InvalidArgument, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
@@ -95,21 +99,3 @@ class JsonPlaybookLoader(object):
         playbooks = [JsonPlaybookLoader.load_playbook(os.path.join(resource_collection, playbook))
                      for playbook in locate_playbooks_in_directory(resource_collection)]
         return [playbook for playbook in playbooks if playbook]
-
-
-def locate_playbooks_in_directory(path=None):
-    """Get a list of workflows in a specified directory or the workflows_path directory as specified in the configuration.
-
-    Args:
-        path (str, optional): The directory path from which to locate the workflows. Defaults to None.
-
-    Returns:
-        A list of workflow names from the specified path, or the directory specified in the configuration.
-    """
-    path = path if path is not None else walkoff.config.WORKFLOWS_PATH
-    if os.path.exists(path):
-        return [workflow for workflow in os.listdir(path) if (os.path.isfile(os.path.join(path, workflow))
-                                                              and workflow.endswith('.playbook'))]
-    else:
-        logger.warning('Could not locate any workflows in directory {0}. Directory does not exist'.format(path))
-        return []
