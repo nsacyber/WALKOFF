@@ -162,7 +162,7 @@ class AppCache(object):
         #     print("Module: " + module)
         #     import_module(module)
 
-        app_path = AppCache._path_to_module(path, relative=False)
+        app_path = AppCache._path_to_module(path, relative=relative)
         # try:
         #     module = import_module(app_path)
         # except ImportError:
@@ -170,6 +170,7 @@ class AppCache(object):
         # else:
         apps = next(os.walk(path))[1]
         for app in apps:
+            print(app_path, app)
             self._import_and_cache_submodules('{0}.{1}'.format(app_path, app), app, app_path)
 
     def clear(self):

@@ -183,5 +183,5 @@ def initialize(config_path=None):
     Config.load_config(config_path)
     setup_logger()
     from walkoff.appgateway import cache_apps
-    cache_apps(Config.APPS_PATH, relative=True)
+    cache_apps(Config.APPS_PATH, relative=False)
     load_app_apis()
