@@ -95,6 +95,7 @@ def set_logging_path():
     with open(logging_json, "r") as f:
         o = json.load(f)
         o["handlers"]["file_handler"]["filename"] = log_log
+        o["handlers"]["file_handler_with_proc"]["filename"] = log_log
 
     with open(logging_json, "w") as f:
         json.dump(o, f, indent=2, sort_keys=True)
