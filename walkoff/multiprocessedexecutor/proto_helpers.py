@@ -108,10 +108,18 @@ def convert_action_to_proto(packet, sender, workflow, data=None):
     """
     packet.type = Message.ACTIONPACKET
     action_packet = packet.action_packet
-    if 'data' is not None:
+
+    arguments = None
+    if data is not None:
+        arguments = data.pop('start_arguments', None)
         action_packet.additional_data = json.dumps(data)
+
     add_sender_to_action_packet_proto(action_packet, sender)
-    add_arguments_to_action_proto(action_packet, sender)
+
+    arguments = arguments if arguments else sender.arguments
+    if arguments:
+        add_arguments_to_action_proto(action_packet, arguments)
+
     add_workflow_to_proto(action_packet.workflow, workflow)
 
 
@@ -130,14 +138,14 @@ def add_sender_to_action_packet_proto(action_packet, sender):
     action_packet.sender.device_id = sender.get_resolved_device_id()
 
 
-def add_arguments_to_action_proto(action_packet, sender):
+def add_arguments_to_action_proto(action_packet, arguments):
     """Adds Arguments to the Action protobuf packet
 
     Args:
         action_packet (protobuf): The protobuf packet
         sender (Action): The Action under which fall the Arguments
     """
-    for argument in sender.arguments:
+    for argument in arguments:
         arg = action_packet.sender.arguments.add()
         arg.name = argument.name
         set_argument_proto(arg, argument)
