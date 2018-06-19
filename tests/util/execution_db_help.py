@@ -78,7 +78,8 @@ def load_playbook(playbook_name):
 def load_workflow(playbook_name, workflow_name):
     execution_db = ExecutionDatabase.instance
     playbook, workflow = JsonPlaybookLoader.load_workflow(
-        os.path.join(walkoff.config.Config.WORKFLOWS_PATH, playbook_name + '.playbook'), workflow_name)
+        os.path.join(walkoff.config.Config.WORKFLOWS_PATH, playbook_name + '.playbook'),
+        workflow_name)
     execution_db.session.add(playbook)
     execution_db.session.commit()
 

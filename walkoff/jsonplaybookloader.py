@@ -34,9 +34,11 @@ class JsonPlaybookLoader(object):
                 try:
                     playbook_json = json.loads(workflow_loaded)
                     playbook_name = playbook_json['name']
+
                     playbook = PlaybookSchema().load(playbook_json)
+
                     workflow = None
-                    for wf in playbook.workflows:
+                    for wf in playbook.data.workflows:
                         if wf.name == workflow_name:
                             workflow = wf
                             break
