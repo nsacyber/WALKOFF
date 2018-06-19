@@ -170,7 +170,6 @@ class AppCache(object):
         # else:
         apps = next(os.walk(path))[1]
         for app in apps:
-            print(app_path, app)
             self._import_and_cache_submodules('{0}.{1}'.format(app_path, app), app, app_path)
 
     def clear(self):
