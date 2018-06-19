@@ -7,7 +7,7 @@ matrix:
         - pip install -r requirements.txt && pip install -r requirements-test.txt
         - pip install coverage
       before_script:
-        - python scripts/generate_certificates.py
+        - python walkoff/scripts/generate_certificates.py
       script:
         - coverage run run_all_tests.py
         - coverage combine
@@ -16,6 +16,7 @@ matrix:
         only:
           - master
           - development
+          - pip_experimental3
         except:
           - caching
 
@@ -35,6 +36,7 @@ matrix:
         only:
           - master
           - development
+          - pip_experimental3
         except:
           - caching
 
@@ -54,6 +56,7 @@ matrix:
         only:
           - master
           - development
+          - pip_experimental3
         except:
           - caching
 
@@ -73,6 +76,7 @@ matrix:
         only:
           - master
           - development
+          - pip_experimental3
         except:
           - caching
 
@@ -98,4 +102,5 @@ matrix:
         only:
           - master
           - development
+          - pip_experimental3
 
