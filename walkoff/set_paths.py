@@ -72,6 +72,8 @@ def set_walkoff_external():
 
     Config.write_values_to_file()
 
+    return external_path
+
 
 def set_alembic_paths():
     Config.load_config()
@@ -102,9 +104,10 @@ def set_logging_path():
 
 
 def main():
-    set_walkoff_external()
+    r = set_walkoff_external()
     set_alembic_paths()
     set_logging_path()
+    return r
 
 
 if __name__ == '__main__':

@@ -95,7 +95,10 @@ def import_workflows(app):
 def main():
     args = parse_args()
     exit_code = 0
-    walkoff.config.initialize(args.config)
+    config_path = args.config if args.config is not None else os.getcwd()
+    if os.path.isdir(config_path):
+        config_path = os.path.join(config_path, "data", "walkoff.config")
+    walkoff.config.initialize(config_path)
     app = create_app(walkoff.config.Config)
     import_workflows(app)
     try:

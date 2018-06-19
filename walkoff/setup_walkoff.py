@@ -31,13 +31,15 @@ def pip_install():
     from walkoff.set_paths import main as set_paths_main
     from walkoff.config import Config
 
-    set_paths_main()
+    d = set_paths_main()
 
     print('\nInstalling Python Dependencies...')
     install_dependencies()
 
     print('\nGenerating Certificates...')
     generate_certificates()
+
+    print("WALKOFF installed to: {}".format(d))
 
 
 def main():

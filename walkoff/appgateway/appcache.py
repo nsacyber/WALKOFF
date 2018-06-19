@@ -152,6 +152,9 @@ class AppCache(object):
             path (str): Path to apps module
             relative (bool): Whether the path should be relative or not
         """
+        if not os.path.exists(path):
+            raise RuntimeError("{} does not exist. Run `walkoff-run` inside a WALKOFF installation directory, "
+                               "or specify a WALKOFF directory or config file with `walkoff-run -c`".format(path))
         sys.path.insert(0, os.path.abspath((os.path.dirname(path))))
         # dirs = next(os.walk(path))[1]
         # print("Path: " + path)
