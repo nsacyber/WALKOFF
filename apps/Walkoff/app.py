@@ -130,7 +130,7 @@ class Walkoff(App):
     def execute_workflow(self, workflow_id, timeout=DEFAULT_TIMEOUT):
         data = {"workflow_id": workflow_id}
         r = self.standard_request('post', '/api/workflowqueue', timeout, headers=self.headers, data=data)
-        r = [r['id']]
+        r = [r[0]['id']]
         return r, 'Success'
 
     @action
