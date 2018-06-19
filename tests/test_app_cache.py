@@ -34,6 +34,7 @@ class TestAppCache(TestCase):
         self.assertSetEqual(set(self.cache._cache[app].functions.keys()), actions)
 
     def assert_cache_has_main(self, main, app='A'):
+        print(id(self.cache._cache[app].main), id(main))
         self.assertEqual(self.cache._cache[app].main, main)
 
     def test_init(self):
@@ -126,9 +127,10 @@ class TestAppCache(TestCase):
         self.assertEqual(AppCache._path_to_module('..' + os.path.sep + 'apppath' + os.path.sep), 'apppath')
 
     def test_cache_apps(self):
+        print(config.TestConfig.APPS_PATH)
         self.cache.cache_apps(config.TestConfig.APPS_PATH)
-        from testapps.HelloWorldBounded.main import Main
-        from testapps.DailyQuote.main import Main as DailyMain
+        from tests.testapps.HelloWorldBounded.main import Main
+        from tests.testapps.DailyQuote.main import Main as DailyMain
         self.assert_cache_has_main(Main, app='HelloWorldBounded')
         hello_world_expected = {
             'main.Main.helloWorld', 'main.Main.repeatBackToMe', 'main.Main.returnPlusOne', 'main.Main.pause',
