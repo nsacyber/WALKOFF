@@ -37,27 +37,21 @@ class JsonPlaybookLoader(object):
 
                     playbook = PlaybookSchema().load(playbook_json)
 
-                    workflow = None
                     for wf in playbook.data.workflows:
                         if wf.name == workflow_name:
                             workflow = wf
-                            break
+                            return playbook.data, workflow
 
-                    if workflow is None:
-                        logger.warning('Workflow {0} not found in playbook {0}. '
-                                       'Cannot load.'.format(workflow_name, playbook_name))
-                        return None
+                    logger.warning('Cannot load Workflow {0} in playbook {0}.'.format(workflow_name, playbook_name))
 
-                    return playbook.data, workflow
                 except ValueError as e:
                     logger.exception('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
                 except (InvalidArgument, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
                     logger.error('Error constructing workflow {0}. Reason: {1}'.format(workflow_name,
                                                                                        format_exception_message(e)))
-                    return None
                 except KeyError as e:
                     logger.error('Invalid Playbook JSON format. Details: {}'.format(e))
-                    return None
+                return None
 
     @staticmethod
     def load_playbook(resource):
