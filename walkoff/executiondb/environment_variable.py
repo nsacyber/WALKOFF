@@ -14,11 +14,9 @@ class EnvironmentVariable(Execution_Base):
     workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id'))
     name = Column(String(80), nullable=False)
     value = Column(String(80), nullable=False)
-    type = Column(String(80), nullable=False)
 
-    def __init__(self, name, value, type, id=None):
+    def __init__(self, name, value, id=None):
         if id:
             self.id = id
         self.name = name
         self.value = value
-        self.type = type
