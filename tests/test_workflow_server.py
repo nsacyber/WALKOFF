@@ -124,6 +124,29 @@ class TestWorkflowServer(ServerTestCase):
     def test_read_playbook_workflows_invalid_id_format_from_query(self):
         self.check_invalid_uuid('get', '/api/workflows?playbook=0', 'playbook')
 
+    def test_read_single_workflow(self):
+        workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+        response = self.get_with_status_check(
+            '/api/workflows/{}'.format(workflow.id),
+            headers=self.headers)
+        self.assertDictEqual(self.strip_ids(response), self.strip_ids(WorkflowSchema().dump(workflow).data))
+
+    def test_read_single_workflow_invalid_name(self):
+        workflow = execution_db_help.load_workflow('basicWorkflowTest', 'invalidWorkflowName')
+        self.assertIsNone(workflow)
+
+    def test_read_single_workflow_invalid_playbook(self):
+        workflow = execution_db_help.load_workflow('fakeWorkflowTest', 'invalidWorkflowName')
+        self.assertIsNone(workflow)
+
+    def test_read_single_workflow_invalid_app(self):
+        workflow = execution_db_help.load_workflow('invalidWorkflowTest2', 'invalidWorkflow')
+        self.assertIsNone(workflow)
+
+    def test_read_single_workflow_error(self):
+        workflow = execution_db_help.load_workflow('invalidWorkflowTest', 'invalidWorkflow')
+        self.assertIsNone(workflow)
+
     def test_read_workflow(self):
         playbook = execution_db_help.standard_load()
         target_workflow = playbook.workflows[0]

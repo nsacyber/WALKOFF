@@ -1,0 +1,27 @@
+{
+    "workflows": [
+        {
+            "actions": [
+                {
+                    "action_name": "invalid",
+                    "app_name": "invalid",
+                    "arguments": [
+                        {
+                            "name": "invalid",
+                            "value": "Hello World"
+                        }
+                    ],
+                    "device_id": {
+                        "name": "__device__",
+                        "value": 1
+                    },
+                    "id": "a3fcdff4-dcae-4401-b76d-ad4dbd6a375d",
+                    "name": "start"
+                }
+            ],
+            "branches": [],
+            "name": "invalidWorkflow",
+            "start": "a3fcdff4-dcae-4401-b76d-ad4dbd6a375d"
+        }
+    ]
+}

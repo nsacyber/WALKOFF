@@ -27,7 +27,7 @@ class JsonPlaybookLoader(object):
             playbook_file = open(resource, 'r')
         except (IOError, OSError) as e:
             logger.error('Could not load workflow from {0}. Reason: {1}'.format(resource, format_exception_message(e)))
-            return None
+            return None, None
         else:
             with playbook_file:
                 workflow_loaded = playbook_file.read()
@@ -51,7 +51,7 @@ class JsonPlaybookLoader(object):
                                                                                        format_exception_message(e)))
                 except KeyError as e:
                     logger.error('Invalid Playbook JSON format. Details: {}'.format(e))
-                return None
+                return None, None
 
     @staticmethod
     def load_playbook(resource):

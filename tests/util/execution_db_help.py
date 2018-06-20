@@ -80,6 +80,10 @@ def load_workflow(playbook_name, workflow_name):
     playbook, workflow = JsonPlaybookLoader.load_workflow(
         os.path.join(walkoff.config.Config.WORKFLOWS_PATH, playbook_name + '.playbook'),
         workflow_name)
+
+    if not all((playbook, workflow)):
+        return None
+
     execution_db.session.add(playbook)
     execution_db.session.commit()
 
