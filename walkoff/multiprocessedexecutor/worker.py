@@ -8,15 +8,15 @@ from threading import Lock
 
 import nacl.bindings
 import nacl.utils
-from nacl.exceptions import CryptoError
 import zmq
 import zmq.auth as auth
-from zmq.error import ZMQError
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.message import DecodeError
+from nacl.exceptions import CryptoError
 from nacl.public import PrivateKey, Box
+from zmq.error import ZMQError
 
 import walkoff.cache
 import walkoff.config
@@ -27,6 +27,7 @@ from walkoff.case.subscription import Subscription, SubscriptionCache
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.environment_variable import EnvironmentVariable
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
@@ -60,7 +61,6 @@ class WorkflowResultsHandler(object):
         except ZMQError:
             logger.exception('Workflow Results handler could not connect to {}!'.format(zmq_results_address))
             raise
-
 
         self.execution_db = execution_db
 
@@ -253,7 +253,15 @@ class WorkflowReceiver(object):
                         for arg in message.arguments:
                             start_arguments.append(
                                 Argument(**(MessageToDict(arg, preserving_proto_field_name=True))))
-                    yield message.workflow_id, message.workflow_execution_id, start, start_arguments, message.resume
+
+                    env_vars = []
+                    if hasattr(message, 'environment_variables'):
+                        for env_var in message.environment_variables:
+                            env_vars.append(
+                                EnvironmentVariable(**(MessageToDict(env_var, preserving_proto_field_name=True))))
+
+                    yield message.workflow_id, message.workflow_execution_id, start, \
+                          start_arguments, message.resume, env_vars
             else:
                 yield None
         raise StopIteration
@@ -362,7 +370,8 @@ class Worker(object):
         with self._lock:
             return len(self.workflows) >= self.capacity
 
-    def execute_workflow_worker(self, workflow_id, workflow_execution_id, start, start_arguments=None, resume=False):
+    def execute_workflow_worker(self, workflow_id, workflow_execution_id, start, start_arguments=None, resume=False,
+                                environment_variables=None):
         """Execute a workflow
 
         Args:
@@ -371,6 +380,8 @@ class Worker(object):
             start (UUID): The ID of the starting Action
             start_arguments (list[Argument], optional): Optional list of starting Arguments. Defaults to None
             resume (bool, optional): Optional boolean to signify that this Workflow is being resumed. Defaults to False.
+            environment_variables (list[EnvironmentVariable]): Optional list of environment variables to pass into
+                the workflow. These will not be persistent.
         """
         self.execution_db.session.expire_all()
         workflow = self.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
@@ -391,7 +402,7 @@ class Worker(object):
 
         start = start if start else workflow.start
         workflow.execute(execution_id=workflow_execution_id, start=start, start_arguments=start_arguments,
-                         resume=resume)
+                         resume=resume, environment_variables=environment_variables)
         with self._lock:
             self.workflows.pop(threading.current_thread().name)
 

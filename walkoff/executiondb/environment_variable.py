@@ -12,11 +12,13 @@ class EnvironmentVariable(Execution_Base):
     __tablename__ = 'environment_variable'
     id = Column(UUIDType(binary=False), primary_key=True, nullable=False, default=uuid4)
     workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id'))
-    name = Column(String(80), nullable=False)
+    name = Column(String(80))
     value = Column(String(80), nullable=False)
+    description = Column(String(255))
 
-    def __init__(self, name, value, id=None):
+    def __init__(self, value, id=None, name=None, description=None):
         if id:
             self.id = id
         self.name = name
         self.value = value
+        self.description = description

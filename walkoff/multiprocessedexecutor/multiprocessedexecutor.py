@@ -146,7 +146,7 @@ class MultiprocessedExecutor(object):
             start_arguments (list[Argument]): The arguments to the starting action of the workflow. Defaults to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
             environment_variables (list[EnvironmentVariable]): Optional list of environment variables to pass into
-                the workflow. These will not be persistent
+                the workflow. These will not be persistent.
 
         Returns:
             (UUID): The execution ID of the Workflow.

@@ -11,6 +11,7 @@ from walkoff.security import permissions_accepted_for_resources, ResourcePermiss
 from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid
 from walkoff.server.problem import Problem
 from walkoff.server.returncodes import *
+from walkoff.executiondb.environment_variable import EnvironmentVariable
 
 
 def does_workflow_exist(workflow_id):
@@ -90,6 +91,11 @@ def execute_workflow():
             return Problem(INVALID_INPUT_ERROR, 'Cannot execute workflow', 'Workflow is invalid')
         args = data['arguments'] if 'arguments' in data else None
         start = data['start'] if 'start' in data else None
+        env_vars = data['environment_variables'] if 'environment_variables' in data else None
+
+        env_var_objs = []
+        if env_vars:
+            env_var_objs = [EnvironmentVariable(**env_var) for env_var in env_vars]
 
         arguments = []
         if args:
@@ -106,7 +112,8 @@ def execute_workflow():
                     'Some arguments are invalid. Reason: {}'.format(errors))
 
         execution_id = current_app.running_context.executor.execute_workflow(workflow_id, start=start,
-                                                                             start_arguments=arguments)
+                                                                             start_arguments=arguments,
+                                                                             environment_variables=env_var_objs)
         current_app.logger.info('Executed workflow {0}'.format(workflow_id))
         return {'id': execution_id}, SUCCESS_ASYNC
 

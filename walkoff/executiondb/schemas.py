@@ -55,9 +55,9 @@ class ExecutionElementBaseSchema(ExecutionBaseSchema):
 class EnvironmentVariableSchema(ExecutionBaseSchema):
     """Schema for environment variables
     """
-    name = field_for(EnvironmentVariable, 'name', required=True)
+    name = field_for(EnvironmentVariable, 'name')
     value = field_for(EnvironmentVariable, 'value', required=True)
-    type = field_for(EnvironmentVariable, 'type', required=True)
+    description = field_for(EnvironmentVariable, 'description')
 
     class Meta:
         model = EnvironmentVariable
