@@ -18,7 +18,7 @@ class EnvironmentVariable(Execution_Base):
 
     def __init__(self, value, id=None, name=None, description=None):
         if id:
-            if isinstance(id, (str, unicode)):
+            if not isinstance(id, UUID):
                 self.id = UUID(id)
             else:
                 self.id = id
