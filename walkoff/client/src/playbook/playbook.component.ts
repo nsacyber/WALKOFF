@@ -59,7 +59,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('consoleContainer') consoleContainer: ElementRef;
 	@ViewChild('consoleTable') consoleTable: DatatableComponent;
 	@ViewChild('errorLogContainer') errorLogContainer: ElementRef;
-    @ViewChild('errorLogTable') errorLogTable: DatatableComponent;
+	@ViewChild('errorLogTable') errorLogTable: DatatableComponent;
+	@ViewChild('importFile') importFile: ElementRef;
 
 	devices: Device[] = [];
 	relevantDevices: Device[] = [];
@@ -910,6 +911,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
 				this.toastyService.success(`Successfuly imported playbook "${this.playbookToImport.name}".`);
 				this.playbookToImport = null;
+				this.importFile.nativeElement.value = "";
 			},
 			e => this.toastyService.error(`Error importing playbook "${this.playbookToImport.name}": ${e.message}`),
 		);

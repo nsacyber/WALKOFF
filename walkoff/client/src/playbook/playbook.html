@@ -364,7 +364,7 @@
                     <div class="importContainer">
                         <h4>Import Playbook</h4>
                         <div class="pull-right">
-                            <input type="file" name="file" id="file" class="importPlaybookInput" (change)="onImportSelectChange($event)"/>
+                            <input #importFile type="file" name="file" id="file" class="importPlaybookInput" (change)="onImportSelectChange($event)"/>
                             <button [disabled]="!playbookToImport" (click)="importPlaybook()" class="btn btn-primary" title="Import Playbook">
                                 <i class="fa fa-upload"></i>
                             </button>
