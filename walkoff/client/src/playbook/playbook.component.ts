@@ -198,7 +198,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
     consoleEventHandler(message: any): void {
 		const consoleEvent = plainToClass(ConsoleLog, (JSON.parse(message.data) as object));
-		console.log(consoleEvent)
 		const newConsoleLog = consoleEvent.toNewConsoleLog();
 		this.consoleLog.push(newConsoleLog);
     }
