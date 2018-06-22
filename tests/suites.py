@@ -35,7 +35,7 @@ __execution_tests = [test_validatable, test_argument, test_action, test_helper_f
 execution_suite = TestSuite()
 add_tests_to_suite(execution_suite, __execution_tests)
 
-__workflow_tests = [test_simple_workflow, test_workflow_manipulation]
+__workflow_tests = [test_simple_workflow, test_workflow_manipulation, test_environment_variable]
 workflow_suite = TestSuite()
 add_tests_to_suite(workflow_suite, __workflow_tests)
 

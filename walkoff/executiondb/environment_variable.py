@@ -1,5 +1,5 @@
 import logging
-from uuid import uuid4
+from uuid import uuid4, UUID
 
 from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy_utils import UUIDType
@@ -18,7 +18,10 @@ class EnvironmentVariable(Execution_Base):
 
     def __init__(self, value, id=None, name=None, description=None):
         if id:
-            self.id = id
+            if isinstance(id, (str, unicode)):
+                self.id = UUID(id)
+            else:
+                self.id = id
         self.name = name
         self.value = value
         self.description = description

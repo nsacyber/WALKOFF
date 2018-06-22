@@ -217,6 +217,7 @@ class TestWorkflowStatus(ServerTestCase):
         @WalkoffEvent.ActionExecutionSuccess.connect
         def y(sender, **kwargs):
             result['count'] += 1
+            result['output'] = kwargs['data']['data']['result']
 
         data = {"workflow_id": str(workflow.id),
                 "arguments": [{"name": "call",
@@ -228,6 +229,36 @@ class TestWorkflowStatus(ServerTestCase):
         current_app.running_context.executor.wait_and_reset(1)
 
         self.assertEqual(result['count'], 1)
+        self.assertEqual(result['output'], 'REPEATING: CHANGE INPUT')
+
+    def test_execute_workflow_change_env_vars(self):
+        playbook = execution_db_help.standard_load()
+        workflow = self.app.running_context.execution_db.session.query(Workflow).filter_by(
+            playbook_id=playbook.id).first()
+        env_var_id = str(uuid4())
+        workflow.actions[0].arguments[0].value = None
+        workflow.actions[0].arguments[0].reference = env_var_id
+
+        action_ids = [action.id for action in workflow.actions if action.name == 'start']
+        setup_subscriptions_for_action(workflow.id, action_ids)
+
+        result = {'count': 0, 'output': None}
+
+        @WalkoffEvent.ActionExecutionSuccess.connect
+        def y(sender, **kwargs):
+            result['count'] += 1
+            result['output'] = kwargs['data']['data']['result']
+
+        data = {"workflow_id": str(workflow.id),
+                "environment_variables": [{"id": env_var_id, "value": "CHANGE INPUT"}]}
+
+        self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
+                                    content_type="application/json", data=json.dumps(data))
+
+        current_app.running_context.executor.wait_and_reset(1)
+
+        self.assertEqual(result['count'], 1)
+        self.assertEqual(result['output'], 'REPEATING: CHANGE INPUT')
 
     def test_execute_workflow_pause_resume(self):
         result = {'paused': False, 'resumed': False}

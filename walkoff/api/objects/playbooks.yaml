@@ -318,7 +318,7 @@ Position:
 
 EnvironmentVariable:
   type: object
-  required: [id, value]
+  required: [value]
   description: An environment variable object, which is a type of argument in a Workflow
   additionalProperties: false
   properties:
@@ -326,13 +326,13 @@ EnvironmentVariable:
       $ref: '#/definitions/Uuid'
     name:
       type: string
-      description: The name of the argument
+      description: The name of the environment variable
     value:
       type: string
-      description: The value of the argument
+      description: The value of the environment variable
     description:
       type: string
-      description: Description of the argument
+      description: Description of the environment variable
 
 CopyWorkflow:
     type: object

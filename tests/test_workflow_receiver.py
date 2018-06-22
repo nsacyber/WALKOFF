@@ -118,3 +118,33 @@ class TestWorkflowReceiver(TestCase):
         receiver.exit = True
         with self.assertRaises(StopIteration):
             next(workflow_generator)
+
+    def test_receive_workflow_with_env_vars(self):
+        workflow_id = str(uuid4())
+        execution_id = str(uuid4())
+        start = str(uuid4())
+        env_var_id = str(uuid4())
+        env_var_id2 = str(uuid4())
+        env_vars = [{"id": env_var_id, "value": "env_var_1"}, {"id": env_var_id2, "value": "env_var_2"}]
+        message = ExecuteWorkflowMessage()
+        message.workflow_id = workflow_id
+        message.workflow_execution_id = execution_id
+        message.resume = True
+        message.start = start
+        env_var = message.environment_variables.add()
+        env_var.id = env_vars[0]['id']
+        env_var.value = env_vars[0]['value']
+        env_var = message.environment_variables.add()
+        env_var.id = env_vars[1]['id']
+        env_var.value = env_vars[1]['value']
+
+        receiver = self.get_receiver()
+        encrypted_message = self.box.encrypt(message.SerializeToString())
+        workflow_generator = receiver.receive_workflows()
+        receiver.cache.lpush('request_queue', encrypted_message)
+        workflow = next(workflow_generator)
+        workflow_env_vars = workflow[5]
+        self.assertEqual(str(workflow_env_vars[0].id), env_vars[0]['id'])
+        self.assertEqual(workflow_env_vars[0].value, env_vars[0]['value'])
+        self.assertEqual(str(workflow_env_vars[1].id), env_vars[1]['id'])
+        self.assertEqual(workflow_env_vars[1].value, env_vars[1]['value'])
