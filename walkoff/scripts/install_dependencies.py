@@ -45,6 +45,10 @@ def install_dependencies(apps=None, interfaces=None):
         subprocess.call(['pip', 'install', '-r', path])
 
 
-if __name__ == '__main__':
+def main():
     args = cmd_line()
     install_dependencies(args.apps, args.interfaces)
+
+
+if __name__ == '__main__':
+    main()

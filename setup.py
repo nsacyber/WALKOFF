@@ -165,7 +165,9 @@ setup(
         'console_scripts': [
             'walkoff-setup=walkoff.setup_walkoff:main',
             'walkoff-run=walkoff.__main__:main',
-            'walkoff-update=walkoff.update_walkoff:main'
+            'walkoff-update=walkoff.update_walkoff:main',
+            'walkoff-install-deps=walkoff.scripts.install_dependencies:main',
+            'walkoff-install-pkg=walkoff.scripts.install_package:main'
         ],
     },
 )
