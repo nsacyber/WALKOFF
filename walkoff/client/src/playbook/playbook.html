@@ -272,7 +272,7 @@
                 <div id="executionResultsModal">
                     <div #workflowResultsContainer>
                         <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]="actionStatuses" [sortType]="'multi'"
-                        [headerHeight]="25" [footerHeight]="25" [rowHeight]="undefined" [sorts]="[{prop: 'started_at', dir: 'desc'}]"
+                        [headerHeight]="25" [footerHeight]="25" [rowHeight]="undefined" [sorts]="[]"
                         [limit]="10">
                         <!-- Column Templates -->
                         <ngx-datatable-column name="Action IDs" prop="action_id" [flexGrow]="1"></ngx-datatable-column>
@@ -364,7 +364,7 @@
                     <div class="importContainer">
                         <h4>Import Playbook</h4>
                         <div class="pull-right">
-                            <input type="file" name="file" id="file" class="importPlaybookInput" (change)="onImportSelectChange($event)"/>
+                            <input #importFile type="file" name="file" id="file" class="importPlaybookInput" (change)="onImportSelectChange($event)"/>
                             <button [disabled]="!playbookToImport" (click)="importPlaybook()" class="btn btn-primary" title="Import Playbook">
                                 <i class="fa fa-upload"></i>
                             </button>

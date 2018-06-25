@@ -39,6 +39,7 @@ import { ActionStatus } from '../models/execution/actionStatus';
 import { ConditionalExpression } from '../models/playbook/conditionalExpression';
 import { ActionStatusEvent } from '../models/execution/actionStatusEvent';
 import { ConsoleLog } from '../models/execution/consoleLog';
+import { WorkflowStatus } from '../models/execution/workflowStatus';
 
 @Component({
 	selector: 'playbook-component',
@@ -58,7 +59,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('consoleContainer') consoleContainer: ElementRef;
 	@ViewChild('consoleTable') consoleTable: DatatableComponent;
 	@ViewChild('errorLogContainer') errorLogContainer: ElementRef;
-    @ViewChild('errorLogTable') errorLogTable: DatatableComponent;
+	@ViewChild('errorLogTable') errorLogTable: DatatableComponent;
+	@ViewChild('importFile') importFile: ElementRef;
 
 	devices: Device[] = [];
 	relevantDevices: Device[] = [];
@@ -138,8 +140,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		this.playbookService.getDevices().then(devices => this.devices = devices);
 		this.playbookService.getApis().then(appApis => this.appApis = appApis.sort((a, b) => a.name > b.name ? 1 : -1));
-		this.getActionStatusSSE();
-		this.getConsoleSSE();
 		this.getPlaybooksWithWorkflows();
 		this._addCytoscapeEventBindings();
 
@@ -180,10 +180,14 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Sets up the EventStream for receiving console logs from the server. Binds various events to the event handler.
 	 * Will currently return ALL stream actions and not just the ones manually executed.
 	 */
-	getConsoleSSE(): void {
+	getConsoleSSE(workflowExecutionId: string): void {
+		if (this.consoleEventSource) this.consoleEventSource.close();
+
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				this.consoleEventSource = new (window as any).EventSource('api/streams/console/log?access_token=' + authToken);
+				let url = `api/streams/console/log?access_token=${ authToken }&workflow_execution_id=${ workflowExecutionId }`;
+
+				this.consoleEventSource = new (window as any).EventSource(url);
                 this.consoleEventSource.addEventListener('log', (e: any) => this.consoleEventHandler(e));
 				this.consoleEventSource.onerror = (err: Error) => {
 					// this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
@@ -194,7 +198,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
     consoleEventHandler(message: any): void {
 		const consoleEvent = plainToClass(ConsoleLog, (JSON.parse(message.data) as object));
-		console.log(consoleEvent)
 		const newConsoleLog = consoleEvent.toNewConsoleLog();
 		this.consoleLog.push(newConsoleLog);
     }
@@ -209,11 +212,14 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Sets up the EventStream for receiving stream actions from the server. Binds various events to the event handler.
 	 * Will currently return ALL stream actions and not just the ones manually executed.
 	 */
-	getActionStatusSSE(): void {
+	getActionStatusSSE(workflowExecutionId: string): void {
+		if (this.eventSource) this.eventSource.close();
+
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				this.eventSource = new (window as any).EventSource('api/streams/workflowqueue/actions?access_token=' + authToken);
+				let url = `api/streams/workflowqueue/actions?access_token=${ authToken }&workflow_execution_id=${ workflowExecutionId }`;
 
+				this.eventSource = new (window as any).EventSource(url);
 				this.eventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
@@ -236,7 +242,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		// If we have a graph loaded, find the matching node for this event and style it appropriately if possible.
 		if (this.cy) {
-			const matchingNode = this.cy.elements(`node[_id="${actionStatusEvent.action_id}"]`);
+			const matchingNode = this.cy.elements(`node[_id="${ actionStatusEvent.action_id }"]`);
 
 			if (matchingNode) {
 				switch (actionStatusEvent.status) {
@@ -310,8 +316,11 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		if (!this.loadedWorkflow) { return; }
 		this.clearExecutionHighlighting();
 		this.playbookService.addWorkflowToQueue(this.loadedWorkflow.id)
-			.then(() => this.toastyService
-				.success(`Starting execution of ${this.loadedPlaybook.name} - ${this.loadedWorkflow.name}.`))
+			.then((workflowStatus: WorkflowStatus) => {
+				this.getActionStatusSSE(workflowStatus.id)
+				this.getConsoleSSE(workflowStatus.id)
+				this.toastyService.success(`Starting execution of ${this.loadedPlaybook.name} - ${this.loadedWorkflow.name}.`)
+			})
 			.catch(e => this.toastyService
 				.error(`Error starting execution of ${this.loadedPlaybook.name} - ${this.loadedWorkflow.name}: ${e.message}`));
 	}
@@ -901,6 +910,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
 				this.toastyService.success(`Successfuly imported playbook "${this.playbookToImport.name}".`);
 				this.playbookToImport = null;
+				this.importFile.nativeElement.value = "";
 			},
 			e => this.toastyService.error(`Error importing playbook "${this.playbookToImport.name}": ${e.message}`),
 		);
