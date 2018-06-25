@@ -82,6 +82,11 @@ def main():
         from walkoff.scripts.compose_api import compose_api
         compose_api()
 
+        os.chdir('walkoff/client')
+        subprocess.call(['npm', 'install'])
+        subprocess.call(['npm', 'run', 'build'])
+        os.chdir('../..')
+
         t = tarfile.open(gzip_filename, "w|gz")
         t.add("apps/")
         t.add("interfaces/")

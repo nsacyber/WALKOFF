@@ -10,10 +10,8 @@ from gevent import pywsgi
 import walkoff
 import walkoff.config
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
-from walkoff.server.app import create_app
 from walkoff.jsonplaybookloader import JsonPlaybookLoader
 from walkoff.executiondb.playbook import Playbook
-from walkoff.scripts.compose_api import compose_api
 
 logger = logging.getLogger('walkoff')
 
@@ -99,6 +97,8 @@ def main():
     if os.path.isdir(config_path):
         config_path = os.path.join(config_path, "data", "walkoff.config")
     walkoff.config.initialize(config_path)
+
+    from walkoff.server.app import create_app  # this import must come after config initialization
     app = create_app(walkoff.config.Config)
     import_workflows(app)
     try:
