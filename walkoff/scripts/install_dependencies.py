@@ -16,6 +16,7 @@ def cmd_line():
                         help='List of apps for which you would like to install dependencies')
     parser.add_argument('-i', '--interfaces', nargs='*', type=str, required=False,
                         help='List of interfaces for which you would like to install dependencies')
+    parser.add_argument('-c', '--config', help='configuration file to use')
     args = parser.parse_args()
     return args
 
@@ -47,6 +48,10 @@ def install_dependencies(apps=None, interfaces=None):
 
 def main():
     args = cmd_line()
+    config_path = args.config if args.config is not None else os.getcwd()
+    if os.path.isdir(config_path):
+        config_path = os.path.join(config_path, "data", "walkoff.config")
+    config.Config.load_config(config_path)
     install_dependencies(args.apps, args.interfaces)
 
 
