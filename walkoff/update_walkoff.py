@@ -10,9 +10,6 @@ from distutils.util import strtobool
 import semver
 from six.moves import input
 
-from walkoff.scripts.migrate_api import convert_apis
-import setup_walkoff
-from walkoff import __version__ as version
 
 
 def prompt(question):
@@ -28,6 +25,8 @@ def prompt(question):
 def archive(flagged, inter):
     if not (flagged or (inter and prompt("Do you want to make a backup of the current directory?"))):
         return
+
+    from walkoff import __version__ as version
 
     if not os.path.exists("backups"):
         os.makedirs("backups")
@@ -58,19 +57,24 @@ def clean_pycache(flagged, inter):
     if not (flagged or (inter and prompt("Do you want to clear pycache files?"))):
         return
 
-    my_dir = os.path.dirname(os.path.abspath(__file__))
+    my_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-    for root, dirnames, filenames in os.walk(my_dir):
+    for root, dirnames, filenames in os.walk(my_dir, topdown=False):
         for filename in filenames:
             if filename.endswith((".pyc", ".pyo")):
                 print("Removing: " + os.path.join(root, filename))
                 os.remove(os.path.join(root, filename))
+        for dirname in dirnames:
+            if dirname == "__pycache__":
+                print("Removing: " + os.path.join(root, dirname))
+                os.removedirs(os.path.join(root, dirname))
 
 
 def setup(flagged, inter):
     if not (flagged or (inter and prompt("Do you want to setup WALKOFF now?"))):
         return
 
+    from walkoff import setup_walkoff
     setup_walkoff.main()
 
 
@@ -78,6 +82,7 @@ def migrate_apps(flagged, inter):
     if not (flagged or (inter and prompt("Do you want to migrate your app APIs?"))):
         return
 
+    from walkoff.scripts.migrate_api import convert_apis
     convert_apis()
 
 

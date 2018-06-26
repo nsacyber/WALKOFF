@@ -57,6 +57,8 @@ def main():
         from walkoff.scripts.compose_api import compose_api
         compose_api()
 
+        subprocess.call(['python', 'walkoff/update_walkoff.py', '-c'])
+
         os.chdir('walkoff/client')
         subprocess.call(['npm', 'install'])
         subprocess.call(['npm', 'run', 'build'])
