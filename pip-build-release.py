@@ -52,32 +52,7 @@ def main():
         if os.path.exists(zip_filename):
             os.remove(zip_filename)
 
-        if os.path.exists("README.rst"):
-            os.remove("README.rst")
-
     if args.build:
-
-        try:
-            import pypandoc
-        except ImportError:
-            print("Run `pip install pypandoc`. This is required to generate a README.rst from our README.md for pypi.")
-            return
-
-        try:
-            pypandoc.convert_file('README.md', 'rst', outputfile="README.rst")
-        except OSError:
-            print("Pandoc executable not found. Install Pandoc: https://pandoc.org/installing.html")
-            print("Can also attempt to install Pandoc automatically, y/n?")
-
-            while True:
-                try:
-                    s = input()
-                    if strtobool(s.lower()):
-                        from pypandoc.pandoc_download import download_pandoc
-                        download_pandoc()
-                        pypandoc.convert_file('README.md', 'rst', outputfile="README.rst")
-                except ValueError:
-                    print("Please respond with 'yes' or 'no'.")
 
         from walkoff.scripts.compose_api import compose_api
         compose_api()
@@ -104,6 +79,8 @@ def main():
 
     if args.test:
         subprocess.call(['twine', 'upload', '--repository-url', 'https://test.pypi.org/legacy/', 'dist/*'])
+    if args.production:
+        subprocess.call(['twine', 'upload', 'dist/*'])
 
 
 if __name__ == '__main__':

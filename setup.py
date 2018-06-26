@@ -1,10 +1,3 @@
-"""A setuptools based setup module.
-
-See:
-https://packaging.python.org/en/latest/distributing.html
-https://github.com/pypa/sampleproject
-"""
-
 from setuptools import setup, find_packages
 from codecs import open
 from os import path
@@ -13,7 +6,7 @@ from walkoff import __version__ as version
 here = path.abspath(path.dirname(__file__))
 
 # Get the long description from the README file
-with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
+with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
@@ -24,7 +17,8 @@ setup(
     version=version,  # Required
     description='A flexible, easy to use, automation framework allowing users to integrate their capabilities'
                 ' and devices to cut through the repetitive, tedious tasks slowing them down.',  # Required
-
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     url='https://github.com/nsacyber/WALKOFF/',  # Optional
     author='nsacyber',  # Optional
     author_email='walkoff@nsa.gov',  # Optional
