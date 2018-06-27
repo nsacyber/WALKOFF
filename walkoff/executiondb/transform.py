@@ -70,8 +70,15 @@ class Transform(ExecutionElement, Execution_Base):
     def init_on_load(self):
         """Loads all necessary fields upon Condition being loaded from database"""
         if not self.errors:
-            self._data_param_name, self._run, self._api = get_transform_api(self.app_name, self.action_name)
-            self._transform_executable = get_transform(self.app_name, self._run)
+            errors = []
+            try:
+                self._data_param_name, self._run, self._api = get_transform_api(self.app_name, self.action_name)
+                self._transform_executable = get_transform(self.app_name, self._run)
+            except UnknownApp:
+                errors.append('Unknown app {}'.format(self.app_name))
+            except UnknownTransform:
+                errors.append('Unknown transform {}'.format(self.action_name))
+            self.errors = errors
 
     def execute(self, data_in, accumulator):
         """Executes the transform.

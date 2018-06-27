@@ -65,8 +65,15 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
     def init_on_load(self):
         """Loads all necessary fields upon Condition being loaded from database"""
         if not self.errors:
-            self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
-            self._condition_executable = get_condition(self.app_name, self._run)
+            errors = []
+            try:
+                self._data_param_name, self._run, self._api = get_condition_api(self.app_name, self.action_name)
+                self._condition_executable = get_condition(self.app_name, self._run)
+            except UnknownApp:
+                errors.append('Unknown app {}'.format(self.app_name))
+            except UnknownCondition:
+                errors.append('Unknown condition {}'.format(self.action_name))
+            self.errors = errors
 
     def validate(self):
         """Validates the object"""
