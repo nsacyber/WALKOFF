@@ -12,7 +12,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
 from walkoff.events import WalkoffEvent
-from helpers import format_db_path
+from walkoff.helpers import format_db_path
 logger = logging.getLogger(__name__)
 
 
