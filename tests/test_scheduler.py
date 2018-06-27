@@ -30,7 +30,7 @@ def execute(workflow_id):
 class TestScheduler(unittest.TestCase):
     def setUp(self):
         self.logger = create_autospec(CaseLogger)
-        self.scheduler = Scheduler(self.logger, 'sqlite', ':memory:')
+        self.scheduler = Scheduler(self.logger)
         self.trigger = DateTrigger(run_date='2050-12-31 23:59:59')
         self.trigger2 = DateTrigger(run_date='2050-12-31 23:59:59')
 
