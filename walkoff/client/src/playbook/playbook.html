@@ -73,8 +73,12 @@
     <!-- Graph editor -->
     <div class="row graphEditorRow">
         <!-- Column for app/action display for drag and drop -->
+
         <div class="col-md-2 graphEditorColumn">
-            <div class="panel-group" id="accordion" [hidden]="!loadedWorkflow">
+            <div class="panel-group" id="accordion" #accordion [hidden]="!loadedWorkflow">
+                <div id="app_search_bar_container">
+                    <input type="search" id="app_search_bar" placeholder="Search" (keyup)="search_for_actions($event)"/>
+                </div>
                 <div *ngFor="let app of getAppsWithActions()" class="panel panel-default">
                     <div class="panel-heading playbook-heading collapsed" data-toggle="collapse" [attr.data-target]="'#actionsCollapse' + removeWhitespace(app.name)"
                         [title]="app.info ? app.info.description : ''">

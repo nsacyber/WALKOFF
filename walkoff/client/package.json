@@ -48,6 +48,7 @@
     "angular2-jwt-refresh": "~0.1.0",
     "angular2-uuid": "^1.1.1",
     "bootstrap": "~3.3.7",
+    "build": "^0.1.4",
     "class-transformer": "^0.1.9",
     "core-js": "~2.4.1",
     "cytoscape": "^3.2.3",

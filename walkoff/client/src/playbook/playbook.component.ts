@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation, ViewChild, ElementRef, ChangeDetectorRef, OnInit,
-	AfterViewChecked, OnDestroy } from '@angular/core';
+	AfterViewChecked, OnDestroy} from '@angular/core';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { DatatableComponent } from '@swimlane/ngx-datatable';
 import { UUID } from 'angular2-uuid';
@@ -61,6 +61,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('errorLogContainer') errorLogContainer: ElementRef;
 	@ViewChild('errorLogTable') errorLogTable: DatatableComponent;
 	@ViewChild('importFile') importFile: ElementRef;
+    @ViewChild('accordion') apps_actions: ElementRef;
 
 	devices: Device[] = [];
 	relevantDevices: Device[] = [];
@@ -1730,5 +1731,36 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			this.cdr.detectChanges();
 			table.recalculate(); 
 		}
+	}
+
+	/**
+	*   Search functionality for App/Action bar
+	*/
+	search_for_actions(event: any){
+	    let searchTerm: string;
+	    searchTerm = event.target.value;
+        let apps = this.apps_actions.nativeElement.querySelectorAll(".panel-title");
+        let actions = this.apps_actions.nativeElement.querySelectorAll(".panel-body");
+        this.apps_actions.nativeElement.querySelectorAll(".panel").forEach(function(item){
+            item.style.display = "block";
+        });
+
+        if(searchTerm.trim() != ""){
+            //Actions
+            for (let element of actions){
+                //Displays Apps
+                if(element.textContent.toLowerCase().includes(searchTerm.toLowerCase().trim())){
+                    element.closest(".panel").closest(".panel").style.display = "block";
+
+                    //Parent Apps Selector
+                    element.closest(".panel").closest(".panel:not(.actionPanel)").style.display = "block";
+
+                }
+                else{
+                    element.closest(".panel").style.display = "none";
+                }
+            }
+        }
+
 	}
 }
