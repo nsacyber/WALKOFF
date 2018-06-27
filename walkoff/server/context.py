@@ -23,7 +23,7 @@ class Context(object):
         self.case_logger = CaseLogger(self.case_db, self.subscription_cache)
         self.cache = walkoff.cache.make_cache(config.CACHE)
         self.executor = executor.MultiprocessedExecutor(self.cache, self.case_logger)
-        self.scheduler = walkoff.scheduler.Scheduler(self.case_logger)
+        self.scheduler = walkoff.scheduler.Scheduler(self.case_logger, config.SCHEDULER_DB_TYPE, config.SCHEDULER_DB_PATH)
 
     def inject_app(self, app):
         self.scheduler.app = app

@@ -96,6 +96,7 @@ class Config(object):
     WALKOFF_DB_TYPE = 'sqlite'
     CASE_DB_TYPE = 'sqlite'
     EXECUTION_DB_TYPE = 'sqlite'
+    SCHEDULER_DB_TYPE = 'sqlite'
 
     # PATHS
 
@@ -113,6 +114,7 @@ class Config(object):
     DEFAULT_APPDEVICE_EXPORT_PATH = join(DATA_PATH, 'appdevice.json')
     DEFAULT_CASE_EXPORT_PATH = join(DATA_PATH, 'cases.json')
     EXECUTION_DB_PATH = abspath(join(DATA_PATH, 'execution.db'))
+    SCHEDULER_DB_PATH = abspath(join(DATA_PATH, 'scheduler.db'))
     INTERFACES_PATH = join('.', 'interfaces')
     LOGGING_CONFIG_PATH = join(DATA_PATH, 'log', 'logging.json')
 

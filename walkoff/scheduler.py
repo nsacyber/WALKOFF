@@ -9,9 +9,10 @@ from apscheduler.schedulers.gevent import GeventScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
+from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 
 from walkoff.events import WalkoffEvent
-
+from helpers import format_db_path
 logger = logging.getLogger(__name__)
 
 
@@ -69,8 +70,9 @@ def split_task_id(task_id):
 
 # A thin wrapper around APScheduler
 class Scheduler(object):
-    def __init__(self, event_logger):
-        self.scheduler = GeventScheduler()
+    def __init__(self, event_logger, job_store_db_type, job_store_db_path):
+        db_path = format_db_path(job_store_db_type, job_store_db_type)
+        self.scheduler = GeventScheduler(jobstores={'default': SQLAlchemyJobStore(url=db_path)})
         self.scheduler.add_listener(self.__scheduler_listener(),
                                     EVENT_SCHEDULER_START | EVENT_SCHEDULER_SHUTDOWN
                                     | EVENT_SCHEDULER_PAUSED | EVENT_SCHEDULER_RESUMED
