@@ -86,6 +86,7 @@ def create_user():
         current_app.running_context.execution_db.session.add(App(name=app_name, devices=[]))
     db.session.commit()
     current_app.running_context.execution_db.session.commit()
+    reschedule_all_workflows()
     send_all_cases_to_workers()
     current_app.logger.handlers = logging.getLogger('server').handlers
 
@@ -101,3 +102,11 @@ def send_all_cases_to_workers():
             Case.name == case_subscription.name).first()
         if case is not None:
             current_app.running_context.executor.update_case(case.id, subscriptions)
+
+
+def reschedule_all_workflows():
+    from walkoff.serverdb.scheduledtasks import ScheduledTask
+    current_app.logger.info('Scheduling workflows')
+    for task in (task for task in ScheduledTask.query.all() if task.status == 'running'):
+        current_app.logger.debug('Rescheduling task {} (id={})'.format(task.name, task.id))
+        task._start_workflows()
