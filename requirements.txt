@@ -22,3 +22,4 @@ marshmallow >= 2.15, < 3.0.0
 marshmallow-sqlalchemy >= 0.13.0
 pynacl
 alembic
+healthcheck

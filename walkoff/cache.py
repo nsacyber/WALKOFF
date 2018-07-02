@@ -446,6 +446,11 @@ class DiskCacheAdapter(object):
         """
         self.cache.clear()
 
+    def check(self):
+        """Checks if the cache is still working
+        """
+        pass
+
     @classmethod
     def from_json(cls, json_in):
         """Constructs this cache from its JSON representation
@@ -682,6 +687,9 @@ class RedisCacheAdapter(object):
         """Clears all values in the cache
         """
         self.cache.flushdb()
+
+    def check(self):
+        self.cache.info()
 
     def register_callbacks(self):
         """Registers callbacks for the PubSubs for the current thread.
