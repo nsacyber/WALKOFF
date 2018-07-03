@@ -10,17 +10,17 @@ from gevent import pywsgi
 import walkoff
 import walkoff.config
 from scripts.compose_api import compose_api
-from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
 from walkoff.server.app import create_app
 from tests.util.jsonplaybookloader import JsonPlaybookLoader
 from walkoff.executiondb.playbook import Playbook
+from start_workers import spawn_worker_processes
 
 logger = logging.getLogger('walkoff')
 
 
 def run(app, host, port):
     print_banner()
-    pids = spawn_worker_processes()
+    pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES, walkoff.config.Config)
     monkey.patch_all()
 
     app.running_context.inject_app(app)

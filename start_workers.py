@@ -3,9 +3,11 @@ import multiprocessing
 import os
 import signal
 import time
-
+import logging
 import walkoff.config
 from walkoff.multiprocessedexecutor.worker import Worker
+
+logger = logging.getLogger(__name__)
 
 
 def parse_args():
@@ -28,7 +30,6 @@ def spawn_worker_processes(num_processes, config):
     try:
         for i in range(num_processes):
             pid = multiprocessing.Process(target=Worker, args=(i, config.CONFIG_PATH))
-            print('Starting worker process {}'.format(i))
             pid.start()
             pids.append(pid)
         return pids
@@ -39,7 +40,7 @@ def spawn_worker_processes(num_processes, config):
 def shutdown_procs(procs):
     for proc in procs:
         if proc.is_alive():
-            print('Shutting down process {}'.format(proc.pid))
+            logger.info('Shutting down process {}'.format(proc.pid))
             os.kill(proc.pid, signal.SIGABRT)
             proc.join(timeout=3)
             try:

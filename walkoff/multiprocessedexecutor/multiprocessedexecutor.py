@@ -1,5 +1,4 @@
 import logging
-import multiprocessing
 import os
 import signal
 import sys
@@ -17,21 +16,10 @@ from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
-from walkoff.multiprocessedexecutor.worker import Worker
 from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController, Receiver
+from start_workers import shutdown_procs
 
 logger = logging.getLogger(__name__)
-
-
-def spawn_worker_processes():
-    """Initialize the multiprocessing pool, allowing for parallel execution of workflows.
-    """
-    pids = []
-    for i in range(walkoff.config.Config.NUMBER_PROCESSES):
-        pid = multiprocessing.Process(target=Worker, args=(i, walkoff.config.Config.CONFIG_PATH))
-        pid.start()
-        pids.append(pid)
-    return pids
 
 
 class MultiprocessedExecutor(object):
@@ -102,16 +90,7 @@ class MultiprocessedExecutor(object):
     def shutdown_pool(self):
         """Shuts down the threadpool"""
         self.manager.send_exit_to_worker_comms()
-        if len(self.pids) > 0:
-            for p in self.pids:
-                if p.is_alive():
-                    logger.info('Multiprocessed executor shutting down process {}'.format(p))
-                    os.kill(p.pid, signal.SIGABRT)
-                    p.join(timeout=3)
-                    try:
-                        os.kill(p.pid, signal.SIGKILL)
-                    except (OSError, AttributeError):
-                        pass
+        shutdown_procs(self.pids)
         if self.receiver_thread:
             self.receiver.thread_exit = True
             self.receiver_thread.join(timeout=1)
