@@ -6,6 +6,7 @@ import { TreeLayout } from 'd3';
 import { Selection, EnterElement } from 'd3-selection';
 
 import { CasesService } from './cases.service';
+import { UtilitiesService } from '../utilities.service';
 
 import { Case } from '../models/case/case';
 import { CaseNode } from '../models/case/caseNode';
@@ -19,7 +20,7 @@ import { Subscription } from '../models/case/subscription';
 	styleUrls: [
 		'./cases.modal.css',
 	],
-	providers: [CasesService],
+	providers: [CasesService, UtilitiesService],
 })
 export class CasesModalComponent implements OnInit {
 	@Input() workingCase: Case;

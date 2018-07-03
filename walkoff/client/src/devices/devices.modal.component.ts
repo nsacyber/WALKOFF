@@ -3,6 +3,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 
 import { DevicesService } from './devices.service';
+import { UtilitiesService } from '../utilities.service';
 
 import { WorkingDevice } from '../models/workingDevice';
 import { AppApi } from '../models/api/appApi';
@@ -16,7 +17,7 @@ import { GenericObject } from '../models/genericObject';
 	styleUrls: [
 		'./devices.css',
 	],
-	providers: [DevicesService],
+	providers: [DevicesService, UtilitiesService],
 })
 export class DevicesModalComponent implements OnInit, AfterViewInit {
 	@Input() workingDevice: WorkingDevice = new WorkingDevice();
