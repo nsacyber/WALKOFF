@@ -4,6 +4,7 @@ import { async, TestBed, ComponentFixture, fakeAsync, tick } from '@angular/core
 import { By } from '@angular/platform-browser';
 import {} from 'jasmine';
 import * as moment from 'moment';
+import { plainToClass } from 'class-transformer';
 
 import { ExecutionComponent } from './execution.component';
 import { ExecutionService } from './execution.service';
@@ -19,7 +20,7 @@ describe('ExecutionComponent', () => {
 	let fixture: ComponentFixture<ExecutionComponent>;
 	let service: ExecutionService;
 
-	const testWorkflowStatuses: WorkflowStatus[] = [
+	const testWorkflowStatuses: WorkflowStatus[] = plainToClass(WorkflowStatus, [
 		{
 			execution_id: 'wfs-1',
 			name: 'Workflow 1',
@@ -62,9 +63,9 @@ describe('ExecutionComponent', () => {
 			workflow_id: 'wf-6',
 			status: 'queued',
 		},
-	];
+	]);;
 
-	const testPlaybooks: Playbook[] = [
+	const testPlaybooks: Playbook[] = plainToClass(Playbook, [
 		{
 			id: 'pb-1',
 			name: 'Playbook 1',
@@ -101,7 +102,7 @@ describe('ExecutionComponent', () => {
 				},
 			],
 		},
-	];
+	]);
 
 	/**
 	 * async beforeEach
@@ -136,7 +137,7 @@ describe('ExecutionComponent', () => {
 		service = fixture.debugElement.injector.get(ExecutionService);
 
 		spyOn(window, 'confirm').and.returnValue(true);
-		spyOn(service, 'getWorkflowStatusList').and.returnValue(Promise.resolve(testWorkflowStatuses));
+		spyOn(service, 'getAllWorkflowStatuses').and.returnValue(Promise.resolve(testWorkflowStatuses));
 		spyOn(service, 'getPlaybooks').and.returnValue(Promise.resolve(testPlaybooks));
 	});
 

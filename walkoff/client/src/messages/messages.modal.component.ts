@@ -13,7 +13,7 @@ import { Message } from '../models/message/message';
 	styleUrls: [
 		'./messages.css',
 	],
-	providers: [MessagesService, UtilitiesService],
+	providers: [MessagesService],
 })
 export class MessagesModalComponent implements OnInit {
 	@Input() message: Message;

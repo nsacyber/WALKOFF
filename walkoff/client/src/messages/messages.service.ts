@@ -1,25 +1,32 @@
 import { Injectable } from '@angular/core';
-import { Response } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
 import { plainToClass } from 'class-transformer';
 
 import { Message } from '../models/message/message';
 import { MessageListing } from '../models/message/messageListing';
 import { Argument } from '../models/playbook/argument';
+import { UtilitiesService } from '../utilities.service';
 
 @Injectable()
 export class MessagesService {
-	constructor(private authHttp: JwtHttp) { }
+	constructor(private authHttp: JwtHttp, private utils: UtilitiesService) {}
+
+	/**
+	 * Grabs an array of all message listings from the server.
+	 */
+	getAllMessageListings(): Promise<MessageListing[]> {
+		return this.utils.paginateAll<MessageListing>(this.getMessageListings.bind(this));
+	}
 
 	/**
 	 * Grabs an array of message listings from the server.
 	 */
-	listMessages(): Promise<MessageListing[]> {
-		return this.authHttp.get('/api/messages')
+	getMessageListings(page: number = 1): Promise<MessageListing[]> {
+		return this.authHttp.get(`/api/messages?page=${ page }`)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(MessageListing, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -29,9 +36,9 @@ export class MessagesService {
 	getMessage(messageId: number): Promise<Message> {
 		return this.authHttp.get(`/api/messages/${messageId}`)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Message, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -45,7 +52,7 @@ export class MessagesService {
 		return this.authHttp.put('/api/messages', { ids: messageIds, action })
 			.toPromise()
 			.then(() => null)
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -64,26 +71,7 @@ export class MessagesService {
 		};
 		return this.authHttp.put('/api/triggers/send_data', body)
 			.toPromise()
-			.then(this.extractData)
-			.catch(this.handleError);
-	}
-
-	private extractData(res: Response) {
-		const body = res.json();
-		return body || {};
-	}
-
-	private handleError(error: Response | any): Promise<any> {
-		let errMsg: string;
-		let err: string;
-		if (error instanceof Response) {
-			const body = error.json() || '';
-			err = body.error || body.detail || JSON.stringify(body);
-			errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
-		} else {
-			err = errMsg = error.message ? error.message : error.toString();
-		}
-		console.error(errMsg);
-		throw new Error(err);
+			.then(this.utils.extractResponseData)
+			.catch(this.utils.handleResponseError);
 	}
 }

@@ -28,7 +28,7 @@ import { ActionStatus } from '../models/execution/actionStatus';
 		'./execution.css',
 	],
 	encapsulation: ViewEncapsulation.None,
-	providers: [ExecutionService, AuthService, UtilitiesService],
+	providers: [ExecutionService, AuthService],
 })
 export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('actionStatusContainer') actionStatusContainer: ElementRef;
@@ -151,7 +151,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 */
 	getWorkflowStatuses(): void {
 		this.executionService
-			.getWorkflowStatusList()
+			.getAllWorkflowStatuses()
 			.then(workflowStatuses => {
 				workflowStatuses.forEach(workflowStatus => {
 					this.calculateLocalizedTimes(workflowStatus);

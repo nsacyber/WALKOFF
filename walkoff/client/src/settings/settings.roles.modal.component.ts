@@ -16,7 +16,7 @@ import { Resource } from '../models/resource';
 	styleUrls: [
 		'./settings.css',
 	],
-	providers: [SettingsService, UtilitiesService],
+	providers: [SettingsService],
 })
 export class SettingsRoleModalComponent {
 	@Input() workingRole: Role;

@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Response } from '@angular/http';
 import * as moment from 'moment';
 
 @Injectable()
@@ -60,5 +61,31 @@ export class UtilitiesService {
 	 */
 	cloneDeep<T>(val: T): T {
 		return JSON.parse(JSON.stringify(val));
+	}
+
+	paginateAll<T>(serviceCall: (p: number) => Promise<T[]>, page: number = 1, allResults : T[] = []): Promise<T[]> {
+		return serviceCall(page).then(results => {
+			if (results.length > 0) return this.paginateAll(serviceCall, page + 1, allResults.concat(results));
+			else return allResults;
+		})
+	}
+
+	extractResponseData (res: Response) {
+		const body = res.json();
+		return body || {};
+	}
+
+	handleResponseError (error: Response | any): Promise<any> {
+		let errMsg: string;
+		let err: string;
+		if (error instanceof Response) {
+			const body = error.json() || '';
+			err = body.error || body.detail || JSON.stringify(body);
+			errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
+		} else {
+			err = errMsg = error.message ? error.message : error.toString();
+		}
+		console.error(errMsg);
+		throw new Error(err);
 	}
 }

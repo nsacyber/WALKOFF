@@ -1,6 +1,5 @@
 import { Component, ViewEncapsulation, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import * as _ from 'lodash';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { Select2OptionData } from 'ng2-select2';
@@ -21,7 +20,7 @@ import { ScheduledTask } from '../models/scheduler/scheduledTask';
 		'../../node_modules/ng-pick-datetime/styles/picker.min.css',
 	],
 	encapsulation: ViewEncapsulation.None,
-	providers: [SchedulerService, UtilitiesService],
+	providers: [SchedulerService],
 })
 export class SchedulerComponent implements OnInit {
 	schedulerStatus: string;
@@ -98,7 +97,7 @@ export class SchedulerComponent implements OnInit {
 	 */
 	getScheduledTasks(): void {
 		this.schedulerService
-			.getScheduledTasks()
+			.getAllScheduledTasks()
 			.then(scheduledTasks => this.displayScheduledTasks = this.scheduledTasks = scheduledTasks)
 			.catch(e => this.toastyService.error(`Error retrieving scheduled tasks: ${e.message}`));
 	}
