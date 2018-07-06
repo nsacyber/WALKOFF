@@ -78,7 +78,7 @@ matrix:
 
     - language: python
       os: linux
-      python: "3.7"
+      python: "3.7-dev"
       install:
         - pip install -r requirements.txt && pip install -r requirements-test.txt
         - pip install coverage
