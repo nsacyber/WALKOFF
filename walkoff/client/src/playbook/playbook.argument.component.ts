@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, Input, OnInit } from '@angular/core';
+import { Component, ViewEncapsulation, Input, OnInit, OnChanges } from '@angular/core';
 import { Select2OptionData } from 'ng2-select2/ng2-select2';
 
 import { Workflow } from '../models/playbook/workflow';
@@ -20,7 +20,7 @@ const AVAILABLE_TYPES = ['string', 'number', 'boolean'];
 	encapsulation: ViewEncapsulation.None,
 	providers: [],
 })
-export class PlaybookArgumentComponent implements OnInit {
+export class PlaybookArgumentComponent implements OnChanges {
 	@Input() id: number;
 	@Input() argument: Argument;
 	@Input() parameterApi: ParameterApi;
@@ -54,7 +54,7 @@ export class PlaybookArgumentComponent implements OnInit {
 	 * Additionally, if we're array or object types, track the types of the values that currently exist.
 	 * Initialize user and role selects if necessary (if schema type user or role is used).
 	 */
-	ngOnInit(): void {
+	ngOnChanges(): void {
 		this.initParameterSchema();
 		this.initDeviceSelect()
 		this.initBranchCounterSelect();
@@ -403,11 +403,5 @@ export class PlaybookArgumentComponent implements OnInit {
 
 	get isBranchCounterSelect(): boolean {
 		return this.valueType == 'branch'
-	}
-
-	resetValue(): void {
-		// this.argument.value = null;
-		// this.argument.reference = null;
-		// this.argument.selection = null;
 	}
 }
