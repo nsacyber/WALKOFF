@@ -273,10 +273,10 @@ class Worker(object):
         signal.signal(signal.SIGINT, self.exit_handler)
         signal.signal(signal.SIGABRT, self.exit_handler)
 
-        if os.name == 'nt':
-            walkoff.config.initialize(config_path=config_path)
-        else:
-            walkoff.config.Config.load_config(config_path)
+        walkoff.config.Config.load_config(config_path)
+
+        if os.name == 'nt' or walkoff.config.Config.SEPARATE_WORKERS:
+            walkoff.config.initialize(config_path=config_path, load=False)
 
         self.execution_db = ExecutionDatabase(walkoff.config.Config.EXECUTION_DB_TYPE,
                                               walkoff.config.Config.EXECUTION_DB_PATH)
