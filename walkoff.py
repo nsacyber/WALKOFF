@@ -13,14 +13,18 @@ from scripts.compose_api import compose_api
 from walkoff.server.app import create_app
 from tests.util.jsonplaybookloader import JsonPlaybookLoader
 from walkoff.executiondb.playbook import Playbook
-from start_workers import spawn_worker_processes
 
 logger = logging.getLogger('walkoff')
 
 
-def run(app, host, port):
+def run(args, app, host, port):
     print_banner()
-    pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES, walkoff.config.Config)
+    if not args.apponly:
+        from start_workers import spawn_worker_processes
+        pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES, walkoff.config.Config)
+    else:
+        pids = None
+
     monkey.patch_all()
 
     app.running_context.inject_app(app)
@@ -61,6 +65,7 @@ def parse_args():
     parser.add_argument('-p', '--port', help='port to run the server on')
     parser.add_argument('-H', '--host', help='host address to run the server on')
     parser.add_argument('-c', '--config', help='configuration file to use')
+    parser.add_argument('-a', '--apponly', help='start WALKOFF app only, no workers', action='store_true')
     args = parser.parse_args()
     if args.version:
         print(walkoff.__version__)
@@ -101,7 +106,7 @@ if __name__ == "__main__":
     app = create_app(walkoff.config.Config)
     import_workflows(app)
     try:
-        run(app, *convert_host_port(args))
+        run(args, app, *convert_host_port(args))
     except KeyboardInterrupt:
         logger.info('Caught KeyboardInterrupt! Please wait a few seconds for WALKOFF to shutdown.')
     except Exception as e:
