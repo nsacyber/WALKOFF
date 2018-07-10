@@ -29,8 +29,12 @@ class ExecutionDatabase(object):
         from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
         from walkoff.executiondb.metrics import AppMetric, WorkflowMetric, ActionMetric, ActionStatusMetric
 
-        self.engine = create_engine(format_db_path(execution_db_type, execution_db_path),
-                                    connect_args={'check_same_thread': False}, poolclass=NullPool)
+        if 'sqlite' in execution_db_type:
+            self.engine = create_engine(format_db_path(execution_db_type, execution_db_path),
+                                        connect_args={'check_same_thread': False}, poolclass=NullPool)
+        else:
+            self.engine = create_engine(format_db_path(execution_db_type, execution_db_path), poolclass=NullPool)
+
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 
