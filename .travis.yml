@@ -76,25 +76,6 @@ matrix:
         except:
           - caching
 
-    - language: python
-      os: linux
-      python: "3.7-dev"
-      install:
-        - pip install -r requirements.txt && pip install -r requirements-test.txt
-        - pip install coverage
-      before_script:
-        - python scripts/generate_certificates.py
-      script:
-        - coverage run run_all_tests.py
-        - coverage combine
-        - coverage report
-      branches:
-        only:
-          - master
-          - development
-        except:
-          - caching
-
     - language: node_js
       node_js:
         - "node"
