@@ -23,3 +23,4 @@ marshmallow-sqlalchemy >= 0.13.0
 pynacl
 alembic
 healthcheck
+psycopg2-binary

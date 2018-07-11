@@ -62,6 +62,10 @@ def handle_generic_server_error(e):
 def create_user():
     from walkoff.serverdb import add_user, User, Role, initialize_default_resources_admin, \
         initialize_default_resources_guest
+    from sqlalchemy_utils import database_exists, create_database
+
+    if not database_exists(db.engine.url):
+        create_database(db.engine.url)
     db.create_all()
 
     # Setup admin and guest roles
