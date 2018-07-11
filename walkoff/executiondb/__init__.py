@@ -33,7 +33,10 @@ class ExecutionDatabase(object):
             self.engine = create_engine(format_db_path(execution_db_type, execution_db_path),
                                         connect_args={'check_same_thread': False}, poolclass=NullPool)
         else:
+            from sqlalchemy_utils import database_exists, create_database
             self.engine = create_engine(format_db_path(execution_db_type, execution_db_path), poolclass=NullPool)
+            if not database_exists(self.engine.url):
+                create_database(self.engine.url)
 
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
