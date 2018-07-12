@@ -9,7 +9,7 @@
 	<!-- Columns for allowing users to specify outputs of other action as arguments for this one -->
 	<div class="row">
 		<div class="col-xs-4">
-			<select name="playbookSelect" class="form-control" [(ngModel)]="valueType" (change)="resetValue()">
+			<select name="playbookSelect" class="form-control" [(ngModel)]="valueType">
 				<option *ngFor="let i of valueTypes" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
 			</select>
 		</div>

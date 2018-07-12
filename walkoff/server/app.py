@@ -3,6 +3,7 @@ import logging
 import connexion
 from flask import Blueprint
 from jinja2 import FileSystemLoader
+from healthcheck import HealthCheck
 
 import interfaces
 import walkoff.config
@@ -62,6 +63,13 @@ def __register_all_app_blueprints(flaskapp):
             __register_app_blueprints(flaskapp, interface_name, interface_blueprints)
 
 
+def add_health_check(_app):
+    health = HealthCheck(_app, '/health')
+    from walkoff.server.endpoints.health import checks
+    for check in checks:
+        health.add_check(check)
+
+
 def create_app(app_config):
     connexion_app = connexion.App(__name__, specification_dir='../api/')
     _app = connexion_app.app
@@ -74,5 +82,6 @@ def create_app(app_config):
 
     _app.running_context = context.Context(walkoff.config.Config)
     register_blueprints(_app)
+    add_health_check(_app)
 
     return _app

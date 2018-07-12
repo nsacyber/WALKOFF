@@ -91,7 +91,8 @@ class WorkflowResultsHandler(object):
             sender = action
 
         packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
-        self.case_logger.log(event, sender.id, kwargs.get('data', None))
+        if event.is_loggable():
+            self.case_logger.log(event, sender.id, kwargs.get('data', None))
         self.results_sock.send(packet_bytes)
 
 

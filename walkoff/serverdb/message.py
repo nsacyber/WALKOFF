@@ -221,7 +221,7 @@ class MessageHistory(db.Model):
     """
     __tablename__ = 'message_history'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    action = db.Column(db.Enum(MessageAction))
+    action = db.Column(db.Enum(MessageAction, name='message_action'))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.Integer)
     username = db.Column(db.String)

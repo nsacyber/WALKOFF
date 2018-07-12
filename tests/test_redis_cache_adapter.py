@@ -2,6 +2,7 @@ from unittest import TestCase
 
 from tests.util.mock_objects import MockRedisCacheAdapter
 from walkoff.cache import unsubscribe_message
+import mock
 
 
 class TestRedisCacheAdapter(TestCase):
