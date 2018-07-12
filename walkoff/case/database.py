@@ -97,7 +97,7 @@ class CaseDatabase(object):
             case_db_path (str): The path to the database
         """
         self.engine = create_engine(
-            format_db_path(case_db_type, case_db_path))
+            format_db_path(case_db_type, case_db_path, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD'))
 
         if not database_exists(self.engine.url):
             create_database(self.engine.url)
