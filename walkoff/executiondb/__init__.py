@@ -42,7 +42,7 @@ class ExecutionDatabase(object):
                 try:
                     create_database(self.engine.url)
                 except IntegrityError as e:
-                    continue
+                    pass
 
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
