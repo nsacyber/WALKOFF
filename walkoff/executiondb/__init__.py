@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import NullPool
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy_utils import database_exists, create_database
 
 from walkoff.helpers import format_db_path
@@ -38,7 +39,10 @@ class ExecutionDatabase(object):
                 format_db_path(execution_db_type, execution_db_path, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD'),
                 poolclass=NullPool)
             if not database_exists(self.engine.url):
-                create_database(self.engine.url)
+                try:
+                    create_database(self.engine.url)
+                except IntegrityError as e:
+                    continue
 
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
