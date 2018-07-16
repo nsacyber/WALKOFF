@@ -25,7 +25,7 @@ TYPE_MAP = {
     'role': int
 }
 
-reserved_return_codes = ['UnhandledException', 'InvalidInput', 'EventTimedOut']
+reserved_return_codes = ['UnhandledException', 'InvalidInput']
 
 
 def make_type(value, type_literal):
@@ -142,6 +142,7 @@ def validate_app_spec(spec, app_name, walkoff_schema_path, spec_url='', http_han
     validate_devices_api(devices, app_name)
 
 
+#TODO: Done
 def validate_data_in_param(params, data_in_param_name, message_prefix):
     data_in_param = next((param for param in params if param['name'] == data_in_param_name), None)
     if data_in_param is None:
@@ -156,6 +157,7 @@ def validate_data_in_param(params, data_in_param_name, message_prefix):
                                                                              data_in_param_name))
 
 
+# TODO: DONE
 def validate_condition_transform_params(spec, app_name, action_type, defined_actions, dereferencer):
     from walkoff.appgateway import get_transform
     from walkoff.appgateway import get_condition
@@ -195,7 +197,7 @@ def validate_spec_json(spec, schema_path, spec_url='', http_handlers=None):
                             cls=Draft4Validator)
     return spec_resolver
 
-
+#TODO: Inner loop is wrapped (not appending to seen)
 def validate_actions(actions, dereferencer, app_name):
     from walkoff.appgateway import get_app_action
     from walkoff.appgateway import get_all_actions_for_app
@@ -224,6 +226,7 @@ def validate_actions(actions, dereferencer, app_name):
                        '{1}'.format(app_name, (set(defined_actions) - seen)))
 
 
+# DONE
 def validate_action_params(parameters, dereferencer, app_name, action_name, action_func, event=''):
     seen = set()
     for parameter in parameters:
@@ -261,6 +264,7 @@ def validate_action_params(parameters, dereferencer, app_name, action_name, acti
         raise InvalidApi(message)
 
 
+#TODO: Done
 def validate_app_action_return_codes(return_codes, app, action):
     reserved = [return_code for return_code in return_codes if return_code in reserved_return_codes]
     if reserved:
@@ -327,7 +331,7 @@ def validate_primitive_parameter(value, param, parameter_type, message_prefix, h
             raise InvalidArgument(message)
         return converted_value
 
-
+# XXX: Done
 def validate_parameter(value, param, message_prefix):
     param = deepcopy(param)
     primitive_type = 'primitive' if 'type' in param else 'object'
@@ -369,7 +373,7 @@ def validate_parameter(value, param, message_prefix):
 
     return converted_value
 
-
+# Done
 def validate_parameters(api, arguments, message_prefix, accumulator=None):
     api_dict = {}
     for param in api:
@@ -456,7 +460,7 @@ def validate_device_field(field_api, value, message_prefix):
         hide = False
     validate_primitive_parameter(value, field_api, field_type, message_prefix, hide_input=hide)
 
-
+#TODO: DONE BUT INNER LOOP
 def validate_devices_api(devices_api, app_name):
     for device_type, device_type_api in devices_api.items():
         for field_api in device_type_api['fields']:
