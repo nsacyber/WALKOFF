@@ -3,7 +3,8 @@ from sqlalchemy_utils import JSONType
 from sqlalchemy.orm import relationship
 from walkoff.executiondb import Execution_Base
 from walkoff.appgateway.validator import *
-from .api_info import AppApiInfo, YamlConstructable, YamlChild
+from .api_info import AppApiInfo
+from walkoff.executiondb.yamlconstructable import YamlChild, YamlConstructable
 from walkoff.appgateway import get_all_actions_for_app
 from walkoff.appgateway import get_all_transforms_for_app
 from walkoff.appgateway import get_all_conditions_for_app

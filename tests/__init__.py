@@ -73,6 +73,7 @@ __all__ = ['test_action',
            'test_workflow_results_stream',
            'test_workflow_server',
            'test_workflow_status',
+           'test_yaml_constructable',
            'test_zmq_communication',
            'test_zmq_communication_server',
            'testapps']
