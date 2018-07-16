@@ -58,7 +58,7 @@ class MultiprocessedExecutor(object):
         self.ctx = zmq.Context.instance()
         self.auth = ThreadAuthenticator()
         self.auth.start()
-        self.auth.allow('127.0.0.1')
+        # TODO: self.auth.allow('127.0.0.1')
         self.auth.configure_curve(domain='*', location=walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH)
 
         self.manager = WorkflowExecutionController(self.cache)
