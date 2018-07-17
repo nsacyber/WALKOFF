@@ -89,8 +89,11 @@ class MultiprocessedExecutor(object):
 
     def shutdown_pool(self):
         """Shuts down the threadpool"""
-        self.manager.send_exit_to_worker_comms()
-        shutdown_procs(self.pids)
+        if self.manager:
+            self.manager.send_exit_to_worker_comms()
+        if not walkoff.config.Config.SEPARATE_WORKERS:
+            shutdown_procs(self.pids)
+
         if self.receiver_thread:
             self.receiver.thread_exit = True
             self.receiver_thread.join(timeout=1)
