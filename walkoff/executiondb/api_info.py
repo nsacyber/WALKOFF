@@ -4,7 +4,8 @@ from sqlalchemy_utils import EmailType
 
 from walkoff.executiondb import Execution_Base
 
-from walkoff.executiondb.yamlconstructable import YamlChild, YamlConstructable
+from .yamlconstructable import YamlChild, YamlConstructable
+from .actionapi import ExternalDoc
 
 
 class AppApiContact(YamlConstructable, Execution_Base):
@@ -32,8 +33,7 @@ class AppApiTag(YamlConstructable, Execution_Base):
     description = Column(Text())
     external_docs = relationship('ExternalDoc', cascade='all, delete-orphan')
 
-    # TODO: Reorganize so this class import doesn't cause circular import
-    _children = (YamlChild('external_docs', 'PLUGIN HERE'),)
+    _children = (YamlChild('external_docs', ExternalDoc),)
 
 
 class AppApiInfo(YamlConstructable, Execution_Base):

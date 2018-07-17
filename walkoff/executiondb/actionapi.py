@@ -1,18 +1,30 @@
 from sqlalchemy import Column, Integer, ForeignKey, String, Text, Boolean, Table
 from sqlalchemy_utils import JSONType
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import declared_attr
 from walkoff.executiondb import Execution_Base
 from walkoff.appgateway.validator import *
-from .api_info import AppApiInfo
-from walkoff.executiondb.yamlconstructable import YamlChild, YamlConstructable
-from walkoff.appgateway import get_all_actions_for_app
-from walkoff.appgateway import get_all_transforms_for_app
-from walkoff.appgateway import get_all_conditions_for_app
+from .yamlconstructable import YamlChild, YamlConstructable
 
 action_api_tags_table = Table(
     'action_api_tag_association',
-    Column('action_api_id', Integer, ForeignKey(Integer, 'action_api.id')),
-    Column('api_tag_id', Integer, ForeignKey(Integer, 'api_tag'))
+    Execution_Base.metadata,
+    Column('action_api_id', Integer, ForeignKey('action_api.id')),
+    Column('api_tag_id', Integer, ForeignKey('api_tag.id'))
+)
+
+condition_api_tags_table = Table(
+    'condition_api_tag_association',
+    Execution_Base.metadata,
+    Column('condition_api_id', Integer, ForeignKey('condition_api.id')),
+    Column('api_tag_id', Integer, ForeignKey('api_tag.id'))
+)
+
+transform_api_tags_table = Table(
+    'transform_api_tag_association',
+    Execution_Base.metadata,
+    Column('transform_api_id', Integer, ForeignKey('transform_api.id')),
+    Column('api_tag_id', Integer, ForeignKey('api_tag.id'))
 )
 
 
@@ -36,7 +48,9 @@ class ApiTag(Execution_Base):
 class ParameterApi(YamlConstructable, Execution_Base):
     __tablename__ = 'parameter_api'
     id = Column(Integer, primary_key=True)
-    action_api_id = Column(Integer, ForeignKey('action_api.id'))
+    action_api_id = Column(Integer(), ForeignKey('action_api.id'))
+    condition_api_id = Column(Integer(), ForeignKey('condition_api.id'))
+    transform_api_id = Column(Integer(), ForeignKey('transform_api.id'))
     name = Column(String(80), nullable=False)
     schema = Column(JSONType, nullable=False)
     placeholder = Column(String(80))
@@ -124,15 +138,23 @@ class ReturnApi(YamlConstructable, Execution_Base):
 
 class Actionable(YamlConstructable):
     id = Column(Integer, primary_key=True)
-    app_api_id = Column(Integer, ForeignKey('app_api.id'))
     name = Column(String(80), nullable=False)
     run = Column(Text, nullable=False)
-    parameters = relationship('ParameterApi', cascade='all, delete-orphan')
-    tags = relationship('ApiTag', secondary=action_api_tags_table)
     summary = Column(Text)
     description = Column(Text)
-    external_docs = relationship('ExternalDoc', cascade='all, delete-orphan')
     deprecated = Column(Boolean)
+
+    @declared_attr
+    def app_api_id(cls):
+        return Column(Integer, ForeignKey('app_api.id'), nullable=False)
+
+    @declared_attr
+    def parameters(cls):
+        return relationship('ParameterApi', cascade='all, delete-orphan')
+
+    @declared_attr
+    def external_docs(cls):
+        return relationship('ExternalDoc', cascade='all, delete-orphan')
 
     _action_type = 'not specified'
 
@@ -145,7 +167,6 @@ class Actionable(YamlConstructable):
     def _id_string(self):
         return 'app {} {} {}'.format(self.app.name, self._action_type, self.name)
 
-    #TODO: GOOD
     def validate_arguments(self, arguments, accumulator=None):
         api_dict = {}
         for param in self.parameters:
@@ -249,6 +270,7 @@ class ActionApi(Actionable, Execution_Base):
     __tablename__ = 'action_api'
     returns = relationship('ReturnApi', cascade='all, delete-orphan')
     default_return = Column(String(80))
+    tags = relationship('ApiTag', secondary=action_api_tags_table)
 
     _action_type = 'action'
 
@@ -314,6 +336,8 @@ class ConditionTransformApi(Actionable):
 
 
 class ConditionApi(ConditionTransformApi, Execution_Base):
+    tags = relationship('ApiTag', secondary=condition_api_tags_table)
+
     __tablename__ = 'condition_api'
     _action_type = 'condition'
 
@@ -325,6 +349,8 @@ class ConditionApi(ConditionTransformApi, Execution_Base):
 class TransformApi(ConditionTransformApi, Execution_Base):
     __tablename__ = 'transform_api'
     returns = relationship('ReturnApi', cascade='all, delete-orphan')
+    tags = relationship('ApiTag', secondary=transform_api_tags_table)
+
 
     _action_type = 'transform'
 
@@ -337,7 +363,7 @@ class TransformApi(ConditionTransformApi, Execution_Base):
 class DeviceFieldApi(YamlConstructable, Execution_Base):
     __tablename__ = 'device_field_api'
     id = Column(Integer, primary_key=True)
-    device_api_id = Column(Integer, ForeignKey('device_api.id'))
+    device_api_id = Column(Integer, ForeignKey('device_api.id'), nullable=False)
     required = Column(Boolean, default=False)
     name = Column(String(80))
     encrypted = Column(Boolean, default=False)
@@ -387,7 +413,7 @@ class DeviceApi(YamlConstructable, Execution_Base):
     name = Column(String(80))
     type = Column(String(80))
     description = Column(Text)
-    fields = relationship('DeviceFieldApi', cascade='all, delete-orphan', backpopulates='device')
+    fields = relationship('DeviceFieldApi', cascade='all, delete-orphan', backref='device')
 
     _children = (YamlChild('fields', DeviceFieldApi), )
 
@@ -431,59 +457,3 @@ class DeviceApi(YamlConstructable, Execution_Base):
 
 
 
-class AppApi(YamlConstructable, Execution_Base):
-    __tablename__ = 'app_api'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(80), nullable=False)
-    info = relationship('AppInfo', uselist=False, cascade='all, delete-orphan')
-    actions = relationship('ActionApi', cascade='all, delete-orphan', backpopulates='app')
-    conditions = relationship('ConditionApi', cascade='all, delete-orphan', backpopulates='app')
-    transforms = relationship('TransformApi', cascade='all, delete-orphan', backpopulates='app')
-    devices = relationship('DeviceApi', cascade='all, delete-orphan', backpopulates='app')
-
-    _children = (
-        YamlChild('info', AppApiInfo),
-        YamlChild('actions', ActionApi, expansion='name'),
-        YamlChild('conditions', ConditionApi, expansion='name'),
-        YamlChild('transforms', TransformApi, expansion='name'),
-        YamlChild('devices', DeviceApi, expansion='name')
-    )
-
-    def validate_api(self):
-        action_getters = (
-            (self.actions, get_all_actions_for_app, ActionApi._action_type),
-            (self.conditions, get_all_conditions_for_app, ConditionApi._action_type),
-            (self.transforms, get_all_transforms_for_app, TransformApi._action_type),
-        )
-        for action_apis, getter, action_type in action_getters:
-            actions_in_module = set(getter(self.name))
-            actions_in_api = set()
-            for action_api in action_apis:
-                action_api.validate_api()
-                actions_in_api.add(action_api.name)
-
-            if actions_in_module != actions_in_api:
-                logger.warning(
-                    'App {0} has defined the following {1}s which do not have a corresponding API: {2}. '
-                    'These {1} will not be usable until defined in the API'.format(
-                        self.name,
-                        action_type,
-                        list(actions_in_module - actions_in_api)
-                    )
-                )
-        for device in self.devices:
-            device.validate_api()
-
-
-def construct_app_api(spec, app_name, walkoff_schema_path, spec_url='', http_handlers=None):
-    walkoff_resolver = validate_spec_json(
-        spec,
-        os.path.join(walkoff_schema_path),
-        spec_url,
-        http_handlers
-    )
-    dereference = partial(deref, resolver=walkoff_resolver)
-    dereferenced_spec = dereference(spec)
-    app = AppApi.from_api_yaml(dereferenced_spec, name=app_name)
-    app.validate_api()
-    return app

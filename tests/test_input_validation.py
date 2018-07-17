@@ -5,44 +5,41 @@ from walkoff.appgateway.validator import validate_parameter, validate_parameters
 from walkoff.executiondb.argument import Argument
 from walkoff.appgateway.apiutil import InvalidArgument
 
+from walkoff.executiondb.actionapi import ParameterApi
+from walkoff.executiondb.api import AppApi
 
 class TestInputValidation(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        from walkoff.executiondb.api_info import AppApiInfo
         cls.message = 'app1 action1'
+        cls.app = AppApi(name='app1')
+
+    @staticmethod
+    def _get_parameter(schema, name='name1', action_api_id=1, **init_args):
+        return ParameterApi(name=name, schema=schema, action_api_id=action_api_id, **init_args)
 
     def test_validate_parameter_primitive_no_formats_not_required_valid_string(self):
-        parameter_api = {'name': 'name1', 'type': 'string'}
-        value = 'test string'
-        self.assertEqual(validate_parameter(value, parameter_api, self.message), value)
-        value = ''
-        self.assertEqual(validate_parameter(value, parameter_api, self.message), value)
+        parameter_api = self._get_parameter({'type': 'string'})
+        for value in ('test_string', ''):
+            self.assertEqual(parameter_api.validate(value, self.message), value)
 
     def test_validate_parameter_primitive_no_formats_not_required_valid_number(self):
-        parameter_api = {'name': 'name1', 'type': 'number'}
-        value = '3.27'
-        self.assertEqual(validate_parameter(value, parameter_api, self.message), 3.27)
-
-    def test_validate_parameter_primitive_no_formats_not_required_valid_negative_number(self):
-        parameter_api = {'name': 'name1', 'type': 'number'}
-        value = '-3.27'
-        self.assertEqual(validate_parameter(value, parameter_api, self.message), -3.27)
+        parameter_api = self._get_parameter({'type': 'number'})
+        for value in ('3.27', '-1.86'):
+            self.assertEqual(parameter_api.validate(value, self.message), float(value))
 
     def test_validate_parameter_primitive_no_formats_not_required_valid_int(self):
-        parameter_api = {'name': 'name1', 'type': 'integer'}
-        value = '3'
-        self.assertEqual(validate_parameter(value, parameter_api, self.message), 3)
+        parameter_api = self._get_parameter({'type': 'integer'})
+        for value in ('3', '5', '-10'):
+            self.assertEqual(validate_parameter(value, parameter_api, self.message), int(value))
 
     def test_validate_parameter_primitive_no_formats_not_required_valid_int_from_float(self):
         parameter_api = {'name': 'name1', 'type': 'integer'}
         value = 3.27
         self.assertEqual(validate_parameter(value, parameter_api, self.message), 3)
 
-    def test_validate_parameter_primitive_no_formats_not_required_valid_negative_int(self):
-        parameter_api = {'name': 'name1', 'type': 'integer'}
-        value = '-3'
-        self.assertEqual(validate_parameter(value, parameter_api, self.message), -3)
-
+    '''
     def test_validate_parameter_primitive_user(self):
         parameter_api = {'name': 'name1', 'type': 'user'}
         value = '3'
@@ -428,3 +425,4 @@ class TestInputValidation(unittest.TestCase):
         expected = ['@action1', 2, {'a': 'v', 'b': 6}]
         converted = convert_json(parameter_api, value, self.message)
         self.assertListEqual(converted, expected)
+    '''
