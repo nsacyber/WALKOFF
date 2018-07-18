@@ -61,7 +61,6 @@ class WorkflowResultsHandler(object):
             logger.exception('Workflow Results handler could not connect to {}!'.format(zmq_results_address))
             raise
 
-
         self.execution_db = execution_db
 
         self.case_logger = case_logger

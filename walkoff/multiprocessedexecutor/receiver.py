@@ -48,10 +48,11 @@ class Receiver:
                 gevent.sleep(0.1)
                 continue
 
-            with self.current_app.app_context():
-                self._send_callback(message_bytes)
+            # with self.current_app.app_context():
+            self._send_callback(message_bytes)
 
         self.results_sock.close()
+        return
 
     def _send_callback(self, message_bytes):
 
@@ -77,7 +78,10 @@ class Receiver:
         event = WalkoffEvent.get_event_from_name(callback_name)
         if event is not None:
             data = self._format_data(event, message)
-            with self.current_app.app_context():
+            if self.current_app:
+                with self.current_app.app_context():
+                    event.send(sender, data=data)
+            else:
                 event.send(sender, data=data)
             if event in [WalkoffEvent.WorkflowShutdown, WalkoffEvent.WorkflowAborted]:
                 self._increment_execution_count()
