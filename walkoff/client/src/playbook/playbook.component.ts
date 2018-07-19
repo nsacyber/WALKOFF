@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation, ViewChild, ElementRef, ChangeDetectorRef, OnInit,
-	AfterViewChecked, OnDestroy } from '@angular/core';
+	AfterViewChecked, OnDestroy} from '@angular/core';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 import { DatatableComponent } from '@swimlane/ngx-datatable';
 import { UUID } from 'angular2-uuid';
@@ -42,6 +42,7 @@ import { ActionStatusEvent } from '../models/execution/actionStatusEvent';
 import { ConsoleLog } from '../models/execution/consoleLog';
 import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 import { PlaybookEnvironmentVariableModalComponent } from './playbook.environment.variable.modal.component';
+import { WorkflowStatus } from '../models/execution/workflowStatus';
 
 @Component({
 	selector: 'playbook-component',
@@ -66,6 +67,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('environmentVariableTableA') environmentVariableTableA: DatatableComponent;
 	@ViewChild('environmentVariableContainerB') environmentVariableContainerB: ElementRef;
     @ViewChild('environmentVariableTableB') environmentVariableTableB: DatatableComponent;
+	@ViewChild('importFile') importFile: ElementRef;
+    @ViewChild('accordion') apps_actions: ElementRef;
 
 	devices: Device[] = [];
 	relevantDevices: Device[] = [];
@@ -147,8 +150,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		this.playbookService.getDevices().then(devices => this.devices = devices);
 		this.playbookService.getApis().then(appApis => this.appApis = appApis.sort((a, b) => a.name > b.name ? 1 : -1));
-		this.getActionStatusSSE();
-		this.getConsoleSSE();
 		this.getPlaybooksWithWorkflows();
 		this._addCytoscapeEventBindings();
 
@@ -189,10 +190,14 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Sets up the EventStream for receiving console logs from the server. Binds various events to the event handler.
 	 * Will currently return ALL stream actions and not just the ones manually executed.
 	 */
-	getConsoleSSE(): void {
+	getConsoleSSE(workflowExecutionId: string): void {
+		if (this.consoleEventSource) this.consoleEventSource.close();
+
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				this.consoleEventSource = new (window as any).EventSource('api/streams/console/log?access_token=' + authToken);
+				let url = `api/streams/console/log?access_token=${ authToken }&workflow_execution_id=${ workflowExecutionId }`;
+
+				this.consoleEventSource = new (window as any).EventSource(url);
                 this.consoleEventSource.addEventListener('log', (e: any) => this.consoleEventHandler(e));
 				this.consoleEventSource.onerror = (err: Error) => {
 					// this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
@@ -203,7 +208,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
     consoleEventHandler(message: any): void {
 		const consoleEvent = plainToClass(ConsoleLog, (JSON.parse(message.data) as object));
-		console.log(consoleEvent)
 		const newConsoleLog = consoleEvent.toNewConsoleLog();
 		this.consoleLog.push(newConsoleLog);
 
@@ -221,11 +225,14 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Sets up the EventStream for receiving stream actions from the server. Binds various events to the event handler.
 	 * Will currently return ALL stream actions and not just the ones manually executed.
 	 */
-	getActionStatusSSE(): void {
+	getActionStatusSSE(workflowExecutionId: string): void {
+		if (this.eventSource) this.eventSource.close();
+
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				this.eventSource = new (window as any).EventSource('api/streams/workflowqueue/actions?access_token=' + authToken);
+				let url = `api/streams/workflowqueue/actions?access_token=${ authToken }&workflow_execution_id=${ workflowExecutionId }`;
 
+				this.eventSource = new (window as any).EventSource(url);
 				this.eventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
@@ -248,7 +255,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		// If we have a graph loaded, find the matching node for this event and style it appropriately if possible.
 		if (this.cy) {
-			const matchingNode = this.cy.elements(`node[_id="${actionStatusEvent.action_id}"]`);
+			const matchingNode = this.cy.elements(`node[_id="${ actionStatusEvent.action_id }"]`);
 
 			if (matchingNode) {
 				switch (actionStatusEvent.status) {
@@ -322,8 +329,11 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		if (!this.loadedWorkflow) { return; }
 		this.clearExecutionHighlighting();
 		this.playbookService.addWorkflowToQueue(this.loadedWorkflow.id)
-			.then(() => this.toastyService
-				.success(`Starting execution of ${this.loadedPlaybook.name} - ${this.loadedWorkflow.name}.`))
+			.then((workflowStatus: WorkflowStatus) => {
+				this.getActionStatusSSE(workflowStatus.id)
+				this.getConsoleSSE(workflowStatus.id)
+				this.toastyService.success(`Starting execution of ${this.loadedPlaybook.name} - ${this.loadedWorkflow.name}.`)
+			})
 			.catch(e => this.toastyService
 				.error(`Error starting execution of ${this.loadedPlaybook.name} - ${this.loadedWorkflow.name}: ${e.message}`));
 	}
@@ -913,6 +923,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
 				this.toastyService.success(`Successfuly imported playbook "${this.playbookToImport.name}".`);
 				this.playbookToImport = null;
+				this.importFile.nativeElement.value = "";
 			},
 			e => this.toastyService.error(`Error importing playbook "${this.playbookToImport.name}": ${e.message}`),
 		);
@@ -1773,5 +1784,35 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			this.loadedWorkflow.environment_variables = this.loadedWorkflow.environment_variables.slice();
 			argument.reference = variable.id;
 		}).catch(() => argument.reference = '')
+	}
+
+	/**
+	 *   Search functionality for App/Action bar
+	 */
+	search_for_actions(event: any){
+	    let searchTerm: string;
+	    searchTerm = event.target.value;
+        let apps = this.apps_actions.nativeElement.querySelectorAll(".panel-title");
+        let actions = this.apps_actions.nativeElement.querySelectorAll(".panel-body");
+        this.apps_actions.nativeElement.querySelectorAll(".panel").forEach(function(item){
+            item.style.display = "block";
+        });
+
+        if(searchTerm.trim() != ""){
+            //Actions
+            for (let element of actions){
+                //Displays Apps
+                if(element.textContent.toLowerCase().includes(searchTerm.toLowerCase().trim())){
+                    element.closest(".panel").closest(".panel").style.display = "block";
+
+                    //Parent Apps Selector
+                    element.closest(".panel").closest(".panel:not(.actionPanel)").style.display = "block";
+
+                }
+                else{
+                    element.closest(".panel").style.display = "none";
+                }
+            }
+        }
 	}
 }

@@ -130,5 +130,4 @@ class TestWorkflowResultsHandler(TestCase):
             data = {'a': 42}
             handler.handle_event(workflow, sender, event=WalkoffEvent.ConsoleLog, data=data)
             mock_convert.assert_called_once_with(action, workflow, event=WalkoffEvent.ConsoleLog, data=data)
-            logger.log.assert_called_once_with(WalkoffEvent.ConsoleLog, 'action', data)
             mock_send.assert_called_once_with('test_packet')

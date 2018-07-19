@@ -4,6 +4,9 @@ import { ActionStatus } from './actionStatus';
 import { CurrentAction } from './currentAction';
 
 export class WorkflowStatus {
+	
+	id?: string;
+
 	execution_id: string;
 
 	workflow_id: string;

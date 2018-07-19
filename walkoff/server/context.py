@@ -24,3 +24,6 @@ class Context(object):
         self.cache = walkoff.cache.make_cache(config.CACHE)
         self.executor = executor.MultiprocessedExecutor(self.cache, self.case_logger)
         self.scheduler = walkoff.scheduler.Scheduler(self.case_logger)
+
+    def inject_app(self, app):
+        self.scheduler.app = app

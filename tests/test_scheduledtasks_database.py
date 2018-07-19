@@ -5,18 +5,13 @@ from flask import current_app
 
 from tests.util import initialize_test_config
 from tests.util.execution_db_help import setup_dbs
+from tests.util.servertestcase import ServerTestCase
 from walkoff.scheduler import InvalidTriggerArgs
 from walkoff.serverdb import db
 from walkoff.serverdb.scheduledtasks import ScheduledTask
 
 
-class TestScheduledTask(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        initialize_test_config()
-        cls.context = current_app.test_request_context()
-        cls.context.push()
-        setup_dbs()
+class TestScheduledTask(ServerTestCase):
 
     def setUp(self):
         self.date_trigger = {'type': 'date', 'args': {'run_date': '2017-01-25 10:00:00'}}

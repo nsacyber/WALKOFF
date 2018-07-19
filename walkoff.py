@@ -23,6 +23,7 @@ def run(app, host, port):
     pids = spawn_worker_processes()
     monkey.patch_all()
 
+    app.running_context.inject_app(app)
     app.running_context.executor.initialize_threading(app, pids)
     # The order of these imports matter for initialization (should probably be fixed)
 

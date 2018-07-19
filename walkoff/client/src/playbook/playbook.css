@@ -112,6 +112,26 @@
 	color: grey;         /* adjust as needed */
 }
 
+#app_search_bar_container {
+  position: relative;
+  &:after {
+    content: '\e003';
+    width: 18px;
+    height: 18px;
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+  }
+}
+#app_search_bar {
+    display: block;
+    margin: 10px auto;
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid $grey;
+    border-radius: 25px;
+    outline: 0;
+}
 .playbookMain #accordion .panel-heading.collapsed .panel-title:after {
 	/* symbol for "collapsed" panels */
 	content: "\f054";    /* adjust as needed, taken from bootstrap.css */

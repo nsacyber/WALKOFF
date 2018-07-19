@@ -5,6 +5,7 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker, scoped_session
+from sqlalchemy_utils import database_exists, create_database
 
 from walkoff.helpers import format_db_path
 from walkoff.helpers import utc_as_rfc_datetime
@@ -96,7 +97,11 @@ class CaseDatabase(object):
             case_db_path (str): The path to the database
         """
         self.engine = create_engine(
-            format_db_path(case_db_type, case_db_path))
+            format_db_path(case_db_type, case_db_path, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD'))
+
+        if not database_exists(self.engine.url):
+            create_database(self.engine.url)
+
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 

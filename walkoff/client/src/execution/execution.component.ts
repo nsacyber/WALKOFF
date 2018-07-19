@@ -248,12 +248,15 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	/**
 	 * Initiates an EventSource for action statuses from the server. Binds various events to the event handler.
 	 */
-	getActionStatusSSE(): void {
+	getActionStatusSSE(workflowExecutionId: string = null): void {
+		if (this.actionStatusEventSource) this.actionStatusEventSource.close();
+
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				this.actionStatusEventSource = new (window as any)
-					.EventSource(`api/streams/workflowqueue/actions?access_token=${authToken}`);
+				let url = `api/streams/workflowqueue/actions?summary=true&access_token=${ authToken }`;
+				if (workflowExecutionId) url += `&workflow_execution_id=${ workflowExecutionId }`;
 
+				this.actionStatusEventSource = new (window as any).EventSource(url);
 				this.actionStatusEventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
 				this.actionStatusEventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
 				this.actionStatusEventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
@@ -374,7 +377,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 */
 	excuteSelectedWorkflow(): void {
 		this.executionService.addWorkflowToQueue(this.selectedWorkflow.id)
-			.then(() => {
+			.then((workflowStatus: WorkflowStatus) => {
 				this.toastyService.success(`Successfully started execution of "${this.selectedWorkflow.name}"`);
 			})
 			.catch(e => this.toastyService.error(`Error executing workflow: ${e.message}`));

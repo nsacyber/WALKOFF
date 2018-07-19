@@ -73,8 +73,12 @@
     <!-- Graph editor -->
     <div class="row graphEditorRow">
         <!-- Column for app/action display for drag and drop -->
+
         <div class="col-md-2 graphEditorColumn">
-            <div class="panel-group" id="accordion" [hidden]="!loadedWorkflow">
+            <div class="panel-group" id="accordion" #accordion [hidden]="!loadedWorkflow">
+                <div id="app_search_bar_container">
+                    <input type="search" id="app_search_bar" placeholder="Search" (keyup)="search_for_actions($event)"/>
+                </div>
                 <div *ngFor="let app of getAppsWithActions()" class="panel panel-default">
                     <div class="panel-heading playbook-heading collapsed" data-toggle="collapse" [attr.data-target]="'#actionsCollapse' + removeWhitespace(app.name)"
                         [title]="app.info ? app.info.description : ''">
@@ -275,8 +279,7 @@
                 <div id="executionResultsModal">
                     <div #workflowResultsContainer>
                         <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]="actionStatuses" [sortType]="'multi'"
-                        [footerHeight]="25" [rowHeight]="undefined" [sorts]="[{prop: 'started_at', dir: 'desc'}]"
-                        [limit]="10">
+                        [footerHeight]="25" [rowHeight]="undefined" [sorts]="[]" [limit]="10">
                         <!-- Column Templates -->
                         <ngx-datatable-column name="Action IDs" prop="action_id" [flexGrow]="1"></ngx-datatable-column>
                         <ngx-datatable-column name="App Name" prop="app_name" [flexGrow]="1"></ngx-datatable-column>
@@ -404,7 +407,7 @@
                     <div class="importContainer">
                         <h4>Import Playbook</h4>
                         <div class="pull-right">
-                            <input type="file" name="file" id="file" class="importPlaybookInput" (change)="onImportSelectChange($event)"/>
+                            <input #importFile type="file" name="file" id="file" class="importPlaybookInput" (change)="onImportSelectChange($event)"/>
                             <button [disabled]="!playbookToImport" (click)="importPlaybook()" class="btn btn-primary" title="Import Playbook">
                                 <i class="fa fa-upload"></i>
                             </button>

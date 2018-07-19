@@ -417,10 +417,4 @@ export class PlaybookArgumentComponent implements OnChanges {
 	addVariable() {
 		this.createVariable.emit(this.argument)
 	}
-
-	resetValue(): void {
-		// this.argument.value = null;
-		// this.argument.reference = null;
-		// this.argument.selection = null;
-	}
 }
