@@ -30,6 +30,7 @@ import { DevicesModalComponent } from './devices/devices.modal.component';
 import { CasesModalComponent } from './cases/cases.modal.component';
 import { SettingsUserModalComponent } from './settings/settings.user.modal.component';
 import { SettingsRoleModalComponent } from './settings/settings.roles.modal.component';
+import { PlaybookEnvironmentVariableModalComponent } from './playbook/playbook.environment.variable.modal.component';
 
 import { PlaybookArgumentComponent } from './playbook/playbook.argument.component';
 import { PlaybookConditionsComponent } from './playbook/playbook.conditions.component';
@@ -74,6 +75,7 @@ import { KeysPipe } from './pipes/keys.pipe';
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
 		MessagesModalComponent,
+		PlaybookEnvironmentVariableModalComponent,
 		// Other subcomponents
 		PlaybookArgumentComponent,
 		PlaybookConditionsComponent,
@@ -95,6 +97,7 @@ import { KeysPipe } from './pipes/keys.pipe';
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
 		MessagesModalComponent,
+		PlaybookEnvironmentVariableModalComponent
 	],
 	bootstrap: [MainComponent],
 })

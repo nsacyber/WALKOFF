@@ -195,7 +195,7 @@ export class SchedulerModalComponent implements OnInit {
 		if (typeof(args) !== 'object') { return; }
 		for (const [key, value] of Object.entries(args)) {
 			if (key === 'start_date' || key === 'end_date') { return; }
-			if (isNaN(value)) { return; }
+			if (isNaN(value as number)) { return; }
 			args[key] = +value;
 		}
 	}
