@@ -10,6 +10,8 @@ from google.protobuf.json_format import MessageToDict
 import walkoff.config
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.proto.build.data_pb2 import Message
+from flask import Flask
+from walkoff.server import context
 
 logger = logging.getLogger(__name__)
 
@@ -35,10 +37,17 @@ class Receiver:
         self.results_sock.curve_server = True
         self.results_sock.bind(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
 
-        self.current_app = current_app
+        if current_app is None:
+            from walkoff.server import workflowresults  # This import must stay
+            self.current_app = Flask(__name__)
+            self.current_app.config.from_object(walkoff.config.Config)
+            self.current_app.running_context = context.Context(walkoff.config.Config, init_all=False)
+        else:
+            self.current_app = current_app
 
     def receive_results(self):
         """Keep receiving results from execution elements over a ZMQ socket, and trigger the callbacks"""
+        print("Receiver started and awaiting results")
         while True:
             if self.thread_exit:
                 break
@@ -48,8 +57,8 @@ class Receiver:
                 gevent.sleep(0.1)
                 continue
 
-            # with self.current_app.app_context():
-            self._send_callback(message_bytes)
+            with self.current_app.app_context():
+                self._send_callback(message_bytes)
 
         self.results_sock.close()
         return
@@ -75,6 +84,7 @@ class Receiver:
             sender = MessageToDict(message.sender, preserving_proto_field_name=True)
         elif hasattr(message, "workflow"):
             sender = MessageToDict(message.workflow, preserving_proto_field_name=True)
+        print(callback_name)
         event = WalkoffEvent.get_event_from_name(callback_name)
         if event is not None:
             data = self._format_data(event, message)

@@ -139,6 +139,7 @@ class Config(object):
     MAX_STREAM_RESULTS_SIZE_KB = 156
 
     SEPARATE_WORKERS = False
+    SEPARATE_RECEIVER = False
 
     @classmethod
     def load_config(cls, config_path=None):

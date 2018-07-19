@@ -13,7 +13,7 @@ from walkoff.config import Config
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.workflow import Workflow
-from walkoff.multiprocessedexecutor.worker import WorkflowResultsHandler
+from walkoff.multiprocessedexecutor.senders import ZMQResutsSender
 
 
 class MockSender(object):
@@ -36,7 +36,7 @@ class TestWorkflowResultsHandler(TestCase):
             database = create_autospec(ExecutionDatabase)
             socket_id = b'test_id'
             address = '127.0.0.1:5557'
-            handler = WorkflowResultsHandler(
+            handler = ZMQResutsSender(
                 socket_id,
                 self.client_secret,
                 self.client_public,
@@ -54,7 +54,7 @@ class TestWorkflowResultsHandler(TestCase):
             database = create_autospec(ExecutionDatabase)
             socket_id = b'test_id'
             address = '127.0.0.1:5557'
-            handler = WorkflowResultsHandler(
+            handler = ZMQResutsSender(
                 socket_id,
                 self.client_secret,
                 self.client_public,
