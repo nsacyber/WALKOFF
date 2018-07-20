@@ -38,7 +38,7 @@ class Receiver:
         self.results_sock.bind(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
 
         if current_app is None:
-            from walkoff.server import workflowresults  # This import must stay
+            from walkoff.server import workflowresults  # Need this import
             self.current_app = Flask(__name__)
             self.current_app.config.from_object(walkoff.config.Config)
             self.current_app.running_context = context.Context(walkoff.config.Config, init_all=False)
@@ -53,7 +53,7 @@ class Receiver:
                 break
             try:
                 message_bytes = self.results_sock.recv(zmq.NOBLOCK)
-            except zmq.ZMQError:
+            except zmq.ZMQError as e:
                 gevent.sleep(0.1)
                 continue
 
@@ -67,6 +67,7 @@ class Receiver:
 
         message_outer = Message()
         message_outer.ParseFromString(message_bytes)
+        print(message_outer)
         callback_name = message_outer.event_name
 
         if message_outer.type == Message.WORKFLOWPACKET:

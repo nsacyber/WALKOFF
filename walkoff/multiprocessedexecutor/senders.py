@@ -22,11 +22,10 @@ class ZMQResutsSender(object):
             execution_db (ExecutionDatabase): An ExecutionDatabase connection object
             case_logger (CaseLoger): A CaseLogger instance
         """
-        self.results_sock = zmq.Context().socket(zmq.PUSH)
+        self.results_sock = zmq.Context().socket(zmq.PUB)
         self.results_sock.identity = socket_id
         self.results_sock.curve_secretkey = client_secret_key
         self.results_sock.curve_publickey = client_public_key
-        self.results_sock.curve_serverkey = server_public_key
         try:
             self.results_sock.connect(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
         except ZMQError:

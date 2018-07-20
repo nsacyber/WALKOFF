@@ -79,10 +79,12 @@ class MultiprocessedExecutor(object):
                                               current_app.running_context.case_logger)
 
         if not walkoff.config.Config.SEPARATE_RECEIVER:
-            self.receiver = Receiver(app)
+            from walkoff.server import workflowresults  # Need this import
 
-            self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
-            self.receiver_thread.start()
+        self.receiver = Receiver(app)
+
+        self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
+        self.receiver_thread.start()
 
         self.threading_is_initialized = True
         logger.debug('Controller threading initialized')

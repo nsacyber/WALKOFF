@@ -28,11 +28,11 @@ class WorkflowExecutionController:
         client_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "client.key_secret")
         _, client_secret = auth.load_certificate(client_secret_file)
 
-        self.comm_socket = zmq.Context.instance().socket(zmq.PUB)
-        self.comm_socket.curve_secretkey = server_secret
-        self.comm_socket.curve_publickey = server_public
-        self.comm_socket.curve_server = True
-        self.comm_socket.bind(walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
+        self.comm_sock = zmq.Context.instance().socket(zmq.PUB)
+        self.comm_sock.curve_secretkey = server_secret
+        self.comm_sock.curve_publickey = server_public
+        self.comm_sock.curve_server = True
+        self.comm_sock.bind(walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
         self.cache = cache
         key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
         worker_key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
@@ -154,4 +154,4 @@ class WorkflowExecutionController:
 
     def _send_message(self, message):
         message_bytes = message.SerializeToString()
-        self.comm_socket.send(message_bytes)
+        self.comm_sock.send(message_bytes)
