@@ -80,14 +80,14 @@ class Receiver:
         else:
             message = message_outer.general_packet
 
+        sender = None
         if hasattr(message, "sender"):
             sender = MessageToDict(message.sender, preserving_proto_field_name=True)
         elif hasattr(message, "workflow"):
             sender = MessageToDict(message.workflow, preserving_proto_field_name=True)
-        print(callback_name)
         event = WalkoffEvent.get_event_from_name(callback_name)
         if event is not None:
-            data = self._format_data(event, message)
+            data = self._format_data(event, message, sender)
             if self.current_app:
                 with self.current_app.app_context():
                     event.send(sender, data=data)
@@ -99,11 +99,14 @@ class Receiver:
             logger.error('Unknown callback {} sent'.format(callback_name))
 
     @staticmethod
-    def _format_data(event, message):
+    def _format_data(event, message, sender=None):
         if event == WalkoffEvent.ConsoleLog:
             data = MessageToDict(message, preserving_proto_field_name=True)
         elif event.event_type != EventType.workflow:
-            data = {'workflow': MessageToDict(message.workflow, preserving_proto_field_name=True)}
+            if hasattr(message, "workflow"):
+                data = {'workflow': MessageToDict(message.workflow, preserving_proto_field_name=True)}
+            else:
+                data = {'workflow': sender}
         else:
             data = {}
         if event.requires_data():
