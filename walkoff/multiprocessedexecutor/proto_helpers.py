@@ -180,7 +180,7 @@ def add_env_vars_to_proto(packet, env_vars):
     """
     for env_var in env_vars:
         ev_proto = packet.environment_variables.add()
-        ev_proto.id = env_var.id
+        ev_proto.id = str(env_var.id)
         ev_proto.value = env_var.value
 
 
