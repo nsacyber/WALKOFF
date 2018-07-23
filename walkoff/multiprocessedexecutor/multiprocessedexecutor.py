@@ -79,12 +79,10 @@ class MultiprocessedExecutor(object):
                                               current_app.running_context.case_logger)
 
         if not walkoff.config.Config.SEPARATE_RECEIVER:
-            from walkoff.server import workflowresults  # Need this import
+            self.receiver = Receiver(app)
 
-        self.receiver = Receiver(app)
-
-        self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
-        self.receiver_thread.start()
+            self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
+            self.receiver_thread.start()
 
         self.threading_is_initialized = True
         logger.debug('Controller threading initialized')
@@ -327,10 +325,7 @@ class MultiprocessedExecutor(object):
 
     def _log_and_send_event(self, event, sender=None, data=None, workflow=None):
         sender = sender or self
-        sender_id = sender.id if not isinstance(sender, dict) else sender['id']
-        self.event_logger.log(event, sender_id, data=data)
-        event.send(sender, data=data)
-        self.zmq_sender.handle_event(workflow, sender, event=event)
+        self.zmq_sender.handle_event(workflow, sender, event=event, data=data)
 
     def create_case(self, case_id, subscriptions):
         """Creates a Case

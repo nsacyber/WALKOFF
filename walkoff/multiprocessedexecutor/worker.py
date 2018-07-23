@@ -208,6 +208,8 @@ class Worker(object):
             id_ (str): The ID of the worker
             config_path (str): The path to the configuration file to be loaded
         """
+        import walkoff.server.workflowresults  # Need this import
+
         logger.info('Spawning worker {}'.format(id_))
         self.id_ = id_
         self._lock = Lock()

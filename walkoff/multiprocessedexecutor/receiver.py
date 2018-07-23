@@ -35,10 +35,9 @@ class Receiver:
         self.results_sock.curve_secretkey = server_secret
         self.results_sock.curve_publickey = server_public
         self.results_sock.curve_server = True
-        self.results_sock.bind(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
+        self.results_sock.connect(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
 
         if current_app is None:
-            from walkoff.server import workflowresults  # Need this import
             self.current_app = Flask(__name__)
             self.current_app.config.from_object(walkoff.config.Config)
             self.current_app.running_context = context.Context(walkoff.config.Config, init_all=False)

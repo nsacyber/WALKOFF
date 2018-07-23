@@ -11,7 +11,8 @@ from tests.util.mock_objects import MockRedisCacheAdapter
 from walkoff.case.subscription import Subscription
 from walkoff.executiondb.argument import Argument
 from walkoff.multiprocessedexecutor.workflowexecutioncontroller import ExecuteWorkflowMessage, \
-    WorkflowExecutionController, Message, CaseControl, CommunicationPacket, WorkflowControl
+    WorkflowExecutionController, CaseControl, CommunicationPacket, WorkflowControl
+from walkoff.multiprocessedexecutor.receiver import Message
 
 
 class TestWorkflowExecutionController(TestCase):

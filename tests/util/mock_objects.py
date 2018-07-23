@@ -12,7 +12,7 @@ from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
-from walkoff.multiprocessedexecutor import workflowexecutioncontroller
+from walkoff.multiprocessedexecutor.receiver import Receiver
 from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
 
 try:
@@ -123,7 +123,7 @@ class MockLoadBalancer(object):
         return True
 
 
-class MockReceiveQueue(workflowexecutioncontroller.Receiver):
+class MockReceiveQueue(Receiver):
 
     def __init__(self, current_app):
         self.current_app = current_app

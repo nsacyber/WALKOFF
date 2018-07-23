@@ -27,7 +27,7 @@ class ZMQResutsSender(object):
         self.results_sock.curve_secretkey = client_secret_key
         self.results_sock.curve_publickey = client_public_key
         try:
-            self.results_sock.connect(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
+            self.results_sock.bind(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
         except ZMQError:
             logger.exception(
                 'Workflow Results handler could not connect to {}!'.format(walkoff.config.Config.ZMQ_RESULTS_ADDRESS))
@@ -53,6 +53,9 @@ class ZMQResutsSender(object):
                 kwargs (dict): Any extra data to send.
         """
         event = kwargs['event']
+
+        event.send(sender, data=kwargs.get('data', None))
+
         if event in [WalkoffEvent.TriggerActionAwaitingData, WalkoffEvent.WorkflowPaused]:
             saved_workflow = SavedWorkflow.from_workflow(workflow)
             self.execution_db.session.add(saved_workflow)
