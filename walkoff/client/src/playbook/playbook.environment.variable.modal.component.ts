@@ -8,7 +8,7 @@ import { EnvironmentVariable } from '../models/playbook/environmentVariable';
   templateUrl: './playbook.environment.variable.modal.html',
 })
 export class PlaybookEnvironmentVariableModalComponent {
-  variable: EnvironmentVariable = new EnvironmentVariable();
+  @Input() variable: EnvironmentVariable = new EnvironmentVariable();
   existing: boolean = false;
 
   constructor(public activeModal: NgbActiveModal) {}

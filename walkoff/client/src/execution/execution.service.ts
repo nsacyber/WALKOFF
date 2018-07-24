@@ -2,10 +2,12 @@ import { Injectable } from '@angular/core';
 import { Response } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
 import 'rxjs/add/operator/toPromise';
-import { plainToClass } from 'class-transformer';
+import { plainToClass, classToPlain } from 'class-transformer';
 
 import { WorkflowStatus } from '../models/execution/workflowStatus';
 import { Playbook } from '../models/playbook/playbook';
+import { Workflow } from '../models/playbook/workflow';
+import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 
 @Injectable()
 export class ExecutionService {
@@ -16,8 +18,11 @@ export class ExecutionService {
 	 * Returns the new workflow status for the workflow execution.
 	 * @param workflowId Workflow Id to queue
 	 */
-	addWorkflowToQueue(workflowId: string): Promise<WorkflowStatus> {
-		return this.authHttp.post('api/workflowqueue', { workflow_id: workflowId })
+	addWorkflowToQueue(workflow_id: string, variables: EnvironmentVariable[] = []): Promise<WorkflowStatus> {
+		let data: any = { workflow_id };
+		if (variables.length > 0) data.environment_variables = classToPlain(variables);
+
+		return this.authHttp.post('api/workflowqueue', data)
 			.toPromise()
 			.then(this.extractData)
 			.then((data: object) => plainToClass(WorkflowStatus, data))
@@ -68,6 +73,18 @@ export class ExecutionService {
 			.toPromise()
 			.then(this.extractData)
 			.then((data: object[]) => plainToClass(Playbook, data))
+			.catch(this.handleError);
+	}
+
+	/**
+	 * Loads the data of a given workflow under a given playbook.
+	 * @param workflowId ID of the workflow to load
+	 */
+	loadWorkflow(workflowId: string): Promise<Workflow> {
+		return this.authHttp.get(`/api/workflows/${workflowId}`)
+			.toPromise()
+			.then(this.extractData)
+			.then((data: object) => plainToClass(Workflow, data))
 			.catch(this.handleError);
 	}
 
