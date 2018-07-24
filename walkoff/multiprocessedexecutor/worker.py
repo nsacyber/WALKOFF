@@ -29,7 +29,7 @@ from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
-from walkoff.multiprocessedexecutor.senders import ZMQResutsSender
+from walkoff.multiprocessedexecutor.senders import ZMQResultsSender
 from walkoff.proto.build.data_pb2 import CommunicationPacket, ExecuteWorkflowMessage, CaseControl, \
     WorkflowControl
 
@@ -208,8 +208,6 @@ class Worker(object):
             id_ (str): The ID of the worker
             config_path (str): The path to the configuration file to be loaded
         """
-        import walkoff.server.workflowresults  # Need this import
-
         logger.info('Spawning worker {}'.format(id_))
         self.id_ = id_
         self._lock = Lock()
@@ -252,8 +250,8 @@ class Worker(object):
 
         self.workflow_receiver = WorkflowReceiver(key, server_key, walkoff.config.Config.CACHE)
 
-        self.workflow_results_sender = ZMQResutsSender(socket_id, client_secret, client_public, server_public,
-                                                       self.execution_db, case_logger)
+        self.workflow_results_sender = ZMQResultsSender(self.execution_db, case_logger, socket_id, client_secret,
+                                                        client_public, server_public)
 
         self.workflow_communication_receiver = WorkflowCommunicationReceiver(
             socket_id,
@@ -364,6 +362,7 @@ class Worker(object):
                 sender (ExecutionElement): The execution element that sent the signal.
                 kwargs (dict): Any extra data to send.
         """
+        print("CommonWorkflowSignal callback hit")
         workflow = self._get_current_workflow()
         self.workflow_results_sender.handle_event(workflow, sender, **kwargs)
 

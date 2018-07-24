@@ -24,6 +24,8 @@ class Receiver:
             current_app (Flask.App, optional): The current Flask app. If the Receiver is not started separately,
                 then the current_app must be included in the init. Otherwise, it should not be included.
         """
+        import walkoff.server.workflowresults  # Need this import
+
         ctx = zmq.Context.instance()
         self.thread_exit = False
         self.workflows_executed = 0
@@ -35,7 +37,7 @@ class Receiver:
         self.results_sock.curve_secretkey = server_secret
         self.results_sock.curve_publickey = server_public
         self.results_sock.curve_server = True
-        self.results_sock.connect(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
+        self.results_sock.bind(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
 
         if current_app is None:
             self.current_app = Flask(__name__)
@@ -52,7 +54,8 @@ class Receiver:
                 break
             try:
                 message_bytes = self.results_sock.recv(zmq.NOBLOCK)
-            except zmq.ZMQError as e:
+                print("receiver received something")
+            except zmq.ZMQError:
                 gevent.sleep(0.1)
                 continue
 
@@ -63,6 +66,7 @@ class Receiver:
         return
 
     def _send_callback(self, message_bytes):
+        print("in send callback")
 
         message_outer = Message()
         message_outer.ParseFromString(message_bytes)

@@ -18,9 +18,8 @@ from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticat
 from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController
 from walkoff.multiprocessedexecutor.receiver import Receiver
 from start_workers import shutdown_procs
-from walkoff.multiprocessedexecutor.senders import ZMQResutsSender
+from walkoff.multiprocessedexecutor.senders import ZMQResultsSender
 from flask import current_app
-import zmq.auth as auth
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +53,9 @@ class MultiprocessedExecutor(object):
             pids (list[Process], optional): Optional list of spawned processes. Defaults to None
 
         """
+        if walkoff.config.Config.SEPARATE_RECEIVER:
+            from walkoff.server import workflowresults  # Need this import
+
         if not (os.path.exists(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH) and
                 os.path.exists(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH)):
             logging.fatal("Certificates are missing - run generate_certificates.py script first.")
@@ -67,16 +69,9 @@ class MultiprocessedExecutor(object):
 
         self.manager = WorkflowExecutionController(self.cache)
 
-        server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
-        server_public, server_secret = auth.load_certificate(server_secret_file)
-        client_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "client.key_secret")
-        client_public, client_secret = auth.load_certificate(client_secret_file)
-
-        socket_id = u"FlaskApp-1".encode("ascii")
         with app.app_context():
-            self.zmq_sender = ZMQResutsSender(socket_id, client_secret, client_public, server_public,
-                                              current_app.running_context.execution_db,
-                                              current_app.running_context.case_logger)
+            self.zmq_sender = ZMQResultsSender(current_app.running_context.execution_db,
+                                               current_app.running_context.case_logger)
 
         if not walkoff.config.Config.SEPARATE_RECEIVER:
             self.receiver = Receiver(app)
