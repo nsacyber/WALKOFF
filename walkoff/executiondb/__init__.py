@@ -25,6 +25,7 @@ class ExecutionDatabase(object):
         from walkoff.executiondb.playbook import Playbook
         from walkoff.executiondb.position import Position
         from walkoff.executiondb.transform import Transform
+        from walkoff.executiondb.environment_variable import EnvironmentVariable
         from walkoff.executiondb.workflow import Workflow
         from walkoff.executiondb.saved_workflow import SavedWorkflow
         from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus

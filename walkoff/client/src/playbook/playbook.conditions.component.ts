@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, Input, OnInit } from '@angular/core';
+import { Component, ViewEncapsulation, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { plainToClass } from 'class-transformer';
 import { AppApi } from '../models/api/appApi';
 import { ConditionApi } from '../models/api/conditionApi';
@@ -20,6 +20,8 @@ export class PlaybookConditionsComponent implements OnInit {
 	@Input() conditions: Condition[];
 	@Input() appApis: AppApi[];
 	@Input() loadedWorkflow: Workflow;
+
+	@Output() createVariable = new EventEmitter<Argument>();
 
 	selectedConditionApi: string;
 	appNamesWithConditions: string[];
@@ -143,5 +145,9 @@ export class PlaybookConditionsComponent implements OnInit {
 	 */
 	getConditionNamesForApp(): string[] {
 		return this.appApis.find(a => a.name === this.selectedAppName).condition_apis.map(c => c.name);
+	}
+
+	onCreateVariable(argument: Argument) {
+		this.createVariable.emit(argument);
 	}
 }

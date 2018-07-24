@@ -5,13 +5,17 @@
 		<div class="col-xs-4">
 			<select2 [data]="availableWorkflows" [options]="workflowSelectConfig" (valueChanged)="workflowSelectChange($event)"></select2>
 		</div>
-		<div class="col-xs-2">
-			<button [disabled]="!selectedWorkflow" (click)="excuteSelectedWorkflow()" title="Execute Workflow" class="btn btn-secondary">
+		<div class="col-xs-4">
+			<button [disabled]="!selectedWorkflow" (click)="executeSelectedWorkflow()" title="Execute Workflow" class="btn btn-secondary">
 				<i class="fa fa-play"></i>
 				Execute Workflow
 			</button>
+			<button *ngIf="selectedWorkflow && selectedWorkflow.referenced_variables.length > 0" (click)="openVariableModal()" title="Edit Environment Variables" class="btn btn-secondary">
+				<i class="fa fa-cog"></i>
+				Edit Environment Variables
+			</button>
 		</div>
-		<div class="col-xs-6">
+		<div class="col-xs-4">
 			<div class="form-group row">
 				<label class="col-xs-2 col-form-label">Search Filter</label>
 				<div class="col-xs-10">

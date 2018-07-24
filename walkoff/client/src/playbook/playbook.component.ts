@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 import 'rxjs/Rx';
 import { saveAs } from 'file-saver';
 import { plainToClass, classToClass } from 'class-transformer';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import * as cytoscape from 'cytoscape';
 import * as clipboard from 'cytoscape-clipboard';
@@ -39,6 +40,8 @@ import { ActionStatus } from '../models/execution/actionStatus';
 import { ConditionalExpression } from '../models/playbook/conditionalExpression';
 import { ActionStatusEvent } from '../models/execution/actionStatusEvent';
 import { ConsoleLog } from '../models/execution/consoleLog';
+import { EnvironmentVariable } from '../models/playbook/environmentVariable';
+import { PlaybookEnvironmentVariableModalComponent } from './playbook.environment.variable.modal.component';
 import { WorkflowStatus } from '../models/execution/workflowStatus';
 
 @Component({
@@ -60,6 +63,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('consoleTable') consoleTable: DatatableComponent;
 	@ViewChild('errorLogContainer') errorLogContainer: ElementRef;
 	@ViewChild('errorLogTable') errorLogTable: DatatableComponent;
+	@ViewChild('environmentVariableContainerA') environmentVariableContainerA: ElementRef;
+	@ViewChild('environmentVariableTableA') environmentVariableTableA: DatatableComponent;
+	@ViewChild('environmentVariableContainerB') environmentVariableContainerB: ElementRef;
+    @ViewChild('environmentVariableTableB') environmentVariableTableB: DatatableComponent;
 	@ViewChild('importFile') importFile: ElementRef;
     @ViewChild('accordion') apps_actions: ElementRef;
 
@@ -83,6 +90,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		appName: string;
 		actionName: string;
 	};
+	selectedEnvironmentVariable: EnvironmentVariable;
 	cyJsonData: string;
 	actionStatuses: ActionStatus[] = [];
 	consoleLog: ConsoleLog[] = [];
@@ -122,6 +130,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		private playbookService: PlaybookService, private authService: AuthService,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
 		private cdr: ChangeDetectorRef, private utils: UtilitiesService,
+		private modalService: NgbModal
 	) {}
 
 	/**
@@ -201,6 +210,9 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		const consoleEvent = plainToClass(ConsoleLog, (JSON.parse(message.data) as object));
 		const newConsoleLog = consoleEvent.toNewConsoleLog();
 		this.consoleLog.push(newConsoleLog);
+
+		// Induce change detection by slicing array
+		this.consoleLog = this.consoleLog.slice();
     }
 
 
@@ -1726,6 +1738,12 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				break;
 			case '#errorLog':
 				table = this.errorLogTable;
+				break;
+			case '#environmentVariableLogA':
+				table = this.environmentVariableTableA;
+				break;
+			case '#environmentVariableLogB':
+				table = this.environmentVariableTableB;
 		}
 		if (table && table.recalculate) { 
 			this.cdr.detectChanges();
@@ -1734,8 +1752,43 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	}
 
 	/**
-	*   Search functionality for App/Action bar
-	*/
+	 * Returns errors in the loaded workflow
+	 */
+	getVariables() : any[] {
+		if (!this.loadedWorkflow) return [];
+		return this.loadedWorkflow.environment_variables;
+	}
+
+	/**
+	 * Returns errors in the loaded workflow
+	 */
+	deleteVariable(selectedVariable: EnvironmentVariable) {
+		this.loadedWorkflow.deleteVariable(selectedVariable);
+		if (this.loadedWorkflow.environment_variables.length == 0) 
+			($('.nav-tabs a[href="#console"], a[href="#errorLog"]') as any).tab('show');
+	}
+
+	editVariableModal(selectedVariable: EnvironmentVariable) {
+		const modalRef = this.modalService.open(PlaybookEnvironmentVariableModalComponent);
+		modalRef.componentInstance.existing = true;
+		modalRef.componentInstance.variable = selectedVariable;
+		modalRef.result.then(variable => {
+			this.loadedWorkflow.environment_variables = this.loadedWorkflow.environment_variables.slice();
+		}).catch(() => null)
+	}
+
+	onCreateVariable(argument: Argument) {
+		const modalRef = this.modalService.open(PlaybookEnvironmentVariableModalComponent);
+		modalRef.result.then(variable => {
+			this.loadedWorkflow.environment_variables.push(variable);
+			this.loadedWorkflow.environment_variables = this.loadedWorkflow.environment_variables.slice();
+			argument.reference = variable.id;
+		}).catch(() => argument.reference = '')
+	}
+
+	/**
+	 *   Search functionality for App/Action bar
+	 */
 	search_for_actions(event: any){
 	    let searchTerm: string;
 	    searchTerm = event.target.value;
@@ -1761,6 +1814,5 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
                 }
             }
         }
-
 	}
 }

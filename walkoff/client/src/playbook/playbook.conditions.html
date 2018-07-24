@@ -47,11 +47,11 @@
 		</div>
 		<playbook-argument-component *ngFor="let parameterApi of getConditionApi(condition.app_name, condition.action_name).parameters; let id = index"
 		 [loadedWorkflow]="loadedWorkflow" [argument]="getOrInitializeArgument(condition, parameterApi)" [parameterApi]="parameterApi"
-		 [id]="id"></playbook-argument-component>
+		 [id]="id" (createVariable)="onCreateVariable($event)"></playbook-argument-component>
 		<div>
 			<h4>Transforms</h4>
 			<playbook-transforms-component [transforms]="condition.transforms" [appApis]="appApis" [selectedAppName]="selectedAppName"
-			 [loadedWorkflow]="loadedWorkflow"></playbook-transforms-component>
+			 [loadedWorkflow]="loadedWorkflow" (createVariable)="onCreateVariable($event)"></playbook-transforms-component>
 		</div>
 	</div>
 </div>

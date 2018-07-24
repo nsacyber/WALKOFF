@@ -33,6 +33,6 @@
 		</div>
 		<playbook-argument-component *ngFor="let parameterApi of getTransformApi(transform.app_name, transform.action_name).parameters; let id = index"
 		[loadedWorkflow]="loadedWorkflow" [argument]="getOrInitializeArgument(transform, parameterApi)" [parameterApi]="parameterApi"
-		[id]="id"></playbook-argument-component>
+		[id]="id" (createVariable)="onCreateVariable($event)"></playbook-argument-component>
 	</div>
 </div>

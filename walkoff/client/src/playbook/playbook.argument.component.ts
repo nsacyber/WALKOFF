@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, Input, OnInit, OnChanges } from '@angular/core';
+import { Component, ViewEncapsulation, Input, Output, EventEmitter, OnChanges } from '@angular/core';
 import { Select2OptionData } from 'ng2-select2/ng2-select2';
 
 import { Workflow } from '../models/playbook/workflow';
@@ -30,9 +30,11 @@ export class PlaybookArgumentComponent implements OnChanges {
 	@Input() devices: Device[];
 	@Input() branchCounters: any[];
 
+	@Output() createVariable = new EventEmitter<Argument>();
+
 	valueType: string = 'static';
 	valueTypes: any[];
-	
+
 	propertyName: string = '';
 	selectedType: string;
 	availableTypes: string[] = AVAILABLE_TYPES;
@@ -103,13 +105,16 @@ export class PlaybookArgumentComponent implements OnChanges {
 		] : [
 			{ id: 'static', name: 'Static Value'},
 			{ id: 'action', name: 'Action Output'},
-			{ id: 'branch', name: 'Branch Counter'}
+			{ id: 'branch', name: 'Branch Counter'},
+			{ id: 'variable', name: 'Environment Variable'}
 		]
 
+		this.valueType = 'static';
 		if (this.isDeviceArgument && !this.argument.reference) this.valueType = 'device';
 		else if (this.argument.reference) {
 			if (this.loadedWorkflow.actions.find(action => action.id == this.argument.reference)) this.valueType = 'action';
 			else if (this.loadedWorkflow.branches.find(branch => branch.id == this.argument.reference)) this.valueType = 'branch';
+			else if (this.loadedWorkflow.environment_variables.find(variable => variable.id == this.argument.reference)) this.valueType = 'variable';
 		}
 
 		this.selectedType = this.availableTypes[0];
@@ -370,7 +375,7 @@ export class PlaybookArgumentComponent implements OnChanges {
 	}
 
 	get isReference(): boolean {
-		return ['static', 'device', 'branch'].indexOf(this.valueType) == -1;
+		return ['static', 'device', 'branch', 'variable'].indexOf(this.valueType) == -1;
 	}
 
 	get isStatic(): boolean {
@@ -379,6 +384,10 @@ export class PlaybookArgumentComponent implements OnChanges {
 
 	get isActionSelect(): boolean {
 		return this.valueType == 'action';
+	}
+
+	get isVariableSelect(): boolean {
+		return this.valueType == 'variable';
 	}
 
 	get isStringSelect(): boolean {
@@ -403,5 +412,9 @@ export class PlaybookArgumentComponent implements OnChanges {
 
 	get isBranchCounterSelect(): boolean {
 		return this.valueType == 'branch'
+	}
+
+	addVariable() {
+		this.createVariable.emit(this.argument)
 	}
 }

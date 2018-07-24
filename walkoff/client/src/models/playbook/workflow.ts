@@ -4,6 +4,9 @@ import { Select2OptionData } from 'ng2-select2/ng2-select2';
 import { Action } from './action';
 import { Branch } from './branch';
 import { ExecutionElement } from './executionElement';
+import { EnvironmentVariable } from './environmentVariable';
+import { ConditionalExpression } from './conditionalExpression';
+import { Argument } from './argument';
 
 export class Workflow extends ExecutionElement {
 	// _playbook_id: number;
@@ -30,6 +33,12 @@ export class Workflow extends ExecutionElement {
 	branches?: Branch[] = [];
 
 	/**
+	 * Array of environment variables.
+	 */
+	@Type(() => EnvironmentVariable)
+	environment_variables?: EnvironmentVariable[] = [];
+
+	/**
 	 * ID of the action designated as the start action.
 	 */
 	start?: string;
@@ -53,6 +62,31 @@ export class Workflow extends ExecutionElement {
 				   .concat(...this.branches.map(branch => branch.all_errors))
 	}
 
+	get all_arguments(): Argument[] {
+		let allArgs: Argument[] = [];
+		const getExpressionArguments = (expression: ConditionalExpression) => {
+			expression.conditions.forEach(condition => {
+				allArgs = allArgs.concat(condition.arguments);
+				condition.transforms.forEach(transform => allArgs = allArgs.concat(transform.arguments));
+			})
+			expression.child_expressions.forEach(getExpressionArguments);
+		}
+
+		this.actions.forEach(action => {
+			allArgs = allArgs.concat(action.arguments);
+			if (action.trigger) getExpressionArguments(action.trigger);
+		})
+		this.branches.forEach(branch => {
+			if (branch.condition) getExpressionArguments(branch.condition);
+		})
+
+		return allArgs;
+	}
+
+	get referenced_variables() : EnvironmentVariable[] {
+		return this.environment_variables.filter(variable => this.all_arguments.some(arg => arg.reference == variable.id));
+	}
+
 	listBranchCounters() : Select2OptionData[] {
 		return this.branches.map(branch  => {
 			const sourceAction = this.findActionById(branch.source_id);
@@ -63,5 +97,12 @@ export class Workflow extends ExecutionElement {
 
 	findActionById(id: string) : Action {
 		return this.actions.find(action => action.id == id)
+	}
+
+	deleteVariable(deletedVariable: EnvironmentVariable) {
+		this.environment_variables = this.environment_variables.filter(variable => variable.id !== deletedVariable.id);
+		this.all_arguments
+			.filter(arg => arg.reference == deletedVariable.id)
+			.forEach(arg => arg.reference = '');
 	}
 }

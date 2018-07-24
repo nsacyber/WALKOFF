@@ -1,4 +1,4 @@
-import { Component, ViewEncapsulation, Input, OnInit } from '@angular/core';
+import { Component, ViewEncapsulation, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { plainToClass } from 'class-transformer';
 import { Workflow } from '../models/playbook/workflow';
 import { AppApi } from '../models/api/appApi';
@@ -19,6 +19,8 @@ export class PlaybookTransformsComponent implements OnInit {
 	@Input() transforms: Transform[];
 	@Input() appApis: AppApi[];
 	@Input() loadedWorkflow: Workflow;
+
+	@Output() createVariable = new EventEmitter<Argument>();
 
 	selectedTransformApi: string;
 	appNamesWithTransforms: string[];
@@ -142,5 +144,9 @@ export class PlaybookTransformsComponent implements OnInit {
 	 */
 	getTransformNamesForApp(): string[] {
 		return this.appApis.find(a => a.name === this.selectedAppName).transform_apis.map(c => c.name);
+	}
+
+	onCreateVariable(argument: Argument) {
+		this.createVariable.emit(argument);
 	}
 }

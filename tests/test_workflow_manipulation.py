@@ -11,6 +11,8 @@ from walkoff.case.logger import CaseLogger
 from walkoff.executiondb.argument import Argument
 from walkoff.multiprocessedexecutor import multiprocessedexecutor
 from walkoff.server.app import create_app
+from walkoff.executiondb.environment_variable import EnvironmentVariable
+from uuid import uuid4
 
 try:
     from importlib import reload
@@ -62,3 +64,34 @@ class TestWorkflowManipulation(unittest.TestCase):
         self.assertDictEqual(
             result['value'],
             {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'})
+
+    def test_environment_variables_in_workflow(self):
+        workflow = execution_db_help.load_workflow('environmentVariables', 'environmentVariables')
+
+        result = {'value': None}
+
+        def action_finished_listener(sender, **kwargs):
+            result['value'] = kwargs['data']['data']
+
+        WalkoffEvent.ActionExecutionSuccess.connect(action_finished_listener)
+
+        self.executor.execute_workflow(workflow.id)
+        self.executor.wait_and_reset(1)
+        self.assertDictEqual(result['value'], {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'})
+
+    def test_environment_variables_in_execute(self):
+        workflow = execution_db_help.load_workflow('test', 'helloWorldWorkflow')
+        env_var = EnvironmentVariable(value='CHANGE INPUT', id=uuid4())
+        workflow.actions[0].arguments[0].value = None
+        workflow.actions[0].arguments[0].reference = str(env_var.id)
+
+        result = {'value': None}
+
+        def action_finished_listener(sender, **kwargs):
+            result['value'] = kwargs['data']['data']
+
+        WalkoffEvent.ActionExecutionSuccess.connect(action_finished_listener)
+
+        self.executor.execute_workflow(workflow.id, environment_variables=[env_var])
+        self.executor.wait_and_reset(1)
+        self.assertDictEqual(result['value'], {'result': 'REPEATING: CHANGE INPUT', 'status': 'Success'})
