@@ -48,13 +48,11 @@ class Receiver:
 
     def receive_results(self):
         """Keep receiving results from execution elements over a ZMQ socket, and trigger the callbacks"""
-        print("Receiver started and awaiting results")
         while True:
             if self.thread_exit:
                 break
             try:
                 message_bytes = self.results_sock.recv(zmq.NOBLOCK)
-                print("receiver received something")
             except zmq.ZMQError:
                 gevent.sleep(0.1)
                 continue
@@ -66,11 +64,9 @@ class Receiver:
         return
 
     def _send_callback(self, message_bytes):
-        print("in send callback")
 
         message_outer = Message()
         message_outer.ParseFromString(message_bytes)
-        print(message_outer)
         callback_name = message_outer.event_name
 
         if message_outer.type == Message.WORKFLOWPACKET:

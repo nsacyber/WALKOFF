@@ -26,7 +26,6 @@ class ZMQResultsSender(object):
         self.results_sock = None
 
         if socket_id is not None:
-            print("connecting results sock")
             self.results_sock = zmq.Context().socket(zmq.PUSH)
             self.results_sock.identity = socket_id
             self.results_sock.curve_secretkey = client_secret_key
@@ -59,8 +58,6 @@ class ZMQResultsSender(object):
                 sender (ExecutionElement): The execution element that sent the signal.
                 kwargs (dict): Any extra data to send.
         """
-        print("Results sock at top", self.results_sock)
-
         event = kwargs['event']
 
         if event in [WalkoffEvent.TriggerActionAwaitingData, WalkoffEvent.WorkflowPaused]:
@@ -75,12 +72,8 @@ class ZMQResultsSender(object):
             sender_id = sender.id if not isinstance(sender, dict) else sender['id']
             self.case_logger.log(event, sender_id, kwargs.get('data', None))
 
-        print("Sender sending event ", event)
-        event.send(sender, data=kwargs.get('data', None))
-
-        print("Results sock at bottom", self.results_sock)
-
         if self.results_sock:
-            print("sending to receiver")
             packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
             self.results_sock.send(packet_bytes)
+        else:
+            event.send(sender, data=kwargs.get('data', None))

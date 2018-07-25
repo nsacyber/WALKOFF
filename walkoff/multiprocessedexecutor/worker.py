@@ -362,7 +362,6 @@ class Worker(object):
                 sender (ExecutionElement): The execution element that sent the signal.
                 kwargs (dict): Any extra data to send.
         """
-        print("CommonWorkflowSignal callback hit")
         workflow = self._get_current_workflow()
         self.workflow_results_sender.handle_event(workflow, sender, **kwargs)
 
