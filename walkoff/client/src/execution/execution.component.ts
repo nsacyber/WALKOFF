@@ -32,7 +32,7 @@ import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 		'./execution.css',
 	],
 	encapsulation: ViewEncapsulation.None,
-	providers: [ExecutionService, AuthService, UtilitiesService],
+	providers: [ExecutionService, AuthService],
 })
 export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('actionStatusContainer') actionStatusContainer: ElementRef;
@@ -99,6 +99,8 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		this.recalculateTableCallback = (e: JQuery.Event<HTMLElement, null>) => {
 			if (this.actionStatusTable && this.actionStatusTable.recalculate) {
+				if (Array.isArray(this.actionStatusTable.rows)) 
+					this.actionStatusTable.rows = [...this.actionStatusTable.rows];
 				this.actionStatusTable.recalculate();
 			}
 		}
@@ -156,7 +158,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 */
 	getWorkflowStatuses(): void {
 		this.executionService
-			.getWorkflowStatusList()
+			.getAllWorkflowStatuses()
 			.then(workflowStatuses => {
 				workflowStatuses.forEach(workflowStatus => {
 					this.calculateLocalizedTimes(workflowStatus);
@@ -466,8 +468,8 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 		args.forEach(element => {
 			if (element.value) { obj[element.name] = element.value; }
 			if (element.reference) { obj[element.name] = element.reference.toString(); }
-			if (element.selection && element.selection.length) {
-				const selectionString = (element.selection as any[]).join('.');
+			if (element.selection && Array.isArray(element.selection)) {
+				const selectionString = Array.from(element.selection).join('.');
 				obj[element.name] = `${obj[element.name]} (${selectionString})`;
 			}
 		});

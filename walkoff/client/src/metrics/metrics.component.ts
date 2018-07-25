@@ -17,7 +17,7 @@ import { WorkflowMetric } from '../models/metric/workflowMetric';
 	styleUrls: [
 		'./metrics.css',
 	],
-	providers: [MetricsService, UtilitiesService],
+	providers: [MetricsService],
 })
 
 export class MetricsComponent implements OnInit {
@@ -75,6 +75,7 @@ export class MetricsComponent implements OnInit {
 		}
 		if (table && table.recalculate) {
 			this.cdr.detectChanges();
+			if (Array.isArray(table.rows)) table.rows = [...table.rows];
 			table.recalculate();
 		}
 	}

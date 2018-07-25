@@ -19,6 +19,9 @@ import * as undoRedo from 'cytoscape-undo-redo';
 import { PlaybookService } from './playbook.service';
 import { AuthService } from '../auth/auth.service';
 import { UtilitiesService } from '../utilities.service';
+import { DevicesService } from '../devices/devices.service';
+import { ExecutionService } from '../execution/execution.service';
+import { SettingsService } from '../settings/settings.service';
 
 import { AppApi } from '../models/api/appApi';
 import { ActionApi } from '../models/api/actionApi';
@@ -53,7 +56,7 @@ import { WorkflowStatus } from '../models/execution/workflowStatus';
 		'../../node_modules/ng2-dnd/bundles/style.css',
 	],
 	encapsulation: ViewEncapsulation.None,
-	providers: [PlaybookService, AuthService, UtilitiesService],
+	providers: [PlaybookService, AuthService, DevicesService, SettingsService, ExecutionService],
 })
 export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('cyRef') cyRef: ElementRef;
@@ -1747,6 +1750,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		}
 		if (table && table.recalculate) { 
 			this.cdr.detectChanges();
+			if (Array.isArray(table.rows)) table.rows = [...table.rows];
 			table.recalculate(); 
 		}
 	}

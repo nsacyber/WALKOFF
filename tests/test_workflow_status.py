@@ -347,3 +347,19 @@ class TestWorkflowStatus(ServerTestCase):
         workflow_status.aborted()
         self.assertEqual(workflow_status.status, WorkflowStatusEnum.aborted)
         self.assertEqual(actions[-1].status, ActionStatusEnum.aborted)
+
+    def test_workflowqueue_pagination(self):
+        for i in range(40):
+            workflow_status = WorkflowStatus(uuid4(), uuid4(), 'test')
+            workflow_status.running()
+            self.app.running_context.execution_db.session.add(workflow_status)
+            self.app.running_context.execution_db.session.commit()
+
+        response = self.get_with_status_check('/api/workflowqueue', headers=self.headers)
+        self.assertEqual(len(response), 20)
+
+        response = self.get_with_status_check('/api/workflowqueue?page=2', headers=self.headers)
+        self.assertEqual(len(response), 20)
+
+        response = self.get_with_status_check('/api/workflowqueue?page=3', headers=self.headers)
+        self.assertEqual(len(response), 0)

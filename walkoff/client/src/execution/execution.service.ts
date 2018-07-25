@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Response } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
 import 'rxjs/add/operator/toPromise';
 import { plainToClass, classToPlain } from 'class-transformer';
@@ -8,10 +7,11 @@ import { WorkflowStatus } from '../models/execution/workflowStatus';
 import { Playbook } from '../models/playbook/playbook';
 import { Workflow } from '../models/playbook/workflow';
 import { EnvironmentVariable } from '../models/playbook/environmentVariable';
+import { UtilitiesService } from '../utilities.service';
 
 @Injectable()
 export class ExecutionService {
-	constructor (private authHttp: JwtHttp) {}
+	constructor (private authHttp: JwtHttp, private utils: UtilitiesService) {}
 
 	/**
 	 * Asyncronously adds a workflow (by ID) to the queue to be executed.
@@ -24,9 +24,9 @@ export class ExecutionService {
 
 		return this.authHttp.post('api/workflowqueue', data)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(WorkflowStatus, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -39,18 +39,25 @@ export class ExecutionService {
 		return this.authHttp.patch('api/workflowqueue', { execution_id: workflowId, status: action })
 			.toPromise()
 			.then(() => null)
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
 	 * Asyncronously gets an array of workflow statuses from the server.
 	 */
-	getWorkflowStatusList(): Promise<WorkflowStatus[]> {
-		return this.authHttp.get('api/workflowqueue')
+	getAllWorkflowStatuses(): Promise<WorkflowStatus[]> {
+		return this.utils.paginateAll<WorkflowStatus>(this.getWorkflowStatuses.bind(this));
+	}
+
+	/**
+	 * Asyncronously gets an array of workflow statuses from the server.
+	 */
+	getWorkflowStatuses(page: number = 1): Promise<WorkflowStatus[]> {
+		return this.authHttp.get(`api/workflowqueue?page=${ page }`)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(WorkflowStatus, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -60,9 +67,9 @@ export class ExecutionService {
 	getWorkflowStatus(workflowExecutionId: string): Promise<WorkflowStatus> {
 		return this.authHttp.get(`api/workflowqueue/${workflowExecutionId}`)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(WorkflowStatus, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -71,9 +78,9 @@ export class ExecutionService {
 	getPlaybooks(): Promise<Playbook[]> {
 		return this.authHttp.get('/api/playbooks')
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(Playbook, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -83,27 +90,8 @@ export class ExecutionService {
 	loadWorkflow(workflowId: string): Promise<Workflow> {
 		return this.authHttp.get(`/api/workflows/${workflowId}`)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Workflow, data))
-			.catch(this.handleError);
-	}
-
-	private extractData (res: Response) {
-		const body = res.json();
-		return body || {};
-	}
-
-	private handleError (error: Response | any): Promise<any> {
-		let errMsg: string;
-		let err: string;
-		if (error instanceof Response) {
-			const body = error.json() || '';
-			err = body.error || body.detail || JSON.stringify(body);
-			errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
-		} else {
-			err = errMsg = error.message ? error.message : error.toString();
-		}
-		console.error(errMsg);
-		throw new Error(err);
+			.catch(this.utils.handleResponseError);
 	}
 }

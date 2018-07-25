@@ -16,7 +16,9 @@ def read_all_users():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('users', ['read']))
     def __func():
-        return [user.as_json() for user in User.query.all()], SUCCESS
+        page = request.args.get('page', 1, type=int)
+        return [user.as_json() for user in
+                User.query.paginate(page, current_app.config['ITEMS_PER_PAGE'], False).items], SUCCESS
 
     return __func()
 

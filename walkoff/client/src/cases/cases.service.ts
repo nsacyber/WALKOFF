@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Response } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
@@ -9,21 +8,28 @@ import { Case } from '../models/case/case';
 import { CaseEvent } from '../models/case/caseEvent';
 import { AvailableSubscription } from '../models/case/availableSubscription';
 import { Playbook } from '../models/playbook/playbook';
+import { UtilitiesService } from '../utilities.service';
 
 @Injectable()
 export class CasesService {
-	constructor (private authHttp: JwtHttp) {
+	constructor (private authHttp: JwtHttp, private utils: UtilitiesService) {}
+
+	/**
+	 * Gets an array of all Case objects specified in the cases DB.
+	 */
+	getAllCases(): Promise<Case[]> {
+		return this.utils.paginateAll<Case>(this.getCases.bind(this));
 	}
 
 	/**
 	 * Gets an array of Case objects specified in the cases DB.
 	 */
-	getCases(): Promise<Case[]> {
-		return this.authHttp.get('/api/cases')
+	getCases(page: number = 1): Promise<Case[]> {
+		return this.authHttp.get(`/api/cases?page=${ page }`)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(Case, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -33,9 +39,9 @@ export class CasesService {
 	getEventsForCase(caseId: number): Promise<CaseEvent[]> {
 		return this.authHttp.get(`/api/cases/${caseId}/events`)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(CaseEvent, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -45,9 +51,9 @@ export class CasesService {
 	addCase(caseToAdd: Case): Promise<Case> {
 		return this.authHttp.post('/api/cases', caseToAdd)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Case, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -57,9 +63,9 @@ export class CasesService {
 	editCase(caseToEdit: Case): Promise<Case> {
 		return this.authHttp.put('/api/cases', caseToEdit)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Case, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -70,7 +76,7 @@ export class CasesService {
 		return this.authHttp.delete(`/api/cases/${id}`)
 			.toPromise()
 			.then(() => null)
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -80,9 +86,9 @@ export class CasesService {
 	getAvailableSubscriptions(): Promise<AvailableSubscription[]> {
 		return this.authHttp.get('/api/availablesubscriptions')
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(AvailableSubscription, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -91,27 +97,8 @@ export class CasesService {
 	getPlaybooks(): Promise<Playbook[]> {
 		return this.authHttp.get('/api/playbooks?full=true')
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(Playbook, data))
-			.catch(this.handleError);
-	}
-
-	private extractData (res: Response) {
-		const body = res.json();
-		return body || {};
-	}
-
-	private handleError (error: Response | any): Promise<any> {
-		let errMsg: string;
-		let err: string;
-		if (error instanceof Response) {
-			const body = error.json() || '';
-			err = body.error || body.detail || JSON.stringify(body);
-			errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
-		} else {
-			err = errMsg = error.message ? error.message : error.toString();
-		}
-		console.error(errMsg);
-		throw new Error(err);
+			.catch(this.utils.handleResponseError);
 	}
 }
