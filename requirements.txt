@@ -24,3 +24,6 @@ pynacl
 alembic
 healthcheck
 psycopg2-binary
+click
+alembic
+semver

@@ -1,23 +1,18 @@
 import json
 import os
-import sys
-from os.path import join
 
 import semver
 
-sys.path.append(os.path.abspath('.'))
 from walkoff.appgateway import cache_apps
 from walkoff.config import load_app_apis
 import walkoff.config
 import importlib
-import scripts.migrations.workflows.versions as versions
-from walkoff import initialize_databases
+from .workflows import versions as versions
 from walkoff import executiondb
 from walkoff.executiondb.playbook import Playbook
 from walkoff.executiondb.schemas import PlaybookSchema
 
-UPGRADE = "upgrade"
-DOWNGRADE = "downgrade"
+
 PREV_VERSION = "0.5.0"
 LATEST_VERSION = "0.7.0"
 
@@ -47,7 +42,7 @@ def continue_condition(mode, cur, tgt):
         return False
 
 
-def get_next_version(mode, cur):
+def get_next_version(cur):
     try:
         if mode == DOWNGRADE:
             return versions.prev_vers[cur]
@@ -58,32 +53,23 @@ def get_next_version(mode, cur):
         return None
 
 
-def convert_playbooks(mode, tgt_version):
-    initialize_databases()
-    cache_apps(join('.', 'apps'))
+def convert_playbooks(current_version, target_version, workflows_path, apps_path):
+    #initialize_databases()
+    cache_apps(apps_path)
     load_app_apis()
 
-    for subd, d, files in os.walk(walkoff.config.Config.WORKFLOWS_PATH):
+
+    for subd, d, files in os.walk(workflows_path):
         for f in files:
             if f.endswith('.playbook'):
                 path = os.path.join(subd, f)
-                convert_playbook(path, mode, tgt_version)
+                convert_playbook(path, version)
 
 
-def convert_playbook(path, mode, tgt_version):
+def convert_playbook(path, current_version):
     print('Converting {}'.format(path))
     with open(path, 'r+') as f:
         playbook = json.load(f)
-
-        if 'walkoff_version' not in playbook:
-            if mode == DOWNGRADE:
-                print("Cannot downgrade, no version specified in playbook.")
-                return
-            else:  # upgrade
-                print("No version specified in playbook, assuming " + PREV_VERSION)
-                cur_version = PREV_VERSION
-        else:
-            cur_version = playbook['walkoff_version']
 
         if validate_path(mode, cur_version, tgt_version):
             next_version = ""
@@ -94,20 +80,9 @@ def convert_playbook(path, mode, tgt_version):
                 print("{}ing playbook from {} to {}".format(mode[:-1], cur_version, next_version))
 
                 path = "scripts.migrations.workflows."
-                if mode == DOWNGRADE:
-                    rev = importlib.import_module(path + cur_version.replace(".", "_"))
-                    if rev.downgrade_supported:
-                        rev.downgrade_playbook(playbook)
-                    else:
-                        print("Downgrade not supported.")
-
-                elif mode == UPGRADE:
-                    rev = importlib.import_module(path + next_version.replace(".", "_"))
-                    if rev.upgrade_supported:
-                        rev.upgrade_playbook(playbook)
-                    else:
-                        print("Upgrade not supported.")
-
+                rev = importlib.import_module(path + next_version.replace(".", "_"))
+                if rev.upgrade_supported:
+                    rev.upgrade_playbook(playbook)
                 cur_version = next_version
 
             playbook_obj = executiondb.execution_db.session.query(Playbook).filter_by(name=playbook['name']).first()

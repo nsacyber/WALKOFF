@@ -1,12 +1,12 @@
 import importlib
 import json
-import logging
-import os
 import pkgutil
-import sys
 import warnings
 from datetime import datetime
 from uuid import uuid4
+import logging
+import os
+import sys
 
 try:
     from importlib import reload as reload_module
@@ -262,3 +262,30 @@ def json_dumps_or_string(val):
         return json.dumps(val)
     except (ValueError, TypeError):
         return str(val)
+
+
+def read_and_indent(filename, indent):
+    indent = '  ' * indent
+    with open(filename, 'r') as file_open:
+        return ['{0}{1}'.format(indent, line) for line in file_open]
+
+
+def compose_api(config):
+    with open(os.path.join(config.API_PATH, 'api.yaml'), 'r') as api_yaml:
+        final_yaml = []
+        for line_num, line in enumerate(api_yaml):
+            if line.lstrip().startswith('$ref:'):
+                split_line = line.split('$ref:')
+                reference = split_line[1].strip()
+                indentation = split_line[0].count('  ')
+                try:
+                    final_yaml.extend(
+                        read_and_indent(os.path.join(config.API_PATH, reference), indentation))
+                    final_yaml.append(os.linesep)
+                except (IOError, OSError):
+                    logger.error('Could not find or open referenced YAML file {0} in line {1}'.format(reference,
+                                                                                                      line_num))
+            else:
+                final_yaml.append(line)
+    with open(os.path.join(config.API_PATH, 'composed_api.yaml'), 'w') as composed_yaml:
+        composed_yaml.writelines(final_yaml)
