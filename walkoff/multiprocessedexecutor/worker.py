@@ -33,6 +33,7 @@ from walkoff.executiondb.workflow import Workflow
 from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
 from walkoff.proto.build.data_pb2 import CommunicationPacket, ExecuteWorkflowMessage, CaseControl, \
     WorkflowControl
+from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
 
 logger = logging.getLogger(__name__)
 
@@ -385,6 +386,12 @@ class Worker(object):
                 the workflow. These will not be persistent.
         """
         self.execution_db.session.expire_all()
+
+        workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
+            execution_id=workflow_execution_id).first()
+        if workflow_status.status == WorkflowStatusEnum.aborted:
+            return
+
         workflow = self.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
         workflow._execution_id = workflow_execution_id
         if resume:
