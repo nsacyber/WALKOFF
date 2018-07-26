@@ -252,8 +252,8 @@ class TestWorkflowStatus(ServerTestCase):
         data = {"workflow_id": str(workflow.id),
                 "environment_variables": [{"id": env_var_id, "value": "CHANGE INPUT"}]}
 
-        self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
-                                    content_type="application/json", data=json.dumps(data))
+        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
+                                               content_type="application/json", data=json.dumps(data))
 
         current_app.running_context.executor.wait_and_reset(1)
 
@@ -264,7 +264,7 @@ class TestWorkflowStatus(ServerTestCase):
             ActionStatus._workflow_status_id == UUID(response['id'])).first()
         arguments = json.loads(action.arguments)
         self.assertEqual(arguments[0]["name"], "call")
-        self.assertEqual(arguments[0]["value"], "CHANGE INPUT")
+        self.assertIn('reference', arguments[0])
 
     def test_execute_workflow_pause_resume(self):
         result = {'paused': False, 'resumed': False}
