@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: walkoff-app
-        image: walkoffdev.azurecr.io/walkoff-app:v15
+        image: x.azurecr.io/walkoff-worker:vy
         env:
           - name: WALKOFF_DB_USERNAME
             value: "walkoff"
