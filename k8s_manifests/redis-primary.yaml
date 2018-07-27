@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis-primary
+  name: kube
   labels:
     app: redis-primary
 spec:

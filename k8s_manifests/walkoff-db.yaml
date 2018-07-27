@@ -4,7 +4,7 @@ metadata:
   name: postgres-walkoffdb
 spec:
   ports:
-  - name: pgql
+  - name: postgres-walkoffdb
     port: 5432
     targetPort: 5432
     protocol: TCP
