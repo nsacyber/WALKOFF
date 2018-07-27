@@ -81,3 +81,41 @@ walkoff-app-public     LoadBalancer   10.0.181.152   211.92.226.222   80:30145/T
 ```
 
 Access web interface using the `EXTERNAL-IP` of `walkoff-app-public`.
+
+# Teardown and troubleshooting
+
+To observe stdout using the names you get from `kubectl get pods`:
+
+`kubectl logs pod-name` 
+
+To teardown:
+
+`kubectl delete deployment walkoff-app walkoff-worker`
+
+Services and supporting pods can be left on when while you mess with app and worker.
+
+To run containers interactively for debug, in `k8s_manifests/walkoff-app.yaml` and `k8s_manifests/walkoff-workers.yaml`, uncomment the below:
+```
+#        command:
+#        - "sleep"
+#        - "36000"
+```
+
+Teardown the existing pods, and apply the deployments:
+
+```
+kubectl apply -f walkoff-workers.yaml
+kubectl apply -f walkoff-app.yaml
+```
+
+Then, exec into each container using the names you get from `kubectl get pods`:
+
+`kubectl exec -it pod-name -- /bin/bash`
+
+To run the workers (do for each replica):
+
+`python start_workers.py -c data/walkoff.config`
+
+To run the Flask app: 
+
+`python walkoff.py -a -c data/walkoff.config`
