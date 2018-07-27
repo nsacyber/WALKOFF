@@ -1,2 +1,0 @@
-fakeredis >= 0.9.0
-mock
