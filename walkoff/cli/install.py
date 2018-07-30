@@ -19,9 +19,9 @@ def install(ctx, archive, values):
     #TODO Check if values exists
     #install pip from get-pip if necessary python get-pip.py --no-index --find-links=/local/copies
     if archive:
-        offline_install(values)
+        offline_install(ctx, values)
     else:
-        online_install(values)
+        online_install(ctx, values)
 
 
 def offline_install(ctx, values):

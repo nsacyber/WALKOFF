@@ -11,20 +11,29 @@ import json
 
 walkoff_charts_repo = 'https://nsacyber.github.io/Walkoff/charts'
 
-
-@click.command()
+@click.group()
 @click.option('-o', '--out', help='Path to the output directory')
+@click.pass_context
+def package(ctx, out):
+    ctx.obj['out'] = out
+    pass
+
+
+
+@package.command(name='all')
 @click.option('--platform', default='linux_x86_64', help='Target platform for walkoffctl')
 @click.option('--python-version', help='Python version to target for walkoffctl', type=click.Choice(['2', '3']), default='3')
 @click.option('--walkoff-version', default='latest')
 @click.option('--helm-archive', help='Path to Helm archive', required=True)
 @click.pass_context
-def download(ctx, out, platform, python_version, walkoff_version, images, helm_archive):
+def package_all(ctx, platform, python_version, walkoff_version, images, helm_archive):
     """Downloads Walkoff for offline installation
     """
+    out = ctx.obj['out']
     if python_version == '2':
         python_version = '27'
     os.makedirs(out)
+    #TODO: ADD BOOTSTRAPPED SCRIPT TO INSTALL PIP AND WALKOFFCTL
     download_get_pip(out)
     download_walkoff_and_deps(out, python_version, platform)
     verify_helm(ctx)
@@ -38,8 +47,6 @@ def download_get_pip(out):
     resp = requests.get('https://bootstrap.pypa.io/get-pip.py')
     with open(os.path.join(out, 'get-pip.py')) as get_pip:
         get_pip.write(resp.text)
-
-
 
 
 def download_walkoff_and_deps(directory, version, platform):
@@ -68,6 +75,7 @@ def download_charts(base_dir, walkoff_version):
     cmd += ' walkoff walkoff'
     call(cmd)
     download_recursive(base_dir, 'walkoff', walkoff_charts_repo)
+    #TODO: Turn the charts directory into a repo with helm repo index
 
 
 def download_docker_images(src, base_dir):
@@ -106,7 +114,7 @@ def compress_repo(out):
     click.echo('Compressing...')
     tar = tarfile.TarFile('{}.tgz'.format(out), mode='w')
     tar.add(out)
-    tar.c
+    tar.close()
 
 
 def call(command):
@@ -189,3 +197,16 @@ def download_recursive(base_dir, chart, repo):
         charts.extend(new_charts)
     print('DONE!')
 
+
+@package.command()
+@click.pass_context
+@click.option('-s', '--select', required=True, help='A comma-separated list of apps to package')
+def apps(ctx, select):
+    click.echo('Packaging Apps {}'.format(select))
+
+
+@package.command()
+@click.pass_context
+@click.option('-s', '--select', required=True, help='A comma-separated list of interfaces to package')
+def interfaces(ctx, select):
+    click.echo('Packaging Interfaces {}'.format(select))

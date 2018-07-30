@@ -8,7 +8,6 @@ from .local import commands as local_commands
 from .dev import commands as dev_commands
 from .local.util import load_config
 from .deploy import commands as deploy_commands
-from .download import download
 
 # from kubernetes import client, config as kube_config
 
@@ -42,13 +41,17 @@ def update(ctx):
 
 @cli.group()
 @click.option('-d', '--dir', help='The directory of the Walkoff installation')
+@click.option('-c', '--config', help='The configuration file of the Walkoff installation')
 @click.pass_context
-def local(ctx, dir):
+def local(ctx, dir, config):
     """Controls local installations of Walkoff
     """
+    if dir and config:
+        click.echo('Cannot specify both dir and config options.')
+        ctx.exit(1)
     if ctx.invoked_subcommand != 'install':
         import walkoff.config
-        directory = dir or os.getcwd()
+        directory = config or dir or os.getcwd()
         load_config(directory)
         ctx.obj['config'] = walkoff.config.Config
         ctx.obj['dir'] = directory
@@ -74,7 +77,7 @@ def deploy(ctx):
 
 
 command_groups = {
-    cli: [install_command, status, version, download],
+    cli: [install_command, status, version],
     update: update_commands,
     local: local_commands,
     dev: dev_commands,
