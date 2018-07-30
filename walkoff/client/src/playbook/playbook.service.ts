@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Response, RequestOptions, ResponseContentType, Headers } from '@angular/http';
+import { RequestOptions, ResponseContentType, Headers } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
 import { plainToClass, classToPlain } from 'class-transformer';
 
@@ -10,11 +10,18 @@ import { Device } from '../models/device';
 import { User } from '../models/user';
 import { Role } from '../models/role';
 import { WorkflowStatus } from '../models/execution/workflowStatus';
+
+import { DevicesService } from '../devices/devices.service';
+import { ExecutionService } from '../execution/execution.service';
+import { SettingsService } from '../settings/settings.service';
+import { UtilitiesService } from '../utilities.service';
+
 import { Observable } from 'rxjs/Observable';
 
 @Injectable()
 export class PlaybookService {
-	constructor(private authHttp: JwtHttp) { }
+	constructor(private authHttp: JwtHttp, private utils: UtilitiesService, private executionService: ExecutionService,
+				private devicesService: DevicesService, private settingsService: SettingsService) {}
 
 	/**
 	 * Returns all playbooks and their child workflows in minimal form (id, name).
@@ -22,9 +29,9 @@ export class PlaybookService {
 	getPlaybooks(): Promise<Playbook[]> {
 		return this.authHttp.get('/api/playbooks')
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(Playbook, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -34,9 +41,9 @@ export class PlaybookService {
 	newPlaybook(playbook: Playbook): Promise<Playbook> {
 		return this.authHttp.post('/api/playbooks', playbook)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Playbook, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -47,9 +54,9 @@ export class PlaybookService {
 	renamePlaybook(playbookId: string, newName: string): Promise<Playbook> {
 		return this.authHttp.patch('/api/playbooks', { id: playbookId, name: newName })
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Playbook, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -60,9 +67,9 @@ export class PlaybookService {
 	duplicatePlaybook(playbookId: string, newName: string): Promise<Playbook> {
 		return this.authHttp.post(`/api/playbooks?source=${playbookId}`, { name: newName })
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Playbook, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -72,8 +79,8 @@ export class PlaybookService {
 	deletePlaybook(playbookIdToDelete: string): Promise<void> {
 		return this.authHttp.delete(`/api/playbooks/${playbookIdToDelete}`)
 			.toPromise()
-			.then(this.extractData)
-			.catch(this.handleError);
+			.then(this.utils.extractResponseData)
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -94,7 +101,7 @@ export class PlaybookService {
 		const options = new RequestOptions({ responseType: ResponseContentType.Blob });
 		return this.authHttp.get(`/api/playbooks/${playbookId}?mode=export`, options)
 			.map(res => res.blob())
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -125,9 +132,9 @@ export class PlaybookService {
 		return this.authHttp.post(`/api/workflows?source=${sourceWorkflowId}`,
 			{ playbook_id: destinationPlaybookId, name: newName })
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Workflow, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -137,8 +144,8 @@ export class PlaybookService {
 	deleteWorkflow(workflowIdToDelete: string): Promise<void> {
 		return this.authHttp.delete(`/api/workflows/${workflowIdToDelete}`)
 			.toPromise()
-			.then(this.extractData)
-			.catch(this.handleError);
+			.then(this.utils.extractResponseData)
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -151,9 +158,9 @@ export class PlaybookService {
 
 		return this.authHttp.post('/api/workflows', classToPlain(workflow))
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Workflow, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -163,9 +170,9 @@ export class PlaybookService {
 	saveWorkflow(workflow: Workflow): Promise<Workflow> {
 		return this.authHttp.put('/api/workflows', classToPlain(workflow))
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Workflow, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -175,9 +182,9 @@ export class PlaybookService {
 	loadWorkflow(workflowId: string): Promise<Workflow> {
 		return this.authHttp.get(`/api/workflows/${workflowId}`)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Workflow, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -186,22 +193,14 @@ export class PlaybookService {
 	 * @param workflowId ID of the workflow to execute
 	 */
 	addWorkflowToQueue(workflowId: string): Promise<WorkflowStatus> {
-		return this.authHttp.post('api/workflowqueue', { workflow_id: workflowId })
-			.toPromise()
-			.then(this.extractData)
-			.then((data: object) => plainToClass(WorkflowStatus, data))
-			.catch(this.handleError);
+		return this.executionService.addWorkflowToQueue(workflowId);
 	}
 
 	/**
 	 * Returns an array of all devices within the DB.
 	 */
 	getDevices(): Promise<Device[]> {
-		return this.authHttp.get('/api/devices')
-			.toPromise()
-			.then(this.extractData)
-			.then((data: object[]) => plainToClass(Device, data))
-			.catch(this.handleError);
+		return this.devicesService.getAllDevices();
 	}
 
 	/**
@@ -210,49 +209,22 @@ export class PlaybookService {
 	getApis(): Promise<AppApi[]> {
 		return this.authHttp.get('/api/apps/apis')
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(AppApi, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
 	 * Returns an array of all users within the DB.
 	 */
 	getUsers(): Promise<User[]> {
-		return this.authHttp.get('/api/users')
-			.toPromise()
-			.then(this.extractData)
-			.then((data: object[]) => plainToClass(User, data))
-			.catch(this.handleError);
+		return this.settingsService.getAllUsers();
 	}
 
 	/**
 	 * Returns an array of all roles within the application.
 	 */
 	getRoles(): Promise<Role[]> {
-		return this.authHttp.get('/api/roles')
-			.toPromise()
-			.then(this.extractData)
-			.then((data: object[]) => plainToClass(Role, data))
-			.catch(this.handleError);
-	}
-
-	private extractData(res: Response) {
-		const body = res.json();
-		return body || {};
-	}
-
-	private handleError(error: Response | any): Promise<any> {
-		let errMsg: string;
-		let err: string;
-		if (error instanceof Response) {
-			const body = error.json() || '';
-			err = body.error || body.detail || JSON.stringify(body);
-			errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
-		} else {
-			err = errMsg = error.message ? error.message : error.toString();
-		}
-		console.error(errMsg);
-		throw new Error(err);
+		return this.settingsService.getRoles();
 	}
 }

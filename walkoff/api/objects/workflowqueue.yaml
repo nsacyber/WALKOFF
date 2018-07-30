@@ -177,6 +177,21 @@ ExecuteWorkflow:
       type: array
       items:
         $ref: '#/definitions/Argument'
+    environment_variables:
+      type: array
+      items:
+        $ref: '#/definitions/EnvironmentVariableExecute'
+
+EnvironmentVariableExecute:
+  type: object
+  required: [id, value]
+  description: Additional environment variables to pass into the workflow execute. There is no need to pass the name.
+  properties:
+    id:
+      $ref: '#/definitions/Uuid'
+    value:
+      type: string
+      description: The value for the environment variable
 
 ControlWorkflow:
   type: object

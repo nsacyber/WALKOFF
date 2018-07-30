@@ -16,6 +16,7 @@ from walkoff.events import WalkoffEvent, EventType
 from walkoff.helpers import json_dumps_or_string
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, CaseControl, \
     WorkflowControl
+from walkoff.multiprocessedexecutor import proto_helpers
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,8 @@ class WorkflowExecutionController:
         worker_key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
         self.box = Box(key, worker_key)
 
-    def add_workflow(self, workflow_id, workflow_execution_id, start=None, start_arguments=None, resume=False):
+    def add_workflow(self, workflow_id, workflow_execution_id, start=None, start_arguments=None, resume=False,
+                     environment_variables=None):
         """Adds a workflow ID to the queue to be executed.
 
         Args:
@@ -52,6 +54,8 @@ class WorkflowExecutionController:
             start_arguments (list[Argument], optional): The arguments to the starting action of the workflow. Defaults
                 to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
+            environment_variables (list[EnvironmentVariable]): Optional list of environment variables to pass into
+                the workflow. These will not be persistent.
         """
         message = ExecuteWorkflowMessage()
         message.workflow_id = str(workflow_id)
@@ -62,6 +66,8 @@ class WorkflowExecutionController:
             message.start = str(start)
         if start_arguments:
             self._set_arguments_for_proto(message, start_arguments)
+        if environment_variables:
+            proto_helpers.add_env_vars_to_proto(message, environment_variables)
 
         message = message.SerializeToString()
         encrypted_message = self.box.encrypt(message)

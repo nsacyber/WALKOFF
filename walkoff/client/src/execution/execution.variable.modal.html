@@ -1,0 +1,22 @@
+<div class="modal-header">
+    <h4 class="modal-title">Edit Environment Variables</h4>
+</div>
+<div class="modal-body">
+    <div class="container-fluid">
+        <div class="row">
+            <form #variableForm="ngForm" (ngSubmit)="execute(variableForm)">
+                <div *ngFor="let v of workflow.referenced_variables" class="col-xs-12">
+                    <div class="form-group">
+                        <label [for]="v.id">{{ v.name }}</label>
+                        <input [name]="v.id" [id]="v.id" type="text" class="form-control" [placeholder]="v.value" ngModel>
+                        <p *ngIf="v.description" class="help-block"><i>{{ v.description }}</i></p>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Close</button>
+    <button type="button" class="btn btn-primary" (click)="execute(variableForm)">Execute Workflow</button>
+</div>

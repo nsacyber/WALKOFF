@@ -15,6 +15,7 @@ from walkoff.extensions import db
 from walkoff.server.endpoints.cases import convert_subscriptions, split_subscriptions
 from walkoff.server.returncodes import *
 from walkoff.serverdb.casesubscription import CaseSubscription
+from walkoff.case.database import Case, Event
 
 
 class TestCaseServer(ServerTestCase):
@@ -34,8 +35,13 @@ class TestCaseServer(ServerTestCase):
         current_app.running_context.case_logger = self.logger
 
     def tearDown(self):
+        current_app.running_context.case_db.session.rollback()
         for case in current_app.running_context.case_db.session.query(case_database.Case).all():
             current_app.running_context.case_db.session.delete(case)
+        for event in current_app.running_context.case_db.session.query(Event).all():
+            current_app.running_context.case_db.session.delete(event)
+        for link in current_app.running_context.case_db.session.query(case_database._CaseEventLink):
+            current_app.running_context.case_db.session.delete(link)
         current_app.running_context.case_db.commit()
         for case in CaseSubscription.query.all():
             db.session.delete(case)
@@ -439,3 +445,42 @@ class TestCaseServer(ServerTestCase):
                 current_app.running_context.case_db.session.commit()
             send_all_cases_to_workers()
             mock_update.assert_has_calls(expected)
+
+    def test_cases_pagination(self):
+        for i in range(40):
+            self.create_case(str(i))
+
+        response = self.get_with_status_check('/api/cases', headers=self.headers)
+        self.assertEqual(len(response), 20)
+
+        response = self.get_with_status_check('/api/cases?page=2', headers=self.headers)
+        self.assertEqual(len(response), 20)
+
+        response = self.get_with_status_check('/api/cases?page=3', headers=self.headers)
+        self.assertEqual(len(response), 0)
+
+    def test_read_event(self):
+        case = Case(name='test_case')
+        event = Event(note='test_note')
+        current_app.running_context.case_db.session.add(case)
+        current_app.running_context.case_db.session.commit()
+        current_app.running_context.case_db.add_event(event, [case.id])
+
+        response = self.get_with_status_check('/api/events/{}'.format(event.id), headers=self.headers)
+        self.assertEqual(response['id'], event.id)
+        self.assertEqual(response['note'], event.note)
+
+    def test_update_event_note(self):
+        case = Case(name='test_case')
+        event = Event(note='test_note')
+        current_app.running_context.case_db.session.add(case)
+        current_app.running_context.case_db.session.commit()
+        current_app.running_context.case_db.add_event(event, [case.id])
+
+        data = {'id': event.id, 'note': 'CHANGE NOTE'}
+        self.put_with_status_check('/api/events', headers=self.headers, data=json.dumps(data),
+                                   content_type='application/json', status_code=SUCCESS)
+
+        response = self.get_with_status_check('/api/events/{}'.format(event.id), headers=self.headers)
+        self.assertEqual(response['id'], event.id)
+        self.assertEqual(response['note'], 'CHANGE NOTE')

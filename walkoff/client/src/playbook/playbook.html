@@ -73,8 +73,12 @@
     <!-- Graph editor -->
     <div class="row graphEditorRow">
         <!-- Column for app/action display for drag and drop -->
+
         <div class="col-md-2 graphEditorColumn">
-            <div class="panel-group" id="accordion" [hidden]="!loadedWorkflow">
+            <div class="panel-group" id="accordion" #accordion [hidden]="!loadedWorkflow">
+                <div id="app_search_bar_container">
+                    <input type="search" id="app_search_bar" placeholder="Search" (keyup)="search_for_actions($event)"/>
+                </div>
                 <div *ngFor="let app of getAppsWithActions()" class="panel panel-default">
                     <div class="panel-heading playbook-heading collapsed" data-toggle="collapse" [attr.data-target]="'#actionsCollapse' + removeWhitespace(app.name)"
                         [title]="app.info ? app.info.description : ''">
@@ -167,7 +171,7 @@
                     <h4>Arguments</h4>
                     <playbook-argument-component *ngFor="let parameterApi of selectedActionApi.parameters; let id = index" [loadedWorkflow]="loadedWorkflow"
                         [argument]="getOrInitializeSelectedActionArgument(parameterApi)" [parameterApi]="parameterApi" [id]="id"
-                        [users]="users" [roles]="roles"></playbook-argument-component>
+                        [users]="users" [roles]="roles" (createVariable)="onCreateVariable($event)"></playbook-argument-component>
                 </div>
                 <!-- Triggers -->
                 <div>
@@ -187,7 +191,8 @@
                         </div>
                     </div>
                     <playbook-conditional-expression-component *ngIf="selectedAction.trigger" [conditionalExpression]="selectedAction.trigger"
-                        [appApis]="appApis" [selectedAppName]="selectedAction.app_name" [loadedWorkflow]="loadedWorkflow"></playbook-conditional-expression-component>
+                        [appApis]="appApis" [selectedAppName]="selectedAction.app_name" [loadedWorkflow]="loadedWorkflow"
+                        (createVariable)="onCreateVariable($event)" ></playbook-conditional-expression-component>
                 </div>
             </div>
             <!-- Editor for Branches (edges) -->
@@ -225,7 +230,8 @@
                         </div>
                     </div>
                     <playbook-conditional-expression-component *ngIf="selectedBranchParams.branch.condition" [conditionalExpression]="selectedBranchParams.branch.condition"
-                        [appApis]="appApis" [selectedAppName]="selectedBranchParams.appName" [loadedWorkflow]="loadedWorkflow"></playbook-conditional-expression-component>
+                        [appApis]="appApis" [selectedAppName]="selectedBranchParams.appName" [loadedWorkflow]="loadedWorkflow"
+                        (createVariable)="onCreateVariable($event)"></playbook-conditional-expression-component>
                 </div>
             </div>
         </div>
@@ -235,11 +241,12 @@
             <li *ngIf="!loadedWorkflow?.has_errors" class="active"><a data-toggle="tab" href="#console"> Console </a></li>
             <li *ngIf="!loadedWorkflow?.has_errors"><a data-toggle="tab" href="#executionLog"> Execution </a></li>
             <li *ngIf="loadedWorkflow?.has_errors" class="active"><a data-toggle="tab" href="#errorLog"> Workflow Errors ({{ loadedWorkflow?.all_errors.length }}) </a></li>
+            <li *ngIf="loadedWorkflow?.environment_variables?.length > 0"><a data-toggle="tab" href="#environmentVariableLogA">Environment Variables</a></li>
         </ul>
         <div class="tab-content">
             <div id="console" #consoleContainer class="tab-pane fade in active" *ngIf="!loadedWorkflow?.has_errors">
                  <ngx-datatable #consoleTable class='material expandable' [columnMode]="'flex'" [rows]="consoleLog" [sortType]="'multi'"
-                        [headerHeight]="25" [footerHeight]="25" [rowHeight]="undefined" [sorts]="[]"
+                        [footerHeight]="25" [rowHeight]="undefined" [sorts]="[]"
                         [limit]="10">
 
                      <ngx-datatable-column name="Level" prop="level" [flexGrow]="1">
@@ -272,8 +279,7 @@
                 <div id="executionResultsModal">
                     <div #workflowResultsContainer>
                         <ngx-datatable #workflowResultsTable class='material expandable' [columnMode]="'flex'" [rows]="actionStatuses" [sortType]="'multi'"
-                        [headerHeight]="25" [footerHeight]="25" [rowHeight]="undefined" [sorts]="[{prop: 'started_at', dir: 'desc'}]"
-                        [limit]="10">
+                        [footerHeight]="25" [rowHeight]="undefined" [sorts]="[]" [limit]="10">
                         <!-- Column Templates -->
                         <ngx-datatable-column name="Action IDs" prop="action_id" [flexGrow]="1"></ngx-datatable-column>
                         <ngx-datatable-column name="App Name" prop="app_name" [flexGrow]="1"></ngx-datatable-column>
@@ -309,11 +315,48 @@
             </div>
             <div id="errorLog" #errorLogContainer class="tab-pane fade in active" *ngIf="loadedWorkflow?.has_errors">
                 <ngx-datatable #errorLogTable class='material expandable' [columnMode]="'flex'" [rows]="getErrors()" [sortType]="'multi'"
-                       [headerHeight]="25" [footerHeight]="25" [rowHeight]="undefined" [sorts]="[]"
+                       [footerHeight]="25" [rowHeight]="undefined" [sorts]="[]"
                        [limit]="10">
                     <ngx-datatable-column name="Error"  prop="error" [sortable]="false" [flexGrow]="1"></ngx-datatable-column>
                 </ngx-datatable>
            </div>
+           <div id="environmentVariableLogA" #environmentVariableContainerA class="tab-pane fade">
+                <ngx-datatable #environmentVariableTable class='material expandable' [columnMode]="'flex'" [rows]="getVariables()" [sortType]="'multi'"
+                    [footerHeight]="25" [rowHeight]="undefined" [sorts]="[]" [limit]="10">
+                    <ngx-datatable-column name="Namea"  prop="name" [sortable]="false" [flexGrow]="1"></ngx-datatable-column>
+                    <ngx-datatable-column name="Default Value"  prop="value" [sortable]="false" [flexGrow]="1"></ngx-datatable-column>
+                    <ngx-datatable-column name="Description"  prop="description" [sortable]="false" [flexGrow]="3"></ngx-datatable-column>
+                    <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <button (click)="editVariableModal(row)" class="btn btn-primary" title="Edit Variable"><i class="fa fa-edit"></i></button>
+                            <button (click)="deleteVariable(row)" class="btn btn-danger" title="Delete Variable"><i class="fa fa-times"></i></button>
+                        </ng-template>
+                    </ngx-datatable-column>
+                </ngx-datatable>
+            </div>
+        </div>
+    </div>
+
+    <div class="row consoleRow" *ngIf="!loadedWorkflow?.id && loadedWorkflow?.environment_variables?.length > 0">
+        <ul class="nav nav-tabs">
+            <li class="active"><a data-toggle="tab" href="#environmentVariableLogB">Environment Variables</a></li>
+        </ul>
+        <div class="tab-content">
+           <div id="environmentVariableLogB" #environmentVariableContainerB class="tab-pane fade in active">
+                <ngx-datatable class='material expandable' [columnMode]="'flex'" [rows]="getVariables()" [sortType]="'multi'"
+                    [footerHeight]="25" [rowHeight]="undefined" [sorts]="[]"
+                    [limit]="10">
+                    <ngx-datatable-column name="Name"  prop="name" [sortable]="false" [flexGrow]="1"></ngx-datatable-column>
+                    <ngx-datatable-column name="Default Value"  prop="value" [sortable]="false" [flexGrow]="1"></ngx-datatable-column>
+                    <ngx-datatable-column name="Description"  prop="description" [sortable]="false" [flexGrow]="3"></ngx-datatable-column>
+                    <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <button (click)="editVariableModal(row)" class="btn btn-primary" title="Edit Variable"><i class="fa fa-edit"></i></button>
+                            <button (click)="deleteVariable(row)" class="btn btn-danger" title="Delete Variable"><i class="fa fa-times"></i></button>
+                        </ng-template>
+                    </ngx-datatable-column>
+                </ngx-datatable>
+            </div>
         </div>
     </div>
 
@@ -364,7 +407,7 @@
                     <div class="importContainer">
                         <h4>Import Playbook</h4>
                         <div class="pull-right">
-                            <input type="file" name="file" id="file" class="importPlaybookInput" (change)="onImportSelectChange($event)"/>
+                            <input #importFile type="file" name="file" id="file" class="importPlaybookInput" (change)="onImportSelectChange($event)"/>
                             <button [disabled]="!playbookToImport" (click)="importPlaybook()" class="btn btn-primary" title="Import Playbook">
                                 <i class="fa fa-upload"></i>
                             </button>

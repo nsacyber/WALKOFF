@@ -3,6 +3,7 @@ from marshmallow.validate import OneOf
 from marshmallow_sqlalchemy import ModelSchema, field_for
 
 from walkoff.executiondb import ExecutionDatabase
+from .environment_variable import EnvironmentVariable
 from .action import Action
 from .argument import Argument
 from .branch import Branch
@@ -49,6 +50,17 @@ class ExecutionBaseSchema(ModelSchema):
 
 class ExecutionElementBaseSchema(ExecutionBaseSchema):
     errors = fields.List(fields.String(), dump_only=True)
+
+
+class EnvironmentVariableSchema(ExecutionBaseSchema):
+    """Schema for environment variables
+    """
+    name = field_for(EnvironmentVariable, 'name')
+    value = field_for(EnvironmentVariable, 'value', required=True)
+    description = field_for(EnvironmentVariable, 'description')
+
+    class Meta:
+        model = EnvironmentVariable
 
 
 class ArgumentSchema(ExecutionElementBaseSchema):
@@ -170,6 +182,7 @@ class WorkflowSchema(ExecutionElementBaseSchema):
     name = field_for(Workflow, 'name', required=True)
     actions = fields.Nested(ActionSchema, many=True)
     branches = fields.Nested(BranchSchema, many=True)
+    environment_variables = fields.Nested(EnvironmentVariableSchema, many=True)
     is_valid = field_for(Workflow, 'is_valid', dump_only=True)
 
     class Meta:

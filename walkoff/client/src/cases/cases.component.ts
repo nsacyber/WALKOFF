@@ -32,7 +32,7 @@ interface ICaseHierarchy {
 	styleUrls: [
 		'./cases.css',
 	],
-	providers: [CasesService, UtilitiesService],
+	providers: [CasesService],
 })
 export class CasesComponent implements OnInit {
 	cases: Case[] = [];
@@ -184,7 +184,7 @@ export class CasesComponent implements OnInit {
 	 */
 	getCases(): void {
 		this.casesService
-			.getCases()
+			.getAllCases()
 			.then((cases) => {
 				this.displayCases = this.cases = cases;
 				this.availableCases = [{ id: '', text: '' }].concat(cases.map(c => ({ id: c.id.toString(), text: c.name })));

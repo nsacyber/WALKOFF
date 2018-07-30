@@ -9,7 +9,7 @@
 	<!-- Columns for allowing users to specify outputs of other action as arguments for this one -->
 	<div class="row">
 		<div class="col-xs-4">
-			<select name="playbookSelect" class="form-control" [(ngModel)]="valueType" (change)="resetValue()">
+			<select name="playbookSelect" class="form-control" [(ngModel)]="valueType">
 				<option *ngFor="let i of valueTypes" [ngValue]="i.id" [label]="i.name">{{i.name}}</option>
 			</select>
 		</div>
@@ -62,6 +62,20 @@
 				</select>
 				<input type="text" class="form-control" [(ngModel)]="argument.selection" name="selection" placeholder="(Optional) Selection for object-based outputs">
 			</ng-container>
+
+			<!-- Action select -->
+			<ng-container *ngIf="isVariableSelect">
+				<div class="row">
+					<div class="col-xs-8" *ngIf="loadedWorkflow?.environment_variables.length > 0">
+						<select class="form-control" [(ngModel)]="argument.reference">
+							<option [ngValue]="''"></option>
+							<option *ngFor="let i of loadedWorkflow.environment_variables" [ngValue]="i.id" [label]="i.name">{{ i.name }}</option>
+						</select>
+					</div>
+					<button (click)="addVariable()" class="btn btn-primary btn-link">+ {{ (loadedWorkflow?.environment_variables.length > 0) ? 'Add New' : 'Add Environment Variable' }}</button>
+				</div>
+			</ng-container>
+
 		</div>
 	</div>
 </div>

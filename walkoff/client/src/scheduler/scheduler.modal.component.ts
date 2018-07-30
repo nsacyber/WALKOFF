@@ -5,6 +5,7 @@ import { Select2OptionData } from 'ng2-select2';
 import * as moment from 'moment';
 
 import { SchedulerService } from './scheduler.service';
+import { UtilitiesService } from '../utilities.service';
 
 import { ScheduledTask } from '../models/scheduler/scheduledTask';
 import { ScheduledTaskCron } from '../models/scheduler/scheduledTaskCron';
@@ -18,7 +19,7 @@ import { GenericObject } from '../models/genericObject';
 	styleUrls: [
 		'./scheduler.css',
 	],
-	providers: [SchedulerService],
+	providers: [SchedulerService, UtilitiesService],
 })
 export class SchedulerModalComponent implements OnInit {
 	@Input() workingScheduledTask: ScheduledTask = new ScheduledTask();
@@ -195,7 +196,7 @@ export class SchedulerModalComponent implements OnInit {
 		if (typeof(args) !== 'object') { return; }
 		for (const [key, value] of Object.entries(args)) {
 			if (key === 'start_date' || key === 'end_date') { return; }
-			if (isNaN(value)) { return; }
+			if (isNaN(value as number)) { return; }
 			args[key] = +value;
 		}
 	}

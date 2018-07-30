@@ -98,7 +98,7 @@ export class SettingsComponent {
 
 	getUsers(): void {
 		this.settingsService
-			.getUsers()
+			.getAllUsers()
 			.then(users => this.displayUsers = this.users = users)
 			.catch(e => this.toastyService.error(`Error retrieving users: ${e.message}`));
 	}

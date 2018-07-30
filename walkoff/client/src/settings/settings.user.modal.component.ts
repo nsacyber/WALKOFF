@@ -3,6 +3,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastyService, ToastyConfig } from 'ng2-toasty';
 
 import { SettingsService } from './settings.service';
+import { UtilitiesService } from '../utilities.service';
 
 import { WorkingUser } from '../models/workingUser';
 import { Role } from '../models/role';
@@ -14,7 +15,7 @@ import { Select2OptionData } from 'ng2-select2/ng2-select2.interface';
 	styleUrls: [
 		'./settings.css',
 	],
-	providers: [SettingsService],
+	providers: [SettingsService, UtilitiesService],
 })
 export class SettingsUserModalComponent {
 	@Input() workingUser: WorkingUser;

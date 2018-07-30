@@ -19,7 +19,7 @@ __server_tests = [test_workflow_server, test_app_api_server, test_case_server, t
                   test_redis_cache_adapter, test_redis_subscription, test_disk_subscription, test_sse_stream,
                   test_filtered_sse_stream, test_notification_stream, test_workflow_status, test_problem,
                   test_workflow_results_stream, test_streamable_blueprint, test_console_stream, test_disk_pubsub_cache,
-                  test_make_cache]
+                  test_make_cache, test_health_endpoint]
 server_suite = TestSuite()
 add_tests_to_suite(server_suite, __server_tests)
 
@@ -35,7 +35,7 @@ __execution_tests = [test_validatable, test_argument, test_action, test_helper_f
 execution_suite = TestSuite()
 add_tests_to_suite(execution_suite, __execution_tests)
 
-__workflow_tests = [test_simple_workflow, test_workflow_manipulation]
+__workflow_tests = [test_simple_workflow, test_workflow_manipulation, test_environment_variable]
 workflow_suite = TestSuite()
 add_tests_to_suite(workflow_suite, __workflow_tests)
 

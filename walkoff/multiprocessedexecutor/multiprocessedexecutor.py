@@ -134,7 +134,8 @@ class MultiprocessedExecutor(object):
         self.manager = None
         self.receiver = None
 
-    def execute_workflow(self, workflow_id, execution_id_in=None, start=None, start_arguments=None, resume=False):
+    def execute_workflow(self, workflow_id, execution_id_in=None, start=None, start_arguments=None, resume=False,
+                         environment_variables=None):
         """Executes a workflow
 
         Args:
@@ -144,6 +145,8 @@ class MultiprocessedExecutor(object):
             start (UUID, optional): The ID of the first, or starting action. Defaults to None.
             start_arguments (list[Argument]): The arguments to the starting action of the workflow. Defaults to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
+            environment_variables (list[EnvironmentVariable]): Optional list of environment variables to pass into
+                the workflow. These will not be persistent.
 
         Returns:
             (UUID): The execution ID of the Workflow.
@@ -164,7 +167,7 @@ class MultiprocessedExecutor(object):
 
         workflow_data = {'execution_id': execution_id, 'id': str(workflow.id), 'name': workflow.name}
         self._log_and_send_event(WalkoffEvent.WorkflowExecutionPending, sender=workflow_data)
-        self.manager.add_workflow(workflow.id, execution_id, start, start_arguments, resume)
+        self.manager.add_workflow(workflow.id, execution_id, start, start_arguments, resume, environment_variables)
 
         self._log_and_send_event(WalkoffEvent.SchedulerJobExecuted)
         return execution_id

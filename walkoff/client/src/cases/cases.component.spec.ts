@@ -2,6 +2,7 @@ import { HttpModule, Http, RequestOptions } from '@angular/http';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { async, TestBed, ComponentFixture, fakeAsync, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { plainToClass } from 'class-transformer';
 import { } from 'jasmine';
 
 import { CasesComponent } from './cases.component';
@@ -21,7 +22,7 @@ describe('CasesComponent', () => {
 	let fixture: ComponentFixture<CasesComponent>;
 	let service: CasesService;
 
-	const testCases: Case[] = [
+	const testCases: Case[] = plainToClass(Case, [
 		{
 			id: 1,
 			name: 'case 1',
@@ -33,9 +34,9 @@ describe('CasesComponent', () => {
 				},
 			],
 		},
-	];
+	]);
 
-	const testAvailableSubscriptions: AvailableSubscription[] = [
+	const testAvailableSubscriptions: AvailableSubscription[] = plainToClass(AvailableSubscription, [
 		{
 			events: [
 				'Job Added',
@@ -98,9 +99,9 @@ describe('CasesComponent', () => {
 			],
 			type: 'transform',
 		},
-	];
+	]);
 
-	const testPlaybooks: Playbook[] = [
+	const testPlaybooks: Playbook[] = plainToClass(Playbook, [
 		{
 			id: 'pb-12345',
 			name: 'test playbook',
@@ -128,7 +129,7 @@ describe('CasesComponent', () => {
 				},
 			],
 		},
-	];
+	]);
 
 	/**
 	 * async beforeEach
@@ -163,7 +164,7 @@ describe('CasesComponent', () => {
 		service = fixture.debugElement.injector.get(CasesService);
 
 		spyOn(window, 'confirm').and.returnValue(true);
-		spyOn(service, 'getCases').and.returnValue(Promise.resolve(testCases));
+		spyOn(service, 'getAllCases').and.returnValue(Promise.resolve(testCases));
 		// spyOn(service, 'getEventsForCase').and.returnValue(Promise.resolve(testCaseEvents));
 		spyOn(service, 'getAvailableSubscriptions').and.returnValue(Promise.resolve(testAvailableSubscriptions));
 		spyOn(service, 'getPlaybooks').and.returnValue(Promise.resolve(testPlaybooks));

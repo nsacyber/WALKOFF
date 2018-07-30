@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import NullPool
+from sqlalchemy_utils import database_exists, create_database
 
 from walkoff.helpers import format_db_path
 
@@ -24,13 +25,22 @@ class ExecutionDatabase(object):
         from walkoff.executiondb.playbook import Playbook
         from walkoff.executiondb.position import Position
         from walkoff.executiondb.transform import Transform
+        from walkoff.executiondb.environment_variable import EnvironmentVariable
         from walkoff.executiondb.workflow import Workflow
         from walkoff.executiondb.saved_workflow import SavedWorkflow
         from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
         from walkoff.executiondb.metrics import AppMetric, WorkflowMetric, ActionMetric, ActionStatusMetric
 
-        self.engine = create_engine(format_db_path(execution_db_type, execution_db_path),
-                                    connect_args={'check_same_thread': False}, poolclass=NullPool)
+        if 'sqlite' in execution_db_type:
+            self.engine = create_engine(format_db_path(execution_db_type, execution_db_path),
+                                        connect_args={'check_same_thread': False}, poolclass=NullPool)
+        else:
+            self.engine = create_engine(
+                format_db_path(execution_db_type, execution_db_path, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD'),
+                poolclass=NullPool)
+            if not database_exists(self.engine.url):
+                create_database(self.engine.url)
+
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
 
@@ -53,10 +63,10 @@ class ExecutionDatabase(object):
 
 
 class WorkflowStatusEnum(enum.Enum):
-    pending = 1
-    running = 2
-    paused = 3
-    awaiting_data = 4
+    running = 1
+    paused = 2
+    awaiting_data = 3
+    pending = 4
     completed = 5
     aborted = 6
 

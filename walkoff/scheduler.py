@@ -78,6 +78,7 @@ class Scheduler(object):
                                     | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.id = 'controller'
         self.event_logger = event_logger
+        self.app = None
 
     def schedule_workflows(self, task_id, executable, workflow_ids, trigger):
         """
@@ -89,9 +90,12 @@ class Scheduler(object):
             workflow_ids (iterable(str)): An iterable of workflow ids
             trigger (Trigger): The trigger to use for this scheduled task
         """
-        for id_ in workflow_ids:
-            self.scheduler.add_job(executable, args=(id_,),
-                                   id=construct_task_id(task_id, id_),
+        def execute(id_):
+            with self.app.app_context():
+                executable(id_)
+        for workflow_id in workflow_ids:
+            self.scheduler.add_job(execute, args=(workflow_id,),
+                                   id=construct_task_id(task_id, workflow_id),
                                    trigger=trigger, replace_existing=True)
 
     def get_all_scheduled_workflows(self):

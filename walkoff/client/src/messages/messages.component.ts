@@ -17,7 +17,7 @@ import { MessageListing } from '../models/message/messageListing';
 	styleUrls: [
 		'./messages.css',
 	],
-	providers: [MessagesService, UtilitiesService],
+	providers: [MessagesService],
 })
 export class MessagesComponent implements OnInit {
 	//Device Data Table params
@@ -68,7 +68,7 @@ export class MessagesComponent implements OnInit {
 	 * Grabs an array of message listings from the server to display and performs the initial filter.
 	 */
 	listMessages(): void {
-		this.messagesService.listMessages()
+		this.messagesService.getAllMessageListings()
 			.then(messages => {
 				this.messages = messages;
 				this.filterMessages();

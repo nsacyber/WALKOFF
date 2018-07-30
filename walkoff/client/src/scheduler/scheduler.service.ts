@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Response } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/toPromise';
@@ -7,6 +6,7 @@ import { plainToClass } from 'class-transformer';
 
 import { ScheduledTask } from '../models/scheduler/scheduledTask';
 import { Playbook } from '../models/playbook/playbook';
+import { UtilitiesService } from '../utilities.service';
 
 const schedulerStatusNumberMapping: { [key: number]: string } = {
 	0: 'stopped',
@@ -16,87 +16,71 @@ const schedulerStatusNumberMapping: { [key: number]: string } = {
 
 @Injectable()
 export class SchedulerService {
-	constructor (private authHttp: JwtHttp) {
-	}
+	constructor (private authHttp: JwtHttp, private utils: UtilitiesService) {}
 
 	getSchedulerStatus(): Promise<string> {
 		return this.authHttp.get('/api/scheduler')
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then(statusObj => schedulerStatusNumberMapping[statusObj.status])
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	changeSchedulerStatus(status: string): Promise<string> {
 		return this.authHttp.put('/api/scheduler', { status })
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then(statusObj => schedulerStatusNumberMapping[statusObj.status])
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
-	getScheduledTasks(): Promise<ScheduledTask[]> {
-		return this.authHttp.get('/api/scheduledtasks')
+	getAllScheduledTasks(): Promise<ScheduledTask[]> {
+		return this.utils.paginateAll<ScheduledTask>(this.getScheduledTasks.bind(this));
+	}
+
+	getScheduledTasks(page: number = 1): Promise<ScheduledTask[]> {
+		return this.authHttp.get(`/api/scheduledtasks?page=${ page }`)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(ScheduledTask, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	addScheduledTask(scheduledTask: ScheduledTask): Promise<ScheduledTask> {
 		return this.authHttp.post('/api/scheduledtasks', scheduledTask)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(ScheduledTask, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	editScheduledTask(scheduledTask: ScheduledTask): Promise<ScheduledTask> {
 		return this.authHttp.put('/api/scheduledtasks', scheduledTask)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(ScheduledTask, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	deleteScheduledTask(scheduledTaskId: number): Promise<void> {
 		return this.authHttp.delete(`/api/scheduledtasks/${scheduledTaskId}`)
 			.toPromise()
 			.then(() => null)
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	changeScheduledTaskStatus(scheduledTaskId: number, actionName: string): Promise<void> {
 		return this.authHttp.patch('/api/scheduledtasks', { id: scheduledTaskId, action: actionName })
 			.toPromise()
 			.then(() => null)
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	getPlaybooks(): Promise<Playbook[]> {
 		return this.authHttp.get('/api/playbooks')
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(Playbook, data))
-			.catch(this.handleError);
-	}
-
-	private extractData (res: Response) {
-		const body = res.json();
-		return body || {};
-	}
-
-	private handleError (error: Response | any): Promise<any> {
-		let errMsg: string;
-		let err: string;
-		if (error instanceof Response) {
-			const body = error.json() || '';
-			err = body.error || body.detail || JSON.stringify(body);
-			errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
-		} else {
-			err = errMsg = error.message ? error.message : error.toString();
-		}
-		console.error(errMsg);
-		throw new Error(err);
+			.catch(this.utils.handleResponseError);
 	}
 }
