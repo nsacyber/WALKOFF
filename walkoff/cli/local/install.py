@@ -11,6 +11,8 @@ import zipfile
 from walkoff.config import Config
 from walkoff.helpers import format_db_path
 
+from .gencerts import generate_certificates
+
 
 @click.group(invoke_without_command=True)
 @click.pass_context
@@ -23,12 +25,10 @@ def install(ctx):
     if ctx.invoked_subcommand is None:
         click.echo('Installing Walkoff Locally')
         walkoff_internal = os.path.abspath(__file__).rsplit(os.path.sep, 1)[0]
-        external = set_walkoff_external(ctx, walkoff_internal)
+        set_walkoff_external(ctx, walkoff_internal)
         set_alembic_paths(walkoff_internal)
         set_logging_path()
-
-        #install_app/interfaces_deps
-        #gen certs
+        generate_certificates(Config.KEYS_PATH, Config.ZMQ_PUBLIC_KEYS_PATH, Config.ZMQ_PRIVATE_KEYS_PATH)
 
 
 @install.group()
@@ -37,11 +37,15 @@ def install(ctx):
 def deps(ctx, all):
     if all:
         apps_path = ctx.obj['config'].APPS_PATH
-        apps_ = list_apps(apps_path)
         interfaces_path = ctx.obj['config'].INTERFACES_PATH
-        interfaces_ = list_interfaces(interfaces_path)
-        install_apps(apps_, apps_path)
-        install_interfaces(interfaces_, interfaces_path)
+        _install_all_apps_interfaces(apps_path, interfaces_path)
+
+
+def _install_all_apps_interfaces(apps_path, interfaces_path):
+    apps_ = list_apps(apps_path)
+    interfaces_ = list_interfaces(interfaces_path)
+    install_apps(apps_, apps_path)
+    install_interfaces(interfaces_, interfaces_path)
 
 
 @deps.command()
@@ -85,7 +89,6 @@ def install_python_deps_from_pip(name, path):
 
 
 def set_walkoff_external(ctx, walkoff_internal):
-    #TODO: How does specified local dir play into it?
     default = os.getcwd()
     external_path = click.prompt(
         " * Enter a directory to install WALKOFF apps, interfaces, and data to (default: {}): ".format(default),

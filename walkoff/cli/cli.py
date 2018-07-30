@@ -8,6 +8,7 @@ from .local import commands as local_commands
 from .dev import commands as dev_commands
 from .local.util import load_config
 from .deploy import commands as deploy_commands
+from .download import download
 
 # from kubernetes import client, config as kube_config
 
@@ -45,11 +46,12 @@ def update(ctx):
 def local(ctx, dir):
     """Controls local installations of Walkoff
     """
-    import walkoff.config
-    dir = dir or os.getcwd()
-    load_config(dir)
-    ctx.obj['config'] = walkoff.config.Config
-    ctx.obj['dir'] = dir
+    if ctx.invoked_subcommand != 'install':
+        import walkoff.config
+        directory = dir or os.getcwd()
+        load_config(directory)
+        ctx.obj['config'] = walkoff.config.Config
+        ctx.obj['dir'] = directory
 
 
 @cli.group()
@@ -63,26 +65,11 @@ def dev(ctx):
     ctx.obj['dir'] = os.getcwd()
 
 
-@cli.command()
-@click.option('--from-local', is_flag=True, help='Prepare the current local installation for on-prem kubernetes')
-@click.option('-d', '--dir', help='Path to the output directory')
-@click.option('-a', '--apps', help='Comma-separated list of apps to download')
-@click.option('-i', '-interfaces', help='Comma-separated list of interfaces to download')
-@click.option('-ag', '--app-repo', help='Git repository for the apps')
-@click.option('-ig', '--interface-repo', help='Git repository for the interfaces')
-@click.option('--compress/--no-compress', default=True, help='Compress the resulting directory')
-@click.pass_context
-def download(ctx, dir, apps, app_repo, interface_repo, compress):
-    """Downloads Walkoff for offline installation
-    """
-
-    if ctx.invoked_subcommand is None:
-        click.echo('Downloading required files for Walkoff on-prem install')
-
-
 @cli.group()
 @click.pass_context
-def deploy(ctx, app_repo, interface_repo):
+def deploy(ctx):
+    """Deploy apps and interfaces.
+    """
     pass
 
 

@@ -6,6 +6,7 @@ import requests
 from .run import run
 from .install import install
 from .update import update
+from .gencerts import gencerts
 
 
 @click.command()
@@ -36,16 +37,9 @@ def status(ctx, host, port):
     except Exception:
         click.echo('Could not connect to Walkoff instance at {}:{}'.format(host, port))
         ctx.exit(1)
-    data = response.json()
-    click.echo(json.dumps(data, sort_keys=True, indent=4, separators=(',', ': ')))
+    else:
+        data = response.json()
+        click.echo(json.dumps(data, sort_keys=True, indent=4, separators=(',', ': ')))
 
 
-@click.command(name='gen-certs')
-@click.pass_context
-def generate_certificates(ctx):
-    """Generates certificates
-    """
-    click.echo('generating certificates')
-
-
-commands = [install, status, run, generate_certificates]
+commands = [install, status, run, gencerts]

@@ -7,8 +7,7 @@ import subprocess
 def status(ctx):
     """Gets the status of the Walkoff cluster.
 
-    When running in the kubernetes context, this command will get the status of all Pods. This command is a proxy for
-    kubectl get pods.
+    This command will get the status of all Pods. This command is a proxy for kubectl get pods.
     """
     click.echo('Getting walkoff status from kubectl')
     subprocess.call(['kubectl', 'get', 'pods'])
