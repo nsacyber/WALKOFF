@@ -1,0 +1,111 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: {{ template "redis.fullname" . }}
+  labels:
+    {{- include "redis.labels.standard" . | nindent 4 }}
+spec:
+  serviceName: {{ template "redis.fullname" . }}
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 0
+  template:
+    metadata:
+      labels:
+        app: {{ template "redis.name" . }}
+        release: {{ .Release.Name }}
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- if .Values.metrics.enabled }}
+        {{- toYaml .Values.metrics.annotations | nindent 8 }}
+        {{- end }}
+    spec:
+      containers:
+        - name: redis
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+            - >-
+              redis-server
+              {{- if hasKey .Values.secretEnvs "REDIS_PASSWORD" }}
+              --requirepass
+              ${REDIS_PASSWORD}
+              {{- end }}
+              {{- if .Values.args }}
+              {{ .Values.args | join " " }}
+              {{- end }}
+          env:
+            {{- include "redis.environment" . | nindent 12 }}
+          ports:
+            - name: redis
+              containerPort: {{ .Values.service.port }}
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - >-
+                  [ "$( redis-cli
+                  {{- if hasKey .Values.secretEnvs "REDIS_PASSWORD" }}
+                  -a ${REDIS_PASSWORD}
+                  {{- end }}
+                  ping )" == "PONG" ]
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - >-
+                  [ "$( redis-cli
+                  {{- if hasKey .Values.secretEnvs "REDIS_PASSWORD" }}
+                  -a ${REDIS_PASSWORD}
+                  {{- end }}
+                  ping )" == "PONG" ]
+            initialDelaySeconds: 5
+            timeoutSeconds: 1
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+        {{- if .Values.metrics.enabled }}
+        - name: metrics
+          image: "{{ .Values.metrics.image.repository }}:{{ .Values.metrics.image.tag }}"
+          imagePullPolicy: {{ .Values.metrics.image.pullPolicy }}
+          env:
+            - name: REDIS_ALIAS
+              value: {{ template "redis.fullname" . }}
+            {{- include "redis.environment" . | nindent 12 }}
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.metrics.port }}
+          resources:
+            {{- toYaml .Values.metrics.resources | nindent 12 }}
+        {{- end }}
+      {{- if not .Values.persistence.enabled }}
+      volumes:
+        - name: data
+          emptyDir: {}
+      {{- end }}
+  {{- if .Values.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          {{- range .Values.persistence.accessModes }}
+          - {{ . | quote }}
+          {{- end }}
+        {{- if hasKey .Values.persistence "storageClass" }}
+        storageClassName: {{ .Values.persistence.storageClass | quote }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size | quote }}
+  {{- end }}

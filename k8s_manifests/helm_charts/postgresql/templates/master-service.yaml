@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "postgresql.master.fullname" . }}
+  labels:
+    app: {{ template "postgresql.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    component: "{{ .Values.master.name }}"
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  {{- if or .Values.master.service.annotations .Values.metrics.enabled }}
+  annotations:
+    {{- if .Values.master.service.annotations }}
+    {{- toYaml .Values.master.service.annotations | nindent 4 }}
+    {{- end }}
+    {{- if .Values.metrics.enabled }}
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9187"
+    {{- end }}
+  {{- end }}
+spec:
+  type: {{ .Values.master.service.type }}
+  {{- if eq .Values.master.service.type "LoadBalancer" }}
+  {{- if .Values.master.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.master.service.loadBalancerIP | quote }}
+  {{- end }}
+  {{- if .Values.master.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+    {{- range .Values.master.service.loadBalancerSourceRanges }}
+    - {{ . | quote }}
+    {{- end }}
+  {{- end }}
+  {{- end }}
+  {{- if .Values.master.service.externalTrafficPolicy }}
+  externalTrafficPolicy: {{ .Values.master.service.externalTrafficPolicy }}
+  {{- end }}
+  ports:
+    - name: postgresql
+      port: {{ .Values.master.service.port }}
+      targetPort: postgresql
+  {{- if .Values.master.service.externalIPs }}
+  externalIPs:
+    {{- toYaml .Values.master.service.externalIPs | nindent 4 }}
+  {{- end }}
+  selector:
+    app: {{ template "postgresql.name" . }}
+    component: "{{ .Values.master.name }}"
+    release: {{ .Release.Name }}
