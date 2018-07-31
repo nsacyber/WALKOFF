@@ -319,6 +319,16 @@ class TestWorkflowServer(ServerTestCase):
                                                 content_type='application/json')
         self.assertEqual(response['name'], self.change_playbook_name)
 
+    def test_update_playbook_duplicate_name(self):
+        playbook = execution_db_help.standard_load()
+
+        data = {'id': str(playbook.id), 'name': 'dataflowTest'}
+        self.patch_with_status_check('/api/playbooks',
+                                     data=json.dumps(data),
+                                     headers=self.headers,
+                                     content_type='application/json',
+                                     status_code=OBJECT_EXISTS_ERROR)
+
     def test_update_playbook_invalid_id(self):
         execution_db_help.standard_load()
         expected = {playbook.name for playbook in self.app.running_context.execution_db.session.query(Playbook).all()}
@@ -447,6 +457,16 @@ class TestWorkflowServer(ServerTestCase):
         self.assertIsNotNone(copy_playbook)
 
         self.assertEqual(len(playbook.workflows), len(copy_playbook.workflows))
+
+    def test_copy_playbook_duplicate_name(self):
+        playbook = execution_db_help.standard_load()
+
+        data = {"name": 'dataflowTest'}
+        self.post_with_status_check('/api/playbooks?source={}'.format(playbook.id),
+                                    data=json.dumps(data),
+                                    headers=self.headers,
+                                    status_code=OBJECT_EXISTS_ERROR,
+                                    content_type="application/json")
 
     def test_get_uuid(self):
         response = self.get_with_status_check('/api/uuid', status_code=OBJECT_CREATED)
