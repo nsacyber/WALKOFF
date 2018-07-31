@@ -11,7 +11,8 @@ from tests.util.mock_objects import MockRedisCacheAdapter
 from walkoff.case.subscription import Subscription
 from walkoff.executiondb.argument import Argument
 from walkoff.multiprocessedexecutor.workflowexecutioncontroller import ExecuteWorkflowMessage, \
-    WorkflowExecutionController, Message, CaseControl, CommunicationPacket, WorkflowControl
+    WorkflowExecutionController, CaseControl, CommunicationPacket, WorkflowControl
+from walkoff.multiprocessedexecutor.receiver import Message
 
 
 class TestWorkflowExecutionController(TestCase):
@@ -29,7 +30,7 @@ class TestWorkflowExecutionController(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.controller.comm_socket.close()
+        cls.controller.comm_sock.close()
 
     @staticmethod
     def assert_message_sent(mock_send, expected_message):

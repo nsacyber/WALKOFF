@@ -1,7 +1,5 @@
 import logging
-import multiprocessing
 import os
-import signal
 import sys
 import threading
 import uuid
@@ -17,21 +15,13 @@ from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
-from walkoff.multiprocessedexecutor.worker import Worker
-from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController, Receiver
+from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController
+from walkoff.multiprocessedexecutor.receiver import Receiver
+from start_workers import shutdown_procs
+from walkoff.multiprocessedexecutor.senders import ZMQResultsSender
+from flask import current_app
 
 logger = logging.getLogger(__name__)
-
-
-def spawn_worker_processes():
-    """Initialize the multiprocessing pool, allowing for parallel execution of workflows.
-    """
-    pids = []
-    for i in range(walkoff.config.Config.NUMBER_PROCESSES):
-        pid = multiprocessing.Process(target=Worker, args=(i, walkoff.config.Config.CONFIG_PATH))
-        pid.start()
-        pids.append(pid)
-    return pids
 
 
 class MultiprocessedExecutor(object):
@@ -53,6 +43,7 @@ class MultiprocessedExecutor(object):
         self.event_logger = event_logger
 
         self.execution_db = ExecutionDatabase.instance
+        self.zmq_sender = None
 
     def initialize_threading(self, app, pids=None):
         """Initialize the multiprocessing communication threads, allowing for parallel execution of workflows.
@@ -62,6 +53,9 @@ class MultiprocessedExecutor(object):
             pids (list[Process], optional): Optional list of spawned processes. Defaults to None
 
         """
+        if walkoff.config.Config.SEPARATE_RECEIVER:
+            from walkoff.server import workflowresults  # Need this import
+
         if not (os.path.exists(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH) and
                 os.path.exists(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH)):
             logging.fatal("Certificates are missing - run generate_certificates.py script first.")
@@ -70,14 +64,20 @@ class MultiprocessedExecutor(object):
         self.ctx = zmq.Context.instance()
         self.auth = ThreadAuthenticator()
         self.auth.start()
-        self.auth.allow('127.0.0.1')
+        # TODO: self.auth.allow('127.0.0.1')
         self.auth.configure_curve(domain='*', location=walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH)
 
         self.manager = WorkflowExecutionController(self.cache)
-        self.receiver = Receiver(app)
 
-        self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
-        self.receiver_thread.start()
+        with app.app_context():
+            self.zmq_sender = ZMQResultsSender(current_app.running_context.execution_db,
+                                               current_app.running_context.case_logger)
+
+        if not walkoff.config.Config.SEPARATE_RECEIVER:
+            self.receiver = Receiver(app)
+
+            self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
+            self.receiver_thread.start()
 
         self.threading_is_initialized = True
         logger.debug('Controller threading initialized')
@@ -101,17 +101,11 @@ class MultiprocessedExecutor(object):
 
     def shutdown_pool(self):
         """Shuts down the threadpool"""
-        self.manager.send_exit_to_worker_comms()
-        if len(self.pids) > 0:
-            for p in self.pids:
-                if p.is_alive():
-                    logger.info('Multiprocessed executor shutting down process {}'.format(p))
-                    os.kill(p.pid, signal.SIGABRT)
-                    p.join(timeout=3)
-                    try:
-                        os.kill(p.pid, signal.SIGKILL)
-                    except (OSError, AttributeError):
-                        pass
+        if self.manager:
+            self.manager.send_exit_to_worker_comms()
+        if not walkoff.config.Config.SEPARATE_WORKERS:
+            shutdown_procs(self.pids)
+
         if self.receiver_thread:
             self.receiver.thread_exit = True
             self.receiver_thread.join(timeout=1)
@@ -165,8 +159,9 @@ class MultiprocessedExecutor(object):
             logger.info('Executing workflow {0} (id={1}) with default starting action'.format(
                 workflow.name, workflow.id, start))
 
+        workflow._execution_id = execution_id
         workflow_data = {'execution_id': execution_id, 'id': str(workflow.id), 'name': workflow.name}
-        self._log_and_send_event(WalkoffEvent.WorkflowExecutionPending, sender=workflow_data)
+        self._log_and_send_event(WalkoffEvent.WorkflowExecutionPending, sender=workflow_data, workflow=workflow)
         self.manager.add_workflow(workflow.id, execution_id, start, start_arguments, resume, environment_variables)
 
         self._log_and_send_event(WalkoffEvent.SchedulerJobExecuted)
@@ -210,7 +205,7 @@ class MultiprocessedExecutor(object):
             workflow = self.execution_db.session.query(Workflow).filter_by(
                 id=workflow_status.workflow_id).first()
             workflow._execution_id = execution_id
-            self._log_and_send_event(WalkoffEvent.WorkflowResumed, sender=workflow)
+            self._log_and_send_event(WalkoffEvent.WorkflowResumed, sender=workflow, workflow=workflow)
 
             start = saved_state.action_id if saved_state else workflow.start
             self.execute_workflow(workflow.id, execution_id_in=execution_id, start=start, resume=True)
@@ -240,7 +235,8 @@ class MultiprocessedExecutor(object):
                 if workflow is not None:
                     self._log_and_send_event(
                         WalkoffEvent.WorkflowAborted,
-                        sender={'execution_id': execution_id, 'id': workflow_status.workflow_id, 'name': workflow.name})
+                        sender={'execution_id': execution_id, 'id': workflow_status.workflow_id, 'name': workflow.name},
+                        workflow=workflow)
             elif workflow_status.status == WorkflowStatusEnum.running:
                 self.manager.abort_workflow(execution_id)
             return True
@@ -280,7 +276,8 @@ class MultiprocessedExecutor(object):
             self._log_and_send_event(
                 WalkoffEvent.TriggerActionTaken,
                 sender=exec_action,
-                data={'workflow_execution_id': execution_id})
+                data={'workflow_execution_id': execution_id},
+                workflow=workflow)
             self.execute_workflow(
                 workflow.id,
                 execution_id_in=execution_id,
@@ -292,7 +289,8 @@ class MultiprocessedExecutor(object):
             self._log_and_send_event(
                 WalkoffEvent.TriggerActionNotTaken,
                 sender=exec_action,
-                data={'workflow_execution_id': execution_id})
+                data={'workflow_execution_id': execution_id},
+                workflow=workflow)
             return False
 
     def get_waiting_workflows(self):
@@ -323,11 +321,9 @@ class MultiprocessedExecutor(object):
             logger.error("Workflow execution id {} does not exist in WorkflowStatus table.").format(execution_id)
             return 0
 
-    def _log_and_send_event(self, event, sender=None, data=None):
+    def _log_and_send_event(self, event, sender=None, data=None, workflow=None):
         sender = sender or self
-        sender_id = sender.id if not isinstance(sender, dict) else sender['id']
-        self.event_logger.log(event, sender_id, data=data)
-        event.send(sender, data=data)
+        self.zmq_sender.handle_event(workflow, sender, event=event, data=data)
 
     def create_case(self, case_id, subscriptions):
         """Creates a Case

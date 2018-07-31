@@ -7,9 +7,10 @@ import walkoff.appgateway
 import walkoff.config
 from tests.util import execution_db_help, initialize_test_config
 from tests.util.mock_objects import *
-from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor, spawn_worker_processes
+from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from walkoff.server.app import create_app
 from walkoff.server.blueprints.root import create_user
+from start_workers import spawn_worker_processes
 
 if not getattr(__builtins__, 'WindowsError', None):
     class WindowsError(OSError): pass
@@ -62,7 +63,7 @@ class ServerTestCase(unittest.TestCase):
             cls.app.running_context.executor.initialize_threading(cls.app)
         else:
             walkoff.config.Config.write_values_to_file()
-            pids = spawn_worker_processes()
+            pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES, walkoff.config.Config)
             cls.app.running_context.executor.initialize_threading(cls.app, pids)
 
     @classmethod
