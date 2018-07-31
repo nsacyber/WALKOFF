@@ -38,7 +38,6 @@ message WorkflowPacket {
 
 }
 
-
 message Argument {
     optional string name = 1;
     optional string value = 2;
@@ -62,6 +61,11 @@ message ActionPacket {
     optional WorkflowSender workflow = 2;
     optional string additional_data = 3;
 
+}
+
+message EnvironmentVariable {
+    optional string id = 1;
+    optional string value = 2;
 }
 
 message GeneralPacket {
@@ -135,11 +139,12 @@ message ExecuteWorkflowMessage {
     optional string start = 3;
     repeated Argument arguments = 4;
     optional bool resume = 5;
+    repeated EnvironmentVariable environment_variables = 6;
 }
 
 message LoggingMessage {
     optional WorkflowSender workflow = 1;
-    optional string name  = 2;
+    optional string name = 2;
     optional string app_name = 3;
     optional string action_name = 4;
     optional string level = 5;

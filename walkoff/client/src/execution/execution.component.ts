@@ -7,6 +7,7 @@ import { DatatableComponent } from '@swimlane/ngx-datatable';
 import { Observable } from 'rxjs';
 import 'rxjs/add/operator/debounceTime';
 import { plainToClass } from 'class-transformer';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { ExecutionService } from './execution.service';
 import { AuthService } from '../auth/auth.service';
@@ -21,6 +22,9 @@ import { GenericObject } from '../models/genericObject';
 import { CurrentAction } from '../models/execution/currentAction';
 import { ActionStatus } from '../models/execution/actionStatus';
 
+import { ExecutionVariableModalComponent } from './execution.variable.modal.component';
+import { EnvironmentVariable } from '../models/playbook/environmentVariable';
+
 @Component({
 	selector: 'execution-component',
 	templateUrl: './execution.html',
@@ -28,7 +32,7 @@ import { ActionStatus } from '../models/execution/actionStatus';
 		'./execution.css',
 	],
 	encapsulation: ViewEncapsulation.None,
-	providers: [ExecutionService, AuthService, UtilitiesService],
+	providers: [ExecutionService, AuthService],
 })
 export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	@ViewChild('actionStatusContainer') actionStatusContainer: ElementRef;
@@ -58,6 +62,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	constructor(
 		private executionService: ExecutionService, private authService: AuthService, private cdr: ChangeDetectorRef,
 		private toastyService: ToastyService, private toastyConfig: ToastyConfig, private utils: UtilitiesService,
+		private modalService: NgbModal,
 	) {}
 
 	/**
@@ -94,6 +99,8 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		this.recalculateTableCallback = (e: JQuery.Event<HTMLElement, null>) => {
 			if (this.actionStatusTable && this.actionStatusTable.recalculate) {
+				if (Array.isArray(this.actionStatusTable.rows)) 
+					this.actionStatusTable.rows = [...this.actionStatusTable.rows];
 				this.actionStatusTable.recalculate();
 			}
 		}
@@ -151,7 +158,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 */
 	getWorkflowStatuses(): void {
 		this.executionService
-			.getWorkflowStatusList()
+			.getAllWorkflowStatuses()
 			.then(workflowStatuses => {
 				workflowStatuses.forEach(workflowStatus => {
 					this.calculateLocalizedTimes(workflowStatus);
@@ -375,8 +382,8 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	/**
 	 * Executes a given workflow. Uses the selected workflow (specified via the select2 box).
 	 */
-	excuteSelectedWorkflow(): void {
-		this.executionService.addWorkflowToQueue(this.selectedWorkflow.id)
+	executeSelectedWorkflow(environmentVariables: EnvironmentVariable[] = []): void {
+		this.executionService.addWorkflowToQueue(this.selectedWorkflow.id, environmentVariables)
 			.then((workflowStatus: WorkflowStatus) => {
 				this.toastyService.success(`Successfully started execution of "${this.selectedWorkflow.name}"`);
 			})
@@ -393,7 +400,18 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 			this.selectedWorkflow = null;
 		} else {
 			this.selectedWorkflow = this.workflows.find(w => w.id === event.value);
+			this.executionService.loadWorkflow(this.selectedWorkflow.id).then(workflow => {
+				if (this.selectedWorkflow.id == workflow.id) this.selectedWorkflow = workflow;
+			})
 		}
+	}
+
+	openVariableModal() {
+		const modalRef = this.modalService.open(ExecutionVariableModalComponent);
+		modalRef.componentInstance.workflow = this.selectedWorkflow;
+		modalRef.result.then(variables => {
+			this.executeSelectedWorkflow(variables);
+		}).catch(() => null)
 	}
 
 	/**
@@ -450,8 +468,8 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 		args.forEach(element => {
 			if (element.value) { obj[element.name] = element.value; }
 			if (element.reference) { obj[element.name] = element.reference.toString(); }
-			if (element.selection && element.selection.length) {
-				const selectionString = (element.selection as any[]).join('.');
+			if (element.selection && Array.isArray(element.selection)) {
+				const selectionString = Array.from(element.selection).join('.');
 				obj[element.name] = `${obj[element.name]} (${selectionString})`;
 			}
 		});

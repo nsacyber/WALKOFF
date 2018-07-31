@@ -20,7 +20,7 @@ import { GenericObject } from '../models/genericObject';
 		'./settings.css',
 	],
 	encapsulation: ViewEncapsulation.None,
-	providers: [SettingsService, UtilitiesService],
+	providers: [SettingsService],
 })
 export class SettingsRolesComponent {
 	availableResourceActions: AvailableResourceAction[] = [];

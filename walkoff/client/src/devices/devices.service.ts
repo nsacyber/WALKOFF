@@ -1,25 +1,31 @@
 import { Injectable } from '@angular/core';
-import { Response } from '@angular/http';
 import { JwtHttp } from 'angular2-jwt-refresh';
 import { plainToClass } from 'class-transformer';
 
 import { Device } from '../models/device';
 import { AppApi } from '../models/api/appApi';
+import { UtilitiesService } from '../utilities.service';
 
 @Injectable()
 export class DevicesService {
-	constructor (private authHttp: JwtHttp) {
-	}
+	constructor (private authHttp: JwtHttp, private utils: UtilitiesService) {}
 
 	/**
 	 * Asynchronously returns an array of all existing devices from the server.
 	 */
-	getDevices(): Promise<Device[]> {
-		return this.authHttp.get('/api/devices')
+	getAllDevices(): Promise<Device[]> {
+		return this.utils.paginateAll<Device>(this.getDevices.bind(this));
+	}
+
+	/**
+	 * Asynchronously returns an array of existing devices from the server.
+	 */
+	getDevices(page: number = 1): Promise<Device[]> {
+		return this.authHttp.get(`/api/devices?page=${ page }`)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(Device, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -29,9 +35,9 @@ export class DevicesService {
 	addDevice(device: Device): Promise<Device> {
 		return this.authHttp.post('/api/devices', device)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Device, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -41,9 +47,9 @@ export class DevicesService {
 	editDevice(device: Device): Promise<Device> {
 		return this.authHttp.patch('/api/devices', device)
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Device, data))
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -54,7 +60,7 @@ export class DevicesService {
 		return this.authHttp.delete(`/api/devices/${deviceId}`)
 			.toPromise()
 			.then(() => null)
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -64,29 +70,10 @@ export class DevicesService {
 	getDeviceApis(): Promise<AppApi[]> {
 		return this.authHttp.get('api/apps/apis?field_name=device_apis')
 			.toPromise()
-			.then(this.extractData)
+			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(AppApi, data))
 			// Clear out any apps without device apis
 			.then(appApis => appApis.filter(a => a.device_apis && a.device_apis.length))
-			.catch(this.handleError);
-	}
-	
-	private extractData (res: Response) {
-		const body = res.json();
-		return body || {};
-	}
-
-	private handleError (error: Response | any): Promise<any> {
-		let errMsg: string;
-		let err: string;
-		if (error instanceof Response) {
-			const body = error.json() || '';
-			err = body.error || body.detail || JSON.stringify(body);
-			errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
-		} else {
-			err = errMsg = error.message ? error.message : error.toString();
-		}
-		console.error(errMsg);
-		throw new Error(err);
+			.catch(this.utils.handleResponseError);
 	}
 }

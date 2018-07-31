@@ -28,7 +28,8 @@ class TestWorkflowServer(ServerTestCase):
                  "arguments": []}],
                 'name': self.add_workflow_name,
                 'start': action_id,
-                'branches': []}
+                'branches': [],
+                'environment_variables': []}
         self.verb_lookup = {'get': self.get_with_status_check,
                             'put': self.put_with_status_check,
                             'post': self.post_with_status_check,
@@ -286,6 +287,25 @@ class TestWorkflowServer(ServerTestCase):
                                                content_type="application/json")
         self.assertEqual(len(response['errors']), 1)
         self.assertEqual(len(response['actions'][0]['errors']), 1)
+
+    def test_create_workflow_with_env_vars(self):
+        playbook = execution_db_help.standard_load()
+        self.empty_workflow_json['playbook_id'] = str(playbook.id)
+        self.empty_workflow_json['environment_variables'].append({'name': 'call', 'value': 'changeme',
+                                                                  'description': 'test description'})
+        self.post_with_status_check('/api/workflows',
+                                    headers=self.headers, status_code=OBJECT_CREATED,
+                                    data=json.dumps(self.empty_workflow_json),
+                                    content_type="application/json")
+
+        final_workflows = playbook.workflows
+        workflow = next((workflow for workflow in final_workflows if workflow.name == self.add_workflow_name), None)
+
+        self.assertEqual(len(workflow.environment_variables), 1)
+        self.assertIsNotNone(workflow.environment_variables[0].id)
+        self.assertEqual(workflow.environment_variables[0].name, 'call')
+        self.assertEqual(workflow.environment_variables[0].value, 'changeme')
+        self.assertEqual(workflow.environment_variables[0].description, 'test description')
 
     # All the updates
 

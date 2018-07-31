@@ -1,8 +1,9 @@
-import { Component, ViewEncapsulation, Input, OnInit } from '@angular/core';
+import { Component, ViewEncapsulation, Input, Output, OnInit, EventEmitter } from '@angular/core';
 
 import { AppApi } from '../models/api/appApi';
 import { ConditionalExpression } from '../models/playbook/conditionalExpression';
 import { Workflow } from '../models/playbook/workflow';
+import { Argument } from '../models/playbook/argument';
 
 @Component({
 	selector: 'playbook-conditional-expression-component',
@@ -16,6 +17,8 @@ export class PlaybookConditionalExpressionComponent implements OnInit {
 	@Input() conditionalExpression: ConditionalExpression;
 	@Input() appApis: AppApi[];
 	@Input() loadedWorkflow: Workflow;
+
+	@Output() createVariable = new EventEmitter<Argument>();
 
 	availableOperators: string[];
 
@@ -67,6 +70,10 @@ export class PlaybookConditionalExpressionComponent implements OnInit {
 	 */
 	removeChildExpression(index: number): void {
 		this.conditionalExpression.child_expressions.splice(index, 1);
+	}
+
+	onCreateVariable(argument: Argument) {
+		this.createVariable.emit(argument);
 	}
 
 	// This method was used to disable the operator dropdown, but I feel it might confuse users if it's disabled.

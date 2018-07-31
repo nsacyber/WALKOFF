@@ -171,6 +171,19 @@ def set_argument_proto(arg_proto, arg_obj):
                 setattr(arg_proto, field, val)
 
 
+def add_env_vars_to_proto(packet, env_vars):
+    """Sets up the EnvironmentVariable protobuf
+
+    Args:
+        packet (protobuf): The protobuf field
+        env_vars (list[EnvironmentVariable]): The EnvironmentVariables to add to the protobuf object
+    """
+    for env_var in env_vars:
+        ev_proto = packet.environment_variables.add()
+        ev_proto.id = str(env_var.id)
+        ev_proto.value = env_var.value
+
+
 def add_workflow_to_proto(packet, workflow):
     """Adds a Workflow to a protobuf packet
 

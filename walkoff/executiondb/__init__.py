@@ -26,6 +26,7 @@ class ExecutionDatabase(object):
         from walkoff.executiondb.playbook import Playbook
         from walkoff.executiondb.position import Position
         from walkoff.executiondb.transform import Transform
+        from walkoff.executiondb.environment_variable import EnvironmentVariable
         from walkoff.executiondb.workflow import Workflow
         from walkoff.executiondb.saved_workflow import SavedWorkflow
         from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
@@ -66,10 +67,10 @@ class ExecutionDatabase(object):
 
 
 class WorkflowStatusEnum(enum.Enum):
-    pending = 1
-    running = 2
-    paused = 3
-    awaiting_data = 4
+    running = 1
+    paused = 2
+    awaiting_data = 3
+    pending = 4
     completed = 5
     aborted = 6
 

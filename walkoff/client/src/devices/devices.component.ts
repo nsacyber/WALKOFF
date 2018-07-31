@@ -89,7 +89,7 @@ export class DevicesComponent implements OnInit {
 	 */
 	getDevices(): void {
 		this.devicesService
-			.getDevices()
+			.getAllDevices()
 			.then(devices => this.displayDevices = this.devices = devices)
 			.catch(e => this.toastyService.error(`Error retrieving devices: ${e.message}`));
 	}

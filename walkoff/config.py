@@ -140,6 +140,7 @@ class Config(object):
 
     SEPARATE_WORKERS = False
     SEPARATE_RECEIVER = False
+    ITEMS_PER_PAGE = 20
 
     @classmethod
     def load_config(cls, config_path=None):

@@ -2,6 +2,7 @@ import { HttpModule, Http, RequestOptions } from '@angular/http';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { async, TestBed, ComponentFixture, fakeAsync, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { plainToClass } from 'class-transformer';
 import {} from 'jasmine';
 
 import { DevicesComponent } from './devices.component';
@@ -19,7 +20,7 @@ describe('DevicesComponent', () => {
 	let fixture: ComponentFixture<DevicesComponent>;
 	let service: DevicesService;
 
-	const testDeviceApis: AppApi[] = [
+	const testDeviceApis: AppApi[] = plainToClass(AppApi, [
 		{
 			name: 'app_name',
 			device_apis: [
@@ -50,8 +51,9 @@ describe('DevicesComponent', () => {
 				},
 			],
 		},
-	];
-	const testDevices: Device[] = [
+	]);
+
+	const testDevices: Device[] = plainToClass(Device, [
 		{
 			id: 1,
 			name: 'name',
@@ -73,7 +75,8 @@ describe('DevicesComponent', () => {
 				},
 			],
 		},
-	];
+	]);
+	
 	/**
 	 * async beforeEach
 	 */
@@ -107,7 +110,7 @@ describe('DevicesComponent', () => {
 		service = fixture.debugElement.injector.get(DevicesService);
 
 		spyOn(window, 'confirm').and.returnValue(true);
-		spyOn(service, 'getDevices').and.returnValue(Promise.resolve(testDevices));
+		spyOn(service, 'getAllDevices').and.returnValue(Promise.resolve(testDevices));
 		spyOn(service, 'getDeviceApis').and.returnValue(Promise.resolve(testDeviceApis));
 		spyOn(service, 'deleteDevice').and.returnValue(Promise.resolve());
 	});
