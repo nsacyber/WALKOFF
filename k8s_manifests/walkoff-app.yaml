@@ -1,0 +1,61 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: walkoff-app
+spec:
+  selector:
+    matchLabels:
+      run: walkoff-app
+  template:
+    metadata:
+      labels:
+        run: walkoff-app
+    spec:
+      containers:
+      - name: walkoff-app
+        image: x.azurecr.io/walkoff-worker:vy
+        env:
+          - name: WALKOFF_DB_USERNAME
+            value: "walkoff"
+          - name: WALKOFF_DB_PASSWORD
+            value: "walkoff"
+        ports:
+        - containerPort: 80
+          name: web
+        - containerPort: 5556
+          name: zmq1
+        - containerPort: 5557
+          name: zmq2
+#        command:
+#        - "sleep"
+#        - "36000"
+      imagePullSecrets:
+      - name: aks
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: walkoff-app-public
+  labels:
+    run: walkoff-app
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+  selector:
+    run: walkoff-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: walkoff-app-internal
+  labels:
+    run: walkoff-app
+spec:
+  ports:
+  - port: 5556
+    name: zmq1
+  - port: 5557
+    name: zmq2
+  selector:
+    run: walkoff-app

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: walkoff-worker
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      run: walkoff-worker
+  template:
+    metadata:
+      labels:
+        run: walkoff-worker
+    spec:
+      containers:
+      - name: walkoff-worker
+        image: x.azurecr.io/walkoff-worker:vy
+        env:
+          - name: WALKOFF_DB_USERNAME
+            value: "walkoff"
+          - name: WALKOFF_DB_PASSWORD
+            value: "walkoff"
+#        command:
+#        - "sleep"
+#        - "36000"
+      imagePullSecrets:
+      - name: aks
