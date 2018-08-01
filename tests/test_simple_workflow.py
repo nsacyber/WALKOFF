@@ -10,6 +10,7 @@ from walkoff.case.logger import CaseLogger
 from walkoff.events import WalkoffEvent
 from walkoff.multiprocessedexecutor import multiprocessedexecutor
 from walkoff.server.app import create_app
+from walkoff.executiondb.actionexecstrategy import LocalActionExecutionStrategy
 
 
 class TestSimpleWorkflow(unittest.TestCase):
@@ -26,7 +27,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
         cls.executor = multiprocessedexecutor.MultiprocessedExecutor(MockRedisCacheAdapter(),
-                                                                     create_autospec(CaseLogger))
+                                                                     create_autospec(CaseLogger), LocalActionExecutionStrategy())
         cls.executor.initialize_threading(app)
 
     def tearDown(self):

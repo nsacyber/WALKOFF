@@ -10,6 +10,7 @@ from walkoff.executiondb.branch import Branch
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.workflow import Workflow
+from walkoff.executiondb.actionexecstrategy import LocalActionExecutionStrategy
 
 
 class TestBranch(unittest.TestCase):
@@ -79,13 +80,13 @@ class TestBranch(unittest.TestCase):
             branch = Branch(source_id=1, destination_id=2, condition=condition)
             if expect_name:
                 expected_name = branch.destination_id
-                self.assertEqual(branch.execute(input_str, {}), expected_name)
+                self.assertEqual(branch.execute(LocalActionExecutionStrategy(), input_str, {}), expected_name)
             else:
-                self.assertIsNone(branch.execute(input_str, {}))
+                self.assertIsNone(branch.execute(LocalActionExecutionStrategy(), input_str, {}))
 
     def test_get_branch_no_branches(self):
         workflow = Workflow('test', 1)
-        self.assertIsNone(workflow.get_branch(None, {}))
+        self.assertIsNone(workflow.get_branch(None, LocalActionExecutionStrategy(), {}))
 
     def test_get_branch(self):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld', id=10)
@@ -107,7 +108,7 @@ class TestBranch(unittest.TestCase):
 
         WalkoffEvent.CommonWorkflowSignal.connect(validate_sent_data)
 
-        self.assertEqual(workflow.get_branch(action, {}), 2)
+        self.assertEqual(workflow.get_branch(action, LocalActionExecutionStrategy(), {}), 2)
         self.assertTrue(result['triggered'])
 
     def test_branch_with_priority(self):
@@ -125,7 +126,7 @@ class TestBranch(unittest.TestCase):
         action._output = ActionResult(result='aaa', status='Success')
         workflow = Workflow('test', 1, actions=[action, action2, action3], branches=[branch_one, branch_two])
 
-        self.assertEqual(workflow.get_branch(action, {}), 1)
+        self.assertEqual(workflow.get_branch(action, LocalActionExecutionStrategy(), {}), 1)
 
     def test_branch_first_action_none(self):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld', id=10)
@@ -145,7 +146,7 @@ class TestBranch(unittest.TestCase):
         action._output = ActionResult(result='aaa', status='Success')
         workflow = Workflow('test', 1, actions=[action, action2, action3], branches=[branch_one, branch_two])
 
-        self.assertEqual(workflow.get_branch(action, {}), 1)
+        self.assertEqual(workflow.get_branch(action, LocalActionExecutionStrategy(), {}), 1)
 
     def test_branch_counter(self):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld', id=1)
@@ -156,7 +157,7 @@ class TestBranch(unittest.TestCase):
 
         action._output = ActionResult(result='aaa', status='Success')
         workflow = Workflow('test', 1, actions=[action], branches=[branch])
-        workflow.get_branch(action, accumulator)
+        workflow.get_branch(action, LocalActionExecutionStrategy(), accumulator)
 
         self.assertEqual(branch._counter, 1)
         self.assertIn(branch.id, accumulator)

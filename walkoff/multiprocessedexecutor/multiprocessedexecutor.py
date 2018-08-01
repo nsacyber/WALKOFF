@@ -35,7 +35,7 @@ def spawn_worker_processes():
 
 
 class MultiprocessedExecutor(object):
-    def __init__(self, cache, event_logger):
+    def __init__(self, cache, event_logger, action_execution_strategy):
         """Initializes a multiprocessed executor, which will handle the execution of workflows.
         """
         self.threading_is_initialized = False
@@ -51,7 +51,7 @@ class MultiprocessedExecutor(object):
         self.receiver_thread = None
         self.cache = cache
         self.event_logger = event_logger
-
+        self.action_execution_strategy = action_execution_strategy
         self.execution_db = ExecutionDatabase.instance
 
     def initialize_threading(self, app, pids=None):
@@ -273,7 +273,7 @@ class MultiprocessedExecutor(object):
         for action in workflow.actions:
             if action.id == saved_state.action_id:
                 exec_action = action
-                executed = action.execute_trigger(data_in, saved_state.accumulator)
+                executed = action.execute_trigger(self.action_execution_strategy, data_in, saved_state.accumulator)
                 break
 
         if executed:

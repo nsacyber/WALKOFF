@@ -139,6 +139,7 @@ class Config(object):
     MAX_STREAM_RESULTS_SIZE_KB = 156
 
     ITEMS_PER_PAGE = 20
+    ACTION_EXECUTION_STRATEGY = 'local'
 
     @classmethod
     def load_config(cls, config_path=None):

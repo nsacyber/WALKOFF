@@ -121,7 +121,7 @@ class Workflow(ExecutionElement, Execution_Base):
         self._abort = True
         logger.info('Aborting workflow {0}'.format(self.name))
 
-    def execute(self, execution_id, start=None, start_arguments=None, resume=False, environment_variables=None):
+    def execute(self, execution_id, action_execution_strategy, start=None, start_arguments=None, resume=False, environment_variables=None):
         """Executes a Workflow by executing all Actions in the Workflow list of Action objects.
 
         Args:
@@ -141,13 +141,13 @@ class Workflow(ExecutionElement, Execution_Base):
             start = start if start is not None else self.start
             if not isinstance(start, UUID):
                 start = UUID(start)
-            executor = self.__execute(start, start_arguments, resume)
+            executor = self.__execute(start, action_execution_strategy, start_arguments=start_arguments, resume=resume)
             next(executor)
         else:
             logger.error('Workflow is invalid, yet executor attempted to execute.')
 
-    def __execute(self, start, start_arguments=None, resume=False):
-        actions = self.__actions(start=start)
+    def __execute(self, start, action_execution_strategy, start_arguments=None, resume=False):
+        actions = self.__actions(action_execution_strategy, start=start)
         for action in (action_ for action_ in actions if action_ is not None):
             self._executing_action = action
             logger.debug('Executing action {0} of workflow {1}'.format(action, self.name))
@@ -165,10 +165,20 @@ class Workflow(ExecutionElement, Execution_Base):
 
             device_id = self._instance_repo.setup_app_instance(action, self)
             if device_id:
-                result = action.execute(self._accumulator, instance=self._instance_repo.get_app_instance(device_id)(),
-                                        arguments=start_arguments, resume=resume)
+                result = action.execute(
+                    action_execution_strategy,
+                    self._accumulator,
+                    instance=self._instance_repo.get_app_instance(device_id)(),
+                    arguments=start_arguments,
+                    resume=resume
+                )
             else:
-                result = action.execute(self._accumulator, arguments=start_arguments, resume=resume)
+                result = action.execute(
+                    action_execution_strategy,
+                    self._accumulator,
+                    arguments=start_arguments,
+                    resume=resume
+                )
 
             if start_arguments:
                 start_arguments = None
@@ -179,18 +189,18 @@ class Workflow(ExecutionElement, Execution_Base):
         self.__shutdown()
         yield
 
-    def __actions(self, start):
+    def __actions(self, action_execution_strategy, start):
         current_id = start
         current_action = self.get_action_by_id(current_id)
 
         while current_action:
             yield current_action
-            current_id = self.get_branch(current_action, self._accumulator)
+            current_id = self.get_branch(current_action, action_execution_strategy, self._accumulator)
             current_action = self.get_action_by_id(current_id) if current_id is not None else None
             yield  # needed so that when for-loop calls next() it doesn't advance too far
         yield  # needed so you can avoid catching StopIteration exception
 
-    def get_branch(self, current_action, accumulator):
+    def get_branch(self, current_action, action_execution_strategy, accumulator):
         """Executes the Branch objects associated with this Workflow to determine which Action should be
             executed next.
 
@@ -207,7 +217,7 @@ class Workflow(ExecutionElement, Execution_Base):
             for branch in branches:
                 # TODO: This here is the only hold up from getting rid of action._output.
                 # Keep whole result in accumulator
-                destination_id = branch.execute(current_action.get_output(), accumulator)
+                destination_id = branch.execute(action_execution_strategy, current_action.get_output(), accumulator)
                 if destination_id is not None:
                     logger.debug('Branch {} with destination {} chosen by workflow {} (id={})'.format(
                         str(branch.id), str(destination_id), self.name, str(self.id)))

@@ -30,6 +30,7 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.environment_variable import EnvironmentVariable
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
+from walkoff.executiondb.actionexecstrategy import make_execution_strategy
 from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
 from walkoff.proto.build.data_pb2 import CommunicationPacket, ExecuteWorkflowMessage, CaseControl, \
     WorkflowControl
@@ -335,6 +336,7 @@ class Worker(object):
             server_public,
             walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
 
+        self.action_execution_strategy = make_execution_strategy(walkoff.config.Config)
         self.comm_thread = threading.Thread(target=self.receive_communications)
 
         self.comm_thread.start()
@@ -409,8 +411,13 @@ class Worker(object):
             self.workflows[threading.current_thread().name] = workflow
 
         start = start if start else workflow.start
-        workflow.execute(execution_id=workflow_execution_id, start=start, start_arguments=start_arguments,
-                         resume=resume, environment_variables=environment_variables)
+        workflow.execute(
+            execution_id=workflow_execution_id,
+            start=start,
+            start_arguments=start_arguments,
+            resume=resume,
+            environment_variables=environment_variables,
+            action_execution_strategy=self.action_execution_strategy)
         with self._lock:
             self.workflows.pop(threading.current_thread().name)
 

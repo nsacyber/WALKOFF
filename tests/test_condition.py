@@ -6,7 +6,7 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.transform import Transform
 from walkoff.appgateway.apiutil import InvalidArgument
-
+from walkoff.executiondb.actionexecstrategy import LocalActionExecutionStrategy
 
 class TestCondition(unittest.TestCase):
     @classmethod
@@ -62,39 +62,39 @@ class TestCondition(unittest.TestCase):
         self.__compare_init(condition, 'HelloWorld', 'Top Condition', transforms, [])
 
     def test_execute_action_only_no_arguments_valid_data_no_conversion(self):
-        self.assertTrue(Condition('HelloWorld', 'Top Condition').execute(3.4, {}))
+        self.assertTrue(Condition('HelloWorld', 'Top Condition').execute(LocalActionExecutionStrategy(), 3.4, {}))
 
     def test_execute_action_only_no_arguments_valid_data_with_conversion(self):
-        self.assertTrue(Condition('HelloWorld', 'Top Condition').execute('3.4', {}))
+        self.assertTrue(Condition('HelloWorld', 'Top Condition').execute(LocalActionExecutionStrategy(), '3.4', {}))
 
     def test_execute_action_only_no_arguments_valid_data_with_conversion_inverted(self):
-        self.assertFalse(Condition('HelloWorld', 'Top Condition', is_negated=True).execute('3.4', {}))
+        self.assertFalse(Condition('HelloWorld', 'Top Condition', is_negated=True).execute(LocalActionExecutionStrategy(), '3.4', {}))
 
     def test_execute_action_only_no_arguments_invalid_data(self):
         with self.assertRaises(InvalidArgument):
-            Condition('HelloWorld', 'Top Condition').execute('invalid', {})
+            Condition('HelloWorld', 'Top Condition').execute(LocalActionExecutionStrategy(), 'invalid', {})
 
     def test_execute_action_with_valid_arguments_valid_data(self):
         self.assertTrue(
-            Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value=3)]).execute('5', {}))
+            Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value=3)]).execute(LocalActionExecutionStrategy(), '5', {}))
 
     def test_execute_action_with_valid_complex_arguments_valid_data(self):
         self.assertTrue(Condition('HelloWorld', action_name='mod1_flag3',
-                                  arguments=[Argument('arg1', value={'a': '1', 'b': '5'})]).execute('some_long_string',
+                                  arguments=[Argument('arg1', value={'a': '1', 'b': '5'})]).execute(LocalActionExecutionStrategy(), 'some_long_string',
                                                                                                     {}))
 
     def test_execute_action_with_valid_arguments_invalid_data(self):
         with self.assertRaises(InvalidArgument):
             Condition('HelloWorld',
                       action_name='mod1_flag2',
-                      arguments=[Argument('arg1', value=3)]).execute('invalid', {})
+                      arguments=[Argument('arg1', value=3)]).execute(LocalActionExecutionStrategy(), 'invalid', {})
 
     def test_execute_action_with_valid_arguments_and_transforms_valid_data(self):
         transforms = [Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='5')]),
                       Transform('HelloWorld', action_name='Top Transform')]
         # should go <input = 1> -> <mod1_filter2 = 5+1 = 6> -> <Top Transform 6=6> -> <mod1_flag2 4+6%2==0> -> True
         self.assertTrue(Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value=4)],
-                                  transforms=transforms).execute('1', {}))
+                                  transforms=transforms).execute(LocalActionExecutionStrategy(), '1', {}))
 
     def test_execute_action_with_valid_arguments_and_transforms_invalid_data(self):
         transforms = [Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='5')]),
@@ -103,7 +103,7 @@ class TestCondition(unittest.TestCase):
         # -> <mod1_flag2 4+invalid throws error> -> False
         with self.assertRaises(InvalidArgument):
             Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value=4)],
-                      transforms=transforms).execute('invalid', {})
+                      transforms=transforms).execute(LocalActionExecutionStrategy(), 'invalid', {})
 
     def test_execute_action_with_valid_arguments_and_transforms_invalid_data_and_routing(self):
         transforms = [
@@ -114,4 +114,4 @@ class TestCondition(unittest.TestCase):
         accumulator = {'action1': '5', 'action2': 4}
         with self.assertRaises(InvalidArgument):
             Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value=4)],
-                      transforms=transforms).execute('invalid', accumulator)
+                      transforms=transforms).execute(LocalActionExecutionStrategy(), 'invalid', accumulator)

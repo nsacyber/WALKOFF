@@ -11,6 +11,7 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.position import Position
+from walkoff.executiondb.actionexecstrategy import LocalActionExecutionStrategy
 
 
 class TestAction(unittest.TestCase):
@@ -106,7 +107,7 @@ class TestAction(unittest.TestCase):
     def test_execute_no_args(self):
         action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld')
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        self.assertEqual(action.execute({}, instance.instance), ActionResult({'message': 'HELLO WORLD'}, 'Success'))
+        self.assertEqual(action.execute(LocalActionExecutionStrategy(), {}, instance.instance), ActionResult({'message': 'HELLO WORLD'}, 'Success'))
         self.assertEqual(action._output, ActionResult({'message': 'HELLO WORLD'}, 'Success'))
 
     def test_execute_return_failure(self):
@@ -130,7 +131,7 @@ class TestAction(unittest.TestCase):
 
         WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
 
-        action.execute({}, instance.instance)
+        action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
         self.assertTrue(result['started_triggered'])
         self.assertTrue(result['result_triggered'])
 
@@ -155,7 +156,7 @@ class TestAction(unittest.TestCase):
 
         WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
 
-        action.execute({}, instance.instance)
+        action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
 
         self.assertTrue(result['started_triggered'])
         self.assertTrue(result['result_triggered'])
@@ -164,7 +165,7 @@ class TestAction(unittest.TestCase):
         action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld')
         original_execution_id = action.get_execution_id()
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        action.execute({}, instance.instance)
+        action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
         self.assertNotEqual(action.get_execution_id(), original_execution_id)
 
     def test_execute_with_args(self):
@@ -173,7 +174,7 @@ class TestAction(unittest.TestCase):
                                    Argument('num2', value='4.3'),
                                    Argument('num3', value='10.2')])
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        result = action.execute({}, instance.instance)
+        result = action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
         self.assertEqual(action._output, result)
@@ -202,7 +203,7 @@ class TestAction(unittest.TestCase):
 
         WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
 
-        action.execute({}, instance.instance)
+        action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
         self.assertTrue(result['started_triggered'])
         self.assertTrue(result['result_triggered'])
 
@@ -213,7 +214,7 @@ class TestAction(unittest.TestCase):
                                    Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'action2': '4.3'}
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        result = action.execute(accumulator, instance.instance)
+        result = action.execute(LocalActionExecutionStrategy(), accumulator, instance.instance)
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
         self.assertEqual(action._output, result)
@@ -225,7 +226,7 @@ class TestAction(unittest.TestCase):
                                    Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'action2': '4.3', '3': '45'}
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        result = action.execute(accumulator, instance.instance)
+        result = action.execute(LocalActionExecutionStrategy(), accumulator, instance.instance)
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
         self.assertEqual(action._output, result)
@@ -237,7 +238,7 @@ class TestAction(unittest.TestCase):
                                    Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'missing': '4.3', '3': '45'}
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        action.execute(accumulator, instance.instance)
+        action.execute(LocalActionExecutionStrategy(), accumulator, instance.instance)
 
     def test_execute_with_accumulator_missing_action_callbacks(self):
         action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
@@ -259,7 +260,7 @@ class TestAction(unittest.TestCase):
                     result['result_triggered'] = True
 
         WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
-        action.execute(accumulator, instance.instance)
+        action.execute(LocalActionExecutionStrategy(), accumulator, instance.instance)
 
         self.assertTrue(result['started_triggered'])
         self.assertTrue(result['result_triggered'])
@@ -271,7 +272,7 @@ class TestAction(unittest.TestCase):
                                                        'd': [{'a': '', 'b': 3}, {'a': '', 'b': -1.5},
                                                              {'a': '', 'b': -0.5}]})])
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        result = action.execute({}, instance.instance)
+        result = action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
         self.assertAlmostEqual(result.result, 11.0)
         self.assertEqual(result.status, 'Success')
         self.assertEqual(action._output, result)
@@ -279,7 +280,7 @@ class TestAction(unittest.TestCase):
     def test_execute_action_which_raises_exception(self):
         action = Action(app_name='HelloWorld', action_name='Buggy', name='helloWorld')
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        action.execute({}, instance.instance)
+        action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
         self.assertIsNotNone(action.get_output())
 
     def test_execute_action_which_raises_exception_sends_callbacks(self):
@@ -299,7 +300,7 @@ class TestAction(unittest.TestCase):
 
         WalkoffEvent.CommonWorkflowSignal.connect(callback_is_sent)
 
-        action.execute({}, instance.instance)
+        action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
 
         self.assertTrue(result['started_triggered'])
         self.assertTrue(result['result_triggered'])
@@ -308,7 +309,7 @@ class TestAction(unittest.TestCase):
         action = Action(app_name='HelloWorld', action_name='global2', name='helloWorld',
                         arguments=[Argument('arg1', value='something')])
         instance = AppInstance.create(app_name='HelloWorld', device_name='')
-        result = action.execute({}, instance.instance)
+        result = action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
         self.assertAlmostEqual(result.result, 'something')
         self.assertEqual(result.status, 'Success')
         self.assertEqual(action._output, result)
@@ -318,7 +319,7 @@ class TestAction(unittest.TestCase):
             'and',
             conditions=[Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])])
         action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld', trigger=trigger)
-        ret = action.execute_trigger({"data_in": {"data": 'aaa'}}, {})
+        ret = action.execute_trigger(LocalActionExecutionStrategy(), {"data_in": {"data": 'aaa'}}, {})
 
         self.assertTrue(ret)
 
@@ -328,5 +329,5 @@ class TestAction(unittest.TestCase):
             conditions=[Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])])
         action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld', trigger=trigger)
         AppInstance.create(app_name='HelloWorld', device_name='device1')
-        self.assertFalse(action.execute_trigger({"data_in": {"data": 'a'}}, {}))
-        self.assertTrue(action.execute_trigger({"data_in": {"data": 'aaa'}}, {}))
+        self.assertFalse(action.execute_trigger(LocalActionExecutionStrategy(), {"data_in": {"data": 'a'}}, {}))
+        self.assertTrue(action.execute_trigger(LocalActionExecutionStrategy(), {"data_in": {"data": 'aaa'}}, {}))

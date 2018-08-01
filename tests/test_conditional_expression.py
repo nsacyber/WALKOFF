@@ -7,6 +7,7 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.schemas import dump_element
+from walkoff.executiondb.actionexecstrategy import LocalActionExecutionStrategy
 
 
 class TestCondition(unittest.TestCase):
@@ -64,25 +65,25 @@ class TestCondition(unittest.TestCase):
     def test_execute_no_conditions(self):
         for operator in ('and', 'or', 'xor'):
             expression = ConditionalExpression(operator=operator)
-            self.assertTrue(expression.execute('', {}))
+            self.assertTrue(expression.execute(LocalActionExecutionStrategy(), '', {}))
 
     def test_execute_inverted(self):
         expression = ConditionalExpression(is_negated=True)
-        self.assertFalse(expression.execute('', {}))
+        self.assertFalse(expression.execute(LocalActionExecutionStrategy(), '', {}))
 
     def test_execute_and_conditions_only(self):
         expression = ConditionalExpression(conditions=[self.get_regex_condition(), self.get_regex_condition('aa')])
-        self.assertTrue(expression.execute('aaa', {}))
-        self.assertFalse(expression.execute('bbb', {}))
+        self.assertTrue(expression.execute(LocalActionExecutionStrategy(), 'aaa', {}))
+        self.assertFalse(expression.execute(LocalActionExecutionStrategy(), 'bbb', {}))
 
     def test_execute_and_expressions_only(self):
         expression = ConditionalExpression(
             child_expressions=[
                 ConditionalExpression(conditions=[self.get_regex_condition('aa')]),
                 ConditionalExpression(conditions=[self.get_regex_condition('bb')])])
-        self.assertTrue(expression.execute('aabb', {}))
+        self.assertTrue(expression.execute(LocalActionExecutionStrategy(), 'aabb', {}))
         for false_pattern in ('aa', 'bb', 'cc'):
-            self.assertFalse(expression.execute(false_pattern, {}))
+            self.assertFalse(expression.execute(LocalActionExecutionStrategy(), false_pattern, {}))
 
     def test_execute_and_with_conditions_and_expressions(self):
         expression = ConditionalExpression(
@@ -90,16 +91,16 @@ class TestCondition(unittest.TestCase):
             child_expressions=[
                 ConditionalExpression(conditions=[self.get_regex_condition('bb')]),
                 ConditionalExpression(conditions=[self.get_regex_condition('cc')])])
-        self.assertTrue(expression.execute('aabbcc', {}))
+        self.assertTrue(expression.execute(LocalActionExecutionStrategy(), 'aabbcc', {}))
         for false_pattern in ('aa', 'bb', 'cc', 'dd'):
-            self.assertFalse(expression.execute(false_pattern, {}))
+            self.assertFalse(expression.execute(LocalActionExecutionStrategy(), false_pattern, {}))
 
     def test_execute_or_conditions_only(self):
         expression = ConditionalExpression(
             operator='or', conditions=[self.get_regex_condition('bb'), self.get_regex_condition('aa')])
         for true_pattern in ('aa', 'bb', 'aabb'):
-            self.assertTrue(expression.execute(true_pattern, {}))
-        self.assertFalse(expression.execute('ccc', {}))
+            self.assertTrue(expression.execute(LocalActionExecutionStrategy(), true_pattern, {}))
+        self.assertFalse(expression.execute(LocalActionExecutionStrategy(), 'ccc', {}))
 
     def test_execute_or_expressions_only(self):
         expression = ConditionalExpression(
@@ -108,8 +109,8 @@ class TestCondition(unittest.TestCase):
                 ConditionalExpression(conditions=[self.get_regex_condition('aa')]),
                 ConditionalExpression(conditions=[self.get_regex_condition('bb')])])
         for true_pattern in ('aa', 'bb', 'aabb'):
-            self.assertTrue(expression.execute(true_pattern, {}))
-        self.assertFalse(expression.execute('ccc', {}))
+            self.assertTrue(expression.execute(LocalActionExecutionStrategy(), true_pattern, {}))
+        self.assertFalse(expression.execute(LocalActionExecutionStrategy(), 'ccc', {}))
 
     def test_execute_or_with_conditions_and_expressions(self):
         expression = ConditionalExpression(
@@ -119,16 +120,16 @@ class TestCondition(unittest.TestCase):
                 ConditionalExpression(conditions=[self.get_regex_condition('bb')]),
                 ConditionalExpression(conditions=[self.get_regex_condition('cc')])])
         for true_pattern in ('aa', 'bb', 'cc', 'aabb', 'bbcc', 'aacc'):
-            self.assertTrue(expression.execute(true_pattern, {}))
-        self.assertFalse(expression.execute('d', {}))
+            self.assertTrue(expression.execute(LocalActionExecutionStrategy(), true_pattern, {}))
+        self.assertFalse(expression.execute(LocalActionExecutionStrategy(), 'd', {}))
 
     def test_execute_xor_conditions_only(self):
         expression = ConditionalExpression(
             operator='xor', conditions=[self.get_regex_condition('bb'), self.get_regex_condition('aa')])
         for true_pattern in ('aa', 'bb'):
-            self.assertTrue(expression.execute(true_pattern, {}))
+            self.assertTrue(expression.execute(LocalActionExecutionStrategy(), true_pattern, {}))
         for false_pattern in ('aabb', 'cc'):
-            self.assertFalse(expression.execute(false_pattern, {}))
+            self.assertFalse(expression.execute(LocalActionExecutionStrategy(), false_pattern, {}))
 
     def test_execute_xor_expressions_only(self):
         expression = ConditionalExpression(
@@ -137,9 +138,9 @@ class TestCondition(unittest.TestCase):
                 ConditionalExpression(conditions=[self.get_regex_condition('aa')]),
                 ConditionalExpression(conditions=[self.get_regex_condition('bb')])])
         for true_pattern in ('aa', 'bb'):
-            self.assertTrue(expression.execute(true_pattern, {}))
+            self.assertTrue(expression.execute(LocalActionExecutionStrategy(), true_pattern, {}))
         for false_pattern in ('aabb', 'cc'):
-            self.assertFalse(expression.execute(false_pattern, {}))
+            self.assertFalse(expression.execute(LocalActionExecutionStrategy(), false_pattern, {}))
 
     def test_execute_xor_with_conditions_and_expressions(self):
         expression = ConditionalExpression(
@@ -149,9 +150,9 @@ class TestCondition(unittest.TestCase):
                 ConditionalExpression(conditions=[self.get_regex_condition('bb')]),
                 ConditionalExpression(conditions=[self.get_regex_condition('cc')])])
         for true_pattern in ('aa', 'bb', 'cc'):
-            self.assertTrue(expression.execute(true_pattern, {}))
+            self.assertTrue(expression.execute(LocalActionExecutionStrategy(), true_pattern, {}))
         for false_pattern in ('aabb', 'bbcc', 'aacc', 'd'):
-            self.assertFalse(expression.execute(false_pattern, {}))
+            self.assertFalse(expression.execute(LocalActionExecutionStrategy(), false_pattern, {}))
 
     def test_execute_true_sends_event(self):
         expression = ConditionalExpression(conditions=[self.get_always_true_condition()])
@@ -164,7 +165,7 @@ class TestCondition(unittest.TestCase):
                 self.assertEqual(kwargs['event'], WalkoffEvent.ConditionalExpressionTrue)
                 result['triggered'] = True
 
-        expression.execute('3.4', {})
+        expression.execute(LocalActionExecutionStrategy(), '3.4', {})
 
         self.assertTrue(result['triggered'])
 
@@ -179,7 +180,7 @@ class TestCondition(unittest.TestCase):
                 self.assertEqual(kwargs['event'], WalkoffEvent.ConditionalExpressionFalse)
                 result['triggered'] = True
 
-        expression.execute('3.4', {})
+        expression.execute(LocalActionExecutionStrategy(), '3.4', {})
 
         self.assertTrue(result['triggered'])
 
@@ -194,7 +195,7 @@ class TestCondition(unittest.TestCase):
                 self.assertEqual(kwargs['event'], WalkoffEvent.ConditionalExpressionError)
                 result['triggered'] = True
 
-        self.assertFalse(expression.execute('any', {}))
+        self.assertFalse(expression.execute(LocalActionExecutionStrategy(), 'any', {}))
         self.assertTrue(result['triggered'])
 
     def test_read_does_not_infinitely_recurse(self):
