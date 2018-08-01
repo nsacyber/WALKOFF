@@ -121,11 +121,20 @@ class Workflow(ExecutionElement, Execution_Base):
         self._abort = True
         logger.info('Aborting workflow {0}'.format(self.name))
 
-    def execute(self, execution_id, action_execution_strategy, start=None, start_arguments=None, resume=False, environment_variables=None):
+    def execute(
+            self,
+            execution_id,
+            action_execution_strategy,
+            start=None,
+            start_arguments=None,
+            resume=False,
+            environment_variables=None
+    ):
         """Executes a Workflow by executing all Actions in the Workflow list of Action objects.
 
         Args:
             execution_id (UUID): The UUID4 hex string uniquely identifying this workflow instance
+            action_execution_strategy: The strategy used to execute the action (e.g. LocalActionExecutionStrategy)
             start (int, optional): The ID of the first Action. Defaults to None.
             start_arguments (list[Argument]): Argument parameters into the first Action. Defaults to None.
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.

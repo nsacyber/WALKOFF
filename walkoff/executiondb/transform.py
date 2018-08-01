@@ -82,6 +82,7 @@ class Transform(ExecutionElement, Execution_Base):
         """Executes the transform.
 
         Args:
+            action_execution_strategy: The strategy used to execute the action (e.g. LocalActionExecutionStrategy)
             data_in: The input to the condition, the last executed action of the workflow or the input to a trigger.
             accumulator (dict): A record of executed actions and their results. Of form {action_name: result}.
 

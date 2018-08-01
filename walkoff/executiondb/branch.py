@@ -60,6 +60,7 @@ class Branch(ExecutionElement, Execution_Base):
         """Executes the Branch object, determining if this Branch should be taken.
 
         Args:
+            action_execution_strategy: The strategy used to execute the action (e.g. LocalActionExecutionStrategy)
             data_in (dict): The input to the Condition objects associated with this Branch.
             accumulator (dict): The accumulated data from previous Actions.
 

@@ -68,7 +68,11 @@ class TestCondition(unittest.TestCase):
         self.assertTrue(Condition('HelloWorld', 'Top Condition').execute(LocalActionExecutionStrategy(), '3.4', {}))
 
     def test_execute_action_only_no_arguments_valid_data_with_conversion_inverted(self):
-        self.assertFalse(Condition('HelloWorld', 'Top Condition', is_negated=True).execute(LocalActionExecutionStrategy(), '3.4', {}))
+        self.assertFalse(Condition('HelloWorld', 'Top Condition', is_negated=True).execute(
+            LocalActionExecutionStrategy(),
+            '3.4',
+            {})
+        )
 
     def test_execute_action_only_no_arguments_invalid_data(self):
         with self.assertRaises(InvalidArgument):
@@ -76,12 +80,19 @@ class TestCondition(unittest.TestCase):
 
     def test_execute_action_with_valid_arguments_valid_data(self):
         self.assertTrue(
-            Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value=3)]).execute(LocalActionExecutionStrategy(), '5', {}))
+            Condition('HelloWorld', action_name='mod1_flag2', arguments=[Argument('arg1', value=3)]).execute(
+                LocalActionExecutionStrategy(),
+                '5',
+                {})
+        )
 
     def test_execute_action_with_valid_complex_arguments_valid_data(self):
         self.assertTrue(Condition('HelloWorld', action_name='mod1_flag3',
-                                  arguments=[Argument('arg1', value={'a': '1', 'b': '5'})]).execute(LocalActionExecutionStrategy(), 'some_long_string',
-                                                                                                    {}))
+                                  arguments=[Argument('arg1', value={'a': '1', 'b': '5'})]).execute(
+            LocalActionExecutionStrategy(),
+            'some_long_string',
+            {})
+        )
 
     def test_execute_action_with_valid_arguments_invalid_data(self):
         with self.assertRaises(InvalidArgument):

@@ -127,6 +127,7 @@ class Action(ExecutionElement, Execution_Base):
         """Executes an Action by calling the associated app function.
 
         Args:
+            action_execution_strategy: The strategy used to execute the action (e.g. LocalActionExecutionStrategy)
             accumulator (dict): Dict containing the results of the previous actions
             instance (App, optional): The instance of an App object to be used to execute the associated function.
                 This field is required if the Action is a bounded action. Otherwise, it defaults to None.
@@ -196,6 +197,7 @@ class Action(ExecutionElement, Execution_Base):
         """Executes the trigger for an Action, which will continue execution if the trigger returns True
 
         Args:
+            action_execution_strategy: The strategy used to execute the action (e.g. LocalActionExecutionStrategy)
             data_in (dict): The data to send to the trigger to test against
             accumulator (dict): Dict containing the results of the previous actions
 

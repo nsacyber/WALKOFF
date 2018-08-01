@@ -107,7 +107,9 @@ class TestAction(unittest.TestCase):
     def test_execute_no_args(self):
         action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld')
         instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        self.assertEqual(action.execute(LocalActionExecutionStrategy(), {}, instance.instance), ActionResult({'message': 'HELLO WORLD'}, 'Success'))
+        self.assertEqual(
+            action.execute(LocalActionExecutionStrategy(), {}, instance.instance),
+            ActionResult({'message': 'HELLO WORLD'}, 'Success'))
         self.assertEqual(action._output, ActionResult({'message': 'HELLO WORLD'}, 'Success'))
 
     def test_execute_return_failure(self):
