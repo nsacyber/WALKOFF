@@ -1,11 +1,9 @@
 import json
 import logging
-import os
 
 import gevent
 import nacl.bindings
 import nacl.utils
-import zmq.auth as auth
 import zmq.green as zmq
 from google.protobuf.json_format import MessageToDict
 from nacl.public import PrivateKey, Box
@@ -28,19 +26,15 @@ class WorkflowExecutionController:
         Args:
             cache (Cache): The Cache object
         """
-        server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
-        server_public, server_secret = auth.load_certificate(server_secret_file)
-        client_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "client.key_secret")
-        _, client_secret = auth.load_certificate(client_secret_file)
-
         self.comm_socket = zmq.Context.instance().socket(zmq.PUB)
-        self.comm_socket.curve_secretkey = server_secret
-        self.comm_socket.curve_publickey = server_public
+        self.comm_socket.curve_secretkey = walkoff.config.Config.SERVER_PRIVATE_KEY
+        self.comm_socket.curve_publickey = walkoff.config.Config.SERVER_PUBLIC_KEY
         self.comm_socket.curve_server = True
         self.comm_socket.bind(walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
         self.cache = cache
-        key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
-        worker_key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
+        key = PrivateKey(walkoff.config.Config.SERVER_PRIVATE_KEY[:nacl.bindings.crypto_box_SECRETKEYBYTES])
+        worker_key = PrivateKey(
+            walkoff.config.Config.CLIENT_PRIVATE_KEY[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
         self.box = Box(key, worker_key)
 
     def add_workflow(self, workflow_id, workflow_execution_id, start=None, start_arguments=None, resume=False,
@@ -178,12 +172,9 @@ class Receiver:
         self.thread_exit = False
         self.workflows_executed = 0
 
-        server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
-        server_public, server_secret = auth.load_certificate(server_secret_file)
-
         self.results_sock = ctx.socket(zmq.PULL)
-        self.results_sock.curve_secretkey = server_secret
-        self.results_sock.curve_publickey = server_public
+        self.results_sock.curve_secretkey = walkoff.config.Config.SERVER_PRIVATE_KEY
+        self.results_sock.curve_publickey = walkoff.config.Config.SERVER_PUBLIC_KEY
         self.results_sock.curve_server = True
         self.results_sock.bind(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
 

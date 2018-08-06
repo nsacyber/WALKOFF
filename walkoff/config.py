@@ -1,6 +1,7 @@
 import json
 import logging
 import logging.config
+import os
 import sys
 import warnings
 from os.path import isfile, join, abspath
@@ -8,6 +9,7 @@ from os.path import isfile, join, abspath
 import yaml
 
 from walkoff.helpers import format_db_path
+from zmq import auth
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +100,6 @@ class Config(object):
     EXECUTION_DB_TYPE = 'sqlite'
 
     # PATHS
-
     DATA_PATH = join('.', 'data')
 
     API_PATH = join('.', 'walkoff', 'api')
@@ -127,8 +128,6 @@ class Config(object):
 
     # AppConfig
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SECRET_KEY = 'SHORTSTOPKEYTEST'
-
     SQLALCHEMY_DATABASE_URI = format_db_path(WALKOFF_DB_TYPE, DB_PATH, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD')
 
     JWT_BLACKLIST_ENABLED = True
@@ -140,6 +139,22 @@ class Config(object):
 
     ITEMS_PER_PAGE = 20
     ACTION_EXECUTION_STRATEGY = 'local'
+
+    CASE_DB_USERNAME = None
+    CASE_DB_PASSWORD = None
+
+    EXECUTION_DB_USERNAME = None
+    EXECUTION_DB_PASSWORD = None
+
+    WALKOFF_DB_USERNAME = None
+    WALKOFF_DB_PASSWORD = None
+
+    SERVER_PUBLIC_KEY = None
+    SERVER_PRIVATE_KEY = None
+    CLIENT_PUBLIC_KEY = None
+    CLIENT_PRIVATE_KEY = None
+
+    SECRET_KEY = "SHORTSTOPKEY"
 
     @classmethod
     def load_config(cls, config_path=None):
@@ -180,10 +195,31 @@ class Config(object):
         with open(cls.CONFIG_PATH, 'w') as config_file:
             config_file.write(json.dumps(output, sort_keys=True, indent=4, separators=(',', ': ')))
 
+    @classmethod
+    def load_env_vars(cls):
+        cls.CASE_DB_USERNAME = os.environ.get("CASE_DB_USERNAME")
+        cls.CASE_DB_PASSWORD = os.environ.get("CASE_DB_PASSWORD")
+
+        cls.EXECUTION_DB_USERNAME = os.environ.get("EXECUTION_DB_USERNAME")
+        cls.EXECUTION_DB_PASSWORD = os.environ.get("EXECUTION_DB_PASSWORD")
+
+        cls.WALKOFF_DB_USERNAME = os.environ.get("WALKOFF_DB_USERNAME")
+        cls.WALKOFF_DB_PASSWORD = os.environ.get("WALKOFF_DB_PASSWORD")
+
+        cls.read_and_set_zmq_keys()
+
+    @classmethod
+    def read_and_set_zmq_keys(cls):
+        server_private_file = os.path.join(cls.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
+        cls.SERVER_PUBLIC_KEY, cls.SERVER_PRIVATE_KEY = auth.load_certificate(server_private_file)
+        client_private_file = os.path.join(cls.ZMQ_PRIVATE_KEYS_PATH, "client.key_secret")
+        cls.CLIENT_PUBLIC_KEY, cls.CLIENT_PRIVATE_KEY = auth.load_certificate(client_private_file)
+
 
 def initialize(config_path=None):
     """Loads the config file, loads the app cache, and loads the app APIs into memory"""
     Config.load_config(config_path)
+    Config.load_env_vars()
     setup_logger()
     from walkoff.appgateway import cache_apps
     cache_apps(Config.APPS_PATH)

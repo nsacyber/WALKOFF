@@ -25,6 +25,7 @@ class TestWorkflowResultsHandler(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        Config.load_env_vars()
         server_secret_file = os.path.join(Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
         cls.server_public, cls.server_secret = auth.load_certificate(server_secret_file)
         client_secret_file = os.path.join(Config.ZMQ_PRIVATE_KEYS_PATH, "client.key_secret")
@@ -35,15 +36,8 @@ class TestWorkflowResultsHandler(TestCase):
             logger = create_autospec(CaseLogger)
             database = create_autospec(ExecutionDatabase)
             socket_id = b'test_id'
-            address = '127.0.0.1:5557'
-            handler = WorkflowResultsHandler(
-                socket_id,
-                self.client_secret,
-                self.client_public,
-                self.server_public,
-                address,
-                database,
-                logger)
+            address = 'tcp://127.0.0.1:5556'
+            handler = WorkflowResultsHandler(socket_id, database, logger)
             mock_connect.assert_called_once_with(address)
             self.assertEqual(handler.execution_db, database)
             self.assertEqual(handler.case_logger, logger)
@@ -53,15 +47,7 @@ class TestWorkflowResultsHandler(TestCase):
             logger = create_autospec(CaseLogger)
             database = create_autospec(ExecutionDatabase)
             socket_id = b'test_id'
-            address = '127.0.0.1:5557'
-            handler = WorkflowResultsHandler(
-                socket_id,
-                self.client_secret,
-                self.client_public,
-                self.server_public,
-                address,
-                database,
-                logger)
+            handler = WorkflowResultsHandler(socket_id, database, logger)
             return handler, database, logger
 
     def test_shutdown(self):

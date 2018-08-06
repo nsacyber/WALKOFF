@@ -9,7 +9,6 @@ from threading import Lock
 import nacl.bindings
 import nacl.utils
 import zmq
-import zmq.auth as auth
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from google.protobuf.json_format import MessageToDict
@@ -40,28 +39,23 @@ logger = logging.getLogger(__name__)
 
 
 class WorkflowResultsHandler(object):
-    def __init__(self, socket_id, client_secret_key, client_public_key, server_public_key, zmq_results_address,
-                 execution_db, case_logger):
+    def __init__(self, socket_id, execution_db, case_logger):
         """Initialize a WorkflowResultsHandler object, which will be sending results of workflow execution
 
         Args:
             socket_id (str): The ID for the results socket
-            client_secret_key (str): The secret key for the client
-            client_public_key (str): The public key for the client
-            server_public_key (str): The public key for the server
-            zmq_results_address (str): The address for the ZMQ results socket
             execution_db (ExecutionDatabase): An ExecutionDatabase connection object
             case_logger (CaseLoger): A CaseLogger instance
         """
         self.results_sock = zmq.Context().socket(zmq.PUSH)
         self.results_sock.identity = socket_id
-        self.results_sock.curve_secretkey = client_secret_key
-        self.results_sock.curve_publickey = client_public_key
-        self.results_sock.curve_serverkey = server_public_key
+        self.results_sock.curve_secretkey = walkoff.config.Config.CLIENT_PRIVATE_KEY
+        self.results_sock.curve_publickey = walkoff.config.Config.CLIENT_PUBLIC_KEY
+        self.results_sock.curve_serverkey = walkoff.config.Config.SERVER_PUBLIC_KEY
         try:
-            self.results_sock.connect(zmq_results_address)
+            self.results_sock.connect(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
         except ZMQError:
-            logger.exception('Workflow Results handler could not connect to {}!'.format(zmq_results_address))
+            logger.exception('Workflow Results handler could not connect to {}!'.format(walkoff.config.Config.ZMQ_RESULTS_ADDRESS))
             raise
 
         self.execution_db = execution_db
@@ -123,27 +117,23 @@ CaseCommunicationMessageData = namedtuple('CaseCommunicationMessageData', ['type
 
 
 class WorkflowCommunicationReceiver(object):
-    def __init__(self, socket_id, client_secret_key, client_public_key, server_public_key, zmq_communication_address):
+    def __init__(self, socket_id):
         """Initialize a WorkflowCommunicationReceiver object, which will receive messages on the comm socket
 
         Args:
             socket_id (str): The socket ID for the ZMQ communication socket
-            client_secret_key (str): The secret key for the client
-            client_public_key (str): The public key for the client
-            server_public_key (str): The public key for the server
-            zmq_communication_address (str): The IP address for the ZMQ communication socket
         """
         self.comm_sock = zmq.Context().socket(zmq.SUB)
         self.comm_sock.identity = socket_id
-        self.comm_sock.curve_secretkey = client_secret_key
-        self.comm_sock.curve_publickey = client_public_key
-        self.comm_sock.curve_serverkey = server_public_key
+        self.comm_sock.curve_secretkey = walkoff.config.Config.CLIENT_PRIVATE_KEY
+        self.comm_sock.curve_publickey = walkoff.config.Config.CLIENT_PUBLIC_KEY
+        self.comm_sock.curve_serverkey = walkoff.config.Config.SERVER_PUBLIC_KEY
         self.comm_sock.setsockopt(zmq.SUBSCRIBE, b'')
         try:
-            self.comm_sock.connect(zmq_communication_address)
+            self.comm_sock.connect(walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
         except ZMQError:
             logger.exception('Workflow Communication Receiver could not connect to {}!'.format(
-                zmq_communication_address))
+                walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS))
             raise
         self.exit = False
 
@@ -288,6 +278,7 @@ class Worker(object):
             walkoff.config.initialize(config_path=config_path)
         else:
             walkoff.config.Config.load_config(config_path)
+            walkoff.config.Config.load_env_vars()
 
         self.execution_db = ExecutionDatabase(walkoff.config.Config.EXECUTION_DB_TYPE,
                                               walkoff.config.Config.EXECUTION_DB_PATH)
@@ -301,15 +292,10 @@ class Worker(object):
 
         self.thread_exit = False
 
-        server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
-        server_public, server_secret = auth.load_certificate(server_secret_file)
-        client_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "client.key_secret")
-        client_public, client_secret = auth.load_certificate(client_secret_file)
-
         socket_id = u"Worker-{}".format(id_).encode("ascii")
 
-        key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
-        server_key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
+        key = PrivateKey(walkoff.config.Config.CLIENT_PRIVATE_KEY[:nacl.bindings.crypto_box_SECRETKEYBYTES])
+        server_key = PrivateKey(walkoff.config.Config.SERVER_PRIVATE_KEY[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
 
         self.cache = walkoff.cache.make_cache(walkoff.config.Config.CACHE)
 
@@ -319,26 +305,11 @@ class Worker(object):
         case_logger = CaseLogger(self.case_db, self.subscription_cache)
 
         self.workflow_receiver = WorkflowReceiver(key, server_key, walkoff.config.Config.CACHE)
-
-        self.workflow_results_sender = WorkflowResultsHandler(
-            socket_id,
-            client_secret,
-            client_public,
-            server_public,
-            walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-            self.execution_db,
-            case_logger)
-
-        self.workflow_communication_receiver = WorkflowCommunicationReceiver(
-            socket_id,
-            client_secret,
-            client_public,
-            server_public,
-            walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
+        self.workflow_results_sender = WorkflowResultsHandler(socket_id, self.execution_db, case_logger)
+        self.workflow_communication_receiver = WorkflowCommunicationReceiver(socket_id)
 
         self.action_execution_strategy = make_execution_strategy(walkoff.config.Config)
         self.comm_thread = threading.Thread(target=self.receive_communications)
-
         self.comm_thread.start()
 
         self.workflows = {}

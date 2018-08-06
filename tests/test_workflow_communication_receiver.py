@@ -2,7 +2,7 @@ from unittest import TestCase
 from uuid import uuid4
 
 from mock import patch
-from zmq import Socket
+from zmq import Socket, auth
 
 from walkoff.config import Config
 from walkoff.multiprocessedexecutor.worker import *
@@ -12,6 +12,7 @@ class TestWorkflowResultsHandler(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        Config.load_env_vars()
         server_secret_file = os.path.join(Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
         cls.server_public, cls.server_secret = auth.load_certificate(server_secret_file)
         client_secret_file = os.path.join(Config.ZMQ_PRIVATE_KEYS_PATH, "client.key_secret")
@@ -20,26 +21,15 @@ class TestWorkflowResultsHandler(TestCase):
     def test_init(self):
         with patch.object(Socket, 'connect') as mock_connect:
             socket_id = b'test_id'
-            address = '127.0.0.1:5557'
-            receiver = WorkflowCommunicationReceiver(
-                socket_id,
-                self.client_secret,
-                self.client_public,
-                self.server_public,
-                address)
+            address = 'tcp://127.0.0.1:5557'
+            receiver = WorkflowCommunicationReceiver(socket_id)
             mock_connect.assert_called_once_with(address)
             self.assertFalse(receiver.exit)
 
     def get_receiver(self):
         with patch.object(Socket, 'connect'):
             socket_id = b'test_id'
-            address = '127.0.0.1:5557'
-            receiver = WorkflowCommunicationReceiver(
-                socket_id,
-                self.client_secret,
-                self.client_public,
-                self.server_public,
-                address)
+            receiver = WorkflowCommunicationReceiver(socket_id)
             return receiver
 
     def test_shutdown(self):
