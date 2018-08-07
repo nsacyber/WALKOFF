@@ -30,71 +30,12 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.environment_variable import EnvironmentVariable
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
-from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
+from walkoff.multiprocessedexecutor.senders import ZMQResultsSender
 from walkoff.proto.build.data_pb2 import CommunicationPacket, ExecuteWorkflowMessage, CaseControl, \
     WorkflowControl
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
 
 logger = logging.getLogger(__name__)
-
-
-class WorkflowResultsHandler(object):
-    def __init__(self, socket_id, client_secret_key, client_public_key, server_public_key, zmq_results_address,
-                 execution_db, case_logger):
-        """Initialize a WorkflowResultsHandler object, which will be sending results of workflow execution
-
-        Args:
-            socket_id (str): The ID for the results socket
-            client_secret_key (str): The secret key for the client
-            client_public_key (str): The public key for the client
-            server_public_key (str): The public key for the server
-            zmq_results_address (str): The address for the ZMQ results socket
-            execution_db (ExecutionDatabase): An ExecutionDatabase connection object
-            case_logger (CaseLoger): A CaseLogger instance
-        """
-        self.results_sock = zmq.Context().socket(zmq.PUSH)
-        self.results_sock.identity = socket_id
-        self.results_sock.curve_secretkey = client_secret_key
-        self.results_sock.curve_publickey = client_public_key
-        self.results_sock.curve_serverkey = server_public_key
-        try:
-            self.results_sock.connect(zmq_results_address)
-        except ZMQError:
-            logger.exception('Workflow Results handler could not connect to {}!'.format(zmq_results_address))
-            raise
-
-        self.execution_db = execution_db
-
-        self.case_logger = case_logger
-
-    def shutdown(self):
-        """Shuts down the results socket and tears down the ExecutionDatabase
-        """
-        self.results_sock.close()
-        self.execution_db.tear_down()
-
-    def handle_event(self, workflow, sender, **kwargs):
-        """Listens for the data_sent callback, which signifies that an execution element needs to trigger a
-                callback in the main thread.
-
-            Args:
-                workflow (Workflow): The Workflow object that triggered the event
-                sender (ExecutionElement): The execution element that sent the signal.
-                kwargs (dict): Any extra data to send.
-        """
-        event = kwargs['event']
-        if event in [WalkoffEvent.TriggerActionAwaitingData, WalkoffEvent.WorkflowPaused]:
-            saved_workflow = SavedWorkflow.from_workflow(workflow)
-            self.execution_db.session.add(saved_workflow)
-            self.execution_db.session.commit()
-        elif kwargs['event'] == WalkoffEvent.ConsoleLog:
-            action = workflow.get_executing_action()
-            sender = action
-
-        packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
-        if event.is_loggable():
-            self.case_logger.log(event, sender.id, kwargs.get('data', None))
-        self.results_sock.send(packet_bytes)
 
 
 class WorkerCommunicationMessageType(Enum):
@@ -283,10 +224,10 @@ class Worker(object):
         signal.signal(signal.SIGINT, self.exit_handler)
         signal.signal(signal.SIGABRT, self.exit_handler)
 
-        if os.name == 'nt':
-            walkoff.config.initialize(config_path=config_path)
-        else:
-            walkoff.config.Config.load_config(config_path)
+        walkoff.config.Config.load_config(config_path)
+
+        if os.name == 'nt' or walkoff.config.Config.SEPARATE_WORKERS:
+            walkoff.config.initialize(config_path=config_path, load=False)
 
         self.execution_db = ExecutionDatabase(walkoff.config.Config.EXECUTION_DB_TYPE,
                                               walkoff.config.Config.EXECUTION_DB_PATH)
@@ -319,14 +260,8 @@ class Worker(object):
 
         self.workflow_receiver = WorkflowReceiver(key, server_key, walkoff.config.Config.CACHE)
 
-        self.workflow_results_sender = WorkflowResultsHandler(
-            socket_id,
-            client_secret,
-            client_public,
-            server_public,
-            walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
-            self.execution_db,
-            case_logger)
+        self.workflow_results_sender = ZMQResultsSender(self.execution_db, case_logger, socket_id, client_secret,
+                                                        client_public, server_public)
 
         self.workflow_communication_receiver = WorkflowCommunicationReceiver(
             socket_id,

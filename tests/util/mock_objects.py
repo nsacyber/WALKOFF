@@ -12,8 +12,9 @@ from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
-from walkoff.multiprocessedexecutor import workflowexecutioncontroller
+from walkoff.multiprocessedexecutor.receiver import Receiver
 from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
+from walkoff.multiprocessedexecutor.senders import ZMQResultsSender
 
 try:
     from Queue import Queue
@@ -26,6 +27,10 @@ workflows_executed = 0
 def mock_initialize_threading(self, pids=None):
     global workflows_executed
     workflows_executed = 0
+
+    with current_app.app_context():
+        self.zmq_sender = ZMQResultsSender(current_app.running_context.execution_db,
+                                           current_app.running_context.case_logger)
 
     self.manager = MockLoadBalancer(current_app._get_current_object())
     self.manager_thread = threading.Thread(target=self.manager.manage_workflows)
@@ -124,7 +129,7 @@ class MockLoadBalancer(object):
         return True
 
 
-class MockReceiveQueue(workflowexecutioncontroller.Receiver):
+class MockReceiveQueue(Receiver):
 
     def __init__(self, current_app):
         self.current_app = current_app

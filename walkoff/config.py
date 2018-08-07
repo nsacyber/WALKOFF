@@ -138,6 +138,8 @@ class Config(object):
     JWT_BLACKLIST_PRUNE_FREQUENCY = 1000
     MAX_STREAM_RESULTS_SIZE_KB = 156
 
+    SEPARATE_WORKERS = False
+    SEPARATE_RECEIVER = False
     ITEMS_PER_PAGE = 20
 
     @classmethod
@@ -180,9 +182,10 @@ class Config(object):
             config_file.write(json.dumps(output, sort_keys=True, indent=4, separators=(',', ': ')))
 
 
-def initialize(config_path=None):
+def initialize(config_path=None, load=True):
     """Loads the config file, loads the app cache, and loads the app APIs into memory"""
-    Config.load_config(config_path)
+    if load:
+        Config.load_config(config_path)
     setup_logger()
     from walkoff.appgateway import cache_apps
     cache_apps(Config.APPS_PATH)

@@ -12,11 +12,11 @@ from walkoff.executiondb.metrics import AppMetric, ActionMetric, ActionStatusMet
 def __workflow_pending(sender, **kwargs):
     current_app.running_context.execution_db.session.expire_all()
     workflow_status = current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
-        execution_id=sender['execution_id']).first()
+        execution_id=str(sender['execution_id'])).first()
     if workflow_status:
         workflow_status.status = WorkflowStatusEnum.pending
     else:
-        workflow_status = WorkflowStatus(sender['execution_id'], sender['id'], sender['name'])
+        workflow_status = WorkflowStatus(str(sender['execution_id']), sender['id'], sender['name'])
         current_app.running_context.execution_db.session.add(workflow_status)
     current_app.running_context.execution_db.session.commit()
 

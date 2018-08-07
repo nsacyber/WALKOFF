@@ -12,8 +12,8 @@ from walkoff.case.database import Case, Event
 from walkoff.case.subscription import Subscription
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
-from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
 from walkoff.server.app import create_app
+from start_workers import spawn_worker_processes
 from walkoff.server import workflowresults  # Need this import
 
 
@@ -27,7 +27,8 @@ class TestZMQCommunication(unittest.TestCase):
         cls.context = cls.app.test_request_context()
         cls.context.push()
 
-        pids = spawn_worker_processes()
+        pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES, walkoff.config.Config)
+        time.sleep(1)
         cls.app.running_context.executor.initialize_threading(cls.app, pids)
 
     def tearDown(self):
