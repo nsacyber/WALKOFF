@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: postgres-casedb
+  namespace: walkoff
 spec:
   ports:
   - name: postgres-casedb
@@ -16,10 +17,12 @@ apiVersion: v1
 kind: ReplicationController
 metadata:
   name: postgres-casedb
+  namespace: walkoff
 spec:
   replicas: 1
   template:
     metadata:
+      namespace: walkoff
       labels:
         app: postgres-casedb
     spec:

@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: walkoff-worker
+  namespace: walkoff
 spec:
   replicas: 5
   selector:
@@ -9,6 +10,7 @@ spec:
       run: walkoff-worker
   template:
     metadata:
+      namespace: walkoff
       labels:
         run: walkoff-worker
     spec:
@@ -17,9 +19,15 @@ spec:
         image: x.azurecr.io/walkoff-worker:vy
         env:
           - name: WALKOFF_DB_USERNAME
-            value: "walkoff"
+            valueFrom:
+              secretKeyRef:
+                name: walkoff-db-secrets
+                key: WALKOFF_DB_USERNAME
           - name: WALKOFF_DB_PASSWORD
-            value: "walkoff"
+            valueFrom:
+              secretKeyRef:
+                name: walkoff-db-secrets
+                key: WALKOFF_DB_PASSWORD
 #        command:
 #        - "sleep"
 #        - "36000"
