@@ -156,8 +156,8 @@ class Config(object):
 
     SECRET_KEY = "SHORTSTOPKEY"
 
-    __passwords = [CASE_DB_PASSWORD, EXECUTION_DB_PASSWORD, WALKOFF_DB_PASSWORD, SERVER_PRIVATE_KEY, CLIENT_PRIVATE_KEY,
-                   SECRET_KEY]
+    __passwords = ['CASE_DB_PASSWORD', 'EXECUTION_DB_PASSWORD', 'WALKOFF_DB_PASSWORD', 'SERVER_PRIVATE_KEY',
+                   'CLIENT_PRIVATE_KEY', 'SERVER_PUBLIC_KEY', 'CLIENT_PUBLIC_KEY', 'SECRET_KEY']
 
     @classmethod
     def load_config(cls, config_path=None):
@@ -192,10 +192,8 @@ class Config(object):
 
         output = {}
         for key in keys:
-            if key not in cls.__passwords and hasattr(cls, key.upper()):
+            if key.upper() not in cls.__passwords and hasattr(cls, key.upper()):
                 output[key.lower()] = getattr(cls, key.upper())
-
-        print(output)
 
         with open(cls.CONFIG_PATH, 'w') as config_file:
             config_file.write(json.dumps(output, sort_keys=True, indent=4, separators=(',', ': ')))
