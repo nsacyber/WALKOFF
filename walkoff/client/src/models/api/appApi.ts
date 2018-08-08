@@ -20,6 +20,13 @@ export class AppApi {
 	@Type(() => DeviceApi)
 	device_apis?: DeviceApi[] = [];
 
+	getFilteredActionApis(searchTerm: string) : ActionApi[] {
+		searchTerm = searchTerm.trim().toLowerCase();
+		return (searchTerm) ? 
+			this.action_apis.filter(api => api.name.toLowerCase().includes(searchTerm) || this.name.toLowerCase().includes(searchTerm)) :
+			this.action_apis;
+	}
+
 	// info: AppInfo;
 
 	// tags: Tag[] = [];

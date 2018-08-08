@@ -76,17 +76,17 @@
 
         <div class="col-md-2 graphEditorColumn">
             <div class="panel-group" id="accordion" #accordion [hidden]="!loadedWorkflow">
-                <div id="app_search_bar_container">
-                    <input type="search" id="app_search_bar" placeholder="Search" (keyup)="search_for_actions($event)"/>
+                <div class="panel">
+                    <input class="form-control" placeholder="Filter Actions..." [ngModel]="actionFilter" [formControl]="actionFilterControl"/>
                 </div>
                 <div *ngFor="let app of getAppsWithActions()" class="panel panel-default">
                     <div class="panel-heading playbook-heading collapsed" data-toggle="collapse" [attr.data-target]="'#actionsCollapse' + removeWhitespace(app.name)"
                         [title]="app.info ? app.info.description : ''">
                         <h4 class="panel-title">{{app.name}}</h4>
                     </div>
-                    <div id="actionsCollapse{{removeWhitespace(app.name)}}" class="panel-collapse collapse">
+                    <div id="actionsCollapse{{removeWhitespace(app.name)}}" class="panel-collapse collapse action-panel">
                         <div class="panel-body">
-                            <div *ngFor="let actionApi of app.action_apis" class="panel panel-default actionPanel" dnd-draggable [dragEnabled]="true"
+                            <div *ngFor="let actionApi of app.getFilteredActionApis(actionFilter)" class="panel panel-default actionPanel" dnd-draggable [dragEnabled]="true"
                                 [dragData]="{ appName: app.name, actionApi: actionApi }" (dblclick)="handleDoubleClickEvent(app.name, actionApi.name)"
                                 [title]="actionApi.description">
                                 <div class="panel-body">

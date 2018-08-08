@@ -8,6 +8,7 @@ import 'rxjs/Rx';
 import { saveAs } from 'file-saver';
 import { plainToClass, classToClass } from 'class-transformer';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { FormControl } from '@angular/forms';
 
 import * as cytoscape from 'cytoscape';
 import * as clipboard from 'cytoscape-clipboard';
@@ -105,6 +106,8 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	consoleEventSource: any;
 	playbookToImport: File;
 	recalculateConsoleTableCallback: any;
+	actionFilter: string = '';
+	actionFilterControl = new FormControl();
 
 	// Simple bootstrap modal params
 	modalParams: {
@@ -162,6 +165,20 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		this.recalculateConsoleTableCallback = (e: JQuery.Event<HTMLElement, null>) => this.recalculateConsoleTable(e);
 		$(document).on('shown.bs.tab', 'a[data-toggle="tab"]', this.recalculateConsoleTableCallback)
+
+		/**
+		 * Filter app list by application and action names
+		 */
+		this.actionFilterControl.valueChanges.debounceTime(250).distinctUntilChanged().subscribe(query => {
+			query = query.trim();
+			this.actionFilter = query;
+			setTimeout(() => {
+				($('.action-panel') as any)
+					.addClass('no-transition')
+					.collapse((this.actionFilter) ? 'show' : 'hide')
+					.removeClass('no-transition') 
+			}, 0);
+		});
 	}
 
 	/**
@@ -1637,7 +1654,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Filters only the apps that have actions specified
 	 */
 	getAppsWithActions(): AppApi[] {
-		return this.appApis.filter(a => a.action_apis && a.action_apis.length);
+		return this.appApis.filter(a => a.action_apis && a.getFilteredActionApis(this.actionFilter).length);
 	}
 
 	/**
@@ -1790,33 +1807,4 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		}).catch(() => argument.reference = '')
 	}
 
-	/**
-	 *   Search functionality for App/Action bar
-	 */
-	search_for_actions(event: any){
-	    let searchTerm: string;
-	    searchTerm = event.target.value;
-        let apps = this.apps_actions.nativeElement.querySelectorAll(".panel-title");
-        let actions = this.apps_actions.nativeElement.querySelectorAll(".panel-body");
-        this.apps_actions.nativeElement.querySelectorAll(".panel").forEach(function(item){
-            item.style.display = "block";
-        });
-
-        if(searchTerm.trim() != ""){
-            //Actions
-            for (let element of actions){
-                //Displays Apps
-                if(element.textContent.toLowerCase().includes(searchTerm.toLowerCase().trim())){
-                    element.closest(".panel").closest(".panel").style.display = "block";
-
-                    //Parent Apps Selector
-                    element.closest(".panel").closest(".panel:not(.actionPanel)").style.display = "block";
-
-                }
-                else{
-                    element.closest(".panel").style.display = "none";
-                }
-            }
-        }
-	}
 }
