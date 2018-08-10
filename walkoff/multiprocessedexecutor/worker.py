@@ -34,6 +34,7 @@ from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
 from walkoff.proto.build.data_pb2 import CommunicationPacket, ExecuteWorkflowMessage, CaseControl, \
     WorkflowControl
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
+from walkoff.executiondb.workflowexecstrategy import WorkflowExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -308,7 +309,10 @@ class Worker(object):
         self.workflow_results_sender = WorkflowResultsHandler(socket_id, self.execution_db, case_logger)
         self.workflow_communication_receiver = WorkflowCommunicationReceiver(socket_id)
 
-        self.action_execution_strategy = make_execution_strategy(walkoff.config.Config)
+        action_execution_strategy = make_execution_strategy(walkoff.config.Config)
+
+        self.workflow_executor = WorkflowExecutor(self.capacity, self.execution_db, action_execution_strategy, AppInstanceRepo)
+
         self.comm_thread = threading.Thread(target=self.receive_communications)
         self.comm_thread.start()
 
@@ -334,63 +338,11 @@ class Worker(object):
         """Receives requests to execute workflows, and sends them off to worker threads"""
         workflow_generator = self.workflow_receiver.receive_workflows()
         while not self.thread_exit:
-            if not self.__is_pool_at_capacity:
+            if not self.workflow_executor.is_at_capacity:
                 workflow_data = next(workflow_generator)
                 if workflow_data is not None:
-                    self.threadpool.submit(self.execute_workflow_worker, *workflow_data)
+                    self.threadpool.submit(self.workflow_executor.execute, *workflow_data)
             time.sleep(0.1)
-
-    @property
-    def __is_pool_at_capacity(self):
-        with self._lock:
-            return len(self.workflows) >= self.capacity
-
-    def execute_workflow_worker(self, workflow_id, workflow_execution_id, start, start_arguments=None, resume=False,
-                                environment_variables=None):
-        """Execute a workflow
-
-        Args:
-            workflow_id (UUID): The ID of the Workflow to be executed
-            workflow_execution_id (UUID): The execution ID of the Workflow to be executed
-            start (UUID): The ID of the starting Action
-            start_arguments (list[Argument], optional): Optional list of starting Arguments. Defaults to None
-            resume (bool, optional): Optional boolean to signify that this Workflow is being resumed. Defaults to False.
-            environment_variables (list[EnvironmentVariable]): Optional list of environment variables to pass into
-                the workflow. These will not be persistent.
-        """
-        self.execution_db.session.expire_all()
-
-        workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
-            execution_id=workflow_execution_id).first()
-        if workflow_status.status == WorkflowStatusEnum.aborted:
-            return
-
-        workflow = self.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
-        workflow._execution_id = workflow_execution_id
-        if resume:
-            saved_state = self.execution_db.session.query(SavedWorkflow).filter_by(
-                workflow_execution_id=workflow_execution_id).first()
-            workflow._accumulator = saved_state.accumulator
-
-            for branch in workflow.branches:
-                if branch.id in workflow._accumulator:
-                    branch._counter = workflow._accumulator[branch.id]
-
-            workflow._instance_repo = AppInstanceRepo(saved_state.app_instances)
-
-        with self._lock:
-            self.workflows[threading.current_thread().name] = workflow
-
-        start = start if start else workflow.start
-        workflow.execute(
-            execution_id=workflow_execution_id,
-            start=start,
-            start_arguments=start_arguments,
-            resume=resume,
-            environment_variables=environment_variables,
-            action_execution_strategy=self.action_execution_strategy)
-        with self._lock:
-            self.workflows.pop(threading.current_thread().name)
 
     def receive_communications(self):
         """Constantly receives data from the ZMQ socket and handles it accordingly"""
@@ -401,12 +353,10 @@ class Worker(object):
                 self._handle_case_control_communication(message.data)
 
     def _handle_workflow_control_communication(self, message):
-        workflow = self.__get_workflow_by_execution_id(message.workflow_execution_id)
-        if workflow:
-            if message.type == WorkflowCommunicationMessageType.pause:
-                workflow.pause()
-            elif message.type == WorkflowCommunicationMessageType.abort:
-                workflow.abort()
+        if message.type == WorkflowCommunicationMessageType.pause:
+            self.workflow_executor.pause(message.workflow_execution_id)
+        elif message.type == WorkflowCommunicationMessageType.abort:
+            self.workflow_executor.abort(message.workflow_execution_id)
 
     def _handle_case_control_communication(self, message):
         if message.type == CaseCommunicationMessageType.create:
@@ -424,16 +374,5 @@ class Worker(object):
                 sender (ExecutionElement): The execution element that sent the signal.
                 kwargs (dict): Any extra data to send.
         """
-        workflow = self._get_current_workflow()
-        self.workflow_results_sender.handle_event(workflow, sender, **kwargs)
-
-    def _get_current_workflow(self):
-        with self._lock:
-            return self.workflows[threading.currentThread().name]
-
-    def __get_workflow_by_execution_id(self, workflow_execution_id):
-        with self._lock:
-            for workflow in self.workflows.values():
-                if workflow.get_execution_id() == workflow_execution_id:
-                    return workflow
-            return None
+        workflow_context = self.workflow_executor.get_current_workflow()
+        self.workflow_results_sender.handle_event(workflow_context.workflow, sender, **kwargs)
