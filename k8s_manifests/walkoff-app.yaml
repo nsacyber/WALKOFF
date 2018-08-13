@@ -17,13 +17,30 @@ spec:
       - name: cert-volume
         secret:
           secretName: walkoff-cert-secret
+      - name: zmq-private
+        secret:
+          secretName: zmq-private-keys
+      - name: zmq-public
+        secret:
+          secretName: zmq-public-keys
+      - name: walkoff-storage
+        persistentVolumeClaim:
+          claimName: walkoff-storage
       containers:
       - name: walkoff-app
-        image: walkoffdev.azurecr.io/walkoff-worker:dev
+        image: walkoffacr.azurecr.io/walkoff-app:old
         volumeMounts:
         - name: cert-volume
           readOnly: true
           mountPath: "/app/walkoff/certs"
+        - name: zmq-private
+          readOnly: true
+          mountPath: "/app/walkoff/certs/private_keys"
+        - name: zmq-public
+          readOnly: true
+          mountPath: "/app/walkoff/certs/public_keys"
+        - name: walkoff-storage
+          mountPath: "/app/walkoff/commonstorage"
         env:
           - name: WALKOFF_DB_USERNAME
             valueFrom:
@@ -36,15 +53,15 @@ spec:
                 name: walkoff-db-secrets
                 key: WALKOFF_DB_PASSWORD
         ports:
-        - containerPort: 80
-          name: web
+        - containerPort: 8080
+          name: http
         - containerPort: 5556
-          name: zmq1
+          name: zmq-results
         - containerPort: 5557
-          name: zmq2
-#        command:
-#        - "sleep"
-#        - "36000"
+          name: zmq-comm
+        command:
+        - "sleep"
+        - "36000"
       imagePullSecrets:
       - name: aks
 ---
@@ -56,9 +73,9 @@ metadata:
   labels:
     run: walkoff-app
 spec:
-  type: LoadBalancer
   ports:
-  - port: 80
+  - port: 8080
+    name: http
   selector:
     run: walkoff-app
 ---
@@ -72,8 +89,8 @@ metadata:
 spec:
   ports:
   - port: 5556
-    name: zmq1
+    name: zmq-results
   - port: 5557
-    name: zmq2
+    name: zmq-comm
   selector:
     run: walkoff-app

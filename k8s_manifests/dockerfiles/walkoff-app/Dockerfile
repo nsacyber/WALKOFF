@@ -37,13 +37,12 @@ RUN pip install psycopg2
 RUN python setup_walkoff.py
 
 COPY [ "./update_config.py", "/app/walkoff/" ]
-COPY [ "../common/app.py", "/app/walkoff/apps/HelloWorld" ]
-COPY [ "../common/dist", "/app/walkoff/walkoff/client/dist" ]
-COPY [ "../common/node_modules", "/app/walkoff/walkoff/client/node_modules" ]
-COPY [ "../common/.certificates", "/app/walkoff/.certificates" ]
+COPY [ "./common/app.py", "/app/walkoff/apps/HelloWorld" ]
+COPY [ "./common/dist", "/app/walkoff/walkoff/client/dist" ]
+COPY [ "./common/node_modules", "/app/walkoff/walkoff/client/node_modules" ]
 
 RUN python update_config.py
 
-EXPOSE 80 5556 5557
+EXPOSE 8080 5556 5557
 
 CMD python walkoff.py -a -c data/walkoff.config

@@ -25,6 +25,12 @@ Config.WALKOFF_DB_TYPE = 'postgresql'
 Config.CASE_DB_TYPE = 'postgresql'
 Config.EXECUTION_DB_TYPE = 'postgresql'
 
+Config.KEYS_PATH = join('.', 'certs')
+Config.CERTIFICATE_PATH = join(Config.KEYS_PATH, 'tls.crt')
+Config.PRIVATE_KEY_PATH = join(Config.KEYS_PATH, 'tls.key')
+Config.ZMQ_PRIVATE_KEYS_PATH = join(Config.KEYS_PATH, 'private_keys')
+Config.ZMQ_PUBLIC_KEYS_PATH = join(Config.KEYS_PATH, 'public_keys')
+
 Config.SQLALCHEMY_DATABASE_URI = format_db_path(Config.WALKOFF_DB_TYPE, Config.DB_PATH, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD')
 
 Config.NUMBER_PROCESSES = 1

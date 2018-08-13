@@ -1,0 +1,23 @@
+---
+namespace: walkoff
+certificates:
+  self-signed-key-pair: ca-key-pair
+storage:
+  classname: walkoff-storage
+  size: 5Gi
+  provisioner:
+    type: kubernetes.io/azure-file
+    parameters: Standard_LRS
+secrets:
+  certs: walkoff-cert-secret
+  zmq-private: zmq-private-keys
+  zmq-public: zmq-public-keys
+  db-logins:
+    db-hostname:
+    secret-name: walkoff-db-secrets
+    db-username-key: WALKOFF_DB_USERNAME
+    db-password-key: WALKOFF_DB_PASSWORD
+  redis-logins:
+    redis-hostname:
+    redis-username:
+    redis-password:

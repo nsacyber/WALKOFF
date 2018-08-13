@@ -14,9 +14,34 @@ spec:
       labels:
         run: walkoff-worker
     spec:
+      volumes:
+      - name: cert-volume
+        secret:
+          secretName: walkoff-cert-secret
+      - name: zmq-private
+        secret:
+          secretName: zmq-private-keys
+      - name: zmq-public
+        secret:
+          secretName: zmq-public-keys
+      - name: walkoff-storage
+        persistentVolumeClaim:
+          claimName: walkoff-storage
       containers:
       - name: walkoff-worker
-        image: x.azurecr.io/walkoff-worker:vy
+        image: walkoffacr.azurecr.io/walkoff-worker:old
+        volumeMounts:
+        - name: cert-volume
+          readOnly: true
+          mountPath: "/app/walkoff/certs"
+        - name: zmq-private
+          readOnly: true
+          mountPath: "/app/walkoff/certs/private_keys"
+        - name: zmq-public
+          readOnly: true
+          mountPath: "/app/walkoff/certs/public_keys"
+        - name: walkoff-storage
+          mountPath: "/app/walkoff/commonstorage"
         env:
           - name: WALKOFF_DB_USERNAME
             valueFrom:
@@ -28,8 +53,8 @@ spec:
               secretKeyRef:
                 name: walkoff-db-secrets
                 key: WALKOFF_DB_PASSWORD
-#        command:
-#        - "sleep"
-#        - "36000"
+        command:
+        - "sleep"
+        - "36000"
       imagePullSecrets:
       - name: aks

@@ -30,17 +30,16 @@ RUN git clone -b worker_executables --single-branch --progress --verbose https:/
 WORKDIR /app/walkoff
 
 # Set branch to before receiver separation for 1.0 proof of concept
-RUN git reset --hard 0a779cfaeda15782877b67c89389b223378b2fbd
+# RUN git reset --hard 0a779cfaeda15782877b67c89389b223378b2fbd
 
 RUN pip install redis
 RUN pip install psycopg2
 RUN python setup_walkoff.py
 
-COPY [ "./app.py", "/app/walkoff/apps/HelloWorld" ]
 COPY [ "./update_config.py", "/app/walkoff/" ]
-COPY [ "./dist", "/app/walkoff/walkoff/client/dist" ]
-COPY [ "./node_modules", "/app/walkoff/walkoff/client/node_modules" ]
-COPY [ "./.certificates", "/app/walkoff/.certificates" ]
+COPY [ "./common/app.py", "/app/walkoff/apps/HelloWorld" ]
+COPY [ "./common/dist", "/app/walkoff/walkoff/client/dist" ]
+COPY [ "./common/node_modules", "/app/walkoff/walkoff/client/node_modules" ]
 
 RUN python update_config.py
 

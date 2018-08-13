@@ -8,6 +8,5 @@ spec:
   issuerRef:
     name: ca-issuer
     kind: Issuer
-  commonName: walkoff.svc.cluster.local
   dnsNames:
-  - "*.walkoff.svc.cluster.local"
+  - walkofftest.eastus.cloudapp.azure.com
