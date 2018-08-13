@@ -13,7 +13,7 @@ from walkoff.multiprocessedexecutor import multiprocessedexecutor
 from walkoff.server.app import create_app
 from walkoff.executiondb.environment_variable import EnvironmentVariable
 from uuid import uuid4
-from walkoff.executiondb.actionexecstrategy import LocalActionExecutionStrategy
+from walkoff.worker.actionexecstrategy import LocalActionExecutionStrategy
 
 try:
     from importlib import reload

@@ -14,7 +14,7 @@ from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.multiprocessedexecutor import workflowexecutioncontroller
 from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
-from walkoff.executiondb.actionexecstrategy import LocalActionExecutionStrategy
+from walkoff.worker.actionexecstrategy import LocalActionExecutionStrategy
 try:
     from Queue import Queue
 except ImportError:

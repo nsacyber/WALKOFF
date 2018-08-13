@@ -5,7 +5,10 @@ from mock import patch
 from zmq import Socket, auth
 
 from walkoff.config import Config
-from walkoff.multiprocessedexecutor.worker import *
+from walkoff.worker.worker import *
+from walkoff.worker.workflow_receivers import WorkerCommunicationMessageType, WorkflowCommunicationMessageType, \
+    CaseCommunicationMessageType, WorkerCommunicationMessageData, WorkflowCommunicationMessageData, \
+    CaseCommunicationMessageData, WorkflowCommunicationReceiver
 
 
 class TestWorkflowResultsHandler(TestCase):

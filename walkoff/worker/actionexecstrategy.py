@@ -1,8 +1,8 @@
 from walkoff.appgateway import get_app_action, get_condition, get_transform
 from walkoff.appgateway.apiutil import get_app_action_api, get_condition_api, get_transform_api
-from .action import Action
-from .condition import Condition
-from .transform import Transform
+from walkoff.executiondb.action import Action
+from walkoff.executiondb.condition import Condition
+from walkoff.executiondb.transform import Transform
 from collections import namedtuple
 
 
@@ -42,7 +42,7 @@ execution_strategy_lookup = {
 }
 
 
-def make_execution_strategy(config, execution_strategy_map=execution_strategy_lookup, **kwargs):
+def make_execution_strategy(config, execution_strategy_map=None, **kwargs):
     strategy = config.ACTION_EXECUTION_STRATEGY
     execution_strategy_map = execution_strategy_map or execution_strategy_lookup
     try:

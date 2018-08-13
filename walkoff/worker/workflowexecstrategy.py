@@ -10,17 +10,17 @@ logger = logging.getLogger(__name__)
 
 
 class WorkflowExecutionContext(object):
-
-    __slots__ = ['workflow', 'name', 'id', 'workflow_start', 'execution_id']
+    __slots__ = ['workflow', 'name', 'id', 'workflow_start', 'execution_id', 'accumulator', 'app_instance_repo',
+                 'executing_action', 'is_paused', 'is_aborted', 'has_branches']
 
     def __init__(self, workflow, accumulator, app_instance_repo, execution_id):
         self.workflow = workflow
+        self.accumulator = accumulator
+        self.app_instance_repo = app_instance_repo
+        self.execution_id = execution_id
         self.name = workflow.name
         self.id = workflow.id
         self.workflow_start = workflow.start
-        self.execution_id = execution_id
-        self.accumulator = accumulator
-        self.app_instance_repo = app_instance_repo
         self.executing_action = None
         self.is_paused = False
         self.is_aborted = False
@@ -213,15 +213,8 @@ class WorkflowExecutor(object):
         'serial': SerialWorkflowExecutionStrategy
     }
 
-    def __init__(
-            self,
-            max_workflows,
-            execution_db,
-            action_execution_stategy,
-            app_instance_repo_class,
-            accumulator_repo_class=dict,
-            executing_workflow_repo=dict
-    ):
+    def __init__(self, max_workflows, execution_db, action_execution_stategy, app_instance_repo_class,
+                 accumulator_repo_class=dict, executing_workflow_repo=dict):
         self.max_workflows = max_workflows
         self.execution_db = execution_db
         self.action_execution_strategy = action_execution_stategy
@@ -257,14 +250,9 @@ class WorkflowExecutor(object):
     def make_new_context(self, workflow, workflow_execution_id):
         accumulator = self._accumulator_repo_type()
         app_instance_repo = self._app_instance_repo_class()
-        return WorkflowExecutionContext(
-            workflow,
-            accumulator,
-            app_instance_repo,
-            workflow_execution_id
-        )
+        return WorkflowExecutionContext(workflow, accumulator, app_instance_repo, workflow_execution_id)
 
-    def make_resumed_context(self, workflow_execution_id):
+    def make_resumed_context(self, workflow, workflow_execution_id):
         saved_state = self.execution_db.session.query(SavedWorkflow).filter_by(
             workflow_execution_id=workflow_execution_id).first()
         if saved_state is None:
@@ -272,17 +260,14 @@ class WorkflowExecutor(object):
                 workflow_execution_id))
             return None
 
-        workflow_context = WorkflowExecutionContext(
-            workflow,
-            saved_state.accumulator,
-            self._app_instance_repo_class(saved_state.app_instances),
-            workflow_execution_id
-        )
+        workflow_context = WorkflowExecutionContext(workflow, saved_state.accumulator,
+                                                    self._app_instance_repo_class(saved_state.app_instances),
+                                                    workflow_execution_id)
         workflow_context.set_branch_counters_from_accumulator()
         return workflow_context
 
     def execute(self, workflow_id, workflow_execution_id, start, start_arguments=None, resume=False,
-                                environment_variables=None):
+                environment_variables=None):
         """Execute a workflow
 
         Args:
@@ -309,7 +294,7 @@ class WorkflowExecutor(object):
             return
 
         if resume:
-            workflow_context = self.make_resumed_context(workflow_execution_id)
+            workflow_context = self.make_resumed_context(workflow, workflow_execution_id)
             if workflow_context is None:
                 return
         else:
@@ -320,14 +305,9 @@ class WorkflowExecutor(object):
         with self._lock:
             self.executing_workflows[threading.current_thread().name] = workflow_context
 
-        self.workflow_execution_strategies['serial'].execute(
-            workflow_context,
-            workflow_execution_id,
-            start=start,
-            start_arguments=start_arguments,
-            resume=resume,
-            environment_variables=environment_variables
-        )
+        self.workflow_execution_strategies['serial'].execute(workflow_context, workflow_execution_id, start=start,
+                                                             start_arguments=start_arguments, resume=resume,
+                                                             environment_variables=environment_variables)
 
         with self._lock:
             self.executing_workflows.pop(threading.current_thread().name)
@@ -342,4 +322,3 @@ class WorkflowExecutor(object):
                 if workflow_context.execution_id == workflow_execution_id:
                     return workflow_context
             return None
-

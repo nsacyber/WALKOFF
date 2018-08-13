@@ -11,7 +11,7 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.position import Position
-from walkoff.executiondb.actionexecstrategy import LocalActionExecutionStrategy
+from walkoff.worker.actionexecstrategy import LocalActionExecutionStrategy
 
 
 class TestAction(unittest.TestCase):

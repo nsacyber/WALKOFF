@@ -1,5 +1,5 @@
 from unittest import TestCase
-from walkoff.executiondb.actionexecstrategy import LocalActionExecutionStrategy, make_execution_strategy
+from walkoff.worker.actionexecstrategy import LocalActionExecutionStrategy, make_execution_strategy
 
 class TestActionExecutionStrategyFactory(TestCase):
 

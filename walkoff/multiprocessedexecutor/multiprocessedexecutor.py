@@ -17,7 +17,7 @@ from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
-from walkoff.multiprocessedexecutor.worker import Worker
+from walkoff.worker.worker import Worker
 from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController, Receiver
 
 logger = logging.getLogger(__name__)

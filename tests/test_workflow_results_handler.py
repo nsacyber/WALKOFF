@@ -7,13 +7,13 @@ from sqlalchemy.orm import scoped_session
 from zmq import Socket
 from zmq import auth
 
-import walkoff.multiprocessedexecutor.worker
+import walkoff.worker.worker
 from walkoff.case.logger import CaseLogger
 from walkoff.config import Config
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.workflow import Workflow
-from walkoff.multiprocessedexecutor.worker import WorkflowResultsHandler
+from walkoff.worker.workflow_receivers import WorkflowResultsHandler
 
 
 class MockSender(object):
@@ -95,12 +95,12 @@ class TestWorkflowResultsHandler(TestCase):
             mock_send.assert_called_once_with('test_packet')
 
     @patch('walkoff.multiprocessedexecutor.worker.convert_to_protobuf', return_value='test_packet')
-    @patch.object(walkoff.multiprocessedexecutor.worker.SavedWorkflow, 'from_workflow', return_value='saved_workflow')
+    @patch.object(walkoff.worker.worker.SavedWorkflow, 'from_workflow', return_value='saved_workflow')
     def test_handle_pause_event(self, mock_saved_workflow, mock_convert):
         self.check_handle_saved_event(mock_saved_workflow, mock_convert, WalkoffEvent.WorkflowPaused)
 
     @patch('walkoff.multiprocessedexecutor.worker.convert_to_protobuf', return_value='test_packet')
-    @patch.object(walkoff.multiprocessedexecutor.worker.SavedWorkflow, 'from_workflow', return_value='saved_workflow')
+    @patch.object(walkoff.worker.worker.SavedWorkflow, 'from_workflow', return_value='saved_workflow')
     def test_handle_trigger_save_event(self, mock_saved_workflow, mock_convert):
         self.check_handle_saved_event(mock_saved_workflow, mock_convert, WalkoffEvent.TriggerActionAwaitingData)
 

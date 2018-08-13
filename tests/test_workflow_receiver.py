@@ -11,7 +11,8 @@ import walkoff.cache
 import walkoff.config
 from tests.util import initialize_test_config
 from tests.util.mock_objects import MockRedisCacheAdapter
-from walkoff.multiprocessedexecutor.worker import WorkflowReceiver, ExecuteWorkflowMessage
+from walkoff.worker.worker import ExecuteWorkflowMessage
+from walkoff.worker.workflow_receivers import WorkflowReceiver
 
 
 class TestWorkflowReceiver(TestCase):
