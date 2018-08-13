@@ -21,25 +21,6 @@ matrix:
 
     - language: python
       os: linux
-      python: "3.4"
-      install:
-        - pip install -r requirements.txt && pip install -r requirements-test.txt
-        - pip install coverage
-      before_script:
-        - python scripts/generate_certificates.py
-      script:
-        - coverage run run_all_tests.py
-        - coverage combine
-        - coverage report
-      branches:
-        only:
-          - master
-          - development
-        except:
-          - caching
-
-    - language: python
-      os: linux
       python: "3.5"
       install:
         - pip install -r requirements.txt && pip install -r requirements-test.txt
