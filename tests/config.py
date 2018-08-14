@@ -20,6 +20,7 @@ class TestConfig(walkoff.config.Config):
     DB_PATH = abspath(join('.', 'tests', 'tmp', 'walkoff_test.db'))
     EXECUTION_DB_PATH = abspath(join('.', 'tests', 'tmp', 'execution_test.db'))
     NUMBER_PROCESSES = 2
-    CACHE = {'type': 'disk', 'directory': CACHE_PATH}
+    #CACHE = {'type': 'disk', 'directory': CACHE_PATH}
+    CACHE = {'type': 'redis'}
     WALKOFF_DB_TYPE = 'sqlite'
     SQLALCHEMY_DATABASE_URI = format_db_path(WALKOFF_DB_TYPE, DB_PATH)

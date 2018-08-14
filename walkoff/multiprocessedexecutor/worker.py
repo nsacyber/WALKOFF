@@ -29,7 +29,7 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.environment_variable import EnvironmentVariable
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
-from walkoff.executiondb.actionexecstrategy import make_execution_strategy
+from walkoff.appgateway.actionexecstrategy import make_execution_strategy
 from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
 from walkoff.proto.build.data_pb2 import CommunicationPacket, ExecuteWorkflowMessage, CaseControl, \
     WorkflowControl

@@ -26,8 +26,8 @@ DEFAULT_TIMEOUT = 2
 
 
 class Walkoff(App):
-    def __init__(self, name=None, device=None):
-        App.__init__(self, name, device)
+    def __init__(self, name, device, context):
+        App.__init__(self, name, device, context)
         self.is_connected = False
         self.headers = None
         self.refresh_token = None

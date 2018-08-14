@@ -14,7 +14,7 @@ from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.multiprocessedexecutor import workflowexecutioncontroller
 from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
-from walkoff.executiondb.actionexecstrategy import LocalActionExecutionStrategy
+from walkoff.appgateway.actionexecstrategy import LocalActionExecutionStrategy
 try:
     from Queue import Queue
 except ImportError:
@@ -177,6 +177,9 @@ class MockRequestQueue(object):
 class MockRedisCacheAdapter(RedisCacheAdapter):
     def __init__(self, **opts):
         self.cache = FakeStrictRedis(**opts)
+        self.cache.info = lambda : None
+    def info(self):
+        pass
 
 
 class PubSubCacheSpy(object):

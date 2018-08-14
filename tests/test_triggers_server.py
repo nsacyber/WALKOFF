@@ -8,6 +8,8 @@ from tests.util import execution_db_help
 from tests.util.servertestcase import ServerTestCase
 from walkoff.events import WalkoffEvent
 from walkoff.server.returncodes import *
+from walkoff.executiondb.device import App, Device
+from walkoff.executiondb import ExecutionDatabase
 
 try:
     from importlib import reload
@@ -21,6 +23,10 @@ class TestTriggersServer(ServerTestCase):
     def setUp(self):
         self.action_events = ['Action Execution Success', 'Trigger Action Awaiting Data', 'Trigger Action Taken',
                               'Trigger Action Not Taken']
+        app = ExecutionDatabase.instance.session.query(App).filter_by(name='HelloWorldBounded').first()
+        device = Device('__device__', [], [], 'something')
+        app.devices.append(device)
+        ExecutionDatabase.instance.session.commit()
 
     def test_trigger_execute(self):
         workflow = execution_db_help.load_workflow('triggerActionWorkflow', 'triggerActionWorkflow')

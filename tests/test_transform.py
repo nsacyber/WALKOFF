@@ -4,7 +4,7 @@ import walkoff.appgateway
 from tests.util import initialize_test_config
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.transform import Transform
-from walkoff.executiondb.actionexecstrategy import LocalActionExecutionStrategy
+from walkoff.appgateway.actionexecstrategy import LocalActionExecutionStrategy
 
 
 class TestTransform(unittest.TestCase):

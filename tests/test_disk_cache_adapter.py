@@ -27,6 +27,10 @@ class TestDiskCacheAdapter(TestCase):
         self.assertEqual(self.cache.directory, walkoff.config.Config.CACHE_PATH)
         self.assertTrue(self.cache.retry)
 
+    def test_singleton(self):
+        cache = DiskCacheAdapter(directory=walkoff.config.Config.CACHE_PATH)
+        self.assertIs(cache, self.cache)
+
     def test_set_get(self):
         self.assertTrue(self.cache.set('alice', 'something'))
         self.assertEqual(self.cache.get('alice'), 'something')
@@ -43,6 +47,15 @@ class TestDiskCacheAdapter(TestCase):
         self.assertEqual(self.cache.get('test'), 123)
         self.assertFalse(self.cache.add('test', 456))
         self.assertEqual(self.cache.get('test'), 123)
+
+    def test_delete(self):
+        self.assertTrue(self.cache.set('alice', 'something'))
+        self.cache.delete('alice')
+        self.assertIsNone(self.cache.get('alice'))
+
+    def test_delete_dne(self):
+        self.cache.delete('alice')
+        self.assertIsNone(self.cache.get('alice'))
 
     def test_incr(self):
         self.cache.set('count', 1)
@@ -114,6 +127,20 @@ class TestDiskCacheAdapter(TestCase):
         self.assertEqual(cache.cache.directory, walkoff.config.Config.CACHE_PATH)
         self.assertEqual(cache.cache._count, 4)
         self.assertFalse(cache.retry)
+
+    def test_scan_no_pattern(self):
+        keys = ('a', 'b', 'c', 'd')
+        for i, key in enumerate(keys):
+            self.cache.set(key, i)
+        ret_keys = self.cache.scan()
+        self.assertSetEqual(set(ret_keys), set(keys))
+
+    def test_scan_with_pattern(self):
+        keys = ('1.a', '2.a', '3.b', 'd')
+        for i, key in enumerate(keys):
+            self.cache.set(key, i)
+        ret_keys = self.cache.scan('*.a')
+        self.assertSetEqual(set(ret_keys), {'1.a', '2.a'})
 
     def test_publish(self):
         self.cache.pubsub_cache = PubSubCacheSpy()

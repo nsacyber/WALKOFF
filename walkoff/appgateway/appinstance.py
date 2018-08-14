@@ -16,19 +16,22 @@ class AppInstance(object):
         self.instance = instance
 
     @staticmethod
-    def create(app_name, device_name):
+    def create(app_name, device_name, context):
         """Creates a new Instance object from an app name and a device name.
         
         Args:
             app_name (str): The name of the app from which to import the main module.
             device_name (str): A device pertaining to the App.
+            context (dict): A dictionary of values representing the context in which the device is executing
             
         Returns:
             (AppInstance): A new Instance object.
         """
         try:
-            return AppInstance(instance=get_app(app_name)(name=app_name, device=device_name))
-        except Exception as e:
+            app_class = get_app(app_name)
+            app = app_class(app_name, device_name, context)
+            return AppInstance(instance=app)
+        except Exception:
             if device_name:
                 logger.exception('Cannot create app instance. app: {0}, device: {1}.'.format(app_name, device_name))
             return AppInstance(instance=None)
@@ -39,6 +42,7 @@ class AppInstance(object):
     def shutdown(self):
         """Shuts down the Instance object."""
         self.instance.shutdown()
+        self.instance._clear_cache()
 
     def __repr__(self):
         return str({'instance': str(self.instance)})

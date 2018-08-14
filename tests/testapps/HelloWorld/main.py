@@ -57,8 +57,8 @@ def dummy_action(status, other=False):
 
 
 class Main(App):
-    def __init__(self, name=None, device=None):
-        App.__init__(self, name, device)
+    def __init__(self, name, device, context):
+        App.__init__(self, name, device, context)
         self.introMessage = {"message": "HELLO WORLD"}
 
     def shutdown(self):

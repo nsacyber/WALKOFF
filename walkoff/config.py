@@ -105,7 +105,8 @@ class Config(object):
     API_PATH = join('.', 'walkoff', 'api')
     APPS_PATH = join('.', 'apps')
     CACHE_PATH = join('.', 'data', 'cache')
-    CACHE = {"type": "disk", "directory": CACHE_PATH, "shards": 8, "timeout": 0.01, "retry": True}
+    # CACHE = {"type": "disk", "directory": CACHE_PATH, "shards": 8, "timeout": 0.01, "retry": True}
+    CACHE = {'type': 'redis'}
     CASE_DB_PATH = abspath(join(DATA_PATH, 'events.db'))
 
     CLIENT_PATH = join('.', 'walkoff', 'client')
