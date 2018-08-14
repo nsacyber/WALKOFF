@@ -14,8 +14,7 @@ from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.multiprocessedexecutor.receiver import Receiver
 from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
-from walkoff.multiprocessedexecutor.senders import ZMQResultsSender
-
+from walkoff.executiondb.actionexecstrategy import LocalActionExecutionStrategy
 try:
     from Queue import Queue
 except ImportError:
@@ -116,7 +115,9 @@ class MockLoadBalancer(object):
             self.exec_id = workflow_execution_id
 
             start = start if start else workflow.start
-            workflow.execute(execution_id=workflow_execution_id, start=start, start_arguments=start_arguments,
+            workflow.execute(execution_id=workflow_execution_id,
+                             action_execution_strategy=LocalActionExecutionStrategy(),
+                             start=start, start_arguments=start_arguments,
                              resume=resume, environment_variables=env_vars)
             self.exec_id = ''
 

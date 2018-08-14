@@ -1,4 +1,5 @@
 __all__ = ['test_action',
+           'test_action_exec_strategy_factory',
            'test_app_action_event_dispatcher',
            'test_app_api_server',
            'test_app_api_validation',

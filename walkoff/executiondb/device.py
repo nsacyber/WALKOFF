@@ -1,10 +1,8 @@
 import logging
-import os
 import sys
 
 import nacl.secret
 import nacl.utils
-import zmq.auth as auth
 from sqlalchemy import Column, Integer, ForeignKey, String, LargeBinary, Enum, DateTime, func, orm, and_
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -365,17 +363,13 @@ class EncryptedDeviceField(Execution_Base, DeviceFieldMixin):
         self.name = name
         self.type = field_type if field_type in allowed_device_field_types else 'string'
 
-        server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
-        _, server_secret = auth.load_certificate(server_secret_file)
-        self.__key = server_secret[:nacl.secret.SecretBox.KEY_SIZE]
+        self.__key = walkoff.config.Config.SERVER_PRIVATE_KEY[:nacl.secret.SecretBox.KEY_SIZE]
         self.__box = nacl.secret.SecretBox(self.__key)
         self._value = self.__box.encrypt(str(value).encode('utf-8'))
 
     @orm.reconstructor
     def init_on_load(self):
-        server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
-        _, server_secret = auth.load_certificate(server_secret_file)
-        self.__key = server_secret[:nacl.secret.SecretBox.KEY_SIZE]
+        self.__key = walkoff.config.Config.SERVER_PRIVATE_KEY[:nacl.secret.SecretBox.KEY_SIZE]
         self.__box = nacl.secret.SecretBox(self.__key)
 
     @hybrid_property

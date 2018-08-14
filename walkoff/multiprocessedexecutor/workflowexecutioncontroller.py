@@ -1,9 +1,7 @@
 import logging
-import os
 
 import nacl.bindings
 import nacl.utils
-import zmq.auth as auth
 import zmq.green as zmq
 from nacl.public import PrivateKey, Box
 from six import string_types
@@ -24,19 +22,15 @@ class WorkflowExecutionController:
         Args:
             cache (Cache): The Cache object
         """
-        server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
-        server_public, server_secret = auth.load_certificate(server_secret_file)
-        client_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "client.key_secret")
-        _, client_secret = auth.load_certificate(client_secret_file)
-
-        self.comm_sock = zmq.Context.instance().socket(zmq.PUB)
-        self.comm_sock.curve_secretkey = server_secret
-        self.comm_sock.curve_publickey = server_public
-        self.comm_sock.curve_server = True
-        self.comm_sock.bind(walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
+        self.comm_socket = zmq.Context.instance().socket(zmq.PUB)
+        self.comm_socket.curve_secretkey = walkoff.config.Config.SERVER_PRIVATE_KEY
+        self.comm_socket.curve_publickey = walkoff.config.Config.SERVER_PUBLIC_KEY
+        self.comm_socket.curve_server = True
+        self.comm_socket.bind(walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
         self.cache = cache
-        key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
-        worker_key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
+        key = PrivateKey(walkoff.config.Config.SERVER_PRIVATE_KEY[:nacl.bindings.crypto_box_SECRETKEYBYTES])
+        worker_key = PrivateKey(
+            walkoff.config.Config.CLIENT_PRIVATE_KEY[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
         self.box = Box(key, worker_key)
 
     def add_workflow(self, workflow_id, workflow_execution_id, start=None, start_arguments=None, resume=False,
@@ -160,4 +154,105 @@ class WorkflowExecutionController:
 
     def _send_message(self, message):
         message_bytes = message.SerializeToString()
-        self.comm_sock.send(message_bytes)
+        self.comm_socket.send(message_bytes)
+
+
+class Receiver:
+    def __init__(self, current_app):
+        """Initialize a Receiver object, which will receive callbacks from the ExecutionElements.
+
+        Args:
+            current_app (Flask.App): The current Flask app
+        """
+        ctx = zmq.Context.instance()
+        self.thread_exit = False
+        self.workflows_executed = 0
+
+        self.results_sock = ctx.socket(zmq.PULL)
+        self.results_sock.curve_secretkey = walkoff.config.Config.SERVER_PRIVATE_KEY
+        self.results_sock.curve_publickey = walkoff.config.Config.SERVER_PUBLIC_KEY
+        self.results_sock.curve_server = True
+        self.results_sock.bind(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
+
+        self.current_app = current_app
+
+    def receive_results(self):
+        """Keep receiving results from execution elements over a ZMQ socket, and trigger the callbacks"""
+        while True:
+            if self.thread_exit:
+                break
+            try:
+                message_bytes = self.results_sock.recv(zmq.NOBLOCK)
+            except zmq.ZMQError:
+                gevent.sleep(0.1)
+                continue
+
+            with self.current_app.app_context():
+                self._send_callback(message_bytes)
+
+        self.results_sock.close()
+
+    def _send_callback(self, message_bytes):
+
+        message_outer = Message()
+        message_outer.ParseFromString(message_bytes)
+        callback_name = message_outer.event_name
+
+        if message_outer.type == Message.WORKFLOWPACKET:
+            message = message_outer.workflow_packet
+        elif message_outer.type == Message.ACTIONPACKET:
+            message = message_outer.action_packet
+        elif message_outer.type == Message.USERMESSAGE:
+            message = message_outer.message_packet
+        elif message_outer.type == Message.LOGMESSAGE:
+            message = message_outer.logging_packet
+        else:
+            message = message_outer.general_packet
+
+        if hasattr(message, "sender"):
+            sender = MessageToDict(message.sender, preserving_proto_field_name=True)
+        elif hasattr(message, "workflow"):
+            sender = MessageToDict(message.workflow, preserving_proto_field_name=True)
+        event = WalkoffEvent.get_event_from_name(callback_name)
+        if event is not None:
+            data = self._format_data(event, message)
+            with self.current_app.app_context():
+                event.send(sender, data=data)
+            if event in [WalkoffEvent.WorkflowShutdown, WalkoffEvent.WorkflowAborted]:
+                self._increment_execution_count()
+        else:
+            logger.error('Unknown callback {} sent'.format(callback_name))
+
+    @staticmethod
+    def _format_data(event, message):
+        if event == WalkoffEvent.ConsoleLog:
+            data = MessageToDict(message, preserving_proto_field_name=True)
+        elif event.event_type != EventType.workflow:
+            data = {'workflow': MessageToDict(message.workflow, preserving_proto_field_name=True)}
+        else:
+            data = {}
+        if event.requires_data():
+            if event != WalkoffEvent.SendMessage:
+                data['data'] = json.loads(message.additional_data)
+            else:
+                data['message'] = format_message_event_data(message)
+        return data
+
+    def _increment_execution_count(self):
+        self.workflows_executed += 1
+
+
+def format_message_event_data(message):
+    """Formats a Message
+
+    Args:
+        message (Message): The Message to be formatted
+
+    Returns:
+        (dict): The formatted Message object
+    """
+    return {'users': message.users,
+            'roles': message.roles,
+            'requires_reauth': message.requires_reauth,
+            'body': json.loads(message.body),
+            'subject': message.subject}

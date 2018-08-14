@@ -69,7 +69,6 @@ class Action(ExecutionElement, Execution_Base):
         self._arguments_api = None
         self._output = None
         self._execution_id = 'default'
-        self._action_executable = None
         self._resolved_device_id = -1
         self.validate()
 
@@ -80,7 +79,7 @@ class Action(ExecutionElement, Execution_Base):
             errors = []
             try:
                 self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
-                self._action_executable = get_app_action(self.app_name, self._run)
+                get_app_action(self.app_name, self._run)
             except UnknownApp:
                 errors.append('Unknown app {}'.format(self.app_name))
             except UnknownAppAction:
@@ -95,7 +94,7 @@ class Action(ExecutionElement, Execution_Base):
         errors = []
         try:
             self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
-            self._action_executable = get_app_action(self.app_name, self._run)
+            get_app_action(self.app_name, self._run)
             if is_app_action_bound(self.app_name, self._run) and not self.device_id:
                 message = 'App action is bound but no device ID was provided.'.format(self.name)
                 errors.append(message)
@@ -124,10 +123,11 @@ class Action(ExecutionElement, Execution_Base):
         """
         return self._execution_id
 
-    def execute(self, accumulator, instance=None, arguments=None, resume=False):
+    def execute(self, action_execution_strategy, accumulator, instance=None, arguments=None, resume=False):
         """Executes an Action by calling the associated app function.
 
         Args:
+            action_execution_strategy: The strategy used to execute the action (e.g. LocalActionExecutionStrategy)
             accumulator (dict): Dict containing the results of the previous actions
             instance (App, optional): The instance of an App object to be used to execute the associated function.
                 This field is required if the Action is a bounded action. Otherwise, it defaults to None.
@@ -163,9 +163,9 @@ class Action(ExecutionElement, Execution_Base):
             args = validate_app_action_parameters(self._arguments_api, arguments, self.app_name, self.action_name,
                                                   accumulator=accumulator)
             if is_app_action_bound(self.app_name, self._run):
-                result = self._action_executable(instance, **args)
+                result = action_execution_strategy.execute(self, args, instance=instance)
             else:
-                result = self._action_executable(**args)
+                result = action_execution_strategy.execute(self, args)
             result.set_default_status(self.app_name, self.action_name)
             if result.is_failure(self.app_name, self.action_name):
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionError,
@@ -193,17 +193,18 @@ class Action(ExecutionElement, Execution_Base):
         self._output = ActionResult('error: {0}'.format(formatted_error), return_type)
         WalkoffEvent.CommonWorkflowSignal.send(self, event=event, data=self._output.as_json())
 
-    def execute_trigger(self, data_in, accumulator):
+    def execute_trigger(self, action_execution_strategy, data_in, accumulator):
         """Executes the trigger for an Action, which will continue execution if the trigger returns True
 
         Args:
+            action_execution_strategy: The strategy used to execute the action (e.g. LocalActionExecutionStrategy)
             data_in (dict): The data to send to the trigger to test against
             accumulator (dict): Dict containing the results of the previous actions
 
         Returns:
             (bool): True if the trigger returned True, False otherwise
         """
-        if self.trigger.execute(data_in=data_in, accumulator=accumulator):
+        if self.trigger.execute(action_execution_strategy, data_in=data_in, accumulator=accumulator):
             logger.debug('Trigger is valid for input {0}'.format(data_in))
             return True
         else:

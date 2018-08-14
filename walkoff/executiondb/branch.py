@@ -56,10 +56,11 @@ class Branch(ExecutionElement, Execution_Base):
     def validate(self):
         pass
 
-    def execute(self, data_in, accumulator):
+    def execute(self, action_execution_strategy, data_in, accumulator):
         """Executes the Branch object, determining if this Branch should be taken.
 
         Args:
+            action_execution_strategy: The strategy used to execute the action (e.g. LocalActionExecutionStrategy)
             data_in (dict): The input to the Condition objects associated with this Branch.
             accumulator (dict): The accumulated data from previous Actions.
 
@@ -72,7 +73,7 @@ class Branch(ExecutionElement, Execution_Base):
         accumulator[self.id] = self._counter
 
         if data_in is not None and data_in.status == self.status:
-            if self.condition is None or self.condition.execute(data_in=data_in.result, accumulator=accumulator):
+            if self.condition is None or self.condition.execute(action_execution_strategy, data_in=data_in.result, accumulator=accumulator):
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.BranchTaken)
                 logger.debug('Branch is valid for input {0}'.format(data_in))
                 return self.destination_id

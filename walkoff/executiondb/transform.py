@@ -41,21 +41,19 @@ class Transform(ExecutionElement, Execution_Base):
         self.action_name = action_name
 
         self._data_param_name = None
-        self._run = None
         self._api = None
 
         self.arguments = []
         if arguments:
             self.arguments = arguments
-        self._transform_executable = None
         self.validate()
 
     def validate(self):
         """Validates the object"""
         errors = []
         try:
-            self._data_param_name, self._run, self._api = get_transform_api(self.app_name, self.action_name)
-            self._transform_executable = get_transform(self.app_name, self._run)
+            self._data_param_name, run, self._api = get_transform_api(self.app_name, self.action_name)
+            get_transform(self.app_name, run)
             tmp_api = split_api_params(self._api, self._data_param_name)
             validate_transform_parameters(tmp_api, self.arguments, self.action_name)
         except UnknownApp:
@@ -72,18 +70,19 @@ class Transform(ExecutionElement, Execution_Base):
         if not self.errors:
             errors = []
             try:
-                self._data_param_name, self._run, self._api = get_transform_api(self.app_name, self.action_name)
-                self._transform_executable = get_transform(self.app_name, self._run)
+                self._data_param_name, run, self._api = get_transform_api(self.app_name, self.action_name)
+                get_transform(self.app_name, run)
             except UnknownApp:
                 errors.append('Unknown app {}'.format(self.app_name))
             except UnknownTransform:
                 errors.append('Unknown transform {}'.format(self.action_name))
             self.errors = errors
 
-    def execute(self, data_in, accumulator):
+    def execute(self, action_execution_strategy, data_in, accumulator):
         """Executes the transform.
 
         Args:
+            action_execution_strategy: The strategy used to execute the action (e.g. LocalActionExecutionStrategy)
             data_in: The input to the condition, the last executed action of the workflow or the input to a trigger.
             accumulator (dict): A record of executed actions and their results. Of form {action_name: result}.
 
@@ -94,7 +93,7 @@ class Transform(ExecutionElement, Execution_Base):
         try:
             arguments = self.__update_arguments_with_data(data_in)
             args = validate_transform_parameters(self._api, arguments, self.action_name, accumulator=accumulator)
-            result = self._transform_executable(**args)
+            result = action_execution_strategy.execute(self, args)
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformSuccess)
             return result
         except InvalidArgument as e:
