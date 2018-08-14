@@ -25,12 +25,12 @@ RUN easy_install pip \
   && pip install --upgrade pip \
   && if [[ ! -e /usr/bin/pip ]]; then ln -sf /usr/bin/pip3 /usr/bin/pip; fi
 
-RUN git clone -b worker_executables --single-branch --progress --verbose https://www.github.com/nsacyber/WALKOFF.git ./walkoff
+RUN git clone -b k8s_development --single-branch --progress --verbose https://www.github.com/nsacyber/WALKOFF.git ./walkoff
 
 WORKDIR /app/walkoff
 
 # Set branch to before receiver separation for 1.0 proof of concept
-RUN git reset --hard 0a779cfaeda15782877b67c89389b223378b2fbd
+# RUN git reset --hard 0a779cfaeda15782877b67c89389b223378b2fbd
 
 RUN pip install redis
 RUN pip install psycopg2

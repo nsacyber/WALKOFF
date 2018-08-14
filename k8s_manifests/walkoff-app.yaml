@@ -28,7 +28,7 @@ spec:
           claimName: walkoff-storage
       containers:
       - name: walkoff-app
-        image: walkoffacr.azurecr.io/walkoff-app:old
+        image: walkoffacr.azurecr.io/walkoff-app:dev2
         volumeMounts:
         - name: cert-volume
           readOnly: true
@@ -52,6 +52,8 @@ spec:
               secretKeyRef:
                 name: walkoff-db-secrets
                 key: WALKOFF_DB_PASSWORD
+          - name: ZMQ_HOST
+            value: walkoff-app-internal
         ports:
         - containerPort: 8080
           name: http

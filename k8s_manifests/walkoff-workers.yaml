@@ -29,7 +29,7 @@ spec:
           claimName: walkoff-storage
       containers:
       - name: walkoff-worker
-        image: walkoffacr.azurecr.io/walkoff-worker:old
+        image: walkoffacr.azurecr.io/walkoff-worker:dev2
         volumeMounts:
         - name: cert-volume
           readOnly: true
@@ -53,6 +53,8 @@ spec:
               secretKeyRef:
                 name: walkoff-db-secrets
                 key: WALKOFF_DB_PASSWORD
+          - name: ZMQ_HOST
+            value: walkoff-app-internal
         command:
         - "sleep"
         - "36000"

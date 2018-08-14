@@ -92,7 +92,6 @@ class WorkflowResultsHandler(object):
         self.results_sock.send(packet_bytes)
 
 
->>>>>>> origin/development
 class WorkerCommunicationMessageType(Enum):
     workflow = 1
     case = 2
