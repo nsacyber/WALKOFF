@@ -6,7 +6,7 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.transform import Transform
 from walkoff.appgateway.apiutil import InvalidArgument
-from walkoff.worker.actionexecstrategy import LocalActionExecutionStrategy
+from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy
 
 class TestCondition(unittest.TestCase):
     @classmethod

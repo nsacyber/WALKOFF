@@ -18,10 +18,10 @@ from walkoff.case.logger import CaseLogger
 from walkoff.case.subscription import SubscriptionCache
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
-from walkoff.worker.actionexecstrategy import make_execution_strategy
+from walkoff.worker.action_exec_strategy import make_execution_strategy
 from walkoff.worker.workflow_receivers import WorkflowResultsHandler, WorkerCommunicationMessageType, \
     WorkflowCommunicationMessageType, CaseCommunicationMessageType, WorkflowCommunicationReceiver, WorkflowReceiver
-from walkoff.worker.workflowexecstrategy import WorkflowExecutor
+from walkoff.worker.workflow_exec_strategy import WorkflowExecutor
 
 logger = logging.getLogger(__name__)
 

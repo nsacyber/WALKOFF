@@ -5,7 +5,7 @@ import walkoff.multiprocessedexecutor.multiprocessedexecutor as executor
 import walkoff.scheduler
 from walkoff.case.logger import CaseLogger
 from walkoff.case.subscription import SubscriptionCache
-from walkoff.worker.actionexecstrategy import make_execution_strategy
+from walkoff.worker.action_exec_strategy import make_execution_strategy
 
 
 class Context(object):

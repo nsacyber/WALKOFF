@@ -10,7 +10,7 @@ from walkoff.case.logger import CaseLogger
 from walkoff.events import WalkoffEvent
 from walkoff.multiprocessedexecutor import multiprocessedexecutor
 from walkoff.server.app import create_app
-from walkoff.worker.actionexecstrategy import LocalActionExecutionStrategy
+from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy
 
 
 class TestSimpleWorkflow(unittest.TestCase):

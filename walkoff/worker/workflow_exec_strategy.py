@@ -6,71 +6,9 @@ from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 import threading
 
+from walkoff.worker.workflow_exec_context import WorkflowExecutionContext
+
 logger = logging.getLogger(__name__)
-
-
-class WorkflowExecutionContext(object):
-    __slots__ = ['workflow', 'name', 'id', 'workflow_start', 'execution_id', 'accumulator', 'app_instance_repo',
-                 'executing_action', 'is_paused', 'is_aborted', 'has_branches']
-
-    def __init__(self, workflow, accumulator, app_instance_repo, execution_id):
-        self.workflow = workflow
-        self.accumulator = accumulator
-        self.app_instance_repo = app_instance_repo
-        self.execution_id = execution_id
-        self.name = workflow.name
-        self.id = workflow.id
-        self.workflow_start = workflow.start
-        self.executing_action = None
-        self.is_paused = False
-        self.is_aborted = False
-        self.has_branches = bool(self.workflow.branches)
-        self.workflow.set_execution_id(execution_id)
-
-    def pause(self):
-        self.is_paused = True
-
-    def abort(self):
-        self.is_aborted = True
-
-    def send_event(self, event, data=None):
-        if data is None:
-            WalkoffEvent.CommonWorkflowSignal.send(self.workflow, event=event)
-        else:
-            WalkoffEvent.CommonWorkflowSignal.send(self.workflow, event=event, data=data)
-
-    def get_app_instance(self, device_id):
-        return self.app_instance_repo.get_app_instance(device_id)()
-
-    def get_action_by_id(self, action_id):
-        return self.workflow.get_action_by_id(action_id)
-
-    def get_branches_by_action_id(self, action_id):
-        return sorted(
-            self.workflow.get_branches_by_action_id(action_id),
-            key=lambda branch_: branch_.priority
-        )
-
-    def set_execution_id(self, execution_id):
-        self.workflow.set_execution_id(execution_id)
-
-    def set_branch_counters_from_accumulator(self):
-        for branch in self.workflow.branches:
-            if branch.id in self.accumulator:
-                branch._counter = self.accumulator[branch.id]
-
-    def update_accumulator(self, key, result):
-        self.accumulator[key] = result
-
-    def update_multiple_accumulator(self, updated_keys):
-        self.accumulator.update(updated_keys)
-
-    def shutdown(self):
-        # Upon finishing shut down instances
-        self.app_instance_repo.shutdown_instances()
-        accumulator = {str(key): value for key, value in self.accumulator.items()}
-        self.send_event(WalkoffEvent.WorkflowShutdown, data=accumulator)
-        logger.info('Workflow {0} completed. Result: {1}'.format(self.workflow.name, self.accumulator))
 
 
 class SerialWorkflowExecutionStrategy(object):
@@ -78,14 +16,7 @@ class SerialWorkflowExecutionStrategy(object):
     def __init__(self, action_execution_strategy):
         self.action_execution_strategy = action_execution_strategy
 
-    def execute(
-            self,
-            workflow_context,
-            start=None,
-            start_arguments=None,
-            resume=False,
-            environment_variables=None
-    ):
+    def execute(self, workflow_context, start=None, start_arguments=None, resume=False, environment_variables=None):
         """Executes a Workflow by executing all Actions in the Workflow list of Action objects.
 
         Args:
@@ -104,13 +35,7 @@ class SerialWorkflowExecutionStrategy(object):
         if not isinstance(start, UUID):
             start = UUID(start)
 
-        self.do_execute(
-            workflow_context,
-            start,
-            self.action_execution_strategy,
-            start_arguments,
-            resume
-        )
+        self.do_execute(workflow_context, start, self.action_execution_strategy, start_arguments, resume)
 
     def do_execute(self, workflow_context, start, action_execution_strategy, start_arguments, resume):
         actions = SerialWorkflowExecutionStrategy.action_iter(workflow_context, action_execution_strategy, start=start)
@@ -132,20 +57,12 @@ class SerialWorkflowExecutionStrategy(object):
 
             device_id = workflow_context.app_instance_repo.setup_app_instance(action, workflow_context.workflow)
             if device_id:
-                result = action.execute(
-                    action_execution_strategy,
-                    workflow_context.accumulator,
-                    instance=workflow_context.get_app_instance(device_id),
-                    arguments=start_arguments,
-                    resume=resume
-                )
+                result = action.execute(action_execution_strategy, workflow_context.accumulator,
+                                        instance=workflow_context.get_app_instance(device_id),
+                                        arguments=start_arguments, resume=resume)
             else:
-                result = action.execute(
-                    action_execution_strategy,
-                    workflow_context.accumulator,
-                    arguments=start_arguments,
-                    resume=resume
-                )
+                result = action.execute(action_execution_strategy, workflow_context.accumulator,
+                                        arguments=start_arguments, resume=resume)
 
             if start_arguments:
                 start_arguments = None
@@ -165,11 +82,8 @@ class SerialWorkflowExecutionStrategy(object):
 
         while current_action:
             yield current_action
-            current_id = SerialWorkflowExecutionStrategy.get_branch(
-                workflow_context,
-                current_action,
-                action_execution_strategy
-            )
+            current_id = SerialWorkflowExecutionStrategy.get_branch(workflow_context, current_action,
+                                                                    action_execution_strategy)
             current_action = workflow_context.get_action_by_id(current_id) if current_id is not None else None
         return
 
@@ -179,7 +93,7 @@ class SerialWorkflowExecutionStrategy(object):
             executed next.
 
         Args:
-            workflow_context (WorkflowExecutionContext): The context of the executing workflow
+            workflow_context (walkoff.worker.workflow_exec_context.WorkflowExecutionContext): The context of the executing workflow
             current_action(Action): The current action that has just finished executing.
             action_execution_strategy: The strategy with which to execute the actions
 
@@ -190,11 +104,8 @@ class SerialWorkflowExecutionStrategy(object):
             for branch in workflow_context.get_branches_by_action_id(current_action.id):
                 # TODO: This here is the only hold up from getting rid of action._output.
                 # Keep whole result in accumulator
-                destination_id = branch.execute(
-                    action_execution_strategy,
-                    current_action.get_output(),
-                    workflow_context.accumulator
-                )
+                destination_id = branch.execute(action_execution_strategy, current_action.get_output(),
+                                                workflow_context.accumulator)
                 if destination_id is not None:
                     logger.debug('Branch {} with destination {} chosen by workflow {} (id={})'.format(
                         str(branch.id),

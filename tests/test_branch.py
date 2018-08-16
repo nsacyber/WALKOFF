@@ -10,7 +10,7 @@ from walkoff.executiondb.branch import Branch
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.workflow import Workflow
-from walkoff.worker.actionexecstrategy import LocalActionExecutionStrategy
+from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy
 
 
 class TestBranch(unittest.TestCase):
