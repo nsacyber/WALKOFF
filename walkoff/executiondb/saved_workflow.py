@@ -34,15 +34,15 @@ class SavedWorkflow(Execution_Base):
         self.app_instances = app_instances
 
     @classmethod
-    def from_workflow(cls, workflow):
+    def from_workflow(cls, workflow_ctx):
         """Creates a SavedWorkflow from a currently executing Workflow object
 
         Args:
-            workflow (Workflow): The currently executing Workflow
+            workflow_ctx (WorkflowExecutionContext): The WorkflowExecutionContext
 
         Returns:
             (SavedWorkflow): A SavedWorkflow object
         """
-        return cls(workflow_execution_id=workflow.get_execution_id(), workflow_id=workflow.id,
-                   action_id=workflow.get_executing_action_id(), accumulator=workflow.get_accumulator(),
-                   app_instances=workflow.get_instances())
+        return cls(workflow_execution_id=workflow_ctx.execution_id, workflow_id=workflow_ctx.id,
+                   action_id=workflow_ctx.get_executing_action_id(), accumulator=workflow_ctx.accumulator,
+                   app_instances=workflow_ctx.app_instance_repo)

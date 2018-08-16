@@ -70,17 +70,6 @@ class Workflow(ExecutionElement, Execution_Base):
         self.errors = errors
         self.is_valid = self._is_valid
 
-    def get_action_by_id(self, action_id):
-        """Gets an Action by its ID
-
-        Args:
-            action_id (UUID): The ID of the Action to find
-
-        Returns:
-            (Action): The Action from its ID
-        """
-        return next((action for action in self.actions if action.id == action_id), None)
-
     def remove_action(self, action_id):
         """Removes a Action object from the Workflow's list of Actions given the Action ID.
 
@@ -90,7 +79,7 @@ class Workflow(ExecutionElement, Execution_Base):
         Returns:
             (bool): True on success, False otherwise.
         """
-        action_to_remove = self.get_action_by_id(action_id)
+        action_to_remove = next((action for action in self.actions if action.id == action_id), None)
         self.actions.remove(action_to_remove)
         self.branches[:] = [branch for branch in self.branches if
                             (branch.source_id != action_id and branch.destination_id != action_id)]

@@ -50,25 +50,25 @@ class WorkflowResultsHandler(object):
         self.results_sock.close()
         self.execution_db.tear_down()
 
-    def handle_event(self, workflow, sender, **kwargs):
+    def handle_event(self, workflow_ctx, sender, **kwargs):
         """Listens for the data_sent callback, which signifies that an execution element needs to trigger a
                 callback in the main thread.
 
             Args:
-                workflow (Workflow): The Workflow object that triggered the event
+                workflow_ctx (WorkflowExecutionContext): The WorkflowExecutionContext object that triggered the event
                 sender (ExecutionElement): The execution element that sent the signal.
                 kwargs (dict): Any extra data to send.
         """
         event = kwargs['event']
         if event in [WalkoffEvent.TriggerActionAwaitingData, WalkoffEvent.WorkflowPaused]:
-            saved_workflow = SavedWorkflow.from_workflow(workflow)
+            saved_workflow = SavedWorkflow.from_workflow(workflow_ctx)
             self.execution_db.session.add(saved_workflow)
             self.execution_db.session.commit()
         elif kwargs['event'] == WalkoffEvent.ConsoleLog:
-            action = workflow.get_executing_action()
+            action = workflow_ctx.get_executing_action()
             sender = action
 
-        packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
+        packet_bytes = convert_to_protobuf(sender, workflow_ctx, **kwargs)
         if event.is_loggable():
             self.case_logger.log(event, sender.id, kwargs.get('data', None))
         self.results_sock.send(packet_bytes)

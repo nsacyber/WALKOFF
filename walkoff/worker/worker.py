@@ -142,4 +142,4 @@ class Worker(object):
                 kwargs (dict): Any extra data to send.
         """
         workflow_context = self.workflow_executor.get_current_workflow()
-        self.workflow_results_sender.handle_event(workflow_context.workflow, sender, **kwargs)
+        self.workflow_results_sender.handle_event(workflow_context, sender, **kwargs)
