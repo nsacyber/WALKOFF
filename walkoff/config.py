@@ -154,6 +154,7 @@ class Config(object):
     SERVER_PRIVATE_KEY = None
     CLIENT_PUBLIC_KEY = None
     CLIENT_PRIVATE_KEY = None
+    ACCUMULATOR_TYPE = 'external'
 
     SECRET_KEY = "SHORTSTOPKEY"
 

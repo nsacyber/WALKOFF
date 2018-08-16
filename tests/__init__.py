@@ -1,4 +1,6 @@
-__all__ = ['test_action',
+__all__ = ['test_accumulators',
+           'test_accumulator_factory',
+           'test_action',
            'test_action_exec_strategy_factory',
            'test_app_action_event_dispatcher',
            'test_app_api_server',

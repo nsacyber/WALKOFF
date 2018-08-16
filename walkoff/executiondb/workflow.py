@@ -10,6 +10,7 @@ from walkoff.events import WalkoffEvent
 from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.action import Action
 from walkoff.executiondb.executionelement import ExecutionElement
+from walkoff.appgateway.accumulators import make_accumulator
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ class Workflow(ExecutionElement, Execution_Base):
 
         self._is_paused = False
         self._abort = False
-        self._accumulator = {branch.id: 0 for branch in self.branches}
+        #self._init_accumulator()
         self._execution_id = 'default'
         self._instance_repo = None
 
@@ -61,9 +62,9 @@ class Workflow(ExecutionElement, Execution_Base):
         """Loads all necessary fields upon Workflow being loaded from database"""
         self._is_paused = False
         self._abort = False
-        self._accumulator = {branch.id: 0 for branch in self.branches}
-        if self.environment_variables:
-            self._accumulator.update({env_var.id: env_var.value for env_var in self.environment_variables})
+        #self._init_accumulator()
+        # if self.environment_variables:
+        #     self._accumulator.update({env_var.id: env_var.value for env_var in self.environment_variables})
         self._instance_repo = AppInstanceRepo()
         self._execution_id = 'default'
 
@@ -121,6 +122,11 @@ class Workflow(ExecutionElement, Execution_Base):
         self._abort = True
         logger.info('Aborting workflow {0}'.format(self.name))
 
+    def _init_accumulator(self, from_resumed=False):
+        self._accumulator = make_accumulator(self)
+        if not from_resumed:
+            self._accumulator.update({branch.id: 0 for branch in self.branches})
+
     def execute(
             self,
             execution_id,
@@ -143,8 +149,10 @@ class Workflow(ExecutionElement, Execution_Base):
         """
         if self.is_valid:
             self._execution_id = execution_id
-            if environment_variables:
-                self._accumulator.update({env_var.id: env_var.value for env_var in environment_variables})
+            self._init_accumulator(from_resumed=resume)
+            for environment_variable_collection in (self.environment_variables, environment_variables):
+                if environment_variable_collection:
+                    self._accumulator.update({env_var.id: env_var.value for env_var in environment_variable_collection})
             logger.info('Executing workflow {0}'.format(self.name))
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowExecutionStart)
             start = start if start is not None else self.start
@@ -249,6 +257,7 @@ class Workflow(ExecutionElement, Execution_Base):
         accumulator = {str(key): value for key, value in self._accumulator.items()}
         WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.WorkflowShutdown, data=accumulator)
         logger.info('Workflow {0} completed. Result: {1}'.format(self.name, self._accumulator))
+        self._accumulator.clear()
 
     def set_execution_id(self, execution_id):
         """Sets the execution UUIDD for the Workflow

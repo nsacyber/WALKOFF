@@ -753,6 +753,17 @@ class RedisCacheAdapter(object):
         """
         return (key.decode('utf-8') for key in self.cache.scan_iter(pattern))
 
+    def exists(self, key):
+        """Checks to see if a key exists in the cache
+
+        Args:
+            key: The key to check
+
+        Returns:
+            bool: Does the key exist?
+        """
+        return bool(self.cache.exists(key))
+
     @classmethod
     def from_json(cls, json_in):
         """Constructs this cache from its JSON representation

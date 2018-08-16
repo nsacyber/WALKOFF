@@ -13,10 +13,9 @@ class SavedWorkflow(Execution_Base):
     workflow_execution_id = Column(UUIDType(binary=False), primary_key=True)
     workflow_id = Column(UUIDType(binary=False), nullable=False)
     action_id = Column(UUIDType(binary=False), nullable=False)
-    accumulator = Column(PickleType(), nullable=False)
     app_instances = Column(PickleType(), nullable=False)
 
-    def __init__(self, workflow_execution_id, workflow_id, action_id, accumulator, app_instances):
+    def __init__(self, workflow_execution_id, workflow_id, action_id, app_instances):
         """Initializes a SavedWorkflow object. This is used when a workflow pauses execution, and must be reloaded
             at a later point.
 
@@ -30,7 +29,6 @@ class SavedWorkflow(Execution_Base):
         self.workflow_execution_id = workflow_execution_id
         self.workflow_id = workflow_id
         self.action_id = action_id
-        self.accumulator = accumulator
         self.app_instances = app_instances
 
     @classmethod
@@ -43,6 +41,9 @@ class SavedWorkflow(Execution_Base):
         Returns:
             (SavedWorkflow): A SavedWorkflow object
         """
-        return cls(workflow_execution_id=workflow.get_execution_id(), workflow_id=workflow.id,
-                   action_id=workflow.get_executing_action_id(), accumulator=workflow.get_accumulator(),
-                   app_instances=workflow.get_instances())
+        return cls(
+            workflow_execution_id=workflow.get_execution_id(),
+            workflow_id=workflow.id,
+            action_id=workflow.get_executing_action_id(),
+            app_instances=workflow.get_instances()
+        )

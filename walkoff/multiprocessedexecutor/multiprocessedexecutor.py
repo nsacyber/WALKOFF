@@ -19,7 +19,7 @@ from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
 from walkoff.multiprocessedexecutor.worker import Worker
 from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController, Receiver
-
+from walkoff.appgateway.accumulators import make_accumulator
 logger = logging.getLogger(__name__)
 
 
@@ -267,13 +267,13 @@ class MultiprocessedExecutor(object):
         workflow = self.execution_db.session.query(Workflow).filter_by(
             id=saved_state.workflow_id).first()
         workflow._execution_id = execution_id
-
+        accumulator = make_accumulator(workflow)
         executed = False
         exec_action = None
         for action in workflow.actions:
             if action.id == saved_state.action_id:
                 exec_action = action
-                executed = action.execute_trigger(self.action_execution_strategy, data_in, saved_state.accumulator)
+                executed = action.execute_trigger(self.action_execution_strategy, data_in, accumulator)
                 break
 
         if executed:

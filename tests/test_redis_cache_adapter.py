@@ -110,6 +110,12 @@ class TestRedisCacheAdapter(TestCase):
         ret_keys = self.cache.scan('*.a')
         self.assertSetEqual(set(ret_keys), {'1.a', '2.a'})
 
+    def test_exists(self):
+        key = 'abc'
+        self.assertFalse(self.cache.exists(key))
+        self.cache.set(key, 42)
+        self.assertTrue(self.cache.exists(key))
+
     def test_subscribe(self):
         sub = self.cache.subscribe('channel1')
         self.assertEqual(sub.channel, 'channel1')
