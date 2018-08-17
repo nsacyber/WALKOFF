@@ -1,4 +1,5 @@
 from collections import namedtuple
+import logging
 
 import zmq
 from enum import Enum
@@ -17,7 +18,8 @@ from walkoff.executiondb.environment_variable import EnvironmentVariable
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
 from walkoff.proto.build.data_pb2 import CommunicationPacket, WorkflowControl, CaseControl, ExecuteWorkflowMessage
-from walkoff.worker.worker import logger
+
+logger = logging.getLogger(__name__)
 
 
 class WorkflowResultsHandler(object):
@@ -29,6 +31,7 @@ class WorkflowResultsHandler(object):
             execution_db (ExecutionDatabase): An ExecutionDatabase connection object
             case_logger (CaseLoger): A CaseLogger instance
         """
+        self._ready = False
         self.results_sock = zmq.Context().socket(zmq.PUSH)
         self.results_sock.identity = socket_id
         self.results_sock.curve_secretkey = walkoff.config.Config.CLIENT_PRIVATE_KEY
@@ -37,16 +40,20 @@ class WorkflowResultsHandler(object):
         try:
             self.results_sock.connect(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
         except ZMQError:
-            logger.exception('Workflow Results handler could not connect to {}!'.format(walkoff.config.Config.ZMQ_RESULTS_ADDRESS))
+            logger.exception(
+                'Workflow Results handler could not connect to {}!'.format(walkoff.config.Config.ZMQ_RESULTS_ADDRESS))
             raise
 
         self.execution_db = execution_db
 
         self.case_logger = case_logger
 
+        self._ready = True
+
     def shutdown(self):
         """Shuts down the results socket and tears down the ExecutionDatabase
         """
+        self._ready = False
         self.results_sock.close()
         self.execution_db.tear_down()
 
@@ -64,6 +71,9 @@ class WorkflowResultsHandler(object):
             saved_workflow = SavedWorkflow.from_workflow(workflow_ctx)
             self.execution_db.session.add(saved_workflow)
             self.execution_db.session.commit()
+        # TODO: FIX THIS.
+        elif event == WalkoffEvent.WorkerReady:
+            packet_bytes = None
         elif kwargs['event'] == WalkoffEvent.ConsoleLog:
             action = workflow_ctx.get_executing_action()
             sender = action
@@ -72,6 +82,13 @@ class WorkflowResultsHandler(object):
         if event.is_loggable():
             self.case_logger.log(event, sender.id, kwargs.get('data', None))
         self.results_sock.send(packet_bytes)
+
+    def is_ready(self):
+        return self._ready
+
+    def send_ready_message(self):
+        WalkoffEvent.CommonWorkflowSignal.send(sender={'id': self.results_sock.identity},
+                                               event=WalkoffEvent.WorkerReady)
 
 
 class WorkerCommunicationMessageType(Enum):
@@ -103,6 +120,7 @@ class WorkflowCommunicationReceiver(object):
         Args:
             socket_id (str): The socket ID for the ZMQ communication socket
         """
+        self._ready = False
         self.comm_sock = zmq.Context().socket(zmq.SUB)
         self.comm_sock.identity = socket_id
         self.comm_sock.curve_secretkey = walkoff.config.Config.CLIENT_PRIVATE_KEY
@@ -121,12 +139,14 @@ class WorkflowCommunicationReceiver(object):
         """Shuts down the object by setting self.exit to True and closing the communication socket
         """
         logger.debug('Shutting down Workflow Communication Recevier')
+        self._ready = False
         self.exit = True
         self.comm_sock.close()
 
     def receive_communications(self):
         """Constantly receives data from the ZMQ socket and handles it accordingly"""
         logger.info('Starting workflow communication receiver')
+        self._ready = True
         while not self.exit:
             try:
                 message_bytes = self.comm_sock.recv()
@@ -178,6 +198,9 @@ class WorkflowCommunicationReceiver(object):
         elif message.type == CaseControl.DELETE:
             return CaseCommunicationMessageData(CaseCommunicationMessageType.delete, message.id, None)
 
+    def is_ready(self):
+        return self._ready
+
 
 class WorkflowReceiver(object):
     def __init__(self, key, server_key, cache_config):
@@ -192,12 +215,14 @@ class WorkflowReceiver(object):
         self.key = key
         self.server_key = server_key
         self.cache = walkoff.cache.make_cache(cache_config)
+        self._ready = False
         self.exit = False
 
     def shutdown(self):
         """Shuts down the object by setting self.exit to True and shutting down the cache
         """
         logger.debug('Shutting down Workflow Receiver')
+        self._ready = False
         self.exit = True
         self.cache.shutdown()
 
@@ -205,6 +230,7 @@ class WorkflowReceiver(object):
         """Receives requests to execute workflows, and sends them off to worker threads"""
         logger.info('Starting workflow receiver')
         box = Box(self.key, self.server_key)
+        self._ready = True
         while not self.exit:
             received_message = self.cache.rpop("request_queue")
             if received_message is not None:
@@ -238,3 +264,6 @@ class WorkflowReceiver(object):
             else:
                 yield None
         raise StopIteration
+
+    def is_ready(self):
+        return self._ready

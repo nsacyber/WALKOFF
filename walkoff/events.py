@@ -88,6 +88,11 @@ class WalkoffSignal(object):
         cls._signals[id(func)] = func
 
 
+class WorkerSignal(WalkoffSignal):
+    def __init__(self, name, message):
+        super(WalkoffSignal, self).__init__(name, EventType.other, message=message)
+
+
 class ControllerSignal(WalkoffSignal):
     """A signal used by controller events
 
@@ -188,6 +193,8 @@ class TransformSignal(WalkoffSignal):
 class WalkoffEvent(Enum):
     """The types of events used by Walkoff. The value of the Enum is a signal which can be used to send and event
     """
+    WorkerReady = WorkerSignal('Worker Ready', 'Worker ready')
+
     SchedulerStart = ControllerSignal('Scheduler Start', 'Scheduler started', EVENT_SCHEDULER_START)
     SchedulerShutdown = ControllerSignal('Scheduler Shutdown', 'Scheduler shutdown', EVENT_SCHEDULER_SHUTDOWN)
     SchedulerPaused = ControllerSignal('Scheduler Paused', 'Scheduler paused', EVENT_SCHEDULER_PAUSED)

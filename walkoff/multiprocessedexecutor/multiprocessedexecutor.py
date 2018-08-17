@@ -209,8 +209,9 @@ class MultiprocessedExecutor(object):
                 workflow_execution_id=execution_id).first()
             workflow = self.execution_db.session.query(Workflow).filter_by(
                 id=workflow_status.workflow_id).first()
-            workflow._execution_id = execution_id
-            self._log_and_send_event(WalkoffEvent.WorkflowResumed, sender=workflow)
+
+            data = {"execution_id": execution_id}
+            self._log_and_send_event(WalkoffEvent.WorkflowResumed, sender=workflow, data=data)
 
             start = saved_state.action_id if saved_state else workflow.start
             self.execute_workflow(workflow.id, execution_id_in=execution_id, start=start, resume=True)

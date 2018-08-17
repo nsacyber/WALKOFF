@@ -11,10 +11,13 @@ from walkoff.case.database import CaseDatabase
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.saved_workflow import SavedWorkflow
-from walkoff.executiondb.workflow import Workflow
 from walkoff.multiprocessedexecutor import workflowexecutioncontroller
 from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
-from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy
+from walkoff.worker.workflow_exec_strategy import WorkflowExecutor
+from walkoff.appgateway.appinstancerepo import AppInstanceRepo
+from walkoff.worker.action_exec_strategy import make_execution_strategy
+import walkoff.config
+
 try:
     from Queue import Queue
 except ImportError:
@@ -62,7 +65,6 @@ class MockLoadBalancer(object):
         self.pending_workflows = MockRequestQueue()
         self.results_queue = MockReceiveQueue(current_app)
         self.workflow_comms = {}
-        self.exec_id = ''
 
         def handle_data_sent(sender, **kwargs):
             self.on_data_sent(sender, **kwargs)
@@ -74,28 +76,27 @@ class MockLoadBalancer(object):
         self.execution_db = ExecutionDatabase.instance
         self.case_db = CaseDatabase.instance
 
+        self.workflow_executor = WorkflowExecutor(2, self.execution_db, make_execution_strategy(walkoff.config.Config),
+                                                  AppInstanceRepo)
+
     def on_data_sent(self, sender, **kwargs):
-        workflow = self.workflow_comms[self.exec_id]
+        workflow_ctx = self.workflow_executor.get_current_workflow()
         if kwargs['event'] in [WalkoffEvent.TriggerActionAwaitingData, WalkoffEvent.WorkflowPaused]:
-            saved_workflow = SavedWorkflow(workflow_execution_id=workflow.get_execution_id(),
-                                           workflow_id=workflow.id,
-                                           action_id=workflow.get_executing_action_id(),
-                                           accumulator=workflow.get_accumulator(),
-                                           app_instances=workflow.get_instances())
+            saved_workflow = SavedWorkflow(workflow_execution_id=workflow_ctx.execution_id,
+                                           workflow_id=workflow_ctx.id,
+                                           action_id=workflow_ctx.get_executing_action_id(),
+                                           accumulator=workflow_ctx.accumulator,
+                                           app_instances=workflow_ctx.app_instance_repo)
             self.execution_db.session.add(saved_workflow)
             self.execution_db.session.commit()
 
-        if self.exec_id or not hasattr(sender, "_execution_id"):
-            packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
-        else:
-            workflow = self.workflow_comms[sender.get_execution_id()]
-            packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
-
+        packet_bytes = convert_to_protobuf(sender, workflow_ctx, **kwargs)
         self.results_queue.send(packet_bytes)
 
     def add_workflow(self, workflow_id, workflow_execution_id, start=None, start_arguments=None, resume=False,
                      environment_variables=None):
-        self.pending_workflows.put((workflow_id, workflow_execution_id, start, start_arguments, resume, environment_variables))
+        self.pending_workflows.put(
+            (workflow_id, workflow_execution_id, start, start_arguments, resume, environment_variables))
 
     def manage_workflows(self):
         while True:
@@ -103,26 +104,14 @@ class MockLoadBalancer(object):
             if workflow_id == "Exit":
                 return
 
-            self.execution_db.session.expire_all()
-            workflow = self.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
-
-            self.workflow_comms[workflow_execution_id] = workflow
-
-            self.exec_id = workflow_execution_id
-
-            start = start if start else workflow.start
-            workflow.execute(execution_id=workflow_execution_id,
-                             action_execution_strategy=LocalActionExecutionStrategy(),
-                             start=start, start_arguments=start_arguments,
-                             resume=resume, environment_variables=env_vars)
-            self.exec_id = ''
+            self.workflow_executor.execute(workflow_id, workflow_execution_id, start, start_arguments, resume, env_vars)
 
     def pause_workflow(self, workflow_execution_id):
         if workflow_execution_id in self.workflow_comms:
-            self.workflow_comms[workflow_execution_id].pause()
+            self.workflow_executor.pause(workflow_execution_id)
 
     def abort_workflow(self, workflow_execution_id):
-        self.workflow_comms[workflow_execution_id].abort()
+        self.workflow_executor.abort(workflow_execution_id)
         return True
 
 

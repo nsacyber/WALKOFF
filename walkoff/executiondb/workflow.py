@@ -70,6 +70,15 @@ class Workflow(ExecutionElement, Execution_Base):
         self.errors = errors
         self.is_valid = self._is_valid
 
+    def get_branches_by_action_id(self, id_):
+        branches = []
+        if self.branches:
+            for branch in self.branches:
+                if branch.source_id == id_:
+                    branches.append(branch)
+        return branches
+
+    # TODO: This isn't being used anywhere...do we need it?
     def remove_action(self, action_id):
         """Removes a Action object from the Workflow's list of Actions given the Action ID.
 
@@ -86,38 +95,6 @@ class Workflow(ExecutionElement, Execution_Base):
 
         logger.debug('Removed action {0} from workflow {1}'.format(action_id, self.name))
         return True
-
-    def get_executing_action_id(self):
-        """Gets the ID of the currently executing Action
-
-        Returns:
-            (UUID): The ID of the currently executing Action
-        """
-        return self._executing_action.id
-
-    def get_executing_action(self):
-        """Gets the currently executing Action
-
-        Returns:
-            (Action): The currently executing Action
-        """
-        return self._executing_action
-
-    def get_accumulator(self):
-        """Gets the accumulator
-
-        Returns:
-            (dict): The accumulator
-        """
-        return self._accumulator
-
-    def get_instances(self):
-        """Gets all instances
-
-        Returns:
-            (list[AppInstance]): All instances
-        """
-        return self._instance_repo.get_all_app_instances()
 
 
 @event.listens_for(Workflow, 'before_update')

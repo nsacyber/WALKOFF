@@ -169,7 +169,7 @@ def workflow_paused_callback(sender, **kwargs):
 @WalkoffEvent.WorkflowResumed.connect
 @workflow_stream.push(WorkflowStreamEvent.resumed.name)
 def workflow_resumed_callback(sender, **kwargs):
-    data = format_workflow_result_with_current_step(sender.get_execution_id(), WorkflowStatusEnum.running)
+    data = format_workflow_result_with_current_step(kwargs['data']['execution_id'], WorkflowStatusEnum.running)
     return format_workflow_return(data)
 
 

@@ -35,7 +35,11 @@ class SerialWorkflowExecutionStrategy(object):
         if not isinstance(start, UUID):
             start = UUID(start)
 
-        self.do_execute(workflow_context, start, self.action_execution_strategy, start_arguments, resume)
+        try:
+            self.do_execute(workflow_context, start, self.action_execution_strategy, start_arguments, resume)
+        except Exception:
+            import traceback
+            traceback.print_exc()
 
     def do_execute(self, workflow_context, start, action_execution_strategy, start_arguments, resume):
         actions = SerialWorkflowExecutionStrategy.action_iter(workflow_context, action_execution_strategy, start=start)
@@ -55,7 +59,7 @@ class SerialWorkflowExecutionStrategy(object):
                 logger.info('Aborted workflow {} (id={})'.format(workflow_context.name, str(workflow_context.id)))
                 return
 
-            device_id = workflow_context.app_instance_repo.setup_app_instance(action, workflow_context.workflow)
+            device_id = workflow_context.app_instance_repo.setup_app_instance(action, workflow_context)
             if device_id:
                 result = action.execute(action_execution_strategy, workflow_context.accumulator,
                                         instance=workflow_context.get_app_instance(device_id),
@@ -146,9 +150,6 @@ class WorkflowExecutor(object):
         workflow_context = self.get_workflow_by_execution_id(workflow_execution_id)
         if workflow_context is not None:
             workflow_context.pause()
-        else:
-            logger.error('Attempted to pause workflow with execution id {}, but it wasn\'t executing'.format(
-                workflow_execution_id))
 
     def abort(self, workflow_execution_id):
         workflow_context = self.get_workflow_by_execution_id(workflow_execution_id)
@@ -216,10 +217,9 @@ class WorkflowExecutor(object):
         with self._lock:
             self.executing_workflows[threading.current_thread().name] = workflow_context
 
-        self.workflow_execution_strategies['serial'].execute(workflow_context, workflow_execution_id, start=start,
+        self.workflow_execution_strategies['serial'].execute(workflow_context, start=start,
                                                              start_arguments=start_arguments, resume=resume,
                                                              environment_variables=environment_variables)
-
         with self._lock:
             self.executing_workflows.pop(threading.current_thread().name)
 

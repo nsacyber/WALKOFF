@@ -45,4 +45,4 @@ class SavedWorkflow(Execution_Base):
         """
         return cls(workflow_execution_id=workflow_ctx.execution_id, workflow_id=workflow_ctx.id,
                    action_id=workflow_ctx.get_executing_action_id(), accumulator=workflow_ctx.accumulator,
-                   app_instances=workflow_ctx.app_instance_repo)
+                   app_instances=workflow_ctx.app_instance_repo.get_all_app_instances())

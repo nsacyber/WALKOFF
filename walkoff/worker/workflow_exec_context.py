@@ -1,5 +1,7 @@
+import logging
 from walkoff.events import WalkoffEvent
-from walkoff.worker.workflow_exec_strategy import logger
+
+logger = logging.getLogger(__name__)
 
 
 class WorkflowExecutionContext(object):
@@ -18,7 +20,6 @@ class WorkflowExecutionContext(object):
         self.is_paused = False
         self.is_aborted = False
         self.has_branches = bool(self.workflow.branches)
-        self.workflow.set_execution_id(execution_id)
 
     def pause(self):
         self.is_paused = True
@@ -36,7 +37,7 @@ class WorkflowExecutionContext(object):
         return self.app_instance_repo.get_app_instance(device_id)()
 
     def get_action_by_id(self, action_id):
-        return self.workflow.get_action_by_id(action_id)
+        return next((action for action in self.workflow.actions if action.id == action_id), None)
 
     def get_executing_action_id(self):
         return self.executing_action.id

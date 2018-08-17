@@ -46,6 +46,8 @@ class Worker(object):
             walkoff.config.Config.load_config(config_path)
             walkoff.config.Config.load_env_vars()
 
+        self.cache = walkoff.cache.make_cache(walkoff.config.Config.CACHE)
+
         self.execution_db = ExecutionDatabase(walkoff.config.Config.EXECUTION_DB_TYPE,
                                               walkoff.config.Config.EXECUTION_DB_PATH)
         self.case_db = CaseDatabase(walkoff.config.Config.CASE_DB_TYPE, walkoff.config.Config.CASE_DB_PATH)
@@ -63,8 +65,6 @@ class Worker(object):
         key = PrivateKey(walkoff.config.Config.CLIENT_PRIVATE_KEY[:nacl.bindings.crypto_box_SECRETKEYBYTES])
         server_key = PrivateKey(
             walkoff.config.Config.SERVER_PRIVATE_KEY[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
-
-        self.cache = walkoff.cache.make_cache(walkoff.config.Config.CACHE)
 
         self.capacity = walkoff.config.Config.NUMBER_THREADS_PER_PROCESS
         self.subscription_cache = SubscriptionCache()
@@ -86,7 +86,17 @@ class Worker(object):
         self.workflows = {}
         self.threadpool = ThreadPoolExecutor(max_workers=self.capacity)
 
+        self.wait_for_ready()
+
         self.receive_workflows()
+
+    def wait_for_ready(self):
+        while True:
+            if self.workflow_receiver.is_ready() and self.workflow_results_sender.is_ready() and \
+                    self.workflow_communication_receiver.is_ready():
+                break
+
+        self.workflow_results_sender.send_ready_message()
 
     def exit_handler(self, signum, frame):
         """Clean up upon receiving a SIGINT or SIGABT"""
