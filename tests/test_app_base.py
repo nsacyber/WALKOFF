@@ -117,6 +117,8 @@ class TestAppBase(TestCase):
         self.cache.set(app._format_cache_key('bar'), dill.dumps('b'))
         self.assertEqual(app.foo, 'a')
         self.assertEqual(app.bar, 'b')
+        with self.assertRaises(AttributeError):
+            y = app.baz
 
     def test_reset_context(self):
         workflow_id1 = uuid4()
