@@ -106,17 +106,21 @@ class App(object):
         self.__dict__.update(state)
         self.__dict__['_cache'] = make_cache(walkoff.config.Config.CACHE)
 
-    def __getattr__(self, item):
-        if item in _reserved_fields:
-            return self.__dict__[item]
-        else:
-            obj = self._cache.get(self._format_cache_key(item))
-            return dill.loads(obj)
+    def __getattribute__(self, item):
+        try:
+            return object.__getattribute__(self, item)
+        except AttributeError:
+            key = self._format_cache_key(item)
+            if not self._cache.exists(key):
+                raise AttributeError
+            else:
+                obj = self._cache.get(key)
+                return dill.loads(obj)
 
     def __setattr__(self, key, value):
         if key in _reserved_fields:
             self.__dict__[key] = value
-        elif key == '__class__':
+        elif key.startswith('__') and key.endswith('__'):
             super(App, self).__setattr__(key, value)
         else:
             value = dill.dumps(value)
@@ -126,6 +130,6 @@ class App(object):
     @classmethod
     def from_cache(cls, app, device, context):
         base = App(app, device, context)
-        base._load_from_context()
+        #base._load_from_context()
         base.__class__ = cls
         return base
