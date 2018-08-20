@@ -28,7 +28,7 @@ class SerialWorkflowExecutionStrategy(object):
                 pass into the workflow execution.
         """
         if environment_variables:
-            workflow_context.update_many_accumulator({env_var.id: env_var.value for env_var in environment_variables})
+            workflow_context.update_multiple_accumulator({env_var.id: env_var.value for env_var in environment_variables})
         logger.info('Executing workflow {0}'.format(workflow_context.name))
         workflow_context.send_event(WalkoffEvent.WorkflowExecutionStart)
         start = start if start is not None else workflow_context.workflow_start

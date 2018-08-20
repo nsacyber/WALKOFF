@@ -4,8 +4,10 @@ from uuid import uuid4
 from mock import patch
 from zmq import Socket, auth
 
+import os
 from walkoff.config import Config
-from walkoff.worker.worker import *
+from walkoff.proto.build.data_pb2 import CaseControl, CommunicationPacket, WorkflowControl
+from walkoff.case.subscription import Subscription
 from walkoff.worker.workflow_receivers import WorkerCommunicationMessageType, WorkflowCommunicationMessageType, \
     CaseCommunicationMessageType, WorkerCommunicationMessageData, WorkflowCommunicationMessageData, \
     CaseCommunicationMessageData, WorkflowCommunicationReceiver

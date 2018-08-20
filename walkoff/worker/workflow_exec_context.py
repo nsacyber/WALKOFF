@@ -21,6 +21,9 @@ class WorkflowExecutionContext(object):
         self.is_aborted = False
         self.has_branches = bool(self.workflow.branches)
 
+        if self.workflow.environment_variables:
+            self.accumulator.update({env_var.id: env_var.value for env_var in self.workflow.environment_variables})
+
     def pause(self):
         self.is_paused = True
 

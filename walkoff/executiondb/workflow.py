@@ -48,12 +48,6 @@ class Workflow(ExecutionElement, Execution_Base):
 
         self.validate()
 
-    @orm.reconstructor
-    def init_on_load(self):
-        """Loads all necessary fields upon Workflow being loaded from database"""
-        if self.environment_variables:
-            self._accumulator.update({env_var.id: env_var.value for env_var in self.environment_variables})
-
     def validate(self):
         """Validates the object"""
         action_ids = [action.id for action in self.actions]

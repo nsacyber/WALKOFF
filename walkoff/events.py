@@ -90,7 +90,7 @@ class WalkoffSignal(object):
 
 class WorkerSignal(WalkoffSignal):
     def __init__(self, name, message):
-        super(WorkerSignal, self).__init__(name, EventType.other, message=message)
+        super(WorkerSignal, self).__init__(name, EventType.other, message=message, loggable=False)
 
 
 class ControllerSignal(WalkoffSignal):

@@ -11,7 +11,7 @@ import walkoff.cache
 import walkoff.config
 from tests.util import initialize_test_config
 from tests.util.mock_objects import MockRedisCacheAdapter
-from walkoff.worker.worker import ExecuteWorkflowMessage
+from walkoff.proto.build.data_pb2 import ExecuteWorkflowMessage
 from walkoff.worker.workflow_receivers import WorkflowReceiver
 
 

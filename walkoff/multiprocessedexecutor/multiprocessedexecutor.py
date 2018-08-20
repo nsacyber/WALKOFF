@@ -210,6 +210,7 @@ class MultiprocessedExecutor(object):
             workflow = self.execution_db.session.query(Workflow).filter_by(
                 id=workflow_status.workflow_id).first()
 
+            print("Sending resumed callback")
             data = {"execution_id": execution_id}
             self._log_and_send_event(WalkoffEvent.WorkflowResumed, sender=workflow, data=data)
 
