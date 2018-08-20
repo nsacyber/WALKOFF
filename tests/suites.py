@@ -15,7 +15,7 @@ __server_tests = [test_workflow_server, test_app_api_server, test_case_server, t
                   test_scheduler_actions, test_device_server, test_app_blueprint, test_metrics_server,
                   test_scheduledtasks_database, test_scheduledtasks_server, test_authentication, test_roles_server,
                   test_users_server, test_message_history_database, test_message_db, test_message,
-                  test_messaging_endpoints, test_trigger_helpers, test_system_server, test_disk_cache_adapter,
+                  test_messaging_endpoints, test_trigger_helpers, test_disk_cache_adapter,
                   test_redis_cache_adapter, test_redis_subscription, test_disk_subscription, test_sse_stream,
                   test_filtered_sse_stream, test_notification_stream, test_workflow_status, test_problem,
                   test_workflow_results_stream, test_streamable_blueprint, test_console_stream, test_disk_pubsub_cache,

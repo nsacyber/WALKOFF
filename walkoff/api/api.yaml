@@ -71,7 +71,6 @@ paths:
   $ref: ./playbooks.yaml
   $ref: ./roles.yaml
   $ref: ./scheduler.yaml
-  $ref: ./system.yaml
   $ref: ./triggers.yaml
   $ref: ./users.yaml
   $ref: ./workflowqueue.yaml
@@ -104,7 +103,6 @@ definitions:
     $ref: ./objects/playbooks.yaml
     $ref: ./objects/roles.yaml
     $ref: ./objects/scheduler.yaml
-    $ref: ./objects/system.yaml
     $ref: ./objects/users.yaml
     $ref: ./objects/workflowqueue.yaml
 
