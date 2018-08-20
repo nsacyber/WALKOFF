@@ -1,5 +1,4 @@
 import logging
-import warnings
 from copy import deepcopy
 from functools import partial
 
@@ -117,13 +116,7 @@ class InterfaceEventDispatcher(object):
         """
 
         @add_docstring(InterfaceEventDispatcher._make_on_walkoff_event_docstring(event))
-        def on_event(cls, sender_ids=None, sender_uids=None, names=None, weak=True):
-            if sender_uids:
-                warnings.warn('"sender_uids" is a deprecated alias for "sender_ids". '
-                              'This alias will be removed in version 0.9.0', PendingDeprecationWarning)
-                if not sender_ids:
-                    sender_ids = sender_uids
-
+        def on_event(cls, sender_ids=None, names=None, weak=True):
             def handler(func):
                 cls.event_dispatcher.register_events(func, {event}, sender_ids=sender_ids, names=names, weak=weak)
                 return func  # Needed so weak references aren't deleted
@@ -174,13 +167,12 @@ class InterfaceEventDispatcher(object):
         return handler
 
     @classmethod
-    def on_walkoff_events(cls, events, sender_ids=None, sender_uids=None, names=None, weak=True):
+    def on_walkoff_events(cls, events, sender_ids=None, names=None, weak=True):
         """Decorator to register a function as a callback for given WalkoffEvent(s)
 
         Args:
             events (str|WalkoffEvent|iterable(str|WalkoffEvent)): The events which should be handled. an use either a
                 WalkoffEvent or its signal name. Defaults to all action-type events
-            sender_uids (str|iterable(str), optional): Deprecated alias for "sender_ids". This will be removed in 0.8.0
             sender_ids (str|iterable(str), optional): The IDs of the sender which will cause this callback to trigger.
             names (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note
                 that unlike IDS, these are not guaranteed to be unique.
@@ -195,11 +187,6 @@ class InterfaceEventDispatcher(object):
             ValueError: If a mix of controller and non-controller events are set for the handler
             InvalidEventHandler: If the wrapped function does not have the correct number of arguments
         """
-        if sender_uids:
-            warnings.warn('"sender_uids" is a deprecated alias for "sender_ids". This will be removed in 0.9.0',
-                          PendingDeprecationWarning)
-            if not sender_ids:
-                sender_ids = sender_uids
         events = validate_events(events)
         are_controller_events = InterfaceEventDispatcher._all_events_are_controller(events)
         if are_controller_events:
@@ -253,7 +240,6 @@ class InterfaceEventDispatcher(object):
         is_controller = event.event_type == EventType.controller
         if not is_controller:
             args_string = ('{}'
-                           '\tsender_uids (str|iterable(str), optional): Deprecated alias for "sender_ids" this will be removed in 0.9.0\n'
                            '\tsender_ids (str|iterable(str), optional): The IDs of the sender which will cause this callback to trigger.\n'
                            '\tnames (str|iterable(str), optional): The names of the sender to will cause this callback to trigger. Note that unlike '
                            'IDS, these are not guaranteed to be unique.\n'.format(args_string))
