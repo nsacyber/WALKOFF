@@ -6,12 +6,7 @@ from . import *
 def add_tests_to_suite(suite, test_modules):
     suite.addTests([TestLoader().loadTestsFromModule(test_module) for test_module in test_modules])
 
-
-__case_tests = [test_case_subscriptions, test_case_database, test_case_logger]
-case_suite = TestSuite()
-add_tests_to_suite(case_suite, __case_tests)
-
-__server_tests = [test_workflow_server, test_app_api_server, test_case_server, test_configuration_server,
+__server_tests = [test_workflow_server, test_app_api_server, test_configuration_server,
                   test_scheduler_actions, test_device_server, test_app_blueprint, test_metrics_server,
                   test_scheduledtasks_database, test_scheduledtasks_server, test_authentication, test_roles_server,
                   test_users_server, test_message_history_database, test_message_db, test_message,
@@ -50,5 +45,5 @@ interface_suite = TestSuite()
 add_tests_to_suite(interface_suite, __interface_tests)
 
 full_suite = TestSuite()
-for tests in [__workflow_tests, __execution_tests, __case_tests, __server_tests, __interface_tests]:
+for tests in [__workflow_tests, __execution_tests, __server_tests, __interface_tests]:
     add_tests_to_suite(full_suite, tests)

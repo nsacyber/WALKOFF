@@ -9,7 +9,7 @@ class TestAppUtilities(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         initialize_test_config()
-        cls.execution_db, _ = execution_db_help.setup_dbs()
+        cls.execution_db = execution_db_help.setup_dbs()
 
         app = cls.execution_db.session.query(App).filter(App.name == 'TestApp').first()
         if app is not None:

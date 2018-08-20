@@ -20,9 +20,6 @@ from zmq.error import ZMQError
 import walkoff.cache
 import walkoff.config
 from walkoff.appgateway.appinstancerepo import AppInstanceRepo
-from walkoff.case.database import CaseDatabase
-from walkoff.case.logger import CaseLogger
-from walkoff.case.subscription import Subscription, SubscriptionCache
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.argument import Argument
@@ -31,21 +28,19 @@ from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.appgateway.actionexecstrategy import make_execution_strategy
 from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
-from walkoff.proto.build.data_pb2 import CommunicationPacket, ExecuteWorkflowMessage, CaseControl, \
-    WorkflowControl
+from walkoff.proto.build.data_pb2 import CommunicationPacket, ExecuteWorkflowMessage, WorkflowControl
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
 
 logger = logging.getLogger(__name__)
 
 
 class WorkflowResultsHandler(object):
-    def __init__(self, socket_id, execution_db, case_logger):
+    def __init__(self, socket_id, execution_db):
         """Initialize a WorkflowResultsHandler object, which will be sending results of workflow execution
 
         Args:
             socket_id (str): The ID for the results socket
             execution_db (ExecutionDatabase): An ExecutionDatabase connection object
-            case_logger (CaseLoger): A CaseLogger instance
         """
         self.results_sock = zmq.Context().socket(zmq.PUSH)
         self.results_sock.identity = socket_id
@@ -59,8 +54,6 @@ class WorkflowResultsHandler(object):
             raise
 
         self.execution_db = execution_db
-
-        self.case_logger = case_logger
 
     def shutdown(self):
         """Shuts down the results socket and tears down the ExecutionDatabase
@@ -87,15 +80,12 @@ class WorkflowResultsHandler(object):
             sender = action
 
         packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
-        if event.is_loggable():
-            self.case_logger.log(event, sender.id, kwargs.get('data', None))
         self.results_sock.send(packet_bytes)
 
 
 class WorkerCommunicationMessageType(Enum):
     workflow = 1
-    case = 2
-    exit = 3
+    exit = 2
 
 
 class WorkflowCommunicationMessageType(Enum):
@@ -103,17 +93,9 @@ class WorkflowCommunicationMessageType(Enum):
     abort = 2
 
 
-class CaseCommunicationMessageType(Enum):
-    create = 1
-    update = 2
-    delete = 3
-
-
 WorkerCommunicationMessageData = namedtuple('WorkerCommunicationMessageData', ['type', 'data'])
 
 WorkflowCommunicationMessageData = namedtuple('WorkflowCommunicationMessageData', ['type', 'workflow_execution_id'])
-
-CaseCommunicationMessageData = namedtuple('CaseCommunicationMessageData', ['type', 'case_id', 'subscriptions'])
 
 
 class WorkflowCommunicationReceiver(object):
@@ -165,11 +147,6 @@ class WorkflowCommunicationReceiver(object):
                     yield WorkerCommunicationMessageData(
                         WorkerCommunicationMessageType.workflow,
                         self._format_workflow_message_data(message.workflow_control_message))
-                elif message_type == CommunicationPacket.CASE:
-                    logger.debug('Workflow received case communication packet')
-                    yield WorkerCommunicationMessageData(
-                        WorkerCommunicationMessageType.case,
-                        self._format_case_message_data(message.case_control_message))
                 elif message_type == CommunicationPacket.EXIT:
                     logger.info('Worker received exit message')
                     break
@@ -182,21 +159,6 @@ class WorkflowCommunicationReceiver(object):
             return WorkflowCommunicationMessageData(WorkflowCommunicationMessageType.pause, workflow_execution_id)
         elif message.type == WorkflowControl.ABORT:
             return WorkflowCommunicationMessageData(WorkflowCommunicationMessageType.abort, workflow_execution_id)
-
-    @staticmethod
-    def _format_case_message_data(message):
-        if message.type == CaseControl.CREATE:
-            return CaseCommunicationMessageData(
-                CaseCommunicationMessageType.create,
-                message.id,
-                [Subscription(sub.id, sub.events) for sub in message.subscriptions])
-        elif message.type == CaseControl.UPDATE:
-            return CaseCommunicationMessageData(
-                CaseCommunicationMessageType.update,
-                message.id,
-                [Subscription(sub.id, sub.events) for sub in message.subscriptions])
-        elif message.type == CaseControl.DELETE:
-            return CaseCommunicationMessageData(CaseCommunicationMessageType.delete, message.id, None)
 
 
 class WorkflowReceiver(object):
@@ -262,7 +224,7 @@ class WorkflowReceiver(object):
 
 class Worker(object):
     def __init__(self, id_, config_path):
-        """Initialize a Workfer object, which will be managing the execution of Workflows
+        """Initialize a Worker object, which will be managing the execution of Workflows
 
         Args:
             id_ (str): The ID of the worker
@@ -282,8 +244,6 @@ class Worker(object):
 
         self.execution_db = ExecutionDatabase(walkoff.config.Config.EXECUTION_DB_TYPE,
                                               walkoff.config.Config.EXECUTION_DB_PATH)
-        self.case_db = CaseDatabase(walkoff.config.Config.CASE_DB_TYPE, walkoff.config.Config.CASE_DB_PATH)
-
         @WalkoffEvent.CommonWorkflowSignal.connect
         def handle_data_sent(sender, **kwargs):
             self.on_data_sent(sender, **kwargs)
@@ -300,12 +260,9 @@ class Worker(object):
         self.cache = walkoff.cache.make_cache(walkoff.config.Config.CACHE)
 
         self.capacity = walkoff.config.Config.NUMBER_THREADS_PER_PROCESS
-        self.subscription_cache = SubscriptionCache()
-
-        case_logger = CaseLogger(self.case_db, self.subscription_cache)
 
         self.workflow_receiver = WorkflowReceiver(key, server_key, walkoff.config.Config.CACHE)
-        self.workflow_results_sender = WorkflowResultsHandler(socket_id, self.execution_db, case_logger)
+        self.workflow_results_sender = WorkflowResultsHandler(socket_id, self.execution_db)
         self.workflow_communication_receiver = WorkflowCommunicationReceiver(socket_id)
 
         self.action_execution_strategy = make_execution_strategy(walkoff.config.Config)
@@ -392,8 +349,6 @@ class Worker(object):
         for message in self.workflow_communication_receiver.receive_communications():
             if message.type == WorkerCommunicationMessageType.workflow:
                 self._handle_workflow_control_communication(message.data)
-            elif message.type == WorkerCommunicationMessageType.case:
-                self._handle_case_control_communication(message.data)
 
     def _handle_workflow_control_communication(self, message):
         workflow = self.__get_workflow_by_execution_id(message.workflow_execution_id)
@@ -402,14 +357,6 @@ class Worker(object):
                 workflow.pause()
             elif message.type == WorkflowCommunicationMessageType.abort:
                 workflow.abort()
-
-    def _handle_case_control_communication(self, message):
-        if message.type == CaseCommunicationMessageType.create:
-            self.subscription_cache.add_subscriptions(message.case_id, message.subscriptions)
-        elif message.type == CaseCommunicationMessageType.update:
-            self.subscription_cache.update_subscriptions(message.case_id, message.subscriptions)
-        elif message.type == CaseCommunicationMessageType.delete:
-            self.subscription_cache.delete_case(message.case_id)
 
     def on_data_sent(self, sender, **kwargs):
         """Listens for the data_sent callback, which signifies that an execution element needs to trigger a

@@ -2,7 +2,6 @@ import json
 import os
 from uuid import uuid4, UUID
 
-import walkoff.case.database as case_database
 from tests.util import execution_db_help
 from tests.util.servertestcase import ServerTestCase
 from walkoff.executiondb.playbook import Playbook
@@ -38,10 +37,6 @@ class TestWorkflowServer(ServerTestCase):
 
     def tearDown(self):
         execution_db_help.cleanup_execution_db()
-
-        self.app.running_context.case_db.session.query(case_database.Event).delete()
-        self.app.running_context.case_db.session.query(case_database.Case).delete()
-        self.app.running_context.case_db.session.commit()
 
     @staticmethod
     def strip_ids(element):

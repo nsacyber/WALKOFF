@@ -185,55 +185,6 @@ actions:
         schema:
           type: string
           description: Unknown HTTP response from server
-  get all cases:
-    run: app.Walkoff.get_all_cases
-    description: Gets a list of all the cases loaded on the system
-    parameters:
-      - name: timeout
-        description: Timeout on the request (in seconds)
-        type: number
-        default: 2.0
-    default_return: Success
-    returns:
-      Success:
-        schema:
-          type: array
-          items:
-            type: object
-            properties:
-              id:
-                type: integer
-              name:
-                type: string
-              note:
-                type: string
-              subscriptions:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    uid:
-                      type: string
-                    events:
-                      type: array
-                      items:
-                        type: string
-      TimedOut:
-        schema:
-          type: string
-          enum: ["Connection timed out"]
-      Unauthorized:
-        schema:
-          type: string
-          enum: ["Unauthorized credentials"]
-      NotConnected:
-        schema:
-          type: string
-          enum: ["Not connected to Walkoff"]
-      UnknownResponse:
-        schema:
-          type: string
-          description: Unknown HTTP response from server
   get all users:
     run: app.Walkoff.get_all_users
     description: Gets a list of all the users loaded on the system

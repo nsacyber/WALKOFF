@@ -12,8 +12,7 @@ from six import string_types
 import walkoff.config
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.helpers import json_dumps_or_string
-from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, CaseControl, \
-    WorkflowControl
+from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, WorkflowControl
 from walkoff.multiprocessedexecutor import proto_helpers
 
 logger = logging.getLogger(__name__)
@@ -113,48 +112,6 @@ class WorkflowExecutionController:
                         setattr(arg, field, json_dumps_or_string(val))
                     else:
                         setattr(arg, field, val)
-
-    def create_case(self, case_id, subscriptions):
-        """Creates a Case
-
-        Args:
-            case_id (int): The ID of the Case
-            subscriptions (list[Subscription]): List of Subscriptions to subscribe to
-        """
-        message = self._create_case_update_message(case_id, CaseControl.CREATE, subscriptions=subscriptions)
-        self._send_message(message)
-
-    def update_case(self, case_id, subscriptions):
-        """Updates a Case
-
-        Args:
-            case_id (int): The ID of the Case
-            subscriptions (list[Subscription]): List of Subscriptions to subscribe to
-        """
-        message = self._create_case_update_message(case_id, CaseControl.UPDATE, subscriptions=subscriptions)
-        self._send_message(message)
-
-    def delete_case(self, case_id):
-        """Deletes a Case
-
-        Args:
-            case_id (int): The ID of the Case to delete
-        """
-        message = self._create_case_update_message(case_id, CaseControl.DELETE)
-        self._send_message(message)
-
-    @staticmethod
-    def _create_case_update_message(case_id, message_type, subscriptions=None):
-        message = CommunicationPacket()
-        message.type = CommunicationPacket.CASE
-        message.case_control_message.id = case_id
-        message.case_control_message.type = message_type
-        subscriptions = subscriptions or []
-        for subscription in subscriptions:
-            sub = message.case_control_message.subscriptions.add()
-            sub.id = subscription.id
-            sub.events.extend(subscription.events)
-        return message
 
     def _send_message(self, message):
         message_bytes = message.SerializeToString()

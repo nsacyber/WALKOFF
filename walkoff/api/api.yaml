@@ -61,10 +61,8 @@ schemes:
 paths:
   $ref: ./apps.yaml
   $ref: ./auth.yaml
-  $ref: ./cases.yaml
   $ref: ./configuration.yaml
   $ref: ./devices.yaml
-  $ref: ./events.yaml
   $ref: ./message.yaml
   $ref: ./metadata.yaml
   $ref: ./metrics.yaml
@@ -95,7 +93,6 @@ definitions:
     $ref: ./objects/objects.yaml
     $ref: ./objects/appapi.yaml
     $ref: ./objects/auth.yaml
-    $ref: ./objects/cases.yaml
     $ref: ./objects/configuration.yaml
     $ref: ./objects/devices.yaml
     $ref: ./objects/metrics.yaml

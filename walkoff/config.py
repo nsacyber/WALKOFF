@@ -78,8 +78,6 @@ def setup_logger():
 class Config(object):
     # CONFIG VALUES
 
-    CLEAR_CASE_DB_ON_STARTUP = True
-
     # IP and port for the webserver
     HOST = "127.0.0.1"
     PORT = 5000
@@ -96,7 +94,6 @@ class Config(object):
 
     # Database types
     WALKOFF_DB_TYPE = 'sqlite'
-    CASE_DB_TYPE = 'sqlite'
     EXECUTION_DB_TYPE = 'sqlite'
 
     # PATHS
@@ -107,13 +104,11 @@ class Config(object):
     CACHE_PATH = join('.', 'data', 'cache')
     # CACHE = {"type": "disk", "directory": CACHE_PATH, "shards": 8, "timeout": 0.01, "retry": True}
     CACHE = {'type': 'redis'}
-    CASE_DB_PATH = abspath(join(DATA_PATH, 'events.db'))
 
     CLIENT_PATH = join('.', 'walkoff', 'client')
     CONFIG_PATH = join(DATA_PATH, 'walkoff.config')
     DB_PATH = abspath(join(DATA_PATH, 'walkoff.db'))
     DEFAULT_APPDEVICE_EXPORT_PATH = join(DATA_PATH, 'appdevice.json')
-    DEFAULT_CASE_EXPORT_PATH = join(DATA_PATH, 'cases.json')
     EXECUTION_DB_PATH = abspath(join(DATA_PATH, 'execution.db'))
     INTERFACES_PATH = join('.', 'interfaces')
     LOGGING_CONFIG_PATH = join(DATA_PATH, 'log', 'logging.json')
@@ -141,9 +136,6 @@ class Config(object):
     ITEMS_PER_PAGE = 20
     ACTION_EXECUTION_STRATEGY = 'local'
 
-    CASE_DB_USERNAME = None
-    CASE_DB_PASSWORD = None
-
     EXECUTION_DB_USERNAME = None
     EXECUTION_DB_PASSWORD = None
 
@@ -158,7 +150,7 @@ class Config(object):
 
     SECRET_KEY = "SHORTSTOPKEY"
 
-    __passwords = ['CASE_DB_PASSWORD', 'EXECUTION_DB_PASSWORD', 'WALKOFF_DB_PASSWORD', 'SERVER_PRIVATE_KEY',
+    __passwords = ['EXECUTION_DB_PASSWORD', 'WALKOFF_DB_PASSWORD', 'SERVER_PRIVATE_KEY',
                    'CLIENT_PRIVATE_KEY', 'SERVER_PUBLIC_KEY', 'CLIENT_PUBLIC_KEY', 'SECRET_KEY']
 
     @classmethod
@@ -202,9 +194,6 @@ class Config(object):
 
     @classmethod
     def load_env_vars(cls):
-        cls.CASE_DB_USERNAME = os.environ.get("CASE_DB_USERNAME")
-        cls.CASE_DB_PASSWORD = os.environ.get("CASE_DB_PASSWORD")
-
         cls.EXECUTION_DB_USERNAME = os.environ.get("EXECUTION_DB_USERNAME")
         cls.EXECUTION_DB_PASSWORD = os.environ.get("EXECUTION_DB_PASSWORD")
 

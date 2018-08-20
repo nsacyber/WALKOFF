@@ -3,10 +3,8 @@ from uuid import uuid4, UUID
 
 from flask import current_app
 
-import walkoff.case.database as case_database
 import walkoff.executiondb.schemas
 from tests.util import execution_db_help
-from tests.util.case_db_help import setup_subscriptions_for_action
 from tests.util.servertestcase import ServerTestCase
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import WorkflowStatusEnum, ActionStatusEnum
@@ -57,10 +55,6 @@ class TestWorkflowStatus(ServerTestCase):
 
     def tearDown(self):
         execution_db_help.cleanup_execution_db()
-
-        self.app.running_context.case_db.session.query(case_database.Event).delete()
-        self.app.running_context.case_db.session.query(case_database.Case).delete()
-        self.app.running_context.case_db.session.commit()
         walkoff.executiondb.schemas._schema_lookup.pop(MockWorkflow, None)
 
     def act_on_workflow(self, execution_id, action):
@@ -181,8 +175,6 @@ class TestWorkflowStatus(ServerTestCase):
 
         workflow = self.app.running_context.execution_db.session.query(Workflow).filter_by(
             playbook_id=playbook.id).first()
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {'count': 0}
 
@@ -208,9 +200,6 @@ class TestWorkflowStatus(ServerTestCase):
         playbook = execution_db_help.standard_load()
         workflow = self.app.running_context.execution_db.session.query(Workflow).filter_by(
             playbook_id=playbook.id).first()
-
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {'count': 0}
 
@@ -238,9 +227,6 @@ class TestWorkflowStatus(ServerTestCase):
         env_var_id = str(uuid4())
         workflow.actions[0].arguments[0].value = None
         workflow.actions[0].arguments[0].reference = env_var_id
-
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {'count': 0, 'output': None}
 
@@ -299,9 +285,6 @@ class TestWorkflowStatus(ServerTestCase):
         execution_db_help.load_playbook('pauseWorkflowTest')
 
         workflow = self.app.running_context.execution_db.session.query(Workflow).filter_by(name='pauseWorkflow').first()
-
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {"aborted": False}
 

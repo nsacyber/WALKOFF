@@ -88,11 +88,6 @@ class Walkoff(App):
     def get_workflow_metrics(self, timeout=DEFAULT_TIMEOUT):
         return self.standard_request('get', '/metrics/workflows', timeout, headers=self.headers)
 
-    # CASES
-    @action
-    def get_all_cases(self, timeout=DEFAULT_TIMEOUT):
-        return self.standard_request('get', '/api/cases', timeout, headers=self.headers)
-
     # USERS
     @action
     def get_all_users(self, timeout=DEFAULT_TIMEOUT):

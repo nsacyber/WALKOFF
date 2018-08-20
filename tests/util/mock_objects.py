@@ -7,7 +7,6 @@ from flask import current_app
 from zmq.utils.strtypes import cast_unicode
 
 from walkoff.cache import RedisCacheAdapter
-from walkoff.case.database import CaseDatabase
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.saved_workflow import SavedWorkflow
@@ -72,7 +71,6 @@ class MockLoadBalancer(object):
             WalkoffEvent.CommonWorkflowSignal.connect(handle_data_sent)
 
         self.execution_db = ExecutionDatabase.instance
-        self.case_db = CaseDatabase.instance
 
     def on_data_sent(self, sender, **kwargs):
         workflow = self.workflow_comms[self.exec_id]

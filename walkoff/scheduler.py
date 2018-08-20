@@ -69,7 +69,7 @@ def split_task_id(task_id):
 
 # A thin wrapper around APScheduler
 class Scheduler(object):
-    def __init__(self, event_logger):
+    def __init__(self):
         self.scheduler = GeventScheduler()
         self.scheduler.add_listener(self.__scheduler_listener(),
                                     EVENT_SCHEDULER_START | EVENT_SCHEDULER_SHUTDOWN
@@ -77,7 +77,6 @@ class Scheduler(object):
                                     | EVENT_JOB_ADDED | EVENT_JOB_REMOVED
                                     | EVENT_JOB_EXECUTED | EVENT_JOB_ERROR)
         self.id = 'controller'
-        self.event_logger = event_logger
         self.app = None
 
     def schedule_workflows(self, task_id, executable, workflow_ids, trigger):
@@ -267,9 +266,8 @@ class Scheduler(object):
         def event_selector(event):
             try:
                 event = event_selector_map[event.code]
-                self.event_logger.log(event, self.id)
                 event.send(self)
-            except KeyError:
+            except KeyError: # pragma: no cover
                 logger.error('Unknown event sent triggered in scheduler {}'.format(event))
 
         return event_selector

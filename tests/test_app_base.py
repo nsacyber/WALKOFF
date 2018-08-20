@@ -14,7 +14,7 @@ class TestAppBase(TestCase):
     @classmethod
     def setUpClass(cls):
         initialize_test_config()
-        cls.execution_db, _ = execution_db_help.setup_dbs()
+        cls.execution_db = execution_db_help.setup_dbs()
         cls.cache = MockRedisCacheAdapter()
 
     @classmethod
