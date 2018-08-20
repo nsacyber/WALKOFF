@@ -10,16 +10,16 @@ __server_tests = [test_workflow_server, test_app_api_server, test_configuration_
                   test_scheduler_actions, test_device_server, test_app_blueprint, test_metrics_server,
                   test_scheduledtasks_database, test_scheduledtasks_server, test_authentication, test_roles_server,
                   test_users_server, test_message_history_database, test_message_db, test_message,
-                  test_messaging_endpoints, test_trigger_helpers, test_disk_cache_adapter,
-                  test_redis_cache_adapter, test_redis_subscription, test_disk_subscription, test_sse_stream,
+                  test_messaging_endpoints, test_trigger_helpers,
+                  test_redis_cache_adapter, test_redis_subscription, test_sse_stream,
                   test_filtered_sse_stream, test_notification_stream, test_workflow_status, test_problem,
-                  test_workflow_results_stream, test_streamable_blueprint, test_console_stream, test_disk_pubsub_cache,
+                  test_workflow_results_stream, test_streamable_blueprint, test_console_stream,
                   test_make_cache, test_health_endpoint]
 server_suite = TestSuite()
 add_tests_to_suite(server_suite, __server_tests)
 
 __execution_tests = [test_validatable, test_argument, test_action, test_helper_functions,
-                     test_workflow_results_handler, test_make_cache, test_disk_pubsub_cache,
+                     test_workflow_results_handler, test_make_cache,
                      test_workflow_communication_receiver, test_workflow_receiver,
                      test_transform, test_condition, test_branch, test_app_instance, test_metrics, test_app_utilities,
                      test_input_validation, test_decorators, test_app_api_validation, test_playbook,
