@@ -12,6 +12,7 @@ message Message {
         GENERALPACKET = 5;
         USERMESSAGE = 6;
         LOGMESSAGE = 7;
+        WORKERPACKET = 8;
     }
 
     optional Type type = 1;
@@ -22,6 +23,7 @@ message Message {
         GeneralPacket general_packet = 5;
         UserMessage message_packet = 6;
         LoggingMessage logging_packet = 7;
+        WorkerPacket worker_packet = 8;
     }
 }
 
@@ -149,4 +151,8 @@ message LoggingMessage {
     optional string action_name = 4;
     optional string level = 5;
     optional string message = 6;
+}
+
+message WorkerPacket {
+    optional string id = 1;
 }

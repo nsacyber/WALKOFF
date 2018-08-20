@@ -37,6 +37,9 @@ def convert_to_protobuf(sender, workflow_ctx, **kwargs):
     elif event.event_type in (
             EventType.branch, EventType.condition, EventType.transform, EventType.conditonalexpression):
         convert_branch_transform_condition_to_proto(packet, sender, workflow_ctx)
+    elif event == WalkoffEvent.WorkerReady:
+        packet.type = Message.WORKERPACKET
+        packet.worker_packet.id = sender['id']
     packet_bytes = packet.SerializeToString()
     return packet_bytes
 

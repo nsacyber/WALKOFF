@@ -27,7 +27,7 @@ class TestWorkflowResultsHandler(TestCase):
             address = 'tcp://127.0.0.1:5557'
             receiver = WorkflowCommunicationReceiver(socket_id)
             mock_connect.assert_called_once_with(address)
-            self.assertFalse(receiver.exit)
+            self.assertFalse(receiver._exit)
 
     def get_receiver(self):
         with patch.object(Socket, 'connect'):
@@ -40,7 +40,7 @@ class TestWorkflowResultsHandler(TestCase):
         with patch.object(receiver.comm_sock, 'close') as mock_close:
             receiver.shutdown()
             mock_close.assert_called_once()
-            self.assertTrue(receiver.exit)
+            self.assertTrue(receiver._exit)
 
     def check_receive_communication_message(self, receiver, message, expected_response):
         with patch.object(receiver.comm_sock, 'recv', return_value=message.SerializeToString()):

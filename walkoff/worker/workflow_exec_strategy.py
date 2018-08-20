@@ -225,7 +225,10 @@ class WorkflowExecutor(object):
 
     def get_current_workflow(self):
         with self._lock:
-            return self.executing_workflows[threading.currentThread().name]
+            if threading.currentThread().name in self.executing_workflows:
+                return self.executing_workflows[threading.currentThread().name]
+            else:
+                return None
 
     def get_workflow_by_execution_id(self, workflow_execution_id):
         with self._lock:

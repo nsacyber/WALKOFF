@@ -451,6 +451,14 @@ class DiskCacheAdapter(object):
         """
         pass
 
+    def ping(self):
+        """Pings the DiskCache to test the connection
+
+        Returns:
+            (Bool): True if the ping was successful, False otherwise.
+        """
+        return True
+
     @classmethod
     def from_json(cls, json_in):
         """Constructs this cache from its JSON representation
@@ -697,6 +705,14 @@ class RedisCacheAdapter(object):
         For the RedisCacheAdapter, this is not necessary
         """
         pass
+
+    def ping(self):
+        """Pings the Redis cache to test the connection
+
+        Returns:
+            (Bool): True if the ping was successful, False otherwise.
+        """
+        return self.cache.ping()
 
     @classmethod
     def from_json(cls, json_in):
