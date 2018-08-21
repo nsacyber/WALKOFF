@@ -28,7 +28,8 @@ class SerialWorkflowExecutionStrategy(object):
                 pass into the workflow execution.
         """
         if environment_variables:
-            workflow_context.update_multiple_accumulator({env_var.id: env_var.value for env_var in environment_variables})
+            workflow_context.accumulator.update({env_var.id: env_var.value for env_var in environment_variables})
+
         logger.info('Executing workflow {0}'.format(workflow_context.name))
         workflow_context.send_event(WalkoffEvent.WorkflowExecutionStart)
         start = start if start is not None else workflow_context.workflow_start
@@ -129,11 +130,10 @@ class WorkflowExecutor(object):
     }
 
     def __init__(self, max_workflows, execution_db, action_execution_stategy, app_instance_repo_class,
-                 accumulator_repo_class=dict, executing_workflow_repo=dict):
+                 executing_workflow_repo=dict):
         self.max_workflows = max_workflows
         self.execution_db = execution_db
         self.action_execution_strategy = action_execution_stategy
-        self._accumulator_repo_type = accumulator_repo_class
         self._app_instance_repo_class = app_instance_repo_class
         self.executing_workflows = executing_workflow_repo()
         self.workflow_execution_strategies = {
@@ -160,9 +160,8 @@ class WorkflowExecutor(object):
                 workflow_execution_id))
 
     def make_new_context(self, workflow, workflow_execution_id):
-        accumulator = self._accumulator_repo_type()
         app_instance_repo = self._app_instance_repo_class()
-        return WorkflowExecutionContext(workflow, accumulator, app_instance_repo, workflow_execution_id)
+        return WorkflowExecutionContext(workflow, app_instance_repo, workflow_execution_id)
 
     def make_resumed_context(self, workflow, workflow_execution_id):
         saved_state = self.execution_db.session.query(SavedWorkflow).filter_by(
@@ -172,10 +171,8 @@ class WorkflowExecutor(object):
                 workflow_execution_id))
             return None
 
-        workflow_context = WorkflowExecutionContext(workflow, saved_state.accumulator,
-                                                    self._app_instance_repo_class(saved_state.app_instances),
-                                                    workflow_execution_id)
-        workflow_context.set_branch_counters_from_accumulator()
+        workflow_context = WorkflowExecutionContext(workflow, self._app_instance_repo_class(saved_state.app_instances),
+                                                    workflow_execution_id, resumed=True)
         return workflow_context
 
     def execute(self, workflow_id, workflow_execution_id, start, start_arguments=None, resume=False,

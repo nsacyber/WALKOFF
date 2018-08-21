@@ -19,6 +19,7 @@ from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
 from walkoff.worker.worker import Worker
 from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController, Receiver
+from walkoff.appgateway.accumulators import make_accumulator
 
 logger = logging.getLogger(__name__)
 
@@ -210,7 +211,6 @@ class MultiprocessedExecutor(object):
             workflow = self.execution_db.session.query(Workflow).filter_by(
                 id=workflow_status.workflow_id).first()
 
-            print("Sending resumed callback")
             data = {"execution_id": execution_id}
             self._log_and_send_event(WalkoffEvent.WorkflowResumed, sender=workflow, data=data)
 
@@ -266,16 +266,15 @@ class MultiprocessedExecutor(object):
         logger.info('Resuming workflow {} from trigger'.format(execution_id))
         saved_state = self.execution_db.session.query(SavedWorkflow).filter_by(
             workflow_execution_id=execution_id).first()
-        workflow = self.execution_db.session.query(Workflow).filter_by(
-            id=saved_state.workflow_id).first()
-        workflow._execution_id = execution_id
+        workflow = self.execution_db.session.query(Workflow).filter_by(id=saved_state.workflow_id).first()
 
+        accumulator = make_accumulator(execution_id)
         executed = False
         exec_action = None
         for action in workflow.actions:
             if action.id == saved_state.action_id:
                 exec_action = action
-                executed = action.execute_trigger(self.action_execution_strategy, data_in, saved_state.accumulator)
+                executed = action.execute_trigger(self.action_execution_strategy, data_in, accumulator)
                 break
 
         if executed:
