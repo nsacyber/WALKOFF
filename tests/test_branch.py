@@ -167,4 +167,4 @@ class TestBranch(unittest.TestCase):
 
         self.assertEqual(branch._counter, 1)
         self.assertIn(branch.id, wf_ctx.accumulator)
-        self.assertEqual(wf_ctx.accumulator[branch.id], 1)
+        self.assertEqual(wf_ctx.accumulator[branch.id], '1')
