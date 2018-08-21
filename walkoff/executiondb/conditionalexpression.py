@@ -79,18 +79,14 @@ class ConditionalExpression(ExecutionElement, Execution_Base):
         Returns:
             (bool): True if the Condition evaluated to True, False otherwise
         """
-        try:
-            result = self.__operator_lookup[self.operator](action_execution_strategy, data_in, accumulator)
-            if self.is_negated:
-                result = not result
-            if result:
-                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionTrue)
-            else:
-                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionFalse)
-            return result
-        except (InvalidArgument, Exception) as e:
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionError)
-            return False
+        result = self.__operator_lookup[self.operator](action_execution_strategy, data_in, accumulator)
+        if self.is_negated:
+            result = not result
+        if result:
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionTrue)
+        else:
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionFalse)
+        return result
 
     def _and(self, action_execution_strategy, data_in, accumulator):
         return (all(condition.execute(action_execution_strategy, data_in, accumulator)

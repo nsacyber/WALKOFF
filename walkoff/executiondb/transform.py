@@ -93,14 +93,18 @@ class Transform(ExecutionElement, Execution_Base):
         try:
             arguments = self.__update_arguments_with_data(data_in)
             args = validate_transform_parameters(self._api, arguments, self.action_name, accumulator=accumulator)
-            result = action_execution_strategy.execute(self, args)
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformSuccess)
-            return result
         except InvalidArgument as e:
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformError)
             logger.error('Transform {0} has invalid input {1}. Error: {2}. '
                          'Returning unmodified data'.format(self.action_name, original_data_in, str(e)))
-        except Exception as e:
+            return original_data_in
+
+        try:
+            result = action_execution_strategy.execute(self, args)
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformSuccess)
+            return result
+
+        except Exception:
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformError)
             logger.exception(
                 'Transform {0} (id={1}) encountered an error. Returning unmodified data'.format(

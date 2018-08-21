@@ -153,6 +153,10 @@ class Action(ExecutionElement, Execution_Base):
         try:
             args = validate_app_action_parameters(self._arguments_api, arguments, self.app_name, self.action_name,
                                                   accumulator=accumulator)
+        except InvalidArgument as e:
+            return self.__handle_error(e, WalkoffEvent.ActionArgumentsInvalid, 'InvalidArguments', accumulator)
+
+        try:
             if is_app_action_bound(self.app_name, self._run):
                 result = action_execution_strategy.execute(self, args, instance=instance)
             else:
@@ -166,7 +170,7 @@ class Action(ExecutionElement, Execution_Base):
                                                        data=result.as_json())
         except Exception as e:
             logger.exception('Error executing action {} (id={})'.format(self.name, str(self.id)))
-            result = self.__handle_execution_error(e, accumulator)
+            result = self.__handle_error(e, WalkoffEvent.ActionExecutionError, 'UnhandledException', accumulator)
             return result
         else:
             accumulator[self.id] = result.result
@@ -175,18 +179,13 @@ class Action(ExecutionElement, Execution_Base):
 
             return result
 
-    def __handle_execution_error(self, e, accumulator):
+    def __handle_error(self, e, event, return_type, accumulator):
         formatted_error = format_exception_message(e)
-        if isinstance(e, InvalidArgument):
-            event = WalkoffEvent.ActionArgumentsInvalid
-            return_type = 'InvalidArguments'
-        else:
-            event = WalkoffEvent.ActionExecutionError
-            return_type = 'UnhandledException'
         result = ActionResult('error: {0}'.format(formatted_error), return_type)
         accumulator[self.id] = result.result
         WalkoffEvent.CommonWorkflowSignal.send(self, event=event, data=result.as_json())
         return result
+
 
     def execute_trigger(self, action_execution_strategy, data_in, accumulator):
         """Executes the trigger for an Action, which will continue execution if the trigger returns True
