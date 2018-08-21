@@ -39,7 +39,6 @@ class TestAction(unittest.TestCase):
         if position:
             self.assertEqual(elem.position.x, position.x)
             self.assertEqual(elem.position.y, position.y)
-        self.assertIsNone(elem._output)
         self.assertEqual(elem._execution_id, 'default')
 
     @staticmethod
@@ -119,10 +118,12 @@ class TestAction(unittest.TestCase):
     def test_execute_no_args(self):
         action = Action('HelloWorld', action_name='helloWorld', name='helloWorld')
         instance = TestAction._make_app_instance()
-        self.assertEqual(
-            action.execute(LocalActionExecutionStrategy(), {}, instance.instance),
-            ActionResult({'message': 'HELLO WORLD'}, 'Success'))
-        self.assertEqual(action._output, ActionResult({'message': 'HELLO WORLD'}, 'Success'))
+        acc = {}
+        result = action.execute(LocalActionExecutionStrategy(), acc, instance.instance)
+        expected = ActionResult({'message': 'HELLO WORLD'}, 'Success')
+        self.assertEqual(result, expected)
+        self.assertEqual(acc[action.id], result.result)
+
 
     def test_execute_return_failure(self):
         action = Action(app_name='HelloWorld', action_name='dummy action', name='helloWorld',
@@ -191,7 +192,6 @@ class TestAction(unittest.TestCase):
         result = action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
-        self.assertEqual(action._output, result)
 
     def test_execute_sends_callbacks(self):
         action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
@@ -231,7 +231,6 @@ class TestAction(unittest.TestCase):
         result = action.execute(LocalActionExecutionStrategy(), accumulator, instance.instance)
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
-        self.assertEqual(action._output, result)
 
     def test_execute_with_accumulator_with_extra_actions(self):
         action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
@@ -243,7 +242,6 @@ class TestAction(unittest.TestCase):
         result = action.execute(LocalActionExecutionStrategy(), accumulator, instance.instance)
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
-        self.assertEqual(action._output, result)
 
     def test_execute_with_accumulator_missing_action(self):
         action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
@@ -289,13 +287,14 @@ class TestAction(unittest.TestCase):
         result = action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
         self.assertAlmostEqual(result.result, 11.0)
         self.assertEqual(result.status, 'Success')
-        self.assertEqual(action._output, result)
 
     def test_execute_action_which_raises_exception(self):
         action = Action(app_name='HelloWorld', action_name='Buggy', name='helloWorld')
         instance = TestAction._make_app_instance()
-        action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
-        self.assertIsNotNone(action.get_output())
+        acc = {}
+        action.execute(LocalActionExecutionStrategy(), acc, instance.instance)
+        self.assertIn(action.id, acc)
+
 
     def test_execute_action_which_raises_exception_sends_callbacks(self):
         action = Action(app_name='HelloWorld', action_name='Buggy', name='helloWorld')
@@ -326,7 +325,6 @@ class TestAction(unittest.TestCase):
         result = action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
         self.assertAlmostEqual(result.result, 'something')
         self.assertEqual(result.status, 'Success')
-        self.assertEqual(action._output, result)
 
     def test_execute_with_triggers(self):
         trigger = ConditionalExpression(

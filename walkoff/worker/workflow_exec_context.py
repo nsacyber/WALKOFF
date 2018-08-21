@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 class WorkflowExecutionContext(object):
     __slots__ = ['workflow', 'name', 'id', 'workflow_start', 'execution_id', 'accumulator', 'app_instance_repo',
-                 'executing_action', 'is_paused', 'is_aborted', 'has_branches']
+                 'executing_action', 'is_paused', 'is_aborted', 'has_branches', 'last_status']
 
     def __init__(self, workflow, app_instance_repo, execution_id, resumed=False):
         self.workflow = workflow
@@ -21,7 +21,7 @@ class WorkflowExecutionContext(object):
         self.is_paused = False
         self.is_aborted = False
         self.has_branches = bool(self.workflow.branches)
-
+        self.last_status = None
         self.init_accumulator(resumed)
 
     def pause(self):
@@ -59,6 +59,9 @@ class WorkflowExecutionContext(object):
 
     def update_multiple_accumulator(self, updated_keys):
         self.accumulator.update(updated_keys)
+
+    def update_status(self, status):
+        self.last_status = status
 
     def init_accumulator(self, from_resumed=False):
         self.accumulator = make_accumulator(self.execution_id)

@@ -36,11 +36,7 @@ class SerialWorkflowExecutionStrategy(object):
         if not isinstance(start, UUID):
             start = UUID(start)
 
-        try:
-            self.do_execute(workflow_context, start, self.action_execution_strategy, start_arguments, resume)
-        except Exception:
-            import traceback
-            traceback.print_exc()
+        self.do_execute(workflow_context, start, self.action_execution_strategy, start_arguments, resume)
 
     def do_execute(self, workflow_context, start, action_execution_strategy, start_arguments, resume):
         actions = SerialWorkflowExecutionStrategy.action_iter(workflow_context, action_execution_strategy, start=start)
@@ -69,16 +65,15 @@ class SerialWorkflowExecutionStrategy(object):
                 result = action.execute(action_execution_strategy, workflow_context.accumulator,
                                         arguments=start_arguments, resume=resume)
 
+            workflow_context.update_status(result.status)
+
             if start_arguments:
                 start_arguments = None
 
             if result and result.status == "trigger":
                 return
 
-            workflow_context.update_accumulator(action.id, action.get_output().result)
-
         workflow_context.shutdown()
-        return
 
     @staticmethod
     def action_iter(workflow_context, action_execution_strategy, start):
@@ -87,30 +82,31 @@ class SerialWorkflowExecutionStrategy(object):
 
         while current_action:
             yield current_action
-            current_id = SerialWorkflowExecutionStrategy.get_branch(workflow_context, current_action,
-                                                                    action_execution_strategy)
+            current_id = SerialWorkflowExecutionStrategy.get_branch(workflow_context, action_execution_strategy)
             current_action = workflow_context.get_action_by_id(current_id) if current_id is not None else None
         return
 
     @staticmethod
-    def get_branch(workflow_context, current_action, action_execution_strategy):
+    def get_branch(workflow_context, action_execution_strategy):
         """Executes the Branch objects associated with this Workflow to determine which Action should be
             executed next.
 
         Args:
-            workflow_context (walkoff.worker.workflow_exec_context.WorkflowExecutionContext): The context of the executing workflow
-            current_action(Action): The current action that has just finished executing.
+            workflow_context (WorkflowExecutionContext): The context of the executing workflow
             action_execution_strategy: The strategy with which to execute the actions
 
         Returns:
             (UUID): The ID of the next Action to be executed if successful, else None.
         """
         if workflow_context.has_branches:
+            current_action = workflow_context.executing_action
             for branch in workflow_context.get_branches_by_action_id(current_action.id):
-                # TODO: This here is the only hold up from getting rid of action._output.
-                # Keep whole result in accumulator
-                destination_id = branch.execute(action_execution_strategy, current_action.get_output(),
-                                                workflow_context.accumulator)
+                destination_id = branch.execute(
+                    action_execution_strategy,
+                    workflow_context.last_status,
+                    current_action,
+                    workflow_context.accumulator
+                )
                 if destination_id is not None:
                     logger.debug('Branch {} with destination {} chosen by workflow {} (id={})'.format(
                         str(branch.id),
