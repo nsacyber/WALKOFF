@@ -87,7 +87,6 @@ class TestInterfaceEventDispatcher(TestCase):
 
     def test_make_on_event_docstring_not_controller(self):
         doc = InterfaceEventDispatcher._make_on_walkoff_event_docstring(WalkoffEvent.ActionStarted)
-        self.assertIn('sender_uids', doc)
         self.assertIn('sender_ids', doc)
         self.assertIn('names', doc)
         self.assertIn('weak', doc)
@@ -96,7 +95,6 @@ class TestInterfaceEventDispatcher(TestCase):
     def test_make_on_event_docstring_controller(self):
         doc = InterfaceEventDispatcher._make_on_walkoff_event_docstring(WalkoffEvent.SchedulerStart)
         self.assertIn('weak', doc)
-        self.assertNotIn('sender_uids', doc)
         self.assertNotIn('sender_ids', doc)
         self.assertNotIn('names', doc)
         self.assertIn('def handler()', doc)
@@ -304,30 +302,6 @@ class TestInterfaceEventDispatcher(TestCase):
 
         workflow = MockWorkflow()
         WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema.dump(workflow).data)
-
-        data = {'id': self.id, 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
-                'execution_id': str(uuid.uuid4())}
-        kwargs = self.get_kwargs(workflow)
-        WalkoffEvent.ActionStarted.send(data, data=kwargs)
-        expected = data
-        expected.update(kwargs)
-        expected['sender_id'] = expected.pop('id')
-        expected['sender_name'] = expected.pop('name')
-        self.assertTrue(result['x'])
-        self.assertDictEqual(result['data'], expected)
-
-    def test_example_on_walkoff_event_noncontroller_event_with_uids(self):
-
-        result = {'x': False}
-        self.id = str(uuid.uuid4())
-
-        @dispatcher.on_walkoff_events(WalkoffEvent.ActionStarted, sender_uids=self.id)
-        def x(data):
-            result['x'] = True
-            result['data'] = data
-
-        workflow = MockWorkflow()
-        WalkoffEvent.WorkflowExecutionPending.send(MockWorkflowSchema().dump(workflow).data)
 
         data = {'id': self.id, 'name': 'b', 'device_id': 2, 'app_name': 'App1', 'action_name': 'action1',
                 'execution_id': str(uuid.uuid4())}

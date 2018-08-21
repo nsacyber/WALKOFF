@@ -1,6 +1,7 @@
 from unittest import TestCase
 from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy, make_execution_strategy
 
+
 class TestActionExecutionStrategyFactory(TestCase):
 
     def test_local_strategy_creation(self):

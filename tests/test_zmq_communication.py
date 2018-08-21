@@ -8,8 +8,6 @@ import walkoff.appgateway
 import walkoff.cache
 import walkoff.config
 from tests.util import execution_db_help, initialize_test_config
-from walkoff.case.database import Case, Event
-from walkoff.case.subscription import Subscription
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
@@ -40,10 +38,6 @@ class TestZMQCommunication(unittest.TestCase):
                 os.remove(walkoff.config.Config.DATA_PATH)
             else:
                 shutil.rmtree(walkoff.config.Config.DATA_PATH)
-        for class_ in (Case, Event):
-            for instance in cls.app.running_context.case_db.session.query(class_).all():
-                cls.app.running_context.case_db.session.delete(instance)
-        cls.app.running_context.case_db.session.commit()
         walkoff.appgateway.clear_cache()
         cls.app.running_context.executor.shutdown_pool()
         execution_db_help.tear_down_execution_db()

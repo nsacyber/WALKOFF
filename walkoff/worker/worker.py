@@ -13,14 +13,11 @@ from nacl.public import PrivateKey
 import walkoff.cache
 import walkoff.config
 from walkoff.appgateway.appinstancerepo import AppInstanceRepo
-from walkoff.case.database import CaseDatabase
-from walkoff.case.logger import CaseLogger
-from walkoff.case.subscription import SubscriptionCache
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.worker.action_exec_strategy import make_execution_strategy
 from walkoff.worker.workflow_receivers import WorkflowResultsHandler, WorkerCommunicationMessageType, \
-    WorkflowCommunicationMessageType, CaseCommunicationMessageType, WorkflowCommunicationReceiver, WorkflowReceiver
+    WorkflowCommunicationMessageType, WorkflowCommunicationReceiver, WorkflowReceiver
 from walkoff.worker.workflow_exec_strategy import WorkflowExecutor
 
 logger = logging.getLogger(__name__)
@@ -50,7 +47,6 @@ class Worker(object):
 
         self.execution_db = ExecutionDatabase(walkoff.config.Config.EXECUTION_DB_TYPE,
                                               walkoff.config.Config.EXECUTION_DB_PATH)
-        self.case_db = CaseDatabase(walkoff.config.Config.CASE_DB_TYPE, walkoff.config.Config.CASE_DB_PATH)
 
         @WalkoffEvent.CommonWorkflowSignal.connect
         def handle_data_sent(sender, **kwargs):
@@ -67,12 +63,9 @@ class Worker(object):
             walkoff.config.Config.SERVER_PRIVATE_KEY[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
 
         self.capacity = walkoff.config.Config.NUMBER_THREADS_PER_PROCESS
-        self.subscription_cache = SubscriptionCache()
-
-        case_logger = CaseLogger(self.case_db, self.subscription_cache)
 
         self.workflow_receiver = WorkflowReceiver(key, server_key, walkoff.config.Config.CACHE)
-        self.workflow_results_sender = WorkflowResultsHandler(socket_id, self.execution_db, case_logger)
+        self.workflow_results_sender = WorkflowResultsHandler(socket_id, self.execution_db)
         self.workflow_communication_receiver = WorkflowCommunicationReceiver(socket_id)
 
         action_execution_strategy = make_execution_strategy(walkoff.config.Config)
@@ -126,22 +119,12 @@ class Worker(object):
         for message in self.workflow_communication_receiver.receive_communications():
             if message.type == WorkerCommunicationMessageType.workflow:
                 self._handle_workflow_control_communication(message.data)
-            elif message.type == WorkerCommunicationMessageType.case:
-                self._handle_case_control_communication(message.data)
 
     def _handle_workflow_control_communication(self, message):
         if message.type == WorkflowCommunicationMessageType.pause:
             self.workflow_executor.pause(message.workflow_execution_id)
         elif message.type == WorkflowCommunicationMessageType.abort:
             self.workflow_executor.abort(message.workflow_execution_id)
-
-    def _handle_case_control_communication(self, message):
-        if message.type == CaseCommunicationMessageType.create:
-            self.subscription_cache.add_subscriptions(message.case_id, message.subscriptions)
-        elif message.type == CaseCommunicationMessageType.update:
-            self.subscription_cache.update_subscriptions(message.case_id, message.subscriptions)
-        elif message.type == CaseCommunicationMessageType.delete:
-            self.subscription_cache.delete_case(message.case_id)
 
     def on_data_sent(self, sender, **kwargs):
         """Listens for the data_sent callback, which signifies that an execution element needs to trigger a

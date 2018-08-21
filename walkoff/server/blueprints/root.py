@@ -29,7 +29,6 @@ def client_app_folder(filename):
 @root_page.route('scheduler')
 @root_page.route('devices')
 @root_page.route('messages')
-@root_page.route('cases')
 @root_page.route('metrics')
 @root_page.route('settings')
 def default():
@@ -91,21 +90,7 @@ def create_user():
     db.session.commit()
     current_app.running_context.execution_db.session.commit()
     reschedule_all_workflows()
-    send_all_cases_to_workers()
     current_app.logger.handlers = logging.getLogger('server').handlers
-
-
-def send_all_cases_to_workers():
-    from walkoff.serverdb.casesubscription import CaseSubscription
-    from walkoff.case.database import Case
-    from walkoff.case.subscription import Subscription
-    current_app.logger.info('Sending existing cases to workers')
-    for case_subscription in CaseSubscription.query.all():
-        subscriptions = [Subscription(sub['id'], sub['events']) for sub in case_subscription.subscriptions]
-        case = current_app.running_context.case_db.session.query(Case).filter(
-            Case.name == case_subscription.name).first()
-        if case is not None:
-            current_app.running_context.executor.update_case(case.id, subscriptions)
 
 
 def reschedule_all_workflows():

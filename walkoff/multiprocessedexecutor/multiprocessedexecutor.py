@@ -36,7 +36,7 @@ def spawn_worker_processes():
 
 
 class MultiprocessedExecutor(object):
-    def __init__(self, cache, event_logger, action_execution_strategy):
+    def __init__(self, cache, action_execution_strategy):
         """Initializes a multiprocessed executor, which will handle the execution of workflows.
         """
         self.threading_is_initialized = False
@@ -51,7 +51,6 @@ class MultiprocessedExecutor(object):
         self.receiver = None
         self.receiver_thread = None
         self.cache = cache
-        self.event_logger = event_logger
         self.action_execution_strategy = action_execution_strategy
         self.execution_db = ExecutionDatabase.instance
 
@@ -326,32 +325,4 @@ class MultiprocessedExecutor(object):
 
     def _log_and_send_event(self, event, sender=None, data=None):
         sender = sender or self
-        sender_id = sender.id if not isinstance(sender, dict) else sender['id']
-        self.event_logger.log(event, sender_id, data=data)
         event.send(sender, data=data)
-
-    def create_case(self, case_id, subscriptions):
-        """Creates a Case
-
-        Args:
-            case_id (int): The ID of the Case
-            subscriptions (list[Subscription]): List of Subscriptions to subscribe to
-        """
-        self.manager.create_case(case_id, subscriptions)
-
-    def update_case(self, case_id, subscriptions):
-        """Updates a Case
-
-        Args:
-            case_id (int): The ID of the Case
-            subscriptions (list[Subscription]): List of Subscriptions to subscribe to
-        """
-        self.manager.create_case(case_id, subscriptions)
-
-    def delete_case(self, case_id):
-        """Deletes a Case
-
-        Args:
-            case_id (int): The ID of the Case to delete
-        """
-        self.manager.delete_case(case_id)

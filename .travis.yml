@@ -3,6 +3,8 @@ matrix:
     - language: python
       os: linux
       python: "2.7"
+      services:
+        - redis-server
       install:
         - pip install -r requirements.txt && pip install -r requirements-test.txt
         - pip install coverage
@@ -22,6 +24,8 @@ matrix:
     - language: python
       os: linux
       python: "3.5"
+      services:
+        - redis-server
       install:
         - pip install -r requirements.txt && pip install -r requirements-test.txt
         - pip install coverage
@@ -41,6 +45,8 @@ matrix:
     - language: python
       os: linux
       python: "3.6"
+      services:
+        - redis-server
       install:
         - pip install -r requirements.txt && pip install -r requirements-test.txt
         - pip install coverage

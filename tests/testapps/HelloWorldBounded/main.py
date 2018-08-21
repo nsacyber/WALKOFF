@@ -10,8 +10,8 @@ def global1(arg1):
 
 
 class Main(App):
-    def __init__(self, name=None, device=None):
-        App.__init__(self, name, device)
+    def __init__(self, name, device, context):
+        App.__init__(self, name, device, context)
         self.introMessage = {"message": "HELLO WORLD"}
 
     @action

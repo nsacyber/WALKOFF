@@ -8,7 +8,6 @@ from walkoff.serverdb.user import User
 logger = logging.getLogger(__name__)
 
 default_resource_permissions_admin = [{"name": "app_apis", "permissions": ["read"]},
-                                      {"name": "cases", "permissions": ["create", "read", "update", "delete"]},
                                       {"name": "configuration", "permissions": ["read", "update"]},
                                       {"name": "devices", "permissions": ["create", "read", "update", "delete"]},
                                       {"name": "messages", "permissions": ["read", "update", "delete"]},
@@ -21,7 +20,6 @@ default_resource_permissions_admin = [{"name": "app_apis", "permissions": ["read
                                       {"name": "users", "permissions": ["create", "read", "update", "delete"]}]
 
 default_resource_permissions_guest = [{"name": "app_apis", "permissions": ["read"]},
-                                      {"name": "cases", "permissions": ["read"]},
                                       {"name": "configuration", "permissions": ["read"]},
                                       {"name": "devices", "permissions": ["read"]},
                                       {"name": "messages", "permissions": ["read", "update", "delete"]},
@@ -31,7 +29,7 @@ default_resource_permissions_guest = [{"name": "app_apis", "permissions": ["read
                                       {"name": "scheduler", "permissions": ["read"]},
                                       {"name": "users", "permissions": ["read"]}]
 
-default_resources = ['app_apis', 'cases', 'configuration', 'devices', 'messages', 'metrics', 'playbooks', 'roles',
+default_resources = ['app_apis', 'configuration', 'devices', 'messages', 'metrics', 'playbooks', 'roles',
                      'scheduler', 'users']
 
 

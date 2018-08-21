@@ -6,11 +6,9 @@ from zmq import Socket, auth
 
 import os
 from walkoff.config import Config
-from walkoff.proto.build.data_pb2 import CaseControl, CommunicationPacket, WorkflowControl
-from walkoff.case.subscription import Subscription
+from walkoff.proto.build.data_pb2 import CommunicationPacket, WorkflowControl
 from walkoff.worker.workflow_receivers import WorkerCommunicationMessageType, WorkflowCommunicationMessageType, \
-    CaseCommunicationMessageType, WorkerCommunicationMessageData, WorkflowCommunicationMessageData, \
-    CaseCommunicationMessageData, WorkflowCommunicationReceiver
+    WorkerCommunicationMessageData, WorkflowCommunicationMessageData, WorkflowCommunicationReceiver
 
 
 class TestWorkflowResultsHandler(TestCase):
@@ -67,43 +65,6 @@ class TestWorkflowResultsHandler(TestCase):
 
     def test_receive_workflow_abort(self):
         self.check_receive_workflow_communication_message(WorkflowControl.ABORT, WorkflowCommunicationMessageType.abort)
-
-    def check_receive_case_communication_message(self, proto_message_type, data_message_type, is_delete=False):
-        receiver = self.get_receiver()
-        message = CommunicationPacket()
-        message.type = CommunicationPacket.CASE
-        message.case_control_message.type = proto_message_type
-        case_id = 42
-        message.case_control_message.id = case_id
-        ids = [str(uuid4()), str(uuid4())]
-        event_sets = [['a', 'b'], ['c', 'd']]
-        for id_, events in zip(ids, event_sets):
-            sub = message.case_control_message.subscriptions.add()
-            sub.id = id_
-            sub.events.extend(events)
-        subscriptions = [Subscription(id_, events) for id_, events in zip(ids, event_sets)]
-        expected = WorkerCommunicationMessageData(
-            WorkerCommunicationMessageType.case,
-            CaseCommunicationMessageData(data_message_type, case_id, subscriptions))
-        self.check_receive_communication_message(receiver, message, expected)
-
-    def test_receive_create_case(self):
-        self.check_receive_case_communication_message(CaseControl.CREATE, CaseCommunicationMessageType.create)
-
-    def test_receive_update_case(self):
-        self.check_receive_case_communication_message(CaseControl.UPDATE, CaseCommunicationMessageType.update)
-
-    def test_receive_delete_case(self):
-        receiver = self.get_receiver()
-        message = CommunicationPacket()
-        message.type = CommunicationPacket.CASE
-        message.case_control_message.type = CaseControl.DELETE
-        case_id = 42
-        message.case_control_message.id = case_id
-        expected = WorkerCommunicationMessageData(
-            WorkerCommunicationMessageType.case,
-            CaseCommunicationMessageData(CaseCommunicationMessageType.delete, case_id, None))
-        self.check_receive_communication_message(receiver, message, expected)
 
     def test_receive_exit(self):
         receiver = self.get_receiver()

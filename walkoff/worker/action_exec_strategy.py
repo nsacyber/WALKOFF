@@ -42,9 +42,8 @@ execution_strategy_lookup = {
 }
 
 
-def make_execution_strategy(config, execution_strategy_map=None, **kwargs):
+def make_execution_strategy(config, execution_strategy_map=execution_strategy_lookup, **kwargs):
     strategy = config.ACTION_EXECUTION_STRATEGY
-    execution_strategy_map = execution_strategy_map or execution_strategy_lookup
     try:
         return execution_strategy_map[strategy](config, **kwargs)
     except KeyError:

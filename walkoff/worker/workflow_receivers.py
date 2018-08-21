@@ -1,8 +1,8 @@
-from collections import namedtuple
 import logging
+from collections import namedtuple
+from enum import Enum
 
 import zmq
-from enum import Enum
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.message import DecodeError
 from nacl.exceptions import CryptoError
@@ -11,25 +11,23 @@ from zmq import ZMQError
 
 import walkoff.cache
 import walkoff.config
-from walkoff.case.subscription import Subscription
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.environment_variable import EnvironmentVariable
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
-from walkoff.proto.build.data_pb2 import CommunicationPacket, WorkflowControl, CaseControl, ExecuteWorkflowMessage, Message, WorkerPacket
+from walkoff.proto.build.data_pb2 import CommunicationPacket, ExecuteWorkflowMessage, WorkflowControl
 
 logger = logging.getLogger(__name__)
 
 
 class WorkflowResultsHandler(object):
-    def __init__(self, socket_id, execution_db, case_logger):
+    def __init__(self, socket_id, execution_db):
         """Initialize a WorkflowResultsHandler object, which will be sending results of workflow execution
 
         Args:
             socket_id (str): The ID for the results socket
             execution_db (ExecutionDatabase): An ExecutionDatabase connection object
-            case_logger (CaseLoger): A CaseLogger instance
         """
         self._ready = False
         self.results_sock = zmq.Context().socket(zmq.PUSH)
@@ -45,8 +43,6 @@ class WorkflowResultsHandler(object):
             raise
 
         self.execution_db = execution_db
-
-        self.case_logger = case_logger
 
         if self.check_status():
             self._ready = True
@@ -77,8 +73,6 @@ class WorkflowResultsHandler(object):
             sender = action
 
         packet_bytes = convert_to_protobuf(sender, workflow_ctx, **kwargs)
-        if event.is_loggable():
-            self.case_logger.log(event, sender.id, kwargs.get('data', None))
         self.results_sock.send(packet_bytes)
 
     def is_ready(self):
@@ -95,8 +89,7 @@ class WorkflowResultsHandler(object):
 
 class WorkerCommunicationMessageType(Enum):
     workflow = 1
-    case = 2
-    exit = 3
+    exit = 2
 
 
 class WorkflowCommunicationMessageType(Enum):
@@ -104,15 +97,8 @@ class WorkflowCommunicationMessageType(Enum):
     abort = 2
 
 
-class CaseCommunicationMessageType(Enum):
-    create = 1
-    update = 2
-    delete = 3
-
-
 WorkerCommunicationMessageData = namedtuple('WorkerCommunicationMessageData', ['type', 'data'])
 WorkflowCommunicationMessageData = namedtuple('WorkflowCommunicationMessageData', ['type', 'workflow_execution_id'])
-CaseCommunicationMessageData = namedtuple('CaseCommunicationMessageData', ['type', 'case_id', 'subscriptions'])
 
 
 class WorkflowCommunicationReceiver(object):
@@ -170,11 +156,6 @@ class WorkflowCommunicationReceiver(object):
                     yield WorkerCommunicationMessageData(
                         WorkerCommunicationMessageType.workflow,
                         self._format_workflow_message_data(message.workflow_control_message))
-                elif message_type == CommunicationPacket.CASE:
-                    logger.debug('Workflow received case communication packet')
-                    yield WorkerCommunicationMessageData(
-                        WorkerCommunicationMessageType.case,
-                        self._format_case_message_data(message.case_control_message))
                 elif message_type == CommunicationPacket.EXIT:
                     logger.info('Worker received exit message')
                     break
@@ -187,21 +168,6 @@ class WorkflowCommunicationReceiver(object):
             return WorkflowCommunicationMessageData(WorkflowCommunicationMessageType.pause, workflow_execution_id)
         elif message.type == WorkflowControl.ABORT:
             return WorkflowCommunicationMessageData(WorkflowCommunicationMessageType.abort, workflow_execution_id)
-
-    @staticmethod
-    def _format_case_message_data(message):
-        if message.type == CaseControl.CREATE:
-            return CaseCommunicationMessageData(
-                CaseCommunicationMessageType.create,
-                message.id,
-                [Subscription(sub.id, sub.events) for sub in message.subscriptions])
-        elif message.type == CaseControl.UPDATE:
-            return CaseCommunicationMessageData(
-                CaseCommunicationMessageType.update,
-                message.id,
-                [Subscription(sub.id, sub.events) for sub in message.subscriptions])
-        elif message.type == CaseControl.DELETE:
-            return CaseCommunicationMessageData(CaseCommunicationMessageType.delete, message.id, None)
 
     def is_ready(self):
         return self._ready

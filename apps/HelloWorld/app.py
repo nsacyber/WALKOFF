@@ -32,8 +32,8 @@ class HelloWorld(App):
     many total actions are called for this app's instance.
     """
 
-    def __init__(self, name=None, device=None):
-        App.__init__(self, name, device)
+    def __init__(self, name, device, context):
+        App.__init__(self, name, device, context)
         # Functions and Variables that are designed to exist across functions go here
         self.introMessage = {"message": "HELLO WORLD"}
         self.total_called_functions = 0

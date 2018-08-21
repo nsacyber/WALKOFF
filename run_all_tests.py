@@ -11,8 +11,7 @@ import os
 
 
 def delete_dbs():
-    db_paths = [tests.config.TestConfig.CASE_DB_PATH, tests.config.TestConfig.EXECUTION_DB_PATH,
-                tests.config.TestConfig.DB_PATH]
+    db_paths = (tests.config.TestConfig.EXECUTION_DB_PATH, tests.config.TestConfig.DB_PATH)
     for db in db_paths:
         if os.path.exists(db):
             os.remove(db)
@@ -28,8 +27,6 @@ def run_tests():
     ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.workflow_suite).wasSuccessful()
     print('\nTesting Execution:')
     ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.execution_suite).wasSuccessful()
-    print('\nTesting Cases:')
-    ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.case_suite).wasSuccessful()
     print('\nTesting Server:')
     ret &= unittest.TextTestRunner(verbosity=1).run(test_suites.server_suite).wasSuccessful()
     print('\nTesting Interface:')

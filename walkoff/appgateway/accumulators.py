@@ -93,13 +93,13 @@ class ExternallyCachedAccumulator(object):
         return self.keys()
 
 
-def make_in_memory_accumulator(config, workflow, **kwargs):
+def make_in_memory_accumulator(config, workflow_execution_id, **kwargs):
     return InMemoryAccumulator()
 
 
-def make_external_accumulator(config, workflow, **kwargs):
+def make_external_accumulator(config, workflow_execution_id, **kwargs):
     cache = make_cache(config.CACHE)
-    return ExternallyCachedAccumulator(cache, workflow.get_execution_id())
+    return ExternallyCachedAccumulator(cache, workflow_execution_id)
 
 
 accumulator_lookup = {

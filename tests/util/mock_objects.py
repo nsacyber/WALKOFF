@@ -6,17 +6,16 @@ from fakeredis import FakeStrictRedis
 from flask import current_app
 from zmq.utils.strtypes import cast_unicode
 
+import walkoff.config
+from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 from walkoff.cache import RedisCacheAdapter
-from walkoff.case.database import CaseDatabase
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.multiprocessedexecutor import workflowexecutioncontroller
 from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
-from walkoff.worker.workflow_exec_strategy import WorkflowExecutor
-from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 from walkoff.worker.action_exec_strategy import make_execution_strategy
-import walkoff.config
+from walkoff.worker.workflow_exec_strategy import WorkflowExecutor
 
 try:
     from Queue import Queue
@@ -74,7 +73,6 @@ class MockLoadBalancer(object):
             WalkoffEvent.CommonWorkflowSignal.connect(handle_data_sent)
 
         self.execution_db = ExecutionDatabase.instance
-        self.case_db = CaseDatabase.instance
 
         self.workflow_executor = WorkflowExecutor(2, self.execution_db, make_execution_strategy(walkoff.config.Config),
                                                   AppInstanceRepo)
@@ -166,6 +164,10 @@ class MockRequestQueue(object):
 class MockRedisCacheAdapter(RedisCacheAdapter):
     def __init__(self, **opts):
         self.cache = FakeStrictRedis(**opts)
+        self.cache.info = lambda: None
+
+    def info(self):
+        pass
 
 
 class PubSubCacheSpy(object):

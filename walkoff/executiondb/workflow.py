@@ -1,7 +1,7 @@
 import logging
 from uuid import UUID
 
-from sqlalchemy import Column, String, ForeignKey, orm, UniqueConstraint, Boolean, event
+from sqlalchemy import Column, String, ForeignKey, UniqueConstraint, Boolean, event
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType
 

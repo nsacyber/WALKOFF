@@ -8,12 +8,17 @@ from walkoff.appgateway.apiutil import get_app_action_api, get_condition_api, ge
     UnknownAppAction, UnknownCondition, UnknownTransform
 from walkoff.helpers import *
 from walkoff.server.blueprints.root import handle_database_errors, handle_generic_server_error
+from walkoff.server.app import create_app
 
 
 class TestHelperFunctions(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         initialize_test_config()
+        cls.app = create_app(walkoff.config.Config)
+        cls.app.testing = True
+        cls.context = cls.app.test_request_context()
+        cls.context.push()
 
     @classmethod
     def tearDownClass(cls):

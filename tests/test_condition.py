@@ -8,6 +8,7 @@ from walkoff.executiondb.transform import Transform
 from walkoff.appgateway.apiutil import InvalidArgument
 from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy
 
+
 class TestCondition(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
