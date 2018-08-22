@@ -17,7 +17,7 @@ from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
 from walkoff.multiprocessedexecutor.receiver import Receiver
 from start_workers import shutdown_procs
-from walkoff.multiprocessedexecutor.senders import ZMQResultsSender
+from walkoff.multiprocessedexecutor.senders import ZMQWorkflowResultsSender
 from flask import current_app
 from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController, Receiver
 from walkoff.appgateway.accumulators import make_accumulator
@@ -70,8 +70,8 @@ class MultiprocessedExecutor(object):
         self.manager = WorkflowExecutionController(self.cache)
 
         with app.app_context():
-            self.zmq_sender = ZMQResultsSender(current_app.running_context.execution_db,
-                                               current_app.running_context.case_logger)
+            self.zmq_sender = ZMQWorkflowResultsSender(current_app.running_context.execution_db,
+                                                       current_app.running_context.case_logger)
 
         if not walkoff.config.Config.SEPARATE_RECEIVER:
             self.receiver = Receiver(app)

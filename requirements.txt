@@ -24,3 +24,4 @@ healthcheck
 psycopg2-binary
 dill
 redis
+confluent-kafka
