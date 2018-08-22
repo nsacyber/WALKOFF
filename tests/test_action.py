@@ -13,6 +13,7 @@ from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.position import Position
 from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy
+from walkoff.appgateway.apiutil import UnknownApp, UnknownAppAction
 
 
 class TestAction(unittest.TestCase):
@@ -50,7 +51,6 @@ class TestAction(unittest.TestCase):
                 'workflow_execution_id': uuid4()
             }
         return AppInstance.create(app_name, device, context)
-
 
     def test_init_default(self):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld')
@@ -115,6 +115,14 @@ class TestAction(unittest.TestCase):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld', trigger=trigger)
         self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', trigger=trigger)
 
+    def test_unknown_app(self):
+        action = Action('InvalidApp', 'InvalidAction', 'name')
+        self.assertIn('Unknown app InvalidApp', action.errors)
+
+    def test_unknown_app_action(self):
+        action = Action('HelloWorld', 'InvalidAction', 'name')
+        self.assertIn('Unknown app action InvalidAction', action.errors)
+
     def test_execute_no_args(self):
         action = Action('HelloWorld', action_name='helloWorld', name='helloWorld')
         instance = TestAction._make_app_instance()
@@ -123,7 +131,6 @@ class TestAction(unittest.TestCase):
         expected = ActionResult({'message': 'HELLO WORLD'}, 'Success')
         self.assertEqual(result, expected)
         self.assertEqual(acc[action.id], result.result)
-
 
     def test_execute_return_failure(self):
         action = Action(app_name='HelloWorld', action_name='dummy action', name='helloWorld',
@@ -294,7 +301,6 @@ class TestAction(unittest.TestCase):
         acc = {}
         action.execute(LocalActionExecutionStrategy(), acc, instance.instance)
         self.assertIn(action.id, acc)
-
 
     def test_execute_action_which_raises_exception_sends_callbacks(self):
         action = Action(app_name='HelloWorld', action_name='Buggy', name='helloWorld')
