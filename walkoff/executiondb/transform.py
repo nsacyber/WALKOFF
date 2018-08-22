@@ -100,7 +100,7 @@ class Transform(ExecutionElement, Execution_Base):
             return original_data_in
 
         try:
-            result = action_execution_strategy.execute(self, args)
+            result = action_execution_strategy.execute(self, accumulator, args)
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformSuccess)
             return result
 

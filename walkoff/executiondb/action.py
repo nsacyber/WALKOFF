@@ -160,9 +160,9 @@ class Action(ExecutionElement, Execution_Base):
             return result
 
         if is_app_action_bound(self.app_name, self._run):
-            result = action_execution_strategy.execute(self, args, instance=instance)
+            result = action_execution_strategy.execute(self, accumulator, args, instance=instance)
         else:
-            result = action_execution_strategy.execute(self, args)
+            result = action_execution_strategy.execute(self, accumulator, args)
 
         if result.status == 'UnhandledException':
             logger.error('Error executing action {} (id={})'.format(self.name, str(self.id)))
@@ -177,7 +177,6 @@ class Action(ExecutionElement, Execution_Base):
         else:
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionSuccess,
                                                    data=result.as_json())
-        accumulator[self.id] = result.result
         return result
 
     def execute_trigger(self, action_execution_strategy, data_in, accumulator):

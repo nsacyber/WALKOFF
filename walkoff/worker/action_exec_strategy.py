@@ -25,12 +25,15 @@ class LocalActionExecutionStrategy(object):
             run_key = run_key[1]
         return key.get_executable(executable.app_name, run_key)
 
-    def execute(self, executable, arguments, instance=None):
-        executable = self._get_execution_func(executable)
+    def execute(self, executable, accumulator, arguments, instance=None):
+        executable_func = self._get_execution_func(executable)
         if instance:
-            return executable(instance, **arguments)
+            result = executable_func(instance, **arguments)
         else:
-            return executable(**arguments)
+            result = executable_func(**arguments)
+        if isinstance(executable, Action):
+            accumulator[executable.id] = result.result
+        return result
 
 
 def make_local_execution_strategy(config, **kwargs):

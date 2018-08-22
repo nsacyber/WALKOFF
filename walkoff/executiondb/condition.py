@@ -115,7 +115,7 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
 
         try:
             logger.debug('Arguments passed to condition {} are valid'.format(self.id))
-            ret = action_execution_strategy.execute(self, args)
+            ret = action_execution_strategy.execute(self, accumulator, args)
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionSuccess)
             if self.is_negated:
                 return not ret
