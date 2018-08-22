@@ -10,7 +10,7 @@ from walkoff.appgateway.validator import validate_condition_parameters
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import format_exception_message
+from walkoff.helpers import ExecutionError, format_exception_message
 from walkoff.appgateway.apiutil import split_api_params, get_condition_api, UnknownApp, InvalidArgument, \
     UnknownCondition
 
@@ -122,7 +122,7 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
             else:
                 return ret
 
-        except Exception:
+        except ExecutionError:
             logger.exception(
                 'Error encountered executing condition {0} with arguments {1} and value {2}: Returning False'.format(
                     self.action_name, arguments, data))

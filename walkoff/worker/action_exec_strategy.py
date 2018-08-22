@@ -4,7 +4,7 @@ from walkoff.executiondb.action import Action
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.transform import Transform
 from collections import namedtuple
-
+from walkoff.helpers import ExecutionError
 
 _ActionLookupKey = namedtuple('_ActionLookupKey', ['get_run_key', 'get_executable'])
 
@@ -27,10 +27,13 @@ class LocalActionExecutionStrategy(object):
 
     def execute(self, executable, accumulator, arguments, instance=None):
         executable_func = self._get_execution_func(executable)
-        if instance:
-            result = executable_func(instance, **arguments)
-        else:
-            result = executable_func(**arguments)
+        try:
+            if instance:
+                result = executable_func(instance, **arguments)
+            else:
+                result = executable_func(**arguments)
+        except Exception as e:
+            raise ExecutionError(e)
         if isinstance(executable, Action):
             accumulator[executable.id] = result.result
         return result
