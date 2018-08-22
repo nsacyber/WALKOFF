@@ -10,9 +10,6 @@ export class Configuration {
 		return {
 			db_path: './data/walkoff.db',
 			walkoff_db_type: 'sqlite',
-			case_db_path: './data/events.db',
-			case_db_type: 'sqlite',
-			clear_case_db_on_startup: false,
 			host: '127.0.0.1',
 			port: 5000,
 			access_token_duration: 15,
@@ -29,12 +26,6 @@ export class Configuration {
 	db_path: string;
 
 	walkoff_db_type: string;
-
-	case_db_path: string;
-
-	case_db_type: string;
-
-	clear_case_db_on_startup: boolean;
 
 	host: string;
 

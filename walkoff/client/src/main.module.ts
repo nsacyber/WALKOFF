@@ -19,7 +19,6 @@ import { SchedulerComponent } from './scheduler/scheduler.component';
 import { PlaybookComponent } from './playbook/playbook.component';
 import { DevicesComponent } from './devices/devices.component';
 import { MessagesComponent } from './messages/messages.component';
-import { CasesComponent } from './cases/cases.component';
 import { MetricsComponent } from './metrics/metrics.component';
 import { SettingsComponent } from './settings/settings.component';
 import { InterfacesComponent } from './interfaces/interfaces.component';
@@ -27,7 +26,6 @@ import { ExecutionComponent } from './execution/execution.component';
 
 import { SchedulerModalComponent } from './scheduler/scheduler.modal.component';
 import { DevicesModalComponent } from './devices/devices.modal.component';
-import { CasesModalComponent } from './cases/cases.modal.component';
 import { SettingsUserModalComponent } from './settings/settings.user.modal.component';
 import { SettingsRoleModalComponent } from './settings/settings.roles.modal.component';
 import { ExecutionVariableModalComponent } from './execution/execution.variable.modal.component';
@@ -64,7 +62,6 @@ import { KeysPipe } from './pipes/keys.pipe';
 		SchedulerComponent,
 		DevicesComponent,
 		MessagesComponent,
-		CasesComponent,
 		MetricsComponent,
 		SettingsComponent,
 		InterfacesComponent,
@@ -72,7 +69,6 @@ import { KeysPipe } from './pipes/keys.pipe';
 		//Modals
 		SchedulerModalComponent,
 		DevicesModalComponent,
-		CasesModalComponent,
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
 		MessagesModalComponent,
@@ -95,7 +91,6 @@ import { KeysPipe } from './pipes/keys.pipe';
 	entryComponents: [
 		SchedulerModalComponent,
 		DevicesModalComponent,
-		CasesModalComponent,
 		SettingsUserModalComponent,
 		SettingsRoleModalComponent,
 		MessagesModalComponent,

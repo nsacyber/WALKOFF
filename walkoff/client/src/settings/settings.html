@@ -21,21 +21,6 @@
                                 <option *ngFor="let i of dbTypes" [value]="i" [label]="i">{{i}}</option>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="case_db_path">Case Database Path</label>
-                            <input type="text" class="form-control" [(ngModel)]="configuration.case_db_path" name="case_db_path" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="case_db_type">Case Database Type</label>
-                            <select class="form-control" [(ngModel)]="configuration.case_db_type" name="case_db_type">
-                                <option *ngFor="let i of dbTypes" [value]="i" [label]="i">{{i}}</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="clear_case_db_on_startup">Clear Case Database on Startup</label>
-                            <input type="checkbox" class="form-control" [(ngModel)]="configuration.clear_case_db_on_startup" name="clear_case_db_on_startup"
-                                required>
-                        </div>
                     </div>
 
                     <div class="col-md-6">
