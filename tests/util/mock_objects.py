@@ -12,7 +12,7 @@ from walkoff.cache import RedisCacheAdapter
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.saved_workflow import SavedWorkflow
-from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
+from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter as ProtoConverter
 from walkoff.multiprocessedexecutor.receiver import Receiver
 from walkoff.multiprocessedexecutor.senders import ZMQResultsSender
 from walkoff.worker.action_exec_strategy import make_execution_strategy
@@ -92,7 +92,7 @@ class MockLoadBalancer(object):
             self.execution_db.session.add(saved_workflow)
             self.execution_db.session.commit()
 
-        packet_bytes = convert_to_protobuf(sender, workflow_ctx, **kwargs)
+        packet_bytes = ProtoConverter.event_to_protobuf(sender, workflow_ctx, **kwargs)
         self.results_queue.send(packet_bytes)
 
     def add_workflow(self, workflow_id, workflow_execution_id, start=None, start_arguments=None, resume=False,

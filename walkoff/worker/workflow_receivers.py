@@ -15,7 +15,7 @@ from walkoff.events import WalkoffEvent
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.environment_variable import EnvironmentVariable
 from walkoff.executiondb.saved_workflow import SavedWorkflow
-from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
+from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter as ProtoConverter
 from walkoff.proto.build.data_pb2 import CommunicationPacket, ExecuteWorkflowMessage, WorkflowControl
 
 logger = logging.getLogger(__name__)
@@ -72,7 +72,7 @@ class WorkflowResultsHandler(object):
             action = workflow_ctx.get_executing_action()
             sender = action
 
-        packet_bytes = convert_to_protobuf(sender, workflow_ctx, **kwargs)
+        packet_bytes = ProtoConverter.event_to_protobuf(sender, workflow_ctx, **kwargs)
         self.results_sock.send(packet_bytes)
 
     def is_ready(self):

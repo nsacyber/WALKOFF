@@ -12,7 +12,7 @@ from six import string_types
 import walkoff.config
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.helpers import json_dumps_or_string
-from walkoff.multiprocessedexecutor import proto_helpers
+from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter as ProtoConverter
 from walkoff.proto.build.data_pb2 import Message, CommunicationPacket, ExecuteWorkflowMessage, WorkflowControl
 
 logger = logging.getLogger(__name__)
@@ -60,7 +60,7 @@ class WorkflowExecutionController:
         if start_arguments:
             self._set_arguments_for_proto(message, start_arguments)
         if environment_variables:
-            proto_helpers.add_env_vars_to_proto(message, environment_variables)
+            ProtoConverter.add_env_vars_to_proto(message, environment_variables)
 
         message = message.SerializeToString()
         encrypted_message = self.box.encrypt(message)
