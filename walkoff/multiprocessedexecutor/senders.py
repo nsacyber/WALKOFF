@@ -11,13 +11,12 @@ logger = logging.getLogger(__name__)
 
 
 class ZMQResultsSender(object):
-    def __init__(self, execution_db, case_logger, socket_id=None, client_secret_key=None, client_public_key=None,
+    def __init__(self, execution_db, socket_id=None, client_secret_key=None, client_public_key=None,
                  server_public_key=None):
         """Initialize a WorkflowResultsHandler object, which will be sending results of workflow execution
 
         Args:
             execution_db (ExecutionDatabase): An ExecutionDatabase connection object
-            case_logger (CaseLoger): A CaseLogger instance
             socket_id (str): The ID for the results socket
             client_secret_key (str): The secret key for the client
             client_public_key (str): The public key for the client
@@ -40,7 +39,6 @@ class ZMQResultsSender(object):
                 raise
 
         self.execution_db = execution_db
-        self.case_logger = case_logger
 
     def shutdown(self):
         """Shuts down the results socket and tears down the ExecutionDatabase

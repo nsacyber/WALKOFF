@@ -70,8 +70,7 @@ class MultiprocessedExecutor(object):
         self.manager = WorkflowExecutionController(self.cache)
 
         with app.app_context():
-            self.zmq_sender = ZMQResultsSender(current_app.running_context.execution_db,
-                                               current_app.running_context.case_logger)
+            self.zmq_sender = ZMQResultsSender(current_app.running_context.execution_db)
 
         if not walkoff.config.Config.SEPARATE_RECEIVER:
             self.receiver = Receiver(app)

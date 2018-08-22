@@ -28,7 +28,7 @@ class TestWorkflowExecutionController(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.controller.comm_sock.close()
+        cls.controller.comm_socket.close()
 
     @staticmethod
     def assert_message_sent(mock_send, expected_message):
