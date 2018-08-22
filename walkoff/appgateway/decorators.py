@@ -3,7 +3,9 @@ from functools import wraps
 from walkoff.appgateway.actionresult import ActionResult
 from walkoff.helpers import get_function_arg_names
 from .walkofftag import WalkoffTag
+import logging
 
+logger = logging.getLogger(__name__)
 
 def format_result(result):
     """Converts a result to an ActionResult object
@@ -42,7 +44,11 @@ def action(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        return format_result(func(*args, **kwargs))
+        try:
+            return format_result(func(*args, **kwargs))
+        except Exception as e:
+            logger.exception('Error executing action')
+            return ActionResult.from_exception(e, 'UnhandledException')
 
     WalkoffTag.action.tag(wrapper)
     wrapper.__arg_names = get_function_arg_names(func)

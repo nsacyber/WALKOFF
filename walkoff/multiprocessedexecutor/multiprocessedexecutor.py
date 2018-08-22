@@ -15,17 +15,18 @@ from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
-from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController
 from walkoff.multiprocessedexecutor.receiver import Receiver
 from start_workers import shutdown_procs
 from walkoff.multiprocessedexecutor.senders import ZMQResultsSender
 from flask import current_app
+from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController, Receiver
+from walkoff.appgateway.accumulators import make_accumulator
 
 logger = logging.getLogger(__name__)
 
 
 class MultiprocessedExecutor(object):
-    def __init__(self, cache, event_logger, action_execution_strategy):
+    def __init__(self, cache, action_execution_strategy):
         """Initializes a multiprocessed executor, which will handle the execution of workflows.
         """
         self.threading_is_initialized = False
@@ -40,7 +41,6 @@ class MultiprocessedExecutor(object):
         self.receiver = None
         self.receiver_thread = None
         self.cache = cache
-        self.event_logger = event_logger
         self.action_execution_strategy = action_execution_strategy
         self.execution_db = ExecutionDatabase.instance
         self.zmq_sender = None
@@ -159,7 +159,6 @@ class MultiprocessedExecutor(object):
             logger.info('Executing workflow {0} (id={1}) with default starting action'.format(
                 workflow.name, workflow.id, start))
 
-        workflow._execution_id = execution_id
         workflow_data = {'execution_id': execution_id, 'id': str(workflow.id), 'name': workflow.name}
         self._log_and_send_event(WalkoffEvent.WorkflowExecutionPending, sender=workflow_data, workflow=workflow)
         self.manager.add_workflow(workflow.id, execution_id, start, start_arguments, resume, environment_variables)
@@ -204,8 +203,9 @@ class MultiprocessedExecutor(object):
                 workflow_execution_id=execution_id).first()
             workflow = self.execution_db.session.query(Workflow).filter_by(
                 id=workflow_status.workflow_id).first()
-            workflow._execution_id = execution_id
-            self._log_and_send_event(WalkoffEvent.WorkflowResumed, sender=workflow, workflow=workflow)
+
+            data = {"execution_id": execution_id}
+            self._log_and_send_event(WalkoffEvent.WorkflowResumed, sender=workflow, data=data)
 
             start = saved_state.action_id if saved_state else workflow.start
             self.execute_workflow(workflow.id, execution_id_in=execution_id, start=start, resume=True)
@@ -260,16 +260,15 @@ class MultiprocessedExecutor(object):
         logger.info('Resuming workflow {} from trigger'.format(execution_id))
         saved_state = self.execution_db.session.query(SavedWorkflow).filter_by(
             workflow_execution_id=execution_id).first()
-        workflow = self.execution_db.session.query(Workflow).filter_by(
-            id=saved_state.workflow_id).first()
-        workflow._execution_id = execution_id
+        workflow = self.execution_db.session.query(Workflow).filter_by(id=saved_state.workflow_id).first()
 
+        accumulator = make_accumulator(execution_id)
         executed = False
         exec_action = None
         for action in workflow.actions:
             if action.id == saved_state.action_id:
                 exec_action = action
-                executed = action.execute_trigger(self.action_execution_strategy, data_in, saved_state.accumulator)
+                executed = action.execute_trigger(self.action_execution_strategy, data_in, accumulator)
                 break
 
         if executed:
@@ -324,29 +323,3 @@ class MultiprocessedExecutor(object):
     def _log_and_send_event(self, event, sender=None, data=None, workflow=None):
         sender = sender or self
         self.zmq_sender.handle_event(workflow, sender, event=event, data=data)
-
-    def create_case(self, case_id, subscriptions):
-        """Creates a Case
-
-        Args:
-            case_id (int): The ID of the Case
-            subscriptions (list[Subscription]): List of Subscriptions to subscribe to
-        """
-        self.manager.create_case(case_id, subscriptions)
-
-    def update_case(self, case_id, subscriptions):
-        """Updates a Case
-
-        Args:
-            case_id (int): The ID of the Case
-            subscriptions (list[Subscription]): List of Subscriptions to subscribe to
-        """
-        self.manager.create_case(case_id, subscriptions)
-
-    def delete_case(self, case_id):
-        """Deletes a Case
-
-        Args:
-            case_id (int): The ID of the Case to delete
-        """
-        self.manager.delete_case(case_id)

@@ -1,19 +1,17 @@
 import socket
 import unittest
 
-from mock import create_autospec
-
 import walkoff.appgateway
 import walkoff.config
 from tests.util import execution_db_help, initialize_test_config
 from tests.util.mock_objects import *
-from walkoff.case.logger import CaseLogger
+
 from walkoff.executiondb.argument import Argument
 from walkoff.multiprocessedexecutor import multiprocessedexecutor
 from walkoff.server.app import create_app
 from walkoff.executiondb.environment_variable import EnvironmentVariable
 from uuid import uuid4
-from walkoff.executiondb.actionexecstrategy import LocalActionExecutionStrategy
+from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy
 
 try:
     from importlib import reload
@@ -36,7 +34,6 @@ class TestWorkflowManipulation(unittest.TestCase):
         multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
         cls.executor = multiprocessedexecutor.MultiprocessedExecutor(
             MockRedisCacheAdapter(),
-            create_autospec(CaseLogger),
             LocalActionExecutionStrategy()
         )
         cls.executor.initialize_threading(app)

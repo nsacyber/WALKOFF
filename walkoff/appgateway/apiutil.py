@@ -63,6 +63,8 @@ def get_app_action_return_is_failure(app, action, status):
     Returns:
         (boolean): True if status is a failure code, false otherwise
     """
+    if status == 'UnhandledException':
+        return True
     try:
         app_api = walkoff.config.app_apis[app]
     except KeyError:
@@ -71,7 +73,7 @@ def get_app_action_return_is_failure(app, action, status):
         try:
             action_api = app_api['actions'][action]
             if 'failure' in action_api['returns'][status]:
-                return True if action_api['returns'][status]['failure'] is True else False
+                return action_api['returns'][status]['failure']
             else:
                 return False
         except KeyError:

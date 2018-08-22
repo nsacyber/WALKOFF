@@ -1,10 +1,7 @@
 import walkoff.cache
-import walkoff.case.database
 import walkoff.executiondb
 import walkoff.scheduler
-from walkoff.case.logger import CaseLogger
-from walkoff.case.subscription import SubscriptionCache
-from walkoff.executiondb.actionexecstrategy import make_execution_strategy
+from walkoff.worker.action_exec_strategy import make_execution_strategy
 
 
 class Context(object):
@@ -17,16 +14,13 @@ class Context(object):
             config (Config): A config object
         """
         self.execution_db = walkoff.executiondb.ExecutionDatabase(config.EXECUTION_DB_TYPE, config.EXECUTION_DB_PATH)
-        self.case_db = walkoff.case.database.CaseDatabase(config.CASE_DB_TYPE, config.CASE_DB_PATH)
 
         if init_all:
             import walkoff.multiprocessedexecutor.multiprocessedexecutor as executor
-            self.subscription_cache = SubscriptionCache()
-            self.case_logger = CaseLogger(self.case_db, self.subscription_cache)
             self.cache = walkoff.cache.make_cache(config.CACHE)
             action_execution_strategy = make_execution_strategy(config)
-            self.executor = executor.MultiprocessedExecutor(self.cache, self.case_logger, action_execution_strategy)
-            self.scheduler = walkoff.scheduler.Scheduler(self.case_logger)
+            self.executor = executor.MultiprocessedExecutor(self.cache, action_execution_strategy)
+            self.scheduler = walkoff.scheduler.Scheduler()
 
     def inject_app(self, app):
         self.scheduler.app = app

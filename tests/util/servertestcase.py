@@ -79,7 +79,6 @@ class ServerTestCase(unittest.TestCase):
         execution_db_help.cleanup_execution_db()
         execution_db_help.tear_down_execution_db()
 
-        cls.app.running_context.case_db.tear_down()
         walkoff.appgateway.clear_cache()
 
     def setUp(self):

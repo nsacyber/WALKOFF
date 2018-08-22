@@ -11,7 +11,8 @@ import walkoff.cache
 import walkoff.config
 from tests.util import initialize_test_config
 from tests.util.mock_objects import MockRedisCacheAdapter
-from walkoff.multiprocessedexecutor.worker import WorkflowReceiver, ExecuteWorkflowMessage
+from walkoff.proto.build.data_pb2 import ExecuteWorkflowMessage
+from walkoff.worker.workflow_receivers import WorkflowReceiver
 
 
 class TestWorkflowReceiver(TestCase):
@@ -34,7 +35,7 @@ class TestWorkflowReceiver(TestCase):
         self.assertEqual(receiver.server_key, self.server_key)
         mock_make_cache.assert_called_once_with(walkoff.config.Config.CACHE)
         self.assertIsInstance(receiver.cache, MockRedisCacheAdapter)
-        self.assertFalse(receiver.exit)
+        self.assertFalse(receiver._exit)
 
     @patch.object(walkoff.cache, 'make_cache', return_value=MockRedisCacheAdapter())
     def get_receiver(self, mock_create_cache):
@@ -44,7 +45,7 @@ class TestWorkflowReceiver(TestCase):
         receiver = self.get_receiver()
         with patch.object(receiver.cache, 'shutdown') as mock_shutdown:
             receiver.shutdown()
-            self.assertTrue(receiver.exit)
+            self.assertTrue(receiver._exit)
             mock_shutdown.assert_called_once()
 
     def test_receive_workflow_no_message(self):
@@ -115,7 +116,7 @@ class TestWorkflowReceiver(TestCase):
     def test_receive_workflow_exit(self):
         receiver = self.get_receiver()
         workflow_generator = receiver.receive_workflows()
-        receiver.exit = True
+        receiver._exit = True
         with self.assertRaises(StopIteration):
             next(workflow_generator)
 

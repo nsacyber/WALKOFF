@@ -68,10 +68,6 @@ class ZMQResultsSender(object):
             action = workflow.get_executing_action()
             sender = action
 
-        if event.is_loggable():
-            sender_id = sender.id if not isinstance(sender, dict) else sender['id']
-            self.case_logger.log(event, sender_id, kwargs.get('data', None))
-
         if self.results_sock:
             packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
             self.results_sock.send(packet_bytes)

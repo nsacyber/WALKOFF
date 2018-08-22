@@ -10,7 +10,7 @@ from walkoff.helpers import utc_as_rfc_datetime
 
 
 class WorkflowStatus(Execution_Base):
-    """Case ORM for a Workflow event in the database
+    """ORM for a Status of a Workflow in the database
 
     Attributes:
         execution_id (UUID): Execution ID of the Workflow

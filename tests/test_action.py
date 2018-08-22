@@ -1,4 +1,5 @@
 import unittest
+from uuid import uuid4
 
 import walkoff.appgateway
 from tests.util import execution_db_help
@@ -11,7 +12,7 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.position import Position
-from walkoff.executiondb.actionexecstrategy import LocalActionExecutionStrategy
+from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy
 
 
 class TestAction(unittest.TestCase):
@@ -38,8 +39,18 @@ class TestAction(unittest.TestCase):
         if position:
             self.assertEqual(elem.position.x, position.x)
             self.assertEqual(elem.position.y, position.y)
-        self.assertIsNone(elem._output)
         self.assertEqual(elem._execution_id, 'default')
+
+    @staticmethod
+    def _make_app_instance(app_name='HelloWorld', device='device1', context=None):
+        if not context:
+            context = {
+                'workflow_name': 'test_workflow',
+                'workflow_id': uuid4(),
+                'workflow_execution_id': uuid4()
+            }
+        return AppInstance.create(app_name, device, context)
+
 
     def test_init_default(self):
         action = Action('HelloWorld', 'helloWorld', 'helloWorld')
@@ -105,17 +116,19 @@ class TestAction(unittest.TestCase):
         self.__compare_init(action, 'HelloWorld', 'helloWorld', 'helloWorld', trigger=trigger)
 
     def test_execute_no_args(self):
-        action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld')
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        self.assertEqual(
-            action.execute(LocalActionExecutionStrategy(), {}, instance.instance),
-            ActionResult({'message': 'HELLO WORLD'}, 'Success'))
-        self.assertEqual(action._output, ActionResult({'message': 'HELLO WORLD'}, 'Success'))
+        action = Action('HelloWorld', action_name='helloWorld', name='helloWorld')
+        instance = TestAction._make_app_instance()
+        acc = {}
+        result = action.execute(LocalActionExecutionStrategy(), acc, instance.instance)
+        expected = ActionResult({'message': 'HELLO WORLD'}, 'Success')
+        self.assertEqual(result, expected)
+        self.assertEqual(acc[action.id], result.result)
+
 
     def test_execute_return_failure(self):
         action = Action(app_name='HelloWorld', action_name='dummy action', name='helloWorld',
                         arguments=[Argument('status', value=False)])
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
+        instance = TestAction._make_app_instance()
         result = {'started_triggered': False, 'result_triggered': False}
 
         def callback_is_sent(sender, **kwargs):
@@ -140,7 +153,7 @@ class TestAction(unittest.TestCase):
     def test_execute_default_return_success(self):
         action = Action(app_name='HelloWorld', action_name='dummy action', name='helloWorld',
                         arguments=[Argument('status', value=True), Argument('other', value=True)])
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
+        instance = TestAction._make_app_instance()
         result = {'started_triggered': False, 'result_triggered': False}
 
         def callback_is_sent(sender, **kwargs):
@@ -166,7 +179,7 @@ class TestAction(unittest.TestCase):
     def test_execute_generates_id(self):
         action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld')
         original_execution_id = action.get_execution_id()
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
+        instance = TestAction._make_app_instance()
         action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
         self.assertNotEqual(action.get_execution_id(), original_execution_id)
 
@@ -175,18 +188,17 @@ class TestAction(unittest.TestCase):
                         arguments=[Argument('num1', value='-5.6'),
                                    Argument('num2', value='4.3'),
                                    Argument('num3', value='10.2')])
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
+        instance = TestAction._make_app_instance()
         result = action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
-        self.assertEqual(action._output, result)
 
     def test_execute_sends_callbacks(self):
         action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
                         arguments=[Argument('num1', value='-5.6'),
                                    Argument('num2', value='4.3'),
                                    Argument('num3', value='10.2')])
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
+        instance = TestAction._make_app_instance()
 
         result = {'started_triggered': False, 'result_triggered': False}
 
@@ -215,11 +227,10 @@ class TestAction(unittest.TestCase):
                                    Argument('num2', reference='action2'),
                                    Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'action2': '4.3'}
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
+        instance = TestAction._make_app_instance()
         result = action.execute(LocalActionExecutionStrategy(), accumulator, instance.instance)
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
-        self.assertEqual(action._output, result)
 
     def test_execute_with_accumulator_with_extra_actions(self):
         action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
@@ -227,11 +238,10 @@ class TestAction(unittest.TestCase):
                                    Argument('num2', reference='action2'),
                                    Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'action2': '4.3', '3': '45'}
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
+        instance = TestAction._make_app_instance()
         result = action.execute(LocalActionExecutionStrategy(), accumulator, instance.instance)
         self.assertAlmostEqual(result.result, 8.9)
         self.assertEqual(result.status, 'Success')
-        self.assertEqual(action._output, result)
 
     def test_execute_with_accumulator_missing_action(self):
         action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
@@ -239,7 +249,7 @@ class TestAction(unittest.TestCase):
                                    Argument('num2', reference='action2'),
                                    Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'missing': '4.3', '3': '45'}
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
+        instance = TestAction._make_app_instance()
         action.execute(LocalActionExecutionStrategy(), accumulator, instance.instance)
 
     def test_execute_with_accumulator_missing_action_callbacks(self):
@@ -248,7 +258,7 @@ class TestAction(unittest.TestCase):
                                    Argument('num2', reference='action2'),
                                    Argument('num3', value='10.2')])
         accumulator = {'1': '-5.6', 'missing': '4.3', '3': '45'}
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
+        instance = TestAction._make_app_instance()
 
         result = {'started_triggered': False, 'result_triggered': False}
 
@@ -273,21 +283,22 @@ class TestAction(unittest.TestCase):
                             Argument('json_in', value={'a': '-5.6', 'b': {'a': '4.3', 'b': 5.3}, 'c': ['1', '2', '3'],
                                                        'd': [{'a': '', 'b': 3}, {'a': '', 'b': -1.5},
                                                              {'a': '', 'b': -0.5}]})])
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
+        instance = TestAction._make_app_instance()
         result = action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
         self.assertAlmostEqual(result.result, 11.0)
         self.assertEqual(result.status, 'Success')
-        self.assertEqual(action._output, result)
 
     def test_execute_action_which_raises_exception(self):
         action = Action(app_name='HelloWorld', action_name='Buggy', name='helloWorld')
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
-        action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
-        self.assertIsNotNone(action.get_output())
+        instance = TestAction._make_app_instance()
+        acc = {}
+        action.execute(LocalActionExecutionStrategy(), acc, instance.instance)
+        self.assertIn(action.id, acc)
+
 
     def test_execute_action_which_raises_exception_sends_callbacks(self):
         action = Action(app_name='HelloWorld', action_name='Buggy', name='helloWorld')
-        instance = AppInstance.create(app_name='HelloWorld', device_name='device1')
+        instance = TestAction._make_app_instance()
 
         result = {'started_triggered': False, 'result_triggered': False}
 
@@ -310,11 +321,10 @@ class TestAction(unittest.TestCase):
     def test_execute_global_action(self):
         action = Action(app_name='HelloWorld', action_name='global2', name='helloWorld',
                         arguments=[Argument('arg1', value='something')])
-        instance = AppInstance.create(app_name='HelloWorld', device_name='')
+        instance = TestAction._make_app_instance()
         result = action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
         self.assertAlmostEqual(result.result, 'something')
         self.assertEqual(result.status, 'Success')
-        self.assertEqual(action._output, result)
 
     def test_execute_with_triggers(self):
         trigger = ConditionalExpression(
@@ -330,6 +340,6 @@ class TestAction(unittest.TestCase):
             'and',
             conditions=[Condition('HelloWorld', action_name='regMatch', arguments=[Argument('regex', value='aaa')])])
         action = Action(app_name='HelloWorld', action_name='helloWorld', name='helloWorld', trigger=trigger)
-        AppInstance.create(app_name='HelloWorld', device_name='device1')
+        TestAction._make_app_instance()
         self.assertFalse(action.execute_trigger(LocalActionExecutionStrategy(), {"data_in": {"data": 'a'}}, {}))
         self.assertTrue(action.execute_trigger(LocalActionExecutionStrategy(), {"data_in": {"data": 'aaa'}}, {}))

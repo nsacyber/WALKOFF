@@ -5,7 +5,7 @@ import signal
 import time
 import logging
 import walkoff.config
-from walkoff.multiprocessedexecutor.worker import Worker
+from walkoff.worker.worker import Worker
 
 logger = logging.getLogger(__name__)
 

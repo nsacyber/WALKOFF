@@ -12,6 +12,7 @@ message Message {
         GENERALPACKET = 5;
         USERMESSAGE = 6;
         LOGMESSAGE = 7;
+        WORKERPACKET = 8;
     }
 
     optional Type type = 1;
@@ -22,6 +23,7 @@ message Message {
         GeneralPacket general_packet = 5;
         UserMessage message_packet = 6;
         LoggingMessage logging_packet = 7;
+        WorkerPacket worker_packet = 8;
     }
 }
 
@@ -83,15 +85,11 @@ message CommunicationPacket {
 
     enum Type {
         WORKFLOW = 1;
-        CASE = 2;
-        EXIT = 3;
+        EXIT = 2;
     }
 
     optional Type type = 1;
-    oneof packet {
-        WorkflowControl workflow_control_message = 2;
-        CaseControl case_control_message = 3;
-    }
+    WorkflowControl workflow_control_message = 2;
 }
 
 
@@ -102,24 +100,6 @@ message WorkflowControl {
     }
     optional Type type = 1;
     optional string workflow_execution_id = 2;
-}
-
-
-message CaseSubscription {
-    optional string id = 1;
-    repeated string events = 2;
-}
-
-
-message CaseControl {
-    enum Type {
-        CREATE = 1;
-        UPDATE = 2;
-        DELETE = 3;
-    }
-    optional Type type = 1;
-    optional int64 id = 2;
-    repeated CaseSubscription subscriptions = 3;
 }
 
 
@@ -149,4 +129,8 @@ message LoggingMessage {
     optional string action_name = 4;
     optional string level = 5;
     optional string message = 6;
+}
+
+message WorkerPacket {
+    optional string id = 1;
 }

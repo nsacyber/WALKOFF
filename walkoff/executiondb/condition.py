@@ -10,7 +10,7 @@ from walkoff.appgateway.validator import validate_condition_parameters
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import format_exception_message
+from walkoff.helpers import ExecutionError, format_exception_message
 from walkoff.appgateway.apiutil import split_api_params, get_condition_api, UnknownApp, InvalidArgument, \
     UnknownCondition
 
@@ -107,24 +107,27 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
         try:
             arguments = self.__update_arguments_with_data(data)
             args = validate_condition_parameters(self._api, arguments, self.action_name, accumulator=accumulator)
+        except InvalidArgument as e:
+            logger.error('Condition {0} has invalid input {1} which was converted to {2}. Error: {3}. '
+                         'Returning False'.format(self.action_name, data_in, data, format_exception_message(e)))
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionError)
+            return False
+
+        try:
             logger.debug('Arguments passed to condition {} are valid'.format(self.id))
-            ret = action_execution_strategy.execute(self, args)
+            ret = action_execution_strategy.execute(self, accumulator, args)
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionSuccess)
             if self.is_negated:
                 return not ret
             else:
                 return ret
-        except InvalidArgument as e:
-            logger.error('Condition {0} has invalid input {1} which was converted to {2}. Error: {3}. '
-                         'Returning False'.format(self.action_name, data_in, data, format_exception_message(e)))
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionError)
-            raise
-        except Exception as e:
+
+        except ExecutionError:
             logger.exception(
                 'Error encountered executing condition {0} with arguments {1} and value {2}: Returning False'.format(
                     self.action_name, arguments, data))
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionError)
-            raise
+            return False
 
     def __update_arguments_with_data(self, data):
         arguments = []

@@ -13,6 +13,7 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.appgateway.apiutil import split_api_params, get_transform_api, UnknownApp, InvalidArgument, \
     UnknownTransform
+from walkoff.helpers import ExecutionError
 
 logger = logging.getLogger(__name__)
 
@@ -93,18 +94,23 @@ class Transform(ExecutionElement, Execution_Base):
         try:
             arguments = self.__update_arguments_with_data(data_in)
             args = validate_transform_parameters(self._api, arguments, self.action_name, accumulator=accumulator)
-            result = action_execution_strategy.execute(self, args)
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformSuccess)
-            return result
         except InvalidArgument as e:
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformError)
             logger.error('Transform {0} has invalid input {1}. Error: {2}. '
                          'Returning unmodified data'.format(self.action_name, original_data_in, str(e)))
-        except Exception as e:
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformError)
+            return original_data_in
+
+        try:
+            result = action_execution_strategy.execute(self, accumulator, args)
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformSuccess)
+            return result
+
+        except ExecutionError:
             logger.exception(
                 'Transform {0} (id={1}) encountered an error. Returning unmodified data'.format(
                     self.action_name, str(self.id)))
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TransformError)
+
         return original_data_in
 
     def __update_arguments_with_data(self, data):

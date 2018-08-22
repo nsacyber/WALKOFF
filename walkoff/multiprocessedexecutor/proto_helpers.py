@@ -10,12 +10,12 @@ from walkoff.proto.build.data_pb2 import Message
 logger = logging.getLogger(__name__)
 
 
-def convert_to_protobuf(sender, workflow, **kwargs):
+def convert_to_protobuf(sender, workflow_ctx, **kwargs):
     """Converts an execution element and its data to a protobuf message.
 
     Args:
         sender (execution element): The execution element object that is sending the data.
-        workflow (Workflow): The workflow which is sending the event
+        workflow_ctx (WorkflowExecutionContext): The WorkflowExecutionContext which is sending the event
         kwargs (dict, optional): A dict of extra fields, such as data, callback_name, etc.
 
     Returns:
@@ -26,17 +26,20 @@ def convert_to_protobuf(sender, workflow, **kwargs):
     packet = Message()
     packet.event_name = event.name
     if event.event_type == EventType.workflow:
-        convert_workflow_to_proto(packet, workflow, data)
+        convert_workflow_to_proto(packet, workflow_ctx, data)
     elif event.event_type == EventType.action:
         if event == WalkoffEvent.ConsoleLog:
-            convert_log_message_to_protobuf(packet, sender, workflow, **kwargs)
+            convert_log_message_to_protobuf(packet, sender, workflow_ctx, **kwargs)
         elif event == WalkoffEvent.SendMessage:
-            convert_send_message_to_protobuf(packet, sender, workflow, **kwargs)
+            convert_send_message_to_protobuf(packet, sender, workflow_ctx, **kwargs)
         else:
-            convert_action_to_proto(packet, sender, workflow, data)
+            convert_action_to_proto(packet, sender, workflow_ctx, data)
     elif event.event_type in (
             EventType.branch, EventType.condition, EventType.transform, EventType.conditonalexpression):
-        convert_branch_transform_condition_to_proto(packet, sender, workflow)
+        convert_branch_transform_condition_to_proto(packet, sender, workflow_ctx)
+    elif event == WalkoffEvent.WorkerReady:
+        packet.type = Message.WORKERPACKET
+        packet.worker_packet.id = sender['id']
     packet_bytes = packet.SerializeToString()
     return packet_bytes
 
@@ -56,20 +59,20 @@ def convert_workflow_to_proto(packet, sender, data=None):
     add_workflow_to_proto(workflow_packet.sender, sender)
 
 
-def convert_send_message_to_protobuf(packet, message, workflow, **kwargs):
+def convert_send_message_to_protobuf(packet, message, workflow_ctx, **kwargs):
     """Converts a Message object to a protobuf object
 
     Args:
         packet (protobuf): The protobuf packet
         message (Message): The Message object to be converted
-        workflow (Workflow): The Workflow relating to this Message
+        workflow_ctx (WorkflowExecutionContext): The WorkflowExecutionContext relating to this Message
         **kwargs (dict, optional): Any additional arguments
     """
     packet.type = Message.USERMESSAGE
     message_packet = packet.message_packet
     message_packet.subject = message.pop('subject', '')
     message_packet.body = json.dumps(message['body'])
-    add_workflow_to_proto(message_packet.workflow, workflow)
+    add_workflow_to_proto(message_packet.workflow, workflow_ctx)
     if 'users' in kwargs:
         message_packet.users.extend(kwargs['users'])
     if 'roles' in kwargs:
@@ -78,13 +81,13 @@ def convert_send_message_to_protobuf(packet, message, workflow, **kwargs):
         message_packet.requires_reauth = kwargs['requires_reauth']
 
 
-def convert_log_message_to_protobuf(packet, sender, workflow, **kwargs):
+def convert_log_message_to_protobuf(packet, sender, workflow_ctx, **kwargs):
     """Converts a logging message to protobuf
 
     Args:
         packet (protobuf): The protobuf packet
         sender (Action): The Action from which this logging message originated
-        workflow (Workflow): The Workflow under which this Action falls
+        workflow_ctx (WorkflowExecutionContext): The WorkflowExecutionContext under which this Action falls
         **kwargs (dict, optional): Any additional arguments
     """
     packet.type = Message.LOGMESSAGE
@@ -94,16 +97,16 @@ def convert_log_message_to_protobuf(packet, sender, workflow, **kwargs):
     logging_packet.action_name = sender.action_name
     logging_packet.level = str(kwargs['level'])  # Needed just in case logging level is set to an int
     logging_packet.message = kwargs['message']
-    add_workflow_to_proto(logging_packet.workflow, workflow)
+    add_workflow_to_proto(logging_packet.workflow, workflow_ctx)
 
 
-def convert_action_to_proto(packet, sender, workflow, data=None):
+def convert_action_to_proto(packet, sender, workflow_ctx, data=None):
     """Converts an Action to protobuf
 
     Args:
         packet (protobuf): The protobuf packet
         sender (Action): The Action
-        workflow (Workflow): The WOrkflow under which this Action falls
+        workflow_ctx (WorkflowExecutionContext): The Workflow under which this Action falls
         data (dict, optional): Any additional data. Defaults to None.
     """
     packet.type = Message.ACTIONPACKET
@@ -120,7 +123,7 @@ def convert_action_to_proto(packet, sender, workflow, data=None):
     if arguments:
         add_arguments_to_action_proto(action_packet, arguments)
 
-    add_workflow_to_proto(action_packet.workflow, workflow)
+    add_workflow_to_proto(action_packet.workflow, workflow_ctx)
 
 
 def add_sender_to_action_packet_proto(action_packet, sender):
@@ -184,29 +187,29 @@ def add_env_vars_to_proto(packet, env_vars):
         ev_proto.value = env_var.value
 
 
-def add_workflow_to_proto(packet, workflow):
+def add_workflow_to_proto(packet, workflow_ctx):
     """Adds a Workflow to a protobuf packet
 
     Args:
         packet (protobuf): The protobuf packet
-        workflow (Workflow): The Workflow object to add to the protobuf message
+        workflow_ctx (WorkflowExecutionContext): The WorkflowExecutionContext object to add to the protobuf message
     """
-    packet.name = workflow.name
-    packet.id = str(workflow.id)
-    packet.execution_id = str(workflow.get_execution_id())
+    packet.name = workflow_ctx.name
+    packet.id = str(workflow_ctx.id)
+    packet.execution_id = str(workflow_ctx.execution_id)
 
 
-def convert_branch_transform_condition_to_proto(packet, sender, workflow):
+def convert_branch_transform_condition_to_proto(packet, sender, workflow_ctx):
     """Converts a Branch, Transform, or Condition to protobuf
 
     Args:
         packet (protobuf): The protobuf packet
         sender (Branch|Transform|Condition): The object to be converted to protobuf
-        workflow (Workflow): The Workflow under which the object falls
+        workflow_ctx (WorkflowExecutionContext): The Workflow under which the object falls
     """
     packet.type = Message.GENERALPACKET
     general_packet = packet.general_packet
     general_packet.sender.id = str(sender.id)
-    add_workflow_to_proto(general_packet.workflow, workflow)
+    add_workflow_to_proto(general_packet.workflow, workflow_ctx)
     if hasattr(sender, 'app_name'):
         general_packet.sender.app_name = sender.app_name

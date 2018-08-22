@@ -281,7 +281,8 @@ class TestWorkflowResultsStream(ServerTestCase):
             WorkflowStatusEnum.running,
             'resumed',
             mock_publish,
-            expected=expected)
+            expected=expected,
+            data={"execution_id": workflow_execution_id})
 
     @patch.object(workflow_stream, 'publish')
     def test_trigger_awaiting_data_workflow_callback(self, mock_publish):

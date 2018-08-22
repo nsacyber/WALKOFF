@@ -262,3 +262,10 @@ def json_dumps_or_string(val):
         return json.dumps(val)
     except (ValueError, TypeError):
         return str(val)
+
+
+class ExecutionError(Exception):
+    def __init__(self, original_exception, message=None):
+        self.exc = original_exception
+        self.message = message or format_exception_message(original_exception)
+        super(ExecutionError, self).__init__()
