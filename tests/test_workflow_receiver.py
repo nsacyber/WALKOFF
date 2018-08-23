@@ -12,7 +12,7 @@ import walkoff.config
 from tests.util import initialize_test_config
 from tests.util.mock_objects import MockRedisCacheAdapter
 from walkoff.proto.build.data_pb2 import ExecuteWorkflowMessage
-from walkoff.worker.workflow_receivers import WorkflowReceiver
+from walkoff.worker.zmq_workflow_receivers import WorkflowReceiver
 
 
 class TestWorkflowReceiver(TestCase):

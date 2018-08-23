@@ -16,9 +16,9 @@ from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.worker.action_exec_strategy import make_execution_strategy
-from walkoff.worker.workflow_receivers import WorkerCommunicationMessageType, WorkflowCommunicationMessageType, \
+from walkoff.worker.zmq_workflow_receivers import WorkerCommunicationMessageType, WorkflowCommunicationMessageType, \
     ZmqWorkflowCommunicationReceiver, WorkflowReceiver
-from walkoff.multiprocessedexecutor.senders import ZMQWorkflowResultsSender
+from walkoff.multiprocessedexecutor.zmq_senders import ZMQWorkflowResultsSender
 from walkoff.worker.workflow_exec_strategy import WorkflowExecutor
 
 logger = logging.getLogger(__name__)

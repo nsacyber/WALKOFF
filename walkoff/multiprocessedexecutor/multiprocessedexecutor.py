@@ -1,29 +1,26 @@
 import logging
-import os
-import sys
 import threading
 import uuid
 
 import gevent
+import nacl.bindings
+import nacl.utils
 import zmq.green as zmq
+from flask import current_app
+from nacl.public import PrivateKey, Box
 
 import walkoff.config
+from start_workers import shutdown_procs
+from walkoff.appgateway.accumulators import make_accumulator
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb import WorkflowStatusEnum
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus
-from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
 from walkoff.multiprocessedexecutor.receiver import Receiver
-from start_workers import shutdown_procs
-from walkoff.multiprocessedexecutor.senders import ZMQWorkflowResultsSender
-from flask import current_app
-from walkoff.appgateway.accumulators import make_accumulator
-from walkoff.multiprocessedexecutor.senders import ZmqWorkflowCommunicationSender
-import nacl.bindings
-import nacl.utils
-from nacl.public import PrivateKey, Box
+from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
+from walkoff.multiprocessedexecutor.zmq_senders import ZmqWorkflowCommunicationSender, ZMQWorkflowResultsSender
 
 logger = logging.getLogger(__name__)
 
@@ -62,12 +59,8 @@ class MultiprocessedExecutor(object):
 
         """
         if walkoff.config.Config.SEPARATE_RECEIVER:
-            from walkoff.server import workflowresults  # Need this import
+            pass
 
-        if not (os.path.exists(walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH) and
-                os.path.exists(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH)):
-            logging.fatal("Certificates are missing - run generate_certificates.py script first.")
-            sys.exit(0)
         self.pids = pids
         self.ctx = zmq.Context.instance()
         self.auth = ThreadAuthenticator()
@@ -189,8 +182,7 @@ class MultiprocessedExecutor(object):
             (bool): True if Workflow successfully paused, False otherwise
         """
         logger.info('Pausing workflow {}'.format(execution_id))
-        workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
-            execution_id=execution_id).first()
+        workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
         if workflow_status and workflow_status.status == WorkflowStatusEnum.running:
             self.zmq_workflow_comm.pause_workflow(execution_id)
             return True
@@ -208,14 +200,12 @@ class MultiprocessedExecutor(object):
             (bool): True if workflow successfully resumed, False otherwise
         """
         logger.info('Resuming workflow {}'.format(execution_id))
-        workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
-            execution_id=execution_id).first()
+        workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
 
         if workflow_status and workflow_status.status == WorkflowStatusEnum.paused:
             saved_state = self.execution_db.session.query(SavedWorkflow).filter_by(
                 workflow_execution_id=execution_id).first()
-            workflow = self.execution_db.session.query(Workflow).filter_by(
-                id=workflow_status.workflow_id).first()
+            workflow = self.execution_db.session.query(Workflow).filter_by(id=workflow_status.workflow_id).first()
 
             data = {"execution_id": execution_id}
             self._log_and_send_event(WalkoffEvent.WorkflowResumed, sender=workflow, data=data)
@@ -237,19 +227,16 @@ class MultiprocessedExecutor(object):
             (bool): True if successfully aborted workflow, False otherwise
         """
         logger.info('Aborting workflow {}'.format(execution_id))
-        workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
-            execution_id=execution_id).first()
+        workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
 
         if workflow_status:
             if workflow_status.status in [WorkflowStatusEnum.pending, WorkflowStatusEnum.paused,
                                           WorkflowStatusEnum.awaiting_data]:
-                workflow = self.execution_db.session.query(Workflow).filter_by(
-                    id=workflow_status.workflow_id).first()
+                workflow = self.execution_db.session.query(Workflow).filter_by(id=workflow_status.workflow_id).first()
                 if workflow is not None:
-                    self._log_and_send_event(
-                        WalkoffEvent.WorkflowAborted,
-                        sender={'execution_id': execution_id, 'id': workflow_status.workflow_id, 'name': workflow.name},
-                        workflow=workflow)
+                    self._log_and_send_event(WalkoffEvent.WorkflowAborted,
+                                             sender={'execution_id': execution_id, 'id': workflow_status.workflow_id,
+                                                     'name': workflow.name}, workflow=workflow)
             elif workflow_status.status == WorkflowStatusEnum.running:
                 self.zmq_workflow_comm.abort_workflow(execution_id)
             return True
@@ -285,24 +272,14 @@ class MultiprocessedExecutor(object):
                 break
 
         if executed:
-            self._log_and_send_event(
-                WalkoffEvent.TriggerActionTaken,
-                sender=exec_action,
-                data={'workflow_execution_id': execution_id},
-                workflow=workflow)
-            self.execute_workflow(
-                workflow.id,
-                execution_id_in=execution_id,
-                start=str(saved_state.action_id),
-                start_arguments=arguments,
-                resume=True)
+            self._log_and_send_event(WalkoffEvent.TriggerActionTaken, sender=exec_action,
+                                     data={'workflow_execution_id': execution_id}, workflow=workflow)
+            self.execute_workflow(workflow.id, execution_id_in=execution_id, start=str(saved_state.action_id),
+                                  start_arguments=arguments, resume=True)
             return True
         else:
-            self._log_and_send_event(
-                WalkoffEvent.TriggerActionNotTaken,
-                sender=exec_action,
-                data={'workflow_execution_id': execution_id},
-                workflow=workflow)
+            self._log_and_send_event(WalkoffEvent.TriggerActionNotTaken, sender=exec_action,
+                                     data={'workflow_execution_id': execution_id}, workflow=workflow)
             return False
 
     def get_waiting_workflows(self):
@@ -325,8 +302,7 @@ class MultiprocessedExecutor(object):
         Returns:
             (int): The status of the workflow
         """
-        workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
-            execution_id=execution_id).first()
+        workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
         if workflow_status:
             return workflow_status.status
         else:

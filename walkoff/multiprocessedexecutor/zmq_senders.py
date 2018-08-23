@@ -1,13 +1,12 @@
 import zmq
 from zmq import ZMQError
 
+import walkoff.config
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.saved_workflow import SavedWorkflow
-from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter as ProtoConverter
+from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowCommunicationConverter, \
+    ProtobufWorkflowResultsConverter as ProtoConverter
 import logging
-import walkoff.config
-from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowCommunicationConverter
-from confluent_kafka import Producer
 
 logger = logging.getLogger(__name__)
 
@@ -94,47 +93,6 @@ class ZMQWorkflowResultsSender(object):
                                                                       start_arguments, resume, environment_variables)
 
 
-class KafkaWorkflowResultsSender(object):
-    def __init__(self, config, execution_db, workflow_event_topic, message_converter=ProtoConverter):
-        self.producer = Producer(config)
-        self.execution_db = execution_db
-        self.topic = workflow_event_topic
-        self.message_converter = message_converter
-
-    def shutdown(self):
-        self.producer.flush()
-
-    @staticmethod
-    def _delivery_callback(err, msg):
-        if err is not None:
-            logger.error('Kafka message delivery failed: {}'.format(err))
-
-    def _format_topic(self, event):
-        return '{}.{}'.format(self.topic, event.name)
-
-    def handle_event(self, workflow, sender, **kwargs):
-        """Listens for the data_sent callback, which signifies that an execution element needs to trigger a
-                callback in the main thread.
-
-            Args:
-                workflow (Workflow): The Workflow object that triggered the event
-                sender (ExecutionElement): The execution element that sent the signal.
-                kwargs (dict): Any extra data to send.
-        """
-        event = kwargs['event']
-        if event in [WalkoffEvent.TriggerActionAwaitingData, WalkoffEvent.WorkflowPaused]:
-            saved_workflow = SavedWorkflow.from_workflow(workflow)
-            self.execution_db.session.add(saved_workflow)
-            self.execution_db.session.commit()
-        elif event == WalkoffEvent.ConsoleLog:
-            action = workflow.get_executing_action()
-            sender = action
-
-        packet_bytes = self.message_converter.event_to_protobuf(sender, workflow, **kwargs)
-        self.producer.produce(self._format_topic(event), packet_bytes, key=str(workflow.id),
-                              callback=self._delivery_callback)
-
-
 class ZmqWorkflowCommunicationSender(object):
 
     def __init__(self, message_converter=ProtobufWorkflowCommunicationConverter):
@@ -174,3 +132,14 @@ class ZmqWorkflowCommunicationSender(object):
     def _send_message(self, message):
         message_bytes = message.SerializeToString()
         self.comm_socket.send(message_bytes)
+
+
+def make_zmq_communication_sender(config, protocol_translation, **kwargs):
+    try:
+        protocol = protocol_translation[config.WORKFLOW_COMMUNICATION_PROTOCOL]
+    except KeyError:
+        message = 'Could not find communication protocol {}'.format(config.WORKFLOW_COMMUNICATION_PROTOCOL)
+        logger.error(message)
+        raise ValueError(message)
+    else:
+        return ZmqWorkflowCommunicationSender(message_converter=protocol)

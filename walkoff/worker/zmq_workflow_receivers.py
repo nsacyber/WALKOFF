@@ -1,8 +1,7 @@
+import uuid
 import logging
-from collections import namedtuple
 
 import zmq
-from enum import Enum
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.message import DecodeError
 from nacl.exceptions import CryptoError
@@ -14,7 +13,9 @@ import walkoff.config
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.environment_variable import EnvironmentVariable
 from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowCommunicationConverter
-from walkoff.proto.build.data_pb2 import CommunicationPacket, ExecuteWorkflowMessage, WorkflowControl
+from walkoff.proto.build.data_pb2 import CommunicationPacket, WorkflowControl, ExecuteWorkflowMessage
+from collections import namedtuple
+from enum import Enum
 
 logger = logging.getLogger(__name__)
 
@@ -111,51 +112,6 @@ class ZmqWorkflowCommunicationReceiver(object):
             return True
 
 
-class KafkaWorkflowCommunicationReceiver(object):
-    _requires = ['confluent-kafka']
-
-    def __init__(
-            self,
-            config,
-            workflow_communication_topic,
-            case_communication_topic,
-            message_converter=ProtobufWorkflowCommunicationConverter
-    ):
-        from comfluent_kafka import Consumer
-        self.receiver = Consumer(config)
-        self.workflow_communication_topic = workflow_communication_topic
-        self.case_communication_topic = case_communication_topic
-        self.message_converter = message_converter
-        self.exit = False
-
-    def shutdown(self):
-        self.exit = True
-        self.receiver.close()
-
-    def receive_communications(self):
-        """Constantly receives data from the ZMQ socket and handles it accordingly"""
-        from confluent_kafka import KafkaError
-        logger.info('Starting workflow communication receiver')
-        while not self.exit:
-            raw_message = self.receiver.poll(1.0)
-            if raw_message is None:
-                continue
-            if raw_message.error():
-                if raw_message.error().code() == KafkaError._PARTITION_EOF:
-                    continue
-                else:
-                    logger.error('Received an error in Kafka receiver: {}'.format(raw_message.error()))
-                    continue
-
-            message = self.message_converter.to_received_message(raw_message.value())
-            if message is not None:
-                yield message
-            else:
-                break
-
-        raise StopIteration
-
-
 class WorkflowReceiver(object):
     def __init__(self, key, server_key, cache_config):
         """Initializes a WorkflowReceiver object, which receives workflow execution requests and ships them off to a
@@ -219,11 +175,23 @@ class WorkflowReceiver(object):
                             env_vars.append(
                                 EnvironmentVariable(**(MessageToDict(env_var, preserving_proto_field_name=True))))
 
-                    yield message.workflow_id, message.workflow_execution_id, start, \
-                          start_arguments, message.resume, env_vars
+                    yield message.workflow_id, message.workflow_execution_id, start, start_arguments, message.resume, \
+                          env_vars
             else:
                 yield None
         raise StopIteration
 
     def is_ready(self):
         return self._ready
+
+
+def make_zmq_communication_receiver(config, protocol_translation, **kwargs):
+    try:
+        protocol = protocol_translation[config.WORKFLOW_COMMUNICATION_PROTOCOL]
+    except KeyError:
+        message = 'Could not find communication protocol {}'.format(config.WORKFLOW_COMMUNICATION_PROTOCOL)
+        logger.error(message)
+        raise ValueError(message)
+    else:
+        return ZmqWorkflowCommunicationReceiver(
+            'Workflow_Communication_Receiver_{}'.format(kwargs.get('id', uuid.uuid4())), message_converter=protocol)

@@ -14,7 +14,7 @@ from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter as ProtoConverter
 from walkoff.multiprocessedexecutor.receiver import Receiver
-from walkoff.multiprocessedexecutor.senders import ZMQWorkflowResultsSender
+from walkoff.multiprocessedexecutor.zmq_senders import ZMQWorkflowResultsSender
 from walkoff.worker.action_exec_strategy import make_execution_strategy
 from walkoff.worker.workflow_exec_strategy import WorkflowExecutor
 

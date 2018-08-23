@@ -12,7 +12,7 @@ from walkoff.executiondb.argument import Argument
 from walkoff.multiprocessedexecutor.protoconverter import ExecuteWorkflowMessage, CommunicationPacket, WorkflowControl, \
     ProtobufWorkflowCommunicationConverter, ProtobufWorkflowResultsConverter
 from walkoff.multiprocessedexecutor.receiver import Message
-from walkoff.multiprocessedexecutor.senders import ZmqWorkflowCommunicationSender
+from walkoff.multiprocessedexecutor.zmq_senders import ZmqWorkflowCommunicationSender
 
 
 class TestWorkflowCommunicationSender(TestCase):

@@ -5,18 +5,18 @@ import os
 import gevent
 import zmq.auth as auth
 import zmq.green as zmq
+from flask import Flask
 from google.protobuf.json_format import MessageToDict
 
 import walkoff.config
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.proto.build.data_pb2 import Message
-from flask import Flask
 from walkoff.server import context
 
 logger = logging.getLogger(__name__)
 
 
-class Receiver:
+class Receiver(object):
     def __init__(self, current_app=None):
         """Initialize a Receiver object, which will receive callbacks from the ExecutionElements.
 

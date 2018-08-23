@@ -7,8 +7,9 @@ from zmq import Socket, auth
 import os
 from walkoff.config import Config
 from walkoff.proto.build.data_pb2 import CommunicationPacket, WorkflowControl
-from walkoff.worker.workflow_receivers import WorkerCommunicationMessageType, WorkflowCommunicationMessageType, \
-    WorkerCommunicationMessageData, WorkflowCommunicationMessageData, ZmqWorkflowCommunicationReceiver
+from walkoff.worker.zmq_workflow_receivers import WorkerCommunicationMessageType, WorkflowCommunicationMessageType, \
+    WorkerCommunicationMessageData, WorkflowCommunicationMessageData
+from walkoff.worker.zmq_workflow_receivers import ZmqWorkflowCommunicationReceiver
 
 
 class TestWorkflowResultsHandler(TestCase):
