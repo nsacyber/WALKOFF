@@ -81,18 +81,6 @@ message GeneralPacket {
     optional WorkflowSender workflow = 2;
 }
 
-message CommunicationPacket {
-
-    enum Type {
-        WORKFLOW = 1;
-        EXIT = 2;
-    }
-
-    optional Type type = 1;
-    WorkflowControl workflow_control_message = 2;
-}
-
-
 message WorkflowControl {
     enum Type {
         PAUSE = 1;
@@ -102,6 +90,16 @@ message WorkflowControl {
     optional string workflow_execution_id = 2;
 }
 
+message CommunicationPacket {
+
+    enum Type {
+        WORKFLOW = 1;
+        EXIT = 2;
+    }
+
+    optional Type type = 1;
+    optional WorkflowControl workflow_control_message = 2;
+}
 
 message UserMessage {
     optional ActionPacket.ActionSender sender = 1;

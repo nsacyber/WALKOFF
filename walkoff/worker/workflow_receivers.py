@@ -1,8 +1,8 @@
 import logging
 from collections import namedtuple
-from enum import Enum
 
 import zmq
+from enum import Enum
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.message import DecodeError
 from nacl.exceptions import CryptoError
@@ -11,80 +11,12 @@ from zmq import ZMQError
 
 import walkoff.cache
 import walkoff.config
-from walkoff.events import WalkoffEvent
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.environment_variable import EnvironmentVariable
-from walkoff.executiondb.saved_workflow import SavedWorkflow
-from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter as ProtoConverter
+from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowCommunicationConverter
 from walkoff.proto.build.data_pb2 import CommunicationPacket, ExecuteWorkflowMessage, WorkflowControl
 
 logger = logging.getLogger(__name__)
-
-
-class WorkflowResultsHandler(object):
-    def __init__(self, socket_id, execution_db):
-        """Initialize a WorkflowResultsHandler object, which will be sending results of workflow execution
-
-        Args:
-            socket_id (str): The ID for the results socket
-            execution_db (ExecutionDatabase): An ExecutionDatabase connection object
-        """
-        self._ready = False
-        self.results_sock = zmq.Context().socket(zmq.PUSH)
-        self.results_sock.identity = socket_id
-        self.results_sock.curve_secretkey = walkoff.config.Config.CLIENT_PRIVATE_KEY
-        self.results_sock.curve_publickey = walkoff.config.Config.CLIENT_PUBLIC_KEY
-        self.results_sock.curve_serverkey = walkoff.config.Config.SERVER_PUBLIC_KEY
-        try:
-            self.results_sock.connect(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
-        except ZMQError:
-            logger.exception(
-                'Workflow Results handler could not connect to {}!'.format(walkoff.config.Config.ZMQ_RESULTS_ADDRESS))
-            raise
-
-        self.execution_db = execution_db
-
-        if self.check_status():
-            self._ready = True
-
-    def shutdown(self):
-        """Shuts down the results socket and tears down the ExecutionDatabase
-        """
-        self._ready = False
-        self.results_sock.close()
-        self.execution_db.tear_down()
-
-    def handle_event(self, workflow_ctx, sender, **kwargs):
-        """Listens for the data_sent callback, which signifies that an execution element needs to trigger a
-                callback in the main thread.
-
-            Args:
-                workflow_ctx (WorkflowExecutionContext): The WorkflowExecutionContext object that triggered the event
-                sender (ExecutionElement): The execution element that sent the signal.
-                kwargs (dict): Any extra data to send.
-        """
-        event = kwargs['event']
-        if event in [WalkoffEvent.TriggerActionAwaitingData, WalkoffEvent.WorkflowPaused]:
-            saved_workflow = SavedWorkflow.from_workflow(workflow_ctx)
-            self.execution_db.session.add(saved_workflow)
-            self.execution_db.session.commit()
-        elif kwargs['event'] == WalkoffEvent.ConsoleLog:
-            action = workflow_ctx.get_executing_action()
-            sender = action
-
-        packet_bytes = ProtoConverter.event_to_protobuf(sender, workflow_ctx, **kwargs)
-        self.results_sock.send(packet_bytes)
-
-    def is_ready(self):
-        return self._ready
-
-    def check_status(self):
-        if self.results_sock:
-            return True
-
-    def send_ready_message(self):
-        WalkoffEvent.CommonWorkflowSignal.send(sender={'id': self.results_sock.identity},
-                                               event=WalkoffEvent.WorkerReady)
 
 
 class WorkerCommunicationMessageType(Enum):
@@ -101,8 +33,8 @@ WorkerCommunicationMessageData = namedtuple('WorkerCommunicationMessageData', ['
 WorkflowCommunicationMessageData = namedtuple('WorkflowCommunicationMessageData', ['type', 'workflow_execution_id'])
 
 
-class WorkflowCommunicationReceiver(object):
-    def __init__(self, socket_id):
+class ZmqWorkflowCommunicationReceiver(object):
+    def __init__(self, socket_id, message_converter=ProtobufWorkflowCommunicationConverter):
         """Initialize a WorkflowCommunicationReceiver object, which will receive messages on the comm socket
 
         Args:
@@ -123,6 +55,8 @@ class WorkflowCommunicationReceiver(object):
             logger.exception('Workflow Communication Receiver could not connect to {}!'.format(
                 walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS))
             raise
+
+        self.message_converter = message_converter
 
         if self.check_status():
             self._ready = True
@@ -175,6 +109,51 @@ class WorkflowCommunicationReceiver(object):
     def check_status(self):
         if self.comm_sock:
             return True
+
+
+class KafkaWorkflowCommunicationReceiver(object):
+    _requires = ['confluent-kafka']
+
+    def __init__(
+            self,
+            config,
+            workflow_communication_topic,
+            case_communication_topic,
+            message_converter=ProtobufWorkflowCommunicationConverter
+    ):
+        from comfluent_kafka import Consumer
+        self.receiver = Consumer(config)
+        self.workflow_communication_topic = workflow_communication_topic
+        self.case_communication_topic = case_communication_topic
+        self.message_converter = message_converter
+        self.exit = False
+
+    def shutdown(self):
+        self.exit = True
+        self.receiver.close()
+
+    def receive_communications(self):
+        """Constantly receives data from the ZMQ socket and handles it accordingly"""
+        from confluent_kafka import KafkaError
+        logger.info('Starting workflow communication receiver')
+        while not self.exit:
+            raw_message = self.receiver.poll(1.0)
+            if raw_message is None:
+                continue
+            if raw_message.error():
+                if raw_message.error().code() == KafkaError._PARTITION_EOF:
+                    continue
+                else:
+                    logger.error('Received an error in Kafka receiver: {}'.format(raw_message.error()))
+                    continue
+
+            message = self.message_converter.to_received_message(raw_message.value())
+            if message is not None:
+                yield message
+            else:
+                break
+
+        raise StopIteration
 
 
 class WorkflowReceiver(object):

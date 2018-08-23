@@ -1,14 +1,32 @@
 import json
 import logging
+from collections import namedtuple
 
+from enum import Enum
 from google.protobuf.json_format import MessageToDict
+from google.protobuf.message import DecodeError
 from six import string_types
 
 from walkoff.events import EventType, WalkoffEvent
 from walkoff.executiondb.workflow import Workflow
-from walkoff.proto.build.data_pb2 import Message
+from walkoff.proto.build.data_pb2 import CommunicationPacket, WorkflowControl, ExecuteWorkflowMessage, Message
 
 logger = logging.getLogger(__name__)
+
+
+class WorkerCommunicationMessageType(Enum):
+    workflow = 1
+    case = 2
+    exit = 3
+
+
+class WorkflowCommunicationMessageType(Enum):
+    pause = 1
+    abort = 2
+
+
+WorkerCommunicationMessageData = namedtuple('WorkerCommunicationMessageData', ['type', 'data'])
+WorkflowCommunicationMessageData = namedtuple('WorkflowCommunicationMessageData', ['type', 'workflow_execution_id'])
 
 
 class ProtobufWorkflowResultsConverter(object):
@@ -126,7 +144,7 @@ class ProtobufWorkflowResultsConverter(object):
 
         arguments = arguments if arguments else sender.arguments
         if arguments:
-            ProtobufWorkflowResultsConverter._add_arguments_to_action_proto(action_packet, arguments)
+            ProtobufWorkflowResultsConverter._add_arguments_to_proto(action_packet.sender, arguments)
 
         ProtobufWorkflowResultsConverter._add_workflow_to_proto(action_packet.workflow, workflow_ctx)
 
@@ -146,17 +164,15 @@ class ProtobufWorkflowResultsConverter(object):
         action_packet.sender.device_id = sender.get_resolved_device_id()
 
     @staticmethod
-    def _add_arguments_to_action_proto(action_packet, arguments):
+    def _add_arguments_to_proto(message, arguments):
         """Adds Arguments to the Action protobuf packet
 
         Args:
-            action_packet (protobuf): The protobuf packet
+            message (protobuf): The protobuf packet
             arguments (list[Argument]): The list of Arguments to add
         """
         for argument in arguments:
-            arg = action_packet.sender.arguments.add()
-            arg.name = argument.name
-            ProtobufWorkflowResultsConverter._set_argument_proto(arg, argument)
+            ProtobufWorkflowResultsConverter._set_argument_proto(message.arguments.add(), argument)
 
     @staticmethod
     def _set_argument_proto(arg_proto, arg_obj):
@@ -279,3 +295,77 @@ class ProtobufWorkflowResultsConverter(object):
                 'requires_reauth': message.requires_reauth,
                 'body': json.loads(message.body),
                 'subject': message.subject}
+
+    @staticmethod
+    def create_workflow_request_message(workflow_id, workflow_execution_id, start=None, start_arguments=None,
+                                        resume=False, environment_variables=None):
+        message = ExecuteWorkflowMessage()
+        message.workflow_id = str(workflow_id)
+        message.workflow_execution_id = workflow_execution_id
+        message.resume = resume
+
+        if start:
+            message.start = str(start)
+        if start_arguments:
+            ProtobufWorkflowResultsConverter._add_arguments_to_proto(message, start_arguments)
+        if environment_variables:
+            ProtobufWorkflowResultsConverter.add_env_vars_to_proto(message, environment_variables)
+        return message.SerializeToString()
+
+
+class ProtobufWorkflowCommunicationConverter(object):
+    @staticmethod
+    def _format_workflow_message_data(message):
+        workflow_execution_id = message.workflow_execution_id
+        if message.type == WorkflowControl.PAUSE:
+            return WorkflowCommunicationMessageData(WorkflowCommunicationMessageType.pause, workflow_execution_id)
+        elif message.type == WorkflowControl.ABORT:
+            return WorkflowCommunicationMessageData(WorkflowCommunicationMessageType.abort, workflow_execution_id)
+
+    @staticmethod
+    def to_received_message(message_bytes):
+        """Constantly receives data from the ZMQ socket and handles it accordingly"""
+        message = CommunicationPacket()
+        try:
+            message.ParseFromString(message_bytes)
+        except DecodeError:
+            logger.error('Worker communication handler could not decode communication packet')
+        else:
+            message_type = message.type
+            if message_type == CommunicationPacket.WORKFLOW:
+                logger.debug('Worker received workflow communication packet')
+                return WorkerCommunicationMessageData(
+                    WorkerCommunicationMessageType.workflow,
+                    ProtobufWorkflowCommunicationConverter._format_workflow_message_data(
+                        message.workflow_control_message))
+            elif message_type == CommunicationPacket.EXIT:
+                logger.info('Worker received exit message')
+                return None
+
+    @staticmethod
+    def _create_workflow_control_message(control_type, workflow_execution_id):
+        message = CommunicationPacket()
+        message.type = CommunicationPacket.WORKFLOW
+        message.workflow_control_message.type = control_type
+        message.workflow_control_message.workflow_execution_id = workflow_execution_id
+        return message
+
+    @staticmethod
+    def create_workflow_pause_message(workflow_execution_id):
+        return ProtobufWorkflowCommunicationConverter._create_workflow_control_message(
+            WorkflowControl.PAUSE,
+            workflow_execution_id
+        )
+
+    @staticmethod
+    def create_workflow_abort_message(workflow_execution_id):
+        return ProtobufWorkflowCommunicationConverter._create_workflow_control_message(
+            WorkflowControl.ABORT,
+            workflow_execution_id
+        )
+
+    @staticmethod
+    def create_worker_exit_message():
+        message = CommunicationPacket()
+        message.type = CommunicationPacket.EXIT
+        return message

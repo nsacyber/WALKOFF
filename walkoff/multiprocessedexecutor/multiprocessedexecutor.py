@@ -19,8 +19,11 @@ from walkoff.multiprocessedexecutor.receiver import Receiver
 from start_workers import shutdown_procs
 from walkoff.multiprocessedexecutor.senders import ZMQWorkflowResultsSender
 from flask import current_app
-from walkoff.multiprocessedexecutor.workflowexecutioncontroller import WorkflowExecutionController, Receiver
 from walkoff.appgateway.accumulators import make_accumulator
+from walkoff.multiprocessedexecutor.senders import ZmqWorkflowCommunicationSender
+import nacl.bindings
+import nacl.utils
+from nacl.public import PrivateKey, Box
 
 logger = logging.getLogger(__name__)
 
@@ -37,13 +40,18 @@ class MultiprocessedExecutor(object):
         self.ctx = None  # TODO: Test if you can always use the singleton
         self.auth = None
 
-        self.manager = None
+        self.zmq_workflow_comm = None
         self.receiver = None
         self.receiver_thread = None
         self.cache = cache
         self.action_execution_strategy = action_execution_strategy
         self.execution_db = ExecutionDatabase.instance
         self.zmq_sender = None
+
+        key = PrivateKey(walkoff.config.Config.SERVER_PRIVATE_KEY[:nacl.bindings.crypto_box_SECRETKEYBYTES])
+        worker_key = PrivateKey(
+            walkoff.config.Config.CLIENT_PRIVATE_KEY[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
+        self.__box = Box(key, worker_key)
 
     def initialize_threading(self, app, pids=None):
         """Initialize the multiprocessing communication threads, allowing for parallel execution of workflows.
@@ -67,11 +75,10 @@ class MultiprocessedExecutor(object):
         # TODO: self.auth.allow('127.0.0.1')
         self.auth.configure_curve(domain='*', location=walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH)
 
-        self.manager = WorkflowExecutionController(self.cache)
+        self.zmq_workflow_comm = ZmqWorkflowCommunicationSender()
 
         with app.app_context():
-            self.zmq_sender = ZMQWorkflowResultsSender(current_app.running_context.execution_db,
-                                                       current_app.running_context.case_logger)
+            self.zmq_sender = ZMQWorkflowResultsSender(current_app.running_context.execution_db)
 
         if not walkoff.config.Config.SEPARATE_RECEIVER:
             self.receiver = Receiver(app)
@@ -101,8 +108,8 @@ class MultiprocessedExecutor(object):
 
     def shutdown_pool(self):
         """Shuts down the threadpool"""
-        if self.manager:
-            self.manager.send_exit_to_worker_comms()
+        if self.zmq_workflow_comm:
+            self.zmq_workflow_comm.send_exit_to_worker_comms()
         if not walkoff.config.Config.SEPARATE_WORKERS:
             shutdown_procs(self.pids)
 
@@ -125,7 +132,7 @@ class MultiprocessedExecutor(object):
         self.receiver_thread = None
         self.workflows_executed = 0
         self.threading_is_initialized = False
-        self.manager = None
+        self.zmq_workflow_comm = None
         self.receiver = None
 
     def execute_workflow(self, workflow_id, execution_id_in=None, start=None, start_arguments=None, resume=False,
@@ -161,10 +168,16 @@ class MultiprocessedExecutor(object):
 
         workflow_data = {'execution_id': execution_id, 'id': str(workflow.id), 'name': workflow.name}
         self._log_and_send_event(WalkoffEvent.WorkflowExecutionPending, sender=workflow_data, workflow=workflow)
-        self.manager.add_workflow(workflow.id, execution_id, start, start_arguments, resume, environment_variables)
+        self.__add_workflow_to_queue(workflow.id, execution_id, start, start_arguments, resume, environment_variables)
 
         self._log_and_send_event(WalkoffEvent.SchedulerJobExecuted)
         return execution_id
+
+    def __add_workflow_to_queue(self, workflow_id, workflow_execution_id, start=None, start_arguments=None,
+                                resume=False, environment_variables=None):
+        message = self.zmq_sender.create_workflow_request_message(workflow_id, workflow_execution_id, start,
+                                                                  start_arguments, resume, environment_variables)
+        self.cache.lpush("request_queue", self.__box.encrypt(message))
 
     def pause_workflow(self, execution_id):
         """Pauses a workflow that is currently executing.
@@ -179,7 +192,7 @@ class MultiprocessedExecutor(object):
         workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
             execution_id=execution_id).first()
         if workflow_status and workflow_status.status == WorkflowStatusEnum.running:
-            self.manager.pause_workflow(execution_id)
+            self.zmq_workflow_comm.pause_workflow(execution_id)
             return True
         else:
             logger.warning('Cannot pause workflow {0}. Invalid key, or workflow not running.'.format(execution_id))
@@ -238,7 +251,7 @@ class MultiprocessedExecutor(object):
                         sender={'execution_id': execution_id, 'id': workflow_status.workflow_id, 'name': workflow.name},
                         workflow=workflow)
             elif workflow_status.status == WorkflowStatusEnum.running:
-                self.manager.abort_workflow(execution_id)
+                self.zmq_workflow_comm.abort_workflow(execution_id)
             return True
         else:
             logger.warning(

@@ -8,7 +8,7 @@ import os
 from walkoff.config import Config
 from walkoff.proto.build.data_pb2 import CommunicationPacket, WorkflowControl
 from walkoff.worker.workflow_receivers import WorkerCommunicationMessageType, WorkflowCommunicationMessageType, \
-    WorkerCommunicationMessageData, WorkflowCommunicationMessageData, WorkflowCommunicationReceiver
+    WorkerCommunicationMessageData, WorkflowCommunicationMessageData, ZmqWorkflowCommunicationReceiver
 
 
 class TestWorkflowResultsHandler(TestCase):
@@ -25,14 +25,14 @@ class TestWorkflowResultsHandler(TestCase):
         with patch.object(Socket, 'connect') as mock_connect:
             socket_id = b'test_id'
             address = 'tcp://127.0.0.1:5557'
-            receiver = WorkflowCommunicationReceiver(socket_id)
+            receiver = ZmqWorkflowCommunicationReceiver(socket_id)
             mock_connect.assert_called_once_with(address)
             self.assertFalse(receiver._exit)
 
     def get_receiver(self):
         with patch.object(Socket, 'connect'):
             socket_id = b'test_id'
-            receiver = WorkflowCommunicationReceiver(socket_id)
+            receiver = ZmqWorkflowCommunicationReceiver(socket_id)
             return receiver
 
     def test_shutdown(self):

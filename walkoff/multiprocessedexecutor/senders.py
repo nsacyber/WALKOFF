@@ -6,32 +6,30 @@ from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter as ProtoConverter
 import logging
 import walkoff.config
-from comfluent_kafka import Producer
+from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowCommunicationConverter
+from confluent_kafka import Producer
 
 logger = logging.getLogger(__name__)
 
 
 class ZMQWorkflowResultsSender(object):
-    def __init__(self, execution_db, socket_id=None, client_secret_key=None, client_public_key=None,
-                 server_public_key=None, message_converter=ProtoConverter):
+    def __init__(self, execution_db, socket_id=None, message_converter=ProtoConverter):
         """Initialize a WorkflowResultsHandler object, which will be sending results of workflow execution
 
         Args:
             execution_db (ExecutionDatabase): An ExecutionDatabase connection object
             socket_id (str): The ID for the results socket
-            client_secret_key (str): The secret key for the client
-            client_public_key (str): The public key for the client
-            server_public_key (str): The public key for the server
             message_converter (ProtobufWorkflowResultsConverter): The class to convert messages
         """
+        self._ready = False
         self.results_sock = None
 
         if socket_id is not None:
             self.results_sock = zmq.Context().socket(zmq.PUSH)
             self.results_sock.identity = socket_id
-            self.results_sock.curve_secretkey = client_secret_key
-            self.results_sock.curve_publickey = client_public_key
-            self.results_sock.curve_serverkey = server_public_key
+            self.results_sock.curve_secretkey = walkoff.config.Config.CLIENT_PRIVATE_KEY
+            self.results_sock.curve_publickey = walkoff.config.Config.CLIENT_PUBLIC_KEY
+            self.results_sock.curve_serverkey = walkoff.config.Config.SERVER_PUBLIC_KEY
             try:
                 self.results_sock.connect(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
             except ZMQError:
@@ -43,9 +41,13 @@ class ZMQWorkflowResultsSender(object):
         self.execution_db = execution_db
         self.message_converter = message_converter
 
+        if self.check_status():
+            self._ready = True
+
     def shutdown(self):
         """Shuts down the results socket and tears down the ExecutionDatabase
         """
+        self._ready = False
         if self.results_sock:
             self.results_sock.close()
             self.execution_db.tear_down()
@@ -74,6 +76,22 @@ class ZMQWorkflowResultsSender(object):
             self.results_sock.send(packet_bytes)
         else:
             event.send(sender, data=kwargs.get('data', None))
+
+    def is_ready(self):
+        return self._ready
+
+    def check_status(self):
+        if self.results_sock:
+            return True
+
+    def send_ready_message(self):
+        WalkoffEvent.CommonWorkflowSignal.send(sender={'id': self.results_sock.identity},
+                                               event=WalkoffEvent.WorkerReady)
+
+    def create_workflow_request_message(self, workflow_id, workflow_execution_id, start=None, start_arguments=None,
+                                        resume=False, environment_variables=None):
+        return self.message_converter.create_workflow_request_message(workflow_id, workflow_execution_id, start,
+                                                                      start_arguments, resume, environment_variables)
 
 
 class KafkaWorkflowResultsSender(object):
@@ -115,3 +133,44 @@ class KafkaWorkflowResultsSender(object):
         packet_bytes = self.message_converter.event_to_protobuf(sender, workflow, **kwargs)
         self.producer.produce(self._format_topic(event), packet_bytes, key=str(workflow.id),
                               callback=self._delivery_callback)
+
+
+class ZmqWorkflowCommunicationSender(object):
+
+    def __init__(self, message_converter=ProtobufWorkflowCommunicationConverter):
+        self.comm_socket = zmq.Context.instance().socket(zmq.PUB)
+        self.comm_socket.curve_secretkey = walkoff.config.Config.SERVER_PRIVATE_KEY
+        self.comm_socket.curve_publickey = walkoff.config.Config.SERVER_PUBLIC_KEY
+        self.comm_socket.curve_server = True
+        self.comm_socket.bind(walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS)
+
+        self.message_converter = message_converter
+
+    def shutdown(self):
+        self.comm_socket.close()
+
+    def pause_workflow(self, workflow_execution_id):
+        """Pauses a workflow currently executing.
+
+        Args:
+            workflow_execution_id (UUID): The execution ID of the workflow.
+        """
+        logger.info('Pausing workflow {0}'.format(workflow_execution_id))
+        self._send_message(self.message_converter.create_workflow_pause_message(workflow_execution_id))
+
+    def abort_workflow(self, workflow_execution_id):
+        """Aborts a workflow currently executing.
+
+        Args:
+            workflow_execution_id (UUID): The execution ID of the workflow.
+        """
+        logger.info('Aborting running workflow {0}'.format(workflow_execution_id))
+        self._send_message(self.message_converter.create_workflow_abort_message(workflow_execution_id))
+
+    def send_exit_to_workers(self):
+        """Sends the exit message over the communication sockets, otherwise worker receiver threads will hang"""
+        self._send_message(self.message_converter.create_worker_exit_message())
+
+    def _send_message(self, message):
+        message_bytes = message.SerializeToString()
+        self.comm_socket.send(message_bytes)

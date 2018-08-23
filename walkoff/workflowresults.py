@@ -4,28 +4,17 @@ import uuid
 
 import gevent
 import zmq.auth
-from zmq import ZMQError, green as zmq
+from zmq import green as zmq
 
 from walkoff.events import WalkoffEvent
-from walkoff.executiondb.saved_workflow import SavedWorkflow
-from walkoff.executiondb.workflow import Workflow
 from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter
 
 logger = logging.getLogger(__name__)
 
 
-
-
-
 class ZmqWorkflowResultsReceiver:
-    def __init__(
-            self,
-            server_secret,
-            server_public,
-            address,
-            current_app,
-            message_converter=ProtobufWorkflowResultsConverter
-    ):
+    def __init__(self, server_secret, server_public, address, current_app,
+                 message_converter=ProtobufWorkflowResultsConverter):
         """Initialize a Receiver object, which will receive callbacks from the ExecutionElements.
 
         Args:

@@ -25,7 +25,7 @@ __execution_tests = [test_validatable, test_argument, test_action, test_helper_f
                      test_input_validation, test_decorators, test_app_api_validation, test_playbook,
                      test_condition_transform_validation, test_roles_pages_database, test_users_roles_database,
                      test_scheduler, test_walkoff_tag, test_app_cache, test_app_base, test_console_logging_handler,
-                     test_workflow_execution_controller, test_device_database, test_device_field_database,
+                     test_workflow_communication_sender, test_device_database, test_device_field_database,
                      test_action_exec_strategy_factory, test_accumulators, test_accumulator_factory]
 
 execution_suite = TestSuite()
