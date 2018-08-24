@@ -13,6 +13,7 @@ from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from walkoff.server.returncodes import *
+import walkoff.server.workflowresults
 
 
 class MockWorkflow(ExecutionElement):

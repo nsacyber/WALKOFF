@@ -1,9 +1,15 @@
 import json
 import threading
+from uuid import UUID
 
 import gevent
+import nacl.bindings
+import nacl.utils
 from fakeredis import FakeStrictRedis
 from flask import current_app
+from google.protobuf.json_format import MessageToDict
+from nacl.public import Box
+from nacl.public import PrivateKey
 from zmq.utils.strtypes import cast_unicode
 
 import walkoff.config
@@ -11,10 +17,13 @@ from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 from walkoff.cache import RedisCacheAdapter
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.environment_variable import EnvironmentVariable
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter as ProtoConverter
 from walkoff.multiprocessedexecutor.receiver import Receiver
 from walkoff.multiprocessedexecutor.zmq_senders import ZMQWorkflowResultsSender
+from walkoff.proto.build.data_pb2 import ExecuteWorkflowMessage
 from walkoff.worker.action_exec_strategy import make_execution_strategy
 from walkoff.worker.workflow_exec_strategy import WorkflowExecutor
 
@@ -36,6 +45,8 @@ def mock_initialize_threading(self, pids=None):
     self.zmq_workflow_comm = MockLoadBalancer(current_app._get_current_object())
     self.manager_thread = threading.Thread(target=self.zmq_workflow_comm.manage_workflows)
     self.manager_thread.start()
+
+    self.cache = self.zmq_workflow_comm.pending_workflows
 
     self.threading_is_initialized = True
 
@@ -134,6 +145,11 @@ class MockRequestQueue(object):
     def __init__(self):
         self.queue = Queue()
 
+        key = PrivateKey(walkoff.config.Config.CLIENT_PRIVATE_KEY[:nacl.bindings.crypto_box_SECRETKEYBYTES])
+        server_key = PrivateKey(
+            walkoff.config.Config.SERVER_PRIVATE_KEY[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
+        self.__box = Box(key, server_key)
+
     def pop(self, flags=None):
         res = self.queue.get()
         return res
@@ -162,6 +178,26 @@ class MockRequestQueue(object):
             self.push(workflow_json)
         except:
             self.push(data)
+
+    def lpush(self, topic, message):
+        self.push(self._decrypt_unpack(message))
+
+    def _decrypt_unpack(self, message):
+        decrypted_msg = self.__box.decrypt(message)
+        message = ExecuteWorkflowMessage()
+        message.ParseFromString(decrypted_msg)
+        start = message.start if hasattr(message, 'start') else None
+
+        start_arguments = []
+        if hasattr(message, 'arguments'):
+            for arg in message.arguments:
+                start_arguments.append(Argument(**(MessageToDict(arg, preserving_proto_field_name=True))))
+        env_vars = []
+        if hasattr(message, 'environment_variables'):
+            for env_var in message.environment_variables:
+                env_vars.append(EnvironmentVariable(**(MessageToDict(env_var, preserving_proto_field_name=True))))
+        return UUID(message.workflow_id), UUID(message.workflow_execution_id), start, start_arguments, \
+               message.resume, env_vars
 
 
 class MockRedisCacheAdapter(RedisCacheAdapter):

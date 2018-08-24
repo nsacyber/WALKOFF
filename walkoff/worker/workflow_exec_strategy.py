@@ -184,7 +184,6 @@ class WorkflowExecutor(object):
             environment_variables (list[EnvironmentVariable]): Optional list of environment variables to pass into
                 the workflow. These will not be persistent.
         """
-        print("in exec?")
         self.execution_db.session.expire_all()
 
         workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(
