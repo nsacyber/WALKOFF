@@ -102,7 +102,7 @@ class MultiprocessedExecutor(object):
     def shutdown_pool(self):
         """Shuts down the threadpool"""
         if self.zmq_workflow_comm:
-            self.zmq_workflow_comm.send_exit_to_worker_comms()
+            self.zmq_workflow_comm.send_exit_to_workers()
         if not walkoff.config.Config.SEPARATE_WORKERS:
             shutdown_procs(self.pids)
 

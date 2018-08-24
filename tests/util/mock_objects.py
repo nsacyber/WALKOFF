@@ -33,8 +33,8 @@ def mock_initialize_threading(self, pids=None):
     with current_app.app_context():
         self.zmq_sender = ZMQWorkflowResultsSender(current_app.running_context.execution_db)
 
-    self.manager = MockLoadBalancer(current_app._get_current_object())
-    self.manager_thread = threading.Thread(target=self.manager.manage_workflows)
+    self.zmq_workflow_comm = MockLoadBalancer(current_app._get_current_object())
+    self.manager_thread = threading.Thread(target=self.zmq_workflow_comm.manage_workflows)
     self.manager_thread.start()
 
     self.threading_is_initialized = True
@@ -55,7 +55,7 @@ def mock_wait_and_reset(self, num_workflows):
 
 def mock_shutdown_pool(self):
     if self.manager_thread and self.manager_thread.is_alive():
-        self.manager.pending_workflows.put(("Exit", "Exit", "Exit", "Exit", "Exit", "Exit"))
+        self.zmq_workflow_comm.pending_workflows.put(("Exit", "Exit", "Exit", "Exit", "Exit", "Exit"))
         self.manager_thread.join(timeout=1)
     self.threading_is_initialized = False
     WalkoffEvent.CommonWorkflowSignal.signal.receivers = {}

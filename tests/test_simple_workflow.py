@@ -23,6 +23,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
+        multiprocessedexecutor.MultiprocessedExecutor.__add_workflow_to_queue = MockLoadBalancer.add_workflow
         cls.executor = multiprocessedexecutor.MultiprocessedExecutor(
             MockRedisCacheAdapter(),
             LocalActionExecutionStrategy()

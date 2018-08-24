@@ -208,16 +208,16 @@ class ProtobufWorkflowResultsConverter(object):
             ev_proto.value = env_var.value
 
     @staticmethod
-    def _add_workflow_to_proto(packet, workflow):
+    def _add_workflow_to_proto(packet, workflow_ctx):
         """Adds a Workflow to a protobuf packet
 
         Args:
             packet (protobuf): The protobuf packet
-            workflow (Workflow): The Workflow object to add to the protobuf message
+            workflow_ctx (WorkflowExecutionContext): The Workflow object to add to the protobuf message
         """
-        packet.name = workflow.name
-        packet.id = str(workflow.id)
-        packet.execution_id = str(workflow.get_execution_id())
+        packet.name = workflow_ctx.name
+        packet.id = str(workflow_ctx.id)
+        packet.execution_id = str(workflow_ctx.execution_id)
 
     @staticmethod
     def _convert_branch_transform_condition_to_proto(packet, sender, workflow):

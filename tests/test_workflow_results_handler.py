@@ -53,7 +53,8 @@ class TestWorkflowResultsHandler(TestCase):
             mock_close.assert_called_once()
             database.tear_down.assert_called_once()
 
-    @patch('walkoff.worker.workflow_receivers.convert_to_protobuf', return_value='test_packet')
+    @patch('walkoff.multiprocessedexecutor.protoconverter.ProtobufWorkflowResultsConverter.event_to_protobuf',
+           return_value='test_packet')
     def test_handle_event_no_data(self, mock_convert):
         handler, _database = self.get_handler()
         with patch.object(handler.results_sock, 'send') as mock_send:
@@ -63,7 +64,8 @@ class TestWorkflowResultsHandler(TestCase):
             mock_convert.assert_called_once_with(sender, 'aa', event=WalkoffEvent.WorkflowExecutionStart)
             mock_send.assert_called_once_with('test_packet')
 
-    @patch('walkoff.worker.workflow_receivers.convert_to_protobuf', return_value='test_packet')
+    @patch('walkoff.multiprocessedexecutor.protoconverter.ProtobufWorkflowResultsConverter.event_to_protobuf',
+           return_value='test_packet')
     def test_handle_event_with_data(self, mock_convert):
         handler, _database = self.get_handler()
         with patch.object(handler.results_sock, 'send') as mock_send:
@@ -87,17 +89,20 @@ class TestWorkflowResultsHandler(TestCase):
             mock_convert.assert_called_once_with(sender, 'aa', event=event)
             mock_send.assert_called_once_with('test_packet')
 
-    @patch('walkoff.worker.workflow_receivers.convert_to_protobuf', return_value='test_packet')
+    @patch('walkoff.multiprocessedexecutor.protoconverter.ProtobufWorkflowResultsConverter.event_to_protobuf',
+           return_value='test_packet')
     @patch.object(walkoff.executiondb.saved_workflow.SavedWorkflow, 'from_workflow', return_value='saved_workflow')
     def test_handle_pause_event(self, mock_saved_workflow, mock_convert):
         self.check_handle_saved_event(mock_saved_workflow, mock_convert, WalkoffEvent.WorkflowPaused)
 
-    @patch('walkoff.worker.workflow_receivers.convert_to_protobuf', return_value='test_packet')
+    @patch('walkoff.multiprocessedexecutor.protoconverter.ProtobufWorkflowResultsConverter.event_to_protobuf',
+           return_value='test_packet')
     @patch.object(walkoff.executiondb.saved_workflow.SavedWorkflow, 'from_workflow', return_value='saved_workflow')
     def test_handle_trigger_save_event(self, mock_saved_workflow, mock_convert):
         self.check_handle_saved_event(mock_saved_workflow, mock_convert, WalkoffEvent.TriggerActionAwaitingData)
 
-    @patch('walkoff.worker.workflow_receivers.convert_to_protobuf', return_value='test_packet')
+    @patch('walkoff.multiprocessedexecutor.protoconverter.ProtobufWorkflowResultsConverter.event_to_protobuf',
+           return_value='test_packet')
     def test_handle_console_log_event(self, mock_convert):
         handler, _database = self.get_handler()
         workflow = create_autospec(Workflow)
