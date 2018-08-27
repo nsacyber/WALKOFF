@@ -192,7 +192,7 @@ class TestCondition(unittest.TestCase):
         def callback_is_sent(sender, **kwargs):
             if isinstance(sender, ConditionalExpression):
                 self.assertIn('event', kwargs)
-                self.assertEqual(kwargs['event'], WalkoffEvent.ConditionalExpressionError)
+                self.assertEqual(kwargs['event'], WalkoffEvent.ConditionalExpressionFalse)
                 result['triggered'] = True
 
         self.assertFalse(expression.execute(LocalActionExecutionStrategy(), 'any', {}))
