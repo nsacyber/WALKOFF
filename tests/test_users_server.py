@@ -211,7 +211,7 @@ class TestUserServer(ServerTestCase):
 
     def test_delete_current_user(self):
         user = add_user('test', 'test')
-        user.set_roles({'admin'})
+        user.set_roles({1})
         response = self.test_client.post('/api/auth', content_type="application/json",
                                          data=json.dumps(dict(username='test', password='test')))
         key = json.loads(response.get_data(as_text=True))

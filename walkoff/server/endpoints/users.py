@@ -134,10 +134,6 @@ def delete_user(user_id):
             return None, NO_CONTENT
         else:
             current_app.logger.error('Could not delete user {0}. User is current user.'.format(user.id))
-            return Problem.from_crud_resource(
-                FORBIDDEN_ERROR,
-                'user',
-                'delete',
-                'Current user cannot delete self.')
+            return Problem.from_crud_resource(FORBIDDEN_ERROR, 'user', 'delete', 'Current user cannot delete self.')
 
     return __func()

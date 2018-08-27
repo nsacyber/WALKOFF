@@ -6,6 +6,7 @@ from . import *
 def add_tests_to_suite(suite, test_modules):
     suite.addTests([TestLoader().loadTestsFromModule(test_module) for test_module in test_modules])
 
+
 __server_tests = [test_workflow_server, test_app_api_server, test_configuration_server,
                   test_scheduler_actions, test_device_server, test_app_blueprint, test_metrics_server,
                   test_scheduledtasks_database, test_scheduledtasks_server, test_authentication, test_roles_server,
