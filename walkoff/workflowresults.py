@@ -2,66 +2,7 @@ import logging
 import os
 import uuid
 
-import gevent
-import zmq.auth
-from zmq import green as zmq
-
-from walkoff.events import WalkoffEvent
-from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter
-
 logger = logging.getLogger(__name__)
-
-
-class ZmqWorkflowResultsReceiver:
-    def __init__(self, server_secret, server_public, address, current_app,
-                 message_converter=ProtobufWorkflowResultsConverter):
-        """Initialize a Receiver object, which will receive callbacks from the ExecutionElements.
-
-        Args:
-            current_app (Flask.App): The current Flask app
-        """
-        self.message_converter = message_converter
-        self.thread_exit = False
-        self.workflows_executed = 0
-
-        # server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
-        # server_public, server_secret = auth.load_certificate(server_secret_file)
-
-        ctx = zmq.Context.instance()
-        self.results_sock = ctx.socket(zmq.PULL)
-        self.results_sock.curve_secretkey = server_secret
-        self.results_sock.curve_publickey = server_public
-        self.results_sock.curve_server = True
-        # self.results_sock.bind(walkoff.config.Config.ZMQ_RESULTS_ADDRESS)
-        self.results_sock.bind(address)
-        self.current_app = current_app
-
-    def receive_results(self):
-        """Keep receiving results from execution elements over a ZMQ socket, and trigger the callbacks"""
-        while True:
-            if self.thread_exit:
-                break
-            try:
-                message_bytes = self.results_sock.recv(zmq.NOBLOCK)
-            except zmq.ZMQError:
-                gevent.sleep(0.1)
-                continue
-
-            with self.current_app.app_context():
-                self._send_callback(message_bytes)
-
-        self.results_sock.close()
-
-    def _send_callback(self, message_bytes):
-        event, sender, data = self.message_converter.to_event_callback(message_bytes)
-        if sender is not None:
-            with self.current_app.app_context():
-                event.send(sender, data=data)
-            if event in [WalkoffEvent.WorkflowShutdown, WalkoffEvent.WorkflowAborted]:
-                self._increment_execution_count()
-
-    def _increment_execution_count(self):
-        self.workflows_executed += 1
 
 
 def make_zmq_workflow_results_sender(config, execution_db, case_logger, protocol_translation, **kwargs):

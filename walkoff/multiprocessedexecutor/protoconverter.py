@@ -253,24 +253,28 @@ class ProtobufWorkflowResultsConverter(object):
         else:
             message = message_outer.general_packet
 
+        sender = None
         if hasattr(message, "sender"):
             sender = MessageToDict(message.sender, preserving_proto_field_name=True)
         elif hasattr(message, "workflow"):
             sender = MessageToDict(message.workflow, preserving_proto_field_name=True)
         event = WalkoffEvent.get_event_from_name(callback_name)
         if event is not None:
-            data = ProtobufWorkflowResultsConverter._format_callback_data(event, message)
-            return sender, data
+            data = ProtobufWorkflowResultsConverter._format_callback_data(event, message, sender)
+            return event, sender, data
         else:
             logger.error('Unknown callback {} sent'.format(callback_name))
-            return None, None
+            return None, None, None
 
     @staticmethod
-    def _format_callback_data(event, message):
+    def _format_callback_data(event, message, sender=None):
         if event == WalkoffEvent.ConsoleLog:
             data = MessageToDict(message, preserving_proto_field_name=True)
         elif event.event_type != EventType.workflow:
-            data = {'workflow': MessageToDict(message.workflow, preserving_proto_field_name=True)}
+            if hasattr(message, "workflow"):
+                data = {'workflow': MessageToDict(message.workflow, preserving_proto_field_name=True)}
+            else:
+                data = {'workflow': sender}
         else:
             data = {}
         if event.requires_data():

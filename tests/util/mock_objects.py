@@ -21,11 +21,12 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.environment_variable import EnvironmentVariable
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter as ProtoConverter
-from walkoff.multiprocessedexecutor.receiver import Receiver
+from walkoff.multiprocessedexecutor.zmq_receivers import ZmqWorkflowResultsReceiver
 from walkoff.multiprocessedexecutor.zmq_senders import ZMQWorkflowResultsSender
 from walkoff.proto.build.data_pb2 import ExecuteWorkflowMessage
 from walkoff.worker.action_exec_strategy import make_execution_strategy
 from walkoff.worker.workflow_exec_strategy import WorkflowExecutor
+from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter
 
 try:
     from Queue import Queue
@@ -127,10 +128,11 @@ class MockLoadBalancer(object):
         return True
 
 
-class MockReceiveQueue(Receiver):
+class MockReceiveQueue(ZmqWorkflowResultsReceiver):
 
-    def __init__(self, current_app):
+    def __init__(self, current_app, message_converter=ProtobufWorkflowResultsConverter):
         self.current_app = current_app
+        self.message_converter = message_converter
 
     def send(self, packet):
         with self.current_app.app_context():
