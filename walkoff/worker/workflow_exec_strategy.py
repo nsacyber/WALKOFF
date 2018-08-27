@@ -226,6 +226,6 @@ class WorkflowExecutor(object):
     def get_workflow_by_execution_id(self, workflow_execution_id):
         with self._lock:
             for workflow_context in self.executing_workflows.values():
-                if workflow_context.execution_id == workflow_execution_id:
+                if str(workflow_context.execution_id) == workflow_execution_id:
                     return workflow_context
             return None
