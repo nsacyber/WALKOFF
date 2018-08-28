@@ -2,6 +2,7 @@ matrix:
   include:
     - language: python
       os: linux
+      name: "Python 2.7 Unit Tests"
       python: "2.7"
       services:
         - redis-server
@@ -24,12 +25,11 @@ matrix:
         only:
           - master
           - development
-        except:
-          - caching
 
     - language: python
       os: linux
       python: "3.5"
+      name: "Python 3.5 Unit Tests"
       services:
         - redis-server
       before_install:
@@ -51,12 +51,11 @@ matrix:
         only:
           - master
           - development
-        except:
-          - caching
 
     - language: python
       os: linux
       python: "3.6"
+      name: "Python 3.6 Unit Tests"
       services:
         - redis-server
       before_install:
@@ -78,13 +77,84 @@ matrix:
         only:
           - master
           - development
-        except:
-          - caching
+
+    - language: python
+      os: linux
+      python: "2.7"
+      name: "Python 2.7 Runtime Unit Tests"
+      services:
+        - redis-server
+      install:
+        - pip install -r requirements.txt
+        - pip install -r requirements-test.txt
+        - pip install -r runtimes/python/requirements.txt
+        - pip install -r runtimes/python/requirements-test.txt
+      script:
+        - python -m pytest runtimes/python --rootdir=. -s -v
+      branches:
+        only:
+          - master
+          - development
+
+    - language: python
+      os: linux
+      python: "3.4"
+      name: "Python 3.4 Runtime Unit Tests"
+      services:
+        - redis-server
+      install:
+        - pip install -r requirements.txt
+        - pip install -r requirements-test.txt
+        - pip install -r runtimes/python/requirements.txt
+        - pip install -r runtimes/python/requirements-test.txt
+      script:
+        - python -m pytest runtimes/python --rootdir=. -s -v
+      branches:
+        only:
+          - master
+          - development
+
+    - language: python
+      os: linux
+      python: "3.5"
+      name: "Python 3.5 Runtime Unit Tests"
+      services:
+        - redis-server
+      install:
+        - pip install -r requirements.txt
+        - pip install -r requirements-test.txt
+        - pip install -r runtimes/python/requirements.txt
+        - pip install -r runtimes/python/requirements-test.txt
+      script:
+        - python -m pytest runtimes/python --rootdir=. -s -v
+      branches:
+        only:
+          - master
+          - development
+
+    - language: python
+      os: linux
+      python: "3.6"
+      name: "Python 3.6 Runtime Unit Tests"
+      services:
+        - redis-server
+      install:
+        - pip install -r requirements.txt
+        - pip install -r requirements-test.txt
+        - pip install -r runtimes/python/requirements.txt
+        - pip install -r runtimes/python/requirements-test.txt
+      script:
+        - python -m pytest runtimes/python --rootdir=. -s -v
+      branches:
+        only:
+          - master
+          - development
 
     - language: node_js
       node_js:
         - "node"
       addons:
+      name: "UI Unit Tests"
       apt:
         sources:
           - google-chrome

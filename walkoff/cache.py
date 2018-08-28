@@ -1,6 +1,7 @@
 import logging
 import os
 from copy import deepcopy
+from redis import StrictRedis
 
 import os.path
 
@@ -54,8 +55,9 @@ class RedisCacheAdapter(object):
         return cls.instance
 
     def __init__(self, **opts):
-        from redis import StrictRedis
         self.cache = StrictRedis(**opts)
+        logger.info('Created redis cache connection with options: {}'.format(opts))
+
 
     def set(self, key, value, expire=None, **opts):
         """Set a value for a key in the cache
@@ -285,6 +287,23 @@ class RedisCacheAdapter(object):
             bool: Does the key exist?
         """
         return bool(self.cache.exists(key))
+
+    def lock(self, name, timeout=None, sleep=0.1, blocking_timeout=None):
+        """Gets a distributed lock backed by the cache
+
+        Args:
+            name (str): The name of the lock
+            timeout (float): The maximum life for the lock in seconds. If none is specified, it will remain locked
+                until release() is called on the lock
+            sleep (float): The amount of time to sleep per loop iteration when the lock is in blocking mode and another
+                client is currently holding the lock
+            blocking_timeout (float): The maximum amount of time in seconds to spend trying to acquire the lock. If
+                none is specified, the lock will continue trying forever
+        Returns:
+            A lock
+        """
+        return self.cache.lock(name, timeout=timeout, sleep=sleep, blocking_timeout=blocking_timeout)
+
 
     @classmethod
     def from_json(cls, json_in):

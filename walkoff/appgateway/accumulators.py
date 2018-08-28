@@ -21,16 +21,16 @@ class ExternallyCachedAccumulator(object):
 
     def __init__(self, cache, workflow_execution_id, key_prefix='accumulator'):
         self._cache = cache
-        self._key = '{0}{1}{2}{1}'.format(key_prefix, self._cache_separator, workflow_execution_id)
-        self._key += '{}'
-        self._scan_key = self._key.format('*')
+        self._key_prefix = key_prefix
+        self.set_key(workflow_execution_id)
 
     def __setitem__(self, key, value):
-        self._cache.set(self._key.format(key), value)
+        self._cache.set(self.format_key(key), value)
+
 
     def __getitem__(self, item):
-        if self._cache.exists(self._key.format(item)):
-            return self._cache.get(self._key.format(item))
+        if self._cache.exists(self.format_key(item)):
+            return self._cache.get(self.format_key(item))
         else:
             raise KeyError
 
@@ -49,6 +49,11 @@ class ExternallyCachedAccumulator(object):
 
     def extract_key(self, key):
         return key.split(self._cache_separator)[-1]
+
+    def set_key(self, workflow_execution_id):
+        self._key = '{0}{1}{2}{1}'.format(self._key_prefix, self._cache_separator, workflow_execution_id)
+        self._key += '{}'
+        self._scan_key = self._key.format('*')
 
     def clear(self):
         for key in self.keys():
