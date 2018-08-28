@@ -2,14 +2,14 @@
 	Role Settings</h1>
 
 <div class="row">
-	<div class="col-xs-6">
-		<button (click)="addRole()" class="btn btn-primary">
-			<i class="fa fa-plus"></i>Add Role</button>
+	<div class="col-6">
+		<button (click)="addRole()" class="btn btn-outline-primary">
+			<i class="fa fa-plus"></i> Add Role</button>
 	</div>
-	<div class="col-xs-6">
+	<div class="col-6">
 		<div class="form-group row">
-			<label class="col-xs-2 col-form-label">Search Filter</label>
-			<div class="col-xs-10">
+			<label class="col-2 col-form-label">Search Filter</label>
+			<div class="col-10">
 				<input class="form-control" [formControl]="filterQuery" />
 			</div>
 		</div>

@@ -1,24 +1,24 @@
 <div id="main" class="executionMain">
 	<h1>Execution Control</h1>
 
-	<div class="row">
-		<div class="col-xs-4">
+	<div class="row align-items-center mb-3">
+		<div class="col-lg-4 my-1 my-lg-none">
 			<select2 [data]="availableWorkflows" [options]="workflowSelectConfig" (valueChanged)="workflowSelectChange($event)"></select2>
 		</div>
-		<div class="col-xs-4">
-			<button [disabled]="!selectedWorkflow" (click)="executeSelectedWorkflow()" title="Execute Workflow" class="btn btn-secondary">
+		<div class="col-lg-auto mr-auto my-1 my-lg-none">
+			<button *ngIf="selectedWorkflow" (click)="executeSelectedWorkflow()" title="Execute Workflow" class="btn btn-outline-primary">
 				<i class="fa fa-play"></i>
 				Execute Workflow
 			</button>
-			<button *ngIf="selectedWorkflow && selectedWorkflow.referenced_variables.length > 0" (click)="openVariableModal()" title="Edit Environment Variables" class="btn btn-secondary">
+			<button *ngIf="selectedWorkflow && selectedWorkflow.referenced_variables.length > 0" (click)="openVariableModal()" title="Edit Environment Variables" class="btn btn-outline-primary">
 				<i class="fa fa-cog"></i>
 				Edit Environment Variables
 			</button>
 		</div>
-		<div class="col-xs-4">
-			<div class="form-group row">
-				<label class="col-xs-2 col-form-label">Search Filter</label>
-				<div class="col-xs-10">
+		<div class="col col-lg-4 my-1 my-lg-none">
+			<div class="row">
+				<label class="col-auto col-form-label">Search Filter</label>
+				<div class="col">
 					<input class="form-control" [formControl]="filterQuery" />
 				</div>
 			</div>

@@ -5,7 +5,7 @@
 	<div class="container-fluid">
 		<div class="row">
 			<form #userForm="ngForm" (ngSubmit)="submit()">
-				<div class="col-xs-6">
+				<div class="col-6">
 					<div class="form-group">
 						<label for="username">
 							Username
@@ -31,7 +31,7 @@
 						(valueChanged)="roleSelectChange($event)"></select2>
 					</div>
 				</div>
-				<div class="col-xs-6">
+				<div class="col-6">
 					<div class="form-group" *ngIf="workingUser.id">
 						<label for="currentPassword">Current Password</label>
 						<input type="password" class="form-control" [(ngModel)]="workingUser.currentPassword" #currentPassword="ngModel" name="currentPassword">

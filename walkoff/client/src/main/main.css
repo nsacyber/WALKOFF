@@ -37,17 +37,17 @@ h3 {
   background-color: #3c8dbc;
 }
 
-#walkoffNav a {
+/* #walkoffNav a {
   color: #f6f6f6;
-}
+} */
 
 #walkoffNav a .navLink {
   margin-left: 5px;
 }
 
-#walkoffNav .dropdown-item {
+/* #walkoffNav .dropdown-item {
   color: #333333;
-}
+} */
 
 #walkoffNav {
   margin-bottom: 0;

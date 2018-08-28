@@ -1,33 +1,34 @@
-<div id="main" class="schedulerMain">
+<div id="main" class="schedulerMain container-fluid">
 	<h1>Scheduler</h1>
 
-	<div class="row">
-		<div class="col-xs-2">
-			<button (click)="addScheduledTask()" class="btn btn-primary"><i class="fa fa-plus"></i>Add To Schedule</button>
+	<div class="row align-items-center mb-3">
+		<div class="col-2">
+			<button (click)="addScheduledTask()" class="btn btn-outline-primary"><i class="fa fa-plus"></i> Add To Schedule</button>
 		</div>
 
-		<div class="col-xs-4">
-			<div id="schedulerStatus">
-				<h4>Scheduler Status: <span id="status">{{schedulerStatus}}</span></h4>
+		<div class="col-4">
+			<div class="row">
+				<h4 class="my-auto mr-2">Scheduler Status: <span id="status">{{schedulerStatus}}</span></h4>
+				
+				<button *ngIf="schedulerStatus && schedulerStatus !== 'running'" (click)="changeSchedulerStatus('start')" class="btn btn-primary"
+					id="startSchedulerBtn" title="Start Scheduler">
+					<i class="fa fa-play"></i>
+				</button>
+				<button *ngIf="schedulerStatus && schedulerStatus === 'running'" (click)="changeSchedulerStatus('pause')" class="btn btn-warning"
+					id="pauseSchedulerBtn" title="Pause Scheduler">
+					<i class="fa fa-pause"></i>
+				</button>
+				<button *ngIf="schedulerStatus && schedulerStatus === 'running'" (click)="changeSchedulerStatus('stop')" class="btn btn-danger"
+					id="stopSchedulerBtn" title="Stop Scheduler">
+					<i class="fa fa-stop"></i>
+				</button>
 			</div>
-			<button *ngIf="schedulerStatus && schedulerStatus !== 'running'" (click)="changeSchedulerStatus('start')" class="btn btn-primary"
-				id="startSchedulerBtn" title="Start Scheduler">
-				<i class="fa fa-play"></i>
-			</button>
-			<button *ngIf="schedulerStatus && schedulerStatus === 'running'" (click)="changeSchedulerStatus('pause')" class="btn btn-warning"
-				id="pauseSchedulerBtn" title="Pause Scheduler">
-				<i class="fa fa-pause"></i>
-			</button>
-			<button *ngIf="schedulerStatus && schedulerStatus === 'running'" (click)="changeSchedulerStatus('stop')" class="btn btn-danger"
-				id="stopSchedulerBtn" title="Stop Scheduler">
-				<i class="fa fa-stop"></i>
-			</button>
 		</div>
 
-		<div class="col-xs-6">
-			<div class="form-group row">
-				<label class="col-xs-2 col-form-label">Search Filter</label>
-				<div class="col-xs-10">
+		<div class="col-6">
+			<div class="row">
+				<label class="col-2 col-form-label">Search Filter</label>
+				<div class="col-10">
 					<input class="form-control" [formControl]="filterQuery" />
 				</div>
 			</div>

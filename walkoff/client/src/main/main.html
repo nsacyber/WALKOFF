@@ -2,125 +2,112 @@
 
   <!-- Main Header -->
   <header>
-    <nav id="walkoffNav" class="navbar navbar-default navbar-custom">
-      <div class="container-fluid">
-        <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1"
-            aria-expanded="false">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="#"><b>WALK</b>OFF</a>
-        </div>
-
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-          <ul class="nav navbar-nav">
-            <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                Interfaces
-                <span class="caret"></span>
+    <nav id="walkoffNav" class="navbar navbar-expand-md navbar-dark">
+      <a class="navbar-brand" href="#"><b>WALK</b>OFF</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/playbook" routerLinkActive="active"><i class="fa fa-sitemap"></i><span class="navLink">Playbook</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/execution" routerLinkActive="active"><i class="fa fa-flag-checkered"></i><span class="navLink">Execution</span></a>
+          </li>
+          <li class="nav-item dropdown" routerLinkActive="active">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <i class="fa fa-area-chart"></i><span class="navLink">Interfaces</span>
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a *ngFor="let interfaceName of interfaceNames" class="dropdown-item installedInterface" routerLink="/interfaces/{{interfaceName}}">
+                <span>{{interfaceName}}</span>
               </a>
-              <ul class="dropdown-menu">
-                <li *ngFor="let interfaceName of interfaceNames">
-                  <a class="installedInterface" routerLink="/interfaces/{{interfaceName}}"><i class="fa fa-gear"></i><span>{{interfaceName}}</span></a>
-                </li>
-                <li *ngIf="!interfaceNames || !interfaceNames.length">
-                  <span class="dropdown-item">No custom WALKOFF interfaces are installed.</span>
-                </li>
-              </ul>
-            </li>
-            <li>
-              <a routerLink="/playbook" routerLinkActive="active"><i class="fa fa-sitemap"></i><span class="navLink">Playbook</span></a>
-            </li>
-            <li>
-              <a routerLink="/execution" routerLinkActive="active"><i class="fa fa-flag-checkered"></i><span class="navLink">Execution</span></a>
-            </li>
-            <li>
-              <a routerLink="/scheduler" routerLinkActive="active"><i class="fa fa-calendar"></i><span class="navLink">Scheduler</span></a>
-            </li>
-            <li>
-              <a routerLink="/devices" routerLinkActive="active"><i class="fa fa-desktop"></i><span class="navLink">Devices</span></a>
-            </li>
-            <li>
-              <a routerLink="/messages" routerLinkActive="active"><i class="fa fa-envelope-o"></i><span class="navLink">Messages</span></a>
-            </li>
-            <li>
-              <a routerLink="/metrics" routerLinkActive="active"><i class="fa fa-pie-chart"></i><span class="navLink">Metrics</span></a>
-            </li>
-            <li>
-              <a routerLink="/settings" routerLinkActive="active"><i class="fa fa-wrench"></i><span class="navLink">Settings</span></a>
-            </li>
-          </ul>
+              <span *ngIf="!interfaceNames || !interfaceNames.length" class="dropdown-item installedInterface">
+                No custom WALKOFF interfaces are installed.
+              </span>
+            </div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/scheduler" routerLinkActive="active"><i class="fa fa-calendar"></i><span class="navLink">Scheduler</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/devices" routerLinkActive="active"><i class="fa fa-desktop"></i><span class="navLink">Devices</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/messages" routerLinkActive="active"><i class="fa fa-envelope-o"></i><span class="navLink">Messages</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/metrics" routerLinkActive="active"><i class="fa fa-pie-chart"></i><span class="navLink">Metrics</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/settings" routerLinkActive="active"><i class="fa fa-wrench"></i><span class="navLink">Settings</span></a>
+          </li>
+        </ul>
+        <!-- <form class="form-inline mt-2 mt-md-0">
+          <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search">
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form> -->
+        <!-- Navbar Right Menu -->
+        <ul class="navbar-nav">
+          <li class="nav-item dropdown messages messages-menu">
+            <a class="nav-link" [class.newMessages]="newMessagesCount" href="#" id="messageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" (click)="recalculateRelativeTimes()">
+              <i class="fa" [ngClass]="{ 'fa-envelope': newMessagesCount, 'fa-envelope-open-o': !newMessagesCount }"></i>
+              <span>{{newMessagesCount}}</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="messageDropdown">
+              <span *ngIf="!messageListings.length" class="noMessages">You have no messages.</span>
+                <table class="messageTable">
+                  <tr *ngFor="let messageListing of messageListings" [class.oldMessage]="messageListing.is_read">
+                    <td>
+                        <i *ngIf="messageListing.awaiting_response" class="fa fa-exclamation required" title="This message is awaiting response."></i>
+                    </td>
+                    <td>
+                        <a class="dropdown-item" href="#" (click)="openMessage($event, messageListing)">{{utils.getTruncatedString(messageListing.subject, 25, '(no subject)')}}</a>    
+                    </td>
+                    <td [title]="utils.getLocalTime(messageListing.created_at)">{{notificationRelativeTimes[messageListing.id]}}</td>
+                  </tr>
+                </table>
+            </div>
+          </li>
+          <li class="nav-item dropdown user user-menu" routerLinkActive="active">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <!-- The user image in the navbar-->
+              <img src="client/assets/img/genericUser.png" class="user-image" alt="User Image">
+              <!-- hidden-xs hides the username on small devices so only the image appears. -->
+              <span class="userName">{{currentUser}}</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarUserDropdown">
+              <!-- The user image in the menu -->
+              <div class="user-header">
+                <img src="client/assets/img/genericUser.png" class="rounded-circle" alt="User Image">
 
-          <!-- Navbar Right Menu -->
-          <div class="navbar-custom-menu">
-            <ul class="nav navbar-nav navbar-right">
-              <li class="dropdown messages messages-menu">
-                <a href="#" class="dropdown-toggle" [class.newMessages]="newMessagesCount" data-toggle="dropdown" (click)="recalculateRelativeTimes()">
-                  <i class="fa" [ngClass]="{ 'fa-envelope': newMessagesCount, 'fa-envelope-open-o': !newMessagesCount }"></i>
-                  <span>{{newMessagesCount}}</span>
-                </a>
-                <div class="dropdown-menu">
-                  <span *ngIf="!messageListings.length" class="noMessages">You have no messages.</span>
-                  <table class="messageTable">
-                    <tr *ngFor="let messageListing of messageListings" [class.oldMessage]="messageListing.is_read">
-                      <td>
-                          <i *ngIf="messageListing.awaiting_response" class="fa fa-exclamation required" title="This message is awaiting response."></i>
-                      </td>
-                      <td>
-                          <a class="dropdown-item" href="#" (click)="openMessage($event, messageListing)">{{utils.getTruncatedString(messageListing.subject, 25, '(no subject)')}}</a>    
-                      </td>
-                      <td [title]="utils.getLocalTime(messageListing.created_at)">{{notificationRelativeTimes[messageListing.id]}}</td>
-                    </tr>
-                  </table>
+                <p>
+                  {{currentUser}}
+                </p>
+              </div>
+              <!-- Menu Body -->
+              <div class="user-body">
+                <div class="row">
+
                 </div>
-              </li>
-              <!-- User Account Menu -->
-              <li class="dropdown user user-menu">
-                <!-- Menu Toggle Button -->
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                  <!-- The user image in the navbar-->
-                  <img src="client/assets/img/genericUser.png" class="user-image" alt="User Image">
-                  <!-- hidden-xs hides the username on small devices so only the image appears. -->
-                  <span class="userName">{{currentUser}}</span>
-                </a>
-                <ul class="dropdown-menu">
-                  <!-- The user image in the menu -->
-                  <li class="user-header">
-                    <img src="client/assets/img/genericUser.png" class="rounded-circle" alt="User Image">
+                <!-- /.row -->
+              </div>
+              <!-- Menu Footer-->
+              <div class="user-footer">
 
-                    <p>
-                      {{currentUser}}
-                    </p>
-                  </li>
-                  <!-- Menu Body -->
-                  <li class="user-body">
-                    <div class="row">
-
-                    </div>
-                    <!-- /.row -->
-                  </li>
-                  <!-- Menu Footer-->
-                  <li class="user-footer">
-
-                    <div class="pull-right">
-                      <button (click)="logout()" class="btn btn-default btn-primary">Sign out</button>
-                    </div>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </div>
-        </div>
+                <div class="pull-right">
+                  <button (click)="logout()" class="btn btn-default btn-primary">Sign out</button>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
       </div>
     </nav>
   </header>
 
-  <div>
+  <main role="main">
     <section>
       <div>
         <router-outlet></router-outlet>
@@ -131,7 +118,7 @@
       </div>
     </section>
     <div></div>
-  </div>
+  </main>
 
   <!--<footer class="footer">
     <strong>WALKOFF</strong>

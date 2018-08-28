@@ -1,11 +1,11 @@
 <div id="main" class="settingsMain">
     <ul class="nav nav-tabs" role="tablist">
-        <li class="active"><a href="#systemSettings" data-toggle="tab" role="tab">System Settings</a></li>
-        <li><a href="#userSettings" data-toggle="tab" role="tab">User Settings</a></li>
-        <li><a href="#roleSettings" data-toggle="tab" role="tab">Role Settings</a></li>
+        <li class="nav-item"><a class="nav-link active" href="#systemSettings" data-toggle="tab" role="tab">System Settings</a></li>
+        <li class="nav-item"><a class="nav-link"href="#userSettings" data-toggle="tab" role="tab">User Settings</a></li>
+        <li class="nav-item"><a class="nav-link"href="#roleSettings" data-toggle="tab" role="tab">Role Settings</a></li>
     </ul>
     <div class="tab-content">
-        <div id="systemSettings" class="tab-pane fade in active">
+        <div id="systemSettings" class="tab-pane fade show active">
             <h1 class="settingsHeader">System Settings</h1>
             <form (ngSubmit)="updateConfiguration()" #systemSettingsForm="ngForm">
                 <div class="row">
@@ -127,13 +127,13 @@
             <h1 class="settingsHeader">User Settings</h1>
 
             <div class="row">
-                <div class="col-xs-6">
-                    <button (click)="addUser()" class="btn btn-primary"><i class="fa fa-plus"></i>Add User</button>
+                <div class="col-6">
+                    <button (click)="addUser()" class="btn btn-outline-primary"><i class="fa fa-plus"></i> Add User</button>
                 </div>
-                <div class="col-xs-6">
+                <div class="col-6">
                     <div class="form-group row">
-                        <label class="col-xs-2 col-form-label">Search Filter</label>
-                        <div class="col-xs-10">
+                        <label class="col-2 col-form-label">Search Filter</label>
+                        <div class="col-10">
                             <input class="form-control" [formControl]="filterQuery" />
                         </div>
                     </div>

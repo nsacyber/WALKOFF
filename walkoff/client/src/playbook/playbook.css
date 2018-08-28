@@ -102,7 +102,7 @@
 	resize: none;
 }
 
-.playbookMain #accordion .panel-heading .panel-title:after {
+.playbookMain #accordion .card-heading .card-title:after {
 	/* symbol for "opening" panels */
 	font: normal normal normal 14px/1 FontAwesome;
 	font-size: inherit;
@@ -116,12 +116,12 @@
     transition: none !important;
 }
 
-.playbookMain #accordion .panel-heading.collapsed .panel-title:after {
+.playbookMain #accordion .card-heading.collapsed .card-title:after {
 	/* symbol for "collapsed" panels */
 	content: "\f054";    /* adjust as needed, taken from bootstrap.css */
 }
 
-.playbookMain .panel-default>.panel-heading {
+.playbookMain .card-default > .card-heading {
 	background-color: #eaf2f6;
 	font-weight: bolder;
 }
@@ -174,7 +174,7 @@
 	cursor: pointer;
 }
 
-#workflowsModal .panel-heading h4 {
+#workflowsModal .card-heading h4 {
 	min-height: 30px;
 }
 
@@ -182,7 +182,7 @@
 	margin-bottom: 5px;
 }
 
-#workflowsModal .importContainer h4 {
+#workflowsModal .importContainer h5 {
 	display: inline-block;
 }
 

@@ -5,7 +5,7 @@
 	<div class="container-fluid">
 		<form #roleForm="ngForm">
 			<div class="row">
-				<div class="col-xs-6">
+				<div class="col-6">
 					<div class="form-group">
 						<label for="name">
 							Name
@@ -19,7 +19,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="col-xs-6">
+				<div class="col-6">
 					<div class="form-group">
 						<label for="description">Description</label>
 						<input type="text" class="form-control" [(ngModel)]="workingRole.description" name="ip" tabindex="2">
@@ -27,13 +27,13 @@
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-xs-6">
+				<div class="col-6">
 					<label>Resource</label>
 					<select class="form-control" [(ngModel)]="selectedAvailableResourceActionName" name="selectedAvailableResourceActionName">
 						<option *ngFor="let i of resourceNames" [value]="i" [label]="i">{{i}}</option>
 					</select>
 				</div>
-				<div class="col-xs-6">
+				<div class="col-6">
 					<div class="form-group">
 						<button class="btn btn-primary pull-right" (click)="addResource()" [disabled]="!selectedAvailableResourceActionName">
 							<i class="fa fa-plus"></i>Add Resource
@@ -43,10 +43,10 @@
 			</div>
 			<div class="resourceGroup form-group {{id % 2 ? 'odd' : 'even'}}" *ngFor="let resource of workingRole.resources; let id = index">
 				<div class="row">
-					<div class="col-xs-6">
+					<div class="col-6">
 						<label>Resource {{id+1}}: {{resource.name}}{{resource.app_name ? ' (' + resource.app_name + ')' : ''}}</label>
 					</div>
-					<div class="col-xs-6">
+					<div class="col-6">
 						<div class="pull-right">
 							<button class="btn btn-danger" (click)="removeResource(resource)" title="Remove Resource"><i class="fa fa-close"></i></button>
 						</div>
