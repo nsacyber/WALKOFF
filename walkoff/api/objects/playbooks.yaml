@@ -211,7 +211,7 @@ Argument:
         of a list, and the "a" field of that object.
       type: array
       items:
-        type: [string, integer]
+        description: Each subsection of the output of the action to use
     errors:
       $ref: '#/definitions/ExecutionElementErrors'
 
@@ -239,7 +239,7 @@ DeviceArgument:
         of a list, and the "a" field of that object.
       type: array
       items:
-        type: [string, integer]
+        description: Each path to a subsection of the output of the action to use
 
 Condition:
   type: object

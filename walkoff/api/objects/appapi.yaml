@@ -268,7 +268,7 @@ ParameterApi:
     name:
       type: string
     example:
-      type: [number, integer, string, boolean]
+      description: Example of the parameter
     description:
       type: string
       description: Description of the parameter
