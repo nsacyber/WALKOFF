@@ -153,6 +153,16 @@ class Config(object):
     __passwords = ['EXECUTION_DB_PASSWORD', 'WALKOFF_DB_PASSWORD', 'SERVER_PRIVATE_KEY',
                    'CLIENT_PRIVATE_KEY', 'SERVER_PUBLIC_KEY', 'CLIENT_PUBLIC_KEY', 'SECRET_KEY']
 
+    WORKFLOW_COMMUNICATION_PROTOCOL = 'protobuf'
+    WORKFLOW_COMMUNICATION_KAFKA_CONFIG = {'topic': 'comm'}
+    WORKFLOW_COMMUNICATION_HANDLER = 'zmq'
+
+    WORKFLOW_RESULTS_PROTOCOL = 'protobuf'
+    WORKFLOW_RESULTS_KAFKA_CONFIG = {'topic': 'results'}
+    WORKFLOW_RESULTS_HANDLER = 'zmq'
+
+    WORKFLOW_REQUESTS_KAFKA_CONFIG = {'topic': 'requests'}
+
     @classmethod
     def load_config(cls, config_path=None):
         """ Loads Walkoff configuration from JSON file

@@ -22,7 +22,7 @@ from walkoff.executiondb.environment_variable import EnvironmentVariable
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter as ProtoConverter
 from walkoff.multiprocessedexecutor.zmq_receivers import ZmqWorkflowResultsReceiver
-from walkoff.multiprocessedexecutor.zmq_senders import ZMQWorkflowResultsSender
+from walkoff.multiprocessedexecutor.zmq_senders import ZmqWorkflowResultsSender
 from walkoff.proto.build.data_pb2 import ExecuteWorkflowMessage
 from walkoff.worker.action_exec_strategy import make_execution_strategy
 from walkoff.worker.workflow_exec_strategy import WorkflowExecutor
@@ -41,7 +41,7 @@ def mock_initialize_threading(self, pids=None):
     workflows_executed = 0
 
     with current_app.app_context():
-        self.zmq_sender = ZMQWorkflowResultsSender(current_app.running_context.execution_db)
+        self.zmq_sender = ZmqWorkflowResultsSender(current_app.running_context.execution_db)
 
     self.zmq_workflow_comm = MockLoadBalancer(current_app._get_current_object())
     self.manager_thread = threading.Thread(target=self.zmq_workflow_comm.manage_workflows)

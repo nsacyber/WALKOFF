@@ -1,3 +1,5 @@
+import logging
+
 import zmq
 from zmq import ZMQError
 
@@ -6,12 +8,11 @@ from walkoff.events import WalkoffEvent
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowCommunicationConverter, \
     ProtobufWorkflowResultsConverter as ProtoConverter
-import logging
 
 logger = logging.getLogger(__name__)
 
 
-class ZMQWorkflowResultsSender(object):
+class ZmqWorkflowResultsSender(object):
     def __init__(self, execution_db, socket_id=None, message_converter=ProtoConverter):
         """Initialize a WorkflowResultsHandler object, which will be sending results of workflow execution
 
@@ -93,6 +94,10 @@ class ZMQWorkflowResultsSender(object):
                                                                       start_arguments, resume, environment_variables)
 
 
+def make_zmq_results_sender(**kwargs):
+    return ZmqWorkflowResultsSender(**kwargs)
+
+
 class ZmqWorkflowCommunicationSender(object):
 
     def __init__(self, message_converter=ProtobufWorkflowCommunicationConverter):
@@ -134,12 +139,5 @@ class ZmqWorkflowCommunicationSender(object):
         self.comm_socket.send(message_bytes)
 
 
-def make_zmq_communication_sender(config, protocol_translation, **kwargs):
-    try:
-        protocol = protocol_translation[config.WORKFLOW_COMMUNICATION_PROTOCOL]
-    except KeyError:
-        message = 'Could not find communication protocol {}'.format(config.WORKFLOW_COMMUNICATION_PROTOCOL)
-        logger.error(message)
-        raise ValueError(message)
-    else:
-        return ZmqWorkflowCommunicationSender(message_converter=protocol)
+def make_zmq_communication_sender(**kwargs):
+    return ZmqWorkflowCommunicationSender(**kwargs)

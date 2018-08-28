@@ -2,7 +2,7 @@ import argparse
 import os
 import logging
 import walkoff.config
-from walkoff.multiprocessedexecutor.zmq_receivers import ZmqWorkflowResultsReceiver
+from walkoff.senders_receivers_helpers import make_results_receiver
 import threading
 import time
 
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     if args.config:
         walkoff.config.initialize(args.config)
 
-    receiver = ZmqWorkflowResultsReceiver()
+    receiver = make_results_receiver()
     receiver_thread = threading.Thread(target=receiver.receive_results)
     receiver_thread.start()
 

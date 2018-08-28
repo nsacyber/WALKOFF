@@ -1,4 +1,3 @@
-import json
 import logging
 
 import gevent
@@ -75,17 +74,5 @@ class ZmqWorkflowResultsReceiver(object):
         self.workflows_executed += 1
 
 
-def format_message_event_data(message):
-    """Formats a Message
-
-    Args:
-        message (Message): The Message to be formatted
-
-    Returns:
-        (dict): The formatted Message object
-    """
-    return {'users': message.users,
-            'roles': message.roles,
-            'requires_reauth': message.requires_reauth,
-            'body': json.loads(message.body),
-            'subject': message.subject}
+def make_zmq_results_receiver(**kwargs):
+    return ZmqWorkflowResultsReceiver(**kwargs)

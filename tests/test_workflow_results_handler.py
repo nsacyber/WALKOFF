@@ -11,7 +11,7 @@ from walkoff.config import Config
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.workflow import Workflow
-from walkoff.multiprocessedexecutor.zmq_senders import ZMQWorkflowResultsSender
+from walkoff.multiprocessedexecutor.zmq_senders import ZmqWorkflowResultsSender
 import walkoff.executiondb.saved_workflow
 
 
@@ -35,7 +35,7 @@ class TestWorkflowResultsHandler(TestCase):
             database = create_autospec(ExecutionDatabase)
             socket_id = b'test_id'
             address = 'tcp://127.0.0.1:5556'
-            handler = ZMQWorkflowResultsSender(database, socket_id)
+            handler = ZmqWorkflowResultsSender(database, socket_id)
             mock_connect.assert_called_once_with(address)
             self.assertEqual(handler.execution_db, database)
 
@@ -43,7 +43,7 @@ class TestWorkflowResultsHandler(TestCase):
         with patch.object(Socket, 'connect'):
             database = create_autospec(ExecutionDatabase)
             socket_id = b'test_id'
-            handler = ZMQWorkflowResultsSender(database, socket_id)
+            handler = ZmqWorkflowResultsSender(database, socket_id)
             return handler, database
 
     def test_shutdown(self):

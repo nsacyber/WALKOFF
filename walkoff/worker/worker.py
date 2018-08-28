@@ -17,9 +17,9 @@ from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.worker.action_exec_strategy import make_execution_strategy
 from walkoff.worker.zmq_workflow_receivers import WorkerCommunicationMessageType, WorkflowCommunicationMessageType, \
-    ZmqWorkflowCommunicationReceiver, WorkflowReceiver
-from walkoff.multiprocessedexecutor.zmq_senders import ZMQWorkflowResultsSender
+    WorkflowReceiver
 from walkoff.worker.workflow_exec_strategy import WorkflowExecutor
+from walkoff.senders_receivers_helpers import make_results_sender, make_communication_receiver
 
 logger = logging.getLogger(__name__)
 
@@ -66,8 +66,10 @@ class Worker(object):
         self.capacity = walkoff.config.Config.NUMBER_THREADS_PER_PROCESS
 
         self.workflow_receiver = WorkflowReceiver(key, server_key, walkoff.config.Config.CACHE)
-        self.workflow_results_sender = ZMQWorkflowResultsSender(self.execution_db, socket_id)
-        self.workflow_communication_receiver = ZmqWorkflowCommunicationReceiver(socket_id)
+        data = {'execution_db': self.execution_db, 'socket_id': socket_id}
+        self.workflow_results_sender = make_results_sender(**data)
+        data = {'socket_id': socket_id}
+        self.workflow_communication_receiver = make_communication_receiver(**data)
 
         action_execution_strategy = make_execution_strategy(walkoff.config.Config)
 

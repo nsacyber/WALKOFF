@@ -18,9 +18,8 @@ from walkoff.executiondb import WorkflowStatusEnum
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus
-from walkoff.multiprocessedexecutor.zmq_receivers import ZmqWorkflowResultsReceiver
 from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
-from walkoff.multiprocessedexecutor.zmq_senders import ZmqWorkflowCommunicationSender, ZMQWorkflowResultsSender
+from walkoff.senders_receivers_helpers import make_results_receiver, make_results_sender, make_communication_sender
 
 logger = logging.getLogger(__name__)
 
@@ -68,13 +67,15 @@ class MultiprocessedExecutor(object):
         # TODO: self.auth.allow('127.0.0.1')
         self.auth.configure_curve(domain='*', location=walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH)
 
-        self.zmq_workflow_comm = ZmqWorkflowCommunicationSender()
+        self.zmq_workflow_comm = make_communication_sender()
 
         with app.app_context():
-            self.zmq_sender = ZMQWorkflowResultsSender(current_app.running_context.execution_db)
+            data = {'execution_db': current_app.running_context.execution_db}
+            self.zmq_sender = make_results_sender(**data)
 
         if not walkoff.config.Config.SEPARATE_RECEIVER:
-            self.receiver = ZmqWorkflowResultsReceiver(app)
+            data = {'current_app': app}
+            self.receiver = make_results_receiver(**data)
 
             self.receiver_thread = threading.Thread(target=self.receiver.receive_results)
             self.receiver_thread.start()

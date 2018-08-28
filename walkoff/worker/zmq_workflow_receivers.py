@@ -1,7 +1,8 @@
-import uuid
 import logging
+from collections import namedtuple
 
 import zmq
+from enum import Enum
 from google.protobuf.json_format import MessageToDict
 from google.protobuf.message import DecodeError
 from nacl.exceptions import CryptoError
@@ -14,8 +15,6 @@ from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.environment_variable import EnvironmentVariable
 from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowCommunicationConverter
 from walkoff.proto.build.data_pb2 import CommunicationPacket, WorkflowControl, ExecuteWorkflowMessage
-from collections import namedtuple
-from enum import Enum
 
 logger = logging.getLogger(__name__)
 
@@ -112,6 +111,10 @@ class ZmqWorkflowCommunicationReceiver(object):
             return True
 
 
+def make_zmq_communication_receiver(**kwargs):
+    return ZmqWorkflowCommunicationReceiver(**kwargs)
+
+
 class WorkflowReceiver(object):
     def __init__(self, key, server_key, cache_config):
         """Initializes a WorkflowReceiver object, which receives workflow execution requests and ships them off to a
@@ -183,15 +186,3 @@ class WorkflowReceiver(object):
 
     def is_ready(self):
         return self._ready
-
-
-def make_zmq_communication_receiver(config, protocol_translation, **kwargs):
-    try:
-        protocol = protocol_translation[config.WORKFLOW_COMMUNICATION_PROTOCOL]
-    except KeyError:
-        message = 'Could not find communication protocol {}'.format(config.WORKFLOW_COMMUNICATION_PROTOCOL)
-        logger.error(message)
-        raise ValueError(message)
-    else:
-        return ZmqWorkflowCommunicationReceiver(
-            'Workflow_Communication_Receiver_{}'.format(kwargs.get('id', uuid.uuid4())), message_converter=protocol)

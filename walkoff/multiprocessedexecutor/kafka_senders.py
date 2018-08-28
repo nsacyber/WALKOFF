@@ -1,19 +1,22 @@
-from confluent_kafka.cimpl import Producer
+import logging
 
+from confluent_kafka import Producer
+
+import walkoff.config
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter as ProtoConverter, \
     ProtobufWorkflowCommunicationConverter
-import logging
 
 logger = logging.getLogger(__name__)
 
 
 class KafkaWorkflowResultsSender(object):
-    def __init__(self, config, execution_db, workflow_event_topic, message_converter=ProtoConverter):
-        self.producer = Producer(config)
+    def __init__(self, execution_db, message_converter=ProtoConverter):
+        kafka_config = walkoff.config.Config.WORKFLOW_RESULTS_KAFKA_CONFIG
+        self.producer = Producer(kafka_config)
         self.execution_db = execution_db
-        self.topic = workflow_event_topic
+        self.topic = kafka_config['topic']
         self.message_converter = message_converter
 
     def shutdown(self):
@@ -50,12 +53,17 @@ class KafkaWorkflowResultsSender(object):
                               callback=self._delivery_callback)
 
 
+def make_kafka_results_sender(**kwargs):
+    return KafkaWorkflowResultsSender(**kwargs)
+
+
 class KafkaWorkflowCommunicationSender(object):
     _requires = ['confluent-kafka']
 
-    def __init__(self, config, workflow_communication_topic, message_converter=ProtobufWorkflowCommunicationConverter):
-        self.producer = Producer(config)
-        self.workflow_communication_topic = workflow_communication_topic
+    def __init__(self, message_converter=ProtobufWorkflowCommunicationConverter):
+        kafka_config = walkoff.config.Config.WORKFLOW_COMMUNICATION_KAFKA_CONFIG
+        self.producer = Producer(kafka_config)
+        self.topic = kafka_config['topic']
         self.message_converter = message_converter
 
     def shutdown(self):
@@ -92,13 +100,11 @@ class KafkaWorkflowCommunicationSender(object):
         self._send_workflow_communication_message(message, None)
 
     def _send_workflow_communication_message(self, message, workflow_id):
-        self._send_message(message, self.workflow_communication_topic, workflow_id)
+        self._send_message(message, self.topic, workflow_id)
 
     def _send_message(self, message, topic, key):
         self.producer.produce(topic, message, key=key, callback=self._delivery_callback)
 
 
-def make_kafka_communication_sender(config, protocol_translation, **kwargs):
-    sender = KafkaWorkflowCommunicationSender(config.WORKFLOW_COMMUNICATION_KAFKA_CONFIG,
-                                              *_get_kafka_configs(config, protocol_translation))
-    return sender
+def make_kafka_communication_sender(**kwargs):
+    return KafkaWorkflowCommunicationSender(**kwargs)
