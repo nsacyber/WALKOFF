@@ -2,9 +2,9 @@
     <h4 class="modal-title">Edit Environment Variables</h4>
 </div>
 <div class="modal-body">
-    <div class="container-fluid">
+    <div class="container">
+        <form #variableForm="ngForm" (ngSubmit)="execute(variableForm)">
         <div class="row">
-            <form #variableForm="ngForm" (ngSubmit)="execute(variableForm)">
                 <div *ngFor="let v of workflow.referenced_variables" class="col-12">
                     <div class="form-group">
                         <label [for]="v.id">{{ v.name }}</label>
@@ -12,8 +12,8 @@
                         <p *ngIf="v.description" class="help-block"><i>{{ v.description }}</i></p>
                     </div>
                 </div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 </div>
 <div class="modal-footer">
