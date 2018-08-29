@@ -1,5 +1,4 @@
 falcon
 pyyaml
-uwsgi
-jwt
+pyjwt
 jsonschema
