@@ -41,7 +41,8 @@ def mock_initialize_threading(self, pids=None):
     workflows_executed = 0
 
     with current_app.app_context():
-        self.zmq_sender = ZmqWorkflowResultsSender(current_app.running_context.execution_db)
+        self.zmq_sender = ZmqWorkflowResultsSender(current_app.running_context.execution_db,
+                                                   ProtobufWorkflowResultsConverter)
 
     self.zmq_workflow_comm = MockLoadBalancer(current_app._get_current_object())
     self.manager_thread = threading.Thread(target=self.zmq_workflow_comm.manage_workflows)
@@ -78,7 +79,7 @@ def mock_shutdown_pool(self):
 class MockLoadBalancer(object):
     def __init__(self, current_app):
         self.pending_workflows = MockRequestQueue()
-        self.results_queue = MockReceiveQueue(current_app)
+        self.results_queue = MockReceiveQueue(ProtobufWorkflowResultsConverter, current_app)
         self.workflow_comms = {}
 
         def handle_data_sent(sender, **kwargs):
@@ -130,7 +131,7 @@ class MockLoadBalancer(object):
 
 class MockReceiveQueue(ZmqWorkflowResultsReceiver):
 
-    def __init__(self, current_app, message_converter=ProtobufWorkflowResultsConverter):
+    def __init__(self, message_converter, current_app=None):
         self.current_app = current_app
         self.message_converter = message_converter
 

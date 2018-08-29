@@ -1,15 +1,81 @@
 import logging
 
 import walkoff.config
-from walkoff.multiprocessedexecutor.kafka_receivers import make_kafka_results_receiver
-from walkoff.multiprocessedexecutor.kafka_senders import make_kafka_results_sender, make_kafka_communication_sender
-from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowCommunicationConverter
-from walkoff.multiprocessedexecutor.zmq_receivers import make_zmq_results_receiver
-from walkoff.multiprocessedexecutor.zmq_senders import make_zmq_results_sender, make_zmq_communication_sender
-from walkoff.worker.kafka_workflow_receivers import make_kafka_communication_receiver
-from walkoff.worker.zmq_workflow_receivers import make_zmq_communication_receiver
+from walkoff.multiprocessedexecutor.kafka_receivers import KafkaWorkflowResultsReceiver
+from walkoff.multiprocessedexecutor.kafka_senders import KafkaWorkflowResultsSender, KafkaWorkflowCommunicationSender
+from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowCommunicationConverter, \
+    ProtobufWorkflowResultsConverter
+from walkoff.multiprocessedexecutor.zmq_receivers import ZmqWorkflowResultsReceiver
+from walkoff.multiprocessedexecutor.zmq_senders import ZmqWorkflowResultsSender, ZmqWorkflowCommunicationSender
+from walkoff.worker.kafka_workflow_receivers import KafkaWorkflowCommunicationReceiver
+from walkoff.worker.zmq_workflow_receivers import ZmqWorkflowCommunicationReceiver
 
 logger = logging.getLogger(__name__)
+
+
+def make_kafka_results_receiver(**kwargs):
+    if 'message_converter' in kwargs:
+        msg_converter = kwargs['message_converter']
+    else:
+        msg_converter = _results_protocol_translation[walkoff.config.Config.WORKFLOW_RESULTS_PROTOCOL]
+    return KafkaWorkflowResultsReceiver(msg_converter, kwargs.get('current_app', None))
+
+
+def make_kafka_results_sender(**kwargs):
+    if 'message_converter' in kwargs:
+        msg_converter = kwargs['message_converter']
+    else:
+        msg_converter = _results_protocol_translation[walkoff.config.Config.WORKFLOW_RESULTS_PROTOCOL]
+    return KafkaWorkflowResultsSender(kwargs['execution_db'], msg_converter)
+
+
+def make_zmq_results_receiver(**kwargs):
+    if 'message_converter' in kwargs:
+        msg_converter = kwargs['message_converter']
+    else:
+        msg_converter = _results_protocol_translation[walkoff.config.Config.WORKFLOW_RESULTS_PROTOCOL]
+    return ZmqWorkflowResultsReceiver(msg_converter, kwargs.get('current_app', None))
+
+
+def make_zmq_results_sender(**kwargs):
+    if 'message_converter' in kwargs:
+        msg_converter = kwargs['message_converter']
+    else:
+        msg_converter = _results_protocol_translation[walkoff.config.Config.WORKFLOW_RESULTS_PROTOCOL]
+    return ZmqWorkflowResultsSender(kwargs['execution_db'], msg_converter, kwargs.get('socket_id', None))
+
+
+def make_kafka_communication_sender(**kwargs):
+    if 'message_converter' in kwargs:
+        msg_converter = kwargs['message_converter']
+    else:
+        msg_converter = _comm_protocol_translation[walkoff.config.Config.WORKFLOW_COMMUNICATION_PROTOCOL]
+    return KafkaWorkflowCommunicationSender(msg_converter)
+
+
+def make_zmq_communication_sender(**kwargs):
+    if 'message_converter' in kwargs:
+        msg_converter = kwargs['message_converter']
+    else:
+        msg_converter = _comm_protocol_translation[walkoff.config.Config.WORKFLOW_COMMUNICATION_PROTOCOL]
+    return ZmqWorkflowCommunicationSender(msg_converter)
+
+
+def make_kafka_communication_receiver(**kwargs):
+    if 'message_converter' in kwargs:
+        msg_converter = kwargs['message_converter']
+    else:
+        msg_converter = _comm_protocol_translation[walkoff.config.Config.WORKFLOW_COMMUNICATION_PROTOCOL]
+    return KafkaWorkflowCommunicationReceiver(msg_converter)
+
+
+def make_zmq_communication_receiver(**kwargs):
+    if 'message_converter' in kwargs:
+        msg_converter = kwargs['message_converter']
+    else:
+        msg_converter = _comm_protocol_translation[walkoff.config.Config.WORKFLOW_COMMUNICATION_PROTOCOL]
+    return ZmqWorkflowCommunicationReceiver(kwargs['socket_id'], msg_converter)
+
 
 _results_transportation_translation = {'zmq': (make_zmq_results_sender, make_zmq_results_receiver),
                                        'kafka': (make_kafka_results_sender, make_kafka_results_receiver)}
@@ -17,7 +83,8 @@ _results_transportation_translation = {'zmq': (make_zmq_results_sender, make_zmq
 _comm_transportation_translation = {'zmq': (make_zmq_communication_sender, make_zmq_communication_receiver),
                                     'kafka': (make_kafka_communication_sender, make_kafka_communication_receiver)}
 
-_protocol_translation = {'protobuf': ProtobufWorkflowCommunicationConverter}
+_results_protocol_translation = {'protobuf': ProtobufWorkflowResultsConverter}
+_comm_protocol_translation = {'protobuf': ProtobufWorkflowCommunicationConverter}
 
 
 def make_results_sender(**init_options):

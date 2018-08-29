@@ -6,14 +6,14 @@ from flask import Flask
 
 import walkoff.config
 from walkoff.events import WalkoffEvent
-from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter
 from walkoff.server import context
+from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter
 
 logger = logging.getLogger(__name__)
 
 
 class ZmqWorkflowResultsReceiver(object):
-    def __init__(self, current_app=None, message_converter=ProtobufWorkflowResultsConverter):
+    def __init__(self, message_converter=ProtobufWorkflowResultsConverter, current_app=None):
         """Initialize a Receiver object, which will receive callbacks from the ExecutionElements.
 
         Args:
@@ -72,7 +72,3 @@ class ZmqWorkflowResultsReceiver(object):
 
     def _increment_execution_count(self):
         self.workflows_executed += 1
-
-
-def make_zmq_results_receiver(**kwargs):
-    return ZmqWorkflowResultsReceiver(**kwargs)

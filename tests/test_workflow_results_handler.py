@@ -13,6 +13,7 @@ from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.workflow import Workflow
 from walkoff.multiprocessedexecutor.zmq_senders import ZmqWorkflowResultsSender
 import walkoff.executiondb.saved_workflow
+from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter
 
 
 class MockSender(object):
@@ -35,7 +36,7 @@ class TestWorkflowResultsHandler(TestCase):
             database = create_autospec(ExecutionDatabase)
             socket_id = b'test_id'
             address = 'tcp://127.0.0.1:5556'
-            handler = ZmqWorkflowResultsSender(database, socket_id)
+            handler = ZmqWorkflowResultsSender(database, ProtobufWorkflowResultsConverter, socket_id)
             mock_connect.assert_called_once_with(address)
             self.assertEqual(handler.execution_db, database)
 
@@ -43,7 +44,7 @@ class TestWorkflowResultsHandler(TestCase):
         with patch.object(Socket, 'connect'):
             database = create_autospec(ExecutionDatabase)
             socket_id = b'test_id'
-            handler = ZmqWorkflowResultsSender(database, socket_id)
+            handler = ZmqWorkflowResultsSender(database, ProtobufWorkflowResultsConverter, socket_id)
             return handler, database
 
     def test_shutdown(self):

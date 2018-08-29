@@ -13,8 +13,8 @@ import walkoff.cache
 import walkoff.config
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.environment_variable import EnvironmentVariable
-from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowCommunicationConverter
 from walkoff.proto.build.data_pb2 import CommunicationPacket, WorkflowControl, ExecuteWorkflowMessage
+from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowCommunicationConverter
 
 logger = logging.getLogger(__name__)
 
@@ -109,10 +109,6 @@ class ZmqWorkflowCommunicationReceiver(object):
     def check_status(self):
         if self.comm_sock:
             return True
-
-
-def make_zmq_communication_receiver(**kwargs):
-    return ZmqWorkflowCommunicationReceiver(**kwargs)
 
 
 class WorkflowReceiver(object):

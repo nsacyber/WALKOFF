@@ -6,14 +6,14 @@ from zmq import ZMQError
 import walkoff.config
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.saved_workflow import SavedWorkflow
-from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowCommunicationConverter, \
-    ProtobufWorkflowResultsConverter as ProtoConverter
+from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter, \
+    ProtobufWorkflowCommunicationConverter
 
 logger = logging.getLogger(__name__)
 
 
 class ZmqWorkflowResultsSender(object):
-    def __init__(self, execution_db, socket_id=None, message_converter=ProtoConverter):
+    def __init__(self, execution_db, message_converter=ProtobufWorkflowResultsConverter, socket_id=None):
         """Initialize a WorkflowResultsHandler object, which will be sending results of workflow execution
 
         Args:
@@ -94,10 +94,6 @@ class ZmqWorkflowResultsSender(object):
                                                                       start_arguments, resume, environment_variables)
 
 
-def make_zmq_results_sender(**kwargs):
-    return ZmqWorkflowResultsSender(**kwargs)
-
-
 class ZmqWorkflowCommunicationSender(object):
 
     def __init__(self, message_converter=ProtobufWorkflowCommunicationConverter):
@@ -137,7 +133,3 @@ class ZmqWorkflowCommunicationSender(object):
     def _send_message(self, message):
         message_bytes = message.SerializeToString()
         self.comm_socket.send(message_bytes)
-
-
-def make_zmq_communication_sender(**kwargs):
-    return ZmqWorkflowCommunicationSender(**kwargs)

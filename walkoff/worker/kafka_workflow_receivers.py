@@ -1,9 +1,9 @@
 import logging
 
 from confluent_kafka import Consumer, KafkaError
+from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowCommunicationConverter
 
 import walkoff.config
-from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowCommunicationConverter
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,3 @@ class KafkaWorkflowCommunicationReceiver(object):
                 break
 
         raise StopIteration
-
-
-def make_kafka_communication_receiver(**kwargs):
-    return KafkaWorkflowCommunicationReceiver(**kwargs)

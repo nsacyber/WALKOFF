@@ -5,14 +5,14 @@ from confluent_kafka import Producer
 import walkoff.config
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.saved_workflow import SavedWorkflow
-from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter as ProtoConverter, \
+from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter, \
     ProtobufWorkflowCommunicationConverter
 
 logger = logging.getLogger(__name__)
 
 
 class KafkaWorkflowResultsSender(object):
-    def __init__(self, execution_db, message_converter=ProtoConverter):
+    def __init__(self, execution_db, message_converter=ProtobufWorkflowResultsConverter):
         kafka_config = walkoff.config.Config.WORKFLOW_RESULTS_KAFKA_CONFIG
         self.producer = Producer(kafka_config)
         self.execution_db = execution_db
@@ -51,10 +51,6 @@ class KafkaWorkflowResultsSender(object):
         packet_bytes = self.message_converter.event_to_protobuf(sender, workflow, **kwargs)
         self.producer.produce(self._format_topic(event), packet_bytes, key=str(workflow.id),
                               callback=self._delivery_callback)
-
-
-def make_kafka_results_sender(**kwargs):
-    return KafkaWorkflowResultsSender(**kwargs)
 
 
 class KafkaWorkflowCommunicationSender(object):
@@ -104,7 +100,3 @@ class KafkaWorkflowCommunicationSender(object):
 
     def _send_message(self, message, topic, key):
         self.producer.produce(topic, message, key=key, callback=self._delivery_callback)
-
-
-def make_kafka_communication_sender(**kwargs):
-    return KafkaWorkflowCommunicationSender(**kwargs)
