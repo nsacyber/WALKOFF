@@ -20,7 +20,7 @@ class KafkaWorkflowResultsReceiver(object):
 
         kafka_config = walkoff.config.Config.WORKFLOW_RESULTS_KAFKA_CONFIG
         self.receiver = Consumer(kafka_config)
-        self.topic = kafka_config['topic']
+        self.topic = walkoff.config.Config.WORKFLOW_RESULTS_KAFKA_TOPIC
         self.message_converter = message_converter
         self.exit = False
         self.workflows_executed = 0

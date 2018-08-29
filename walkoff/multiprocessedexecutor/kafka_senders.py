@@ -16,7 +16,7 @@ class KafkaWorkflowResultsSender(object):
         kafka_config = walkoff.config.Config.WORKFLOW_RESULTS_KAFKA_CONFIG
         self.producer = Producer(kafka_config)
         self.execution_db = execution_db
-        self.topic = kafka_config['topic']
+        self.topic = walkoff.config.Config.WORKFLOW_RESULTS_KAFKA_TOPIC
         self.message_converter = message_converter
 
     def shutdown(self):
@@ -59,7 +59,7 @@ class KafkaWorkflowCommunicationSender(object):
     def __init__(self, message_converter=ProtobufWorkflowCommunicationConverter):
         kafka_config = walkoff.config.Config.WORKFLOW_COMMUNICATION_KAFKA_CONFIG
         self.producer = Producer(kafka_config)
-        self.topic = kafka_config['topic']
+        self.topic = walkoff.config.Config.WORKFLOW_COMMUNICATION_KAFKA_TOPIC
         self.message_converter = message_converter
 
     def shutdown(self):
