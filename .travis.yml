@@ -90,7 +90,7 @@ matrix:
         - pip install -r runtimes/python/requirements.txt
         - pip install -r runtimes/python/requirements-test.txt
       script:
-        - python -m pytest runtimes/python --rootdir=. -s -v
+        - python -m pytest --rootdir=. -s -v runtimes/python
       branches:
         only:
           - master
@@ -109,7 +109,7 @@ matrix:
         - pip install -r runtimes/python/requirements-test.txt
       script:
         - which pytest
-        - python -m pytest runtimes/python --rootdir=. -s -v
+        - python -m pytest --rootdir=. -s -v runtimes/python
       branches:
         only:
           - master
@@ -127,7 +127,7 @@ matrix:
         - pip install -r runtimes/python/requirements.txt
         - pip install -r runtimes/python/requirements-test.txt
       script:
-        - python -m pytest runtimes/python --rootdir=. -s -v
+        - python -m pytest --rootdir=. -s -v runtimes/python
       branches:
         only:
           - master
@@ -145,7 +145,7 @@ matrix:
         - pip install -r runtimes/python/requirements.txt
         - pip install -r runtimes/python/requirements-test.txt
       script:
-        - python -m pytest runtimes/python --rootdir=. -s -v
+        - python -m pytest --rootdir=. -s -v runtimes/python
       branches:
         only:
           - master
