@@ -12,12 +12,17 @@ logger = logging.getLogger(__name__)
 
 
 class KafkaWorkflowResultsSender(object):
-    def __init__(self, execution_db, message_converter=ProtobufWorkflowResultsConverter):
+    def __init__(self, execution_db, message_converter=ProtobufWorkflowResultsConverter, socket_id=None):
+        self._ready = False
+        self.id_ = socket_id
         kafka_config = walkoff.config.Config.WORKFLOW_RESULTS_KAFKA_CONFIG
         self.producer = Producer(kafka_config)
         self.execution_db = execution_db
         self.topic = walkoff.config.Config.WORKFLOW_RESULTS_KAFKA_TOPIC
         self.message_converter = message_converter
+
+        if self.check_status():
+            self._ready = True
 
     def shutdown(self):
         self.producer.flush()
@@ -48,9 +53,27 @@ class KafkaWorkflowResultsSender(object):
             action = workflow.get_executing_action()
             sender = action
 
-        packet_bytes = self.message_converter.event_to_protobuf(sender, workflow, **kwargs)
-        self.producer.produce(self._format_topic(event), packet_bytes, key=str(workflow.id),
-                              callback=self._delivery_callback)
+        if self.id_:
+            packet_bytes = self.message_converter.event_to_protobuf(sender, workflow, **kwargs)
+            self.producer.produce(self._format_topic(event), packet_bytes, key=str(workflow.id),
+                                  callback=self._delivery_callback)
+        else:
+            event.send(sender, data=kwargs.get('data', None))
+
+    def is_ready(self):
+        return self._ready
+
+    def check_status(self):
+        if self.producer:
+            return True
+
+    def send_ready_message(self):
+        WalkoffEvent.CommonWorkflowSignal.send(sender={'id': 1}, event=WalkoffEvent.WorkerReady)
+
+    def create_workflow_request_message(self, workflow_id, workflow_execution_id, start=None, start_arguments=None,
+                                        resume=False, environment_variables=None):
+        return self.message_converter.create_workflow_request_message(workflow_id, workflow_execution_id, start,
+                                                                      start_arguments, resume, environment_variables)
 
 
 class KafkaWorkflowCommunicationSender(object):

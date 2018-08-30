@@ -26,7 +26,7 @@ def make_kafka_results_sender(**kwargs):
         msg_converter = kwargs['message_converter']
     else:
         msg_converter = _results_protocol_translation[walkoff.config.Config.WORKFLOW_RESULTS_PROTOCOL]
-    return KafkaWorkflowResultsSender(kwargs['execution_db'], msg_converter)
+    return KafkaWorkflowResultsSender(kwargs['execution_db'], msg_converter, kwargs.get('socket_id', None))
 
 
 def make_zmq_results_receiver(**kwargs):

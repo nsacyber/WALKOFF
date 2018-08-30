@@ -61,11 +61,15 @@ class MultiprocessedExecutor(object):
             pass
 
         self.pids = pids
-        self.ctx = zmq.Context.instance()
-        self.auth = ThreadAuthenticator()
-        self.auth.start()
-        # TODO: self.auth.allow('127.0.0.1')
-        self.auth.configure_curve(domain='*', location=walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH)
+
+        if 'zmq' in [walkoff.config.Config.WORKFLOW_COMMUNICATION_HANDLER,
+                     walkoff.config.Config.WORKFLOW_RESULTS_HANDLER]:
+            # Only run the threadauthenticator if ZMQ is in use
+            self.ctx = zmq.Context.instance()
+            self.auth = ThreadAuthenticator()
+            self.auth.start()
+            # TODO: self.auth.allow('127.0.0.1')
+            self.auth.configure_curve(domain='*', location=walkoff.config.Config.ZMQ_PUBLIC_KEYS_PATH)
 
         self.zmq_workflow_comm = make_communication_sender()
 

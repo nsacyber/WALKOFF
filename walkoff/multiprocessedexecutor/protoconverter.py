@@ -352,7 +352,7 @@ class ProtobufWorkflowCommunicationConverter(object):
         message.type = CommunicationPacket.WORKFLOW
         message.workflow_control_message.type = control_type
         message.workflow_control_message.workflow_execution_id = workflow_execution_id
-        return message
+        return message.SerializeToString()
 
     @staticmethod
     def create_workflow_pause_message(workflow_execution_id):
@@ -372,4 +372,4 @@ class ProtobufWorkflowCommunicationConverter(object):
     def create_worker_exit_message():
         message = CommunicationPacket()
         message.type = CommunicationPacket.EXIT
-        return message
+        return message.SerializeToString()

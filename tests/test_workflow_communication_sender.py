@@ -38,7 +38,7 @@ class TestWorkflowCommunicationSender(TestCase):
 
     @patch.object(Socket, 'send')
     def test_send_message(self, mock_send):
-        self.controller._send_message(Message())
+        self.controller._send_message(Message().SerializeToString())
         self.assert_message_sent(mock_send, Message().SerializeToString())
 
     @patch.object(Socket, 'send')
@@ -52,25 +52,24 @@ class TestWorkflowCommunicationSender(TestCase):
     def test_create_workflow_control_message(self):
         uid = str(uuid4())
         message = ProtobufWorkflowCommunicationConverter._create_workflow_control_message(WorkflowControl.PAUSE, uid)
-        self.assertEqual(message.type, CommunicationPacket.WORKFLOW)
-        self.assertEqual(message.workflow_control_message.type, WorkflowControl.PAUSE)
-        self.assertEqual(message.workflow_control_message.workflow_execution_id, uid)
+        expected_message = CommunicationPacket()
+        expected_message.ParseFromString(message)
+        self.assertEqual(expected_message.workflow_control_message.type, WorkflowControl.PAUSE)
+        self.assertEqual(expected_message.workflow_control_message.workflow_execution_id, uid)
 
     @patch.object(Socket, 'send')
     def test_abort_workflow(self, mock_send):
         uid = str(uuid4())
         message = ProtobufWorkflowCommunicationConverter._create_workflow_control_message(WorkflowControl.ABORT, uid)
         self.controller.abort_workflow(uid)
-        expected_message = message.SerializeToString()
-        self.assert_message_sent(mock_send, expected_message)
+        self.assert_message_sent(mock_send, message)
 
     @patch.object(Socket, 'send')
     def test_pause_workflow(self, mock_send):
         uid = str(uuid4())
         message = ProtobufWorkflowCommunicationConverter._create_workflow_control_message(WorkflowControl.PAUSE, uid)
         self.controller.pause_workflow(uid)
-        expected_message = message.SerializeToString()
-        self.assert_message_sent(mock_send, expected_message)
+        self.assert_message_sent(mock_send, message)
 
     def test_set_argumets_for_proto(self):
         message = ExecuteWorkflowMessage()

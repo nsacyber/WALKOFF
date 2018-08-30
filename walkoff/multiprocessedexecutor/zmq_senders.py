@@ -131,5 +131,4 @@ class ZmqWorkflowCommunicationSender(object):
         self._send_message(self.message_converter.create_worker_exit_message())
 
     def _send_message(self, message):
-        message_bytes = message.SerializeToString()
-        self.comm_socket.send(message_bytes)
+        self.comm_socket.send(message)
