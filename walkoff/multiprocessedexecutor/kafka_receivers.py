@@ -39,6 +39,7 @@ class KafkaWorkflowResultsReceiver(object):
     def receive_results(self):
         """Constantly receives data from the Kafka Consumer and handles it accordingly"""
         logger.info('Starting Kafka workflow results receiver')
+        self.receiver.subscribe([self.topic])
         while not self.exit:
             raw_message = self.receiver.poll(1.0)
             if raw_message is None:
@@ -52,6 +53,7 @@ class KafkaWorkflowResultsReceiver(object):
                     logger.error('Received an error in Kafka receiver: {}'.format(raw_message.error()))
                     gevent.sleep(0.1)
                     continue
+            print("Kafka receiver got message", raw_message.value())
             with self.current_app.app_context():
                 self._send_callback(raw_message.value())
         return

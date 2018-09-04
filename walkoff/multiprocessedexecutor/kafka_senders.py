@@ -54,9 +54,9 @@ class KafkaWorkflowResultsSender(object):
             sender = action
 
         if self.id_:
+            print("Kafka producer sending event ", event)
             packet_bytes = self.message_converter.event_to_protobuf(sender, workflow, **kwargs)
-            self.producer.produce(self._format_topic(event), packet_bytes, key=str(workflow.id),
-                                  callback=self._delivery_callback)
+            self.producer.produce(self._format_topic(event), packet_bytes, callback=self._delivery_callback)
         else:
             event.send(sender, data=kwargs.get('data', None))
 
@@ -64,11 +64,12 @@ class KafkaWorkflowResultsSender(object):
         return self._ready
 
     def check_status(self):
-        if self.producer:
+        if self.producer is not None:
             return True
+        return False
 
     def send_ready_message(self):
-        WalkoffEvent.CommonWorkflowSignal.send(sender={'id': 1}, event=WalkoffEvent.WorkerReady)
+        WalkoffEvent.CommonWorkflowSignal.send(sender={'id': '1'}, event=WalkoffEvent.WorkerReady)
 
     def create_workflow_request_message(self, workflow_id, workflow_execution_id, start=None, start_arguments=None,
                                         resume=False, environment_variables=None):

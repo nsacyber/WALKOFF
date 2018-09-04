@@ -12,11 +12,16 @@ class KafkaWorkflowCommunicationReceiver(object):
     _requires = ['confluent-kafka']
 
     def __init__(self, message_converter=ProtobufWorkflowCommunicationConverter):
+        self._ready = False
+
         kafka_config = walkoff.config.Config.WORKFLOW_COMMUNICATION_KAFKA_CONFIG
         self.receiver = Consumer(kafka_config)
         self.topic = walkoff.config.Config.WORKFLOW_COMMUNICATION_KAFKA_TOPIC
         self.message_converter = message_converter
         self.exit = False
+
+        if self.check_status():
+            self._ready = True
 
     def shutdown(self):
         self.exit = True
@@ -43,3 +48,11 @@ class KafkaWorkflowCommunicationReceiver(object):
                 break
 
         raise StopIteration
+
+    def is_ready(self):
+        return self._ready
+
+    def check_status(self):
+        if self.receiver is not None:
+            return True
+        return False

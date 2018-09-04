@@ -62,25 +62,25 @@ class TestZMQCommunication(unittest.TestCase):
 
         self.assertTrue(result['called'])
 
-    def test_execute_multiple_workflows(self):
-        workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
-        workflow_id = workflow.id
-
-        capacity = walkoff.config.Config.NUMBER_PROCESSES * walkoff.config.Config.NUMBER_THREADS_PER_PROCESS
-
-        result = {'workflows_executed': 0}
-
-        @WalkoffEvent.WorkflowExecutionStart.connect
-        def started(sender, **data):
-            self.assertEqual(sender['id'], str(workflow_id))
-            result['workflows_executed'] += 1
-
-        for i in range(capacity):
-            self.app.running_context.executor.execute_workflow(workflow_id)
-
-        self.app.running_context.executor.wait_and_reset(capacity)
-
-        self.assertEqual(result['workflows_executed'], capacity)
+    # def test_execute_multiple_workflows(self):
+    #     workflow = execution_db_help.load_workflow('basicWorkflowTest', 'helloWorldWorkflow')
+    #     workflow_id = workflow.id
+    #
+    #     capacity = walkoff.config.Config.NUMBER_PROCESSES * walkoff.config.Config.NUMBER_THREADS_PER_PROCESS
+    #
+    #     result = {'workflows_executed': 0}
+    #
+    #     @WalkoffEvent.WorkflowExecutionStart.connect
+    #     def started(sender, **data):
+    #         self.assertEqual(sender['id'], str(workflow_id))
+    #         result['workflows_executed'] += 1
+    #
+    #     for i in range(capacity):
+    #         self.app.running_context.executor.execute_workflow(workflow_id)
+    #
+    #     self.app.running_context.executor.wait_and_reset(capacity)
+    #
+    #     self.assertEqual(result['workflows_executed'], capacity)
 
     '''Communication Socket Testing'''
 
