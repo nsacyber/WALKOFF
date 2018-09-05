@@ -18,11 +18,12 @@ class KafkaWorkflowResultsReceiver(object):
     def __init__(self, message_converter=ProtobufWorkflowResultsConverter, current_app=None):
         import walkoff.server.workflowresults  # Need this import
 
+        self.thread_exit = False
+
         kafka_config = walkoff.config.Config.WORKFLOW_RESULTS_KAFKA_CONFIG
         self.receiver = Consumer(kafka_config)
         self.topic = walkoff.config.Config.WORKFLOW_RESULTS_KAFKA_TOPIC
         self.message_converter = message_converter
-        self.exit = False
         self.workflows_executed = 0
 
         if current_app is None:
@@ -32,15 +33,11 @@ class KafkaWorkflowResultsReceiver(object):
         else:
             self.current_app = current_app
 
-    def shutdown(self):
-        self.exit = True
-        self.receiver.close()
-
     def receive_results(self):
         """Constantly receives data from the Kafka Consumer and handles it accordingly"""
         logger.info('Starting Kafka workflow results receiver')
         self.receiver.subscribe([self.topic])
-        while not self.exit:
+        while not self.thread_exit:
             raw_message = self.receiver.poll(1.0)
             if raw_message is None:
                 gevent.sleep(0.1)
@@ -53,9 +50,9 @@ class KafkaWorkflowResultsReceiver(object):
                     logger.error('Received an error in Kafka receiver: {}'.format(raw_message.error()))
                     gevent.sleep(0.1)
                     continue
-            print("Kafka receiver got message", raw_message.value())
             with self.current_app.app_context():
                 self._send_callback(raw_message.value())
+        self.receiver.close()
         return
 
     def _send_callback(self, message_bytes):

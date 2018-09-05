@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 class KafkaWorkflowResultsSender(object):
     def __init__(self, execution_db, message_converter=ProtobufWorkflowResultsConverter, socket_id=None):
         self._ready = False
+
         self.id_ = socket_id
         kafka_config = walkoff.config.Config.WORKFLOW_RESULTS_KAFKA_CONFIG
         self.producer = Producer(kafka_config)
@@ -33,7 +34,8 @@ class KafkaWorkflowResultsSender(object):
             logger.error('Kafka message delivery failed: {}'.format(err))
 
     def _format_topic(self, event):
-        return '{}.{}'.format(self.topic, event.name)
+        # return '{}.{}'.format(self.topic, event.name)
+        return self.topic
 
     def handle_event(self, workflow, sender, **kwargs):
         """Listens for the data_sent callback, which signifies that an execution element needs to trigger a
@@ -54,7 +56,6 @@ class KafkaWorkflowResultsSender(object):
             sender = action
 
         if self.id_:
-            print("Kafka producer sending event ", event)
             packet_bytes = self.message_converter.event_to_protobuf(sender, workflow, **kwargs)
             self.producer.produce(self._format_topic(event), packet_bytes, callback=self._delivery_callback)
         else:

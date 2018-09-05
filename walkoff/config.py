@@ -153,15 +153,12 @@ class Config(object):
     __passwords = ['EXECUTION_DB_PASSWORD', 'WALKOFF_DB_PASSWORD', 'SERVER_PRIVATE_KEY',
                    'CLIENT_PRIVATE_KEY', 'SERVER_PUBLIC_KEY', 'CLIENT_PUBLIC_KEY', 'SECRET_KEY']
 
-    WORKFLOW_REQUESTS_KAFKA_CONFIG = {'bootstrap_servers': 'localhost:2181'}
-    WORKFLOW_REQUESTS_KAFKA_TOPIC = 'requests'
-
-    WORKFLOW_RESULTS_HANDLER = 'kafka'
+    WORKFLOW_RESULTS_HANDLER = 'zmq'
     WORKFLOW_RESULTS_PROTOCOL = 'protobuf'
     WORKFLOW_RESULTS_KAFKA_CONFIG = {'bootstrap.servers': 'localhost:9092', 'group.id': 'results'}
     WORKFLOW_RESULTS_KAFKA_TOPIC = 'results'
 
-    WORKFLOW_COMMUNICATION_HANDLER = 'kafka'
+    WORKFLOW_COMMUNICATION_HANDLER = 'zmq'
     WORKFLOW_COMMUNICATION_PROTOCOL = 'protobuf'
     WORKFLOW_COMMUNICATION_KAFKA_CONFIG = {'bootstrap.servers': 'localhost:9092', 'group.id': 'comm'}
     WORKFLOW_COMMUNICATION_KAFKA_TOPIC = 'comm'
