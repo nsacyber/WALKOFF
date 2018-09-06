@@ -27,7 +27,7 @@ matrix:
         except:
           - caching
       after_failure:
-        - cat nohup.out
+        - ls
 
     - language: python
       os: linux
@@ -56,7 +56,7 @@ matrix:
         except:
           - caching
       after_failure:
-      - cat nohup.out
+      - ls
 
     - language: python
       os: linux
@@ -85,7 +85,7 @@ matrix:
         except:
           - caching
       after_failure:
-      - cat nohup.out
+      - ls
 
     - language: node_js
       node_js:
