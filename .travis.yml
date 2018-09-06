@@ -10,7 +10,6 @@ matrix:
         - mkdir -p kafka && tar xzf kafka.tgz -C kafka --strip-components 1
         - nohup bash -c "cd kafka && bin/zookeeper-server-start.sh config/zookeeper.properties &"
         - nohup bash -c "cd kafka && bin/kafka-server-start.sh config/server.properties &"
-        - cat nohup.out
         - sleep 5
       install:
         - pip install -r requirements.txt && pip install -r requirements-test.txt
@@ -27,6 +26,8 @@ matrix:
           - development
         except:
           - caching
+      after_failure:
+        - cat nohup.out
 
     - language: python
       os: linux
@@ -54,6 +55,8 @@ matrix:
           - development
         except:
           - caching
+      after_failure:
+      - cat nohup.out
 
     - language: python
       os: linux
@@ -81,6 +84,8 @@ matrix:
           - development
         except:
           - caching
+      after_failure:
+      - cat nohup.out
 
     - language: node_js
       node_js:
