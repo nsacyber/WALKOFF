@@ -26,10 +26,6 @@ matrix:
           - development
         except:
           - caching
-      after_failure:
-        - ls -la
-        - cat nohup.out
-        - java --version
 
     - language: python
       os: linux
@@ -57,10 +53,6 @@ matrix:
           - development
         except:
           - caching
-      after_failure:
-        - ls -la
-        - cat nohup.out
-        - java --version
 
     - language: python
       os: linux
@@ -88,10 +80,6 @@ matrix:
           - development
         except:
           - caching
-      after_failure:
-        - ls -la
-        - cat nohup.out
-        - java --version
 
     - language: node_js
       node_js:
