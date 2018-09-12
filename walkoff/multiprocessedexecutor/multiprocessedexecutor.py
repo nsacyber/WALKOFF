@@ -20,12 +20,17 @@ from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
 from walkoff.senders_receivers_helpers import make_results_receiver, make_results_sender, make_communication_sender
+from start_workers import shutdown_procs
+from flask import current_app
+from walkoff.appgateway.accumulators import make_accumulator
+from walkoff.worker.action_exec_strategy import make_execution_strategy
+from walkoff.worker.workflow_exec_context import RestrictedWorkflowContext
 
 logger = logging.getLogger(__name__)
 
 
 class MultiprocessedExecutor(object):
-    def __init__(self, cache, action_execution_strategy):
+    def __init__(self, cache, config):
         """Initializes a multiprocessed executor, which will handle the execution of workflows.
         """
         self.threading_is_initialized = False
@@ -40,7 +45,7 @@ class MultiprocessedExecutor(object):
         self.receiver = None
         self.receiver_thread = None
         self.cache = cache
-        self.action_execution_strategy = action_execution_strategy
+        self.config = config
         self.execution_db = ExecutionDatabase.instance
         self.zmq_sender = None
 
@@ -267,13 +272,19 @@ class MultiprocessedExecutor(object):
             workflow_execution_id=execution_id).first()
         workflow = self.execution_db.session.query(Workflow).filter_by(id=saved_state.workflow_id).first()
 
+
+        action_execution_strategy = make_execution_strategy(
+            self.config,
+            RestrictedWorkflowContext.from_workflow(workflow, execution_id)
+        )
+
         accumulator = make_accumulator(execution_id)
         executed = False
         exec_action = None
         for action in workflow.actions:
             if action.id == saved_state.action_id:
                 exec_action = action
-                executed = action.execute_trigger(self.action_execution_strategy, data_in, accumulator)
+                executed = action.execute_trigger(action_execution_strategy, data_in, accumulator)
                 break
 
         if executed:

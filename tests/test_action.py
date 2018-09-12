@@ -129,8 +129,8 @@ class TestAction(unittest.TestCase):
         acc = {}
         result = action.execute(LocalActionExecutionStrategy(), acc, instance.instance)
         expected = ActionResult({'message': 'HELLO WORLD'}, 'Success')
-        self.assertEqual(result, expected)
-        self.assertEqual(acc[action.id], result.result)
+        self.assertEqual(result, expected.status)
+        self.assertEqual(acc[action.id], expected.result)
 
     def test_execute_return_failure(self):
         action = Action(app_name='HelloWorld', action_name='dummy action', name='helloWorld',
@@ -196,9 +196,10 @@ class TestAction(unittest.TestCase):
                                    Argument('num2', value='4.3'),
                                    Argument('num3', value='10.2')])
         instance = TestAction._make_app_instance()
-        result = action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
-        self.assertAlmostEqual(result.result, 8.9)
-        self.assertEqual(result.status, 'Success')
+        acc = {}
+        result = action.execute(LocalActionExecutionStrategy(), acc, instance.instance)
+        self.assertAlmostEqual(acc[action.id], 8.9)
+        self.assertEqual(result, 'Success')
 
     def test_execute_sends_callbacks(self):
         action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
@@ -236,8 +237,8 @@ class TestAction(unittest.TestCase):
         accumulator = {'1': '-5.6', 'action2': '4.3'}
         instance = TestAction._make_app_instance()
         result = action.execute(LocalActionExecutionStrategy(), accumulator, instance.instance)
-        self.assertAlmostEqual(result.result, 8.9)
-        self.assertEqual(result.status, 'Success')
+        self.assertAlmostEqual(accumulator[action.id], 8.9)
+        self.assertEqual(result, 'Success')
 
     def test_execute_with_accumulator_with_extra_actions(self):
         action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
@@ -247,8 +248,8 @@ class TestAction(unittest.TestCase):
         accumulator = {'1': '-5.6', 'action2': '4.3', '3': '45'}
         instance = TestAction._make_app_instance()
         result = action.execute(LocalActionExecutionStrategy(), accumulator, instance.instance)
-        self.assertAlmostEqual(result.result, 8.9)
-        self.assertEqual(result.status, 'Success')
+        self.assertAlmostEqual(accumulator[action.id], 8.9)
+        self.assertEqual(result, 'Success')
 
     def test_execute_with_accumulator_missing_action(self):
         action = Action(app_name='HelloWorld', action_name='Add Three', name='helloWorld',
@@ -291,9 +292,10 @@ class TestAction(unittest.TestCase):
                                                        'd': [{'a': '', 'b': 3}, {'a': '', 'b': -1.5},
                                                              {'a': '', 'b': -0.5}]})])
         instance = TestAction._make_app_instance()
-        result = action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
-        self.assertAlmostEqual(result.result, 11.0)
-        self.assertEqual(result.status, 'Success')
+        acc = {}
+        result = action.execute(LocalActionExecutionStrategy(), acc, instance.instance)
+        self.assertAlmostEqual(acc[action.id], 11.0)
+        self.assertEqual(result, 'Success')
 
     def test_execute_action_which_raises_exception(self):
         action = Action(app_name='HelloWorld', action_name='Buggy', name='helloWorld')
@@ -328,9 +330,10 @@ class TestAction(unittest.TestCase):
         action = Action(app_name='HelloWorld', action_name='global2', name='helloWorld',
                         arguments=[Argument('arg1', value='something')])
         instance = TestAction._make_app_instance()
-        result = action.execute(LocalActionExecutionStrategy(), {}, instance.instance)
-        self.assertAlmostEqual(result.result, 'something')
-        self.assertEqual(result.status, 'Success')
+        acc = {}
+        result = action.execute(LocalActionExecutionStrategy(), acc, instance.instance)
+        self.assertAlmostEqual(acc[action.id], 'something')
+        self.assertEqual(result, 'Success')
 
     def test_execute_with_triggers(self):
         trigger = ConditionalExpression(

@@ -77,3 +77,30 @@ class WorkflowExecutionContext(object):
         self.send_event(WalkoffEvent.WorkflowShutdown, data=accumulator)
         logger.info('Workflow {0} completed. Result: {1}'.format(self.workflow.name, self.accumulator))
         self.accumulator.clear()
+
+    @property
+    def restricted_context(self):
+        return RestrictedWorkflowContext.from_workflow_context(self)
+
+
+class RestrictedWorkflowContext(object):
+
+    def __init__(self, execution_id, id, name):
+        self.execution_id = execution_id
+        self.id = id
+        self.name = name
+
+    def as_json(self):
+        return {
+            'workflow_execution_id': self.execution_id,
+            'workflow_id': self.id,
+            'workflow_name': self.name
+        }
+
+    @classmethod
+    def from_workflow(cls, workflow, execution_id):
+        return cls(execution_id, workflow.id, workflow.name)
+
+    @classmethod
+    def from_workflow_context(cls, context):
+        return cls(context.execution_id, context.id, context.name)

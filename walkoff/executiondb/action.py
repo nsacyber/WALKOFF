@@ -156,7 +156,7 @@ class Action(ExecutionElement, Execution_Base):
             result = ActionResult.from_exception(e, 'InvalidArguments')
             accumulator[self.id] = result.result
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionArgumentsInvalid, data=result.as_json())
-            return result
+            return result.status
 
         if is_app_action_bound(self.app_name, self._run):
             result = action_execution_strategy.execute(self, accumulator, args, instance=instance)
@@ -176,7 +176,7 @@ class Action(ExecutionElement, Execution_Base):
         else:
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionSuccess,
                                                    data=result.as_json())
-        return result
+        return result.status
 
     def execute_trigger(self, action_execution_strategy, data_in, accumulator):
         """Executes the trigger for an Action, which will continue execution if the trigger returns True

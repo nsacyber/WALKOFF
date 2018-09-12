@@ -15,7 +15,6 @@ import walkoff.config
 from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
-from walkoff.worker.action_exec_strategy import make_execution_strategy
 from walkoff.worker.zmq_workflow_receivers import WorkerCommunicationMessageType, WorkflowCommunicationMessageType, \
     WorkflowReceiver
 from walkoff.worker.workflow_exec_strategy import WorkflowExecutor
@@ -26,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 class Worker(object):
     def __init__(self, id_, config_path):
-        """Initialize a Workfer object, which will be managing the execution of Workflows
+        """Initialize a Worker object, which will be managing the execution of Workflows
 
         Args:
             id_ (str): The ID of the worker
@@ -71,10 +70,12 @@ class Worker(object):
         data = {'socket_id': socket_id}
         self.workflow_communication_receiver = make_communication_receiver(**data)
 
-        action_execution_strategy = make_execution_strategy(walkoff.config.Config)
-
-        self.workflow_executor = WorkflowExecutor(self.capacity, self.execution_db, action_execution_strategy,
-                                                  AppInstanceRepo)
+        self.workflow_executor = WorkflowExecutor(
+            walkoff.config.Config,
+            self.capacity,
+            self.execution_db,
+            AppInstanceRepo
+        )
 
         self.comm_thread = threading.Thread(target=self.receive_communications)
         self.comm_thread.start()

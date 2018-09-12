@@ -50,7 +50,7 @@ def parse_openapi(path):
             schema['properties']['arguments']['items'] = definitions['Argument']
         return schema
     except (OSError, IOError) as e:
-        logger.exception('Could not parse OpenAPI specification', level=logging.FATAL)
+        logger.fatal('Could not parse OpenAPI specification', exc_info=True)
         raise
 
 def make_redis():
@@ -64,7 +64,7 @@ def make_redis():
     try:
         redis_cache.ping()
     except Exception as e:
-        logger.exception('Could not connect to Redis cache.', level=logging.FATAL)
+        logger.fatal('Could not connect to Redis cache.', exc_info=True)
         raise
     return redis_cache
 
