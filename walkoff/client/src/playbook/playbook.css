@@ -190,6 +190,10 @@
 	display: inline-block;
 }
 
+#workflowsModal > .modal-dialog {
+	max-width: 600px;
+}
+
 #workflowsModal .modal-title,
 #executionResultsModal .modal-title,
 #playbookAndWorkflowActionModal .modal-title {
@@ -197,5 +201,5 @@
 }
 
 #executionResultsModal > .modal-dialog {
-	width: 95%;
+	max-width: 95%;
 }

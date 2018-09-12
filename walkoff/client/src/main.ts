@@ -14,8 +14,8 @@ import '@swimlane/ngx-datatable/release/index.css';
 import '@swimlane/ngx-datatable/release/themes/material.css';
 import '@swimlane/ngx-datatable/release/assets/icons.css';
 import 'font-awesome/css/font-awesome.min.css';
-import 'ng2-toasty/style-bootstrap.css';
 import 'select2/dist/css/select2.min.css';
+import 'ngx-toastr/toastr.css';
 
 document.addEventListener('DOMContentLoaded', event => {
 	if (sessionStorage.getItem('refresh_token')) {

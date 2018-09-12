@@ -7,5 +7,5 @@
 }
 
 .actionStatusModal > .modal-dialog {
-	width: 95%;
+	max-width: 95%;
 }

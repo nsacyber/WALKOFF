@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { ToastyService, ToastyConfig } from 'ng2-toasty';
+import { ToastrService } from 'ngx-toastr';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
 import { MessagesService } from './messages.service';
@@ -31,7 +31,7 @@ export class MessagesComponent implements OnInit {
 
 	constructor(
 		private messagesService: MessagesService, private modalService: NgbModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private toastrService: ToastrService,
 		public utils: UtilitiesService,
 	) {}
 
@@ -39,7 +39,6 @@ export class MessagesComponent implements OnInit {
 	 * On component init, get a list of messages to display in our datatable and bind our search filter input.
 	 */
 	ngOnInit(): void {
-		this.toastyConfig.theme = 'bootstrap';
 
 		this.listMessages();
 
@@ -73,7 +72,7 @@ export class MessagesComponent implements OnInit {
 				this.messages = messages;
 				this.filterMessages();
 			})
-			.catch(e => this.toastyService.error(`Error retrieving messages: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error retrieving messages: ${e.message}`));
 	}
 
 	/**
@@ -96,7 +95,7 @@ export class MessagesComponent implements OnInit {
 		
 				this._handleModalClose(modalRef);
 			})
-			.catch(e => this.toastyService.error(`Error opening message: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error opening message: ${e.message}`));
 	}
 
 	/**
@@ -118,7 +117,7 @@ export class MessagesComponent implements OnInit {
 
 				this.filterMessages();
 			})
-			.catch(e => this.toastyService.error(`Error deleting messages: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error deleting messages: ${e.message}`));
 	}
 
 	/**
@@ -137,7 +136,7 @@ export class MessagesComponent implements OnInit {
 					}
 				});
 			})
-			.catch(e => this.toastyService.error(`Error marking messages as read: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error marking messages as read: ${e.message}`));
 	}
 
 	/**
@@ -156,7 +155,7 @@ export class MessagesComponent implements OnInit {
 					}
 				});
 			})
-			.catch(e => this.toastyService.error(`Error marking messages as unread: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error marking messages as unread: ${e.message}`));
 	}
 
 	/**
@@ -179,6 +178,6 @@ export class MessagesComponent implements OnInit {
 	private _handleModalClose(modalRef: NgbModalRef): void {
 		modalRef.result
 			.then((result) => null,
-			(error) => { if (error) { this.toastyService.error(error.message); } });
+			(error) => { if (error) { this.toastrService.error(error.message); } });
 	}
 }

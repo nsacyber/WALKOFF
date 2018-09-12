@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig } from 'ng2-toasty';
+import { ToastrService } from 'ngx-toastr';
 
 import { SettingsService } from './settings.service';
 import { UtilitiesService } from '../utilities.service';
@@ -29,8 +29,7 @@ export class SettingsUserModalComponent {
 
 	constructor(
 		private settingsService: SettingsService, private activeModal: NgbActiveModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig) {
-		this.toastyConfig.theme = 'bootstrap';
+		private toastrService: ToastrService, ) {
 	}
 
 	ngOnInit(): void {
@@ -62,7 +61,7 @@ export class SettingsUserModalComponent {
 	submit(): void {
 		const validationMessage = this.validate();
 		if (validationMessage) {
-			this.toastyService.error(validationMessage);
+			this.toastrService.error(validationMessage);
 			return;
 		}
 
@@ -76,7 +75,7 @@ export class SettingsUserModalComponent {
 					user,
 					isEdit: true,
 				}))
-				.catch(e => this.toastyService.error(e.message));
+				.catch(e => this.toastrService.error(e.message));
 		} else {
 			this.settingsService
 				.addUser(toSubmit)
@@ -84,7 +83,7 @@ export class SettingsUserModalComponent {
 					user,
 					isEdit: false,
 				}))
-				.catch(e => this.toastyService.error(e.message));
+				.catch(e => this.toastrService.error(e.message));
 		}
 	}
 

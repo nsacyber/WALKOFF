@@ -1,6 +1,6 @@
 import { Component, ElementRef, ViewChild, ViewEncapsulation, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ToastyService, ToastyConfig } from 'ng2-toasty';
+import { ToastrService } from 'ngx-toastr';
 
 import { AuthService } from '../auth/auth.service';
 
@@ -19,14 +19,13 @@ export class InterfacesComponent implements OnInit {
 
 	constructor(
 		private route: ActivatedRoute, private authService: AuthService,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private toastrService: ToastrService,
 	) {}
 
 	/**
 	 * On init, get our interface name from the route params and grab the interface.
 	 */
 	ngOnInit() {
-		this.toastyConfig.theme = 'bootstrap';
 
 		this.paramsSub = this.route.params.subscribe(params => {
 			this.interfaceName = params.interfaceName;
@@ -58,6 +57,6 @@ export class InterfacesComponent implements OnInit {
 				xhr.setRequestHeader('Authorization', 'Bearer ' + authToken);
 				xhr.send();
 			})
-			.catch(e => this.toastyService.error(`Error retrieving interface: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error retrieving interface: ${e.message}`));
 	}
 }

@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig } from 'ng2-toasty';
+import { ToastrService } from 'ngx-toastr';
 import { Select2OptionData } from 'ng2-select2';
 import * as moment from 'moment';
 
@@ -35,14 +35,13 @@ export class SchedulerModalComponent implements OnInit {
 	
 	constructor(
 		private schedulerService: SchedulerService, private activeModal: NgbActiveModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private toastrService: ToastrService,
 	) {}
 
 	/**
 	 * Initializes the workflow select config for selecting workflows to schedule.
 	 */
 	ngOnInit(): void {
-		this.toastyConfig.theme = 'bootstrap';
 
 		this.workflowSelectConfig = {
 			width: '100%',
@@ -59,7 +58,7 @@ export class SchedulerModalComponent implements OnInit {
 	submit(): void {
 		const validationMessage = this.validate();
 		if (validationMessage) {
-			this.toastyService.error(validationMessage);
+			this.toastrService.error(validationMessage);
 			return;
 		}
 
@@ -75,7 +74,7 @@ export class SchedulerModalComponent implements OnInit {
 					scheduledTask,
 					isEdit: true,
 				}))
-				.catch(e => this.toastyService.error(e.message));
+				.catch(e => this.toastrService.error(e.message));
 		} else {
 			this.schedulerService
 				.addScheduledTask(this.workingScheduledTask)
@@ -83,7 +82,7 @@ export class SchedulerModalComponent implements OnInit {
 					scheduledTask,
 					isEdit: false,
 				}))
-				.catch(e => this.toastyService.error(e.message));
+				.catch(e => this.toastrService.error(e.message));
 		}
 	}
 

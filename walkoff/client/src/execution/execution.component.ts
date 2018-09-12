@@ -1,7 +1,7 @@
 import { Component, ViewEncapsulation, OnInit, AfterViewChecked, ElementRef, ViewChild,
 	ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { ToastyService, ToastyConfig } from 'ng2-toasty';
+import { ToastrService } from 'ngx-toastr';
 import { Select2OptionData } from 'ng2-select2';
 import { DatatableComponent } from '@swimlane/ngx-datatable';
 import { Observable } from 'rxjs';
@@ -61,7 +61,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 	constructor(
 		private executionService: ExecutionService, private authService: AuthService, private cdr: ChangeDetectorRef,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig, private utils: UtilitiesService,
+		private toastrService: ToastrService, private utils: UtilitiesService,
 		private modalService: NgbModal,
 	) {}
 
@@ -71,7 +71,6 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Set up SSEs for workflow status and action status to add/update data in our datatables.
 	 */
 	ngOnInit(): void {
-		this.toastyConfig.theme = 'bootstrap';
 
 		this.workflowSelectConfig = {
 			width: '100%',
@@ -166,7 +165,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 				this.displayWorkflowStatuses = this.workflowStatuses = workflowStatuses;
 				this.recalculateRelativeTimes();
 			})
-			.catch(e => this.toastyService.error(`Error retrieving workflow statuses: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error retrieving workflow statuses: ${e.message}`));
 	}
 
 	/**
@@ -236,7 +235,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 						this.utils.getRelativeLocalTime(workflowStatusEvent.timestamp);
 					break;
 				default:
-					this.toastyService.warning(`Unknown Workflow Status SSE Type: ${message.type}.`);
+					this.toastrService.warning(`Unknown Workflow Status SSE Type: ${message.type}.`);
 					break;
 			}
 
@@ -323,7 +322,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 						// don't think anything needs to happen here
 						break;
 					default:
-						this.toastyService.warning(`Unknown Action Status SSE Type: ${message.type}.`);
+						this.toastrService.warning(`Unknown Action Status SSE Type: ${message.type}.`);
 						break;
 				}
 
@@ -348,8 +347,8 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	performWorkflowStatusAction(workflowStatus: WorkflowStatus, actionName: string): void {
 		this.executionService
 			.performWorkflowStatusAction(workflowStatus.execution_id, actionName)
-			.then(() => this.toastyService.success(`Successfully told ${workflowStatus.name} to  ${actionName}`))
-			.catch(e => this.toastyService.error(`Error performing ${actionName} on workflow: ${e.message}`));
+			.then(() => this.toastrService.success(`Successfully told ${workflowStatus.name} to  ${actionName}`))
+			.catch(e => this.toastrService.error(`Error performing ${actionName} on workflow: ${e.message}`));
 	}
 
 	/**
@@ -385,9 +384,9 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	executeSelectedWorkflow(environmentVariables: EnvironmentVariable[] = []): void {
 		this.executionService.addWorkflowToQueue(this.selectedWorkflow.id, environmentVariables)
 			.then((workflowStatus: WorkflowStatus) => {
-				this.toastyService.success(`Successfully started execution of "${this.selectedWorkflow.name}"`);
+				this.toastrService.success(`Successfully started execution of "${this.selectedWorkflow.name}"`);
 			})
-			.catch(e => this.toastyService.error(`Error executing workflow: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error executing workflow: ${e.message}`));
 	}
 
 	/**
@@ -436,8 +435,9 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 					this.recalculateRelativeTimes();
 					
 				})
-				.catch(e => this.toastyService
-					.error(`Error loading action results for "${workflowStatus.name}": ${e.message}`));
+				.catch(e => {
+					this.toastrService.error(`Error loading action results for "${workflowStatus.name}": ${e.message}`)
+				});
 		}
 
 		actionResultsPromise.then(() => {

@@ -8,7 +8,7 @@ const helpers = require('./helpers');
 // /**
 //  * Webpack Plugins
 //  */
-const AssetsPlugin = require('assets-webpack-plugin');
+// const AssetsPlugin = require('assets-webpack-plugin');
 // const NormalModuleReplacementPlugin = require('webpack/lib/NormalModuleReplacementPlugin');
 // const ContextReplacementPlugin = require('webpack/lib/ContextReplacementPlugin');
 // const CopyWebpackPlugin = require('copy-webpack-plugin');

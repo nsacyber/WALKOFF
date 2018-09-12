@@ -1,7 +1,7 @@
 import { Component, ViewEncapsulation, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig } from 'ng2-toasty';
+import { ToastrService } from 'ngx-toastr';
 import { Select2OptionData } from 'ng2-select2';
 
 import { DevicesModalComponent } from './devices.modal.component';
@@ -34,7 +34,7 @@ export class DevicesComponent implements OnInit {
 
 	constructor(
 		private devicesService: DevicesService, private modalService: NgbModal, 
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private toastrService: ToastrService,
 	) {}
 
 	/**
@@ -42,7 +42,6 @@ export class DevicesComponent implements OnInit {
 	 * Set up the search filter to filter devices after 500 ms of inactivity.
 	 */
 	ngOnInit(): void {
-		this.toastyConfig.theme = 'bootstrap';
 
 		this.appSelectConfig = {
 			width: '100%',
@@ -91,7 +90,7 @@ export class DevicesComponent implements OnInit {
 		this.devicesService
 			.getAllDevices()
 			.then(devices => this.displayDevices = this.devices = devices)
-			.catch(e => this.toastyService.error(`Error retrieving devices: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error retrieving devices: ${e.message}`));
 	}
 
 	/**
@@ -136,9 +135,9 @@ export class DevicesComponent implements OnInit {
 
 				this.filterDevices();
 
-				this.toastyService.success(`Device "${deviceToDelete.name}" successfully deleted.`);
+				this.toastrService.success(`Device "${deviceToDelete.name}" successfully deleted.`);
 			})
-			.catch(e => this.toastyService.error(`Error deleting device: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error deleting device: ${e.message}`));
 	}
 
 	/**
@@ -154,7 +153,7 @@ export class DevicesComponent implements OnInit {
 				this.appNames = appApis.map(a => a.name);
 				this.availableApps = this.appNames.map((appName) => ({ id: appName, text: appName }));
 			})
-			.catch(e => this.toastyService.error(`Error retrieving device types: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error retrieving device types: ${e.message}`));
 	}
 
 	/**
@@ -189,15 +188,15 @@ export class DevicesComponent implements OnInit {
 
 					this.filterDevices();
 
-					this.toastyService.success(`Device "${result.device.name}" successfully edited.`);
+					this.toastrService.success(`Device "${result.device.name}" successfully edited.`);
 				} else {
 					this.devices.push(result.device);
 
 					this.filterDevices();
 
-					this.toastyService.success(`Device "${result.device.name}" successfully added.`);
+					this.toastrService.success(`Device "${result.device.name}" successfully added.`);
 				}
 			},
-			(error) => { if (error) { this.toastyService.error(error.message); } });
+			(error) => { if (error) { this.toastrService.error(error.message); } });
 	}
 }

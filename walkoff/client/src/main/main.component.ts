@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { JwtHelper } from 'angular2-jwt';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig } from 'ng2-toasty';
+import { ToastrService } from 'ngx-toastr';
 import { plainToClass } from 'class-transformer';
 
 import { MessagesModalComponent } from '../messages/messages.modal.component';
@@ -38,8 +38,8 @@ export class MainComponent implements OnInit, OnDestroy {
 
 	constructor(
 		private mainService: MainService, private authService: AuthService,
-		private modalService: NgbModal, private toastyService: ToastyService,
-		private toastyConfig: ToastyConfig, public utils: UtilitiesService,
+		private modalService: NgbModal, private toastrService: ToastrService,
+		public utils: UtilitiesService,
 	) {}
 
 	/**
@@ -48,7 +48,6 @@ export class MainComponent implements OnInit, OnDestroy {
 	 * Set up an SSE for handling new notifications.
 	 */
 	ngOnInit(): void {
-		this.toastyConfig.theme = 'bootstrap';
 
 		this.currentUser = this.authService.getAndDecodeAccessToken().user_claims.username;
 		this.getInterfaceNames();
@@ -69,7 +68,7 @@ export class MainComponent implements OnInit, OnDestroy {
 	getInterfaceNames(): void {
 		this.mainService.getInterfaceNames()
 			.then(interfaceNames => this.interfaceNames = interfaceNames)
-			.catch(e => this.toastyService.error(`Error retrieving interfaces: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error retrieving interfaces: ${e.message}`));
 	}
 
 	/**
@@ -81,7 +80,7 @@ export class MainComponent implements OnInit, OnDestroy {
 				this.messageListings = messageListings.concat(this.messageListings);
 				this._recalculateNewMessagesCount();
 			})
-			.catch(e => this.toastyService.error(`Error retrieving notifications: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error retrieving notifications: ${e.message}`));
 	}
 
 	/**
@@ -179,7 +178,7 @@ export class MainComponent implements OnInit, OnDestroy {
 		
 				this._handleModalClose(this.messageModalRef);
 			})
-			.catch(e => this.toastyService.error(`Error opening message: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error opening message: ${e.message}`));
 	}
 
 	/**
@@ -206,6 +205,6 @@ export class MainComponent implements OnInit, OnDestroy {
 	private _handleModalClose(modalRef: NgbModalRef): void {
 		modalRef.result
 			.then((result) => null,
-			(error) => { if (error) { this.toastyService.error(error.message); } });
+			(error) => { if (error) { this.toastrService.error(error.message); } });
 	}
 }

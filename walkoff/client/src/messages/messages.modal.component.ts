@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig } from 'ng2-toasty';
+import { ToastrService } from 'ngx-toastr';
 
 import { MessagesService } from './messages.service';
 import { UtilitiesService } from '../utilities.service';
@@ -20,11 +20,10 @@ export class MessagesModalComponent implements OnInit {
 
 	constructor(
 		private messagesService: MessagesService, private activeModal: NgbActiveModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig, public utils: UtilitiesService,
+		private toastrService: ToastrService, public utils: UtilitiesService,
 	) {}
 
 	ngOnInit(): void {
-		this.toastyConfig.theme = 'bootstrap';
 	}
 
 	/**
@@ -37,9 +36,9 @@ export class MessagesModalComponent implements OnInit {
 			.then(() => {
 				this.message.awaiting_response = false;
 				this.message.responded_at = this.utils.getCurrentIsoString();
-				this.toastyService.success(`Successfully performed "${action}" on message.`);
+				this.toastrService.success(`Successfully performed "${action}" on message.`);
 			})
-			.catch(e => this.toastyService.error(`Error performing ${action} on message: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error performing ${action} on message: ${e.message}`));
 	}
 
 	/**

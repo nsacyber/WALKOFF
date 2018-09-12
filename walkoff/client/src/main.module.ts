@@ -5,11 +5,12 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
-import { ToastyModule } from 'ng2-toasty';
 import { Select2Module } from 'ng2-select2';
 import { JwtHttp } from 'angular2-jwt-refresh';
 import { DateTimePickerModule } from 'ng-pick-datetime';
 import { DndModule } from 'ng2-dnd';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ToastrModule } from 'ngx-toastr';
 
 // Custom routing module
 import { RoutingModule } from './routing';
@@ -49,10 +50,11 @@ import { KeysPipe } from './pipes/keys.pipe';
 		RoutingModule,
 		NgbModule.forRoot(),
 		NgxDatatableModule,
-		ToastyModule.forRoot(),
 		Select2Module,
 		DateTimePickerModule,
 		DndModule.forRoot(),
+	    BrowserAnimationsModule,
+		ToastrModule.forRoot({ positionClass: 'toast-bottom-right' })
 	],
 	declarations: [
 		//Main component

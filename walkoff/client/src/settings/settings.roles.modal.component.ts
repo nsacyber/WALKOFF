@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig } from 'ng2-toasty';
+import { ToastrService } from 'ngx-toastr';
 import { Select2OptionData } from 'ng2-select2';
 
 import { SettingsService } from './settings.service';
@@ -32,10 +32,9 @@ export class SettingsRoleModalComponent {
 
 	constructor(
 		private settingsService: SettingsService, private activeModal: NgbActiveModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private toastrService: ToastrService,
 		private utils: UtilitiesService,
 	) {
-		this.toastyConfig.theme = 'bootstrap';
 
 		this.permissionSelectConfig = {
 			width: '100%',
@@ -107,7 +106,7 @@ export class SettingsRoleModalComponent {
 	submit(): void {
 		const validationMessage = this.validate();
 		if (validationMessage) {
-			this.toastyService.error(validationMessage);
+			this.toastrService.error(validationMessage);
 			return;
 		}
 
@@ -126,7 +125,7 @@ export class SettingsRoleModalComponent {
 					role,
 					isEdit: true,
 				}))
-				.catch(e => this.toastyService.error(e.message));
+				.catch(e => this.toastrService.error(e.message));
 		} else {
 			this.settingsService
 				.addRole(toSubmit)
@@ -134,7 +133,7 @@ export class SettingsRoleModalComponent {
 					role,
 					isEdit: false,
 				}))
-				.catch(e => this.toastyService.error(e.message));
+				.catch(e => this.toastrService.error(e.message));
 		}
 	}
 

@@ -1,6 +1,6 @@
 import { Component, Input, ChangeDetectorRef, ViewChild, ElementRef, OnInit, AfterViewInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig } from 'ng2-toasty';
+import { ToastrService } from 'ngx-toastr';
 
 import { DevicesService } from './devices.service';
 import { UtilitiesService } from '../utilities.service';
@@ -39,11 +39,10 @@ export class DevicesModalComponent implements OnInit, AfterViewInit {
 
 	constructor (
 		private devicesService: DevicesService, private activeModal: NgbActiveModal, 
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig, private cdr: ChangeDetectorRef,
+		private toastrService: ToastrService, private cdr: ChangeDetectorRef,
 	) {}
 
 	ngOnInit(): void {
-		this.toastyConfig.theme = 'bootstrap';
 	}
 
 	ngAfterViewInit(): void {
@@ -142,7 +141,7 @@ export class DevicesModalComponent implements OnInit, AfterViewInit {
 					device,
 					isEdit: true,
 				}))
-				.catch(e => this.toastyService.error(e.message));
+				.catch(e => this.toastrService.error(e.message));
 		} else {
 			this.devicesService
 				.addDevice(toSubmit)
@@ -150,7 +149,7 @@ export class DevicesModalComponent implements OnInit, AfterViewInit {
 					device,
 					isEdit: false,
 				}))
-				.catch(e => this.toastyService.error(e.message));
+				.catch(e => this.toastrService.error(e.message));
 		}
 	}
 

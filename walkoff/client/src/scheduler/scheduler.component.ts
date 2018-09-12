@@ -1,7 +1,7 @@
 import { Component, ViewEncapsulation, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig } from 'ng2-toasty';
+import { ToastrService } from 'ngx-toastr';
 import { Select2OptionData } from 'ng2-select2';
 import 'rxjs/add/operator/debounceTime';
 
@@ -32,7 +32,7 @@ export class SchedulerComponent implements OnInit {
 
 	constructor(
 		private schedulerService: SchedulerService, private modalService: NgbModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private toastrService: ToastrService,
 		private utils: UtilitiesService,
 	) {}
 
@@ -43,7 +43,6 @@ export class SchedulerComponent implements OnInit {
 	 * Initialize the search filter input to filter scheduled tasks.
 	 */
 	ngOnInit(): void {
-		this.toastyConfig.theme = 'bootstrap';
 
 		this.getSchedulerStatus();
 		this.getWorkflows();
@@ -74,7 +73,7 @@ export class SchedulerComponent implements OnInit {
 		this.schedulerService
 			.getSchedulerStatus()
 			.then(schedulerStatus => this.schedulerStatus = schedulerStatus)
-			.catch(e => this.toastyService.error(`Error retrieving scheduler status: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error retrieving scheduler status: ${e.message}`));
 	}
 
 	/**
@@ -89,7 +88,7 @@ export class SchedulerComponent implements OnInit {
 			.then(newStatus => {
 				if (newStatus) { this.schedulerStatus = newStatus; }
 			})
-			.catch(e => this.toastyService.error(`Error changing scheduler status: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error changing scheduler status: ${e.message}`));
 	}
 
 	/**
@@ -99,7 +98,7 @@ export class SchedulerComponent implements OnInit {
 		this.schedulerService
 			.getAllScheduledTasks()
 			.then(scheduledTasks => this.displayScheduledTasks = this.scheduledTasks = scheduledTasks)
-			.catch(e => this.toastyService.error(`Error retrieving scheduled tasks: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error retrieving scheduled tasks: ${e.message}`));
 	}
 
 	/**
@@ -144,9 +143,9 @@ export class SchedulerComponent implements OnInit {
 
 				this.filterScheduledTasks();
 
-				this.toastyService.success(`Scheduled Task "${taskToDelete.name}" successfully deleted.`);
+				this.toastrService.success(`Scheduled Task "${taskToDelete.name}" successfully deleted.`);
 			})
-			.catch(e => this.toastyService.error(`Error deleting task: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error deleting task: ${e.message}`));
 	}
 
 	/**
@@ -169,7 +168,7 @@ export class SchedulerComponent implements OnInit {
 				newStatus = 'stopped';
 				break;
 			default:
-				this.toastyService.error(`Attempted to set an unknown status ${actionName}`);
+				this.toastrService.error(`Attempted to set an unknown status ${actionName}`);
 				break;
 		}
 
@@ -180,7 +179,7 @@ export class SchedulerComponent implements OnInit {
 			.then(() => {
 				task.status = newStatus;
 			})
-			.catch(e => this.toastyService.error(`Error changing scheduler status: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error changing scheduler status: ${e.message}`));
 	}
 
 	/**
@@ -248,15 +247,15 @@ export class SchedulerComponent implements OnInit {
 
 					this.filterScheduledTasks();
 
-					this.toastyService.success(`Scheduled task "${result.scheduledTask.name}" successfully edited.`);
+					this.toastrService.success(`Scheduled task "${result.scheduledTask.name}" successfully edited.`);
 				} else {
 					this.scheduledTasks.push(result.scheduledTask);
 
 					this.filterScheduledTasks();
 
-					this.toastyService.success(`Scheduled task "${result.scheduledTask.name}" successfully added.`);
+					this.toastrService.success(`Scheduled task "${result.scheduledTask.name}" successfully added.`);
 				}
 			},
-			(error) => { if (error) { this.toastyService.error(error.message); } });
+			(error) => { if (error) { this.toastrService.error(error.message); } });
 	}
 }

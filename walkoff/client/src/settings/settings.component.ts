@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig } from 'ng2-toasty';
+import { ToastrService } from 'ngx-toastr';
 import 'rxjs/add/operator/debounceTime';
 
 import { SettingsService } from './settings.service';
@@ -37,9 +37,8 @@ export class SettingsComponent {
 
 	constructor(
 		private settingsService: SettingsService, private modalService: NgbModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private toastrService: ToastrService,
 	) {
-		this.toastyConfig.theme = 'bootstrap';
 
 		this.getConfiguration();
 		this.getUsers();
@@ -67,7 +66,7 @@ export class SettingsComponent {
 				Object.assign(this.configuration, configuration);
 				if (! this.configuration.cache) this.configuration.cache = new CacheConfig();
 			})
-			.catch(e => this.toastyService.error(e.message));
+			.catch(e => this.toastrService.error(e.message));
 	}
 
 	updateConfiguration(): void {
@@ -76,9 +75,9 @@ export class SettingsComponent {
 			.then((configuration) => {
 				Object.assign(this.configuration, configuration);
 				if (! this.configuration.cache) this.configuration.cache = new CacheConfig();
-				this.toastyService.success('Configuration successfully updated.');
+				this.toastrService.success('Configuration successfully updated.');
 			})
-			.catch(e => this.toastyService.error(e.message));
+			.catch(e => this.toastrService.error(e.message));
 	}
 
 	//TODO: add a better confirm dialog
@@ -93,14 +92,14 @@ export class SettingsComponent {
 		this.settingsService
 			.getRoles()
 			.then(roles => this.roles = roles)
-			.catch(e => this.toastyService.error(`Error retrieving roles: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error retrieving roles: ${e.message}`));
 	}
 
 	getUsers(): void {
 		this.settingsService
 			.getAllUsers()
 			.then(users => this.displayUsers = this.users = users)
-			.catch(e => this.toastyService.error(`Error retrieving users: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error retrieving users: ${e.message}`));
 	}
 
 	addUser(): void {
@@ -136,9 +135,9 @@ export class SettingsComponent {
 
 				this.filterUsers();
 
-				this.toastyService.success(`User "${userToDelete.username}" successfully deleted.`);
+				this.toastrService.success(`User "${userToDelete.username}" successfully deleted.`);
 			})
-			.catch(e => this.toastyService.error(e.message));
+			.catch(e => this.toastrService.error(e.message));
 	}
 
 	getFriendlyRoles(roles: Role[]): string {
@@ -162,15 +161,15 @@ export class SettingsComponent {
 
 					this.filterUsers();
 
-					this.toastyService.success(`User "${result.user.username}" successfully edited.`);
+					this.toastrService.success(`User "${result.user.username}" successfully edited.`);
 				} else {
 					this.users.push(result.user);
 
 					this.filterUsers();
 
-					this.toastyService.success(`User "${result.user.username}" successfully added.`);
+					this.toastrService.success(`User "${result.user.username}" successfully added.`);
 				}
 			},
-			(error) => { if (error) { this.toastyService.error(error.message); } });
+			(error) => { if (error) { this.toastrService.error(error.message); } });
 	}
 }

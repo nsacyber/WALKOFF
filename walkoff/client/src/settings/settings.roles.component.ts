@@ -1,7 +1,7 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { ToastyService, ToastyConfig } from 'ng2-toasty';
+import { ToastrService } from 'ngx-toastr';
 import 'rxjs/add/operator/debounceTime';
 
 import { SettingsService } from './settings.service';
@@ -31,10 +31,9 @@ export class SettingsRolesComponent {
 
 	constructor(
 		private settingsService: SettingsService, private modalService: NgbModal,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private toastrService: ToastrService,
 		private utils: UtilitiesService,
 	) {
-		this.toastyConfig.theme = 'bootstrap';
 
 		this.getAvailableResourceActions();
 		this.getRoles();
@@ -57,14 +56,14 @@ export class SettingsRolesComponent {
 		this.settingsService
 			.getAvailableResourceActions()
 			.then(availableResourceActions => this.availableResourceActions = availableResourceActions)
-			.catch(e => this.toastyService.error(e.message));
+			.catch(e => this.toastrService.error(e.message));
 	}
 
 	getRoles(): void {
 		this.settingsService
 			.getRoles()
 			.then(roles => this.displayRoles = this.roles = roles)
-			.catch(e => this.toastyService.error(e.message));
+			.catch(e => this.toastrService.error(e.message));
 	}
 
 	addRole(): void {
@@ -97,9 +96,9 @@ export class SettingsRolesComponent {
 
 				this.filterRoles();
 
-				this.toastyService.success(`Role "${roleToDelete.name}" successfully deleted.`);
+				this.toastrService.success(`Role "${roleToDelete.name}" successfully deleted.`);
 			})
-			.catch(e => this.toastyService.error(e.message));
+			.catch(e => this.toastrService.error(e.message));
 	}
 
 	getFriendlyPermissions(role: Role): string {
@@ -129,15 +128,15 @@ export class SettingsRolesComponent {
 
 					this.filterRoles();
 
-					this.toastyService.success(`Role "${result.role.name}" successfully edited.`);
+					this.toastrService.success(`Role "${result.role.name}" successfully edited.`);
 				} else {
 					this.roles.push(result.role);
 
 					this.filterRoles();
 
-					this.toastyService.success(`Role "${result.role.name}" successfully added.`);
+					this.toastrService.success(`Role "${result.role.name}" successfully added.`);
 				}
 			},
-			(error) => { if (error) { this.toastyService.error(error.message); } });
+			(error) => { if (error) { this.toastrService.error(error.message); } });
 	}
 }

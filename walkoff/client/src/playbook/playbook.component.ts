@@ -1,6 +1,6 @@
 import { Component, ViewEncapsulation, ViewChild, ElementRef, ChangeDetectorRef, OnInit,
 	AfterViewChecked, OnDestroy} from '@angular/core';
-import { ToastyService, ToastyConfig } from 'ng2-toasty';
+import { ToastrService } from 'ngx-toastr';
 import { DatatableComponent } from '@swimlane/ngx-datatable';
 import { UUID } from 'angular2-uuid';
 import { Observable } from 'rxjs';
@@ -134,7 +134,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 	constructor(
 		private playbookService: PlaybookService, private authService: AuthService,
-		private toastyService: ToastyService, private toastyConfig: ToastyConfig,
+		private toastrService: ToastrService,
 		private cdr: ChangeDetectorRef, private utils: UtilitiesService,
 		private modalService: NgbModal
 	) {}
@@ -145,7 +145,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Also initialize cytoscape event bindings.
 	 */
 	ngOnInit(): void {
-		this.toastyConfig.theme = 'bootstrap';
 
 		const cyDummy = cytoscape();
 		if (!cyDummy.clipboard) { clipboard(cytoscape, $); }
@@ -220,7 +219,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				this.consoleEventSource = new (window as any).EventSource(url);
                 this.consoleEventSource.addEventListener('log', (e: any) => this.consoleEventHandler(e));
 				this.consoleEventSource.onerror = (err: Error) => {
-					// this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
+					// this.toastrService.error(`Error retrieving workflow results: ${err.message}`);
 					console.error(err);
 				};
 			});
@@ -259,7 +258,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				this.eventSource.addEventListener('awaiting_data', (e: any) => this.actionStatusEventHandler(e));
 
 				this.eventSource.onerror = (err: Error) => {
-					// this.toastyService.error(`Error retrieving workflow results: ${err.message}`);
+					// this.toastrService.error(`Error retrieving workflow results: ${err.message}`);
 					console.error(err);
 				};
 			});
@@ -327,7 +326,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 					// don't think anything needs to happen here
 					break;
 				default:
-					this.toastyService.warning(`Unknown Action Status SSE Type: ${message.type}.`);
+					this.toastrService.warning(`Unknown Action Status SSE Type: ${message.type}.`);
 					break;
 			}
 
@@ -352,9 +351,9 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			.then((workflowStatus: WorkflowStatus) => {
 				this.getActionStatusSSE(workflowStatus.id)
 				this.getConsoleSSE(workflowStatus.id)
-				this.toastyService.success(`Starting execution of ${this.loadedPlaybook.name} - ${this.loadedWorkflow.name}.`)
+				this.toastrService.success(`Starting execution of ${this.loadedPlaybook.name} - ${this.loadedWorkflow.name}.`)
 			})
-			.catch(e => this.toastyService
+			.catch(e => this.toastrService
 				.error(`Error starting execution of ${this.loadedPlaybook.name} - ${this.loadedWorkflow.name}: ${e.message}`));
 	}
 
@@ -374,7 +373,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 					this.setupGraph();
 					this._closeWorkflowsModal();
 				})
-				.catch(e => this.toastyService.error(`Error loading workflow "${playbook.name} - ${workflow.name}": ${e.message}`));
+				.catch(e => this.toastrService.error(`Error loading workflow "${playbook.name} - ${workflow.name}": ${e.message}`));
 		} else {
 			this.loadedPlaybook = playbook;
 			this.loadedWorkflow = workflow;
@@ -724,7 +723,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 		const workflowToSave: Workflow = classToClass(this.loadedWorkflow);
 
 		if (!workflowToSave.start) {
-			this.toastyService.warning('Workflow cannot be saved without a starting action.');
+			this.toastrService.warning('Workflow cannot be saved without a starting action.');
 			return;
 		}
 
@@ -776,9 +775,9 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				}
 				this.loadedWorkflow = savedWorkflow;
 				this.setupGraph();
-				this.toastyService.success(`Successfully saved workflow ${this.loadedPlaybook.name} - ${workflowToSave.name}.`);
+				this.toastrService.success(`Successfully saved workflow ${this.loadedPlaybook.name} - ${workflowToSave.name}.`);
 			})
-			.catch(e => this.toastyService
+			.catch(e => this.toastrService
 				.error(`Error saving workflow ${this.loadedPlaybook.name} - ${workflowToSave.name}: ${e.message}`));
 	}
 
@@ -919,7 +918,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			blob => {
 				saveAs(blob, `${playbook.name}.playbook`);
 			},
-			e => this.toastyService.error(`Error exporting playbook "${playbook.name}": ${e.message}`),
+			e => this.toastrService.error(`Error exporting playbook "${playbook.name}": ${e.message}`),
 		);
 	}
 
@@ -941,11 +940,11 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			data => {
 				this.playbooks.push(data);
 				this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
-				this.toastyService.success(`Successfuly imported playbook "${this.playbookToImport.name}".`);
+				this.toastrService.success(`Successfuly imported playbook "${this.playbookToImport.name}".`);
 				this.playbookToImport = null;
 				this.importFile.nativeElement.value = "";
 			},
-			e => this.toastyService.error(`Error importing playbook "${this.playbookToImport.name}": ${e.message}`),
+			e => this.toastrService.error(`Error importing playbook "${this.playbookToImport.name}": ${e.message}`),
 		);
 	}
 
@@ -991,7 +990,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				})
 				.catch(error => {
 					this.waitingOnData = false;
-					this.toastyService.error(`Error grabbing users or roles: ${error.message}`);
+					this.toastrService.error(`Error grabbing users or roles: ${error.message}`);
 				});
 		}
 
@@ -1357,10 +1356,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 					.then(renamedPlaybook => {
 						this.playbooks.find(pb => pb.id === renamedPlaybook.id).name = renamedPlaybook.name;
 						this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
-						this.toastyService.success(`Successfully renamed playbook "${renamedPlaybook.name}".`);
+						this.toastrService.success(`Successfully renamed playbook "${renamedPlaybook.name}".`);
 						this._closeModal();
 					})
-					.catch(e => this.toastyService.error(`Error renaming playbook "${this.modalParams.newPlaybook}": ${e.message}`));
+					.catch(e => this.toastrService.error(`Error renaming playbook "${this.modalParams.newPlaybook}": ${e.message}`));
 			},
 		};
 
@@ -1386,11 +1385,11 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 					.then(duplicatedPlaybook => {
 						this.playbooks.push(duplicatedPlaybook);
 						this.playbooks.sort((a, b) => a.name > b.name ? 1 : -1);
-						this.toastyService
+						this.toastrService
 							.success(`Successfully duplicated playbook "${playbook.name}" as "${duplicatedPlaybook.name}".`);
 						this._closeModal();
 					})
-					.catch(e => this.toastyService
+					.catch(e => this.toastrService
 						.error(`Error duplicating playbook "${this.modalParams.newPlaybook}": ${e.message}`));
 			},
 		};
@@ -1415,9 +1414,9 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 				// If our loaded workflow is in this playbook, close it.
 				if (this.loadedPlaybook && playbook.id === this.loadedPlaybook.id) { this.closeWorkflow(); }
-				this.toastyService.success(`Successfully deleted playbook "${playbook.name}".`);
+				this.toastrService.success(`Successfully deleted playbook "${playbook.name}".`);
 			})
-			.catch(e => this.toastyService
+			.catch(e => this.toastrService
 				.error(`Error deleting playbook "${playbook.name}": ${e.message}`));
 	}
 
@@ -1503,11 +1502,11 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 						destinationPb.workflows.push(duplicatedWorkflow);
 						destinationPb.workflows.sort((a, b) => a.name > b.name ? 1 : -1);
 
-						this.toastyService
+						this.toastrService
 							.success(`Successfully duplicated workflow "${destinationPb.name} - ${this.modalParams.newWorkflow}".`);
 						this._closeModal();
 					})
-					.catch(e => this.toastyService
+					.catch(e => this.toastrService
 						.error(`Error duplicating workflow "${destinationPb.name} - ${this.modalParams.newWorkflow}": ${e.message}`));
 			},
 		};
@@ -1535,9 +1534,9 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 				if (this.loadedPlaybook && this.loadedWorkflow &&
 					playbook.id === this.loadedPlaybook.id && workflow.id === this.loadedWorkflow.id) { this.closeWorkflow(); }
 
-				this.toastyService.success(`Successfully deleted workflow "${playbook.name} - ${workflow.name}".`);
+				this.toastrService.success(`Successfully deleted workflow "${playbook.name} - ${workflow.name}".`);
 			})
-			.catch(e => this.toastyService.error(`Error deleting workflow "${playbook.name} - ${workflow.name}": ${e.message}`));
+			.catch(e => this.toastrService.error(`Error deleting workflow "${playbook.name} - ${workflow.name}": ${e.message}`));
 	}
 
 	/**

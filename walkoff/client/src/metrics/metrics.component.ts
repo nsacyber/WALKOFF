@@ -1,5 +1,5 @@
 import { Component, ViewEncapsulation, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { ToastyService, ToastyConfig } from 'ng2-toasty';
+import { ToastrService } from 'ngx-toastr';
 import { Select2OptionData } from 'ng2-select2';
 import 'rxjs/add/operator/debounceTime';
 import { DatatableComponent } from '@swimlane/ngx-datatable';
@@ -32,13 +32,11 @@ export class MetricsComponent implements OnInit {
 	@ViewChild('workflowMetricsTable') workflowMetricsTable: DatatableComponent; 
 
 	constructor(
-        private metricsService: MetricsService, private toastyService: ToastyService, 
-		private toastyConfig: ToastyConfig, private utils: UtilitiesService,
-		private cdr: ChangeDetectorRef
+        private metricsService: MetricsService, private toastrService: ToastrService, 
+		private utils: UtilitiesService, private cdr: ChangeDetectorRef
 	) {}
 
 	ngOnInit(): void {
-		this.toastyConfig.theme = 'bootstrap';
 
 		this.appSelectConfig = {
 			width: '100%',
@@ -126,7 +124,7 @@ export class MetricsComponent implements OnInit {
                 this.availableApps = [{ id: '', text: '' },{ id: 'all', text: 'All' }].concat(appMetrics.map(m => ({ id: m.name, text: m.name })));
                 this.displayAppMetrics();
 			})
-			.catch(e => this.toastyService.error(`Error retrieving app metrics: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error retrieving app metrics: ${e.message}`));
     }
     
     /**
@@ -139,7 +137,7 @@ export class MetricsComponent implements OnInit {
 			.then((workflowMetrics) => {
 				this.workflowMetrics = workflowMetrics;
 			})
-			.catch(e => this.toastyService.error(`Error retrieving workflow metrics: ${e.message}`));
+			.catch(e => this.toastrService.error(`Error retrieving workflow metrics: ${e.message}`));
 	}
 
 	/**
