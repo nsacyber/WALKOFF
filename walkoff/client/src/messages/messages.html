@@ -1,8 +1,8 @@
 <div id="main" class="messagesMain">
 	<h1>Messages</h1>
 
-	<div class="row">
-		<div class="col-6">
+	<div class="row align-items-center mb-3">
+		<div class="col">
 			<button (click)="deleteSelected()" class="btn btn-outline-primary" title="Delete Selected">
 				<i class="fa fa-trash-o"></i>
 			</button>
@@ -13,10 +13,10 @@
 				<i class="fa fa-envelope-o"></i>
 			</button>
 		</div>
-		<div class="col-6">
-			<div class="form-group row">
-				<label class="col-2 col-form-label">Search Filter</label>
-				<div class="col-10">
+		<div class="col-4">
+			<div class="row">
+				<label class="col-auto col-form-label">Search Filter</label>
+				<div class="col">
 					<input class="form-control" [formControl]="filterQuery" />
 				</div>
 			</div>

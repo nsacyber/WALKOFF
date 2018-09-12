@@ -2,11 +2,11 @@
 	<h1>Scheduler</h1>
 
 	<div class="row align-items-center mb-3">
-		<div class="col-2">
+		<div class="col-auto">
 			<button (click)="addScheduledTask()" class="btn btn-outline-primary"><i class="fa fa-plus"></i> Add To Schedule</button>
 		</div>
 
-		<div class="col-4">
+		<div class="col">
 			<div class="row">
 				<h4 class="my-auto mr-2">Scheduler Status: <span id="status">{{schedulerStatus}}</span></h4>
 				
@@ -25,10 +25,10 @@
 			</div>
 		</div>
 
-		<div class="col-6">
+		<div class="col-4">
 			<div class="row">
-				<label class="col-2 col-form-label">Search Filter</label>
-				<div class="col-10">
+				<label class="col-auto col-form-label">Search Filter</label>
+				<div class="col">
 					<input class="form-control" [formControl]="filterQuery" />
 				</div>
 			</div>
