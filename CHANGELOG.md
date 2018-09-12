@@ -2,6 +2,12 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
+## [0.8.5]
+###### 2018-09-12
+
+### Fixed
+* Fixed a bug caused by a new version of the connexion library which made the OpenAPI specification invalid
+
 ## [0.8.4]
 ###### 2018-07-30
 
