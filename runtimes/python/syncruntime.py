@@ -16,9 +16,11 @@ from walkoff.cache import make_cache
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.helpers import ExecutionError
 from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy, ExecutableContext
+from walkoff.worker.workflow_exec_context import RestrictedWorkflowContext
 import jwt
 import logging
-
+from walkoff.events import WalkoffEvent
+from walkoff.multiprocessedexecutor.kafka_senders import KafkaWorkflowResultsSender
 
 app_name = os.environ.get('APP_NAME')
 
@@ -35,6 +37,9 @@ app_creation_lock_prefix = 'app_creation_lock'
 app_instance_created_set_prefix = 'app_instance_created_set'
 cache_separator = ':'
 app_instance_set_name = '{}{}{}'.format(app_instance_created_set_prefix, cache_separator, app_name)
+config = walkoff.config.Config
+config.load_env_vars()
+
 
 def parse_openapi(path):
     logger.debug('Parsing OpenAPI file at {}'.format(path))
@@ -81,14 +86,14 @@ walkoff.config.load_app_apis(app_path)
 execution_post_schema = parse_openapi(os.environ.get('OPENAPI_PATH', 'api.yaml'))
 
 redis_cache = make_redis()
-make_execution_db()
-
+execution_db = make_execution_db()
 
 class ActionExecution(object):
 
-    def __init__(self, strategy, accumulator):
+    def __init__(self, strategy, kafka_sender, accumulator):
         self.strategy = strategy
         self.accumulator = accumulator
+        self.kafka_sender = kafka_sender
 
     def on_post(self, req, resp, workflow_exec_id, action_exec_id):
 
@@ -103,6 +108,7 @@ class ActionExecution(object):
                 )
             )
             raise falcon.HTTPBadRequest('Invalid execution request', str(e))
+
         workflow_context = {'workflow_{}'.format(key): value for key, value in data['workflow_context'].items()}
         workflow_context['workflow_execution_id'] = workflow_exec_id
         self.accumulator.set_key(workflow_exec_id)
@@ -113,6 +119,17 @@ class ActionExecution(object):
             action_context['name'],
             action_context['id']
         )
+
+        restricted_workflow_context = RestrictedWorkflowContext(
+            workflow_exec_id,
+            workflow_context['workflow_id'],
+            workflow_context['workflow_name']
+        )
+
+        @WalkoffEvent.CommonWorkflowSignal.connect
+        def handle_event(sender, **kwargs):
+            self.kafka_sender.handle_event(restricted_workflow_context, sender, **kwargs)
+
         if 'device_id' in action_context:
             app_instance = self.create_device(workflow_context, action_context['device_id'])
         else:
@@ -276,7 +293,10 @@ jwt_secret = os.environ.get('JWT_SECRET')
 api = application = falcon.API(middleware=[JsonMiddleware(), AuthMiddleware(jwt_secret)])
 
 accumulator = ExternallyCachedAccumulator(redis_cache, 'null')
-action_executions = ActionExecution(LocalActionExecutionStrategy(fully_cached=True), accumulator)
+
+kafka_sender = KafkaWorkflowResultsSender(execution_db)
+
+action_executions = ActionExecution(LocalActionExecutionStrategy(fully_cached=True), kafka_sender, accumulator)
 workflow_executions = WorkflowExecution()
 health_resource = Health()
 

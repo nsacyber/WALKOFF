@@ -34,13 +34,25 @@ def client():
 
 
 @pytest.fixture
+def kafka_client():
+    class MockKafkaResultsSender:
+
+        def __init__(self):
+            self.call_history = []
+
+        def handle_event(self, workflow, sender, **kwargs):
+            self.call_history.append((workflow, sender, kwargs))
+
+    return MockKafkaResultsSender()
+
+@pytest.fixture
 def accumulator():
     return ExternallyCachedAccumulator(runtime.redis_cache, 'null')
 
 
 @pytest.fixture
-def action_executor(accumulator):
-    return runtime.ActionExecution(LocalActionExecutionStrategy(fully_cached=True), accumulator)
+def action_executor(accumulator, kafka_client):
+    return runtime.ActionExecution(LocalActionExecutionStrategy(fully_cached=True), kafka_client, accumulator)
 
 
 def make_execute_url(workflow_execution_id, executable_execution_id):

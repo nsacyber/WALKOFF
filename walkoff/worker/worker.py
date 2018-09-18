@@ -42,6 +42,7 @@ class Worker(object):
         else:
             walkoff.config.Config.load_config(config_path)
             walkoff.config.Config.load_env_vars()
+            walkoff.config.Config.read_and_set_zmq_keys()
 
         self.cache = walkoff.cache.make_cache(walkoff.config.Config.CACHE)
 

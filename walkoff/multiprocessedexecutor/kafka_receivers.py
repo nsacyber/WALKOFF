@@ -36,7 +36,7 @@ class KafkaWorkflowResultsReceiver(object):
     def receive_results(self):
         """Constantly receives data from the Kafka Consumer and handles it accordingly"""
         logger.info('Starting Kafka workflow results receiver')
-        self.receiver.subscribe([self.topic])
+        self.receiver.subscribe(['{}.*'.format(self.topic)])
         while not self.thread_exit:
             raw_message = self.receiver.poll(1.0)
             if raw_message is None:
