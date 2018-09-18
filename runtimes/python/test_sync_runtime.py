@@ -2,6 +2,13 @@ from datetime import datetime, timedelta
 from uuid import uuid4
 import logging
 
+import sys
+import os
+
+sys.path.append(os.path.abspath('../..'))
+
+print('HERHERHEHRE')
+
 import jwt
 import pytest
 import syncruntime as runtime
@@ -11,6 +18,9 @@ from walkoff.appgateway import get_app
 from walkoff.appgateway.accumulators import ExternallyCachedAccumulator
 from walkoff.cache import make_cache
 from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy
+
+
+
 
 
 logging.disable(logging.CRITICAL)  # comment out to see logs

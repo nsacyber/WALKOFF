@@ -37,8 +37,7 @@ app_creation_lock_prefix = 'app_creation_lock'
 app_instance_created_set_prefix = 'app_instance_created_set'
 cache_separator = ':'
 app_instance_set_name = '{}{}{}'.format(app_instance_created_set_prefix, cache_separator, app_name)
-config = walkoff.config.Config
-config.load_env_vars()
+walkoff.config.Config.load_env_vars()
 
 
 def parse_openapi(path):
@@ -81,6 +80,8 @@ def make_execution_db():
     return execution_db
 
 app_path = os.environ.get('APP_PATH', './app')
+print(app_path)
+print(os.path.abspath(app_path))
 cache_apps(app_path)
 walkoff.config.load_app_apis(app_path)
 execution_post_schema = parse_openapi(os.environ.get('OPENAPI_PATH', 'api.yaml'))
