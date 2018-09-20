@@ -1,10 +1,12 @@
 import argparse
-import os
 import logging
+import os
+import threading
+
+import walkoff.cache
 import walkoff.config
 from walkoff.senders_receivers_helpers import make_results_receiver
-import threading
-import time
+from walkoff.server.app import create_app
 
 logger = logging.getLogger(__name__)
 
@@ -24,16 +26,16 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
 
-    if args.config:
-        walkoff.config.initialize(args.config)
+    walkoff.config.initialize(args.config)
+    app = create_app(walkoff.config.Config)
 
     receiver = make_results_receiver()
     receiver_thread = threading.Thread(target=receiver.receive_results)
     receiver_thread.start()
 
     try:
-        while True:
-            time.sleep(100)
+        server = setup_server(app, host, port)
+        server.serve_forever()
     except KeyboardInterrupt:
         receiver.thread_exit = True
         receiver_thread.join(timeout=1)

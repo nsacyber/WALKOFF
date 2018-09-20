@@ -6,17 +6,18 @@ from jinja2 import FileSystemLoader
 from healthcheck import HealthCheck
 
 import interfaces
-import walkoff.config
 from walkoff.extensions import db, jwt
 from walkoff.helpers import import_submodules
 from walkoff.server import context
 from walkoff.server.blueprints import custominterface, workflowresults, notifications, console, root
+from flask import Flask
+import walkoff.config
 # import walkoff.server.workflowresults
 
 logger = logging.getLogger(__name__)
 
 
-def register_blueprints(flaskapp):
+def register_blueprints(flaskapp, separate_interfaces=False):
     flaskapp.logger.info('Registering builtin blueprints')
     flaskapp.register_blueprint(custominterface.custom_interface_page, url_prefix='/custominterfaces/<interface>')
     flaskapp.register_blueprint(workflowresults.workflowresults_page, url_prefix='/api/streams/workflowqueue')
@@ -25,7 +26,8 @@ def register_blueprints(flaskapp):
     flaskapp.register_blueprint(root.root_page, url_prefix='/')
     for blueprint in (workflowresults.workflowresults_page, notifications.notifications_page, console.console_page):
         blueprint.cache = flaskapp.running_context.cache
-    __register_all_app_blueprints(flaskapp)
+    if not separate_interfaces:
+        __register_all_app_blueprints(flaskapp)
 
 
 def __get_blueprints_in_module(module):
@@ -70,18 +72,27 @@ def add_health_check(_app):
         health.add_check(check)
 
 
-def create_app(app_config):
-    connexion_app = connexion.App(__name__, specification_dir='../api/')
-    _app = connexion_app.app
+def create_app(app_config, interface_app=False):
+    if not interface_app:
+        app = connexion.App(__name__, specification_dir='../api/')
+    else:
+        app = Flask(__name__)
+
+    _app = app.app
     _app.jinja_loader = FileSystemLoader(['walkoff/templates'])
     _app.config.from_object(app_config)
 
     db.init_app(_app)
-    jwt.init_app(_app)
-    connexion_app.add_api('composed_api.yaml')
 
-    _app.running_context = context.Context(walkoff.config.Config)
-    register_blueprints(_app)
+    if not interface_app:
+        jwt.init_app(_app)
+        app.add_api('composed_api.yaml')
+        _app.running_context = context.Context()
+        register_blueprints(_app, walkoff.config.Config.SEPARATE_INTERFACES)
+    else:
+        _app.running_context = context.Context(executor=False)
+        __register_all_app_blueprints(_app)
+
     add_health_check(_app)
 
     return _app
