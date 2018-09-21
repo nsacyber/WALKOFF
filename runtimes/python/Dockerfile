@@ -1,4 +1,4 @@
-FROM python:3.6-alpine
+FROM python:{python_version}-alpine
 
 # Removing unneeded Python stdlib
 RUN rm -r /usr/local/lib/python*/ensurepip                    && \
@@ -42,9 +42,12 @@ RUN find /usr/local \
 RUN rm -rf /root/.cache /var/cache /usr/share/terminfo
 
 COPY syncruntime.py /app/syncruntime.py
+COPY {app_path} /app/app/{app_name}
+
+#TODO: These files don't exist in the directory, so they'll need to be moved in before you build the image
 COPY api.yaml /app/api.yaml
 COPY walkoff_schema.json /app/walkoff_schema.json
-COPY testapp/HelloWorld /app/app/HelloWorld
+
 
 WORKDIR /app
 
