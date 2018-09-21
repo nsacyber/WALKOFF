@@ -80,11 +80,10 @@ def add_health_check(_app):
 
 def create_app(interface_app=False):
     if not interface_app:
-        app = connexion.App(__name__, specification_dir='../api/')
+        _app = connexion.App(__name__, specification_dir='../api/').app
     else:
-        app = Flask(__name__)
+        _app = Flask(__name__)
 
-    _app = app.app
     _app.jinja_loader = FileSystemLoader(['walkoff/templates'])
     _app.config.from_object(walkoff.config.Config)
 

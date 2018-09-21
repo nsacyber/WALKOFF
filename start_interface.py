@@ -78,7 +78,7 @@ if __name__ == '__main__':
     args = parse_args()
 
     walkoff.config.initialize(args.config)
-    app = create_app()
+    app = create_app(interface_app=True)
 
     walkoff.config.Config.WORKFLOW_RESULTS_HANDLER = 'kafka'
     receiver = make_results_receiver()
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     receiver_thread.start()
 
     try:
-        run(args, app, *convert_host_port(args))
+        run(app, *convert_host_port(args))
     except KeyboardInterrupt:
         logger.info('Caught KeyboardInterrupt! Please wait a few seconds for WALKOFF interface server to shutdown.')
         receiver.thread_exit = True
