@@ -25,3 +25,5 @@ psycopg2-binary
 dill
 redis
 confluent-kafka
+fluent-logger
+msgpack
