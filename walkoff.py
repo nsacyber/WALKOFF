@@ -103,7 +103,7 @@ if __name__ == "__main__":
     exit_code = 0
     compose_api()
     walkoff.config.initialize(args.config)
-    app = create_app(walkoff.config.Config)
+    app = create_app()
     import_workflows(app)
     try:
         run(args, app, *convert_host_port(args))

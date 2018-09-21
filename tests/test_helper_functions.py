@@ -15,7 +15,7 @@ class TestHelperFunctions(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         initialize_test_config()
-        cls.app = create_app(walkoff.config.Config)
+        cls.app = create_app()
         cls.app.testing = True
         cls.context = cls.app.test_request_context()
         cls.context.push()
