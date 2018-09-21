@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import json
+import ujson
 import os
 from timeit import default_timer as timer
 
@@ -17,7 +17,6 @@ from walkoff.executiondb import ExecutionDatabase
 from walkoff.helpers import ExecutionError
 from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy, ExecutableContext
 from walkoff.worker.workflow_exec_context import RestrictedWorkflowContext
-import jwt
 import logging
 from walkoff.events import WalkoffEvent
 from walkoff.multiprocessedexecutor.kafka_senders import KafkaWorkflowResultsSender
@@ -30,8 +29,8 @@ def make_logger():
     logging.basicConfig(level=os.environ.get('LOGLEVEL', 'INFO'))
     return logger_
 
-logger = make_logger()
 
+logger = make_logger()
 
 app_creation_lock_prefix = 'app_creation_lock'
 app_instance_created_set_prefix = 'app_instance_created_set'
@@ -48,7 +47,8 @@ def parse_openapi(path):
             definitions = openapi['definitions']
             schema = definitions['ExecutionContext']
 
-            for position, replacement in (('workflow_context', 'WorkflowContext'), ('executable_context', 'ExecutableContext')):
+            for position, replacement in (
+            ('workflow_context', 'WorkflowContext'), ('executable_context', 'ExecutableContext')):
                 schema['properties'][position] = definitions[replacement]
 
             schema['properties']['arguments']['items'] = definitions['Argument']
@@ -56,6 +56,7 @@ def parse_openapi(path):
     except (OSError, IOError) as e:
         logger.fatal('Could not parse OpenAPI specification', exc_info=True)
         raise
+
 
 def make_redis():
     redis_host = os.environ.get('REDIS_HOST')
@@ -72,6 +73,7 @@ def make_redis():
         raise
     return redis_cache
 
+
 def make_execution_db():
     execution_db_path = os.environ.get('EXECUTION_DB_PATH')
     execution_db_type = os.environ.get('EXECUTION_DB_TYPE', 'postgresql')
@@ -79,15 +81,15 @@ def make_execution_db():
     execution_db = ExecutionDatabase(execution_db_type, execution_db_path)
     return execution_db
 
+
 app_path = os.environ.get('APP_PATH', './app')
-print(app_path)
-print(os.path.abspath(app_path))
+
 cache_apps(app_path)
 walkoff.config.load_app_apis(app_path)
 execution_post_schema = parse_openapi(os.environ.get('OPENAPI_PATH', 'api.yaml'))
-
 redis_cache = make_redis()
 execution_db = make_execution_db()
+
 
 class ActionExecution(object):
 
@@ -183,7 +185,7 @@ class ActionExecution(object):
         redis_key = ActionExecution.format_app_instance_key(workflow_exec_id, device_id)
         app_class = get_app(app_name)
         if not redis_cache.cache.sismember(app_instance_set_name, redis_key):
-            #If workflows become parallelized, this will need to be locked
+            # If workflows become parallelized, this will need to be locked
             logger.info('Creating new app instance')
             app_instance = app_class(app_name, device_id, workflow_context)
             redis_cache.cache.sadd(app_instance_set_name, redis_key)
@@ -206,8 +208,8 @@ class WorkflowExecution(object):
     def format_scan_pattern(workflow_exec_id):
         return '{}{}*'.format(workflow_exec_id, cache_separator)
 
-class Health(object):
 
+class Health(object):
     no_auth = True
 
     def on_get(self, req, resp):
@@ -219,7 +221,7 @@ class Health(object):
                 'cache': [
                     {'test_name': 'pinging',
                      'result': 'pass',
-                     'time': str(end-start)
+                     'time': str(end - start)
                      }
                 ]
             }
@@ -244,7 +246,7 @@ class JsonMiddleware(object):
         if not req.content_length:
             return
         try:
-            req.json = json.loads(req.stream.read().decode('utf-8'))
+            req.json = ujson.loads(req.stream.read().decode('utf-8'))
         except UnicodeDecodeError:
             logger.error('Could not decode request as UTF-8')
             raise falcon.HTTPBadRequest("Invalid encoding", "Could not decode as UTF-8")
@@ -253,45 +255,7 @@ class JsonMiddleware(object):
             raise falcon.HTTPBadRequest("Malformed JSON", "Syntax error")
 
 
-class AuthMiddleware(object):
-
-    def __init__(self, secret):
-        self.secret = secret
-
-    def process_resource(self, req, resp, resource, params):
-        if getattr(resource, 'no_auth', False):
-            return
-
-        token = req.get_header('Authorization')
-        if token is None:
-            logger.error('No Authorization header provided')
-            description = 'Please provide an auth token as part of the request.'
-            raise falcon.HTTPUnauthorized('Auth token required', description)
-
-        token_parts = token.split()
-        if token_parts[0] != 'Bearer':
-            logger.error('Bearer was no part of Authorization header')
-            description = 'Token must be a header of the form Authorization: Bearer <token>.'
-            raise falcon.HTTPUnauthorized('Auth token improperly formatted', description)
-        token = token_parts[1]
-        if not self._token_is_valid(token):
-            logger.error('Authorization token was invalid')
-            description = 'The provided auth token is not valid. Please request a new token and try again.'
-
-            raise falcon.HTTPUnauthorized('Authentication required', description)
-
-    def _token_is_valid(self, token):
-        try:
-            options = {'verify_exp': True}
-            jwt.decode(token, self.secret, verify='True', algorithms=['HS256'], options=options)
-            return True
-        except jwt.DecodeError:
-            return False
-
-
-jwt_secret = os.environ.get('JWT_SECRET')
-
-api = application = falcon.API(middleware=[JsonMiddleware(), AuthMiddleware(jwt_secret)])
+api = application = falcon.API(middleware=[JsonMiddleware()])
 
 accumulator = ExternallyCachedAccumulator(redis_cache, 'null')
 

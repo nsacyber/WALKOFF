@@ -7,9 +7,6 @@ import os
 
 sys.path.append(os.path.abspath('../..'))
 
-print('HERHERHEHRE')
-
-import jwt
 import pytest
 import syncruntime as runtime
 from falcon import testing
@@ -19,23 +16,7 @@ from walkoff.appgateway.accumulators import ExternallyCachedAccumulator
 from walkoff.cache import make_cache
 from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy
 
-
-
-
-
 logging.disable(logging.CRITICAL)  # comment out to see logs
-
-def make_token():
-    return jwt.encode(
-        {'user_identifier': 1, 'exp': datetime.utcnow() + timedelta(seconds=5)},
-        runtime.jwt_secret,
-        algorithm='HS256'
-    ).decode("utf-8")
-
-
-@pytest.fixture
-def auth_header():
-    return {'Authorization': 'Bearer {}'.format(make_token())}
 
 
 @pytest.fixture
@@ -103,7 +84,7 @@ def make_workflow_context_from_exec_json(exec_json, workflow_exec_id):
 
 
 @pytest.mark.parametrize("function_type", ['transform', 'condition', 'action'])
-def test_unknown_function(function_type, client, auth_header):
+def test_unknown_function(function_type, client):
     workflow_execution_id = str(uuid4())
     executable_execution_id = str(uuid4())
 
@@ -111,7 +92,7 @@ def test_unknown_function(function_type, client, auth_header):
     doc = make_execution_json(function_type, invalid_name)
 
     url = make_execute_url(workflow_execution_id, executable_execution_id)
-    resp = client.simulate_post(url, json=doc, headers=auth_header)
+    resp = client.simulate_post(url, json=doc)
     assert resp.status_code == 404
     expected_response = {
         'title': 'Unknown {}'.format(function_type),
@@ -120,7 +101,7 @@ def test_unknown_function(function_type, client, auth_header):
     assert resp.json == expected_response
 
 
-def test_execute_transform(client, accumulator, auth_header):
+def test_execute_transform(client, accumulator):
     workflow_execution_id = str(uuid4())
     executable_execution_id = str(uuid4())
     accumulator.set_key(workflow_execution_id)
@@ -138,14 +119,14 @@ def test_execute_transform(client, accumulator, auth_header):
     executable_id = get_exec_id_from_exec_json(doc)
 
     url = make_execute_url(workflow_execution_id, executable_execution_id)
-    resp = client.simulate_post(url, json=doc, headers=auth_header)
+    resp = client.simulate_post(url, json=doc)
     assert resp.status_code == 200
     expected_key = accumulator.format_key(executable_id)
     assert resp.json == {'status': 'Success', 'result_key': expected_key}
     # assert accumulator[expected_key].decode('utf-8') == '1' #unknown why this says key doesn't exist. Manual testing with redis-cli confirms it exists
 
 
-def test_execute_transform_execution_error(client, accumulator, auth_header):
+def test_execute_transform_execution_error(client, accumulator):
     workflow_execution_id = str(uuid4())
     executable_execution_id = str(uuid4())
     accumulator.set_key(workflow_execution_id)
@@ -162,13 +143,13 @@ def test_execute_transform_execution_error(client, accumulator, auth_header):
     doc = make_execution_json('transform', 'select json', arguments=arguments)
     executable_id = get_exec_id_from_exec_json(doc)
     url = make_execute_url(workflow_execution_id, executable_execution_id)
-    resp = client.simulate_post(url, json=doc, headers=auth_header)
+    resp = client.simulate_post(url, json=doc)
     assert resp.status_code == 200
     expected_key = accumulator.format_key(executable_id)
     assert resp.json == {'status': 'UnhandledException', 'result_key': expected_key}
 
 
-def test_execute_condition(client, accumulator, auth_header):
+def test_execute_condition(client, accumulator):
     workflow_execution_id = str(uuid4())
     executable_execution_id = str(uuid4())
     accumulator.set_key(workflow_execution_id)
@@ -186,13 +167,13 @@ def test_execute_condition(client, accumulator, auth_header):
     executable_id = get_exec_id_from_exec_json(doc)
 
     url = make_execute_url(workflow_execution_id, executable_execution_id)
-    resp = client.simulate_post(url, json=doc, headers=auth_header)
+    resp = client.simulate_post(url, json=doc)
     assert resp.status_code == 200
     expected_key = accumulator.format_key(executable_id)
     assert resp.json == {'status': 'Success', 'result_key': expected_key}
 
 
-def test_execute_condition_execution_error(client, accumulator, auth_header):
+def test_execute_condition_execution_error(client, accumulator):
     workflow_execution_id = str(uuid4())
     executable_execution_id = str(uuid4())
     accumulator.set_key(workflow_execution_id)
@@ -210,13 +191,13 @@ def test_execute_condition_execution_error(client, accumulator, auth_header):
     executable_id = get_exec_id_from_exec_json(doc)
 
     url = make_execute_url(workflow_execution_id, executable_execution_id)
-    resp = client.simulate_post(url, json=doc, headers=auth_header)
+    resp = client.simulate_post(url, json=doc)
     assert resp.status_code == 200
     expected_key = accumulator.format_key(executable_id)
     assert resp.json == {'status': 'UnhandledException', 'result_key': expected_key}
 
 
-def test_execute_action_no_device(client, accumulator, auth_header):
+def test_execute_action_no_device(client, accumulator):
     workflow_execution_id = str(uuid4())
     executable_execution_id = str(uuid4())
     accumulator.set_key(workflow_execution_id)
@@ -230,7 +211,7 @@ def test_execute_action_no_device(client, accumulator, auth_header):
     executable_id = get_exec_id_from_exec_json(doc)
 
     url = make_execute_url(workflow_execution_id, executable_execution_id)
-    resp = client.simulate_post(url, json=doc, headers=auth_header)
+    resp = client.simulate_post(url, json=doc)
     assert resp.status_code == 200
     expected_key = accumulator.format_key(executable_id)
     assert resp.json == {'status': 'Success', 'result_key': expected_key}
@@ -271,7 +252,7 @@ def test_execute_action_device_not_in_cache(action_executor):
     assert app_instance.introMessage == {'message': 'HELLO WORLD'}
 
 
-def test_workflow_execution_deleted(client, auth_header):
+def test_workflow_execution_deleted(client):
     workflow_execution_id = str(uuid4())
 
     def get_num_keys():
@@ -285,7 +266,7 @@ def test_workflow_execution_deleted(client, auth_header):
 
     assert get_num_keys() == num_app_instances_inserted
 
-    resp = client.simulate_delete('/workflows/{}'.format(workflow_execution_id), headers=auth_header)
+    resp = client.simulate_delete('/workflows/{}'.format(workflow_execution_id))
     assert resp.status_code == 204
     assert get_num_keys() == 0
 
@@ -341,55 +322,6 @@ def test_execute_invalid_workflow_uuid(url, is_execute, client):
     assert resp.status_code == 404
 
 
-def test_execute_no_token(client):
-    workflow_execution_id = str(uuid4())
-    executable_execution_id = str(uuid4())
-    arguments = [
-        {
-            'name': 'arg1',
-            'value': 'aaa'
-        }
-    ]
-    doc = make_execution_json('action', 'global1', arguments=arguments)
-
-    url = make_execute_url(workflow_execution_id, executable_execution_id)
-    resp = client.simulate_post(url, json=doc)
-    assert resp.status_code == 401
-
-
-@pytest.mark.parametrize('token', ['invalid {}'.format(make_token()), '{}'.format(make_token()), 'Bearer invalid'])
-def test_execute_invalid_token(token, client):
-    workflow_execution_id = str(uuid4())
-    executable_execution_id = str(uuid4())
-    arguments = [
-        {
-            'name': 'arg1',
-            'value': 'aaa'
-        }
-    ]
-    doc = make_execution_json('action', 'global1', arguments=arguments)
-
-    url = make_execute_url(workflow_execution_id, executable_execution_id)
-    resp = client.simulate_post(url, json=doc, headers={'Authorization': token})
-    assert resp.status_code == 401
-
-
-def test_workflow_execution_deleted_no_token(client):
-    workflow_execution_id = str(uuid4())
-
-    resp = client.simulate_delete('/workflows/{}'.format(workflow_execution_id))
-    assert resp.status_code == 401
-
-
-@pytest.mark.parametrize('token', ['invalid {}'.format(make_token()), '{}'.format(make_token()), 'Bearer invalid'])
-def test_workflow_execution_deleted_no_token(token, client):
-    workflow_execution_id = str(uuid4())
-
-    resp = client.simulate_delete('/workflows/{}'.format(workflow_execution_id), headers={'Authorization': token})
-    assert resp.status_code == 401
-
-
-
 def invalid_execution_request_generator():
     original_request = make_execution_json('action', 'something')
 
@@ -421,9 +353,9 @@ def invalid_execution_request_generator():
 
 
 @pytest.mark.parametrize('request', [request for request in invalid_execution_request_generator()])
-def test_execute_invalid_request(request, client, auth_header):  # test endpoint validation
+def test_execute_invalid_request(request, client):  # test endpoint validation
     workflow_execution_id = str(uuid4())
     executable_execution_id = str(uuid4())
     url = make_execute_url(workflow_execution_id, executable_execution_id)
-    resp = client.simulate_post(url, json=request, headers=auth_header)
+    resp = client.simulate_post(url, json=request)
     assert resp.status_code == 400

@@ -172,30 +172,6 @@ matrix:
           - master
           - development
 
-    - language: python
-      os: linux
-      dist: xenial
-      sudo: true
-      python: 3.7
-      name: "Python 3.7 Runtime Unit Tests"
-      services:
-        - redis-server
-      install:
-        - pip install -r requirements.txt
-        - pip install -r requirements-test.txt
-        - pip install -r runtimes/python/requirements.txt
-        - pip install -r runtimes/python/requirements-test.txt
-      script:
-        - cp apps/__init__.py runtimes/python/testapp/__init__.py
-        - cp apps/messaging.py runtimes/python/testapp/messaging.py
-        - cd runtimes/python
-        - pytest -s -v
-      branches:
-        only:
-          - master
-          - development
-
-
     ###########################
     ####   UI Unit Tests   ####
     ###########################
