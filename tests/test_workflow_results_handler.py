@@ -26,6 +26,7 @@ class TestWorkflowResultsHandler(TestCase):
     @classmethod
     def setUpClass(cls):
         Config.load_env_vars()
+        Config.read_and_set_zmq_keys()
         server_secret_file = os.path.join(Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
         cls.server_public, cls.server_secret = auth.load_certificate(server_secret_file)
         client_secret_file = os.path.join(Config.ZMQ_PRIVATE_KEYS_PATH, "client.key_secret")

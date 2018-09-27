@@ -4,12 +4,14 @@ import logging.config
 import os
 import sys
 import warnings
+from io import BytesIO
 from os.path import isfile, join, abspath
 
+import msgpack
 import yaml
+from zmq import auth
 
 from walkoff.helpers import format_db_path
-from zmq import auth
 
 logger = logging.getLogger(__name__)
 
@@ -205,13 +207,9 @@ class Config(object):
 
     @classmethod
     def load_env_vars(cls):
-        cls.EXECUTION_DB_USERNAME = os.environ.get("EXECUTION_DB_USERNAME")
-        cls.EXECUTION_DB_PASSWORD = os.environ.get("EXECUTION_DB_PASSWORD")
-
-        cls.WALKOFF_DB_USERNAME = os.environ.get("WALKOFF_DB_USERNAME")
-        cls.WALKOFF_DB_PASSWORD = os.environ.get("WALKOFF_DB_PASSWORD")
-
-        cls.read_and_set_zmq_keys()
+        for field in (field for field in dir(cls) if field.isupper()):
+            if field in os.environ:
+                setattr(cls, field, os.environ.get(field))
 
     @classmethod
     def read_and_set_zmq_keys(cls):
@@ -226,7 +224,14 @@ def initialize(config_path=None, load=True):
     if load:
         Config.load_config(config_path)
         Config.load_env_vars()
+        Config.read_and_set_zmq_keys()
     setup_logger()
     from walkoff.appgateway import cache_apps
     cache_apps(Config.APPS_PATH)
     load_app_apis()
+
+
+def fluent_overflow_handler(pendings):
+    unpacker = msgpack.Unpacker(BytesIO(pendings))
+    for unpacked in unpacker:
+        print(unpacked)

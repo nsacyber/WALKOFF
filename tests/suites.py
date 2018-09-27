@@ -19,8 +19,8 @@ __server_tests = [test_workflow_server, test_app_api_server, test_configuration_
 server_suite = TestSuite()
 add_tests_to_suite(server_suite, __server_tests)
 
-__execution_tests = [test_validatable, test_argument, test_action, test_helper_functions,
-                     test_workflow_results_handler, test_make_cache,
+__execution_tests = [test_validatable, test_argument, test_remote_action_exec_strategy, test_action,
+                     test_helper_functions, test_workflow_results_handler, test_make_cache,
                      test_workflow_communication_receiver, test_workflow_receiver,
                      test_transform, test_condition, test_branch, test_app_instance, test_metrics, test_app_utilities,
                      test_input_validation, test_decorators, test_app_api_validation, test_playbook,

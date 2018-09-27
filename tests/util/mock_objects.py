@@ -24,7 +24,6 @@ from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResult
 from walkoff.multiprocessedexecutor.zmq_receivers import ZmqWorkflowResultsReceiver
 from walkoff.multiprocessedexecutor.zmq_senders import ZmqWorkflowResultsSender
 from walkoff.proto.build.data_pb2 import ExecuteWorkflowMessage
-from walkoff.worker.action_exec_strategy import make_execution_strategy
 from walkoff.worker.workflow_exec_strategy import WorkflowExecutor
 from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter
 
@@ -91,8 +90,7 @@ class MockLoadBalancer(object):
 
         self.execution_db = ExecutionDatabase.instance
 
-        self.workflow_executor = WorkflowExecutor(2, self.execution_db, make_execution_strategy(walkoff.config.Config),
-                                                  AppInstanceRepo)
+        self.workflow_executor = WorkflowExecutor(walkoff.config.Config, 2, self.execution_db, AppInstanceRepo)
 
     def on_data_sent(self, sender, **kwargs):
         workflow_ctx = self.workflow_executor.get_current_workflow()

@@ -265,7 +265,9 @@ def json_dumps_or_string(val):
 
 
 class ExecutionError(Exception):
-    def __init__(self, original_exception, message=None):
-        self.exc = original_exception
+    def __init__(self, original_exception=None, message=None):
+        if original_exception is None and message is None:
+            raise ValueError('Either original exception or message must be provided')
+        self.exc = original_exception or None
         self.message = message or format_exception_message(original_exception)
         super(ExecutionError, self).__init__()

@@ -26,7 +26,7 @@ class AppInstanceRepo(object):
 
         Args:
             action (Action): The Action which has the Device
-            workflow_ctx (WorkflowExecutionContext): The Workflow which has the Action
+            workflow_ctx (WorkflowExecutionContext): The context of the workflow
 
         Returns:
             (tuple(app_name, device_id)): A tuple containing the app name for the Action, and the device_id int

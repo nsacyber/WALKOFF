@@ -34,8 +34,7 @@ class KafkaWorkflowResultsSender(object):
             logger.error('Kafka message delivery failed: {}'.format(err))
 
     def _format_topic(self, event):
-        # return '{}.{}'.format(self.topic, event.name)
-        return self.topic
+        return '{}.{}'.format(self.topic, event.name)
 
     def handle_event(self, workflow, sender, **kwargs):
         """Listens for the data_sent callback, which signifies that an execution element needs to trigger a

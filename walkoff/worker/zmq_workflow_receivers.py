@@ -93,7 +93,7 @@ class ZmqWorkflowCommunicationReceiver(object):
                 elif message_type == CommunicationPacket.EXIT:
                     logger.info('Worker received exit message')
                     break
-        raise StopIteration
+        return
 
     @staticmethod
     def _format_workflow_message_data(message):
@@ -178,7 +178,7 @@ class WorkflowReceiver(object):
                           env_vars
             else:
                 yield None
-        raise StopIteration
+        return
 
     def is_ready(self):
         return self._ready

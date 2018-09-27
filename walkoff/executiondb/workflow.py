@@ -72,24 +72,6 @@ class Workflow(ExecutionElement, Execution_Base):
                     branches.append(branch)
         return branches
 
-    # TODO: This isn't being used anywhere...do we need it?
-    def remove_action(self, action_id):
-        """Removes a Action object from the Workflow's list of Actions given the Action ID.
-
-        Args:
-            action_id (UUID): The ID of the Action object to be removed.
-
-        Returns:
-            (bool): True on success, False otherwise.
-        """
-        action_to_remove = next((action for action in self.actions if action.id == action_id), None)
-        self.actions.remove(action_to_remove)
-        self.branches[:] = [branch for branch in self.branches if
-                            (branch.source_id != action_id and branch.destination_id != action_id)]
-
-        logger.debug('Removed action {0} from workflow {1}'.format(action_id, self.name))
-        return True
-
 
 @event.listens_for(Workflow, 'before_update')
 def validate_before_update(mapper, connection, target):

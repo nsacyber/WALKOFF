@@ -7,6 +7,7 @@ from walkoff.executiondb.saved_workflow import SavedWorkflow
 import threading
 
 from walkoff.worker.workflow_exec_context import WorkflowExecutionContext
+from walkoff.worker.action_exec_strategy import make_execution_strategy
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ class SerialWorkflowExecutionStrategy(object):
         if environment_variables:
             workflow_context.accumulator.update({env_var.id: env_var.value for env_var in environment_variables})
 
-        logger.info('Executing workflow {0}'.format(workflow_context.name))
+        logger.info('Executing workflow {}'.format(workflow_context.name))
         workflow_context.send_event(WalkoffEvent.WorkflowExecutionStart)
         start = start if start is not None else workflow_context.workflow_start
         if not isinstance(start, UUID):
@@ -42,7 +43,7 @@ class SerialWorkflowExecutionStrategy(object):
         actions = SerialWorkflowExecutionStrategy.action_iter(workflow_context, action_execution_strategy, start=start)
         for action in (action_ for action_ in actions if action_ is not None):
             workflow_context.executing_action = action
-            logger.debug('Executing action {0} of workflow {1}'.format(action, workflow_context.name))
+            logger.debug('Executing action {} of workflow {}'.format(action, workflow_context.name))
 
             if workflow_context.is_paused:
                 workflow_context.is_paused = False
@@ -58,19 +59,19 @@ class SerialWorkflowExecutionStrategy(object):
 
             device_id = workflow_context.app_instance_repo.setup_app_instance(action, workflow_context)
             if device_id:
-                result = action.execute(action_execution_strategy, workflow_context.accumulator,
+                result_status = action.execute(action_execution_strategy, workflow_context.accumulator,
                                         instance=workflow_context.get_app_instance(device_id),
                                         arguments=start_arguments, resume=resume)
             else:
-                result = action.execute(action_execution_strategy, workflow_context.accumulator,
+                result_status = action.execute(action_execution_strategy, workflow_context.accumulator,
                                         arguments=start_arguments, resume=resume)
 
-            workflow_context.update_status(result.status)
+            workflow_context.update_status(result_status)
 
             if start_arguments:
                 start_arguments = None
 
-            if result and result.status == "trigger":
+            if result_status == "trigger":
                 return
 
         workflow_context.shutdown()
@@ -125,16 +126,12 @@ class WorkflowExecutor(object):
         'serial': SerialWorkflowExecutionStrategy
     }
 
-    def __init__(self, max_workflows, execution_db, action_execution_stategy, app_instance_repo_class,
-                 executing_workflow_repo=dict):
+    def __init__(self, config, max_workflows, execution_db, app_instance_repo_class, executing_workflow_repo=dict):
         self.max_workflows = max_workflows
         self.execution_db = execution_db
-        self.action_execution_strategy = action_execution_stategy
+        self.config = config
         self._app_instance_repo_class = app_instance_repo_class
         self.executing_workflows = executing_workflow_repo()
-        self.workflow_execution_strategies = {
-            key: strategy(action_execution_stategy) for key, strategy in self.workflow_execution_strategies.items()
-        }
         self._lock = threading.Lock()
 
     @property
@@ -210,7 +207,9 @@ class WorkflowExecutor(object):
         with self._lock:
             self.executing_workflows[threading.current_thread().name] = workflow_context
 
-        self.workflow_execution_strategies['serial'].execute(workflow_context, start=start,
+        action_execution_strategy = make_execution_strategy(self.config, workflow_context)
+        workflow_execution_strategy = self.workflow_execution_strategies['serial'](action_execution_strategy)
+        workflow_execution_strategy.execute(workflow_context, start=start,
                                                              start_arguments=start_arguments, resume=resume,
                                                              environment_variables=environment_variables)
         with self._lock:

@@ -11,3 +11,4 @@ def initialize_test_config():
     walkoff.config.app_apis = {}
     walkoff.config.load_app_apis()
     walkoff.config.Config.load_env_vars()
+    walkoff.config.Config.read_and_set_zmq_keys()

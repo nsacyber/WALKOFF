@@ -10,6 +10,14 @@
     },
     "simple_with_proc": {
       "format": "[%(asctime)s] %(processName)s %(threadName)s %(levelname)s - %(message)s"
+    },
+    "fluent_fmt": {
+      "()": "fluent.handler.FluentRecordFormatter",
+      "format": {
+        "level": "%(levelname)s",
+        "hostname": "%(hostname)s",
+        "where": "%(module)s.%(funcName)s"
+      }
     }
   },
   "handlers": {
@@ -41,16 +49,25 @@
       "maxBytes": 10485760,
       "backupCount": 20,
       "encoding": "utf8"
+    },
+    "fluent": {
+      "class": "fluent.handler.FluentHandler",
+      "host": "localhost",
+      "port": 24224,
+      "tag": "fluent.logging",
+      "buffer_overflow_handler": "walkoff.config.fluent_overflow_handler",
+      "formatter": "fluent_fmt",
+      "level": "NOTSET"
     }
   },
   "loggers": {
     "walkoff": {
       "level": "INFO",
-      "handlers": ["file_handler"]
+      "handlers": ["file_handler", "fluent"]
     },
     "apps": {
       "level": "DEBUG",
-      "handlers": ["file_handler", "console_logs"]
+      "handlers": ["file_handler", "console_logs", "fluent"]
     },
     "connexion": {
       "level": "ERROR",

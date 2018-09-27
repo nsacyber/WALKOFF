@@ -1,7 +1,6 @@
 import walkoff.cache
 import walkoff.executiondb
 import walkoff.scheduler
-from walkoff.worker.action_exec_strategy import make_execution_strategy
 import walkoff.config
 
 
@@ -18,8 +17,7 @@ class Context(object):
             self.cache = walkoff.cache.make_cache(walkoff.config.Config.CACHE)
             if executor:
                 import walkoff.multiprocessedexecutor.multiprocessedexecutor as executor
-                action_execution_strategy = make_execution_strategy(walkoff.config.Config)
-                self.executor = executor.MultiprocessedExecutor(self.cache, action_execution_strategy)
+                self.executor = executor.MultiprocessedExecutor(self.cache, walkoff.config.Config)
                 self.scheduler = walkoff.scheduler.Scheduler()
 
     def inject_app(self, app):
