@@ -80,7 +80,8 @@ def add_health_check(_app):
 
 def create_app(interface_app=False):
     if not interface_app:
-        _app = connexion.App(__name__, specification_dir='../api/').app
+        connexion_app = _app = connexion.App(__name__, specification_dir='../api/')
+        _app = connexion_app.app
     else:
         _app = Flask(__name__)
 
@@ -91,7 +92,7 @@ def create_app(interface_app=False):
 
     if not interface_app:
         jwt.init_app(_app)
-        app.add_api('composed_api.yaml')
+        connexion_app.add_api('composed_api.yaml')
         _app.running_context = context.Context()
         register_blueprints(_app, walkoff.config.Config.SEPARATE_INTERFACES)
     else:
