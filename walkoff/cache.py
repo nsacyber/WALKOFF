@@ -251,13 +251,6 @@ class RedisCacheAdapter(object):
     def check(self):
         self.cache.info()
 
-    def register_callbacks(self):
-        """Registers callbacks for the PubSubs for the current thread.
-
-        For the RedisCacheAdapter, this is not necessary
-        """
-        pass
-
     def ping(self):
         """Pings the Redis cache to test the connection
 

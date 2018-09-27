@@ -130,6 +130,5 @@ class App(object):
     @classmethod
     def from_cache(cls, app, device, context):
         base = App(app, device, context)
-        #base._load_from_context()
         base.__class__ = cls
         return base

@@ -1,7 +1,6 @@
 import logging
 
 from walkoff.appgateway import get_app
-from walkoff.helpers import format_exception_message
 
 logger = logging.getLogger(__name__)
 

@@ -25,7 +25,7 @@ TYPE_MAP = {
     'role': int
 }
 
-reserved_return_codes = ['UnhandledException', 'InvalidInput', 'EventTimedOut']
+reserved_return_codes = ['UnhandledException', 'InvalidInput']
 
 
 def make_type(value, type_literal):
