@@ -13,6 +13,8 @@ from scripts.compose_api import compose_api
 from walkoff.server.app import create_app
 from tests.util.jsonplaybookloader import JsonPlaybookLoader
 from walkoff.executiondb.playbook import Playbook
+from walkoff.server.prometheus_logging import setup_prometheus_monitoring
+from prometheus_flask_exporter import PrometheusMetrics
 
 logger = logging.getLogger('walkoff')
 
@@ -104,6 +106,10 @@ if __name__ == "__main__":
     compose_api()
     walkoff.config.initialize(args.config)
     app = create_app(walkoff.config.Config)
+
+    # setup_prometheus_monitoring(app)
+    metrics = PrometheusMetrics(app, path='/prometheus_metrics')
+
     import_workflows(app)
     try:
         run(args, app, *convert_host_port(args))

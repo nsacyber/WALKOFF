@@ -27,3 +27,6 @@ redis
 confluent-kafka
 fluent-logger
 msgpack
+prometheus_client
+werkzeug
+prometheus_flask_exporter

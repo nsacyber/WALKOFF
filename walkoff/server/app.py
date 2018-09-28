@@ -11,7 +11,6 @@ from walkoff.extensions import db, jwt
 from walkoff.helpers import import_submodules
 from walkoff.server import context
 from walkoff.server.blueprints import custominterface, workflowresults, notifications, console, root
-# import walkoff.server.workflowresults
 
 logger = logging.getLogger(__name__)
 
