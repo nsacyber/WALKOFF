@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { JwtHttp } from 'angular2-jwt-refresh';
+import { HttpClient } from '@angular/common/http';
 import { plainToClass } from 'class-transformer';
 
 import { Configuration } from '../models/configuration';
@@ -10,20 +10,18 @@ import { UtilitiesService } from '../utilities.service';
 
 @Injectable()
 export class SettingsService {
-	constructor (private authHttp: JwtHttp, private utils: UtilitiesService) {}
+	constructor (private http: HttpClient, private utils: UtilitiesService) {}
 
 	getConfiguration(): Promise<Configuration> {
-		return this.authHttp.get('/api/configuration')
+		return this.http.get('/api/configuration')
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Configuration, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	updateConfiguration(configuration: Configuration): Promise<Configuration> {
-		return this.authHttp.put('/api/configuration', configuration)
+		return this.http.put('/api/configuration', configuration)
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Configuration, data))
 			.catch(this.utils.handleResponseError);
 	}
@@ -33,62 +31,56 @@ export class SettingsService {
 	}
 
 	getUsers(page: number = 1): Promise<User[]> {
-		return this.authHttp.get(`/api/users?page=${ page }`)
+		return this.http.get(`/api/users?page=${ page }`)
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(User, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	addUser(user: User): Promise<User> {
-		return this.authHttp.post('/api/users', user)
+		return this.http.post('/api/users', user)
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(User, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	editUser(user: User): Promise<User> {
-		return this.authHttp.put('/api/users', user)
+		return this.http.put('/api/users', user)
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(User, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	deleteUser(id: number): Promise<void> {
-		return this.authHttp.delete(`/api/users/${id}`)
+		return this.http.delete(`/api/users/${id}`)
 			.toPromise()
 			.then(() => null)
 			.catch(this.utils.handleResponseError);
 	}
 
 	getRoles(): Promise<Role[]> {
-		return this.authHttp.get('/api/roles')
+		return this.http.get('/api/roles')
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(Role, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	addRole(role: Role): Promise<Role> {
-		return this.authHttp.post('/api/roles', role)
+		return this.http.post('/api/roles', role)
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Role, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	editRole(role: Role): Promise<Role> {
-		return this.authHttp.put('/api/roles', role)
+		return this.http.put('/api/roles', role)
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Role, data))
 			.catch(this.utils.handleResponseError);
 	}
 
 	deleteRole(id: number): Promise<void> {
-		return this.authHttp.delete(`/api/roles/${id}`)
+		return this.http.delete(`/api/roles/${id}`)
 			.toPromise()
 			.then(() => null)
 			.catch(this.utils.handleResponseError);
@@ -120,9 +112,8 @@ export class SettingsService {
 		// ];
 
 		// return Promise.resolve(testData);
-		return this.authHttp.get('/api/availableresourceactions')
+		return this.http.get('/api/availableresourceactions')
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(AvailableResourceAction, data))
 			.catch(this.utils.handleResponseError);
 	}

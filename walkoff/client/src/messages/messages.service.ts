@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { JwtHttp } from 'angular2-jwt-refresh';
 import { plainToClass } from 'class-transformer';
+import { HttpClient } from '@angular/common/http';
 
 import { Message } from '../models/message/message';
 import { MessageListing } from '../models/message/messageListing';
@@ -9,7 +9,7 @@ import { UtilitiesService } from '../utilities.service';
 
 @Injectable()
 export class MessagesService {
-	constructor(private authHttp: JwtHttp, private utils: UtilitiesService) {}
+	constructor(private http: HttpClient, private utils: UtilitiesService) {}
 
 	/**
 	 * Grabs an array of all message listings from the server.
@@ -22,9 +22,8 @@ export class MessagesService {
 	 * Grabs an array of message listings from the server.
 	 */
 	getMessageListings(page: number = 1): Promise<MessageListing[]> {
-		return this.authHttp.get(`/api/messages?page=${ page }`)
+		return this.http.get(`/api/messages?page=${ page }`)
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(MessageListing, data))
 			.catch(this.utils.handleResponseError);
 	}
@@ -34,9 +33,8 @@ export class MessagesService {
 	 * @param messageId ID of message to query
 	 */
 	getMessage(messageId: number): Promise<Message> {
-		return this.authHttp.get(`/api/messages/${messageId}`)
+		return this.http.get(`/api/messages/${messageId}`)
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Message, data))
 			.catch(this.utils.handleResponseError);
 	}
@@ -49,7 +47,7 @@ export class MessagesService {
 	performActionOnMessages(messageIds: number | number[], action: string): Promise<void> {
 		if (!Array.isArray(messageIds)) { messageIds = [messageIds]; }
 
-		return this.authHttp.put('/api/messages', { ids: messageIds, action })
+		return this.http.put('/api/messages', { ids: messageIds, action })
 			.toPromise()
 			.then(() => null)
 			.catch(this.utils.handleResponseError);
@@ -69,9 +67,8 @@ export class MessagesService {
 			data_in: action,
 			arguments: [arg],
 		};
-		return this.authHttp.put('/api/triggers/send_data', body)
+		return this.http.put('/api/triggers/send_data', body)
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.catch(this.utils.handleResponseError);
 	}
 }

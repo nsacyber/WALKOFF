@@ -1,5 +1,4 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { JwtHelper } from 'angular2-jwt';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import { plainToClass } from 'class-transformer';
@@ -29,7 +28,6 @@ const MAX_TOTAL_MESSAGES = 20;
 export class MainComponent implements OnInit, OnDestroy {
 	currentUser: string;
 	interfaceNames: string[] = [];
-	jwtHelper: JwtHelper = new JwtHelper();
 	messageListings: MessageListing[] = [];
 	messageModalRef: NgbModalRef;
 	newMessagesCount: number = 0;

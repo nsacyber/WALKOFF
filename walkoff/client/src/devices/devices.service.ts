@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { JwtHttp } from 'angular2-jwt-refresh';
+import { HttpClient } from '@angular/common/http';
 import { plainToClass } from 'class-transformer';
 
 import { Device } from '../models/device';
@@ -8,7 +8,7 @@ import { UtilitiesService } from '../utilities.service';
 
 @Injectable()
 export class DevicesService {
-	constructor (private authHttp: JwtHttp, private utils: UtilitiesService) {}
+	constructor (private http: HttpClient, private utils: UtilitiesService) {}
 
 	/**
 	 * Asynchronously returns an array of all existing devices from the server.
@@ -21,10 +21,9 @@ export class DevicesService {
 	 * Asynchronously returns an array of existing devices from the server.
 	 */
 	getDevices(page: number = 1): Promise<Device[]> {
-		return this.authHttp.get(`/api/devices?page=${ page }`)
+		return this.http.get(`/api/devices?page=${ page }`)
 			.toPromise()
-			.then(this.utils.extractResponseData)
-			.then((data: object[]) => plainToClass(Device, data))
+			.then((data) => plainToClass(Device, data))
 			.catch(this.utils.handleResponseError);
 	}
 
@@ -33,10 +32,9 @@ export class DevicesService {
 	 * @param device Device to add
 	 */
 	addDevice(device: Device): Promise<Device> {
-		return this.authHttp.post('/api/devices', device)
+		return this.http.post('/api/devices', device)
 			.toPromise()
-			.then(this.utils.extractResponseData)
-			.then((data: object) => plainToClass(Device, data))
+			.then((data) => plainToClass(Device, data))
 			.catch(this.utils.handleResponseError);
 	}
 
@@ -45,10 +43,9 @@ export class DevicesService {
 	 * @param device Device to edit
 	 */
 	editDevice(device: Device): Promise<Device> {
-		return this.authHttp.patch('/api/devices', device)
+		return this.http.patch('/api/devices', device)
 			.toPromise()
-			.then(this.utils.extractResponseData)
-			.then((data: object) => plainToClass(Device, data))
+			.then((data) => plainToClass(Device, data))
 			.catch(this.utils.handleResponseError);
 	}
 
@@ -57,7 +54,7 @@ export class DevicesService {
 	 * @param deviceId Device ID to delete
 	 */
 	deleteDevice(deviceId: number): Promise<void> {
-		return this.authHttp.delete(`/api/devices/${deviceId}`)
+		return this.http.delete(`/api/devices/${deviceId}`)
 			.toPromise()
 			.then(() => null)
 			.catch(this.utils.handleResponseError);
@@ -68,12 +65,11 @@ export class DevicesService {
 	 * AppApi objects are scoped to only contain device apis.
 	 */
 	getDeviceApis(): Promise<AppApi[]> {
-		return this.authHttp.get('api/apps/apis?field_name=device_apis')
+		return this.http.get('api/apps/apis?field_name=device_apis')
 			.toPromise()
-			.then(this.utils.extractResponseData)
-			.then((data: object[]) => plainToClass(AppApi, data))
+			.then((data) => plainToClass(AppApi, data as Object[]))
 			// Clear out any apps without device apis
-			.then(appApis => appApis.filter(a => a.device_apis && a.device_apis.length))
+			.then((appApis: AppApi[]) => appApis.filter(a => a.device_apis && a.device_apis.length))
 			.catch(this.utils.handleResponseError);
 	}
 }

@@ -1,44 +1,43 @@
 import { Injectable } from '@angular/core';
-import { Http, Response, Headers } from '@angular/http';
-import { JwtHelper } from 'angular2-jwt';
-import { JwtHttp } from 'angular2-jwt-refresh';
+import { JwtHelperService } from '@auth0/angular-jwt';
+import { HttpClient } from '@angular/common/http';
 import { plainToClass } from 'class-transformer';
 
 import { AccessToken } from '../models/accessToken';
+import { UtilitiesService } from '../utilities.service';
 
 const REFRESH_TOKEN_NAME = 'refresh_token';
 const ACCESS_TOKEN_NAME = 'access_token';
 
 @Injectable()
 export class AuthService {
-	jwtHelper = new JwtHelper();
 
-	constructor(private authHttp: JwtHttp, private http: Http) {
-	}
+	jwtHelper = new JwtHelperService();
+
+	constructor(private http: HttpClient, private utils: UtilitiesService) {}
 
 	//TODO: not currently used, eventually should be used on the login
 	login(username: string, password: string): Promise<void> {
-		return this.authHttp.post('/api/auth', { username, password })
+		return this.http.post('/api/auth', { username, password })
 			.toPromise()
-			.then(this.extractData)
 			.then((tokens: { access_token: string, refresh_token: string }) => {
 				sessionStorage.setItem(ACCESS_TOKEN_NAME, tokens.access_token);
 				sessionStorage.setItem(REFRESH_TOKEN_NAME, tokens.refresh_token);
 				location.href = '/';
 			})
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
 	 * Logs the user out on the server and clears the tokens in session storage.
 	 */
 	logout(): Promise<void> {
-		return this.authHttp.post('/api/auth/logout', { refresh_token: sessionStorage.getItem(REFRESH_TOKEN_NAME) })
+		return this.http.post('/api/auth/logout', { refresh_token: sessionStorage.getItem(REFRESH_TOKEN_NAME) })
 			.toPromise()
 			.then(() => {
 				this.clearTokens();
 			})
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -70,24 +69,44 @@ export class AuthService {
 	}
 
 	/**
+	 * Returns true if access token is expired
+	 */
+	isAccessTokenExpired(): boolean {
+		return this.getAccessToken() && this.jwtHelper.isTokenExpired(this.getAccessToken())
+	}
+
+	/**
+	 * Returns true is refresh token is expired
+	 */
+	isRefreshTokenExpired(): boolean {
+		return this.getRefreshToken() && this.jwtHelper.isTokenExpired(this.getRefreshToken())
+	}
+
+	/**
 	 * Asynchronously checks if the access token needs to be refreshed, and refreshes it if necessary.
 	 * Will return a promise of the existing access token or the newly refreshed access token.
 	 */
 	getAccessTokenRefreshed(): Promise<string> {
-		const token = this.getAccessToken();
-		if (!this.jwtHelper.isTokenExpired(token)) { return Promise.resolve(token); }
-		const refreshToken = this.getRefreshToken();
+		if (!this.isAccessTokenExpired()) return Promise.resolve(this.getAccessToken());
 
-		if (!refreshToken || this.jwtHelper.isTokenExpired(refreshToken)) {
+		if (this.isRefreshTokenExpired()) {
+			sessionStorage.removeItem('access_token');
+			sessionStorage.removeItem('refresh_token');
+			//TODO: figure out a better way of handling this... maybe incorporate login into the main component somehow
+			location.href = '/login';
 			return Promise.reject('Refresh token does not exist or has expired. Please log in again.');
 		}
 
-		const headers = new Headers({ Authorization: `Bearer ${this.getRefreshToken()}` });
+		const headers = { 'Authorization': `Bearer ${ this.getRefreshToken() }` };
+
 		return this.http.post('/api/auth/refresh', {}, { headers })
 			.toPromise()
-			.then(this.extractData)
-			.then(refreshedToken => refreshedToken.access_token)
-			.catch(this.handleError);
+			.then((res: any) => {
+				const accessToken = res.access_token;
+				sessionStorage.setItem('access_token', accessToken);
+				return accessToken;
+			})
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -113,22 +132,4 @@ export class AuthService {
 		return !!this.getAndDecodeAccessToken().fresh;
 	}
 
-	private extractData(res: Response) {
-		const body = res.json();
-		return body || {};
-	}
-
-	private handleError(error: Response | any): Promise<any> {
-		let errMsg: string;
-		let err: string;
-		if (error instanceof Response) {
-			const body = error.json() || '';
-			err = body.error || body.detail || JSON.stringify(body);
-			errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
-		} else {
-			err = errMsg = error.message ? error.message : error.toString();
-		}
-		console.error(errMsg);
-		throw new Error(err);
-	}
 }

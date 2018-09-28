@@ -1,12 +1,13 @@
 import { NgModule } from '@angular/core';
-import { Http, RequestOptions } from '@angular/http';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpModule } from '@angular/http';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { Select2Module } from 'ng2-select2';
-import { JwtHttp } from 'angular2-jwt-refresh';
+import { AuthService } from './auth/auth.service';
+import { JwtInterceptor, JwtModule } from '@auth0/angular-jwt';
+import { RefreshTokenInterceptor } from './refresh-token-interceptor';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { DateTimePickerModule } from 'ng-pick-datetime';
 import { DndModule } from 'ng2-dnd';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -14,7 +15,6 @@ import { ToastrModule } from 'ngx-toastr';
 
 // Custom routing module
 import { RoutingModule } from './routing';
-import { GetJwtHttp } from './jwthttp.factory';
 import { MainComponent } from './main/main.component';
 import { SchedulerComponent } from './scheduler/scheduler.component';
 import { PlaybookComponent } from './playbook/playbook.component';
@@ -40,13 +40,20 @@ import { SettingsRolesComponent } from './settings/settings.roles.component';
 import { MessagesModalComponent } from './messages/messages.modal.component';
 
 import { KeysPipe } from './pipes/keys.pipe';
+import { UtilitiesService } from './utilities.service';
 
 @NgModule({
 	imports: [
 		BrowserModule,
 		FormsModule,
 		ReactiveFormsModule,
-		HttpModule,
+		HttpClientModule,
+		JwtModule.forRoot({
+			config: {
+				tokenGetter: () => sessionStorage.getItem('access_token'),
+				blacklistedRoutes: ['/login', '/api/auth', '/api/auth/logout', '/api/auth/refresh']
+			}
+		}),
 		RoutingModule,
 		NgbModule.forRoot(),
 		NgxDatatableModule,
@@ -85,11 +92,21 @@ import { KeysPipe } from './pipes/keys.pipe';
 		// Pipes
 		KeysPipe,
 	],
-	providers: [{
-		provide: JwtHttp,
-		useFactory: GetJwtHttp,
-		deps: [ Http, RequestOptions ],
-	}],
+	providers: [
+		UtilitiesService,
+		AuthService,
+		JwtInterceptor, // Providing JwtInterceptor allow to inject JwtInterceptor manually into RefreshTokenInterceptor
+		{
+			provide: HTTP_INTERCEPTORS,
+			useExisting: JwtInterceptor,
+			multi: true
+		},
+		{
+			provide: HTTP_INTERCEPTORS,
+			useClass: RefreshTokenInterceptor,
+			multi: true
+		}
+	],
 	entryComponents: [
 		SchedulerModalComponent,
 		DevicesModalComponent,

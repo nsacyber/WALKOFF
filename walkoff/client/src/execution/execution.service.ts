@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { JwtHttp } from 'angular2-jwt-refresh';
 import 'rxjs/add/operator/toPromise';
 import { plainToClass, classToPlain } from 'class-transformer';
+import { HttpClient } from '@angular/common/http';
 
 import { WorkflowStatus } from '../models/execution/workflowStatus';
 import { Playbook } from '../models/playbook/playbook';
@@ -11,7 +11,7 @@ import { UtilitiesService } from '../utilities.service';
 
 @Injectable()
 export class ExecutionService {
-	constructor (private authHttp: JwtHttp, private utils: UtilitiesService) {}
+	constructor (private http: HttpClient, private utils: UtilitiesService) {}
 
 	/**
 	 * Asyncronously adds a workflow (by ID) to the queue to be executed.
@@ -22,9 +22,8 @@ export class ExecutionService {
 		let data: any = { workflow_id };
 		if (variables.length > 0) data.environment_variables = classToPlain(variables);
 
-		return this.authHttp.post('api/workflowqueue', data)
+		return this.http.post('api/workflowqueue', data)
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(WorkflowStatus, data))
 			.catch(this.utils.handleResponseError);
 	}
@@ -36,7 +35,7 @@ export class ExecutionService {
 	 * @param action Action to take (e.g. abort, resume, pause)
 	 */
 	performWorkflowStatusAction(workflowId: string, action: string): Promise<void> {
-		return this.authHttp.patch('api/workflowqueue', { execution_id: workflowId, status: action })
+		return this.http.patch('api/workflowqueue', { execution_id: workflowId, status: action })
 			.toPromise()
 			.then(() => null)
 			.catch(this.utils.handleResponseError);
@@ -53,9 +52,8 @@ export class ExecutionService {
 	 * Asyncronously gets an array of workflow statuses from the server.
 	 */
 	getWorkflowStatuses(page: number = 1): Promise<WorkflowStatus[]> {
-		return this.authHttp.get(`api/workflowqueue?page=${ page }`)
+		return this.http.get(`api/workflowqueue?page=${ page }`)
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(WorkflowStatus, data))
 			.catch(this.utils.handleResponseError);
 	}
@@ -65,9 +63,8 @@ export class ExecutionService {
 	 * @param workflowExecutionId Workflow Status to query
 	 */
 	getWorkflowStatus(workflowExecutionId: string): Promise<WorkflowStatus> {
-		return this.authHttp.get(`api/workflowqueue/${workflowExecutionId}`)
+		return this.http.get(`api/workflowqueue/${workflowExecutionId}`)
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(WorkflowStatus, data))
 			.catch(this.utils.handleResponseError);
 	}
@@ -76,9 +73,8 @@ export class ExecutionService {
 	 * Asyncryonously gets arrays of all playbooks and workflows (id, name pairs only).
 	 */
 	getPlaybooks(): Promise<Playbook[]> {
-		return this.authHttp.get('/api/playbooks')
+		return this.http.get('/api/playbooks')
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.then((data: object[]) => plainToClass(Playbook, data))
 			.catch(this.utils.handleResponseError);
 	}
@@ -88,9 +84,8 @@ export class ExecutionService {
 	 * @param workflowId ID of the workflow to load
 	 */
 	loadWorkflow(workflowId: string): Promise<Workflow> {
-		return this.authHttp.get(`/api/workflows/${workflowId}`)
+		return this.http.get(`/api/workflows/${workflowId}`)
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Workflow, data))
 			.catch(this.utils.handleResponseError);
 	}

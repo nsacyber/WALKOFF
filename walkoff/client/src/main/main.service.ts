@@ -1,23 +1,22 @@
 import { Injectable } from '@angular/core';
-import { Response } from '@angular/http';
-import { JwtHttp } from 'angular2-jwt-refresh';
+import { HttpClient } from '@angular/common/http';
 import { plainToClass } from 'class-transformer';
 
 import { Message } from '../models/message/message';
 import { MessageListing } from '../models/message/messageListing';
+import { UtilitiesService } from '../utilities.service';
 
 @Injectable()
 export class MainService {
-	constructor (private authHttp: JwtHttp) { }
+	constructor (private http: HttpClient, private utils: UtilitiesService) { }
 
 	/**
 	 * Asyncryonously returns a list of imported interface names from the server.
 	 */
 	getInterfaceNames(): Promise<string[]> {
-		return this.authHttp.get('/api/interfaces')
+		return this.http.get('/api/interfaces')
 			.toPromise()
-			.then(this.extractData)
-			.catch(this.handleError);
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -26,11 +25,10 @@ export class MainService {
 	 * Will fill up to 5 read notifications if unread notifications do not exist.
 	 */
 	getInitialNotifications(): Promise<MessageListing[]> {
-		return this.authHttp.get('/api/notifications')
+		return this.http.get('/api/notifications')
 			.toPromise()
-			.then(this.extractData)
-			.then((data: object[]) => plainToClass(MessageListing, data))
-			.catch(this.handleError);
+			.then((data) => plainToClass(MessageListing, data))
+			.catch(this.utils.handleResponseError);
 	}
 
 	/**
@@ -38,29 +36,10 @@ export class MainService {
 	 * @param messageId DB ID of message to retrieve
 	 */
 	getMessage(messageId: number): Promise<Message> {
-		return this.authHttp.get(`/api/messages/${messageId}`)
+		return this.http.get(`/api/messages/${messageId}`)
 			.toPromise()
-			.then(this.extractData)
-			.then((data: object) => plainToClass(Message, data))
-			.catch(this.handleError);
-	}
-	
-	private extractData (res: Response) {
-		const body = res.json();
-		return body || {};
+			.then((data) => plainToClass(Message, data))
+			.catch(this.utils.handleResponseError);
 	}
 
-	private handleError (error: Response | any): Promise<any> {
-		let errMsg: string;
-		let err: string;
-		if (error instanceof Response) {
-			const body = error.json() || '';
-			err = body.error || body.detail || JSON.stringify(body);
-			errMsg = `${error.status} - ${error.statusText || ''} ${err}`;
-		} else {
-			err = errMsg = error.message ? error.message : error.toString();
-		}
-		console.error(errMsg);
-		throw new Error(err);
-	}
 }

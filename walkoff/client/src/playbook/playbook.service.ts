@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { RequestOptions, ResponseContentType, Headers } from '@angular/http';
-import { JwtHttp } from 'angular2-jwt-refresh';
 import { plainToClass, classToPlain } from 'class-transformer';
+import { HttpClient } from '@angular/common/http';
 
 import { Workflow } from '../models/playbook/workflow';
 import { Playbook } from '../models/playbook/playbook';
@@ -20,17 +19,16 @@ import { Observable } from 'rxjs/Observable';
 
 @Injectable()
 export class PlaybookService {
-	constructor(private authHttp: JwtHttp, private utils: UtilitiesService, private executionService: ExecutionService,
+	constructor(private http: HttpClient, private utils: UtilitiesService, private executionService: ExecutionService,
 				private devicesService: DevicesService, private settingsService: SettingsService) {}
 
 	/**
 	 * Returns all playbooks and their child workflows in minimal form (id, name).
 	 */
 	getPlaybooks(): Promise<Playbook[]> {
-		return this.authHttp.get('/api/playbooks')
+		return this.http.get('/api/playbooks')
 			.toPromise()
-			.then(this.utils.extractResponseData)
-			.then((data: object[]) => plainToClass(Playbook, data))
+			.then((data) => plainToClass(Playbook, data))
 			.catch(this.utils.handleResponseError);
 	}
 
@@ -39,10 +37,9 @@ export class PlaybookService {
 	 * @param playbook New playbook to be saved
 	 */
 	newPlaybook(playbook: Playbook): Promise<Playbook> {
-		return this.authHttp.post('/api/playbooks', playbook)
+		return this.http.post('/api/playbooks', playbook)
 			.toPromise()
-			.then(this.utils.extractResponseData)
-			.then((data: object) => plainToClass(Playbook, data))
+			.then((data) => plainToClass(Playbook, data))
 			.catch(this.utils.handleResponseError);
 	}
 
@@ -52,9 +49,8 @@ export class PlaybookService {
 	 * @param newName New name for the updated playbook
 	 */
 	renamePlaybook(playbookId: string, newName: string): Promise<Playbook> {
-		return this.authHttp.patch('/api/playbooks', { id: playbookId, name: newName })
+		return this.http.patch('/api/playbooks', { id: playbookId, name: newName })
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.then((data: object) => plainToClass(Playbook, data))
 			.catch(this.utils.handleResponseError);
 	}
@@ -65,10 +61,9 @@ export class PlaybookService {
 	 * @param newName Name of the new copy to be saved
 	 */
 	duplicatePlaybook(playbookId: string, newName: string): Promise<Playbook> {
-		return this.authHttp.post(`/api/playbooks?source=${playbookId}`, { name: newName })
+		return this.http.post(`/api/playbooks?source=${playbookId}`, { name: newName })
 			.toPromise()
-			.then(this.utils.extractResponseData)
-			.then((data: object) => plainToClass(Playbook, data))
+			.then((data) => plainToClass(Playbook, data))
 			.catch(this.utils.handleResponseError);
 	}
 
@@ -77,9 +72,8 @@ export class PlaybookService {
 	 * @param playbookIdToDelete ID of playbook to be deleted.
 	 */
 	deletePlaybook(playbookIdToDelete: string): Promise<void> {
-		return this.authHttp.delete(`/api/playbooks/${playbookIdToDelete}`)
+		return this.http.delete(`/api/playbooks/${playbookIdToDelete}`)
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.catch(this.utils.handleResponseError);
 	}
 
@@ -88,19 +82,7 @@ export class PlaybookService {
 	 * @param playbookId: ID of playbook to export
 	 */
 	exportPlaybook(playbookId: string): Observable<Blob> {
-		// const headers = new Headers();
-		// headers.append('method', 'GET');
-		// const requestOptions = new RequestOptions({
-		// 	headers,
-		// 	responseType: ResponseContentType.Blob, 
-		// });
-
-		// return this.authHttp.get('/api/playbooks', requestOptions => {
-		// 	return new Blob( [res.blob()], { type: 'application/octet-stream'} );
-		// });
-		const options = new RequestOptions({ responseType: ResponseContentType.Blob });
-		return this.authHttp.get(`/api/playbooks/${playbookId}?mode=export`, options)
-			.map(res => res.blob())
+		return this.http.get(`/api/playbooks/${playbookId}?mode=export`, { responseType: 'blob' })
 			.catch(this.utils.handleResponseError);
 	}
 
@@ -111,12 +93,11 @@ export class PlaybookService {
 	importPlaybook(fileToImport: File): Observable<Playbook> {
 		const formData: FormData = new FormData();
 		formData.append('file', fileToImport, fileToImport.name);
-		const headers = new Headers();
-		// headers.append('Content-Type', 'multipart/form-data');
-		headers.append('Accept', 'application/json');
-		const options = new RequestOptions({ headers });
-		return this.authHttp.post('/api/playbooks', formData, options)
-			.map(res => plainToClass(Playbook, (res.json() as object)))
+
+		const headers = { 'Accept': 'application/json' }
+
+		return this.http.post('/api/playbooks', formData, { headers })
+			.map(res => plainToClass(Playbook, res))
 			.catch(error => Observable.throw(error));
 	}
 
@@ -129,11 +110,10 @@ export class PlaybookService {
 	duplicateWorkflow(
 		sourceWorkflowId: string, destinationPlaybookId: string, newName: string,
 	): Promise<Workflow> {
-		return this.authHttp.post(`/api/workflows?source=${sourceWorkflowId}`,
+		return this.http.post(`/api/workflows?source=${sourceWorkflowId}`,
 			{ playbook_id: destinationPlaybookId, name: newName })
 			.toPromise()
-			.then(this.utils.extractResponseData)
-			.then((data: object) => plainToClass(Workflow, data))
+			.then((data) => plainToClass(Workflow, data))
 			.catch(this.utils.handleResponseError);
 	}
 
@@ -142,9 +122,8 @@ export class PlaybookService {
 	 * @param workflowIdToDelete ID of the workflow to be deleted
 	 */
 	deleteWorkflow(workflowIdToDelete: string): Promise<void> {
-		return this.authHttp.delete(`/api/workflows/${workflowIdToDelete}`)
+		return this.http.delete(`/api/workflows/${workflowIdToDelete}`)
 			.toPromise()
-			.then(this.utils.extractResponseData)
 			.catch(this.utils.handleResponseError);
 	}
 
@@ -156,10 +135,9 @@ export class PlaybookService {
 	newWorkflow(playbookId: string, workflow: Workflow): Promise<Workflow> {
 		workflow.playbook_id = playbookId;
 
-		return this.authHttp.post('/api/workflows', classToPlain(workflow))
+		return this.http.post('/api/workflows', classToPlain(workflow))
 			.toPromise()
-			.then(this.utils.extractResponseData)
-			.then((data: object) => plainToClass(Workflow, data))
+			.then((data) => plainToClass(Workflow, data))
 			.catch(this.utils.handleResponseError);
 	}
 
@@ -168,10 +146,9 @@ export class PlaybookService {
 	 * @param workflow Data to be saved under the workflow (actions, etc.)
 	 */
 	saveWorkflow(workflow: Workflow): Promise<Workflow> {
-		return this.authHttp.put('/api/workflows', classToPlain(workflow))
+		return this.http.put('/api/workflows', classToPlain(workflow))
 			.toPromise()
-			.then(this.utils.extractResponseData)
-			.then((data: object) => plainToClass(Workflow, data))
+			.then((data) => plainToClass(Workflow, data))
 			.catch(this.utils.handleResponseError);
 	}
 
@@ -180,10 +157,9 @@ export class PlaybookService {
 	 * @param workflowId ID of the workflow to load
 	 */
 	loadWorkflow(workflowId: string): Promise<Workflow> {
-		return this.authHttp.get(`/api/workflows/${workflowId}`)
+		return this.http.get(`/api/workflows/${workflowId}`)
 			.toPromise()
-			.then(this.utils.extractResponseData)
-			.then((data: object) => plainToClass(Workflow, data))
+			.then((data) => plainToClass(Workflow, data))
 			.catch(this.utils.handleResponseError);
 	}
 
@@ -207,10 +183,9 @@ export class PlaybookService {
 	 * Gets all app apis from the server.
 	 */
 	getApis(): Promise<AppApi[]> {
-		return this.authHttp.get('/api/apps/apis')
+		return this.http.get('/api/apps/apis')
 			.toPromise()
-			.then(this.utils.extractResponseData)
-			.then((data: object[]) => plainToClass(AppApi, data))
+			.then((data) => plainToClass(AppApi, data))
 			.catch(this.utils.handleResponseError);
 	}
 
