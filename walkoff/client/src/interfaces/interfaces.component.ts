@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 
 import { AuthService } from '../auth/auth.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
 	selector: 'interfaces-component',
@@ -19,7 +20,7 @@ export class InterfacesComponent implements OnInit {
 
 	constructor(
 		private route: ActivatedRoute, private authService: AuthService,
-		private toastrService: ToastrService,
+		private toastrService: ToastrService, private http: HttpClient
 	) {}
 
 	/**
@@ -46,7 +47,8 @@ export class InterfacesComponent implements OnInit {
 					if (xhr.readyState !== 4 || xhr.status !== 200) { return; }
 
 					//Remove our existing iframe if applicable
-					this.main.nativeElement.removeChild(this.main.nativeElement.lastChild);
+					if (this.main.nativeElement.lastChild)
+						this.main.nativeElement.removeChild(this.main.nativeElement.lastChild);
 
 					this.activeIFrame = document.createElement('iframe');
 					(this.activeIFrame as any).srcdoc = xhr.responseText;
@@ -56,6 +58,25 @@ export class InterfacesComponent implements OnInit {
 				};
 				xhr.setRequestHeader('Authorization', 'Bearer ' + authToken);
 				xhr.send();
+			})
+			.catch(e => this.toastrService.error(`Error retrieving interface: ${e.message}`));
+		
+		console.log('hello')
+
+		this.http
+			.get(`custominterfaces/${this.interfaceName}/`, { responseType: 'text'})
+			.toPromise()
+			.then(data => {
+				console.log('hi', data);
+				//Remove our existing iframe if applicable
+				if (this.main.nativeElement.lastChild)
+				this.main.nativeElement.removeChild(this.main.nativeElement.lastChild);
+
+				this.activeIFrame = document.createElement('iframe');
+				(this.activeIFrame as any).srcdoc = data;
+				this.activeIFrame.src = 'data:text/html;charset=utf-8,' + data;
+
+				this.main.nativeElement.appendChild(this.activeIFrame);
 			})
 			.catch(e => this.toastrService.error(`Error retrieving interface: ${e.message}`));
 	}

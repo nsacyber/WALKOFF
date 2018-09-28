@@ -328,8 +328,8 @@
                     <ngx-datatable-column name="Description"  prop="description" [sortable]="false" [flexGrow]="3"></ngx-datatable-column>
                     <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
                         <ng-template let-row="row" ngx-datatable-cell-template>
-                            <button (click)="editVariableModal(row)" class="btn btn-primary" title="Edit Variable"><i class="fa fa-edit"></i></button>
-                            <button (click)="deleteVariable(row)" class="btn btn-danger" title="Delete Variable"><i class="fa fa-times"></i></button>
+                            <button (click)="editVariableModal(row)" class="btn btn-primary mx-1" title="Edit Variable"><i class="fa fa-edit"></i></button>
+                            <button (click)="deleteVariable(row)" class="btn btn-danger mx-1" title="Delete Variable"><i class="fa fa-times"></i></button>
                         </ng-template>
                     </ngx-datatable-column>
                 </ngx-datatable>
@@ -351,8 +351,8 @@
                     <ngx-datatable-column name="Description"  prop="description" [sortable]="false" [flexGrow]="3"></ngx-datatable-column>
                     <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
                         <ng-template let-row="row" ngx-datatable-cell-template>
-                            <button (click)="editVariableModal(row)" class="btn btn-primary" title="Edit Variable"><i class="fa fa-edit"></i></button>
-                            <button (click)="deleteVariable(row)" class="btn btn-danger" title="Delete Variable"><i class="fa fa-times"></i></button>
+                            <button (click)="editVariableModal(row)" class="btn btn-primary mx-1" title="Edit Variable"><i class="fa fa-edit"></i></button>
+                            <button (click)="deleteVariable(row)" class="btn btn-danger mx-1" title="Delete Variable"><i class="fa fa-times"></i></button>
                         </ng-template>
                     </ngx-datatable-column>
                 </ngx-datatable>
@@ -419,16 +419,16 @@
                                 <h5 class="card-title my-auto p-3">
                                     {{playbook.name}}
                                     <div class="pull-right">
-                                        <button (click)="renamePlaybookModal($event, playbook)" class="btn btn-primary btn-sm" title="Rename Playbook">
+                                        <button (click)="renamePlaybookModal($event, playbook)" class="btn btn-primary btn-sm mx-1" title="Rename Playbook">
                                             <i class="fa fa-i-cursor"></i>
                                         </button>
-                                        <button (click)="duplicatePlaybookModal($event, playbook)" class="btn btn-primary btn-sm" title="Duplicate Playbook">
+                                        <button (click)="duplicatePlaybookModal($event, playbook)" class="btn btn-primary btn-sm mx-1" title="Duplicate Playbook">
                                             <i class="fa fa-copy"></i>
                                         </button>
-                                        <button (click)="exportPlaybook($event, playbook)" class="btn btn-primary btn-sm" title="Export Playbook">
+                                        <button (click)="exportPlaybook($event, playbook)" class="btn btn-primary btn-sm mx-1" title="Export Playbook">
                                             <i class="fa fa-download"></i>
                                         </button>
-                                        <button (click)="deletePlaybook($event, playbook)" class="btn btn-danger btn-sm" title="Delete Playbook">
+                                        <button (click)="deletePlaybook($event, playbook)" class="btn btn-danger btn-sm mx-1" title="Delete Playbook">
                                             <i class="fa fa-times"></i>
                                         </button>
                                     </div>
@@ -443,10 +443,10 @@
                                                 <!-- <button (click)="renameWorkflowModal(playbook.id, workflow.id)" class="btn btn-primary" title="Rename Workflow">
                                                     <i class="fa fa-i-cursor"></i>
                                                 </button> -->
-                                                <button (click)="duplicateWorkflowModal(playbook.id, workflow.id)" class="btn btn-primary btn-sm" title="Duplicate Workflow">
+                                                <button (click)="duplicateWorkflowModal(playbook.id, workflow.id)" class="btn btn-primary btn-sm mx-1" title="Duplicate Workflow">
                                                     <i class="fa fa-copy"></i>
                                                 </button>
-                                                <button (click)="deleteWorkflow(playbook, workflow)" class="btn btn-danger btn-sm" title="Delete Workflow">
+                                                <button (click)="deleteWorkflow(playbook, workflow)" class="btn btn-danger btn-sm mx-1" title="Delete Workflow">
                                                     <i class="fa fa-times"></i>
                                                 </button>
                                             </div>

@@ -29,10 +29,10 @@
 	</ngx-datatable-column>
 	<ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
 		<ng-template let-row="row" ngx-datatable-cell-template>
-			<button (click)="editRole(row)" class="btn btn-primary" title="Edit Role" [disabled]="row.name === 'admin'">
+			<button (click)="editRole(row)" class="btn btn-primary mx-1" title="Edit Role" [disabled]="row.name === 'admin'">
 				<i class="fa fa-edit"></i>
 			</button>
-			<button (click)="deleteRole(row)" class="btn btn-danger" title="Delete Role" [disabled]="row.name === 'admin'">
+			<button (click)="deleteRole(row)" class="btn btn-danger mx-1" title="Delete Role" [disabled]="row.name === 'admin'">
 				<i class="fa fa-times"></i>
 			</button>
 		</ng-template>

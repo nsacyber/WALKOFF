@@ -53,7 +53,7 @@
           <li class="nav-item dropdown messages messages-menu">
             <a class="nav-link" [class.newMessages]="newMessagesCount" href="#" id="messageDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" (click)="recalculateRelativeTimes()">
               <i class="fa" [ngClass]="{ 'fa-envelope': newMessagesCount, 'fa-envelope-open-o': !newMessagesCount }"></i>
-              <span>{{newMessagesCount}}</span>
+              <span> {{newMessagesCount}}</span>
             </a>
             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="messageDropdown">
               <span *ngIf="!messageListings.length" class="noMessages">You have no messages.</span>
