@@ -55,7 +55,7 @@ import { UtilitiesService } from './utilities.service';
 			}
 		}),
 		RoutingModule,
-		NgbModule.forRoot(),
+		NgbModule,
 		NgxDatatableModule,
 		Select2Module,
 		DateTimePickerModule,
