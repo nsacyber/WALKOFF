@@ -165,6 +165,8 @@ class Config(object):
     WORKFLOW_COMMUNICATION_KAFKA_CONFIG = {'bootstrap.servers': 'localhost:9092', 'group.id': 'comm'}
     WORKFLOW_COMMUNICATION_KAFKA_TOPIC = 'comm'
 
+    SEPARATE_PROMETHEUS = False
+
     @classmethod
     def load_config(cls, config_path=None):
         """ Loads Walkoff configuration from JSON file

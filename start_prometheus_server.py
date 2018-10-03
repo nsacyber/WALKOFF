@@ -1,11 +1,9 @@
 from flask import Flask
-from werkzeug.wsgi import DispatcherMiddleware
-from prometheus_client import make_wsgi_app
+from prometheus_flask_exporter import PrometheusMetrics
 
+import walkoff.config
 
 if __name__ == "__main__":
-    app = Flask(__name__)
-
-    app_dispatch = DispatcherMiddleware(app, {
-        '/prometheus_metrics': make_wsgi_app()
-    })
+    app = Flask('prometheus')
+    PrometheusMetrics(app, path='/prometheus_metrics')
+    app.run(host=walkoff.config.Config.HOST, port=walkoff.config.Config.PORT)
