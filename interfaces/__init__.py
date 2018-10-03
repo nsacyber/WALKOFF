@@ -22,7 +22,6 @@ class AppBlueprint(StreamableBlueprint):
         super(AppBlueprint, self).__init__(name, import_name, **kwargs)
 
 
-
 class InterfaceEventDispatcher(object):
     """Primary dispatcher of events to interfaces
 

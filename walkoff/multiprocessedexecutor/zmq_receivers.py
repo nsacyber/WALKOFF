@@ -37,7 +37,7 @@ class ZmqWorkflowResultsReceiver(object):
         if current_app is None:
             self.current_app = Flask(__name__)
             self.current_app.config.from_object(walkoff.config.Config)
-            self.current_app.running_context = context.Context(walkoff.config.Config, init_all=False)
+            self.current_app.running_context = context.Context(init_all=False)
         else:
             self.current_app = current_app
 

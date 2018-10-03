@@ -158,7 +158,6 @@ class SseStream(object):
         Keyword Args:
             event (str): The event associated with this data
         """
-        self.cache.register_callbacks()
         response = {'data': data, 'event': kwargs.get('event', '')}
         self.cache.publish(self.channel, json.dumps(response))
 
@@ -261,7 +260,6 @@ class FilteredSseStream(SseStream):
             self.publish(response[0], subchannels=response[1], event=default_event)
 
     def publish(self, data, **kwargs):
-        self.cache.register_callbacks()
         subchannels = kwargs.get('subchannels', [])
         data = json.dumps({'data': data, 'event': kwargs.get('event', '')})
         if not isinstance(subchannels, string_types) and isinstance(subchannels, collections.Iterable):

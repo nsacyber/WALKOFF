@@ -17,7 +17,7 @@ class TestSimpleWorkflow(unittest.TestCase):
         initialize_test_config()
         execution_db_help.setup_dbs()
 
-        app = create_app(walkoff.config.Config)
+        app = create_app()
         cls.context = app.test_request_context()
         cls.context.push()
 

@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
   description: >-
-    An API used to execute WALKOFF apps deployed as microservices https://nsacyber.github.io/WALKOFF/
+    An API used to execute WALKOFF apps deployed as microservices. See https://nsacyber.github.io/WALKOFF/
   version: 0.1.0
   title: WALKOFF
   contact:
@@ -77,23 +77,6 @@ paths:
           description: Everything is healthy
         400:
           description: App is not healthy
-
-securityDefinitions:
-  AuthenticationToken:
-    type: apiKey
-    name: Authorization
-    in: header
-    description: >
-      We use a JWT authorization workflow. Use the /api/auth endpoint from the main Walkoff application to get JWT
-      access and refresh tokens. Then use the
-      access token in the header "Authorization: Bearer accesstoken.goes.here".  That token will expire in 15 minutes by
-      default. When it expires, you'll receive a 401 response code. At that point, use the /api/auth/refresh
-      with the header "Authorization: Bearer refreshtoken.goes.here" to receive a fresh access token. When you're done,
-      please use the /api/auth/logout endpoint to log out.  See the implementation in the Walkoff App for an example
-      implementation.
-
-security:
-  - AuthenticationToken: []
 
 definitions:
   ExecutionContext:

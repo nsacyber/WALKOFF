@@ -2,35 +2,23 @@ import argparse
 import logging
 import os
 import sys
+import threading
 import traceback
 
-from gevent import monkey
-from gevent import pywsgi
+from gevent import monkey, pywsgi
 
-import walkoff
+import walkoff.cache
 import walkoff.config
-from scripts.compose_api import compose_api
+from walkoff.senders_receivers_helpers import make_results_receiver
 from walkoff.server.app import create_app
-from tests.util.jsonplaybookloader import JsonPlaybookLoader
-from walkoff.executiondb.playbook import Playbook
-from prometheus_flask_exporter import PrometheusMetrics
 
-logger = logging.getLogger('walkoff')
+logger = logging.getLogger(__name__)
 
 
-def run(args, app, host, port):
+def run(app, host, port):
     print_banner()
-    if not args.apponly:
-        from start_workers import spawn_worker_processes
-        pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES, walkoff.config.Config)
-    else:
-        pids = None
 
     monkey.patch_all()
-
-    app.running_context.inject_app(app)
-    app.running_context.executor.initialize_threading(app, pids)
-    # The order of these imports matter for initialization (should probably be fixed)
 
     server = setup_server(app, host, port)
     server.serve_forever()
@@ -66,7 +54,6 @@ def parse_args():
     parser.add_argument('-p', '--port', help='port to run the server on')
     parser.add_argument('-H', '--host', help='host address to run the server on')
     parser.add_argument('-c', '--config', help='configuration file to use')
-    parser.add_argument('-a', '--apponly', help='start WALKOFF app only, no workers', action='store_true')
     args = parser.parse_args()
     if args.version:
         print(walkoff.__version__)
@@ -86,39 +73,28 @@ def convert_host_port(args):
     return host, port
 
 
-def import_workflows(app):
-    playbook_name = [playbook.id for playbook in app.running_context.execution_db.session.query(Playbook).all()]
-    if os.path.exists(walkoff.config.Config.WORKFLOWS_PATH):
-        logger.info('Importing any workflows not currently in database')
-        for p in os.listdir(walkoff.config.Config.WORKFLOWS_PATH):
-            full_path = os.path.join(walkoff.config.Config.WORKFLOWS_PATH, p)
-            if os.path.isfile(full_path):
-                playbook = JsonPlaybookLoader.load_playbook(full_path)
-                if playbook.name not in playbook_name:
-                    app.running_context.execution_db.session.add(playbook)
-        app.running_context.execution_db.session.commit()
-
-
-if __name__ == "__main__":
-    args = parse_args()
+if __name__ == '__main__':
     exit_code = 0
-    compose_api()
+    args = parse_args()
+
     walkoff.config.initialize(args.config)
-    app = create_app()
+    app = create_app(interface_app=True)
 
-    if not walkoff.config.Config.SEPARATE_PROMETHEUS:
-        metrics = PrometheusMetrics(app, path='/prometheus_metrics')
+    walkoff.config.Config.WORKFLOW_RESULTS_HANDLER = 'kafka'
+    receiver = make_results_receiver()
+    receiver_thread = threading.Thread(target=receiver.receive_results)
+    receiver_thread.start()
 
-    import_workflows(app)
     try:
-        run(args, app, *convert_host_port(args))
+        run(app, *convert_host_port(args))
     except KeyboardInterrupt:
-        logger.info('Caught KeyboardInterrupt! Please wait a few seconds for WALKOFF to shutdown.')
+        logger.info('Caught KeyboardInterrupt! Please wait a few seconds for WALKOFF interface server to shutdown.')
+        receiver.thread_exit = True
+        receiver_thread.join(timeout=1)
     except Exception as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_exc()
         exit_code = 1
     finally:
-        app.running_context.executor.shutdown_pool()
-        logger.info('Shutting down server')
-        os._exit(exit_code)
+        logger.info('Shutting down interface server')
+        os._exit(0)

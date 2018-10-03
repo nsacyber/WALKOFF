@@ -49,7 +49,7 @@ class ServerTestCase(unittest.TestCase):
                 os.remove(cls.conf.DATA_PATH)
             os.makedirs(cls.conf.DATA_PATH)
 
-        cls.app = create_app(walkoff.config.Config)
+        cls.app = create_app()
         cls.app.testing = True
         cls.context = cls.app.test_request_context()
         cls.context.push()

@@ -20,7 +20,7 @@ import walkoff.config
 
 
 walkoff.config.initialize()
-app = create_app(walkoff.config.Config)
+app = create_app()
 app_context = app.test_request_context()
 app_context.push()
 # add your model's MetaData object here

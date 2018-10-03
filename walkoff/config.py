@@ -135,6 +135,7 @@ class Config(object):
 
     SEPARATE_WORKERS = False
     SEPARATE_RECEIVER = False
+    SEPARATE_INTERFACES = False
     ITEMS_PER_PAGE = 20
     ACTION_EXECUTION_STRATEGY = 'local'
 

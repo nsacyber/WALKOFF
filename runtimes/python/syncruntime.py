@@ -32,7 +32,6 @@ def make_logger():
 
 logger = make_logger()
 
-app_creation_lock_prefix = 'app_creation_lock'
 app_instance_created_set_prefix = 'app_instance_created_set'
 cache_separator = ':'
 app_instance_set_name = '{}{}{}'.format(app_instance_created_set_prefix, cache_separator, app_name)
@@ -172,7 +171,7 @@ class ActionExecution(object):
         resp.media = result
 
     @staticmethod
-    def format_app_instance_key(workflow_execution_id, device_id):
+    def format_app_instance_key(workflow_execution_id, device_id):  # do we need a app name?
         return '{}{}{}'.format(
             workflow_execution_id,
             cache_separator,

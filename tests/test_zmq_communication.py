@@ -21,7 +21,7 @@ class TestZMQCommunication(unittest.TestCase):
         initialize_test_config()
         walkoff.config.Config.write_values_to_file()
 
-        cls.app = create_app(walkoff.config.Config)
+        cls.app = create_app()
         cls.context = cls.app.test_request_context()
         cls.context.push()
 
