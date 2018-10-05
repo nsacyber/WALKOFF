@@ -152,11 +152,11 @@ class WorkflowExecutor(object):
             logger.error('Attempted to abort workflow with execution id {}, but it wasn\'t executing'.format(
                 workflow_execution_id))
 
-    def make_new_context(self, workflow, workflow_execution_id):
+    def make_new_context(self, workflow, workflow_execution_id, user=None):
         app_instance_repo = self._app_instance_repo_class()
-        return WorkflowExecutionContext(workflow, app_instance_repo, workflow_execution_id)
+        return WorkflowExecutionContext(workflow, app_instance_repo, workflow_execution_id, user)
 
-    def make_resumed_context(self, workflow, workflow_execution_id):
+    def make_resumed_context(self, workflow, workflow_execution_id, user=None):
         saved_state = self.execution_db.session.query(SavedWorkflow).filter_by(
             workflow_execution_id=workflow_execution_id).first()
         if saved_state is None:
@@ -165,11 +165,11 @@ class WorkflowExecutor(object):
             return None
 
         workflow_context = WorkflowExecutionContext(workflow, self._app_instance_repo_class(saved_state.app_instances),
-                                                    workflow_execution_id, resumed=True)
+                                                    workflow_execution_id, resumed=True, user=user)
         return workflow_context
 
     def execute(self, workflow_id, workflow_execution_id, start, start_arguments=None, resume=False,
-                environment_variables=None):
+                environment_variables=None, user=None):
         """Execute a workflow
 
         Args:
@@ -180,6 +180,7 @@ class WorkflowExecutor(object):
             resume (bool, optional): Optional boolean to signify that this Workflow is being resumed. Defaults to False.
             environment_variables (list[EnvironmentVariable]): Optional list of environment variables to pass into
                 the workflow. These will not be persistent.
+            user (str, optional): The username who requested the workflow be executed. Defaults to None.
         """
         self.execution_db.session.expire_all()
 
@@ -196,11 +197,11 @@ class WorkflowExecutor(object):
             return
 
         if resume:
-            workflow_context = self.make_resumed_context(workflow, workflow_execution_id)
+            workflow_context = self.make_resumed_context(workflow, workflow_execution_id, user)
             if workflow_context is None:
                 return
         else:
-            workflow_context = self.make_new_context(workflow, workflow_execution_id)
+            workflow_context = self.make_new_context(workflow, workflow_execution_id, user)
 
         start = start if start else workflow.start
 

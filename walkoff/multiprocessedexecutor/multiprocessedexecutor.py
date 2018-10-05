@@ -20,9 +20,6 @@ from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.multiprocessedexecutor.threadauthenticator import ThreadAuthenticator
 from walkoff.senders_receivers_helpers import make_results_receiver, make_results_sender, make_communication_sender
-from start_workers import shutdown_procs
-from flask import current_app
-from walkoff.appgateway.accumulators import make_accumulator
 from walkoff.worker.action_exec_strategy import make_execution_strategy
 from walkoff.worker.workflow_exec_context import RestrictedWorkflowContext
 
@@ -139,7 +136,7 @@ class MultiprocessedExecutor(object):
         self.receiver = None
 
     def execute_workflow(self, workflow_id, execution_id_in=None, start=None, start_arguments=None, resume=False,
-                         environment_variables=None):
+                         environment_variables=None, user=None):
         """Executes a workflow
 
         Args:
@@ -151,6 +148,8 @@ class MultiprocessedExecutor(object):
             resume (bool, optional): Optional boolean to resume a previously paused workflow. Defaults to False.
             environment_variables (list[EnvironmentVariable]): Optional list of environment variables to pass into
                 the workflow. These will not be persistent.
+            user (str, Optional): The username of the user who requested that this workflow be executed. Defaults
+                to None.
 
         Returns:
             (UUID): The execution ID of the Workflow.
@@ -163,23 +162,26 @@ class MultiprocessedExecutor(object):
         execution_id = execution_id_in if execution_id_in else str(uuid.uuid4())
 
         if start is not None:
-            logger.info('Executing workflow {0} (id={1}) with starting action action {2}'.format(
+            logger.info('Executing workflow {0} (id={1}) with starting action {2}'.format(
                 workflow.name, workflow.id, start))
         else:
-            logger.info('Executing workflow {0} (id={1}) with default starting action'.format(
+            logger.info('Executing workflow {0} (id={1}) with default starting action {2}'.format(
                 workflow.name, workflow.id, start))
 
-        workflow_data = {'execution_id': execution_id, 'id': str(workflow.id), 'name': workflow.name}
+        workflow_data = {'execution_id': execution_id, 'id': str(workflow.id), 'name': workflow.name,
+                         'user': user}
         self._log_and_send_event(WalkoffEvent.WorkflowExecutionPending, sender=workflow_data, workflow=workflow)
-        self.__add_workflow_to_queue(workflow.id, execution_id, start, start_arguments, resume, environment_variables)
+        self.__add_workflow_to_queue(workflow.id, execution_id, start, start_arguments, resume, environment_variables,
+                                     user)
 
         self._log_and_send_event(WalkoffEvent.SchedulerJobExecuted)
         return execution_id
 
     def __add_workflow_to_queue(self, workflow_id, workflow_execution_id, start=None, start_arguments=None,
-                                resume=False, environment_variables=None):
+                                resume=False, environment_variables=None, user=None):
         message = self.zmq_sender.create_workflow_request_message(workflow_id, workflow_execution_id, start,
-                                                                  start_arguments, resume, environment_variables)
+                                                                  start_arguments, resume, environment_variables,
+                                                                  user)
         self.cache.lpush("request_queue", self.__box.encrypt(message))
 
     def pause_workflow(self, execution_id):
@@ -271,7 +273,6 @@ class MultiprocessedExecutor(object):
         saved_state = self.execution_db.session.query(SavedWorkflow).filter_by(
             workflow_execution_id=execution_id).first()
         workflow = self.execution_db.session.query(Workflow).filter_by(id=saved_state.workflow_id).first()
-
 
         action_execution_strategy = make_execution_strategy(
             self.config,

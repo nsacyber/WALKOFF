@@ -118,6 +118,7 @@ message ExecuteWorkflowMessage {
     repeated Argument arguments = 4;
     optional bool resume = 5;
     repeated EnvironmentVariable environment_variables = 6;
+    optional string user = 7;
 }
 
 message LoggingMessage {

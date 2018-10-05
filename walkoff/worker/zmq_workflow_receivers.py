@@ -174,8 +174,12 @@ class WorkflowReceiver(object):
                             env_vars.append(
                                 EnvironmentVariable(**(MessageToDict(env_var, preserving_proto_field_name=True))))
 
+                    user = None
+                    if hasattr(message, 'user'):
+                        user = message.user
+
                     yield message.workflow_id, message.workflow_execution_id, start, start_arguments, message.resume, \
-                          env_vars
+                          env_vars, user
             else:
                 yield None
         return

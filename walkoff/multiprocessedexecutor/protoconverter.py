@@ -302,7 +302,7 @@ class ProtobufWorkflowResultsConverter(object):
 
     @staticmethod
     def create_workflow_request_message(workflow_id, workflow_execution_id, start=None, start_arguments=None,
-                                        resume=False, environment_variables=None):
+                                        resume=False, environment_variables=None, user=None):
         message = ExecuteWorkflowMessage()
         message.workflow_id = str(workflow_id)
         message.workflow_execution_id = workflow_execution_id
@@ -314,6 +314,8 @@ class ProtobufWorkflowResultsConverter(object):
             ProtobufWorkflowResultsConverter._add_arguments_to_proto(message, start_arguments)
         if environment_variables:
             ProtobufWorkflowResultsConverter.add_env_vars_to_proto(message, environment_variables)
+        if user:
+            message.user = user
         return message.SerializeToString()
 
 

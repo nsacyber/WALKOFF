@@ -7,9 +7,9 @@ logger = logging.getLogger(__name__)
 
 class WorkflowExecutionContext(object):
     __slots__ = ['workflow', 'name', 'id', 'workflow_start', 'execution_id', 'accumulator', 'app_instance_repo',
-                 'executing_action', 'is_paused', 'is_aborted', 'has_branches', 'last_status']
+                 'executing_action', 'is_paused', 'is_aborted', 'has_branches', 'last_status', 'user']
 
-    def __init__(self, workflow, app_instance_repo, execution_id, resumed=False):
+    def __init__(self, workflow, app_instance_repo, execution_id, resumed=False, user=None):
         self.workflow = workflow
         self.accumulator = None
         self.app_instance_repo = app_instance_repo
@@ -23,6 +23,7 @@ class WorkflowExecutionContext(object):
         self.has_branches = bool(self.workflow.branches)
         self.last_status = None
         self.init_accumulator(resumed)
+        self.user = user
 
     def pause(self):
         self.is_paused = True

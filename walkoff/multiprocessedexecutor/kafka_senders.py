@@ -72,9 +72,10 @@ class KafkaWorkflowResultsSender(object):
         WalkoffEvent.CommonWorkflowSignal.send(sender={'id': '1'}, event=WalkoffEvent.WorkerReady)
 
     def create_workflow_request_message(self, workflow_id, workflow_execution_id, start=None, start_arguments=None,
-                                        resume=False, environment_variables=None):
+                                        resume=False, environment_variables=None, user=None):
         return self.message_converter.create_workflow_request_message(workflow_id, workflow_execution_id, start,
-                                                                      start_arguments, resume, environment_variables)
+                                                                      start_arguments, resume, environment_variables,
+                                                                      user)
 
 
 class KafkaWorkflowCommunicationSender(object):

@@ -1,7 +1,7 @@
 from collections import OrderedDict
 
 from flask import request, current_app
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_claims
 from sqlalchemy import exists
 
 from walkoff.executiondb.argument import Argument
@@ -82,6 +82,7 @@ def execute_workflow():
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['execute']))
     @with_workflow('execute', workflow_id)
     def __func(workflow):
+        print(get_jwt_claims())
         if not workflow.is_valid:
             return Problem(INVALID_INPUT_ERROR, 'Cannot execute workflow', 'Workflow is invalid')
         args = data['arguments'] if 'arguments' in data else None
@@ -108,7 +109,8 @@ def execute_workflow():
 
         execution_id = current_app.running_context.executor.execute_workflow(workflow_id, start=start,
                                                                              start_arguments=arguments,
-                                                                             environment_variables=env_var_objs)
+                                                                             environment_variables=env_var_objs,
+                                                                             user=get_jwt_claims().get('username', None))
         current_app.logger.info('Executed workflow {0}'.format(workflow_id))
         return {'id': execution_id}, SUCCESS_ASYNC
 
