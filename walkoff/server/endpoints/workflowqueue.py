@@ -82,7 +82,6 @@ def execute_workflow():
     @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['execute']))
     @with_workflow('execute', workflow_id)
     def __func(workflow):
-        print(get_jwt_claims())
         if not workflow.is_valid:
             return Problem(INVALID_INPUT_ERROR, 'Cannot execute workflow', 'Workflow is invalid')
         args = data['arguments'] if 'arguments' in data else None

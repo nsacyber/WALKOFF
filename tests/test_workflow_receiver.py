@@ -69,7 +69,7 @@ class TestWorkflowReceiver(TestCase):
         message.workflow_id = workflow_id
         message.workflow_execution_id = execution_id
         message.resume = True
-        self.check_workflow_message(message, (workflow_id, execution_id, '', [], True, []))
+        self.check_workflow_message(message, (workflow_id, execution_id, '', [], True, [], ''))
 
     def test_receive_workflow_with_start(self):
         workflow_id = str(uuid4())
@@ -80,7 +80,7 @@ class TestWorkflowReceiver(TestCase):
         message.workflow_execution_id = execution_id
         message.resume = True
         message.start = start
-        self.check_workflow_message(message, (workflow_id, execution_id, start, [], True, []))
+        self.check_workflow_message(message, (workflow_id, execution_id, start, [], True, [], ''))
 
     def test_receive_workflow_with_arguments(self):
         workflow_id = str(uuid4())
