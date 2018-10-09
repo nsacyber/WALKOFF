@@ -57,7 +57,7 @@ class ZmqWorkflowResultsSender(object):
                 callback in the main thread.
 
             Args:
-                workflow (Workflow): The Workflow object that triggered the event
+                workflow (Workflow|WorkflowExecutionContext): The Workflow object that triggered the event
                 sender (ExecutionElement): The execution element that sent the signal.
                 kwargs (dict): Any extra data to send.
         """

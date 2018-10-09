@@ -44,7 +44,7 @@ class MultiprocessedExecutor(object):
         self.cache = cache
         self.config = config
         self.execution_db = ExecutionDatabase.instance
-        self.zmq_sender = None
+        self.results_sender = None
 
         key = PrivateKey(walkoff.config.Config.SERVER_PRIVATE_KEY[:nacl.bindings.crypto_box_SECRETKEYBYTES])
         worker_key = PrivateKey(
@@ -77,7 +77,7 @@ class MultiprocessedExecutor(object):
 
         with app.app_context():
             data = {'execution_db': current_app.running_context.execution_db}
-            self.zmq_sender = make_results_sender(**data)
+            self.results_sender = make_results_sender(**data)
 
         if not walkoff.config.Config.SEPARATE_RECEIVER:
             data = {'current_app': app}
@@ -179,9 +179,9 @@ class MultiprocessedExecutor(object):
 
     def __add_workflow_to_queue(self, workflow_id, workflow_execution_id, start=None, start_arguments=None,
                                 resume=False, environment_variables=None, user=None):
-        message = self.zmq_sender.create_workflow_request_message(workflow_id, workflow_execution_id, start,
-                                                                  start_arguments, resume, environment_variables,
-                                                                  user)
+        message = self.results_sender.create_workflow_request_message(workflow_id, workflow_execution_id, start,
+                                                                      start_arguments, resume, environment_variables,
+                                                                      user)
         self.cache.lpush("request_queue", self.__box.encrypt(message))
 
     def pause_workflow(self, execution_id):
@@ -328,4 +328,4 @@ class MultiprocessedExecutor(object):
 
     def _log_and_send_event(self, event, sender=None, data=None, workflow=None):
         sender = sender or self
-        self.zmq_sender.handle_event(workflow, sender, event=event, data=data)
+        self.results_sender.handle_event(workflow, sender, event=event, data=data)
