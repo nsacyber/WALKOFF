@@ -25,6 +25,7 @@ message Message {
         LoggingMessage logging_packet = 7;
         WorkerPacket worker_packet = 8;
     }
+    optional string user = 9;
 }
 
 message WorkflowSender {

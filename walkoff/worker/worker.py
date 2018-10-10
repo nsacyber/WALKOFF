@@ -143,4 +143,8 @@ class Worker(object):
         if workflow_context is None and kwargs['event'] != WalkoffEvent.WorkerReady:
             logger.error('Workflow context information does not exist for callback being sent.')
         else:
+            if workflow_context.user:
+                if 'data' not in kwargs:
+                    kwargs['data'] = {}
+                kwargs['data']['user'] = workflow_context.user
             self.workflow_results_sender.handle_event(workflow_context, sender, **kwargs)

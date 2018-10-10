@@ -168,13 +168,17 @@ class MultiprocessedExecutor(object):
             logger.info('Executing workflow {0} (id={1}) with default starting action {2}'.format(
                 workflow.name, workflow.id, start))
 
-        workflow_data = {'execution_id': execution_id, 'id': str(workflow.id), 'name': workflow.name,
-                         'user': user}
-        self._log_and_send_event(WalkoffEvent.WorkflowExecutionPending, sender=workflow_data, workflow=workflow)
+        workflow_data = {'execution_id': execution_id, 'id': str(workflow.id), 'name': workflow.name}
+
+        data = {}
+        if user:
+            data['user'] = user
+        self._log_and_send_event(WalkoffEvent.WorkflowExecutionPending, sender=workflow_data, workflow=workflow,
+                                 data=data)
         self.__add_workflow_to_queue(workflow.id, execution_id, start, start_arguments, resume, environment_variables,
                                      user)
 
-        self._log_and_send_event(WalkoffEvent.SchedulerJobExecuted)
+        self._log_and_send_event(WalkoffEvent.SchedulerJobExecuted, data=data)
         return execution_id
 
     def __add_workflow_to_queue(self, workflow_id, workflow_execution_id, start=None, start_arguments=None,
@@ -202,11 +206,13 @@ class MultiprocessedExecutor(object):
             logger.warning('Cannot pause workflow {0}. Invalid key, or workflow not running.'.format(execution_id))
             return False
 
-    def resume_workflow(self, execution_id):
+    def resume_workflow(self, execution_id, user=None):
         """Resumes a workflow that is currently paused.
 
         Args:
             execution_id (UUID): The execution id of the workflow.
+            user (str, Optional): The username of the user who requested that this workflow be resumed. Defaults
+                to None.
 
         Returns:
             (bool): True if workflow successfully resumed, False otherwise
@@ -220,20 +226,24 @@ class MultiprocessedExecutor(object):
             workflow = self.execution_db.session.query(Workflow).filter_by(id=workflow_status.workflow_id).first()
 
             data = {"execution_id": execution_id}
+            if user:
+                data['user'] = user
             self._log_and_send_event(WalkoffEvent.WorkflowResumed, sender=workflow, data=data)
 
             start = saved_state.action_id if saved_state else workflow.start
-            self.execute_workflow(workflow.id, execution_id_in=execution_id, start=start, resume=True)
+            self.execute_workflow(workflow.id, execution_id_in=execution_id, start=start, resume=True, user=user)
             return True
         else:
             logger.warning('Cannot resume workflow {0}. Invalid key, or workflow not paused.'.format(execution_id))
             return False
 
-    def abort_workflow(self, execution_id):
+    def abort_workflow(self, execution_id, user=None):
         """Abort a workflow
 
         Args:
             execution_id (UUID): The execution id of the workflow.
+            user (str, Optional): The username of the user who requested that this workflow be aborted. Defaults
+                to None.
 
         Returns:
             (bool): True if successfully aborted workflow, False otherwise
@@ -246,9 +256,12 @@ class MultiprocessedExecutor(object):
                                           WorkflowStatusEnum.awaiting_data]:
                 workflow = self.execution_db.session.query(Workflow).filter_by(id=workflow_status.workflow_id).first()
                 if workflow is not None:
+                    data = {}
+                    if user:
+                        data['user'] = user
                     self._log_and_send_event(WalkoffEvent.WorkflowAborted,
                                              sender={'execution_id': execution_id, 'id': workflow_status.workflow_id,
-                                                     'name': workflow.name}, workflow=workflow)
+                                                     'name': workflow.name}, workflow=workflow, data=data)
             elif workflow_status.status == WorkflowStatusEnum.running:
                 self.zmq_workflow_comm.abort_workflow(execution_id)
             return True
@@ -257,7 +270,7 @@ class MultiprocessedExecutor(object):
                 'Cannot resume workflow {0}. Invalid key, or workflow already shutdown.'.format(execution_id))
             return False
 
-    def resume_trigger_step(self, execution_id, data_in, arguments=None):
+    def resume_trigger_step(self, execution_id, data_in, arguments=None, user=None):
         """Resumes a workflow awaiting trigger data, if the conditions are met.
 
         Args:
@@ -265,6 +278,8 @@ class MultiprocessedExecutor(object):
             data_in (dict): The data to send to the trigger
             arguments (list[Argument], optional): Optional list of new Arguments for the trigger action.
                 Defaults to None.
+            user (str, Optional): The username of the user who requested that this workflow be resumed. Defaults
+                to None.
 
         Returns:
             (bool): True if successfully resumed trigger step, false otherwise
@@ -288,11 +303,16 @@ class MultiprocessedExecutor(object):
                 executed = action.execute_trigger(action_execution_strategy, data_in, accumulator)
                 break
 
+        data = {'workflow_execution_id': execution_id}
+        if user:
+            data['user'] = user
+
         if executed:
+
             self._log_and_send_event(WalkoffEvent.TriggerActionTaken, sender=exec_action,
                                      data={'workflow_execution_id': execution_id}, workflow=workflow)
             self.execute_workflow(workflow.id, execution_id_in=execution_id, start=str(saved_state.action_id),
-                                  start_arguments=arguments, resume=True)
+                                  start_arguments=arguments, resume=True, user=user)
             return True
         else:
             self._log_and_send_event(WalkoffEvent.TriggerActionNotTaken, sender=exec_action,
