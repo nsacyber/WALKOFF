@@ -39,7 +39,7 @@ Walkoff apps can be found at: <https://github.com/nsacyber/WALKOFF-Apps>
 * Python 2.7+ or Python 3.4+
 * NodeJS v4+ and Node Package Manager (npm) v5+
     * On Ubuntu, if you install `node` via `apt-get`, it will be installed as `nodejs` - you may need to create a symlink from your installed `nodejs` to `node` for `npm` to work correctly.
-    * npm v5 requires Node v4+, while npm v6 requires Node v6+.
+    * npm v5 requires Node v4+, while npm v6 requires Node v6+. Using [NVM (Node Version Manager)](https://github.com/creationix/nvm) can assist in obtaining the correct versions of NodeJS and NPM.
 * Tested on Windows and Linux
     * On Linux, you will need the `python-devel` package for your distribution.
 
