@@ -40,7 +40,7 @@ def mock_initialize_threading(self, pids=None):
     workflows_executed = 0
 
     with current_app.app_context():
-        self.zmq_sender = ZmqWorkflowResultsSender(current_app.running_context.execution_db,
+        self.results_sender = ZmqWorkflowResultsSender(current_app.running_context.execution_db,
                                                    ProtobufWorkflowResultsConverter)
 
     self.zmq_workflow_comm = MockLoadBalancer(current_app._get_current_object())

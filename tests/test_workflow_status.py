@@ -43,8 +43,11 @@ def mock_pause_workflow(self, execution_id):
     WalkoffEvent.WorkflowPaused.send({'execution_id': execution_id, 'id': '123', 'name': 'workflow'})
 
 
-def mock_resume_workflow(self, execution_id):
-    WalkoffEvent.WorkflowResumed.send(MockWorkflow(execution_id), data={"execution_id": execution_id})
+def mock_resume_workflow(self, execution_id, user=None):
+    data = {"execution_id": execution_id}
+    if user:
+        data["user"] = user
+    WalkoffEvent.WorkflowResumed.send(MockWorkflow(execution_id), data=data)
 
 
 class TestWorkflowStatus(ServerTestCase):

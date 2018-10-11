@@ -45,8 +45,8 @@ class ProtobufWorkflowResultsConverter(object):
         event = kwargs['event']
         data = kwargs['data'] if 'data' in kwargs else None
         packet = Message()
-        if data and 'user' in data:
-            packet.user = data['user']
+        if 'user' in kwargs:
+            packet.user = kwargs['user']
         packet.event_name = event.name
         if event.event_type == EventType.workflow:
             ProtobufWorkflowResultsConverter._convert_workflow_to_proto(packet, workflow_ctx, data)
