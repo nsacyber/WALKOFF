@@ -16,7 +16,8 @@ def __workflow_pending(sender, **kwargs):
     if workflow_status:
         workflow_status.status = WorkflowStatusEnum.pending
     else:
-        workflow_status = WorkflowStatus(str(sender['execution_id']), sender['id'], sender['name'])
+        user = kwargs['user'] if 'user' in kwargs else None
+        workflow_status = WorkflowStatus(str(sender['execution_id']), sender['id'], sender['name'], user=user)
         current_app.running_context.execution_db.session.add(workflow_status)
     current_app.running_context.execution_db.session.commit()
 
