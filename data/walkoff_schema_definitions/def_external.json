@@ -1,0 +1,31 @@
+{
+    "external_docs": {
+        "type": "array",
+        "items": {
+            "$ref": "#/definitions/external_doc"
+        }
+    },
+    
+    "external_doc": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "information about external documentation",
+        "required": [
+            "url"
+        ],
+        "properties": {
+            "description": {
+                "type": "string"
+            },
+            "url": {
+                "type": "string",
+                "format": "uri"
+            }
+        },
+        "patternProperties": {
+            "^x-": {
+                "$ref": "#/definitions/vendorExtension"
+            }
+        }
+    }
+}
