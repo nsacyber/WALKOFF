@@ -1,0 +1,15 @@
+{
+    "actions": {
+        "type": "object",
+        "description": "Actions of this app",
+        "patternProperties": {
+            "^x-": {
+                "$ref": "#/definitions/vendorExtension"
+            },
+            "": {
+                "$ref": "#/definitions/actionItem"
+            }
+        },
+        "additionalProperties": false
+    }
+}
