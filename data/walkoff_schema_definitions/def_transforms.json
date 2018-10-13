@@ -1,0 +1,15 @@
+{
+  "transforms": {
+    "type": "object",
+    "description": "Transforms of this app",
+    "patternProperties": {
+      "^x-": {
+        "$ref": "#/definitions/vendorExtension"
+      },
+      "": {
+        "$ref": "#/definitions/transformItem"
+      }
+    },
+    "additionalProperties": false
+  }
+}
