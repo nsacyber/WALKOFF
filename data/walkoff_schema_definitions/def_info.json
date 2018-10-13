@@ -1,0 +1,40 @@
+{
+    "info": {
+        "type": "object",
+        "description": "General information about the API.",
+        "required": [
+            "version",
+            "title"
+        ],
+        "additionalProperties": false,
+        "patternProperties": {
+            "^x-": {
+                "$ref": "#/definitions/vendorExtension"
+            }
+        },
+        "properties": {
+            "title": {
+                "type": "string",
+                "description": "A unique and precise title of the API."
+            },
+            "version": {
+                "type": "string",
+                "description": "A semantic version number of the API."
+            },
+            "description": {
+                "type": "string",
+                "description": "A longer description of the API. Should be different from the title.  GitHub Flavored Markdown is allowed."
+            },
+            "terms_of_service": {
+                "type": "string",
+                "description": "The terms of service for the API."
+            },
+            "contact": {
+                "$ref": "#/definitions/contact"
+            },
+            "license": {
+                "$ref": "#/definitions/license"
+            }
+        }
+    }
+}
