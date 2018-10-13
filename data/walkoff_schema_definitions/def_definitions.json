@@ -1,0 +1,16 @@
+{
+    "definitions": {
+        "type": "object",
+        "additionalProperties": {
+            "$ref": "#/definitions/schema"
+        },
+        "description": "One or more JSON objects describing the schemas being consumed and produced by the API."
+    },
+    "parameterDefinitions": {
+        "type": "object",
+        "additionalProperties": {
+            "$ref": "#/definitions/parameter"
+        },
+        "description": "One or more JSON representations for parameters"
+    }
+}
