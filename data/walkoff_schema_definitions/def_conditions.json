@@ -1,0 +1,15 @@
+{
+    "conditions": {
+        "type": "object",
+        "description": "Conditions of this app",
+        "patternProperties": {
+            "^x-": {
+                "$ref": "#/definitions/vendorExtension"
+            },
+            "": {
+                "$ref": "#/definitions/conditionItem"
+            }
+        },
+        "additionalProperties": false
+    }
+}
