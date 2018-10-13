@@ -1,0 +1,28 @@
+{
+    "contact": {
+        "type": "object",
+        "description": "Contact information for the owners of the API.",
+        "additionalProperties": false,
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The identifying name of the contact person/organization."
+            },
+            "url": {
+                "type": "string",
+                "description": "The URL pointing to the contact information.",
+                "format": "uri"
+            },
+            "email": {
+                "type": "string",
+                "description": "The email address of the contact person/organization.",
+                "format": "email"
+            }
+        },
+        "patternProperties": {
+            "^x-": {
+                "$ref": "#/definitions/vendorExtension"
+            }
+        }
+    }
+}
