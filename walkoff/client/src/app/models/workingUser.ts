@@ -15,16 +15,32 @@ export class WorkingUser {
 
 	confirmNewPassword: string;
 
-	toSave(): User {
+	public static toUser(workingUser: WorkingUser): User {
 		const returnUser = new User();
 
-		returnUser.id = this.id;
-		returnUser.username = this.username;
-		returnUser.roles = this.role_ids.map(id => ({ id }));
-		returnUser.active = this.active;
+		returnUser.id = workingUser.id;
+		returnUser.username = workingUser.username;
+		returnUser.roles = workingUser.role_ids.map(id => ({ id }));
+		returnUser.active = workingUser.active;
 
-		returnUser.old_password = this.currentPassword;
-		returnUser.password = this.newPassword;
+		returnUser.old_password = workingUser.currentPassword;
+		returnUser.password = workingUser.newPassword;
+		return returnUser;
+	}
+
+	public static fromUser(user: User): WorkingUser {
+		const returnUser = new WorkingUser();
+
+		returnUser.id = user.id;
+		returnUser.username = user.username;
+		// returnUser.roles = user.roles;
+
+		Array.isArray(user.roles) ?
+			returnUser.role_ids = user.roles.map(r => r.id) :
+			returnUser.role_ids = [];
+
+		returnUser.active = user.active;
+
 		return returnUser;
 	}
 }

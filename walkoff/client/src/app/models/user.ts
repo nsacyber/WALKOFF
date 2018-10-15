@@ -1,7 +1,6 @@
 import { Type } from 'class-transformer';
 
 import { Role } from './role';
-import { WorkingUser } from './workingUser';
 
 export class User {
 	id: number;
@@ -23,20 +22,4 @@ export class User {
 	roles: Role[] = [];
 
 	active: boolean;
-
-	toWorkingUser(): WorkingUser {
-		const returnUser = new WorkingUser();
-
-		returnUser.id = this.id;
-		returnUser.username = this.username;
-		// returnUser.roles = user.roles;
-
-		Array.isArray(this.roles) ?
-			returnUser.role_ids = this.roles.map(r => r.id) :
-			returnUser.role_ids = [];
-
-		returnUser.active = this.active;
-
-		return returnUser;
-	}
 }

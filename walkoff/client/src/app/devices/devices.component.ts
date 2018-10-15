@@ -9,6 +9,7 @@ import { DevicesModalComponent } from './devices.modal.component';
 import { DevicesService } from './devices.service';
 
 import { Device } from '../models/device';
+import { WorkingDevice } from '../models/workingDevice';
 import { AppApi } from '../models/api/appApi';
 import { GenericObject } from '../models/genericObject';
 
@@ -115,7 +116,7 @@ export class DevicesComponent implements OnInit {
 		modalRef.componentInstance.submitText = 'Save Changes';
 		modalRef.componentInstance.appNames = this.appNames;
 		modalRef.componentInstance.appApis = this.appApis;
-		modalRef.componentInstance.workingDevice = device.toWorkingDevice();
+		modalRef.componentInstance.workingDevice = WorkingDevice.fromDevice(device);
 
 		this._handleModalClose(modalRef);
 	}
