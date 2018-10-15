@@ -53,8 +53,8 @@ import { WorkflowStatus } from '../models/execution/workflowStatus';
 	templateUrl: './playbook.html',
 	styleUrls: [
 		'./playbook.css',
-		'../../node_modules/cytoscape-panzoom/cytoscape.js-panzoom.css',
-		'../../node_modules/ng2-dnd/bundles/style.css',
+		'../../../node_modules/cytoscape-panzoom/cytoscape.js-panzoom.css',
+		'../../../node_modules/ng2-dnd/bundles/style.css',
 	],
 	encapsulation: ViewEncapsulation.None,
 	providers: [PlaybookService, AuthService, DevicesService, SettingsService, ExecutionService],
@@ -162,7 +162,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			this.recalculateRelativeTimes();
 		});
 
-		this.recalculateConsoleTableCallback = (e: JQuery.Event<HTMLElement, null>) => this.recalculateConsoleTable(e);
+		this.recalculateConsoleTableCallback = (e: any) => this.recalculateConsoleTable(e);
 		$(document).on('shown.bs.tab', 'a[data-toggle="tab"]', this.recalculateConsoleTableCallback)
 
 		/**
@@ -1746,7 +1746,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	/**
 	 * This function is used primarily to recalculate column widths for execution results table.
 	 */
-	recalculateConsoleTable(e: JQuery.Event<HTMLElement, null>) {
+	recalculateConsoleTable(e: any) {
 		let table: DatatableComponent;
 		switch(e.target.getAttribute('href')) {
 			case '#console':

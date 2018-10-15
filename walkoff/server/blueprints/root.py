@@ -32,7 +32,8 @@ def client_app_folder(filename):
 @root_page.route('metrics')
 @root_page.route('settings')
 def default():
-    return render_template("index.html")
+    return send_from_directory(os.path.abspath(walkoff.config.Config.CLIENT_PATH), "dist/index.html")
+    # return render_template("index.html")
 
 
 @root_page.route('interfaces/<interface_name>')

@@ -19,15 +19,13 @@ export class InterfacesComponent implements OnInit {
 	activeIFrame: any;
 
 	constructor(
-		private route: ActivatedRoute, private authService: AuthService,
-		private toastrService: ToastrService, private http: HttpClient
+		private route: ActivatedRoute, private toastrService: ToastrService, private http: HttpClient
 	) {}
 
 	/**
 	 * On init, get our interface name from the route params and grab the interface.
 	 */
 	ngOnInit() {
-
 		this.paramsSub = this.route.params.subscribe(params => {
 			this.interfaceName = params.interfaceName;
 			this.getInterface();
@@ -39,38 +37,13 @@ export class InterfacesComponent implements OnInit {
 	 * Loads the interface into an iframe currently.
 	 */
 	getInterface() {
-		this.authService.getAccessTokenRefreshed()
-			.then(authToken => {
-				const xhr = new XMLHttpRequest();
-				xhr.open('GET', `custominterfaces/${this.interfaceName}/`, true);
-				xhr.onreadystatechange = () => {
-					if (xhr.readyState !== 4 || xhr.status !== 200) { return; }
-
-					//Remove our existing iframe if applicable
-					if (this.main.nativeElement.lastChild)
-						this.main.nativeElement.removeChild(this.main.nativeElement.lastChild);
-
-					this.activeIFrame = document.createElement('iframe');
-					(this.activeIFrame as any).srcdoc = xhr.responseText;
-					this.activeIFrame.src = 'data:text/html;charset=utf-8,' + xhr.responseText;
-
-					this.main.nativeElement.appendChild(this.activeIFrame);
-				};
-				xhr.setRequestHeader('Authorization', 'Bearer ' + authToken);
-				xhr.send();
-			})
-			.catch(e => this.toastrService.error(`Error retrieving interface: ${e.message}`));
-		
-		console.log('hello')
-
 		this.http
 			.get(`custominterfaces/${this.interfaceName}/`, { responseType: 'text'})
 			.toPromise()
 			.then(data => {
-				console.log('hi', data);
 				//Remove our existing iframe if applicable
 				if (this.main.nativeElement.lastChild)
-				this.main.nativeElement.removeChild(this.main.nativeElement.lastChild);
+					this.main.nativeElement.removeChild(this.main.nativeElement.lastChild);
 
 				this.activeIFrame = document.createElement('iframe');
 				(this.activeIFrame as any).srcdoc = data;

@@ -96,7 +96,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 			this.recalculateRelativeTimes();
 		});
 
-		this.recalculateTableCallback = (e: JQuery.Event<HTMLElement, null>) => {
+		this.recalculateTableCallback = (e: any) => {
 			if (this.actionStatusTable && this.actionStatusTable.recalculate) {
 				if (Array.isArray(this.actionStatusTable.rows)) 
 					this.actionStatusTable.rows = [...this.actionStatusTable.rows];

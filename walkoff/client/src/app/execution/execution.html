@@ -6,11 +6,11 @@
 			<select2 [data]="availableWorkflows" [options]="workflowSelectConfig" (valueChanged)="workflowSelectChange($event)"></select2>
 		</div>
 		<div class="col-lg-auto mr-auto my-1 my-lg-none">
-			<button *ngIf="selectedWorkflow" (click)="executeSelectedWorkflow()" title="Execute Workflow" class="btn btn-outline-primary">
+			<button *ngIf="selectedWorkflow" (click)="executeSelectedWorkflow()" title="Execute Workflow" class="btn btn-outline-primary mx-1">
 				<i class="fa fa-play"></i>
 				Execute Workflow
 			</button>
-			<button *ngIf="selectedWorkflow && selectedWorkflow.referenced_variables.length > 0" (click)="openVariableModal()" title="Edit Environment Variables" class="btn btn-outline-primary">
+			<button *ngIf="selectedWorkflow && selectedWorkflow.referenced_variables.length > 0" (click)="openVariableModal()" title="Edit Environment Variables" class="btn btn-outline-primary mx-1">
 				<i class="fa fa-cog"></i>
 				Edit Environment Variables
 			</button>

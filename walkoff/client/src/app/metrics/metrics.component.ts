@@ -25,7 +25,7 @@ export class MetricsComponent implements OnInit {
     appFilter: string = '';
     workflowMetrics: WorkflowMetric[] = [];
 	availableApps: Select2OptionData[] = [];
-	appSelectConfig: Select2Options;
+	appSelectConfig: any;
 	recalculateTableCallback: any;
 
 	@ViewChild('appMetricsTable') appMetricsTable: DatatableComponent; 
@@ -43,7 +43,7 @@ export class MetricsComponent implements OnInit {
 			placeholder: 'Select an App to view its Metrics',
 		};
 
-		this.recalculateTableCallback = (e: JQuery.Event<HTMLElement, null>) => {
+		this.recalculateTableCallback = (e: any) => {
 			this.recalculateTable(e);
 		}
 		$(document).on('shown.bs.tab', 'a[data-toggle="tab"]', this.recalculateTableCallback)
@@ -62,7 +62,7 @@ export class MetricsComponent implements OnInit {
 	/**
 	 * This angular function is used primarily to recalculate column widths for execution results table.
 	 */
-	recalculateTable(event: JQuery.Event<HTMLElement, null>) : void {
+	recalculateTable(event: any) : void {
 		let table: DatatableComponent;
 		switch(event.target.getAttribute('href')) {
 			case '#apps':
