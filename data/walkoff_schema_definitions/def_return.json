@@ -1,0 +1,59 @@
+{
+    "returns": {
+        "type": "object",
+        "description": "Response objects names can be any string",
+        "minProperties": 1,
+        "additionalProperties": false,
+        "patternProperties": {
+            "": {
+                "$ref": "#/definitions/returnValue"
+            },
+            "^x-": {
+                "$ref": "#/definitions/vendorExtension"
+            }
+        },
+        "not": {
+            "type": "object",
+            "additionalProperties": false,
+            "patternProperties": {
+                "^x-": {
+                    "$ref": "#/definitions/vendorExtension"
+                }
+            }
+        }
+    },
+    "returnValue": {
+        "oneOf": [{
+                "$ref": "#/definitions/return"
+            },
+            {
+                "$ref": "#/definitions/jsonReference"
+            }
+        ]
+    },
+    "return": {
+        "type": "object",
+        "properties": {
+            "failure": {
+                "type": "boolean",
+                "default": false,
+                "description": "If true, action turns red when it returns this code."
+            },
+            "description": {
+                "type": "string"
+            },
+            "schema": {
+                "$ref": "#/definitions/schema"
+            },
+            "examples": {
+                "$ref": "#/definitions/examples"
+            }
+        },
+        "additionalProperties": false,
+        "patternProperties": {
+            "^x-": {
+                "$ref": "#/definitions/vendorExtension"
+            }
+        }
+    }
+}
