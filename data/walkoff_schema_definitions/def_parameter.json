@@ -125,5 +125,35 @@
                 "type": ["number", "integer", "string", "boolean"]
             }
         }
+    },
+    "parameter": {
+        "oneOf": [{
+                "$ref": "#/definitions/jsonParameter"
+            },
+            {
+                "$ref": "#/definitions/primitiveParameter"
+            },
+            {
+                "$ref": "#/definitions/messagePrimitive"
+            },
+            {
+                "$ref": "#/definitions/jsonReference"
+            }
+        ]
+    },
+    "parametersList": {
+        "type": "array",
+        "description": "The parameters needed to send a valid API call.",
+        "additionalItems": false,
+        "items": {
+            "oneOf": [{
+                    "$ref": "#/definitions/parameter"
+                },
+                {
+                    "$ref": "#/definitions/jsonReference"
+                }
+            ]
+        },
+        "uniqueItems": true
     }
 }
