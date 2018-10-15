@@ -1,0 +1,129 @@
+{
+    "jsonParameter": {
+        "type": "object",
+        "required": [
+            "name",
+            "schema"
+        ],
+        "patternProperties": {
+            "^x-": {
+                "$ref": "#/definitions/vendorExtension"
+            }
+        },
+        "properties": {
+            "description": {
+                "type": "string",
+                "description": "A brief description of the parameter. This could contain examples of use.  GitHub Flavored Markdown is allowed."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the parameter."
+            },
+            "required": {
+                "type": "boolean",
+                "description": "Determines whether or not this parameter is required or optional.",
+                "default": false
+            },
+            "placeholder": {
+                "$ref": "#/definitions/placeholder"
+            },
+            "schema": {
+                "$ref": "#/definitions/schema"
+            }
+        },
+        "additionalProperties": false
+    },
+    "primitiveParameter": {
+        "additionalProperties": false,
+        "patternProperties": {
+            "^x-": {
+                "$ref": "#/definitions/vendorExtension"
+            }
+        },
+        "properties": {
+            "required": {
+                "type": "boolean",
+                "enum": [
+                    true
+                ],
+                "description": "Determines whether or not this parameter is required or optional."
+            },
+            "description": {
+                "type": "string",
+                "description": "A brief description of the parameter. This could contain examples of use.  GitHub Flavored Markdown is allowed."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the parameter."
+            },
+            "type": {
+                "type": "string",
+                "enum": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "integer",
+                    "array",
+                    "object"
+                ]
+            },
+            "format": {
+                "type": "string"
+            },
+            "placeholder": {
+                "$ref": "#/definitions/placeholder"
+            },
+            "items": {
+                "oneOf": [{
+                        "$ref": "#/definitions/primitivesItems"
+                    },
+                    {
+                        "$ref": "#/definitions/messagePrimitive"
+                    }
+                ]
+            },
+            "default": {
+                "$ref": "#/definitions/default"
+            },
+            "maximum": {
+                "$ref": "#/definitions/maximum"
+            },
+            "exclusiveMaximum": {
+                "$ref": "#/definitions/exclusiveMaximum"
+            },
+            "minimum": {
+                "$ref": "#/definitions/minimum"
+            },
+            "exclusiveMinimum": {
+                "$ref": "#/definitions/exclusiveMinimum"
+            },
+            "maxLength": {
+                "$ref": "#/definitions/maxLength"
+            },
+            "minLength": {
+                "$ref": "#/definitions/minLength"
+            },
+            "pattern": {
+                "$ref": "#/definitions/pattern"
+            },
+            "maxItems": {
+                "$ref": "#/definitions/maxItems"
+            },
+            "minItems": {
+                "$ref": "#/definitions/minItems"
+            },
+            "uniqueItems": {
+                "$ref": "#/definitions/uniqueItems"
+            },
+            "enum": {
+                "$ref": "#/definitions/enum"
+            },
+            "multipleOf": {
+                "$ref": "#/definitions/multipleOf"
+            },
+            "example": {
+                "type": ["number", "integer", "string", "boolean"]
+            }
+        }
+    }
+}
