@@ -63,6 +63,10 @@
     "definitions" : { "$ref": "./walkoff_schema/def_definitions.json/#definitions" },
     "parameterDefinitions" : { "$ref": "./walkoff_schema/def_definitions.json/#parameterDefinitions" },
     "external_docs" : { "$ref": "./walkoff_schema/def_external.json/#external_docs" },
-    "external_doc" : { "$ref": "./walkoff_schema/def_external.json/#external_doc" }
+    "external_doc" : { "$ref": "./walkoff_schema/def_external.json/#external_doc" },
+    "examples" : { "$ref": "./walkoff_schema/def_items.json/#examples" },
+    "actionItem" : { "$ref": "./walkoff_schema/def_items.json/#actionItem" },
+    "conditionItem" : { "$ref": "./walkoff_schema/def_items.json/#conditionItem" },
+    "transformItem" : { "$ref": "./walkoff_schema/def_items.json/#transformItem" }
   }
 }
