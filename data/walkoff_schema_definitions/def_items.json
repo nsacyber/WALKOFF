@@ -1,0 +1,152 @@
+{
+    "examples": {
+        "type": "object",
+        "additionalProperties": true
+    },
+    "actionItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["run"],
+        "patternProperties": {
+            "^x-": {
+                "$ref": "#/definitions/vendorExtension"
+            }
+        },
+        "properties": {
+            "tags": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "uniqueItems": true
+            },
+            "summary": {
+                "type": "string",
+                "description": "A brief summary of the operation."
+            },
+            "description": {
+                "type": "string",
+                "description": "A longer description of the operation, GitHub Flavored Markdown is allowed."
+            },
+            "external_docs": {
+                "$ref": "#/definitions/external_docs"
+            },
+            "run": {
+                "type": "string",
+                "description": "The method to execute"
+            },
+            "parameters": {
+                "$ref": "#/definitions/parametersList"
+            },
+            "default_return": {
+                "type": "string",
+                "description": "The name of the default return code for this action. Defaults to Success.",
+                "default": "Success"
+            },
+            "returns": {
+                "$ref": "#/definitions/returns"
+            },
+            "event": {
+                "type": "string",
+                "description": "The name of the event needed for this action to occur"
+            },
+            "deprecated": {
+                "type": "boolean",
+                "default": false
+            }
+        }
+    },
+    "conditionItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["run", "parameters", "data_in"],
+        "patternProperties": {
+            "^x-": {
+                "$ref": "#/definitions/vendorExtension"
+            }
+        },
+        "properties": {
+            "tags": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "uniqueItems": true
+            },
+            "summary": {
+                "type": "string",
+                "description": "A brief summary of the operation."
+            },
+            "description": {
+                "type": "string",
+                "description": "A longer description of the operation, GitHub Flavored Markdown is allowed."
+            },
+            "external_docs": {
+                "$ref": "#/definitions/external_docs"
+            },
+            "run": {
+                "type": "string",
+                "description": "The method to execute"
+            },
+            "parameters": {
+                "$ref": "#/definitions/parametersList"
+            },
+            "data_in": {
+                "type": "string",
+                "description": "name of the parameter which contains the data to evaluate"
+            },
+            "deprecated": {
+                "type": "boolean",
+                "default": false
+            }
+        }
+    },
+    "transformItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["run", "parameters", "data_in", "returns"],
+        "patternProperties": {
+            "^x-": {
+                "$ref": "#/definitions/vendorExtension"
+            }
+        },
+        "properties": {
+            "tags": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                },
+                "uniqueItems": true
+            },
+            "summary": {
+                "type": "string",
+                "description": "A brief summary of the operation."
+            },
+            "description": {
+                "type": "string",
+                "description": "A longer description of the operation, GitHub Flavored Markdown is allowed."
+            },
+            "external_docs": {
+                "$ref": "#/definitions/external_docs"
+            },
+            "run": {
+                "type": "string",
+                "description": "The method to execute"
+            },
+            "parameters": {
+                "$ref": "#/definitions/parametersList"
+            },
+            "data_in": {
+                "type": "string",
+                "description": "name of the parameter which contains the data to transform"
+            },
+            "returns": {
+                "$ref": "#/definitions/returns"
+            },
+            "deprecated": {
+                "type": "boolean",
+                "default": false
+            }
+        }
+    }
+}
