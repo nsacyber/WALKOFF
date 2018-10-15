@@ -70,6 +70,14 @@
     "transformItem" : { "$ref": "./walkoff_schema/def_items.json/#transformItem" },
     "returns" : { "$ref": "./walkoff_schema/def_return.json/#returns" },
     "returnValue" : { "$ref": "./walkoff_schema/def_return.json/#returnValue" },
-    "return" : { "$ref": "./walkoff_schema/def_return.json/#return" }
+    "return" : { "$ref": "./walkoff_schema/def_return.json/#return" },
+    "vendorExtension" : { "$ref": "./walkoff_schema/def_misc.json/#vendorExtension" },
+    "jsonParameter" : { "$ref": "./walkoff_schema/def_parameter.json/#jsonParameter" },
+    "primitiveParameter" : { "$ref": "./walkoff_schema/def_parameter.json/#primitiveParameter" },
+    "messagePrimitive" : { "$ref": "./walkoff_schema/def_messagePrim.json/#messagePrimitive" },
+    "parameter" : { "$ref": "./walkoff_schema/def_parameter.json/#parameter" },
+    "schema" : { "$ref": "./walkoff_schema/def_schema.json/#schema" },
+    "primitivesItems" : { "$ref": "./walkoff_schema/def_primItems.json/#primitivesItems" },
+    "parametersList" : { "$ref": "./walkoff_schema/def_parameter.json/#parametersList" }
   }
 }
