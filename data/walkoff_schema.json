@@ -67,6 +67,9 @@
     "examples" : { "$ref": "./walkoff_schema/def_items.json/#examples" },
     "actionItem" : { "$ref": "./walkoff_schema/def_items.json/#actionItem" },
     "conditionItem" : { "$ref": "./walkoff_schema/def_items.json/#conditionItem" },
-    "transformItem" : { "$ref": "./walkoff_schema/def_items.json/#transformItem" }
+    "transformItem" : { "$ref": "./walkoff_schema/def_items.json/#transformItem" },
+    "returns" : { "$ref": "./walkoff_schema/def_return.json/#returns" },
+    "returnValue" : { "$ref": "./walkoff_schema/def_return.json/#returnValue" },
+    "return" : { "$ref": "./walkoff_schema/def_return.json/#return" }
   }
 }
