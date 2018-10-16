@@ -32,7 +32,9 @@ export class AuthService {
 	 * Logs the user out on the server and clears the tokens in session storage.
 	 */
 	logout(): Promise<void> {
-		return this.http.post('/api/auth/logout', { refresh_token: sessionStorage.getItem(REFRESH_TOKEN_NAME) })
+		const headers = { 'Authorization': `Bearer ${ this.getAccessToken() }` };
+
+		return this.http.post('/api/auth/logout', { refresh_token: sessionStorage.getItem(REFRESH_TOKEN_NAME) }, { headers })
 			.toPromise()
 			.then(() => {
 				this.clearTokens();

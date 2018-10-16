@@ -224,10 +224,13 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 					matchingWorkflowStatus.current_action = workflowStatusEvent.current_action;
 					break;
 				case 'completed':
-					matchingWorkflowStatus.completed_at = workflowStatusEvent.timestamp;
-					this.workflowStatusCompletedRelativeTimes[matchingWorkflowStatus.execution_id] =
-						this.utils.getRelativeLocalTime(workflowStatusEvent.timestamp);
-					delete matchingWorkflowStatus.current_action;
+					// Add a delay to ensure completed status is updated in quick executing workflows
+					setTimeout(() => {
+						matchingWorkflowStatus.completed_at = workflowStatusEvent.timestamp;
+						this.workflowStatusCompletedRelativeTimes[matchingWorkflowStatus.execution_id] =
+							this.utils.getRelativeLocalTime(workflowStatusEvent.timestamp);
+						delete matchingWorkflowStatus.current_action;
+					}, 250);
 					break;
 				case 'aborted':
 					matchingWorkflowStatus.completed_at = workflowStatusEvent.timestamp;
