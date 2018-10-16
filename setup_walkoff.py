@@ -14,7 +14,7 @@ def main():
     os.system('npm install')
 
     print('\nCompiling TypeScript Files...')
-    os.system('npm run build')
+    os.system('npm run build:prod')
 
 
 if __name__ == '__main__':
