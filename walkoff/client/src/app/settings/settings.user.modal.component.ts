@@ -13,7 +13,7 @@ import { Select2OptionData } from 'ng2-select2/ng2-select2.interface';
 	selector: 'user-modal',
 	templateUrl: './settings.user.modal.html',
 	styleUrls: [
-		'./settings.css',
+		'./settings.scss',
 	],
 	providers: [SettingsService, UtilitiesService],
 })

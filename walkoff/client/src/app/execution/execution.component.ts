@@ -29,7 +29,7 @@ import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 	selector: 'execution-component',
 	templateUrl: './execution.html',
 	styleUrls: [
-		'./execution.css',
+		'./execution.scss',
 	],
 	encapsulation: ViewEncapsulation.None,
 	providers: [ExecutionService, AuthService],

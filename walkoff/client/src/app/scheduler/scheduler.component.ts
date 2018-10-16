@@ -16,7 +16,7 @@ import { ScheduledTask } from '../models/scheduler/scheduledTask';
 	selector: 'scheduler-component',
 	templateUrl: './scheduler.html',
 	styleUrls: [
-		'./scheduler.css',
+		'./scheduler.scss',
 		'../../../node_modules/ng-pick-datetime/styles/picker.min.css',
 	],
 	encapsulation: ViewEncapsulation.None,

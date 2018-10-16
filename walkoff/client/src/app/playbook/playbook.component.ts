@@ -52,7 +52,7 @@ import { WorkflowStatus } from '../models/execution/workflowStatus';
 	selector: 'playbook-component',
 	templateUrl: './playbook.html',
 	styleUrls: [
-		'./playbook.css',
+		'./playbook.scss',
 		'../../../node_modules/cytoscape-panzoom/cytoscape.js-panzoom.css',
 		'../../../node_modules/ng2-dnd/bundles/style.css',
 	],

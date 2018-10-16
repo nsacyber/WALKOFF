@@ -14,7 +14,7 @@ import { Resource } from '../models/resource';
 	selector: 'settings-role-modal',
 	templateUrl: './settings.roles.modal.html',
 	styleUrls: [
-		'./settings.css',
+		'./settings.scss',
 	],
 	providers: [SettingsService, UtilitiesService],
 })

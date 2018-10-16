@@ -17,7 +17,7 @@ import { GenericObject } from '../models/genericObject';
 	selector: 'scheduler-modal',
 	templateUrl: './scheduler.modal.html',
 	styleUrls: [
-		'./scheduler.css',
+		'./scheduler.scss',
 	],
 	providers: [SchedulerService, UtilitiesService],
 })

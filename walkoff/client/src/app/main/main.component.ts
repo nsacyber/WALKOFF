@@ -21,7 +21,7 @@ const MAX_TOTAL_MESSAGES = 20;
 	selector: 'main-component',
 	templateUrl: './main.html',
 	styleUrls: [
-		'./main.css',
+		'./main.scss',
 	],
 	providers: [MainService, AuthService, UtilitiesService],
 })

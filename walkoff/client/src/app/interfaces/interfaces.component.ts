@@ -8,7 +8,7 @@ import { HttpClient } from '@angular/common/http';
 @Component({
 	selector: 'interfaces-component',
 	templateUrl: './interfaces.html',
-	styleUrls: ['./interfaces.css'],
+	styleUrls: ['./interfaces.scss'],
 	encapsulation: ViewEncapsulation.None,
 	providers: [AuthService],
 })

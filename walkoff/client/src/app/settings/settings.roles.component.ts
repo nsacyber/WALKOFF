@@ -17,7 +17,7 @@ import { GenericObject } from '../models/genericObject';
 	selector: 'settings-roles-component',
 	templateUrl: './settings.roles.html',
 	styleUrls: [
-		'./settings.css',
+		'./settings.scss',
 	],
 	encapsulation: ViewEncapsulation.None,
 	providers: [SettingsService],

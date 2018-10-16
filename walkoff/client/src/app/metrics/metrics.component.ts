@@ -15,7 +15,7 @@ import { WorkflowMetric } from '../models/metric/workflowMetric';
 	templateUrl: './metrics.html',
 	encapsulation: ViewEncapsulation.None,
 	styleUrls: [
-		'./metrics.css',
+		'./metrics.scss',
 	],
 	providers: [MetricsService],
 })

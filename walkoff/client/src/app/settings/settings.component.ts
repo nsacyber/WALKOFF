@@ -18,7 +18,7 @@ import { Role } from '../models/role';
 	selector: 'settings-component',
 	templateUrl: './settings.html',
 	styleUrls: [
-		'./settings.css',
+		'./settings.scss',
 	],
 	providers: [SettingsService],
 })

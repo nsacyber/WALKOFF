@@ -11,7 +11,7 @@ import { Message } from '../models/message/message';
 	selector: 'messages-modal',
 	templateUrl: './messages.modal.html',
 	styleUrls: [
-		'./messages.css',
+		'./messages.scss',
 	],
 	providers: [MessagesService, UtilitiesService],
 })

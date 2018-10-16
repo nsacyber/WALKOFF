@@ -15,7 +15,7 @@ import { GenericObject } from '../models/genericObject';
 	selector: 'device-modal',
 	templateUrl: './devices.modal.html',
 	styleUrls: [
-		'./devices.css',
+		'./devices.scss',
 	],
 	providers: [DevicesService, UtilitiesService],
 })

@@ -17,7 +17,7 @@ import { GenericObject } from '../models/genericObject';
 	selector: 'devices-component',
 	templateUrl: './devices.html',
 	styleUrls: [
-		'./devices.css',
+		'./devices.scss',
 	],
 	encapsulation: ViewEncapsulation.None,
 	providers: [DevicesService],
