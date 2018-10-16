@@ -31,7 +31,7 @@ export class SettingsRoleModalComponent {
 	selectedAvailableResourceActionName: string;
 
 	constructor(
-		private settingsService: SettingsService, private activeModal: NgbActiveModal,
+		private settingsService: SettingsService, public activeModal: NgbActiveModal,
 		private toastrService: ToastrService,
 		private utils: UtilitiesService,
 	) {

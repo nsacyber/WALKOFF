@@ -38,7 +38,7 @@ export class DevicesModalComponent implements OnInit, AfterViewInit {
 	encryptedFieldsToBeCleared: { [key: string]: boolean } = {};
 
 	constructor (
-		private devicesService: DevicesService, private activeModal: NgbActiveModal, 
+		private devicesService: DevicesService, public activeModal: NgbActiveModal, 
 		private toastrService: ToastrService, private cdr: ChangeDetectorRef,
 	) {}
 

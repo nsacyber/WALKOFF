@@ -34,7 +34,7 @@ export class SchedulerModalComponent implements OnInit {
 	date: ScheduledTaskDate = new ScheduledTaskDate();
 	
 	constructor(
-		private schedulerService: SchedulerService, private activeModal: NgbActiveModal,
+		private schedulerService: SchedulerService, public activeModal: NgbActiveModal,
 		private toastrService: ToastrService,
 	) {}
 

@@ -42,6 +42,10 @@ import { MessagesModalComponent } from './messages/messages.modal.component';
 import { KeysPipe } from './pipes/keys.pipe';
 import { UtilitiesService } from './utilities.service';
 
+export function jwtTokenGetter() : string {
+	return sessionStorage.getItem('access_token');
+}
+
 @NgModule({
 	imports: [
 		BrowserModule,
@@ -50,7 +54,7 @@ import { UtilitiesService } from './utilities.service';
 		HttpClientModule,
 		JwtModule.forRoot({
 			config: {
-				tokenGetter: () => sessionStorage.getItem('access_token'),
+				tokenGetter: jwtTokenGetter,
 				blacklistedRoutes: ['/login', '/api/auth', '/api/auth/logout', '/api/auth/refresh']
 			}
 		}),

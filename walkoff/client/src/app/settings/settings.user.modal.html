@@ -47,7 +47,7 @@
 							<i *ngIf="!this.workingUser.id" class="fa fa-asterisk required" title="This field is required."></i>
 						</label>
 						<input type="password" class="form-control" [(ngModel)]="workingUser.newPassword" #newPassword="ngModel" name="newPassword">
-						<div *ngIf="((currentPassword && currentPassword.value) || !workingUser.id) && (newPassword.dirty || newPassword.touched) && !newPassword.value"
+						<div *ngIf="(!workingUser.id || workingUser.currentPassword) && (newPassword.dirty || newPassword.touched) && !newPassword.value"
 							class="alert alert-danger">
 							Password is required.
 						</div>

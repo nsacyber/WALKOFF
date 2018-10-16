@@ -28,7 +28,7 @@ export class SettingsUserModalComponent {
 	roleSelectInitialValue: number[];
 
 	constructor(
-		private settingsService: SettingsService, private activeModal: NgbActiveModal,
+		private settingsService: SettingsService, public activeModal: NgbActiveModal,
 		private toastrService: ToastrService, ) {
 	}
 
