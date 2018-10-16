@@ -39,7 +39,7 @@ class MockWorkflowSchema(object):
         return Dummy({'id': str(workflow.id), 'name': workflow.name, 'execution_id': str(workflow.execution_id)})
 
 
-def mock_pause_workflow(self, execution_id):
+def mock_pause_workflow(self, execution_id, user=None):
     WalkoffEvent.WorkflowPaused.send({'execution_id': execution_id, 'id': '123', 'name': 'workflow'})
 
 

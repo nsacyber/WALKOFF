@@ -127,7 +127,8 @@ def control_workflow():
         status = data['status']
 
         if status == 'pause':
-            current_app.running_context.executor.pause_workflow(execution_id)
+            current_app.running_context.executor.pause_workflow(execution_id,
+                                                                user=get_jwt_claims().get('username', None))
         elif status == 'resume':
             current_app.running_context.executor.resume_workflow(execution_id,
                                                                  user=get_jwt_claims().get('username', None))

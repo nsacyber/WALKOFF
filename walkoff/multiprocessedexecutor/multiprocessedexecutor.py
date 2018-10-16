@@ -162,11 +162,11 @@ class MultiprocessedExecutor(object):
         execution_id = execution_id_in if execution_id_in else str(uuid.uuid4())
 
         if start is not None:
-            logger.info('Executing workflow {0} (id={1}) with starting action {2}'.format(
-                workflow.name, workflow.id, start))
+            logger.info('User {0} executing workflow {1} (id={2}) with starting action {3}'.format(
+                user, workflow.name, workflow.id, start))
         else:
-            logger.info('Executing workflow {0} (id={1}) with default starting action {2}'.format(
-                workflow.name, workflow.id, start))
+            logger.info('User {0} executing workflow {1} (id={2}) with default starting action {3}'.format(
+                user, workflow.name, workflow.id, start))
 
         workflow_data = {'execution_id': execution_id, 'id': str(workflow.id), 'name': workflow.name}
 
@@ -188,7 +188,7 @@ class MultiprocessedExecutor(object):
                                                                       user)
         self.cache.lpush("request_queue", self.__box.encrypt(message))
 
-    def pause_workflow(self, execution_id):
+    def pause_workflow(self, execution_id, user=None):
         """Pauses a workflow that is currently executing.
 
         Args:
@@ -197,7 +197,7 @@ class MultiprocessedExecutor(object):
         Returns:
             (bool): True if Workflow successfully paused, False otherwise
         """
-        logger.info('Pausing workflow {}'.format(execution_id))
+        logger.info('User {0} pausing workflow {1}'.format(user, execution_id))
         workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
         if workflow_status and workflow_status.status == WorkflowStatusEnum.running:
             self.zmq_workflow_comm.pause_workflow(execution_id)
@@ -217,7 +217,7 @@ class MultiprocessedExecutor(object):
         Returns:
             (bool): True if workflow successfully resumed, False otherwise
         """
-        logger.info('Resuming workflow {}'.format(execution_id))
+        logger.info('User {0} resuming workflow {1}'.format(user, execution_id))
         workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
 
         if workflow_status and workflow_status.status == WorkflowStatusEnum.paused:
@@ -248,7 +248,7 @@ class MultiprocessedExecutor(object):
         Returns:
             (bool): True if successfully aborted workflow, False otherwise
         """
-        logger.info('Aborting workflow {}'.format(execution_id))
+        logger.info('User {0} aborting workflow {1}'.format(user, execution_id))
         workflow_status = self.execution_db.session.query(WorkflowStatus).filter_by(execution_id=execution_id).first()
 
         if workflow_status:
@@ -284,7 +284,7 @@ class MultiprocessedExecutor(object):
         Returns:
             (bool): True if successfully resumed trigger step, false otherwise
         """
-        logger.info('Resuming workflow {} from trigger'.format(execution_id))
+        logger.info('User {0} resuming workflow {1} from trigger'.format(user, execution_id))
         saved_state = self.execution_db.session.query(SavedWorkflow).filter_by(
             workflow_execution_id=execution_id).first()
         workflow = self.execution_db.session.query(Workflow).filter_by(id=saved_state.workflow_id).first()
