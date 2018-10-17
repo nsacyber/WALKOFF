@@ -1,0 +1,12 @@
+/* You can add global styles to this file, and also import other style files */
+
+// Import global CSS packages
+@import 'variables';
+@import '~font-awesome/scss/font-awesome';
+@import '~bootstrap/scss/bootstrap';
+
+@import '@swimlane/ngx-datatable/release/index.css';
+@import '@swimlane/ngx-datatable/release/themes/material.css';
+@import '@swimlane/ngx-datatable/release/assets/icons.css';
+@import 'select2/dist/css/select2.min.css';
+@import 'ngx-toastr/toastr.css';

@@ -1,0 +1,39 @@
+<div id="main" class="devicesMain">
+    <h1>Device Management</h1>
+
+    <div class="row align-items-center mb-3">
+        <div class="col">
+            <button (click)="addDevice()" class="btn btn-outline-primary"><i class="fa fa-plus"></i> Add Device</button>
+        </div>
+        <div class="col-4">
+            <select2 [data]="availableApps" [options]="appSelectConfig" (valueChanged)="appSelectChange($event)"></select2>
+        </div>
+        <div class="col-4">
+            <div class="row">
+                <label class="col-auto col-form-label">Search Filter</label>
+                <div class="col">
+                    <input class="form-control" [formControl]="filterQuery" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <ngx-datatable #deviceTable class='material expandable' [columnMode]="'flex'" [rows]="displayDevices" [sortType]="'multi'"
+     [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'name', dir: 'asc'}]" [limit]="25">
+        <!-- Column Templates -->
+        <ngx-datatable-column name="Name" prop="name" [flexGrow]="2"></ngx-datatable-column>
+        <ngx-datatable-column name="App" prop="app_name" [flexGrow]="2"></ngx-datatable-column>
+        <ngx-datatable-column name="Type" prop="type" [flexGrow]="2"></ngx-datatable-column>
+        <ngx-datatable-column name="Fields" [sortable]="false" [flexGrow]="5">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+                {{getCustomFields(row)}}
+            </ng-template>
+        </ngx-datatable-column>
+        <ngx-datatable-column name="Actions" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="2">
+            <ng-template let-row="row" ngx-datatable-cell-template>
+                <button (click)="editDevice(row)" class="btn btn-primary mx-1" title="Edit Device"><i class="fa fa-edit"></i></button>
+                <button (click)="deleteDevice(row)" class="btn btn-danger mx-1" title="Delete Device"><i class="fa fa-times"></i></button>
+            </ng-template>
+        </ngx-datatable-column>
+    </ngx-datatable>
+</div>
