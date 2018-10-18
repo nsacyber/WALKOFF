@@ -15,6 +15,8 @@ export class WorkflowStatus {
 
 	started_at?: string;
 
+	user: string;
+
 	/**
 	 * Date when workflow ended.
 	 * TODO: figure out if we want to use this for various stopping points: awaiting data, paused, completed, aborted

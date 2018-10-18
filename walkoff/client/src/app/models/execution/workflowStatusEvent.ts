@@ -10,6 +10,8 @@ export class WorkflowStatusEvent {
 
 	name: string;
 
+	user: string;
+
 	timestamp: string;
 
 	status: string;

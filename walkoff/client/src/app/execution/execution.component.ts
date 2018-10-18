@@ -215,6 +215,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 						this.workflowStatusStartedRelativeTimes[matchingWorkflowStatus.execution_id] =
 							this.utils.getRelativeLocalTime(workflowStatusEvent.timestamp);
 					}
+					matchingWorkflowStatus.user = workflowStatusEvent.user;
 					matchingWorkflowStatus.current_action = workflowStatusEvent.current_action;
 					break;
 				case 'paused':
