@@ -166,7 +166,7 @@ class MultiprocessedExecutor(object):
                 user, workflow.name, workflow.id, start))
         else:
             logger.info('User {0} executing workflow {1} (id={2}) with default starting action {3}'.format(
-                user, workflow.name, workflow.id, start))
+                user, workflow.name, workflow.id, workflow.start))
 
         workflow_data = {'execution_id': execution_id, 'id': str(workflow.id), 'name': workflow.name}
 
