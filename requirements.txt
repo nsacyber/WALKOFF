@@ -27,3 +27,7 @@ psycopg2-binary
 click
 alembic
 semver
+
+kubernetes
+pyopenssl
+gitpython

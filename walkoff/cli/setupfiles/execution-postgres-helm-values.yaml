@@ -1,0 +1,2 @@
+existingSecret: walkoff-redis-secret
+postgresUser: walkoff

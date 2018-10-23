@@ -3,7 +3,7 @@ from walkoff.helpers import compose_api as _componse_api
 from ..local.util import clean_pycache
 import os
 import subprocess
-from .download import download
+# from .dev import download
 
 
 @click.command()
@@ -35,7 +35,7 @@ def docs():
     subprocess.call(['make', 'html'], shell=True)
 
 
-generate.add_command(download)
+# generate.add_command(download)
 
 
 @click.group(name='open')
