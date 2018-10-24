@@ -6,7 +6,7 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { Select2Module } from 'ng2-select2';
 import { AuthService } from './auth/auth.service';
 import { JwtInterceptor, JwtModule } from '@auth0/angular-jwt';
-import { RefreshTokenInterceptor } from './refresh-token-interceptor';
+import { RefreshTokenInterceptor, jwtTokenGetter } from './refresh-token-interceptor';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { DateTimePickerModule } from 'ng-pick-datetime';
 import { DndModule } from 'ng2-dnd';
@@ -41,10 +41,6 @@ import { MessagesModalComponent } from './messages/messages.modal.component';
 
 import { KeysPipe } from './pipes/keys.pipe';
 import { UtilitiesService } from './utilities.service';
-
-export function jwtTokenGetter() : string {
-	return sessionStorage.getItem('access_token');
-}
 
 @NgModule({
 	imports: [

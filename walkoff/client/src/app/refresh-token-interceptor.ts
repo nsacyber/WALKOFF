@@ -1,9 +1,13 @@
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
+import { mergeMap } from 'rxjs/operators';
 import { AuthService } from './auth/auth.service';
 import { JwtInterceptor } from '@auth0/angular-jwt';
 
+export function jwtTokenGetter() : string {
+	return sessionStorage.getItem('access_token');
+}
 
 @Injectable()
 export class RefreshTokenInterceptor implements HttpInterceptor {
@@ -12,13 +16,11 @@ export class RefreshTokenInterceptor implements HttpInterceptor {
 
     intercept (req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         if (this.jwtInterceptor.isWhitelistedDomain(req) && !this.jwtInterceptor.isBlacklistedRoute(req) && this.authService.isAccessTokenExpired()) {
-            return Observable
-                .fromPromise(this.authService.getAccessTokenRefreshed())
-                .mergeMap(() => this.jwtInterceptor.intercept(req, next));
+            return from(this.authService.getAccessTokenRefreshed())
+                    .pipe(mergeMap(() => this.jwtInterceptor.intercept(req, next)));
         } 
         else {
             return next.handle(req);
         }
     }
-
 }
