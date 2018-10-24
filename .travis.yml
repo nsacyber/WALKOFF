@@ -80,7 +80,7 @@ matrix:
       before_script:
         - cd walkoff/client
         - npm install
-      script: npm run test -- --single-run
+      script: npm run test -- --watch=false
       branches:
         only:
           - master

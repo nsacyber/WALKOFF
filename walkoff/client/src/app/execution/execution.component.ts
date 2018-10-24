@@ -4,7 +4,7 @@ import { FormControl } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { Select2OptionData } from 'ng2-select2';
 import { DatatableComponent } from '@swimlane/ngx-datatable';
-import { Observable } from 'rxjs';
+import { Observable, interval } from 'rxjs';
 import 'rxjs/add/operator/debounceTime';
 import { plainToClass } from 'class-transformer';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
@@ -92,7 +92,7 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 			.debounceTime(500)
 			.subscribe(event => this.filterWorkflowStatuses());
 
-		Observable.interval(30000).subscribe(() => {
+		interval(30000).subscribe(() => {
 			this.recalculateRelativeTimes();
 		});
 
