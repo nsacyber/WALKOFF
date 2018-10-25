@@ -139,16 +139,16 @@ class Config(object):
     ITEMS_PER_PAGE = 20
     ACTION_EXECUTION_STRATEGY = 'local'
 
-    EXECUTION_DB_USERNAME = None
-    EXECUTION_DB_PASSWORD = None
+    EXECUTION_DB_USERNAME = ''
+    EXECUTION_DB_PASSWORD = ''
 
-    WALKOFF_DB_USERNAME = None
-    WALKOFF_DB_PASSWORD = None
+    WALKOFF_DB_USERNAME = ''
+    WALKOFF_DB_PASSWORD = ''
 
-    SERVER_PUBLIC_KEY = None
-    SERVER_PRIVATE_KEY = None
-    CLIENT_PUBLIC_KEY = None
-    CLIENT_PRIVATE_KEY = None
+    SERVER_PUBLIC_KEY = ''
+    SERVER_PRIVATE_KEY = ''
+    CLIENT_PUBLIC_KEY = ''
+    CLIENT_PRIVATE_KEY = ''
     ACCUMULATOR_TYPE = 'external'
 
     SECRET_KEY = "SHORTSTOPKEY"
@@ -211,11 +211,11 @@ class Config(object):
     def load_env_vars(cls):
         for field in (field for field in dir(cls) if field.isupper()):
             if field in os.environ:
-                try:
-                    s = json.loads(os.environ.get(field))
-                except (TypeError, ValueError):
-                    s = os.environ.get(field)
-                setattr(cls, field, s)
+                var_type = type(getattr(cls, field))
+                if var_type == dict:
+                    setattr(cls, field, json.loads(os.environ.get(field)))
+                else:
+                    setattr(cls, field, var_type(os.environ.get(field)))
 
     @classmethod
     def read_and_set_zmq_keys(cls):
