@@ -211,7 +211,11 @@ class Config(object):
     def load_env_vars(cls):
         for field in (field for field in dir(cls) if field.isupper()):
             if field in os.environ:
-                setattr(cls, field, os.environ.get(field))
+                try:
+                    s = json.loads(os.environ.get(field))
+                except (TypeError, ValueError):
+                    s = os.environ.get(field)
+                setattr(cls, field, s)
 
     @classmethod
     def read_and_set_zmq_keys(cls):
