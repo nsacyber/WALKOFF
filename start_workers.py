@@ -23,13 +23,13 @@ def parse_args():
     return args
 
 
-def spawn_worker_processes(num_processes, config):
+def spawn_worker_processes():
     """Initialize the multiprocessing pool, allowing for parallel execution of workflows.
     """
     pids = []
     try:
-        for i in range(num_processes):
-            pid = multiprocessing.Process(target=Worker, args=(i, config.CONFIG_PATH))
+        for i in range(walkoff.config.Config.NUMBER_PROCESSES):
+            pid = multiprocessing.Process(target=Worker, args=(i, walkoff.config.Config.CONFIG_PATH))
             pid.start()
             pids.append(pid)
         return pids
@@ -51,14 +51,13 @@ def shutdown_procs(procs):
 
 if __name__ == '__main__':
     args = parse_args()
-    num_procs = walkoff.config.Config.NUMBER_PROCESSES
-    if args.config:
-        walkoff.config.Config.load_config(args.config)
-        num_procs = walkoff.config.Config.NUMBER_PROCESSES
-    if args.num:
-        num_procs = args.num
 
-    processes = spawn_worker_processes(num_procs, walkoff.config.Config)
+    if args.config:
+        walkoff.config.initialize(config_path=args.config)
+    else:
+        walkoff.config.initialize()
+
+    processes = spawn_worker_processes()
 
     try:
         while True:
