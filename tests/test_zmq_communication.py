@@ -25,7 +25,7 @@ class TestZMQCommunication(unittest.TestCase):
         cls.context = cls.app.test_request_context()
         cls.context.push()
 
-        pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES, walkoff.config.Config)
+        pids = spawn_worker_processes()
         time.sleep(1)
         cls.app.running_context.executor.initialize_threading(cls.app, pids)
 

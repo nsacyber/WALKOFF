@@ -63,7 +63,7 @@ class ServerTestCase(unittest.TestCase):
             cls.app.running_context.executor.initialize_threading(cls.app)
         else:
             walkoff.config.Config.write_values_to_file()
-            pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES, walkoff.config.Config)
+            pids = spawn_worker_processes()
             cls.app.running_context.executor.initialize_threading(cls.app, pids)
 
     @classmethod
