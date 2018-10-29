@@ -31,18 +31,19 @@ class Worker(object):
             id_ (str): The ID of the worker
             config_path (str): The path to the configuration file to be loaded
         """
-        logger.info('Spawning worker {}'.format(id_))
         self.id_ = id_
         self._lock = Lock()
         signal.signal(signal.SIGINT, self.exit_handler)
         signal.signal(signal.SIGABRT, self.exit_handler)
 
-        if os.name == 'nt':
+        if walkoff.config.Config.SEPARATE_WORKERS:
             walkoff.config.initialize(config_path=config_path)
         else:
             walkoff.config.Config.load_config(config_path)
             walkoff.config.Config.load_env_vars()
             walkoff.config.Config.read_and_set_zmq_keys()
+
+        logger.info('Spawning worker {}'.format(id_))
 
         self.cache = walkoff.cache.make_cache(walkoff.config.Config.CACHE)
 
