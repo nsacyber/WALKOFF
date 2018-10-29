@@ -11,7 +11,8 @@ class Context(object):
             variables that might be needed.
         """
         self.execution_db = walkoff.executiondb.ExecutionDatabase(walkoff.config.Config.EXECUTION_DB_TYPE,
-                                                                  walkoff.config.Config.EXECUTION_DB_PATH)
+                                                                  walkoff.config.Config.EXECUTION_DB_PATH,
+                                                                  walkoff.config.Config.EXECUTION_DB_HOST)
 
         if init_all:
             self.cache = walkoff.cache.make_cache(walkoff.config.Config.CACHE)

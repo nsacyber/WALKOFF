@@ -98,6 +98,9 @@ class Config(object):
     WALKOFF_DB_TYPE = 'sqlite'
     EXECUTION_DB_TYPE = 'sqlite'
 
+    WALKOFF_DB_HOST = 'localhost'
+    EXECUTION_DB_HOST = 'localhost'
+
     # PATHS
     DATA_PATH = join('.', 'data')
 
@@ -124,7 +127,7 @@ class Config(object):
 
     # AppConfig
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = format_db_path(WALKOFF_DB_TYPE, DB_PATH, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD')
+    SQLALCHEMY_DATABASE_URI = format_db_path(WALKOFF_DB_TYPE, DB_PATH, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD', WALKOFF_DB_HOST)
 
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['refresh']
@@ -191,7 +194,7 @@ class Config(object):
                 logger.warning('Could not read config file.', exc_info=True)
 
         cls.SQLALCHEMY_DATABASE_URI = format_db_path(cls.WALKOFF_DB_TYPE, cls.DB_PATH, 'WALKOFF_DB_USERNAME',
-                                                     'WALKOFF_DB_PASSWORD')
+                                                     'WALKOFF_DB_PASSWORD', cls.WALKOFF_DB_HOST)
 
     @classmethod
     def write_values_to_file(cls, keys=None):

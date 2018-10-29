@@ -47,7 +47,8 @@ class Worker(object):
         self.cache = walkoff.cache.make_cache(walkoff.config.Config.CACHE)
 
         self.execution_db = ExecutionDatabase(walkoff.config.Config.EXECUTION_DB_TYPE,
-                                              walkoff.config.Config.EXECUTION_DB_PATH)
+                                              walkoff.config.Config.EXECUTION_DB_PATH,
+                                              walkoff.config.Config.EXECUTION_DB_HOST)
 
         @WalkoffEvent.CommonWorkflowSignal.connect
         def handle_data_sent(sender, **kwargs):

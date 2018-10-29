@@ -15,7 +15,7 @@ class ExecutionDatabase(object):
     """Wrapper for the SQLAlchemy database connection object"""
     instance = None
 
-    def __init__(self, execution_db_type, execution_db_path):
+    def __init__(self, execution_db_type, execution_db_path, execution_db_host="localhost"):
         # All of these imports are necessary
         from walkoff.executiondb.device import App, Device, DeviceField, EncryptedDeviceField
         from walkoff.executiondb.argument import Argument
@@ -37,7 +37,7 @@ class ExecutionDatabase(object):
                                         connect_args={'check_same_thread': False}, poolclass=NullPool)
         else:
             self.engine = create_engine(
-                format_db_path(execution_db_type, execution_db_path, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD'),
+                format_db_path(execution_db_type, execution_db_path, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD', execution_db_host),
                 poolclass=NullPool)
             if not database_exists(self.engine.url):
                 try:
