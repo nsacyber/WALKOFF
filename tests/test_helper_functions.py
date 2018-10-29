@@ -93,7 +93,6 @@ class TestHelperFunctions(unittest.TestCase):
 
     def test_format_db_path(self):
         self.assertEqual(format_db_path('sqlite', 'aa.db'), 'sqlite:///aa.db')
-        self.assertEqual(format_db_path('postgresql', 'aa.db'), 'postgresql://aa.db')
 
     def test_get_app_action_api_invalid_app(self):
         with self.assertRaises(UnknownApp):
