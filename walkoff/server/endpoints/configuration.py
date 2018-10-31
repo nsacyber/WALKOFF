@@ -12,13 +12,10 @@ from walkoff.server.returncodes import *
 
 def __get_current_configuration():
     return {'db_path': walkoff.config.Config.DB_PATH,
-            'case_db_path': walkoff.config.Config.CASE_DB_PATH,
             'logging_config_path': walkoff.config.Config.LOGGING_CONFIG_PATH,
             'host': walkoff.config.Config.HOST,
             'port': int(walkoff.config.Config.PORT),
             'walkoff_db_type': walkoff.config.Config.WALKOFF_DB_TYPE,
-            'case_db_type': walkoff.config.Config.CASE_DB_TYPE,
-            'clear_case_db_on_startup': bool(walkoff.config.Config.CLEAR_CASE_DB_ON_STARTUP),
             'access_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds / 60),
             'refresh_token_duration': int(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days),
             'zmq_results_address': walkoff.config.Config.ZMQ_RESULTS_ADDRESS,

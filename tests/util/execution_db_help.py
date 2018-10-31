@@ -3,7 +3,6 @@ import os
 
 import walkoff.config
 from tests.util.jsonplaybookloader import JsonPlaybookLoader
-from walkoff.case.database import CaseDatabase
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.action import Action
 from walkoff.executiondb.argument import Argument
@@ -21,9 +20,8 @@ from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
 
 def setup_dbs():
     execution_db = ExecutionDatabase(walkoff.config.Config.EXECUTION_DB_TYPE, walkoff.config.Config.EXECUTION_DB_PATH)
-    case_db = CaseDatabase(walkoff.config.Config.CASE_DB_TYPE, walkoff.config.Config.CASE_DB_PATH)
 
-    return execution_db, case_db
+    return execution_db
 
 
 def cleanup_execution_db():

@@ -117,6 +117,15 @@ class WorkflowStreamEvent(Enum):
 
 
 def format_workflow_result(sender, status):
+    workflow_status = current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
+        execution_id=sender['execution_id']).first()
+    if workflow_status is not None:
+        return {'execution_id': str(sender['execution_id']),
+                'workflow_id': str(sender['id']),
+                'name': sender['name'],
+                'status': status.name,
+                'timestamp': utc_as_rfc_datetime(datetime.utcnow()),
+                'user': workflow_status.user}
     return {'execution_id': str(sender['execution_id']),
             'workflow_id': str(sender['id']),
             'name': sender['name'],
@@ -130,7 +139,7 @@ def format_workflow_result_with_current_step(workflow_execution_id, status):
     if workflow_status is not None:
         status_json = workflow_status.as_json()
         for field in (field for field in list(status_json.keys())
-                      if field not in ('execution_id', 'workflow_id', 'name', 'status', 'current_action')):
+                      if field not in ('execution_id', 'workflow_id', 'name', 'status', 'current_action', 'user')):
             status_json.pop(field)
         status_json['timestamp'] = utc_as_rfc_datetime(datetime.utcnow())
         status_json['status'] = status.name  # in case this callback is called before it is properly set in the database
@@ -169,7 +178,7 @@ def workflow_paused_callback(sender, **kwargs):
 @WalkoffEvent.WorkflowResumed.connect
 @workflow_stream.push(WorkflowStreamEvent.resumed.name)
 def workflow_resumed_callback(sender, **kwargs):
-    data = format_workflow_result_with_current_step(sender.get_execution_id(), WorkflowStatusEnum.running)
+    data = format_workflow_result_with_current_step(kwargs['data']['execution_id'], WorkflowStatusEnum.running)
     return format_workflow_return(data)
 
 

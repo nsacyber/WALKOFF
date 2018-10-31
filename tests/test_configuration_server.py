@@ -31,13 +31,10 @@ class TestConfigurationServer(ServerTestCase):
 
     def test_get_configuration(self):
         expected = {'db_path': walkoff.config.Config.DB_PATH,
-                    'case_db_path': walkoff.config.Config.CASE_DB_PATH,
                     'logging_config_path': walkoff.config.Config.LOGGING_CONFIG_PATH,
                     'host': walkoff.config.Config.HOST,
                     'port': int(walkoff.config.Config.PORT),
                     'walkoff_db_type': walkoff.config.Config.WALKOFF_DB_TYPE,
-                    'case_db_type': walkoff.config.Config.CASE_DB_TYPE,
-                    'clear_case_db_on_startup': bool(walkoff.config.Config.CLEAR_CASE_DB_ON_STARTUP),
                     'number_threads_per_process': int(walkoff.config.Config.NUMBER_THREADS_PER_PROCESS),
                     'number_processes': int(walkoff.config.Config.NUMBER_PROCESSES),
                     'access_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds / 60),
@@ -51,13 +48,10 @@ class TestConfigurationServer(ServerTestCase):
     def put_post_to_config(self, verb):
         send_func = self.put_with_status_check if verb == 'put' else self.patch_with_status_check
         data = {"db_path": "db_path_reset",
-                "case_db_path": "case_db_reset",
                 "logging_config_path": "logging_config_reset",
                 "host": "host_reset",
                 "port": 1100,
                 "walkoff_db_type": "postgresql",
-                "case_db_type": "mysql",
-                "clear_case_db_on_startup": False,
                 "number_threads_per_process": 5,
                 "number_processes": 10,
                 "access_token_duration": 20,
@@ -70,13 +64,10 @@ class TestConfigurationServer(ServerTestCase):
                              content_type='application/json')
 
         expected = {walkoff.config.Config.DB_PATH: "db_path_reset",
-                    walkoff.config.Config.CASE_DB_PATH: "case_db_reset",
                     walkoff.config.Config.LOGGING_CONFIG_PATH: "logging_config_reset",
                     walkoff.config.Config.HOST: "host_reset",
                     walkoff.config.Config.PORT: 1100,
                     walkoff.config.Config.WALKOFF_DB_TYPE: "postgresql",
-                    walkoff.config.Config.CASE_DB_TYPE: "mysql",
-                    walkoff.config.Config.CLEAR_CASE_DB_ON_STARTUP: False,
                     walkoff.config.Config.NUMBER_THREADS_PER_PROCESS: 5,
                     walkoff.config.Config.NUMBER_PROCESSES: 10,
                     walkoff.config.Config.ZMQ_RESULTS_ADDRESS: "127.0.0.1:1000",

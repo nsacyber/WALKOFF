@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import NullPool
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy_utils import database_exists, create_database
 
 from walkoff.helpers import format_db_path
@@ -14,7 +15,7 @@ class ExecutionDatabase(object):
     """Wrapper for the SQLAlchemy database connection object"""
     instance = None
 
-    def __init__(self, execution_db_type, execution_db_path):
+    def __init__(self, execution_db_type, execution_db_path, execution_db_host="localhost"):
         # All of these imports are necessary
         from walkoff.executiondb.device import App, Device, DeviceField, EncryptedDeviceField
         from walkoff.executiondb.argument import Argument
@@ -25,6 +26,7 @@ class ExecutionDatabase(object):
         from walkoff.executiondb.playbook import Playbook
         from walkoff.executiondb.position import Position
         from walkoff.executiondb.transform import Transform
+        from walkoff.executiondb.environment_variable import EnvironmentVariable
         from walkoff.executiondb.workflow import Workflow
         from walkoff.executiondb.saved_workflow import SavedWorkflow
         from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
@@ -35,10 +37,13 @@ class ExecutionDatabase(object):
                                         connect_args={'check_same_thread': False}, poolclass=NullPool)
         else:
             self.engine = create_engine(
-                format_db_path(execution_db_type, execution_db_path, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD'),
+                format_db_path(execution_db_type, execution_db_path, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD', execution_db_host),
                 poolclass=NullPool)
             if not database_exists(self.engine.url):
-                create_database(self.engine.url)
+                try:
+                    create_database(self.engine.url)
+                except IntegrityError as e:
+                    pass
 
         self.connection = self.engine.connect()
         self.transaction = self.connection.begin()
@@ -62,10 +67,10 @@ class ExecutionDatabase(object):
 
 
 class WorkflowStatusEnum(enum.Enum):
-    pending = 1
-    running = 2
-    paused = 3
-    awaiting_data = 4
+    running = 1
+    paused = 2
+    awaiting_data = 3
+    pending = 4
     completed = 5
     aborted = 6
 

@@ -355,3 +355,15 @@ class TestMessagingEndpoints(ServerTestCase):
         notifications = self.get_notifications(self.user1)
         self.assertEqual(len(notifications), max_notifications)
         self.assertTrue(all(not notification['is_read'] for notification in notifications))
+
+    def test_message_pagination(self):
+        for i in range(38):
+            TestMessagingEndpoints.make_message([self.user1.user])
+        response = self.get_with_status_check('/api/messages', headers=self.user1.header, status_code=SUCCESS)
+        self.assertEqual(len(response), 20)
+        response = self.get_with_status_check('/api/messages?page=2', headers=self.user1.header,
+                                              status_code=SUCCESS)
+        self.assertEqual(len(response), 20)
+        response = self.get_with_status_check('/api/messages?page=3', headers=self.user1.header,
+                                              status_code=SUCCESS)
+        self.assertEqual(len(response), 0)

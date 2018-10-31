@@ -1,0 +1,53 @@
+<div id="main" class="messagesMain">
+	<h1>Messages</h1>
+
+	<div class="row align-items-center mb-3">
+		<div class="col">
+			<button (click)="deleteSelected()" class="btn btn-outline-primary mx-1" title="Delete Selected">
+				<i class="fa fa-trash-o"></i>
+			</button>
+			<button (click)="markSelectedAsRead()" class="btn btn-outline-primary mx-1" title="Mark Selected as Read">
+				<i class="fa fa-envelope-open-o"></i>
+			</button>
+			<button (click)="markSelectedAsUnread()" class="btn btn-outline-primary mx-1" title="Mark Selected as Unread">
+				<i class="fa fa-envelope-o"></i>
+			</button>
+		</div>
+		<div class="col-4">
+			<div class="row">
+				<label class="col-auto col-form-label">Search Filter</label>
+				<div class="col">
+					<input class="form-control" [formControl]="filterQuery" />
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<template ngbModalContainer></template>
+	<ngx-datatable #messagesTable class='material expandable' [columnMode]="'flex'" [rows]="displayMessages" [sortType]="'multi'"
+	 [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'created_at', dir: 'desc'}]" [limit]="25">
+		<!-- Column Templates -->
+		<ngx-datatable-column name="" [resizeable]="false" [sortable]="false" [draggable]="false" [flexGrow]="0">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				<input type="checkbox" [(ngModel)]="selectMapping[row.id]">
+			</ng-template>
+		</ngx-datatable-column>
+		<ngx-datatable-column name="Subject" prop="subject" [flexGrow]="2">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				<div>
+					<i *ngIf="row.awaiting_response" class="fa fa-exclamation required" title="This message is awaiting response."></i>
+					<a href="#" class="messageLink" [class.unread]="!row.is_read" (click)="openMessage($event, row)">
+						{{utils.getDefaultString(row.subject, '(no subject)')}}
+					</a>
+				</div>
+			</ng-template>
+		</ngx-datatable-column>
+		<ngx-datatable-column name="Sent" prop="created_at" [flexGrow]="1">
+			<ng-template let-row="row" ngx-datatable-cell-template>
+				<span [title]="utils.getLocalTime(row.created_at)">
+					{{messageRelativeTimes[row.id]}}
+				</span>
+			</ng-template>
+		</ngx-datatable-column>
+	</ngx-datatable>
+</div>

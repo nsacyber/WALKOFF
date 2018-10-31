@@ -18,7 +18,8 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='data.proto',
   package='core',
-  serialized_pb=_b('\n\ndata.proto\x12\x04\x63ore\"\xc4\x03\n\x07Message\x12 \n\x04type\x18\x01 \x01(\x0e\x32\x12.core.Message.Type\x12\x12\n\nevent_name\x18\x02 \x01(\t\x12/\n\x0fworkflow_packet\x18\x03 \x01(\x0b\x32\x14.core.WorkflowPacketH\x00\x12+\n\raction_packet\x18\x04 \x01(\x0b\x32\x12.core.ActionPacketH\x00\x12-\n\x0egeneral_packet\x18\x05 \x01(\x0b\x32\x13.core.GeneralPacketH\x00\x12+\n\x0emessage_packet\x18\x06 \x01(\x0b\x32\x11.core.UserMessageH\x00\x12.\n\x0elogging_packet\x18\x07 \x01(\x0b\x32\x14.core.LoggingMessageH\x00\"\x8e\x01\n\x04Type\x12\x12\n\x0eWORKFLOWPACKET\x10\x01\x12\x16\n\x12WORKFLOWPACKETDATA\x10\x02\x12\x10\n\x0c\x41\x43TIONPACKET\x10\x03\x12\x14\n\x10\x41\x43TIONPACKETDATA\x10\x04\x12\x11\n\rGENERALPACKET\x10\x05\x12\x0f\n\x0bUSERMESSAGE\x10\x06\x12\x0e\n\nLOGMESSAGE\x10\x07\x42\x08\n\x06packet\"@\n\x0eWorkflowSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x14\n\x0c\x65xecution_id\x18\x03 \x01(\t\"O\n\x0eWorkflowPacket\x12$\n\x06sender\x18\x01 \x01(\x0b\x32\x14.core.WorkflowSender\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x02 \x01(\t\"M\n\x08\x41rgument\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\x12\x11\n\treference\x18\x03 \x01(\t\x12\x11\n\tselection\x18\x04 \x01(\t\"\x9e\x02\n\x0c\x41\x63tionPacket\x12/\n\x06sender\x18\x01 \x01(\x0b\x32\x1f.core.ActionPacket.ActionSender\x12&\n\x08workflow\x18\x02 \x01(\x0b\x32\x14.core.WorkflowSender\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x03 \x01(\t\x1a\x9b\x01\n\x0c\x41\x63tionSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x14\n\x0c\x65xecution_id\x18\x03 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x04 \x01(\t\x12\x13\n\x0b\x61\x63tion_name\x18\x05 \x01(\t\x12!\n\targuments\x18\x06 \x03(\x0b\x32\x0e.core.Argument\x12\x11\n\tdevice_id\x18\t \x01(\x05\"\x99\x01\n\rGeneralPacket\x12\x31\n\x06sender\x18\x01 \x01(\x0b\x32!.core.GeneralPacket.GeneralSender\x12&\n\x08workflow\x18\x02 \x01(\x0b\x32\x14.core.WorkflowSender\x1a-\n\rGeneralSender\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x02 \x01(\t\"\xe5\x01\n\x13\x43ommunicationPacket\x12,\n\x04type\x18\x01 \x01(\x0e\x32\x1e.core.CommunicationPacket.Type\x12\x39\n\x18workflow_control_message\x18\x02 \x01(\x0b\x32\x15.core.WorkflowControlH\x00\x12\x31\n\x14\x63\x61se_control_message\x18\x03 \x01(\x0b\x32\x11.core.CaseControlH\x00\"(\n\x04Type\x12\x0c\n\x08WORKFLOW\x10\x01\x12\x08\n\x04\x43\x41SE\x10\x02\x12\x08\n\x04\x45XIT\x10\x03\x42\x08\n\x06packet\"x\n\x0fWorkflowControl\x12(\n\x04type\x18\x01 \x01(\x0e\x32\x1a.core.WorkflowControl.Type\x12\x1d\n\x15workflow_execution_id\x18\x02 \x01(\t\"\x1c\n\x04Type\x12\t\n\x05PAUSE\x10\x01\x12\t\n\x05\x41\x42ORT\x10\x02\".\n\x10\x43\x61seSubscription\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0e\n\x06\x65vents\x18\x02 \x03(\t\"\x9a\x01\n\x0b\x43\x61seControl\x12$\n\x04type\x18\x01 \x01(\x0e\x32\x16.core.CaseControl.Type\x12\n\n\x02id\x18\x02 \x01(\x03\x12-\n\rsubscriptions\x18\x03 \x03(\x0b\x32\x16.core.CaseSubscription\"*\n\x04Type\x12\n\n\x06\x43REATE\x10\x01\x12\n\n\x06UPDATE\x10\x02\x12\n\n\x06\x44\x45LETE\x10\x03\"\xbc\x01\n\x0bUserMessage\x12/\n\x06sender\x18\x01 \x01(\x0b\x32\x1f.core.ActionPacket.ActionSender\x12&\n\x08workflow\x18\x02 \x01(\x0b\x32\x14.core.WorkflowSender\x12\x0f\n\x07subject\x18\x03 \x01(\t\x12\x0c\n\x04\x62ody\x18\x04 \x01(\t\x12\x17\n\x0frequires_reauth\x18\x05 \x01(\x08\x12\r\n\x05users\x18\x06 \x03(\x05\x12\r\n\x05roles\x18\x07 \x03(\x05\"\x8e\x01\n\x16\x45xecuteWorkflowMessage\x12\x13\n\x0bworkflow_id\x18\x01 \x01(\t\x12\x1d\n\x15workflow_execution_id\x18\x02 \x01(\t\x12\r\n\x05start\x18\x03 \x01(\t\x12!\n\targuments\x18\x04 \x03(\x0b\x32\x0e.core.Argument\x12\x0e\n\x06resume\x18\x05 \x01(\x08\"\x8d\x01\n\x0eLoggingMessage\x12&\n\x08workflow\x18\x01 \x01(\x0b\x32\x14.core.WorkflowSender\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x03 \x01(\t\x12\x13\n\x0b\x61\x63tion_name\x18\x04 \x01(\t\x12\r\n\x05level\x18\x05 \x01(\t\x12\x0f\n\x07message\x18\x06 \x01(\t')
+  syntax='proto2',
+  serialized_pb=_b('\n\ndata.proto\x12\x04\x63ore\"\x91\x04\n\x07Message\x12 \n\x04type\x18\x01 \x01(\x0e\x32\x12.core.Message.Type\x12\x12\n\nevent_name\x18\x02 \x01(\t\x12/\n\x0fworkflow_packet\x18\x03 \x01(\x0b\x32\x14.core.WorkflowPacketH\x00\x12+\n\raction_packet\x18\x04 \x01(\x0b\x32\x12.core.ActionPacketH\x00\x12-\n\x0egeneral_packet\x18\x05 \x01(\x0b\x32\x13.core.GeneralPacketH\x00\x12+\n\x0emessage_packet\x18\x06 \x01(\x0b\x32\x11.core.UserMessageH\x00\x12.\n\x0elogging_packet\x18\x07 \x01(\x0b\x32\x14.core.LoggingMessageH\x00\x12+\n\rworker_packet\x18\x08 \x01(\x0b\x32\x12.core.WorkerPacketH\x00\x12\x0c\n\x04user\x18\t \x01(\t\"\xa0\x01\n\x04Type\x12\x12\n\x0eWORKFLOWPACKET\x10\x01\x12\x16\n\x12WORKFLOWPACKETDATA\x10\x02\x12\x10\n\x0c\x41\x43TIONPACKET\x10\x03\x12\x14\n\x10\x41\x43TIONPACKETDATA\x10\x04\x12\x11\n\rGENERALPACKET\x10\x05\x12\x0f\n\x0bUSERMESSAGE\x10\x06\x12\x0e\n\nLOGMESSAGE\x10\x07\x12\x10\n\x0cWORKERPACKET\x10\x08\x42\x08\n\x06packet\"@\n\x0eWorkflowSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x14\n\x0c\x65xecution_id\x18\x03 \x01(\t\"O\n\x0eWorkflowPacket\x12$\n\x06sender\x18\x01 \x01(\x0b\x32\x14.core.WorkflowSender\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x02 \x01(\t\"M\n\x08\x41rgument\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\x12\x11\n\treference\x18\x03 \x01(\t\x12\x11\n\tselection\x18\x04 \x01(\t\"\x9e\x02\n\x0c\x41\x63tionPacket\x12/\n\x06sender\x18\x01 \x01(\x0b\x32\x1f.core.ActionPacket.ActionSender\x12&\n\x08workflow\x18\x02 \x01(\x0b\x32\x14.core.WorkflowSender\x12\x17\n\x0f\x61\x64\x64itional_data\x18\x03 \x01(\t\x1a\x9b\x01\n\x0c\x41\x63tionSender\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x14\n\x0c\x65xecution_id\x18\x03 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x04 \x01(\t\x12\x13\n\x0b\x61\x63tion_name\x18\x05 \x01(\t\x12!\n\targuments\x18\x06 \x03(\x0b\x32\x0e.core.Argument\x12\x11\n\tdevice_id\x18\t \x01(\x05\"0\n\x13\x45nvironmentVariable\x12\n\n\x02id\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t\"\x99\x01\n\rGeneralPacket\x12\x31\n\x06sender\x18\x01 \x01(\x0b\x32!.core.GeneralPacket.GeneralSender\x12&\n\x08workflow\x18\x02 \x01(\x0b\x32\x14.core.WorkflowSender\x1a-\n\rGeneralSender\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x02 \x01(\t\"x\n\x0fWorkflowControl\x12(\n\x04type\x18\x01 \x01(\x0e\x32\x1a.core.WorkflowControl.Type\x12\x1d\n\x15workflow_execution_id\x18\x02 \x01(\t\"\x1c\n\x04Type\x12\t\n\x05PAUSE\x10\x01\x12\t\n\x05\x41\x42ORT\x10\x02\"\x9c\x01\n\x13\x43ommunicationPacket\x12,\n\x04type\x18\x01 \x01(\x0e\x32\x1e.core.CommunicationPacket.Type\x12\x37\n\x18workflow_control_message\x18\x02 \x01(\x0b\x32\x15.core.WorkflowControl\"\x1e\n\x04Type\x12\x0c\n\x08WORKFLOW\x10\x01\x12\x08\n\x04\x45XIT\x10\x02\"\xbc\x01\n\x0bUserMessage\x12/\n\x06sender\x18\x01 \x01(\x0b\x32\x1f.core.ActionPacket.ActionSender\x12&\n\x08workflow\x18\x02 \x01(\x0b\x32\x14.core.WorkflowSender\x12\x0f\n\x07subject\x18\x03 \x01(\t\x12\x0c\n\x04\x62ody\x18\x04 \x01(\t\x12\x17\n\x0frequires_reauth\x18\x05 \x01(\x08\x12\r\n\x05users\x18\x06 \x03(\x05\x12\r\n\x05roles\x18\x07 \x03(\x05\"\xd6\x01\n\x16\x45xecuteWorkflowMessage\x12\x13\n\x0bworkflow_id\x18\x01 \x01(\t\x12\x1d\n\x15workflow_execution_id\x18\x02 \x01(\t\x12\r\n\x05start\x18\x03 \x01(\t\x12!\n\targuments\x18\x04 \x03(\x0b\x32\x0e.core.Argument\x12\x0e\n\x06resume\x18\x05 \x01(\x08\x12\x38\n\x15\x65nvironment_variables\x18\x06 \x03(\x0b\x32\x19.core.EnvironmentVariable\x12\x0c\n\x04user\x18\x07 \x01(\t\"\x8d\x01\n\x0eLoggingMessage\x12&\n\x08workflow\x18\x01 \x01(\x0b\x32\x14.core.WorkflowSender\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x10\n\x08\x61pp_name\x18\x03 \x01(\t\x12\x13\n\x0b\x61\x63tion_name\x18\x04 \x01(\t\x12\r\n\x05level\x18\x05 \x01(\t\x12\x0f\n\x07message\x18\x06 \x01(\t\"\x1a\n\x0cWorkerPacket\x12\n\n\x02id\x18\x01 \x01(\t')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -58,39 +59,17 @@ _MESSAGE_TYPE = _descriptor.EnumDescriptor(
       name='LOGMESSAGE', index=6, number=7,
       options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='WORKERPACKET', index=7, number=8,
+      options=None,
+      type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=321,
-  serialized_end=463,
+  serialized_start=380,
+  serialized_end=540,
 )
 _sym_db.RegisterEnumDescriptor(_MESSAGE_TYPE)
-
-_COMMUNICATIONPACKET_TYPE = _descriptor.EnumDescriptor(
-  name='Type',
-  full_name='core.CommunicationPacket.Type',
-  filename=None,
-  file=DESCRIPTOR,
-  values=[
-    _descriptor.EnumValueDescriptor(
-      name='WORKFLOW', index=0, number=1,
-      options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='CASE', index=1, number=2,
-      options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='EXIT', index=2, number=3,
-      options=None,
-      type=None),
-  ],
-  containing_type=None,
-  options=None,
-  serialized_start=1326,
-  serialized_end=1366,
-)
-_sym_db.RegisterEnumDescriptor(_COMMUNICATIONPACKET_TYPE)
 
 _WORKFLOWCONTROL_TYPE = _descriptor.EnumDescriptor(
   name='Type',
@@ -109,36 +88,32 @@ _WORKFLOWCONTROL_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=1470,
-  serialized_end=1498,
+  serialized_start=1365,
+  serialized_end=1393,
 )
 _sym_db.RegisterEnumDescriptor(_WORKFLOWCONTROL_TYPE)
 
-_CASECONTROL_TYPE = _descriptor.EnumDescriptor(
+_COMMUNICATIONPACKET_TYPE = _descriptor.EnumDescriptor(
   name='Type',
-  full_name='core.CaseControl.Type',
+  full_name='core.CommunicationPacket.Type',
   filename=None,
   file=DESCRIPTOR,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='CREATE', index=0, number=1,
+      name='WORKFLOW', index=0, number=1,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='UPDATE', index=1, number=2,
-      options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='DELETE', index=2, number=3,
+      name='EXIT', index=1, number=2,
       options=None,
       type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=1661,
-  serialized_end=1703,
+  serialized_start=1522,
+  serialized_end=1552,
 )
-_sym_db.RegisterEnumDescriptor(_CASECONTROL_TYPE)
+_sym_db.RegisterEnumDescriptor(_COMMUNICATIONPACKET_TYPE)
 
 
 _MESSAGE = _descriptor.Descriptor(
@@ -197,6 +172,20 @@ _MESSAGE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='worker_packet', full_name='core.Message.worker_packet', index=7,
+      number=8, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='user', full_name='core.Message.user', index=8,
+      number=9, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -206,6 +195,7 @@ _MESSAGE = _descriptor.Descriptor(
   ],
   options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
     _descriptor.OneofDescriptor(
@@ -213,7 +203,7 @@ _MESSAGE = _descriptor.Descriptor(
       index=0, containing_type=None, fields=[]),
   ],
   serialized_start=21,
-  serialized_end=473,
+  serialized_end=550,
 )
 
 
@@ -253,11 +243,12 @@ _WORKFLOWSENDER = _descriptor.Descriptor(
   ],
   options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=475,
-  serialized_end=539,
+  serialized_start=552,
+  serialized_end=616,
 )
 
 
@@ -290,11 +281,12 @@ _WORKFLOWPACKET = _descriptor.Descriptor(
   ],
   options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=541,
-  serialized_end=620,
+  serialized_start=618,
+  serialized_end=697,
 )
 
 
@@ -341,11 +333,12 @@ _ARGUMENT = _descriptor.Descriptor(
   ],
   options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=622,
-  serialized_end=699,
+  serialized_start=699,
+  serialized_end=776,
 )
 
 
@@ -413,11 +406,12 @@ _ACTIONPACKET_ACTIONSENDER = _descriptor.Descriptor(
   ],
   options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=833,
-  serialized_end=988,
+  serialized_start=910,
+  serialized_end=1065,
 )
 
 _ACTIONPACKET = _descriptor.Descriptor(
@@ -456,11 +450,50 @@ _ACTIONPACKET = _descriptor.Descriptor(
   ],
   options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=702,
-  serialized_end=988,
+  serialized_start=779,
+  serialized_end=1065,
+)
+
+
+_ENVIRONMENTVARIABLE = _descriptor.Descriptor(
+  name='EnvironmentVariable',
+  full_name='core.EnvironmentVariable',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='core.EnvironmentVariable.id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='core.EnvironmentVariable.value', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto2',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1067,
+  serialized_end=1115,
 )
 
 
@@ -493,11 +526,12 @@ _GENERALPACKET_GENERALSENDER = _descriptor.Descriptor(
   ],
   options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1099,
-  serialized_end=1144,
+  serialized_start=1226,
+  serialized_end=1271,
 )
 
 _GENERALPACKET = _descriptor.Descriptor(
@@ -529,59 +563,12 @@ _GENERALPACKET = _descriptor.Descriptor(
   ],
   options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=991,
-  serialized_end=1144,
-)
-
-
-_COMMUNICATIONPACKET = _descriptor.Descriptor(
-  name='CommunicationPacket',
-  full_name='core.CommunicationPacket',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='type', full_name='core.CommunicationPacket.type', index=0,
-      number=1, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=1,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='workflow_control_message', full_name='core.CommunicationPacket.workflow_control_message', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='case_control_message', full_name='core.CommunicationPacket.case_control_message', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-    _COMMUNICATIONPACKET_TYPE,
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  oneofs=[
-    _descriptor.OneofDescriptor(
-      name='packet', full_name='core.CommunicationPacket.packet',
-      index=0, containing_type=None, fields=[]),
-  ],
-  serialized_start=1147,
-  serialized_end=1376,
+  serialized_start=1118,
+  serialized_end=1271,
 )
 
 
@@ -615,76 +602,33 @@ _WORKFLOWCONTROL = _descriptor.Descriptor(
   ],
   options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1378,
-  serialized_end=1498,
+  serialized_start=1273,
+  serialized_end=1393,
 )
 
 
-_CASESUBSCRIPTION = _descriptor.Descriptor(
-  name='CaseSubscription',
-  full_name='core.CaseSubscription',
+_COMMUNICATIONPACKET = _descriptor.Descriptor(
+  name='CommunicationPacket',
+  full_name='core.CommunicationPacket',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='id', full_name='core.CaseSubscription.id', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='events', full_name='core.CaseSubscription.events', index=1,
-      number=2, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=1500,
-  serialized_end=1546,
-)
-
-
-_CASECONTROL = _descriptor.Descriptor(
-  name='CaseControl',
-  full_name='core.CaseControl',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='type', full_name='core.CaseControl.type', index=0,
+      name='type', full_name='core.CommunicationPacket.type', index=0,
       number=1, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=1,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='id', full_name='core.CaseControl.id', index=1,
-      number=2, type=3, cpp_type=2, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='subscriptions', full_name='core.CaseControl.subscriptions', index=2,
-      number=3, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
+      name='workflow_control_message', full_name='core.CommunicationPacket.workflow_control_message', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
@@ -693,15 +637,16 @@ _CASECONTROL = _descriptor.Descriptor(
   ],
   nested_types=[],
   enum_types=[
-    _CASECONTROL_TYPE,
+    _COMMUNICATIONPACKET_TYPE,
   ],
   options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1549,
-  serialized_end=1703,
+  serialized_start=1396,
+  serialized_end=1552,
 )
 
 
@@ -769,11 +714,12 @@ _USERMESSAGE = _descriptor.Descriptor(
   ],
   options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1706,
-  serialized_end=1894,
+  serialized_start=1555,
+  serialized_end=1743,
 )
 
 
@@ -819,6 +765,20 @@ _EXECUTEWORKFLOWMESSAGE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='environment_variables', full_name='core.ExecuteWorkflowMessage.environment_variables', index=5,
+      number=6, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='user', full_name='core.ExecuteWorkflowMessage.user', index=6,
+      number=7, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -827,11 +787,12 @@ _EXECUTEWORKFLOWMESSAGE = _descriptor.Descriptor(
   ],
   options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1897,
-  serialized_end=2039,
+  serialized_start=1746,
+  serialized_end=1960,
 )
 
 
@@ -892,11 +853,43 @@ _LOGGINGMESSAGE = _descriptor.Descriptor(
   ],
   options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2042,
-  serialized_end=2183,
+  serialized_start=1963,
+  serialized_end=2104,
+)
+
+
+_WORKERPACKET = _descriptor.Descriptor(
+  name='WorkerPacket',
+  full_name='core.WorkerPacket',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='core.WorkerPacket.id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  syntax='proto2',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2106,
+  serialized_end=2132,
 )
 
 _MESSAGE.fields_by_name['type'].enum_type = _MESSAGE_TYPE
@@ -905,6 +898,7 @@ _MESSAGE.fields_by_name['action_packet'].message_type = _ACTIONPACKET
 _MESSAGE.fields_by_name['general_packet'].message_type = _GENERALPACKET
 _MESSAGE.fields_by_name['message_packet'].message_type = _USERMESSAGE
 _MESSAGE.fields_by_name['logging_packet'].message_type = _LOGGINGMESSAGE
+_MESSAGE.fields_by_name['worker_packet'].message_type = _WORKERPACKET
 _MESSAGE_TYPE.containing_type = _MESSAGE
 _MESSAGE.oneofs_by_name['packet'].fields.append(
   _MESSAGE.fields_by_name['workflow_packet'])
@@ -921,6 +915,9 @@ _MESSAGE.fields_by_name['message_packet'].containing_oneof = _MESSAGE.oneofs_by_
 _MESSAGE.oneofs_by_name['packet'].fields.append(
   _MESSAGE.fields_by_name['logging_packet'])
 _MESSAGE.fields_by_name['logging_packet'].containing_oneof = _MESSAGE.oneofs_by_name['packet']
+_MESSAGE.oneofs_by_name['packet'].fields.append(
+  _MESSAGE.fields_by_name['worker_packet'])
+_MESSAGE.fields_by_name['worker_packet'].containing_oneof = _MESSAGE.oneofs_by_name['packet']
 _WORKFLOWPACKET.fields_by_name['sender'].message_type = _WORKFLOWSENDER
 _ACTIONPACKET_ACTIONSENDER.fields_by_name['arguments'].message_type = _ARGUMENT
 _ACTIONPACKET_ACTIONSENDER.containing_type = _ACTIONPACKET
@@ -929,38 +926,29 @@ _ACTIONPACKET.fields_by_name['workflow'].message_type = _WORKFLOWSENDER
 _GENERALPACKET_GENERALSENDER.containing_type = _GENERALPACKET
 _GENERALPACKET.fields_by_name['sender'].message_type = _GENERALPACKET_GENERALSENDER
 _GENERALPACKET.fields_by_name['workflow'].message_type = _WORKFLOWSENDER
-_COMMUNICATIONPACKET.fields_by_name['type'].enum_type = _COMMUNICATIONPACKET_TYPE
-_COMMUNICATIONPACKET.fields_by_name['workflow_control_message'].message_type = _WORKFLOWCONTROL
-_COMMUNICATIONPACKET.fields_by_name['case_control_message'].message_type = _CASECONTROL
-_COMMUNICATIONPACKET_TYPE.containing_type = _COMMUNICATIONPACKET
-_COMMUNICATIONPACKET.oneofs_by_name['packet'].fields.append(
-  _COMMUNICATIONPACKET.fields_by_name['workflow_control_message'])
-_COMMUNICATIONPACKET.fields_by_name['workflow_control_message'].containing_oneof = _COMMUNICATIONPACKET.oneofs_by_name['packet']
-_COMMUNICATIONPACKET.oneofs_by_name['packet'].fields.append(
-  _COMMUNICATIONPACKET.fields_by_name['case_control_message'])
-_COMMUNICATIONPACKET.fields_by_name['case_control_message'].containing_oneof = _COMMUNICATIONPACKET.oneofs_by_name['packet']
 _WORKFLOWCONTROL.fields_by_name['type'].enum_type = _WORKFLOWCONTROL_TYPE
 _WORKFLOWCONTROL_TYPE.containing_type = _WORKFLOWCONTROL
-_CASECONTROL.fields_by_name['type'].enum_type = _CASECONTROL_TYPE
-_CASECONTROL.fields_by_name['subscriptions'].message_type = _CASESUBSCRIPTION
-_CASECONTROL_TYPE.containing_type = _CASECONTROL
+_COMMUNICATIONPACKET.fields_by_name['type'].enum_type = _COMMUNICATIONPACKET_TYPE
+_COMMUNICATIONPACKET.fields_by_name['workflow_control_message'].message_type = _WORKFLOWCONTROL
+_COMMUNICATIONPACKET_TYPE.containing_type = _COMMUNICATIONPACKET
 _USERMESSAGE.fields_by_name['sender'].message_type = _ACTIONPACKET_ACTIONSENDER
 _USERMESSAGE.fields_by_name['workflow'].message_type = _WORKFLOWSENDER
 _EXECUTEWORKFLOWMESSAGE.fields_by_name['arguments'].message_type = _ARGUMENT
+_EXECUTEWORKFLOWMESSAGE.fields_by_name['environment_variables'].message_type = _ENVIRONMENTVARIABLE
 _LOGGINGMESSAGE.fields_by_name['workflow'].message_type = _WORKFLOWSENDER
 DESCRIPTOR.message_types_by_name['Message'] = _MESSAGE
 DESCRIPTOR.message_types_by_name['WorkflowSender'] = _WORKFLOWSENDER
 DESCRIPTOR.message_types_by_name['WorkflowPacket'] = _WORKFLOWPACKET
 DESCRIPTOR.message_types_by_name['Argument'] = _ARGUMENT
 DESCRIPTOR.message_types_by_name['ActionPacket'] = _ACTIONPACKET
+DESCRIPTOR.message_types_by_name['EnvironmentVariable'] = _ENVIRONMENTVARIABLE
 DESCRIPTOR.message_types_by_name['GeneralPacket'] = _GENERALPACKET
-DESCRIPTOR.message_types_by_name['CommunicationPacket'] = _COMMUNICATIONPACKET
 DESCRIPTOR.message_types_by_name['WorkflowControl'] = _WORKFLOWCONTROL
-DESCRIPTOR.message_types_by_name['CaseSubscription'] = _CASESUBSCRIPTION
-DESCRIPTOR.message_types_by_name['CaseControl'] = _CASECONTROL
+DESCRIPTOR.message_types_by_name['CommunicationPacket'] = _COMMUNICATIONPACKET
 DESCRIPTOR.message_types_by_name['UserMessage'] = _USERMESSAGE
 DESCRIPTOR.message_types_by_name['ExecuteWorkflowMessage'] = _EXECUTEWORKFLOWMESSAGE
 DESCRIPTOR.message_types_by_name['LoggingMessage'] = _LOGGINGMESSAGE
+DESCRIPTOR.message_types_by_name['WorkerPacket'] = _WORKERPACKET
 
 Message = _reflection.GeneratedProtocolMessageType('Message', (_message.Message,), dict(
   DESCRIPTOR = _MESSAGE,
@@ -1005,6 +993,13 @@ ActionPacket = _reflection.GeneratedProtocolMessageType('ActionPacket', (_messag
 _sym_db.RegisterMessage(ActionPacket)
 _sym_db.RegisterMessage(ActionPacket.ActionSender)
 
+EnvironmentVariable = _reflection.GeneratedProtocolMessageType('EnvironmentVariable', (_message.Message,), dict(
+  DESCRIPTOR = _ENVIRONMENTVARIABLE,
+  __module__ = 'data_pb2'
+  # @@protoc_insertion_point(class_scope:core.EnvironmentVariable)
+  ))
+_sym_db.RegisterMessage(EnvironmentVariable)
+
 GeneralPacket = _reflection.GeneratedProtocolMessageType('GeneralPacket', (_message.Message,), dict(
 
   GeneralSender = _reflection.GeneratedProtocolMessageType('GeneralSender', (_message.Message,), dict(
@@ -1020,13 +1015,6 @@ GeneralPacket = _reflection.GeneratedProtocolMessageType('GeneralPacket', (_mess
 _sym_db.RegisterMessage(GeneralPacket)
 _sym_db.RegisterMessage(GeneralPacket.GeneralSender)
 
-CommunicationPacket = _reflection.GeneratedProtocolMessageType('CommunicationPacket', (_message.Message,), dict(
-  DESCRIPTOR = _COMMUNICATIONPACKET,
-  __module__ = 'data_pb2'
-  # @@protoc_insertion_point(class_scope:core.CommunicationPacket)
-  ))
-_sym_db.RegisterMessage(CommunicationPacket)
-
 WorkflowControl = _reflection.GeneratedProtocolMessageType('WorkflowControl', (_message.Message,), dict(
   DESCRIPTOR = _WORKFLOWCONTROL,
   __module__ = 'data_pb2'
@@ -1034,19 +1022,12 @@ WorkflowControl = _reflection.GeneratedProtocolMessageType('WorkflowControl', (_
   ))
 _sym_db.RegisterMessage(WorkflowControl)
 
-CaseSubscription = _reflection.GeneratedProtocolMessageType('CaseSubscription', (_message.Message,), dict(
-  DESCRIPTOR = _CASESUBSCRIPTION,
+CommunicationPacket = _reflection.GeneratedProtocolMessageType('CommunicationPacket', (_message.Message,), dict(
+  DESCRIPTOR = _COMMUNICATIONPACKET,
   __module__ = 'data_pb2'
-  # @@protoc_insertion_point(class_scope:core.CaseSubscription)
+  # @@protoc_insertion_point(class_scope:core.CommunicationPacket)
   ))
-_sym_db.RegisterMessage(CaseSubscription)
-
-CaseControl = _reflection.GeneratedProtocolMessageType('CaseControl', (_message.Message,), dict(
-  DESCRIPTOR = _CASECONTROL,
-  __module__ = 'data_pb2'
-  # @@protoc_insertion_point(class_scope:core.CaseControl)
-  ))
-_sym_db.RegisterMessage(CaseControl)
+_sym_db.RegisterMessage(CommunicationPacket)
 
 UserMessage = _reflection.GeneratedProtocolMessageType('UserMessage', (_message.Message,), dict(
   DESCRIPTOR = _USERMESSAGE,
@@ -1068,6 +1049,13 @@ LoggingMessage = _reflection.GeneratedProtocolMessageType('LoggingMessage', (_me
   # @@protoc_insertion_point(class_scope:core.LoggingMessage)
   ))
 _sym_db.RegisterMessage(LoggingMessage)
+
+WorkerPacket = _reflection.GeneratedProtocolMessageType('WorkerPacket', (_message.Message,), dict(
+  DESCRIPTOR = _WORKERPACKET,
+  __module__ = 'data_pb2'
+  # @@protoc_insertion_point(class_scope:core.WorkerPacket)
+  ))
+_sym_db.RegisterMessage(WorkerPacket)
 
 
 # @@protoc_insertion_point(module_scope)

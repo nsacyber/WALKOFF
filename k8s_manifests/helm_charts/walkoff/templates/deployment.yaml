@@ -1,0 +1,206 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.namespace }}
+  labels:
+    name: {{ .Values.namespace }}
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Issuer
+metadata:
+  name: ca-issuer
+  namespace: {{ .Values.namespace }}
+spec:
+  ca:
+    secretName: {{ .Values.self-signed-key-pair }}
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: walkoff-cert
+  namespace: {{ .Values.namespace }}
+spec:
+  secretName: walkoff-cert-secret
+  issuerRef:
+    name: ca-issuer
+    kind: Issuer
+  dnsNames:
+  - {{ .Values.ingress.hosts }}
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: walkoff-storage
+  namespace: {{ .Values.namespace }}
+provisioner: {{ .Values.storage.provisioner }}
+mountOptions:
+  - dir_mode=0777
+  - file_mode=0777
+  - uid=1000
+  - gid=1000
+parameters:
+  skuName: {{ .Values.storage.provisioner.parameters }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.storage.classname }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: {{ .Values.storage.classname }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.size }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: walkoff-worker
+  namespace: walkoff
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      run: walkoff-worker
+  template:
+    metadata:
+      namespace: walkoff
+      labels:
+        run: walkoff-worker
+    spec:
+      volumes:
+      - name: cert-volume
+        secret:
+          secretName: walkoff-cert-secret
+      - name: zmq-private
+        secret:
+          secretName: zmq-private-keys
+      - name: zmq-public
+        secret:
+          secretName: zmq-public-keys
+      - name: walkoff-storage
+        persistentVolumeClaim:
+          claimName: walkoff-storage
+      containers:
+      - name: walkoff-worker
+        image: walkoffacr.azurecr.io/walkoff-worker:old
+        volumeMounts:
+        - name: cert-volume
+          readOnly: true
+          mountPath: "/app/walkoff/certs"
+        - name: zmq-private
+          readOnly: true
+          mountPath: "/app/walkoff/certs/private_keys"
+        - name: zmq-public
+          readOnly: true
+          mountPath: "/app/walkoff/certs/public_keys"
+        - name: walkoff-storage
+          mountPath: "/app/walkoff/commonstorage"
+        env:
+          - name: WALKOFF_DB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: walkoff-db-secrets
+                key: WALKOFF_DB_USERNAME
+          - name: WALKOFF_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: walkoff-db-secrets
+                key: WALKOFF_DB_PASSWORD
+      imagePullSecrets:
+      - name: aks
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: walkoff-app
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    matchLabels:
+      run: walkoff-app
+  template:
+    metadata:
+    namespace: {{ .Values.namespace }}
+      labels:
+        run: walkoff-app
+    spec:
+      volumes:
+      - name: cert-volume
+        secret:
+          secretName: {{ .Values.secrets.walkoff-cert-secret }}
+      - name: zmq-private
+        secret:
+          secretName: {{ .Values.secrets.zmq-private-keys }}
+      - name: zmq-public
+        secret:
+          secretName: {{ .Values.secrets.zmq-public-keys }}
+      - name: walkoff-storage
+        persistentVolumeClaim:
+          claimName: {{ .Values.storage.classname }}
+      containers:
+      - name: walkoff-app
+        image: walkoffacr.azurecr.io/walkoff-app:old
+        volumeMounts:
+        - name: cert-volume
+          readOnly: true
+          mountPath: "/app/walkoff/certs"
+        - name: zmq-private
+          readOnly: true
+          mountPath: "/app/walkoff/certs/private_keys"
+        - name: zmq-public
+          readOnly: true
+          mountPath: "/app/walkoff/certs/public_keys"
+        - name: walkoff-storage
+          mountPath: "/app/walkoff/commonstorage"
+        env:
+          - name: WALKOFF_DB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.secrets.db-logins }}
+                key: {{ .Values.secrets.db-logins.db-username-key }}
+          - name: WALKOFF_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.secrets.db-logins }}
+                key: {{ .Values.secrets.db-logins.db-password-key }}
+        ports:
+        - containerPort: 8080
+          name: http
+        - containerPort: 5556
+          name: zmq-results
+        - containerPort: 5557
+          name: zmq-comm
+      imagePullSecrets:
+      - name: aks
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: walkoff-app-public
+  namespace: {{ .Values.namespace }}
+  labels:
+    run: walkoff-app
+spec:
+  ports:
+  - port: 8080
+    name: http
+  selector:
+    run: walkoff-app
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: walkoff-app-internal
+  namespace: {{ .Values.namespace }}
+  labels:
+    run: walkoff-app
+spec:
+  ports:
+  - port: 5556
+    name: zmq-results
+  - port: 5557
+    name: zmq-comm
+  selector:
+    run: walkoff-app

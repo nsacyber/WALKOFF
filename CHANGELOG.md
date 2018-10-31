@@ -2,7 +2,44 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
-## [0.8.2]
+## [0.8.5]
+###### 2018-09-12
+
+### Fixed
+* Fixed a bug caused by a new version of the connexion library which made the OpenAPI specification invalid
+
+## [0.8.4]
+###### 2018-07-30
+
+### Added
+* Workflows now support environment variables. These are top-level
+  arguments to a workflow. These are then exposed on the execution page
+  allowing users to modify the most important variables in a workflow
+  without modifying the workflow itself.
+* Added a health check endpoint at the /heath endpoint
+
+### Changed
+* The Metrics page now defaults to showing workflow metrics instead of
+  app metrics
+
+
+### Fixed
+* Action results and workflow results stream now filter for the
+  currently-executing workflow. This eliminates many issues experienced
+  by multiple users executing workflows concurrently from the workflow
+  editor
+* Fixed an error which caused the Scheduler to not execute workflows
+* Fixed another bug in the scheduler in which the scheduled workflows
+  would not persist across server restarts
+* A bug where messages couldn't be sent
+* A bug where modifying more than one device at a time on the playbook
+  editor would cause the workflow to be invalidated
+* Some database configuration bugs when used with non-SQLite databases
+* Fixed a bug which wouldn't allow a user to a abort a workflow if it
+  was pending execution.
+
+
+## [0.8.3]
 ###### 2018-06-14
 
 ### Added

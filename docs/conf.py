@@ -179,7 +179,6 @@ import walkoff.config
 import walkoff
 walkoff.config.Config.KEYWORDS_PATH = '../walkoff/keywords'
 walkoff.config.Config.EXECUTION_DB_PATH = '../data/device.db'
-walkoff.config.Config.CASE_DB_PATH = '../data/events.db'
 walkoff.config.Config.WALKOFF_SCHEMA_PATH = '../data/walkoff_schema.json'
 walkoff.config.Config.APPS_PATH = '../apps'
 walkoff.config.Config.WORKFLOWS_PATH = '../workflows'

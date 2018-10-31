@@ -10,8 +10,8 @@ def global1(arg1):
 
 
 class Main(App):
-    def __init__(self, name=None, device=None):
-        App.__init__(self, name, device)
+    def __init__(self, name, device, context):
+        App.__init__(self, name, device, context)
         self.introMessage = {"message": "HELLO WORLD"}
 
     @action
@@ -45,25 +45,16 @@ class Main(App):
 
     @action
     def wait_for_pause_and_resume(self):
-        from walkoff.case.database import CaseDatabase, Event
         from walkoff.executiondb import ExecutionDatabase
         from walkoff.executiondb.workflowresults import WorkflowStatus
 
         execution_db = ExecutionDatabase.instance
-        case_db = CaseDatabase.instance
         workflow_status = execution_db.session.query(WorkflowStatus).first()
 
         workflow_id = str(workflow_status.workflow_id)
 
-        events = case_db.session.query(Event).filter_by(originator=workflow_id).all()
-
         pause = False
         resume = False
-        for event in events:
-            if event.message == 'Workflow paused':
-                pause = True
-            elif event.message == 'Workflow resumed':
-                resume = True
 
         if pause and resume:
             return "success"

@@ -211,10 +211,25 @@ class TestUserServer(ServerTestCase):
 
     def test_delete_current_user(self):
         user = add_user('test', 'test')
-        user.set_roles({'admin'})
+        user.set_roles({1})
         response = self.test_client.post('/api/auth', content_type="application/json",
                                          data=json.dumps(dict(username='test', password='test')))
         key = json.loads(response.get_data(as_text=True))
         access_token = key['access_token']
         headers = {'Authorization': 'Bearer {}'.format(access_token)}
         self.delete_with_status_check('/api/users/{}'.format(user.id), headers=headers, status_code=FORBIDDEN_ERROR)
+
+    def test_user_pagination(self):
+        for i in range(39):
+            data = {'username': 'user' + str(i), 'password': 'NoH4x0rzPls!'}
+            self.post_with_status_check('/api/users', headers=self.headers, content_type='application/json',
+                                        data=json.dumps(data), status_code=OBJECT_CREATED)
+
+        response = self.get_with_status_check('/api/users', headers=self.headers, status_code=SUCCESS)
+        self.assertEqual(len(response), 20)
+
+        response = self.get_with_status_check('/api/users?page=2', headers=self.headers, status_code=SUCCESS)
+        self.assertEqual(len(response), 20)
+
+        response = self.get_with_status_check('/api/users?page=3', headers=self.headers, status_code=SUCCESS)
+        self.assertEqual(len(response), 0)

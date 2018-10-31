@@ -23,7 +23,7 @@ class TestMessageDatabase(TestCase):
     @classmethod
     def setUpClass(cls):
         initialize_test_config()
-        cls.app = create_app(walkoff.config.Config)
+        cls.app = create_app()
         cls.context = current_app.test_request_context()
         cls.context.push()
 

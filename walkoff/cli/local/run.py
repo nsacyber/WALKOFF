@@ -10,7 +10,7 @@ from gevent import pywsgi
 
 import walkoff
 import walkoff.config
-from scripts.compose_api import compose_api
+from walkoff.helpers import compose_api
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
 from walkoff.server.app import create_app
 from tests.util.jsonplaybookloader import JsonPlaybookLoader
@@ -48,8 +48,8 @@ def run(ctx, host, port, config):
     This local install is intended for testing purposes only, and it is recommended that you use the kubernetes version.
     """
     exit_code = 0
-    compose_api()
     walkoff.config.initialize(config)
+    compose_api(walkoff.config.Config)
     app = create_app(walkoff.config.Config)
     import_workflows(app)
     try:

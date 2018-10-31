@@ -8,8 +8,8 @@ from apps import App, action
 # There is an associated Daily Quote test workflow which can be executed
 
 class DailyQuote(App):
-    def __init__(self, name=None, device=None):
-        App.__init__(self, name, device)
+    def __init__(self, app_name, device, context):
+        App.__init__(self, app_name, device, context)
         self.introMessage = {"message": "Quote App"}
         self.baseUrl = "http://quotes.rest/qod.json?category=inspire"
         self.s = requests.Session()

@@ -46,6 +46,11 @@ CreateWorkflow:
       type: array
       items:
         $ref: '#/definitions/Branch'
+    environment_variables:
+      description: The environment variables for this workflow
+      type: array
+      items:
+        $ref: '#/definitions/EnvironmentVariable'
     playbook_id:
       description: Only used when copying a workflow to a different playbook
       $ref: '#/definitions/Uuid'
@@ -75,6 +80,11 @@ Workflow:
       type: array
       items:
         $ref: '#/definitions/Branch'
+    environment_variables:
+      description: The environment variables for this workflow
+      type: array
+      items:
+        $ref: '#/definitions/EnvironmentVariable'
     is_valid:
       description: Is this workflow able to be run?
       type: boolean
@@ -201,7 +211,7 @@ Argument:
         of a list, and the "a" field of that object.
       type: array
       items:
-        type: [string, integer]
+        description: Each subsection of the output of the action to use
     errors:
       $ref: '#/definitions/ExecutionElementErrors'
 
@@ -229,7 +239,7 @@ DeviceArgument:
         of a list, and the "a" field of that object.
       type: array
       items:
-        type: [string, integer]
+        description: Each path to a subsection of the output of the action to use
 
 Condition:
   type: object
@@ -305,6 +315,24 @@ Position:
     y:
       type: number
       description: The Y coordinate for the Action
+
+EnvironmentVariable:
+  type: object
+  required: [value]
+  description: An environment variable object, which is a type of argument in a Workflow
+  additionalProperties: false
+  properties:
+    id:
+      $ref: '#/definitions/Uuid'
+    name:
+      type: string
+      description: The name of the environment variable
+    value:
+      type: string
+      description: The value of the environment variable
+    description:
+      type: string
+      description: Description of the environment variable
 
 CopyWorkflow:
     type: object

@@ -1,0 +1,399 @@
+walkoff: '0.1'
+info:
+  version: 1.0.0
+  title: HelloWorldApp
+  description: A sample walkoff app specification
+  contact:
+    name: Walkoff Team
+  license:
+    name: Creative Commons
+actions:
+  global1:
+    run: main.global1
+    description: example of a global action
+    parameters:
+        - name: arg1
+          description: message to repeat
+          required: true
+          type: string
+    returns:
+      Success:
+        schema:
+          type: string
+  global2:
+    run: actions.global2
+    description: example of a global action
+    parameters:
+        - name: arg1
+          description: message to repeat
+          required: true
+          type: string
+    returns:
+      Success:
+        schema:
+          type: string
+
+  helloWorld:
+    run: main.Main.helloWorld
+    description: Returns an introductory message
+    returns:
+      Success:
+        description: introductory message
+        schema:
+          type: string
+  'Hello World':
+    run: main.Main.helloWorld
+    description: Returns an introductory message
+    returns:
+      Success:
+        description: introductory message
+        schema:
+          type: string
+  repeatBackToMe:
+    run: main.Main.repeatBackToMe
+    description: Repeats the call argument
+    parameters:
+        - name: call
+          description: message to repeat
+          required: true
+          type: string
+    returns:
+      Success:
+        description: repeated method
+        schema:
+          type: string
+  returnPlusOne:
+    run: main.Main.returnPlusOne
+    description: Increments a given number by 1
+    parameters:
+        - name: number
+          description: number to increment
+          required: true
+          type: number
+    returns:
+      Success:
+        description: incremented number
+        schema:
+          type: number
+  pause:
+    run: main.Main.pause
+    description: Pauses execution
+    parameters:
+        - name: seconds
+          description: Seconds to pause
+          required: true
+          type: number
+    returns:
+      Success:
+        description: successfully paused
+        schema:
+          type: number
+  Buggy:
+    run: main.Main.buggy_action
+    description: raises an exception
+    returns:
+      Success:
+        description: the exception
+        schema:
+          type: integer
+  'Add Three':
+    run: main.Main.addThree
+    description: Adds three numbers
+    parameters:
+        - name: num1
+          required: true
+          type: number
+        - name: num2
+          required: true
+          type: number
+        - name: num3
+          required: true
+          type: number
+    returns:
+      Success:
+        description: summation
+        schema:
+          type: number
+  'Json Sample':
+    run: main.Main.json_sample
+    description: Example of using a json input
+    parameters:
+        - name: json_in
+          required: true
+          schema:
+            type: object
+            properties:
+              a:
+                type: number
+              b:
+                type: object
+                properties:
+                  a:
+                    type: number
+                  b:
+                    type: number
+              c:
+                type: array
+                items:
+                  type: number
+              d:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    a:
+                      type: string
+                    b:
+                      type: number
+    returns:
+      Success:
+        description: summation
+        schema:
+          type: number
+
+conditions:
+  'Top Condition':
+    run: conditions.top_level_flag
+    data_in: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+  mod1_flag1:
+    run: conditions.flag1
+    data_in: value
+    parameters:
+      - name: value
+        required: true
+        type: string
+  mod1_flag2:
+    run: conditions.flag2
+    data_in: value
+    parameters:
+      - name: value
+        required: true
+        type: integer
+      - name: arg1
+        required: true
+        type: integer
+  mod1_flag3:
+    run: conditions.flag3
+    data_in: value
+    parameters:
+      - name: value
+        required: true
+        type: string
+      - name: arg1
+        required: true
+        schema:
+          type: object
+          properties:
+            a:
+              type: integer
+            b:
+              type: integer
+  sub1_top_flag:
+    run: conditions.sub1_top_flag
+    data_in: value
+    parameters:
+      - name: value
+        required: true
+        type: string
+  regMatch:
+    run: conditions.regMatch
+    description: Matches an input against a regular expression
+    data_in: value
+    parameters:
+      - name: value
+        description: The input value
+        required: true
+        type: string
+      - name: regex
+        description: The regular expression to match
+        required: true
+        type: string
+  count:
+    run: conditions.count
+    description: Compares two numbers
+    data_in: value
+    parameters:
+        - name: value
+          description: The input value
+          required: true
+          type: number
+        - name: operator
+          description: The comparison operator ('g', 'ge', etc.)
+          required: true
+          type: string
+          enum: [g, ge, l, le, e]
+          default: e
+        - name: threshold
+          description: The value with which to compare the input
+          required: true
+          type: number
+transforms:
+  'Top Transform':
+    run: transforms.top_level_filter
+    data_in: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+    returns:
+      Success:
+        schema:
+          type: object
+  mod1_filter2:
+    run: transforms.filter2
+    data_in: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+      - name: arg1
+        required: true
+        type: number
+    returns:
+      Success:
+        schema:
+          type: object
+  sub_top_filter:
+    run: transforms.sub1_top_filter
+    data_in: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+    returns:
+      Success:
+        schema:
+          type: object
+  sub1_filter3:
+    run: transforms.filter3
+    data_in: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+    returns:
+      Success:
+        schema:
+          type: object
+  sub1_filter1:
+    run: transforms.filter1
+    data_in: value
+    parameters:
+      - name: value
+        required: true
+        type: number
+      - name: arg1
+        required: true
+        schema:
+          type: object
+          properties:
+            a:
+              type: number
+            b:
+              type: string
+    returns:
+      Success:
+        schema:
+          type: object
+  complex:
+    run: transforms.complex_filter
+    data_in: data_in
+    parameters:
+      - name: data_in
+        required: true
+        type: number
+      - name: arg
+        required: true
+        schema:
+          type: object
+          properties:
+            a:
+              type: number
+            b:
+              type: number
+            c:
+              type: array
+              items:
+                type: integer
+    returns:
+      Success:
+        schema:
+          type: number
+  length:
+    run: transforms.length
+    description: Returns the length of a collection
+    data_in: value
+    parameters:
+      - name: value
+        description: The input collection
+        required: true
+        type: string
+    returns:
+      Success:
+        description: The length of the collection
+        schema:
+          type: object
+  'select json':
+    run: transforms.json_select
+    data_in: json_in
+    parameters:
+        - name: json_in
+          required: true
+          type: object
+        - name: element
+          type: string
+          required: true
+    returns:
+      Success:
+        schema:
+          type: object
+devices:
+  Test Device Type:
+    description: a test type
+    fields:
+      - name: Text field
+        type: string
+        minLength: 5
+        maxLength: 20
+        required: true
+        placeholder: enter something please
+      - name: Encrypted field
+        type: string
+        encrypted: true
+        placeholder: shh its a secret
+      - name: Number field
+        type: integer
+        minimum: 0
+        maximum: 25
+        exclusiveMaximum: true
+        multipleOf: 5
+        placeholder: this ones a number
+        required: true
+      - name: Enum field
+        type: string
+        enum: [val 1, val 2, val 3, another val]
+        required: true
+        placeholder: this ones a dropdown
+      - name: Boolean field
+        type: boolean
+  Test Device Type 2:
+    description: a 2nd test type
+    fields:
+      - name: Text field
+        type: string
+        minLength: 5
+        maxLength: 100
+        pattern: ^([01]?\d\d?|2[0-4]\d|25[0-5])\.([01]?\d\d?|2[0-4]\d|25[0-5])\.([01]?\d\d?|2[0-4]\d|25[0-5])\.([01]?\d\d?|2[0-4]\d|25[0-5])$
+      - name: Enum field
+        type: string
+        enum: [val 1, val 2, val 3, another val]
+      - name: Encrypted field
+        type: string
+        encrypted: true
+      - name: Number field
+        type: number
+        default: 10

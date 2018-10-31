@@ -26,8 +26,8 @@ DEFAULT_TIMEOUT = 2
 
 
 class Walkoff(App):
-    def __init__(self, name=None, device=None):
-        App.__init__(self, name, device)
+    def __init__(self, name, device, context):
+        App.__init__(self, name, device, context)
         self.is_connected = False
         self.headers = None
         self.refresh_token = None
@@ -87,11 +87,6 @@ class Walkoff(App):
     @action
     def get_workflow_metrics(self, timeout=DEFAULT_TIMEOUT):
         return self.standard_request('get', '/metrics/workflows', timeout, headers=self.headers)
-
-    # CASES
-    @action
-    def get_all_cases(self, timeout=DEFAULT_TIMEOUT):
-        return self.standard_request('get', '/api/cases', timeout, headers=self.headers)
 
     # USERS
     @action

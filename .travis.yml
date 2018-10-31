@@ -1,27 +1,22 @@
 matrix:
   include:
-    - language: python
-      os: linux
-      python: "2.7"
-      install:
-        - pip install -r requirements.txt && pip install -r requirements-test.txt
-        - pip install coverage
-      before_script:
-        - python scripts/generate_certificates.py
-      script:
-        - coverage run run_all_tests.py
-        - coverage combine
-        - coverage report
-      branches:
-        only:
-          - master
-          - development
-        except:
-          - caching
+
+  ########################
+  ####   Unit Tests   ####
+  ########################
 
     - language: python
       os: linux
-      python: "3.4"
+      name: "Python 2.7 Unit Tests"
+      python: "2.7"
+      services:
+        - redis-server
+      before_install:
+        - wget http://www.apache.org/dist/kafka/1.1.0/kafka_2.12-1.1.0.tgz -O kafka.tgz
+        - mkdir -p kafka && tar xzf kafka.tgz -C kafka --strip-components 1
+        - nohup bash -c "cd kafka && bin/zookeeper-server-start.sh config/zookeeper.properties &"
+        - nohup bash -c "cd kafka && bin/kafka-server-start.sh config/server.properties &"
+        - sleep 5
       install:
         - pip install -r requirements.txt && pip install -r requirements-test.txt
         - pip install coverage
@@ -35,12 +30,19 @@ matrix:
         only:
           - master
           - development
-        except:
-          - caching
 
     - language: python
       os: linux
       python: "3.5"
+      name: "Python 3.5 Unit Tests"
+      services:
+        - redis-server
+      before_install:
+      - wget http://www.apache.org/dist/kafka/1.1.0/kafka_2.12-1.1.0.tgz -O kafka.tgz
+      - mkdir -p kafka && tar xzf kafka.tgz -C kafka --strip-components 1
+      - nohup bash -c "cd kafka && bin/zookeeper-server-start.sh config/zookeeper.properties &"
+      - nohup bash -c "cd kafka && bin/kafka-server-start.sh config/server.properties &"
+      - sleep 5
       install:
         - pip install -r requirements.txt && pip install -r requirements-test.txt
         - pip install coverage
@@ -54,12 +56,19 @@ matrix:
         only:
           - master
           - development
-        except:
-          - caching
 
     - language: python
       os: linux
       python: "3.6"
+      name: "Python 3.6 Unit Tests"
+      services:
+        - redis-server
+      before_install:
+      - wget http://www.apache.org/dist/kafka/1.1.0/kafka_2.12-1.1.0.tgz -O kafka.tgz
+      - mkdir -p kafka && tar xzf kafka.tgz -C kafka --strip-components 1
+      - nohup bash -c "cd kafka && bin/zookeeper-server-start.sh config/zookeeper.properties &"
+      - nohup bash -c "cd kafka && bin/kafka-server-start.sh config/server.properties &"
+      - sleep 5
       install:
         - pip install -r requirements.txt && pip install -r requirements-test.txt
         - pip install coverage
@@ -73,13 +82,105 @@ matrix:
         only:
           - master
           - development
-        except:
-          - caching
+
+  ##################################
+  ####   Python Runtime Tests   ####
+  ##################################
+
+    - language: python
+      os: linux
+      python: "2.7"
+      name: "Python 2.7 Runtime Unit Tests"
+      services:
+        - redis-server
+      install:
+        - pip install -r requirements.txt
+        - pip install -r requirements-test.txt
+        - pip install -r runtimes/python/requirements.txt
+        - pip install -r runtimes/python/requirements-test.txt
+      script:
+        - cp apps/__init__.py runtimes/python/testapp/__init__.py
+        - cp apps/messaging.py runtimes/python/testapp/messaging.py
+        - cd runtimes/python
+        - pytest -s -v
+      branches:
+        only:
+          - master
+          - development
+
+    - language: python
+      os: linux
+      python: "3.4"
+      name: "Python 3.4 Runtime Unit Tests"
+      services:
+        - redis-server
+      install:
+        - pip install -r requirements.txt
+        - pip install -r requirements-test.txt
+        - pip install -r runtimes/python/requirements.txt
+        - pip install -r runtimes/python/requirements-test.txt
+      script:
+        - cp apps/__init__.py runtimes/python/testapp/__init__.py
+        - cp apps/messaging.py runtimes/python/testapp/messaging.py
+        - cd runtimes/python
+        - pytest -s -v
+      branches:
+        only:
+          - master
+          - development
+
+    - language: python
+      os: linux
+      python: "3.5"
+      name: "Python 3.5 Runtime Unit Tests"
+      services:
+        - redis-server
+      install:
+        - pip install -r requirements.txt
+        - pip install -r requirements-test.txt
+        - pip install -r runtimes/python/requirements.txt
+        - pip install -r runtimes/python/requirements-test.txt
+      script:
+        - cp apps/__init__.py runtimes/python/testapp/__init__.py
+        - cp apps/messaging.py runtimes/python/testapp/messaging.py
+        - cd runtimes/python
+        - pytest -s -v
+      branches:
+        only:
+          - master
+          - development
+
+
+    - language: python
+      os: linux
+      python: "3.6"
+      name: "Python 3.6 Runtime Unit Tests"
+      services:
+        - redis-server
+      install:
+        - pip install -r requirements.txt
+        - pip install -r requirements-test.txt
+        - pip install -r runtimes/python/requirements.txt
+        - pip install -r runtimes/python/requirements-test.txt
+      script:
+        - cp apps/__init__.py runtimes/python/testapp/__init__.py
+        - cp apps/messaging.py runtimes/python/testapp/messaging.py
+        - cd runtimes/python
+        - pytest -s -v
+      branches:
+        only:
+          - master
+          - development
+
+    ###########################
+    ####   UI Unit Tests   ####
+    ###########################
 
     - language: node_js
       node_js:
         - "node"
       addons:
+      name: "UI Unit Tests"
       apt:
         sources:
           - google-chrome
@@ -93,7 +194,7 @@ matrix:
       before_script:
         - cd walkoff/client
         - npm install
-      script: npm run test -- --single-run
+      script: npm run test -- --watch=false
       branches:
         only:
           - master

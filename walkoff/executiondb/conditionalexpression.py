@@ -68,53 +68,50 @@ class ConditionalExpression(ExecutionElement, Execution_Base):
         for child in child_expressions:
             child.parent = self
 
-    def execute(self, data_in, accumulator):
+    def execute(self, action_execution_strategy, data_in, accumulator):
         """Executes the ConditionalExpression object, determining if the statement evaluates to True or False.
 
         Args:
+            action_execution_strategy: The strategy used to execute the action (e.g. LocalActionExecutionStrategy)
             data_in (dict): The input to the Transform objects associated with this ConditionalExpression.
             accumulator (dict): The accumulated data from previous Actions.
 
         Returns:
             (bool): True if the Condition evaluated to True, False otherwise
         """
-        try:
-            result = self.__operator_lookup[self.operator](data_in, accumulator)
-            if self.is_negated:
-                result = not result
-            if result:
-                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionTrue)
-            else:
-                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionFalse)
-            return result
-        except (InvalidArgument, Exception) as e:
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionError)
-            return False
+        result = self.__operator_lookup[self.operator](action_execution_strategy, data_in, accumulator)
+        if self.is_negated:
+            result = not result
+        if result:
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionTrue)
+        else:
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ConditionalExpressionFalse)
+        return result
 
-    def _and(self, data_in, accumulator):
-        return (all(condition.execute(data_in, accumulator) for condition in self.conditions)
-                and all(expression.execute(data_in, accumulator) for expression in self.child_expressions))
+    def _and(self, action_execution_strategy, data_in, accumulator):
+        return (all(condition.execute(action_execution_strategy, data_in, accumulator)
+                    for condition in self.conditions)
+                and all(expression.execute(action_execution_strategy, data_in, accumulator)
+                        for expression in self.child_expressions))
 
-    def _or(self, data_in, accumulator):
+    def _or(self, action_execution_strategy, data_in, accumulator):
         if not self.conditions and not self.child_expressions:
             return True
-        return (any(condition.execute(data_in, accumulator) for condition in self.conditions)
-                or any(expression.execute(data_in, accumulator) for expression in self.child_expressions))
+        return (any(condition.execute(action_execution_strategy, data_in, accumulator)
+                    for condition in self.conditions)
+                or any(expression.execute(action_execution_strategy, data_in, accumulator)
+                       for expression in self.child_expressions))
 
-    def _xor(self, data_in, accumulator):
+    def _xor(self, action_execution_strategy, data_in, accumulator):
         if not self.conditions and not self.child_expressions:
             return True
         is_one_found = False
-        for condition in self.conditions:
-            if condition.execute(data_in, accumulator):
-                if is_one_found:
-                    return False
-                is_one_found = True
-        for expression in self.child_expressions:
-            if expression.execute(data_in, accumulator):
-                if is_one_found:
-                    return False
-                is_one_found = True
+        for executable_group in (self.conditions, self.child_expressions):
+            for executable in executable_group:
+                if executable.execute(action_execution_strategy, data_in, accumulator):
+                    if is_one_found:
+                        return False
+                    is_one_found = True
         return is_one_found
 
 

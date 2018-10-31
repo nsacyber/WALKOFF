@@ -12,7 +12,6 @@ from walkoff.events import WalkoffEvent
 from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.helpers import format_exception_message
 from walkoff.appgateway.apiutil import get_app_action_api, UnknownApp, UnknownAppAction, InvalidArgument
 
 logger = logging.getLogger(__name__)
@@ -67,9 +66,8 @@ class Action(ExecutionElement, Execution_Base):
 
         self._run = None
         self._arguments_api = None
-        self._output = None
+        self._last_status = None
         self._execution_id = 'default'
-        self._action_executable = None
         self._resolved_device_id = -1
         self.validate()
 
@@ -80,13 +78,13 @@ class Action(ExecutionElement, Execution_Base):
             errors = []
             try:
                 self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
-                self._action_executable = get_app_action(self.app_name, self._run)
+                get_app_action(self.app_name, self._run)
             except UnknownApp:
                 errors.append('Unknown app {}'.format(self.app_name))
             except UnknownAppAction:
                 errors.append('Unknown app action {}'.format(self.action_name))
             self.errors = errors
-        self._output = None
+        self._last_status = None
         self._execution_id = 'default'
         self._resolved_device_id = -1
 
@@ -95,7 +93,7 @@ class Action(ExecutionElement, Execution_Base):
         errors = []
         try:
             self._run, self._arguments_api = get_app_action_api(self.app_name, self.action_name)
-            self._action_executable = get_app_action(self.app_name, self._run)
+            get_app_action(self.app_name, self._run)
             if is_app_action_bound(self.app_name, self._run) and not self.device_id:
                 message = 'App action is bound but no device ID was provided.'.format(self.name)
                 errors.append(message)
@@ -108,14 +106,6 @@ class Action(ExecutionElement, Execution_Base):
             errors.extend(e.errors)
         self.errors = errors
 
-    def get_output(self):
-        """Gets the output of an Action (the result)
-
-        Returns:
-            (ActionResult): The result of the Action
-        """
-        return self._output
-
     def get_execution_id(self):
         """Gets the execution ID of the Action
 
@@ -124,10 +114,11 @@ class Action(ExecutionElement, Execution_Base):
         """
         return self._execution_id
 
-    def execute(self, accumulator, instance=None, arguments=None, resume=False):
+    def execute(self, action_execution_strategy, accumulator, instance=None, arguments=None, resume=False):
         """Executes an Action by calling the associated app function.
 
         Args:
+            action_execution_strategy: The strategy used to execute the action (e.g. LocalActionExecutionStrategy)
             accumulator (dict): Dict containing the results of the previous actions
             instance (App, optional): The instance of an App object to be used to execute the associated function.
                 This field is required if the Action is a bounded action. Otherwise, it defaults to None.
@@ -154,7 +145,6 @@ class Action(ExecutionElement, Execution_Base):
         if self.trigger and not resume:
             WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.TriggerActionAwaitingData)
             logger.debug('Trigger Action {} is awaiting data'.format(self.name))
-            self._output = None
             return ActionResult("trigger", "trigger")
 
         arguments = arguments if arguments else self.arguments
@@ -162,48 +152,44 @@ class Action(ExecutionElement, Execution_Base):
         try:
             args = validate_app_action_parameters(self._arguments_api, arguments, self.app_name, self.action_name,
                                                   accumulator=accumulator)
-            if is_app_action_bound(self.app_name, self._run):
-                result = self._action_executable(instance, **args)
-            else:
-                result = self._action_executable(**args)
-            result.set_default_status(self.app_name, self.action_name)
-            if result.is_failure(self.app_name, self.action_name):
-                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionError,
-                                                       data=result.as_json())
-            else:
-                WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionSuccess,
-                                                       data=result.as_json())
-        except Exception as e:
-            logger.exception('Error executing action {} (id={})'.format(self.name, str(self.id)))
-            self.__handle_execution_error(e)
+        except InvalidArgument as e:
+            result = ActionResult.from_exception(e, 'InvalidArguments')
+            accumulator[self.id] = result.result
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionArgumentsInvalid, data=result.as_json())
+            return result.status
+
+        if is_app_action_bound(self.app_name, self._run):
+            result = action_execution_strategy.execute(self, accumulator, args, instance=instance)
         else:
-            self._output = result
+            result = action_execution_strategy.execute(self, accumulator, args)
+
+        if result.status == 'UnhandledException':
+            logger.error('Error executing action {} (id={})'.format(self.name, str(self.id)))
+        else:
             logger.debug(
                 'Action {0}-{1} (id {2}) executed successfully'.format(self.app_name, self.action_name, self.id))
-            return result
 
-    def __handle_execution_error(self, e):
-        formatted_error = format_exception_message(e)
-        if isinstance(e, InvalidArgument):
-            event = WalkoffEvent.ActionArgumentsInvalid
-            return_type = 'InvalidArguments'
+        result.set_default_status(self.app_name, self.action_name)
+        if result.is_failure(self.app_name, self.action_name):
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionError,
+                                                   data=result.as_json())
         else:
-            event = WalkoffEvent.ActionExecutionError
-            return_type = 'UnhandledException'
-        self._output = ActionResult('error: {0}'.format(formatted_error), return_type)
-        WalkoffEvent.CommonWorkflowSignal.send(self, event=event, data=self._output.as_json())
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionExecutionSuccess,
+                                                   data=result.as_json())
+        return result.status
 
-    def execute_trigger(self, data_in, accumulator):
+    def execute_trigger(self, action_execution_strategy, data_in, accumulator):
         """Executes the trigger for an Action, which will continue execution if the trigger returns True
 
         Args:
+            action_execution_strategy: The strategy used to execute the action (e.g. LocalActionExecutionStrategy)
             data_in (dict): The data to send to the trigger to test against
             accumulator (dict): Dict containing the results of the previous actions
 
         Returns:
             (bool): True if the trigger returned True, False otherwise
         """
-        if self.trigger.execute(data_in=data_in, accumulator=accumulator):
+        if self.trigger.execute(action_execution_strategy, data_in=data_in, accumulator=accumulator):
             logger.debug('Trigger is valid for input {0}'.format(data_in))
             return True
         else:

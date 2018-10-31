@@ -100,7 +100,7 @@ def import_submodules(package, recursive=False):
     return {}
 
 
-def format_db_path(db_type, path, username=None, password=None):
+def format_db_path(db_type, path, username=None, password=None, host="localhost"):
     """
     Formats the path to the database
 
@@ -121,11 +121,12 @@ def format_db_path(db_type, path, username=None, password=None):
         sqlalchemy_path = '{0}:///{1}'.format(db_type, path)
     elif db_type in supported_dbs:
         if username and username in os.environ and password and password in os.environ:
-            sqlalchemy_path = '{0}://{1}:{2}@{3}'.format(db_type, os.environ[username], os.environ[password], path)
+            sqlalchemy_path = '{0}://{1}:{2}@{3}/{4}'.format(db_type, os.environ[username], os.environ[password],
+                                                             host, path)
         elif username and username in os.environ:
-            sqlalchemy_path = '{0}://{1}@{2}'.format(db_type, os.environ[username], path)
+            sqlalchemy_path = '{0}://{1}@{2}/{3}'.format(db_type, os.environ[username], host, path)
         else:
-            sqlalchemy_path = '{0}://{1}'.format(db_type, path)
+            logger.error('No username or password found for database')
     else:
         logger.error('Database type {0} not supported for database {1}'.format(db_type, path))
 
@@ -289,3 +290,12 @@ def compose_api(config):
                 final_yaml.append(line)
     with open(os.path.join(config.API_PATH, 'composed_api.yaml'), 'w') as composed_yaml:
         composed_yaml.writelines(final_yaml)
+
+
+class ExecutionError(Exception):
+    def __init__(self, original_exception=None, message=None):
+        if original_exception is None and message is None:
+            raise ValueError('Either original exception or message must be provided')
+        self.exc = original_exception or None
+        self.message = message or format_exception_message(original_exception)
+        super(ExecutionError, self).__init__()

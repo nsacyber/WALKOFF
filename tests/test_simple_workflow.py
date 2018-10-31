@@ -1,15 +1,14 @@
 import unittest
 
-from mock import create_autospec
-
 import walkoff.appgateway
 import walkoff.config
 from tests.util import execution_db_help, initialize_test_config
 from tests.util.mock_objects import *
-from walkoff.case.logger import CaseLogger
 from walkoff.events import WalkoffEvent
 from walkoff.multiprocessedexecutor import multiprocessedexecutor
 from walkoff.server.app import create_app
+from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy
+import walkoff.server.workflowresults
 
 
 class TestSimpleWorkflow(unittest.TestCase):
@@ -18,15 +17,17 @@ class TestSimpleWorkflow(unittest.TestCase):
         initialize_test_config()
         execution_db_help.setup_dbs()
 
-        app = create_app(walkoff.config.Config)
+        app = create_app()
         cls.context = app.test_request_context()
         cls.context.push()
 
         multiprocessedexecutor.MultiprocessedExecutor.initialize_threading = mock_initialize_threading
         multiprocessedexecutor.MultiprocessedExecutor.wait_and_reset = mock_wait_and_reset
         multiprocessedexecutor.MultiprocessedExecutor.shutdown_pool = mock_shutdown_pool
-        cls.executor = multiprocessedexecutor.MultiprocessedExecutor(MockRedisCacheAdapter(),
-                                                                     create_autospec(CaseLogger))
+        cls.executor = multiprocessedexecutor.MultiprocessedExecutor(
+            MockRedisCacheAdapter(),
+            LocalActionExecutionStrategy()
+        )
         cls.executor.initialize_threading(app)
 
     def tearDown(self):

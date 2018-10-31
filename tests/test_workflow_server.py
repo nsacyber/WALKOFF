@@ -2,7 +2,6 @@ import json
 import os
 from uuid import uuid4, UUID
 
-import walkoff.case.database as case_database
 from tests.util import execution_db_help
 from tests.util.servertestcase import ServerTestCase
 from walkoff.executiondb.playbook import Playbook
@@ -28,7 +27,8 @@ class TestWorkflowServer(ServerTestCase):
                  "arguments": []}],
                 'name': self.add_workflow_name,
                 'start': action_id,
-                'branches': []}
+                'branches': [],
+                'environment_variables': []}
         self.verb_lookup = {'get': self.get_with_status_check,
                             'put': self.put_with_status_check,
                             'post': self.post_with_status_check,
@@ -37,10 +37,6 @@ class TestWorkflowServer(ServerTestCase):
 
     def tearDown(self):
         execution_db_help.cleanup_execution_db()
-
-        self.app.running_context.case_db.session.query(case_database.Event).delete()
-        self.app.running_context.case_db.session.query(case_database.Case).delete()
-        self.app.running_context.case_db.session.commit()
 
     @staticmethod
     def strip_ids(element):
@@ -287,6 +283,25 @@ class TestWorkflowServer(ServerTestCase):
         self.assertEqual(len(response['errors']), 1)
         self.assertEqual(len(response['actions'][0]['errors']), 1)
 
+    def test_create_workflow_with_env_vars(self):
+        playbook = execution_db_help.standard_load()
+        self.empty_workflow_json['playbook_id'] = str(playbook.id)
+        self.empty_workflow_json['environment_variables'].append({'name': 'call', 'value': 'changeme',
+                                                                  'description': 'test description'})
+        self.post_with_status_check('/api/workflows',
+                                    headers=self.headers, status_code=OBJECT_CREATED,
+                                    data=json.dumps(self.empty_workflow_json),
+                                    content_type="application/json")
+
+        final_workflows = playbook.workflows
+        workflow = next((workflow for workflow in final_workflows if workflow.name == self.add_workflow_name), None)
+
+        self.assertEqual(len(workflow.environment_variables), 1)
+        self.assertIsNotNone(workflow.environment_variables[0].id)
+        self.assertEqual(workflow.environment_variables[0].name, 'call')
+        self.assertEqual(workflow.environment_variables[0].value, 'changeme')
+        self.assertEqual(workflow.environment_variables[0].description, 'test description')
+
     # All the updates
 
     def test_update_playbook_name(self):
@@ -298,6 +313,16 @@ class TestWorkflowServer(ServerTestCase):
                                                 headers=self.headers,
                                                 content_type='application/json')
         self.assertEqual(response['name'], self.change_playbook_name)
+
+    def test_update_playbook_duplicate_name(self):
+        playbook = execution_db_help.standard_load()
+
+        data = {'id': str(playbook.id), 'name': 'dataflowTest'}
+        self.patch_with_status_check('/api/playbooks',
+                                     data=json.dumps(data),
+                                     headers=self.headers,
+                                     content_type='application/json',
+                                     status_code=OBJECT_EXISTS_ERROR)
 
     def test_update_playbook_invalid_id(self):
         execution_db_help.standard_load()
@@ -427,6 +452,16 @@ class TestWorkflowServer(ServerTestCase):
         self.assertIsNotNone(copy_playbook)
 
         self.assertEqual(len(playbook.workflows), len(copy_playbook.workflows))
+
+    def test_copy_playbook_duplicate_name(self):
+        playbook = execution_db_help.standard_load()
+
+        data = {"name": 'dataflowTest'}
+        self.post_with_status_check('/api/playbooks?source={}'.format(playbook.id),
+                                    data=json.dumps(data),
+                                    headers=self.headers,
+                                    status_code=OBJECT_EXISTS_ERROR,
+                                    content_type="application/json")
 
     def test_get_uuid(self):
         response = self.get_with_status_check('/api/uuid', status_code=OBJECT_CREATED)

@@ -1,0 +1,152 @@
+swagger: '2.0'
+info:
+  description: >-
+    An API used to execute WALKOFF apps deployed as microservices. See https://nsacyber.github.io/WALKOFF/
+  version: 0.1.0
+  title: WALKOFF
+  contact:
+    email: walkoff@nsa.gov
+  license:
+    name: Creative-Commons
+    url: 'http://creativecommons.org/licenses/by/4.0/'
+
+schemes:
+  - http
+  - https
+
+paths:
+  /workflows/{workflow_execution_id}/actions/{executable_execution_id}:
+    parameters:
+      - name: workflow_execution_id
+        in: path
+        description: The unique ID of the workflow which is executing this action
+        required: true
+        type: string
+        format: uuid
+      - name: executable_execution_id
+        in: path
+        description: The unique ID of the executing executable (action, condition or transform).
+        type: string
+        format: uuid
+    post:
+      summary: Executes an executable (action, condition, or transform) for the current app
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: body
+          description: Details of the executable to execute
+          required: true
+          schema:
+            $ref: '#/definitions/ExecutionContext'
+      responses:
+        200:
+          description: Success
+          schema:
+            $ref: '#/definitions/ExecutionResult'
+        400:
+          description: Raised when invalid parameters are used or when the executable raised an exception
+
+  /workflows/{workflow_execution_id}:
+    parameters:
+      - name: workflow_execution_id
+        in: path
+        description: The unique ID of the workflow which is executing this action
+        required: true
+        type: string
+        format: uuid
+    delete:
+      summary: Cleans up any cached values from the executed workflow
+      produces:
+        - application/json
+      consumes:
+        - application/json
+      responses:
+        204:
+          description: Success
+        400:
+          description: Raised when invalid parameters are used or when the executable raised an exception
+
+  /health:
+    get:
+      summary: Gets the health of the app service
+      responses:
+        200:
+          description: Everything is healthy
+        400:
+          description: App is not healthy
+
+definitions:
+  ExecutionContext:
+    type: object
+    required: [workflow_context, executable_context, arguments]
+    additionalProperties: false
+    properties:
+      workflow_context:
+        $ref: '#/definitions/WorkflowContext'
+      executable_context:
+        $ref: '#/definitions/ExecutableContext'
+      arguments:
+        type: array
+        items:
+          $ref: '#/definitions/Argument'
+
+  WorkflowContext:
+    type: object
+    required: [name, id]
+    additionalProperties: false
+    properties:
+      name:
+        type: string
+        description: The name of the workflow executing
+      id:
+        type: string
+        format: uuid
+        description: The ID of the workflow (Note -- not the execution ID)
+
+  ExecutableContext:
+    type: object
+    required: [name, type, id]
+    additionalProperties: false
+    properties:
+      name:
+        type: string
+        description: The name of the executable (Note -- The function name, not the user-defined name in the workflow)
+      type:
+        type: string
+        enum: [action, condition, transform]
+        description: The type of the executable
+      id:
+        type: string
+        format: uuid
+        description: The ID of the executable (Note -- not the execution ID)
+      device_id:
+        type: integer
+        minimum: 1
+        description: The ID of the device used to run the executable
+
+  Argument:
+    type: object
+    required: [name, value]
+    additionalProperties: false
+    properties:
+      name:
+        type: string
+        description: The name of the argument
+      value:
+        type: [string, integer, number, boolean, array, object]
+
+  ExecutionResult:
+    type: object
+    required: [status, result_key]
+    additionalProperties: false
+    properties:
+      status:
+        type: string
+        description: The status resulting from the executed action
+      result_key:
+        type: string
+        description: The key in the cache which holds the results
+

@@ -1,0 +1,38 @@
+<div id="main" class="metricsMain">
+	<ul class="nav nav-tabs" role="tablist">
+		<li class="nav-item"><a class="nav-link active" href="#workflows" data-toggle="tab" role="tab">Workflow Metrics</a></li>
+		<li class="nav-item"><a class="nav-link" href="#apps" data-toggle="tab" role="tab">App Metrics</a></li>
+	</ul>
+	<div class="tab-content">
+		<div id="workflows" class="tab-pane fade show active">
+			<h1>Workflow Metrics</h1>
+
+			<ngx-datatable #workflowMetricsTable class='material expandable workflowMetricsTable' [columnMode]="'flex'" [rows]="workflowMetrics"
+			 [headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'name', dir: 'asc'}]" [limit]="25">
+				<!-- Column Templates -->
+				<ngx-datatable-column name="Name" prop="name" [flexGrow]="4"></ngx-datatable-column>
+                <ngx-datatable-column name="Executions (Average Time)" prop="display_text" [flexGrow]="1"></ngx-datatable-column>
+			</ngx-datatable>
+		</div>
+		<div id="apps" class="tab-pane fade">
+			<h1>App Metrics</h1>
+
+			<div class="row">
+				<div class="col-offset-7 col-5">
+					<div class="form-group">
+						<select2 [data]="availableApps" [value]="" [options]="appSelectConfig" (valueChanged)="appSelectChange($event)"></select2>
+					</div>
+				</div>
+			</div>
+
+			<ngx-datatable #appMetricsTable class='material expandable appMetricsTable' [columnMode]="'flex'" [rows]="displayAppMetrics()" [sortType]="'multi'"
+				[headerHeight]="50" [footerHeight]="50" [rowHeight]="undefined" [sorts]="[{prop: 'app', dir: 'asc'}, {prop: 'action', dir: 'asc'}]" [limit]="25">
+				<!-- Column Templates -->
+				<ngx-datatable-column name="App" prop="app" [flexGrow]="2"></ngx-datatable-column>
+				<ngx-datatable-column name="Action" prop="action" [flexGrow]="2"></ngx-datatable-column>
+				<ngx-datatable-column name="Successful Executions (Average Time)" prop="success" [flexGrow]="1"></ngx-datatable-column>
+				<ngx-datatable-column name="Failed Executions (Average Time)" prop="error" [flexGrow]="1"></ngx-datatable-column>
+			</ngx-datatable>
+		</div>
+	</div>
+</div>

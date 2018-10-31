@@ -7,9 +7,10 @@ import walkoff.appgateway
 import walkoff.config
 from tests.util import execution_db_help, initialize_test_config
 from tests.util.mock_objects import *
-from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor, spawn_worker_processes
+from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from walkoff.server.app import create_app
 from walkoff.server.blueprints.root import create_user
+from start_workers import spawn_worker_processes
 
 if not getattr(__builtins__, 'WindowsError', None):
     class WindowsError(OSError): pass
@@ -48,7 +49,7 @@ class ServerTestCase(unittest.TestCase):
                 os.remove(cls.conf.DATA_PATH)
             os.makedirs(cls.conf.DATA_PATH)
 
-        cls.app = create_app(walkoff.config.Config)
+        cls.app = create_app()
         cls.app.testing = True
         cls.context = cls.app.test_request_context()
         cls.context.push()
@@ -78,7 +79,6 @@ class ServerTestCase(unittest.TestCase):
         execution_db_help.cleanup_execution_db()
         execution_db_help.tear_down_execution_db()
 
-        cls.app.running_context.case_db.tear_down()
         walkoff.appgateway.clear_cache()
 
     def setUp(self):

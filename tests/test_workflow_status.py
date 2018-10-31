@@ -3,10 +3,8 @@ from uuid import uuid4, UUID
 
 from flask import current_app
 
-import walkoff.case.database as case_database
 import walkoff.executiondb.schemas
 from tests.util import execution_db_help
-from tests.util.case_db_help import setup_subscriptions_for_action
 from tests.util.servertestcase import ServerTestCase
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import WorkflowStatusEnum, ActionStatusEnum
@@ -15,6 +13,7 @@ from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from walkoff.server.returncodes import *
+import walkoff.server.workflowresults
 
 
 class MockWorkflow(ExecutionElement):
@@ -40,12 +39,15 @@ class MockWorkflowSchema(object):
         return Dummy({'id': str(workflow.id), 'name': workflow.name, 'execution_id': str(workflow.execution_id)})
 
 
-def mock_pause_workflow(self, execution_id):
+def mock_pause_workflow(self, execution_id, user=None):
     WalkoffEvent.WorkflowPaused.send({'execution_id': execution_id, 'id': '123', 'name': 'workflow'})
 
 
-def mock_resume_workflow(self, execution_id):
-    WalkoffEvent.WorkflowResumed.send(MockWorkflow(execution_id))
+def mock_resume_workflow(self, execution_id, user=None):
+    data = {"execution_id": execution_id}
+    if user:
+        data["user"] = user
+    WalkoffEvent.WorkflowResumed.send(MockWorkflow(execution_id), data=data)
 
 
 class TestWorkflowStatus(ServerTestCase):
@@ -57,10 +59,6 @@ class TestWorkflowStatus(ServerTestCase):
 
     def tearDown(self):
         execution_db_help.cleanup_execution_db()
-
-        self.app.running_context.case_db.session.query(case_database.Event).delete()
-        self.app.running_context.case_db.session.query(case_database.Case).delete()
-        self.app.running_context.case_db.session.commit()
         walkoff.executiondb.schemas._schema_lookup.pop(MockWorkflow, None)
 
     def act_on_workflow(self, execution_id, action):
@@ -181,8 +179,6 @@ class TestWorkflowStatus(ServerTestCase):
 
         workflow = self.app.running_context.execution_db.session.query(Workflow).filter_by(
             playbook_id=playbook.id).first()
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {'count': 0}
 
@@ -209,14 +205,12 @@ class TestWorkflowStatus(ServerTestCase):
         workflow = self.app.running_context.execution_db.session.query(Workflow).filter_by(
             playbook_id=playbook.id).first()
 
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_ids)
-
         result = {'count': 0}
 
         @WalkoffEvent.ActionExecutionSuccess.connect
         def y(sender, **kwargs):
             result['count'] += 1
+            result['output'] = kwargs['data']['data']['result']
 
         data = {"workflow_id": str(workflow.id),
                 "arguments": [{"name": "call",
@@ -228,12 +222,39 @@ class TestWorkflowStatus(ServerTestCase):
         current_app.running_context.executor.wait_and_reset(1)
 
         self.assertEqual(result['count'], 1)
+        self.assertEqual(result['output'], 'REPEATING: CHANGE INPUT')
+
+    def test_execute_workflow_change_env_vars(self):
+        playbook = execution_db_help.standard_load()
+        workflow = self.app.running_context.execution_db.session.query(Workflow).filter_by(
+            playbook_id=playbook.id).first()
+        env_var_id = str(uuid4())
+        workflow.actions[0].arguments[0].value = None
+        workflow.actions[0].arguments[0].reference = env_var_id
+
+        result = {'count': 0, 'output': None}
+
+        @WalkoffEvent.ActionExecutionSuccess.connect
+        def y(sender, **kwargs):
+            result['count'] += 1
+            result['output'] = kwargs['data']['data']['result']
+
+        data = {"workflow_id": str(workflow.id),
+                "environment_variables": [{"id": env_var_id, "value": "CHANGE INPUT"}]}
+
+        response = self.post_with_status_check('/api/workflowqueue', headers=self.headers, status_code=SUCCESS_ASYNC,
+                                               content_type="application/json", data=json.dumps(data))
+
+        current_app.running_context.executor.wait_and_reset(1)
+
+        self.assertEqual(result['count'], 1)
+        self.assertEqual(result['output'], 'REPEATING: CHANGE INPUT')
 
         action = current_app.running_context.execution_db.session.query(ActionStatus).filter(
             ActionStatus._workflow_status_id == UUID(response['id'])).first()
         arguments = json.loads(action.arguments)
         self.assertEqual(arguments[0]["name"], "call")
-        self.assertEqual(arguments[0]["value"], "CHANGE INPUT")
+        self.assertIn('reference', arguments[0])
 
     def test_execute_workflow_pause_resume(self):
         result = {'paused': False, 'resumed': False}
@@ -268,9 +289,6 @@ class TestWorkflowStatus(ServerTestCase):
         execution_db_help.load_playbook('pauseWorkflowTest')
 
         workflow = self.app.running_context.execution_db.session.query(Workflow).filter_by(name='pauseWorkflow').first()
-
-        action_ids = [action.id for action in workflow.actions if action.name == 'start']
-        setup_subscriptions_for_action(workflow.id, action_ids)
 
         result = {"aborted": False}
 
@@ -316,3 +334,19 @@ class TestWorkflowStatus(ServerTestCase):
         workflow_status.aborted()
         self.assertEqual(workflow_status.status, WorkflowStatusEnum.aborted)
         self.assertEqual(actions[-1].status, ActionStatusEnum.aborted)
+
+    def test_workflowqueue_pagination(self):
+        for i in range(40):
+            workflow_status = WorkflowStatus(uuid4(), uuid4(), 'test')
+            workflow_status.running()
+            self.app.running_context.execution_db.session.add(workflow_status)
+            self.app.running_context.execution_db.session.commit()
+
+        response = self.get_with_status_check('/api/workflowqueue', headers=self.headers)
+        self.assertEqual(len(response), 20)
+
+        response = self.get_with_status_check('/api/workflowqueue?page=2', headers=self.headers)
+        self.assertEqual(len(response), 20)
+
+        response = self.get_with_status_check('/api/workflowqueue?page=3', headers=self.headers)
+        self.assertEqual(len(response), 0)

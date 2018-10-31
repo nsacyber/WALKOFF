@@ -33,24 +33,21 @@ class WalkoffSignal(object):
         name (str): The name of the signal
         signal (Signal): The signal object which sends the event and data
         event_type (EventType): The event type of this signal
-        is_loggable (bool): Should this event get logged into cases?
         is_sent_to_interfaces (bool, optional): Should this event get sent to the interface dispatcher? Defaults to True
         message (str): Human readable message for this event
 
     Args:
         name (str): The name of the signal
         event_type (EventType): The event type of this signal
-        loggable (bool, optional): Should this event get logged into cases? Defaults to True
         send_to_interfaces (bool, optional): Should this event get sent to the interface dispatcher? Defaults to True
         message (str, optional): Human readable message for this event. Defaults to empty string
     """
     _signals = {}
 
-    def __init__(self, name, event_type, loggable=True, send_to_interfaces=True, message=''):
+    def __init__(self, name, event_type, send_to_interfaces=True, message=''):
         self.name = name
         self.signal = Signal(name)
         self.event_type = event_type
-        self.is_loggable = loggable
         self.is_sent_to_interfaces = send_to_interfaces
         self.message = message
 
@@ -88,6 +85,11 @@ class WalkoffSignal(object):
         cls._signals[id(func)] = func
 
 
+class WorkerSignal(WalkoffSignal):
+    def __init__(self, name, message):
+        super(WorkerSignal, self).__init__(name, EventType.other, message=message)
+
+
 class ControllerSignal(WalkoffSignal):
     """A signal used by controller events
 
@@ -96,7 +98,7 @@ class ControllerSignal(WalkoffSignal):
 
     Args:
         name (str): The name of the signal
-        message (str): The message log with this signal to a case. Defaults to empty string
+        message (str): The message to log. Defaults to empty string
         scheduler_event (int): The APScheduler event connected to this signal.
     """
 
@@ -110,7 +112,7 @@ class WorkflowSignal(WalkoffSignal):
 
     Args:
         name (str): The name of the signal
-        message (str): The message log with this signal to a case. Defaults to empty string
+        message (str): The message to log. Defaults to empty string
     """
 
     def __init__(self, name, message):
@@ -122,17 +124,15 @@ class ActionSignal(WalkoffSignal):
 
     Args:
         name (str): The name of the signal
-        message (str): The message log with this signal to a case. Defaults to empty string
-        loggable (bool, optional): Should this event get logged into cases? Defaults to True
+        message (str): The message  to log. Defaults to empty string
         send_to_interfaces (bool, optional): Should this event get sent to the interface dispatcher? Defaults to True
     """
 
-    def __init__(self, name, message, loggable=True, send_to_interfaces=True):
+    def __init__(self, name, message, send_to_interfaces=True):
         super(ActionSignal, self).__init__(
             name,
             EventType.action,
             message=message,
-            loggable=loggable,
             send_to_interfaces=send_to_interfaces)
 
 
@@ -141,7 +141,7 @@ class BranchSignal(WalkoffSignal):
 
         Args:
             name (str): The name of the signal
-            message (str): The message log with this signal to a case. Defaults to empty string
+            message (str): The message to log. Defaults to empty string
     """
 
     def __init__(self, name, message):
@@ -153,7 +153,7 @@ class ConditionalExpressionSignal(WalkoffSignal):
 
         Args:
             name (str): The name of the signal
-            message (str): The message log with this signal to a case. Defaults to empty string
+            message (str): The message to log. Defaults to empty string
     """
 
     def __init__(self, name, message):
@@ -165,7 +165,7 @@ class ConditionSignal(WalkoffSignal):
 
         Args:
             name (str): The name of the signal
-            message (str): The message log with this signal to a case. Defaults to empty string
+            message (str): The message to log. Defaults to empty string
     """
 
     def __init__(self, name, message):
@@ -177,7 +177,7 @@ class TransformSignal(WalkoffSignal):
 
         Args:
             name (str): The name of the signal
-            message (str): The message log with this signal to a case. Defaults to empty string
+            message (str): The message to log. Defaults to empty string
     """
 
     def __init__(self, name, message):
@@ -188,6 +188,8 @@ class TransformSignal(WalkoffSignal):
 class WalkoffEvent(Enum):
     """The types of events used by Walkoff. The value of the Enum is a signal which can be used to send and event
     """
+    WorkerReady = WorkerSignal('Worker Ready', 'Worker ready')
+
     SchedulerStart = ControllerSignal('Scheduler Start', 'Scheduler started', EVENT_SCHEDULER_START)
     SchedulerShutdown = ControllerSignal('Scheduler Shutdown', 'Scheduler shutdown', EVENT_SCHEDULER_SHUTDOWN)
     SchedulerPaused = ControllerSignal('Scheduler Paused', 'Scheduler paused', EVENT_SCHEDULER_PAUSED)
@@ -214,8 +216,8 @@ class WalkoffEvent(Enum):
     TriggerActionAwaitingData = ActionSignal('Trigger Action Awaiting Data', 'Trigger action awaiting data')
     TriggerActionTaken = ActionSignal('Trigger Action Taken', 'Trigger action taken')
     TriggerActionNotTaken = ActionSignal('Trigger Action Not Taken', 'Trigger action not taken')
-    SendMessage = ActionSignal('Message Sent', 'Walkoff message sent', loggable=False, send_to_interfaces=False)
-    ConsoleLog = ActionSignal('Console Log', 'Console log', loggable=False, send_to_interfaces=False)
+    SendMessage = ActionSignal('Message Sent', 'Walkoff message sent', send_to_interfaces=False)
+    ConsoleLog = ActionSignal('Console Log', 'Console log', send_to_interfaces=False)
 
     BranchTaken = BranchSignal('Branch Taken', 'Branch taken')
     BranchNotTaken = BranchSignal('Branch Not Taken', 'Branch not taken')
@@ -224,8 +226,6 @@ class WalkoffEvent(Enum):
                                                             'Conditional expression evaluated true')
     ConditionalExpressionFalse = ConditionalExpressionSignal('Conditional Expression False',
                                                              'Conditional expression evaluated false')
-    ConditionalExpressionError = ConditionalExpressionSignal('Conditional Expression Error',
-                                                             'Error occurred while evaluating conditional expression')
 
     ConditionSuccess = ConditionSignal('Condition Success', 'Condition executed without error')
     ConditionError = ConditionSignal('Condition Error', 'Condition executed with error')
@@ -233,7 +233,7 @@ class WalkoffEvent(Enum):
     TransformSuccess = TransformSignal('Transform Success', 'Transform success')
     TransformError = TransformSignal('Transform Error', 'Transform error')
 
-    CommonWorkflowSignal = WalkoffSignal('Common Workflow Signal', EventType.other, loggable=False)
+    CommonWorkflowSignal = WalkoffSignal('Common Workflow Signal', EventType.other)
 
     @property
     def signal_name(self):
@@ -304,14 +304,6 @@ class WalkoffEvent(Enum):
         """
         self.value.connect(func, weak=weak)
         return func
-
-    def is_loggable(self):
-        """Is this event loggable?
-
-        Returns:
-            (bool)
-        """
-        return self.value.is_loggable
 
     def is_sent_to_interfaces(self):
         """Is this event supposed to be sent to the interfaces?
