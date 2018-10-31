@@ -11,7 +11,7 @@ from gevent import pywsgi
 import walkoff
 import walkoff.config
 from walkoff.helpers import compose_api
-from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
+from start_workers import spawn_worker_processes
 from walkoff.server.app import create_app
 from tests.util.jsonplaybookloader import JsonPlaybookLoader
 from walkoff.executiondb.playbook import Playbook
@@ -64,7 +64,6 @@ def run(ctx, host, port, config):
         app.running_context.executor.shutdown_pool()
         logger.info('Shutting down server')
         os._exit(exit_code)
-
 
 
 def _run_server(app, host, port):
