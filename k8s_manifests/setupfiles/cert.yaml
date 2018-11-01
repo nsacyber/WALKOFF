@@ -4,9 +4,13 @@ metadata:
   name: walkoff-cert
   namespace: default
 spec:
-  dnsNames:
-  - walkoffhelmtest.eastus.cloudapp.azure.com
+  secretName: walkoff-cert-secret
   issuerRef:
+    name: walkoff-ca-issuer
     kind: Issuer
-    name: ca-issuer
-  secretName: null
+  commonName: example.com
+  organization:
+  - WALKOFF
+  dnsNames:
+  - example.com
+  - www.example.com
