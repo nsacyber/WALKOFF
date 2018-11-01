@@ -1,19 +1,30 @@
+---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ template "walkoff.fullname" . }}
+  name: {{ .Values.config.app.zmq_service }}
+  namespace: {{ .Values.namespace }}
   labels:
-    app: {{ template "walkoff.name" . }}
-    chart: {{ template "walkoff.chart" . }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    run: {{ .Values.config.app.name }}
 spec:
-  type: {{ .Values.service.type }}
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
-      protocol: TCP
-      name: http
+  - port: {{ .Values.config.zmq_results_port }}
+    name: zmq-results
+  - port: {{ .Values.config.zmq_comm_port }}
+    name: zmq-comm
   selector:
-    app: {{ template "walkoff.name" . }}
-    release: {{ .Release.Name }}
+    run: {{ .Values.config.app.name }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.config.app.http_service }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    run: {{ .Values.config.app.name }}
+spec:
+  ports:
+  - port: {{ .Values.config.http_backend_port }}
+    name: http
+  selector:
+    run: {{ .Values.config.app.name }}

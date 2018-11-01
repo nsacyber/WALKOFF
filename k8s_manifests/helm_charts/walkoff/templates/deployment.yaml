@@ -1,90 +1,47 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: {{ .Values.namespace }}
-  labels:
-    name: {{ .Values.namespace }}
----
-apiVersion: certmanager.k8s.io/v1alpha1
-kind: Issuer
-metadata:
-  name: ca-issuer
-  namespace: {{ .Values.namespace }}
-spec:
-  ca:
-    secretName: {{ .Values.self-signed-key-pair }}
----
-apiVersion: certmanager.k8s.io/v1alpha1
-kind: Certificate
-metadata:
-  name: walkoff-cert
-  namespace: {{ .Values.namespace }}
-spec:
-  secretName: walkoff-cert-secret
-  issuerRef:
-    name: ca-issuer
-    kind: Issuer
-  dnsNames:
-  - {{ .Values.ingress.hosts }}
----
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: walkoff-storage
-  namespace: {{ .Values.namespace }}
-provisioner: {{ .Values.storage.provisioner }}
-mountOptions:
-  - dir_mode=0777
-  - file_mode=0777
-  - uid=1000
-  - gid=1000
-parameters:
-  skuName: {{ .Values.storage.provisioner.parameters }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ .Values.storage.classname }}
+  name: {{ .Values.config.storage.name }}
 spec:
   accessModes:
     - ReadWriteMany
-  storageClassName: {{ .Values.storage.classname }}
   resources:
     requests:
-      storage: {{ .Values.storage.size }}
+      storage: {{ .Values.config.storage.size }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: walkoff-worker
-  namespace: walkoff
+  name: {{ .Values.config.worker.name }}
+  namespace: {{ .Values.namespace }}
 spec:
-  replicas: 5
+  replicas: {{ .Values.config.worker.replicas }}
   selector:
     matchLabels:
-      run: walkoff-worker
+      run: {{ .Values.config.worker.name }}
   template:
     metadata:
-      namespace: walkoff
+      namespace: {{ .Values.namespace }}
       labels:
-        run: walkoff-worker
+        run: {{ .Values.config.worker.name }}
     spec:
       volumes:
       - name: cert-volume
         secret:
-          secretName: walkoff-cert-secret
+          secretName: {{ .Values.secrets.certs }}
       - name: zmq-private
         secret:
-          secretName: zmq-private-keys
+          secretName: {{ .Values.secrets.zmq_private }}
       - name: zmq-public
         secret:
-          secretName: zmq-public-keys
+          secretName: {{ .Values.secrets.zmq_public }}
       - name: walkoff-storage
         persistentVolumeClaim:
-          claimName: walkoff-storage
+          claimName: {{ .Values.config.storage.name }}
       containers:
-      - name: walkoff-worker
-        image: walkoffacr.azurecr.io/walkoff-worker:old
+      - name: {{ .Values.config.worker.name }}
+        image: {{ .Values.images.worker }}
         volumeMounts:
         - name: cert-volume
           readOnly: true
@@ -98,50 +55,98 @@ spec:
         - name: walkoff-storage
           mountPath: "/app/walkoff/commonstorage"
         env:
-          - name: WALKOFF_DB_USERNAME
+          - name: EXECUTION_DB_USERNAME
+            value: {{ .Values.resources.execution_db.username }}
+          - name: EXECUTION_DB_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: walkoff-db-secrets
-                key: WALKOFF_DB_USERNAME
+                name: {{ .Values.resources.execution_db.secret_name }}
+                key: {{ .Values.resources.execution_db.password_key }}
+          - name: WALKOFF_DB_USERNAME
+            value: {{ .Values.resources.walkoff_db.username }}
           - name: WALKOFF_DB_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: walkoff-db-secrets
-                key: WALKOFF_DB_PASSWORD
-      imagePullSecrets:
-      - name: aks
+                name: {{ .Values.resources.walkoff_db.secret_name }}
+                key: {{ .Values.resources.walkoff_db.password_key }}
+          - name: WALKOFF_REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.resources.redis.secret_name }}
+                key: {{ .Values.resources.redis.password_key }}
+          - name: CACHE
+            value: "{\"type\": \"redis\",\"host\": \"{{ .Values.resources.redis.service_name }}\",\"port\": {{ .Values.resources.redis.port }}}"
+          - name: HOST
+            value: "0.0.0.0"
+          - name: PORT
+            value: "{{ .Values.config.http_backend_port }}"
+          - name: ZMQ_RESULTS_ADDRESS
+            value: "tcp://{{ .Values.config.app.zmq_service }}:{{ .Values.config.zmq_results_port }}"
+          - name: ZMQ_COMMUNICATION_ADDRESS
+            value: "tcp://{{ .Values.config.app.zmq_service }}:{{ .Values.config.zmq_comm_port }}"
+          - name: SEPARATE_WORKERS
+            value: "true"
+          - name: WALKOFF_DB_TYPE 
+            value: "{{ .Values.resources.walkoff_db.db_type }}"
+          - name: EXECUTION_DB_TYPE
+            value: "{{ .Values.resources.execution_db.db_type }}"
+          - name: DB_PATH 
+            value: "walkoff"
+          - name: EXECUTION_DB_PATH
+            value: "execution"
+          - name: WALKOFF_DB_HOST
+            value: "{{ .Values.resources.walkoff_db.service_name }}"
+          - name: EXECUTION_DB_HOST
+            value: "{{ .Values.resources.execution_db.service_name }}"
+          - name: KEYS_PATH
+            value: "./certs"
+          - name: CERTIFICATE_PATH
+            value: "./certs/none.crt"
+          - name: PRIVATE_KEY_PATH
+            value: "./certs/none.key"
+          - name: ZMQ_PRIVATE_KEYS_PATH
+            value: "./certs/private_keys"
+          - name: ZMQ_PUBLIC_KEYS_PATH
+            value: "./certs/public_keys"
+          - name: SQLALCHEMY_DATABASE_URI
+            value: "{{ .Values.resources.walkoff_db.db_type }}://walkoff:walkoff@{{ .Values.resources.walkoff_db.service_name }}/walkoff"
+          - name: NUMBER_PROCESSES
+            value: "1"
+        # command:
+        # - "sleep"
+        # - "36000"
 ---
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: walkoff-app
+  name: {{ .Values.config.app.name }}
   namespace: {{ .Values.namespace }}
 spec:
   selector:
     matchLabels:
-      run: walkoff-app
+      run: {{ .Values.config.app.name }}
   template:
     metadata:
-    namespace: {{ .Values.namespace }}
+      namespace: {{ .Values.namespace }}
       labels:
-        run: walkoff-app
+        run: {{ .Values.config.app.name }}
     spec:
       volumes:
       - name: cert-volume
         secret:
-          secretName: {{ .Values.secrets.walkoff-cert-secret }}
+          secretName: {{ .Values.secrets.certs }}
       - name: zmq-private
         secret:
-          secretName: {{ .Values.secrets.zmq-private-keys }}
+          secretName: {{ .Values.secrets.zmq_private }}
       - name: zmq-public
         secret:
-          secretName: {{ .Values.secrets.zmq-public-keys }}
+          secretName: {{ .Values.secrets.zmq_public }}
       - name: walkoff-storage
         persistentVolumeClaim:
-          claimName: {{ .Values.storage.classname }}
+          claimName: {{ .Values.config.storage.name }}
       containers:
-      - name: walkoff-app
-        image: walkoffacr.azurecr.io/walkoff-app:old
+      - name: {{ .Values.config.app.name }}
+        image: {{ .Values.images.app }}
         volumeMounts:
         - name: cert-volume
           readOnly: true
@@ -155,52 +160,70 @@ spec:
         - name: walkoff-storage
           mountPath: "/app/walkoff/commonstorage"
         env:
-          - name: WALKOFF_DB_USERNAME
+          - name: EXECUTION_DB_USERNAME
+            value: {{ .Values.resources.execution_db.username }}
+          - name: EXECUTION_DB_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: {{ .Values.secrets.db-logins }}
-                key: {{ .Values.secrets.db-logins.db-username-key }}
+                name: {{ .Values.resources.execution_db.secret_name }}
+                key: {{ .Values.resources.execution_db.password_key }}
+          - name: WALKOFF_DB_USERNAME
+            value: {{ .Values.resources.walkoff_db.username }}
           - name: WALKOFF_DB_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: {{ .Values.secrets.db-logins }}
-                key: {{ .Values.secrets.db-logins.db-password-key }}
+                name: {{ .Values.resources.walkoff_db.secret_name }}
+                key: {{ .Values.resources.walkoff_db.password_key }}
+          - name: WALKOFF_REDIS_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.resources.redis.secret_name }}
+                key: {{ .Values.resources.redis.password_key }}
+          - name: CACHE
+            value: "{\"type\": \"redis\",\"host\": \"{{ .Values.resources.redis.service_name }}\",\"port\": {{ .Values.resources.redis.port }}}"
+          - name: HOST
+            value: "0.0.0.0"
+          - name: PORT
+            value: "{{ .Values.config.http_backend_port }}"
+          - name: ZMQ_RESULTS_ADDRESS
+            value: "tcp://0.0.0.0:{{ .Values.config.zmq_results_port }}"
+          - name: ZMQ_COMMUNICATION_ADDRESS
+            value: "tcp://0.0.0.0:{{ .Values.config.zmq_comm_port }}"
+          - name: SEPARATE_WORKERS
+            value: "true"
+          - name: WALKOFF_DB_TYPE 
+            value: "{{ .Values.resources.walkoff_db.db_type }}"
+          - name: EXECUTION_DB_TYPE
+            value: "{{ .Values.resources.execution_db.db_type }}"
+          - name: DB_PATH 
+            value: "walkoff"
+          - name: EXECUTION_DB_PATH
+            value: "execution"
+          - name: WALKOFF_DB_HOST
+            value: "{{ .Values.resources.walkoff_db.service_name }}"
+          - name: EXECUTION_DB_HOST
+            value: "{{ .Values.resources.execution_db.service_name }}"
+          - name: KEYS_PATH
+            value: "./certs"
+          - name: CERTIFICATE_PATH
+            value: "./certs/none.crt"
+          - name: PRIVATE_KEY_PATH
+            value: "./certs/none.key"
+          - name: ZMQ_PRIVATE_KEYS_PATH
+            value: "./certs/private_keys"
+          - name: ZMQ_PUBLIC_KEYS_PATH
+            value: "./certs/public_keys"
+          - name: SQLALCHEMY_DATABASE_URI
+            value: "{{ .Values.resources.walkoff_db.db_type }}://walkoff:walkoff@{{ .Values.resources.walkoff_db.service_name }}/walkoff"
+          - name: NUMBER_PROCESSES
+            value: "1"
         ports:
-        - containerPort: 8080
+        - containerPort: {{ .Values.config.http_backend_port }}
           name: http
-        - containerPort: 5556
+        - containerPort: {{ .Values.config.zmq_results_port }}
           name: zmq-results
-        - containerPort: 5557
+        - containerPort: {{ .Values.config.zmq_comm_port }}
           name: zmq-comm
-      imagePullSecrets:
-      - name: aks
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: walkoff-app-public
-  namespace: {{ .Values.namespace }}
-  labels:
-    run: walkoff-app
-spec:
-  ports:
-  - port: 8080
-    name: http
-  selector:
-    run: walkoff-app
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: walkoff-app-internal
-  namespace: {{ .Values.namespace }}
-  labels:
-    run: walkoff-app
-spec:
-  ports:
-  - port: 5556
-    name: zmq-results
-  - port: 5557
-    name: zmq-comm
-  selector:
-    run: walkoff-app
+        # command:
+        # - "sleep"
+        # - "36000"
