@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM alpine:3.6
+FROM alpine:edge
 
 WORKDIR /app
 
@@ -9,11 +9,13 @@ RUN apk --no-cache add \
     python3-dev \
     build-base \
     postgresql-dev \
-    bash \ 
+    bash \
     git \
     libffi \
     libffi-dev \
-    linux-headers 
+    librdkafka \
+    librdkafka-dev \
+    linux-headers
 
 # Setup Python Environment
 RUN  if [[ ! -e /usr/bin/python ]];        then ln -sf /usr/bin/python3 /usr/bin/python; fi \
@@ -29,20 +31,10 @@ RUN git clone -b k8s_development --single-branch --progress --verbose https://ww
 
 WORKDIR /app/walkoff
 
-# Set branch to before receiver separation for 1.0 proof of concept
-# RUN git reset --hard 0a779cfaeda15782877b67c89389b223378b2fbd
-
 RUN pip install redis
 RUN pip install psycopg2
 RUN python setup_walkoff.py
 
-COPY [ "./update_config.py", "/app/walkoff/" ]
-COPY [ "./common/app.py", "/app/walkoff/apps/HelloWorld" ]
-COPY [ "./common/dist", "/app/walkoff/walkoff/client/dist" ]
-COPY [ "./common/node_modules", "/app/walkoff/walkoff/client/node_modules" ]
-
-RUN python update_config.py
-
 EXPOSE 5556 5557
 
-CMD python start_workers.py -c data/walkoff.config
+CMD python start_workers.py

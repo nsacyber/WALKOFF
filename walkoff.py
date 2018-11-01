@@ -22,7 +22,7 @@ def run(args, app, host, port):
     print_banner()
     if not args.apponly:
         from start_workers import spawn_worker_processes
-        pids = spawn_worker_processes(walkoff.config.Config.NUMBER_PROCESSES, walkoff.config.Config)
+        pids = spawn_worker_processes()
     else:
         pids = None
 
