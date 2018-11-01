@@ -26,18 +26,18 @@ resources:
   execution_db:
     db_type: postgresql
     service_name: execution-db-postgresql
-    secret_name: walkoff-postgres-secret
+    secret_name: walkoff-postgres-execution-secret
     username: walkoff
     password_key: postgres-password
   walkoff_db:
     db_type: postgresql
     service_name: walkoff-db-postgresql
-    secret_name: walkoff-postgres-execution-secret
+    secret_name: walkoff-postgres-secret
     username: walkoff
     password_key: postgres-password
   redis:
     service_name: walkoff-redis-master
-    port: 
+    port: 6379 
     secret_name: walkoff-redis-secret
     password_key: redis-password
 images:
