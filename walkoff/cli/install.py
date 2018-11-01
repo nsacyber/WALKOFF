@@ -129,11 +129,13 @@ def online_install(ctx, values):
         k8s_api.create_namespaced_secret(namespace, redis_secret_obj)
 
     if not redis_hostname:
+        redis_hostname = 'walkoff-redis'
         helm_command(['install', 'stable/redis',
-                      '--name', 'walkoff-redis',
+                      '--name', redis_hostname,
                       '--values', 'walkoff/cli/setupfiles/redis-helm-values.yaml',
                       '--set', 'existingSecret={}'.format(redis_secret_name)],
                      tiller_namespace, namespace)
+        
 
     with open("walkoff/cli/setupfiles/redis-helm-values.yaml", 'r+') as f:
         try:
@@ -164,7 +166,7 @@ def online_install(ctx, values):
     with open("walkoff/cli/setupfiles/execution-postgres-helm-values.yaml", 'r+') as f:
         try:
             y = yaml.load(f)
-            y['existingSecret'] = redis_secret_name
+            y['existingSecret'] = execution_secret_name
             f.seek(0)
             f.truncate()
             yaml.dump(y, f, default_flow_style=False)
@@ -196,7 +198,7 @@ def online_install(ctx, values):
     with open("walkoff/cli/setupfiles/walkoff-postgres-helm-values.yaml", 'r+') as f:
         try:
             y = yaml.load(f)
-            y['existingSecret'] = redis_secret_name
+            y['existingSecret'] = walkoff_db_secret_name
             f.seek(0)
             f.truncate()
             yaml.dump(y, f, default_flow_style=False)
@@ -261,7 +263,7 @@ def online_install(ctx, values):
                 key = b64encode(byte_key).decode('ascii')
                 f.write(byte_key)
 
-        tls_secret = client.V1Secret(metadata={'name': 'walkoff-ca-key-pair'}, data={'tls.crt': crt, 'tls.key': key}, type='kubernetes.io/tls')
+        tls_secret = client.V1Secret(metadata={'name': 'walkoff-ca-key-pair'}, data={'ca.crt': crt, 'ca.key': key}, type='kubernetes.io/tls')
         k8s_api.create_namespaced_secret('default', tls_secret) 
 
     helm_command(['install', 'stable/cert-manager',
@@ -283,6 +285,21 @@ def online_install(ctx, values):
     kubectl_command(['apply', '-f', 'walkoff/cli/setupfiles/cert.yaml'],
                     namespace)
 
+    with open("walkoff/cli/setupfiles/walkoff-values.yaml", 'r+') as f:
+        try:
+            y = yaml.load(f)
+            y['namespace'] = namespace
+            y['resources']['redis']['service_name'] = redis_hostname
+            y['resources']['redis']['secret_name'] = redis_secret_name
+            y['resources']['execution_db']['service_name'] = execution_db_hostname
+            y['resources']['execution_db']['secret_name'] = execution_secret_name
+            y['resources']['walkoff_db']['service_name'] = walkoff_db_hostname
+            y['resources']['walkoff_db']['secret_name'] = walkoff_db_secret_name
+            f.seek(0)
+            f.truncate()
+            yaml.dump(y, f, default_flow_style=False)
+        except yaml.YAMLError as e:
+            click.echo("Error reading walkoff-values.yaml")
 
     helm_command(['install', './walkoff',
                   '--name', 'walkoff-deployment'],
