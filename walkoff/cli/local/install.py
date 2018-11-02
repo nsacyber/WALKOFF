@@ -158,7 +158,6 @@ def set_alembic_paths(walkoff_internal):
         config.readfp(f)
 
     config.set("walkoff", "sqlalchemy.url", format_db_path(Config.WALKOFF_DB_TYPE, Config.DB_PATH))
-    config.set("events", "sqlalchemy.url", format_db_path(Config.CASE_DB_TYPE, Config.CASE_DB_PATH))
     config.set("execution", "sqlalchemy.url", format_db_path(Config.EXECUTION_DB_TYPE, Config.EXECUTION_DB_PATH))
 
     with open(alembic_ini, "w") as f:

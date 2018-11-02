@@ -19,7 +19,7 @@ from .gencerts import gencerts
 @click.option(
     '-p',
     '--port',
-    help='The port to of a running Walkoff server. Defaults to setting contained in ./data/walkoff.config',
+    help='The port of a running Walkoff server. Defaults to setting contained in ./data/walkoff.config',
     type=int
 )
 def status(ctx, host, port):
