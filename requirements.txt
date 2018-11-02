@@ -34,3 +34,4 @@ msgpack
 prometheus_client
 werkzeug
 prometheus_flask_exporter
+requests
