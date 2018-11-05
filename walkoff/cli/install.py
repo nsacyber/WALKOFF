@@ -16,8 +16,8 @@ from OpenSSL import crypto, SSL
 @click.command()
 @click.pass_context
 @click.option('-a', '--archive', help='Archived installation for off-line installation')
-@click.option('-v', '--values', help='Path to a Helm chart values YAML to use in the installation')
-def install(ctx, archive, values):
+# @click.option('-v', '--values', help='Path to a Helm chart values YAML to use in the installation')
+def install(ctx, archive):
     """ Installs Walkoff in a kubernetes cluster.
 
     If installing on kubernetes, Walkoff will use Helm to install itself onto the kubernetes cluster
@@ -25,12 +25,12 @@ def install(ctx, archive, values):
     #TODO Check if values exists
     #install pip from get-pip if necessary python get-pip.py --no-index --find-links=/local/copies
     if archive:
-        offline_install(ctx, values)
+        offline_install(ctx)
     else:
-        online_install(ctx, values)
+        online_install(ctx)
 
 
-def offline_install(ctx, values):
+def offline_install(ctx):
     #TODO: Offline install must execute separate script to install wlkoffctl
     if not find_executable('helm'):
         install_helm_offline(ctx)
@@ -38,9 +38,9 @@ def offline_install(ctx, values):
     add_charts_offline()
     install_docker_repository()
     populate_docker_repository()
-    if not values:
-        values = get_chart_configuration()
-    install_walkoff(values)
+    # if not values:
+        # values = get_chart_configuration()
+    # install_walkoff(values)
 
 
 def helm_command(args, tiller, namespace):
@@ -50,6 +50,8 @@ def helm_command(args, tiller, namespace):
         print(r.decode('utf-8'))
     except subprocess.CalledProcessError as e:
         click.echo('Helm returned error code {}: {}'.format(e.returncode, e.output.decode('utf-8')))
+        click.echo('You may want to use the uninstall command to roll back components that we installed before trying again.')
+        exit(1)
 
 
 def kubectl_command(args, namespace):
@@ -61,9 +63,11 @@ def kubectl_command(args, namespace):
         print(r.decode('utf-8'))
     except subprocess.CalledProcessError as e:
         click.echo('Kubectl returned error code {}: {}'.format(e.returncode, e.output.decode('utf-8')))
+        click.echo('You may want to use the uninstall command to roll back components that we installed before trying again.')
+        exit(1)
 
-
-def online_install(ctx, values):
+@click.pass_context
+def online_install(ctx):
     click.echo('Installing WALKOFF to Kubernetes cluster. Online install.')
     k8s_api = None
     k8s_custom_api = None
@@ -151,6 +155,7 @@ def online_install(ctx, values):
     execution_db_hostname = None
     if click.confirm('Do you have an existing PostgreSQL database to store WALKOFF execution data in?'):
         execution_db_hostname = click.prompt('Enter the database hostname (if it is not in the same Kubernetes namespace as WALKOFF, enter a fully qualified domain name)')
+        execution_db_username = click.prompt('Enter a username that is able to create/read/write/update databases')
         if click.confirm("Is the PostgreSQL password already stored in a Kubernetes secret?"):
             execution_secret_name = click.prompt('Available secrets: {}\nEnter the name of the secret the PostgreSQL password is stored in with a key of "postgres-password" (leave blank for none): ', default="")
             if execution_secret_name not in existing_secrets:
@@ -159,6 +164,7 @@ def online_install(ctx, values):
 
     if not execution_secret_name:
         execution_secret_name = "walkoff-postgres-execution-secret"
+        execution_db_username = click.prompt('Enter a username to create')
         new_pass = click.prompt('Enter a password for the PostgreSQL instance', hide_input=True, confirmation_prompt=True)
         execution_secret_obj = client.V1Secret(metadata={'name': execution_secret_name}, data={'postgres-password': b64encode(new_pass.encode('utf-8')).decode('utf-8')})
         k8s_api.create_namespaced_secret(namespace, execution_secret_obj)
@@ -183,6 +189,7 @@ def online_install(ctx, values):
     walkoff_db_hostname = None
     if click.confirm('Do you have an existing PostgreSQL database to store WALKOFF application data in? (This can be the same or different as the previous)'):
         walkoff_db_hostname = click.prompt('Enter the database hostname (if it is not in the same Kubernetes namespace as WALKOFF, enter a fully qualified domain name)')
+        walkoff_db_username = click.prompt('Enter a username that is able to create/read/write/update databases')
         if click.confirm("Is the PostgreSQL password already stored in a Kubernetes secret?"):
             walkoff_db_secret_name = click.prompt('Available secrets: {}\nEnter the name of the secret the PostgreSQL password is stored in with a key of "postgres-password" (leave blank for none): ', default="")
             if walkoff_db_secret_name not in existing_secrets:
@@ -191,6 +198,7 @@ def online_install(ctx, values):
 
     if not walkoff_db_secret_name:
         walkoff_db_secret_name = "walkoff-postgres-secret"
+        walkoff_db_username = click.prompt('Enter a username to create')
         new_pass = click.prompt('Enter a password for the PostgreSQL instance', hide_input=True, confirmation_prompt=True)
         walkoff_db_secret_obj = client.V1Secret(metadata={'name': walkoff_db_secret_name}, data={'postgres-password': b64encode(new_pass.encode('utf-8')).decode('utf-8')})
         k8s_api.create_namespaced_secret(namespace, walkoff_db_secret_obj)
@@ -270,6 +278,16 @@ def online_install(ctx, values):
                  '--name', 'walkoff-cert-manager'],
                  tiller_namespace, namespace)
                 
+    with open("walkoff/cli/setupfiles/cert-issuer.yaml", 'r+') as f:
+        try:
+            y = yaml.load(f)
+            y['spec']['ca']['secretName'] = ca_secret_name
+            f.seek(0)
+            f.truncate()
+            yaml.dump(y, f, default_flow_style=False)
+        except yaml.YAMLError as e:
+            click.echo("Error reading cert-issuer.yaml")
+
     with open("walkoff/cli/setupfiles/cert.yaml", 'r+') as f:
         try:
             y = yaml.load(f)
@@ -293,8 +311,10 @@ def online_install(ctx, values):
             y['resources']['redis']['secret_name'] = redis_secret_name
             y['resources']['execution_db']['service_name'] = execution_db_hostname
             y['resources']['execution_db']['secret_name'] = execution_secret_name
+            y['resources']['execution_db']['username'] = execution_db_username
             y['resources']['walkoff_db']['service_name'] = walkoff_db_hostname
             y['resources']['walkoff_db']['secret_name'] = walkoff_db_secret_name
+            y['resources']['walkoff_db']['username'] = walkoff_db_username
             f.seek(0)
             f.truncate()
             yaml.dump(y, f, default_flow_style=False)
@@ -305,11 +325,49 @@ def online_install(ctx, values):
                   '--name', 'walkoff-deployment'],
                   tiller_namespace, namespace)
                  
-    helm_command(['install', 'stable/docker-registry',
-                  '--name', 'walkoff-docker-registry'],
-                  tiller_namespace, namespace)
+    # helm_command(['install', 'stable/docker-registry',
+    #               '--name', 'walkoff-docker-registry'],
+    #               tiller_namespace, namespace)
 
 # https://github.com/helm/charts/blob/master/stable/docker-registry/README.md
+
+def uninstall(ctx):
+
+    if click.confirm("Are you sure you wish to uninstall WALKOFF from your Kubernetes cluster? (This will only uninstall components that WALKOFF created through this installer.)"):
+        k8s_api = None
+        try:
+            config_dir = os.environ.get('KUBECONFIG', os.path.join(os.path.expanduser("~"), ".kube", "config"))
+            config_dir = click.prompt("Enter location of kubernetes config", 
+                                    default=config_dir)
+
+            contexts, current = config.list_kube_config_contexts(config_file=config_dir)
+            contexts = [context["name"] for context in contexts]
+            current = current["name"]
+
+            context = click.prompt("Available contexts: {}\nEnter context to install WALKOFF to (current/default: {}): ".format(contexts, current), 
+                                default=current)
+
+            config.load_kube_config(config_file=config_dir, context=context)
+            k8s_api = client.CoreV1Api()
+        except IOError as e:
+            print("Could not open config: {}".format(e))
+
+        namespaces = k8s_api.list_namespace()
+        namespaces = [ns.metadata.name for ns in namespaces.items]
+        namespace = click.prompt("Available namespaces: {}\nEnter namespace to uninstall WALKOFF from".format(namespaces),
+                                default="default")
+
+        tiller_namespace = click.prompt('Enter the namespace your Tiller service resides in',
+                                default='kube-system')
+                             
+        kubectl_command(['delete', 'secrets', 'walkoff-redis-secret', 'walkoff-zmq-private-keys', 'walkoff-zmq-public-keys', 'walkoff-postgres-execution-secret', 'walkoff-postgres-secret', 'walkoff-ca-key-pair'], namespace)
+        kubectl_command(['delete', 'pvc', 'execution-db-postgresql', 'redis-data-walkoff-redis-master-0', 'walkoff-db-postgresql'], namespace)
+        kubectl_command(['delete', 'crd', 'certificates.certmanager.k8s.io', 'clusterissuers.certmanager.k8s.io', 'issuers.certmanager.k8s.io'], namespace)
+        helm_command(['del', '--purge', 'walkoff-redis'], tiller_namespace, namespace)
+        helm_command(['del', '--purge', 'walkoff-db'], tiller_namespace, namespace)
+        helm_command(['del', '--purge', 'execution-db'], tiller_namespace, namespace)
+        helm_command(['del', '--purge', 'walkoff-cert-manager'], tiller_namespace, namespace)
+        # helm_command(['del', '--purge', 'walkoff-docker-registry'], tiller_namespace, namespace)
 
 
 def install_helm_online(ctx):

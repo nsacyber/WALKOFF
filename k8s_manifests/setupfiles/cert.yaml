@@ -8,9 +8,9 @@ spec:
   issuerRef:
     name: walkoff-ca-issuer
     kind: Issuer
-  commonName: example.com
+  commonName: walkoff
   organization:
   - WALKOFF
-  dnsNames:
-  - example.com
-  - www.example.com
+  # dnsNames:
+  # - example.com
+  # - www.example.com

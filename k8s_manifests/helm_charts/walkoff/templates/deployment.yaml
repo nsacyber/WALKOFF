@@ -108,8 +108,8 @@ spec:
             value: "./certs/private_keys"
           - name: ZMQ_PUBLIC_KEYS_PATH
             value: "./certs/public_keys"
-          - name: SQLALCHEMY_DATABASE_URI
-            value: "{{ .Values.resources.walkoff_db.db_type }}://walkoff:walkoff@{{ .Values.resources.walkoff_db.service_name }}/walkoff"
+          # - name: SQLALCHEMY_DATABASE_URI
+          #   value: "{{ .Values.resources.walkoff_db.db_type }}://walkoff:walkoff@{{ .Values.resources.walkoff_db.service_name }}/walkoff"
           - name: NUMBER_PROCESSES
             value: "1"
         # command:
@@ -213,8 +213,8 @@ spec:
             value: "./certs/private_keys"
           - name: ZMQ_PUBLIC_KEYS_PATH
             value: "./certs/public_keys"
-          - name: SQLALCHEMY_DATABASE_URI
-            value: "{{ .Values.resources.walkoff_db.db_type }}://walkoff:walkoff@{{ .Values.resources.walkoff_db.service_name }}/walkoff"
+          # - name: SQLALCHEMY_DATABASE_URI
+          #   value: "{{ .Values.resources.walkoff_db.db_type }}://walkoff:walkoff@{{ .Values.resources.walkoff_db.service_name }}/walkoff"
           - name: NUMBER_PROCESSES
             value: "1"
         ports:

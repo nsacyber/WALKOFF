@@ -220,6 +220,9 @@ class Config(object):
                 else:
                     setattr(cls, field, var_type(os.environ.get(field)))
 
+        cls.SQLALCHEMY_DATABASE_URI = format_db_path(cls.WALKOFF_DB_TYPE, cls.DB_PATH, 'WALKOFF_DB_USERNAME',
+                                                     'WALKOFF_DB_PASSWORD', cls.WALKOFF_DB_HOST)
+
     @classmethod
     def read_and_set_zmq_keys(cls):
         server_private_file = os.path.join(cls.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
