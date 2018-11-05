@@ -106,15 +106,20 @@ def set_walkoff_external(ctx, walkoff_internal):
 
     arch_path = os.path.join(walkoff_internal, "walkoff_external")
 
-    if os.name == 'posix':
-        arch_path += ".tar.gz"
-        archf = tarfile.open(arch_path)
-
-    elif os.name == 'nt':
-        arch_path += ".zip"
-        archf = zipfile.ZipFile(arch_path)
-    else:
-        raise ValueError('Unsupported OS {}'.format(os.name))
+    try:
+        if os.name == 'posix':
+            arch_path += ".tar.gz"
+            archf = tarfile.open(arch_path)
+        elif os.name == 'nt':
+            arch_path += ".zip"
+            archf = zipfile.ZipFile(arch_path)
+        else:
+            raise ValueError('Unsupported OS {}'.format(os.name))
+    except IOError:
+        click.echo(
+            "WALKOFF installation file does not exist. Please make sure the file exists at {} and try again.".format(
+                arch_path))
+        ctx.exit(1)
 
     archf.extractall(external_path)
 
