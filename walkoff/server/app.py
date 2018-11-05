@@ -1,4 +1,5 @@
 import logging
+import os
 
 import connexion
 from flask import Blueprint
@@ -86,7 +87,13 @@ def create_app(interface_app=False):
     _app.jinja_loader = FileSystemLoader(['walkoff/templates'])
     _app.config.from_object(walkoff.config.Config)
 
-    db.init_app(_app)
+    try:
+        db.init_app(_app)
+    except Exception as e:
+        logger.error("Error initializing walkoff database. Please make sure all settings are properly configured in the"
+                     "config file, and that all necessary environment variables are set correctly."
+                     "Error message: {}".format(str(e)))
+        os._exit(1)
 
     if not interface_app:
         jwt.init_app(_app)

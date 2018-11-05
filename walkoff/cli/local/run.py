@@ -2,7 +2,6 @@ import click
 
 import logging
 import os
-import sys
 import traceback
 
 from gevent import monkey
@@ -57,7 +56,6 @@ def run(ctx, host, port, config):
     except KeyboardInterrupt:
         logger.info('Caught KeyboardInterrupt! Please wait a few seconds for WALKOFF to shutdown.')
     except Exception as e:
-        exc_type, exc_value, exc_traceback = sys.exc_info()
         traceback.print_exc()
         exit_code = 1
     finally:

@@ -1,15 +1,17 @@
-import click
-from distutils.spawn import find_executable
-import yaml
-import os
-import subprocess
-from uuid import uuid4
-import shutil
-import requests
-import tarfile
 import json
+import os
+import shutil
+import subprocess
+import tarfile
+from distutils.spawn import find_executable
+from uuid import uuid4
+
+import click
+import requests
+import yaml
 
 walkoff_charts_repo = 'https://nsacyber.github.io/Walkoff/charts'
+
 
 @click.group()
 @click.option('-o', '--out', help='Path to the output directory')
@@ -19,10 +21,10 @@ def package(ctx, out):
     pass
 
 
-
 @package.command(name='all')
 @click.option('--platform', default='linux_x86_64', help='Target platform for walkoffctl')
-@click.option('--python-version', help='Python version to target for walkoffctl', type=click.Choice(['2', '3']), default='3')
+@click.option('--python-version', help='Python version to target for walkoffctl', type=click.Choice(['2', '3']),
+              default='3')
 @click.option('--walkoff-version', default='latest')
 @click.option('--helm-archive', help='Path to Helm archive', required=True)
 @click.pass_context
@@ -33,7 +35,7 @@ def package_all(ctx, platform, python_version, walkoff_version, images, helm_arc
     if python_version == '2':
         python_version = '27'
     os.makedirs(out)
-    #TODO: ADD BOOTSTRAPPED SCRIPT TO INSTALL PIP AND WALKOFFCTL
+    # TODO: ADD BOOTSTRAPPED SCRIPT TO INSTALL PIP AND WALKOFFCTL
     download_get_pip(out)
     download_walkoff_and_deps(out, python_version, platform)
     verify_helm(ctx)
@@ -75,7 +77,7 @@ def download_charts(base_dir, walkoff_version):
     cmd += ' walkoff walkoff'
     call(cmd)
     download_recursive(base_dir, 'walkoff', walkoff_charts_repo)
-    #TODO: Turn the charts directory into a repo with helm repo index
+    # TODO: Turn the charts directory into a repo with helm repo index
 
 
 def download_docker_images(src, base_dir):
@@ -163,7 +165,8 @@ def download_new_charts(existing, repos, deps, base_dir):
         if name not in existing:
             repo = get_repo_name(repos, dep['repository'])
             out_dir = os.path.join(base_dir, name)
-            command = 'helm fetch --untar --untardir {} --version {} {}/{}'.format(out_dir, dep['version'], repos[repo], name)
+            command = 'helm fetch --untar --untardir {} --version {} {}/{}'.format(out_dir, dep['version'], repos[repo],
+                                                                                   name)
             print(command)
             call(command)
             new_charts.append((name, repo))

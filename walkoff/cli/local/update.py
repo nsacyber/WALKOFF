@@ -6,7 +6,6 @@ import subprocess
 import time
 from git import Repo
 
-
 from .util import clean_pycache
 
 
@@ -119,7 +118,7 @@ def migrate_databases():
                     subprocess.check_output(["alembic", "--name", name, "stamp", "dd74ff55c643"],
                                             stderr=subprocess.STDOUT, universal_newlines=True)
                 click.echo(subprocess.check_output(["alembic", "--name", name, "upgrade", "head"],
-                                              stderr=subprocess.STDOUT, universal_newlines=True))
+                                                   stderr=subprocess.STDOUT, universal_newlines=True))
         except subprocess.CalledProcessError:
             click.echo("Alembic encountered an error.")
             click.echo("Try manually running 'alembic --name {} upgrade head".format(name))
@@ -131,4 +130,3 @@ def migrate_workflows(version):
     from walkoff.migrations.migrate_workflows import convert_playbooks
     click.echo("Updating workflows...")
     convert_playbooks(version)
-
