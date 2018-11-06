@@ -32,12 +32,12 @@ def install(ctx):
 
 
 @install.group()
-@click.option('-a', '--all', is_flag=True)
+@click.option('-a', '--all', is_flag=True, help='Install dependencies for all apps and interfaces')
 @click.pass_context
 def deps(ctx, all):
     if all:
-        apps_path = ctx.obj['config'].APPS_PATH
-        interfaces_path = ctx.obj['config'].INTERFACES_PATH
+        apps_path = ctx.obj['config'].APPS_PATH if 'config' in ctx.obj else Config.APPS_PATH
+        interfaces_path = ctx.obj['config'].INTERFACES_PATH if 'config' in ctx.obj else Config.INTERFACES_PATH
         _install_all_apps_interfaces(apps_path, interfaces_path)
 
 
@@ -52,7 +52,7 @@ def _install_all_apps_interfaces(apps_path, interfaces_path):
 @click.option('-s', '--select', help='Specify a comma-separated list of apps')
 @click.pass_context
 def apps(ctx, select):
-    apps_path = ctx.obj['config'].APPS_PATH
+    apps_path = ctx.obj['config'].APPS_PATH if 'config' in ctx.obj else Config.APPS_PATH
     apps_ = list_apps(apps_path) if not select else select.split(',')
     install_apps(apps_, apps_path)
 
@@ -62,7 +62,7 @@ def apps(ctx, select):
 @click.pass_context
 def interfaces(ctx, select):
     click.echo('Installing interfaces with {}'.format(select))
-    interfaces_path = ctx.obj['config'].INTERFACES_PATH
+    interfaces_path = ctx.obj['config'].INTERFACES_PATH if 'config' in ctx.obj else Config.INTERFACES_PATH
     interfaces_ = list_interfaces(interfaces_path) if not select else select
     install_interfaces(interfaces_, interfaces_path)
 
