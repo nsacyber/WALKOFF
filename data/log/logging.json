@@ -35,7 +35,7 @@
       "backupCount": 20, 
       "class": "logging.handlers.RotatingFileHandler", 
       "encoding": "utf8", 
-      "filename": "/home/corey/WALKOFF/data/log/log.log", 
+      "filename": "data/log/log.log", 
       "formatter": "simple", 
       "level": "NOTSET", 
       "maxBytes": 10485760
@@ -44,7 +44,7 @@
       "backupCount": 20, 
       "class": "logging.handlers.RotatingFileHandler", 
       "encoding": "utf8", 
-      "filename": "/home/corey/WALKOFF/data/log/log.log", 
+      "filename": "data/log/log.log", 
       "formatter": "simple_with_proc", 
       "level": "NOTSET", 
       "maxBytes": 10485760
