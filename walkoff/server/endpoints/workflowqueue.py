@@ -2,7 +2,7 @@ from collections import OrderedDict
 
 from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_claims
-from sqlalchemy import exists
+from sqlalchemy import exists, and_, or_
 
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.workflow import Workflow
@@ -12,6 +12,7 @@ from walkoff.server.decorators import with_resource_factory, validate_resource_e
 from walkoff.server.problem import Problem
 from walkoff.server.returncodes import *
 from walkoff.executiondb.environment_variable import EnvironmentVariable
+import datetime
 
 
 def does_workflow_exist(workflow_id):
@@ -55,8 +56,8 @@ def get_all_workflow_status():
 
         ret = current_app.running_context.execution_db.session.query(WorkflowStatus). \
             order_by(WorkflowStatus.status, WorkflowStatus.started_at.desc()). \
-            limit(current_app.config['ITEMS_PER_PAGE']).\
-            offset((page-1) * current_app.config['ITEMS_PER_PAGE'])
+            limit(current_app.config['ITEMS_PER_PAGE']). \
+            offset((page - 1) * current_app.config['ITEMS_PER_PAGE'])
 
         ret = [workflow_status.as_json() for workflow_status in ret]
         return ret, SUCCESS
@@ -136,6 +137,27 @@ def control_workflow():
             current_app.running_context.executor.abort_workflow(execution_id,
                                                                 user=get_jwt_claims().get('username', None))
 
+        return None, NO_CONTENT
+
+    return __func()
+
+
+def clear_workflow_status(all=False, days=30):
+    @jwt_required
+    @permissions_accepted_for_resources(ResourcePermissions('playbooks', ['read']))
+    def __func():
+        if all:
+            current_app.running_context.execution_db.session.query(WorkflowStatus).filter(or_(
+                WorkflowStatus.status == WorkflowStatusEnum.aborted,
+                WorkflowStatus.status == WorkflowStatusEnum.completed
+            )).delete()
+        elif days > 0:
+            delete_date = datetime.datetime.today() - datetime.timedelta(days=days)
+            current_app.running_context.execution_db.session.query(WorkflowStatus).filter(and_(
+                WorkflowStatus.status in [WorkflowStatusEnum.aborted, WorkflowStatusEnum.completed],
+                WorkflowStatus.completed_at <= delete_date
+            )).delete()
+        current_app.running_context.execution_db.session.commit()
         return None, NO_CONTENT
 
     return __func()

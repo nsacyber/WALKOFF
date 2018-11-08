@@ -350,3 +350,55 @@ class TestWorkflowStatus(ServerTestCase):
 
         response = self.get_with_status_check('/api/workflowqueue?page=3', headers=self.headers)
         self.assertEqual(len(response), 0)
+
+    def test_clear_all_workflow_status(self):
+        for i in range(10):
+            wf_exec_id = uuid4()
+            wf_id = uuid4()
+            workflow_status = WorkflowStatus(wf_exec_id, wf_id, 'test')
+            workflow_status.running()
+
+            action_exec_id = uuid4()
+            action_id = uuid4()
+            action_status = ActionStatus(action_exec_id, action_id, 'name', 'test_app', 'test_action')
+            workflow_status._action_statuses.append(action_status)
+
+            workflow_status.completed()
+
+            self.app.running_context.execution_db.session.add(workflow_status)
+            self.app.running_context.execution_db.session.commit()
+
+        self.delete_with_status_check('/api/workflowqueue/cleardb?all=true', headers=self.headers,
+                                      status_code=NO_CONTENT)
+
+        wf_stats = self.app.running_context.execution_db.session.query(WorkflowStatus).all()
+        self.assertEqual(len(wf_stats), 0)
+        action_stats = self.app.running_context.execution_db.session.query(ActionStatus).all()
+        for a in action_stats:
+            print(a.__dict__)
+        self.assertEqual(len(action_stats), 0)
+
+    # def test_clear_workflow_status_by_days(self):
+    #     for i in range(10):
+    #         wf_exec_id = uuid4()
+    #         wf_id = uuid4()
+    #         workflow_status = WorkflowStatus(wf_exec_id, wf_id, 'test')
+    #         workflow_status.running()
+    #
+    #         action_exec_id = uuid4()
+    #         action_id = uuid4()
+    #         action_status = ActionStatus(action_exec_id, action_id, 'name', 'test_app', 'test_action')
+    #         workflow_status._action_statuses.append(action_status)
+    #
+    #         workflow_status.completed()
+    #
+    #         self.app.running_context.execution_db.session.add(workflow_status)
+    #         self.app.running_context.execution_db.session.commit()
+    #
+    #     self.delete_with_status_check('/api/workflowqueue/cleardb?all=true', headers=self.headers,
+    #                                   status_code=NO_CONTENT)
+    #
+    #     wf_stats = self.app.running_context.execution_db.session.query(WorkflowStatus).all()
+    #     self.assertEqual(len(wf_stats), 0)
+    #     action_stats = self.app.running_context.execution_db.session.query(ActionStatus).all()
+    #     self.assertEqual(len(action_stats), 0)

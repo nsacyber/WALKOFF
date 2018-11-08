@@ -102,3 +102,26 @@
         description: Object does not exist.
         schema:
           $ref: '#/definitions/Error'
+/workflowqueue/cleardb:
+  parameters:
+    - name: all
+      in: query
+      description: Whether or not to delete all workflow statuses, defaults to false
+      required: false
+      type: boolean
+    - name: days
+      in: query
+      description: The number of days of workflow statuses to keep
+      required: false
+      type: integer
+  delete:
+    tags:
+      - WorkflowQueue
+    summary: Removes workflow statuses from the execution database. It will delete all of them or ones older than a certain number of days
+    description: ''
+    operationId: walkoff.server.endpoints.workflowqueue.clear_workflow_status
+    produces:
+      - application/json
+    responses:
+      204:
+        description: Success
