@@ -60,7 +60,6 @@ def handle_generic_server_error(e):
 
 @root_page.before_app_first_request
 def create_user():
-    print("Creating users before first request")
     from walkoff.serverdb import add_user, User, Role, initialize_default_resources_admin, \
         initialize_default_resources_guest
     from sqlalchemy_utils import database_exists, create_database
@@ -74,11 +73,9 @@ def create_user():
     initialize_default_resources_guest()
 
     # Setup admin user
-    print("Setting up admin user")
     admin_role = Role.query.filter_by(id=1).first()
     admin_user = User.query.filter_by(username="admin").first()
     if not admin_user:
-        print("Creating admin user")
         add_user(username='admin', password='admin', roles=[1])
     elif admin_role not in admin_user.roles:
         admin_user.roles.append(admin_role)
