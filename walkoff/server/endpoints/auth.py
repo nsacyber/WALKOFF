@@ -14,6 +14,7 @@ user_deactivated_problem = Problem(UNAUTHORIZED_ERROR, token_problem_title, 'Use
 
 
 def _authenticate_and_grant_tokens(json_in, with_refresh=False):
+    print("are we even in here?")
     username = json_in.get('username', None)
     password = json_in.get('password', None)
     if not (username and password):
@@ -41,10 +42,12 @@ def _authenticate_and_grant_tokens(json_in, with_refresh=False):
 
 
 def login():
+    print("in login")
     return _authenticate_and_grant_tokens(request.get_json(), with_refresh=True)
 
 
 def fresh_login():
+    print("in fresh login")
     return _authenticate_and_grant_tokens(request.get_json(), with_refresh=False)
 
 
