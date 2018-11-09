@@ -24,3 +24,4 @@ pynacl
 alembic
 healthcheck
 psycopg2-binary
+swagger-spec-validator
