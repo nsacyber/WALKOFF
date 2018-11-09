@@ -35,3 +35,4 @@ prometheus_client
 werkzeug
 prometheus_flask_exporter
 requests
+swagger_spec_validator
