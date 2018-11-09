@@ -1,5 +1,4 @@
 import logging
-from uuid import UUID
 
 from sqlalchemy import Column, String, ForeignKey, UniqueConstraint, Boolean, event
 from sqlalchemy.orm import relationship
@@ -14,14 +13,14 @@ logger = logging.getLogger(__name__)
 
 class Workflow(ExecutionElement, Execution_Base):
     __tablename__ = 'workflow'
-    playbook_id = Column(UUIDType(binary=False), ForeignKey('playbook.id'))
+    playbook_id = Column(UUIDType(binary=False), ForeignKey('playbook.id', ondelete='CASCADE'))
     name = Column(String(80), nullable=False)
-    actions = relationship('Action', cascade='all, delete-orphan')
-    branches = relationship('Branch', cascade='all, delete-orphan')
+    actions = relationship('Action', cascade='all, delete-orphan', passive_deletes=True)
+    branches = relationship('Branch', cascade='all, delete-orphan', passive_deletes=True)
     start = Column(UUIDType(binary=False))
     is_valid = Column(Boolean, default=False)
     children = ('actions', 'branches')
-    environment_variables = relationship('EnvironmentVariable', cascade='all, delete-orphan')
+    environment_variables = relationship('EnvironmentVariable', cascade='all, delete-orphan', passive_deletes=True)
     __table_args__ = (UniqueConstraint('playbook_id', 'name', name='_playbook_workflow'),)
 
     def __init__(self, name, start, id=None, actions=None, branches=None, environment_variables=None):

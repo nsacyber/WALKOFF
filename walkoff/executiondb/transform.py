@@ -20,10 +20,10 @@ logger = logging.getLogger(__name__)
 
 class Transform(ExecutionElement, Execution_Base):
     __tablename__ = 'transform'
-    condition_id = Column(UUIDType(binary=False), ForeignKey('condition.id'))
+    condition_id = Column(UUIDType(binary=False), ForeignKey('condition.id', ondelete='CASCADE'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
-    arguments = relationship('Argument', cascade='all, delete, delete-orphan')
+    arguments = relationship('Argument', cascade='all, delete, delete-orphan', passive_deletes=True)
     children = ('arguments',)
 
     def __init__(self, app_name, action_name, id=None, arguments=None):

@@ -55,10 +55,7 @@ class TestConfigurationServer(ServerTestCase):
                 "number_threads_per_process": 5,
                 "number_processes": 10,
                 "access_token_duration": 20,
-                "refresh_token_duration": 35,
-                "zmq_results_address": "127.0.0.1:1000",
-                "zmq_communication_address": "127.0.0.1:1001",
-                "cache": {"type": "disk", "directory": "abc", "shards": 10, "timeout": 30, "retry": False}}
+                "refresh_token_duration": 35}
 
         response = send_func('/api/configuration', headers=self.headers, data=json.dumps(data),
                              content_type='application/json')
@@ -69,15 +66,11 @@ class TestConfigurationServer(ServerTestCase):
                     walkoff.config.Config.PORT: 1100,
                     walkoff.config.Config.WALKOFF_DB_TYPE: "postgresql",
                     walkoff.config.Config.NUMBER_THREADS_PER_PROCESS: 5,
-                    walkoff.config.Config.NUMBER_PROCESSES: 10,
-                    walkoff.config.Config.ZMQ_RESULTS_ADDRESS: "127.0.0.1:1000",
-                    walkoff.config.Config.ZMQ_COMMUNICATION_ADDRESS: "127.0.0.1:1001"}
+                    walkoff.config.Config.NUMBER_PROCESSES: 10}
 
         for actual, expected_ in expected.items():
             self.assertEqual(actual, expected_)
 
-        self.assertDictEqual(walkoff.config.Config.CACHE,
-                             {"type": "disk", "directory": "abc", "shards": 10, "timeout": 30, "retry": False})
         self.assertEqual(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds, 20 * 60)
         self.assertEqual(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days, 35)
 

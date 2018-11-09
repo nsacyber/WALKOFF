@@ -35,10 +35,7 @@ class App(Execution_Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(25), nullable=False)
-    devices = relationship('Device',
-                           cascade='all, delete-orphan',
-                           backref='post',
-                           lazy='dynamic')
+    devices = relationship('Device', cascade='all, delete-orphan', backref='post', lazy='dynamic', passive_deletes=True)
 
     def __init__(self, name, devices=None):
         self.name = name
@@ -139,10 +136,11 @@ class Device(Execution_Base):
     name = Column(String(25), nullable=False)
     type = Column(String(25), nullable=False)
     description = Column(String(255), default='')
-    plaintext_fields = relationship('DeviceField', cascade='all, delete-orphan', backref='post', lazy='dynamic')
+    plaintext_fields = relationship('DeviceField', cascade='all, delete-orphan', backref='post', lazy='dynamic',
+                                    passive_deletes=True)
     encrypted_fields = relationship('EncryptedDeviceField', cascade='all, delete-orphan', backref='post',
-                                    lazy='dynamic')
-    app_id = Column(Integer, ForeignKey('app.id'))
+                                    lazy='dynamic', passive_deletes=True)
+    app_id = Column(Integer, ForeignKey('app.id', ondelete='CASCADE'))
     created_at = Column(DateTime, default=func.current_timestamp())
     modified_at = Column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
 
@@ -281,10 +279,11 @@ class DeviceFieldMixin(object):
     id = Column(Integer, primary_key=True)
     name = Column(String(25), nullable=False)
     type = Column(Enum(*allowed_device_field_types, name='allowed_device_field_types'))
+    # _device_id = Column(Integer, ForeignKey('Device.id', ondelete='CASCADE'))
 
     @declared_attr
     def device_id(cls):
-        return Column(Integer, ForeignKey('device.id'))
+        return Column(Integer, ForeignKey('device.id', ondelete='CASCADE'))
 
 
 class DeviceField(Execution_Base, DeviceFieldMixin):

@@ -19,15 +19,16 @@ logger = logging.getLogger(__name__)
 
 class Action(ExecutionElement, Execution_Base):
     __tablename__ = 'action'
-    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id'))
+    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id', ondelete='CASCADE'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     name = Column(String(80), nullable=False)
     device_id = relationship('Argument', uselist=False, cascade='all, delete-orphan',
-                             foreign_keys=[Argument.action_device_id])
-    arguments = relationship('Argument', cascade='all, delete, delete-orphan', foreign_keys=[Argument.action_id])
-    trigger = relationship('ConditionalExpression', cascade='all, delete-orphan', uselist=False)
-    position = relationship('Position', uselist=False, cascade='all, delete-orphan')
+                             foreign_keys=[Argument.action_device_id], passive_deletes=True)
+    arguments = relationship('Argument', cascade='all, delete, delete-orphan', foreign_keys=[Argument.action_id],
+                             passive_deletes=True)
+    trigger = relationship('ConditionalExpression', cascade='all, delete-orphan', uselist=False, passive_deletes=True)
+    position = relationship('Position', uselist=False, cascade='all, delete-orphan', passive_deletes=True)
     children = ('arguments', 'trigger')
 
     def __init__(self, app_name, action_name, name, device_id=None, id=None, arguments=None, trigger=None,

@@ -18,15 +18,15 @@ valid_operators = ('and', 'or', 'xor')
 class ConditionalExpression(ExecutionElement, Execution_Base):
     __tablename__ = 'conditional_expression'
     id = Column(UUIDType(binary=False), primary_key=True, default=uuid4)
-    action_id = Column(UUIDType(binary=False), ForeignKey('action.id'))
-    branch_id = Column(UUIDType(binary=False), ForeignKey('branch.id'))
-    parent_id = Column(UUIDType(binary=False), ForeignKey(id))
+    action_id = Column(UUIDType(binary=False), ForeignKey('action.id', ondelete='CASCADE'))
+    branch_id = Column(UUIDType(binary=False), ForeignKey('branch.id', ondelete='CASCADE'))
+    parent_id = Column(UUIDType(binary=False), ForeignKey(id, ondelete='CASCADE'))
     operator = Column(Enum(*valid_operators, name='operator_types'), nullable=False)
     is_negated = Column(Boolean, default=False)
     child_expressions = relationship('ConditionalExpression',
                                      cascade='all, delete-orphan',
-                                     backref=backref('parent', remote_side=id))
-    conditions = relationship('Condition', cascade='all, delete-orphan')
+                                     backref=backref('parent', remote_side=id), passive_deletes=True)
+    conditions = relationship('Condition', cascade='all, delete-orphan', passive_deletes=True)
     children = ('child_expressions', 'conditions')
 
     def __init__(self, operator='and', id=None, is_negated=False, child_expressions=None, conditions=None):

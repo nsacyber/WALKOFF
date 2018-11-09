@@ -8,7 +8,8 @@ from walkoff.executiondb.executionelement import ExecutionElement
 class Playbook(ExecutionElement, Execution_Base):
     __tablename__ = 'playbook'
     name = Column(String(255), nullable=False, unique=True)
-    workflows = relationship('Workflow', backref=backref('playbook'), cascade='all, delete-orphan')
+    workflows = relationship('Workflow', backref=backref('playbook'), cascade='all, delete-orphan',
+                             passive_deletes=True)
 
     def __init__(self, name, workflows=None, id=None):
         """Creates a Playbook object.

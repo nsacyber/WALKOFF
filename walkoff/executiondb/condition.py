@@ -19,12 +19,12 @@ logger = logging.getLogger(__name__)
 
 class Condition(ExecutionElement, executiondb.Execution_Base):
     __tablename__ = 'condition'
-    conditional_expression_id = Column(UUIDType(binary=False), ForeignKey('conditional_expression.id'))
+    conditional_expression_id = Column(UUIDType(binary=False), ForeignKey('conditional_expression.id', ondelete='CASCADE'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     is_negated = Column(Boolean, default=False)
-    arguments = relationship('Argument', cascade='all, delete, delete-orphan')
-    transforms = relationship('Transform', cascade='all, delete-orphan')
+    arguments = relationship('Argument', cascade='all, delete, delete-orphan', passive_deletes=True)
+    transforms = relationship('Transform', cascade='all, delete-orphan', passive_deletes=True)
     children = ('arguments', 'transforms')
 
     def __init__(self, app_name, action_name, id=None, is_negated=False, arguments=None, transforms=None):

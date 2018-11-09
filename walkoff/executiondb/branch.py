@@ -13,11 +13,11 @@ logger = logging.getLogger(__name__)
 
 class Branch(ExecutionElement, Execution_Base):
     __tablename__ = 'branch'
-    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id'))
+    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id', ondelete='CASCADE'))
     source_id = Column(UUIDType(binary=False), nullable=False)
     destination_id = Column(UUIDType(binary=False), nullable=False)
     status = Column(String(80))
-    condition = relationship('ConditionalExpression', cascade='all, delete-orphan', uselist=False)
+    condition = relationship('ConditionalExpression', cascade='all, delete-orphan', uselist=False, passive_deletes=True)
     priority = Column(Integer)
     children = ('condition',)
 

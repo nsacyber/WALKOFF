@@ -30,7 +30,8 @@ class WorkflowStatus(Execution_Base):
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
     user = Column(String)
-    _action_statuses = relationship('ActionStatus', backref=backref("_workflow_status", passive_deletes=True))
+    _action_statuses = relationship('ActionStatus', backref=backref("_workflow_status"), passive_deletes=True,
+                                    cascade='all, delete-orphan')
 
     def __init__(self, execution_id, workflow_id, name, user=None):
         self.execution_id = execution_id
