@@ -15,4 +15,4 @@ spec:
       - path: /
         backend:
           serviceName: {{ .Values.config.app.http_service }}
-          servicePort: {{ .Values.config.http_backend_port }}
+          servicePort: {{ .Values.config.app.http_backend_port }}

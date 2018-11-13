@@ -8,9 +8,9 @@ metadata:
     run: {{ .Values.config.app.name }}
 spec:
   ports:
-  - port: {{ .Values.config.zmq_results_port }}
+  - port: {{ .Values.config.app.zmq_results_port }}
     name: zmq-results
-  - port: {{ .Values.config.zmq_comm_port }}
+  - port: {{ .Values.config.app.zmq_comm_port }}
     name: zmq-comm
   selector:
     run: {{ .Values.config.app.name }}
@@ -24,7 +24,7 @@ metadata:
     run: {{ .Values.config.app.name }}
 spec:
   ports:
-  - port: {{ .Values.config.http_backend_port }}
+  - port: {{ .Values.config.app.http_backend_port }}
     name: http
   selector:
     run: {{ .Values.config.app.name }}

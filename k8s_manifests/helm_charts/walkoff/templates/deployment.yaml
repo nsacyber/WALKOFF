@@ -79,11 +79,11 @@ spec:
           - name: HOST
             value: "0.0.0.0"
           - name: PORT
-            value: "{{ .Values.config.http_backend_port }}"
+            value: "{{ .Values.config.app.http_backend_port }}"
           - name: ZMQ_RESULTS_ADDRESS
-            value: "tcp://{{ .Values.config.app.zmq_service }}:{{ .Values.config.zmq_results_port }}"
+            value: "tcp://{{ .Values.config.app.zmq_service }}:{{ .Values.config.app.zmq_results_port }}"
           - name: ZMQ_COMMUNICATION_ADDRESS
-            value: "tcp://{{ .Values.config.app.zmq_service }}:{{ .Values.config.zmq_comm_port }}"
+            value: "tcp://{{ .Values.config.app.zmq_service }}:{{ .Values.config.app.zmq_comm_port }}"
           - name: SEPARATE_WORKERS
             value: "true"
           - name: WALKOFF_DB_TYPE 
@@ -184,11 +184,11 @@ spec:
           - name: HOST
             value: "0.0.0.0"
           - name: PORT
-            value: "{{ .Values.config.http_backend_port }}"
+            value: "{{ .Values.config.app.http_backend_port }}"
           - name: ZMQ_RESULTS_ADDRESS
-            value: "tcp://0.0.0.0:{{ .Values.config.zmq_results_port }}"
+            value: "tcp://0.0.0.0:{{ .Values.config.app.zmq_results_port }}"
           - name: ZMQ_COMMUNICATION_ADDRESS
-            value: "tcp://0.0.0.0:{{ .Values.config.zmq_comm_port }}"
+            value: "tcp://0.0.0.0:{{ .Values.config.app.zmq_comm_port }}"
           - name: SEPARATE_WORKERS
             value: "true"
           - name: WALKOFF_DB_TYPE 
@@ -218,11 +218,11 @@ spec:
           - name: NUMBER_PROCESSES
             value: "1"
         ports:
-        - containerPort: {{ .Values.config.http_backend_port }}
+        - containerPort: {{ .Values.config.app.http_backend_port }}
           name: http
-        - containerPort: {{ .Values.config.zmq_results_port }}
+        - containerPort: {{ .Values.config.app.zmq_results_port }}
           name: zmq-results
-        - containerPort: {{ .Values.config.zmq_comm_port }}
+        - containerPort: {{ .Values.config.app.zmq_comm_port }}
           name: zmq-comm
         # command:
         # - "sleep"

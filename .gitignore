@@ -37,3 +37,5 @@ walkoff/client/dist/
 !interfaces/*.py
 !interfaces/*.pytests/tmp/*
 data/cache/
+*.key
+*.crt

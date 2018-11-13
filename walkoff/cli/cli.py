@@ -3,6 +3,7 @@ import os
 
 from .update import commands as update_commands
 from .install import install as install_command
+from .install import uninstall as uninstall_command
 from .status import status
 from .local import commands as local_commands
 from .dev import commands as dev_commands
@@ -77,7 +78,7 @@ def deploy(ctx):
 
 
 command_groups = {
-    cli: [install_command, status, version],
+    cli: [install_command, uninstall_command, status, version],
     update: update_commands,
     local: local_commands,
     dev: dev_commands,

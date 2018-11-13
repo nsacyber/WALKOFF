@@ -4,13 +4,10 @@ metadata:
   name: walkoff-cert
   namespace: default
 spec:
-  secretName: walkoff-cert-secret
-  issuerRef:
-    name: walkoff-ca-issuer
-    kind: Issuer
   commonName: walkoff
+  issuerRef:
+    kind: Issuer
+    name: walkoff-ca-issuer
   organization:
   - WALKOFF
-  # dnsNames:
-  # - example.com
-  # - www.example.com
+  secretName: walkoff-cert-secret
