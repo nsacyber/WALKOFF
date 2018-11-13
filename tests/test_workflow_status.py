@@ -1,9 +1,11 @@
+import datetime
 import json
 from uuid import uuid4, UUID
 
 from flask import current_app
 
 import walkoff.executiondb.schemas
+import walkoff.server.workflowresults
 from tests.util import execution_db_help
 from tests.util.servertestcase import ServerTestCase
 from walkoff.events import WalkoffEvent
@@ -13,7 +15,6 @@ from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
 from walkoff.multiprocessedexecutor.multiprocessedexecutor import MultiprocessedExecutor
 from walkoff.server.returncodes import *
-import walkoff.server.workflowresults
 
 
 class MockWorkflow(ExecutionElement):
@@ -374,31 +375,31 @@ class TestWorkflowStatus(ServerTestCase):
         wf_stats = self.app.running_context.execution_db.session.query(WorkflowStatus).all()
         self.assertEqual(len(wf_stats), 0)
         action_stats = self.app.running_context.execution_db.session.query(ActionStatus).all()
-        for a in action_stats:
-            print(a.__dict__)
         self.assertEqual(len(action_stats), 0)
 
-    # def test_clear_workflow_status_by_days(self):
-    #     for i in range(10):
-    #         wf_exec_id = uuid4()
-    #         wf_id = uuid4()
-    #         workflow_status = WorkflowStatus(wf_exec_id, wf_id, 'test')
-    #         workflow_status.running()
-    #
-    #         action_exec_id = uuid4()
-    #         action_id = uuid4()
-    #         action_status = ActionStatus(action_exec_id, action_id, 'name', 'test_app', 'test_action')
-    #         workflow_status._action_statuses.append(action_status)
-    #
-    #         workflow_status.completed()
-    #
-    #         self.app.running_context.execution_db.session.add(workflow_status)
-    #         self.app.running_context.execution_db.session.commit()
-    #
-    #     self.delete_with_status_check('/api/workflowqueue/cleardb?all=true', headers=self.headers,
-    #                                   status_code=NO_CONTENT)
-    #
-    #     wf_stats = self.app.running_context.execution_db.session.query(WorkflowStatus).all()
-    #     self.assertEqual(len(wf_stats), 0)
-    #     action_stats = self.app.running_context.execution_db.session.query(ActionStatus).all()
-    #     self.assertEqual(len(action_stats), 0)
+    def test_clear_workflow_status_by_days(self):
+        for i in range(10):
+            wf_exec_id = uuid4()
+            wf_id = uuid4()
+            workflow_status = WorkflowStatus(wf_exec_id, wf_id, 'test')
+            workflow_status.running()
+            workflow_status.started_at = datetime.datetime.today() - datetime.timedelta(days=40)
+
+            action_exec_id = uuid4()
+            action_id = uuid4()
+            action_status = ActionStatus(action_exec_id, action_id, 'name', 'test_app', 'test_action')
+            workflow_status._action_statuses.append(action_status)
+
+            workflow_status.completed()
+            workflow_status.completed_at = datetime.datetime.today() - datetime.timedelta(days=40)
+
+            self.app.running_context.execution_db.session.add(workflow_status)
+            self.app.running_context.execution_db.session.commit()
+
+        self.delete_with_status_check('/api/workflowqueue/cleardb?days=30', headers=self.headers,
+                                      status_code=NO_CONTENT)
+
+        wf_stats = self.app.running_context.execution_db.session.query(WorkflowStatus).all()
+        self.assertEqual(len(wf_stats), 0)
+        action_stats = self.app.running_context.execution_db.session.query(ActionStatus).all()
+        self.assertEqual(len(action_stats), 0)

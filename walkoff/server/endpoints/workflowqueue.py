@@ -1,3 +1,4 @@
+import datetime
 from collections import OrderedDict
 
 from flask import request, current_app
@@ -5,14 +6,13 @@ from flask_jwt_extended import jwt_required, get_jwt_claims
 from sqlalchemy import exists, and_, or_
 
 from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.environment_variable import EnvironmentVariable
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid
 from walkoff.server.problem import Problem
 from walkoff.server.returncodes import *
-from walkoff.executiondb.environment_variable import EnvironmentVariable
-import datetime
 
 
 def does_workflow_exist(workflow_id):
@@ -110,7 +110,8 @@ def execute_workflow():
         execution_id = current_app.running_context.executor.execute_workflow(workflow_id, start=start,
                                                                              start_arguments=arguments,
                                                                              environment_variables=env_var_objs,
-                                                                             user=get_jwt_claims().get('username', None))
+                                                                             user=get_jwt_claims().get('username',
+                                                                                                       None))
         current_app.logger.info('Executed workflow {0}'.format(workflow_id))
         return {'id': execution_id}, SUCCESS_ASYNC
 
@@ -154,9 +155,9 @@ def clear_workflow_status(all=False, days=30):
         elif days > 0:
             delete_date = datetime.datetime.today() - datetime.timedelta(days=days)
             current_app.running_context.execution_db.session.query(WorkflowStatus).filter(and_(
-                WorkflowStatus.status in [WorkflowStatusEnum.aborted, WorkflowStatusEnum.completed],
+                WorkflowStatus.status.in_([WorkflowStatusEnum.aborted, WorkflowStatusEnum.completed]),
                 WorkflowStatus.completed_at <= delete_date
-            )).delete()
+            )).delete(synchronize_session=False)
         current_app.running_context.execution_db.session.commit()
         return None, NO_CONTENT
 
