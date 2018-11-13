@@ -13,4 +13,3 @@ EXECUTION_DB_USERNAME=walkoff
 EXECUTION_DB_PASSWORD=walkoff
 WALKOFF_DB_USERNAME=walkoff
 WALKOFF_DB_PASSWORD=walkoff
-SQLALCHEMY_DATABASE_URI=postgresql://walkoff:walkoff@walkoff-postgres/walkoff

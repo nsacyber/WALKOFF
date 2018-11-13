@@ -15,6 +15,7 @@ Execution_Base = declarative_base()
 class ExecutionDatabase(object):
     """Wrapper for the SQLAlchemy database connection object"""
     instance = None
+    db_type = ""
 
     def __init__(self, execution_db_type, execution_db_path, execution_db_host="localhost"):
         # All of these imports are necessary
@@ -32,6 +33,8 @@ class ExecutionDatabase(object):
         from walkoff.executiondb.saved_workflow import SavedWorkflow
         from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
         from walkoff.executiondb.metrics import AppMetric, WorkflowMetric, ActionMetric, ActionStatusMetric
+
+        ExecutionDatabase.db_type = execution_db_type
 
         if 'sqlite' in execution_db_type:
             self.engine = create_engine(format_db_path(execution_db_type, execution_db_path),
@@ -69,9 +72,10 @@ class ExecutionDatabase(object):
 
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
+    if 'sqlite' in ExecutionDatabase.db_type:
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
 
 
 class WorkflowStatusEnum(enum.Enum):
