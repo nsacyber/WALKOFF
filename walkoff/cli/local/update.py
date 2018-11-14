@@ -1,12 +1,11 @@
-import click
 import ctypes as cts
 import os
 import shutil
 import subprocess
 import time
-from git import Repo
 
-from .util import clean_pycache
+import click
+from git import Repo
 
 
 @click.command()

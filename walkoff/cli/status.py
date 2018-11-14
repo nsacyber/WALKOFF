@@ -1,5 +1,6 @@
-import click
 import subprocess
+
+import click
 
 
 @click.command()

@@ -1,19 +1,18 @@
-import click
-
 import logging
 import os
 import traceback
 
+import click
 from gevent import monkey
 from gevent import pywsgi
 
 import walkoff
 import walkoff.config
-from walkoff.helpers import compose_api
 from start_workers import spawn_worker_processes
-from walkoff.server.app import create_app
 from tests.util.jsonplaybookloader import JsonPlaybookLoader
 from walkoff.executiondb.playbook import Playbook
+from walkoff.helpers import compose_api
+from walkoff.server.app import create_app
 
 logger = logging.getLogger('walkoff')
 

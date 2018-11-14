@@ -1,14 +1,15 @@
-import click
 import os
 
-from .update import commands as update_commands
+import click
+
+from .deploy import commands as deploy_commands
+from .dev import commands as dev_commands
 from .install import install as install_command
 from .install import uninstall as uninstall_command
-from .status import status
 from .local import commands as local_commands
-from .dev import commands as dev_commands
 from .local.util import load_config
-from .deploy import commands as deploy_commands
+from .status import status
+from .update import commands as update_commands
 
 
 # from kubernetes import client, config as kube_config

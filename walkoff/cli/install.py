@@ -1,18 +1,17 @@
-import click
-import subprocess
-from distutils.spawn import find_executable
-import requests
 import os
 import stat
-import tarfile
-import shutil
-import yaml
+import subprocess
 import sys
+import tarfile
 from base64 import b64encode
+from distutils.spawn import find_executable
 
-from kubernetes import config
+import click
+import requests
+import yaml
+from OpenSSL import crypto
 from kubernetes import client as k8s_client
-from OpenSSL import crypto, SSL
+from kubernetes import config
 
 
 @click.command()

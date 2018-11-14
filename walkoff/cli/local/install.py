@@ -1,16 +1,15 @@
-import click
-from walkoff.helpers import list_apps, list_interfaces
-import subprocess
-
 import json
 import os
-from six.moves import configparser
+import subprocess
 import tarfile
 import zipfile
 
+import click
+from six.moves import configparser
+
 from walkoff.config import Config
 from walkoff.helpers import format_db_path
-
+from walkoff.helpers import list_apps, list_interfaces
 from .gencerts import generate_certificates
 
 

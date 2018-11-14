@@ -3,10 +3,10 @@ import json
 import click
 import requests
 
-from .run import run
-from .install import install
-from .update import update
 from .gencerts import gencerts
+from .install import install
+from .run import run
+from .update import update
 
 
 @click.command()
