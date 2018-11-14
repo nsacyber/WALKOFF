@@ -24,8 +24,6 @@ def kube_status():
     #         container_name = container.name
     #         status = _state_summary(container.state)
 
-
-
 # def _state_summary(state):
 #     for possible_state in ('running', 'terminated', 'waiting'):
 #         if getattr(state, possible_state, None) is not None:
