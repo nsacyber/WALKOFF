@@ -13,8 +13,8 @@ import walkoff.cache
 import walkoff.config
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.environment_variable import EnvironmentVariable
-from walkoff.proto.build.data_pb2 import CommunicationPacket, WorkflowControl, ExecuteWorkflowMessage
 from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowCommunicationConverter
+from walkoff.proto.build.data_pb2 import CommunicationPacket, WorkflowControl, ExecuteWorkflowMessage
 
 logger = logging.getLogger(__name__)
 

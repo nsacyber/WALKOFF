@@ -7,11 +7,11 @@ import sys
 import time
 from distutils.util import strtobool
 
+import scripts.migrate_api
+import scripts.migrate_workflows
 import semver
 from six.moves import input
 
-import scripts.migrate_api
-import scripts.migrate_workflows
 import setup_walkoff
 from walkoff import __version__ as version
 

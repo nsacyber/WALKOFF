@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class KafkaWorkflowCommunicationReceiver(object):
+    """Receives communication via Kafka and sends it to the executing workflow"""
     _requires = ['confluent-kafka']
 
     def __init__(self, message_converter=ProtobufWorkflowCommunicationConverter):
@@ -28,7 +29,7 @@ class KafkaWorkflowCommunicationReceiver(object):
         self.receiver.close()
 
     def receive_communications(self):
-        """Constantly receives data from the ZMQ socket and handles it accordingly"""
+        """Constantly receives data from the Kafka and handles it accordingly"""
         logger.info('Starting workflow communication receiver')
         while not self.exit:
             raw_message = self.receiver.poll(1.0)

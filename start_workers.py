@@ -1,9 +1,10 @@
 import argparse
+import logging
 import multiprocessing
 import os
 import signal
 import time
-import logging
+
 import walkoff.config
 from walkoff.worker.worker import Worker
 

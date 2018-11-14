@@ -1,11 +1,13 @@
-from walkoff.appgateway import get_app_action, get_condition, get_transform
-from walkoff.appgateway.apiutil import get_app_action_api, get_condition_api, get_transform_api
-from collections import namedtuple
-from walkoff.helpers import ExecutionError
-import requests
 import logging
-from walkoff.appgateway.actionresult import ActionResult
+from collections import namedtuple
 from uuid import uuid4
+
+import requests
+
+from walkoff.appgateway import get_app_action, get_condition, get_transform
+from walkoff.appgateway.actionresult import ActionResult
+from walkoff.appgateway.apiutil import get_app_action_api, get_condition_api, get_transform_api
+from walkoff.helpers import ExecutionError
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +15,6 @@ _ActionLookupKey = namedtuple('_ActionLookupKey', ['get_run_key', 'get_executabl
 
 
 class ExecutableContext(object):
-
     __slots__ = ['type', 'app_name', 'executable_name', 'id', 'execution_id']
 
     def __init__(self, executable_type, app_name, executable_name, executable_id, execution_id=None):

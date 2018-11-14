@@ -1,11 +1,15 @@
 import logging
-from walkoff.events import WalkoffEvent
+
 from walkoff.appgateway.accumulators import make_accumulator
+from walkoff.events import WalkoffEvent
 
 logger = logging.getLogger(__name__)
 
 
 class WorkflowExecutionContext(object):
+    """Holds a context for executing a Workflow. Much of this logic was previously held in the Workflow object itself.
+       A context keeps track of a specific execution of a workflow.
+    """
     __slots__ = ['workflow', 'name', 'id', 'workflow_start', 'execution_id', 'accumulator', 'app_instance_repo',
                  'executing_action', 'is_paused', 'is_aborted', 'has_branches', 'last_status', 'user']
 

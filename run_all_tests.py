@@ -1,6 +1,6 @@
-from walkoff.helpers import compose_api
-import walkoff.config
 import tests.config
+import walkoff.config
+from walkoff.helpers import compose_api
 
 walkoff.config.Config.load_config(tests.config.TestConfig.CONFIG_PATH)
 compose_api(walkoff.config.Config)

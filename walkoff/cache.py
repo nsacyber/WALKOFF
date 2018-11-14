@@ -1,9 +1,9 @@
 import logging
 import os
-from copy import deepcopy
-from redis import StrictRedis
-
 import os.path
+from copy import deepcopy
+
+from redis import StrictRedis
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +15,7 @@ except ImportError:
 unsubscribe_message = b'__UNSUBSCRIBE__'
 """(str): The message used to unsubscribe from and close a PubSub channel
 """
+
 
 class RedisSubscription(object):
     def __init__(self, channel, pubsub):
@@ -45,7 +46,6 @@ class RedisSubscription(object):
 
 
 class RedisCacheAdapter(object):
-
     instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -57,7 +57,6 @@ class RedisCacheAdapter(object):
     def __init__(self, **opts):
         self.cache = StrictRedis(**opts)
         logger.info('Created redis cache connection with options: {}'.format(opts))
-
 
     def set(self, key, value, expire=None, **opts):
         """Set a value for a key in the cache
@@ -296,7 +295,6 @@ class RedisCacheAdapter(object):
             A lock
         """
         return self.cache.lock(name, timeout=timeout, sleep=sleep, blocking_timeout=blocking_timeout)
-
 
     @classmethod
     def from_json(cls, json_in):

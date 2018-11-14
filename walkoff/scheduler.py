@@ -89,9 +89,11 @@ class Scheduler(object):
             workflow_ids (iterable(str)): An iterable of workflow ids
             trigger (Trigger): The trigger to use for this scheduled task
         """
+
         def execute(id_):
             with self.app.app_context():
                 executable(id_)
+
         for workflow_id in workflow_ids:
             self.scheduler.add_job(execute, args=(workflow_id,),
                                    id=construct_task_id(task_id, workflow_id),
@@ -267,7 +269,7 @@ class Scheduler(object):
             try:
                 event = event_selector_map[event.code]
                 event.send(self)
-            except KeyError: # pragma: no cover
+            except KeyError:  # pragma: no cover
                 logger.error('Unknown event sent triggered in scheduler {}'.format(event))
 
         return event_selector

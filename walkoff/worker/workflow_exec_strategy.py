@@ -1,13 +1,13 @@
-from walkoff.events import WalkoffEvent
 import logging
-from uuid import UUID
-from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
-from walkoff.executiondb.workflow import Workflow
-from walkoff.executiondb.saved_workflow import SavedWorkflow
 import threading
+from uuid import UUID
 
-from walkoff.worker.workflow_exec_context import WorkflowExecutionContext
+from walkoff.events import WalkoffEvent
+from walkoff.executiondb.saved_workflow import SavedWorkflow
+from walkoff.executiondb.workflow import Workflow
+from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
 from walkoff.worker.action_exec_strategy import make_execution_strategy
+from walkoff.worker.workflow_exec_context import WorkflowExecutionContext
 
 logger = logging.getLogger(__name__)
 
@@ -60,11 +60,11 @@ class SerialWorkflowExecutionStrategy(object):
             device_id = workflow_context.app_instance_repo.setup_app_instance(action, workflow_context)
             if device_id:
                 result_status = action.execute(action_execution_strategy, workflow_context.accumulator,
-                                        instance=workflow_context.get_app_instance(device_id),
-                                        arguments=start_arguments, resume=resume)
+                                               instance=workflow_context.get_app_instance(device_id),
+                                               arguments=start_arguments, resume=resume)
             else:
                 result_status = action.execute(action_execution_strategy, workflow_context.accumulator,
-                                        arguments=start_arguments, resume=resume)
+                                               arguments=start_arguments, resume=resume)
 
             workflow_context.update_status(result_status)
 
@@ -211,8 +211,8 @@ class WorkflowExecutor(object):
         action_execution_strategy = make_execution_strategy(self.config, workflow_context)
         workflow_execution_strategy = self.workflow_execution_strategies['serial'](action_execution_strategy)
         workflow_execution_strategy.execute(workflow_context, start=start,
-                                                             start_arguments=start_arguments, resume=resume,
-                                                             environment_variables=environment_variables)
+                                            start_arguments=start_arguments, resume=resume,
+                                            environment_variables=environment_variables)
         with self._lock:
             self.executing_workflows.pop(threading.current_thread().name)
 

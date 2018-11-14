@@ -15,10 +15,10 @@ import walkoff.config
 from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
+from walkoff.senders_receivers_helpers import make_results_sender, make_communication_receiver
+from walkoff.worker.workflow_exec_strategy import WorkflowExecutor
 from walkoff.worker.zmq_workflow_receivers import WorkerCommunicationMessageType, WorkflowCommunicationMessageType, \
     WorkflowReceiver
-from walkoff.worker.workflow_exec_strategy import WorkflowExecutor
-from walkoff.senders_receivers_helpers import make_results_sender, make_communication_receiver
 
 logger = logging.getLogger(__name__)
 
@@ -91,6 +91,7 @@ class Worker(object):
         self.receive_workflows()
 
     def wait_for_ready(self):
+        """Waits for the worker to be ready"""
         while True:
             if self.workflow_receiver.is_ready() and self.workflow_results_sender.is_ready() and \
                     self.workflow_communication_receiver.is_ready():
