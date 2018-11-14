@@ -5,7 +5,8 @@ import click
 @click.pass_context
 @click.option('-p', '--path', help='Path to compressed app')
 def app(ctx, path):
-    """Deploys a new app to Walkoff
+    """
+    WIP - Deploys a new app to WALKOFF
     """
     click.echo('Deploy an app by using unzipping and using kubectl to copy to the mounted volume')
     pass
@@ -15,7 +16,8 @@ def app(ctx, path):
 @click.pass_context
 @click.option('-p', '--path', help='Path to compressed app')
 def interface(ctx, path):
-    """Deploys a new interface to Walkoff
+    """
+    WIP - Deploys a new interface to WALKOFF
     """
     click.echo('Deploy an interface by using unzipping and using kubectl to copy to the mounted volume')
     pass

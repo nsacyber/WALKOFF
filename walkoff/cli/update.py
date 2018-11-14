@@ -4,7 +4,8 @@ import click
 @click.command()
 @click.pass_context
 def apps(ctx):
-    """Updates the apps used by Walkoff
+    """
+    WIP - Update WALKOFF apps inside Kubernetes cluster
 
     Gets the current set of apps from a GitHub repository and restarts the workers and server to use the updated apps.
 
@@ -17,7 +18,8 @@ def apps(ctx):
 @click.command()
 @click.pass_context
 def interfaces(ctx):
-    """Updates the apps used by Walkoff
+    """
+    WIP - Update WALKOFF interfaces inside Kubernetes cluster
 
     Gets the current set of interfaces from a GitHub repository and restarts the server to use the updated interfaces.
 

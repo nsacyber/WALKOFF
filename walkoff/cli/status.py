@@ -6,11 +6,11 @@ import click
 @click.command()
 @click.pass_context
 def status(ctx):
-    """Gets the status of the Walkoff cluster.
-
-    This command will get the status of all Pods. This command is a proxy for kubectl get pods.
     """
-    click.echo('Getting walkoff status from kubectl')
+    Retrieves status of WALKOFF inside Kubernetes cluster.
+
+    WIP - currently an alias for kubectl get pods
+    """
     subprocess.call(['kubectl', 'get', 'pods'])
 
 

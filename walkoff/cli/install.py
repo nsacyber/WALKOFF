@@ -19,9 +19,10 @@ from kubernetes import config
 @click.option('-a', '--archive', help='Archived installation for offline installation')
 # @click.option('-v', '--values', help='Path to a Helm chart values YAML to use in the installation')
 def install(ctx, archive):
-    """ Installs Walkoff in a kubernetes cluster.
+    """
+    Installs WALKOFF to a Kubernetes cluster. Requires Helm and Kubectl to be installed and pointed at a cluster.
 
-    If installing on kubernetes, Walkoff will use Helm to install itself onto the kubernetes cluster
+    If an archive is provided, installation will take place without requiring an internet connection.
     """
     if archive:
         offline_install(ctx)
@@ -394,7 +395,8 @@ def online_install(ctx):
 @click.command()
 @click.pass_context
 def uninstall(ctx):
-    """ Uninstalls Walkoff from a kubernetes cluster.
+    """
+    Removes resources and deployments created by this installer from a Kubernetes cluster.
     """
 
     if click.confirm(("Are you sure you wish to uninstall WALKOFF from your Kubernetes cluster? "
@@ -488,20 +490,8 @@ def setup_helm():
     click.echo('setting up Helm with proper TLS, RBAC')
 
 
-def add_charts_online():
-    click.echo('Downloading charts')
-
-
 def add_charts_offline():
     click.echo('Adding charts offline using helm repo add <name> <URL>')
-
-
-def get_chart_configuration():
-    click.echo('launching interactive prompt to get configuration')
-
-
-def install_walkoff(values):
-    click.echo('Installing walkoff with {}')
 
 
 def install_docker_repository():
@@ -509,8 +499,4 @@ def install_docker_repository():
 
 
 def populate_docker_repository():
-    pass
-
-
-def generate_tls_keys():
     pass

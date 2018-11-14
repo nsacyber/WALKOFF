@@ -19,14 +19,16 @@ from .update import commands as update_commands
 @click.option('-v', '--verbose', count=True, help='Specify the verbosity of the output')
 @click.pass_context
 def cli(ctx, verbose):
-    """Command line controller for Walkoff
+    """
+    walkoffctl is a CLI tool for managing WALKOFF installations, locally and on Kubernetes clusters.
     """
     ctx.obj['verbose'] = verbose
 
 
 @cli.command()
 def version():
-    """ Prints the version of Walkoff installed.
+    """
+    Displays the WALKOFF version currently in use.
     """
     import walkoff
     click.echo('Walkoff v{}'.format(walkoff.__version__))
@@ -35,9 +37,8 @@ def version():
 @cli.group()
 @click.pass_context
 def update(ctx):
-    """ Updates Walkoff to the next version.
-
-    Uses the main Git repository to update Walkoff to the most recent version.
+    """
+    WIP - Updates WALKOFF on a Kubernetes cluster to the next version.
     """
     pass
 
@@ -47,7 +48,8 @@ def update(ctx):
 @click.option('-c', '--config', help='The configuration file of the Walkoff installation')
 @click.pass_context
 def local(ctx, dir, config):
-    """Controls local installations of Walkoff
+    """
+    Commands for controlling local installations of WALKOFF.
     """
     if dir and config:
         click.echo('Cannot specify both dir and config options.')
@@ -63,7 +65,8 @@ def local(ctx, dir, config):
 @cli.group()
 @click.pass_context
 def dev(ctx):
-    """Functions useful for developing Walkoff
+    """
+    Commands for assisting with development of WALKOFF.
     """
     import walkoff.config
     load_config(os.getcwd())
@@ -74,7 +77,8 @@ def dev(ctx):
 @cli.group()
 @click.pass_context
 def deploy(ctx):
-    """Deploy apps and interfaces.
+    """
+    WIP - Commands for deploying apps and interfaces to WALKOFF in Kubernetes.
     """
     pass
 
