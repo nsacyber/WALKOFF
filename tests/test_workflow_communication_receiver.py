@@ -1,10 +1,10 @@
+import os
 from unittest import TestCase
 from uuid import uuid4
 
 from mock import patch
 from zmq import Socket, auth
 
-import os
 from walkoff.config import Config
 from walkoff.proto.build.data_pb2 import CommunicationPacket, WorkflowControl
 from walkoff.worker.zmq_workflow_receivers import WorkerCommunicationMessageType, WorkflowCommunicationMessageType, \

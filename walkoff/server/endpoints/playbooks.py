@@ -1,4 +1,5 @@
 import json
+from io import BytesIO
 from uuid import uuid4
 
 from flask import request, current_app, send_file
@@ -6,19 +7,16 @@ from flask_jwt_extended import jwt_required
 from sqlalchemy import exists, and_
 from sqlalchemy.exc import IntegrityError, StatementError
 
+from walkoff.appgateway.apiutil import UnknownApp, UnknownFunction, InvalidArgument
 from walkoff.executiondb.playbook import Playbook
+from walkoff.executiondb.schemas import PlaybookSchema, WorkflowSchema
 from walkoff.executiondb.workflow import Workflow
 from walkoff.helpers import regenerate_workflow_ids
+from walkoff.helpers import strip_device_ids, strip_argument_ids
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import with_resource_factory, validate_resource_exists_factory, is_valid_uid
-from walkoff.server.returncodes import *
-
-
-from io import BytesIO
 from walkoff.server.problem import Problem
-from walkoff.executiondb.schemas import PlaybookSchema, WorkflowSchema
-from walkoff.helpers import strip_device_ids, strip_argument_ids
-from walkoff.appgateway.apiutil import UnknownApp, UnknownFunction, InvalidArgument
+from walkoff.server.returncodes import *
 
 playbook_schema = PlaybookSchema()
 workflow_schema = WorkflowSchema()

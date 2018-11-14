@@ -1,11 +1,11 @@
 import enum
 from sqlalchemy import create_engine, event
+from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import NullPool
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy_utils import database_exists, create_database
-from sqlalchemy.engine import Engine
 
 from walkoff.helpers import format_db_path
 
@@ -41,7 +41,8 @@ class ExecutionDatabase(object):
                                         connect_args={'check_same_thread': False}, poolclass=NullPool)
         else:
             self.engine = create_engine(
-                format_db_path(execution_db_type, execution_db_path, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD', execution_db_host),
+                format_db_path(execution_db_type, execution_db_path, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD',
+                               execution_db_host),
                 poolclass=NullPool)
             if not database_exists(self.engine.url):
                 try:
@@ -65,6 +66,8 @@ class ExecutionDatabase(object):
         return cls.instance
 
     def tear_down(self):
+        """Clean up the database
+        """
         self.session.rollback()
         self.connection.close()
         self.engine.dispose()
@@ -72,6 +75,8 @@ class ExecutionDatabase(object):
 
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):
+    """Necessary for enforcing foreign key constraints in sqlite database
+    """
     if 'sqlite' in ExecutionDatabase.db_type:
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")

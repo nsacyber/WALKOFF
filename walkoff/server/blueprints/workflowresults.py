@@ -1,7 +1,7 @@
 from datetime import datetime
-from enum import Enum, unique
 from uuid import UUID
 
+from enum import Enum, unique
 from flask import current_app, request
 
 from walkoff.events import WalkoffEvent
@@ -9,9 +9,9 @@ from walkoff.executiondb import ActionStatusEnum, WorkflowStatusEnum
 from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.helpers import convert_action_argument, utc_as_rfc_datetime
 from walkoff.security import jwt_required_in_query
-from walkoff.sse import FilteredSseStream, StreamableBlueprint
 from walkoff.server.problem import Problem
 from walkoff.server.returncodes import BAD_REQUEST
+from walkoff.sse import FilteredSseStream, StreamableBlueprint
 
 workflow_stream = FilteredSseStream('workflow_results')
 action_stream = FilteredSseStream('action_results')

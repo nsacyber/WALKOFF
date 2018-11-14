@@ -11,8 +11,8 @@ from tests.util.mock_objects import MockRedisCacheAdapter
 from walkoff.executiondb.argument import Argument
 from walkoff.multiprocessedexecutor.protoconverter import ExecuteWorkflowMessage, CommunicationPacket, WorkflowControl, \
     ProtobufWorkflowCommunicationConverter, ProtobufWorkflowResultsConverter
-from walkoff.proto.build.data_pb2 import Message
 from walkoff.multiprocessedexecutor.zmq_senders import ZmqWorkflowCommunicationSender
+from walkoff.proto.build.data_pb2 import Message
 
 
 class TestWorkflowCommunicationSender(TestCase):

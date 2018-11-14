@@ -1,11 +1,12 @@
+import logging
 from functools import wraps
 
 from walkoff.appgateway.actionresult import ActionResult
 from walkoff.helpers import get_function_arg_names
 from .walkofftag import WalkoffTag
-import logging
 
 logger = logging.getLogger(__name__)
+
 
 def format_result(result):
     """Converts a result to an ActionResult object

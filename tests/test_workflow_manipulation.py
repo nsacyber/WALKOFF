@@ -1,16 +1,15 @@
 import socket
 import unittest
+from uuid import uuid4
 
 import walkoff.appgateway
 import walkoff.config
 from tests.util import execution_db_help, initialize_test_config
 from tests.util.mock_objects import *
-
 from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.environment_variable import EnvironmentVariable
 from walkoff.multiprocessedexecutor import multiprocessedexecutor
 from walkoff.server.app import create_app
-from walkoff.executiondb.environment_variable import EnvironmentVariable
-from uuid import uuid4
 from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy
 
 try:

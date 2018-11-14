@@ -3,9 +3,9 @@ import logging
 from sqlalchemy import Column, Integer, ForeignKey, String, orm, event
 from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
 
+from walkoff.appgateway.apiutil import InvalidArgument
 from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.validatable import Validatable
-from walkoff.appgateway.apiutil import InvalidArgument
 
 logger = logging.getLogger(__name__)
 

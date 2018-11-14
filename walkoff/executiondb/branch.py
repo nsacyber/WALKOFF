@@ -74,7 +74,8 @@ class Branch(ExecutionElement, Execution_Base):
         accumulator[self.id] = self._counter
         if current_action is not None and status == self.status:
             data_in = accumulator[current_action.id]
-            if self.condition is None or self.condition.execute(action_execution_strategy, data_in=data_in, accumulator=accumulator):
+            if self.condition is None or self.condition.execute(action_execution_strategy, data_in=data_in,
+                                                                accumulator=accumulator):
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.BranchTaken)
                 logger.debug('Branch is valid for input {0}'.format(data_in))
                 return self.destination_id

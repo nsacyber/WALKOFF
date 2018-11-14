@@ -6,20 +6,21 @@ from sqlalchemy_utils import UUIDType
 
 from walkoff import executiondb
 from walkoff.appgateway import get_condition
+from walkoff.appgateway.apiutil import split_api_params, get_condition_api, UnknownApp, InvalidArgument, \
+    UnknownCondition
 from walkoff.appgateway.validator import validate_condition_parameters
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
 from walkoff.helpers import ExecutionError, format_exception_message
-from walkoff.appgateway.apiutil import split_api_params, get_condition_api, UnknownApp, InvalidArgument, \
-    UnknownCondition
 
 logger = logging.getLogger(__name__)
 
 
 class Condition(ExecutionElement, executiondb.Execution_Base):
     __tablename__ = 'condition'
-    conditional_expression_id = Column(UUIDType(binary=False), ForeignKey('conditional_expression.id', ondelete='CASCADE'))
+    conditional_expression_id = Column(UUIDType(binary=False),
+                                       ForeignKey('conditional_expression.id', ondelete='CASCADE'))
     app_name = Column(String(80), nullable=False)
     action_name = Column(String(80), nullable=False)
     is_negated = Column(Boolean, default=False)
@@ -56,6 +57,7 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
 
         self._data_param_name = None
         self._api = None
+        self._condition_executable = None
 
         self.validate()
 

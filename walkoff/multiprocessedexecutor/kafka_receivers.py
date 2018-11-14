@@ -6,8 +6,8 @@ from flask import Flask
 
 import walkoff.config
 from walkoff.events import WalkoffEvent
-from walkoff.server import context
 from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter
+from walkoff.server import context
 
 logger = logging.getLogger(__name__)
 

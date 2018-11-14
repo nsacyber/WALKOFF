@@ -279,6 +279,7 @@ class DeviceFieldMixin(object):
     id = Column(Integer, primary_key=True)
     name = Column(String(25), nullable=False)
     type = Column(Enum(*allowed_device_field_types, name='allowed_device_field_types'))
+
     # _device_id = Column(Integer, ForeignKey('Device.id', ondelete='CASCADE'))
 
     @declared_attr

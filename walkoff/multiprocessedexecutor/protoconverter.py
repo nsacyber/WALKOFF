@@ -239,6 +239,8 @@ class ProtobufWorkflowResultsConverter(object):
 
     @staticmethod
     def to_event_callback(message_bytes):
+        """Converts a message to an event callback message
+        """
 
         message_outer = Message()
         message_outer.ParseFromString(message_bytes)
@@ -305,6 +307,8 @@ class ProtobufWorkflowResultsConverter(object):
     @staticmethod
     def create_workflow_request_message(workflow_id, workflow_execution_id, start=None, start_arguments=None,
                                         resume=False, environment_variables=None, user=None):
+        """Creates a workflow request message to be placed on the redis queue
+        """
         message = ExecuteWorkflowMessage()
         message.workflow_id = str(workflow_id)
         message.workflow_execution_id = workflow_execution_id
@@ -360,6 +364,8 @@ class ProtobufWorkflowCommunicationConverter(object):
 
     @staticmethod
     def create_workflow_pause_message(workflow_execution_id):
+        """Creates a message to pause a Workflow
+        """
         return ProtobufWorkflowCommunicationConverter._create_workflow_control_message(
             WorkflowControl.PAUSE,
             workflow_execution_id
@@ -367,6 +373,8 @@ class ProtobufWorkflowCommunicationConverter(object):
 
     @staticmethod
     def create_workflow_abort_message(workflow_execution_id):
+        """Creates a message to abort a Workflow
+        """
         return ProtobufWorkflowCommunicationConverter._create_workflow_control_message(
             WorkflowControl.ABORT,
             workflow_execution_id
@@ -374,6 +382,8 @@ class ProtobufWorkflowCommunicationConverter(object):
 
     @staticmethod
     def create_worker_exit_message():
+        """Creates a message to tell the Workers to exit
+        """
         message = CommunicationPacket()
         message.type = CommunicationPacket.EXIT
         return message.SerializeToString()

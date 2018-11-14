@@ -5,9 +5,9 @@ from flask import request
 
 from walkoff.events import WalkoffEvent
 from walkoff.security import jwt_required_in_query
-from walkoff.sse import FilteredSseStream, StreamableBlueprint
 from walkoff.server.problem import Problem
 from walkoff.server.returncodes import BAD_REQUEST
+from walkoff.sse import FilteredSseStream, StreamableBlueprint
 
 console_stream = FilteredSseStream('console_results')
 console_page = StreamableBlueprint('console_page', __name__, streams=(console_stream,))
@@ -22,7 +22,7 @@ def format_console_data(sender, data):
         'workflow': sender['name'],
         'app_name': data['app_name'],
         'action_name': data['action_name'],
-        'level':  logging.getLevelName(level),
+        'level': logging.getLevelName(level),
         'message': data['message']
     }
 

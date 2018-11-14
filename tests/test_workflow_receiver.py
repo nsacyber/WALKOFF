@@ -1,8 +1,8 @@
+import os.path
 from unittest import TestCase
 from uuid import uuid4
 
 import nacl.bindings.crypto_box
-import os.path
 from mock import patch
 from nacl.public import PrivateKey, Box
 from zmq import auth

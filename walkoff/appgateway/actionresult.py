@@ -3,6 +3,7 @@ import json
 from walkoff.appgateway.apiutil import get_app_action_default_return, get_app_action_return_is_failure
 from walkoff.helpers import format_exception_message
 
+
 class ActionResult(object):
     def __init__(self, result, status):
         """ActionResult object, which stores the result of an action

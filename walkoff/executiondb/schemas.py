@@ -3,12 +3,12 @@ from marshmallow.validate import OneOf
 from marshmallow_sqlalchemy import ModelSchema, field_for
 
 from walkoff.executiondb import ExecutionDatabase
-from .environment_variable import EnvironmentVariable
 from .action import Action
 from .argument import Argument
 from .branch import Branch
 from .condition import Condition
 from .conditionalexpression import ConditionalExpression, valid_operators
+from .environment_variable import EnvironmentVariable
 from .executionelement import ExecutionElement
 from .playbook import Playbook
 from .position import Position

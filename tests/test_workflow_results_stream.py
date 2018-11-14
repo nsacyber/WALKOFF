@@ -86,7 +86,7 @@ class TestWorkflowResultsStream(ServerTestCase):
         self.app.config['MAX_STREAM_RESULTS_SIZE_KB'] = size_limit
         workflow_id = str(uuid4())
         kwargs = {'data': {'workflow': {'execution_id': workflow_id},
-                           'data': {'result': 'x'*1024*2*size_limit}}}  # should exceed limit
+                           'data': {'result': 'x' * 1024 * 2 * size_limit}}}  # should exceed limit
         sender = self.get_sample_action_sender()
         status = ActionStatusEnum.executing
         result = format_action_data_with_results(sender, kwargs, status)
@@ -94,7 +94,7 @@ class TestWorkflowResultsStream(ServerTestCase):
         expected['action_id'] = expected.pop('id')
         expected['workflow_execution_id'] = workflow_id
         expected['status'] = status.name
-        expected['result'] = {'truncated': 'x'*1024*size_limit}
+        expected['result'] = {'truncated': 'x' * 1024 * size_limit}
         self.assert_and_strip_timestamp(result)
         self.assertDictEqual(result, expected)
 
@@ -398,5 +398,3 @@ class TestWorkflowResultsStream(ServerTestCase):
     @patch.object(workflow_stream, 'stream')
     def test_workflow_stream_endpoint_invalid_key(self, mock_stream):
         self.check_stream_endpoint_no_key('workflow_status', mock_stream)
-
-

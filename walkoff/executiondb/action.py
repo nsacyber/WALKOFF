@@ -7,12 +7,12 @@ from sqlalchemy_utils import UUIDType
 
 from walkoff.appgateway import get_app_action, is_app_action_bound
 from walkoff.appgateway.actionresult import ActionResult
+from walkoff.appgateway.apiutil import get_app_action_api, UnknownApp, UnknownAppAction, InvalidArgument
 from walkoff.appgateway.validator import validate_app_action_parameters
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.appgateway.apiutil import get_app_action_api, UnknownApp, UnknownAppAction, InvalidArgument
 
 logger = logging.getLogger(__name__)
 
@@ -156,7 +156,8 @@ class Action(ExecutionElement, Execution_Base):
         except InvalidArgument as e:
             result = ActionResult.from_exception(e, 'InvalidArguments')
             accumulator[self.id] = result.result
-            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionArgumentsInvalid, data=result.as_json())
+            WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.ActionArgumentsInvalid,
+                                                   data=result.as_json())
             return result.status
 
         if is_app_action_bound(self.app_name, self._run):

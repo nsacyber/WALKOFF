@@ -1,17 +1,15 @@
 import os
 import shutil
-import threading
 import time
 import unittest
 
 import walkoff.appgateway
 import walkoff.cache
 import walkoff.config
+from start_workers import spawn_worker_processes
 from tests.util import execution_db_help, initialize_test_config
 from walkoff.events import WalkoffEvent
-from walkoff.executiondb.workflowresults import WorkflowStatus, WorkflowStatusEnum
 from walkoff.server.app import create_app
-from start_workers import spawn_worker_processes
 from walkoff.server import workflowresults  # Need this import
 
 

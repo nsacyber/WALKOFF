@@ -1,19 +1,19 @@
+import os.path
 from unittest import TestCase
 from uuid import uuid4
 
-import os.path
 from mock import patch, create_autospec
 from sqlalchemy.orm import scoped_session
 from zmq import Socket
 from zmq import auth
 
+import walkoff.executiondb.saved_workflow
 from walkoff.config import Config
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.executiondb.workflow import Workflow
-from walkoff.multiprocessedexecutor.zmq_senders import ZmqWorkflowResultsSender
-import walkoff.executiondb.saved_workflow
 from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter
+from walkoff.multiprocessedexecutor.zmq_senders import ZmqWorkflowResultsSender
 
 
 class MockSender(object):

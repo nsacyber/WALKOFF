@@ -4,6 +4,7 @@ from walkoff.cache import make_cache
 class InMemoryAccumulator(dict):
     """This accumulator is identical to a dictionary, but the copy and __cmp__ properties are disabled.
     """
+
     def __init__(self):
         super(InMemoryAccumulator, self).__init__()
 
@@ -22,11 +23,13 @@ class ExternallyCachedAccumulator(object):
     def __init__(self, cache, workflow_execution_id, key_prefix='accumulator'):
         self._cache = cache
         self._key_prefix = key_prefix
+
+        self._key = ""
+        self._scan_key = ""
         self.set_key(workflow_execution_id)
 
     def __setitem__(self, key, value):
         self._cache.set(self.format_key(key), value)
-
 
     def __getitem__(self, item):
         if self._cache.exists(self.format_key(item)):

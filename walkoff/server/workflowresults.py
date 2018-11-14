@@ -1,11 +1,12 @@
 import json
 
 from flask import current_app
+
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import WorkflowStatusEnum, ActionStatusEnum
+from walkoff.executiondb.metrics import AppMetric, ActionMetric, ActionStatusMetric, WorkflowMetric
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
-from walkoff.executiondb.metrics import AppMetric, ActionMetric, ActionStatusMetric, WorkflowMetric
 
 
 @WalkoffEvent.WorkflowExecutionPending.connect
