@@ -5,7 +5,7 @@ import sys
 
 sys.path.append(os.getcwd())
 
-from scripts.migrations.database.commonenv import run
+from walkoff.migrations.database.commonenv import run
 from walkoff.executiondb.device import Execution_Base
 
 

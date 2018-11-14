@@ -6,14 +6,13 @@ import sys
 sys.path.append(os.getcwd())
 
 # Need all these imports
-from walkoff.serverdb.casesubscription import *
 from walkoff.serverdb.message import *
 from walkoff.serverdb.mixins import *
 from walkoff.serverdb.resource import *
 from walkoff.serverdb.scheduledtasks import *
 from walkoff.serverdb.tokens import *
 from walkoff.serverdb.user import *
-from scripts.migrations.database.commonenv import run
+from walkoff.migrations.database.commonenv import run
 from walkoff.extensions import db
 from walkoff.server.app import create_app
 import walkoff.config

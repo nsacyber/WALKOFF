@@ -21,7 +21,7 @@ from walkoff.executiondb.transform import Transform
 from walkoff.executiondb.workflow import Workflow
 from walkoff.executiondb.workflowresults import *
 from walkoff.executiondb import Execution_Base
-from scripts.migrations.database.commonenv import run
+from walkoff.migrations.database.commonenv import run
 
 # add your model's MetaData object here
 # for 'autogenerate' support
