@@ -22,6 +22,7 @@ pynacl
 alembic
 healthcheck
 psycopg2-binary
+<<<<<<< HEAD
 click
 kubernetes
 pyopenssl
@@ -36,3 +37,6 @@ werkzeug
 prometheus_flask_exporter
 requests
 swagger_spec_validator
+=======
+swagger-spec-validator
+>>>>>>> master
