@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Interface Development &mdash; Walkoff 0.8.1 documentation</title>
+  <title>Interface Development &mdash; Walkoff 0.9.0 documentation</title>
   
 
   
@@ -24,14 +24,15 @@
 
   
 
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Walkoff Platform" href="platform.html" />
+    <link rel="prev" title="App Development" href="apps.html" /> 
 
   
-  <script src="../_static/js/modernizr.min.js"></script>
+  <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
@@ -47,7 +48,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> Walkoff
+            <a href="index.html" class="icon icon-home"> Walkoff
           
 
           
@@ -57,14 +58,14 @@
             
             
               <div class="version">
-                0.8.1
+                0.9.0
               </div>
             
           
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -82,10 +83,10 @@
             
             
               <p class="caption"><span class="caption-text">API Reference:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../apps.html">App Development</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../interfaces.html">Interface Development</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../platform.html">Walkoff Platform</a></li>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="apps.html">App Development</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Interface Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="platform.html">Walkoff Platform</a></li>
 </ul>
 
             
@@ -100,7 +101,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">Walkoff</a>
+          <a href="index.html">Walkoff</a>
         
       </nav>
 
@@ -129,7 +130,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="index.html">Docs</a> &raquo;</li>
         
       <li>Interface Development</li>
     
@@ -137,7 +138,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/templates/interfaces.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/interfaces.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -154,12 +155,12 @@
 <span id="interface-development"></span><h1>Interface Development<a class="headerlink" href="#module-interfaces" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="interfaces.AppBlueprint">
-<em class="property">class </em><code class="descclassname">interfaces.</code><code class="descname">AppBlueprint</code><span class="sig-paren">(</span><em>name</em>, <em>import_name</em>, <em>url_prefix=''</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces.html#AppBlueprint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.AppBlueprint" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">interfaces.</code><code class="descname">AppBlueprint</code><span class="sig-paren">(</span><em>name</em>, <em>import_name</em>, <em>url_prefix=''</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces.html#AppBlueprint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.AppBlueprint" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="class">
 <dt id="interfaces.InterfaceEventDispatcher">
-<em class="property">class </em><code class="descclassname">interfaces.</code><code class="descname">InterfaceEventDispatcher</code><a class="reference internal" href="../_modules/interfaces.html#InterfaceEventDispatcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.InterfaceEventDispatcher" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">interfaces.</code><code class="descname">InterfaceEventDispatcher</code><a class="reference internal" href="_modules/interfaces.html#InterfaceEventDispatcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.InterfaceEventDispatcher" title="Permalink to this definition">¶</a></dt>
 <dd><p>Primary dispatcher of events to interfaces</p>
 <p>This class generates event registration methods of the form “on_&lt;signal_name&gt;” on __new__ for all WalkoffEvents
 (provided that their EventType is not <cite>other</cite>).</p>
@@ -170,27 +171,42 @@
 <dl class="attribute">
 <dt id="interfaces.InterfaceEventDispatcher.event_dispatcher">
 <code class="descname">event_dispatcher</code><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.event_dispatcher" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>interfaces.dispatchers.EventDispatcher</em> – Router and dispatcher for WalkoffEvents</p>
+<dd><p>Router and dispatcher for WalkoffEvents</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#interfaces.dispatchers.EventDispatcher" title="interfaces.dispatchers.EventDispatcher">interfaces.dispatchers.EventDispatcher</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="interfaces.InterfaceEventDispatcher.app_action_dispatcher">
 <code class="descname">app_action_dispatcher</code><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.app_action_dispatcher" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>interfaces.dispatchers.AppEventDispatcher</em> – Router and dispatcher for action WalkfoffEvents</p>
+<dd><p>Router and dispatcher for action WalkfoffEvents</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#interfaces.dispatchers.AppEventDispatcher" title="interfaces.dispatchers.AppEventDispatcher">interfaces.dispatchers.AppEventDispatcher</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_action_execution_error">
-<code class="descname">on_action_execution_error</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_action_execution_error" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_action_execution_error</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_action_execution_error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Action Execution Error WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -204,16 +220,15 @@
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_action_execution_success">
-<code class="descname">on_action_execution_success</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_action_execution_success" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_action_execution_success</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_action_execution_success" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Action Execution Success WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -227,16 +242,15 @@
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_action_started">
-<code class="descname">on_action_started</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_action_started" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_action_started</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_action_started" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Action Started WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -250,20 +264,20 @@
 
 <dl class="classmethod">
 <dt id="interfaces.InterfaceEventDispatcher.on_app_actions">
-<em class="property">classmethod </em><code class="descname">on_app_actions</code><span class="sig-paren">(</span><em>app</em>, <em>actions='all'</em>, <em>events='all'</em>, <em>device_ids='all'</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces.html#InterfaceEventDispatcher.on_app_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_app_actions" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">on_app_actions</code><span class="sig-paren">(</span><em>app</em>, <em>actions='all'</em>, <em>events='all'</em>, <em>device_ids='all'</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces.html#InterfaceEventDispatcher.on_app_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_app_actions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decorator to register a function as a callback for a given app, action(s), event(s), and device(s)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>app</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The app whose events should be handled</li>
-<li><strong>actions</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The actions whose events should be handled, Defaults to all actions</li>
+<li><strong>app</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The app whose events should be handled</li>
+<li><strong>actions</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The actions whose events should be handled, Defaults to all actions</li>
 <li><strong>events</strong> (<em>str|WalkoffEvent|iterable</em><em>(</em><em>str|WalkoffEvent</em><em>)</em>) – The events which should be handled. an use either a
 WalkoffEvent or its signal name. Defaults to all action-type events</li>
-<li><strong>device_ids</strong> (<em>int|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the devices whose events should be handled. Defaults to
+<li><strong>device_ids</strong> (<em>int|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the devices whose events should be handled. Defaults to
 all devices</li>
-<li><strong>weak</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a><em>, </em><em>optional</em>) – Should the callback be registered as a weak function? Defaults to True. Warning!
+<li><strong>weak</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – Should the callback be registered as a weak function? Defaults to True. Warning!
 Setting this to False could causes memory leaks.</li>
 </ul>
 </td>
@@ -286,16 +300,15 @@ Setting this to False could causes memory leaks.</li>
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_app_instance_created">
-<code class="descname">on_app_instance_created</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_app_instance_created" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_app_instance_created</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_app_instance_created" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the App Instance Created WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -309,16 +322,15 @@ Setting this to False could causes memory leaks.</li>
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_arguments_invalid">
-<code class="descname">on_arguments_invalid</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_arguments_invalid" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_arguments_invalid</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_arguments_invalid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Arguments Invalid WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -332,16 +344,15 @@ Setting this to False could causes memory leaks.</li>
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_branch_not_taken">
-<code class="descname">on_branch_not_taken</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_branch_not_taken" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_branch_not_taken</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_branch_not_taken" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Branch Not Taken WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -355,16 +366,15 @@ Setting this to False could causes memory leaks.</li>
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_branch_taken">
-<code class="descname">on_branch_taken</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_branch_taken" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_branch_taken</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_branch_taken" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Branch Taken WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -378,16 +388,15 @@ Setting this to False could causes memory leaks.</li>
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_condition_error">
-<code class="descname">on_condition_error</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_condition_error" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_condition_error</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_condition_error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Condition Error WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -401,39 +410,15 @@ Setting this to False could causes memory leaks.</li>
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_condition_success">
-<code class="descname">on_condition_success</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_condition_success" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_condition_success</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_condition_success" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Condition Success WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
-<li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
-</ul>
-</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">InvalidEventHandler</span></code> – If the wrapped function has the incorrect number of arguments for the event type</p>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="method">
-<dt id="interfaces.InterfaceEventDispatcher.on_conditional_expression_error">
-<code class="descname">on_conditional_expression_error</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_conditional_expression_error" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a callback for the Conditional Expression Error WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -447,16 +432,15 @@ Setting this to False could causes memory leaks.</li>
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_conditional_expression_false">
-<code class="descname">on_conditional_expression_false</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_conditional_expression_false" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_conditional_expression_false</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_conditional_expression_false" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Conditional Expression False WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -470,16 +454,15 @@ Setting this to False could causes memory leaks.</li>
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_conditional_expression_true">
-<code class="descname">on_conditional_expression_true</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_conditional_expression_true" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_conditional_expression_true</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_conditional_expression_true" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Conditional Expression True WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -621,16 +604,15 @@ Setting this to False could causes memory leaks.</li>
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_transform_error">
-<code class="descname">on_transform_error</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_transform_error" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_transform_error</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_transform_error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Transform Error WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -644,16 +626,15 @@ Setting this to False could causes memory leaks.</li>
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_transform_success">
-<code class="descname">on_transform_success</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_transform_success" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_transform_success</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_transform_success" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Transform Success WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -667,16 +648,15 @@ Setting this to False could causes memory leaks.</li>
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_trigger_action_awaiting_data">
-<code class="descname">on_trigger_action_awaiting_data</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_trigger_action_awaiting_data" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_trigger_action_awaiting_data</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_trigger_action_awaiting_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Trigger Action Awaiting Data WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -690,16 +670,15 @@ Setting this to False could causes memory leaks.</li>
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_trigger_action_not_taken">
-<code class="descname">on_trigger_action_not_taken</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_trigger_action_not_taken" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_trigger_action_not_taken</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_trigger_action_not_taken" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Trigger Action Not Taken WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -713,16 +692,15 @@ Setting this to False could causes memory leaks.</li>
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_trigger_action_taken">
-<code class="descname">on_trigger_action_taken</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_trigger_action_taken" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_trigger_action_taken</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_trigger_action_taken" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Trigger Action Taken WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -736,7 +714,7 @@ Setting this to False could causes memory leaks.</li>
 
 <dl class="classmethod">
 <dt id="interfaces.InterfaceEventDispatcher.on_walkoff_events">
-<em class="property">classmethod </em><code class="descname">on_walkoff_events</code><span class="sig-paren">(</span><em>events</em>, <em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces.html#InterfaceEventDispatcher.on_walkoff_events"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_walkoff_events" title="Permalink to this definition">¶</a></dt>
+<em class="property">classmethod </em><code class="descname">on_walkoff_events</code><span class="sig-paren">(</span><em>events</em>, <em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces.html#InterfaceEventDispatcher.on_walkoff_events"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_walkoff_events" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decorator to register a function as a callback for given WalkoffEvent(s)</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -745,11 +723,10 @@ Setting this to False could causes memory leaks.</li>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>events</strong> (<em>str|WalkoffEvent|iterable</em><em>(</em><em>str|WalkoffEvent</em><em>)</em>) – The events which should be handled. an use either a
 WalkoffEvent or its signal name. Defaults to all action-type events</li>
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids”. This will be removed in 0.8.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note
 that unlike IDS, these are not guaranteed to be unique.</li>
-<li><strong>weak</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a><em>, </em><em>optional</em>) – Should the callback be registered as a weak function? Defaults to True. Warning!
+<li><strong>weak</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – Should the callback be registered as a weak function? Defaults to True. Warning!
 Setting this to False could causes memory leaks.</li>
 </ul>
 </td>
@@ -774,16 +751,15 @@ InvalidEventHandler: If the wrapped function does not have the correct number of
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_workflow_aborted">
-<code class="descname">on_workflow_aborted</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_aborted" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_workflow_aborted</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_aborted" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Workflow Aborted WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -797,16 +773,15 @@ InvalidEventHandler: If the wrapped function does not have the correct number of
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_workflow_arguments_invalid">
-<code class="descname">on_workflow_arguments_invalid</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_arguments_invalid" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_workflow_arguments_invalid</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_arguments_invalid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Workflow Arguments Invalid WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -820,16 +795,15 @@ InvalidEventHandler: If the wrapped function does not have the correct number of
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_workflow_arguments_validated">
-<code class="descname">on_workflow_arguments_validated</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_arguments_validated" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_workflow_arguments_validated</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_arguments_validated" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Workflow Arguments Validated WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -843,16 +817,15 @@ InvalidEventHandler: If the wrapped function does not have the correct number of
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_workflow_execution_pending">
-<code class="descname">on_workflow_execution_pending</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_execution_pending" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_workflow_execution_pending</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_execution_pending" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Workflow Execution Pending WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -866,16 +839,15 @@ InvalidEventHandler: If the wrapped function does not have the correct number of
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_workflow_execution_start">
-<code class="descname">on_workflow_execution_start</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_execution_start" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_workflow_execution_start</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_execution_start" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Workflow Execution Start WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -889,16 +861,15 @@ InvalidEventHandler: If the wrapped function does not have the correct number of
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_workflow_paused">
-<code class="descname">on_workflow_paused</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_paused" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_workflow_paused</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_paused" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Workflow Paused WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -912,16 +883,15 @@ InvalidEventHandler: If the wrapped function does not have the correct number of
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_workflow_resumed">
-<code class="descname">on_workflow_resumed</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_resumed" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_workflow_resumed</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_resumed" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Workflow Resumed WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -935,16 +905,15 @@ InvalidEventHandler: If the wrapped function does not have the correct number of
 
 <dl class="method">
 <dt id="interfaces.InterfaceEventDispatcher.on_workflow_shutdown">
-<code class="descname">on_workflow_shutdown</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>sender_uids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_shutdown" title="Permalink to this definition">¶</a></dt>
+<code class="descname">on_workflow_shutdown</code><span class="sig-paren">(</span><em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="headerlink" href="#interfaces.InterfaceEventDispatcher.on_workflow_shutdown" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a callback for the Workflow Shutdown WalkoffEvent. Requires that the function being decorated have the signature <cite>def handler(data)</cite>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>sender_uids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – Deprecated alias for “sender_ids” this will be removed in 0.9.0</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The IDs of the sender which will cause this callback to trigger.</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names of the sender to will cause this callback to trigger. Note that unlike IDS, these are not guaranteed to be unique.</li>
 <li><strong>weak</strong> (<em>boolean</em><em>, </em><em>optional</em>) – Should the callback persist even if function leaves scope? Warning! Could cause memory leaks</li>
 </ul>
 </td>
@@ -961,24 +930,40 @@ InvalidEventHandler: If the wrapped function does not have the correct number of
 <dl class="data">
 <dt id="interfaces.dispatcher">
 <code class="descclassname">interfaces.</code><code class="descname">dispatcher</code><em class="property"> = &lt;interfaces.InterfaceEventDispatcher object&gt;</em><a class="headerlink" href="#interfaces.dispatcher" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>InterfaceEventDispatcher</em> – The global dispatcher to use when registering interface event handlers</p>
+<dd><p>The global dispatcher to use when registering interface event handlers</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference internal" href="#interfaces.InterfaceEventDispatcher" title="interfaces.InterfaceEventDispatcher">InterfaceEventDispatcher</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <span class="target" id="module-interfaces.exceptions"></span><dl class="exception">
 <dt id="interfaces.exceptions.InvalidEventHandler">
-<em class="property">exception </em><code class="descclassname">interfaces.exceptions.</code><code class="descname">InvalidEventHandler</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/exceptions.html#InvalidEventHandler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.exceptions.InvalidEventHandler" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="descclassname">interfaces.exceptions.</code><code class="descname">InvalidEventHandler</code><span class="sig-paren">(</span><em>message</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/exceptions.html#InvalidEventHandler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.exceptions.InvalidEventHandler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception thrown when an invalid function is intended to be used as an event handler</p>
 <dl class="attribute">
 <dt id="interfaces.exceptions.InvalidEventHandler.message">
 <code class="descname">message</code><a class="headerlink" href="#interfaces.exceptions.InvalidEventHandler.message" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> – The error message</p>
+<dd><p>The error message</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The error message</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>message</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The error message</td>
 </tr>
 </tbody>
 </table>
@@ -986,12 +971,20 @@ InvalidEventHandler: If the wrapped function does not have the correct number of
 
 <dl class="exception">
 <dt id="interfaces.exceptions.UnknownEvent">
-<em class="property">exception </em><code class="descclassname">interfaces.exceptions.</code><code class="descname">UnknownEvent</code><span class="sig-paren">(</span><em>events</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/exceptions.html#UnknownEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.exceptions.UnknownEvent" title="Permalink to this definition">¶</a></dt>
+<em class="property">exception </em><code class="descclassname">interfaces.exceptions.</code><code class="descname">UnknownEvent</code><span class="sig-paren">(</span><em>events</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/exceptions.html#UnknownEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.exceptions.UnknownEvent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Exception thrown when an unknown or unallowed event(s) is encountered</p>
 <dl class="attribute">
 <dt id="interfaces.exceptions.UnknownEvent.message">
 <code class="descname">message</code><a class="headerlink" href="#interfaces.exceptions.UnknownEvent.message" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> – The error message</p>
+<dd><p>The error message</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <table class="docutils field-list" frame="void" rules="none">
@@ -1006,18 +999,34 @@ InvalidEventHandler: If the wrapped function does not have the correct number of
 
 <span class="target" id="module-interfaces.dispatchers"></span><dl class="class">
 <dt id="interfaces.dispatchers.AppActionEventDispatcher">
-<em class="property">class </em><code class="descclassname">interfaces.dispatchers.</code><code class="descname">AppActionEventDispatcher</code><span class="sig-paren">(</span><em>app</em>, <em>action</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/dispatchers.html#AppActionEventDispatcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppActionEventDispatcher" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">interfaces.dispatchers.</code><code class="descname">AppActionEventDispatcher</code><span class="sig-paren">(</span><em>app</em>, <em>action</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/dispatchers.html#AppActionEventDispatcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppActionEventDispatcher" title="Permalink to this definition">¶</a></dt>
 <dd><p>Container for routing and dispatching action events for a specific app and action</p>
 <dl class="attribute">
 <dt id="interfaces.dispatchers.AppActionEventDispatcher.app">
 <code class="descname">app</code><a class="headerlink" href="#interfaces.dispatchers.AppActionEventDispatcher.app" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> – The app associated with this dispatcher</p>
+<dd><p>The app associated with this dispatcher</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="interfaces.dispatchers.AppActionEventDispatcher.action">
 <code class="descname">action</code><a class="headerlink" href="#interfaces.dispatchers.AppActionEventDispatcher.action" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> – The action associated with this dispatcher</p>
+<dd><p>The action associated with this dispatcher</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
@@ -1031,8 +1040,8 @@ InvalidEventHandler: If the wrapped function does not have the correct number of
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>app</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The app associated with this dispatcher</li>
-<li><strong>action</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The action associated with this dispatcher</li>
+<li><strong>app</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The app associated with this dispatcher</li>
+<li><strong>action</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The action associated with this dispatcher</li>
 </ul>
 </td>
 </tr>
@@ -1040,7 +1049,7 @@ InvalidEventHandler: If the wrapped function does not have the correct number of
 </table>
 <dl class="method">
 <dt id="interfaces.dispatchers.AppActionEventDispatcher.dispatch">
-<code class="descname">dispatch</code><span class="sig-paren">(</span><em>event_</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/dispatchers.html#AppActionEventDispatcher.dispatch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppActionEventDispatcher.dispatch" title="Permalink to this definition">¶</a></dt>
+<code class="descname">dispatch</code><span class="sig-paren">(</span><em>event_</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/dispatchers.html#AppActionEventDispatcher.dispatch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppActionEventDispatcher.dispatch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Dispatches an event to all registered callbacks</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -1051,8 +1060,8 @@ InvalidEventHandler: If the wrapped function does not have the correct number of
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>event</strong> (<a class="reference internal" href="../platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a>) – The event to dispatch</li>
-<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – The data to send to the functions</li>
+<li><strong>event</strong> (<a class="reference internal" href="platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a>) – The event to dispatch</li>
+<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – The data to send to the functions</li>
 </ul>
 </td>
 </tr>
@@ -1062,14 +1071,14 @@ InvalidEventHandler: If the wrapped function does not have the correct number of
 
 <dl class="method">
 <dt id="interfaces.dispatchers.AppActionEventDispatcher.is_registered">
-<code class="descname">is_registered</code><span class="sig-paren">(</span><em>event</em>, <em>device_id</em>, <em>func</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/dispatchers.html#AppActionEventDispatcher.is_registered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppActionEventDispatcher.is_registered" title="Permalink to this definition">¶</a></dt>
+<code class="descname">is_registered</code><span class="sig-paren">(</span><em>event</em>, <em>device_id</em>, <em>func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/dispatchers.html#AppActionEventDispatcher.is_registered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppActionEventDispatcher.is_registered" title="Permalink to this definition">¶</a></dt>
 <dd><p>Is a function registered?</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>event</strong> (<a class="reference internal" href="../platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a>) – The event to check</li>
+<li><strong>event</strong> (<a class="reference internal" href="platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a>) – The event to check</li>
 <li><strong>device_id</strong> (<em>str|int</em>) – The device ID to check</li>
 <li><strong>func</strong> (<em>func</em>) – The function to check</li>
 </ul>
@@ -1078,7 +1087,7 @@ InvalidEventHandler: If the wrapped function does not have the correct number of
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Is the function registered?</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></p>
 </td>
 </tr>
 </tbody>
@@ -1087,14 +1096,14 @@ InvalidEventHandler: If the wrapped function does not have the correct number of
 
 <dl class="method">
 <dt id="interfaces.dispatchers.AppActionEventDispatcher.register_event">
-<code class="descname">register_event</code><span class="sig-paren">(</span><em>event</em>, <em>device_ids</em>, <em>func</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/dispatchers.html#AppActionEventDispatcher.register_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppActionEventDispatcher.register_event" title="Permalink to this definition">¶</a></dt>
+<code class="descname">register_event</code><span class="sig-paren">(</span><em>event</em>, <em>device_ids</em>, <em>func</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/dispatchers.html#AppActionEventDispatcher.register_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppActionEventDispatcher.register_event" title="Permalink to this definition">¶</a></dt>
 <dd><p>Registers an event and device_ids to a function</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>event</strong> (<a class="reference internal" href="../platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a>) – The event to register</li>
+<li><strong>event</strong> (<a class="reference internal" href="platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a>) – The event to register</li>
 <li><strong>device_ids</strong> – (str|iterable(int)): The device IDs to register to. Specifying ‘all’ will always trigger
 regardless of device ID passed to dispatch()</li>
 <li><strong>func</strong> (<em>func</em>) – Function to register</li>
@@ -1110,7 +1119,7 @@ regardless of device ID passed to dispatch()</li>
 
 <dl class="class">
 <dt id="interfaces.dispatchers.AppEventDispatcher">
-<em class="property">class </em><code class="descclassname">interfaces.dispatchers.</code><code class="descname">AppEventDispatcher</code><a class="reference internal" href="../_modules/interfaces/dispatchers.html#AppEventDispatcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppEventDispatcher" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">interfaces.dispatchers.</code><code class="descname">AppEventDispatcher</code><a class="reference internal" href="_modules/interfaces/dispatchers.html#AppEventDispatcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppEventDispatcher" title="Permalink to this definition">¶</a></dt>
 <dd><p>Object which routes and dispatches action events</p>
 <dl class="attribute">
 <dt>
@@ -1120,7 +1129,7 @@ regardless of device ID passed to dispatch()</li>
 
 <dl class="method">
 <dt id="interfaces.dispatchers.AppEventDispatcher.dispatch">
-<code class="descname">dispatch</code><span class="sig-paren">(</span><em>event_</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/dispatchers.html#AppEventDispatcher.dispatch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppEventDispatcher.dispatch" title="Permalink to this definition">¶</a></dt>
+<code class="descname">dispatch</code><span class="sig-paren">(</span><em>event_</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/dispatchers.html#AppEventDispatcher.dispatch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppEventDispatcher.dispatch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Dispatches an event to all registered callbacks</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -1131,8 +1140,8 @@ regardless of device ID passed to dispatch()</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>event</strong> (<a class="reference internal" href="../platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a>) – The event to dispatch</li>
-<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – The data to send to the callbacks</li>
+<li><strong>event</strong> (<a class="reference internal" href="platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a>) – The event to dispatch</li>
+<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – The data to send to the callbacks</li>
 </ul>
 </td>
 </tr>
@@ -1142,16 +1151,16 @@ regardless of device ID passed to dispatch()</li>
 
 <dl class="method">
 <dt id="interfaces.dispatchers.AppEventDispatcher.is_registered">
-<code class="descname">is_registered</code><span class="sig-paren">(</span><em>app</em>, <em>action</em>, <em>event</em>, <em>device</em>, <em>func</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/dispatchers.html#AppEventDispatcher.is_registered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppEventDispatcher.is_registered" title="Permalink to this definition">¶</a></dt>
+<code class="descname">is_registered</code><span class="sig-paren">(</span><em>app</em>, <em>action</em>, <em>event</em>, <em>device</em>, <em>func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/dispatchers.html#AppEventDispatcher.is_registered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppEventDispatcher.is_registered" title="Permalink to this definition">¶</a></dt>
 <dd><p>Is a given callback registered</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>app</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The callback’s app</li>
-<li><strong>action</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The callback’s action</li>
-<li><strong>event</strong> (<a class="reference internal" href="../platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a>) – The callback’s event</li>
+<li><strong>app</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The callback’s app</li>
+<li><strong>action</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The callback’s action</li>
+<li><strong>event</strong> (<a class="reference internal" href="platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a>) – The callback’s event</li>
 <li><strong>device</strong> (<em>str|int</em>) – The callback’s device ID</li>
 <li><strong>func</strong> (<em>func</em>) – The callback</li>
 </ul>
@@ -1160,7 +1169,7 @@ regardless of device ID passed to dispatch()</li>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Is the callback registered?</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></p>
 </td>
 </tr>
 </tbody>
@@ -1169,7 +1178,7 @@ regardless of device ID passed to dispatch()</li>
 
 <dl class="method">
 <dt id="interfaces.dispatchers.AppEventDispatcher.register_app_actions">
-<code class="descname">register_app_actions</code><span class="sig-paren">(</span><em>func</em>, <em>app</em>, <em>events</em>, <em>actions='all'</em>, <em>device_ids='all'</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/dispatchers.html#AppEventDispatcher.register_app_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppEventDispatcher.register_app_actions" title="Permalink to this definition">¶</a></dt>
+<code class="descname">register_app_actions</code><span class="sig-paren">(</span><em>func</em>, <em>app</em>, <em>events</em>, <em>actions='all'</em>, <em>device_ids='all'</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/dispatchers.html#AppEventDispatcher.register_app_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppEventDispatcher.register_app_actions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Registers an callback for a given event, app, action, and device ID</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1177,13 +1186,13 @@ regardless of device ID passed to dispatch()</li>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>func</strong> (<em>func</em>) – Function to register</li>
-<li><strong>app</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The app to register the callback to</li>
-<li><strong>events</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="../platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a><em>)</em>) – The events to register to callback to</li>
-<li><strong>actions</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The actions to register the callback to. Defaults to ‘all’,
+<li><strong>app</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The app to register the callback to</li>
+<li><strong>events</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a><em>)</em>) – The events to register to callback to</li>
+<li><strong>actions</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The actions to register the callback to. Defaults to ‘all’,
 meaning all actions</li>
-<li><strong>device_ids</strong> (<em>str|int|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>)</em><em>, </em><em>optional</em>) – The devices to register the callback to. Defaults to ‘all’
+<li><strong>device_ids</strong> (<em>str|int|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a><em>)</em><em>, </em><em>optional</em>) – The devices to register the callback to. Defaults to ‘all’
 meaning all devices</li>
-<li><strong>weak</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a><em>, </em><em>optional</em>) – Should the function be registered as a weak reference? Defaults to True</li>
+<li><strong>weak</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – Should the function be registered as a weak reference? Defaults to True</li>
 </ul>
 </td>
 </tr>
@@ -1199,15 +1208,15 @@ meaning all devices</li>
 
 <dl class="staticmethod">
 <dt id="interfaces.dispatchers.AppEventDispatcher.validate_app_actions">
-<em class="property">static </em><code class="descname">validate_app_actions</code><span class="sig-paren">(</span><em>actions</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/dispatchers.html#AppEventDispatcher.validate_app_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppEventDispatcher.validate_app_actions" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="descname">validate_app_actions</code><span class="sig-paren">(</span><em>app</em>, <em>actions</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/dispatchers.html#AppEventDispatcher.validate_app_actions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.AppEventDispatcher.validate_app_actions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Validates that an app’s actions are valid, meaning that they exist in a defined app API</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>app</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The app to validate</li>
-<li><strong>actions</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The action to validate</li>
+<li><strong>app</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The app to validate</li>
+<li><strong>actions</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The action to validate</li>
 </ul>
 </td>
 </tr>
@@ -1232,18 +1241,34 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 
 <dl class="class">
 <dt id="interfaces.dispatchers.CallbackContainer">
-<em class="property">class </em><code class="descclassname">interfaces.dispatchers.</code><code class="descname">CallbackContainer</code><span class="sig-paren">(</span><em>weak=None</em>, <em>strong=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/dispatchers.html#CallbackContainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.CallbackContainer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">interfaces.dispatchers.</code><code class="descname">CallbackContainer</code><span class="sig-paren">(</span><em>weak=None</em>, <em>strong=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/dispatchers.html#CallbackContainer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.CallbackContainer" title="Permalink to this definition">¶</a></dt>
 <dd><p>A container holding both strong and weak references to callbacks</p>
 <dl class="attribute">
 <dt id="interfaces.dispatchers.CallbackContainer.weak">
 <code class="descname">weak</code><a class="headerlink" href="#interfaces.dispatchers.CallbackContainer.weak" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>WeakSet(func)</em> – Weak references to callbacks</p>
+<dd><p>Weak references to callbacks</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">WeakSet(func)</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="interfaces.dispatchers.CallbackContainer.strong">
 <code class="descname">strong</code><a class="headerlink" href="#interfaces.dispatchers.CallbackContainer.strong" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>set(func)</em> – Strong references to callbacks</p>
+<dd><p>Strong references to callbacks</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.7)">set</a>(func)</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <table class="docutils field-list" frame="void" rules="none">
@@ -1260,7 +1285,7 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 </table>
 <dl class="method">
 <dt id="interfaces.dispatchers.CallbackContainer.is_registered">
-<code class="descname">is_registered</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/dispatchers.html#CallbackContainer.is_registered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.CallbackContainer.is_registered" title="Permalink to this definition">¶</a></dt>
+<code class="descname">is_registered</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/dispatchers.html#CallbackContainer.is_registered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.CallbackContainer.is_registered" title="Permalink to this definition">¶</a></dt>
 <dd><p>Is a function registered?</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1270,7 +1295,7 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Is the function registered?</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)">bool</a></td>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></td>
 </tr>
 </tbody>
 </table>
@@ -1278,7 +1303,7 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 
 <dl class="method">
 <dt id="interfaces.dispatchers.CallbackContainer.iter_strong">
-<code class="descname">iter_strong</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/dispatchers.html#CallbackContainer.iter_strong"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.CallbackContainer.iter_strong" title="Permalink to this definition">¶</a></dt>
+<code class="descname">iter_strong</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/dispatchers.html#CallbackContainer.iter_strong"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.CallbackContainer.iter_strong" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterates over all the strong references</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1292,7 +1317,7 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 
 <dl class="method">
 <dt id="interfaces.dispatchers.CallbackContainer.iter_weak">
-<code class="descname">iter_weak</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/dispatchers.html#CallbackContainer.iter_weak"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.CallbackContainer.iter_weak" title="Permalink to this definition">¶</a></dt>
+<code class="descname">iter_weak</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/dispatchers.html#CallbackContainer.iter_weak"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.CallbackContainer.iter_weak" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterates over all the weak references</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1306,7 +1331,7 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 
 <dl class="method">
 <dt id="interfaces.dispatchers.CallbackContainer.register">
-<code class="descname">register</code><span class="sig-paren">(</span><em>func</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/dispatchers.html#CallbackContainer.register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.CallbackContainer.register" title="Permalink to this definition">¶</a></dt>
+<code class="descname">register</code><span class="sig-paren">(</span><em>func</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/dispatchers.html#CallbackContainer.register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.CallbackContainer.register" title="Permalink to this definition">¶</a></dt>
 <dd><p>Registers a function in the container</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1314,7 +1339,7 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>func</strong> (<em>func</em>) – The function to register</li>
-<li><strong>weak</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a><em>, </em><em>optional</em>) – Should the reference be a weak reference? Defaults to True</li>
+<li><strong>weak</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – Should the reference be a weak reference? Defaults to True</li>
 </ul>
 </td>
 </tr>
@@ -1326,7 +1351,7 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 
 <dl class="class">
 <dt id="interfaces.dispatchers.EventDispatcher">
-<em class="property">class </em><code class="descclassname">interfaces.dispatchers.</code><code class="descname">EventDispatcher</code><a class="reference internal" href="../_modules/interfaces/dispatchers.html#EventDispatcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.EventDispatcher" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">interfaces.dispatchers.</code><code class="descname">EventDispatcher</code><a class="reference internal" href="_modules/interfaces/dispatchers.html#EventDispatcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.EventDispatcher" title="Permalink to this definition">¶</a></dt>
 <dd><p>Routes and dispatches generic WalkoffEvents to their given callbacks</p>
 <dl class="attribute">
 <dt>
@@ -1336,7 +1361,7 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 
 <dl class="method">
 <dt id="interfaces.dispatchers.EventDispatcher.dispatch">
-<code class="descname">dispatch</code><span class="sig-paren">(</span><em>event_</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/dispatchers.html#EventDispatcher.dispatch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.EventDispatcher.dispatch" title="Permalink to this definition">¶</a></dt>
+<code class="descname">dispatch</code><span class="sig-paren">(</span><em>event_</em>, <em>data</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/dispatchers.html#EventDispatcher.dispatch"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.EventDispatcher.dispatch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Dispatches an event to all its registered callbacks</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
@@ -1347,8 +1372,8 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>event</strong> (<a class="reference internal" href="../platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a>) – The event to dispatch</li>
-<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – The data to send to all the events</li>
+<li><strong>event</strong> (<a class="reference internal" href="platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a>) – The event to dispatch</li>
+<li><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – The data to send to all the events</li>
 </ul>
 </td>
 </tr>
@@ -1358,15 +1383,15 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 
 <dl class="method">
 <dt id="interfaces.dispatchers.EventDispatcher.is_registered">
-<code class="descname">is_registered</code><span class="sig-paren">(</span><em>entry</em>, <em>event</em>, <em>func</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/dispatchers.html#EventDispatcher.is_registered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.EventDispatcher.is_registered" title="Permalink to this definition">¶</a></dt>
+<code class="descname">is_registered</code><span class="sig-paren">(</span><em>entry</em>, <em>event</em>, <em>func</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/dispatchers.html#EventDispatcher.is_registered"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.EventDispatcher.is_registered" title="Permalink to this definition">¶</a></dt>
 <dd><p>Is a function registered for a given entry ID and event?</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>entry</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The entry ID of the callback</li>
-<li><strong>event</strong> (<a class="reference internal" href="../platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a>) – The event of the callback</li>
+<li><strong>entry</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The entry ID of the callback</li>
+<li><strong>event</strong> (<a class="reference internal" href="platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a>) – The event of the callback</li>
 <li><strong>func</strong> (<em>func</em>) – The callback</li>
 </ul>
 </td>
@@ -1374,7 +1399,7 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Is the function registered?</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)">bool</a></p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)">bool</a></p>
 </td>
 </tr>
 </tbody>
@@ -1383,7 +1408,7 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 
 <dl class="method">
 <dt id="interfaces.dispatchers.EventDispatcher.register_events">
-<code class="descname">register_events</code><span class="sig-paren">(</span><em>func</em>, <em>events</em>, <em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/dispatchers.html#EventDispatcher.register_events"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.EventDispatcher.register_events" title="Permalink to this definition">¶</a></dt>
+<code class="descname">register_events</code><span class="sig-paren">(</span><em>func</em>, <em>events</em>, <em>sender_ids=None</em>, <em>names=None</em>, <em>weak=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/dispatchers.html#EventDispatcher.register_events"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.dispatchers.EventDispatcher.register_events" title="Permalink to this definition">¶</a></dt>
 <dd><p>Registers an event for a given sender ID or name</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1391,10 +1416,10 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>func</strong> (<em>func</em>) – Callback to register</li>
-<li><strong>events</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="../platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a><em>)</em>) – Events to register the callback to</li>
-<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – IDs to register the callback to. Defaults to None</li>
-<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names to register the callback to. Defaults to None</li>
-<li><strong>weak</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a><em>, </em><em>optional</em>) – Should the callback be registered with a weak reference? Defaults to true</li>
+<li><strong>events</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a><em>)</em>) – Events to register the callback to</li>
+<li><strong>sender_ids</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – IDs to register the callback to. Defaults to None</li>
+<li><strong>names</strong> (<em>str|iterable</em><em>(</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>)</em><em>, </em><em>optional</em>) – The names to register the callback to. Defaults to None</li>
+<li><strong>weak</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – Should the callback be registered with a weak reference? Defaults to true</li>
 </ul>
 </td>
 </tr>
@@ -1406,13 +1431,13 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 
 <span class="target" id="module-interfaces.util"></span><dl class="function">
 <dt id="interfaces.util.add_docstring">
-<code class="descclassname">interfaces.util.</code><code class="descname">add_docstring</code><span class="sig-paren">(</span><em>docstring</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/util.html#add_docstring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.util.add_docstring" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">interfaces.util.</code><code class="descname">add_docstring</code><span class="sig-paren">(</span><em>docstring</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/util.html#add_docstring"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.util.add_docstring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decorator to add a docstring dynamically to a function</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>docstring</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The string to use as the docstring</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>docstring</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The string to use as the docstring</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The function with the added docstring</td>
 </tr>
@@ -1424,7 +1449,7 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 
 <dl class="function">
 <dt id="interfaces.util.convert_events">
-<code class="descclassname">interfaces.util.</code><code class="descname">convert_events</code><span class="sig-paren">(</span><em>events</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/util.html#convert_events"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.util.convert_events" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">interfaces.util.</code><code class="descname">convert_events</code><span class="sig-paren">(</span><em>events</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/util.html#convert_events"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.util.convert_events" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts events from signal names to WalkoffEvents</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1444,7 +1469,7 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 
 <dl class="function">
 <dt id="interfaces.util.convert_to_iterable">
-<code class="descclassname">interfaces.util.</code><code class="descname">convert_to_iterable</code><span class="sig-paren">(</span><em>elements</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/util.html#convert_to_iterable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.util.convert_to_iterable" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">interfaces.util.</code><code class="descname">convert_to_iterable</code><span class="sig-paren">(</span><em>elements</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/util.html#convert_to_iterable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.util.convert_to_iterable" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts an element or elements to list if it not already iterable</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1466,7 +1491,7 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 
 <dl class="function">
 <dt id="interfaces.util.validate_events">
-<code class="descclassname">interfaces.util.</code><code class="descname">validate_events</code><span class="sig-paren">(</span><em>events='all'</em>, <em>allowed_events=set([&lt;WalkoffEvent.WorkflowShutdown: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ConsoleLog: &lt;walkoff.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerStart: &lt;walkoff.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SendMessage: &lt;walkoff.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ActionStarted: &lt;walkoff.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.TransformSuccess: &lt;walkoff.events.TransformSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowArgumentsInvalid: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ConditionalExpressionError: &lt;walkoff.events.ConditionalExpressionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.AppInstanceCreated: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ConditionSuccess: &lt;walkoff.events.ConditionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ConditionalExpressionTrue: &lt;walkoff.events.ConditionalExpressionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowExecutionPending: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowArgumentsValidated: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerJobAdded: &lt;walkoff.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ActionExecutionError: &lt;walkoff.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowPaused: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerJobRemoved: &lt;walkoff.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ConditionalExpressionFalse: &lt;walkoff.events.ConditionalExpressionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ConditionError: &lt;walkoff.events.ConditionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowAborted: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowResumed: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.CommonWorkflowSignal: &lt;walkoff.events.WalkoffSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.TransformError: &lt;walkoff.events.TransformSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.TriggerActionAwaitingData: &lt;walkoff.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.BranchNotTaken: &lt;walkoff.events.BranchSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.BranchTaken: &lt;walkoff.events.BranchSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowExecutionStart: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerPaused: &lt;walkoff.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerShutdown: &lt;walkoff.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.TriggerActionNotTaken: &lt;walkoff.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ActionArgumentsInvalid: &lt;walkoff.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerResumed: &lt;walkoff.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerJobError: &lt;walkoff.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.TriggerActionTaken: &lt;walkoff.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerJobExecuted: &lt;walkoff.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ActionExecutionSuccess: &lt;walkoff.events.ActionSignal object&gt;&gt;])</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/interfaces/util.html#validate_events"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.util.validate_events" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">interfaces.util.</code><code class="descname">validate_events</code><span class="sig-paren">(</span><em>events='all'</em>, <em>allowed_events={&lt;WalkoffEvent.SchedulerJobAdded: &lt;walkoff.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ActionStarted: &lt;walkoff.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerPaused: &lt;walkoff.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ActionExecutionError: &lt;walkoff.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkerReady: &lt;walkoff.events.WorkerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.TransformSuccess: &lt;walkoff.events.TransformSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerJobExecuted: &lt;walkoff.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowArgumentsValidated: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.TriggerActionNotTaken: &lt;walkoff.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowExecutionStart: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.TriggerActionTaken: &lt;walkoff.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerShutdown: &lt;walkoff.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.BranchTaken: &lt;walkoff.events.BranchSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.BranchNotTaken: &lt;walkoff.events.BranchSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ConditionError: &lt;walkoff.events.ConditionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ConditionalExpressionFalse: &lt;walkoff.events.ConditionalExpressionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.CommonWorkflowSignal: &lt;walkoff.events.WalkoffSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerJobRemoved: &lt;walkoff.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ActionExecutionSuccess: &lt;walkoff.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SendMessage: &lt;walkoff.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerJobError: &lt;walkoff.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerStart: &lt;walkoff.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowPaused: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.TriggerActionAwaitingData: &lt;walkoff.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.SchedulerResumed: &lt;walkoff.events.ControllerSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.AppInstanceCreated: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowExecutionPending: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowArgumentsInvalid: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ActionArgumentsInvalid: &lt;walkoff.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ConditionSuccess: &lt;walkoff.events.ConditionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowResumed: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowShutdown: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ConsoleLog: &lt;walkoff.events.ActionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.ConditionalExpressionTrue: &lt;walkoff.events.ConditionalExpressionSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.WorkflowAborted: &lt;walkoff.events.WorkflowSignal object&gt;&gt;</em>, <em>&lt;WalkoffEvent.TransformError: &lt;walkoff.events.TransformSignal object&gt;&gt;}</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/util.html#validate_events"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#interfaces.util.validate_events" title="Permalink to this definition">¶</a></dt>
 <dd><p>Validates a set of events against allowed events. Converts strings to events if possible.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1475,14 +1500,14 @@ UnknownAppAction: If the action is not found in the give app’s actions</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>events</strong> (<em>str|WalkoffEvent|iterable</em><em>(</em><em>str|WalkoffEvent</em><em>)</em><em>, </em><em>optional</em>) – The event or events to validate.
 Defaults to all events</li>
-<li><strong>allowed_events</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="../platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a><em>)</em><em>, </em><em>optional</em>) – The allowed events. Defaults to all WalkoffEvents</li>
+<li><strong>allowed_events</strong> (<em>iterable</em><em>(</em><a class="reference internal" href="platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent"><em>WalkoffEvent</em></a><em>)</em><em>, </em><em>optional</em>) – The allowed events. Defaults to all WalkoffEvents</li>
 </ul>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">The converted set of events.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.6)">set</a>(<a class="reference internal" href="../platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent">WalkoffEvent</a>)</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#set" title="(in Python v3.7)">set</a>(<a class="reference internal" href="platform.html#walkoff.events.WalkoffEvent" title="walkoff.events.WalkoffEvent">WalkoffEvent</a>)</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">UnknownEvent</span></code> – If some events passed in are not in available_events</p>
@@ -1500,12 +1525,21 @@ Defaults to all events</li>
           </div>
           <footer>
   
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="platform.html" class="btn btn-neutral float-right" title="Walkoff Platform" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="apps.html" class="btn btn-neutral" title="App Development" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2017, United States Government.
+        &copy; Copyright 2017, United States Government
 
     </p>
   </div>
@@ -1524,34 +1558,21 @@ Defaults to all events</li>
 
   
 
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'0.8.1',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
 
   
 
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="_static/js/theme.js"></script>
 
   <script type="text/javascript">
       jQuery(function () {
-          
-          SphinxRtdTheme.Navigation.enableSticky();
-          
+          SphinxRtdTheme.Navigation.enable(true);
       });
   </script> 
 

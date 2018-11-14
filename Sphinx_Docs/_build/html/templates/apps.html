@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>App Development &mdash; Walkoff 0.8.1 documentation</title>
+  <title>App Development &mdash; Walkoff 0.9.0 documentation</title>
   
 
   
@@ -24,14 +24,15 @@
 
   
 
-  
-    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Interface Development" href="interfaces.html" />
+    <link rel="prev" title="Welcome to Walkoff’s documentation!" href="index.html" /> 
 
   
-  <script src="../_static/js/modernizr.min.js"></script>
+  <script src="_static/js/modernizr.min.js"></script>
 
 </head>
 
@@ -47,7 +48,7 @@
           
 
           
-            <a href="../index.html" class="icon icon-home"> Walkoff
+            <a href="index.html" class="icon icon-home"> Walkoff
           
 
           
@@ -57,14 +58,14 @@
             
             
               <div class="version">
-                0.8.1
+                0.9.0
               </div>
             
           
 
           
 <div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
@@ -82,10 +83,10 @@
             
             
               <p class="caption"><span class="caption-text">API Reference:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../apps.html">App Development</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../interfaces.html">Interface Development</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../platform.html">Walkoff Platform</a></li>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">App Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interfaces.html">Interface Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="platform.html">Walkoff Platform</a></li>
 </ul>
 
             
@@ -100,7 +101,7 @@
       <nav class="wy-nav-top" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">Walkoff</a>
+          <a href="index.html">Walkoff</a>
         
       </nav>
 
@@ -129,7 +130,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../index.html">Docs</a> &raquo;</li>
+      <li><a href="index.html">Docs</a> &raquo;</li>
         
       <li>App Development</li>
     
@@ -137,7 +138,7 @@
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="../_sources/templates/apps.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/apps.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -154,27 +155,60 @@
 <span id="app-development"></span><h1>App Development<a class="headerlink" href="#module-apps" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="apps.App">
-<em class="property">class </em><code class="descclassname">apps.</code><code class="descname">App</code><span class="sig-paren">(</span><em>app</em>, <em>device</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps.html#App"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.App" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">apps.</code><code class="descname">App</code><span class="sig-paren">(</span><em>app</em>, <em>device</em>, <em>context</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apps.html#App"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.App" title="Permalink to this definition">¶</a></dt>
 <dd><p>Base class for apps
 .. attribute:: app</p>
 <blockquote>
-<div><em>apps.devicedb.App</em> – The ORM of the App with the name passed into the constructor</div></blockquote>
+<div><p>The ORM of the App with the name passed into the constructor</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">type:</th><td class="field-body">apps.devicedb.App</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
 <dl class="attribute">
 <dt id="apps.App.device">
 <code class="descname">device</code><a class="headerlink" href="#apps.App.device" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>apps.devicedb.Device</em> – The ORM of the device with the ID passed into teh constructor</p>
+<dd><p>The ORM of the device with the ID passed into teh constructor</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body">apps.devicedb.Device</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="apps.App.device_fields">
 <code class="descname">device_fields</code><a class="headerlink" href="#apps.App.device_fields" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>dict</em> – A dict of the plaintext fields of the device</p>
+<dd><p>A dict of the plaintext fields of the device</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="apps.App.device_type">
 <code class="descname">device_type</code><a class="headerlink" href="#apps.App.device_type" title="Permalink to this definition">¶</a></dt>
-<dd><p><em>str</em> – The type of device associated with self.device</p>
+<dd><p>The type of device associated with self.device</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)">str</a></td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <table class="docutils field-list" frame="void" rules="none">
@@ -182,8 +216,8 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>app</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The name of the app</li>
-<li><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a>) – The ID of the device</li>
+<li><strong>app</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The name of the app</li>
+<li><strong>device</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a>) – The ID of the device</li>
 </ul>
 </td>
 </tr>
@@ -191,7 +225,7 @@
 </table>
 <dl class="method">
 <dt id="apps.App.get_all_devices">
-<code class="descname">get_all_devices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps.html#App.get_all_devices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.App.get_all_devices" title="Permalink to this definition">¶</a></dt>
+<code class="descname">get_all_devices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apps.html#App.get_all_devices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.App.get_all_devices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Gets all the devices associated with this app
 :returns: A list of apps.appdevice.Device objects associated with this app
 :rtype: list</p>
@@ -199,7 +233,7 @@
 
 <dl class="method">
 <dt id="apps.App.shutdown">
-<code class="descname">shutdown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps.html#App.shutdown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.App.shutdown" title="Permalink to this definition">¶</a></dt>
+<code class="descname">shutdown</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apps.html#App.shutdown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.App.shutdown" title="Permalink to this definition">¶</a></dt>
 <dd><p>When implemented, this method performs shutdown procedures for the app</p>
 </dd></dl>
 
@@ -207,29 +241,29 @@
 
 <span class="target" id="module-apps.messaging"></span><dl class="class">
 <dt id="apps.messaging.Text">
-<em class="property">class </em><code class="descclassname">apps.messaging.</code><code class="descname">Text</code><span class="sig-paren">(</span><em>text</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/messaging.html#Text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Text" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">apps.messaging.</code><code class="descname">Text</code><span class="sig-paren">(</span><em>text</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apps/messaging.html#Text"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Text" title="Permalink to this definition">¶</a></dt>
 <dd><p>A MessageComponent used for rendering simple text.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>text</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The text to be rendered</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>text</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The text to be rendered</td>
 </tr>
 </tbody>
 </table>
 <dl class="staticmethod">
 <dt id="apps.messaging.Text.from_component_json">
-<em class="property">static </em><code class="descname">from_component_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/messaging.html#Text.from_component_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Text.from_component_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constructs a Text component from JSON
-:param json_in: The JSON from which to construct the Text component
-:type json_in: dict</p>
+<em class="property">static </em><code class="descname">from_component_json</code><span class="sig-paren">(</span><em>json_in</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apps/messaging.html#Text.from_component_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Text.from_component_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a Text component from JSON</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The text component</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>json_in</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – The JSON from which to construct the Text component</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">(<a class="reference internal" href="#apps.messaging.Text" title="apps.messaging.Text">Text</a>)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The text component object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">(<a class="reference internal" href="#apps.messaging.Text" title="apps.messaging.Text">Text</a>)</td>
 </tr>
 </tbody>
 </table>
@@ -237,15 +271,15 @@
 
 <dl class="method">
 <dt id="apps.messaging.Text.get_component_json">
-<code class="descname">get_component_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/messaging.html#Text.get_component_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Text.get_component_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Intended to be overridden by subclasses, and should return a normal JSON representation of the object.</p>
+<code class="descname">get_component_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apps/messaging.html#Text.get_component_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Text.get_component_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the JSON representation of the component</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The JSON representation of the component.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The JSON representation of the component</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>)</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
 </tr>
 </tbody>
 </table>
@@ -260,15 +294,15 @@
 
 <dl class="class">
 <dt id="apps.messaging.Url">
-<em class="property">class </em><code class="descclassname">apps.messaging.</code><code class="descname">Url</code><span class="sig-paren">(</span><em>url</em>, <em>title=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/messaging.html#Url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Url" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">apps.messaging.</code><code class="descname">Url</code><span class="sig-paren">(</span><em>url</em>, <em>title=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apps/messaging.html#Url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Url" title="Permalink to this definition">¶</a></dt>
 <dd><p>A MessageComponent used for rendering hyperlinks.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>url</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a>) – The URL of the link</li>
-<li><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>, </em><em>optional</em>) – The title to use for the link. Defaults to None.</li>
+<li><strong>url</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a>) – The URL of the link</li>
+<li><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – The title to use for the link. Defaults to None.</li>
 </ul>
 </td>
 </tr>
@@ -276,17 +310,17 @@
 </table>
 <dl class="staticmethod">
 <dt id="apps.messaging.Url.from_component_json">
-<em class="property">static </em><code class="descname">from_component_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/messaging.html#Url.from_component_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Url.from_component_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constructs a Url component from JSON
-:param json_in: The JSON from which to construct the Text component
-:type json_in: dict</p>
+<em class="property">static </em><code class="descname">from_component_json</code><span class="sig-paren">(</span><em>json_in</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apps/messaging.html#Url.from_component_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Url.from_component_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs a Url component from JSON</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The text component</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>json_in</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – The JSON from which to construct the Text component</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">(<a class="reference internal" href="#apps.messaging.Url" title="apps.messaging.Url">Url</a>)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The text component</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">(<a class="reference internal" href="#apps.messaging.Url" title="apps.messaging.Url">Url</a>)</td>
 </tr>
 </tbody>
 </table>
@@ -294,15 +328,15 @@
 
 <dl class="method">
 <dt id="apps.messaging.Url.get_component_json">
-<code class="descname">get_component_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/messaging.html#Url.get_component_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Url.get_component_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Intended to be overridden by subclasses, and should return a normal JSON representation of the object.</p>
+<code class="descname">get_component_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apps/messaging.html#Url.get_component_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Url.get_component_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the JSON representation of the component</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The JSON representation of the component.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The JSON representation of the component</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>)</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a></td>
 </tr>
 </tbody>
 </table>
@@ -317,21 +351,21 @@
 
 <dl class="class">
 <dt id="apps.messaging.AcceptDecline">
-<em class="property">class </em><code class="descclassname">apps.messaging.</code><code class="descname">AcceptDecline</code><a class="reference internal" href="../_modules/apps/messaging.html#AcceptDecline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.AcceptDecline" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">apps.messaging.</code><code class="descname">AcceptDecline</code><a class="reference internal" href="_modules/apps/messaging.html#AcceptDecline"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.AcceptDecline" title="Permalink to this definition">¶</a></dt>
 <dd><p>A MessageComponent used for rendering a button to Accept or Decline some action</p>
 <dl class="staticmethod">
 <dt id="apps.messaging.AcceptDecline.from_component_json">
-<em class="property">static </em><code class="descname">from_component_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/messaging.html#AcceptDecline.from_component_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.AcceptDecline.from_component_json" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constructs an AcceptDecline component from JSON
-:param json_in: The JSON from which to construct the Text component
-:type json_in: dict</p>
+<em class="property">static </em><code class="descname">from_component_json</code><span class="sig-paren">(</span><em>json_in</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apps/messaging.html#AcceptDecline.from_component_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.AcceptDecline.from_component_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs an AcceptDecline component from JSON</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The text component</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>json_in</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – The JSON from which to construct the Text component</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">(<a class="reference internal" href="#apps.messaging.AcceptDecline" title="apps.messaging.AcceptDecline">AcceptDecline</a>)</td>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The text component</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">(<a class="reference internal" href="#apps.messaging.AcceptDecline" title="apps.messaging.AcceptDecline">AcceptDecline</a>)</td>
 </tr>
 </tbody>
 </table>
@@ -346,15 +380,15 @@
 
 <dl class="class">
 <dt id="apps.messaging.Message">
-<em class="property">class </em><code class="descclassname">apps.messaging.</code><code class="descname">Message</code><span class="sig-paren">(</span><em>subject=None</em>, <em>body=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/messaging.html#Message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Message" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">apps.messaging.</code><code class="descname">Message</code><span class="sig-paren">(</span><em>subject=None</em>, <em>body=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apps/messaging.html#Message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Message" title="Permalink to this definition">¶</a></dt>
 <dd><p>An object used to contain an entire message.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>subject</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.6)"><em>str</em></a><em>, </em><em>optional</em>) – The subject of the message. Defaults to None</li>
-<li><strong>body</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>[</em><em>MessageComponent</em><em>]</em>) – The body of the message. Defaults to an empty body.</li>
+<li><strong>subject</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – The subject of the message. Defaults to None</li>
+<li><strong>body</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a><em>[</em><em>MessageComponent</em><em>]</em>) – The body of the message. Defaults to an empty body.</li>
 </ul>
 </td>
 </tr>
@@ -362,7 +396,7 @@
 </table>
 <dl class="method">
 <dt id="apps.messaging.Message.append">
-<code class="descname">append</code><span class="sig-paren">(</span><em>message_component</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/messaging.html#Message.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Message.append" title="Permalink to this definition">¶</a></dt>
+<code class="descname">append</code><span class="sig-paren">(</span><em>message_component</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apps/messaging.html#Message.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Message.append" title="Permalink to this definition">¶</a></dt>
 <dd><p>Appends a message component to the body of the message.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -376,7 +410,7 @@
 
 <dl class="method">
 <dt id="apps.messaging.Message.as_json">
-<code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/messaging.html#Message.as_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Message.as_json" title="Permalink to this definition">¶</a></dt>
+<code class="descname">as_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/apps/messaging.html#Message.as_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Message.as_json" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get the JSON representation of this message</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -384,7 +418,7 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The JSON representation of this message</td>
 </tr>
-<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)">dict</a>)</td>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">(<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)">dict</a>)</td>
 </tr>
 </tbody>
 </table>
@@ -392,7 +426,7 @@
 
 <dl class="method">
 <dt id="apps.messaging.Message.extend">
-<code class="descname">extend</code><span class="sig-paren">(</span><em>message_components</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/messaging.html#Message.extend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Message.extend" title="Permalink to this definition">¶</a></dt>
+<code class="descname">extend</code><span class="sig-paren">(</span><em>message_components</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apps/messaging.html#Message.extend"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Message.extend" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds multiple message components to the body of the message.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -406,13 +440,13 @@
 
 <dl class="staticmethod">
 <dt id="apps.messaging.Message.from_json">
-<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/messaging.html#Message.from_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Message.from_json" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="descname">from_json</code><span class="sig-paren">(</span><em>json_in</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apps/messaging.html#Message.from_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.Message.from_json" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs a Message from its JSON representation</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>json_in</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.6)"><em>dict</em></a>) – The JSON representation of this message</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>json_in</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – The JSON representation of this message</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The constructed Message</td>
 </tr>
@@ -426,7 +460,7 @@
 
 <dl class="function">
 <dt id="apps.messaging.send_message">
-<code class="descclassname">apps.messaging.</code><code class="descname">send_message</code><span class="sig-paren">(</span><em>message</em>, <em>users=None</em>, <em>roles=None</em>, <em>requires_reauth=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/apps/messaging.html#send_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.send_message" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">apps.messaging.</code><code class="descname">send_message</code><span class="sig-paren">(</span><em>message</em>, <em>users=None</em>, <em>roles=None</em>, <em>requires_reauth=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/apps/messaging.html#send_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#apps.messaging.send_message" title="Permalink to this definition">¶</a></dt>
 <dd><p>Helper function used to send a message</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -434,9 +468,9 @@
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>message</strong> (<a class="reference internal" href="#apps.messaging.Message" title="apps.messaging.Message"><em>Message</em></a>) – The message to send</li>
-<li><strong>users</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em><em>, </em><em>optional</em>) – The IDs of the users to send the message to. Defaults to [].</li>
-<li><strong>roles</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.6)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.6)"><em>int</em></a><em>]</em><em>, </em><em>optional</em>) – The IDs of the roles to send the message to. Defaults to [].</li>
-<li><strong>requires_reauth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.6)"><em>bool</em></a><em>, </em><em>optional</em>) – Does this message require reauthorization. CURRENTLY NOT IMPLEMENTED.</li>
+<li><strong>users</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a><em>]</em><em>, </em><em>optional</em>) – The IDs of the users to send the message to. Defaults to [].</li>
+<li><strong>roles</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.7)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a><em>]</em><em>, </em><em>optional</em>) – The IDs of the roles to send the message to. Defaults to [].</li>
+<li><strong>requires_reauth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – Does this message require reauthorization. CURRENTLY NOT IMPLEMENTED.</li>
 </ul>
 </td>
 </tr>
@@ -452,12 +486,21 @@
           </div>
           <footer>
   
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="interfaces.html" class="btn btn-neutral float-right" title="Interface Development" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="Welcome to Walkoff’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2017, United States Government.
+        &copy; Copyright 2017, United States Government
 
     </p>
   </div>
@@ -476,34 +519,21 @@
 
   
 
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'../',
-            VERSION:'0.8.1',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="../_static/jquery.js"></script>
-      <script type="text/javascript" src="../_static/underscore.js"></script>
-      <script type="text/javascript" src="../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+    
 
   
 
-  
-  
-    <script type="text/javascript" src="../_static/js/theme.js"></script>
-  
+  <script type="text/javascript" src="_static/js/theme.js"></script>
 
   <script type="text/javascript">
       jQuery(function () {
-          
-          SphinxRtdTheme.Navigation.enableSticky();
-          
+          SphinxRtdTheme.Navigation.enable(true);
       });
   </script> 
 
