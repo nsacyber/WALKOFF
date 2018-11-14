@@ -1,7 +1,9 @@
 from unittest import TestCase
+from uuid import uuid4
+
 from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy, make_execution_strategy, \
     RemoteActionExecutionStrategy
-from uuid import uuid4
+
 
 class MockRestrictedWorkflowContext:
     id = str(uuid4())
@@ -35,5 +37,3 @@ class TestActionExecutionStrategyFactory(TestCase):
 
         with self.assertRaises(ValueError):
             make_execution_strategy(MockConfig, MockRestrictedWorkflowContext)
-
-

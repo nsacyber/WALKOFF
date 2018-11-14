@@ -1,7 +1,8 @@
 from unittest import TestCase
-from walkoff.appgateway.accumulators import InMemoryAccumulator, ExternallyCachedAccumulator
-from tests.util.mock_objects import MockRedisCacheAdapter
 from uuid import uuid4
+
+from tests.util.mock_objects import MockRedisCacheAdapter
+from walkoff.appgateway.accumulators import InMemoryAccumulator, ExternallyCachedAccumulator
 
 
 class TestInMemoryAccumulator(TestCase):
@@ -21,12 +22,12 @@ class TestInMemoryAccumulator(TestCase):
         with self.assertRaises(AttributeError):
             self.cache.__cmp__(cache2)
 
+
 class TestExternallyCachedAccumulator(TestCase):
 
     @classmethod
     def setUpClass(cls):
         cls.redis_cache = MockRedisCacheAdapter()
-
 
     def setUp(self):
         self.workflow_id = uuid4()
@@ -106,9 +107,9 @@ class TestExternallyCachedAccumulator(TestCase):
         self.cache.update(entries)
         retrieved = {self.cache.extract_key(key): value for key, value in self.cache.items()}
         self.assertEqual(len(retrieved), len(entries))
-        #entries = {self.cache.format_key(key): value for key, value in entries.items()}
-        #print(set(retrieved))
-        #print(set(list(entries.items())))
+        # entries = {self.cache.format_key(key): value for key, value in entries.items()}
+        # print(set(retrieved))
+        # print(set(list(entries.items())))
         self.assertDictEqual(retrieved, entries)
 
     def test_pop_too_many_args(self):

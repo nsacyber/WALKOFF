@@ -1,14 +1,17 @@
 from unittest import TestCase
-import requests_mock
 from uuid import uuid4
-from walkoff.worker.action_exec_strategy import RemoteActionExecutionStrategy, ExecutableContext
+
+import requests_mock
+
 from walkoff.helpers import ExecutionError
+from walkoff.worker.action_exec_strategy import RemoteActionExecutionStrategy, ExecutableContext
 
 
 class MockWorkflowExecContext(object):
     id = str(uuid4())
     execution_id = str(uuid4())
     name = 'test'
+
 
 class TestRemoteActionExecStrategy(TestCase):
 
@@ -28,7 +31,6 @@ class TestRemoteActionExecStrategy(TestCase):
         if not executable_id:
             executable_id = uuid4()
         return ExecutableContext(executable_type, app_name, executable_name, executable_id, execution_id=execution_id)
-
 
     def test_404_error_non_action(self):
         execution_id = str(uuid4())

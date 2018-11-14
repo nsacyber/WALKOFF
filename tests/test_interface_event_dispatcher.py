@@ -6,9 +6,9 @@ import walkoff.executiondb.schemas
 from interfaces import InterfaceEventDispatcher, dispatcher
 from interfaces.exceptions import UnknownEvent
 from tests.util import execution_db_help, initialize_test_config
+from walkoff.appgateway.apiutil import UnknownApp, UnknownAppAction
 from walkoff.events import WalkoffEvent, EventType
 from walkoff.executiondb.executionelement import ExecutionElement
-from walkoff.appgateway.apiutil import UnknownApp, UnknownAppAction
 
 
 class MockWorkflow(ExecutionElement):

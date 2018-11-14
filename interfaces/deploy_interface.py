@@ -1,6 +1,7 @@
-from walkoff.multiprocessedexecutor.kafka_receivers import KafkaWorkflowResultsReceiver
 import threading
+
 import walkoff.config
+from walkoff.multiprocessedexecutor.kafka_receivers import KafkaWorkflowResultsReceiver
 
 if __name__ == '__main__':
     walkoff.config.initialize()

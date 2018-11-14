@@ -1,6 +1,6 @@
 import logging
-import time
 import socket
+import time
 
 from apps import App, action
 

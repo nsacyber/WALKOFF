@@ -1,25 +1,26 @@
 #!/usr/bin/env python
 
-import ujson
+import logging
 import os
 from timeit import default_timer as timer
 
 import falcon
+import ujson
 import yaml
 from jsonschema import validate, ValidationError
+
 import walkoff.config
 from apps import App
 from walkoff.appgateway import cache_apps, get_app
 from walkoff.appgateway.accumulators import ExternallyCachedAccumulator
 from walkoff.appgateway.apiutil import UnknownFunction
 from walkoff.cache import make_cache
+from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
 from walkoff.helpers import ExecutionError
+from walkoff.multiprocessedexecutor.kafka_senders import KafkaWorkflowResultsSender
 from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy, ExecutableContext
 from walkoff.worker.workflow_exec_context import RestrictedWorkflowContext
-import logging
-from walkoff.events import WalkoffEvent
-from walkoff.multiprocessedexecutor.kafka_senders import KafkaWorkflowResultsSender
 
 app_name = os.environ.get('APP_NAME')
 
@@ -47,7 +48,7 @@ def parse_openapi(path):
             schema = definitions['ExecutionContext']
 
             for position, replacement in (
-            ('workflow_context', 'WorkflowContext'), ('executable_context', 'ExecutableContext')):
+                    ('workflow_context', 'WorkflowContext'), ('executable_context', 'ExecutableContext')):
                 schema['properties'][position] = definitions[replacement]
 
             schema['properties']['arguments']['items'] = definitions['Argument']

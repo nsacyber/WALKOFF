@@ -2,13 +2,13 @@ import unittest
 
 import walkoff.appgateway
 import walkoff.config
+import walkoff.server.workflowresults
 from tests.util import execution_db_help, initialize_test_config
 from tests.util.mock_objects import *
 from walkoff.events import WalkoffEvent
 from walkoff.multiprocessedexecutor import multiprocessedexecutor
 from walkoff.server.app import create_app
 from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy
-import walkoff.server.workflowresults
 
 
 class TestSimpleWorkflow(unittest.TestCase):

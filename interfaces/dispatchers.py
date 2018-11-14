@@ -3,8 +3,8 @@ from weakref import WeakSet
 
 import walkoff.config
 from interfaces.util import convert_to_iterable
-from walkoff.events import EventType
 from walkoff.appgateway.apiutil import UnknownApp, UnknownAppAction
+from walkoff.events import EventType
 
 _logger = logging.getLogger(__name__)
 

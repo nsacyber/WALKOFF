@@ -49,6 +49,7 @@ def test_app(app_name):
 
 if __name__ == '__main__':
     from walkoff.config import Config
+
     cmd_args = cmd_line()
     all_apps = list_apps(Config.APPS_PATH)
     ret = True

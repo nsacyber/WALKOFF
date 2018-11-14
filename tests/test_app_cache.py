@@ -1,13 +1,12 @@
+import os.path
 from importlib import import_module
 from unittest import TestCase
 
-import os.path
-
+from walkoff.appgateway.apiutil import UnknownApp, UnknownAppAction
 from walkoff.appgateway.appcache import (AppCache, WalkoffTag,
                                          _get_qualified_class_name, _get_qualified_function_name,
                                          _strip_base_module_from_qualified_name)
 from walkoff.appgateway.decorators import action
-from walkoff.appgateway.apiutil import UnknownApp, UnknownAppAction
 
 
 def f1(): pass

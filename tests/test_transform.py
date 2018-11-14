@@ -82,7 +82,7 @@ class TestTransform(unittest.TestCase):
     def test_execute_with_args_with_conversion(self):
         self.assertAlmostEqual(
             Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='10.3')]).execute(
-                LocalActionExecutionStrategy(), 5.4,{}),
+                LocalActionExecutionStrategy(), 5.4, {}),
             15.7
         )
 

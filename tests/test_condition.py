@@ -5,7 +5,6 @@ from tests.util import execution_db_help, initialize_test_config
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.transform import Transform
-from walkoff.appgateway.apiutil import InvalidArgument
 from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy
 
 

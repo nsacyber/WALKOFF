@@ -1,12 +1,13 @@
 from unittest import TestCase
+from uuid import uuid4
+
+import dill
 
 from apps import App as AppBase
 from tests.util import execution_db_help
 from tests.util import initialize_test_config
-from walkoff.executiondb.device import App, Device, DeviceField, EncryptedDeviceField
 from tests.util.mock_objects import MockRedisCacheAdapter
-from uuid import uuid4
-import dill
+from walkoff.executiondb.device import App, Device, DeviceField, EncryptedDeviceField
 
 
 class TestAppBase(TestCase):
@@ -154,4 +155,3 @@ class TestAppBase(TestCase):
         self.assertIsInstance(reconstructed, Foo)
         self.assertEqual(reconstructed.a, 5)
         self.assertEqual(reconstructed.b, 'b')
-

@@ -1,10 +1,7 @@
 import json
-import unittest
 
 from flask import current_app
 
-from tests.util import initialize_test_config
-from tests.util.execution_db_help import setup_dbs
 from tests.util.servertestcase import ServerTestCase
 from walkoff.scheduler import InvalidTriggerArgs
 from walkoff.serverdb import db

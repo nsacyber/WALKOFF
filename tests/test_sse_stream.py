@@ -81,7 +81,7 @@ class SseStreamTestBase(object):
 
         args = [('event1', 1), ('event2', 2)]
         sses = [SseEvent(event, {'a': arg}) for event, arg in args]
-        formatted_sses = [sse.format(i+1) for i, sse in enumerate(sses)]
+        formatted_sses = [sse.format(i + 1) for i, sse in enumerate(sses)]
 
         def publish():
             for event, data in args:
@@ -110,7 +110,7 @@ class SseStreamTestBase(object):
 
         args = [('event1', 1), ('event2', 2)]
         sses = [SseEvent(event, {'a': arg}) for event, arg in args]
-        formatted_sses = [sse.format(i+1, retry=50) for i, sse in enumerate(sses)]
+        formatted_sses = [sse.format(i + 1, retry=50) for i, sse in enumerate(sses)]
 
         def publish():
             for event, data in args:
@@ -139,7 +139,7 @@ class SseStreamTestBase(object):
 
         args = [('event1', 1), ('event2', 2)]
         sses = [SseEvent(event, {'a': arg}) for event, arg in args]
-        formatted_sses = [sse.format(i+1) for i, sse in enumerate(sses)]
+        formatted_sses = [sse.format(i + 1) for i, sse in enumerate(sses)]
 
         def publish():
             for event, data in args:
@@ -168,7 +168,7 @@ class SseStreamTestBase(object):
 
         args = [('event1', 1), ('event2', 2)]
         sses = [SseEvent(event, {'a': arg}) for event, arg in args]
-        formatted_sses = [sse.format(i+1, retry=100) for i, sse in enumerate(sses)]
+        formatted_sses = [sse.format(i + 1, retry=100) for i, sse in enumerate(sses)]
 
         def publish():
             for event, data in args:
@@ -207,5 +207,3 @@ class TestInterfaceSseStream(TestCase):
         stream = InterfaceSseStream('HelloWorld2', 'random')
         self.assertEqual(stream.interface, 'HelloWorld2')
         self.assertEqual(stream.channel, create_interface_channel_name('HelloWorld2', 'random'))
-
-

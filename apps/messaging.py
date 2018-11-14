@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def convert_class_name_to_tag(name):
     """
-    Converts a upper camelcase Python class name to lower snake case. Used for converting a MessageComponent class name
+    Converts an upper camelcase Python class name to lower snake case. Used for converting a MessageComponent class name
     to a tag to be used in the JSON
 
     Args:
@@ -31,12 +31,12 @@ class MessageComponentTypeRegistry(type):
     """
 
     def __init__(cls, name, bases, dct):
-        """
-        Constructor
+        """Constructor for MessageComponentTypeRegistry class
+
         Args:
-            name: Name of the class
-            bases: Bases of the class
-            dct: Namespace of the class
+            name (str): Name of the class
+            bases (Tuple[type]): Bases of the class
+            dct (dict(str, any)): Namespace of the class
         """
         if not hasattr(cls, 'registry'):
             cls.registry = {}
@@ -93,7 +93,6 @@ class MessageComponent(object):
 
         Returns:
             (MessageComponent): The constructed message component
-
         """
         message_component_class = MessageComponent.registry.get(json_in['type'], MessageComponent)
         return message_component_class.from_component_json(json_in['data'])
@@ -126,17 +125,23 @@ class Text(MessageComponent):
         self.text = text
 
     def get_component_json(self):
+        """Gets the JSON representation of the component
+
+        Returns:
+            dict: The JSON representation of the component
+        """
         return {'text': self.text}
 
     @staticmethod
     def from_component_json(json_in):
         """
         Constructs a Text component from JSON
+
         Args:
             json_in (dict): The JSON from which to construct the Text component
 
         Returns:
-            (Text): The text component
+            (Text): The text component object
         """
         return Text(json_in['text'])
 
@@ -156,6 +161,11 @@ class Url(MessageComponent):
         self.title = title
 
     def get_component_json(self):
+        """Gets the JSON representation of the component
+
+        Returns:
+            dict: The JSON representation of the component
+        """
         ret = {'url': self.url}
         if self.title:
             ret['title'] = self.title
@@ -165,6 +175,7 @@ class Url(MessageComponent):
     def from_component_json(json_in):
         """
         Constructs a Url component from JSON
+
         Args:
             json_in (dict): The JSON from which to construct the Text component
 
@@ -186,6 +197,7 @@ class AcceptDecline(MessageComponent):
     def from_component_json(json_in):
         """
         Constructs an AcceptDecline component from JSON
+
         Args:
             json_in (dict): The JSON from which to construct the Text component
 

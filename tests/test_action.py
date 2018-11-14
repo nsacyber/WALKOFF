@@ -13,7 +13,6 @@ from walkoff.executiondb.condition import Condition
 from walkoff.executiondb.conditionalexpression import ConditionalExpression
 from walkoff.executiondb.position import Position
 from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy
-from walkoff.appgateway.apiutil import UnknownApp, UnknownAppAction
 
 
 class TestAction(unittest.TestCase):

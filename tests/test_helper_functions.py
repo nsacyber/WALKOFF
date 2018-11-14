@@ -7,8 +7,8 @@ from tests.util.assertwrappers import orderless_list_compare
 from walkoff.appgateway.apiutil import get_app_action_api, get_condition_api, get_transform_api, UnknownApp, \
     UnknownAppAction, UnknownCondition, UnknownTransform
 from walkoff.helpers import *
-from walkoff.server.blueprints.root import handle_database_errors, handle_generic_server_error
 from walkoff.server.app import create_app
+from walkoff.server.blueprints.root import handle_database_errors, handle_generic_server_error
 
 
 class TestHelperFunctions(unittest.TestCase):

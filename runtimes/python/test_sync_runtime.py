@@ -1,8 +1,7 @@
-from uuid import uuid4
 import logging
-
-import sys
 import os
+import sys
+from uuid import uuid4
 
 sys.path.append(os.path.abspath('../..'))
 
@@ -23,7 +22,6 @@ def client():
     return testing.TestClient(runtime.api)
 
 
-
 @pytest.fixture
 def kafka_client():
     class MockKafkaResultsSender:
@@ -35,6 +33,7 @@ def kafka_client():
             self.call_history.append((workflow, sender, kwargs))
 
     return MockKafkaResultsSender()
+
 
 @pytest.fixture
 def accumulator():
@@ -333,7 +332,7 @@ def invalid_execution_request_generator():
         invalid_request.pop(field)
         yield invalid_request
 
-    #generate requests with missing field in workflow context
+    # generate requests with missing field in workflow context
     for field in ('name', 'id'):
         invalid_request = original_request.copy()
         invalid_request['workflow_context'].pop(field)
@@ -349,7 +348,6 @@ def invalid_execution_request_generator():
     yield ''
     yield '\x81'
     yield 'not json'
-
 
 
 @pytest.mark.parametrize('request', [request for request in invalid_execution_request_generator()])

@@ -1,8 +1,10 @@
 from unittest import TestCase
-from walkoff.appgateway.accumulators import *
 from uuid import uuid4
+
 from tests.config import TestConfig as Config
+from walkoff.appgateway.accumulators import *
 from walkoff.cache import make_cache
+
 
 class MockWorkflow(object):
 
@@ -11,6 +13,7 @@ class MockWorkflow(object):
 
     def get_execution_id(self):
         return self.workflow_execution_id
+
 
 class TestAccumulatorFactory(TestCase):
 
@@ -34,5 +37,3 @@ class TestAccumulatorFactory(TestCase):
 
         with self.assertRaises(ValueError):
             make_accumulator(self.workflow, MockConfig)
-
-

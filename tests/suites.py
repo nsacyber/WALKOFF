@@ -28,7 +28,8 @@ __execution_tests = [test_validatable, test_argument, test_remote_action_exec_st
                      test_scheduler, test_walkoff_tag, test_app_cache, test_app_base, test_console_logging_handler,
                      test_workflow_communication_sender, test_device_database, test_device_field_database,
                      test_action_exec_strategy_factory, test_accumulators, test_accumulator_factory,
-                     test_conditional_expression]
+                     test_conditional_expression, test_app_cache_entry, test_app_database, test_device_validation,
+                     test_scheduler_utils]
 
 execution_suite = TestSuite()
 add_tests_to_suite(execution_suite, __execution_tests)

@@ -1,10 +1,10 @@
 import importlib
 import unittest
+from uuid import uuid4
 
 import walkoff.appgateway
 from tests.util import execution_db_help, initialize_test_config
 from walkoff.appgateway import appinstance
-from uuid import uuid4
 
 
 class TestInstance(unittest.TestCase):

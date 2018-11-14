@@ -1,6 +1,5 @@
 import unittest
 
-import walkoff.config
 from tests.util import execution_db_help, initialize_test_config
 from walkoff.extensions import db
 from walkoff.server.app import create_app

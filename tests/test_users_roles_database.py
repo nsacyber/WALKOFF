@@ -1,7 +1,6 @@
 import unittest
 from datetime import datetime, timedelta
 
-import walkoff.config
 from tests.util import execution_db_help, initialize_test_config
 from walkoff.extensions import db
 from walkoff.helpers import timestamp_to_datetime

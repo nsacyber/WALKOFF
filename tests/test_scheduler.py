@@ -1,7 +1,5 @@
 import unittest
 
-from mock import call
-
 from walkoff.scheduler import *
 
 
@@ -123,7 +121,6 @@ class TestScheduler(unittest.TestCase):
     #     self.assertDictEqual(self.scheduler.get_all_scheduled_workflows(), {task_id2: workflow_ids2})
 
     def test_start_from_stopped(self):
-
         @WalkoffEvent.SchedulerStart.connect
         def sub(sender, **kwargs):
             self.event_count += 1
@@ -148,7 +145,6 @@ class TestScheduler(unittest.TestCase):
         @WalkoffEvent.SchedulerPaused.connect
         def sub(sender, **kwargs):
             self.event_count += 1
-
 
         self.assertEqual(self.scheduler.pause(), STATE_PAUSED)
         self.assert_event_count(1)

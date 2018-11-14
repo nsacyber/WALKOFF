@@ -7,9 +7,9 @@ from flask import current_app
 from tests.util import execution_db_help
 from tests.util.servertestcase import ServerTestCase
 from walkoff.events import WalkoffEvent
-from walkoff.server.returncodes import *
-from walkoff.executiondb.device import App, Device
 from walkoff.executiondb import ExecutionDatabase
+from walkoff.executiondb.device import App, Device
+from walkoff.server.returncodes import *
 
 try:
     from importlib import reload

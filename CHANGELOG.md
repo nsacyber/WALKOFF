@@ -2,6 +2,32 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
+## [0.9.0]
+###### 2018-11-14
+
+### Added
+* -walkoffctl initial working version
+- more comprehenesive logging (prometheus and fluentd)
+- ability to run with kubernetes
+- runtimes
+- pytests in addition to unit tests
+- user in execution
+- templates for runtime docker files
+- separated senders/receivers for ZMQ and Kafka
+
+### Changed
+* -bootstrap4, angular 6.1.7
+-workflow execution contexts
+
+### Removed
+*- disk cache
+- case db
+
+### Fixed
+* foreign key constraints
+- pinned connexion library version
+- minor aesthetic improvements
+
 ## [0.8.5]
 ###### 2018-09-12
 
