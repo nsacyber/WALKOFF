@@ -6,27 +6,27 @@
 ###### 2018-11-14
 
 ### Added
-* -walkoffctl initial working version
-- more comprehenesive logging (prometheus and fluentd)
-- ability to run with kubernetes
-- runtimes
-- pytests in addition to unit tests
-- user in execution
-- templates for runtime docker files
-- separated senders/receivers for ZMQ and Kafka
+* Support for running WALKOFF in a Kubernetes cluster using docker images and helm
+* Command line interface (walkoffctl) for managing WALKOFF installations, both locally and on Kubernetes
+* More comprehensive logging with Prometheus, fluentd, and flask
+* Ability to run apps in separate containers for better scalability (still in-progress)
+  * Support for templating Docker files for apps and runtimes
+* Began introducing PyTest as a more maintainable alternative to unittest
+* Support for tracking which User executed which Workflow
+* Now have the option of choosing ZMQ sockets or Kafka message queues to communicate with executing Workflows
 
 ### Changed
-* -bootstrap4, angular 6.1.7
--workflow execution contexts
+* Moved logic of executing a Workflow into Workflow execution context objects, which allows for more flexiblity
+* Upgraded to boostrap4 and Angular 6.1.7
 
 ### Removed
-*- disk cache
-- case db
+* Removed support for DiskCache -- a Redis cache must be installed to run WALKOFF
+* The Case database, as it was unnecessary on top of the comprehensive logging done by WALKOFF
 
 ### Fixed
-* foreign key constraints
-- pinned connexion library version
-- minor aesthetic improvements
+* Fixed the foreign key constraints in both databases (they were not being enforced previously)
+* Connexion library version updated in requirements.txt to fix access_token and 404 error
+* Minor aesthetic improvements to front-end
 
 ## [0.8.5]
 ###### 2018-09-12
