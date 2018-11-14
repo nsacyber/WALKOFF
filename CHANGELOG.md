@@ -5,6 +5,11 @@
 ## [0.9.0]
 ###### 2018-11-14
 
+**Please Note: From version 0.9.0 forwards, WALKOFF requires a Redis cache to operate. You can run Redis natively 
+on most Linux distributions (see the Redis quickstart guide: https://redis.io/topics/quickstart or search for a package
+in your OS's package manager). On Windows, you will need to use Docker to run Redis in a container or expose Redis from 
+a VM.**
+
 ### Added
 * Support for running WALKOFF in a Kubernetes cluster using docker images and helm
 * Command line interface (walkoffctl) for managing WALKOFF installations, both locally and on Kubernetes

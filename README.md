@@ -40,12 +40,21 @@ Walkoff apps can be found at: <https://github.com/nsacyber/WALKOFF-Apps>
 * NodeJS v4+ and Node Package Manager (npm) v5+
     * On Ubuntu, if you install `node` via `apt-get`, it will be installed as `nodejs` - you may need to create a symlink from your installed `nodejs` to `node` for `npm` to work correctly.
     * npm v5 requires Node v4+, while npm v6 requires Node v6+.
-* Tested on Windows and Linux
-    * On Linux, you will need the `python-devel` package for your distribution.
+* Redis 5+
+    * Redis can be run on Linux (see https://redis.io/topics/quickstart or check your OS's package manager), 
+    * If you are using Windows, you will need to use Redis in a VM or a Docker container.
+* Best used with Linux, or in Docker
+    * On Linux, you will need the `python-devel` package for your distribution if running natively.
 
 *Individual apps may specify their own requirements.*
 
 ## Installation Instructions
+
+### Docker
+
+Please see the Readme on Docker Cloud for instructions on running WALKOFF in a docker container: https://cloud.docker.com/repository/docker/walkoffcyber/walkoff
+
+### Natively
 
 If the Python environment for your elevated privileges are the same as the Python environment you will be running WALKOFF in (use `pip --version` to check), you can use the all-in-one setup script with elevated privileges:
 
