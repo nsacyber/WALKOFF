@@ -22,13 +22,12 @@ pynacl
 alembic
 healthcheck
 psycopg2-binary
-<<<<<<< HEAD
 click
 kubernetes
 pyopenssl
 gitpython
 dill
-redis
+redis == 2.10.6
 confluent-kafka
 fluent-logger
 msgpack
@@ -37,6 +36,3 @@ werkzeug
 prometheus_flask_exporter
 requests
 swagger_spec_validator
-=======
-swagger-spec-validator
->>>>>>> master
