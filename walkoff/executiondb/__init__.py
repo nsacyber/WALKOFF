@@ -1,5 +1,5 @@
 import enum
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, MetaData
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
@@ -10,6 +10,14 @@ from sqlalchemy_utils import database_exists, create_database
 from walkoff.helpers import format_db_path
 
 Execution_Base = declarative_base()
+naming_convention = {
+    "ix": 'ix_%(column_0_label)s',
+    "uq": "uq_%(table_name)s_%(column_0_name)s",
+    "ck": "ck_%(table_name)s_%(column_0_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+    "pk": "pk_%(table_name)s"
+}
+Execution_Base.metadata = MetaData(naming_convention=naming_convention)
 
 
 class ExecutionDatabase(object):
