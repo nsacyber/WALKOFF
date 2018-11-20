@@ -15,7 +15,7 @@ from git import Repo
 @click.option('-bp', '--backup-path', help='The directory to which the backup should be stored', default='./backup')
 @click.option('-v', '--version', help='Target version. If unspecified updates to the latest version')
 def update(ctx, check, backup, backup_path):
-    """Updates Walkoff to the most recent version
+    """Updates Walkoff to the most recent version.
 
     Warning: Success of this operation is not guaranteed or necessarily reversible.
     """
