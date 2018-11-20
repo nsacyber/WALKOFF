@@ -80,7 +80,7 @@ class WorkflowExecutionContext(object):
         self.app_instance_repo.shutdown_instances()
         accumulator = {str(key): value for key, value in self.accumulator.items()}
         self.send_event(WalkoffEvent.WorkflowShutdown, data=accumulator)
-        logger.info('Workflow {0} completed. Result: {1}'.format(self.workflow.name, self.accumulator))
+        logger.info('Workflow {0} completed. Result: {1}'.format(self.workflow.name, accumulator))
         self.accumulator.clear()
 
     @property
