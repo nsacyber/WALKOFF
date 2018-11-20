@@ -42,4 +42,4 @@ def status(ctx, host, port):
         click.echo(json.dumps(data, sort_keys=True, indent=4, separators=(',', ': ')))
 
 
-commands = [install, status, run, gencerts]
+commands = [install, status, run, gencerts, update]
