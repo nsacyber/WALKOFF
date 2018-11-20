@@ -26,21 +26,19 @@ def update(ctx, check, backup, backup_path):
     if check:
         ctx.exit(0)
 
-    click.echo('This feature is planned for version 1.0')
-    # if not is_admin():
-    #     if not click.confirm(
-    #             'Migrating databases and installing any new requirements might require admin privileges, but current '
-    #             'user is not admin. Would you like to try anyways?'):
-    #         ctx.exit(1)
-    #
-    # if backup:
-    #     backup(backup_path)
-    #
-    # git_pull()
-    # clean_pycache(walkoff_dir, ctx.obj['verbose'])
-    # migrate_apps()
-    # migrate_databases()
-    # migrate_workflows(latest_version[1:])
+    if not is_admin():
+        if not click.confirm(
+                'Migrating databases and installing any new requirements might require admin privileges, but current '
+                'user is not admin. Would you like to try anyways?'):
+            ctx.exit(1)
+
+    if backup:
+        backup(backup_path)
+
+    git_pull()
+    clean_pycache(walkoff_dir, ctx.obj['verbose'])
+    migrate_apps()
+    migrate_databases()
 
 
 def check_for_updates(ctx):
@@ -94,18 +92,27 @@ def git_pull():
     click.echo(subprocess.check_output(["git", "pull"], stderr=subprocess.STDOUT, universal_newlines=True))
 
 
+def clean_pycache(path=None, verbose=False):
+    if path is None:
+        my_dir = os.path.dirname(os.path.abspath(__file__))
+    else:
+        my_dir = os.path.dirname(os.path.abspath(path))
+
+    for root, dirnames, filenames in os.walk(my_dir):
+        for filename in filenames:
+            if filename.endswith((".pyc", ".pyo")):
+                if verbose:
+                    click.echo("Removing: " + os.path.join(root, filename))
+                os.remove(os.path.join(root, filename))
+
+
 def migrate_apps():
     # TODO: This needs serious effort. It needs to work like migrate workflows
-    pass
+    click.echo("Migrate apps has not yet been implemented.")
 
 
 def migrate_databases():
-    path = os.path.join('.', 'data', 'devices.db')
-    if os.path.isfile(path):
-        new_path = os.path.join('.', 'data', 'execution.db')
-        os.rename(path, new_path)
-
-    names = ["execution", "events", "walkoff"]
+    names = ["execution", "walkoff"]
     for name in names:
         try:
             r = (subprocess.check_output(["alembic", "--name", name, "current"], stderr=subprocess.STDOUT,
@@ -113,9 +120,6 @@ def migrate_databases():
             if "(head)" in r:
                 click.echo("Already up to date, no alembic upgrade needed.")
             else:
-                if name == "walkoff":
-                    subprocess.check_output(["alembic", "--name", name, "stamp", "dd74ff55c643"],
-                                            stderr=subprocess.STDOUT, universal_newlines=True)
                 click.echo(subprocess.check_output(["alembic", "--name", name, "upgrade", "head"],
                                                    stderr=subprocess.STDOUT, universal_newlines=True))
         except subprocess.CalledProcessError:
@@ -123,9 +127,3 @@ def migrate_databases():
             click.echo("Try manually running 'alembic --name {} upgrade head".format(name))
             click.echo("You may already be on the latest revision.")
             continue
-
-
-def migrate_workflows(version):
-    from walkoff.migrations.migrate_workflows import convert_playbooks
-    click.echo("Updating workflows...")
-    convert_playbooks(version)
