@@ -13,16 +13,16 @@ from git import Repo
 @click.option('--check', help='Check if updates are available', is_flag=True)
 @click.option('-b', '--backup', help='Create a backup of the entire walkoff directory')
 @click.option('-bp', '--backup-path', help='The directory to which the backup should be stored', default='./backup')
-@click.option('-v', '--version', help='Target version. If unspecified updates to the latest version')
+# @click.option('-v', '--version', help='Target version. If unspecified updates to the latest version')
 def update(ctx, check, backup, backup_path):
     """Updates Walkoff to the most recent version.
 
     Warning: Success of this operation is not guaranteed or necessarily reversible.
     """
-    # click.echo('Updating Walkoff locally')
+    click.echo('Updating Walkoff locally')
     walkoff_dir = ctx.obj['dir']
     os.chdir(walkoff_dir)
-    latest_version = check_for_updates(ctx)
+    # latest_version = check_for_updates(ctx)
     if check:
         ctx.exit(0)
 
