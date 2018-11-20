@@ -170,13 +170,16 @@ class TestBranch(unittest.TestCase):
         self.assertEqual(Executor.get_branch(wf_ctx, LocalActionExecutionStrategy()), 1)
 
     def test_branch_counter(self):
-        action = Action('HelloWorld', 'helloWorld', 'helloWorld', id=1)
+        import uuid
+        action_uid = uuid.uuid4()
+        branch_uid = uuid.uuid4()
 
-        branch = Branch(source_id=action.id, destination_id=action.id)
+        action = Action('HelloWorld', 'helloWorld', 'helloWorld', id=action_uid)
+        branch = Branch(source_id=action.id, destination_id=action.id, id=branch_uid)
         self.assertEqual(branch._counter, 0)
 
         action_result = ActionResult(result='aaa', status='Success')
-        workflow = Workflow('test', 1, actions=[action], branches=[branch])
+        workflow = Workflow('test', action_uid, actions=[action], branches=[branch])
         wf_ctx = WorkflowExecutionContext(workflow, None, None)
         wf_ctx.accumulator[action.id] = action_result.result
         wf_ctx.last_status = action_result.status
@@ -185,4 +188,4 @@ class TestBranch(unittest.TestCase):
 
         self.assertEqual(branch._counter, 1)
         self.assertIn(branch.id, wf_ctx.accumulator)
-        self.assertEqual(wf_ctx.accumulator[branch.id], '1')
+        self.assertEqual(wf_ctx.accumulator[branch.id], 1)

@@ -1,5 +1,5 @@
 from walkoff.cache import make_cache
-
+import pickle
 
 class InMemoryAccumulator(dict):
     """This accumulator is identical to a dictionary, but the copy and __cmp__ properties are disabled.
@@ -29,11 +29,12 @@ class ExternallyCachedAccumulator(object):
         self.set_key(workflow_execution_id)
 
     def __setitem__(self, key, value):
-        self._cache.set(self.format_key(key), value)
+        pickled_value = pickle.dumps(value)
+        self._cache.set(self.format_key(key), pickled_value)
 
     def __getitem__(self, item):
         if self._cache.exists(self.format_key(item)):
-            return self._cache.get(self.format_key(item))
+            return pickle.loads(self._cache.get(self.format_key(item)))
         else:
             raise KeyError
 
@@ -68,25 +69,27 @@ class ExternallyCachedAccumulator(object):
     def update(self, *args, **kwargs):
         for arg in args:
             for key, val in arg.items():
-                self._cache.set(self._key.format(key), val)
+                pickled_val = pickle.dumps(val)
+                self._cache.set(self._key.format(key), pickled_val)
         for key, val in kwargs.items():
-            self._cache.set(self._key.format(key), val)
+            pickled_val = pickle.dumps(val)
+            self._cache.set(self._key.format(key), pickled_val)
 
     def keys(self):
         return self._cache.scan(self._scan_key)
 
     def values(self):
-        return (self._cache.get(key) for key in self._cache.scan(self._scan_key))
+        return (pickle.loads(self._cache.get(key)) for key in self._cache.scan(self._scan_key))
 
     def items(self):
-        return ((key, self._cache.get(key)) for key in self._cache.scan(self._scan_key))
+        return ((key, pickle.loads(self._cache.get(key))) for key in self._cache.scan(self._scan_key))
 
     def pop(self, *args):
         if len(args) > 2:
             raise TypeError('Cannot use more than 2 arguments')
         key = self._key.format(args[0])
         if self._cache.exists(key):
-            ret = self._cache.get(key)
+            ret = pickle.loads(self._cache.get(key))
             self._cache.delete(key)
             return ret
         elif len(args) == 2:
