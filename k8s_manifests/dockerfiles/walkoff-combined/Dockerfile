@@ -28,7 +28,7 @@ RUN easy_install pip \
   && pip install --upgrade pip \
   && if [[ ! -e /usr/bin/pip ]]; then ln -sf /usr/bin/pip3 /usr/bin/pip; fi
 
-RUN git clone -b k8s_development --single-branch --progress --verbose https://www.github.com/nsacyber/WALKOFF.git ./walkoff
+RUN git clone -b master --single-branch --progress --verbose https://www.github.com/nsacyber/WALKOFF.git ./walkoff
 
 WORKDIR /app/walkoff
 
