@@ -1,6 +1,9 @@
 import logging
 import os
 
+from alembic.config import Config
+from alembic.runtime.migration import MigrationContext
+from alembic.script import ScriptDirectory
 from flask import current_app
 from flask import render_template, send_from_directory, Blueprint
 from sqlalchemy.exc import SQLAlchemyError
@@ -67,6 +70,14 @@ def create_user():
     if not database_exists(db.engine.url):
         create_database(db.engine.url)
     db.create_all()
+
+    alembic_cfg = Config(os.path.abspath("alembic.ini"), ini_section="walkoff", attributes={'configure_logger': False})
+
+    # This is necessary for a flask database
+    connection = db.engine.connect()
+    context = MigrationContext.configure(connection)
+    script = ScriptDirectory.from_config(alembic_cfg)
+    context.stamp(script, "head")
 
     # Setup admin and guest roles
     initialize_default_resources_admin()
