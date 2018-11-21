@@ -40,3 +40,6 @@ data/cache/
 *.key
 *.crt
 runtimes/python/.pytest_cache/
+runtimes/python/*.db
+runtimes/python/testapp/__init__.py
+runtimes/python/testapp/messaging.py

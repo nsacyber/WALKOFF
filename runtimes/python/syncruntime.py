@@ -9,8 +9,6 @@ import ujson
 import yaml
 from jsonschema import validate, ValidationError
 
-import sys
-sys.path.append(os.path.abspath('.'))
 import walkoff.config
 from apps import App
 from walkoff.appgateway import cache_apps, get_app
