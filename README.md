@@ -52,11 +52,65 @@ Walkoff apps can be found at: <https://github.com/nsacyber/WALKOFF-Apps>
 
 ### Docker
 
-Please see the Readme on Docker Cloud for instructions on running WALKOFF in a docker container: https://cloud.docker.com/repository/docker/walkoffcyber/walkoff
+You can use Docker Compose (https://docs.docker.com/compose/install/) to install WALKOFF along with Postgres and Redis
+using the compose file below. (This file is provided in the repository under `k8s_manifests/dockerfiles/walkoff-combined`)
+
+```yaml
+version: '3'
+services:
+  walkoff:
+    ports:
+    - "8080:8080"
+    image: "walkoffcyber/walkoff:combinedv1"
+    environment:
+    - "CACHE={\"type\": \"redis\", \"host\": \"walkoff-redis\", \"port\": 6379}"
+    - "HOST=0.0.0.0"
+    - "PORT=8080"
+    - "ZMQ_RESULTS_ADDRESS=tcp://0.0.0.0:5556"
+    - "ZMQ_COMMUNICATION_ADDRESS=tcp://0.0.0.0:5557"
+    - "WALKOFF_DB_TYPE=postgresql"
+    - "EXECUTION_DB_TYPE=postgresql"
+    - "DB_PATH=walkoff"
+    - "EXECUTION_DB_PATH=execution"
+    - "WALKOFF_DB_HOST=walkoff-postgres"
+    - "EXECUTION_DB_HOST=walkoff-postgres"
+    - "EXECUTION_DB_USERNAME=walkoff"
+    - "EXECUTION_DB_PASSWORD=walkoff"
+    - "WALKOFF_DB_USERNAME=walkoff"
+    - "WALKOFF_DB_PASSWORD=walkoff"
+    depends_on:
+    - "walkoff-redis"
+    - "walkoff-postgres"
+    entrypoint:
+    - "sleep"
+    - "36000"
+  walkoff-redis:
+    image: "redis"
+  walkoff-postgres:
+    image: "postgres"
+    environment:
+    - "POSTGRES_USER=walkoff"
+    - "POSTGRES_PASSWORD=walkoff"
+```
+
+### Kubernetes
+
+Provided that you have a Kubernetes cluster stood up and have installed Helm to that cluster, you can use 
+`python -m walkoff install` to run a guided wizard that will set up resources for WALKOFF using helm and kubectl.
 
 ### Natively
 
-If the Python environment for your elevated privileges are the same as the Python environment you will be running WALKOFF in (use `pip --version` to check), you can use the all-in-one setup script with elevated privileges:
+We recommend using a Python virtual environment (such as venv included with Python 3, pyenv-virtualenv or pipenv),
+as this avoids package version conflicts with other applications that you might have, and avoids the necessity of 
+running setup with sudo, which could cause permissions issues if you don't use sudo for subsequent runs.
+
+We also recommend using nvm to install NodeJS and npm for the same reasons as above, and as it ensures that you receive 
+the latest version (or latest LTS, whichever you prefer). Some distributions (notably Ubuntu) will have very out of 
+date versions of nodejs in their default repositories, as well as packages distributed with a nodejs executable instead 
+of node. 
+
+If the Python environment for your elevated privileges are the same as the Python environment you will be running 
+WALKOFF in (use `pip --version` to check), you can use the all-in-one setup script with elevated privileges:
 
    `python setup_walkoff.py`
 
