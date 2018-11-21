@@ -81,9 +81,6 @@ services:
     depends_on:
     - "walkoff-redis"
     - "walkoff-postgres"
-    entrypoint:
-    - "sleep"
-    - "36000"
   walkoff-redis:
     image: "redis"
   walkoff-postgres:
