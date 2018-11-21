@@ -1,4 +1,8 @@
+import os
+
 import enum
+from alembic import command
+from alembic.config import Config
 from sqlalchemy import create_engine, event, MetaData
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import IntegrityError
@@ -67,6 +71,9 @@ class ExecutionDatabase(object):
 
         Execution_Base.metadata.bind = self.engine
         Execution_Base.metadata.create_all(self.engine)
+
+        alembic_cfg = Config(os.path.abspath("alembic.ini"), ini_section="execution", attributes={'configure_logger': False})
+        command.stamp(alembic_cfg, "head")
 
     def __new__(cls, *args, **kwargs):
         if cls.instance is None:
