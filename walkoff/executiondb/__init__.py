@@ -1,5 +1,3 @@
-import os
-
 import enum
 from alembic import command
 from alembic.config import Config
@@ -11,6 +9,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import NullPool
 from sqlalchemy_utils import database_exists, create_database
 
+import walkoff.config
 from walkoff.helpers import format_db_path
 
 Execution_Base = declarative_base()
@@ -72,7 +71,8 @@ class ExecutionDatabase(object):
         Execution_Base.metadata.bind = self.engine
         Execution_Base.metadata.create_all(self.engine)
 
-        alembic_cfg = Config(os.path.abspath("alembic.ini"), ini_section="execution", attributes={'configure_logger': False})
+        alembic_cfg = Config(walkoff.config.Config.ALEMBIC_CONFIG, ini_section="execution",
+                             attributes={'configure_logger': False})
         command.stamp(alembic_cfg, "head")
 
     def __new__(cls, *args, **kwargs):

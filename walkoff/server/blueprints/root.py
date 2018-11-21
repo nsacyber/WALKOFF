@@ -71,7 +71,8 @@ def create_user():
         create_database(db.engine.url)
     db.create_all()
 
-    alembic_cfg = Config(os.path.abspath("alembic.ini"), ini_section="walkoff", attributes={'configure_logger': False})
+    alembic_cfg = Config(walkoff.config.Config.ALEMBIC_CONFIG, ini_section="walkoff",
+                         attributes={'configure_logger': False})
 
     # This is necessary for a flask database
     connection = db.engine.connect()

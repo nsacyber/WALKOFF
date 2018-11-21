@@ -172,6 +172,8 @@ class Config(object):
 
     SEPARATE_PROMETHEUS = False
 
+    ALEMBIC_CONFIG = join('.', 'alembic.ini')
+
     @classmethod
     def load_config(cls, config_path=None):
         """ Loads Walkoff configuration from JSON file
