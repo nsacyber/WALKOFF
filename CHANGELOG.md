@@ -1,6 +1,25 @@
 # Changelog
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
+     
+## [0.9.1]
+###### 2018-11-26
+
+### Added
+* README.md now contains more detailed instructions on using WALKOFF with Docker, as well as a docker-compose file
+* All databases will now be stamped with the most up-to-date alembic version, so WALKOFF will not run if you are using
+an out-of-date database (see Fixed section for more details)
+
+### Fixed
+* When using Redis as an external accumulator, results are now pickled to preserve typing. This fixes the issue where
+everything (list, int, etc.) was incorrectly being returned as strings
+* Fixed walkoffctl update script to correctly update databases -- run `python -m walkoff local update` to update
+* ActionResult objects are now pretty-printed correctly in the console and log files
+* Python Redis library is now pinned in requirements.txt due to breaking changes
+* Fixed certificate generation for Kubernetes certificates
+
+### Removed
+* Update.py script was removed and replaced with walkoffctl update (see Fixed section for more details)
 
 ## [0.9.0]
 ###### 2018-11-14
