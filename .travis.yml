@@ -84,7 +84,7 @@ matrix:
         - cp apps/__init__.py runtimes/python/testapp/__init__.py
         - cp apps/messaging.py runtimes/python/testapp/messaging.py
         - cd runtimes/python
-        - pytest runtimes/python -s -v
+        - pytest -s -v
       branches:
         only:
           - master
@@ -105,7 +105,7 @@ matrix:
         - cp apps/__init__.py runtimes/python/testapp/__init__.py
         - cp apps/messaging.py runtimes/python/testapp/messaging.py
         - cd runtimes/python
-        - pytest runtimes/python -s -v
+        - pytest -s -v
       branches:
         only:
           - master
@@ -126,7 +126,7 @@ matrix:
         - cp apps/__init__.py runtimes/python/testapp/__init__.py
         - cp apps/messaging.py runtimes/python/testapp/messaging.py
         - cd runtimes/python
-        - pytest runtimes/python -s -v
+        - pytest -s -v
       branches:
         only:
           - master
@@ -148,7 +148,7 @@ matrix:
         - cp apps/__init__.py runtimes/python/testapp/__init__.py
         - cp apps/messaging.py runtimes/python/testapp/messaging.py
         - cd runtimes/python
-        - pytest runtimes/python -s -v
+        - pytest -s -v
       branches:
         only:
           - master
