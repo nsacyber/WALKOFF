@@ -308,15 +308,25 @@ def online_install(ctx):
 
         if not all((crt, key)):
             key_obj = crypto.PKey()
-            key_obj.generate_key(crypto.TYPE_RSA, 1024)
+            key_obj.generate_key(crypto.TYPE_RSA, 2048)
 
             cert = crypto.X509()
             cert.get_subject().CN = "walkoff"
+            cert.set_version(0x2)
             cert.set_serial_number(1)
             cert.gmtime_adj_notBefore(0)
             cert.gmtime_adj_notAfter(10 * 365 * 24 * 60 * 60)
             cert.set_issuer(cert.get_subject())
             cert.set_pubkey(key_obj)
+
+            cert.add_extensions([
+                crypto.X509Extension(b'basicConstraints', True, b'CA:TRUE'),
+                crypto.X509Extension(b'subjectKeyIdentifier', False, b'hash', subject=cert)
+            ])
+            cert.add_extensions([
+                crypto.X509Extension(b'authorityKeyIdentifier', False, b'keyid:always', issuer=cert)
+            ])
+
             cert.sign(key_obj, 'sha256')
 
             with open('ca.crt', 'wb') as f:
