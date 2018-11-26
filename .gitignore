@@ -25,6 +25,7 @@ data/log/*.log
 data/walkoff.config
 docs/_*/
 npm-debug.log
+runtimes/python/*.db
 tests/testWorkflows/testGeneratedWorkflows_bkup
 tests/tmp
 tests/tmp/*
