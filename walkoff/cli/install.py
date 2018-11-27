@@ -9,9 +9,16 @@ from distutils.spawn import find_executable
 import click
 import requests
 import yaml
-from OpenSSL import crypto
 from kubernetes import client as k8s_client
 from kubernetes import config
+
+from cryptography import x509
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.x509.oid import NameOID
+import datetime
+import uuid
 
 
 @click.command()
@@ -307,34 +314,46 @@ def online_install(ctx):
                     key = None
 
         if not all((crt, key)):
-            key_obj = crypto.PKey()
-            key_obj.generate_key(crypto.TYPE_RSA, 2048)
+            private_key = rsa.generate_private_key(
+                public_exponent=65537,
+                key_size=2048,
+                backend=default_backend()
+            )
+            public_key = private_key.public_key()
+            builder = x509.CertificateBuilder()
+            builder = builder.subject_name(x509.Name([
+                x509.NameAttribute(NameOID.COMMON_NAME, u'walkoff')
+            ]))
+            builder = builder.issuer_name(x509.Name([
+                x509.NameAttribute(NameOID.COMMON_NAME, u'walkoff'),
+            ]))
+            builder = builder.not_valid_before(datetime.datetime.today() - datetime.timedelta(days=1))
+            builder = builder.not_valid_after(datetime.datetime.today() + datetime.timedelta(days=3650))
+            builder = builder.serial_number(int(uuid.uuid4()))
+            builder = builder.public_key(public_key)
+            builder = builder.add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True)
+            builder = builder.add_extension(x509.SubjectKeyIdentifier.from_public_key(public_key), critical=False)
+            builder = builder.add_extension(x509.AuthorityKeyIdentifier.from_issuer_public_key(public_key),
+                                            critical=False)
 
-            cert = crypto.X509()
-            cert.get_subject().CN = "walkoff"
-            cert.set_version(0x2)
-            cert.set_serial_number(1)
-            cert.gmtime_adj_notBefore(0)
-            cert.gmtime_adj_notAfter(10 * 365 * 24 * 60 * 60)
-            cert.set_issuer(cert.get_subject())
-            cert.set_pubkey(key_obj)
+            certificate = builder.sign(
+                private_key=private_key, algorithm=hashes.SHA256(),
+                backend=default_backend()
+            )
 
-            cert.add_extensions([
-                crypto.X509Extension(b'basicConstraints', True, b'CA:TRUE'),
-                crypto.X509Extension(b'subjectKeyIdentifier', False, b'hash', subject=cert)
-            ])
-            cert.add_extensions([
-                crypto.X509Extension(b'authorityKeyIdentifier', False, b'keyid:always', issuer=cert)
-            ])
-
-            cert.sign(key_obj, 'sha256')
-
-            with open('ca.crt', 'wb') as f:
-                byte_cert = crypto.dump_certificate(crypto.FILETYPE_PEM, cert)
+            with open("ca.key", "wb") as f:
+                byte_cert = private_key.private_bytes(
+                    encoding=serialization.Encoding.PEM,
+                    format=serialization.PrivateFormat.TraditionalOpenSSL,
+                    encryption_algorithm=serialization.NoEncryption()
+                )
                 crt = b64encode(byte_cert).decode('ascii')
                 f.write(byte_cert)
-            with open('ca.key', 'wb') as f:
-                byte_key = crypto.dump_privatekey(crypto.FILETYPE_PEM, key_obj)
+
+            with open("ca.crt", "wb") as f:
+                byte_key = certificate.public_bytes(
+                    encoding=serialization.Encoding.PEM,
+                )
                 key = b64encode(byte_key).decode('ascii')
                 f.write(byte_key)
 
