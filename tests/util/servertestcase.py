@@ -87,6 +87,7 @@ class ServerTestCase(unittest.TestCase):
         post = self.test_client.post('/api/auth', content_type="application/json",
                                      data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
         key = json.loads(post.get_data(as_text=True))
+        print(key)
         self.headers = {'Authorization': 'Bearer {}'.format(key['access_token'])}
         self.http_verb_lookup = {'get': self.test_client.get,
                                  'post': self.test_client.post,

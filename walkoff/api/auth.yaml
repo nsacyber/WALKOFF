@@ -74,3 +74,11 @@
         description: Invalid refresh token
         schema:
           $ref: '#/definitions/Error'
+
+components:
+  securitySchemes:
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-bearerInfoFunc: walkoff.security.decode_token
