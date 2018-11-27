@@ -89,7 +89,18 @@ def backup(backup_path):
 def git_pull():
     click.echo("Pulling from current branch: ")
     click.echo(subprocess.check_output(["git", "branch"], stderr=subprocess.STDOUT, universal_newlines=True))
-    click.echo(subprocess.check_output(["git", "pull"], stderr=subprocess.STDOUT, universal_newlines=True))
+
+    url = ""
+    out = subprocess.check_output(["git", "remote", "-v"], stderr=subprocess.STDOUT, universal_newlines=True)
+    if 'https' not in out and is_admin():
+        url = out[:out.index(" ")].split("\t")[1]
+        subprocess.check_output(["git", "remote", "set-url", "origin", "https://github.com/nsacyber/walkoff.git"],
+                                stderr=subprocess.STDOUT, universal_newlines=True)
+
+    subprocess.Popen(["git", "pull"], stderr=subprocess.STDOUT, universal_newlines=True)
+    if url:
+        subprocess.check_output(["git", "remote", "set-url", "origin", url], stderr=subprocess.STDOUT,
+                                universal_newlines=True)
 
 
 def clean_pycache(path=None, verbose=False):
@@ -112,13 +123,26 @@ def migrate_apps():
 
 
 def migrate_databases():
+    import walkoff.config
+    walkoff.config.Config.load_config()
+    walkoff.config.Config.load_env_vars()
     names = ["execution", "walkoff"]
     for name in names:
+
+        if name == 'execution':
+            if not os.path.exists(walkoff.config.Config.EXECUTION_DB_PATH):
+                click.echo("{} database does not exist, no alembic upgrade needed.".format(name))
+                continue
+        elif name == 'walkoff':
+            if not os.path.exists(walkoff.config.Config.DB_PATH):
+                click.echo("{} database does not exist, no alembic upgrade needed.".format(name))
+                continue
+
         try:
             r = (subprocess.check_output(["alembic", "--name", name, "current"], stderr=subprocess.STDOUT,
                                          universal_newlines=True))
             if "(head)" in r:
-                click.echo("Already up to date, no alembic upgrade needed.")
+                click.echo("{} database already up to date, no alembic upgrade needed.".format(name))
             else:
                 click.echo(subprocess.check_output(["alembic", "--name", name, "upgrade", "head"],
                                                    stderr=subprocess.STDOUT, universal_newlines=True))
