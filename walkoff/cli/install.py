@@ -448,9 +448,9 @@ def uninstall(ctx):
                         namespace, exit_on_err=False)
 
         kubectl_command(['delete', 'pvc',
-                         'execution-db-postgresql',
+                         'data-execution-db-postgresql-0',
                          'redis-data-walkoff-redis-master-0',
-                         'walkoff-db-postgresql'],
+                         'data-walkoff-db-postgresql-0'],
                         namespace, exit_on_err=False)
 
         kubectl_command(['delete', 'crd',
