@@ -37,6 +37,7 @@ def update(ctx, check, backup, backup_path):
 
     git_pull()
     clean_pycache(walkoff_dir, ctx.obj['verbose'])
+    update_pip_dependencies()
     migrate_apps()
     migrate_databases()
 
@@ -151,3 +152,10 @@ def migrate_databases():
             click.echo("Try manually running 'alembic --name {} upgrade head".format(name))
             click.echo("You may already be on the latest revision.")
             continue
+
+
+def update_pip_dependencies():
+    click.echo("Installing and updating pip dependencies, this may take some time.")
+    with open('requirements.txt') as f:
+        for req in f:
+            click.echo(subprocess.check_output(["pip", "install", "--upgrade", req]))
