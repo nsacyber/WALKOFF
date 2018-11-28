@@ -27,6 +27,7 @@
           application/json:
             schema:
               $ref: '#/components/schemas/Error'
+    security: []
 
 /auth/refresh:
   post:
