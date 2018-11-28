@@ -201,10 +201,10 @@ def online_install(ctx):
     if not execution_secret_name:
         execution_secret_name = "walkoff-postgres-execution-secret"
         execution_db_username = click.prompt('Enter a username to create', default='walkoff')
-        new_pass = click.prompt('Enter a password for the PostgreSQL instance', hide_input=True,
+        execution_db_password = click.prompt('Enter a password for the PostgreSQL instance', hide_input=True,
                                 confirmation_prompt=True, default='walkoff')
         execution_secret_obj = k8s_client.V1Secret(metadata={'name': execution_secret_name}, data={
-            'postgres-password': b64encode(new_pass.encode('utf-8')).decode('utf-8')})
+            'postgres-password': b64encode(execution_db_password.encode('utf-8')).decode('utf-8')})
         try:
             k8s_api.create_namespaced_secret(namespace, execution_secret_obj)
         except k8s_client.rest.ApiException as e:
@@ -215,7 +215,8 @@ def online_install(ctx):
     with open("k8s_manifests/setupfiles/execution-postgres-helm-values.yaml", 'r+') as f:
         try:
             y = yaml.load(f)
-            y['existingSecret'] = execution_secret_name
+            y['postgresqlUsername'] = execution_db_username
+            y['postgresqlPassword'] = execution_db_password
             f.seek(0)
             f.truncate()
             yaml.dump(y, f, default_flow_style=False)
@@ -250,10 +251,10 @@ def online_install(ctx):
     if not walkoff_db_secret_name:
         walkoff_db_secret_name = "walkoff-postgres-secret"
         walkoff_db_username = click.prompt('Enter a username to create', default='walkoff')
-        new_pass = click.prompt('Enter a password for the PostgreSQL instance', hide_input=True,
+        walkoff_db_password = click.prompt('Enter a password for the PostgreSQL instance', hide_input=True,
                                 confirmation_prompt=True, default='walkoff')
         walkoff_db_secret_obj = k8s_client.V1Secret(metadata={'name': walkoff_db_secret_name}, data={
-            'postgres-password': b64encode(new_pass.encode('utf-8')).decode('utf-8')})
+            'postgres-password': b64encode(walkoff_db_password.encode('utf-8')).decode('utf-8')})
         try:
             k8s_api.create_namespaced_secret(namespace, walkoff_db_secret_obj)
         except k8s_client.rest.ApiException as e:
@@ -264,7 +265,8 @@ def online_install(ctx):
     with open("k8s_manifests/setupfiles/walkoff-postgres-helm-values.yaml", 'r+') as f:
         try:
             y = yaml.load(f)
-            y['existingSecret'] = walkoff_db_secret_name
+            y['postgresqlUsername'] = walkoff_db_username
+            y['postgresqlPassword'] = walkoff_db_password
             f.seek(0)
             f.truncate()
             yaml.dump(y, f, default_flow_style=False)
@@ -331,11 +333,11 @@ def online_install(ctx):
             builder = builder.not_valid_after(datetime.datetime.today() + datetime.timedelta(days=3650))
             builder = builder.serial_number(int(uuid.uuid4()))
             builder = builder.public_key(public_key)
-            builder = builder.add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True)
+
             builder = builder.add_extension(x509.SubjectKeyIdentifier.from_public_key(public_key), critical=False)
             builder = builder.add_extension(x509.AuthorityKeyIdentifier.from_issuer_public_key(public_key),
                                             critical=False)
-
+            builder = builder.add_extension(x509.BasicConstraints(ca=True, path_length=None), critical=True)
             certificate = builder.sign(
                 private_key=private_key, algorithm=hashes.SHA256(),
                 backend=default_backend()
@@ -347,14 +349,14 @@ def online_install(ctx):
                     format=serialization.PrivateFormat.TraditionalOpenSSL,
                     encryption_algorithm=serialization.NoEncryption()
                 )
-                crt = b64encode(byte_cert).decode('ascii')
+                key = b64encode(byte_cert).decode('ascii')
                 f.write(byte_cert)
 
             with open("ca.crt", "wb") as f:
                 byte_key = certificate.public_bytes(
                     encoding=serialization.Encoding.PEM,
                 )
-                key = b64encode(byte_key).decode('ascii')
+                crt = b64encode(byte_key).decode('ascii')
                 f.write(byte_key)
 
         tls_secret = k8s_client.V1Secret(metadata={'name': 'walkoff-ca-key-pair'},
