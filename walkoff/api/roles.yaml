@@ -5,38 +5,38 @@
     summary: Read all roles
     description: ''
     operationId: walkoff.server.endpoints.roles.read_all_roles
-    produces:
-      - application/json
     responses:
       '200':
         description: Success
-        schema:
-          description: A list of roles
-          type: array
-          items:
-            $ref: '#/definitions/Role'
+        content:
+          application/json:
+            schema:
+              description: A list of roles
+              type: array
+              items:
+                $ref: '#/components/schemas/Role'
   post:
     tags:
       - Roles
     summary: Create a role
     description: ''
     operationId: walkoff.server.endpoints.roles.create_role
-    consumes:
-      - application/json
-    produces:
-      - application/json
     parameters:
       - in: body
         name: body
         description: The role object to be created
         required: true
-        schema:
-          $ref: '#/definitions/AddRole'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddRole'
     responses:
       201:
         description: Object created.
-        schema:
-          $ref: '#/definitions/Role'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
       400:
         description: Object exists.
   put:
@@ -45,22 +45,22 @@
     summary: Update a role
     description: ''
     operationId: walkoff.server.endpoints.roles.update_role
-    consumes:
-      - application/json
-    produces:
-      - application/json
     parameters:
       - in: body
         name: body
         description: Updated fields for the role object
         required: true
-        schema:
-          $ref: '#/definitions/Role'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
     responses:
       200:
         description: Success
-        schema:
-          $ref: '#/definitions/Role'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
       404:
         description: Object does not exist.
   patch:
@@ -69,22 +69,23 @@
     summary: Update a role
     description: ''
     operationId: walkoff.server.endpoints.roles.patch_role
-    consumes:
-      - application/json
-    produces:
-      - application/json
+
     parameters:
       - in: body
         name: body
         description: Updated fields for the role object
         required: true
-        schema:
-          $ref: '#/definitions/Role'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
     responses:
       200:
         description: Success
-        schema:
-          $ref: '#/definitions/Role'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
       404:
         description: Object does not exist.
 /roles/{role_id}:
@@ -93,20 +94,21 @@
       in: path
       description: The name that needs to be fetched.
       required: true
-      type: string
+      schema:
+        type: string
   get:
     tags:
       - Roles
     summary: Read a role
     description: ''
     operationId: walkoff.server.endpoints.roles.read_role
-    produces:
-      - application/json
     responses:
       200:
         description: Success
-        schema:
-          $ref: '#/definitions/Role'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Role'
       404:
         description: Object does not exist.
   delete:
@@ -115,8 +117,6 @@
     summary: Delete a role
     description: ''
     operationId: walkoff.server.endpoints.roles.delete_role
-    produces:
-      - application/json
     responses:
       204:
         description: Success
@@ -130,13 +130,13 @@
       summary: Read all available resource actions
       description: ''
       operationId: walkoff.server.endpoints.roles.read_available_resource_actions
-      produces:
-        - application/json
       responses:
         200:
           description: Success
-          schema:
-            description: List of available resource actions
-            type: array
-            items:
-              $ref: '#/definitions/AvailableResourceAction'
+          content:
+            application/json:
+              schema:
+                description: List of available resource actions
+                type: array
+                items:
+                  $ref: '#/components/schemas/AvailableResourceAction'

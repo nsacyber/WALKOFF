@@ -27,7 +27,7 @@ AddDevice:
       description: fields used to configure this device
       type: array
       items:
-        $ref: '#/definitions/DeviceFieldInput'
+        $ref: '#/components/schemas/DeviceFieldInput'
 
 Device:
   type: object
@@ -62,7 +62,7 @@ Device:
       description: fields used to configure this device
       type: array
       items:
-        $ref: '#/definitions/Argument'
+        $ref: '#/components/schemas/Argument'
 
 DeviceField:
   type: object

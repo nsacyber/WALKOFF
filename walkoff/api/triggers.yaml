@@ -5,35 +5,35 @@
     operationId: walkoff.server.endpoints.triggers.send_data_to_trigger
     tags:
       - Triggers
-    consumes:
-      - application/json
-    produces:
-      - application/json
     parameters:
       - in: body
         name: body
         required: true
-        schema:
-          type: object
-          required: [execution_ids, data_in]
-          properties:
-            execution_ids:
-              description: Execution IDs of currently paused workflows
-              type: array
-              items:
-                type: string
-            data_in:
-              description: Data to send to workflows awaiting data
-            arguments:
-              description: Updated arguments to send to the trigger action
-              type: array
-              items:
-                $ref: '#/definitions/Argument'
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [execution_ids, data_in]
+              properties:
+                execution_ids:
+                  description: Execution IDs of currently paused workflows
+                  type: array
+                  items:
+                    type: string
+                data_in:
+                  description: Data to send to workflows awaiting data
+                arguments:
+                  description: Updated arguments to send to the trigger action
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Argument'
     responses:
       200:
         description: Success
-        schema:
-          type: array
-          items:
-            type: string
-            description: The execution IDs of workflows that were sent data.
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                description: The execution IDs of workflows that were sent data.

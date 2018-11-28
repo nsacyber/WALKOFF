@@ -4,69 +4,74 @@
       - Configuration
     summary: Reads the configuration
     operationId: walkoff.server.endpoints.configuration.read_config_values
-    produces:
-      - application/json
     responses:
       200:
         description: Success
-        schema:
-          $ref: '#/definitions/Configuration'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Configuration'
       401:
         description: Unauthorized access
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
   put:
     tags:
       - Configuration
     summary: Updates the configuration
     operationId: walkoff.server.endpoints.configuration.update_configuration
-    consumes:
-      - application/json
-    produces:
-      - application/json
-
     parameters:
       - name: configuration
         in: body
         description: The configuration object
         required: true
-        schema:
-          $ref: '#/definitions/Configuration'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Configuration'
     responses:
       200:
         description: Success
       401:
         description: Unauthorized access
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
       515:
         description: Could not write configuration to file
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
   patch:
     tags:
       - Configuration
     summary: Updates the configuration
     operationId: walkoff.server.endpoints.configuration.patch_configuration
-    consumes:
-      - application/json
-    produces:
-      - application/json
     parameters:
       - name: configuration
         in: body
         description: The configuration object
         required: true
-        schema:
-          $ref: '#/definitions/Configuration'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Configuration'
     responses:
       200:
         description: Success
       401:
         description: Unauthorized access
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
       515:
         description: Could not write configuration to file
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'

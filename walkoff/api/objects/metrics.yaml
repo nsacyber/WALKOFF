@@ -22,9 +22,9 @@ ActionMetric:
       example: repeatBackToMe
       readOnly: true
     success_metrics:
-      $ref: '#/definitions/ActionMetricDetails'
+      $ref: '#/components/schemas/ActionMetricDetails'
     error_metrics:
-      $ref: '#/definitions/ActionMetricDetails'
+      $ref: '#/components/schemas/ActionMetricDetails'
 AppMetricDetails:
   type: object
   required: [name, count, actions]
@@ -43,7 +43,7 @@ AppMetricDetails:
       description: Metrics of the app's actions
       type: array
       items:
-        $ref: '#/definitions/ActionMetric'
+        $ref: '#/components/schemas/ActionMetric'
 AppMetrics:
   type: object
   required: [apps]
@@ -52,7 +52,7 @@ AppMetrics:
       description: Metrics of apps
       type: array
       items:
-        $ref: '#/definitions/AppMetricDetails'
+        $ref: '#/components/schemas/AppMetricDetails'
 
 WorkflowMetric:
   type: object
@@ -80,4 +80,4 @@ WorkflowMetrics:
     workflows:
       type: array
       items:
-        $ref: '#/definitions/WorkflowMetric'
+        $ref: '#/components/schemas/WorkflowMetric'

@@ -99,4 +99,8 @@ components:
         with the header "Authorization: Bearer refreshtoken.goes.here" to receive a fresh access token. When you're done,
         please use the /api/auth/logout endpoint to log out.  See the implementation in the Walkoff App for an example
         implementation.
-
+    jwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-bearerInfoFunc: walkoff.security.decode_token

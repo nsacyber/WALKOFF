@@ -16,7 +16,7 @@ AddScheduledTask:
       description: List if IDs of workflows attached to this task
       type: array
       items:
-        $ref: '#/definitions/Uuid'
+        $ref: '#/components/schemas/Uuid'
     name:
       type: string
       description: Name of this task
@@ -28,7 +28,7 @@ AddScheduledTask:
       description: Status of the task
       enum: [running, stopped]
     task_trigger:
-      $ref: '#/definitions/TaskTrigger'
+      $ref: '#/components/schemas/TaskTrigger'
 
 ScheduledTask:
   type: object
@@ -43,7 +43,7 @@ ScheduledTask:
       description: List if IDs of workflows attached to this task
       type: array
       items:
-        $ref: '#/definitions/Uuid'
+        $ref: '#/components/schemas/Uuid'
     name:
       type: string
       description: Name of this task
@@ -55,7 +55,7 @@ ScheduledTask:
       description: Status of the task
       enum: [running, stopped]
     task_trigger:
-      $ref: '#/definitions/TaskTrigger'
+      $ref: '#/components/schemas/TaskTrigger'
     action:
       type: string
       enum: [start, stop]
