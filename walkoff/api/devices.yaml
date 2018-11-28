@@ -65,24 +65,16 @@
     summary: Add a device
     description: ''
     operationId: walkoff.server.endpoints.devices.create_device
-    parameters:
-      - in: body
-        name: body
-        description: The new device object to be created
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddDevice'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/AddDevice'
-      - in: formData
-        name: formData
-        description: The device file to be imported
-        required: false
-        schema:
-          type: file
+    requestBody:
+      description: The JSON device object to be created, or the form-data device file to be imported
+      required: false
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AddDevice'
+        multipart/form-data:
+          schema:
+            type: file
     responses:
       201:
         description: Object created
@@ -93,7 +85,7 @@
       400:
         description: Device already exists
         content:
-          applicationjson:
+          application/json:
             schema:
               $ref: '#/components/schemas/Error'
 
@@ -103,15 +95,13 @@
     summary: Update a device
     description: ''
     operationId: walkoff.server.endpoints.devices.update_device
-    parameters:
-      - in: body
-        name: body
-        description: The new device object to be created
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Device'
+    requestBody:
+      description: The new device object to be created
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Device'
     responses:
       200:
         description: Success

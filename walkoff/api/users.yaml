@@ -34,7 +34,7 @@
       201:
         description: User created.
         content:
-          applicationjson:
+          application/json:
             schema:
               description: The newly created user.
               $ref: '#/components/schemas/DisplayUser'
