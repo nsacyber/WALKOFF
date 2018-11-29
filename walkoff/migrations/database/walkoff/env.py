@@ -18,10 +18,12 @@ from walkoff.server.app import create_app
 import walkoff.config
 
 
-walkoff.config.initialize()
-app = create_app()
-app_context = app.test_request_context()
-app_context.push()
+# unclear if commented out app creation is necessary, but may need it in the future
+# walkoff.config.initialize()
+# app = create_app()
+# app_context = app.test_request_context()
+# app_context.push()
+
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
