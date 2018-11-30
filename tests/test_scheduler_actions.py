@@ -41,3 +41,8 @@ class TestSchedulerActions(ServerTestCase):
 
         response = self.take_action('stop')
         self.assertEqual("Scheduler already stopped.", response['status'])
+
+    def test_update_scheduler_status_invalid_status(self):
+        data = {'status': 'invalid'}
+        self.put_with_status_check('/api/scheduler', headers=self.headers, data=json.dumps(data),
+                                   status_code=BAD_REQUEST, content_type='application/json')

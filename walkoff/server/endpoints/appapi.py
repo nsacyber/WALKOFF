@@ -135,8 +135,8 @@ def read_app_api(app_name):
     return __func()
 
 
-@jwt_required
-def read_app_api_field(app_name, field_name, token_info=None, user=None, body=None):
+def read_app_api_field(app_name, field_name):
+    @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
     def __func():
         api = walkoff.config.app_apis.get(app_name, None)
