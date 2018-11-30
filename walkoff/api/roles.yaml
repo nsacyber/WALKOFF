@@ -45,15 +45,13 @@
     summary: Update a role
     description: ''
     operationId: walkoff.server.endpoints.roles.update_role
-    parameters:
-      - in: body
-        name: body
-        description: Updated fields for the role object
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Role'
+    requestBody:
+      description: Updated fields for the role object
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Role'
     responses:
       200:
         description: Success
@@ -69,7 +67,6 @@
     summary: Update a role
     description: ''
     operationId: walkoff.server.endpoints.roles.patch_role
-
     parameters:
       - in: body
         name: body

@@ -5,7 +5,7 @@ sqlalchemy >= 1.1.0
 sqlalchemy-utils >= 0.32.0
 APscheduler >= 3.0.0
 gevent >= 1.2
-connexion == 1.5.3
+connexion >= 2.0
 pyyaml >= 3.0
 pyzmq > 14.1.0
 passlib >= 1.7.0
