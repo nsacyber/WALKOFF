@@ -34,16 +34,22 @@
           type: string
           format: uuid
         required: false
-    requestBody:
-      description: The playbook object to be created, or the file to be imported
-      required: false
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/CreatePlaybook'
-        multipart/form-data:
-          schema:
-            type: file
+      - in: body
+        name: body
+        description: The playbook object to be created
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlaybook'
+      - in: formData
+        name: formData
+        description: The file to import to create a playbook
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: file
     responses:
       201:
         description: Object created
@@ -362,3 +368,4 @@
               properties:
                 uuid:
                   $ref: '#/components/schemas/Uuid'
+    security: []

@@ -350,11 +350,12 @@ class TestWorkflowServer(ServerTestCase):
         workflow = playbook.workflows[0]
         expected_json = WorkflowSchema().dump(workflow).data
         expected_json['name'] = self.change_workflow_name
+        expected_json.pop('is_valid')
         response = self.put_with_status_check('/api/workflows',
                                               data=json.dumps(expected_json),
                                               headers=self.headers,
                                               content_type='application/json')
-
+        response.pop('is_valid')
         self.assertDictEqual(response, expected_json)
 
         self.assertIsNotNone(
@@ -371,10 +372,12 @@ class TestWorkflowServer(ServerTestCase):
         expected_json = WorkflowSchema().dump(workflow).data
         expected_json['name'] = self.change_workflow_name
         expected_json['actions'][0]['action_name'] = 'invalid'
+        expected_json.pop('is_valid')
         response = self.put_with_status_check('/api/workflows',
                                               data=json.dumps(expected_json),
                                               headers=self.headers,
                                               content_type='application/json')
+        response.pop('is_valid')
         errors = response['actions'][0].pop('errors')
         self.assertEqual(len(errors), 1)
         self.assertDictEqual(response, expected_json)

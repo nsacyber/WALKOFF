@@ -104,7 +104,6 @@ class TestAuthorization(ServerTestCase):
         response = self.test_client.post('/api/auth', content_type="application/json",
                                          data=json.dumps(dict(username='admin', password='admin')))
         key = json.loads(response.get_data(as_text=True))
-        print(key)
 
         headers = {'Authorization': 'Bearer {}'.format(key['refresh_token'])}
         refresh = self.test_client.post('/api/auth/refresh', content_type="application/json", headers=headers)

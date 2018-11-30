@@ -65,16 +65,23 @@
     summary: Add a device
     description: ''
     operationId: walkoff.server.endpoints.devices.create_device
-    requestBody:
-      description: The JSON device object to be created, or the form-data device file to be imported
-      required: false
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/AddDevice'
-        multipart/form-data:
-          schema:
-            type: file
+    parameters:
+      - in: body
+        name: body
+        description: The JSON device object to be created
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddDevice'
+      - in: formData
+        name: formData
+        description: The file to upload to create a device
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: file
     responses:
       201:
         description: Object created

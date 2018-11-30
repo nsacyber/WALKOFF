@@ -72,7 +72,7 @@
       "handlers": [
         "file_handler"
       ], 
-      "level": "INFO"
+      "level": "DEBUG"
     }, 
     "passlib": {
       "handlers": [
