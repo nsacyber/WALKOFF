@@ -15,8 +15,8 @@
 * [Features](#Features)
 * [Apps](#Apps)
 * [Branches](#Branches)
-* [Updating Walkoff](#Updating Walkoff)
-* [Stability and Versioning](#Stability and Versioning)
+* [Updating Walkoff](#Updating-Walkoff)
+* [Stability and Versioning](#Stability-and-Versioning)
 * [Contributions](#Contributions)
   
 
@@ -201,26 +201,26 @@ If that is not the case, or if you would like to manually install WALKOFF:
 
 First, install Python dependencies with the following command:
 
-   `pip install -r requirements.txt`
+    `pip install -r requirements.txt`
 
 To install the Python dependencies for each individual app, run:
 
-   `python scripts/install_dependencies.py`
+    `python scripts/install_dependencies.py`
 
 Or to just install the dependencies for specific apps:
 
-   `python scripts/install_dependencies.py -a AppOne,AppTwo,AppThree`
+    `python scripts/install_dependencies.py -a AppOne,AppTwo,AppThree`
    
 Then, generate certificates for WALKOFF's internal messaging:
 
-   `python scripts/generate_certificates.py`
+    `python scripts/generate_certificates.py`
 
 If you were previously familiar with WALKOFF, NodeJS and NPM are no longer needed to build front-end components, as the webpacked JavaScript files are now included in this repository.
 
 That's it! To start up the server, just navigate back to the WALKOFF root and
 run:
 
-   `python walkoff.py`
+    `python walkoff.py`
 
 Then, navigate to the specified IP and port to start using WALKOFF. The default
 is `http://127.0.0.1:5000`.
@@ -231,7 +231,7 @@ Through this script, you can also specify port and host, for example
 
 For more options, run
 
-    `python walkoff.py --help`
+   `python walkoff.py --help`
 
 ## Features
 
