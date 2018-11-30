@@ -4,6 +4,22 @@
 
 <img src="https://nsacyber.github.io/WALKOFF/files/images/flyingLogoWithTextSmall.png">
 
+# Table of Contents
+
+* [Description](#Description)
+* [Requirements](#Requirements)
+* [Installation](#Installation)
+  * [Docker](#Docker)
+  * [Kubernetes](#Kubernetes)
+  * [Natively](#Natively)
+* [Features](#Features)
+* [Apps](#Apps)
+* [Branches](#Branches)
+* [Updating Walkoff](#Updating Walkoff)
+* [Stability and Versioning](#Stability and Versioning)
+* [Contributions](#Contributions)
+  
+
 # Description
 
 * Are repetitive, tedious processes taking up too much of your time?
@@ -34,12 +50,9 @@ their processes but allows users to act on their processes faster as well.
 
 Walkoff apps can be found at: <https://github.com/nsacyber/WALKOFF-Apps>
 
-## Base Requirements
+# Requirements
 
 * Python 2.7+ or Python 3.4+
-* NodeJS v4+ and Node Package Manager (npm) v5+
-    * On Ubuntu, if you install `node` via `apt-get`, it will be installed as `nodejs` - you may need to create a symlink from your installed `nodejs` to `node` for `npm` to work correctly.
-    * npm v5 requires Node v4+, while npm v6 requires Node v6+. Using [NVM (Node Version Manager)](https://github.com/creationix/nvm) can assist in obtaining the correct versions of NodeJS and NPM.
 * Redis 5+
     * Redis can be run on Linux (see https://redis.io/topics/quickstart or check your OS's package manager), 
     * If you are using Windows, you will need to use Redis in a VM or a Docker container.
@@ -48,12 +61,22 @@ Walkoff apps can be found at: <https://github.com/nsacyber/WALKOFF-Apps>
 
 *Individual apps may specify their own requirements.*
 
-## Installation Instructions
+# Installation
+
+There are three main ways of using WALKOFF - natively, using Docker, or using Kubernetes.
+
+- Natively means running WALKOFF as a Python application on your computer. This is recommended for development.
+- Docker allows you to run WALKOFF inside a container that provides a consistent and portable environment. This is recommended for checking out the project, or development if you have issues with Python versioning.
+- Kubernetes allows you to run WALKOFF inside a cluster for purposes of scalability and load balancing. This is recommended for networks larger than toy examples. While an initial version exists, this is also under active development.
 
 ### Docker
 
-You can use Docker Compose (https://docs.docker.com/compose/install/) to install WALKOFF along with Postgres and Redis
-using the compose file below. (This file is provided in the repository under `k8s_manifests/dockerfiles/walkoff-combined`)
+You can use Docker Compose to install WALKOFF along with Postgres and Redis using the compose file below. 
+(This file is provided in the repository under )
+
+Docker Compose is included with Docker CE on Linux and MacOS, but will need to be installed separately (see https://docs.docker.com/compose/install/ for more details.)
+
+Once installed, create a file called `docker-compose.yaml` as below (or clone this repository, the file is provided under `k8s_manifests/dockerfiles/walkoff-combined/docker-compose.yaml`)
 
 ```yaml
 version: '3'
@@ -81,6 +104,11 @@ services:
     depends_on:
     - "walkoff-redis"
     - "walkoff-postgres"
+    # entrypoint: 
+    # - "sleep" 
+    # - "36000"
+    # volumes:
+    # - /path/to/host/apps:/app/walkoff/apps
   walkoff-redis:
     image: "redis"
   walkoff-postgres:
@@ -90,10 +118,62 @@ services:
     - "POSTGRES_PASSWORD=walkoff"
 ```
 
+Alternatively:
+
+```
+# If you haven't created your own docker-compose.yaml, clone the respository and cd into it
+git clone https://github.com/nsacyber/WALKOFF.git
+cd WALKOFF/k8s_manifests/dockerfiles/walkoff-combined
+```
+
+Once you have configured the Compose file as desired and are in the same directory as it, you can start the containers:
+```
+# Start containers
+docker-compose up
+```
+
+#### Passwords
+
+If you would like to set usernames and passwords for your Redis or Postgres containers, ensure that they are consistent in your docker-compose.yaml, and that proper permissions are set on the file to protect it.
+
+#### Development 
+
+If you intend to use the container for development, you may want to run WALKOFF manually inside the container to test your changes. To do this, uncomment the "entrypoint" line and its entries.
+
+You can also mount a volume to directories inside the container, for example if you are developing apps and would like to mount it to WALKOFF's app directory, a commented example is provided above. Alternatively, you can use the docker cp command to copy files into the container. (See https://docs.docker.com/engine/reference/commandline/cp/ for more details.)
+
+If you uncommented the `sleep` entrypoint for development purposes, you will need to start WALKOFF yourself:
+```
+# Obtain the WALKOFF container ID - look for/grep 'walkoffcyber/walkoff:combinedv1'
+docker ps
+
+# Enter the container (you can use the first three characters of the ID for short)
+docker exec -it abc /bin/bash
+
+# Once inside the container, run WALKOFF:
+python walkoff.py
+```
+
+
 ### Kubernetes
 
-Provided that you have a Kubernetes cluster stood up and have installed Helm to that cluster, you can use 
-`python -m walkoff install` to run a guided wizard that will set up resources for WALKOFF using helm and kubectl.
+Prerequisites: 
+- Stand up a managed Kubernetes cluster (for development purposes, minikube is recommended: https://kubernetes.io/docs/setup/minikube/)
+- Install Helm to that cluster (see https://docs.helm.sh/using_helm/ for more details)
+
+You can then use `python -m walkoff install` to run a guided wizard that will set up resources for WALKOFF using helm and kubectl.
+
+The steps break down as follows (see `online_install()` in `walkoff/cli/install.py` for details):
+
+1. Create a namespace for WALKOFF if needed (not required, use default if you don't)
+2. Generate ZMQ certificates and store the public/private keys in Kubernetes secrets
+3. Prompt for an existing Redis instance and password, else install one to the cluster using Helm
+4. Prompt for an existing PostgreSQL instance, username, and password, else install two to the cluster using Helm
+5. Prompt for an existing CA signing keypair, else create one and store them in Kubernetes secrets
+6. Install cert-manager (https://github.com/jetstack/cert-manager) to the cluster to generate SSL certificates for ingress
+7. Install WALKOFF to the cluster using Helm with collected configuration details.
+
+If the installation goes wrong or you change your mind, you can use `python -m walkoff uninstall` to rollback changes that the wizard made (you must do this before attempting another install). 
 
 ### Natively
 
@@ -106,18 +186,24 @@ the latest version (or latest LTS, whichever you prefer). Some distributions (no
 date versions of nodejs in their default repositories, as well as packages distributed with a nodejs executable instead 
 of node. 
 
+Install Redis Server:
+* MacOS: Use homebrew - https://brew.sh/
+* Linux: Use your distro's package manager, follow an appropriate guide for your distro.
+* Windows: There are no up-to-date Redis binaries available for Windows, see Docker below.
+* Docker: Run a Redis container with port 6379 published to localhost: `docker run --name walkoff-redis -p 6379:6379 -d redis`
+
 If the Python environment for your elevated privileges are the same as the Python environment you will be running 
-WALKOFF in (use `pip --version` to check), you can use the all-in-one setup script with elevated privileges:
+WALKOFF in (check that `pip --version` aligns with `which python`), you can use the all-in-one setup script with elevated privileges:
 
    `python setup_walkoff.py`
 
 If that is not the case, or if you would like to manually install WALKOFF:
 
-First, install the dependencies with the following command:
+First, install Python dependencies with the following command:
 
    `pip install -r requirements.txt`
 
-To install the dependencies for each individual app, run:
+To install the Python dependencies for each individual app, run:
 
    `python scripts/install_dependencies.py`
 
@@ -129,14 +215,7 @@ Then, generate certificates for WALKOFF's internal messaging:
 
    `python scripts/generate_certificates.py`
 
-Next, navigate to /walkoff/client and install the client dependencies with the
-following commands - these will require elevated privileges:
-
-   `npm install`
-
-Next, use gulp to build the client:
-
-   `npm run build`
+If you were previously familiar with WALKOFF, NodeJS and NPM are no longer needed to build front-end components, as the webpacked JavaScript files are now included in this repository.
 
 That's it! To start up the server, just navigate back to the WALKOFF root and
 run:
@@ -195,20 +274,14 @@ WALKOFF-enabled apps can be found at www.github.com/nsacyber/walkoff-apps
 2. development - Development branch for WALKOFF version 2.  Updated frequently
 3. gh-pages - Pages used to generate documentation at our
    [github.io](https://nsacyber.github.io/WALKOFF "GitHub IO") site
-4. gh-pages-development - Branch used to document new features in development.
-3. walkoff-experimental - WALKOFF version 1  *No longer under development*
 
 *Other development-centric branches may be created but should not be
 considered permanent*
 
 ## Updating Walkoff
 
-An update script, `update.py`, is provided to update the repo to the most
-recent release. This script uses SqlAlchemy-Alembic to update database schemas
-and custom upgrade scripts to update the workflow JSON files. To run this
-script in interactive mode run `python update.py -i`. Other options can be
-viewed using `python update.py --help`. The most common usage is
-`python update.py -pcs` for pull, clean, and setup.
+An update script, `python -m walkoff local update`, is provided to update your local repo to the most
+recent release. This script uses SqlAlchemy-Alembic to update database schemas. Updating WALKOFF in Kubernetes is a work in progress.
 
 ## Stability and Versioning
 
