@@ -20,26 +20,24 @@
       - Messages
     summary: Acts on a user's messages
     operationId: walkoff.server.endpoints.messages.act_on_messages
-    parameters:
-      - in: body
-        name: body
-        description: The Message IDs to act on
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [ids, action]
-              properties:
-                ids:
-                  type: array
-                  items:
-                    type: integer
-                    minimum: 1
-                action:
-                  description: The action to take on multiple messages
-                  type: string
-                  enum: [read, unread, delete]
+    requestBody:
+      description: The Message IDs to act on
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [ids, action]
+            properties:
+              ids:
+                type: array
+                items:
+                  type: integer
+                  minimum: 1
+              action:
+                description: The action to take on multiple messages
+                type: string
+                enum: [read, unread, delete]
     responses:
       200:
         description: Success

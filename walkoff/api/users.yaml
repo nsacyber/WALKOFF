@@ -21,15 +21,13 @@
     summary: Create a user
     description: ''
     operationId: walkoff.server.endpoints.users.create_user
-    parameters:
-      - in: body
-        name: body
-        description: The new user object to be created
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddUser'
+    requestBody:
+      description: The new user object to be created
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AddUser'
     responses:
       201:
         description: User created.
@@ -50,15 +48,13 @@
     summary: Update a user
     description: ''
     operationId: walkoff.server.endpoints.users.update_user
-    parameters:
-      - in: body
-        name: body
-        description: Updated fields for the user object
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EditUser'
+    requestBody:
+      description: Updated fields for the user object
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EditUser'
     responses:
       200:
         description: Success
@@ -85,15 +81,13 @@
     summary: Update a user
     description: ''
     operationId: walkoff.server.endpoints.users.patch_user
-    parameters:
-      - in: body
-        name: body
-        description: Updated fields for the user object
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/EditUser'
+    requestBody:
+      description: Updated fields for the user object
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EditUser'
     responses:
       200:
         description: Success

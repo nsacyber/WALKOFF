@@ -28,14 +28,12 @@
     summary: Execute a workflow
     description: ''
     operationId: walkoff.server.endpoints.workflowqueue.execute_workflow
-    parameters:
-      - name: body
-        in: body
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ExecuteWorkflow'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ExecuteWorkflow'
     responses:
       202:
         description: Success asynchronous.
@@ -61,13 +59,12 @@
     summary: Pause, resume, or abort a workflow
     description: ''
     operationId: walkoff.server.endpoints.workflowqueue.control_workflow
-    parameters:
-      - name: body
-        in: body
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ControlWorkflow'
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ControlWorkflow'
     responses:
       204:
         description: Success.

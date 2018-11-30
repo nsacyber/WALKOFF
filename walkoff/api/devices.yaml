@@ -121,15 +121,13 @@
     summary: Update a device
     description: ''
     operationId: walkoff.server.endpoints.devices.patch_device
-    parameters:
-      - in: body
-        name: body
-        description: The new device object to be created
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Device'
+    requestBody:
+      description: The new device object to be created
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Device'
     responses:
       200:
         description: Success

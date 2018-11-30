@@ -49,15 +49,13 @@
       - Configuration
     summary: Updates the configuration
     operationId: walkoff.server.endpoints.configuration.patch_configuration
-    parameters:
-      - name: configuration
-        in: body
-        description: The configuration object
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Configuration'
+    requestBody:
+      description: The configuration object
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Configuration'
     responses:
       200:
         description: Success

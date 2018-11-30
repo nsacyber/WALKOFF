@@ -21,15 +21,13 @@
     summary: Create a role
     description: ''
     operationId: walkoff.server.endpoints.roles.create_role
-    parameters:
-      - in: body
-        name: body
-        description: The role object to be created
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddRole'
+    requestBody:
+      description: The role object to be created
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AddRole'
     responses:
       201:
         description: Object created.
@@ -67,15 +65,13 @@
     summary: Update a role
     description: ''
     operationId: walkoff.server.endpoints.roles.patch_role
-    parameters:
-      - in: body
-        name: body
-        description: Updated fields for the role object
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Role'
+    requestBody:
+      description: Updated fields for the role object
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Role'
     responses:
       200:
         description: Success

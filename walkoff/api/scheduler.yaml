@@ -18,21 +18,19 @@
     summary: Update the status of the scheduler
     description: ''
     operationId: walkoff.server.endpoints.scheduler.update_scheduler_status
-    parameters:
-      - in: body
-        name: body
-        description: The new Scheduled Task object
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [status]
-              properties:
-                status:
-                  description: Requested status of the scheduler
-                  type: string
-                  enum: [start, stop, pause, resume]
+    requestBody:
+      description: The new Scheduled Task object
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status:
+                description: Requested status of the scheduler
+                type: string
+                enum: [start, stop, pause, resume]
     responses:
       200:
         description: Success
@@ -67,15 +65,13 @@
       - Scheduler
     summary: Create a new Scheduled Task
     operationId: walkoff.server.endpoints.scheduler.create_scheduled_task
-    parameters:
-      - in: body
-        name: body
-        description: The new Scheduled Task object
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddScheduledTask'
+    requestBody:
+      description: The new Scheduled Task object
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AddScheduledTask'
     responses:
       201:
         description: Success
@@ -97,15 +93,13 @@
       - Scheduler
     summary: Update a new Scheduled Task
     operationId: walkoff.server.endpoints.scheduler.update_scheduled_task
-    parameters:
-      - in: body
-        name: body
-        description: The updated Scheduled Task object
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ScheduledTask'
+    requestBody:
+      description: The updated Scheduled Task object
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ScheduledTask'
     responses:
       200:
         description: Success
@@ -130,23 +124,21 @@
       - Scheduler
     summary: Enable the scheduled task
     operationId: walkoff.server.endpoints.scheduler.control_scheduled_task
-    parameters:
-      - in: body
-        name: body
-        description: The updated Scheduled Task object
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [id, action]
-              properties:
-                id:
-                  type: integer
-                action:
-                  type: string
-                  description: The requested status of the task
-                  enum: [start, stop]
+    requestBody:
+      description: The updated Scheduled Task object
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [id, action]
+            properties:
+              id:
+                type: integer
+              action:
+                type: string
+                description: The requested status of the task
+                enum: [start, stop]
     responses:
       200:
         description: Success

@@ -34,20 +34,16 @@
           type: string
           format: uuid
         required: false
-      - in: body
-        name: body
-        description: The playbook object to be created
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreatePlaybook'
-      - in: formData
-        name: formData
-        description: The playbook file to be imported
-        required: false
-        schema:
-          type: file
+    requestBody:
+      description: The playbook object to be created, or the file to be imported
+      required: false
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreatePlaybook'
+        multipart/form-data:
+          schema:
+            type: file
     responses:
       201:
         description: Object created
@@ -67,15 +63,13 @@
     summary: Update a playbook
     description: ''
     operationId: walkoff.server.endpoints.playbooks.update_playbook
-    parameters:
-      - in: body
-        name: body
-        description: Fields of the playbook object to be updated
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdatePlaybook'
+    requestBody:
+      description: Fields of the playbook object to be updated
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdatePlaybook'
     responses:
       200:
         description: Success
@@ -242,14 +236,13 @@
           type: string
           format: uuid
         required: false
-      - in: body
-        name: body
-        description: The workflow object to be created
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateWorkflow'
+    requestBody:
+      description: The workflow object to be created
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateWorkflow'
     responses:
       201:
         description: Workflow created.
@@ -275,15 +268,13 @@
     summary: Update a workflow
     description: ''
     operationId: walkoff.server.endpoints.playbooks.update_workflow
-    parameters:
-      - in: body
-        name: body
-        description: The fields of the workflow object to be updated
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Workflow'
+    requestBody:
+      description: The fields of the workflow object to be updated
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Workflow'
     responses:
       200:
         description: Success
