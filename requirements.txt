@@ -16,7 +16,7 @@ futures; python_version < "3"
 semver
 jsonschema
 six >= 1.10.0
-marshmallow >= 2.15, < 3.0.0
+marshmallow < 3.0.0
 marshmallow-sqlalchemy >= 0.13.0
 pynacl
 alembic
