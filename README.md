@@ -69,6 +69,8 @@ There are three main ways of using WALKOFF - natively, using Docker, or using Ku
 - Docker allows you to run WALKOFF inside a container that provides a consistent and portable environment. This is recommended for checking out the project, or development if you have issues with Python versioning.
 - Kubernetes allows you to run WALKOFF inside a cluster for purposes of scalability and load balancing. This is recommended for networks larger than toy examples. While an initial version exists, this is also under active development.
 
+Once installed, the default login is admin/admin. This can be changed and additional users can be created within the settings page inside WALKOFF.
+
 ### Docker
 
 You can use Docker Compose to install WALKOFF along with Postgres and Redis.
