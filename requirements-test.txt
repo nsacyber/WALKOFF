@@ -1,4 +1,4 @@
-fakeredis >= 0.9.0
+fakeredis >= 0.16.0
 mock
 requests-mock
 tzlocal

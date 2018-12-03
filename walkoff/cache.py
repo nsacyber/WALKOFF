@@ -3,7 +3,7 @@ import os
 import os.path
 from copy import deepcopy
 
-from redis import StrictRedis
+from redis import Redis
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ class RedisCacheAdapter(object):
         return cls.instance
 
     def __init__(self, **opts):
-        self.cache = StrictRedis(**opts)
+        self.cache = Redis(**opts)
         logger.info('Created redis cache connection with options: {}'.format(opts))
 
     def set(self, key, value, expire=None, **opts):

@@ -27,7 +27,7 @@ kubernetes
 pyopenssl
 gitpython
 dill
-redis == 2.10.6
+redis >= 3.0
 confluent-kafka
 fluent-logger
 msgpack
