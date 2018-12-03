@@ -71,8 +71,7 @@ There are three main ways of using WALKOFF - natively, using Docker, or using Ku
 
 ### Docker
 
-You can use Docker Compose to install WALKOFF along with Postgres and Redis using the compose file below. 
-(This file is provided in the repository under )
+You can use Docker Compose to install WALKOFF along with Postgres and Redis.
 
 Docker Compose is included with Docker CE on Linux and MacOS, but will need to be installed separately (see https://docs.docker.com/compose/install/ for more details.)
 
@@ -126,7 +125,7 @@ git clone https://github.com/nsacyber/WALKOFF.git
 cd WALKOFF/k8s_manifests/dockerfiles/walkoff-combined
 ```
 
-Once you have configured the Compose file as desired and are in the same directory as it, you can start the containers:
+Once you have configured the Compose file as desired and are in the same directory as it, you can start the containers (use Ctrl+C to stop them):
 ```
 # Start containers
 docker-compose up
@@ -150,7 +149,7 @@ docker ps
 # Enter the container (you can use the first three characters of the ID for short)
 docker exec -it abc /bin/bash
 
-# Once inside the container, run WALKOFF:
+# Once inside the container, run WALKOFF (use Ctrl+C to stop the server):
 python walkoff.py
 ```
 
@@ -177,19 +176,14 @@ If the installation goes wrong or you change your mind, you can use `python -m w
 
 ### Natively
 
-We recommend using a Python virtual environment (such as venv included with Python 3, pyenv-virtualenv or pipenv),
+We recommend using a Python virtual environment (such as [venv](https://docs.python.org/3/library/venv.html) included with Python 3, [virtualenv](https://virtualenv.pypa.io/en/latest/), [pyenv](https://github.com/pyenv/pyenv)-[virtualenv](https://github.com/pyenv/pyenv-virtualenv) or [pipenv](https://pipenv.readthedocs.io/en/latest/)),
 as this avoids package version conflicts with other applications that you might have, and avoids the necessity of 
 running setup with sudo, which could cause permissions issues if you don't use sudo for subsequent runs.
-
-We also recommend using nvm to install NodeJS and npm for the same reasons as above, and as it ensures that you receive 
-the latest version (or latest LTS, whichever you prefer). Some distributions (notably Ubuntu) will have very out of 
-date versions of nodejs in their default repositories, as well as packages distributed with a nodejs executable instead 
-of node. 
 
 Install Redis Server:
 * MacOS: Use homebrew - https://brew.sh/
 * Linux: Use your distro's package manager, follow an appropriate guide for your distro.
-* Windows: There are no up-to-date Redis binaries available for Windows, see Docker below.
+* Windows: There are no up-to-date Redis binaries available for Windows, use Docker as below.
 * Docker: Run a Redis container with port 6379 published to localhost: `docker run --name walkoff-redis -p 6379:6379 -d redis`
 
 If the Python environment for your elevated privileges are the same as the Python environment you will be running 
