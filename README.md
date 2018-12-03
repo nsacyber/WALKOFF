@@ -162,6 +162,25 @@ Prerequisites:
 
 You can then use `python -m walkoff install` to run a guided wizard that will set up resources for WALKOFF using helm and kubectl.
 
+For example, to run WALKOFF in Minikube, assuming Minikube, Helm, and WALKOFF's Python dependencies are already installed:
+```
+# Create the cluster and enable ingress controller (this may take a few minutes)
+minikube start
+minikube addons enable ingress
+
+# Install Helm tiller to cluster
+helm init
+
+# Check on status of pods - this may take a few minutes
+kubectl get pods --all-namespaces
+
+# Start WALKOFF install wizard
+python -m walkoff install
+
+# Obtain ingress IP of cluster, use this to access WALKOFF in your browser
+minikube ip
+```
+
 The steps break down as follows (see `online_install()` in `walkoff/cli/install.py` for details):
 
 1. Create a namespace for WALKOFF if needed (not required, use default if you don't)
