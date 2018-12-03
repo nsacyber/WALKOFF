@@ -4,8 +4,10 @@ import os
 import connexion
 from flask import Blueprint
 from flask import Flask
+from flask_swagger_ui import get_swaggerui_blueprint
 from healthcheck import HealthCheck
 from jinja2 import FileSystemLoader
+from yaml import Loader, load
 
 import interfaces
 import walkoff.config
@@ -70,6 +72,16 @@ def __register_all_app_blueprints(flaskapp, main_app=False):
             __register_app_blueprints(flaskapp, interface_name, interface_blueprints)
 
 
+def register_swagger_blueprint(flaskapp):
+    # register swagger API docs location
+    swagger_path = os.path.join(walkoff.config.Config.API_PATH, 'composed_api.yaml')
+    swagger_yaml = load(open(swagger_path), Loader=Loader)
+    swaggerui_blueprint = get_swaggerui_blueprint(walkoff.config.Config.SWAGGER_URL, swagger_yaml,
+                                                  config={'spec': swagger_yaml})
+    flaskapp.register_blueprint(swaggerui_blueprint, url_prefix=walkoff.config.Config.SWAGGER_URL)
+    flaskapp.logger.info("Registered blueprint for swagger API docs at url prefix /api/docs")
+
+
 def add_health_check(_app):
     health = HealthCheck(_app, '/health')
     from walkoff.server.endpoints.health import checks
@@ -79,7 +91,7 @@ def add_health_check(_app):
 
 def create_app(interface_app=False):
     if not interface_app:
-        connexion_app = _app = connexion.App(__name__, specification_dir='../api/')
+        connexion_app = _app = connexion.App(__name__, specification_dir='../api/', options={'swagger_ui': False})
         _app = connexion_app.app
     else:
         _app = Flask(__name__)
@@ -100,6 +112,7 @@ def create_app(interface_app=False):
         connexion_app.add_api('composed_api.yaml')
         _app.running_context = context.Context()
         register_blueprints(_app, walkoff.config.Config.SEPARATE_INTERFACES)
+        register_swagger_blueprint(_app)
     else:
         _app.running_context = context.Context(executor=False)
         __register_all_app_blueprints(_app)

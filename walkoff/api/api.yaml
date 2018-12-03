@@ -17,10 +17,6 @@ tags:
     description: Authorization Operations
   - name: Apps
     description: App Management Operations
-  - name: Cases
-    description: WALKOFF logging and case management operations
-  - name: Subscriptions
-    description: WALKOFF case subscription operations
   - name: Configuration
     description: System Configuration Operations
   - name: Devices

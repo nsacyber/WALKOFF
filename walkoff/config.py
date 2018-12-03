@@ -174,6 +174,8 @@ class Config(object):
 
     ALEMBIC_CONFIG = join('.', 'alembic.ini')
 
+    SWAGGER_URL = '/api/docs'
+
     @classmethod
     def load_config(cls, config_path=None):
         """ Loads Walkoff configuration from JSON file
