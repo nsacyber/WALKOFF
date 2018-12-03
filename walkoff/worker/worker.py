@@ -36,7 +36,7 @@ class Worker(object):
         signal.signal(signal.SIGINT, self.exit_handler)
         signal.signal(signal.SIGABRT, self.exit_handler)
 
-        if walkoff.config.Config.SEPARATE_WORKERS:
+        if walkoff.config.Config.SEPARATE_WORKERS or os.name == 'nt':
             walkoff.config.initialize(config_path=config_path)
         else:
             walkoff.config.Config.load_config(config_path)

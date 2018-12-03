@@ -106,7 +106,7 @@ class Config(object):
 
     API_PATH = join('.', 'walkoff', 'api')
     APPS_PATH = join('.', 'apps')
-    CACHE = {'type': 'redis'}
+    CACHE = {'type': 'redis', 'host': 'localhost', 'port': 6379}
 
     CLIENT_PATH = join('.', 'walkoff', 'client')
     CONFIG_PATH = join(DATA_PATH, 'walkoff.config')

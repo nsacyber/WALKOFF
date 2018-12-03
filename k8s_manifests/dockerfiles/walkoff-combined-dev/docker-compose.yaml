@@ -3,7 +3,7 @@ services:
   walkoff:
     ports:
     - "8080:8080"
-    image: "walkoffcyber/walkoff:combinedv1"
+    image: "walkoffcyber/walkoff:devcombinedv1"
     environment:
     - "CACHE={\"type\": \"redis\", \"host\": \"walkoff-redis\", \"port\": 6379}"
     - "HOST=0.0.0.0"
@@ -20,13 +20,9 @@ services:
     - "EXECUTION_DB_PASSWORD=walkoff"
     - "WALKOFF_DB_USERNAME=walkoff"
     - "WALKOFF_DB_PASSWORD=walkoff"
-    - "NUMBER_PROCESSES=1"
     depends_on:
     - "walkoff-redis"
     - "walkoff-postgres"
-#    entrypoint:
-#    - "sleep"
-#    - "36000"
   walkoff-redis:
     image: "redis"
   walkoff-postgres:

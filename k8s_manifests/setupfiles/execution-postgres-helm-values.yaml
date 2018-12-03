@@ -1,2 +1,3 @@
-existingSecret: walkoff-postgres-execution-secret
-postgresUser: walkoff
+postgresqlDatabase: execution
+postgresqlPassword: walkoff
+postgresqlUsername: walkoff
