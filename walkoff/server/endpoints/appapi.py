@@ -107,6 +107,11 @@ def read_all_app_apis(field_name=None):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
     def __func():
+        # TODO: Remove this once connexion can validate enums with openapi3.
+        if field_name and field_name not in ['info', 'action_apis', 'condition_apis', 'transform_apis', 'device_apis',
+                                             'tags', 'external_docs']:
+            return Problem(BAD_REQUEST, 'Could not read app api.', '{} is not a valid field name.'.format(field_name))
+
         ret = []
         for app_name, app_api in walkoff.config.app_apis.items():
             ret.append(format_full_app_api(app_api, app_name))
@@ -139,6 +144,11 @@ def read_app_api_field(app_name, field_name):
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('app_apis', ['read']))
     def __func():
+        # TODO: Remove this once connexion can validate enums with openapi3.
+        if field_name not in ['info', 'action_apis', 'condition_apis', 'transform_apis', 'device_apis', 'tags',
+                              'externalDocs']:
+            return Problem(BAD_REQUEST, 'Could not read app api.', '{} is not a valid field name.'.format(field_name))
+
         api = walkoff.config.app_apis.get(app_name, None)
         if api is not None:
             return format_full_app_api(api, app_name)[field_name], SUCCESS
