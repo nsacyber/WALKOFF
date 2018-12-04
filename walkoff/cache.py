@@ -233,7 +233,6 @@ class RedisCacheAdapter(object):
         Returns:
             The number of subscriptions which received the data
         """
-        print("publishing...")
         return self.cache.publish(channel, data)
 
     def shutdown(self):

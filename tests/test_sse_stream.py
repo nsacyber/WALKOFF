@@ -71,13 +71,12 @@ class SseStreamTestBase(object):
 
         @self.stream.push('event1')
         def pusher(a, ev):
-            print("pushing")
+            gevent.sleep(0.1)
             return {'a': a}, ev
 
         result = []
 
         def listen():
-            print("listening")
             for event in self.stream.send():
                 result.append(event)
 
@@ -87,7 +86,6 @@ class SseStreamTestBase(object):
 
         def publish():
             for event, data in args:
-                print("pushing", event, data)
                 pusher(data, event)
             self.stream.unsubscribe()
 
@@ -95,16 +93,16 @@ class SseStreamTestBase(object):
         thread2 = gevent.spawn(publish)
         thread.start()
         thread2.start()
+        gevent.sleep(0.1)
         thread.join(timeout=2)
         thread2.join(timeout=2)
-        print(result)
-        print(formatted_sses)
         self.assertListEqual(result, formatted_sses)
 
     def test_send_with_retry(self):
 
         @self.stream.push('event1')
         def pusher(a, ev):
+            gevent.sleep(0.1)
             return {'a': a}, ev
 
         result = []
@@ -126,6 +124,7 @@ class SseStreamTestBase(object):
         thread2 = gevent.spawn(publish)
         thread.start()
         thread2.start()
+        gevent.sleep(0.1)
         thread.join(timeout=2)
         thread2.join(timeout=2)
         self.assertListEqual(result, formatted_sses)
@@ -133,6 +132,7 @@ class SseStreamTestBase(object):
     def test_stream_with_data(self):
         @self.stream.push('event1')
         def pusher(a, ev):
+            gevent.sleep(0.1)
             return {'a': a}, ev
 
         result = []
@@ -155,6 +155,7 @@ class SseStreamTestBase(object):
         thread2 = gevent.spawn(publish)
         thread.start()
         thread2.start()
+        gevent.sleep(0.1)
         thread.join(timeout=2)
         thread2.join(timeout=2)
         self.assertListEqual(result, formatted_sses)
@@ -162,6 +163,7 @@ class SseStreamTestBase(object):
     def test_stream_with_data_with_retry(self):
         @self.stream.push('event1')
         def pusher(a, ev):
+            gevent.sleep(0.1)
             return {'a': a}, ev
 
         result = []
@@ -184,6 +186,7 @@ class SseStreamTestBase(object):
         thread2 = gevent.spawn(publish)
         thread.start()
         thread2.start()
+        gevent.sleep(0.1)
         thread.join(timeout=2)
         thread2.join(timeout=2)
         self.assertListEqual(result, formatted_sses)
