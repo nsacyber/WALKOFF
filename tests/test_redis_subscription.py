@@ -1,7 +1,8 @@
 from unittest import TestCase
 
 import gevent
-from fakeredis import FakeStrictRedis
+# from fakeredis import FakeStrictRedis
+from redis import Redis
 from gevent.monkey import patch_all
 
 from walkoff.cache import RedisSubscription, unsubscribe_message
@@ -11,7 +12,8 @@ class TestRedisSubscription(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.redis = FakeStrictRedis()
+        # cls.redis = FakeStrictRedis()
+        cls.redis = Redis()
         cls.channel = 'channel1'
         patch_all()
 
