@@ -222,4 +222,4 @@ def dump_element(element):
     Returns:
         dict: The serialized element
     """
-    return _schema_lookup[element.__class__]().dump(element).data
+    return _schema_lookup[element.__class__]().dump(element)

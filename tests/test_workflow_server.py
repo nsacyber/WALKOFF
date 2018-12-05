@@ -72,7 +72,7 @@ class TestWorkflowServer(ServerTestCase):
     def test_read_playbook(self):
         playbook = execution_db_help.standard_load()
         response = self.get_with_status_check('/api/playbooks/{}'.format(playbook.id), headers=self.headers)
-        expected_workflows = [self.strip_ids(WorkflowSchema().dump(workflow).data) for workflow in playbook.workflows]
+        expected_workflows = [self.strip_ids(WorkflowSchema().dump(workflow)) for workflow in playbook.workflows]
         self.assertEqual(response['name'], 'test')
         self.assertEqual(len(response['workflows']), len(expected_workflows))
         self.assertListEqual([self.strip_ids(workflow) for workflow in response['workflows']], expected_workflows)
@@ -94,7 +94,7 @@ class TestWorkflowServer(ServerTestCase):
         playbook = execution_db_help.standard_load()
         response = self.get_with_status_check('/api/playbooks/{}/workflows'.format(playbook.id), headers=self.headers)
 
-        expected_workflows = [self.strip_ids(WorkflowSchema().dump(workflow).data) for workflow in playbook.workflows]
+        expected_workflows = [self.strip_ids(WorkflowSchema().dump(workflow)) for workflow in playbook.workflows]
 
         self.assertEqual(len(response), len(expected_workflows))
         self.assertListEqual([self.strip_ids(workflow) for workflow in response], expected_workflows)
@@ -109,7 +109,7 @@ class TestWorkflowServer(ServerTestCase):
         playbook = execution_db_help.standard_load()
         response = self.get_with_status_check('/api/workflows?playbook={}'.format(playbook.id), headers=self.headers)
 
-        expected_workflows = [self.strip_ids(WorkflowSchema().dump(workflow).data) for workflow in playbook.workflows]
+        expected_workflows = [self.strip_ids(WorkflowSchema().dump(workflow)) for workflow in playbook.workflows]
 
         self.assertEqual(len(response), len(expected_workflows))
         self.assertListEqual([self.strip_ids(workflow) for workflow in response], expected_workflows)
@@ -126,7 +126,7 @@ class TestWorkflowServer(ServerTestCase):
         response = self.get_with_status_check(
             '/api/workflows/{}'.format(target_workflow.id),
             headers=self.headers)
-        self.assertDictEqual(self.strip_ids(response), self.strip_ids(WorkflowSchema().dump(target_workflow).data))
+        self.assertDictEqual(self.strip_ids(response), self.strip_ids(WorkflowSchema().dump(target_workflow)))
 
     def test_read_workflow_invalid_workflow_id(self):
         self.check_invalid_id('get', '/api/workflows/{}'.format(uuid4()), 'workflow')
@@ -241,7 +241,7 @@ class TestWorkflowServer(ServerTestCase):
         workflow = Workflow('wf1', uuid4())
         self.app.running_context.execution_db.session.add(workflow)
         self.app.running_context.execution_db.session.flush()
-        workflow_json = WorkflowSchema().dump(workflow).data
+        workflow_json = WorkflowSchema().dump(workflow)
         workflow_json['id'] = 'garbage'
         data = {'name': self.add_playbook_name, 'workflows': [workflow_json]}
         self.post_with_status_check('/api/playbooks',
@@ -348,7 +348,7 @@ class TestWorkflowServer(ServerTestCase):
         from walkoff.executiondb.schemas import WorkflowSchema
         playbook = execution_db_help.standard_load()
         workflow = playbook.workflows[0]
-        expected_json = WorkflowSchema().dump(workflow).data
+        expected_json = WorkflowSchema().dump(workflow)
         expected_json['name'] = self.change_workflow_name
         expected_json.pop('is_valid')
         response = self.put_with_status_check('/api/workflows',
@@ -369,7 +369,7 @@ class TestWorkflowServer(ServerTestCase):
         from walkoff.executiondb import ExecutionDatabase
         playbook = execution_db_help.standard_load()
         workflow = playbook.workflows[0]
-        expected_json = WorkflowSchema().dump(workflow).data
+        expected_json = WorkflowSchema().dump(workflow)
         expected_json['name'] = self.change_workflow_name
         expected_json['actions'][0]['action_name'] = 'invalid'
         expected_json.pop('is_valid')
@@ -406,8 +406,8 @@ class TestWorkflowServer(ServerTestCase):
             elif workflow.name == self.add_workflow_name:
                 workflow_copy = workflow
 
-        copy_workflow_json = WorkflowSchema().dump(workflow_copy).data
-        original_workflow_json = WorkflowSchema().dump(workflow_original).data
+        copy_workflow_json = WorkflowSchema().dump(workflow_copy)
+        original_workflow_json = WorkflowSchema().dump(workflow_original)
         copy_workflow_json.pop('name', None)
         original_workflow_json.pop('name', None)
         self.assertNotEqual(original_workflow_json['start'], copy_workflow_json['start'])
@@ -479,14 +479,14 @@ class TestWorkflowServer(ServerTestCase):
                                                data=files, content_type='multipart/form-data')
         playbook = self.app.running_context.execution_db.session.query(Playbook).filter_by(id=response['id']).first()
         self.assertIsNotNone(playbook)
-        self.assertDictEqual(PlaybookSchema().dump(playbook).data, response)
+        self.assertDictEqual(PlaybookSchema().dump(playbook), response)
 
     def test_export_workflow(self):
         from walkoff.helpers import strip_device_ids, strip_argument_ids
         playbook = execution_db_help.standard_load()
 
         response = self.get_with_status_check('/api/playbooks/{}?mode=export'.format(playbook.id), headers=self.headers)
-        expected = PlaybookSchema().dump(playbook).data
+        expected = PlaybookSchema().dump(playbook)
         strip_device_ids(expected)
         strip_argument_ids(expected)
         self.assertDictEqual(response, expected)
