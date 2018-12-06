@@ -40,9 +40,7 @@ Apps can also have custom interfaces enabling app developers to uniquely
 display information.  WALKOFF not only makes it easier for users to automate
 their processes but allows users to act on their processes faster as well.
 
-<img src="https://raw.githubusercontent.com/nsacyber/WALKOFF/gh-pages/files/images/demoGIFs/customAnalytics.gif" height=300>
-
-Walkoff apps can be found at: <https://github.com/nsacyber/WALKOFF-Apps>
+WALKOFF Apps can be found at: <https://github.com/nsacyber/WALKOFF-Apps>
 
 # Requirements
 
