@@ -20,7 +20,7 @@ engines:
     config: .tslint.json
   markdownlint:
     enabled: true
-  pep8:
+  pycodestyle:
     enabled: true
 checks:
   file-lines:
