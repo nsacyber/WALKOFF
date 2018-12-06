@@ -50,6 +50,7 @@ WALKOFF Apps can be found at: <https://github.com/nsacyber/WALKOFF-Apps>
     * If you are using Windows, you will need to use Redis in a VM or a Docker container.
 * Best used with Linux, or in Docker
     * On Linux, you will need the `python-devel` package for your distribution if running natively.
+    * Windows is no longer supported at this time. We may restore Windows support at a later date, but we recommend running inside a Docker container or Linux VM instead.
 
 *Individual apps may specify their own requirements.*
 
@@ -196,7 +197,7 @@ running setup with sudo, which could cause permissions issues if you don't use s
 Install Redis Server:
 * MacOS: Use homebrew - https://brew.sh/
 * Linux: Use your distro's package manager, follow an appropriate guide for your distro.
-* Windows: There are no up-to-date Redis binaries available for Windows, use Docker as below.
+* Windows: There are no up-to-date Redis binaries available for Windows, and we no longer support Windows at this time. Support may resume at a later date.
 * Docker: Run a Redis container with port 6379 published to localhost: `docker run --name walkoff-redis -p 6379:6379 -d redis`
 
 If the Python environment for your elevated privileges are the same as the Python environment you will be running 
