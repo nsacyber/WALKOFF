@@ -19,6 +19,13 @@
     display: block;
 }
 
+#player1 {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+}
+
 #vidtext {
     color: #FFF;
     width: 80%;
