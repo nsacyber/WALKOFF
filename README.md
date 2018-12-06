@@ -3,8 +3,6 @@
 
 <img src="https://nsacyber.github.io/WALKOFF/files/images/flyingLogoWithTextSmall.png">
 
-[![Overview](https://raw.githubusercontent.com/nsacyber/WALKOFF/gh-pages/img/overview.png)](https://nsacyber.github.io/WALKOFF/vid/overview.mp4)
-
 # Table of Contents
 
 * [Description](#Description)
@@ -36,12 +34,7 @@ together to form Workflows.  Workflows are defined in a JSON format making them
 easily sharable across environments and organizations and easily
 created/customizable through our drag and drop workflow editor.
 
-<center><img src="https://raw.githubusercontent.com/nsacyber/WALKOFF/gh-pages/files/images/demoGIFs/DragDropGIF.gif" height=300></center>
-
-WALKOFF also makes it easier to manage your newly automated processes with
-real-time visual updates and feeds based on your workflows progress.
-
-<img src="https://raw.githubusercontent.com/nsacyber/WALKOFF/gh-pages/files/images/demoGIFs/realTimeUpdates.gif" height=300>
+[![Overview](https://raw.githubusercontent.com/nsacyber/WALKOFF/gh-pages/img/overview.png)](https://nsacyber.github.io/WALKOFF/vid/overview.mp4)
 
 Apps can also have custom interfaces enabling app developers to uniquely
 display information.  WALKOFF not only makes it easier for users to automate
