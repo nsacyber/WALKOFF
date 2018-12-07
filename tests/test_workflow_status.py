@@ -48,7 +48,7 @@ def mock_resume_workflow(self, execution_id, user=None):
     data = {"execution_id": execution_id}
     if user:
         data["user"] = user
-    WalkoffEvent.WorkflowResumed.send(MockWorkflow(execution_id), data=data)
+    WalkoffEvent.WorkflowResumed.send(MockWorkflow(execution_id).as_json(), data=data)
 
 
 class TestWorkflowStatus(ServerTestCase):

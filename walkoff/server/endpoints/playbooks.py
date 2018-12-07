@@ -4,6 +4,7 @@ from uuid import uuid4
 
 from flask import request, current_app, send_file
 from flask_jwt_extended import jwt_required
+from marshmallow import ValidationError
 from sqlalchemy import exists, and_
 from sqlalchemy.exc import IntegrityError, StatementError
 
@@ -107,20 +108,19 @@ def create_playbook(source=None):
 
         try:
             playbook = playbook_schema.load(data)
-            if playbook.errors:
-                current_app.running_context.execution_db.session.rollback()
-                current_app.logger.error('Could not create Playbook {}. Invalid input'.format(playbook_name))
-                return improper_json_problem('playbook', 'create', playbook_name, playbook.errors)
-            else:
-                current_app.running_context.execution_db.session.add(playbook)
-                current_app.running_context.execution_db.session.commit()
+
+            current_app.running_context.execution_db.session.add(playbook)
+            current_app.running_context.execution_db.session.commit()
+            current_app.logger.info('Playbook {0} created'.format(playbook_name))
+            return playbook_schema.dump(playbook), OBJECT_CREATED
+        except ValidationError as e:
+            current_app.running_context.execution_db.session.rollback()
+            current_app.logger.error('Could not create Playbook {}. Invalid input'.format(playbook_name))
+            return improper_json_problem('playbook', 'create', playbook_name, e.messages)
         except (IntegrityError, StatementError):
             current_app.running_context.execution_db.session.rollback()
             current_app.logger.error('Could not create Playbook {}. Unique constraint failed'.format(playbook_name))
             return unique_constraint_problem('playbook', 'create', playbook_name)
-        else:
-            current_app.logger.info('Playbook {0} created'.format(playbook_name))
-            return playbook_schema.dump(playbook), OBJECT_CREATED
 
     if source:
         return copy_playbook(source)
@@ -203,6 +203,7 @@ def copy_playbook(playbook_id):
 
         if 'workflows' in playbook_json:
             for workflow in playbook_json['workflows']:
+                workflow.pop('is_valid', None)
                 regenerate_workflow_ids(workflow)
 
         try:
@@ -260,14 +261,14 @@ def create_workflow(source=None):
             return Problem(BAD_REQUEST, 'Could not create workflow.', '"start" is required field.')
         try:
             workflow = workflow_schema.load(data)
-            if workflow.errors:
-                current_app.running_context.execution_db.session.rollback()
-                current_app.logger.error('Could not create Workflow {}. Invalid input'.format(workflow_name))
-                return improper_json_problem('workflow', 'create', workflow_name, workflow.errors)
-            else:
-                playbook.workflows.append(workflow)
-                current_app.running_context.execution_db.session.add(workflow)
-                current_app.running_context.execution_db.session.commit()
+
+            playbook.workflows.append(workflow)
+            current_app.running_context.execution_db.session.add(workflow)
+            current_app.running_context.execution_db.session.commit()
+        except ValidationError as e:
+            current_app.running_context.execution_db.session.rollback()
+            current_app.logger.error('Could not create Workflow {}. Invalid input'.format(workflow_name))
+            return improper_json_problem('workflow', 'create', workflow_name, e.messages)
         except IntegrityError:
             current_app.running_context.execution_db.session.rollback()
             current_app.logger.error('Could not create workflow {}. Unique constraint failed'.format(workflow_name))
@@ -357,6 +358,7 @@ def copy_workflow(playbook_id, workflow_id):
 
         workflow_json = workflow_schema.dump(workflow)
         workflow_json.pop('id')
+        workflow_json.pop('is_valid', None)
         workflow_json['name'] = new_workflow_name
 
         regenerate_workflow_ids(workflow_json)

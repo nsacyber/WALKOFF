@@ -242,6 +242,7 @@ class TestWorkflowServer(ServerTestCase):
         self.app.running_context.execution_db.session.add(workflow)
         self.app.running_context.execution_db.session.flush()
         workflow_json = WorkflowSchema().dump(workflow)
+        workflow_json.pop('is_valid', None)
         workflow_json['id'] = 'garbage'
         data = {'name': self.add_playbook_name, 'workflows': [workflow_json]}
         self.post_with_status_check('/api/playbooks',
