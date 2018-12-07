@@ -1,10 +1,9 @@
 [![Build Status](https://img.shields.io/travis/nsacyber/WALKOFF/master.svg?maxAge=3600&label=Linux)](https://travis-ci.org/nsacyber/WALKOFF) [![Build status](https://ci.appveyor.com/api/projects/status/hs6ujwd1f87n39ut/branch/master?svg=true)](https://ci.appveyor.com/project/iadgovuser11/walkoff/branch/master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/330249e13845a07a69a2/maintainability)](https://codeclimate.com/github/iadgov/WALKOFF/maintainability)[![GitHub (pre-)release](https://img.shields.io/github/release/nsacyber/WALKOFF/all.svg?style=flat)](release)
 
-
 <img src="https://nsacyber.github.io/WALKOFF/files/images/flyingLogoWithTextSmall.png">
 
-# Table of Contents
+## Table of Contents
 
 * [Description](#Description)
 * [Requirements](#Requirements)
@@ -18,9 +17,14 @@
 * [Updating Walkoff](#Updating-Walkoff)
 * [Stability and Versioning](#Stability-and-Versioning)
 * [Contributions](#Contributions)
-  
 
-# Description
+External Links:
+- [WALKOFF Apps Repository](https://github.com/nsacyber/WALKOFF-Apps)
+- [WALKOFF REST API Documentation](https://nsacyber.github.io/WALKOFF/swagger/index.html)
+- [WALKOFF Documentation](https://nsacyber.github.io/WALKOFF/documentation/build/index.html) 
+- [WALKOFF Tutorials](https://nsacyber.github.io/WALKOFF/tutorials/build/index.html)   
+
+## Overview
 
 * Are repetitive, tedious processes taking up too much of your time?
 * Is more time spent focusing on managing your data than acting on the data
@@ -35,22 +39,13 @@ together to form Workflows.  Workflows are defined in a JSON format making them
 easily sharable across environments and organizations and easily
 created/customizable through our drag and drop workflow editor.
 
-<center><img src="https://raw.githubusercontent.com/nsacyber/WALKOFF/gh-pages/files/images/demoGIFs/DragDropGIF.gif" height=300></center>
-
-WALKOFF also makes it easier to manage your newly automated processes with
-real-time visual updates and feeds based on your workflows progress.
-
-<img src="https://raw.githubusercontent.com/nsacyber/WALKOFF/gh-pages/files/images/demoGIFs/realTimeUpdates.gif" height=300>
+[![Overview](https://raw.githubusercontent.com/nsacyber/WALKOFF/gh-pages/img/overview.png)](https://nsacyber.github.io/WALKOFF/vid/overview.mp4)
 
 Apps can also have custom interfaces enabling app developers to uniquely
 display information.  WALKOFF not only makes it easier for users to automate
 their processes but allows users to act on their processes faster as well.
 
-<img src="https://raw.githubusercontent.com/nsacyber/WALKOFF/gh-pages/files/images/demoGIFs/customAnalytics.gif" height=300>
-
-Walkoff apps can be found at: <https://github.com/nsacyber/WALKOFF-Apps>
-
-# Requirements
+## Requirements
 
 * Python 2.7+ or Python 3.4+
 * Redis 5+
@@ -62,7 +57,7 @@ Walkoff apps can be found at: <https://github.com/nsacyber/WALKOFF-Apps>
 
 *Individual apps may specify their own requirements.*
 
-# Installation
+## Installation
 
 There are three main ways of using WALKOFF - natively, using Docker, or using Kubernetes.
 
