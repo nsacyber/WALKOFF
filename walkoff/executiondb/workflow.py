@@ -23,7 +23,7 @@ class Workflow(ExecutionElement, Execution_Base):
     environment_variables = relationship('EnvironmentVariable', cascade='all, delete-orphan', passive_deletes=True)
     __table_args__ = (UniqueConstraint('playbook_id', 'name', name='_playbook_workflow'),)
 
-    def __init__(self, name, start, id=None, actions=None, branches=None, environment_variables=None):
+    def __init__(self, name, start, id=None, actions=None, branches=None, environment_variables=None, errors=None):
         """Initializes a Workflow object. A Workflow falls under a Playbook, and has many associated Actions
             within it that get executed.
 
@@ -37,7 +37,7 @@ class Workflow(ExecutionElement, Execution_Base):
             environment_variables (list[EnvironmentVariable], optional): A list of environment variables for the
                 Workflow. Defaults to None.
         """
-        ExecutionElement.__init__(self, id)
+        ExecutionElement.__init__(self, id, errors)
         self.name = name
         self.actions = actions if actions else []
         self.branches = branches if branches else []

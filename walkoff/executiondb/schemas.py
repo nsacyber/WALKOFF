@@ -49,7 +49,7 @@ class ExecutionBaseSchema(ModelSchema):
 
 
 class ExecutionElementBaseSchema(ExecutionBaseSchema):
-    errors = fields.List(fields.String(), dump_only=True)
+    errors = fields.List(fields.String())
 
 
 class EnvironmentVariableSchema(ExecutionBaseSchema):

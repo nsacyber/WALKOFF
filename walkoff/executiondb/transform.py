@@ -26,7 +26,7 @@ class Transform(ExecutionElement, Execution_Base):
     arguments = relationship('Argument', cascade='all, delete, delete-orphan', passive_deletes=True)
     children = ('arguments',)
 
-    def __init__(self, app_name, action_name, id=None, arguments=None):
+    def __init__(self, app_name, action_name, id=None, arguments=None, errors=None):
         """Initializes a new Transform object. A Transform is used to transform input into a workflow.
 
         Args:
@@ -37,7 +37,7 @@ class Transform(ExecutionElement, Execution_Base):
             arguments (list[Argument], optional): Dictionary of Argument keys to Argument values.
                 This dictionary will be converted to a dictionary of str:Argument. Defaults to None.
         """
-        ExecutionElement.__init__(self, id)
+        ExecutionElement.__init__(self, id, errors)
         self.app_name = app_name
         self.action_name = action_name
 

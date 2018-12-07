@@ -28,7 +28,7 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
     transforms = relationship('Transform', cascade='all, delete-orphan', passive_deletes=True)
     children = ('arguments', 'transforms')
 
-    def __init__(self, app_name, action_name, id=None, is_negated=False, arguments=None, transforms=None):
+    def __init__(self, app_name, action_name, id=None, is_negated=False, arguments=None, transforms=None, errors=None):
         """Initializes a new Condition object.
 
         Args:
@@ -42,7 +42,7 @@ class Condition(ExecutionElement, executiondb.Execution_Base):
             transforms(list[Transform], optional): A list of Transform objects for the Condition object.
                 Defaults to None.
         """
-        ExecutionElement.__init__(self, id)
+        ExecutionElement.__init__(self, id, errors)
         self.app_name = app_name
         self.action_name = action_name
         self.is_negated = is_negated

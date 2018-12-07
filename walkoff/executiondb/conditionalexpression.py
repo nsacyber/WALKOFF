@@ -28,7 +28,7 @@ class ConditionalExpression(ExecutionElement, Execution_Base):
     conditions = relationship('Condition', cascade='all, delete-orphan', passive_deletes=True)
     children = ('child_expressions', 'conditions')
 
-    def __init__(self, operator='and', id=None, is_negated=False, child_expressions=None, conditions=None):
+    def __init__(self, operator='and', id=None, is_negated=False, child_expressions=None, conditions=None, errors=None):
         """Initializes a new ConditionalExpression object
 
         Args:
@@ -40,7 +40,7 @@ class ConditionalExpression(ExecutionElement, Execution_Base):
                 object. Defaults to None.
             conditions (list[Condition], optional): Condition objects for this object. Defaults to None.
         """
-        ExecutionElement.__init__(self, id)
+        ExecutionElement.__init__(self, id, errors)
         self.operator = operator
         self.is_negated = is_negated
         if child_expressions:
