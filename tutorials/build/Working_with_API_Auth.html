@@ -115,8 +115,7 @@ img.media-object.image{
             <li>Attempts to authenticate with the WALKOFF instance at that address with the specified username, prompting for a password.</li>
             <li>Refreshs the access token.</li>
             <li>Lists the available workflows.</li>
-            <li>If the playbook "Tutorials" has a workflow "Triggers", executes it.</li>
-            <li>Using the resulting <code>execution_uid</code>, provides data to any triggers waiting in that workflow.
+            <li>If the workflow "Tutorial" exists, executes it.</li>
             <li>Checks the results of the workflow.</li>
             <li>Logs out.</li>
         </ol>
@@ -215,7 +214,7 @@ def logout(self):
                           json=dict(refresh_token=self.refresh_token),
                           timeout=2)
 
-        if r.status_code == 200:
+        if r.status_code == 204:
             self.is_connected = False
             print("Logged out.")
             logged_out = True
@@ -230,14 +229,14 @@ def logout(self):
     return logged_out
             </code></pre>
         <p>The <code>/api/auth/logout</code> endpoint requires that the authorization header is set with the refresh token.</p>
-        <p>This concludes the tutorial on the API's authentication functions. In the next tutorial, we will look at querying Playbooks.</p>
+        <p>This concludes the tutorial on the API's authentication functions. In the next tutorial, we will look at querying Workflows.</p>
         <div align="center" style="border:1px solid blue">
             <h5><a href="Working_with_API_Query.html">Next >></a></h5>
         </div>
         <h4><b>More in this series:</b></h4>
         <ol>
             <li><a href="Working_with_API_Query.html">Using the API to query a WALKOFF instance.</a></li>
-            <li><a href="Working_with_API_Trigger.html">Using the API to provide trigger data to a waiting action.</a></li>
+            <li><a href="Working_with_API_Execution.html">Using the API to execute a workflow.</a></li>
       </ol>
     </div>
 

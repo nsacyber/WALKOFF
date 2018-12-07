@@ -115,49 +115,52 @@ img.media-object.image{
             <li>Attempts to authenticate with the WALKOFF instance at that address with the specified username, prompting for a password.</li>
             <li>Refreshs the access token.</li>
             <li>Lists the available workflows.</li>
-            <li>If the playbook "Tutorials" has a workflow "Triggers", executes it.</li>
-            <li>Using the resulting <code>execution_uid</code>, provides data to any triggers waiting in that workflow.
+            <li>If the workflow "Tutorial" exists, executes it.</li>
             <li>Checks the results of the workflow.</li>
             <li>Logs out.</li>
         </ol>
         <p>This part will detail step 4.</p>
         <h4><b>1. Check if the workflow exists</b></h4>
-        <p>We'll query the <code>/api/playbooks/{playbook_name}/workflows/{workflow_name}</code> endpoint to see if our desired workflow exists.</p>
+        <p>We'll query the <code>/api/workflows/{workflow_id}</code> endpoint to see if our desired workflow exists.</p>
         <pre><code class="python">
-def check_workflow_exists(self, playbook_name, workflow_name):
-    exists = False
+def get_workflow_by_name(self, workflow_name):
+    """" Attempts to find a workflow by name and returns its id """
     if self.is_connected:
-        print("Querying workflow..."),
-        ep = "/api/playbooks/{}/workflows/{}".format(
-            playbook_name, workflow_name)
+        r = requests.get(self.url + "/api/workflows", headers=self.auth_header)
+        workflows = r.json()
+        for workflow in workflows:
+            if workflow["name"].lower() == workflow_name.lower():
+                return workflow["id"]
 
-        r = requests.get(self.address + ep,
-                         headers=self.auth_header,
-                         timeout=2)
+        print("Workflow: {} does not exist.".format(workflow_name))
+
+def check_workflow_exists(self, workflow_name):
+    workflow_id = self.get_workflow_by_name(workflow_name)
+    if self.is_connected and workflow_id is not None:
+        print("Querying workflow: {}\t with ID:{}...".format(workflow_name, workflow_id)),
+        ep = "/api/workflows/{}".format(workflow_id)
+
+        r = requests.get(self.url + ep, headers=self.auth_header, timeout=2)
 
         if r.status_code == 200:
-            exists = True
-            print("{}:{} exists".format(
-                playbook_name, workflow_name))
+            print("Workflow: {}\t{} exists".format(workflow_name, workflow_id))
+            return workflow_id
 
-        elif r.status_code == 461:
-            print("Playbook or workflow does not exist.")
+        elif r.status_code == 404:
+            print("Workflow does not exist.")
 
         else:
-            print("Unknown response: {}: {}".format(
-                r.status_code, r.json()))
-
-    return exists
+            print("Unknown response: {}: {}".format(r.status_code, r.json()))
         </code></pre>
 
-        <p>This concludes the tutorial on the API's query functions. Analogous functions can be written to retrieve information on metrics, cases, users, systems, apps, and more. In the next tutorial, we will look at executing, triggering, and checking workflow results.</p>
+        <p>This concludes the tutorial on the API's query functions. Analogous functions can be written to retrieve information on metrics, cases, users, systems, apps, and more. In the next tutorial, we will look at executing and checking workflow results.</p>
         <div align="center" style="border:1px solid blue">
-            <h5><a href="Working_with_API_Trigger.html">Next >></a></h5>
+            <h5><a href="Working_with_API_Execution.html">Next >></a></h5>
         </div>
         <h4><b>More in this series:</b></h4>
         <ol>
             <li><a href="Working_with_API_Auth.html">Using the API to authenticate with a WALKOFF instance.</a></li>
-            <li><a href="Working_with_API_Trigger.html">Using the API to provide trigger data to a waiting action.</a></li>
+            <li><a href="Working_with_API_Execution.html">Using the API to execute a workflow.</a></li>
       </ol>
     </div>
 
