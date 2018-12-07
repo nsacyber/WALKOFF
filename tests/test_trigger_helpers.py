@@ -2,9 +2,11 @@ import json
 from unittest import TestCase
 from uuid import uuid4
 
+from walkoff.server.app import create_app
 from walkoff.server.endpoints.triggers import get_authorized_execution_ids
 from walkoff.serverdb import db, User, Role
 from walkoff.serverdb.message import Message, MessageHistory
+from tests.util import initialize_test_config
 
 
 class TestTriggerHelpers(TestCase):
@@ -15,9 +17,12 @@ class TestTriggerHelpers(TestCase):
         cls.uid2 = str(uuid4())
         cls.uid3 = str(uuid4())
         cls.uids = {cls.uid1, cls.uid2, cls.uid3}
-        from flask import current_app
-        cls.context = current_app.test_request_context()
+
+        initialize_test_config()
+        cls.app = create_app()
+        cls.context = cls.app.test_request_context()
         cls.context.push()
+
         db.create_all()
         for user in [user for user in User.query.all() if user.username != 'admin']:
             db.session.delete(user)

@@ -1,10 +1,9 @@
 from datetime import datetime
 from unittest import TestCase
 
-from flask import current_app
-
 from tests.util import execution_db_help, initialize_test_config
 from walkoff.messaging import MessageAction
+from walkoff.server.app import create_app
 from walkoff.serverdb import db
 from walkoff.serverdb.message import MessageHistory
 from walkoff.serverdb.user import User
@@ -17,8 +16,10 @@ class TestMessageHistoryDatabase(TestCase):
         initialize_test_config()
         execution_db_help.setup_dbs()
 
-        cls.context = current_app.test_request_context()
+        cls.app = create_app()
+        cls.context = cls.app.test_request_context()
         cls.context.push()
+
         db.create_all()
         for user in [user for user in User.query.all() if user.username != 'admin']:
             db.session.delete(user)

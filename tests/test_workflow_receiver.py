@@ -9,7 +9,7 @@ from zmq import auth
 
 import walkoff.cache
 import walkoff.config
-from tests.util import initialize_test_config
+from tests.util import initialize_test_config, execution_db_help
 from tests.util.mock_objects import MockRedisCacheAdapter
 from walkoff.proto.build.data_pb2 import ExecuteWorkflowMessage
 from walkoff.worker.zmq_workflow_receivers import WorkflowReceiver
@@ -20,6 +20,7 @@ class TestWorkflowReceiver(TestCase):
     @classmethod
     def setUpClass(cls):
         initialize_test_config()
+
         server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
         server_public, server_secret = auth.load_certificate(server_secret_file)
         client_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "client.key_secret")
@@ -27,6 +28,13 @@ class TestWorkflowReceiver(TestCase):
         cls.key = PrivateKey(client_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES])
         cls.server_key = PrivateKey(server_secret[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
         cls.box = Box(cls.key, cls.server_key)
+
+    def setUp(self):
+        execution_db_help.setup_dbs()
+
+    def tearDown(self):
+        execution_db_help.cleanup_execution_db()
+        execution_db_help.tear_down_execution_db()
 
     @patch.object(walkoff.cache, 'make_cache', return_value=MockRedisCacheAdapter())
     def test_init(self, mock_make_cache):
