@@ -1,7 +1,6 @@
 [![Build Status](https://img.shields.io/travis/nsacyber/WALKOFF/master.svg?maxAge=3600&label=Linux)](https://travis-ci.org/nsacyber/WALKOFF) [![Build status](https://ci.appveyor.com/api/projects/status/hs6ujwd1f87n39ut/branch/master?svg=true)](https://ci.appveyor.com/project/iadgovuser11/walkoff/branch/master)
 [![Maintainability](https://api.codeclimate.com/v1/badges/330249e13845a07a69a2/maintainability)](https://codeclimate.com/github/iadgov/WALKOFF/maintainability)[![GitHub (pre-)release](https://img.shields.io/github/release/nsacyber/WALKOFF/all.svg?style=flat)](release)
 
-
 <img src="https://nsacyber.github.io/WALKOFF/files/images/flyingLogoWithTextSmall.png">
 
 # Table of Contents
@@ -35,20 +34,13 @@ together to form Workflows.  Workflows are defined in a JSON format making them
 easily sharable across environments and organizations and easily
 created/customizable through our drag and drop workflow editor.
 
-<center><img src="https://raw.githubusercontent.com/nsacyber/WALKOFF/gh-pages/files/images/demoGIFs/DragDropGIF.gif" height=300></center>
-
-WALKOFF also makes it easier to manage your newly automated processes with
-real-time visual updates and feeds based on your workflows progress.
-
-<img src="https://raw.githubusercontent.com/nsacyber/WALKOFF/gh-pages/files/images/demoGIFs/realTimeUpdates.gif" height=300>
+[![Overview](https://raw.githubusercontent.com/nsacyber/WALKOFF/gh-pages/img/overview.png)](https://nsacyber.github.io/WALKOFF/vid/overview.mp4)
 
 Apps can also have custom interfaces enabling app developers to uniquely
 display information.  WALKOFF not only makes it easier for users to automate
 their processes but allows users to act on their processes faster as well.
 
-<img src="https://raw.githubusercontent.com/nsacyber/WALKOFF/gh-pages/files/images/demoGIFs/customAnalytics.gif" height=300>
-
-Walkoff apps can be found at: <https://github.com/nsacyber/WALKOFF-Apps>
+WALKOFF Apps can be found at: <https://github.com/nsacyber/WALKOFF-Apps>
 
 # Requirements
 
@@ -58,6 +50,7 @@ Walkoff apps can be found at: <https://github.com/nsacyber/WALKOFF-Apps>
     * If you are using Windows, you will need to use Redis in a VM or a Docker container.
 * Best used with Linux, or in Docker
     * On Linux, you will need the `python-devel` package for your distribution if running natively.
+    * Windows is no longer supported at this time. We may restore Windows support at a later date, but we recommend running inside a Docker container or Linux VM instead.
 
 *Individual apps may specify their own requirements.*
 
@@ -204,7 +197,7 @@ running setup with sudo, which could cause permissions issues if you don't use s
 Install Redis Server:
 * MacOS: Use homebrew - https://brew.sh/
 * Linux: Use your distro's package manager, follow an appropriate guide for your distro.
-* Windows: There are no up-to-date Redis binaries available for Windows, use Docker as below.
+* Windows: There are no up-to-date Redis binaries available for Windows, and we no longer support Windows at this time. Support may resume at a later date.
 * Docker: Run a Redis container with port 6379 published to localhost: `docker run --name walkoff-redis -p 6379:6379 -d redis`
 
 If the Python environment for your elevated privileges are the same as the Python environment you will be running 
