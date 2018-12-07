@@ -23,18 +23,21 @@ def execute_workflow(self, workflow_id):
         print("Executing workflow..."),
         ep = "/api/workflowqueue"
 
-        r = requests.post(self.url + ep, headers=self.auth_header, json={"workflow_id": workflow_id},
+        r = requests.post(self.url + ep, headers=self.auth_header,
+                          json={"workflow_id": workflow_id},
                           timeout=2)
 
         if r.status_code == 202:
             execution_uid = r.json()["id"]
-            print("Workflow: {} was executed with execution ID: {}".format(workflow_id, execution_uid))
+            print("Workflow: {} was executed with ID: {}".format(
+            workflow_id, execution_uid))
 
         elif r.status_code == 404:
             print("Workflow does not exist.")
 
         else:
-            print("Unknown response: {}: {}".format(r.status_code, r.json()))
+            print("Unknown response: {}: {}".format(r.status_code,
+                                                    r.json()))
 
     return execution_uid
         </code></pre>
@@ -50,7 +53,8 @@ def check_result(self, execution_uid):
 
         ep = "/api/workflowqueue/{}".format(execution_uid)
 
-        r = requests.get(self.url + ep, headers=self.auth_header, timeout=2)
+        r = requests.get(self.url + ep, headers=self.auth_header,
+                         timeout=2)
 
         if r.status_code == 200:
             success = True

@@ -20,7 +20,8 @@
 def get_workflow_by_name(self, workflow_name):
     """" Attempts to find a workflow by name and returns its id """
     if self.is_connected:
-        r = requests.get(self.url + "/api/workflows", headers=self.auth_header)
+        r = requests.get(self.url + "/api/workflows",
+                         headers=self.auth_header)
         workflows = r.json()
         for workflow in workflows:
             if workflow["name"].lower() == workflow_name.lower():
@@ -31,20 +32,25 @@ def get_workflow_by_name(self, workflow_name):
 def check_workflow_exists(self, workflow_name):
     workflow_id = self.get_workflow_by_name(workflow_name)
     if self.is_connected and workflow_id is not None:
-        print("Querying workflow: {}\t with ID:{}...".format(workflow_name, workflow_id)),
+        print("Querying workflow: {}\t with ID:{}...".format(
+            workflow_name, workflow_id)),
         ep = "/api/workflows/{}".format(workflow_id)
 
-        r = requests.get(self.url + ep, headers=self.auth_header, timeout=2)
+        r = requests.get(self.url + ep,
+                         headers=self.auth_header,
+                         timeout=2)
 
         if r.status_code == 200:
-            print("Workflow: {}\t{} exists".format(workflow_name, workflow_id))
+            print("Workflow: {}\t{} exists".format(workflow_name,
+                                                   workflow_id))
             return workflow_id
 
         elif r.status_code == 404:
             print("Workflow does not exist.")
 
         else:
-            print("Unknown response: {}: {}".format(r.status_code, r.json()))
+            print("Unknown response: {}: {}".format(r.status_code,
+                                                    r.json()))
         </code></pre>
 
         <p>This concludes the tutorial on the API's query functions. Analogous functions can be written to retrieve information on metrics, cases, users, systems, apps, and more. In the next tutorial, we will look at executing and checking workflow results.</p>
