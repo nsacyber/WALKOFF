@@ -332,15 +332,12 @@ class TestWorkflowResultsStream(ServerTestCase):
 
     def check_stream_endpoint(self, endpoint, mock_stream, execution_id=None, summary=False):
         mock_stream.return_value = Response('something', status=SUCCESS)
-        post = self.test_client.post('/api/auth', content_type="application/json",
-                                     data=json.dumps(dict(username='admin', password='admin')), follow_redirects=True)
-        key = json.loads(post.get_data(as_text=True))['access_token']
-        url = '/api/streams/workflowqueue/{}?access_token={}'.format(endpoint, key)
+        url = '/api/streams/workflowqueue/{}'.format(endpoint)
         if execution_id:
-            url += '&workflow_execution_id={}'.format(execution_id)
+            url += '?workflow_execution_id={}'.format(execution_id)
         if summary:
-            url += '&summary=true'
-        response = self.test_client.get(url)
+            url += '&summary=true' if '?' in url else '?summary=true'
+        response = self.test_client.get(url, headers=self.headers)
         if execution_id is None:
             execution_id = 'all'
         if execution_id != 'invalid':
@@ -349,12 +346,6 @@ class TestWorkflowResultsStream(ServerTestCase):
         else:
             mock_stream.assert_not_called()
             self.assertEqual(response.status_code, BAD_REQUEST)
-
-    def check_stream_endpoint_no_key(self, endpoint, mock_stream):
-        mock_stream.return_value = Response('something', status=SUCCESS)
-        response = self.test_client.get('/api/streams/workflowqueue/{}?access_token=invalid'.format(endpoint))
-        mock_stream.assert_not_called()
-        self.assertEqual(response.status_code, 422)
 
     @patch.object(action_stream, 'stream')
     def test_action_stream_endpoint(self, mock_stream):
@@ -390,11 +381,3 @@ class TestWorkflowResultsStream(ServerTestCase):
     @patch.object(workflow_stream, 'stream')
     def test_workflow_stream_endpoint_with_invalid_execution_id(self, mock_stream):
         self.check_stream_endpoint('workflow_status', mock_stream, execution_id='invalid')
-
-    @patch.object(action_stream, 'stream')
-    def test_action_stream_endpoint_invalid_key(self, mock_stream):
-        self.check_stream_endpoint_no_key('actions', mock_stream)
-
-    @patch.object(workflow_stream, 'stream')
-    def test_workflow_stream_endpoint_invalid_key(self, mock_stream):
-        self.check_stream_endpoint_no_key('workflow_status', mock_stream)

@@ -1,10 +1,9 @@
 from datetime import datetime
 
 from enum import Enum, unique
-from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from walkoff.messaging import MessageActionEvent
-from walkoff.security import jwt_required_in_query
 from walkoff.sse import FilteredSseStream, StreamableBlueprint
 
 sse_stream = FilteredSseStream('notifications')
@@ -53,7 +52,7 @@ def message_read_callback(message, **data):
 
 
 @notifications_page.route('/notifications', methods=['GET'])
-@jwt_required_in_query('access_token')
+@jwt_required
 def stream_workflow_success_events():
     user_id = get_jwt_identity()
     return sse_stream.stream(subchannel=user_id)

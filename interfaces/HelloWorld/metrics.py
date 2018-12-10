@@ -5,7 +5,6 @@ from flask_jwt_extended import jwt_required
 
 from interfaces import dispatcher, AppBlueprint
 from walkoff.events import WalkoffEvent
-from walkoff.security import jwt_required_in_query
 from walkoff.sse import InterfaceSseStream, create_interface_channel_name
 
 metrics_stream = InterfaceSseStream('HelloWorld', 'metrics')
@@ -53,6 +52,6 @@ def __action_error_callback(data):
 
 
 @blueprint.route('/actionstream', methods=['GET'])
-@jwt_required_in_query('access_token')
+@jwt_required
 def stream_workflow_action_events():
     return metrics_stream.stream()
