@@ -20,8 +20,6 @@ engines:
     config: .tslint.json
   markdownlint:
     enabled: true
-  pycodestyle:
-    enabled: true
 checks:
   file-lines:
     config:
@@ -41,6 +39,8 @@ plugins:
     config:
       tests_patterns:
         - tests/**
+  pycodestyle:
+    enabled: true
 exclude_paths:
   - tests/
   - walkoff/proto
