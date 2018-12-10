@@ -354,7 +354,6 @@ UpdatePlaybook:
 
 ExecutionElementErrors:
   description: Errors attached to this ExecutionElement
-  readOnly: true
   type: array
   items:
     type: string

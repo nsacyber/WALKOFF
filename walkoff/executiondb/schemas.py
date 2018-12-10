@@ -183,7 +183,7 @@ class WorkflowSchema(ExecutionElementBaseSchema):
     actions = fields.Nested(ActionSchema, many=True)
     branches = fields.Nested(BranchSchema, many=True)
     environment_variables = fields.Nested(EnvironmentVariableSchema, many=True)
-    is_valid = field_for(Workflow, 'is_valid', dump_only=True)
+    is_valid = field_for(Workflow, 'is_valid')
 
     class Meta:
         model = Workflow
