@@ -88,7 +88,6 @@ Workflow:
     is_valid:
       description: Is this workflow able to be run?
       type: boolean
-      readOnly: true
     errors:
       $ref: '#/components/schemas/ExecutionElementErrors'
 
