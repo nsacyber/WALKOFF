@@ -35,6 +35,12 @@ ratings:
     - "**.ts"
     - "**.py"
     - "**.md"
+plugins:
+  sonar-python:
+    enabled: true
+    config:
+      tests_patterns:
+        - tests/**
 exclude_paths:
   - tests/
   - walkoff/proto
