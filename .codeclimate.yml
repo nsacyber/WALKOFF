@@ -26,7 +26,7 @@ plugins:
     config:
       tests_patterns:
         - tests/**
-  pycodestyle:
+  pep8:
     enabled: true
 checks:
   file-lines:
