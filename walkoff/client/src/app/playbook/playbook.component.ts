@@ -48,6 +48,12 @@ import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 import { PlaybookEnvironmentVariableModalComponent } from './playbook.environment.variable.modal.component';
 import { WorkflowStatus } from '../models/execution/workflowStatus';
 
+declare var EventSourcePolyfill: any;
+EventSourcePolyfill.prototype.close = function() {
+    this.controller.abort();
+    this._close();
+  };
+
 @Component({
 	selector: 'playbook-component',
 	templateUrl: './playbook.html',
@@ -108,6 +114,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	recalculateConsoleTableCallback: any;
 	actionFilter: string = '';
 	actionFilterControl = new FormControl();
+	
 
 	// Simple bootstrap modal params
 	modalParams: {
@@ -214,9 +221,11 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				let url = `api/streams/console/log?access_token=${ authToken }&workflow_execution_id=${ workflowExecutionId }`;
+				let url = `api/streams/console/log?workflow_execution_id=${ workflowExecutionId }`;
 
-				this.consoleEventSource = new (window as any).EventSource(url);
+				this.consoleEventSource = new EventSourcePolyfill(url, {
+					headers: { 'Authorization': `Bearer ${ authToken }` }
+				})
                 this.consoleEventSource.addEventListener('log', (e: any) => this.consoleEventHandler(e));
 				this.consoleEventSource.onerror = (err: Error) => {
 					// this.toastrService.error(`Error retrieving workflow results: ${err.message}`);
@@ -249,9 +258,11 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				let url = `api/streams/workflowqueue/actions?access_token=${ authToken }&workflow_execution_id=${ workflowExecutionId }`;
+				let url = `api/streams/workflowqueue/actions?workflow_execution_id=${ workflowExecutionId }`;
 
-				this.eventSource = new (window as any).EventSource(url);
+				this.eventSource = new EventSourcePolyfill(url, {
+					headers: { 'Authorization': `Bearer ${ authToken }` }
+				})
 				this.eventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));

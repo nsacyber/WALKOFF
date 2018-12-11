@@ -25,6 +25,12 @@ import { ActionStatus } from '../models/execution/actionStatus';
 import { ExecutionVariableModalComponent } from './execution.variable.modal.component';
 import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 
+declare var EventSourcePolyfill: any;
+EventSourcePolyfill.prototype.close = function() {
+    this.controller.abort();
+    this._close();
+  };
+
 @Component({
 	selector: 'execution-component',
 	templateUrl: './execution.html',
@@ -174,8 +180,10 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	getWorkflowStatusSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				this.workflowStatusEventSource = new (window as any)
-					.EventSource(`api/streams/workflowqueue/workflow_status?access_token=${authToken}`);
+
+				this.workflowStatusEventSource = new EventSourcePolyfill('/api/streams/workflowqueue/workflow_status', {
+					headers: { 'Authorization': `Bearer ${ authToken }` }
+				})
 
 				this.workflowStatusEventSource.addEventListener('queued', (e: any) => this.workflowStatusEventHandler(e));
 				this.workflowStatusEventSource.addEventListener('started', (e: any) => this.workflowStatusEventHandler(e));
@@ -263,10 +271,12 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				let url = `api/streams/workflowqueue/actions?summary=true&access_token=${ authToken }`;
+				let url = `api/streams/workflowqueue/actions?summary=true`;
 				if (workflowExecutionId) url += `&workflow_execution_id=${ workflowExecutionId }`;
 
-				this.actionStatusEventSource = new (window as any).EventSource(url);
+				this.actionStatusEventSource = new EventSourcePolyfill(url, {
+					headers: { 'Authorization': `Bearer ${ authToken }` }
+				})
 				this.actionStatusEventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
 				this.actionStatusEventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
 				this.actionStatusEventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));

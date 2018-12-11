@@ -17,6 +17,12 @@ import { GenericObject } from '../models/genericObject';
 const MAX_READ_MESSAGES = 5;
 const MAX_TOTAL_MESSAGES = 20;
 
+declare var EventSourcePolyfill: any;
+EventSourcePolyfill.prototype.close = function() {
+    this.controller.abort();
+    this._close();
+  };
+
 @Component({
 	selector: 'main-component',
 	templateUrl: './main.html',
@@ -88,8 +94,9 @@ export class MainComponent implements OnInit, OnDestroy {
 	getNotificationsSSE(): void {
 		this.authService.getAccessTokenRefreshed()
 			.then(authToken => {
-				this.eventSource = new (window as any)
-					.EventSource('/api/streams/messages/notifications?access_token=' + authToken);
+				this.eventSource = new EventSourcePolyfill('/api/streams/messages/notifications', {
+					headers: { 'Authorization': `Bearer ${ authToken }` }
+				})
 
 				this.eventSource.addEventListener('created', (message: any) => {
 					const newMessage = plainToClass(MessageListing, (JSON.parse(message.data) as object));
