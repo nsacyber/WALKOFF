@@ -25,6 +25,9 @@ services:
     - "walkoff-postgres"
     stop_signal: SIGINT
     stop_grace_period: 30s
+#    entrypoint:
+#    - "sleep"
+#    - "36000"
   walkoff-redis:
     image: "redis"
   walkoff-postgres:

@@ -20,10 +20,11 @@ services:
     - "EXECUTION_DB_PASSWORD=walkoff"
     - "WALKOFF_DB_USERNAME=walkoff"
     - "WALKOFF_DB_PASSWORD=walkoff"
-    - "NUMBER_PROCESSES=1"
     depends_on:
     - "walkoff-redis"
     - "walkoff-postgres"
+    stop_signal: SIGINT
+    stop_grace_period: 30s
 #    entrypoint:
 #    - "sleep"
 #    - "36000"
