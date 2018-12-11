@@ -10,7 +10,7 @@ from walkoff.helpers import utc_as_rfc_datetime
 
 
 class WorkflowStatus(Execution_Base):
-    """Case ORM for a Workflow event in the database
+    """ORM for a Status of a Workflow in the database
 
     Attributes:
         execution_id (UUID): Execution ID of the Workflow
@@ -19,22 +19,26 @@ class WorkflowStatus(Execution_Base):
         status (str): Status of the Workflow
         started_at (datetime): Time the Workflow started
         completed_at (datetime): Time the Workflow ended
+        user (str): The user who initially executed this workflow
         _action_statuses (list[ActionStatus]): A list of ActionStatus objects for this WorkflowStatus
     """
     __tablename__ = 'workflow_status'
     execution_id = Column(UUIDType(binary=False), primary_key=True)
     workflow_id = Column(UUIDType(binary=False), nullable=False)
     name = Column(String, nullable=False)
-    status = Column(Enum(WorkflowStatusEnum), nullable=False)
+    status = Column(Enum(WorkflowStatusEnum, name='WorkflowStatusEnum'), nullable=False)
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
-    _action_statuses = relationship('ActionStatus', backref=backref('_workflow_status'), cascade='all, delete-orphan')
+    user = Column(String)
+    _action_statuses = relationship('ActionStatus', backref=backref("_workflow_status"), passive_deletes=True,
+                                    cascade='all, delete-orphan')
 
-    def __init__(self, execution_id, workflow_id, name):
+    def __init__(self, execution_id, workflow_id, name, user=None):
         self.execution_id = execution_id
         self.workflow_id = workflow_id
         self.name = name
         self.status = WorkflowStatusEnum.pending
+        self.user = user
 
     def running(self):
         """Sets the status to running"""
@@ -84,6 +88,8 @@ class WorkflowStatus(Execution_Base):
                "workflow_id": str(self.workflow_id),
                "name": self.name,
                "status": self.status.name}
+        if self.user:
+            ret["user"] = self.user
         if self.started_at:
             ret["started_at"] = utc_as_rfc_datetime(self.started_at)
         if self.status in [WorkflowStatusEnum.completed, WorkflowStatusEnum.aborted]:
@@ -121,10 +127,10 @@ class ActionStatus(Execution_Base):
     action_name = Column(String, nullable=False)
     result = Column(String)
     arguments = Column(String)
-    status = Column(Enum(ActionStatusEnum), nullable=False)
+    status = Column(Enum(ActionStatusEnum, name='ActionStatusEnum'), nullable=False)
     started_at = Column(DateTime, default=datetime.utcnow)
     completed_at = Column(DateTime)
-    _workflow_status_id = Column(UUIDType(binary=False), ForeignKey('workflow_status.execution_id'))
+    _workflow_status_id = Column(UUIDType(binary=False), ForeignKey('workflow_status.execution_id', ondelete='CASCADE'))
 
     def __init__(self, execution_id, action_id, name, app_name, action_name, arguments=None):
         self.execution_id = execution_id

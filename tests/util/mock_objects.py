@@ -1,19 +1,32 @@
 import json
 import threading
+from uuid import UUID
 
 import gevent
-from fakeredis import FakeStrictRedis
+import nacl.bindings
+import nacl.utils
+# from fakeredis import FakeStrictRedis
+from redis import Redis
 from flask import current_app
+from google.protobuf.json_format import MessageToDict
+from nacl.public import Box
+from nacl.public import PrivateKey
 from zmq.utils.strtypes import cast_unicode
 
+import walkoff.config
+from walkoff.appgateway.appinstancerepo import AppInstanceRepo
 from walkoff.cache import RedisCacheAdapter
-from walkoff.case.database import CaseDatabase
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ExecutionDatabase
+from walkoff.executiondb.argument import Argument
+from walkoff.executiondb.environment_variable import EnvironmentVariable
 from walkoff.executiondb.saved_workflow import SavedWorkflow
-from walkoff.executiondb.workflow import Workflow
-from walkoff.multiprocessedexecutor import workflowexecutioncontroller
-from walkoff.multiprocessedexecutor.proto_helpers import convert_to_protobuf
+from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter
+from walkoff.multiprocessedexecutor.protoconverter import ProtobufWorkflowResultsConverter as ProtoConverter
+from walkoff.multiprocessedexecutor.zmq_receivers import ZmqWorkflowResultsReceiver
+from walkoff.multiprocessedexecutor.zmq_senders import ZmqWorkflowResultsSender
+from walkoff.proto.build.data_pb2 import ExecuteWorkflowMessage
+from walkoff.worker.workflow_exec_strategy import WorkflowExecutor
 
 try:
     from Queue import Queue
@@ -27,9 +40,15 @@ def mock_initialize_threading(self, pids=None):
     global workflows_executed
     workflows_executed = 0
 
-    self.manager = MockLoadBalancer(current_app._get_current_object())
-    self.manager_thread = threading.Thread(target=self.manager.manage_workflows)
+    with current_app.app_context():
+        self.results_sender = ZmqWorkflowResultsSender(current_app.running_context.execution_db,
+                                                       ProtobufWorkflowResultsConverter)
+
+    self.zmq_workflow_comm = MockLoadBalancer(current_app._get_current_object())
+    self.manager_thread = threading.Thread(target=self.zmq_workflow_comm.manage_workflows)
     self.manager_thread.start()
+
+    self.cache = self.zmq_workflow_comm.pending_workflows
 
     self.threading_is_initialized = True
 
@@ -49,7 +68,7 @@ def mock_wait_and_reset(self, num_workflows):
 
 def mock_shutdown_pool(self):
     if self.manager_thread and self.manager_thread.is_alive():
-        self.manager.pending_workflows.put(("Exit", "Exit", "Exit", "Exit", "Exit"))
+        self.zmq_workflow_comm.pending_workflows.put(("Exit", "Exit", "Exit", "Exit", "Exit", "Exit"))
         self.manager_thread.join(timeout=1)
     self.threading_is_initialized = False
     WalkoffEvent.CommonWorkflowSignal.signal.receivers = {}
@@ -60,9 +79,8 @@ def mock_shutdown_pool(self):
 class MockLoadBalancer(object):
     def __init__(self, current_app):
         self.pending_workflows = MockRequestQueue()
-        self.results_queue = MockReceiveQueue(current_app)
+        self.results_queue = MockReceiveQueue(ProtobufWorkflowResultsConverter, current_app)
         self.workflow_comms = {}
-        self.exec_id = ''
 
         def handle_data_sent(sender, **kwargs):
             self.on_data_sent(sender, **kwargs)
@@ -72,61 +90,49 @@ class MockLoadBalancer(object):
             WalkoffEvent.CommonWorkflowSignal.connect(handle_data_sent)
 
         self.execution_db = ExecutionDatabase.instance
-        self.case_db = CaseDatabase.instance
+
+        self.workflow_executor = WorkflowExecutor(walkoff.config.Config, 2, self.execution_db, AppInstanceRepo)
 
     def on_data_sent(self, sender, **kwargs):
-        workflow = self.workflow_comms[self.exec_id]
+        workflow_ctx = self.workflow_executor.get_current_workflow()
         if kwargs['event'] in [WalkoffEvent.TriggerActionAwaitingData, WalkoffEvent.WorkflowPaused]:
-            saved_workflow = SavedWorkflow(workflow_execution_id=workflow.get_execution_id(),
-                                           workflow_id=workflow.id,
-                                           action_id=workflow.get_executing_action_id(),
-                                           accumulator=workflow.get_accumulator(),
-                                           app_instances=workflow.get_instances())
+            saved_workflow = SavedWorkflow(workflow_execution_id=workflow_ctx.execution_id,
+                                           workflow_id=workflow_ctx.id,
+                                           action_id=workflow_ctx.get_executing_action_id(),
+                                           app_instances=workflow_ctx.app_instance_repo)
             self.execution_db.session.add(saved_workflow)
             self.execution_db.session.commit()
 
-        if self.exec_id or not hasattr(sender, "_execution_id"):
-            packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
-        else:
-            workflow = self.workflow_comms[sender.get_execution_id()]
-            packet_bytes = convert_to_protobuf(sender, workflow, **kwargs)
-
+        packet_bytes = ProtoConverter.event_to_protobuf(sender, workflow_ctx, **kwargs)
         self.results_queue.send(packet_bytes)
 
-    def add_workflow(self, workflow_id, workflow_execution_id, start=None, start_arguments=None, resume=False):
-        self.pending_workflows.put((workflow_id, workflow_execution_id, start, start_arguments, resume))
+    def add_workflow(self, workflow_id, workflow_execution_id, start=None, start_arguments=None, resume=False,
+                     environment_variables=None):
+        self.pending_workflows.put(
+            (workflow_id, workflow_execution_id, start, start_arguments, resume, environment_variables))
 
     def manage_workflows(self):
         while True:
-            workflow_id, workflow_execution_id, start, start_arguments, resume = self.pending_workflows.recv()
+            workflow_id, workflow_execution_id, start, start_arguments, resume, env_vars = self.pending_workflows.recv()
             if workflow_id == "Exit":
                 return
 
-            self.execution_db.session.expire_all()
-            workflow = self.execution_db.session.query(Workflow).filter_by(id=workflow_id).first()
-
-            self.workflow_comms[workflow_execution_id] = workflow
-
-            self.exec_id = workflow_execution_id
-
-            start = start if start else workflow.start
-            workflow.execute(execution_id=workflow_execution_id, start=start, start_arguments=start_arguments,
-                             resume=resume)
-            self.exec_id = ''
+            self.workflow_executor.execute(workflow_id, workflow_execution_id, start, start_arguments, resume, env_vars)
 
     def pause_workflow(self, workflow_execution_id):
         if workflow_execution_id in self.workflow_comms:
-            self.workflow_comms[workflow_execution_id].pause()
+            self.workflow_executor.pause(workflow_execution_id)
 
     def abort_workflow(self, workflow_execution_id):
-        self.workflow_comms[workflow_execution_id].abort()
+        self.workflow_executor.abort(workflow_execution_id)
         return True
 
 
-class MockReceiveQueue(workflowexecutioncontroller.Receiver):
+class MockReceiveQueue(ZmqWorkflowResultsReceiver):
 
-    def __init__(self, current_app):
+    def __init__(self, message_converter, current_app=None):
         self.current_app = current_app
+        self.message_converter = message_converter
 
     def send(self, packet):
         with self.current_app.app_context():
@@ -140,6 +146,11 @@ class MockReceiveQueue(workflowexecutioncontroller.Receiver):
 class MockRequestQueue(object):
     def __init__(self):
         self.queue = Queue()
+
+        key = PrivateKey(walkoff.config.Config.CLIENT_PRIVATE_KEY[:nacl.bindings.crypto_box_SECRETKEYBYTES])
+        server_key = PrivateKey(
+            walkoff.config.Config.SERVER_PRIVATE_KEY[:nacl.bindings.crypto_box_SECRETKEYBYTES]).public_key
+        self.__box = Box(key, server_key)
 
     def pop(self, flags=None):
         res = self.queue.get()
@@ -170,10 +181,35 @@ class MockRequestQueue(object):
         except:
             self.push(data)
 
+    def lpush(self, topic, message):
+        self.push(self._decrypt_unpack(message))
+
+    def _decrypt_unpack(self, message):
+        decrypted_msg = self.__box.decrypt(message)
+        message = ExecuteWorkflowMessage()
+        message.ParseFromString(decrypted_msg)
+        start = message.start if hasattr(message, 'start') else None
+
+        start_arguments = []
+        if hasattr(message, 'arguments'):
+            for arg in message.arguments:
+                start_arguments.append(Argument(**(MessageToDict(arg, preserving_proto_field_name=True))))
+        env_vars = []
+        if hasattr(message, 'environment_variables'):
+            for env_var in message.environment_variables:
+                env_vars.append(EnvironmentVariable(**(MessageToDict(env_var, preserving_proto_field_name=True))))
+        return UUID(message.workflow_id), UUID(message.workflow_execution_id), start, start_arguments, \
+               message.resume, env_vars
+
 
 class MockRedisCacheAdapter(RedisCacheAdapter):
     def __init__(self, **opts):
-        self.cache = FakeStrictRedis(**opts)
+        # self.cache = FakeStrictRedis(**opts)
+        self.cache = Redis(**opts)
+        self.cache.info = lambda: None
+
+    def info(self):
+        pass
 
 
 class PubSubCacheSpy(object):

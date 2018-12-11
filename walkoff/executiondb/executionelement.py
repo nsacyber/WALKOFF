@@ -10,9 +10,11 @@ class ExecutionElement(Validatable):
     id = Column(UUIDType(binary=False), primary_key=True, nullable=False, default=uuid4)
     errors = Column(ScalarListType(), nullable=True)
 
-    def __init__(self, id=None):
+    def __init__(self, id=None, errors=None):
         if id:
             self.id = id
+        if errors:
+            self.errors = errors
 
     def __repr__(self):
         from .schemas import dump_element

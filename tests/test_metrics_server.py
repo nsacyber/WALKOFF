@@ -9,6 +9,7 @@ from tests.util.assertwrappers import orderless_list_compare
 from tests.util.servertestcase import ServerTestCase
 from walkoff.executiondb.metrics import AppMetric, ActionMetric, ActionStatusMetric, WorkflowMetric
 from walkoff.server.endpoints.metrics import _convert_action_time_averages, _convert_workflow_time_averages
+from walkoff.server import workflowresults  # Need this import
 
 
 class MetricsServerTest(ServerTestCase):

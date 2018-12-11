@@ -12,7 +12,6 @@ metrics_stream = InterfaceSseStream('HelloWorld', 'metrics')
 
 blueprint = AppBlueprint('HelloWorldPage__', __name__, streams=[metrics_stream])
 
-
 hello_world_channel_names = {}
 
 

@@ -3,15 +3,15 @@ import random
 from gevent import sleep
 from gevent import spawn
 from gevent.event import Event, AsyncResult
-from walkoff.sse import InterfaceSseStream
+
 from interfaces import AppBlueprint
+from walkoff.sse import InterfaceSseStream
 
 counter_stream = InterfaceSseStream('Sample', 'counter')
 random_stream = InterfaceSseStream('Sample', 'random')
 
 blueprint = AppBlueprint('HelloWorldPage', __name__, streams=(counter_stream, random_stream))
 blueprint2 = AppBlueprint('HelloWorldPage2', __name__, url_prefix='/<string:action>')
-
 
 __sync_signal = Event()
 random_event_result = AsyncResult()

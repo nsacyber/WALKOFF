@@ -5,13 +5,13 @@
     summary: Read app usage metrics
     description: ''
     operationId: walkoff.server.endpoints.metrics.read_app_metrics
-    produces:
-      - application/json
     responses:
       200:
         description: Success
-        schema:
-          $ref: '#/definitions/AppMetrics'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppMetrics'
 /metrics/workflows:
   get:
     tags:
@@ -19,10 +19,10 @@
     summary: Read Workflow Metrics
     description: ''
     operationId: walkoff.server.endpoints.metrics.read_workflow_metrics
-    produces:
-      - application/json
     responses:
       200:
         description: Success
-        schema:
-          $ref: '#/definitions/WorkflowMetrics'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowMetrics'

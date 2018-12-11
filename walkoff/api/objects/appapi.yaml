@@ -4,36 +4,36 @@ AppApi:
   required: [info]
   properties:
     info:
-      $ref: '#/definitions/ApiInfo'
+      $ref: '#/components/schemas/ApiInfo'
     action_apis:
       description: Actions associated with this app
       type: array
       items:
-        $ref: '#/definitions/ActionApi'
+        $ref: '#/components/schemas/ActionApi'
     condition_apis:
       description: Conditions associated with this app
       type: array
       items:
-        $ref: '#/definitions/ConditionApi'
+        $ref: '#/components/schemas/ConditionApi'
     transform_apis:
       description: Transforms associated with this app
       type: array
       items:
-        $ref: '#/definitions/TransformApi'
+        $ref: '#/components/schemas/TransformApi'
     device_apis:
       description: Devices associated with this app
       type: array
       items:
-        $ref: '#/definitions/DeviceApi'
+        $ref: '#/components/schemas/DeviceApi'
     tags:
       type: array
       items:
-        $ref: '#/definitions/ApiTag'
+        $ref: '#/components/schemas/ApiTag'
       uniqueItems: true
     external_docs:
       type: array
       items:
-        $ref: '#/definitions/ExternalDoc'
+        $ref: '#/components/schemas/ExternalDoc'
     
 ApiInfo:
   type: object
@@ -54,9 +54,9 @@ ApiInfo:
       type: string
       description: Terms of service for the API
     contact:
-      $ref: '#/definitions/ApiContact'
+      $ref: '#/components/schemas/ApiContact'
     license:
-      $ref: '#/definitions/ApiLicense'
+      $ref: '#/components/schemas/ApiLicense'
 
 ApiContact:
   type: object
@@ -104,12 +104,12 @@ ActionApi:
     returns:
       type: array
       items:
-        $ref: '#/definitions/ReturnApi'
+        $ref: '#/components/schemas/ReturnApi'
       description: The return types of this action
     parameters:
       type: array
       items:
-        $ref: '#/definitions/ParameterApi'
+        $ref: '#/components/schemas/ParameterApi'
       description: The parameters needed by this action
     deprecated:
       type: boolean
@@ -130,7 +130,7 @@ ActionApi:
     external_docs:
       type: array
       items:
-        $ref: '#/definitions/ExternalDoc'
+        $ref: '#/components/schemas/ExternalDoc'
 
 ConditionApi:
   type: object
@@ -149,7 +149,7 @@ ConditionApi:
     parameters:
       type: array
       items:
-        $ref: '#/definitions/ParameterApi'
+        $ref: '#/components/schemas/ParameterApi'
       description: The parameters needed by this action
     deprecated:
       type: boolean
@@ -170,11 +170,11 @@ ConditionApi:
     external_docs:
       type: array
       items:
-        $ref: '#/definitions/ExternalDoc'
+        $ref: '#/components/schemas/ExternalDoc'
     returns:
       type: array
       items:
-        $ref: '#/definitions/ReturnApi'
+        $ref: '#/components/schemas/ReturnApi'
       description: The return types of this action
 
 TransformApi:
@@ -194,7 +194,7 @@ TransformApi:
     parameters:
       type: array
       items:
-        $ref: '#/definitions/ParameterApi'
+        $ref: '#/components/schemas/ParameterApi'
       description: The parameters needed by this action
     deprecated:
       type: boolean
@@ -215,11 +215,11 @@ TransformApi:
     external_docs:
       type: array
       items:
-        $ref: '#/definitions/ExternalDoc'
+        $ref: '#/components/schemas/ExternalDoc'
     returns:
       type: array
       items:
-        $ref: '#/definitions/ReturnApi'
+        $ref: '#/components/schemas/ReturnApi'
       description: The return types of this transform
 
 DeviceApi:
@@ -234,7 +234,7 @@ DeviceApi:
     fields:
       type: array
       items:
-        $ref: '#/definitions/DeviceFieldApi'
+        $ref: '#/components/schemas/DeviceFieldApi'
 
 DeviceFieldApi:
   type: object
@@ -257,7 +257,7 @@ DeviceFieldApi:
       default: false
       description: Is this field required?
     schema:
-      $ref: '#/definitions/ParameterSchema'
+      $ref: '#/components/schemas/ParameterSchema'
 
 
 ParameterApi:
@@ -268,7 +268,7 @@ ParameterApi:
     name:
       type: string
     example:
-      type: [number, integer, string, boolean]
+      description: Example of the parameter
     description:
       type: string
       description: Description of the parameter
@@ -280,7 +280,7 @@ ParameterApi:
       default: false
       description: Is this parameter required
     schema:
-      $ref: '#/definitions/ParameterSchema'
+      $ref: '#/components/schemas/ParameterSchema'
 
 ReturnApi:
   type: object
@@ -298,7 +298,7 @@ ReturnApi:
       description: Whether this return type indicates action failure
       default: false
     schema:
-      $ref: '#/definitions/ParameterSchema'
+      $ref: '#/components/schemas/ParameterSchema'
     examples:
       description: An exaple of the returned type
 
@@ -329,7 +329,7 @@ ApiTag:
     external_docs:
       type: array
       items:
-        $ref: '#/definitions/ExternalDoc'
+        $ref: '#/components/schemas/ExternalDoc'
       
 ParameterSchema:
   type: object
@@ -372,4 +372,5 @@ ParameterSchema:
       type: boolean
     enum:
       type: array
+      items: {}
       minItems: 1

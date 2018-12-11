@@ -20,7 +20,7 @@ class ScheduledWorkflow(db.Model):
     __tablename__ = 'scheduled_workflow'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     workflow_id = db.Column(UUIDType(binary=False), nullable=False)
-    task_id = db.Column(db.Integer, db.ForeignKey('scheduled_task.id'))
+    task_id = db.Column(db.Integer, db.ForeignKey('scheduled_task.id', ondelete='CASCADE'))
 
 
 class ScheduledTask(db.Model, TrackModificationsMixIn):
@@ -48,12 +48,10 @@ class ScheduledTask(db.Model, TrackModificationsMixIn):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.String(255), nullable=False)
-    status = db.Column(db.Enum('running', 'stopped'))
-    workflows = db.relationship('ScheduledWorkflow',
-                                cascade="all, delete-orphan",
-                                backref='post',
-                                lazy='dynamic')
-    trigger_type = db.Column(db.Enum('date', 'interval', 'cron', 'unspecified'))
+    status = db.Column(db.Enum('running', 'stopped', name='task_statuses'))
+    workflows = db.relationship('ScheduledWorkflow', cascade="all, delete-orphan", backref='post', lazy='dynamic',
+                                passive_deletes=True)
+    trigger_type = db.Column(db.Enum('date', 'interval', 'cron', 'unspecified', name='trigger_types'))
     trigger_args = db.Column(db.String(255))
 
     def __init__(self, name, description='', status='running', workflows=None, task_trigger=None):

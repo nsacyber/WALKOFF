@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="client/node_modules/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="client/resources/bootstrap/dist/css/bootstrap.min.css">
     <style>
         body {
             font-family: "Verdana", sans-serif;
@@ -50,33 +50,33 @@
 <body>
     <div class="form">
         <div class="formHeader">
-            <img id="logo" src="client/assets/img/walkoffLogo.png"/>
+            <img id="logo" src="client/dist/assets/img/walkoffLogo.png"/>
         </div>
 
         <div class="loginFormContainer">
             <h2><strong>WALK</strong>OFF Login</h2>
             <form id="loginForm" action="/login-process" method="POST">
                 <div class="row">
-                    <div class="col-xs-2">
+                    <div class="col-3">
                         <label for="name">Username</label>
                     </div>
-                    <div class="col-xs-10">
+                    <div class="col-9">
                         <input id="username" type="text" class="form-control" />
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-xs-2">
+                    <div class="col-3">
                         <label for="name">Password</label>
                     </div>
-                    <div class="col-xs-10">
+                    <div class="col-9">
                         <input id="password" type="password" class="form-control" />
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-xs-10">
+                    <div class="col">
                         <span id="message"></span>
                     </div>
-                    <div class="col-xs-2">
+                    <div class="col-auto">
                         <input type="submit" id="login" class="btn btn-primary pull-right" value="Login" />
                     </div>
                 </div>
@@ -85,8 +85,8 @@
         <span class="clear"></span>
     </div>
 
-    <script src="client/node_modules/jquery/dist/jquery.min.js"></script>
-    <script src="client/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="client/resources/jquery/dist/jquery.min.js"></script>
+    <script src="client/resources/bootstrap/dist/js/bootstrap.min.js"></script>
     <script>
         $("#loginForm").on("submit", function (e) {
             e.preventDefault();

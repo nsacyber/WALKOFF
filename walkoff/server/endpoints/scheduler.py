@@ -60,7 +60,9 @@ def read_all_scheduled_tasks():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('scheduler', ['read']))
     def __func():
-        return [task.as_json() for task in ScheduledTask.query.all()], SUCCESS
+        page = request.args.get('page', 1, type=int)
+        return [task.as_json() for task in
+                ScheduledTask.query.paginate(page, current_app.config['ITEMS_PER_PAGE'], False).items], SUCCESS
 
     return __func()
 

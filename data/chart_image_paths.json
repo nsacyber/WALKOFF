@@ -1,0 +1,28 @@
+{
+    "redis": [
+      {
+        "repository": "image.repository",
+        "tag": "image.tag"
+      },
+      {
+        "repository": "metrics.image.repository",
+        "tag": "metrics.image.tag"
+      }
+    ],
+    "postgresql": [
+      {
+        "repository": "image",
+        "tag": "imageTag"
+      }
+    ],
+    "walkoff": [
+      {
+        "repository": "server.image.repository",
+        "tag": "server.image.tag"
+      },
+      {
+        "repository": "worker.image.repository",
+        "tag": "worker.image.tag"
+      }
+    ]
+}

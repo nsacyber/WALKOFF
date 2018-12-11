@@ -21,7 +21,7 @@ class AppMetric(Execution_Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     app = Column(String, nullable=False)
     count = Column(Integer)
-    actions = relationship('ActionMetric', cascade='all, delete, delete-orphan')
+    actions = relationship('ActionMetric', cascade='all, delete, delete-orphan', passive_deletes=True)
 
     def __init__(self, app, actions=None):
         self.app = app
@@ -72,8 +72,8 @@ class ActionMetric(Execution_Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     action_id = Column(UUIDType(binary=False), nullable=False)
     action_name = Column(String(255), nullable=False)
-    app_metric_id = Column(Integer, ForeignKey('app_metric.id'))
-    action_statuses = relationship('ActionStatusMetric', cascade='all, delete, delete-orphan')
+    app_metric_id = Column(Integer, ForeignKey('app_metric.id', ondelete='CASCADE'))
+    action_statuses = relationship('ActionStatusMetric', cascade='all, delete, delete-orphan', passive_deletes=True)
 
     def __init__(self, action_id, name, action_statuses=None):
         self.action_id = action_id
@@ -126,7 +126,7 @@ class ActionStatusMetric(Execution_Base):
     status = Column(String(10))
     count = Column(Integer)
     avg_time = Column(Float)
-    action_metric_id = Column(Integer, ForeignKey('action_metric.id'))
+    action_metric_id = Column(Integer, ForeignKey('action_metric.id', ondelete='CASCADE'))
 
     def __init__(self, status, avg_time):
         self.status = status

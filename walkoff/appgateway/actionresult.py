@@ -1,6 +1,7 @@
 import json
 
 from walkoff.appgateway.apiutil import get_app_action_default_return, get_app_action_return_is_failure
+from walkoff.helpers import format_exception_message
 
 
 class ActionResult(object):
@@ -50,3 +51,8 @@ class ActionResult(object):
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
+
+    @classmethod
+    def from_exception(cls, exc, status):
+        formatted_error = format_exception_message(exc)
+        return cls('error: {0}'.format(formatted_error), status)

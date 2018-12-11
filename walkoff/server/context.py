@@ -1,26 +1,42 @@
+import logging
+import os
+
+from sqlalchemy.exc import OperationalError
+
 import walkoff.cache
-import walkoff.case.database
+import walkoff.config
 import walkoff.executiondb
-import walkoff.multiprocessedexecutor.multiprocessedexecutor as executor
 import walkoff.scheduler
-from walkoff.case.logger import CaseLogger
-from walkoff.case.subscription import SubscriptionCache
+
+logger = logging.getLogger(__name__)
 
 
 class Context(object):
 
-    def __init__(self, config):
+    def __init__(self, init_all=True, executor=True):
         """Initializes a new Context object. This acts as an interface for objects to access other event specific
             variables that might be needed.
-
-        Args:
-            config (Config): A config object
         """
-        self.execution_db = walkoff.executiondb.ExecutionDatabase(config.EXECUTION_DB_TYPE, config.EXECUTION_DB_PATH)
-        self.case_db = walkoff.case.database.CaseDatabase(config.CASE_DB_TYPE, config.CASE_DB_PATH)
+        try:
+            self.execution_db = walkoff.executiondb.ExecutionDatabase(walkoff.config.Config.EXECUTION_DB_TYPE,
+                                                                      walkoff.config.Config.EXECUTION_DB_PATH,
+                                                                      walkoff.config.Config.EXECUTION_DB_HOST)
+        except OperationalError as e:
+            if "password" in str(e):
+                logger.error("Incorrect username and/or password for execution database. Please make sure these are "
+                             "both set correctly in their respective environment variables and try again."
+                             "Error Message: {}".format(str(e)))
+            else:
+                logger.error("Error connecting to execution database. Please make sure all database settings are "
+                             "correct and try again. Error Message: {}".format(str(e)))
+            os._exit(1)
 
-        self.subscription_cache = SubscriptionCache()
-        self.case_logger = CaseLogger(self.case_db, self.subscription_cache)
-        self.cache = walkoff.cache.make_cache(config.CACHE)
-        self.executor = executor.MultiprocessedExecutor(self.cache, self.case_logger)
-        self.scheduler = walkoff.scheduler.Scheduler(self.case_logger)
+        if init_all:
+            self.cache = walkoff.cache.make_cache(walkoff.config.Config.CACHE)
+            if executor:
+                import walkoff.multiprocessedexecutor.multiprocessedexecutor as executor
+                self.executor = executor.MultiprocessedExecutor(self.cache, walkoff.config.Config)
+                self.scheduler = walkoff.scheduler.Scheduler()
+
+    def inject_app(self, app):
+        self.scheduler.app = app

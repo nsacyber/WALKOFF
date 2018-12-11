@@ -1,4 +1,5 @@
-engines:
+version: 2
+plugins:
   csslint:
     enabled: true
   duplication:
@@ -20,6 +21,11 @@ engines:
     config: .tslint.json
   markdownlint:
     enabled: true
+  sonar-python:
+    enabled: true
+    config:
+      tests_patterns:
+        - tests/**
   pep8:
     enabled: true
 checks:
@@ -29,13 +35,7 @@ checks:
   method-lines:
     config:
       threshold: 40
-ratings:
-  paths:
-    - "**.css"
-    - "**.ts"
-    - "**.py"
-    - "**.md"
-exclude_paths:
+exclude_patterns:
   - tests/
   - walkoff/proto
   - walkoff/client/build

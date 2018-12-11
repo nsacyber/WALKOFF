@@ -1,0 +1,57 @@
+<div *ngIf="appNamesWithConditions.length">
+	<div class="row addBar">
+		<div class="col-4">
+			<label>App</label>
+			<select class="form-control" [(ngModel)]="selectedAppName" (change)="resetConditionSelection($event.target.value)">
+				<option *ngFor="let i of appNamesWithConditions" [value]="i" [label]="i">{{i}}</option>
+			</select>
+		</div>
+		<div class="col-4">
+			<label>Action</label>
+			<select class="form-control" [(ngModel)]="selectedConditionApi">
+				<option *ngFor="let i of getConditionNamesForApp()" [value]="i" [label]="i">{{i}}</option>
+			</select>
+		</div>
+		<div class="col-4">
+			<div class="form-group">
+				<button class="btn btn-primary pull-right" (click)="addCondition()">
+					<i class="fa fa-plus"></i>Add Condition
+				</button>
+			</div>
+		</div>
+	</div>
+	<div *ngFor="let condition of conditions; let id = index">
+		<div class="row">
+			<div class="col-4">
+				<label>Condition {{id+1}}: {{condition.app_name}} - {{condition.action_name}}</label>
+			</div>
+			<div class="col-4">
+				<div class="form-group">
+					<label>Negated</label>
+					<input type="checkbox" class="form-control" [(ngModel)]="condition.is_negated">
+				</div>
+			</div>
+			<div class="col-4">
+				<div class="pull-right">
+					<button *ngIf="id > 0" class="btn btn-primary" (click)="moveUp(id)" title="Move Up">
+						<i class="fa fa-arrow-up"></i>
+					</button>
+					<button *ngIf="id < conditions.length - 1" class="btn btn-primary" (click)="moveDown(id)" title="Move Down">
+						<i class="fa fa-arrow-down"></i>
+					</button>
+					<button class="btn btn-danger" (click)="removeCondition(id)" title="Remove Condition">
+						<i class="fa fa-close"></i>
+					</button>
+				</div>
+			</div>
+		</div>
+		<playbook-argument-component *ngFor="let parameterApi of getConditionApi(condition.app_name, condition.action_name).parameters; let id = index"
+		 [loadedWorkflow]="loadedWorkflow" [argument]="getOrInitializeArgument(condition, parameterApi)" [parameterApi]="parameterApi"
+		 [id]="id" (createVariable)="onCreateVariable($event)"></playbook-argument-component>
+		<div>
+			<h4>Transforms</h4>
+			<playbook-transforms-component [transforms]="condition.transforms" [appApis]="appApis" [selectedAppName]="selectedAppName"
+			 [loadedWorkflow]="loadedWorkflow" (createVariable)="onCreateVariable($event)"></playbook-transforms-component>
+		</div>
+	</div>
+</div>

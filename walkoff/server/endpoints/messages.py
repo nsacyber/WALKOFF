@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from walkoff.extensions import db
@@ -18,7 +18,11 @@ def get_all_messages():
     def __func():
         user_id = get_jwt_identity()
         user = User.query.filter(User.id == user_id).first()
-        return [message.as_json(user=user, summary=True) for message in user.messages]
+
+        page = request.args.get('page', 1, type=int)
+        messages = user.messages[
+                   (page - 1) * current_app.config['ITEMS_PER_PAGE']: page * current_app.config['ITEMS_PER_PAGE']]
+        return [message.as_json(user=user, summary=True) for message in messages]
 
     return __func()
 

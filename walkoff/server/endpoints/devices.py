@@ -3,9 +3,9 @@ import json
 from flask import current_app, request, send_file
 from flask_jwt_extended import jwt_required
 
+from walkoff.appgateway.apiutil import get_app_device_api, UnknownApp, UnknownDevice, InvalidArgument
 from walkoff.appgateway.validator import validate_device_fields
 from walkoff.executiondb.device import Device, App
-from walkoff.appgateway.apiutil import get_app_device_api, UnknownApp, UnknownDevice, InvalidArgument
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.decorators import with_resource_factory
 from walkoff.server.problem import Problem
@@ -33,8 +33,10 @@ def read_all_devices():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('devices', ['read']))
     def __func():
+        page = request.args.get('page', 1, type=int)
         return [get_device_json_with_app_name(device) for device in
-                current_app.running_context.execution_db.session.query(Device).all()], SUCCESS
+                current_app.running_context.execution_db.session.query(Device).limit(
+                    current_app.config['ITEMS_PER_PAGE']).offset((page-1) * current_app.config['ITEMS_PER_PAGE'])], SUCCESS
 
     return __func()
 

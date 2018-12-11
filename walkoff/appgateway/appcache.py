@@ -1,11 +1,11 @@
 import inspect
 import logging
+import os.path
 import pkgutil
 import sys
 from collections import namedtuple
 from importlib import import_module
 
-import os.path
 from six import string_types
 
 from walkoff.appgateway.apiutil import UnknownApp, UnknownAppAction, UnknownCondition, UnknownTransform

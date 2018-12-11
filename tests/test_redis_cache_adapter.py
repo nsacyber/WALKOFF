@@ -13,6 +13,10 @@ class TestRedisCacheAdapter(TestCase):
         self.cache.clear()
         self.cache.shutdown()
 
+    def test_singleton(self):
+        cache = MockRedisCacheAdapter()
+        self.assertIs(cache, self.cache)
+
     def test_set_get(self):
         self.assertTrue(self.cache.set('alice', 'something'))
         self.assertEqual(self.cache.get('alice'), 'something')
@@ -29,6 +33,15 @@ class TestRedisCacheAdapter(TestCase):
         self.assertEqual(self.cache.get('test'), '123')
         self.assertFalse(self.cache.add('test', 456))
         self.assertEqual(self.cache.get('test'), '123')
+
+    def test_delete(self):
+        self.assertTrue(self.cache.set('alice', 'something'))
+        self.cache.delete('alice')
+        self.assertIsNone(self.cache.get('alice'))
+
+    def test_delete_dne(self):
+        self.cache.delete('alice')
+        self.assertIsNone(self.cache.get('alice'))
 
     def test_incr(self):
         self.cache.set('count', 1)
@@ -83,6 +96,26 @@ class TestRedisCacheAdapter(TestCase):
         self.assertEqual(self.cache.lpop('big'), '10')
         self.assertEqual(self.cache.rpop('big'), '12')
 
+    def test_scan_no_pattern(self):
+        keys = ('a', 'b', 'c', 'd')
+        for i, key in enumerate(keys):
+            self.cache.set(key, i)
+        ret_keys = self.cache.scan()
+        self.assertSetEqual(set(ret_keys), set(keys))
+
+    def test_scan_with_pattern(self):
+        keys = ('1.a', '2.a', '3.b', 'd')
+        for i, key in enumerate(keys):
+            self.cache.set(key, i)
+        ret_keys = self.cache.scan('*.a')
+        self.assertSetEqual(set(ret_keys), {'1.a', '2.a'})
+
+    def test_exists(self):
+        key = 'abc'
+        self.assertFalse(self.cache.exists(key))
+        self.cache.set(key, 42)
+        self.assertTrue(self.cache.exists(key))
+
     def test_subscribe(self):
         sub = self.cache.subscribe('channel1')
         self.assertEqual(sub.channel, 'channel1')
@@ -91,10 +124,18 @@ class TestRedisCacheAdapter(TestCase):
         sub = self.cache.subscribe('channel_a')
         self.cache.publish('channel_a', '42')
         result = sub._pubsub.get_message()
+        if result['data'] == 1:
+            result = sub._pubsub.get_message()
         self.assertEqual(result['data'], b'42')
 
     def test_unsubscribe(self):
         sub = self.cache.subscribe('channel_a')
         self.cache.unsubscribe('channel_a')
         result = sub._pubsub.get_message()
+        if result['data'] == 1:
+            result = sub._pubsub.get_message()
         self.assertEqual(result['data'], unsubscribe_message)
+
+    def test_lock(self):
+        r = self.cache.lock('myname', timeout=4.5, sleep=0.5, blocking_timeout=1.6)
+        self.assertEqual(r.name, 'myname')

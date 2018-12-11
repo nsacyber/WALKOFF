@@ -8,9 +8,10 @@ from walkoff.executiondb.executionelement import ExecutionElement
 class Playbook(ExecutionElement, Execution_Base):
     __tablename__ = 'playbook'
     name = Column(String(255), nullable=False, unique=True)
-    workflows = relationship('Workflow', backref=backref('playbook'), cascade='all, delete-orphan')
+    workflows = relationship('Workflow', backref=backref('playbook'), cascade='all, delete-orphan',
+                             passive_deletes=True)
 
-    def __init__(self, name, workflows=None, id=None):
+    def __init__(self, name, workflows=None, id=None, errors=None):
         """Creates a Playbook object.
 
         Args:
@@ -20,7 +21,7 @@ class Playbook(ExecutionElement, Execution_Base):
             id (str|UUID, optional): Optional UUID to pass into the Playbook. Must be UUID object or valid UUID string.
                 Defaults to None.
         """
-        ExecutionElement.__init__(self, id)
+        ExecutionElement.__init__(self, id, errors)
         self.name = name
         if workflows:
             self.workflows = workflows

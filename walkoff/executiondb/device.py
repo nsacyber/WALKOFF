@@ -1,10 +1,8 @@
 import logging
-import os
 import sys
 
 import nacl.secret
 import nacl.utils
-import zmq.auth as auth
 from sqlalchemy import Column, Integer, ForeignKey, String, LargeBinary, Enum, DateTime, func, orm, and_
 from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
@@ -37,10 +35,7 @@ class App(Execution_Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(25), nullable=False)
-    devices = relationship('Device',
-                           cascade='all, delete-orphan',
-                           backref='post',
-                           lazy='dynamic')
+    devices = relationship('Device', cascade='all, delete-orphan', backref='post', lazy='dynamic', passive_deletes=True)
 
     def __init__(self, name, devices=None):
         self.name = name
@@ -141,10 +136,11 @@ class Device(Execution_Base):
     name = Column(String(25), nullable=False)
     type = Column(String(25), nullable=False)
     description = Column(String(255), default='')
-    plaintext_fields = relationship('DeviceField', cascade='all, delete-orphan', backref='post', lazy='dynamic')
+    plaintext_fields = relationship('DeviceField', cascade='all, delete-orphan', backref='post', lazy='dynamic',
+                                    passive_deletes=True)
     encrypted_fields = relationship('EncryptedDeviceField', cascade='all, delete-orphan', backref='post',
-                                    lazy='dynamic')
-    app_id = Column(Integer, ForeignKey('app.id'))
+                                    lazy='dynamic', passive_deletes=True)
+    app_id = Column(Integer, ForeignKey('app.id', ondelete='CASCADE'))
     created_at = Column(DateTime, default=func.current_timestamp())
     modified_at = Column(DateTime, default=func.current_timestamp(), onupdate=func.current_timestamp())
 
@@ -282,11 +278,13 @@ class DeviceFieldMixin(object):
     """
     id = Column(Integer, primary_key=True)
     name = Column(String(25), nullable=False)
-    type = Column(Enum(*allowed_device_field_types))
+    type = Column(Enum(*allowed_device_field_types, name='allowed_device_field_types'))
+
+    # _device_id = Column(Integer, ForeignKey('Device.id', ondelete='CASCADE'))
 
     @declared_attr
     def device_id(cls):
-        return Column(Integer, ForeignKey('device.id'))
+        return Column(Integer, ForeignKey('device.id', ondelete='CASCADE'))
 
 
 class DeviceField(Execution_Base, DeviceFieldMixin):
@@ -365,17 +363,13 @@ class EncryptedDeviceField(Execution_Base, DeviceFieldMixin):
         self.name = name
         self.type = field_type if field_type in allowed_device_field_types else 'string'
 
-        server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
-        _, server_secret = auth.load_certificate(server_secret_file)
-        self.__key = server_secret[:nacl.secret.SecretBox.KEY_SIZE]
+        self.__key = walkoff.config.Config.SERVER_PRIVATE_KEY[:nacl.secret.SecretBox.KEY_SIZE]
         self.__box = nacl.secret.SecretBox(self.__key)
         self._value = self.__box.encrypt(str(value).encode('utf-8'))
 
     @orm.reconstructor
     def init_on_load(self):
-        server_secret_file = os.path.join(walkoff.config.Config.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
-        _, server_secret = auth.load_certificate(server_secret_file)
-        self.__key = server_secret[:nacl.secret.SecretBox.KEY_SIZE]
+        self.__key = walkoff.config.Config.SERVER_PRIVATE_KEY[:nacl.secret.SecretBox.KEY_SIZE]
         self.__box = nacl.secret.SecretBox(self.__key)
 
     @hybrid_property

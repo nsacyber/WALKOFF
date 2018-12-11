@@ -1,21 +1,3 @@
-/availablesubscriptions:
-  get:
-    tags:
-      - System
-    summary: Read all available subscription options
-    description: ''
-    operationId: walkoff.server.endpoints.metadata.read_all_possible_subscriptions
-    produces:
-      - application/json
-    responses:
-      200:
-        description: Success
-        schema:
-          description: List of available subscriptions in hierarchical order from controller to transform
-          type: array
-          items:
-            $ref: '#/definitions/AvailableSubscriptions'
-
 /interfaces:
   get:
     tags:
@@ -23,16 +5,16 @@
     summary: Read all interfaces
     description: ''
     operationId: walkoff.server.endpoints.metadata.read_all_interfaces
-    produces:
-      - application/json
     responses:
       200:
         description: Success
-        schema:
-          description: All the interfaces defined
-          type: array
-          items:
-            type: string
+        content:
+          application/json:
+            schema:
+              description: All the interfaces defined
+              type: array
+              items:
+                type: string
 
 
 /client/{filename}:
@@ -42,14 +24,13 @@
     summary: Get a client file
     description: ''
     operationId: walkoff.server.endpoints.metadata.read_client_file
-    produces:
-      - application/json
     parameters:
       - name: filename
         in: path
         description: The name of the file to fetch
         required: true
-        type: string
+        schema:
+          type: string
     responses:
       200:
         description: Success

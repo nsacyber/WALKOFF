@@ -1,0 +1,64 @@
+<div class="modal-header">
+	<h4 class="modal-title">{{title}}</h4>
+</div>
+<div id="roleModalBody" class="modal-body">
+	<div class="container-fluid">
+		<form #roleForm="ngForm">
+			<div class="row">
+				<div class="col-6">
+					<div class="form-group">
+						<label for="name">
+							Name
+							<i class="fa fa-asterisk required" title="This field is required."></i>
+						</label>
+						<input type="text" class="form-control" [(ngModel)]="workingRole.name" name="name" #name="ngModel" required>
+						<div *ngIf="name.errors && (name.dirty || name.touched)" class="alert alert-danger">
+							<div [hidden]="!name.errors.required">
+								Name is required.
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-6">
+					<div class="form-group">
+						<label for="description">Description</label>
+						<input type="text" class="form-control" [(ngModel)]="workingRole.description" name="ip" tabindex="2">
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-6">
+					<label>Resource</label>
+					<select class="form-control" [(ngModel)]="selectedAvailableResourceActionName" name="selectedAvailableResourceActionName">
+						<option *ngFor="let i of resourceNames" [value]="i" [label]="i">{{i}}</option>
+					</select>
+				</div>
+				<div class="col-6">
+					<div class="form-group">
+						<button class="btn btn-primary pull-right" (click)="addResource()" [disabled]="!selectedAvailableResourceActionName">
+							<i class="fa fa-plus"></i>Add Resource
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="resourceGroup form-group {{id % 2 ? 'odd' : 'even'}}" *ngFor="let resource of workingRole.resources; let id = index">
+				<div class="row">
+					<div class="col-6">
+						<label>Resource {{id+1}}: {{resource.name}}{{resource.app_name ? ' (' + resource.app_name + ')' : ''}}</label>
+					</div>
+					<div class="col-6">
+						<div class="pull-right">
+							<button class="btn btn-danger" (click)="removeResource(resource)" title="Remove Resource"><i class="fa fa-close"></i></button>
+						</div>
+					</div>
+				</div>
+				<select2 [data]="selectPermissionMapping[resource.resource_id]" [value]="resource.permissions" [options]="permissionSelectConfig"
+				 (valueChanged)="permissionSelectChange($event, resource)"></select2>
+			</div>
+		</form>
+	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
+	<button type="button" class="btn btn-primary" [disabled]="!roleForm.form.valid" (click)="submit()">{{submitText}}</button>
+</div>

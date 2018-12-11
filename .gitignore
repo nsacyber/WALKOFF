@@ -8,6 +8,7 @@
 *.py[co]
 *.sw[ponm]
 *~
+.DS_Store
 .certificates/
 .coverage/
 .idea/
@@ -24,6 +25,7 @@ data/log/*.log
 data/walkoff.config
 docs/_*/
 npm-debug.log
+runtimes/python/*.db
 tests/testWorkflows/testGeneratedWorkflows_bkup
 tests/tmp
 tests/tmp/*
@@ -31,8 +33,13 @@ walkoff/api/composed_api.yaml
 walkoff/client/node_modules/
 walkoff/client/build/
 walkoff/client/coverage/
-walkoff/client/dist/
 !apps/*.py
 !interfaces/*.py
 !interfaces/*.pytests/tmp/*
 data/cache/
+*.key
+*.crt
+runtimes/python/.pytest_cache/
+runtimes/python/*.db
+runtimes/python/testapp/__init__.py
+runtimes/python/testapp/messaging.py

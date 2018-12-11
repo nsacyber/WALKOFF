@@ -8,6 +8,7 @@ from .argument import Argument
 from .branch import Branch
 from .condition import Condition
 from .conditionalexpression import ConditionalExpression, valid_operators
+from .environment_variable import EnvironmentVariable
 from .executionelement import ExecutionElement
 from .playbook import Playbook
 from .position import Position
@@ -48,7 +49,18 @@ class ExecutionBaseSchema(ModelSchema):
 
 
 class ExecutionElementBaseSchema(ExecutionBaseSchema):
-    errors = fields.List(fields.String(), dump_only=True)
+    errors = fields.List(fields.String())
+
+
+class EnvironmentVariableSchema(ExecutionBaseSchema):
+    """Schema for environment variables
+    """
+    name = field_for(EnvironmentVariable, 'name')
+    value = field_for(EnvironmentVariable, 'value', required=True)
+    description = field_for(EnvironmentVariable, 'description')
+
+    class Meta:
+        model = EnvironmentVariable
 
 
 class ArgumentSchema(ExecutionElementBaseSchema):
@@ -170,7 +182,8 @@ class WorkflowSchema(ExecutionElementBaseSchema):
     name = field_for(Workflow, 'name', required=True)
     actions = fields.Nested(ActionSchema, many=True)
     branches = fields.Nested(BranchSchema, many=True)
-    is_valid = field_for(Workflow, 'is_valid', dump_only=True)
+    environment_variables = fields.Nested(EnvironmentVariableSchema, many=True)
+    is_valid = field_for(Workflow, 'is_valid')
 
     class Meta:
         model = Workflow
@@ -209,4 +222,4 @@ def dump_element(element):
     Returns:
         dict: The serialized element
     """
-    return _schema_lookup[element.__class__]().dump(element).data
+    return _schema_lookup[element.__class__]().dump(element)

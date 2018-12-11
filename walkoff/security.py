@@ -120,6 +120,12 @@ def _decode_jwt_from_query_string(param_name):
     )
 
 
+# This function is necessary for connexion update to v2.0
+def decode_token(token):
+    return decode_jwt(encoded_token=token, secret=config.decode_key, algorithm=config.algorithm, csrf_value=None,
+                      user_claims_key=config.user_claims_key, identity_claim_key=config.identity_claim_key)
+
+
 class ResourcePermissions:
     def __init__(self, resource, permissions):
         self.resource = resource

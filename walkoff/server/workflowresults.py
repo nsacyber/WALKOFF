@@ -1,22 +1,24 @@
 import json
 
 from flask import current_app
+
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import WorkflowStatusEnum, ActionStatusEnum
+from walkoff.executiondb.metrics import AppMetric, ActionMetric, ActionStatusMetric, WorkflowMetric
 from walkoff.executiondb.saved_workflow import SavedWorkflow
 from walkoff.executiondb.workflowresults import WorkflowStatus, ActionStatus
-from walkoff.executiondb.metrics import AppMetric, ActionMetric, ActionStatusMetric, WorkflowMetric
 
 
 @WalkoffEvent.WorkflowExecutionPending.connect
 def __workflow_pending(sender, **kwargs):
     current_app.running_context.execution_db.session.expire_all()
     workflow_status = current_app.running_context.execution_db.session.query(WorkflowStatus).filter_by(
-        execution_id=sender['execution_id']).first()
+        execution_id=str(sender['execution_id'])).first()
     if workflow_status:
         workflow_status.status = WorkflowStatusEnum.pending
     else:
-        workflow_status = WorkflowStatus(sender['execution_id'], sender['id'], sender['name'])
+        user = kwargs['data']['user'] if ('data' in kwargs and 'user' in kwargs['data']) else None
+        workflow_status = WorkflowStatus(str(sender['execution_id']), sender['id'], sender['name'], user=user)
         current_app.running_context.execution_db.session.add(workflow_status)
     current_app.running_context.execution_db.session.commit()
 

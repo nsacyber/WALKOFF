@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from flask import current_app
+from flask import current_app, request
 from flask_jwt_extended import jwt_required
 
 import walkoff.config
@@ -12,13 +12,10 @@ from walkoff.server.returncodes import *
 
 def __get_current_configuration():
     return {'db_path': walkoff.config.Config.DB_PATH,
-            'case_db_path': walkoff.config.Config.CASE_DB_PATH,
             'logging_config_path': walkoff.config.Config.LOGGING_CONFIG_PATH,
             'host': walkoff.config.Config.HOST,
             'port': int(walkoff.config.Config.PORT),
             'walkoff_db_type': walkoff.config.Config.WALKOFF_DB_TYPE,
-            'case_db_type': walkoff.config.Config.CASE_DB_TYPE,
-            'clear_case_db_on_startup': bool(walkoff.config.Config.CLEAR_CASE_DB_ON_STARTUP),
             'access_token_duration': int(current_app.config['JWT_ACCESS_TOKEN_EXPIRES'].seconds / 60),
             'refresh_token_duration': int(current_app.config['JWT_REFRESH_TOKEN_EXPIRES'].days),
             'zmq_results_address': walkoff.config.Config.ZMQ_RESULTS_ADDRESS,
@@ -37,19 +34,20 @@ def read_config_values():
     return __func()
 
 
-def update_configuration(configuration):
+def update_configuration():
     @jwt_required
     @permissions_accepted_for_resources(ResourcePermissions('configuration', ['update']))
     def __func():
-        if not _reset_token_durations(access_token_duration=configuration.get('access_token_duration', None),
-                                      refresh_token_duration=configuration.get('refresh_token_duration', None)):
+        config_in = request.get_json()
+        if not _reset_token_durations(access_token_duration=config_in.get('access_token_duration', None),
+                                      refresh_token_duration=config_in.get('refresh_token_duration', None)):
             return Problem.from_crud_resource(
                 BAD_REQUEST,
                 'configuration',
                 'update',
                 'Access token duration must be less than refresh token duration.')
 
-        for config, config_value in configuration.items():
+        for config, config_value in config_in.items():
             if hasattr(walkoff.config.Config, config.upper()):
                 setattr(walkoff.config.Config, config.upper(), config_value)
             elif hasattr(current_app.config, config.upper()):
@@ -69,8 +67,8 @@ def update_configuration(configuration):
     return __func()
 
 
-def patch_configuration(configuration):
-    return update_configuration(configuration)
+def patch_configuration():
+    return update_configuration()
 
 
 def _reset_token_durations(access_token_duration=None, refresh_token_duration=None):

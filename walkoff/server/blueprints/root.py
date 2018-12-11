@@ -1,6 +1,9 @@
 import logging
 import os
 
+from alembic.config import Config
+from alembic.runtime.migration import MigrationContext
+from alembic.script import ScriptDirectory
 from flask import current_app
 from flask import render_template, send_from_directory, Blueprint
 from sqlalchemy.exc import SQLAlchemyError
@@ -29,11 +32,11 @@ def client_app_folder(filename):
 @root_page.route('scheduler')
 @root_page.route('devices')
 @root_page.route('messages')
-@root_page.route('cases')
 @root_page.route('metrics')
 @root_page.route('settings')
 def default():
-    return render_template("index.html")
+    return send_from_directory(os.path.abspath(walkoff.config.Config.CLIENT_PATH), "dist/index.html")
+    # return render_template("index.html")
 
 
 @root_page.route('interfaces/<interface_name>')
@@ -62,7 +65,20 @@ def handle_generic_server_error(e):
 def create_user():
     from walkoff.serverdb import add_user, User, Role, initialize_default_resources_admin, \
         initialize_default_resources_guest
+    from sqlalchemy_utils import database_exists, create_database
+
+    if not database_exists(db.engine.url):
+        create_database(db.engine.url)
     db.create_all()
+
+    alembic_cfg = Config(walkoff.config.Config.ALEMBIC_CONFIG, ini_section="walkoff",
+                         attributes={'configure_logger': False})
+
+    # This is necessary for a flask database
+    connection = db.engine.connect()
+    context = MigrationContext.configure(connection)
+    script = ScriptDirectory.from_config(alembic_cfg)
+    context.stamp(script, "head")
 
     # Setup admin and guest roles
     initialize_default_resources_admin()
@@ -79,25 +95,21 @@ def create_user():
     db.session.commit()
 
     apps = set(helpers.list_apps(walkoff.config.Config.APPS_PATH)) - set([_app.name
-                                           for _app in
-                                           current_app.running_context.execution_db.session.query(App).all()])
+                                                                          for _app in
+                                                                          current_app.running_context.execution_db.session.query(
+                                                                              App).all()])
     current_app.logger.debug('Found new apps: {0}'.format(apps))
     for app_name in apps:
         current_app.running_context.execution_db.session.add(App(name=app_name, devices=[]))
     db.session.commit()
     current_app.running_context.execution_db.session.commit()
-    send_all_cases_to_workers()
+    reschedule_all_workflows()
     current_app.logger.handlers = logging.getLogger('server').handlers
 
 
-def send_all_cases_to_workers():
-    from walkoff.serverdb.casesubscription import CaseSubscription
-    from walkoff.case.database import Case
-    from walkoff.case.subscription import Subscription
-    current_app.logger.info('Sending existing cases to workers')
-    for case_subscription in CaseSubscription.query.all():
-        subscriptions = [Subscription(sub['id'], sub['events']) for sub in case_subscription.subscriptions]
-        case = current_app.running_context.case_db.session.query(Case).filter(
-            Case.name == case_subscription.name).first()
-        if case is not None:
-            current_app.running_context.executor.update_case(case.id, subscriptions)
+def reschedule_all_workflows():
+    from walkoff.serverdb.scheduledtasks import ScheduledTask
+    current_app.logger.info('Scheduling workflows')
+    for task in (task for task in ScheduledTask.query.all() if task.status == 'running'):
+        current_app.logger.debug('Rescheduling task {} (id={})'.format(task.name, task.id))
+        task._start_workflows()

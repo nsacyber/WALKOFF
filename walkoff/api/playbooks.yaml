@@ -5,88 +5,96 @@
     summary: Read all playbooks
     description: ''
     operationId: walkoff.server.endpoints.playbooks.get_playbooks
-    produces:
-      - application/json
     parameters:
       - in: query
         name: full
-        type: boolean
+        schema:
+          type: boolean
         required: false
     responses:
       200:
         description: Success
-        schema:
-          type: array
-          items:
-            $ref: '#/definitions/Playbook'
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Playbook'
   post:
     tags:
       - Playbooks
     summary: Create a playbook
     description: ''
     operationId: walkoff.server.endpoints.playbooks.create_playbook
-    consumes:
-      - application/json
-      - multipart/form-data
-    produces:
-      - application/json
     parameters:
       - in: query
         name: source
         description: The ID of the playbook to clone
-        type: string
+        schema:
+          type: string
+          format: uuid
         required: false
-        format: uuid
       - in: body
         name: body
         description: The playbook object to be created
         required: false
-        schema:
-          $ref: '#/definitions/CreatePlaybook'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlaybook'
       - in: formData
         name: formData
-        description: The playbook file to be imported
+        description: The file to import to create a playbook
         required: false
-        type: file
+        content:
+          multipart/form-data:
+            schema:
+              type: file
     responses:
       201:
         description: Object created
-        schema:
-          $ref: '#/definitions/Playbook'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Playbook'
       400:
         description: Object exists
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
   patch:
     tags:
       - Playbooks
     summary: Update a playbook
     description: ''
     operationId: walkoff.server.endpoints.playbooks.update_playbook
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        description: Fields of the playbook object to be updated
-        required: true
-        schema:
-          $ref: '#/definitions/UpdatePlaybook'
+    requestBody:
+      description: Fields of the playbook object to be updated
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UpdatePlaybook'
     responses:
       200:
         description: Success
-        schema:
-          $ref: '#/definitions/Playbook'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Playbook'
       404:
         description: Playbook does not exist.
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
       400:
         description: Playbook already exists.
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
 
 /playbooks/{playbook_id}:
   parameters:
@@ -94,12 +102,14 @@
       in: path
       description: The ID that needs to be fetched.
       required: true
-      type: string
-      format: uuid
+      schema:
+        type: string
+        format: uuid
     - in: query
       name: mode
       description: Specify mode as export to download the playbook file
-      type: string
+      schema:
+        type: string
       required: false
   get:
     tags:
@@ -107,44 +117,52 @@
     summary: Read or download a playbook
     description: ''
     operationId: walkoff.server.endpoints.playbooks.read_playbook
-    produces:
-      - application/json
     responses:
       200:
         description: Success
-        schema:
-          $ref: '#/definitions/Playbook'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Playbook'
       404:
         description: Object does not exist.
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
       400:
         description: Invalid input error.
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
       515:
         description: I/O error.
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
   delete:
     tags:
       - Playbooks
     summary: Delete a playbook
     description: ''
     operationId: walkoff.server.endpoints.playbooks.delete_playbook
-    produces:
-      - application/json
     responses:
       204:
         description: Success
       404:
         description: Playbook does not exist.
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
       515:
         description: I/O error.
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
 
 
 /playbooks/{playbook_id}/workflows:
@@ -153,28 +171,31 @@
       in: path
       description: 'The ID that needs to be fetched. '
       required: true
-      type: string
-      format: uuid
+      schema:
+        type: string
+        format: uuid
   get:
     tags:
       - Playbooks
     summary: Read all workflows in playbook
     description: ''
     operationId: walkoff.server.endpoints.playbooks.get_workflows_for_playbook
-    produces:
-      - application/json
     responses:
       200:
         description: Success
-        schema:
-          type: array
-          description: The JSON representation of all the workflows for the playbook
-          items:
-            $ref: '#/definitions/Workflow'
+        content:
+          application/json:
+            schema:
+              type: array
+              description: The JSON representation of all the workflows for the playbook
+              items:
+                $ref: '#/components/schemas/Workflow'
       404:
         description: Playbook does not exist.
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
 
 /workflows:
   get:
@@ -183,97 +204,106 @@
     summary: Read all workflows in playbook
     description: ''
     operationId: walkoff.server.endpoints.playbooks.get_workflows
-    produces:
-      - application/json
     parameters:
       - in: query
         name: playbook
         description: The ID of the playbook whose workflows to get
-        type: string
+        schema:
+          type: string
+          format: uuid
         required: false
-        format: uuid
     responses:
       200:
         description: Success
-        schema:
-          type: array
-          description: The JSON representation of all the workflows for the playbook
-          items:
-            $ref: '#/definitions/Workflow'
+        content:
+          application/json:
+            schema:
+              type: array
+              description: The JSON representation of all the workflows for the playbook
+              items:
+                $ref: '#/components/schemas/Workflow'
       404:
         description: Playbook does not exist.
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
   post:
     tags:
       - Workflows
     summary: Create a workflow
     description: ''
     operationId: walkoff.server.endpoints.playbooks.create_workflow
-    consumes:
-      - application/json
-    produces:
-      - application/json
     parameters:
       - in: query
         name: source
         description: The ID of the workflow to clone
-        type: string
-        format: uuid
-        required: false
-      - in: body
-        name: body
-        description: The workflow object to be created
-        required: true
         schema:
-          $ref: '#/definitions/CreateWorkflow'
+          type: string
+          format: uuid
+        required: false
+    requestBody:
+      description: The workflow object to be created
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/CreateWorkflow'
     responses:
       201:
         description: Workflow created.
-        schema:
-          $ref: '#/definitions/Workflow'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workflow'
       404:
         description: Playbook does not exist.
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
       400:
         description: Workflow already exists.
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
   put:
     tags:
       - Workflows
     summary: Update a workflow
     description: ''
     operationId: walkoff.server.endpoints.playbooks.update_workflow
-    consumes:
-      - application/json
-    produces:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        description: The fields of the workflow object to be updated
-        required: true
-        schema:
-          $ref: '#/definitions/Workflow'
+    requestBody:
+      description: The fields of the workflow object to be updated
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Workflow'
     responses:
       200:
         description: Success
-        schema:
-          type: object
-          required: [workflow]
-          properties:
-            workflow:
-              $ref: '#/definitions/Workflow'
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [workflow]
+              properties:
+                workflow:
+                  $ref: '#/components/schemas/Workflow'
       404:
         description: Playbook or workflow does not exist.
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
       400:
         description: Workflow already exists.
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
 
 /workflows/{workflow_id}:
   parameters:
@@ -281,25 +311,28 @@
       in: path
       description: 'The ID that needs to be fetched. '
       required: true
-      type: string
-      format: uuid
+      schema:
+        type: string
+        format: uuid
   get:
     tags:
       - Workflows
     summary: Read a workflow
     description: ''
     operationId: walkoff.server.endpoints.playbooks.read_workflow
-    produces:
-      - application/json
     responses:
       200:
         description: Success
-        schema:
-          $ref: '#/definitions/Workflow'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Workflow'
       404:
         description: Playbook or workflow does not exist.
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
 
   delete:
     tags:
@@ -307,15 +340,15 @@
     summary: Delete a workflow
     description: ''
     operationId: walkoff.server.endpoints.playbooks.delete_workflow
-    produces:
-      - application/json
     responses:
       204:
         description: Success
       404:
         description: Playbook or workflow does not exist.
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
 
 /uuid:
   get:
@@ -324,14 +357,15 @@
     summary: Get a new UUID
     description: ''
     operationId: walkoff.server.endpoints.playbooks.get_uuid
-    produces:
-      - application/json
     responses:
       201:
         description: Success
-        schema:
-          type: object
-          required: [uuid]
-          properties:
-            uuid:
-              $ref: '#/definitions/Uuid'
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [uuid]
+              properties:
+                uuid:
+                  $ref: '#/components/schemas/Uuid'
+    security: []

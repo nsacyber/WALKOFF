@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: walkoff-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    certmanager.k8s.io/issuer: ca-issuer
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  tls:
+  - hosts:
+    - walkoff-ingress.eastus.cloudapp.azure.com
+    secretName: walkoff-cert-secret
+  rules:
+  - host: walkoff-ingress.eastus.cloudapp.azure.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: walkoff-app-public
+          servicePort: 8080

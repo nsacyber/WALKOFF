@@ -1,6 +1,5 @@
 import unittest
 
-import walkoff.config
 from tests.util import execution_db_help, initialize_test_config
 from walkoff.extensions import db
 from walkoff.server.app import create_app
@@ -13,7 +12,7 @@ class TestRoles(unittest.TestCase):
     def setUpClass(cls):
         initialize_test_config()
 
-        app = create_app(walkoff.config.Config)
+        app = create_app()
         cls.context = app.test_request_context()
         cls.context.push()
 

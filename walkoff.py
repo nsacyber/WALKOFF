@@ -6,23 +6,29 @@ import traceback
 
 from gevent import monkey
 from gevent import pywsgi
+from prometheus_flask_exporter import PrometheusMetrics
 
 import walkoff
 import walkoff.config
-from scripts.compose_api import compose_api
-from walkoff.multiprocessedexecutor.multiprocessedexecutor import spawn_worker_processes
-from walkoff.server.app import create_app
 from tests.util.jsonplaybookloader import JsonPlaybookLoader
 from walkoff.executiondb.playbook import Playbook
+from walkoff.helpers import compose_api
+from walkoff.server.app import create_app
 
 logger = logging.getLogger('walkoff')
 
 
-def run(app, host, port):
+def run(args, app, host, port):
     print_banner()
-    pids = spawn_worker_processes()
+    if not args.apponly:
+        from start_workers import spawn_worker_processes
+        pids = spawn_worker_processes()
+    else:
+        pids = None
+
     monkey.patch_all()
 
+    app.running_context.inject_app(app)
     app.running_context.executor.initialize_threading(app, pids)
     # The order of these imports matter for initialization (should probably be fixed)
 
@@ -60,6 +66,7 @@ def parse_args():
     parser.add_argument('-p', '--port', help='port to run the server on')
     parser.add_argument('-H', '--host', help='host address to run the server on')
     parser.add_argument('-c', '--config', help='configuration file to use')
+    parser.add_argument('-a', '--apponly', help='start WALKOFF app only, no workers', action='store_true')
     args = parser.parse_args()
     if args.version:
         print(walkoff.__version__)
@@ -95,12 +102,16 @@ def import_workflows(app):
 if __name__ == "__main__":
     args = parse_args()
     exit_code = 0
-    compose_api()
     walkoff.config.initialize(args.config)
-    app = create_app(walkoff.config.Config)
+    compose_api(walkoff.config.Config)
+    app = create_app()
+
+    if not walkoff.config.Config.SEPARATE_PROMETHEUS:
+        metrics = PrometheusMetrics(app, path='/prometheus_metrics')
+
     import_workflows(app)
     try:
-        run(app, *convert_host_port(args))
+        run(args, app, *convert_host_port(args))
     except KeyboardInterrupt:
         logger.info('Caught KeyboardInterrupt! Please wait a few seconds for WALKOFF to shutdown.')
     except Exception as e:

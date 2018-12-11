@@ -15,13 +15,14 @@ class SkeletonApp(App):
        Skeleton example app to build other apps off of
     
        Args:
-           name (str): Name of the app
+           app_name (str): Name of the app
            device (list[str]): List of associated device names
+           context (dict): Information about the context in which the App is operating
            
     """
 
-    def __init__(self, name=None, device=None):
-        App.__init__(self, name, device)  # Required to call superconstructor
+    def __init__(self, app_name, device, context):
+        App.__init__(self, app_name, device, context)  # Required to call superconstructor
 
     @action
     def test_function(self):

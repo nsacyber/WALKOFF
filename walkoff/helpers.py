@@ -100,7 +100,7 @@ def import_submodules(package, recursive=False):
     return {}
 
 
-def format_db_path(db_type, path, username=None, password=None):
+def format_db_path(db_type, path, username=None, password=None, host="localhost"):
     """
     Formats the path to the database
 
@@ -121,11 +121,12 @@ def format_db_path(db_type, path, username=None, password=None):
         sqlalchemy_path = '{0}:///{1}'.format(db_type, path)
     elif db_type in supported_dbs:
         if username and username in os.environ and password and password in os.environ:
-            sqlalchemy_path = '{0}://{1}:{2}@{3}'.format(db_type, os.environ[username], os.environ[password], path)
+            sqlalchemy_path = '{0}://{1}:{2}@{3}/{4}'.format(db_type, os.environ[username], os.environ[password],
+                                                             host, path)
         elif username and username in os.environ:
-            sqlalchemy_path = '{0}://{1}@{2}'.format(db_type, os.environ[username], path)
+            sqlalchemy_path = '{0}://{1}@{2}/{3}'.format(db_type, os.environ[username], host, path)
         else:
-            sqlalchemy_path = '{0}://{1}'.format(db_type, path)
+            logger.error('No username or password found for database')
     else:
         logger.error('Database type {0} not supported for database {1}'.format(db_type, path))
 
@@ -262,3 +263,39 @@ def json_dumps_or_string(val):
         return json.dumps(val)
     except (ValueError, TypeError):
         return str(val)
+
+
+def read_and_indent(filename, indent):
+    indent = '  ' * indent
+    with open(filename, 'r') as file_open:
+        return ['{0}{1}'.format(indent, line) for line in file_open]
+
+
+def compose_api(config):
+    with open(os.path.join(config.API_PATH, 'api.yaml'), 'r') as api_yaml:
+        final_yaml = []
+        for line_num, line in enumerate(api_yaml):
+            if line.lstrip().startswith('$ref:'):
+                split_line = line.split('$ref:')
+                reference = split_line[1].strip()
+                indentation = split_line[0].count('  ')
+                try:
+                    final_yaml.extend(
+                        read_and_indent(os.path.join(config.API_PATH, reference), indentation))
+                    final_yaml.append(os.linesep)
+                except (IOError, OSError):
+                    logger.error('Could not find or open referenced YAML file {0} in line {1}'.format(reference,
+                                                                                                      line_num))
+            else:
+                final_yaml.append(line)
+    with open(os.path.join(config.API_PATH, 'composed_api.yaml'), 'w') as composed_yaml:
+        composed_yaml.writelines(final_yaml)
+
+
+class ExecutionError(Exception):
+    def __init__(self, original_exception=None, message=None):
+        if original_exception is None and message is None:
+            raise ValueError('Either original exception or message must be provided')
+        self.exc = original_exception or None
+        self.message = message or format_exception_message(original_exception)
+        super(ExecutionError, self).__init__()

@@ -13,6 +13,7 @@ from walkoff.server.endpoints.messages import max_notifications, min_notificatio
 from walkoff.server.returncodes import *
 from walkoff.serverdb import User, Role
 from walkoff.serverdb.message import Message, MessageHistory
+from walkoff.server.app import create_app
 
 
 class UserWrapper(object):
@@ -31,10 +32,13 @@ class TestMessagingEndpoints(ServerTestCase):
         initialize_test_config()
         execution_db_help.setup_dbs()
 
-        cls.context = current_app.test_request_context()
-        cls.context.push()
-        cls.app = current_app.test_client(cls)
+        cls.app = create_app()
         cls.app.testing = True
+        cls.context = cls.app.test_request_context()
+        cls.context.push()
+
+        cls.test_client = cls.app.test_client(cls)
+
         db.create_all()
         cls.role_rd = Role('message_guest')
         cls.role_rd.set_resources([{'name': 'messages', 'permissions': ['read', 'delete', 'update']}])
@@ -81,11 +85,11 @@ class TestMessagingEndpoints(ServerTestCase):
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
-        self.http_verb_lookup = {'get': self.app.get,
-                                 'post': self.app.post,
-                                 'put': self.app.put,
-                                 'delete': self.app.delete,
-                                 'patch': self.app.patch}
+        self.http_verb_lookup = {'get': self.test_client.get,
+                                 'post': self.test_client.post,
+                                 'put': self.test_client.put,
+                                 'delete': self.test_client.delete,
+                                 'patch': self.test_client.patch}
 
     def tearDown(self):
         db.session.rollback()
@@ -107,7 +111,7 @@ class TestMessagingEndpoints(ServerTestCase):
         execution_db_help.tear_down_execution_db()
 
     def login_user(self, user):
-        post = self.app.post('/api/auth', content_type="application/json",
+        post = self.test_client.post('/api/auth', content_type="application/json",
                              data=json.dumps(dict(username=user.username, password=user.password)),
                              follow_redirects=True)
         key = json.loads(post.get_data(as_text=True))
@@ -123,7 +127,7 @@ class TestMessagingEndpoints(ServerTestCase):
             self.put_with_status_check('/api/messages', headers=user.header, status_code=status_code,
                                        data=json.dumps(data), content_type='application/json')
         else:
-            self.app.put('/api/messages', headers=user.header,
+            self.test_client.put('/api/messages', headers=user.header,
                          data=json.dumps(data), content_type='application/json')
 
     def get_all_messages_for_user(self, user, status_code=SUCCESS):
@@ -355,3 +359,15 @@ class TestMessagingEndpoints(ServerTestCase):
         notifications = self.get_notifications(self.user1)
         self.assertEqual(len(notifications), max_notifications)
         self.assertTrue(all(not notification['is_read'] for notification in notifications))
+
+    def test_message_pagination(self):
+        for i in range(38):
+            TestMessagingEndpoints.make_message([self.user1.user])
+        response = self.get_with_status_check('/api/messages', headers=self.user1.header, status_code=SUCCESS)
+        self.assertEqual(len(response), 20)
+        response = self.get_with_status_check('/api/messages?page=2', headers=self.user1.header,
+                                              status_code=SUCCESS)
+        self.assertEqual(len(response), 20)
+        response = self.get_with_status_check('/api/messages?page=3', headers=self.user1.header,
+                                              status_code=SUCCESS)
+        self.assertEqual(len(response), 0)

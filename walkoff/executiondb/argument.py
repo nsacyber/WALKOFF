@@ -4,9 +4,9 @@ from sqlalchemy import Column, Integer, ForeignKey, String, orm, event
 from sqlalchemy.orm import relationship
 from sqlalchemy_utils import UUIDType, JSONType, ScalarListType
 
+from walkoff.appgateway.apiutil import InvalidArgument
 from walkoff.executiondb import Execution_Base
 from walkoff.executiondb.validatable import Validatable
-from walkoff.appgateway.apiutil import InvalidArgument
 
 logger = logging.getLogger(__name__)
 
@@ -14,15 +14,15 @@ logger = logging.getLogger(__name__)
 class Argument(Execution_Base, Validatable):
     __tablename__ = 'argument'
     id = Column(Integer, primary_key=True, autoincrement=True)
-    action_id = Column(UUIDType(binary=False), ForeignKey('action.id'))
-    action_device_id = Column(UUIDType(binary=False), ForeignKey('action.id'))
-    condition_id = Column(UUIDType(binary=False), ForeignKey('condition.id'))
-    transform_id = Column(UUIDType(binary=False), ForeignKey('transform.id'))
+    action_id = Column(UUIDType(binary=False), ForeignKey('action.id', ondelete='CASCADE'))
+    action_device_id = Column(UUIDType(binary=False), ForeignKey('action.id', ondelete='CASCADE'))
+    condition_id = Column(UUIDType(binary=False), ForeignKey('condition.id', ondelete='CASCADE'))
+    transform_id = Column(UUIDType(binary=False), ForeignKey('transform.id', ondelete='CASCADE'))
     name = Column(String(255), nullable=False)
     value = Column(JSONType)
     reference = Column(UUIDType(binary=False))
-    selection = relationship('Argument', cascade='all, delete, delete-orphan')
-    selection_id = Column(UUIDType(binary=False), ForeignKey('argument.id'))
+    selection = relationship('Argument', cascade='all, delete, delete-orphan', passive_deletes=True)
+    selection_id = Column(UUIDType(binary=False), ForeignKey('argument.id', ondelete='CASCADE'))
     errors = Column(ScalarListType())
 
     def __init__(self, name, value=None, reference=None, selection=None):

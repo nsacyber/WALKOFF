@@ -71,6 +71,19 @@ actions:
         description: echoed list
         schema:
           type: array
+  csv as array:
+    run: actions.csv_as_array
+    description: returns a csv string as an array
+    parameters:
+      - name: data
+        description: csv to return
+        required: true
+        type: string
+    returns:
+      Success:
+        description: echoed list
+        schema:
+          type: array
   'json select':
     run: actions.json_select
     description: Gets a selected sub element of a json

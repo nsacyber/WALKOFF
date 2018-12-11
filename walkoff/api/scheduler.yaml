@@ -5,46 +5,44 @@
     summary: Get the current scheduler status.
     description: ''
     operationId: walkoff.server.endpoints.scheduler.get_scheduler_status
-    produces:
-      - application/json
     responses:
       200:
         description: Success
-        schema:
-          $ref: '#/definitions/Scheduler'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Scheduler'
   put:
     tags:
       - Scheduler
     summary: Update the status of the scheduler
     description: ''
     operationId: walkoff.server.endpoints.scheduler.update_scheduler_status
-    produces:
-      - application/json
-    consumes:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        description: The new Scheduled Task object
-        required: true
-        schema:
-          type: object
-          required: [status]
-          properties:
-            status:
-              description: Requested status of the scheduler
-              type: string
-              enum: [start, stop, pause, resume]
+    requestBody:
+      description: The new Scheduled Task object
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [status]
+            properties:
+              status:
+                description: Requested status of the scheduler
+                type: string
+                enum: [start, stop, pause, resume]
     responses:
       200:
         description: Success
-        schema:
-          type: object
-          required: [status]
-          properties:
-            status:
-              type: string
-              description: The current status of the scheduler
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  description: The current status of the scheduler
 
 /scheduledtasks:
   get:
@@ -52,104 +50,104 @@
       - Scheduler
     summary: Get all the scheduled tasks
     operationId: walkoff.server.endpoints.scheduler.read_all_scheduled_tasks
-    produces:
-      - application/json
     responses:
       200:
         description: Success
-        schema:
-          description: A list of Scheduled Task objects
-          type: array
-          items:
-            $ref: '#/definitions/ScheduledTask'
+        content:
+          application/json:
+            schema:
+              description: A list of Scheduled Task objects
+              type: array
+              items:
+                $ref: '#/components/schemas/ScheduledTask'
   post:
     tags:
       - Scheduler
     summary: Create a new Scheduled Task
     operationId: walkoff.server.endpoints.scheduler.create_scheduled_task
-    produces:
-      - application/json
-    consumes:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        description: The new Scheduled Task object
-        required: true
-        schema:
-          $ref: '#/definitions/AddScheduledTask'
+    requestBody:
+      description: The new Scheduled Task object
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AddScheduledTask'
     responses:
       201:
         description: Success
-        schema:
-          description: A list of Scheduled Task objects
-          type: array
-          items:
-            $ref: '#/definitions/ScheduledTask'
+        content:
+          application/json:
+            schema:
+              description: A list of Scheduled Task objects
+              type: array
+              items:
+                $ref: '#/components/schemas/ScheduledTask'
       400:
         description: Scheduled task already exists
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
   put:
     tags:
       - Scheduler
     summary: Update a new Scheduled Task
     operationId: walkoff.server.endpoints.scheduler.update_scheduled_task
-    produces:
-      - application/json
-    consumes:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        description: The updated Scheduled Task object
-        required: true
-        schema:
-          $ref: '#/definitions/ScheduledTask'
+    requestBody:
+      description: The updated Scheduled Task object
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ScheduledTask'
     responses:
       200:
         description: Success
-        schema:
-          $ref: '#/definitions/ScheduledTask'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduledTask'
       404:
         description: Scheduled task does not exist
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
       400:
         description: Scheduled task name already exists
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
   patch:
     tags:
       - Scheduler
     summary: Enable the scheduled task
     operationId: walkoff.server.endpoints.scheduler.control_scheduled_task
-    produces:
-      - application/json
-    consumes:
-      - application/json
-    parameters:
-      - in: body
-        name: body
-        description: The updated Scheduled Task object
-        required: true
-        schema:
-          type: object
-          required: [id, action]
-          properties:
-            id:
-              type: integer
-            action:
-              type: string
-              description: The requested status of the task
-              enum: [start, stop]
+    requestBody:
+      description: The updated Scheduled Task object
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [id, action]
+            properties:
+              id:
+                type: integer
+              action:
+                type: string
+                description: The requested status of the task
+                enum: [start, stop]
     responses:
       200:
         description: Success
       404:
         description: Scheduled task does not exist
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
 
 /scheduledtasks/{scheduled_task_id}:
   parameters:
@@ -157,34 +155,37 @@
       in: path
       description: The ID of the scheduled task.
       required: true
-      type: string
+      schema:
+        type: string
   get:
     tags:
       - Scheduler
     summary: Get the scheduled task
     operationId: walkoff.server.endpoints.scheduler.read_scheduled_task
-    produces:
-      - application/json
     responses:
       200:
         description: Success
-        schema:
-          $ref: '#/definitions/ScheduledTask'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduledTask'
       404:
         description: Scheduled task does not exist
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'
   delete:
     tags:
       - Scheduler
     summary: Delete the scheduled task
     operationId: walkoff.server.endpoints.scheduler.delete_scheduled_task
-    produces:
-      - application/json
     responses:
       204:
         description: Success
       404:
         description: Scheduled task does not exist
-        schema:
-          $ref: '#/definitions/Error'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Error'

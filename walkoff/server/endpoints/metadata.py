@@ -5,27 +5,8 @@ from flask_jwt_extended import jwt_required
 
 import walkoff.config
 from walkoff import helpers
-from walkoff.events import WalkoffEvent, EventType
 from walkoff.security import permissions_accepted_for_resources, ResourcePermissions
 from walkoff.server.returncodes import SUCCESS
-
-
-def read_all_possible_subscriptions():
-    event_dict = {EventType.playbook.name: []}
-    for event in (event for event in WalkoffEvent if event.is_loggable()):
-        if event.event_type.name not in event_dict:
-            event_dict[event.event_type.name] = [event.signal_name]
-        else:
-            event_dict[event.event_type.name].append(event.signal_name)
-    ret = [{'type': event_type.name, 'events': sorted(event_dict[event_type.name])}
-           for event_type in EventType if event_type != EventType.other]
-
-    @jwt_required
-    @permissions_accepted_for_resources(ResourcePermissions('cases', ['read']))
-    def __func():
-        return ret, SUCCESS
-
-    return __func()
 
 
 def read_all_interfaces():

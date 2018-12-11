@@ -1,92 +1,134 @@
 {
-  "version": 1,
-  "disable_existing_loggers": false,
+  "disable_existing_loggers": false, 
   "formatters": {
-    "simple": {
-      "format": "[%(asctime)s]  %(name)s::%(levelname)s - %(message)s"
-    },
     "detailed": {
       "format": "[%(asctime)s] %(levelname)s: %(message)s  <in %(name)s.%(funcName)s:%(lineno)d)>"
-    },
+    }, 
+    "fluent_fmt": {
+      "()": "fluent.handler.FluentRecordFormatter", 
+      "format": {
+        "hostname": "%(hostname)s", 
+        "level": "%(levelname)s", 
+        "where": "%(module)s.%(funcName)s"
+      }
+    }, 
+    "simple": {
+      "format": "[%(asctime)s]  %(name)s::%(levelname)s - %(message)s"
+    }, 
     "simple_with_proc": {
       "format": "[%(asctime)s] %(processName)s %(threadName)s %(levelname)s - %(message)s"
     }
-  },
+  }, 
   "handlers": {
     "console": {
-      "class": "logging.StreamHandler",
-      "level": "NOTSET",
-      "formatter": "simple",
+      "class": "logging.StreamHandler", 
+      "formatter": "simple", 
+      "level": "NOTSET", 
       "stream": "ext://sys.stdout"
-    },
+    }, 
     "console_logs": {
-      "class": "walkoff.appgateway.console.ConsoleLoggingHandler",
-      "level": "NOTSET",
-      "formatter": "simple"
-    },
+      "class": "walkoff.appgateway.console.ConsoleLoggingHandler", 
+      "formatter": "simple", 
+      "level": "NOTSET"
+    }, 
     "file_handler": {
-      "class": "logging.handlers.RotatingFileHandler",
-      "level": "NOTSET",
-      "formatter": "simple",
-      "filename": "data/log/log.log",
-      "maxBytes": 10485760,
-      "backupCount": 20,
-      "encoding": "utf8"
-    },
+      "backupCount": 20, 
+      "class": "logging.handlers.RotatingFileHandler", 
+      "encoding": "utf8", 
+      "filename": "data/log/log.log", 
+      "formatter": "simple", 
+      "level": "NOTSET", 
+      "maxBytes": 10485760
+    }, 
     "file_handler_with_proc": {
-      "class": "logging.handlers.RotatingFileHandler",
-      "level": "NOTSET",
-      "formatter": "simple_with_proc",
-      "filename": "data/log/log.log",
-      "maxBytes": 10485760,
-      "backupCount": 20,
-      "encoding": "utf8"
+      "backupCount": 20, 
+      "class": "logging.handlers.RotatingFileHandler", 
+      "encoding": "utf8", 
+      "filename": "data/log/log.log", 
+      "formatter": "simple_with_proc", 
+      "level": "NOTSET", 
+      "maxBytes": 10485760
+    }, 
+    "fluent": {
+      "buffer_overflow_handler": "walkoff.config.fluent_overflow_handler", 
+      "class": "fluent.handler.FluentHandler", 
+      "formatter": "fluent_fmt", 
+      "host": "localhost", 
+      "level": "NOTSET", 
+      "port": 24224, 
+      "tag": "fluent.logging"
     }
-  },
+  }, 
   "loggers": {
-    "walkoff": {
-      "level": "INFO",
-      "handlers": ["file_handler"]
-    },
     "apps": {
-      "level": "DEBUG",
-      "handlers": ["file_handler", "console_logs"]
-    },
+      "handlers": [
+        "file_handler", 
+        "console_logs", 
+        "fluent"
+      ], 
+      "level": "DEBUG"
+    }, 
     "connexion": {
-      "level": "ERROR",
-      "handlers": ["file_handler"]
-    },
+      "handlers": [
+        "file_handler"
+      ], 
+      "level": "INFO"
+    }, 
     "passlib": {
-      "level": "ERROR",
-      "handlers": ["file_handler"]
-    },
-    "zmq": {
-      "level": "INFO",
-      "handlers": ["file_handler"]
-    },
+      "handlers": [
+        "file_handler"
+      ], 
+      "level": "ERROR"
+    }, 
     "swagger_spec_validator": {
-      "level": "ERROR",
-      "handlers": ["file_handler"]
-    },
+      "handlers": [
+        "file_handler"
+      ], 
+      "level": "ERROR"
+    }, 
+    "walkoff": {
+      "handlers": [
+        "file_handler", 
+        "fluent"
+      ], 
+      "level": "INFO"
+    }, 
     "walkoff.appgateway.appcache": {
-      "level": "ERROR",
-      "handlers": ["file_handler"]
-    },
-    "walkoff.server.app": {
-      "level": "ERROR",
-      "handlers": ["file_handler"]
-    },
+      "handlers": [
+        "file_handler"
+      ], 
+      "level": "ERROR"
+    }, 
     "walkoff.executiondb": {
-      "level": "WARNING",
-      "handlers": ["file_handler_with_proc"]
-    },
+      "handlers": [
+        "file_handler_with_proc"
+      ], 
+      "level": "WARNING"
+    }, 
     "walkoff.multiprocessedexecutor": {
-      "level": "INFO",
-      "handlers": ["file_handler_with_proc"]
+      "handlers": [
+        "file_handler_with_proc"
+      ], 
+      "level": "INFO"
+    }, 
+    "walkoff.server.app": {
+      "handlers": [
+        "file_handler"
+      ], 
+      "level": "ERROR"
+    }, 
+    "zmq": {
+      "handlers": [
+        "file_handler"
+      ], 
+      "level": "INFO"
     }
-  },
+  }, 
   "root": {
-    "level": "DEBUG",
-    "handlers": ["console"]
-  }
+    "handlers": [
+      "console"
+    ], 
+    "level": "INFO"
+  }, 
+  "version": 1
 }

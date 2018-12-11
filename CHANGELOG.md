@@ -2,6 +2,145 @@
 <!-- Use the tags Added, Changed, Deprecated, Removed, Fixed, Security, and
      Contributor to describe changes -->
 
+## [0.9.4]
+###### 2018-12-11
+
+### Added
+* Added ability to view WALKOFF Server API locally via /api/docs with the server running.
+
+### Fixed
+* Execution DB now gets properly closed when WALKOFF exits. Fixes issues with docker-compose stop/start. 
+* Triggers on unbound actions (apps without devices) fixed.
+* Add Docker image and compose file based on development branch.
+* Upgraded WALKOFF Server API from swagger2 to openapi3, which includes improved security, and better request validation.
+* Upgraded Python marshmallow library version, which includes stricter validation.
+* Please note: because some dependency library versions were changed in the requirements.txt file, users must run the command `pip install --upgrade -r requirements.txt` to make sure all dependencies are met. This is also good practice to do after every new release.
+
+## [0.9.3]
+###### 2018-12-03
+
+This is a minor release to fix missing front-end resources. A number of documentation changes have also been made, particularly regarding installing WALKOFF on Windows, as running WALKOFF directly on Windows has no longer supported since 0.9.0. 
+
+### Fixed
+* References to running WALKOFF directly on Windows now emphasize lack of support.
+* Front-end dependencies have been added to the repository.
+
+## [0.9.2]
+###### 2018-11-30
+
+This is a minor release primarily to ease installation of WALKOFF.
+
+### Added
+* README.md contains further documentation on running WALKOFF locally, in Docker, or in Kubernetes
+* NodeJS and NPM are no longer required, as the front-end components are now prepackaged in the main repository.
+     
+## [0.9.1]
+###### 2018-11-26
+
+### Added
+* README.md now contains more detailed instructions on using WALKOFF with Docker, as well as a docker-compose file
+* All databases will now be stamped with the most up-to-date alembic version, so WALKOFF will not run if you are using
+an out-of-date database (see Fixed section for more details)
+
+### Fixed
+* When using Redis as an external accumulator, results are now pickled to preserve typing. This fixes the issue where
+everything (list, int, etc.) was incorrectly being returned as strings
+* Fixed walkoffctl update script to correctly update databases -- run `python -m walkoff local update` to update
+* ActionResult objects are now pretty-printed correctly in the console and log files
+* Python Redis library is now pinned in requirements.txt due to breaking changes
+* Fixed certificate generation for Kubernetes certificates
+
+### Removed
+* Update.py script was removed and replaced with walkoffctl update (see Fixed section for more details)
+
+## [0.9.0]
+###### 2018-11-14
+
+**Please Note: From version 0.9.0 forwards, WALKOFF requires a Redis cache to operate. You can run Redis natively 
+on most Linux distributions (see the Redis quickstart guide: https://redis.io/topics/quickstart or search for a package
+in your OS's package manager). On Windows, you will need to use Docker to run Redis in a container or expose Redis from 
+a VM.**
+
+### Added
+* Support for running WALKOFF in a Kubernetes cluster using docker images and helm
+* Command line interface (walkoffctl) for managing WALKOFF installations, both locally and on Kubernetes
+* More comprehensive logging with Prometheus, fluentd, and flask
+* Ability to run apps in separate containers for better scalability (still in-progress)
+  * Support for templating Docker files for apps and runtimes
+* Began introducing PyTest as a more maintainable alternative to unittest
+* Support for tracking which User executed which Workflow
+* Now have the option of choosing ZMQ sockets or Kafka message queues to communicate with executing Workflows
+
+### Changed
+* Moved logic of executing a Workflow into Workflow execution context objects, which allows for more flexiblity
+* Upgraded to boostrap4 and Angular 6.1.7
+
+### Removed
+* Removed support for DiskCache -- a Redis cache must be installed to run WALKOFF
+* The Case database, as it was unnecessary on top of the comprehensive logging done by WALKOFF
+
+### Fixed
+* Fixed the foreign key constraints in both databases (they were not being enforced previously)
+* Connexion library version updated in requirements.txt to fix access_token and 404 error
+* Minor aesthetic improvements to front-end
+
+## [0.8.5]
+###### 2018-09-12
+
+### Fixed
+* Fixed a bug caused by a new version of the connexion library which made the OpenAPI specification invalid
+
+## [0.8.4]
+###### 2018-07-30
+
+### Added
+* Workflows now support environment variables. These are top-level
+  arguments to a workflow. These are then exposed on the execution page
+  allowing users to modify the most important variables in a workflow
+  without modifying the workflow itself.
+* Added a health check endpoint at the /heath endpoint
+
+### Changed
+* The Metrics page now defaults to showing workflow metrics instead of
+  app metrics
+
+
+### Fixed
+* Action results and workflow results stream now filter for the
+  currently-executing workflow. This eliminates many issues experienced
+  by multiple users executing workflows concurrently from the workflow
+  editor
+* Fixed an error which caused the Scheduler to not execute workflows
+* Fixed another bug in the scheduler in which the scheduled workflows
+  would not persist across server restarts
+* A bug where messages couldn't be sent
+* A bug where modifying more than one device at a time on the playbook
+  editor would cause the workflow to be invalidated
+* Some database configuration bugs when used with non-SQLite databases
+* Fixed a bug which wouldn't allow a user to a abort a workflow if it
+  was pending execution.
+
+
+## [0.8.3]
+###### 2018-06-14
+
+### Added
+* CSV to Array action in the Utilities app
+
+
+### Changed
+* The action results SSE stream truncates the result using the
+  `MAX_STREAM_RESULTS_SIZE_KB` config option
+
+
+### Fixed
+* Bytes conversion bug in the RedisCacheAdapter
+* Bug in playbook editor using users and roles as arguments
+* Bug where some callbacks weren't getting registered
+* Column width bug in playbook editor, execution, and metrics pages
+* OpenAPI validation bug with newest version of the swagger validator
+
+
 ## [0.8.2]
 ###### 2018-05-03
 
@@ -30,7 +169,7 @@
 * Bug where Workflows with unbounded Actions were unable to be executed
 
 ## [0.8.0]
-###### unreleased
+###### 2018-04-16
 
 ### Added
 * Multiple tools have been added to help develop workflows

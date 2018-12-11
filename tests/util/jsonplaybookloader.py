@@ -1,12 +1,11 @@
 import json
 import logging
-
 import os.path
 
 import walkoff.config
+from walkoff.appgateway.apiutil import UnknownApp, UnknownAppAction, InvalidArgument, UnknownCondition, UnknownTransform
 from walkoff.executiondb.schemas import PlaybookSchema, WorkflowSchema
 from walkoff.helpers import (locate_playbooks_in_directory, format_exception_message)
-from walkoff.appgateway.apiutil import UnknownApp, UnknownAppAction, InvalidArgument, UnknownCondition, UnknownTransform
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +41,7 @@ class JsonPlaybookLoader(object):
                                        'Cannot load.'.format(workflow_name, playbook_name))
                         return None
                     workflow = WorkflowSchema().load(workflow_json)
-                    return playbook_name, workflow.data
+                    return playbook_name, workflow
                 except ValueError as e:
                     logger.exception('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
                 except (InvalidArgument, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:
@@ -72,7 +71,7 @@ class JsonPlaybookLoader(object):
                     playbook_json = json.loads(workflow_loaded)
 
                     playbook = PlaybookSchema().load(playbook_json)
-                    return playbook.data
+                    return playbook
                 except ValueError as e:
                     logger.exception('Cannot parse {0}. Reason: {1}'.format(resource, format_exception_message(e)))
                 except (InvalidArgument, UnknownApp, UnknownAppAction, UnknownTransform, UnknownCondition) as e:

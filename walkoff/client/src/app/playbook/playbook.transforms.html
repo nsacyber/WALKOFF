@@ -1,0 +1,38 @@
+<div *ngIf="appNamesWithTransforms.length" class="indent">
+	<div class="row addBar">
+		<div class="col-4">
+			<label>App</label>
+			<select class="form-control" [(ngModel)]="selectedAppName" (change)="resetTransformSelection($event.target.value)">
+				<option *ngFor="let i of appNamesWithTransforms" [value]="i" [label]="i">{{i}}</option>
+			</select>
+		</div>
+		<div class="col-4">
+			<label>Action</label>
+			<select class="form-control" [(ngModel)]="selectedTransformApi">
+				<option *ngFor="let i of getTransformNamesForApp()" [value]="i" [label]="i">{{i}}</option>
+			</select>
+			</div>
+		<div class="col-4">
+			<div class="form-group">
+				<button class="btn btn-primary pull-right" (click)="addTransform()"><i class="fa fa-plus"></i>Add Transform</button>
+			</div>
+		</div>
+	</div>
+	<div *ngFor="let transform of transforms; let id = index">
+		<div class="row">
+			<div class="col-6">
+				<label>Transform {{id+1}}: {{transform.app_name}} - {{transform.action_name}}</label>
+			</div>
+			<div class="col-6">
+				<div class="pull-right">
+					<button *ngIf="id > 0" class="btn btn-primary" (click)="moveUp(id)" title="Move Up"><i class="fa fa-arrow-up"></i></button>
+					<button *ngIf="id < transforms.length - 1" class="btn btn-primary" (click)="moveDown(id)" title="Move Down"><i class="fa fa-arrow-down"></i></button>
+					<button class="btn btn-danger" (click)="removeTransform(id)" title="Remove Transform"><i class="fa fa-close"></i></button>
+				</div>
+			</div>
+		</div>
+		<playbook-argument-component *ngFor="let parameterApi of getTransformApi(transform.app_name, transform.action_name).parameters; let id = index"
+		[loadedWorkflow]="loadedWorkflow" [argument]="getOrInitializeArgument(transform, parameterApi)" [parameterApi]="parameterApi"
+		[id]="id" (createVariable)="onCreateVariable($event)"></playbook-argument-component>
+	</div>
+</div>

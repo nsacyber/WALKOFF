@@ -63,6 +63,8 @@ def get_app_action_return_is_failure(app, action, status):
     Returns:
         (boolean): True if status is a failure code, false otherwise
     """
+    if status == 'UnhandledException':
+        return True
     try:
         app_api = walkoff.config.app_apis[app]
     except KeyError:
@@ -71,7 +73,7 @@ def get_app_action_return_is_failure(app, action, status):
         try:
             action_api = app_api['actions'][action]
             if 'failure' in action_api['returns'][status]:
-                return True if action_api['returns'][status]['failure'] is True else False
+                return action_api['returns'][status]['failure']
             else:
                 return False
         except KeyError:
@@ -79,6 +81,19 @@ def get_app_action_return_is_failure(app, action, status):
 
 
 def get_app_device_api(app, device_type):
+    """Gets the device API
+
+    Args:
+        app (str): App name
+        device_type (str): The name of the device type
+
+    Returns:
+        dict: The device API
+
+    Raises:
+        UnknownApp: If an app name is passed in that is not in the App API
+        UnknownDevice: If a device type is passed in that does not correspond to the App
+    """
     try:
         app_api = walkoff.config.app_apis[app]
     except KeyError:
@@ -91,6 +106,15 @@ def get_app_device_api(app, device_type):
 
 
 def split_api_params(api, data_param_name):
+    """Return a dict with data_param_name entry not included
+
+    Args:
+        api (dict): The API
+        data_param_name (str): The name of the param to exclude from the dictionary
+
+    Returns:
+        dict: The new dictionary with the data_param_name entry removed
+    """
     args = []
     for api_param in api:
         if api_param['name'] != data_param_name:
@@ -99,6 +123,19 @@ def split_api_params(api, data_param_name):
 
 
 def get_condition_api(app, condition):
+    """Gets the condition API
+
+    Args:
+        app (str): The name of the App
+        condition (str): The name of the condition
+
+    Returns:
+        dict: The condition API
+
+    Raises:
+        UnknownApp: If no App with that name exists
+        UnknownCondition: If no Condition exists for that App
+    """
     try:
         app_api = walkoff.config.app_apis[app]
     except KeyError:
@@ -113,6 +150,19 @@ def get_condition_api(app, condition):
 
 
 def get_transform_api(app, transform):
+    """Gets the transform API
+
+        Args:
+            app (str): The name of the App
+            transform (str): The name of the Transform
+
+        Returns:
+            dict: The transform API
+
+        Raises:
+            UnknownApp: If no App with that name exists
+            UnknownTransform: If no Transform exists for that App
+        """
     try:
         app_api = walkoff.config.app_apis[app]
     except KeyError:
@@ -126,6 +176,7 @@ def get_transform_api(app, transform):
             raise UnknownTransform(app, transform)
 
 
+# Exceptions
 class InvalidAppStructure(Exception):
     pass
 

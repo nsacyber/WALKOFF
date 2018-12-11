@@ -1,0 +1,165 @@
+<div class="modal-header">
+	<h4 class="modal-title">{{title}}</h4>
+</div>
+<div class="modal-body">
+	<div class="container-fluid">
+		<div class="form-group">
+			<label for="name">Workflow(s)</label>
+			<!--No two-way binding available - ng-select2 package has it but requires transpiling-->
+			<select2 [data]="availableWorkflows" [value]="workingScheduledTask.workflows" [options]="workflowSelectConfig"
+				name="workflows" tabindex="2" (valueChanged)="workflowsSelectChanged($event)"></select2>
+		</div>
+		<div class="row">
+			<div class="col-6">
+				<div class="form-group">
+					<label for="name">Name</label>
+					<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.name" name="name" required tabindex="1">
+				</div>
+				<div class="form-group">
+					<label for="name">Trigger Type</label>
+					<select class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.type" name="type" tabindex="4" (change)="changeType($event.target.value)">
+						<option value=""></option>
+						<option *ngFor="let i of scheduledItemTriggerTypes" [value]="i" [label]="i">{{i}}</option>
+					</select>
+				</div>
+			</div>
+			<div class="col-6">
+				<div class="form-group">
+					<label for="name">Description</label>
+					<textarea class="form-control" [(ngModel)]="workingScheduledTask.description" name="port" required tabindex="2" rows="5"></textarea>
+				</div>
+			</div>
+		</div>
+
+		<div class="row" *ngIf="workingScheduledTask.task_trigger.type === 'date'">
+			<div class="col-12">
+				<div class="form-group">
+					<label for="name">Run Datetime</label>
+					<input class="form-control" [value]="workingScheduledTask.task_trigger.args.run_date | date: 'short'" [(ngModel)]="workingScheduledTask.task_trigger.args.run_date"
+						name="run_date" [minMoment]="getToday()" dateTimePicker required />
+				</div>
+			</div>
+		</div>
+
+		<div *ngIf="workingScheduledTask.task_trigger.type === 'interval'">
+			<div class="row">
+				<div class="col-6">
+					<div class="form-group">
+						<label for="name">Start Datetime</label>
+						<input class="form-control" [value]="workingScheduledTask.task_trigger.args.start_date | date: 'short'" [(ngModel)]="workingScheduledTask.task_trigger.args.start_date"
+							name="start_date" [minMoment]="getToday()" dateTimePicker required />
+					</div>
+				</div>
+				<div class="col-6">
+					<div class="form-group">
+						<label for="name">End Datetime</label>
+						<input class="form-control" [value]="workingScheduledTask.task_trigger.args.end_date | date: 'short'" [(ngModel)]="workingScheduledTask.task_trigger.args.end_date"
+							name="end_date" [minMoment]="getToday()" dateTimePicker />
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-2">
+					<h3>Occur every...</h3>
+				</div>
+				<div class="col-2">
+					<div class="form-group">
+						<label for="name">Weeks</label>
+						<input type="number" min="0" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.weeks" name="weeks" required>
+					</div>
+				</div>
+				<div class="col-2">
+					<div class="form-group">
+						<label for="name">Days</label>
+						<input type="number" min="0" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.days" name="days" required>
+					</div>
+				</div>
+				<div class="col-2">
+					<div class="form-group">
+						<label for="name">Hours</label>
+						<input type="number" min="0" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.hours" name="hours" required>
+					</div>
+				</div>
+				<div class="col-2">
+					<div class="form-group">
+						<label for="name">Minutes</label>
+						<input type="number" min="0" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.minutes" name="minutes"
+							required>
+					</div>
+				</div>
+				<div class="col-2">
+					<div class="form-group">
+						<label for="name">Seconds</label>
+						<input type="number" min="0" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.seconds" name="seconds"
+							required>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div *ngIf="workingScheduledTask.task_trigger.type === 'cron'">
+			<div class="row">
+				<div class="col-6">
+					<div class="form-group">
+						<label for="name">Start Datetime</label>
+						<input class="form-control" [value]="workingScheduledTask.task_trigger.args.start_date | date: 'short'" [(ngModel)]="workingScheduledTask.task_trigger.args.start_date"
+							name="start_date" [minMoment]="getToday()" dateTimePicker required />
+					</div>
+				</div>
+				<div class="col-6">
+					<div class="form-group">
+						<label for="name">End Datetime</label>
+						<input class="form-control" [value]="workingScheduledTask.task_trigger.args.end_date | date: 'short'" [(ngModel)]="workingScheduledTask.task_trigger.args.end_date"
+							name="end_date" [minMoment]="getToday()" dateTimePicker />
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-3">
+					<div class="form-group">
+						<label for="name">Year</label>
+						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.year" name="year">
+					</div>
+					<div class="form-group">
+						<label for="name">Day</label>
+						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.day" name="day">
+					</div>
+				</div>
+				<div class="col-3">
+					<div class="form-group">
+						<label for="name">Month</label>
+						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.month" name="month">
+					</div>
+					<div class="form-group">
+						<label for="name">Hour</label>
+						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.hour" name="hour">
+					</div>
+				</div>
+				<div class="col-3">
+					<div class="form-group">
+						<label for="name">Week</label>
+						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.week" name="week">
+					</div>
+					<div class="form-group">
+						<label for="name">Minute</label>
+						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.minute" name="minute">
+					</div>
+				</div>
+				<div class="col-3">
+					<div class="form-group">
+						<label for="name">Day of Week</label>
+						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.day_of_week" name="day_of_week">
+					</div>
+					<div class="form-group">
+						<label for="name">Second</label>
+						<input type="text" class="form-control" [(ngModel)]="workingScheduledTask.task_trigger.args.second" name="second">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal-footer">
+	<button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Undo Changes and Close</button>
+	<button type="button" class="btn btn-primary" (click)="submit()">{{submitText}}</button>
+</div>

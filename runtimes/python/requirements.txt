@@ -1,0 +1,5 @@
+ujson
+falcon
+pyyaml
+jsonschema
+uwsgi

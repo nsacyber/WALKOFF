@@ -1,10 +1,10 @@
-swagger: '2.0'
+openapi: '3.0.0'
 info:
   description: >-
     An active cyber defense development framework enabling orchestration
     capabilities to be written once and deployed across WALKOFF-enabled
     orchestration tools. https://nsacyber.github.io/WALKOFF/
-  version: 0.8.0
+  version: 0.9.1
   title: WALKOFF
   contact:
     email: walkoff@nsa.gov
@@ -17,10 +17,6 @@ tags:
     description: Authorization Operations
   - name: Apps
     description: App Management Operations
-  - name: Cases
-    description: WALKOFF logging and case management operations
-  - name: Subscriptions
-    description: WALKOFF case subscription operations
   - name: Configuration
     description: System Configuration Operations
   - name: Devices
@@ -52,51 +48,32 @@ tags:
   - name: System
     description: System Resources
 
-basePath: /api
-
-schemes:
-  - http
-  - https
+servers:
+  - url: /api
 
 paths:
   $ref: ./apps.yaml
   $ref: ./auth.yaml
-  $ref: ./cases.yaml
   $ref: ./configuration.yaml
   $ref: ./devices.yaml
-  $ref: ./events.yaml
   $ref: ./message.yaml
   $ref: ./metadata.yaml
   $ref: ./metrics.yaml
   $ref: ./playbooks.yaml
   $ref: ./roles.yaml
   $ref: ./scheduler.yaml
-  $ref: ./system.yaml
   $ref: ./triggers.yaml
   $ref: ./users.yaml
   $ref: ./workflowqueue.yaml
 
-securityDefinitions:
-  AuthenticationToken:
-    type: apiKey
-    name: Authorization
-    in: header
-    description: >
-      We use a JWT authorization workflow. Use the /api/auth endpoint to get JWT access and refresh tokens. Then use the
-      access token in the header "Authorization: Bearer accesstoken.goes.here".  That token will expire in 15 minutes by
-      default. When it expires, you'll receive a 401 response code. At that point, use the /api/auth/refresh
-      with the header "Authorization: Bearer refreshtoken.goes.here" to receive a fresh access token. When you're done,
-      please use the /api/auth/logout endpoint to log out.  See the implementation in the Walkoff App for an example
-      implementation.
-
 security:
   - AuthenticationToken: []
 
-definitions:
+components:
+  schemas:
     $ref: ./objects/objects.yaml
     $ref: ./objects/appapi.yaml
     $ref: ./objects/auth.yaml
-    $ref: ./objects/cases.yaml
     $ref: ./objects/configuration.yaml
     $ref: ./objects/devices.yaml
     $ref: ./objects/metrics.yaml
@@ -104,7 +81,18 @@ definitions:
     $ref: ./objects/playbooks.yaml
     $ref: ./objects/roles.yaml
     $ref: ./objects/scheduler.yaml
-    $ref: ./objects/system.yaml
     $ref: ./objects/users.yaml
     $ref: ./objects/workflowqueue.yaml
-
+  securitySchemes:
+    AuthenticationToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-bearerInfoFunc: walkoff.security.decode_token
+      description: >
+        We use a JWT authorization workflow. Use the /api/auth endpoint to get JWT access and refresh tokens. Then use the
+        access token in the header "Authorization: Bearer accesstoken.goes.here".  That token will expire in 15 minutes by
+        default. When it expires, you'll receive a 401 response code. At that point, use the /api/auth/refresh
+        with the header "Authorization: Bearer refreshtoken.goes.here" to receive a fresh access token. When you're done,
+        please use the /api/auth/logout endpoint to log out.  See the implementation in the Walkoff App for an example
+        implementation.

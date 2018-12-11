@@ -1,11 +1,15 @@
 import json
 import logging
 import logging.config
+import os
 import sys
 import warnings
+from io import BytesIO
 from os.path import isfile, join, abspath
 
+import msgpack
 import yaml
+from zmq import auth
 
 from walkoff.helpers import format_db_path
 
@@ -76,8 +80,6 @@ def setup_logger():
 class Config(object):
     # CONFIG VALUES
 
-    CLEAR_CASE_DB_ON_STARTUP = True
-
     # IP and port for the webserver
     HOST = "127.0.0.1"
     PORT = 5000
@@ -94,24 +96,22 @@ class Config(object):
 
     # Database types
     WALKOFF_DB_TYPE = 'sqlite'
-    CASE_DB_TYPE = 'sqlite'
     EXECUTION_DB_TYPE = 'sqlite'
 
-    # PATHS
+    WALKOFF_DB_HOST = 'localhost'
+    EXECUTION_DB_HOST = 'localhost'
 
+    # PATHS
     DATA_PATH = join('.', 'data')
 
     API_PATH = join('.', 'walkoff', 'api')
     APPS_PATH = join('.', 'apps')
-    CACHE_PATH = join('.', 'data', 'cache')
-    CACHE = {"type": "disk", "directory": CACHE_PATH, "shards": 8, "timeout": 0.01, "retry": True}
-    CASE_DB_PATH = abspath(join(DATA_PATH, 'events.db'))
+    CACHE = {'type': 'redis', 'host': 'localhost', 'port': 6379}
 
     CLIENT_PATH = join('.', 'walkoff', 'client')
     CONFIG_PATH = join(DATA_PATH, 'walkoff.config')
     DB_PATH = abspath(join(DATA_PATH, 'walkoff.db'))
     DEFAULT_APPDEVICE_EXPORT_PATH = join(DATA_PATH, 'appdevice.json')
-    DEFAULT_CASE_EXPORT_PATH = join(DATA_PATH, 'cases.json')
     EXECUTION_DB_PATH = abspath(join(DATA_PATH, 'execution.db'))
     INTERFACES_PATH = join('.', 'interfaces')
     LOGGING_CONFIG_PATH = join(DATA_PATH, 'log', 'logging.json')
@@ -127,15 +127,54 @@ class Config(object):
 
     # AppConfig
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SECRET_KEY = 'SHORTSTOPKEYTEST'
-
-    SQLALCHEMY_DATABASE_URI = format_db_path(WALKOFF_DB_TYPE, DB_PATH, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD')
+    SQLALCHEMY_DATABASE_URI = format_db_path(WALKOFF_DB_TYPE, DB_PATH, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD',
+                                             WALKOFF_DB_HOST)
 
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['refresh']
     JWT_TOKEN_LOCATION = 'headers'
 
     JWT_BLACKLIST_PRUNE_FREQUENCY = 1000
+    MAX_STREAM_RESULTS_SIZE_KB = 156
+
+    SEPARATE_WORKERS = False
+    SEPARATE_RECEIVER = False
+    SEPARATE_INTERFACES = False
+    ITEMS_PER_PAGE = 20
+    ACTION_EXECUTION_STRATEGY = 'local'
+
+    EXECUTION_DB_USERNAME = ''
+    EXECUTION_DB_PASSWORD = ''
+
+    WALKOFF_DB_USERNAME = ''
+    WALKOFF_DB_PASSWORD = ''
+
+    SERVER_PUBLIC_KEY = ''
+    SERVER_PRIVATE_KEY = ''
+    CLIENT_PUBLIC_KEY = ''
+    CLIENT_PRIVATE_KEY = ''
+    ACCUMULATOR_TYPE = 'external'
+
+    SECRET_KEY = "SHORTSTOPKEY"
+
+    __passwords = ['EXECUTION_DB_PASSWORD', 'WALKOFF_DB_PASSWORD', 'SERVER_PRIVATE_KEY',
+                   'CLIENT_PRIVATE_KEY', 'SERVER_PUBLIC_KEY', 'CLIENT_PUBLIC_KEY', 'SECRET_KEY']
+
+    WORKFLOW_RESULTS_HANDLER = 'zmq'
+    WORKFLOW_RESULTS_PROTOCOL = 'protobuf'
+    WORKFLOW_RESULTS_KAFKA_CONFIG = {'bootstrap.servers': 'localhost:9092', 'group.id': 'results'}
+    WORKFLOW_RESULTS_KAFKA_TOPIC = 'results'
+
+    WORKFLOW_COMMUNICATION_HANDLER = 'zmq'
+    WORKFLOW_COMMUNICATION_PROTOCOL = 'protobuf'
+    WORKFLOW_COMMUNICATION_KAFKA_CONFIG = {'bootstrap.servers': 'localhost:9092', 'group.id': 'comm'}
+    WORKFLOW_COMMUNICATION_KAFKA_TOPIC = 'comm'
+
+    SEPARATE_PROMETHEUS = False
+
+    ALEMBIC_CONFIG = join('.', 'alembic.ini')
+
+    SWAGGER_URL = '/api/docs'
 
     @classmethod
     def load_config(cls, config_path=None):
@@ -160,7 +199,7 @@ class Config(object):
                 logger.warning('Could not read config file.', exc_info=True)
 
         cls.SQLALCHEMY_DATABASE_URI = format_db_path(cls.WALKOFF_DB_TYPE, cls.DB_PATH, 'WALKOFF_DB_USERNAME',
-                                                     'WALKOFF_DB_PASSWORD')
+                                                     'WALKOFF_DB_PASSWORD', cls.WALKOFF_DB_HOST)
 
     @classmethod
     def write_values_to_file(cls, keys=None):
@@ -170,17 +209,46 @@ class Config(object):
 
         output = {}
         for key in keys:
-            if hasattr(cls, key.upper()):
+            if key.upper() not in cls.__passwords and hasattr(cls, key.upper()):
                 output[key.lower()] = getattr(cls, key.upper())
 
         with open(cls.CONFIG_PATH, 'w') as config_file:
             config_file.write(json.dumps(output, sort_keys=True, indent=4, separators=(',', ': ')))
 
+    @classmethod
+    def load_env_vars(cls):
+        for field in (field for field in dir(cls) if field.isupper()):
+            if field in os.environ:
+                var_type = type(getattr(cls, field))
+                if var_type == dict:
+                    setattr(cls, field, json.loads(os.environ.get(field)))
+                else:
+                    setattr(cls, field, var_type(os.environ.get(field)))
 
-def initialize(config_path=None):
+        cls.SQLALCHEMY_DATABASE_URI = format_db_path(cls.WALKOFF_DB_TYPE, cls.DB_PATH, 'WALKOFF_DB_USERNAME',
+                                                     'WALKOFF_DB_PASSWORD', cls.WALKOFF_DB_HOST)
+
+    @classmethod
+    def read_and_set_zmq_keys(cls):
+        server_private_file = os.path.join(cls.ZMQ_PRIVATE_KEYS_PATH, "server.key_secret")
+        cls.SERVER_PUBLIC_KEY, cls.SERVER_PRIVATE_KEY = auth.load_certificate(server_private_file)
+        client_private_file = os.path.join(cls.ZMQ_PRIVATE_KEYS_PATH, "client.key_secret")
+        cls.CLIENT_PUBLIC_KEY, cls.CLIENT_PRIVATE_KEY = auth.load_certificate(client_private_file)
+
+
+def initialize(config_path=None, load=True):
     """Loads the config file, loads the app cache, and loads the app APIs into memory"""
-    Config.load_config(config_path)
+    if load:
+        Config.load_config(config_path)
+        Config.load_env_vars()
+        Config.read_and_set_zmq_keys()
     setup_logger()
     from walkoff.appgateway import cache_apps
     cache_apps(Config.APPS_PATH)
     load_app_apis()
+
+
+def fluent_overflow_handler(pendings):
+    unpacker = msgpack.Unpacker(BytesIO(pendings))
+    for unpacked in unpacker:
+        print(unpacked)

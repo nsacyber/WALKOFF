@@ -2,8 +2,8 @@ from unittest import TestCase
 
 import walkoff.config
 from interfaces import AppEventDispatcher
-from walkoff.events import WalkoffEvent, EventType
 from walkoff.appgateway.apiutil import UnknownApp, UnknownAppAction
+from walkoff.events import WalkoffEvent, EventType
 
 
 def func(): pass

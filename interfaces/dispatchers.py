@@ -3,8 +3,8 @@ from weakref import WeakSet
 
 import walkoff.config
 from interfaces.util import convert_to_iterable
-from walkoff.events import EventType
 from walkoff.appgateway.apiutil import UnknownApp, UnknownAppAction
+from walkoff.events import EventType
 
 _logger = logging.getLogger(__name__)
 
@@ -123,7 +123,8 @@ class AppActionEventDispatcher(object):
             event_ (WalkoffEvent): The event to dispatch
             data (dict): The data to send to the functions
         """
-        for callback in self._get_callbacks(event_, data['device_id']):
+        device_ids = data.get("device_id", "all")
+        for callback in self._get_callbacks(event_, device_ids):
             try:
                 callback(data)
             except Exception as e:

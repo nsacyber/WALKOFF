@@ -27,7 +27,7 @@ AddDevice:
       description: fields used to configure this device
       type: array
       items:
-        $ref: '#/definitions/DeviceFieldInput'
+        $ref: '#/components/schemas/DeviceFieldInput'
 
 Device:
   type: object
@@ -36,7 +36,6 @@ Device:
     id:
       type: integer
       example: 1234
-      readOnly: true
     name:
       description: Name of the device
       type: string
@@ -47,7 +46,6 @@ Device:
       type: string
       example: HelloWorld
       description: The name of the app associated with this device
-      readOnly: true
     type:
       type: string
       example: HelloWorldDeviceType1
@@ -62,7 +60,7 @@ Device:
       description: fields used to configure this device
       type: array
       items:
-        $ref: '#/definitions/Argument'
+        $ref: '#/components/schemas/Argument'
 
 DeviceField:
   type: object

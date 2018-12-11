@@ -1,0 +1,44 @@
+config:
+  app:
+    http_backend_port: 8080
+    http_service: walkoff-app-external
+    name: walkoff-app
+    zmq_comm_port: 5557
+    zmq_results_port: 5556
+    zmq_service: walkoff-app-internal
+  certs:
+    issuer_name: walkoff-ca-issuer
+  ingress:
+    name: walkoff-ingress
+  storage:
+    name: walkoff-storage
+    size: 5Gi
+  worker:
+    name: walkoff-worker
+    replicas: 5
+images:
+  app: registry.hub.docker.com/walkoffcyber/walkoff:appv1
+  worker: registry.hub.docker.com/walkoffcyber/walkoff:workerv1
+namespace: default
+resources:
+  execution_db:
+    db_type: postgresql
+    password_key: postgres-password
+    secret_name: walkoff-postgres-execution-secret
+    service_name: execution-db-postgresql
+    username: walkoff
+  redis:
+    password_key: redis-password
+    port: 6379
+    secret_name: walkoff-redis-secret
+    service_name: walkoff-redis
+  walkoff_db:
+    db_type: postgresql
+    password_key: postgres-password
+    secret_name: walkoff-postgres-secret
+    service_name: walkoff-db-postgresql
+    username: walkoff
+secrets:
+  certs: walkoff-cert-secret
+  zmq_private: walkoff-zmq-private-keys
+  zmq_public: walkoff-zmq-public-keys

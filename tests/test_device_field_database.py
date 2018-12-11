@@ -1,9 +1,14 @@
 import unittest
 
+import walkoff.config
 from walkoff.executiondb.device import EncryptedDeviceField, DeviceField
 
 
 class TestDeviceField(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        walkoff.config.Config.read_and_set_zmq_keys()
+
     def assertConstructionIsCorrect(self, field, name, field_type, value):
         self.assertEqual(field.name, name)
         self.assertEqual(field.type, field_type)

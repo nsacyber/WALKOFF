@@ -13,15 +13,15 @@ logger = logging.getLogger(__name__)
 
 class Branch(ExecutionElement, Execution_Base):
     __tablename__ = 'branch'
-    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id'))
+    workflow_id = Column(UUIDType(binary=False), ForeignKey('workflow.id', ondelete='CASCADE'))
     source_id = Column(UUIDType(binary=False), nullable=False)
     destination_id = Column(UUIDType(binary=False), nullable=False)
     status = Column(String(80))
-    condition = relationship('ConditionalExpression', cascade='all, delete-orphan', uselist=False)
+    condition = relationship('ConditionalExpression', cascade='all, delete-orphan', uselist=False, passive_deletes=True)
     priority = Column(Integer)
     children = ('condition',)
 
-    def __init__(self, source_id, destination_id, id=None, status='Success', condition=None, priority=999):
+    def __init__(self, source_id, destination_id, id=None, status='Success', condition=None, priority=999, errors=None):
         """Initializes a new Branch object.
         
         Args:
@@ -38,7 +38,7 @@ class Branch(ExecutionElement, Execution_Base):
                 list of Branches should be executed if multiple have conditions resulting to True.
                 Defaults to 999 (lowest priority).
         """
-        ExecutionElement.__init__(self, id)
+        ExecutionElement.__init__(self, id, errors)
         self.source_id = source_id
         self.destination_id = destination_id
         self.status = status
@@ -56,11 +56,13 @@ class Branch(ExecutionElement, Execution_Base):
     def validate(self):
         pass
 
-    def execute(self, data_in, accumulator):
+    def execute(self, action_execution_strategy, status, current_action, accumulator):
         """Executes the Branch object, determining if this Branch should be taken.
 
         Args:
-            data_in (dict): The input to the Condition objects associated with this Branch.
+            action_execution_strategy: The strategy used to execute the action (e.g. LocalActionExecutionStrategy)
+            status (str): The status of the current action
+            current_action (Action): The previously-executed Action.
             accumulator (dict): The accumulated data from previous Actions.
 
         Returns:
@@ -70,9 +72,10 @@ class Branch(ExecutionElement, Execution_Base):
         logger.debug('Executing branch {}'.format(str(self.id)))
         self._counter += 1
         accumulator[self.id] = self._counter
-
-        if data_in is not None and data_in.status == self.status:
-            if self.condition is None or self.condition.execute(data_in=data_in.result, accumulator=accumulator):
+        if current_action is not None and status == self.status:
+            data_in = accumulator[current_action.id]
+            if self.condition is None or self.condition.execute(action_execution_strategy, data_in=data_in,
+                                                                accumulator=accumulator):
                 WalkoffEvent.CommonWorkflowSignal.send(self, event=WalkoffEvent.BranchTaken)
                 logger.debug('Branch is valid for input {0}'.format(data_in))
                 return self.destination_id

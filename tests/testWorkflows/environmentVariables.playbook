@@ -1,0 +1,35 @@
+{
+    "name": "environmentVariables",
+    "workflows": [
+        {
+            "actions": [
+                {
+                    "action_name": "repeatBackToMe",
+                    "app_name": "HelloWorldBounded",
+                    "arguments": [
+                        {
+                            "name": "call",
+                            "reference": "d524843a-9caa-4fc1-aa0e-e8dfbdba7490"
+                        }
+                    ],
+                    "device_id": {
+                        "name": "__device__",
+                        "value": 1
+                    },
+                    "id": "4269a5b5-bbb7-49d9-becc-31152ccc29b7",
+                    "name": "start"
+                }
+            ],
+            "environment_variables": [
+                {
+                    "id": "d524843a-9caa-4fc1-aa0e-e8dfbdba7490",
+                    "name": "call",
+                    "value": "CHANGE INPUT"
+                }
+            ],
+            "branches": [],
+            "name": "environmentVariables",
+            "start": "4269a5b5-bbb7-49d9-becc-31152ccc29b7"
+        }
+    ]
+}

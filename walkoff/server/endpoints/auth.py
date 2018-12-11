@@ -49,7 +49,7 @@ def fresh_login():
 
 
 @jwt_refresh_token_required
-def refresh():
+def refresh(body=None, token_info=None, user=None):
     current_user_id = get_jwt_identity()
     user = User.query.filter(User.id == current_user_id).first()
     if user is None:

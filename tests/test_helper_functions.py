@@ -7,6 +7,7 @@ from tests.util.assertwrappers import orderless_list_compare
 from walkoff.appgateway.apiutil import get_app_action_api, get_condition_api, get_transform_api, UnknownApp, \
     UnknownAppAction, UnknownCondition, UnknownTransform
 from walkoff.helpers import *
+from walkoff.server.app import create_app
 from walkoff.server.blueprints.root import handle_database_errors, handle_generic_server_error
 
 
@@ -14,6 +15,10 @@ class TestHelperFunctions(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         initialize_test_config()
+        cls.app = create_app()
+        cls.app.testing = True
+        cls.context = cls.app.test_request_context()
+        cls.context.push()
 
     @classmethod
     def tearDownClass(cls):
@@ -88,7 +93,6 @@ class TestHelperFunctions(unittest.TestCase):
 
     def test_format_db_path(self):
         self.assertEqual(format_db_path('sqlite', 'aa.db'), 'sqlite:///aa.db')
-        self.assertEqual(format_db_path('postgresql', 'aa.db'), 'postgresql://aa.db')
 
     def test_get_app_action_api_invalid_app(self):
         with self.assertRaises(UnknownApp):

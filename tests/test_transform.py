@@ -4,6 +4,7 @@ import walkoff.appgateway
 from tests.util import initialize_test_config
 from walkoff.executiondb.argument import Argument
 from walkoff.executiondb.transform import Transform
+from walkoff.worker.action_exec_strategy import LocalActionExecutionStrategy
 
 
 class TestTransform(unittest.TestCase):
@@ -49,46 +50,68 @@ class TestTransform(unittest.TestCase):
         self.assertEqual(len(transform.errors), 2)
 
     def test_execute_with_no_args_no_conversion(self):
-        self.assertAlmostEqual(Transform('HelloWorld', 'Top Transform').execute(5.4, {}), 5.4)
+        self.assertAlmostEqual(
+            Transform('HelloWorld', 'Top Transform').execute(LocalActionExecutionStrategy(), 5.4, {}),
+            5.4
+        )
 
     def test_execute_with_no_args_with_conversion(self):
-        self.assertAlmostEqual(Transform('HelloWorld', 'Top Transform').execute('-10.437', {}), -10.437)
+        self.assertAlmostEqual(
+            Transform('HelloWorld', 'Top Transform').execute(LocalActionExecutionStrategy(), '-10.437', {}),
+            -10.437
+        )
 
     def test_execute_with_invalid_input(self):
-        self.assertEqual(Transform('HelloWorld', 'Top Transform').execute('invalid', {}), 'invalid')
+        self.assertEqual(
+            Transform('HelloWorld', 'Top Transform').execute(LocalActionExecutionStrategy(), 'invalid', {}),
+            'invalid'
+        )
 
     def test_execute_with_filter_which_raises_exception(self):
-        self.assertEqual(Transform('HelloWorld', 'sub1_filter3').execute('anything', {}), 'anything')
+        self.assertEqual(
+            Transform('HelloWorld', 'sub1_filter3').execute(LocalActionExecutionStrategy(), 'anything', {}),
+            'anything'
+        )
 
     def test_execute_with_args_no_conversion(self):
         self.assertAlmostEqual(
             Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='10.3')]).execute(
-                '5.4', {}), 15.7)
+                LocalActionExecutionStrategy(), '5.4', {}), 15.7
+        )
 
     def test_execute_with_args_with_conversion(self):
         self.assertAlmostEqual(
-            Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='10.3')]).execute(5.4,
-                                                                                                                    {}),
-            15.7)
+            Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='10.3')]).execute(
+                LocalActionExecutionStrategy(), 5.4, {}),
+            15.7
+        )
 
     def test_execute_with_args_with_routing(self):
         self.assertAlmostEqual(
-            Transform('HelloWorld', action_name='mod1_filter2',
-                      arguments=[Argument('arg1', reference="action1")]).execute(5.4, {'action1': 10.3}),
-            15.7)
+            Transform(
+                'HelloWorld',
+                action_name='mod1_filter2',
+                arguments=[Argument('arg1', reference="action1")]
+            ).execute(LocalActionExecutionStrategy(), 5.4, {'action1': 10.3}),
+            15.7
+        )
 
     def test_execute_with_complex_args(self):
-        original_filter = Transform('HelloWorld', action_name='sub1_filter1',
-                                    arguments=[Argument('arg1', value={'a': '5.4', 'b': 'string_in'})])
-        self.assertEqual(original_filter.execute(3, {}), '3.0 5.4 string_in')
+        original_filter = Transform(
+            'HelloWorld',
+            action_name='sub1_filter1',
+            arguments=[Argument('arg1', value={'a': '5.4', 'b': 'string_in'})]
+        )
+        self.assertEqual(original_filter.execute(LocalActionExecutionStrategy(), 3, {}), '3.0 5.4 string_in')
 
     def test_call_with_nested_complex_args(self):
         args = [Argument('arg', value={'a': '4', 'b': 6, 'c': [1, 2, 3]})]
         original_filter = Transform('HelloWorld', action_name='complex', arguments=args)
-        self.assertAlmostEqual(original_filter.execute(3, {}), 19.0)
+        self.assertAlmostEqual(original_filter.execute(LocalActionExecutionStrategy(), 3, {}), 19.0)
 
     def test_call_with_args_invalid_input(self):
         self.assertEqual(
             Transform('HelloWorld', action_name='mod1_filter2', arguments=[Argument('arg1', value='10.3')]).execute(
-                'invalid', {}),
-            'invalid')
+                LocalActionExecutionStrategy(), 'invalid', {}),
+            'invalid'
+        )

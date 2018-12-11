@@ -31,7 +31,8 @@ def send_data_to_trigger():
             arg_objects.append(Argument(**arg))
 
         for execution_id in execution_ids:
-            if current_app.running_context.executor.resume_trigger_step(execution_id, data_in, arg_objects):
+            if current_app.running_context.executor.resume_trigger_step(execution_id, data_in, arg_objects,
+                                                                        user=get_jwt_claims().get('username', None)):
                 completed_execution_ids.append(execution_id)
                 log_action_taken_on_message(user_id, execution_id)
 

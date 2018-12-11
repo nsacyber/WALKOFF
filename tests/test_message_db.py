@@ -3,8 +3,6 @@ from datetime import datetime
 from unittest import TestCase
 from uuid import uuid4
 
-from flask import current_app
-
 import walkoff.config
 import walkoff.messaging
 from tests.util import execution_db_help, initialize_test_config
@@ -23,8 +21,9 @@ class TestMessageDatabase(TestCase):
     @classmethod
     def setUpClass(cls):
         initialize_test_config()
-        cls.app = create_app(walkoff.config.Config)
-        cls.context = current_app.test_request_context()
+
+        cls.app = create_app()
+        cls.context = cls.app.test_request_context()
         cls.context.push()
 
         db.create_all()
