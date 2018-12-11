@@ -71,7 +71,9 @@ Once installed, the default login is admin/admin. This can be changed and additi
 
 You can use Docker Compose to install WALKOFF along with Postgres and Redis.
 
-Docker Compose is included with Docker CE on Linux and MacOS, but will need to be installed separately (see https://docs.docker.com/compose/install/ for more details.)
+
+
+Docker Compose is included with Docker CE on Windows and MacOS, but will need to be installed separately on Linux (see https://docs.docker.com/compose/install/ and https://docs.docker.com/install/ for more details.)
 
 Once installed, create a file called `docker-compose.yaml` as below (or clone this repository, the file is provided under `k8s_manifests/dockerfiles/walkoff-combined/docker-compose.yaml`)
 
