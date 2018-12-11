@@ -23,6 +23,8 @@ services:
     depends_on:
     - "walkoff-redis"
     - "walkoff-postgres"
+    stop_signal: SIGINT
+    stop_grace_period: 30s
   walkoff-redis:
     image: "redis"
   walkoff-postgres:
