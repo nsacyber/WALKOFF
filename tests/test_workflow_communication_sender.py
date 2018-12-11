@@ -77,7 +77,7 @@ class TestWorkflowCommunicationSender(TestCase):
         selection = [Argument('test', 1), Argument('test', 'a'), Argument('test', '32'), Argument('test', 46)]
         arguments = [
             Argument('name1', value=32), Argument('name2', reference=uid, selection=selection)]
-        ProtobufWorkflowResultsConverter._add_arguments_to_proto(message, arguments)
+        ProtobufWorkflowResultsConverter._add_arguments_to_proto(message.arguments, arguments)
         self.assertEqual(len(message.arguments), len(arguments))
         self.assertEqual(message.arguments[0].name, arguments[0].name)
         self.assertEqual(message.arguments[0].value, str(arguments[0].value))

@@ -146,7 +146,7 @@ class ProtobufWorkflowResultsConverter(object):
 
         arguments = arguments if arguments else sender.arguments
         if arguments:
-            ProtobufWorkflowResultsConverter._add_arguments_to_proto(action_packet.sender, arguments)
+            ProtobufWorkflowResultsConverter._add_arguments_to_proto(action_packet.sender.arguments, arguments)
 
         ProtobufWorkflowResultsConverter._add_workflow_to_proto(action_packet.workflow, workflow_ctx)
 
@@ -166,15 +166,15 @@ class ProtobufWorkflowResultsConverter(object):
         action_packet.sender.device_id = sender.get_resolved_device_id()
 
     @staticmethod
-    def _add_arguments_to_proto(message, arguments):
+    def _add_arguments_to_proto(message_arguments, arguments):
         """Adds Arguments to the Action protobuf packet
 
         Args:
-            message (protobuf): The protobuf packet
+            message_arguments (protobuf): The protobuf packet
             arguments (list[Argument]): The list of Arguments to add
         """
         for argument in arguments:
-            ProtobufWorkflowResultsConverter._set_argument_proto(message.arguments.add(), argument)
+            ProtobufWorkflowResultsConverter._set_argument_proto(message_arguments.add(), argument)
 
     @staticmethod
     def _set_argument_proto(arg_proto, arg_obj):
@@ -320,7 +320,7 @@ class ProtobufWorkflowResultsConverter(object):
         if start:
             message.start = str(start)
         if start_arguments:
-            ProtobufWorkflowResultsConverter._add_arguments_to_proto(message, start_arguments)
+            ProtobufWorkflowResultsConverter._add_arguments_to_proto(message.arguments, start_arguments)
         if environment_variables:
             ProtobufWorkflowResultsConverter.add_env_vars_to_proto(message, environment_variables)
         if user:
