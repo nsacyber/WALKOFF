@@ -6,13 +6,15 @@
 ###### 2018-12-11
 
 ### Added
-*
-*
+* Added ability to view WALKOFF Server API locally via /api/docs with the server running.
 
 ### Fixed
 * Execution DB now gets properly closed when WALKOFF exits. Fixes issues with docker-compose stop/start. 
 * Triggers on unbound actions (apps without devices) fixed.
 * Add Docker image and compose file based on development branch.
+* Upgraded WALKOFF Server API from swagger2 to openapi3, which includes improved security, and better request validation.
+* Upgraded Python marshmallow library version, which includes stricter validation.
+* Please note: because some dependency library versions were changed in the requirements.txt file, users must run the command `pip install --upgrade -r requirements.txt` to make sure all dependencies are met. This is also good practice to do after every new release.
 
 ## [0.9.3]
 ###### 2018-12-03
