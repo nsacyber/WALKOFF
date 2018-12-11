@@ -124,6 +124,8 @@ class MultiprocessedExecutor(object):
         if self.ctx:
             self.ctx.destroy()
         self.cleanup_threading()
+
+        self.execution_db.tear_down()
         return
 
     def cleanup_threading(self):
