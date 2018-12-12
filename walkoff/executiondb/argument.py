@@ -22,7 +22,7 @@ class Argument(Execution_Base, Validatable):
     value = Column(JSONType)
     reference = Column(UUIDType(binary=False))
     selection = relationship('Argument', cascade='all, delete, delete-orphan', passive_deletes=True)
-    selection_id = Column(UUIDType(binary=False), ForeignKey('argument.id', ondelete='CASCADE'))
+    selection_id = Column(Integer, ForeignKey('argument.id', ondelete='CASCADE'))
     errors = Column(ScalarListType())
 
     def __init__(self, name, value=None, reference=None, selection=None):
