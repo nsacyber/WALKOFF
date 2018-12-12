@@ -1,5 +1,7 @@
-[![Build Status](https://img.shields.io/travis/nsacyber/WALKOFF/master.svg?maxAge=3600&label=Linux)](https://travis-ci.org/nsacyber/WALKOFF) [![Build status](https://ci.appveyor.com/api/projects/status/hs6ujwd1f87n39ut/branch/master?svg=true)](https://ci.appveyor.com/project/iadgovuser11/walkoff/branch/master)
-[![Maintainability](https://api.codeclimate.com/v1/badges/330249e13845a07a69a2/maintainability)](https://codeclimate.com/github/iadgov/WALKOFF/maintainability)[![GitHub (pre-)release](https://img.shields.io/github/release/nsacyber/WALKOFF/all.svg?style=flat)](release)
+[![Build Status](https://img.shields.io/travis/nsacyber/WALKOFF/master.svg?maxAge=3600&label=Linux)](https://travis-ci.org/nsacyber/WALKOFF)
+[![Build status](https://ci.appveyor.com/api/projects/status/hs6ujwd1f87n39ut/branch/master?svg=true)](https://ci.appveyor.com/project/iadgovuser11/walkoff/branch/master)
+[![Maintainability](https://api.codeclimate.com/v1/badges/330249e13845a07a69a2/maintainability)](https://codeclimate.com/github/iadgov/WALKOFF/maintainability)
+[![GitHub (pre-)release](https://img.shields.io/github/release/nsacyber/WALKOFF/all.svg?style=flat)](release)
 
 <img src="https://nsacyber.github.io/WALKOFF/files/images/flyingLogoWithTextSmall.png">
 
