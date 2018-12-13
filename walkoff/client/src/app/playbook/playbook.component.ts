@@ -384,13 +384,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	setupGraph(): void {
 		// Convert our selection arrays to a string
 		if (!this.loadedWorkflow.actions) { this.loadedWorkflow.actions = []; }
-		this.loadedWorkflow.actions.forEach(action => {
-			action.arguments.forEach(argument => {
-				if (argument.selection && Array.isArray(argument.selection)) {
-					argument.selection = (argument.selection as Array<string | number>).join('.');
-				}
-			});
-		});
 
 		// Create the Cytoscape graph
 		this.cy = cytoscape({
@@ -852,22 +845,6 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			if (!argument.reference) {
 				delete argument.selection;
 				return;
-			}
-
-			if (argument.selection == null) {
-				argument.selection = [];
-			} else if (typeof (argument.selection) === 'string') {
-				argument.selection = argument.selection.trim();
-				argument.selection = argument.selection.split('.');
-
-				if (argument.selection[0] === '') {
-					argument.selection = [];
-				} else {
-					// For each value, if it's a valid number, convert it to a number.
-					for (let i = 0; i < argument.selection.length; i++) {
-						if (!isNaN(argument.selection[i] as number)) { argument.selection[i] = +argument.selection[i]; }
-					}
-				}
 			}
 		});
 	}

@@ -37,7 +37,7 @@ export class PlaybookService {
 	 * @param playbook New playbook to be saved
 	 */
 	newPlaybook(playbook: Playbook): Promise<Playbook> {
-		return this.http.post('/api/playbooks', playbook)
+		return this.http.post('/api/playbooks', classToPlain(playbook))
 			.toPromise()
 			.then((data) => plainToClass(Playbook, data))
 			.catch(this.utils.handleResponseError);
