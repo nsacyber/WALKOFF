@@ -17,12 +17,6 @@ import { GenericObject } from '../models/genericObject';
 const MAX_READ_MESSAGES = 5;
 const MAX_TOTAL_MESSAGES = 20;
 
-declare var EventSourcePolyfill: any;
-EventSourcePolyfill.prototype.close = function() {
-    this.controller.abort();
-    this._close();
-  };
-
 @Component({
 	selector: 'main-component',
 	templateUrl: './main.html',
@@ -92,11 +86,9 @@ export class MainComponent implements OnInit, OnDestroy {
 	 * For existing messages, if they were responded to, remove the ! icon.
 	 */
 	getNotificationsSSE(): void {
-		this.authService.getAccessTokenRefreshed()
-			.then(authToken => {
-				this.eventSource = new EventSourcePolyfill('/api/streams/messages/notifications', {
-					headers: { 'Authorization': `Bearer ${ authToken }` }
-				})
+		this.authService.getEventSource('/api/streams/messages/notifications')
+			.then(eventSource => {
+				this.eventSource = eventSource;
 
 				this.eventSource.addEventListener('created', (message: any) => {
 					const newMessage = plainToClass(MessageListing, (JSON.parse(message.data) as object));
@@ -146,9 +138,6 @@ export class MainComponent implements OnInit, OnDestroy {
 					// 	(this.messageModalRef.componentInstance.message as Message).responded_by = update.username;
 					// 	(this.messageModalRef.componentInstance.message as Message).awaiting_response = false;
 					// }
-				});
-				this.eventSource.addEventListener('error', (err: Error) => {
-					console.error(err);
 				});
 			});
 	}

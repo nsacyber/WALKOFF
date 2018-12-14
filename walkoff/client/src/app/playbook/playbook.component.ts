@@ -48,12 +48,6 @@ import { EnvironmentVariable } from '../models/playbook/environmentVariable';
 import { PlaybookEnvironmentVariableModalComponent } from './playbook.environment.variable.modal.component';
 import { WorkflowStatus } from '../models/execution/workflowStatus';
 
-declare var EventSourcePolyfill: any;
-EventSourcePolyfill.prototype.close = function() {
-    this.controller.abort();
-    this._close();
-  };
-
 @Component({
 	selector: 'playbook-component',
 	templateUrl: './playbook.html',
@@ -219,18 +213,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	getConsoleSSE(workflowExecutionId: string): void {
 		if (this.consoleEventSource) this.consoleEventSource.close();
 
-		this.authService.getAccessTokenRefreshed()
-			.then(authToken => {
-				let url = `api/streams/console/log?workflow_execution_id=${ workflowExecutionId }`;
-
-				this.consoleEventSource = new EventSourcePolyfill(url, {
-					headers: { 'Authorization': `Bearer ${ authToken }` }
-				})
+		this.authService.getEventSource(`/api/streams/console/log?workflow_execution_id=${ workflowExecutionId }`)
+			.then(eventSource => {
+				this.consoleEventSource = eventSource
                 this.consoleEventSource.addEventListener('log', (e: any) => this.consoleEventHandler(e));
-				this.consoleEventSource.onerror = (err: Error) => {
-					// this.toastrService.error(`Error retrieving workflow results: ${err.message}`);
-					console.error(err);
-				};
 			});
 	}
 
@@ -256,22 +242,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	getActionStatusSSE(workflowExecutionId: string): void {
 		if (this.eventSource) this.eventSource.close();
 
-		this.authService.getAccessTokenRefreshed()
-			.then(authToken => {
-				let url = `api/streams/workflowqueue/actions?workflow_execution_id=${ workflowExecutionId }`;
-
-				this.eventSource = new EventSourcePolyfill(url, {
-					headers: { 'Authorization': `Bearer ${ authToken }` }
-				})
+		this.authService.getEventSource(`/api/streams/workflowqueue/actions?workflow_execution_id=${ workflowExecutionId }`)
+			.then(eventSource => {
+				this.eventSource = eventSource
 				this.eventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('awaiting_data', (e: any) => this.actionStatusEventHandler(e));
-
-				this.eventSource.onerror = (err: Error) => {
-					// this.toastrService.error(`Error retrieving workflow results: ${err.message}`);
-					console.error(err);
-				};
 			});
 	}
 

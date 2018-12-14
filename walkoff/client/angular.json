@@ -34,7 +34,7 @@
               "./node_modules/jquery/dist/jquery.min.js",
               "./node_modules/bootstrap/dist/js/bootstrap.js",
               "./node_modules/select2/dist/js/select2.js",
-              "./node_modules/event-source-polyfill/src/eventsource.min.js"
+              "./node_modules/eventsource/example/eventsource-polyfill.js"
             ]
           },
           "configurations": {
