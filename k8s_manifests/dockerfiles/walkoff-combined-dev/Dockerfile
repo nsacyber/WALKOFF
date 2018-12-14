@@ -14,8 +14,6 @@ RUN apk --no-cache add \
     libffi-dev \
     librdkafka \
     librdkafka-dev \
-    nodejs \
-    nodejs-npm \
     linux-headers
 
 # Setup Python Environment
@@ -35,7 +33,6 @@ WORKDIR /app/walkoff
 RUN pip install redis
 RUN pip install psycopg2
 RUN python setup_walkoff.py
-RUN find walkoff/client/node_modules/ -mindepth 1 -maxdepth 1 -type d ! -name "bootstrap" ! -name "jquery" -exec rm -r {} +
 
 EXPOSE 8080 5556 5557
 

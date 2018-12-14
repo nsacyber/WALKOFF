@@ -1,9 +1,11 @@
-[![Build Status](https://img.shields.io/travis/nsacyber/WALKOFF/master.svg?maxAge=3600&label=Linux)](https://travis-ci.org/nsacyber/WALKOFF) [![Build status](https://ci.appveyor.com/api/projects/status/hs6ujwd1f87n39ut/branch/master?svg=true)](https://ci.appveyor.com/project/iadgovuser11/walkoff/branch/master)
-[![Maintainability](https://api.codeclimate.com/v1/badges/330249e13845a07a69a2/maintainability)](https://codeclimate.com/github/iadgov/WALKOFF/maintainability)[![GitHub (pre-)release](https://img.shields.io/github/release/nsacyber/WALKOFF/all.svg?style=flat)](release)
+[![Build Status](https://img.shields.io/travis/nsacyber/WALKOFF/master.svg?maxAge=3600&label=Linux)](https://travis-ci.org/nsacyber/WALKOFF)
+[![Build status](https://ci.appveyor.com/api/projects/status/hs6ujwd1f87n39ut/branch/master?svg=true)](https://ci.appveyor.com/project/iadgovuser11/walkoff/branch/master)
+[![Maintainability](https://api.codeclimate.com/v1/badges/330249e13845a07a69a2/maintainability)](https://codeclimate.com/github/iadgov/WALKOFF/maintainability)
+[![GitHub (pre-)release](https://img.shields.io/github/release/nsacyber/WALKOFF/all.svg?style=flat)](release)
 
 <img src="https://nsacyber.github.io/WALKOFF/files/images/flyingLogoWithTextSmall.png">
 
-# Table of Contents
+## Table of Contents
 
 * [Description](#Description)
 * [Requirements](#Requirements)
@@ -17,9 +19,14 @@
 * [Updating Walkoff](#Updating-Walkoff)
 * [Stability and Versioning](#Stability-and-Versioning)
 * [Contributions](#Contributions)
-  
 
-# Description
+External Links:
+- [WALKOFF Apps Repository](https://github.com/nsacyber/WALKOFF-Apps)
+- [WALKOFF REST API Documentation](https://nsacyber.github.io/WALKOFF/swagger/index.html)
+- [WALKOFF Documentation](https://nsacyber.github.io/WALKOFF/documentation/build/index.html) 
+- [WALKOFF Tutorials](https://nsacyber.github.io/WALKOFF/tutorials/build/index.html)   
+
+## Overview
 
 * Are repetitive, tedious processes taking up too much of your time?
 * Is more time spent focusing on managing your data than acting on the data
@@ -40,9 +47,7 @@ Apps can also have custom interfaces enabling app developers to uniquely
 display information.  WALKOFF not only makes it easier for users to automate
 their processes but allows users to act on their processes faster as well.
 
-WALKOFF Apps can be found at: <https://github.com/nsacyber/WALKOFF-Apps>
-
-# Requirements
+## Requirements
 
 * Python 2.7+ or Python 3.4+
 * Redis 5+
@@ -54,7 +59,7 @@ WALKOFF Apps can be found at: <https://github.com/nsacyber/WALKOFF-Apps>
 
 *Individual apps may specify their own requirements.*
 
-# Installation
+## Installation
 
 There are three main ways of using WALKOFF - natively, using Docker, or using Kubernetes.
 
@@ -68,7 +73,7 @@ Once installed, the default login is admin/admin. This can be changed and additi
 
 You can use Docker Compose to install WALKOFF along with Postgres and Redis.
 
-Docker Compose is included with Docker CE on Linux and MacOS, but will need to be installed separately (see https://docs.docker.com/compose/install/ for more details.)
+Docker Compose is included with Docker CE on Windows and MacOS, but will need to be installed separately on Linux (see https://docs.docker.com/compose/install/ and https://docs.docker.com/install/ for more details.)
 
 Once installed, create a file called `docker-compose.yaml` as below (or clone this repository, the file is provided under `k8s_manifests/dockerfiles/walkoff-combined/docker-compose.yaml`)
 
