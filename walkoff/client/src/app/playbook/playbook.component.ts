@@ -1657,7 +1657,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 			if (element.value) { obj[element.name] = element.value; }
 			if (element.reference) { obj[element.name] = element.reference.toString(); }
 			if (element.selection && element.selection.length) {
-				const selectionString = (element.selection as any[]).join('.');
+				const selectionString = element.selection;
 				obj[element.name] = `${obj[element.name]} (${selectionString})`;
 			}
 		});
