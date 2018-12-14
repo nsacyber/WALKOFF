@@ -212,6 +212,7 @@ def workflow_shutdown_callback(sender, **kwargs):
     return format_workflow_return(data)
 
 
+# JWT now required in header instead of query string
 @workflowresults_page.route('/actions', methods=['GET'])
 @jwt_required
 def stream_workflow_action_events():
