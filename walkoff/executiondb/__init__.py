@@ -52,7 +52,7 @@ class ExecutionDatabase(object):
                                         connect_args={'check_same_thread': False}, poolclass=NullPool)
         else:
             self.engine = create_engine(
-                format_db_path(execution_db_type, execution_db_path, 'WALKOFF_DB_USERNAME', 'WALKOFF_DB_PASSWORD',
+                format_db_path(execution_db_type, execution_db_path, 'EXECUTION_DB_USERNAME', 'EXECUTION_DB_PASSWORD',
                                execution_db_host),
                 poolclass=NullPool)
             if not database_exists(self.engine.url):

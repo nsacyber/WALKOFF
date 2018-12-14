@@ -108,6 +108,7 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	recalculateConsoleTableCallback: any;
 	actionFilter: string = '';
 	actionFilterControl = new FormControl();
+	
 
 	// Simple bootstrap modal params
 	modalParams: {
@@ -212,16 +213,10 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	getConsoleSSE(workflowExecutionId: string): void {
 		if (this.consoleEventSource) this.consoleEventSource.close();
 
-		this.authService.getAccessTokenRefreshed()
-			.then(authToken => {
-				let url = `api/streams/console/log?access_token=${ authToken }&workflow_execution_id=${ workflowExecutionId }`;
-
-				this.consoleEventSource = new (window as any).EventSource(url);
+		this.authService.getEventSource(`/api/streams/console/log?workflow_execution_id=${ workflowExecutionId }`)
+			.then(eventSource => {
+				this.consoleEventSource = eventSource
                 this.consoleEventSource.addEventListener('log', (e: any) => this.consoleEventHandler(e));
-				this.consoleEventSource.onerror = (err: Error) => {
-					// this.toastrService.error(`Error retrieving workflow results: ${err.message}`);
-					console.error(err);
-				};
 			});
 	}
 
@@ -247,20 +242,13 @@ export class PlaybookComponent implements OnInit, AfterViewChecked, OnDestroy {
 	getActionStatusSSE(workflowExecutionId: string): void {
 		if (this.eventSource) this.eventSource.close();
 
-		this.authService.getAccessTokenRefreshed()
-			.then(authToken => {
-				let url = `api/streams/workflowqueue/actions?access_token=${ authToken }&workflow_execution_id=${ workflowExecutionId }`;
-
-				this.eventSource = new (window as any).EventSource(url);
+		this.authService.getEventSource(`/api/streams/workflowqueue/actions?workflow_execution_id=${ workflowExecutionId }`)
+			.then(eventSource => {
+				this.eventSource = eventSource
 				this.eventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
 				this.eventSource.addEventListener('awaiting_data', (e: any) => this.actionStatusEventHandler(e));
-
-				this.eventSource.onerror = (err: Error) => {
-					// this.toastrService.error(`Error retrieving workflow results: ${err.message}`);
-					console.error(err);
-				};
 			});
 	}
 

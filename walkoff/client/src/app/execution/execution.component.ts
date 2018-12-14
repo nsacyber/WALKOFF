@@ -172,11 +172,9 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	 * Initiates an EventSource for workflow statuses from the server. Binds various events to the event handler.
 	 */
 	getWorkflowStatusSSE(): void {
-		this.authService.getAccessTokenRefreshed()
-			.then(authToken => {
-				this.workflowStatusEventSource = new (window as any)
-					.EventSource(`api/streams/workflowqueue/workflow_status?access_token=${authToken}`);
-
+		this.authService.getEventSource('/api/streams/workflowqueue/workflow_status')
+			.then(eventSource => {
+				this.workflowStatusEventSource = eventSource;
 				this.workflowStatusEventSource.addEventListener('queued', (e: any) => this.workflowStatusEventHandler(e));
 				this.workflowStatusEventSource.addEventListener('started', (e: any) => this.workflowStatusEventHandler(e));
 				this.workflowStatusEventSource.addEventListener('paused', (e: any) => this.workflowStatusEventHandler(e));
@@ -185,10 +183,6 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 				this.workflowStatusEventSource.addEventListener('triggered', (e: any) => this.workflowStatusEventHandler(e));
 				this.workflowStatusEventSource.addEventListener('aborted', (e: any) => this.workflowStatusEventHandler(e));
 				this.workflowStatusEventSource.addEventListener('completed', (e: any) => this.workflowStatusEventHandler(e));
-
-				this.workflowStatusEventSource.onerror = (err: Error) => {
-					console.error(err);
-				};
 			});
 	}
 
@@ -261,20 +255,16 @@ export class ExecutionComponent implements OnInit, AfterViewChecked, OnDestroy {
 	getActionStatusSSE(workflowExecutionId: string = null): void {
 		if (this.actionStatusEventSource) this.actionStatusEventSource.close();
 
-		this.authService.getAccessTokenRefreshed()
-			.then(authToken => {
-				let url = `api/streams/workflowqueue/actions?summary=true&access_token=${ authToken }`;
-				if (workflowExecutionId) url += `&workflow_execution_id=${ workflowExecutionId }`;
+		let url = `/api/streams/workflowqueue/actions?summary=true`;
+		if (workflowExecutionId) url += `&workflow_execution_id=${ workflowExecutionId }`;
 
-				this.actionStatusEventSource = new (window as any).EventSource(url);
+		this.authService.getEventSource(url)
+			.then(eventSource => {
+				this.actionStatusEventSource = eventSource;
 				this.actionStatusEventSource.addEventListener('started', (e: any) => this.actionStatusEventHandler(e));
 				this.actionStatusEventSource.addEventListener('success', (e: any) => this.actionStatusEventHandler(e));
 				this.actionStatusEventSource.addEventListener('failure', (e: any) => this.actionStatusEventHandler(e));
 				this.actionStatusEventSource.addEventListener('awaiting_data', (e: any) => this.actionStatusEventHandler(e));
-
-				this.actionStatusEventSource.onerror = (err: Error) => {
-					console.error(err);
-				};
 			});
 	}
 

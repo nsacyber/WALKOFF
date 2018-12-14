@@ -3,12 +3,12 @@ from uuid import UUID
 
 from enum import Enum, unique
 from flask import current_app, request
+from flask_jwt_extended import jwt_required
 
 from walkoff.events import WalkoffEvent
 from walkoff.executiondb import ActionStatusEnum, WorkflowStatusEnum
 from walkoff.executiondb.workflowresults import WorkflowStatus
 from walkoff.helpers import convert_action_argument, utc_as_rfc_datetime
-from walkoff.security import jwt_required_in_query
 from walkoff.server.problem import Problem
 from walkoff.server.returncodes import BAD_REQUEST
 from walkoff.sse import FilteredSseStream, StreamableBlueprint
@@ -212,8 +212,9 @@ def workflow_shutdown_callback(sender, **kwargs):
     return format_workflow_return(data)
 
 
+# JWT now required in header instead of query string
 @workflowresults_page.route('/actions', methods=['GET'])
-@jwt_required_in_query('access_token')
+@jwt_required
 def stream_workflow_action_events():
     workflow_execution_id = request.args.get('workflow_execution_id', 'all')
     if workflow_execution_id != 'all':
@@ -231,7 +232,7 @@ def stream_workflow_action_events():
 
 
 @workflowresults_page.route('/workflow_status', methods=['GET'])
-@jwt_required_in_query('access_token')
+@jwt_required
 def stream_workflow_status():
     workflow_execution_id = request.args.get('workflow_execution_id', 'all')
     if workflow_execution_id != 'all':
